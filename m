@@ -1,28 +1,41 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 647181A0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:07:23 +1000 (AEST)
-Received: by pdjm12 with SMTP id m12so61647908pdj.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 18:07:21 -0700 (PDT)
-Message-ID: <1433293592.438.74.camel@axtens.net>
-Subject: Re: [PATCH v1 7/9]powerpc/powernv: Event attr creation and PMU
- registration
-From: Daniel Axtens <dja@axtens.net>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Stephane
- Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>, Sukadev
- Bhattiprolu <sukadev@linux.vnet.ibm.com>, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>
-Date: Wed, 03 Jun 2015 11:06:32 +1000
-In-Reply-To: <1433260778-26497-8-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433260778-26497-8-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-3UvNLlBH0iFn4hydQOlX"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 74BDE1A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:38:48 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 3 Jun 2015 11:38:46 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B8AF63578048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:38:43 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t531cZ5a61669490
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:38:43 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t531cAGW022718
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:38:11 +1000
+Date: Wed, 3 Jun 2015 09:37:53 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH V7 08/10] powerpc/powernv: Support PCI config restore for
+ VFs
+Message-ID: <20150603013753.GA7387@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1432032612-21701-9-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150602000136.GH3631@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150602000136.GH3631@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,142 +45,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jun 01, 2015 at 07:01:36PM -0500, Bjorn Helgaas wrote:
+>On Tue, May 19, 2015 at 06:50:10PM +0800, Wei Yang wrote:
+>> After PE reset, OPAL API opal_pci_reinit() is called on all devices
+>> contained in the PE to reinitialize them. However, VFs can't be seen
+>> from skiboot firmware. We have to implement the functions, similar
+>> those in skiboot firmware, to reinitialize VFs after reset on PE
+>> for VFs.
+>> 
+>> [gwshan: changelog and code refactoring]
+>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/pci-bridge.h        |    1 +
+>>  arch/powerpc/platforms/powernv/eeh-powernv.c |   70 +++++++++++++++++++++++++-
+>>  arch/powerpc/platforms/powernv/pci.c         |   18 +++++++
+>>  3 files changed, 88 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>> index c324882..ad60263 100644
+>> --- a/arch/powerpc/include/asm/pci-bridge.h
+>> +++ b/arch/powerpc/include/asm/pci-bridge.h
+>> @@ -206,6 +206,7 @@ struct pci_dn {
+>>  #define IODA_INVALID_M64        (-1)
+>>  	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
+>>  #endif /* CONFIG_PCI_IOV */
+>> +	int	mps;
+>>  #endif
+>>  	struct list_head child_list;
+>>  	struct list_head list;
+>> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> index 7af3c1e..33deb78 100644
+>> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> @@ -1612,6 +1612,67 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+>>  	return ret;
+>>  }
+>>  
+>> +static int pnv_eeh_restore_vf_config(struct pci_dn *pdn)
+>> +{
+>> +	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+>> +	u32 devctl, cmd, cap2, aer_capctl;
+>> +	int old_mps;
+>> +
+>> +	/* Restore MPS */
+>> +	if (edev->pcie_cap) {
+>> +		old_mps = (ffs(pdn->mps) - 8) << 5;
+>> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+>> +				     2, &devctl);
+>> +		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
+>> +		devctl |= old_mps;
+>> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+>> +				      2, devctl);
+>> +	}
+>> +
+>> +	/* Disable Completion Timeout */
+>> +	if (edev->pcie_cap) {
+>> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
+>> +				     4, &cap2);
+>> +		if (cap2 & 0x10) {
+>> +			eeh_ops->read_config(pdn,
+>> +					edev->pcie_cap + PCI_EXP_DEVCTL2,
+>> +					4, &cap2);
+>> +			cap2 |= 0x10;
+>> +			eeh_ops->write_config(pdn,
+>> +					edev->pcie_cap + PCI_EXP_DEVCTL2,
+>> +					4, cap2);
+>> +		}
+>> +	}
+>> +
+>> +	/* Enable SERR and parity checking */
+>> +	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
+>> +	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+>> +	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
+>> +
+>> +	/* Enable report various errors */
+>> +	if (edev->pcie_cap) {
+>> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+>> +				2, &devctl);
+>> +		devctl &= ~PCI_EXP_DEVCTL_CERE;
+>> +		devctl |= (PCI_EXP_DEVCTL_NFERE |
+>> +			   PCI_EXP_DEVCTL_FERE |
+>> +			   PCI_EXP_DEVCTL_URRE);
+>> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
+>> +				2, devctl);
+>> +	}
+>> +
+>> +	/* Enable ECRC generation and check */
+>> +	if (edev->pcie_cap && edev->aer_cap) {
+>> +		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+>> +				4, &aer_capctl);
+>> +		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+>> +		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
+>> +				4, aer_capctl);
+>> +	}
+>
+>Where is all this stuff set up the first time?  It'd be nice if we could
+>use the same path that did it the first time.
+>
 
---=-3UvNLlBH0iFn4hydQOlX
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Those steps in this function are called to setup the pci_dev. For those PFs,
+they are done in the skiboot firmware, invoked by opal_pci_reinit(). For VFs,
+since skiboot firmware is not aware of those VFs, we need to setup it in
+kernel.
 
-On Tue, 2015-06-02 at 21:29 +0530, Madhavan Srinivasan wrote:
-> Patch adds common event attribute function and Nest pmu registration call=
-.
->=20
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: Stephane Eranian <eranian@google.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/nest-pmu.c | 52 ++++++++++++++++++++++++++++++++++++++=
-++++++
->  1 file changed, 52 insertions(+)
->=20
-> diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-> index 514a0be..dd84fd7 100644
-> --- a/arch/powerpc/perf/nest-pmu.c
-> +++ b/arch/powerpc/perf/nest-pmu.c
-> @@ -244,6 +244,49 @@ static int update_pmu_ops(struct nest_pmu *pmu)
->  	return 0;
->  }
-> =20
-> +/*
-> + * Populate event name and string in attribute
-> + */
-> +struct attribute *dev_str_attr(char *name, char *str)
-> +{
-> +	struct perf_pmu_events_attr *attr;
-> +
-> +	attr =3D kzalloc(sizeof(*attr), GFP_KERNEL);
-> +
-> +	attr->event_str =3D (const char *)str;
-Erk. Two things:
- - Is str const or not? If you're treating it as const here, should you
-pass that through the function signature?
- - Who is responsible for the memory behind it? It looks like a caller
-can't construct str dynamically, pass it to this function and then free
-it, because that will invalidate attr->event_str. Is this documented?
+This means originally, those stuffs are in skiboot firmware. This is the first
+time appears in kernel.
 
-> +	attr->attr.attr.name =3D name;
-> +	attr->attr.attr.mode =3D 0444;
-> +	attr->attr.show =3D perf_event_sysfs_show;
-> +
-> +	return &attr->attr.attr;
-If you're returning the address of attr->attr.attr, then:
- - why don't you just deal directly with struct attribute * in the
-function? Why an entire struct perf_pmu_events_attr *?
- - with the function as written, if you return just &attr->attr.attr,
-don't attr->event_str and attr->attr.show get lost?
+>Are we setting up a PF or a VF here?  The function is called
+>pnv_eeh_restore_vf_config(), but it's called when "edev->physfn", so it's a
+>little confusing.
+>
 
-> +}
-> +
-> +int update_events_in_group(
-> +	struct ppc64_nest_ima_events *p8_events, int idx,
-> +		struct nest_pmu *pmu)
-> +{
-> +	struct attribute_group *attr_group;
-> +	struct attribute **attrs;
-> +	int i;
-> +
-> +	attr_group =3D kzalloc(((sizeof(struct attribute *) * (idx + 1)) +
-> +				sizeof(*attr_group)), GFP_KERNEL);
-> +	if (!attr_group)
-> +		return -ENOMEM;
-> +
-> +	attrs =3D (struct attribute **)(attr_group + 1);
-> +	attr_group->name =3D "events";
-> +	attr_group->attrs =3D attrs;
-> +
-> +	for (i=3D0; i< idx; i++, p8_events++)
-> +		attrs[i] =3D dev_str_attr((char *)p8_events->ev_name,
-> +						(char *)p8_events->ev_value);
-> +
-> +	pmu->attr_groups[0] =3D attr_group;
-> +	return 0;
-> +}
-I'm very confused by what this function is trying to do. Could you add
-some comments? I'm particularly confused by the relationship between
-attrs and attr_group.
+Yes, this is called for VFs. "edev->physfn" means the edev has a PF, so that
+this edev is a VF.
 
-> +
-> +
->  static int nest_pmu_create(struct device_node *dev, int pmu_index)
->  {
->  	struct ppc64_nest_ima_events **p8_events_arr;
-> @@ -364,6 +407,15 @@ static int nest_pmu_create(struct device_node *dev, =
-int pmu_index)
->  		}
->  	}
-> =20
-> +	update_events_in_group(
-> +		(struct ppc64_nest_ima_events *)p8_events_arr,
-> +							idx, pmu_ptr);
-> +	update_pmu_ops(pmu_ptr);
-> +
-> +	/* Register the pmu */
-> +	perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
-> +	printk(KERN_INFO "Nest PMU %s Registered\n", pmu_ptr->pmu.name);
-> +
->  	return 0;
->  }
-> =20
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>  static int pnv_eeh_restore_config(struct pci_dn *pdn)
+>>  {
+>>  	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+>> @@ -1622,7 +1683,14 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+>>  		return -EEXIST;
+>>  
+>>  	phb = edev->phb->private_data;
+>> -	ret = opal_pci_reinit(phb->opal_id,
+>> +	/*
+>> +	 * We have to restore the PCI config space after reset since the
+>> +	 * firmware can't see SRIOV VFs.
+>> +	 */
+>> +	if (edev->physfn)
+>> +		ret = pnv_eeh_restore_vf_config(pdn);
+>> +	else
+>> +		ret = opal_pci_reinit(phb->opal_id,
+>>  			      OPAL_REINIT_PCI_DEV, edev->config_addr);
+>>  	if (ret) {
+>>  		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>> index bca2aeb..10bc8c3 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -729,6 +729,24 @@ static void pnv_p7ioc_rc_quirk(struct pci_dev *dev)
+>>  }
+>>  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x3b9, pnv_p7ioc_rc_quirk);
+>>  
+>> +#ifdef CONFIG_PCI_IOV
+>> +static void pnv_pci_fixup_vf_mps(struct pci_dev *pdev)
+>> +{
+>> +	struct pci_dn *pdn = pci_get_pdn(pdev);
+>> +	int parent_mps;
+>> +
+>> +	if (!pdev->is_virtfn)
+>> +		return;
+>> +
+>> +	/* Synchronize MPS for VF and PF */
+>> +	parent_mps = pcie_get_mps(pdev->physfn);
+>> +	if ((128 << pdev->pcie_mpss) >= parent_mps)
+>> +		pcie_set_mps(pdev, parent_mps);
+>> +	pdn->mps = pcie_get_mps(pdev);
+>> +}
+>> +DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_mps);
+>
+>Same comment as before -- I don't like this usage of fixups.  Would it work
+>to do this in pcibios_add_device()?
+>
+>I assume you need this to happen when you hot-remove and hot-add a VF
+>during EEH recovery?  Where does this happen in the normal hotplug path,
+>e.g., pciehp, and can you do it in a corresponding place for EEH hotplug?
+>
 
-Regards,
-Daniel
+Yes, this is called in the EEH recovery. While not only in the hot-add case,
+when we do the normal EEH reset, 
 
+eeh_reset_device()
+    eeh_pe_restore_bars()
+        eeh_restore_one_device_bars()
+	    eeh_ops->restore_config()
+	        pnv_eeh_restore_config()
 
---=-3UvNLlBH0iFn4hydQOlX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+eeh_reset_device() would handle both hot-add and non-hot-add cases. So this is
+not proper to move it to the hot-plug path.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
+>
+>> +#endif /* CONFIG_PCI_IOV */
+>> +
+>>  void __init pnv_pci_init(void)
+>>  {
+>>  	struct device_node *np;
+>> -- 
+>> 1.7.9.5
+>> 
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-iQIcBAABCAAGBQJVblMZAAoJEPC3R3P2I92FGdIQANzpg6CJiccMpX6x6PdJVSz1
-HRHjpNrK1KcmapqtS+OMOKbT7BAnRuadZgD6WgINOTznw0gpuVPzDpPwvBDjLgc6
-tKMyMjMN9cg1f1tW4Mj1nno8MsPg9klCBHXmUQ20otWEaEh/a3AMbCNVGK6unbrV
-51Kh8VBGXpKiCHTywQd4j1x1enXKPEmAs5eI4+9VOC8V9YIkljsndDAWAmR/NuLr
-S92Y6ubDbvXk2Dln/BU3DggP7j0VTXFigtaTn5qfaf435Dt01qVwk6NqeVBiA4qD
-pgs86SAuwQAbxHl3PwQmS4DC4WjH7YxO9tlR/Ej4sU3Sr49+U+cXBc+cpUHuzz6U
-c8JPCH5qGNysJjDqLOsKc19X6co7fRhozuN1yANvcI+Y+Jg6MqgfctOOYxIItyXy
-wlCQv0u4GSFp1mLvX5bUZrlmm8woRwE2zUJ2SUDm9qVOAbUzNaIebf4gukfWw2v+
-eIfrQZP9mGOvqVm0zafXQLFSmYb02ZZ9mFi7CYcrQB6QumewkBJnYD6fR39Td3HY
-lcbFPkMDUPaVXgv9x8GbTG9mkIqrl1yC8V7wZRy/s0Q77riTZAriuECqSky7fgEO
-29FpisoyEE3oI3eCWPuunebVGe2V3CNFkmSTClIZyDY0lFFeoyEppbTA7AX59lbl
-Vi7o8+9eJGPeH7fpvaIO
-=7AbK
------END PGP SIGNATURE-----
-
---=-3UvNLlBH0iFn4hydQOlX--
+-- 
+Richard Yang
+Help you, Help me
