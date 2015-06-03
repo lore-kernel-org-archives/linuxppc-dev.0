@@ -1,41 +1,41 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCEDE1A0050
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:41:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C5F3E1A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:48:35 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 3 Jun 2015 11:41:00 +1000
+ Wed, 3 Jun 2015 11:48:34 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 143402BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:40:57 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 790332BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:48:33 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t531dXkk54919322
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:39:41 +1000
+ t531mOTk51642462
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:48:32 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t531d9IT023810
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:39:10 +1000
-Date: Wed, 3 Jun 2015 09:38:52 +0800
+ t531m0Qh006352
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:48:01 +1000
+Date: Wed, 3 Jun 2015 09:47:42 +0800
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
  linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH V7 01/10] PCI/IOV: Rename and export
- virtfn_add/virtfn_remove
-Message-ID: <20150603013852.GB7387@richard>
+Subject: Re: [PATCH V7 04/10] powerpc/eeh: Trace first 7 BARs in address cache
+Message-ID: <20150603014742.GC7387@richard>
 Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
  <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-2-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150602171907.GI3631@google.com>
+ <1432032612-21701-5-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150601233233.GE3631@google.com> <20150602035115.GB6785@richard>
+ <20150602041124.GA19672@gwshan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150602171907.GI3631@google.com>
+In-Reply-To: <20150602041124.GA19672@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,110 +45,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 02, 2015 at 12:19:07PM -0500, Bjorn Helgaas wrote:
->On Tue, May 19, 2015 at 06:50:03PM +0800, Wei Yang wrote:
->> During EEH recovery, hotplug is applied to the devices which don't
->> have drivers or their drivers don't support EEH. However, the hotplug,
->> which was implemented based on PCI bus, can't be applied to VF directly.
->> 
->> The patch renames virtn_{add,remove}() and exports them so that they
->> can be used in PCI hotplug during EEH recovery.
->> 
->> [gwshan: changelog]
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On Tue, Jun 02, 2015 at 02:11:24PM +1000, Gavin Shan wrote:
+>On Tue, Jun 02, 2015 at 11:51:15AM +0800, Wei Yang wrote:
+>>On Mon, Jun 01, 2015 at 06:32:33PM -0500, Bjorn Helgaas wrote:
+>>>The subject says "Trace first 7 BARs..."  I think maybe you meant "Track
+>>>first 7 BARs" or maybe "Cache only BARs, not windows or IOV BARs"
+>>>
+>>
+>>Agree, Track is more accurate.
+>>
+>>Gavin,
+>>
+>>Which subject you prefer?
+>>
 >
->Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+>"Cache only BARs, not windows or IOV BARs" is better.
 >
->I assume you'll merge this along with the rest of this series via the
->powerpc tree.
+>>>On Tue, May 19, 2015 at 06:50:06PM +0800, Wei Yang wrote:
+>>>> EEH address cache, which helps to locate the PCI device according to
+>>>> the given (physical) MMIO address, didn't cover PCI bridges. 
+>>>
+>>>"doesn't contain PCI bridge windows"?
+>>>
+>>>I see that eeh_addr_cache_insert_dev() ignores bridges because it never
+>>>calls __eeh_addr_cache_insert_dev() when "(dev->class >> 16) ==
+>>>PCI_BASE_CLASS_BRIDGE".  I think it would be more technically correct if
+>>>you removed that test and relied on the "i <= PCI_ROM_RESOURCE" test in
+>>>this patch, because it is legal (though rare) for bridge devices to have
+>>>two BARs, and I assume you would want to put those in your cache if they
+>>>exist.
+>>>
+>>
+>>I think this is fine to remove the test "(dev->class >> 16) ==
+>>PCI_BASE_CLASS_BRIDGE" for a bridge and rely on the "i <= PCI_ROM_RESOURCE"
+>>
+>>Gavin,
+>>
+>>Do you thinks this is fine?
+>>
 >
+>Fine to me.
 
-Thanks, I think so.
+Thanks, I will change accordingly and do some tests.
 
->> ---
->>  drivers/pci/iov.c   |   10 +++++-----
->>  include/linux/pci.h |    8 ++++++++
->>  2 files changed, 13 insertions(+), 5 deletions(-)
->> 
->> diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
->> index ee0ebff..cc941dd 100644
->> --- a/drivers/pci/iov.c
->> +++ b/drivers/pci/iov.c
->> @@ -108,7 +108,7 @@ resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
->>  	return dev->sriov->barsz[resno - PCI_IOV_RESOURCES];
->>  }
->>  
->> -static int virtfn_add(struct pci_dev *dev, int id, int reset)
->> +int pci_iov_virtfn_add(struct pci_dev *dev, int id, int reset)
->>  {
->>  	int i;
->>  	int rc = -ENOMEM;
->> @@ -183,7 +183,7 @@ failed:
->>  	return rc;
->>  }
->>  
->> -static void virtfn_remove(struct pci_dev *dev, int id, int reset)
->> +void pci_iov_virtfn_remove(struct pci_dev *dev, int id, int reset)
->>  {
->>  	char buf[VIRTFN_ID_LEN];
->>  	struct pci_dev *virtfn;
->> @@ -320,7 +320,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
->>  	}
->>  
->>  	for (i = 0; i < initial; i++) {
->> -		rc = virtfn_add(dev, i, 0);
->> +		rc = pci_iov_virtfn_add(dev, i, 0);
->>  		if (rc)
->>  			goto failed;
->>  	}
->> @@ -332,7 +332,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
->>  
->>  failed:
->>  	for (j = 0; j < i; j++)
->> -		virtfn_remove(dev, j, 0);
->> +		pci_iov_virtfn_remove(dev, j, 0);
->>  
->>  	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
->>  	pci_cfg_access_lock(dev);
->> @@ -361,7 +361,7 @@ static void sriov_disable(struct pci_dev *dev)
->>  		return;
->>  
->>  	for (i = 0; i < iov->num_VFs; i++)
->> -		virtfn_remove(dev, i, 0);
->> +		pci_iov_virtfn_remove(dev, i, 0);
->>  
->>  	pcibios_sriov_disable(dev);
->>  
->> diff --git a/include/linux/pci.h b/include/linux/pci.h
->> index 353db8d..06aa5dd 100644
->> --- a/include/linux/pci.h
->> +++ b/include/linux/pci.h
->> @@ -1679,6 +1679,8 @@ int pci_iov_virtfn_devfn(struct pci_dev *dev, int id);
->>  
->>  int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
->>  void pci_disable_sriov(struct pci_dev *dev);
->> +int pci_iov_virtfn_add(struct pci_dev *dev, int id, int reset);
->> +void pci_iov_virtfn_remove(struct pci_dev *dev, int id, int reset);
->>  int pci_num_vf(struct pci_dev *dev);
->>  int pci_vfs_assigned(struct pci_dev *dev);
->>  int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
->> @@ -1696,6 +1698,12 @@ static inline int pci_iov_virtfn_devfn(struct pci_dev *dev, int id)
->>  static inline int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn)
->>  { return -ENODEV; }
->>  static inline void pci_disable_sriov(struct pci_dev *dev) { }
->> +static inline int pci_iov_virtfn_add(struct pci_dev *dev, int id, int reset)
->> +{
->> +	return -ENOSYS;
->> +}
->> +static inline void pci_iov_virtfn_remove(struct pci_dev *dev, int id, int reset)
->> +{ }
->>  static inline int pci_num_vf(struct pci_dev *dev) { return 0; }
->>  static inline int pci_vfs_assigned(struct pci_dev *dev)
->>  { return 0; }
->> -- 
->> 1.7.9.5
->> 
+>
+>>>> Also, it
+>>>> shouldn't return PF with address in PF's IOV BARs. Instead, the VFs
+>>>> should be returned.
+>>>> The patch restricts the address cache to cover first 7 BARs for the
+>>>> above purposes.
+>>>> 
+>>>> [gwshan: changelog]
+>>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>> ---
+>>>>  arch/powerpc/kernel/eeh_cache.c |    2 +-
+>>>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>> 
+>>>> diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+>>>> index eeabeab..f6c5f05 100644
+>>>> --- a/arch/powerpc/kernel/eeh_cache.c
+>>>> +++ b/arch/powerpc/kernel/eeh_cache.c
+>>>> @@ -196,7 +196,7 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
+>>>>  	}
+>>>>  
+>>>>  	/* Walk resources on this device, poke them into the tree */
+>>>> -	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+>>>> +	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+>>>>  		unsigned long start = pci_resource_start(dev,i);
+>>>>  		unsigned long end = pci_resource_end(dev,i);
+>>>>  		unsigned int flags = pci_resource_flags(dev,i);
+>>>> -- 
+>>>> 1.7.9.5
+>>>> 
+>>
+>>-- 
+>>Richard Yang
+>>Help you, Help me
 
 -- 
 Richard Yang
