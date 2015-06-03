@@ -1,27 +1,27 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x231.google.com (mail-pd0-x231.google.com
- [IPv6:2607:f8b0:400e:c02::231])
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 57F1A1A0050
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 10:47:09 +1000 (AEST)
-Received: by pdbqa5 with SMTP id qa5so144271442pdb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 17:47:06 -0700 (PDT)
-Message-ID: <1433292378.438.58.camel@axtens.net>
-Subject: Re: [PATCH v1 6/9]powerpc/powernv: dt parser function for nest pmu
- and its events
+ by lists.ozlabs.org (Postfix) with ESMTPS id 734DC1A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 10:55:17 +1000 (AEST)
+Received: by payr10 with SMTP id r10so61710417pay.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 17:55:15 -0700 (PDT)
+Message-ID: <1433292866.438.64.camel@axtens.net>
+Subject: Re: [PATCH v1 8/9] powerpc/powernv: Add OPAL support for Nest PMU
 From: Daniel Axtens <dja@axtens.net>
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Stephane
- Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>, Sukadev
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Stewart
+ Smith <stewart@linux.vnet.ibm.com>, Stephane Eranian <eranian@google.com>,
+ Paul Mackerras <paulus@samba.org>, Jeremy Kerr <jk@ozlabs.org>, Sukadev
  Bhattiprolu <sukadev@linux.vnet.ibm.com>, Anshuman Khandual
  <khandual@linux.vnet.ibm.com>
-Date: Wed, 03 Jun 2015 10:46:18 +1000
-In-Reply-To: <1433260778-26497-7-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Wed, 03 Jun 2015 10:54:26 +1000
+In-Reply-To: <1433260778-26497-9-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433260778-26497-7-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433260778-26497-9-git-send-email-maddy@linux.vnet.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-bfjZ9G2BF4b52N3RRZAP"
+ protocol="application/pgp-signature"; boundary="=-ObRaLzi/U2/kie2bNaOT"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,168 +33,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-bfjZ9G2BF4b52N3RRZAP
+--=-ObRaLzi/U2/kie2bNaOT
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
+> +int64_t opal_nest_ima_control(uint32_t value);
 
-> +static int nest_pmu_create(struct device_node *dev, int pmu_index)
+If I'm understanding things correctly, you call this function in patch
+3. Quoting from that patch:
+> +static void nest_init(void *dummy)
 > +{
-> +	struct ppc64_nest_ima_events **p8_events_arr;
-> +	struct ppc64_nest_ima_events *p8_events;
-> +	struct property *pp;
-> +	char *buf;
-> +	const __be32 *lval;
-> +	u32 val;
-> +	int len, idx =3D 0;
-> +	struct nest_pmu *pmu_ptr;
-> +	const char *start, *end;
-> +
-> +	if (!dev)
-> +		return -EINVAL;
-> +
-> +	pmu_ptr =3D kzalloc(sizeof(struct nest_pmu), GFP_KERNEL);
-> +	if (!pmu_ptr)
-> +		return -ENOMEM;
-> +
-> +	/* Needed for hotplug/migration */
-> +	per_nestpmu_arr[pmu_index] =3D pmu_ptr;
-> +
-> +	p8_events_arr =3D kzalloc((sizeof(struct ppc64_nest_ima_events) * 64),
-> +								GFP_KERNEL);
-> +	if (!p8_events_arr)
-> +		return -ENOMEM;
-> +	p8_events =3D (struct ppc64_nest_ima_events *)p8_events_arr;
-I think you're trying to get the first element of the array here: why
-not just `p8_events =3D p8_events_arr[0];`?
-
-> +
-> +	/*
-> +	 * Loop through each property
-> +	 */
-> +	for_each_property_of_node(dev, pp) {
-> +		start =3D pp->name;
-> +		end =3D start + strlen(start);
-> +		len =3D strlen(start);
-> +
-> +		if (!strcmp(pp->name, "name")) {
-> +			if (!pp->value ||
-> +			   (strnlen(pp->value, pp->length) >=3D pp->length))
-> +				return -EINVAL;
-> +
-> +			buf =3D kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
-> +			if (!buf)
-> +				return -ENOMEM;
-> +
-> +			sprintf(buf, "Nest_%s", (char *)pp->value);
-> +			pmu_ptr->pmu.name =3D (char *)buf;
-> +			pmu_ptr->attr_groups[1] =3D &p8_nest_format_group;
-> +			pmu_ptr->attr_groups[2] =3D &cpumask_nest_pmu_attr_group;
-> +		}
-> +
-> +		/* Skip these, we dont need it */
-> +		if (!strcmp(pp->name, "name") ||
-> +		    !strcmp(pp->name, "phandle") ||
-> +		    !strcmp(pp->name, "device_type") ||
-> +		    !strcmp(pp->name, "linux,phandle"))
-> +			continue;
-> +
-> +		buf =3D kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
-> +		if (!buf)
-> +			return -ENOMEM;
-> +
-> +		if (strncmp(pp->name, "unit.", 5) =3D=3D 0) {
-> +			start +=3D 5;
-> +			len =3D strlen(start);
-> +			strncpy(buf, start, strlen(start));
-You've just saved strlen(start), you could just use len. This also
-applies in the next case below.
-> +			p8_events->ev_name =3D buf;
-> +
-> +			if (!pp->value ||
-> +                            (strnlen(pp->value, pp->length) >=3D pp->len=
-gth))
-> +				return -EINVAL;
-The strnlen will never be greater than pp->length, so the only case this
-will hit is if strnlen(pp->value, pp->length) =3D=3D pp->length. This also
-applies again below.
-
-> +
-> +			buf =3D kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
-> +			if (!buf)
-> +				return -ENOMEM;
-> +
-> +			strncpy(buf, (const char *)pp->value, pp->length);
-> +			p8_events->ev_value =3D buf;
-> +			idx++;
-> +			p8_events++;
-> +
-> +		} else if (strncmp(pp->name, "scale.", 6) =3D=3D 0) {
-> +			start +=3D 6;
-> +			len =3D strlen(start);
-> +			strncpy(buf, start, strlen(start));
-> +			p8_events->ev_name =3D buf;
-> +
-> +			if (!pp->value ||
-> +			   (strnlen(pp->value, pp->length) >=3D pp->length))
-> +				return -EINVAL;
-> +
-> +			buf =3D kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
-> +			if (!buf)
-> +				return -ENOMEM;
-> +
-> +			strncpy(buf, (const char *)pp->value, pp->length);
-> +			p8_events->ev_value =3D buf;
-> +			idx++;
-> +			p8_events++;
-> +
-> +		} else {
-> +			strncpy(buf, start, len);
-This is the only case where you actually use the orignal version of len.
-This makes me think you could drop the variable entirely and just use
-strlen(start) in all cases. I also don't see where `end` is used
-anywhere in this function: could that be dropped?
-> +			p8_events->ev_name =3D buf;
-> +			lval =3D of_get_property(dev, pp->name, NULL);
-> +			val =3D (uint32_t)be32_to_cpup(lval);
-> +
-> +			/*
-> +			* Use DT property value as the event
-> +			*/
-I'm not sure if this is my mailer, but it looks like lines 2 and 3 of
-that comment need to be indented to line up under the * in the first
-line.
-> +			buf =3D kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
-> +			if (!buf)
-> +                                return -ENOMEM;
-> +
-> +			sprintf(buf,"event=3D0x%x", val);
-> +			p8_events->ev_value =3D buf;
-> +			p8_events++;
-> +			idx++;
-> +		}
-> +	}
-> +
-> +	return 0;
+> +       opal_nest_ima_control(P8_NEST_ENGINE_START);
 > +}
+Does this patch need to be moved earlier in the series?=20
+
+Have you tested that the series compiles at every point?=20
+(I've found that this can be done quite easily with
+ git rebase --interactive using x to run the compile)
+
 > +
+>  /* Internal functions */
+>  extern int early_init_dt_scan_opal(unsigned long node, const char *uname=
+,
+>  				   int depth, void *data);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerp=
+c/platforms/powernv/opal-wrappers.S
+> index a7ade94..ce36a68 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -295,3 +295,4 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+>  OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+>  OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+>  OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
+> +OPAL_CALL(opal_nest_ima_control,		OPAL_NEST_IMA_CONTROL);
 
-> @@ -288,7 +427,7 @@ static int __init nest_pmu_init(void)
->  	cpumask_chip();
-> =20
->  	/*
-> -	 * Detect the Nest PMU feature
-> +	 * Detect the Nest PMU feature and register the pmus
->  	 */
->  	if (nest_ima_detect_parse())
->  		return 0;
-As the changed comment indicates, this function changes the behaviour of
-nest_ima_detect_parse. Given that it's a new function introduced by this
-patch series, maybe it should also change names.
 
-
-
---=-bfjZ9G2BF4b52N3RRZAP
+--=-ObRaLzi/U2/kie2bNaOT
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -203,19 +77,19 @@ Content-Transfer-Encoding: 7bit
 Version: GnuPG v2
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAABCAAGBQJVbk5aAAoJEPC3R3P2I92FwLkP/2pZbsZ9fcwBmB3rd+vdnqOa
-9aOX/KF53rxrghFPidDrmdXEyOup0ATPCIdXbU2hHkV8zTasTTolcK5GiRiOZQkr
-gDeINkH5QpDk58KBULWFnbw6aO7imWzOKnPdCP751KgNtZ1HgXRs96VD1OjUoLc3
-iYcDqYVmsivfMDa8VtwfWU3Lzyy4h1XIB7wXz0wsq/3OjniFTf1v4x0UWlRjOP94
-9p6SQZkSMMF+b/oyVm7XKMAEqk9/EZBzu4Q+2/q7VAPfBaX5TbmGI4JPCzcKUOeF
-pcd39iaEwiVPHodpqZaI4FOZ0XkoFu2GLPhBApssdnjPCQEQHSltNDp4JS4PsWve
-Ratmp+v7nieFrBS4TBd2zn4ap7y18oXWv9G1QA6dM6Yg1i0dnM/9BZwithkvjB/6
-8798LH8weTSVmmRLMovZbBwMz6N59X9xQ8NoZsq6Skqnpw4N13XZH2Q2RVFYpHfx
-amNoUgxqm09+qCL1veNGVIkqNgKxD5es8NxQu+/IsSyIrAgDOKyXSkgSOiA5hMP5
-hBaH6Lr0oOUVw+KaY/FCOqv2yw3R8QutQw3rtk+amThU6e/AwcKxxfyrY0p8MD6G
-cgFuuXbPSjXF4HmSTE4NLGB1XHfxruvrgHIaUg8a1NQ/sI4r6n9krJYFfuNPqcXJ
-zx9qzGe2SppKW6NHj6TD
-=lLT1
+iQIcBAABCAAGBQJVblBDAAoJEPC3R3P2I92FWzUP/2QCJta57GBCFYcEjQB6ZbCd
+/ZWLFoEDUCjAwSHZje2h1ZUYK0VcHjhMEuE1xEl/jxZAiexTilQXa+IPhyOs6T5p
+cNJMQ7EdWv7FtOCp5X8OHcQwJ76ITEkomv2ixQhh7mn3C3vy86yvbp6eECmmDOOM
+PkJpk3Y0GpugVEz+2roXiqQ7otICO7WZVdxQ6xWxCXppwojqPrx3m2UA8EAI7Z1o
+Y6MRa0bcrpNCTfHjOyS0rXrlN+t1srTVWISyg8nQpsnLYkKXXT+W58LdUGIpb1oF
+yCtGW+2PqGXSUTXdVPgeHUIyuIo/r5jH1/wl6zXM+uyIkjbD1huHkcMI/RtExm4J
+9ixcA54L2q5uV5e8AEXTl6N6b6weRzUlTnUEydQpQlsyLAMW9/s2KQjclsRERxOo
+ElvJGlx2wbA4vHBdVznG0aBrUvr5twoJlpdxEq7b7CeBzu39LBOgs/WeOZ6/qeM3
+gMkIytldGZ0iALWuaDAUrwPT/X7ZhJ1dolzgUGqjSknjLrC+p2D3q/smp26jVl/H
+QqXWQiePv6Klz5zgyi2oY9sGiLx5JCAD2gnDb0gFsUZCtPj1tufOTqWbx+4JPbMm
+/hoe0P7TirnxJ9yCys7+xoSag7/1xxvLYi+hJ91cjEsb66jSidAmqjFUm3731Pl8
+ckb29n2AIIE5WWSOEjMQ
+=CxPj
 -----END PGP SIGNATURE-----
 
---=-bfjZ9G2BF4b52N3RRZAP--
+--=-ObRaLzi/U2/kie2bNaOT--
