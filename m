@@ -1,41 +1,43 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-yk0-f182.google.com (mail-yk0-f182.google.com
+ [209.85.160.182])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C5F3E1A0050
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:48:35 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 3 Jun 2015 11:48:34 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 790332BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 11:48:33 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t531mOTk51642462
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:48:32 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t531m0Qh006352
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 11:48:01 +1000
-Date: Wed, 3 Jun 2015 09:47:42 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH V7 04/10] powerpc/eeh: Trace first 7 BARs in address cache
-Message-ID: <20150603014742.GC7387@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-5-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150601233233.GE3631@google.com> <20150602035115.GB6785@richard>
- <20150602041124.GA19672@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2F6E11A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 12:13:26 +1000 (AEST)
+Received: by ykfl8 with SMTP id l8so59645083ykf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 19:13:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150602041124.GA19672@gwshan>
+In-Reply-To: <alpine.DEB.2.11.1506022115240.20347@nanos>
+References: <1433159093-4548-1-git-send-email-baolin.wang@linaro.org>
+ <alpine.DEB.2.11.1506022115240.20347@nanos>
+Date: Wed, 3 Jun 2015 10:13:24 +0800
+Message-ID: <CAMz4ku+8unOm7EpZyurO+mzUywTJWJng_NFMAfcD8jPMHQAneg@mail.gmail.com>
+Subject: Re: [PATCH v4 00/25] Convert the posix_clock_operations and k_clock
+ structure to ready for 2038
+From: Baolin Wang <baolin.wang@linaro.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, John Stultz <john.stultz@linaro.org>,
+ Heena Sirwani <heenasirwani@gmail.com>, Xunlei Pang <pang.xunlei@linaro.org>,
+ peterz@infradead.org,
+ rafael.j.wysocki@intel.com, gregkh@linuxfoundation.org,
+ Richard Cochran <richardcochran@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org,
+ mpe@ellerman.id.au, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+ linux390@de.ibm.com, rth@twiddle.net, riel@redhat.com, cl@linux.com,
+ tj@kernel.org, =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+ Andrew Hunter <ahh@google.com>, Paul Turner <pjt@google.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ Serge Hallyn <serge.hallyn@canonical.com>, james.l.morris@oracle.com,
+ serge@hallyn.com,
+ pmoore@redhat.com, tiwai@suse.de, Jeffrey Vander Stoep <jeffv@google.com>,
+ Jeffrey Layton <jlayton@primarydata.com>, Kees Cook <keescook@chromium.org>,
+ sds@tycho.nsa.gov,
+ mark.d.rustad@intel.com, linux-security-module@vger.kernel.org,
+ y2038 Mailman List <y2038@lists.linaro.org>
+Content-Type: multipart/alternative; boundary=089e0122f52e8f71d60517939a3b
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,84 +47,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 02, 2015 at 02:11:24PM +1000, Gavin Shan wrote:
->On Tue, Jun 02, 2015 at 11:51:15AM +0800, Wei Yang wrote:
->>On Mon, Jun 01, 2015 at 06:32:33PM -0500, Bjorn Helgaas wrote:
->>>The subject says "Trace first 7 BARs..."  I think maybe you meant "Track
->>>first 7 BARs" or maybe "Cache only BARs, not windows or IOV BARs"
->>>
->>
->>Agree, Track is more accurate.
->>
->>Gavin,
->>
->>Which subject you prefer?
->>
->
->"Cache only BARs, not windows or IOV BARs" is better.
->
->>>On Tue, May 19, 2015 at 06:50:06PM +0800, Wei Yang wrote:
->>>> EEH address cache, which helps to locate the PCI device according to
->>>> the given (physical) MMIO address, didn't cover PCI bridges. 
->>>
->>>"doesn't contain PCI bridge windows"?
->>>
->>>I see that eeh_addr_cache_insert_dev() ignores bridges because it never
->>>calls __eeh_addr_cache_insert_dev() when "(dev->class >> 16) ==
->>>PCI_BASE_CLASS_BRIDGE".  I think it would be more technically correct if
->>>you removed that test and relied on the "i <= PCI_ROM_RESOURCE" test in
->>>this patch, because it is legal (though rare) for bridge devices to have
->>>two BARs, and I assume you would want to put those in your cache if they
->>>exist.
->>>
->>
->>I think this is fine to remove the test "(dev->class >> 16) ==
->>PCI_BASE_CLASS_BRIDGE" for a bridge and rely on the "i <= PCI_ROM_RESOURCE"
->>
->>Gavin,
->>
->>Do you thinks this is fine?
->>
->
->Fine to me.
+--089e0122f52e8f71d60517939a3b
+Content-Type: text/plain; charset=UTF-8
 
-Thanks, I will change accordingly and do some tests.
+On 3 June 2015 at 03:20, Thomas Gleixner <tglx@linutronix.de> wrote:
 
+> On Mon, 1 Jun 2015, Baolin Wang wrote:
 >
->>>> Also, it
->>>> shouldn't return PF with address in PF's IOV BARs. Instead, the VFs
->>>> should be returned.
->>>> The patch restricts the address cache to cover first 7 BARs for the
->>>> above purposes.
->>>> 
->>>> [gwshan: changelog]
->>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>> ---
->>>>  arch/powerpc/kernel/eeh_cache.c |    2 +-
->>>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>> 
->>>> diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
->>>> index eeabeab..f6c5f05 100644
->>>> --- a/arch/powerpc/kernel/eeh_cache.c
->>>> +++ b/arch/powerpc/kernel/eeh_cache.c
->>>> @@ -196,7 +196,7 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
->>>>  	}
->>>>  
->>>>  	/* Walk resources on this device, poke them into the tree */
->>>> -	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
->>>> +	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
->>>>  		unsigned long start = pci_resource_start(dev,i);
->>>>  		unsigned long end = pci_resource_end(dev,i);
->>>>  		unsigned int flags = pci_resource_flags(dev,i);
->>>> -- 
->>>> 1.7.9.5
->>>> 
->>
->>-- 
->>Richard Yang
->>Help you, Help me
+> > This patch series changes the 32-bit time types (timespec/itimerspec) to
+> > the 64-bit types (timespec64/itimerspec64), since 32-bit time types will
+> > break in the year 2038.
+>
+> That's only true for 32bit systems.
+>
+> All in all the patch series looks rather reasonable now, except for
+> the subject lines and the changelogs.
+>
+> The only technical objection I have is the macro conversion magic in
+> patch #6. This can be done in a less cryptic and more efficient way.
+>
+> See the comments to the various patches and please apply them to all
+> of the series.
+>
+> Thanks,
+>
+>         tglx
+>
+>
+>
+Hi Thomas,
+
+Thanks for your comments, and i'll check and fix these problems.
 
 -- 
-Richard Yang
-Help you, Help me
+Baolin.wang
+Best Regards
+
+--089e0122f52e8f71d60517939a3b
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
+te">On 3 June 2015 at 03:20, Thomas Gleixner <span dir=3D"ltr">&lt;<a href=
+=3D"mailto:tglx@linutronix.de" target=3D"_blank">tglx@linutronix.de</a>&gt;=
+</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .=
+8ex;border-left:1px #ccc solid;padding-left:1ex"><span class=3D"">On Mon, 1=
+ Jun 2015, Baolin Wang wrote:<br>
+<br>
+</span><span class=3D"">&gt; This patch series changes the 32-bit time type=
+s (timespec/itimerspec) to<br>
+&gt; the 64-bit types (timespec64/itimerspec64), since 32-bit time types wi=
+ll<br>
+&gt; break in the year 2038.<br>
+<br>
+</span>That&#39;s only true for 32bit systems.<br>
+<br>
+All in all the patch series looks rather reasonable now, except for<br>
+the subject lines and the changelogs.<br>
+<br>
+The only technical objection I have is the macro conversion magic in<br>
+patch #6. This can be done in a less cryptic and more efficient way.<br>
+<br>
+See the comments to the various patches and please apply them to all<br>
+of the series.<br>
+<br>
+Thanks,<br>
+<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 tglx<br>
+<br>
+<br>
+</blockquote></div><br>Hi Thomas,</div><div class=3D"gmail_extra"><br></div=
+><div class=3D"gmail_extra">Thanks for your comments, and i&#39;ll check an=
+d fix these problems.<br clear=3D"all"><div><br></div>-- <br><div class=3D"=
+gmail_signature"><div dir=3D"ltr"><div>Baolin.wang<br></div>Best Regards<br=
+></div></div>
+</div></div>
+
+--089e0122f52e8f71d60517939a3b--
