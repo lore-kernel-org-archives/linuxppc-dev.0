@@ -1,43 +1,40 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-yk0-f182.google.com (mail-yk0-f182.google.com
- [209.85.160.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F6E11A005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 12:13:26 +1000 (AEST)
-Received: by ykfl8 with SMTP id l8so59645083ykf.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 19:13:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5AC831A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 13:32:38 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 3 Jun 2015 13:32:36 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9452D2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 13:32:33 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t533WONG58851490
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 13:32:33 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t533W0lw019697
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 13:32:01 +1000
+Date: Wed, 3 Jun 2015 11:31:42 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH V7 06/10] powerpc/eeh: Create PE for VFs
+Message-ID: <20150603033142.GA22584@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1432032612-21701-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150601234645.GF3631@google.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.11.1506022115240.20347@nanos>
-References: <1433159093-4548-1-git-send-email-baolin.wang@linaro.org>
- <alpine.DEB.2.11.1506022115240.20347@nanos>
-Date: Wed, 3 Jun 2015 10:13:24 +0800
-Message-ID: <CAMz4ku+8unOm7EpZyurO+mzUywTJWJng_NFMAfcD8jPMHQAneg@mail.gmail.com>
-Subject: Re: [PATCH v4 00/25] Convert the posix_clock_operations and k_clock
- structure to ready for 2038
-From: Baolin Wang <baolin.wang@linaro.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, John Stultz <john.stultz@linaro.org>,
- Heena Sirwani <heenasirwani@gmail.com>, Xunlei Pang <pang.xunlei@linaro.org>,
- peterz@infradead.org,
- rafael.j.wysocki@intel.com, gregkh@linuxfoundation.org,
- Richard Cochran <richardcochran@gmail.com>, benh@kernel.crashing.org,
- paulus@samba.org,
- mpe@ellerman.id.au, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
- linux390@de.ibm.com, rth@twiddle.net, riel@redhat.com, cl@linux.com,
- tj@kernel.org, =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
- Andrew Hunter <ahh@google.com>, Paul Turner <pjt@google.com>,
- linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
- Serge Hallyn <serge.hallyn@canonical.com>, james.l.morris@oracle.com,
- serge@hallyn.com,
- pmoore@redhat.com, tiwai@suse.de, Jeffrey Vander Stoep <jeffv@google.com>,
- Jeffrey Layton <jlayton@primarydata.com>, Kees Cook <keescook@chromium.org>,
- sds@tycho.nsa.gov,
- mark.d.rustad@intel.com, linux-security-module@vger.kernel.org,
- y2038 Mailman List <y2038@lists.linaro.org>
-Content-Type: multipart/alternative; boundary=089e0122f52e8f71d60517939a3b
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150601234645.GF3631@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,80 +44,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e0122f52e8f71d60517939a3b
-Content-Type: text/plain; charset=UTF-8
+On Mon, Jun 01, 2015 at 06:46:45PM -0500, Bjorn Helgaas wrote:
+>On Tue, May 19, 2015 at 06:50:08PM +0800, Wei Yang wrote:
+>> Current EEH recovery code works with the assumption: the PE has primary
+>> bus. Unfortunately, that's not true to VF PEs, which generally contains
+>> one or multiple VFs (for VF group case). The patch creates PEs for VFs
+>> at PCI final fixup time. Those PEs for VFs are indentified with newly
+>> introduced flag EEH_PE_VF so that we handle them differently during
+>> EEH recovery.
+>> 
+>> [gwshan: changelog and code refactoring]
+>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/eeh.h               |    1 +
+>>  arch/powerpc/kernel/eeh_pe.c                 |   10 ++++++++--
+>>  arch/powerpc/platforms/powernv/eeh-powernv.c |   17 +++++++++++++++++
+>>  3 files changed, 26 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>> index 1b3614d..c1fde48 100644
+>> --- a/arch/powerpc/include/asm/eeh.h
+>> +++ b/arch/powerpc/include/asm/eeh.h
+>> @@ -70,6 +70,7 @@ struct pci_dn;
+>>  #define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
+>>  #define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
+>>  #define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
+>> +#define EEH_PE_VF	(1 << 4)	/* VF PE     */
+>>  
+>>  #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
+>>  #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
+>> diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>> index 35f0b62..260a701 100644
+>> --- a/arch/powerpc/kernel/eeh_pe.c
+>> +++ b/arch/powerpc/kernel/eeh_pe.c
+>> @@ -299,7 +299,10 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
+>>  	 * EEH device already having associated PE, but
+>>  	 * the direct parent EEH device doesn't have yet.
+>>  	 */
+>> -	pdn = pdn ? pdn->parent : NULL;
+>> +	if (edev->physfn)
+>> +		pdn = pci_get_pdn(edev->physfn);
+>> +	else
+>> +		pdn = pdn ? pdn->parent : NULL;
+>>  	while (pdn) {
+>>  		/* We're poking out of PCI territory */
+>>  		parent = pdn_to_eeh_dev(pdn);
+>> @@ -382,7 +385,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+>>  	}
+>>  
+>>  	/* Create a new EEH PE */
+>> -	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+>> +	if (edev->physfn)
+>> +		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
+>> +	else
+>> +		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+>>  	if (!pe) {
+>>  		pr_err("%s: out of memory!\n", __func__);
+>>  		return -ENOMEM;
+>> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> index ce738ab..c505036 100644
+>> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>> @@ -1520,6 +1520,23 @@ static struct eeh_ops pnv_eeh_ops = {
+>>  	.restore_config		= pnv_eeh_restore_config
+>>  };
+>>  
+>> +static void pnv_eeh_vf_final_fixup(struct pci_dev *pdev)
+>> +{
+>> +	struct pci_dn *pdn = pci_get_pdn(pdev);
+>> +
+>> +	if (!pdev->is_virtfn)
+>> +		return;
+>> +
+>> +	/*
+>> +	 * The following operations will fail if VF's sysfs files
+>> +	 * aren't created or its resources aren't finalized.
+>> +	 */
+>
+>I don't understand this comment.  "The following operations" seems to refer
+>to eeh_add_device_early() and eeh_add_device_late(), and
+>"VF's sysfs files being created" seems to refer to eeh_sysfs_add_device().
+>
+>So the comment suggests that eeh_add_device_early() and
+>eeh_add_device_late() will fail because they're called before
+>eeh_sysfs_add_device().  So I think you must be talking about some other
+>"following operations," not eeh_add_device_early() and
+>eeh_add_device_late().
 
-On 3 June 2015 at 03:20, Thomas Gleixner <tglx@linutronix.de> wrote:
+Sorry for this confusion.
 
-> On Mon, 1 Jun 2015, Baolin Wang wrote:
->
-> > This patch series changes the 32-bit time types (timespec/itimerspec) to
-> > the 64-bit types (timespec64/itimerspec64), since 32-bit time types will
-> > break in the year 2038.
->
-> That's only true for 32bit systems.
->
-> All in all the patch series looks rather reasonable now, except for
-> the subject lines and the changelogs.
->
-> The only technical objection I have is the macro conversion magic in
-> patch #6. This can be done in a less cryptic and more efficient way.
->
-> See the comments to the various patches and please apply them to all
-> of the series.
->
-> Thanks,
->
->         tglx
->
->
->
-Hi Thomas,
+The comment here wants to say the eeh_sysfs_add_device() will fail if the VF's
+sysfs is not created well. Or it will fail if the VF's resources are not set
+properly, since we would cache the VF's BAR in eeh_add_device_late().
 
-Thanks for your comments, and i'll check and fix these problems.
+Gavin,
+
+If my understanding is not correct please let me know.
+
+>
+>> +	eeh_add_device_early(pdn);
+>> +	eeh_add_device_late(pdev);
+>> +	eeh_sysfs_add_device(pdev);
+>> +}
+>> +DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_eeh_vf_final_fixup);
+>
+>Ugh.  This is powerpc code, but I don't like using fixups as a hook like
+>this.  There is a pcibios_add_device() -- could this be done there?
+>
+
+I don't like it neither :-) But looks we can't put it in the
+pcibios_add_device().
+
+>If not, what happens after pcibios_add_device() that is required for this
+>code?  Maybe we need a pcibios_bus_add_device() hook?
+
+The pnv_eeh_vf_final_fixup() will try to create sysfs for VFs. This requires
+the VF sysfs(kobj) is initialized properly. If we put these into
+pcibios_add_device(), the eeh_sysfs_add_device() would fail.
+
+Below is the call flow for your reference:
+
+pci_device_add()
+    pcibios_add_device()
+    device_add()                <--- kobj initialized here
+
+>
+>> +
+>>  /**
+>>   * eeh_powernv_init - Register platform dependent EEH operations
+>>   *
+>> -- 
+>> 1.7.9.5
+>> 
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
-Baolin.wang
-Best Regards
-
---089e0122f52e8f71d60517939a3b
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On 3 June 2015 at 03:20, Thomas Gleixner <span dir=3D"ltr">&lt;<a href=
-=3D"mailto:tglx@linutronix.de" target=3D"_blank">tglx@linutronix.de</a>&gt;=
-</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .=
-8ex;border-left:1px #ccc solid;padding-left:1ex"><span class=3D"">On Mon, 1=
- Jun 2015, Baolin Wang wrote:<br>
-<br>
-</span><span class=3D"">&gt; This patch series changes the 32-bit time type=
-s (timespec/itimerspec) to<br>
-&gt; the 64-bit types (timespec64/itimerspec64), since 32-bit time types wi=
-ll<br>
-&gt; break in the year 2038.<br>
-<br>
-</span>That&#39;s only true for 32bit systems.<br>
-<br>
-All in all the patch series looks rather reasonable now, except for<br>
-the subject lines and the changelogs.<br>
-<br>
-The only technical objection I have is the macro conversion magic in<br>
-patch #6. This can be done in a less cryptic and more efficient way.<br>
-<br>
-See the comments to the various patches and please apply them to all<br>
-of the series.<br>
-<br>
-Thanks,<br>
-<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 tglx<br>
-<br>
-<br>
-</blockquote></div><br>Hi Thomas,</div><div class=3D"gmail_extra"><br></div=
-><div class=3D"gmail_extra">Thanks for your comments, and i&#39;ll check an=
-d fix these problems.<br clear=3D"all"><div><br></div>-- <br><div class=3D"=
-gmail_signature"><div dir=3D"ltr"><div>Baolin.wang<br></div>Best Regards<br=
-></div></div>
-</div></div>
-
---089e0122f52e8f71d60517939a3b--
+Richard Yang
+Help you, Help me
