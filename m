@@ -1,40 +1,18 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 82B741A0651
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 15:11:27 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 3 Jun 2015 15:11:26 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C94FF3578048
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 15:11:24 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t535BGIa59244552
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 15:11:24 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t535Ap1o016157
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 15:10:52 +1000
-Date: Wed, 3 Jun 2015 15:10:23 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, gwshan@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Subject: Re: [PATCH V7 06/10] powerpc/eeh: Create PE for VFs
-Message-ID: <20150603051023.GA26652@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-7-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150601234645.GF3631@google.com> <20150603033142.GA22584@richard>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150603033142.GA22584@richard>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F12A1A0DD1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 15:13:08 +1000 (AEST)
+In-Reply-To: <1431962284-12260-2-git-send-email-vipin@linux.vnet.ibm.com>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: stewart@linux.vnet.ibm.com, Vipin K Parashar <vipin@linux.vnet.ibm.com>,
+ joel@jms.id.au
+Subject: Re: [v5] powerpc/powernv: Add poweroff (EPOW,
+ DPO) events support for PowerNV platform
+Message-Id: <20150603051308.7988A1402A5@ozlabs.org>
+Date: Wed,  3 Jun 2015 15:13:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,159 +22,407 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 03, 2015 at 11:31:42AM +0800, Wei Yang wrote:
->On Mon, Jun 01, 2015 at 06:46:45PM -0500, Bjorn Helgaas wrote:
->>On Tue, May 19, 2015 at 06:50:08PM +0800, Wei Yang wrote:
->>> Current EEH recovery code works with the assumption: the PE has primary
->>> bus. Unfortunately, that's not true to VF PEs, which generally contains
->>> one or multiple VFs (for VF group case). The patch creates PEs for VFs
->>> at PCI final fixup time. Those PEs for VFs are indentified with newly
->>> introduced flag EEH_PE_VF so that we handle them differently during
->>> EEH recovery.
->>> 
->>> [gwshan: changelog and code refactoring]
->>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>> ---
->>>  arch/powerpc/include/asm/eeh.h               |    1 +
->>>  arch/powerpc/kernel/eeh_pe.c                 |   10 ++++++++--
->>>  arch/powerpc/platforms/powernv/eeh-powernv.c |   17 +++++++++++++++++
->>>  3 files changed, 26 insertions(+), 2 deletions(-)
->>> 
->>> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->>> index 1b3614d..c1fde48 100644
->>> --- a/arch/powerpc/include/asm/eeh.h
->>> +++ b/arch/powerpc/include/asm/eeh.h
->>> @@ -70,6 +70,7 @@ struct pci_dn;
->>>  #define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
->>>  #define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
->>>  #define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
->>> +#define EEH_PE_VF	(1 << 4)	/* VF PE     */
->>>  
->>>  #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
->>>  #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
->>> diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
->>> index 35f0b62..260a701 100644
->>> --- a/arch/powerpc/kernel/eeh_pe.c
->>> +++ b/arch/powerpc/kernel/eeh_pe.c
->>> @@ -299,7 +299,10 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
->>>  	 * EEH device already having associated PE, but
->>>  	 * the direct parent EEH device doesn't have yet.
->>>  	 */
->>> -	pdn = pdn ? pdn->parent : NULL;
->>> +	if (edev->physfn)
->>> +		pdn = pci_get_pdn(edev->physfn);
->>> +	else
->>> +		pdn = pdn ? pdn->parent : NULL;
->>>  	while (pdn) {
->>>  		/* We're poking out of PCI territory */
->>>  		parent = pdn_to_eeh_dev(pdn);
->>> @@ -382,7 +385,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->>>  	}
->>>  
->>>  	/* Create a new EEH PE */
->>> -	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
->>> +	if (edev->physfn)
->>> +		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
->>> +	else
->>> +		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
->>>  	if (!pe) {
->>>  		pr_err("%s: out of memory!\n", __func__);
->>>  		return -ENOMEM;
->>> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>> index ce738ab..c505036 100644
->>> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->>> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>> @@ -1520,6 +1520,23 @@ static struct eeh_ops pnv_eeh_ops = {
->>>  	.restore_config		= pnv_eeh_restore_config
->>>  };
->>>  
->>> +static void pnv_eeh_vf_final_fixup(struct pci_dev *pdev)
->>> +{
->>> +	struct pci_dn *pdn = pci_get_pdn(pdev);
->>> +
->>> +	if (!pdev->is_virtfn)
->>> +		return;
->>> +
->>> +	/*
->>> +	 * The following operations will fail if VF's sysfs files
->>> +	 * aren't created or its resources aren't finalized.
->>> +	 */
->>
->>I don't understand this comment.  "The following operations" seems to refer
->>to eeh_add_device_early() and eeh_add_device_late(), and
->>"VF's sysfs files being created" seems to refer to eeh_sysfs_add_device().
->>
->>So the comment suggests that eeh_add_device_early() and
->>eeh_add_device_late() will fail because they're called before
->>eeh_sysfs_add_device().  So I think you must be talking about some other
->>"following operations," not eeh_add_device_early() and
->>eeh_add_device_late().
->
->Sorry for this confusion.
->
->The comment here wants to say the eeh_sysfs_add_device() will fail if the VF's
->sysfs is not created well. Or it will fail if the VF's resources are not set
->properly, since we would cache the VF's BAR in eeh_add_device_late().
->
->Gavin,
->
->If my understanding is not correct please let me know.
->
+On Mon, 2015-18-05 at 15:18:04 UTC, Vipin K Parashar wrote:
+> This patch adds support for FSP EPOW (Early Power Off Warning) and
 
-It's correct. "The following operations" refers to eeh_add_device_late()
-and eeh_sysfs_add_device(). The former one requires the resources for
-one particular PCI device (VF here) are finalized (assigned). eeh_sysfs_add_device()
-will fail if the sysfs entry for the PCI device isn't populated yet.
+Please spell out the acronyms the first time you use them, including FSP.
 
->>
->>> +	eeh_add_device_early(pdn);
->>> +	eeh_add_device_late(pdev);
->>> +	eeh_sysfs_add_device(pdev);
->>> +}
->>> +DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_eeh_vf_final_fixup);
->>
->>Ugh.  This is powerpc code, but I don't like using fixups as a hook like
->>this.  There is a pcibios_add_device() -- could this be done there?
->>
->
->I don't like it neither :-) But looks we can't put it in the
->pcibios_add_device().
->
->>If not, what happens after pcibios_add_device() that is required for this
->>code?  Maybe we need a pcibios_bus_add_device() hook?
->
->The pnv_eeh_vf_final_fixup() will try to create sysfs for VFs. This requires
->the VF sysfs(kobj) is initialized properly. If we put these into
->pcibios_add_device(), the eeh_sysfs_add_device() would fail.
->
->Below is the call flow for your reference:
->
->pci_device_add()
->    pcibios_add_device()
->    device_add()                <--- kobj initialized here
->
+> DPO (Delayed Power Off) events for PowerNV platform. EPOW events are
+                                    ^
+				    the
 
-We can put it into pcibios_bus_add_device(), but we don't it currently. If
-Bjorn agree to add pcibios_bus_add_device(), I'm fine to move the block code
-there.
+> generated by SPCN/FSP due to various critical system conditions that
 
-Thanks,
-Gavin
+SPCN?
 
->>
->>> +
->>>  /**
->>>   * eeh_powernv_init - Register platform dependent EEH operations
->>>   *
->>> -- 
->>> 1.7.9.5
->>> 
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->-- 
->Richard Yang
->Help you, Help me
+> need system shutdown. Few examples of these conditions are high
+                        ^
+s/need/require/ ?       A few
+
+> ambient temperature or system running on UPS power with low UPS battery.
+> DPO event is generated in response to admin initiated system request.
+
+Blank line between paragraphs please.
+
+> 	Upon receipt of EPOW and DPO events host kernel invokes
+                                            ^
+					    the host kernel
+
+> orderly_poweroff for performing graceful system shutdown. System admin
+
+I like it if you spell functions with a trailing () to make it clear they are
+functions, so this would be "orderly_powerof()".
+
+> can also add systemd service shutdown scripts to perform any specific
+> actions like graceful guest shutdown upon system poweroff. libvirt-guests
+> is systemd service available on recent distros for management of guests
+> at system start/shutdown time.
+
+This last part about the scripts is not relevant to the kernel patch so just
+leave it out please.
+
+> 
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> Reviewed-by: Joel Stanley <joel@jms.id.au>
+> Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/opal-api.h            |  44 ++++++++
+>  arch/powerpc/include/asm/opal.h                |   3 +-
+>  arch/powerpc/platforms/powernv/opal-power.c    | 147 ++++++++++++++++++++++---
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>  4 files changed, 179 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0321a90..90fa364 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -355,6 +355,10 @@ enum opal_msg_type {
+>  	OPAL_MSG_TYPE_MAX,
+>  };
+>  
+> +/* OPAL_MSG_SHUTDOWN parameter values */
+> +#define	SOFT_OFF	0x00
+> +#define	SOFT_REBOOT	0x01
+
+I don't see this in the skiboot version of opal-api.h ?
+
+They should be kept in sync.
+
+If it's a Linux only define it should go in opal.h
+
+>  struct opal_msg {
+>  	__be32 msg_type;
+>  	__be32 reserved;
+> @@ -730,6 +734,46 @@ struct opal_i2c_request {
+>  	__be64 buffer_ra;		/* Buffer real address */
+>  };
+>  
+> +/*
+> + * EPOW status sharing (OPAL and the host)
+> + *
+> + * The host will pass on OPAL, a buffer of length OPAL_SYSEPOW_MAX
+> + * with individual elements being 16 bits wide to fetch the system
+> + * wide EPOW status. Each element in the buffer will contain the
+> + * EPOW status in it's bit representation for a particular EPOW sub
+> + * class as defiend here. So multiple detailed EPOW status bits
+> + * specific for any sub class can be represented in a single buffer
+> + * element as it's bit representation.
+> + */
+> +
+> +/* System EPOW type */
+> +enum OpalSysEpow {
+> +	OPAL_SYSEPOW_POWER	= 0,	/* Power EPOW */
+> +	OPAL_SYSEPOW_TEMP	= 1,	/* Temperature EPOW */
+> +	OPAL_SYSEPOW_COOLING	= 2,	/* Cooling EPOW */
+> +	OPAL_SYSEPOW_MAX	= 3,	/* Max EPOW categories */
+> +};
+> +
+> +/* Power EPOW */
+> +enum OpalSysPower {
+> +	OPAL_SYSPOWER_UPS	= 0x0001, /* System on UPS power */
+> +	OPAL_SYSPOWER_CHNG	= 0x0002, /* System power config change */
+> +	OPAL_SYSPOWER_FAIL	= 0x0004, /* System impending power failure */
+> +	OPAL_SYSPOWER_INCL	= 0x0008, /* System incomplete power */
+> +};
+> +
+> +/* Temperature EPOW */
+> +enum OpalSysTemp {
+> +	OPAL_SYSTEMP_AMB	= 0x0001, /* System over ambient temperature */
+> +	OPAL_SYSTEMP_INT	= 0x0002, /* System over internal temperature */
+> +	OPAL_SYSTEMP_HMD	= 0x0004, /* System over ambient humidity */
+> +};
+> +
+> +/* Cooling EPOW */
+> +enum OpalSysCooling {
+> +	OPAL_SYSCOOL_INSF	= 0x0001, /* System insufficient cooling */
+> +};
+
+I don't see the last three of these enums used at all, so please drop them.
+
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* __OPAL_API_H */
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 042af1a..d30766f 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -141,7 +141,8 @@ int64_t opal_pci_fence_phb(uint64_t phb_id);
+>  int64_t opal_pci_reinit(uint64_t phb_id, uint64_t reinit_scope, uint64_t data);
+>  int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t error_type, uint8_t mask_action);
+>  int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
+> -int64_t opal_get_epow_status(__be64 *status);
+> +int64_t opal_get_epow_status(uint16_t *status, uint16_t *length);
+
+Has the signature of this function really changed or was it just wrong before?
+
+If it's changed how do we know we're running on a version of OPAL that supports
+the two argument version?
+
+The parameter names don't seem very clear either. status is actually a pointer
+to an array of "statuses", and length is the number of entries in that array.
+
+Also you removed the endian annotations but then you pass it __be16 values, so
+that looks incorrect, you should be using __be16 here.
+
+> +int64_t opal_get_dpo_status(int64_t *dpo_timeout);
+
+Similarly this should be __be64 AFAICS.
+
+> diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
+> index ac46c2c..581bbd8 100644
+> --- a/arch/powerpc/platforms/powernv/opal-power.c
+> +++ b/arch/powerpc/platforms/powernv/opal-power.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * PowerNV OPAL power control for graceful shutdown handling
+> + * PowerNV support for OPAL power-control, poweroff events
+>   *
+>   * Copyright 2015 IBM Corp.
+>   *
+> @@ -9,18 +9,87 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>  
+> +#define pr_fmt(fmt)	"OPAL-POWER: "	fmt
+
+Please don't shout, "opal-power" is fine.
+
+>  #include <linux/kernel.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/timer.h>
+
+Don't think you need those?
+
+>  #include <linux/reboot.h>
+> -#include <linux/notifier.h>
+> -
+
+I think you DO need notifier.h.
+
+> +#include <linux/of.h>
+>  #include <asm/opal.h>
+>  #include <asm/machdep.h>
+>  
+> -#define SOFT_OFF 0x00
+> -#define SOFT_REBOOT 0x01
+> +/* Get EPOW status */
+> +static bool get_epow_status(void)
+
+This is not a great name, "get" implies it gives you something back, but it
+doesn't it just tells you true or false.
+
+So maybe epow_event_pending() ?
+
+> +{
+> +	int i;
+> +	u16 num_classes;
+> +	__be16 epow_classes;
+
+I think this would be cleaner if you just had a single num_classes and you
+endian swap in the one place you use it.
+
+> +	__be16 opal_epow_status[OPAL_SYSEPOW_MAX] = {0};
+> +
+> +	/* Send kernel EPOW classes supported info to OPAL */
+> +	epow_classes = cpu_to_be16(OPAL_SYSEPOW_MAX);
+> +
+> +	/* Get EPOW events information from OPAL */
+> +	opal_get_epow_status(opal_epow_status, &epow_classes);
+
+This could fail.
+
+> +
+> +	/* Look for EPOW events present */
+> +	num_classes = be16_to_cpu(epow_classes);
+> +	for (i = 0; i < num_classes; i++) {
+> +		if (be16_to_cpu(opal_epow_status[i]))
+> +			return true;
+> +	}
+> +
+> +	return false;
+> +}
+> +
+> +/* Process existing EPOW, DPO events */
+> +static void process_existing_poweroff_events(void)
+> +{
+> +	int rc;
+> +	__be64 opal_dpo_timeout;
+>  
+> +	/* Check for DPO event */
+> +	rc = opal_get_dpo_status(&opal_dpo_timeout);
+> +	if (rc != OPAL_WRONG_STATE) {
+> +		pr_info("Existing DPO event detected. Powering off system\n");
+> +		goto poweroff;
+> +	}
+> +
+> +	/* Check for EPOW event */
+> +	if (get_epow_status()) {
+> +		pr_info("Existing EPOW event detected. Powering off system");
+> +		goto poweroff;
+> +	}
+> +	return;
+> +
+> +poweroff:
+> +	orderly_poweroff(true);
+
+I don't like that much, you shouldn't need to use goto for such simple logic.
+
+Can you create a single function, maybe called event_pending(), and have it
+check both EPOW and DPO and return a bool if there's any kind of event pending.
+
+Then this can just become:
+
+  if (event_pending())
+  	orderly_poweroff(true);
+
+> +}
+> +
+> +/* OPAL EPOW, DPO event notifier */
+> +static int opal_epow_dpo_event(struct notifier_block *nb,
+> +				unsigned long msg_type, void *msg)
+> +{
+> +	switch (msg_type) {
+> +	case OPAL_MSG_EPOW:
+> +		pr_info("EPOW msg received. Powering off system\n");
+> +		break;
+> +	case OPAL_MSG_DPO:
+> +		pr_info("DPO msg received. Powering off system\n");
+> +		break;
+> +	default:
+> +		pr_err("Unknown message type %lu\n", msg_type);
+> +		return 0;
+> +	}
+> +
+> +	orderly_poweroff(true);
+> +	return 0;
+> +}
+
+Why do we need a separate notifier function? Can't this just be folded into
+opal_power_control_event() ?
+
+> +
+> +/* OPAL power-control events notifier */
+>  static int opal_power_control_event(struct notifier_block *nb,
+> -				    unsigned long msg_type, void *msg)
+> +					unsigned long msg_type, void *msg)
+>  {
+>  	struct opal_msg *power_msg = msg;
+>  	uint64_t type;
+> @@ -29,20 +98,35 @@ static int opal_power_control_event(struct notifier_block *nb,
+>  
+>  	switch (type) {
+>  	case SOFT_REBOOT:
+> -		pr_info("OPAL: reboot requested\n");
+> +		pr_info("Reboot requested\n");
+>  		orderly_reboot();
+>  		break;
+>  	case SOFT_OFF:
+> -		pr_info("OPAL: poweroff requested\n");
+> +		pr_info("Poweroff requested\n");
+>  		orderly_poweroff(true);
+>  		break;
+>  	default:
+> -		pr_err("OPAL: power control type unexpected %016llx\n", type);
+> +		pr_err("Unknown power-control type %llu\n", type);
+>  	}
+>  
+>  	return 0;
+>  }
+>  
+> +/* OPAL EPOW event notifier block */
+> +static struct notifier_block opal_epow_nb = {
+> +	.notifier_call	= opal_epow_dpo_event,
+> +	.next		= NULL,
+> +	.priority	= 0,
+> +};
+> +
+> +/* OPAL DPO event notifier block */
+> +static struct notifier_block opal_dpo_nb = {
+> +	.notifier_call	= opal_epow_dpo_event,
+> +	.next		= NULL,
+> +	.priority	= 0,
+> +};
+> +
+> +/* OPAL power-control event notifier block */
+>  static struct notifier_block opal_power_control_nb = {
+>  	.notifier_call	= opal_power_control_event,
+>  	.next		= NULL,
+> @@ -51,16 +135,49 @@ static struct notifier_block opal_power_control_nb = {
+>  
+>  static int __init opal_power_control_init(void)
+>  {
+> -	int ret;
+> +	int ret, epow_dpo_supported = 0;
+
+Can you make that a bool and call it "supported".
+
+> +	struct device_node *node_epow;
+
+It's typical to just call it "np".
+
+>  
+> +	/* Register OPAL power-control events notifier */
+>  	ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> -					     &opal_power_control_nb);
+> -	if (ret) {
+> -		pr_err("%s: Can't register OPAL event notifier (%d)\n",
+> -				__func__, ret);
+> -		return ret;
+> +				&opal_power_control_nb);
+> +	if (ret)
+> +		pr_err("Power-control events notifier registration "
+> +				"failed, ret = %d\n", ret);
+
+Please don't split the string, and similarly below.
+
+> +
+> +	/* Determine EPOW, DPO support in hardware. */
+> +	node_epow = of_find_node_by_path("/ibm,opal/epow");
+> +	if (node_epow) {
+> +		epow_dpo_supported = of_device_is_compatible(node_epow,
+> +				"ibm,opal-v3-epow");
+> +		of_node_put(node_epow);
+>  	}
+>  
+> +	if (epow_dpo_supported)
+> +		pr_info("OPAL EPOW, DPO support detected.\n");
+> +	else
+> +		return 0;
+
+Clearer as:
+
+	if (!supported)
+		return 0;
+
+	pr_info("OPAL EPOW, DPO support detected.\n");
+
+> +
+> +	/* Register EPOW event notifier */
+> +	ret = opal_message_notifier_register(OPAL_MSG_EPOW,
+> +			&opal_epow_nb);
+> +	if (ret)
+> +		pr_err("EPOW event notifier registration failed, "
+> +				"ret = %d\n", ret);
+> +
+> +	/* Register DPO event notifier */
+> +	ret = opal_message_notifier_register(OPAL_MSG_DPO,
+> +			&opal_dpo_nb);
+> +	if (ret)
+> +		pr_err("DPO event notifier registration failed, "
+> +				"ret = %d\n", ret);
+> +
+> +	/* Check for any existing EPOW or DPO events. */
+> +	process_existing_poweroff_events();
+> +
+> +	pr_info("Poweroff events support initialized\n");
+> +
+>  	return 0;
+>  }
+> +
+
+No extra blank line thanks.
+
+>  machine_subsys_initcall(powernv, opal_power_control_init);
+
+
+cheers
