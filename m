@@ -1,14 +1,14 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
- [209.85.220.43])
+Received: from mail-pd0-f175.google.com (mail-pd0-f175.google.com
+ [209.85.192.175])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B47771A023C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 21:11:19 +1000 (AEST)
-Received: by padjw17 with SMTP id jw17so5099459pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2015 04:11:17 -0700 (PDT)
-Message-ID: <556EE0CD.1030508@ozlabs.ru>
-Date: Wed, 03 Jun 2015 21:11:09 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 907A51A023C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 21:19:00 +1000 (AEST)
+Received: by pdbqa5 with SMTP id qa5so5480541pdb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Jun 2015 04:18:58 -0700 (PDT)
+Message-ID: <556EE29A.6040108@ozlabs.ru>
+Date: Wed, 03 Jun 2015 21:18:50 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>
@@ -18,12 +18,12 @@ CC: linuxppc-dev@lists.ozlabs.org,
  Gavin Shan <gwshan@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v11 09/34] vfio: powerpc/spapr: Move locked_vm
- accounting to helpers
+Subject: Re: [PATCH kernel v11 26/34] powerpc/powernv/ioda2: Introduce
+ pnv_pci_ioda2_set_window
 References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
- <1432889098-22924-10-git-send-email-aik@ozlabs.ru>
- <20150601042814.GH22789@voom.redhat.com>
-In-Reply-To: <20150601042814.GH22789@voom.redhat.com>
+ <1432889098-22924-27-git-send-email-aik@ozlabs.ru>
+ <20150601233039.GP22789@voom.redhat.com>
+In-Reply-To: <20150601233039.GP22789@voom.redhat.com>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,184 +34,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/01/2015 02:28 PM, David Gibson wrote:
-> On Fri, May 29, 2015 at 06:44:33PM +1000, Alexey Kardashevskiy wrote:
->> There moves locked pages accounting to helpers.
->> Later they will be reused for Dynamic DMA windows (DDW).
+On 06/02/2015 09:30 AM, David Gibson wrote:
+> On Fri, May 29, 2015 at 06:44:50PM +1000, Alexey Kardashevskiy wrote:
+>> This is a part of moving DMA window programming to an iommu_ops
+>> callback. pnv_pci_ioda2_set_window() takes an iommu_table_group as
+>> a first parameter (not pnv_ioda_pe) as it is going to be used as
+>> a callback for VFIO DDW code.
 >>
->> This reworks debug messages to show the current value and the limit.
+>> This adds pnv_pci_ioda2_tvt_invalidate() to invalidate TVT as it is
+>
+> I'm assuming that's what's now called pnv_pci_ioda2_invalidate_entire()?
+
+
+Yes, my bad... And the patch is not adding it at all...
+
+
+>
+>> a good thing to do. It does not have immediate effect now as the table
+>> is never recreated after reboot but it will in the following patches.
 >>
->> This stores the locked pages number in the container so when unlocking
->> the iommu table pointer won't be needed. This does not have an effect
->> now but it will with the multiple tables per container as then we will
->> allow attaching/detaching groups on fly and we may end up having
->> a container with no group attached but with the counter incremented.
->>
->> While we are here, update the comment explaining why RLIMIT_MEMLOCK
->> might be required to be bigger than the guest RAM. This also prints
->> pid of the current process in pr_warn/pr_debug.
+>> This should cause no behavioural change.
 >>
 >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> [aw: for the vfio related changes]
->> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 >> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 >> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >> ---
 >> Changes:
->> v4:
->> * new helpers do nothing if @npages == 0
->> * tce_iommu_disable() now can decrement the counter if the group was
->> detached (not possible now but will be in the future)
+>> v11:
+>> * replaced some 1<<it_page_shift with IOMMU_PAGE_SIZE() macro
+>>
+>> v9:
+>> * initialize pe->table_group.tables[0] at the very end when
+>> tbl is fully initialized
+>> * moved pnv_pci_ioda2_tvt_invalidate() from earlier patch
 >> ---
->>   drivers/vfio/vfio_iommu_spapr_tce.c | 82 ++++++++++++++++++++++++++++---------
->>   1 file changed, 63 insertions(+), 19 deletions(-)
+>>   arch/powerpc/platforms/powernv/pci-ioda.c | 47 +++++++++++++++++++++++++------
+>>   1 file changed, 38 insertions(+), 9 deletions(-)
 >>
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index 64300cc..40583f9 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -29,6 +29,51 @@
->>   static void tce_iommu_detach_group(void *iommu_data,
->>   		struct iommu_group *iommu_group);
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 3d29fe3..fda01c1 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -1968,6 +1968,43 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>>   	}
+>>   }
 >>
->> +static long try_increment_locked_vm(long npages)
+>> +static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
+>> +		int num, struct iommu_table *tbl)
 >> +{
->> +	long ret = 0, locked, lock_limit;
+>> +	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
+>> +			table_group);
+>> +	struct pnv_phb *phb = pe->phb;
+>> +	int64_t rc;
+>> +	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
+>> +	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
 >> +
->> +	if (!current || !current->mm)
->> +		return -ESRCH; /* process exited */
+>> +	pe_info(pe, "Setting up window %llx..%llx pg=%x\n",
+>> +			start_addr, start_addr + win_size - 1,
+>> +			IOMMU_PAGE_SIZE(tbl));
 >> +
->> +	if (!npages)
->> +		return 0;
+>> +	/*
+>> +	 * Map TCE table through TVT. The TVE index is the PE number
+>> +	 * shifted by 1 bit for 32-bits DMA space.
+>> +	 */
+>> +	rc = opal_pci_map_pe_dma_window(phb->opal_id,
+>> +			pe->pe_number,
+>> +			pe->pe_number << 1,
+>> +			1,
+>> +			__pa(tbl->it_base),
+>> +			tbl->it_size << 3,
+>> +			IOMMU_PAGE_SIZE(tbl));
+>> +	if (rc) {
+>> +		pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
+>> +		return rc;
+>> +	}
 >> +
->> +	down_write(&current->mm->mmap_sem);
->> +	locked = current->mm->locked_vm + npages;
->
-> Is there a possibility of userspace triggering an integer overflow
-> here, if npages is really huge?
-
-
-I do not see how. I just do not accept npages bigger than the host RAM size 
-in pages. And it is "long". For (lets say) 128GB host, the number of 4KB 
-pages is (128<<30)/4096=33554432.
-
-
->
->> +	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->> +	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
->> +		ret = -ENOMEM;
->> +	else
->> +		current->mm->locked_vm += npages;
+>> +	pnv_pci_link_table_and_group(phb->hose->node, num,
+>> +			tbl, &pe->table_group);
+>> +	pnv_pci_ioda2_tce_invalidate_entire(pe);
 >> +
->> +	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
->> +			npages << PAGE_SHIFT,
->> +			current->mm->locked_vm << PAGE_SHIFT,
->> +			rlimit(RLIMIT_MEMLOCK),
->> +			ret ? " - exceeded" : "");
->> +
->> +	up_write(&current->mm->mmap_sem);
->> +
->> +	return ret;
+>> +	return 0;
 >> +}
 >> +
->> +static void decrement_locked_vm(long npages)
->> +{
->> +	if (!current || !current->mm || !npages)
->> +		return; /* process exited */
->> +
->> +	down_write(&current->mm->mmap_sem);
->> +	if (npages > current->mm->locked_vm)
->> +		npages = current->mm->locked_vm;
->
-> Can this case ever occur (without there being a leak bug somewhere
-> else in the code)?
-
-
-It should not. Safety measure. Having a warning here might make sense but I 
-believe if this happens, there will be many, many warnings in other places :)
-
-
-
->> +	current->mm->locked_vm -= npages;
->> +	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
->> +			npages << PAGE_SHIFT,
->> +			current->mm->locked_vm << PAGE_SHIFT,
->> +			rlimit(RLIMIT_MEMLOCK));
->> +	up_write(&current->mm->mmap_sem);
->> +}
->> +
->>   /*
->>    * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
->>    *
->> @@ -45,6 +90,7 @@ struct tce_container {
->>   	struct mutex lock;
->>   	struct iommu_table *tbl;
->>   	bool enabled;
->> +	unsigned long locked_pages;
->>   };
->>
->>   static bool tce_page_is_contained(struct page *page, unsigned page_shift)
->> @@ -60,7 +106,7 @@ static bool tce_page_is_contained(struct page *page, unsigned page_shift)
->>   static int tce_iommu_enable(struct tce_container *container)
+>>   static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
 >>   {
->>   	int ret = 0;
->> -	unsigned long locked, lock_limit, npages;
->> +	unsigned long locked;
->>   	struct iommu_table *tbl = container->tbl;
+>>   	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+>> @@ -2123,21 +2160,13 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>>   	pe->table_group.ops = &pnv_pci_ioda2_ops;
+>>   #endif
 >>
->>   	if (!container->tbl)
->> @@ -89,21 +135,22 @@ static int tce_iommu_enable(struct tce_container *container)
->>   	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
->>   	 * that would effectively kill the guest at random points, much better
->>   	 * enforcing the limit based on the max that the guest can map.
->> +	 *
->> +	 * Unfortunately at the moment it counts whole tables, no matter how
->> +	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
->> +	 * each with 2GB DMA window, 8GB will be counted here. The reason for
->> +	 * this is that we cannot tell here the amount of RAM used by the guest
->> +	 * as this information is only available from KVM and VFIO is
->> +	 * KVM agnostic.
->>   	 */
->> -	down_write(&current->mm->mmap_sem);
->> -	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
->> -	locked = current->mm->locked_vm + npages;
->> -	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->> -	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
->> -		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
->> -				rlimit(RLIMIT_MEMLOCK));
->> -		ret = -ENOMEM;
->> -	} else {
->> +	locked = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
->> +	ret = try_increment_locked_vm(locked);
->> +	if (ret)
->> +		return ret;
+>> -	/*
+>> -	 * Map TCE table through TVT. The TVE index is the PE number
+>> -	 * shifted by 1 bit for 32-bits DMA space.
+>> -	 */
+>> -	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
+>> -			pe->pe_number << 1, 1, __pa(tbl->it_base),
+>> -			tbl->it_size << 3, 1ULL << tbl->it_page_shift);
+>> +	rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+>>   	if (rc) {
+>>   		pe_err(pe, "Failed to configure 32-bit TCE table,"
+>>   		       " err %ld\n", rc);
+>>   		goto fail;
+>>   	}
 >>
->> -		current->mm->locked_vm += npages;
->> -		container->enabled = true;
->> -	}
->> -	up_write(&current->mm->mmap_sem);
->> +	container->locked_pages = locked;
->> +
->> +	container->enabled = true;
->>
->>   	return ret;
->>   }
->> @@ -115,13 +162,10 @@ static void tce_iommu_disable(struct tce_container *container)
->>
->>   	container->enabled = false;
->>
->> -	if (!container->tbl || !current->mm)
->> +	if (!current->mm)
->>   		return;
->>
->> -	down_write(&current->mm->mmap_sem);
->> -	current->mm->locked_vm -= (container->tbl->it_size <<
->> -			container->tbl->it_page_shift) >> PAGE_SHIFT;
->> -	up_write(&current->mm->mmap_sem);
->> +	decrement_locked_vm(container->locked_pages);
->>   }
->>
->>   static void *tce_iommu_open(unsigned long arg)
+>> -	pnv_pci_ioda2_tce_invalidate_entire(pe);
+>> -
+>>   	/* OPAL variant of PHB3 invalidated TCEs */
+>>   	if (phb->ioda.tce_inval_reg)
+>>   		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
 >
 
 
