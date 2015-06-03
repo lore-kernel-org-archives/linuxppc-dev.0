@@ -2,22 +2,23 @@ Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 80D9B1A0764
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 20:31:51 +1000 (AEST)
-Date: Wed, 3 Jun 2015 12:31:43 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B08E1A0D3A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 20:32:11 +1000 (AEST)
+Date: Wed, 3 Jun 2015 12:32:04 +0200
 From: Jiri Olsa <jolsa@redhat.com>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>,
  Arnaldo Carvalho de Melo <acme@kernel.org>, namhyung@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v13 06/14] perf, tools: Support alias descriptions
-Message-ID: <20150603103143.GH1828@krava.redhat.com>
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Robert Richter <rric@kernel.org>
+Subject: Re: [PATCH v13 04/14] perf, tools: Allow events with dot
+Message-ID: <20150603103204.GI1828@krava.redhat.com>
 References: <1433265135-20426-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1433265135-20426-7-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1433265135-20426-5-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1433265135-20426-7-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1433265135-20426-5-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 02, 2015 at 10:12:06AM -0700, Sukadev Bhattiprolu wrote:
+On Tue, Jun 02, 2015 at 10:12:04AM -0700, Sukadev Bhattiprolu wrote:
+> From: Andi Kleen <ak@linux.intel.com>
+> 
+> The Intel events use a dot to separate event name and unit mask.
+> Allow dot in names in the scanner, and remove special handling
+> of dot as EOF. Also remove the hack in jevents to replace dot
+> with underscore. This way dotted events can be specified
+> directly by the user.
+> 
+> I'm not fully sure this change to the scanner is correct
+> (what was the dot special case good for?), but I haven't
+> found anything that breaks with it so far at least.
 
-SNIP
+can't see anything either
 
-> @@ -1033,37 +1064,49 @@ void print_pmu_events(const char *event_glob, bool name_only)
->  						       event_glob))))
->  				continue;
+Robert,
+does it ring a bell? seems like you introduced it ;-)
+
+thanks,
+jirka
+
+
+> 
+> V2: Add the dot to name too, to handle events outside cpu//
+> Acked-by: Namhyung Kim <namhyung@kernel.org>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/parse-events.l |    5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
+> index 09e738f..13cef3c 100644
+> --- a/tools/perf/util/parse-events.l
+> +++ b/tools/perf/util/parse-events.l
+> @@ -119,8 +119,8 @@ event		[^,{}/]+
+>  num_dec		[0-9]+
+>  num_hex		0x[a-fA-F0-9]+
+>  num_raw_hex	[a-fA-F0-9]+
+> -name		[a-zA-Z_*?][a-zA-Z0-9_*?]*
+> -name_minus	[a-zA-Z_*?][a-zA-Z0-9\-_*?]*
+> +name		[a-zA-Z_*?][a-zA-Z0-9_*?.]*
+> +name_minus	[a-zA-Z_*?][a-zA-Z0-9\-_*?.]*
+>  /* If you add a modifier you need to update check_modifier() */
+>  modifier_event	[ukhpGHSDI]+
+>  modifier_bp	[rwx]{1,3}
+> @@ -165,7 +165,6 @@ modifier_bp	[rwx]{1,3}
+>  			return PE_EVENT_NAME;
+>  		}
 >  
-> -			if (is_cpu && !name_only)
-> +			if (is_cpu && !name_only && !alias->desc)
->  				name = format_alias_or(buf, sizeof(buf), pmu, alias);
->  
-> -			aliases[j] = strdup(name);
-> -			if (aliases[j] == NULL)
-> -				goto out_enomem;
-> +			aliases[j].name = name;
-> +			if (is_cpu && !name_only && !alias->desc)
-> +				aliases[j].name = format_alias_or(buf, sizeof(buf),
-> +								  pmu, alias);
-> +			aliases[j].name = strdup(aliases[j].name);
-> +			/* failure harmless */
-
-yea but we still try to care everywhere.. ;-)
-we would print "NULL" for name in the code below right?
-
-please keep the above pattern:
-
-			if (aliases[j].name == NULL)
-				goto out_enomem;
-
-
-
-> +			aliases[j].desc = alias->desc;
->  			j++;
->  		}
->  		if (pmu->selectable) {
->  			char *s;
->  			if (asprintf(&s, "%s//", pmu->name) < 0)
->  				goto out_enomem;
-> -			aliases[j] = s;
-> +			aliases[j].name = s;
->  			j++;
->  		}
->  	}
->  	len = j;
-> -	qsort(aliases, len, sizeof(char *), cmp_string);
-> +	qsort(aliases, len, sizeof(struct pair), cmp_pair);
->  	for (j = 0; j < len; j++) {
->  		if (name_only) {
-> -			printf("%s ", aliases[j]);
-> +			printf("%s ", aliases[j].name);
->  			continue;
->  		}
-> -		printf("  %-50s [Kernel PMU event]\n", aliases[j]);
-> +		if (aliases[j].desc) {
-> +			if (numdesc++ == 0)
-> +				printf("\n");
-> +			printf("  %-50s\n", aliases[j].name);
-> +			printf("%*s", 8, "[");
-> +			wordwrap(aliases[j].desc, 8, columns, 0);
-> +			printf("]\n");
-> +		} else
-> +			printf("  %-50s [Kernel PMU event]\n", aliases[j].name);
->  		printed++;
-
-SNIP
+> -.		|
+>  <<EOF>>		{
+>  			BEGIN(INITIAL);
+>  			REWIND(0);
+> -- 
+> 1.7.9.5
+> 
