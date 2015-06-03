@@ -1,27 +1,26 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 8A5221A005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 17:38:19 +1000 (AEST)
-Date: Wed, 3 Jun 2015 17:38:05 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Darren Hart <dvhart@infradead.org>
-cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, linux-kernel@vger.kernel.org,
- linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
-Subject: Re: [RFC 07/24] x86/thinkpad_acpi: Use arch_nvram_ops methods instead
- of nvram_read_byte() and nvram_write_byte()
-In-Reply-To: <20150603033401.GB49670@vmdeb7>
-Message-ID: <alpine.LNX.2.00.1506031722530.15426@nippy.intranet>
-References: <20150531010132.289674310@telegraphics.com.au>
- <20150531010134.129479218@telegraphics.com.au>
- <20150531041114.GA30431@khazad-dum.debian.net>
- <alpine.LNX.2.00.1505311605420.23528@nippy.intranet>
- <20150531143422.GA12337@khazad-dum.debian.net>
- <1433239768.902135.284523153.1200C3E3@webmail.messagingengine.com>
- <20150603033401.GB49670@vmdeb7>
+Return-Path: <ralf@linux-mips.org>
+Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
+ by lists.ozlabs.org (Postfix) with ESMTP id A8AF91A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 18:26:48 +1000 (AEST)
+Received: from localhost.localdomain ([127.0.0.1]:37599 "EHLO linux-mips.org"
+ rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+ id S27026923AbbFCI0qa3D7P (ORCPT
+ <rfc822;linuxppc-dev@lists.ozlabs.org>);
+ Wed, 3 Jun 2015 10:26:46 +0200
+Date: Wed, 3 Jun 2015 10:26:38 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Grant Likely <grant.likely@linaro.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] of: clean-up unnecessary libfdt include paths
+Message-ID: <20150603082638.GJ9839@linux-mips.org>
+References: <1433308225-13874-1-git-send-email-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1433308225-13874-1-git-send-email-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Tue, 2 Jun 2015, Darren Hart wrote:
-
-> On Tue, Jun 02, 2015 at 07:09:28AM -0300, Henrique de Moraes Holschuh 
-> wrote:
-> > Test results were sent to me privately, and they are correct, so...
-> > 
+On Wed, Jun 03, 2015 at 12:10:25AM -0500, Rob Herring wrote:
+> Date:   Wed,  3 Jun 2015 00:10:25 -0500
+> From: Rob Herring <robh@kernel.org>
+> To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+> Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>,
+>  Ralf Baechle <ralf@linux-mips.org>, Benjamin Herrenschmidt
+>  <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael
+>  Ellerman <mpe@ellerman.id.au>, linux-mips@linux-mips.org,
+>  linuxppc-dev@lists.ozlabs.org
+> Subject: [PATCH] of: clean-up unnecessary libfdt include paths
 > 
-> Finn, unless there is some compelling reason not to - like they are MBs 
-> worth of data, please submit these to the list in the future so we have 
-> them for reference.
-
-Sure. Those results were just confirmation that this patch series doesn't 
-affect input events read directly from 
-/dev/input/by-path/platform-thinkpad_acpi-event
-given the the hotkey_source_mask settings discussed in this thread.
-
+> With the latest dtc import include fixups, it is no longer necessary to
+> add explicit include paths to use libfdt. Remove these across the
+> kernel.
 > 
-> > Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> 
-> I'm fine with the changes, but they need to be submitted with the other 
-> changes as this one change cannot compile independently in my tree.
-> 
-> Finn, please work with whomever is pulling the series to include this in 
-> their pull request.
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: linuxppc-dev@lists.ozlabs.org
 
-Right.
+For the MIPS bits;
 
-> 
-> Reviewed-by: Darren Hart <dvhart@linux.intel.com>
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-Thanks for your review.
-
--- 
+  Ralf
