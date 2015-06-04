@@ -1,42 +1,39 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 883601A0BC1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 18:30:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46E351A08A4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 19:06:17 +1000 (AEST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 4 Jun 2015 14:00:53 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id AA29D394005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 14:00:49 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t548UmbA60293290
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 14:00:48 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t547dNUA030073
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 13:09:24 +0530
-Message-ID: <55700CA9.7000501@linux.vnet.ibm.com>
-Date: Thu, 04 Jun 2015 14:00:33 +0530
+ Thu, 4 Jun 2015 14:36:14 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8E96A3940060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 14:36:11 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t54969rj1049080
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 14:36:10 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t54968HB016787
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 14:36:09 +0530
+Message-ID: <557014FC.2000209@linux.vnet.ibm.com>
+Date: Thu, 04 Jun 2015 14:36:04 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Daniel Axtens <dja@axtens.net>
 CC: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Peter Zijlstra <peterz@infradead.org>,
  Stephane Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v1 3/9]powerpc/powernv: Add cpu hotplug support
+Subject: Re: [PATCH v1 4/9]powerpc/powernv: Add generic nest pmu ops
 References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433260778-26497-4-git-send-email-maddy@linux.vnet.ibm.com>
- <1433288296.438.30.camel@axtens.net>
-In-Reply-To: <1433288296.438.30.camel@axtens.net>
+ <1433260778-26497-5-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433289819.438.38.camel@axtens.net>
+In-Reply-To: <1433289819.438.38.camel@axtens.net>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -49,128 +46,126 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Wednesday 03 June 2015 05:08 AM, Daniel Axtens wrote:
+On Wednesday 03 June 2015 05:33 AM, Daniel Axtens wrote:
 > On Tue, 2015-06-02 at 21:29 +0530, Madhavan Srinivasan wrote:
->> Patch adds cpu hotplug support. First online cpu in a node is picked as
->> designated thread to read the Nest pmu counter data, and at the time of
->> hotplug, next online cpu from the same node is picked up.
-> I'm not sure I understand this commit message. I think I understand the
-> first half - I think you're trying to say: "At boot, the first online
-I will rephrase it.
+>> Patch adds generic nest pmu functions and format attribute.
+>>
+> I'm not sure this commit message accurately reflects the content of the
+> patch. At any rate, please could you:
+>   - say what the patch adds the functions and attributes to.
+>   - phrase your message as "Add generic ..." not "Patch adds
+> generic ...": see
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/SubmittingPatches#n155
 
-> CPU in a node is picked as the designated thread to read the Nest PMU
-> counter data." I'm not sure I understand the second half: "picked up"
-> how and for what?
-When the designated thread is hotplugged, next online cpu in the
-same node is picked up as the designated thread to read the PMU counter 
-data.
-
-> (I did eventually figure it out by reading the patch, but it'd be really
-> nice to have it spelled out nicely in the commit message.)
-Sure. Will fix the commit message.
-
->> +static void nest_exit_cpu(int cpu)
->> +{
->> +	int i, nid, target = -1;
->> +	const struct cpumask *l_cpumask;
->> +	int src_chipid;
->> +
->> +	if (!cpumask_test_and_clear_cpu(cpu, &cpu_mask_nest_pmu))
->> +		return;
->> +
->> +	nid = cpu_to_node(cpu);
->> +	src_chipid = topology_physical_package_id(cpu);
->> +	l_cpumask = cpumask_of_node(nid);
->> +	for_each_cpu(i, l_cpumask) {
->> +		if (i == cpu)
->> +			continue;
->> +		if (src_chipid == topology_physical_package_id(i)) {
->> +			target = i;
->> +			break;
->> +		}
->> +	}
-> Some comments here would really help. I think you're looking for the
-> first CPU that's (a) not the cpu you're removing and (b) on the same
-> physical package, so sharing the same nest, but it took me a lot of
-> staring at the code to figure it out.
-My bad. I will comment it.
-
->> +
->> +	cpumask_set_cpu(target, &cpu_mask_nest_pmu);
->> +	nest_change_cpu_context (cpu, target);
->> +	return;
-> Return is redundant here and in several other functions in this patch.
-Ok.
-
->> +}
->> +
->> +static void nest_init_cpu(int cpu)
->> +{
->> +	int i, src_chipid;
->> +
->> +	src_chipid = topology_physical_package_id(cpu);
->> +	for_each_cpu(i, &cpu_mask_nest_pmu)
->> +		if (src_chipid == topology_physical_package_id(i))
->> +			return;
->> +
->> +	cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
->> +	nest_change_cpu_context ( -1, cpu);
-> Weird extra spaces here.
-Yes. Nice catch. Will fix it.
-
->> +	return;
->> +}
-> This function could also do with a comment: AFAICT, you've structured
-> the function so that it only calls nest_change_cpu_context if you've
-> picked up a cpu on a physical package that previously didn't have a nest
-> pmu thread on it.
+Sure. Will rephrase it.
 >
->> +
->> +static int nest_cpu_notifier(struct notifier_block *self,
->> +				unsigned long action, void *hcpu)
->> +{
->> +	unsigned int cpu = (long)hcpu;
-> What's with this cast? You cast it to a long and then assign it to an
-> unsigned int?
-
-Facepalm. My bad, will fix it.
->> +
->> +	switch (action & ~CPU_TASKS_FROZEN) {
->> +	case CPU_DOWN_FAILED:
-> Is it necessary to move the thread back if the CPU fails to go down?
-No. not need.
-> You've moved it to another online CPU already; what's the benefit of
-> paying the time-penalty to move it back?
-Why should go through that. Because, there is no restriction saying only 
-the first
-cpu has to read it, why should we complicate it further instead of 
-moving to another
-cpu in the same node.
-
->> +	case CPU_STARTING:
->> +		nest_init_cpu(cpu);
->> +		break;
->> +	case CPU_DOWN_PREPARE:
->> +		nest_exit_cpu(cpu);
->> +		break;
->> +	default:
->> +		break;
->> +	}
->> +
->> +	return NOTIFY_OK;
->> +}
 >>   
-> Now, I don't know the details of CPU hotplug _at all_, so this may be
-> stupid, but what happens if you hotplug a lot of CPUs all at once? Is
-> everything properly serialised or is this going to race and end up with
-> either multiple cpus trying to do PMU or no cpus?
-I did test the code with hotplug test. If all the cpus in the node is 
-offlined,
-then we will have no cpus designated for that node.
+>> +PMU_FORMAT_ATTR(event, "config:0-20");
+>> +struct attribute *p8_nest_format_attrs[] = {
+>> +	&format_attr_event.attr,
+>> +	NULL,
+>> +};
+>> +
+>> +struct attribute_group p8_nest_format_group = {
+>> +	.name = "format",
+>> +	.attrs = p8_nest_format_attrs,
+>> +};
+> Can these structs be constified?
+I guess it can. Will check it out.
 
-Thanks for review
-Maddy
+>> +
+>> +int p8_nest_event_init(struct perf_event *event)
+>> +{
+>> +	int chip_id;
+>> +
+>> +	if (event->attr.type != event->pmu->type)
+>> +		return -ENOENT;
+>> +
+>> +	/* Sampling not supported yet */
+>> +	if (event->hw.sample_period)
+>> +		return -EINVAL;
+>> +
+>> +	/* unsupported modes and filters */
+>> +	if (event->attr.exclude_user   ||
+>> +	    event->attr.exclude_kernel ||
+>> +	    event->attr.exclude_hv     ||
+>> +	    event->attr.exclude_idle   ||
+>> +	    event->attr.exclude_host   ||
+>> +	    event->attr.exclude_guest  ||
+>> +	    event->attr.sample_period) /* no sampling */
+>> +		return -EINVAL;
+> You test for sample period twice here.
+Yes right. I will remove it.
+
+>> +
+>> +	if (event->cpu < 0)
+>> +		return -EINVAL;
+>> +
+>> +	chip_id = topology_physical_package_id(event->cpu);
+>> +	event->hw.event_base = event->attr.config +
+>> +				p8_perchip_nest_info[chip_id].vbase;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +void p8_nest_read_counter(struct perf_event *event)
+>> +{
+>> +	u64 *addr;
+>> +	u64 data = 0;
+>> +
+>> +	addr = (u64 *)event->hw.event_base;
+>> +	data = __be64_to_cpu((uint64_t)*addr);
+>> +	local64_set(&event->hw.prev_count, data);
+>> +}
+>> +
+>> +void p8_nest_perf_event_update(struct perf_event *event)
+>> +{
+>> +	u64 counter_prev, counter_new, final_count;
+>> +	uint64_t *addr;
+>> +
+>> +	addr = (u64 *)event->hw.event_base;
+>> +	counter_prev = local64_read(&event->hw.prev_count);
+>> +	counter_new = __be64_to_cpu((uint64_t)*addr);
+>> +	final_count = counter_new - counter_prev;
+>> +
+>> +	local64_set(&event->hw.prev_count, counter_new);
+>> +	local64_add(final_count, &event->count);
+>> +}
+>> +
+>> +void p8_nest_event_start(struct perf_event *event, int flags)
+>> +{
+>> +	event->hw.state = 0;
+>> +	p8_nest_read_counter(event);
+>> +}
+>> +
+>> +void p8_nest_event_stop(struct perf_event *event, int flags)
+>> +{
+>> +	p8_nest_perf_event_update(event);
+>> +}
+>> +
+>> +int p8_nest_event_add(struct perf_event *event, int flags)
+>> +{
+>> +	p8_nest_event_start(event, flags);
+>> +	return 0;
+>> +}
+>> +
+>> +void p8_nest_event_del(struct perf_event *event, int flags)
+>> +{
+>> +	p8_nest_event_stop(event, flags);
+> Is this necessary?
+>
+> Stop calls update, which I guess makes sense as it finalises the value.
+> But if the event is being deleted anyway, why not just do nothing here?
+Since these Nest PMUs does not support sampling. IIUC, "perf record" 
+interface uses
+the event start/stop ops. Incase of perf stat interface event add/del 
+interface are used to enable and disable the counters. Now, when we 
+disable or delete, we update the event counter with the delta value.
+
+>> +}
+>> +
 > Regards,
 > Daniel Axtens
->
->
+
+Thanks for the review
+Maddy
