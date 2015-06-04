@@ -1,36 +1,29 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B86971A086B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 05:12:10 +1000 (AEST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Thu, 4 Jun 2015 00:42:07 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6BDF3E0054
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 00:45:21 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t53JC3IW7012716
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 00:42:04 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t53JC2sM015229
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 00:42:03 +0530
-Message-ID: <556F5181.8060902@linux.vnet.ibm.com>
-Date: Thu, 04 Jun 2015 00:42:01 +0530
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 805BC1A0214
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 11:25:34 +1000 (AEST)
+Date: Thu, 4 Jun 2015 11:00:28 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v11 09/34] vfio: powerpc/spapr: Move locked_vm
+ accounting to helpers
+Message-ID: <20150604010028.GC5590@voom.redhat.com>
+References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
+ <1432889098-22924-10-git-send-email-aik@ozlabs.ru>
+ <20150601042814.GH22789@voom.redhat.com>
+ <556EE0CD.1030508@ozlabs.ru>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-CC: stewart@linux.vnet.ibm.com, joel@jms.id.au
-Subject: Re: [v5] powerpc/powernv: Add poweroff (EPOW, DPO) events support
- for PowerNV platform
-References: <20150603051308.7988A1402A5@ozlabs.org>
-In-Reply-To: <20150603051308.7988A1402A5@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="jousvV0MzM2p6OtC"
+In-Reply-To: <556EE0CD.1030508@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,487 +33,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-               Thanks for review. Responses below
 
-On 06/03/2015 10:43 AM, Michael Ellerman wrote:
-> On Mon, 2015-18-05 at 15:18:04 UTC, Vipin K Parashar wrote:
->> This patch adds support for FSP EPOW (Early Power Off Warning) and
-> Please spell out the acronyms the first time you use them, including FSP.
+--jousvV0MzM2p6OtC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Will do.
+On Wed, Jun 03, 2015 at 09:11:09PM +1000, Alexey Kardashevskiy wrote:
+> On 06/01/2015 02:28 PM, David Gibson wrote:
+> >On Fri, May 29, 2015 at 06:44:33PM +1000, Alexey Kardashevskiy wrote:
+> >>There moves locked pages accounting to helpers.
+> >>Later they will be reused for Dynamic DMA windows (DDW).
+> >>
+> >>This reworks debug messages to show the current value and the limit.
+> >>
+> >>This stores the locked pages number in the container so when unlocking
+> >>the iommu table pointer won't be needed. This does not have an effect
+> >>now but it will with the multiple tables per container as then we will
+> >>allow attaching/detaching groups on fly and we may end up having
+> >>a container with no group attached but with the counter incremented.
+> >>
+> >>While we are here, update the comment explaining why RLIMIT_MEMLOCK
+> >>might be required to be bigger than the guest RAM. This also prints
+> >>pid of the current process in pr_warn/pr_debug.
+> >>
+> >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >>[aw: for the vfio related changes]
+> >>Acked-by: Alex Williamson <alex.williamson@redhat.com>
+> >>Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> >>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> >>---
+> >>Changes:
+> >>v4:
+> >>* new helpers do nothing if @npages =3D=3D 0
+> >>* tce_iommu_disable() now can decrement the counter if the group was
+> >>detached (not possible now but will be in the future)
+> >>---
+> >>  drivers/vfio/vfio_iommu_spapr_tce.c | 82 ++++++++++++++++++++++++++++=
+---------
+> >>  1 file changed, 63 insertions(+), 19 deletions(-)
+> >>
+> >>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_io=
+mmu_spapr_tce.c
+> >>index 64300cc..40583f9 100644
+> >>--- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>@@ -29,6 +29,51 @@
+> >>  static void tce_iommu_detach_group(void *iommu_data,
+> >>  		struct iommu_group *iommu_group);
+> >>
+> >>+static long try_increment_locked_vm(long npages)
+> >>+{
+> >>+	long ret =3D 0, locked, lock_limit;
+> >>+
+> >>+	if (!current || !current->mm)
+> >>+		return -ESRCH; /* process exited */
+> >>+
+> >>+	if (!npages)
+> >>+		return 0;
+> >>+
+> >>+	down_write(&current->mm->mmap_sem);
+> >>+	locked =3D current->mm->locked_vm + npages;
+> >
+> >Is there a possibility of userspace triggering an integer overflow
+> >here, if npages is really huge?
+>=20
+>=20
+> I do not see how. I just do not accept npages bigger than the host RAM si=
+ze
+> in pages. And it is "long". For (lets say) 128GB host, the number of 4KB
+> pages is (128<<30)/4096=3D33554432.
 
->
->> DPO (Delayed Power Off) events for PowerNV platform. EPOW events are
->                                      ^
-> 				    the
+Ah, yes, npages has already been shifted right so it should be safe. Ok.
 
-the PowerNV platform.  Will edit.
+>=20
+>=20
+> >
+> >>+	lock_limit =3D rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+> >>+	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+> >>+		ret =3D -ENOMEM;
+> >>+	else
+> >>+		current->mm->locked_vm +=3D npages;
+> >>+
+> >>+	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+> >>+			npages << PAGE_SHIFT,
+> >>+			current->mm->locked_vm << PAGE_SHIFT,
+> >>+			rlimit(RLIMIT_MEMLOCK),
+> >>+			ret ? " - exceeded" : "");
+> >>+
+> >>+	up_write(&current->mm->mmap_sem);
+> >>+
+> >>+	return ret;
+> >>+}
+> >>+
+> >>+static void decrement_locked_vm(long npages)
+> >>+{
+> >>+	if (!current || !current->mm || !npages)
+> >>+		return; /* process exited */
+> >>+
+> >>+	down_write(&current->mm->mmap_sem);
+> >>+	if (npages > current->mm->locked_vm)
+> >>+		npages =3D current->mm->locked_vm;
+> >
+> >Can this case ever occur (without there being a leak bug somewhere
+> >else in the code)?
+>=20
+>=20
+> It should not. Safety measure. Having a warning here might make sense but=
+ I
+> believe if this happens, there will be many, many warnings in other places
+> :)
 
->
->> generated by SPCN/FSP due to various critical system conditions that
-> SPCN?
+Ok.  I'd would be nice to see a WARN_ON() as documentation that this
+isn't a situation that should ever happen.  I wouldn't nack on that
+basis alone though.
 
-Will remove SPCN. FSP should be sufficient.
+> >>+	current->mm->locked_vm -=3D npages;
+> >>+	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
+> >>+			npages << PAGE_SHIFT,
+> >>+			current->mm->locked_vm << PAGE_SHIFT,
+> >>+			rlimit(RLIMIT_MEMLOCK));
+> >>+	up_write(&current->mm->mmap_sem);
+> >>+}
+> >>+
+> >>  /*
+> >>   * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
+> >>   *
+> >>@@ -45,6 +90,7 @@ struct tce_container {
+> >>  	struct mutex lock;
+> >>  	struct iommu_table *tbl;
+> >>  	bool enabled;
+> >>+	unsigned long locked_pages;
+> >>  };
+> >>
+> >>  static bool tce_page_is_contained(struct page *page, unsigned page_sh=
+ift)
+> >>@@ -60,7 +106,7 @@ static bool tce_page_is_contained(struct page *page,=
+ unsigned page_shift)
+> >>  static int tce_iommu_enable(struct tce_container *container)
+> >>  {
+> >>  	int ret =3D 0;
+> >>-	unsigned long locked, lock_limit, npages;
+> >>+	unsigned long locked;
+> >>  	struct iommu_table *tbl =3D container->tbl;
+> >>
+> >>  	if (!container->tbl)
+> >>@@ -89,21 +135,22 @@ static int tce_iommu_enable(struct tce_container *=
+container)
+> >>  	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
+> >>  	 * that would effectively kill the guest at random points, much bett=
+er
+> >>  	 * enforcing the limit based on the max that the guest can map.
+> >>+	 *
+> >>+	 * Unfortunately at the moment it counts whole tables, no matter how
+> >>+	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
+> >>+	 * each with 2GB DMA window, 8GB will be counted here. The reason for
+> >>+	 * this is that we cannot tell here the amount of RAM used by the gue=
+st
+> >>+	 * as this information is only available from KVM and VFIO is
+> >>+	 * KVM agnostic.
+> >>  	 */
+> >>-	down_write(&current->mm->mmap_sem);
+> >>-	npages =3D (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+> >>-	locked =3D current->mm->locked_vm + npages;
+> >>-	lock_limit =3D rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+> >>-	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+> >>-		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
+> >>-				rlimit(RLIMIT_MEMLOCK));
+> >>-		ret =3D -ENOMEM;
+> >>-	} else {
+> >>+	locked =3D (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+> >>+	ret =3D try_increment_locked_vm(locked);
+> >>+	if (ret)
+> >>+		return ret;
+> >>
+> >>-		current->mm->locked_vm +=3D npages;
+> >>-		container->enabled =3D true;
+> >>-	}
+> >>-	up_write(&current->mm->mmap_sem);
+> >>+	container->locked_pages =3D locked;
+> >>+
+> >>+	container->enabled =3D true;
+> >>
+> >>  	return ret;
+> >>  }
+> >>@@ -115,13 +162,10 @@ static void tce_iommu_disable(struct tce_containe=
+r *container)
+> >>
+> >>  	container->enabled =3D false;
+> >>
+> >>-	if (!container->tbl || !current->mm)
+> >>+	if (!current->mm)
+> >>  		return;
+> >>
+> >>-	down_write(&current->mm->mmap_sem);
+> >>-	current->mm->locked_vm -=3D (container->tbl->it_size <<
+> >>-			container->tbl->it_page_shift) >> PAGE_SHIFT;
+> >>-	up_write(&current->mm->mmap_sem);
+> >>+	decrement_locked_vm(container->locked_pages);
+> >>  }
+> >>
+> >>  static void *tce_iommu_open(unsigned long arg)
+> >
+>=20
+>=20
 
->
->> need system shutdown. Few examples of these conditions are high
->                          ^
-> s/need/require/ ?       A few
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Agreed.
+--jousvV0MzM2p6OtC
+Content-Type: application/pgp-signature
 
->
->> ambient temperature or system running on UPS power with low UPS battery.
->> DPO event is generated in response to admin initiated system request.
-> Blank line between paragraphs please.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Sure
+iQIcBAEBAgAGBQJVb6MsAAoJEGw4ysog2bOSnqAP/jH9kOnqRfPz6Z3gkYn6zNBv
+aLpB80NxwYkSYGf7zfjb5QaAGZKwrVEd5WqCwmGxYR88ZF9Nsroyh7gzJ9kKKNZd
+yKqePLsqH7ZwIN+la9bRyM4kdoRLefPbyjgSxdOgbfcpW15r0Fr4CcyxEE7eh0ut
+30jjNdFpr9VY7DQx2nl182pJc2o8QOJxZSQM0/Jp8E1yV0fXLNwlXNEunB2xXUO0
+S9NfZB8wXCvvTysQ22/iQfT2mOLzwWprBtz+pHTxhLo3QcJ0ifvmrGbmMKR+sETb
+0AEFgTcRcl7xcRTQH9klfS+8VOxP9M/duMYkAa89zlOfhxNkRxFdNjLCJPSlvW6J
+AVBhe29jCxS35VlQPezURBpxHGOQ/44m7xe6Ir34m25U7Oumfds/UeFOcUeUv/yR
+GRw03YfItCbn4E2XsoblJm5HufROPqoIOCssBpa0e37BqgLDsfI8LNDPGb8AhPX/
+5gC3LMQRGPZ3n1eJ0OLAp6hzUrCbR9BeizCY/FRJbMvnkpsUpb9Db4dEA22nzkAS
+lg2ApWCWs7/e6UeIBj/qRyzobR0nraLctRR03Lu4fWTn2n7iYiRyTLL6HTriN+JZ
+exHi93JpV8VvK8LxdPLyl3cRQHUD6ebkMaAD9Dx71u4vayhYRwfgQNblUcR6jTG7
+0WsisrU3bNJQNI0O3jlX
+=2gkh
+-----END PGP SIGNATURE-----
 
->
->> 	Upon receipt of EPOW and DPO events host kernel invokes
->                                              ^
-> 					    the host kernel
-
-will edit
-
->> orderly_poweroff for performing graceful system shutdown. System admin
-> I like it if you spell functions with a trailing () to make it clear they are
-> functions, so this would be "orderly_powerof()".
-
-Agreed.
-
->
->> can also add systemd service shutdown scripts to perform any specific
->> actions like graceful guest shutdown upon system poweroff. libvirt-guests
->> is systemd service available on recent distros for management of guests
->> at system start/shutdown time.
-> This last part about the scripts is not relevant to the kernel patch so just
-> leave it out please.
-
-Agreed.
-
->
->> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
->> Reviewed-by: Joel Stanley <joel@jms.id.au>
->> Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/include/asm/opal-api.h            |  44 ++++++++
->>   arch/powerpc/include/asm/opal.h                |   3 +-
->>   arch/powerpc/platforms/powernv/opal-power.c    | 147 ++++++++++++++++++++++---
->>   arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
->>   4 files changed, 179 insertions(+), 16 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
->> index 0321a90..90fa364 100644
->> --- a/arch/powerpc/include/asm/opal-api.h
->> +++ b/arch/powerpc/include/asm/opal-api.h
->> @@ -355,6 +355,10 @@ enum opal_msg_type {
->>   	OPAL_MSG_TYPE_MAX,
->>   };
->>   
->> +/* OPAL_MSG_SHUTDOWN parameter values */
->> +#define	SOFT_OFF	0x00
->> +#define	SOFT_REBOOT	0x01
-> I don't see this in the skiboot version of opal-api.h ?
->
-> They should be kept in sync.
->
-> If it's a Linux only define it should go in opal.h
-
-Agreed. Won't add these definitions to opal-api.h as its not present in 
-skiboot version of opal-api.h.
-
->>   struct opal_msg {
->>   	__be32 msg_type;
->>   	__be32 reserved;
->> @@ -730,6 +734,46 @@ struct opal_i2c_request {
->>   	__be64 buffer_ra;		/* Buffer real address */
->>   };
->>   
->> +/*
->> + * EPOW status sharing (OPAL and the host)
->> + *
->> + * The host will pass on OPAL, a buffer of length OPAL_SYSEPOW_MAX
->> + * with individual elements being 16 bits wide to fetch the system
->> + * wide EPOW status. Each element in the buffer will contain the
->> + * EPOW status in it's bit representation for a particular EPOW sub
->> + * class as defiend here. So multiple detailed EPOW status bits
->> + * specific for any sub class can be represented in a single buffer
->> + * element as it's bit representation.
->> + */
->> +
->> +/* System EPOW type */
->> +enum OpalSysEpow {
->> +	OPAL_SYSEPOW_POWER	= 0,	/* Power EPOW */
->> +	OPAL_SYSEPOW_TEMP	= 1,	/* Temperature EPOW */
->> +	OPAL_SYSEPOW_COOLING	= 2,	/* Cooling EPOW */
->> +	OPAL_SYSEPOW_MAX	= 3,	/* Max EPOW categories */
->> +};
->> +
->> +/* Power EPOW */
->> +enum OpalSysPower {
->> +	OPAL_SYSPOWER_UPS	= 0x0001, /* System on UPS power */
->> +	OPAL_SYSPOWER_CHNG	= 0x0002, /* System power config change */
->> +	OPAL_SYSPOWER_FAIL	= 0x0004, /* System impending power failure */
->> +	OPAL_SYSPOWER_INCL	= 0x0008, /* System incomplete power */
->> +};
->> +
->> +/* Temperature EPOW */
->> +enum OpalSysTemp {
->> +	OPAL_SYSTEMP_AMB	= 0x0001, /* System over ambient temperature */
->> +	OPAL_SYSTEMP_INT	= 0x0002, /* System over internal temperature */
->> +	OPAL_SYSTEMP_HMD	= 0x0004, /* System over ambient humidity */
->> +};
->> +
->> +/* Cooling EPOW */
->> +enum OpalSysCooling {
->> +	OPAL_SYSCOOL_INSF	= 0x0001, /* System insufficient cooling */
->> +};
-> I don't see the last three of these enums used at all, so please drop them.
-
-OPAL_SYSPOWER_CHNG / FAIL / INCL, OPAL_SYSTEMP_HMD and OPAL_SYSCOOL_INSF
-enums aren't used here but they are part of skiboot version of 
-opal-api.h and
-thus need to be retained.
-          PKVM2.1 uses these enums and thus can't be removed from 
-skiboot opal-api.h
-
->
->>   #endif /* __ASSEMBLY__ */
->>   
->>   #endif /* __OPAL_API_H */
->> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
->> index 042af1a..d30766f 100644
->> --- a/arch/powerpc/include/asm/opal.h
->> +++ b/arch/powerpc/include/asm/opal.h
->> @@ -141,7 +141,8 @@ int64_t opal_pci_fence_phb(uint64_t phb_id);
->>   int64_t opal_pci_reinit(uint64_t phb_id, uint64_t reinit_scope, uint64_t data);
->>   int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t error_type, uint8_t mask_action);
->>   int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
->> -int64_t opal_get_epow_status(__be64 *status);
->> +int64_t opal_get_epow_status(uint16_t *status, uint16_t *length);
-> Has the signature of this function really changed or was it just wrong before?
->
-> If it's changed how do we know we're running on a version of OPAL that supports
-> the two argument version?
-
-__be64 * status is wrong here. OPAL expects two arguments of type __be16 *
-and has been unchanged.
-
->
-> The parameter names don't seem very clear either. status is actually a pointer
-> to an array of "statuses", and length is the number of entries in that array.
->
-> Also you removed the endian annotations but then you pass it __be16 values, so
-> that looks incorrect, you should be using __be16 here.
-
-Will correct endian notation and use below names for epow, dpo api
-int64_t opal_get_epow_status(__be16 *epow_status, __be16 *num_epow_classes);
-int64_t opal_get_dpo_status(__be64 *dpo_timeout);
-
->
->> +int64_t opal_get_dpo_status(int64_t *dpo_timeout);
-> Similarly this should be __be64 AFAICS.
-
-Agreed. Changed api above.
-
->
->> diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
->> index ac46c2c..581bbd8 100644
->> --- a/arch/powerpc/platforms/powernv/opal-power.c
->> +++ b/arch/powerpc/platforms/powernv/opal-power.c
->> @@ -1,5 +1,5 @@
->>   /*
->> - * PowerNV OPAL power control for graceful shutdown handling
->> + * PowerNV support for OPAL power-control, poweroff events
->>    *
->>    * Copyright 2015 IBM Corp.
->>    *
->> @@ -9,18 +9,87 @@
->>    * 2 of the License, or (at your option) any later version.
->>    */
->>   
->> +#define pr_fmt(fmt)	"OPAL-POWER: "	fmt
-> Please don't shout, "opal-power" is fine.
-
-Will keep in small letters.
-
->
->>   #include <linux/kernel.h>
->> +#include <linux/spinlock.h>
->> +#include <linux/timer.h>
-> Don't think you need those?
-
-yes, not needed now.
-
->
->>   #include <linux/reboot.h>
->> -#include <linux/notifier.h>
->> -
-> I think you DO need notifier.h.
-
-Agreed. Won't remove.
-
->
->> +#include <linux/of.h>
->>   #include <asm/opal.h>
->>   #include <asm/machdep.h>
->>   
->> -#define SOFT_OFF 0x00
->> -#define SOFT_REBOOT 0x01
->> +/* Get EPOW status */
->> +static bool get_epow_status(void)
-> This is not a great name, "get" implies it gives you something back, but it
-> doesn't it just tells you true or false.
->
-> So maybe epow_event_pending() ?
-
-Agreed. Will use better naming.
-
->
->> +{
->> +	int i;
->> +	u16 num_classes;
->> +	__be16 epow_classes;
-> I think this would be cleaner if you just had a single num_classes and you
-> endian swap in the one place you use it.
-
-Agreed.
-
->
->> +	__be16 opal_epow_status[OPAL_SYSEPOW_MAX] = {0};
->> +
->> +	/* Send kernel EPOW classes supported info to OPAL */
->> +	epow_classes = cpu_to_be16(OPAL_SYSEPOW_MAX);
->> +
->> +	/* Get EPOW events information from OPAL */
->> +	opal_get_epow_status(opal_epow_status, &epow_classes);
-> This could fail.
-
-Will add a check for API failure.
-Though skiboot implementation doesn't have a fail case for this.
-
->
->> +
->> +	/* Look for EPOW events present */
->> +	num_classes = be16_to_cpu(epow_classes);
->> +	for (i = 0; i < num_classes; i++) {
->> +		if (be16_to_cpu(opal_epow_status[i]))
->> +			return true;
->> +	}
->> +
->> +	return false;
->> +}
->> +
->> +/* Process existing EPOW, DPO events */
->> +static void process_existing_poweroff_events(void)
->> +{
->> +	int rc;
->> +	__be64 opal_dpo_timeout;
->>   
->> +	/* Check for DPO event */
->> +	rc = opal_get_dpo_status(&opal_dpo_timeout);
->> +	if (rc != OPAL_WRONG_STATE) {
->> +		pr_info("Existing DPO event detected. Powering off system\n");
->> +		goto poweroff;
->> +	}
->> +
->> +	/* Check for EPOW event */
->> +	if (get_epow_status()) {
->> +		pr_info("Existing EPOW event detected. Powering off system");
->> +		goto poweroff;
->> +	}
->> +	return;
->> +
->> +poweroff:
->> +	orderly_poweroff(true);
-> I don't like that much, you shouldn't need to use goto for such simple logic.
->
-> Can you create a single function, maybe called event_pending(), and have it
-> check both EPOW and DPO and return a bool if there's any kind of event pending.
->
-> Then this can just become:
->
->    if (event_pending())
->    	orderly_poweroff(true);
-
-Agreed. Will reorganize this code.
-
->
->> +}
->> +
->> +/* OPAL EPOW, DPO event notifier */
->> +static int opal_epow_dpo_event(struct notifier_block *nb,
->> +				unsigned long msg_type, void *msg)
->> +{
->> +	switch (msg_type) {
->> +	case OPAL_MSG_EPOW:
->> +		pr_info("EPOW msg received. Powering off system\n");
->> +		break;
->> +	case OPAL_MSG_DPO:
->> +		pr_info("DPO msg received. Powering off system\n");
->> +		break;
->> +	default:
->> +		pr_err("Unknown message type %lu\n", msg_type);
->> +		return 0;
->> +	}
->> +
->> +	orderly_poweroff(true);
->> +	return 0;
->> +}
-> Why do we need a separate notifier function? Can't this just be folded into
-> opal_power_control_event() ?
-
-Will merge all of them into opal_power_control_event.
-
->
->> +
->> +/* OPAL power-control events notifier */
->>   static int opal_power_control_event(struct notifier_block *nb,
->> -				    unsigned long msg_type, void *msg)
->> +					unsigned long msg_type, void *msg)
->>   {
->>   	struct opal_msg *power_msg = msg;
->>   	uint64_t type;
->> @@ -29,20 +98,35 @@ static int opal_power_control_event(struct notifier_block *nb,
->>   
->>   	switch (type) {
->>   	case SOFT_REBOOT:
->> -		pr_info("OPAL: reboot requested\n");
->> +		pr_info("Reboot requested\n");
->>   		orderly_reboot();
->>   		break;
->>   	case SOFT_OFF:
->> -		pr_info("OPAL: poweroff requested\n");
->> +		pr_info("Poweroff requested\n");
->>   		orderly_poweroff(true);
->>   		break;
->>   	default:
->> -		pr_err("OPAL: power control type unexpected %016llx\n", type);
->> +		pr_err("Unknown power-control type %llu\n", type);
->>   	}
->>   
->>   	return 0;
->>   }
->>   
->> +/* OPAL EPOW event notifier block */
->> +static struct notifier_block opal_epow_nb = {
->> +	.notifier_call	= opal_epow_dpo_event,
->> +	.next		= NULL,
->> +	.priority	= 0,
->> +};
->> +
->> +/* OPAL DPO event notifier block */
->> +static struct notifier_block opal_dpo_nb = {
->> +	.notifier_call	= opal_epow_dpo_event,
->> +	.next		= NULL,
->> +	.priority	= 0,
->> +};
->> +
->> +/* OPAL power-control event notifier block */
->>   static struct notifier_block opal_power_control_nb = {
->>   	.notifier_call	= opal_power_control_event,
->>   	.next		= NULL,
->> @@ -51,16 +135,49 @@ static struct notifier_block opal_power_control_nb = {
->>   
->>   static int __init opal_power_control_init(void)
->>   {
->> -	int ret;
->> +	int ret, epow_dpo_supported = 0;
-> Can you make that a bool and call it "supported".
-
-Will change name to supported. Pasted reorganized code below.
-
->
->> +	struct device_node *node_epow;
-> It's typical to just call it "np".
-
-Agreed. will use "np"
-
->
->>   
->> +	/* Register OPAL power-control events notifier */
->>   	ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
->> -					     &opal_power_control_nb);
->> -	if (ret) {
->> -		pr_err("%s: Can't register OPAL event notifier (%d)\n",
->> -				__func__, ret);
->> -		return ret;
->> +				&opal_power_control_nb);
->> +	if (ret)
->> +		pr_err("Power-control events notifier registration "
->> +				"failed, ret = %d\n", ret);
-> Please don't split the string, and similarly below.
-
-sure
-
->
->> +
->> +	/* Determine EPOW, DPO support in hardware. */
->> +	node_epow = of_find_node_by_path("/ibm,opal/epow");
->> +	if (node_epow) {
->> +		epow_dpo_supported = of_device_is_compatible(node_epow,
->> +				"ibm,opal-v3-epow");
->> +		of_node_put(node_epow);
->>   	}
->>   
->> +	if (epow_dpo_supported)
->> +		pr_info("OPAL EPOW, DPO support detected.\n");
->> +	else
->> +		return 0;
-> Clearer as:
->
-> 	if (!supported)
-> 		return 0;
->
-> 	pr_info("OPAL EPOW, DPO support detected.\n");
-
-Reorganized code as below
-
-         /* Determine OPAL EPOW, DPO support */
-         np = of_find_node_by_path("/ibm,opal/epow");
-         if (np) {
-                 int supported;
-
-                 supported = of_device_is_compatible(np, 
-"ibm,opal-v3-epow");
-                 of_node_put(np);
-                 if (!supported)
-                         return 0;
-                 pr_info("OPAL EPOW, DPO support detected.\n");
-         }
-
->
->> +
->> +	/* Register EPOW event notifier */
->> +	ret = opal_message_notifier_register(OPAL_MSG_EPOW,
->> +			&opal_epow_nb);
->> +	if (ret)
->> +		pr_err("EPOW event notifier registration failed, "
->> +				"ret = %d\n", ret);
->> +
->> +	/* Register DPO event notifier */
->> +	ret = opal_message_notifier_register(OPAL_MSG_DPO,
->> +			&opal_dpo_nb);
->> +	if (ret)
->> +		pr_err("DPO event notifier registration failed, "
->> +				"ret = %d\n", ret);
->> +
->> +	/* Check for any existing EPOW or DPO events. */
->> +	process_existing_poweroff_events();
->> +
->> +	pr_info("Poweroff events support initialized\n");
->> +
->>   	return 0;
->>   }
->> +
-> No extra blank line thanks.
-
-sure
-
->
->>   machine_subsys_initcall(powernv, opal_power_control_init);
->
-> cheers
->
+--jousvV0MzM2p6OtC--
