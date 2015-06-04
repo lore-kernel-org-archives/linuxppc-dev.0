@@ -1,34 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E0C91A091D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:45:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 795B31A0EBA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:45:16 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 4 Jun 2015 16:45:02 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A42D73578055
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:44:59 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t546haW857409708
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:43:44 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t546hBKJ006151
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:43:12 +1000
+ Thu, 4 Jun 2015 16:45:16 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1B9382BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:45:14 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t546hoox53346368
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:43:58 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t546hPuG003259
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:43:27 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, bhelgaas@google.com, aik@ozlabs.ru,
  panto@antoniou-consulting.com, robherring2@gmail.com,
  grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v5 08/42] powerpc/powernv: DMA32 cleanup
-Date: Thu,  4 Jun 2015 16:41:37 +1000
-Message-Id: <1433400131-18429-9-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v5 19/42] powerpc/powernv: Remove DMA32 list of PEs
+Date: Thu,  4 Jun 2015 16:41:48 +1000
+Message-Id: <1433400131-18429-20-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,224 +40,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch cleans up DMA32 in pci-ioda.c. It shouldn't introduce
-behavioural changes:
-
-   * Rename various fields in "struct pnv_phb" and "struct pnv_ioda_pe"
-     as 32-bits DMA should be related to "DMA", not "TCE", and move
-     them around to reflect their relationship and their relative
-     importance.
-   * Removed struct pnv_ioda_pe::tce32_segcount.
+PEs were put into the list, maintained by PHB, according its DMA32
+weight. After that, the list was iterated to initialize PE's DMA
+capability. For now, the PE is created and its DMA capability is
+initialized right way. So we don't need the list and the patch
+removes that.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
 v5:
-  * Split from PATCH[v4 5/21]
+  * Newly introduced
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 48 +++++++++++++++----------------
- arch/powerpc/platforms/powernv/pci.h      | 13 +++------
- 2 files changed, 28 insertions(+), 33 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 18 ------------------
+ arch/powerpc/platforms/powernv/pci.h      |  6 ------
+ 2 files changed, 24 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index d9ff739..4af3d06 100644
+index f0b54ab..0447534 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -971,7 +971,7 @@ static void pnv_ioda_link_pe_by_weight(struct pnv_phb *phb,
- 	struct pnv_ioda_pe *lpe;
- 
- 	list_for_each_entry(lpe, &phb->ioda.pe_dma_list, dma_link) {
--		if (lpe->dma_weight < pe->dma_weight) {
-+		if (lpe->dma32_weight < pe->dma32_weight) {
- 			list_add_tail(&pe->dma_link, &lpe->dma_link);
- 			return;
- 		}
-@@ -996,14 +996,14 @@ static unsigned int pnv_ioda_dev_dma_weight(struct pci_dev *dev)
- 	if (dev->class == PCI_CLASS_SERIAL_USB_UHCI ||
- 	    dev->class == PCI_CLASS_SERIAL_USB_OHCI ||
- 	    dev->class == PCI_CLASS_SERIAL_USB_EHCI)
--		return 3 * phb->ioda.tce32_count;
-+		return 3 * phb->ioda.dma32_segcount;
- 
- 	/* Increase the weight of RAID (includes Obsidian) */
- 	if ((dev->class >> 8) == PCI_CLASS_STORAGE_RAID)
--		return 15 * phb->ioda.tce32_count;
-+		return 15 * phb->ioda.dma32_segcount;
- 
- 	/* Default */
--	return 10 * phb->ioda.tce32_count;
-+	return 10 * phb->ioda.dma32_segcount;
+@@ -992,20 +992,6 @@ out:
+ 	return 0;
  }
  
- static int __pnv_ioda_phb_dma_weight(struct pci_dev *pdev, void *data)
-@@ -1182,7 +1182,7 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
- 			continue;
- 		}
- 		pdn->pe_number = pe->pe_number;
--		pe->dma_weight += pnv_ioda_dev_dma_weight(dev);
-+		pe->dma32_weight += pnv_ioda_dev_dma_weight(dev);
- 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
- 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
- 	}
-@@ -1219,10 +1219,10 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
- 	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
- 	pe->pbus = bus;
- 	pe->pdev = NULL;
--	pe->tce32_seg = -1;
-+	pe->dma32_seg = -1;
- 	pe->mve_number = -1;
- 	pe->rid = bus->busn_res.start << 8;
--	pe->dma_weight = 0;
-+	pe->dma32_weight = 0;
+-static void pnv_ioda_link_pe_by_weight(struct pnv_phb *phb,
+-				       struct pnv_ioda_pe *pe)
+-{
+-	struct pnv_ioda_pe *lpe;
+-
+-	list_for_each_entry(lpe, &phb->ioda.pe_dma_list, dma_link) {
+-		if (lpe->dma32_weight < pe->dma32_weight) {
+-			list_add_tail(&pe->dma_link, &lpe->dma_link);
+-			return;
+-		}
+-	}
+-	list_add_tail(&pe->dma_link, &phb->ioda.pe_dma_list);
+-}
+-
+ static unsigned int pnv_ioda_dev_dma_weight(struct pci_dev *dev)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+@@ -1296,9 +1282,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 	/* Put PE to the list */
+ 	list_add_tail(&pe->list, &phb->ioda.pe_list);
  
- 	if (all)
- 		pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
-@@ -1585,7 +1585,7 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 		pe->flags = PNV_IODA_PE_VF;
- 		pe->pbus = NULL;
- 		pe->parent_dev = pdev;
--		pe->tce32_seg = -1;
-+		pe->dma32_seg = -1;
- 		pe->mve_number = -1;
- 		pe->rid = (pci_iov_virtfn_bus(pdev, vf_index) << 8) |
- 			   pci_iov_virtfn_devfn(pdev, vf_index);
-@@ -2061,7 +2061,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	/* XXX FIXME: Allocate multi-level tables on PHB3 */
+-	/* Link the PE */
+-	pnv_ioda_link_pe_by_weight(phb, pe);
+-
+ 	return pe;
+ }
  
- 	/* We shouldn't already have a 32-bit DMA associated */
--	if (WARN_ON(pe->tce32_seg >= 0))
-+	if (WARN_ON(pe->dma32_seg >= 0))
- 		return;
- 
- 	tbl = pnv_pci_table_alloc(phb->hose->node);
-@@ -2070,7 +2070,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
- 
- 	/* Grab a 32-bit TCE table */
--	pe->tce32_seg = base;
-+	pe->dma32_seg = base;
- 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
- 		(base << 28), ((base + segs) << 28) - 1);
- 
-@@ -2131,8 +2131,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	return;
-  fail:
- 	/* XXX Failure: Try to fallback to 64-bit only ? */
--	if (pe->tce32_seg >= 0)
--		pe->tce32_seg = -1;
-+	if (pe->dma32_seg >= 0)
-+		pe->dma32_seg = -1;
- 	if (tce_mem)
- 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
- 	if (tbl) {
-@@ -2520,7 +2520,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	int64_t rc;
- 
- 	/* We shouldn't already have a 32-bit DMA associated */
--	if (WARN_ON(pe->tce32_seg >= 0))
-+	if (WARN_ON(pe->dma32_seg >= 0))
- 		return;
- 
- 	/* TVE #1 is selected by PCI address bit 59 */
-@@ -2530,7 +2530,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 			pe->pe_number);
- 
- 	/* The PE will reserve all possible 32-bits space */
--	pe->tce32_seg = 0;
-+	pe->dma32_seg = 0;
- 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
- 		phb->ioda.m32_pci_base);
- 
-@@ -2547,8 +2547,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 
- 	rc = pnv_pci_ioda2_setup_default_config(pe);
- 	if (rc) {
--		if (pe->tce32_seg >= 0)
--			pe->tce32_seg = -1;
-+		if (pe->dma32_seg >= 0)
-+			pe->dma32_seg = -1;
- 		return;
+@@ -3421,7 +3404,6 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 		phb->ioda.root_pe = IODA_INVALID_PE;
  	}
  
-@@ -2567,7 +2567,7 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 	/* Calculate the PHB's DMA weight */
- 	dma_weight = pnv_ioda_phb_dma_weight(phb);
- 	pr_info("PCI%04x has %ld DMA32 segments, total weight %d\n",
--		hose->global_number, phb->ioda.tce32_count, dma_weight);
-+		hose->global_number, phb->ioda.dma32_segcount, dma_weight);
- 
- 	pnv_pci_ioda_setup_opal_tce_kill(phb);
- 
-@@ -2576,7 +2576,7 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 	 * weight
- 	 */
- 	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
--		if (!pe->dma_weight)
-+		if (!pe->dma32_weight)
- 			continue;
- 
- 		/*
-@@ -2587,15 +2587,15 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 		if (phb->type == PNV_PHB_IODA1) {
- 			unsigned int segs, base = 0;
- 
--			if (pe->dma_weight <
--			    dma_weight / phb->ioda.tce32_count)
-+			if (pe->dma32_weight <
-+			    dma_weight / phb->ioda.dma32_segcount)
- 				segs = 1;
- 			else
--				segs = (pe->dma_weight *
--					phb->ioda.tce32_count) / dma_weight;
-+				segs = (pe->dma32_weight *
-+					phb->ioda.dma32_segcount) / dma_weight;
- 
- 			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
--				pe->dma_weight, segs);
-+				pe->dma32_weight, segs);
- 			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
- 
- 			base += segs;
-@@ -3314,7 +3314,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+-	INIT_LIST_HEAD(&phb->ioda.pe_dma_list);
+ 	INIT_LIST_HEAD(&phb->ioda.pe_list);
  	mutex_init(&phb->ioda.pe_list_mutex);
  
- 	/* Calculate how many 32-bit TCE segments we have */
--	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
-+	phb->ioda.dma32_segcount = phb->ioda.m32_pci_base >> 28;
- 
- #if 0 /* We should really do that ... */
- 	rc = opal_pci_set_phb_mem_window(opal->phb_id,
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 38d8616..5ea33ca 100644
+index 64c7f03..bf63481 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -58,15 +58,10 @@ struct pnv_ioda_pe {
- 	unsigned long		m32_segmap[8];
- 	unsigned long		m64_segmap[8];
+@@ -79,7 +79,6 @@ struct pnv_ioda_pe {
+ 	struct list_head	slaves;
  
--	/* "Weight" assigned to the PE for the sake of DMA resource
--	 * allocations
--	 */
--	unsigned int		dma_weight;
+ 	/* Link in list of PE#s */
+-	struct list_head	dma_link;
+ 	struct list_head	list;
+ };
+ 
+@@ -186,11 +185,6 @@ struct pnv_phb {
+ 			/* Number of 32-bit DMA segments */
+ 			unsigned long		dma32_segcount;
+ 
+-			/* Sorted list of used PE's, sorted at
+-			 * boot for resource allocation purposes
+-			 */
+-			struct list_head	pe_dma_list;
 -
- 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
--	int			tce32_seg;
--	int			tce32_segcount;
- 	struct iommu_table_group table_group;
-+	int			dma32_seg;
-+	unsigned int		dma32_weight;
- 
- 	/* 64-bit TCE bypass region */
- 	bool			tce_bypass_enabled;
-@@ -182,8 +177,8 @@ struct pnv_phb {
+ 			/* TCE cache invalidate registers (physical and
+ 			 * remapped)
  			 */
- 			unsigned char		pe_rmap[0x10000];
- 
--			/* 32-bit TCE tables allocation */
--			unsigned long		tce32_count;
-+			/* Number of 32-bit DMA segments */
-+			unsigned long		dma32_segcount;
- 
- 			/* Sorted list of used PE's, sorted at
- 			 * boot for resource allocation purposes
 -- 
 2.1.0
