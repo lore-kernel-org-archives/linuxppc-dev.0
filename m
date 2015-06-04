@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6ABDA1A0889
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 21:31:16 +1000 (AEST)
-In-Reply-To: <1432871759.306324.398125101148.1.gpush@pablo>
-To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A1251A0889
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 21:40:29 +1000 (AEST)
+In-Reply-To: <20150520233416.GA10270@us.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [3/3,v3] powerpc/powernv: Add opal-prd channel
-Message-Id: <20150604113116.61400140273@ozlabs.org>
-Date: Thu,  4 Jun 2015 21:31:16 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [1/1] powerpc/perf/hv-24x7: Check support before registering
+Message-Id: <20150604114029.0D2AD140280@ozlabs.org>
+Date: Thu,  4 Jun 2015 21:40:28 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,174 +20,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-29-05 at 03:55:59 UTC, Jeremy Kerr wrote:
-> This change adds a char device to access the "PRD" (processor runtime
-> diagnostics) channel to OPAL firmware.
+On Wed, 2015-20-05 at 23:34:16 UTC, Sukadev Bhattiprolu wrote:
+> >From 955102eacf035b19080dc659a15d9b8fbd8fae7f Mon Sep 17 00:00:00 2001
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Date: Tue, 28 Apr 2015 18:47:58 -0400
+> Subject: [PATCH 1/1] powerpc/perf/hv-24x7: Check support before registering
+>  PMU
 > 
-> Includes contributions from Vaidyanathan Srinivasan, Neelesh Gupta &
-> Vishal Kulkarni.
+> We currently try to register the 24x7 PMU unconditionally. Not all
+> Power systems support 24x7 counters (eg: Power7). On these systems
+> we get a backtrace during boot when trying to register the 24x7 PMU.
 > 
-> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-
-Sorry, I put this in but then hit the build break, I was going to fix it up but
-would rather you did and tested it, so we may as well do another review :)
-
-> diff --git a/arch/powerpc/include/uapi/asm/opal-prd.h b/arch/powerpc/include/uapi/asm/opal-prd.h
-> new file mode 100644
-> index 0000000..319ff4a
-> --- /dev/null
-> +++ b/arch/powerpc/include/uapi/asm/opal-prd.h
-> @@ -0,0 +1,58 @@
+> Check if the hypervisor supports 24x7 counters before attempting to
+> register the 24x7 PMU.
+> 
+> Reported-by: Gustavo Luiz Duarte <gusld@br.ibm.com>
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+> 
+> Changelog[v2]
+> 	- [Michael Ellerman] Simplify check with bogus parameters.
+> ---
+>  arch/powerpc/perf/hv-24x7.c |   21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
+> 
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+> index ec2eb20..c04a332 100644
+> --- a/arch/powerpc/perf/hv-24x7.c
+> +++ b/arch/powerpc/perf/hv-24x7.c
+> @@ -1268,12 +1268,33 @@ static struct pmu h_24x7_pmu = {
+>  	.read        = h_24x7_event_read,
+>  };
+>  
 > +/*
-> + * OPAL Runtime Diagnostics interface driver
-> + * Supported on POWERNV platform
-> + *
-> + * (C) Copyright IBM 2015
+> + * Return 1 if we can access the 24x7 counter catalog from the hypervisor.
+> + * Return 0 otherwise.
 
-Usual syntax is: "Copyright IBM Corporation 2015"
+Comment is wrong.
 
-> + *
-> + * Author: Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>
-> + * Author: Jeremy Kerr <jk@ozlabs.org>
-
-I'd rather you dropped these, they'll just bit rot, but if you insist I don't
-care that much.
-
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2, or (at your option)
-> + * any later version.
-
-As pointed out by Daniel, we should probably be using the "version 2" only
-language on new files.
-
-> diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
-> new file mode 100644
-> index 0000000..3004f4a
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-prd.c
-> @@ -0,0 +1,451 @@
-
-...
-
-> +/*
-> + * opal_prd_mmap - maps firmware-provided ranges into userspace
-> + * @file: file structure for the device
-> + * @vma: VMA to map the registers into
 > + */
-> +
-> +static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
+> +static bool hv_has_24x7(void)
 > +{
-> +	size_t addr, size;
-> +	int rc;
-> +
-> +	pr_devel("opal_prd_mmap(0x%016lx, 0x%016lx, 0x%lx, 0x%lx)\n",
-> +			vma->vm_start, vma->vm_end, vma->vm_pgoff,
-> +			vma->vm_flags);
-> +
-> +	addr = vma->vm_pgoff << PAGE_SHIFT;
-> +	size = vma->vm_end - vma->vm_start;
-> +
-> +	/* ensure we're mapping within one of the allowable ranges */
-> +	if (!opal_prd_range_is_valid(addr, size))
-> +		return -EINVAL;
-> +
-> +	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
-> +						 size, vma->vm_page_prot)
-> +				| _PAGE_SPECIAL;
+> +	unsigned long hret;
 
-This doesn't build with CONFIG_STRICT_MM_TYPECHECKS=y:
+ret would be fine.
 
-  arch/powerpc/platforms/powernv/opal-prd.c:131:5: error: invalid operands to binary | (have ‘pgprot_t’ and ‘int’)
-  | _PAGE_SPECIAL;
+> +
+> +	hret = h_get_24x7_catalog_page(0, 0, 0);
+> +
+> +	if (hret != H_FUNCTION)
+> +		pr_err("Error %ld reading catalog, disabling 24x7 PMU\n", hret);
+> +
+> +	return hret == 0;
 
+I don't get what you're doing here.
 
-> +static long opal_prd_ioctl(struct file *file, unsigned int cmd,
-> +		unsigned long param)
-> +{
-> +	struct opal_prd_info info;
-> +	struct opal_prd_scom scom;
-> +	int rc = 0;
-> +
-> +	switch(cmd) {
-              ^
-	      space please
+You check for something other than H_FUNCTION, and print, and then you just
+compare against 0. But I wouldn't ever expect that to return 0, because you
+passed it bogus args.
 
-> +	case OPAL_PRD_GET_INFO:
-> +		memset(&info, 0, sizeof(info));
-> +		info.version = OPAL_PRD_KERNEL_VERSION;
-> +		rc = copy_to_user((void __user *)param, &info, sizeof(info));
-> +		if (rc)
-> +			return -EFAULT;
-> +		break;
-> +
-> +	case OPAL_PRD_SCOM_READ:
-> +		rc = copy_from_user(&scom, (void __user *)param, sizeof(scom));
-> +		if (rc)
-> +			return -EFAULT;
-> +
-> +		scom.rc = opal_xscom_read(scom.chip, scom.addr,
-> +				(__be64 *)&scom.data);
-> +		scom.data = be64_to_cpu(scom.data);
-> +		pr_devel("ioctl SCOM_READ: chip %llx addr %016llx "
-> +				"data %016llx rc %lld\n",
+The logic should be:
 
-Don't split the string please.
+static bool is_24x7_supported(void)
+{
+	if (h_get_24x7_catalog_page(0, 0, 0) == H_FUNCTION)
+		return false;
 
-> +				scom.chip, scom.addr, scom.data, scom.rc);
-> +
-> +		rc = copy_to_user((void __user *)param, &scom, sizeof(scom));
-> +		if (rc)
-> +			return -EFAULT;
-> +		break;
-> +
-> +	case OPAL_PRD_SCOM_WRITE:
-> +		rc = copy_from_user(&scom, (void __user *)param, sizeof(scom));
-> +		if (rc)
-> +			return -EFAULT;
-> +
-> +		scom.rc = opal_xscom_write(scom.chip, scom.addr, scom.data);
-> +		pr_devel("ioctl SCOM_WRITE: chip %llx addr %016llx "
-> +				"data %016llx rc %lld\n",
+	return true;
+}
 
-Don't split the string please.
+>  static int hv_24x7_init(void)
+>  {
+>  	int r;
+>  	unsigned long hret;
+>  	struct hv_perf_caps caps;
+>  
+> +	if (!hv_has_24x7())
+> +		return -ENODEV;
+> +
 
-> +				scom.chip, scom.addr, scom.data, scom.rc);
-> +
-> +		rc = copy_to_user((void __user *)param, &scom, sizeof(scom));
-> +		if (rc)
-> +			return -EFAULT;
-> +		break;
-> +
-> +	default:
-> +		rc = -EINVAL;
-> +	}
-> +
-> +	return rc;
-> +}
-> +
-> +struct file_operations opal_prd_fops = {
+This is no good. You're doing the check, which involves a hcall, before you
+even check if you're running with a hypervisor (below).
 
-This can be static const I think.
-
-> +	.open		= opal_prd_open,
-> +	.mmap		= opal_prd_mmap,
-> +	.poll		= opal_prd_poll,
-> +	.read		= opal_prd_read,
-> +	.write		= opal_prd_write,
-> +	.unlocked_ioctl	= opal_prd_ioctl,
-> +	.release	= opal_prd_release,
-> +	.owner		= THIS_MODULE,
-> +};
-> +
-> +static struct miscdevice opal_prd_dev = {
-> +        .minor		= MISC_DYNAMIC_MINOR,
-> +        .name		= "opal-prd",
-> +        .fops		= &opal_prd_fops,
-
-White space is messed up here, should be leading tabs.
+>  	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+>  		pr_debug("not a virtualized system, not enabling\n");
+>  		return -ENODEV;
 
 cheers
