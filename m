@@ -1,41 +1,20 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0796F1A0923
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 17:48:50 +1000 (AEST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 4 Jun 2015 13:18:48 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id DC099125805D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 13:21:10 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t547mPFl1048972
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 13:18:26 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t547mOcd024978
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 13:18:25 +0530
-Message-ID: <557002C3.5050303@linux.vnet.ibm.com>
-Date: Thu, 04 Jun 2015 13:18:19 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFEE41A0BC1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 18:03:13 +1000 (AEST)
+From: <Yuantian.Tang@freescale.com>
+To: <rjw@rjwysocki.net>
+CC: <viresh.kumar@linaro.org>, <linux-pm@vger.kernel.org>,
+ <cpufreq@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Tang Yuantian
+ <Yuantian.Tang@freescale.com>
+Subject: [PATCH] cpufreq: qoriq: optimize the CPU frequency switching time
+Date: Thu, 4 Jun 2015 14:25:42 +0800
+Message-ID: <1433399142-18324-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
-To: Daniel Axtens <dja@axtens.net>
-CC: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Stephane Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v1 1/9]powerpc/powernv: Data structure and macros
- definition
-References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433260778-26497-2-git-send-email-maddy@linux.vnet.ibm.com>
- <1433286663.438.10.camel@axtens.net>
-In-Reply-To: <1433286663.438.10.camel@axtens.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,38 +24,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Tang Yuantian <Yuantian.Tang@freescale.com>
 
+Each time the CPU switches its frequency, the clock nodes in
+DTS are walked through to find proper clock source. This is
+very time-consuming, for example, it is up to 500+ us on T4240.
+Besides, switching time varies from clock to clock.
+To optimize this, each input clock of CPU is buffered, so that
+it can be picked up instantly when needed.
 
-On Wednesday 03 June 2015 04:41 AM, Daniel Axtens wrote:
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the License, or (at your option) any later version.
->> + */
-> I'm not certain about this, but I _think_ this is supposed to be version
-> 2 only:
-> http://git.kernel.org/cgit/linux/kernel/git/stable/linux-stable.git/tree/COPYING#n9
-I referred other files for license information from the same folder. So 
-I could wait
-for the maintainers comment on this.
->
->> +/*
->> + * Device tree parser code detect nest pmu support
->> + * and create new nest pmus. This structure will
->> + * hold the pmu functions and attrs for each nest pmu and
->> + * will be referenced at the time of pmu registering.
->> + */
-> The first sentence of that comment is unclear: I think your trying to
-> say "Device tree parser code detects nest pmu support and registers new
-> nest pmus"? Also s/registering/registration/.
-Yes. I will rewrite the comment.
+Since for each CPU each input clock is stored in a pointer
+which takes 4 or 8 bytes memory and normally there are several
+input clocks per CPU, that will not take much memory as well.
 
->> +struct nest_pmu {
->> +	struct pmu pmu;
->> +	const struct attribute_group *attr_groups[4];
->> +};
->> +
-> Regards,
-> Daniel Axtens
-Thanks for the review
-Maddy
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+---
+ drivers/cpufreq/qoriq-cpufreq.c | 32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 88b21ae..358f075 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -27,11 +27,11 @@
+ 
+ /**
+  * struct cpu_data
+- * @parent: the parent node of cpu clock
++ * @pclk: the parent clock of cpu
+  * @table: frequency table
+  */
+ struct cpu_data {
+-	struct device_node *parent;
++	struct clk **pclk;
+ 	struct cpufreq_frequency_table *table;
+ };
+ 
+@@ -196,7 +196,7 @@ static void freq_table_sort(struct cpufreq_frequency_table *freq_table,
+ 
+ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	struct device_node *np;
++	struct device_node *np, *pnode;
+ 	int i, count, ret;
+ 	u32 freq, mask;
+ 	struct clk *clk;
+@@ -219,17 +219,23 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_nomem2;
+ 	}
+ 
+-	data->parent = of_parse_phandle(np, "clocks", 0);
+-	if (!data->parent) {
++	pnode = of_parse_phandle(np, "clocks", 0);
++	if (!pnode) {
+ 		pr_err("%s: could not get clock information\n", __func__);
+ 		goto err_nomem2;
+ 	}
+ 
+-	count = of_property_count_strings(data->parent, "clock-names");
++	count = of_property_count_strings(pnode, "clock-names");
++	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
++	if (!data->pclk) {
++		pr_err("%s: no memory\n", __func__);
++		goto err_node;
++	}
++
+ 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
+ 	if (!table) {
+ 		pr_err("%s: no memory\n", __func__);
+-		goto err_node;
++		goto err_pclk;
+ 	}
+ 
+ 	if (fmask)
+@@ -238,7 +244,8 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		mask = 0x0;
+ 
+ 	for (i = 0; i < count; i++) {
+-		clk = of_clk_get(data->parent, i);
++		clk = of_clk_get(pnode, i);
++		data->pclk[i] = clk;
+ 		freq = clk_get_rate(clk);
+ 		/*
+ 		 * the clock is valid if its frequency is not masked
+@@ -273,13 +280,16 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = u64temp + 1;
+ 
+ 	of_node_put(np);
++	of_node_put(pnode);
+ 
+ 	return 0;
+ 
+ err_nomem1:
+ 	kfree(table);
++err_pclk:
++	kfree(data->pclk);
+ err_node:
+-	of_node_put(data->parent);
++	of_node_put(pnode);
+ err_nomem2:
+ 	policy->driver_data = NULL;
+ 	kfree(data);
+@@ -293,7 +303,7 @@ static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+ 	struct cpu_data *data = policy->driver_data;
+ 
+-	of_node_put(data->parent);
++	kfree(data->pclk);
+ 	kfree(data->table);
+ 	kfree(data);
+ 	policy->driver_data = NULL;
+@@ -307,7 +317,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+ 	struct clk *parent;
+ 	struct cpu_data *data = policy->driver_data;
+ 
+-	parent = of_clk_get(data->parent, data->table[index].driver_data);
++	parent = data->pclk[data->table[index].driver_data];
+ 	return clk_set_parent(policy->clk, parent);
+ }
+ 
+-- 
+2.1.0.27.g96db324
