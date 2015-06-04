@@ -1,27 +1,27 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B4CA1A0D3A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 19:53:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9CF091A0ACD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 20:04:04 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 4 Jun 2015 19:53:47 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 41E0F357804F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 19:53:44 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t549rZoe56098966
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 19:53:43 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t549rBxi015817
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 19:53:11 +1000
-Message-ID: <55701FF1.7050803@linux.vnet.ibm.com>
-Date: Thu, 04 Jun 2015 15:22:49 +0530
+ Thu, 4 Jun 2015 15:34:02 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id CCF95394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 15:34:00 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t54A3xw244105832
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 15:33:59 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t54A3w5c021076
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 15:33:59 +0530
+Message-ID: <55702289.8090401@linux.vnet.ibm.com>
+Date: Thu, 04 Jun 2015 15:33:53 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Daniel Axtens <dja@axtens.net>
@@ -29,11 +29,12 @@ CC: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Stephane Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v1 5/9]powerpc/powernv: nest pmu feature detection support
+Subject: Re: [PATCH v1 6/9]powerpc/powernv: dt parser function for nest pmu
+ and its events
 References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433260778-26497-6-git-send-email-maddy@linux.vnet.ibm.com>
- <1433290876.438.46.camel@axtens.net>
-In-Reply-To: <1433290876.438.46.camel@axtens.net>
+ <1433260778-26497-7-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433292378.438.58.camel@axtens.net>
+In-Reply-To: <1433292378.438.58.camel@axtens.net>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,102 +47,168 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Wednesday 03 June 2015 05:51 AM, Daniel Axtens wrote:
-> On Tue, 2015-06-02 at 21:29 +0530, Madhavan Srinivasan wrote:
->> Patch adds a device tree function to detect the nest pmu
->> support. Function will look for specific dt property "ibm,ima-chip"
->> as a detection mechanism for the nest pmu.
->>
->> For Nest pmu, device tree will have two set of information.
->> 1) Per-chip Homer address region for nest pmu counter collection area.
->> 2) Supported Nest PMUs and events
-> What's HOMER?
-Nest PMUs are configured via PORE engine interface and PORE Engine 
-collections the Nest counter
-value and updates in the main memory which is reserved for this use.
-
->>   
->> +static int nest_ima_detect_parse(void)
+On Wednesday 03 June 2015 06:16 AM, Daniel Axtens wrote:
+>> +static int nest_pmu_create(struct device_node *dev, int pmu_index)
 >> +{
->> +	const __be32 *gcid;
->> +	const __be64 *chip_ima_reg;
->> +	const __be64 *chip_ima_size;
->> +	struct device_node *dev;
->> +	int rc = -EINVAL, idx;
+>> +	struct ppc64_nest_ima_events **p8_events_arr;
+>> +	struct ppc64_nest_ima_events *p8_events;
+>> +	struct property *pp;
+>> +	char *buf;
+>> +	const __be32 *lval;
+>> +	u32 val;
+>> +	int len, idx = 0;
+>> +	struct nest_pmu *pmu_ptr;
+>> +	const char *start, *end;
 >> +
->> +	for_each_node_with_property(dev, "ibm,ima-chip") {
->> +		gcid = of_get_property(dev, "ibm,chip-id", NULL);
->> +		chip_ima_reg = of_get_property(dev, "reg", NULL);
->> +		chip_ima_size = of_get_property(dev, "size", NULL);
->> +		if ((!gcid) || (!chip_ima_reg) || (!chip_ima_size)) {
->> +			pr_err("%s: device %s missing property \n",
->> +				__func__, dev->full_name);
-> This is not a particularly informative error message. It'd be good if it
-> mentioned that it was for PMU.
-Sure will changes.
-
->> +			return rc
+>> +	if (!dev)
+>> +		return -EINVAL;
+>> +
+>> +	pmu_ptr = kzalloc(sizeof(struct nest_pmu), GFP_KERNEL);
+>> +	if (!pmu_ptr)
+>> +		return -ENOMEM;
+>> +
+>> +	/* Needed for hotplug/migration */
+>> +	per_nestpmu_arr[pmu_index] = pmu_ptr;
+>> +
+>> +	p8_events_arr = kzalloc((sizeof(struct ppc64_nest_ima_events) * 64),
+>> +								GFP_KERNEL);
+>> +	if (!p8_events_arr)
+>> +		return -ENOMEM;
+>> +	p8_events = (struct ppc64_nest_ima_events *)p8_events_arr;
+> I think you're trying to get the first element of the array here: why
+> not just `p8_events = p8_events_arr[0];`?
+Yes. Will change it.
+>> +
+>> +	/*
+>> +	 * Loop through each property
+>> +	 */
+>> +	for_each_property_of_node(dev, pp) {
+>> +		start = pp->name;
+>> +		end = start + strlen(start);
+>> +		len = strlen(start);
+>> +
+>> +		if (!strcmp(pp->name, "name")) {
+>> +			if (!pp->value ||
+>> +			   (strnlen(pp->value, pp->length) >= pp->length))
+>> +				return -EINVAL;
+>> +
+>> +			buf = kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
+>> +			if (!buf)
+>> +				return -ENOMEM;
+>> +
+>> +			sprintf(buf, "Nest_%s", (char *)pp->value);
+>> +			pmu_ptr->pmu.name = (char *)buf;
+>> +			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
+>> +			pmu_ptr->attr_groups[2] = &cpumask_nest_pmu_attr_group;
 >> +		}
 >> +
->> +		idx = (uint32_t)be32_to_cpup(gcid);
->> +		p8_perchip_nest_info[idx].pbase = be64_to_cpup(chip_ima_reg);
->> +		p8_perchip_nest_info[idx].size = be64_to_cpup(chip_ima_size);
->> +		p8_perchip_nest_info[idx].vbase = (uint64_t)
->> +			phys_to_virt(p8_perchip_nest_info[idx].pbase);
+>> +		/* Skip these, we dont need it */
+>> +		if (!strcmp(pp->name, "name") ||
+>> +		    !strcmp(pp->name, "phandle") ||
+>> +		    !strcmp(pp->name, "device_type") ||
+>> +		    !strcmp(pp->name, "linux,phandle"))
+>> +			continue;
 >> +
->> +		rc = 0;
+>> +		buf = kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
+>> +		if (!buf)
+>> +			return -ENOMEM;
+>> +
+>> +		if (strncmp(pp->name, "unit.", 5) == 0) {
+>> +			start += 5;
+>> +			len = strlen(start);
+>> +			strncpy(buf, start, strlen(start));
+> You've just saved strlen(start), you could just use len. This also
+> applies in the next case below.
+Yes. That is true.
+
+>> +			p8_events->ev_name = buf;
+>> +
+>> +			if (!pp->value ||
+>> +                            (strnlen(pp->value, pp->length) >= pp->length))
+>> +				return -EINVAL;
+> The strnlen will never be greater than pp->length, so the only case this
+> will hit is if strnlen(pp->value, pp->length) == pp->length. This also
+> applies again below.
+
+True will change it.
+>
+>> +
+>> +			buf = kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
+>> +			if (!buf)
+>> +				return -ENOMEM;
+>> +
+>> +			strncpy(buf, (const char *)pp->value, pp->length);
+>> +			p8_events->ev_value = buf;
+>> +			idx++;
+>> +			p8_events++;
+>> +
+>> +		} else if (strncmp(pp->name, "scale.", 6) == 0) {
+>> +			start += 6;
+>> +			len = strlen(start);
+>> +			strncpy(buf, start, strlen(start));
+>> +			p8_events->ev_name = buf;
+>> +
+>> +			if (!pp->value ||
+>> +			   (strnlen(pp->value, pp->length) >= pp->length))
+>> +				return -EINVAL;
+>> +
+>> +			buf = kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
+>> +			if (!buf)
+>> +				return -ENOMEM;
+>> +
+>> +			strncpy(buf, (const char *)pp->value, pp->length);
+>> +			p8_events->ev_value = buf;
+>> +			idx++;
+>> +			p8_events++;
+>> +
+>> +		} else {
+>> +			strncpy(buf, start, len);
+> This is the only case where you actually use the orignal version of len.
+> This makes me think you could drop the variable entirely and just use
+> strlen(start) in all cases. I also don't see where `end` is used
+> anywhere in this function: could that be dropped?
+Correct. I guess we can drop both len and end. I used "end" for my 
+prints during debug.
+
+>> +			p8_events->ev_name = buf;
+>> +			lval = of_get_property(dev, pp->name, NULL);
+>> +			val = (uint32_t)be32_to_cpup(lval);
+>> +
+>> +			/*
+>> +			* Use DT property value as the event
+>> +			*/
+> I'm not sure if this is my mailer, but it looks like lines 2 and 3 of
+> that comment need to be indented to line up under the * in the first
+> line.
+No, it is not your mail :). Will fix the indentation.
+
+>> +			buf = kzalloc(MAX_PMU_NAME_LEN, GFP_KERNEL);
+>> +			if (!buf)
+>> +                                return -ENOMEM;
+>> +
+>> +			sprintf(buf,"event=0x%x", val);
+>> +			p8_events->ev_value = buf;
+>> +			p8_events++;
+>> +			idx++;
+>> +		}
 >> +	}
 >> +
->> +	return rc;
-> I'm not sure your rc handling is correct. As I understand it:
->   - Start with rc = -EINVAL.
->   - If your first node is missing a property, return -EINVAL.
->   - Once your first node succeeds, set rc = 0
->   - If any subsequent node is missing a property, return 0.
->   - Return 0 if any node is successfully processed, otherwise return
-> -EINVAL.
-Main loop is only for nodes with property "ibm,ima-chip".  Not all the 
-nodes will have this
-property.
-> If that's what you intended (especially with regards to returning 0 when
-> a subsequent node is missing a property), a comment explaining it would
-> be great.
-Yes. I will add comment explaining it. But i did add this in the commit 
-message.
-
-> Also, why bail out if a property is missing on any node? Why not try all
-> of them and see if any succeed?
-Only the Nest Unit nodes in the device tree will have this property. 
-Commit has the
-device tree hierarchy for the Nest instrumentation.  So if we dont find 
-this property
-then Nest instrumentation is not supported, hence bail out.
->
+>> +	return 0;
 >> +}
 >> +
->>   static int __init nest_pmu_init(void)
->>   {
->>   	int ret = 0;
->> @@ -256,6 +287,12 @@ static int __init nest_pmu_init(void)
->>   
+>> @@ -288,7 +427,7 @@ static int __init nest_pmu_init(void)
 >>   	cpumask_chip();
 >>   
->> +	/*
->> +	 * Detect the Nest PMU feature
->> +	 */
->> +	if (nest_ima_detect_parse())
->> +		return 0;
->> +
->>   	return 0;
->>   }
-> Zero is returned regardless of the output of nest_ima_detect_parse. Is
-> that intentional? If so, do you need the 'if'?
-No it should return "ret" which should be initialized to error value. 
-WIll fix it
-
->>   device_initcall(nest_pmu_init);
-> Regards,
-> Daniel Axtens
+>>   	/*
+>> -	 * Detect the Nest PMU feature
+>> +	 * Detect the Nest PMU feature and register the pmus
+>>   	 */
+>>   	if (nest_ima_detect_parse())
+>>   		return 0;
+> As the changed comment indicates, this function changes the behaviour of
+> nest_ima_detect_parse. Given that it's a new function introduced by this
+> patch series, maybe it should also change names.
 >
-Thanks for the review
-MAddy
+Ok will fix it.
+Thanks for the review.
+Maddy
