@@ -6,17 +6,19 @@ To: Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>,
  Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>,
  Borislav Petkov <bp@alien8.de>, Anatolij Gustschin <agust@denx.de>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>
+ Scott Wood <scottwood@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>, Arnd Bergmann <arnd@arndb.de>
 Cc: Jiang Liu <jiang.liu@linux.intel.com>,
  Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  Tony Luck <tony.luck@intel.com>, x86@kernel.org,
  linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
  linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  cbe-oss-dev@lists.ozlabs.org
-Subject: [RFT v2 04/48] powerpc,
- irq: Use irq_desc_get_xxx() to avoid redundant lookup of irq_desc
-Date: Thu,  4 Jun 2015 12:13:14 +0800
-Message-Id: <1433391238-19471-5-git-send-email-jiang.liu@linux.intel.com>
+Subject: [RFT v2 26/48] powerpc,
+ irq: Prepare for killing the first parameter 'irq' of
+ irq_flow_handler_t
+Date: Thu,  4 Jun 2015 12:13:36 +0800
+Message-Id: <1433391238-19471-27-git-send-email-jiang.liu@linux.intel.com>
 In-Reply-To: <1433391238-19471-1-git-send-email-jiang.liu@linux.intel.com>
 References: <1433391238-19471-1-git-send-email-jiang.liu@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,84 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use irq_desc_get_xxx() to avoid redundant lookup of irq_desc while we
-already have a pointer to corresponding irq_desc.
-
-Note: this patch has been queued for 4.2 by Michael Ellerman <mpe@ellerman.id.au>
+Change irq flow handler to prepare for killing the first parameter 'irq'
+of irq_flow_handler_t.
 
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |    2 +-
- arch/powerpc/platforms/cell/axon_msi.c        |    2 +-
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c |    2 +-
- arch/powerpc/sysdev/uic.c                     |    2 +-
- arch/powerpc/sysdev/xics/xics-common.c        |    2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/512x/mpc5121_ads_cpld.c  |    4 +++-
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c |    2 +-
+ arch/powerpc/platforms/cell/interrupt.c         |    3 ++-
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-index c949ca055712..63016621aff8 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -193,7 +193,7 @@ static struct irq_chip mpc52xx_gpt_irq_chip = {
+diff --git a/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
+index ca3a062ed1b9..4411ed51803e 100644
+--- a/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
++++ b/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
+@@ -105,8 +105,10 @@ cpld_pic_get_irq(int offset, u8 ignore, u8 __iomem *statusp,
+ }
  
- void mpc52xx_gpt_irq_cascade(unsigned int virq, struct irq_desc *desc)
+ static void
+-cpld_pic_cascade(unsigned int irq, struct irq_desc *desc)
++cpld_pic_cascade(unsigned int __irq, struct irq_desc *desc)
  {
--	struct mpc52xx_gpt_priv *gpt = irq_get_handler_data(virq);
-+	struct mpc52xx_gpt_priv *gpt = irq_desc_get_handler_data(desc);
- 	int sub_virq;
- 	u32 status;
++	unsigned int irq;
++
+ 	irq = cpld_pic_get_irq(0, PCI_IGNORE, &cpld_regs->pci_status,
+ 		&cpld_regs->pci_mask);
+ 	if (irq != NO_IRQ) {
+diff --git a/arch/powerpc/platforms/85xx/socrates_fpga_pic.c b/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+index 55a9682b9529..5153e58654f7 100644
+--- a/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
++++ b/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+@@ -100,7 +100,7 @@ void socrates_fpga_pic_cascade(unsigned int irq, struct irq_desc *desc)
+ 	 * See if we actually have an interrupt, call generic handling code if
+ 	 * we do.
+ 	 */
+-	cascade_irq = socrates_fpga_pic_get_irq(irq);
++	cascade_irq = socrates_fpga_pic_get_irq(irq_desc_get_irq(desc));
  
-diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
-index 623bd961465a..817d0e6747ea 100644
---- a/arch/powerpc/platforms/cell/axon_msi.c
-+++ b/arch/powerpc/platforms/cell/axon_msi.c
-@@ -95,7 +95,7 @@ static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
- static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
+ 	if (cascade_irq != NO_IRQ)
+ 		generic_handle_irq(cascade_irq);
+diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
+index 3af8324c122e..e2dd6c9d3a78 100644
+--- a/arch/powerpc/platforms/cell/interrupt.c
++++ b/arch/powerpc/platforms/cell/interrupt.c
+@@ -99,8 +99,9 @@ static void iic_ioexc_eoi(struct irq_data *d)
  {
+ }
+ 
+-static void iic_ioexc_cascade(unsigned int irq, struct irq_desc *desc)
++static void iic_ioexc_cascade(unsigned int __irq, struct irq_desc *desc)
+ {
++	unsigned int irq = irq_desc_get_irq(desc);
  	struct irq_chip *chip = irq_desc_get_chip(desc);
--	struct axon_msic *msic = irq_get_handler_data(irq);
-+	struct axon_msic *msic = irq_desc_get_handler_data(desc);
- 	u32 write_offset, msi;
- 	int idx;
- 	int retry = 0;
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index c269caee58f9..9dd154d6f89a 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -124,7 +124,7 @@ static void hlwd_pic_irq_cascade(unsigned int cascade_virq,
- 				      struct irq_desc *desc)
- {
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
--	struct irq_domain *irq_domain = irq_get_handler_data(cascade_virq);
-+	struct irq_domain *irq_domain = irq_desc_get_handler_data(desc);
- 	unsigned int virq;
- 
- 	raw_spin_lock(&desc->lock);
-diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
-index 7c37157d4c24..e763fe215cf5 100644
---- a/arch/powerpc/sysdev/uic.c
-+++ b/arch/powerpc/sysdev/uic.c
-@@ -198,7 +198,7 @@ void uic_irq_cascade(unsigned int virq, struct irq_desc *desc)
- {
- 	struct irq_chip *chip = irq_desc_get_chip(desc);
- 	struct irq_data *idata = irq_desc_get_irq_data(desc);
--	struct uic *uic = irq_get_handler_data(virq);
-+	struct uic *uic = irq_desc_get_handler_data(desc);
- 	u32 msr;
- 	int src;
- 	int subvirq;
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index 878a54036a25..76be7b00dd80 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -227,7 +227,7 @@ void xics_migrate_irqs_away(void)
- 
- 		/* Locate interrupt server */
- 		server = -1;
--		ics = irq_get_chip_data(virq);
-+		ics = irq_desc_get_chip_data(desc);
- 		if (ics)
- 			server = ics->get_server(ics, irq);
- 		if (server < 0) {
+ 	struct cbe_iic_regs __iomem *node_iic =
+ 		(void __iomem *)irq_desc_get_handler_data(desc);
 -- 
 1.7.10.4
