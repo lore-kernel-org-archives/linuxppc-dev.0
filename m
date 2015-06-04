@@ -1,10 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6879D1A004D
+ by lists.ozlabs.org (Postfix) with ESMTPS id A79201A025F
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 11:25:34 +1000 (AEST)
-Date: Thu, 4 Jun 2015 11:16:31 +1000
+Date: Thu, 4 Jun 2015 11:20:22 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -13,17 +13,16 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Gavin Shan <gwshan@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v11 27/34] powerpc/powernv: Implement multilevel
- TCE tables
-Message-ID: <20150604011631.GD5590@voom.redhat.com>
+Subject: Re: [PATCH kernel v11 33/34] vfio: powerpc/spapr: Register memory
+ and define IOMMU v2
+Message-ID: <20150604012022.GE5590@voom.redhat.com>
 References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
- <1432889098-22924-28-git-send-email-aik@ozlabs.ru>
- <20150601235025.GQ22789@voom.redhat.com>
- <556EE48E.7080503@ozlabs.ru>
+ <1432889098-22924-34-git-send-email-aik@ozlabs.ru>
+ <20150602041749.GF3186@voom.fritz.box> <556EE7C1.8040502@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="DrWhICOqskFTAXiy"
-In-Reply-To: <556EE48E.7080503@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="y2zxS2PfCDLh6JVG"
+In-Reply-To: <556EE7C1.8040502@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,343 +33,336 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---DrWhICOqskFTAXiy
+--y2zxS2PfCDLh6JVG
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Jun 03, 2015 at 09:27:10PM +1000, Alexey Kardashevskiy wrote:
-> On 06/02/2015 09:50 AM, David Gibson wrote:
-> >On Fri, May 29, 2015 at 06:44:51PM +1000, Alexey Kardashevskiy wrote:
-> >>TCE tables might get too big in case of 4K IOMMU pages and DDW enabled
-> >>on huge guests (hundreds of GB of RAM) so the kernel might be unable to
-> >>allocate contiguous chunk of physical memory to store the TCE table.
+On Wed, Jun 03, 2015 at 09:40:49PM +1000, Alexey Kardashevskiy wrote:
+> On 06/02/2015 02:17 PM, David Gibson wrote:
+> >On Fri, May 29, 2015 at 06:44:57PM +1000, Alexey Kardashevskiy wrote:
+> >>The existing implementation accounts the whole DMA window in
+> >>the locked_vm counter. This is going to be worse with multiple
+> >>containers and huge DMA windows. Also, real-time accounting would requi=
+te
+> >>additional tracking of accounted pages due to the page size difference -
+> >>IOMMU uses 4K pages and system uses 4K or 64K pages.
 > >>
-> >>To address this, POWER8 CPU (actually, IODA2) supports multi-level
-> >>TCE tables, up to 5 levels which splits the table into a tree of
-> >>smaller subtables.
+> >>Another issue is that actual pages pinning/unpinning happens on every
+> >>DMA map/unmap request. This does not affect the performance much now as
+> >>we spend way too much time now on switching context between
+> >>guest/userspace/host but this will start to matter when we add in-kernel
+> >>DMA map/unmap acceleration.
 > >>
-> >>This adds multi-level TCE tables support to
-> >>pnv_pci_ioda2_table_alloc_pages() and pnv_pci_ioda2_table_free_pages()
-> >>helpers.
+> >>This introduces a new IOMMU type for SPAPR - VFIO_SPAPR_TCE_v2_IOMMU.
+> >>New IOMMU deprecates VFIO_IOMMU_ENABLE/VFIO_IOMMU_DISABLE and introduces
+> >>2 new ioctls to register/unregister DMA memory -
+> >>VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY=
+ -
+> >>which receive user space address and size of a memory region which
+> >>needs to be pinned/unpinned and counted in locked_vm.
+> >>New IOMMU splits physical pages pinning and TCE table update
+> >>into 2 different operations. It requires:
+> >>1) guest pages to be registered first
+> >>2) consequent map/unmap requests to work only with pre-registered memor=
+y.
+> >>For the default single window case this means that the entire guest
+> >>(instead of 2GB) needs to be pinned before using VFIO.
+> >>When a huge DMA window is added, no additional pinning will be
+> >>required, otherwise it would be guest RAM + 2GB.
+> >>
+> >>The new memory registration ioctls are not supported by
+> >>VFIO_SPAPR_TCE_IOMMU. Dynamic DMA window and in-kernel acceleration
+> >>will require memory to be preregistered in order to work.
+> >>
+> >>The accounting is done per the user process.
+> >>
+> >>This advertises v2 SPAPR TCE IOMMU and restricts what the userspace
+> >>can do with v1 or v2 IOMMUs.
+> >>
+> >>In order to support memory pre-registration, we need a way to track
+> >>the use of every registered memory region and only allow unregistration
+> >>if a region is not in use anymore. So we need a way to tell from what
+> >>region the just cleared TCE was from.
+> >>
+> >>This adds a userspace view of the TCE table into iommu_table struct.
+> >>It contains userspace address, one per TCE entry. The table is only
+> >>allocated when the ownership over an IOMMU group is taken which means
+> >>it is only used from outside of the powernv code (such as VFIO).
 > >>
 > >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >>[aw: for the vfio related changes]
+> >>Acked-by: Alex Williamson <alex.williamson@redhat.com>
 > >>---
 > >>Changes:
+> >>v11:
+> >>* mm_iommu_put() does not return a code so this does not check it
+> >>* moved "v2" in tce_container to pack the struct
+> >>
 > >>v10:
-> >>* fixed multiple comments received for v9
+> >>* moved it_userspace allocation to vfio_iommu_spapr_tce as it VFIO
+> >>specific thing
+> >>* squashed "powerpc/iommu: Add userspace view of TCE table" into this as
+> >>it is
+> >>a part of IOMMU v2
+> >>* s/tce_iommu_use_page_v2/tce_iommu_prereg_ua_to_hpa/
+> >>* fixed some function names to have "tce_iommu_" in the beginning rather
+> >>just "tce_"
+> >>* as mm_iommu_mapped_inc() can now fail, check for the return code
 > >>
 > >>v9:
-> >>* moved from ioda2 to common powernv pci code
-> >>* fixed cleanup if allocation fails in a middle
-> >>* removed check for the size - all boundary checks happen in the callin=
-g code
-> >>anyway
-> >>---
-> >>  arch/powerpc/include/asm/iommu.h          |  2 +
-> >>  arch/powerpc/platforms/powernv/pci-ioda.c | 98 ++++++++++++++++++++++=
-++++++---
-> >>  arch/powerpc/platforms/powernv/pci.c      | 13 ++++
-> >>  3 files changed, 104 insertions(+), 9 deletions(-)
+> >>* s/tce_get_hva_cached/tce_iommu_use_page_v2/
 > >>
+> >>v7:
+> >>* now memory is registered per mm (i.e. process)
+> >>* moved memory registration code to powerpc/mmu
+> >>* merged "vfio: powerpc/spapr: Define v2 IOMMU" into this
+> >>* limited new ioctls to v2 IOMMU
+> >>* updated doc
+> >>* unsupported ioclts return -ENOTTY instead of -EPERM
+> >>
+> >>v6:
+> >>* tce_get_hva_cached() returns hva via a pointer
+> >>
+> >>v4:
+> >>* updated docs
+> >>* s/kzmalloc/vzalloc/
+> >>* in tce_pin_pages()/tce_unpin_pages() removed @vaddr, @size and
+> >>replaced offset with index
+> >>* renamed vfio_iommu_type_register_memory to vfio_iommu_spapr_register_=
+memory
+> >>and removed duplicating vfio_iommu_spapr_register_memory
+> >>---
+> >>  Documentation/vfio.txt              |  31 ++-
+> >>  arch/powerpc/include/asm/iommu.h    |   6 +
+> >>  drivers/vfio/vfio_iommu_spapr_tce.c | 512 +++++++++++++++++++++++++++=
++++------
+> >>  include/uapi/linux/vfio.h           |  27 ++
+> >>  4 files changed, 487 insertions(+), 89 deletions(-)
+> >>
+> >>diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+> >>index 96978ec..7dcf2b5 100644
+> >>--- a/Documentation/vfio.txt
+> >>+++ b/Documentation/vfio.txt
+> >>@@ -289,10 +289,12 @@ PPC64 sPAPR implementation note
+> >>
+> >>  This implementation has some specifics:
+> >>
+> >>-1) Only one IOMMU group per container is supported as an IOMMU group
+> >>-represents the minimal entity which isolation can be guaranteed for and
+> >>-groups are allocated statically, one per a Partitionable Endpoint (PE)
+> >>+1) On older systems (POWER7 with P5IOC2/IODA1) only one IOMMU group per
+> >>+container is supported as an IOMMU table is allocated at the boot time,
+> >>+one table per a IOMMU group which is a Partitionable Endpoint (PE)
+> >>  (PE is often a PCI domain but not always).
+> >>+Newer systems (POWER8 with IODA2) have improved hardware design which =
+allows
+> >>+to remove this limitation and have multiple IOMMU groups per a VFIO co=
+ntainer.
+> >>
+> >>  2) The hardware supports so called DMA windows - the PCI address range
+> >>  within which DMA transfer is allowed, any attempt to access address s=
+pace
+> >>@@ -427,6 +429,29 @@ The code flow from the example above should be sli=
+ghtly changed:
+> >>
+> >>  	....
+> >>
+> >>+5) There is v2 of SPAPR TCE IOMMU. It deprecates VFIO_IOMMU_ENABLE/
+> >>+VFIO_IOMMU_DISABLE and implements 2 new ioctls:
+> >>+VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY
+> >>+(which are unsupported in v1 IOMMU).
+> >>+
+> >>+PPC64 paravirtualized guests generate a lot of map/unmap requests,
+> >>+and the handling of those includes pinning/unpinning pages and updating
+> >>+mm::locked_vm counter to make sure we do not exceed the rlimit.
+> >>+The v2 IOMMU splits accounting and pinning into separate operations:
+> >>+
+> >>+- VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY =
+ioctls
+> >>+receive a user space address and size of the block to be pinned.
+> >>+Bisecting is not supported and VFIO_IOMMU_UNREGISTER_MEMORY is expecte=
+d to
+> >>+be called with the exact address and size used for registering
+> >>+the memory block. The userspace is not expected to call these often.
+> >>+The ranges are stored in a linked list in a VFIO container.
+> >>+
+> >>+- VFIO_IOMMU_MAP_DMA/VFIO_IOMMU_UNMAP_DMA ioctls only update the actual
+> >>+IOMMU table and do not do pinning; instead these check that the usersp=
+ace
+> >>+address is from pre-registered range.
+> >>+
+> >>+This separation helps in optimizing DMA for guests.
+> >>+
+> >>  ---------------------------------------------------------------------=
+----------
+> >>
+> >>  [1] VFIO was originally an acronym for "Virtual Function I/O" in its
 > >>diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/as=
 m/iommu.h
-> >>index 4636734..706cfc0 100644
+> >>index 9d37492..f9957eb 100644
 > >>--- a/arch/powerpc/include/asm/iommu.h
 > >>+++ b/arch/powerpc/include/asm/iommu.h
-> >>@@ -96,6 +96,8 @@ struct iommu_pool {
-> >>  struct iommu_table {
-> >>  	unsigned long  it_busno;     /* Bus number this table belongs to */
-> >>  	unsigned long  it_size;      /* Size of iommu table in entries */
-> >>+	unsigned long  it_indirect_levels;
-> >>+	unsigned long  it_level_size;
-> >>  	unsigned long  it_offset;    /* Offset into global table */
-> >>  	unsigned long  it_base;      /* mapped address of tce table */
-> >>  	unsigned long  it_index;     /* which iommu table this is */
-> >>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/p=
-latforms/powernv/pci-ioda.c
-> >>index fda01c1..68ffc7a 100644
-> >>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>@@ -49,6 +49,9 @@
-> >>  /* 256M DMA window, 4K TCE pages, 8 bytes TCE */
-> >>  #define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
+> >>@@ -112,9 +112,15 @@ struct iommu_table {
+> >>  	unsigned long *it_map;       /* A simple allocation bitmap for now */
+> >>  	unsigned long  it_page_shift;/* table iommu page size */
+> >>  	struct list_head it_group_list;/* List of iommu_table_group_link */
+> >>+	unsigned long *it_userspace; /* userspace view of the table */
+> >>  	struct iommu_table_ops *it_ops;
+> >>  };
 > >>
-> >>+#define POWERNV_IOMMU_DEFAULT_LEVELS	1
-> >>+#define POWERNV_IOMMU_MAX_LEVELS	5
+> >>+#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
+> >>+		((tbl)->it_userspace ? \
+> >>+			&((tbl)->it_userspace[(entry) - (tbl)->it_offset]) : \
+> >>+			NULL)
 > >>+
-> >>  static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
+> >>  /* Pure 2^n version of get_order */
+> >>  static inline __attribute_const__
+> >>  int get_iommu_order(unsigned long size, struct iommu_table *tbl)
+> >>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_io=
+mmu_spapr_tce.c
+> >>index 7a84110..cadd9f8 100644
+> >>--- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>@@ -19,8 +19,10 @@
+> >>  #include <linux/uaccess.h>
+> >>  #include <linux/err.h>
+> >>  #include <linux/vfio.h>
+> >>+#include <linux/vmalloc.h>
+> >>  #include <asm/iommu.h>
+> >>  #include <asm/tce.h>
+> >>+#include <asm/mmu_context.h>
 > >>
-> >>  static void pe_level_printk(const struct pnv_ioda_pe *pe, const char =
-*level,
-> >>@@ -1975,6 +1978,8 @@ static long pnv_pci_ioda2_set_window(struct iommu=
-_table_group *table_group,
-> >>  			table_group);
-> >>  	struct pnv_phb *phb =3D pe->phb;
-> >>  	int64_t rc;
-> >>+	const unsigned long size =3D tbl->it_indirect_levels ?
-> >>+			tbl->it_level_size : tbl->it_size;
-> >>  	const __u64 start_addr =3D tbl->it_offset << tbl->it_page_shift;
-> >>  	const __u64 win_size =3D tbl->it_size << tbl->it_page_shift;
+> >>  #define DRIVER_VERSION  "0.1"
+> >>  #define DRIVER_AUTHOR   "aik@ozlabs.ru"
+> >>@@ -81,6 +83,11 @@ static void decrement_locked_vm(long npages)
+> >>   * into DMA'ble space using the IOMMU
+> >>   */
 > >>
-> >>@@ -1989,9 +1994,9 @@ static long pnv_pci_ioda2_set_window(struct iommu=
-_table_group *table_group,
-> >>  	rc =3D opal_pci_map_pe_dma_window(phb->opal_id,
-> >>  			pe->pe_number,
-> >>  			pe->pe_number << 1,
-> >>-			1,
-> >>+			tbl->it_indirect_levels + 1,
-> >>  			__pa(tbl->it_base),
-> >>-			tbl->it_size << 3,
-> >>+			size << 3,
-> >>  			IOMMU_PAGE_SIZE(tbl));
-> >>  	if (rc) {
-> >>  		pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
-> >>@@ -2071,11 +2076,19 @@ static void pnv_pci_ioda_setup_opal_tce_kill(st=
-ruct pnv_phb *phb)
-> >>  	phb->ioda.tce_inval_reg =3D ioremap(phb->ioda.tce_inval_reg_phys, 8);
-> >>  }
-> >>
-> >>-static __be64 *pnv_pci_ioda2_table_do_alloc_pages(int nid, unsigned sh=
-ift)
-> >>+static __be64 *pnv_pci_ioda2_table_do_alloc_pages(int nid, unsigned sh=
-ift,
-> >>+		unsigned levels, unsigned long limit,
-> >>+		unsigned long *tce_table_allocated)
-> >>  {
-> >>  	struct page *tce_mem =3D NULL;
-> >>-	__be64 *addr;
-> >>+	__be64 *addr, *tmp;
-> >>  	unsigned order =3D max_t(unsigned, shift, PAGE_SHIFT) - PAGE_SHIFT;
-> >>+	unsigned long local_allocated =3D 1UL << (order + PAGE_SHIFT);
-> >>+	unsigned entries =3D 1UL << (shift - 3);
-> >>+	long i;
+> >>+struct tce_iommu_group {
+> >>+	struct list_head next;
+> >>+	struct iommu_group *grp;
+> >>+};
 > >>+
-> >>+	if (*tce_table_allocated >=3D limit)
-> >>+		return NULL;
-> >
-> >I'm not quite clear what case this limit logic is trying to catch.
->=20
->=20
-> The function is allocating some amount of entries which may be in one chu=
-nk
-> of memory and spread between multiple chunks in multiple levels. "limit" =
-is
-> the amount of memory for actual TCEs (not intermediate levels). If I do n=
-ot
-> do this, and the user requests 5 levels, and I do not check this, more
-> memory will be allocated that actually needed because size of the window =
-is
-> limited.
-
-Ah, ok.  It's to handle the case where the requested window size
-doesn't match a "whole" number of levels.
-
-It seems a rather counter-intuitive way of handling it to me -
-tracking the amount of memory allocated at the leaf level, rather than
-tracking what window offset you're working on (at whatever level) and
-checking that against a window size limit.
-
-Plus it means that if you hit an allocation failure somewhere down the
-tree, you won't be able to distinguish that from having hit the window
-size limit and so having completed successfully.
-
-> >>  	tce_mem =3D alloc_pages_node(nid, GFP_KERNEL, order);
-> >>  	if (!tce_mem) {
-> >>@@ -2083,31 +2096,69 @@ static __be64 *pnv_pci_ioda2_table_do_alloc_pag=
-es(int nid, unsigned shift)
-> >>  		return NULL;
-> >>  	}
-> >>  	addr =3D page_address(tce_mem);
-> >>-	memset(addr, 0, 1UL << (order + PAGE_SHIFT));
-> >>+	memset(addr, 0, local_allocated);
-> >>+
-> >>+	--levels;
-> >>+	if (!levels) {
-> >>+		*tce_table_allocated +=3D local_allocated;
-> >>+		return addr;
-> >>+	}
-> >>+
-> >>+	for (i =3D 0; i < entries; ++i) {
-> >>+		tmp =3D pnv_pci_ioda2_table_do_alloc_pages(nid, shift,
-> >>+				levels, limit, tce_table_allocated);
-> >>+		if (!tmp)
-> >>+			break;
-> >>+
-> >>+		addr[i] =3D cpu_to_be64(__pa(tmp) |
-> >>+				TCE_PCI_READ | TCE_PCI_WRITE);
-> >>+	}
+> >>  /*
+> >>   * The container descriptor supports only a single group per containe=
+r.
+> >>   * Required by the API as the container is not supplied with the IOMM=
+U group
+> >>@@ -88,11 +95,84 @@ static void decrement_locked_vm(long npages)
+> >>   */
+> >>  struct tce_container {
+> >>  	struct mutex lock;
+> >>-	struct iommu_group *grp;
+> >>  	bool enabled;
+> >>+	bool v2;
+> >>  	unsigned long locked_pages;
+> >>+	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+> >>+	struct list_head group_list;
+> >>  };
 > >>
-> >>  	return addr;
-> >>  }
-> >>
-> >>+static void pnv_pci_ioda2_table_do_free_pages(unsigned long addr,
-> >>+		unsigned long size, unsigned level);
+> >>+static long tce_iommu_unregister_pages(struct tce_container *container,
+> >>+		__u64 vaddr, __u64 size)
+> >>+{
+> >>+	struct mm_iommu_table_group_mem_t *mem;
 > >>+
-> >>  static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
-> >>-		__u32 page_shift, __u64 window_size, struct iommu_table *tbl)
-> >>+		__u32 page_shift, __u64 window_size, __u32 levels,
-> >>+		struct iommu_table *tbl)
-> >>  {
-> >>  	void *addr;
-> >>+	unsigned long tce_table_allocated =3D 0, level_shift;
-> >>  	const unsigned window_shift =3D ilog2(window_size);
-> >>  	unsigned entries_shift =3D window_shift - page_shift;
-> >>  	unsigned table_shift =3D max_t(unsigned, entries_shift + 3, PAGE_SHI=
-FT);
-> >>  	const unsigned long tce_table_size =3D 1UL << table_shift;
-> >>
-> >>+	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
+> >>+	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
 > >>+		return -EINVAL;
 > >>+
-> >>  	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_si=
-ze))
-> >>  		return -EINVAL;
-> >>
-> >>+	/* Adjust direct table size from window_size and levels */
-> >>+	entries_shift =3D (entries_shift + levels - 1) / levels;
-> >>+	level_shift =3D entries_shift + 3;
-> >>+	level_shift =3D max_t(unsigned, level_shift, PAGE_SHIFT);
-> >>+
-> >>  	/* Allocate TCE table */
-> >>-	addr =3D pnv_pci_ioda2_table_do_alloc_pages(nid, table_shift);
-> >>+	addr =3D pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
-> >>+			levels, tce_table_size, &tce_table_allocated);
-> >>  	if (!addr)
-> >>  		return -ENOMEM;
+> >>+	mem =3D mm_iommu_lookup(vaddr, size >> PAGE_SHIFT);
+> >>+	if (!mem)
+> >>+		return -EINVAL;
 > >
-> >If the do_alloc_pages hits the limit partway through its recursion
-> >this will leak memory.
+> >Uh.. contrary to the commit message this doesn't enforce that the
+> >unregister is called on the exact same vaddr and size as was
+> >registered.  Instead a call to unregister will unregister the first
+> >registered region that overlaps with the specified region.
 >=20
-> Oh, right.
+>=20
+> Ah. There was another precise-lookup function which I removed during these
+> rebased and got this bug. Will fix it, good catch.
 >=20
 >=20
-> >>
-> >>+	if (tce_table_size > tce_table_allocated) {
-> >>+		pnv_pci_ioda2_table_do_free_pages((unsigned long) addr,
-> >>+				1ULL << (level_shift - 3), levels - 1);
-> >>+		return -ENOMEM;
-> >
-> >The logic here doesn't quite make sense to me.  Is this trying to
-> >catch the case where do_alloc_pages hit the limit before completing?
-> >Comparing the total memory allocated by all the levels to the amount
-> >that would be allocated by a linear table doesn't seem like a useful
-> >thing to do.
+> >Also, ENOENT might be a better error code for this case (couldn't find
+> >a matching registered region) - EINVAL is rather overused.
 >=20
-> tce_table_size is how much memory we want for actual TCEs.
-> tce_table_allocated is how much we managed to allocate. If we allocated l=
-ess
-> than we wanted, then it is a failure.
->=20
-> Only actual (last level) TCEs are counted in tce_table_allocated.
-
-Ah, ok.  So that's how you detect the failure case.
-
-Ok, I think the logic is correct, although it seems a strange way of
-doing it to me.
-
+> Ok.
 >=20
 >=20
 >=20
-> >>+	}
 > >>+
-> >>  	/* Setup linux iommu table */
-> >>  	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, bus_offset,
-> >>  			page_shift);
-> >>+	tbl->it_level_size =3D 1ULL << (level_shift - 3);
-> >>+	tbl->it_indirect_levels =3D levels - 1;
-> >>
-> >>  	pr_devel("Created TCE table: ws=3D%08llx ts=3D%lx @%08llx\n",
-> >>  			window_size, tce_table_size, bus_offset);
-> >>@@ -2115,12 +2166,40 @@ static long pnv_pci_ioda2_table_alloc_pages(int=
- nid, __u64 bus_offset,
-> >>  	return 0;
-> >>  }
-> >>
-> >>+static void pnv_pci_ioda2_table_do_free_pages(unsigned long addr,
-> >
-> >Since addr is a virtual address, not a physical one, it should be
-> >passed as a pointer.
->=20
-> Fair point.
->=20
->=20
-> >>+		unsigned long size, unsigned level)
-> >>+{
-> >>+	addr &=3D ~(TCE_PCI_READ | TCE_PCI_WRITE);
-> >>+
-> >>+	if (level) {
-> >>+		long i;
-> >>+		u64 *tmp =3D (u64 *) addr;
-> >>+
-> >>+		for (i =3D 0; i < size; ++i) {
-> >>+			unsigned long hpa =3D be64_to_cpu(tmp[i]);
-> >>+
-> >>+			if (!(hpa & (TCE_PCI_READ | TCE_PCI_WRITE)))
-> >>+				continue;
-> >>+
-> >>+			pnv_pci_ioda2_table_do_free_pages(
-> >>+					(unsigned long) __va(hpa),
-> >>+					size, level - 1);
-> >>+		}
-> >>+	}
-> >>+
-> >>+	free_pages(addr, get_order(size << 3));
+> >>+	return mm_iommu_put(mem);
 > >>+}
 > >>+
-> >>  static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
-> >>  {
-> >>+	const unsigned long size =3D tbl->it_indirect_levels ?
-> >>+			tbl->it_level_size : tbl->it_size;
+> >>+static long tce_iommu_register_pages(struct tce_container *container,
+> >>+		__u64 vaddr, __u64 size)
+> >>+{
+> >>+	long ret =3D 0;
+> >>+	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> >>+	unsigned long entries =3D size >> PAGE_SHIFT;
 > >>+
-> >>  	if (!tbl->it_size)
-> >>  		return;
-> >>
-> >>-	free_pages(tbl->it_base, get_order(tbl->it_size << 3));
-> >>+	pnv_pci_ioda2_table_do_free_pages(tbl->it_base, size,
-> >>+			tbl->it_indirect_levels);
-> >>  }
-> >>
-> >>  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-> >>@@ -2148,7 +2227,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv=
-_phb *phb,
-> >>
-> >>  	/* Setup linux iommu table */
-> >>  	rc =3D pnv_pci_ioda2_table_alloc_pages(pe->phb->hose->node,
-> >>-			0, IOMMU_PAGE_SHIFT_4K, phb->ioda.m32_pci_base, tbl);
-> >>+			0, IOMMU_PAGE_SHIFT_4K, phb->ioda.m32_pci_base,
-> >>+			POWERNV_IOMMU_DEFAULT_LEVELS, tbl);
-> >>  	if (rc) {
-> >>  		pe_err(pe, "Failed to create 32-bit TCE table, err %ld", rc);
-> >>  		goto fail;
-> >>diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platfo=
-rms/powernv/pci.c
-> >>index dce3bfd..d4e59f7 100644
-> >>--- a/arch/powerpc/platforms/powernv/pci.c
-> >>+++ b/arch/powerpc/platforms/powernv/pci.c
-> >>@@ -575,6 +575,19 @@ struct pci_ops pnv_pci_ops =3D {
-> >>  static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
-> >>  {
-> >>  	__be64 *tmp =3D ((__be64 *)tbl->it_base);
-> >>+	int  level =3D tbl->it_indirect_levels;
-> >>+	const long shift =3D ilog2(tbl->it_level_size);
-> >>+	unsigned long mask =3D (tbl->it_level_size - 1) << (level * shift);
+> >>+	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
+> >>+			((vaddr + size) < vaddr))
+> >>+		return -EINVAL;
 > >>+
-> >>+	while (level) {
-> >>+		int n =3D (idx & mask) >> (level * shift);
-> >>+		unsigned long tce =3D be64_to_cpu(tmp[n]);
+> >>+	ret =3D mm_iommu_get(vaddr, entries, &mem);
+> >>+	if (ret)
+> >>+		return ret;
 > >>+
-> >>+		tmp =3D __va(tce & ~(TCE_PCI_READ | TCE_PCI_WRITE));
-> >>+		idx &=3D ~mask;
-> >>+		mask >>=3D shift;
-> >>+		--level;
-> >>+	}
-> >>
-> >>  	return tmp + idx;
-> >>  }
+> >>+	container->enabled =3D true;
 > >
+> >I'm assuming that once any region is registered you can no longer add
+> >or remove groups from the container?  That's fine but it might want a
+> >more prominent notice in the docs.
 >=20
 >=20
+> No, you can add/remove groups. The only limitation here is when removing =
+the
+> very last group, there should be no active mappings. Or hotplug would be
+> broken.
+
+Ok.
+
+[snip]
+> >>@@ -622,23 +918,45 @@ static long tce_iommu_take_ownership_ddw(struct t=
+ce_container *container,
+> >>
+> >>  	table_group->ops->take_ownership(table_group);
+> >>
+> >>-	ret =3D tce_iommu_create_table(container,
+> >>-			table_group,
+> >>-			0, /* window number */
+> >>-			IOMMU_PAGE_SHIFT_4K,
+> >>-			table_group->tce32_size,
+> >>-			1, /* default levels */
+> >>-			&tbl);
+> >>-	if (!ret) {
+> >>-		ret =3D table_group->ops->set_window(table_group, 0, tbl);
+> >>+	/*
+> >>+	 * If it the first group attached, check if there is
+> >>+	 * a default DMA window and create one if none as
+> >>+	 * the userspace expects it to exist.
+> >
+> >You could choose not to create the 32-bit DMA window by default for v2
+> >containers.  But I don't know if that would actually simplify anything.
+>=20
+>=20
+> Current machine reset code in QEMU removes all windows and creates the
+> default one. So there better be something to remove (to suppress QEMU err=
+or
+> messages), that is the main reason.
+
+I don't see what you're getting at here.  The qemu code will have to
+change to enable v2 containers anyway, in which case it could also be
+changed to handle the creation of the 32-bit window in qemu instead of
+the kernel.
+
+Oh.. wait.. except I keep forgetting that v2 containers can still
+handle pre-IODA IOMMUs that don't do ddw at all, so not initializing
+the default window would given an inconsistent state for a fresh
+container.
+
+Ok. it makes sense as it is.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -378,25 +370,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---DrWhICOqskFTAXiy
+--y2zxS2PfCDLh6JVG
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVb6bvAAoJEGw4ysog2bOSsvQQALOWw0u0r+b6QHPy33snSPAH
-h++v++uGF3salR05Nn200coYsIfKM7WqiGX/dWWWddPvfBtkzqJy7oS25dPqFEcu
-OWjmvthQgLnVCsa/mcNDj/CI+ehZTGghQnGRlquPqT+FN9cjz4jSTVtjGyTgzDwD
-qrG7r0BfbpXja6goyQx+5aClhDvFdo6CpPdsyEUHHUVSEivvmVdpJK3q5Z1cO6JZ
-FA5/mCCm9Uu1GWuwohP0etl9WMa4f6h1nDDkJ2SXjBsrmjnJotGQsoVqMO90s8aG
-XXIFSd3z5iym8gyQR7wKu0wUXdqK+7ngbNDljEQl5QSTX5nbnn3CfyAYs045mqOt
-dROcsZyB9DJBiLxa3fn0+4Hn1UltvlLduncH2NLQD3Zenm0Blh90xTz18Njb11BP
-a5JKiRptLDCBZ445hLGkypyCHZ8VGfgg5uXOYLnmhIMfR9HA9Q54yPV7zjufzqp/
-3lnidCLekgWVLHjcwzbxRxUEARp9ync+8YBPQaKB/y3WJX7DngIdyZneWWhE40nB
-sC2im5JO3QGMYNlv9a7htZnbQYxQ1tnadRqvDzLO+1DOV5QwFf/nuHFmJ+XS60rq
-++sLIEIz5KNh20zUYu3Zbybjwe8cAiVyNTbitQs84Fh0Lp7nrMV67EJmsPSAUuTM
-p69WZOMT3iurV2yIAf8Y
-=g8rZ
+iQIcBAEBAgAGBQJVb6fWAAoJEGw4ysog2bOSb5MP/3oAe3/BH2b+fdj2iVng4cNY
+AWWMP3EcmavhH6kcbR1BRh0+dWW8er7yU2hzpKMR3vsvHXHto7njuyICA4kQuIwk
+wsD07Lyk5f81pJLHn7w1y+/sQqITjq9InYyxf2KGzh4bvbyXdvL45/3tw6XK1ona
+JARaatefbL+wugb3og/BBmm7lw0A6ebgwMWM8ku5L+JlepoY6M4OCe+YYi4vWTj9
+nrfME24Mx33r9TBaY7cqvf0EIvksf/xmb7WhbR4Ayl9QwrM6vZjCt7gLjlZdD6ou
+x2aYN+CMdjCCIkFR4y7x4eIEgD2S4d8H/XlfNeWR9Jjm3N+6b9MtGyzFOMxgJeh6
+ujYUbvw3cW8AFihos+zUJyHH/HyQkccXfsmxpYoEMOc+6ZzGXnHL3Dp+lrKeZxST
+UNzGdK5xvloKuwkBw9fg4U6oPvT9CFKURGuj5gxR7inYjnCoRYMTKMtC2aB3xT8l
+61Wy1H0DpOhJZSJ5KQZGqqRxxwEMuDlyG73rVDe9E1sqmPCbvq4E89Mx4KhCXlDM
+DTSEu8nK5oRFue/XIdK5SrGSwUT7EyHi+CE92kY4c3iKKCyj1UsLYK9H+0z3Whka
+HX1hxgsPysGjhsc64FIdZX9lRwt4s5QobWjT1V5eEwPuFPxbwX3K/XsaumIMHilJ
+jJPPVRl2empt4n5QNQxe
+=W/Mw
 -----END PGP SIGNATURE-----
 
---DrWhICOqskFTAXiy--
+--y2zxS2PfCDLh6JVG--
