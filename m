@@ -1,34 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 472071A0921
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:43:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41E531A092A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:43:24 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 4 Jun 2015 16:43:23 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C5F182BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:43:20 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t546hC8A48627742
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:43:20 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t546glAc013509
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:42:48 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id F12B42BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Jun 2015 16:43:19 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t546hBNp29818986
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:43:19 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t546gkPh004879
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 16:42:47 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  benh@kernel.crashing.org, bhelgaas@google.com, aik@ozlabs.ru,
  panto@antoniou-consulting.com, robherring2@gmail.com,
  grant.likely@linaro.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v5 02/42] powerpc/powernv: Enable M64 on P7IOC
-Date: Thu,  4 Jun 2015 16:41:31 +1000
-Message-Id: <1433400131-18429-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v5 01/42] PCI: Add pcibios_setup_bridge()
+Date: Thu,  4 Jun 2015 16:41:30 +1000
+Message-Id: <1433400131-18429-2-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,186 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch enables M64 window on P7IOC, which has been enabled on
-PHB3. Different from PHB3 where 16 M64 BARs are supported and each
-of them can be owned by one particular PE# exclusively or divided
-evenly to 256 segments, each P7IOC PHB has 16 M64 BARs and each
-of them are divided into 8 segments. So each P7IOC PHB can support
-128 M64 segments only. Also, P7IOC has M64DT, which helps mapping
-one particular M64 segment# to arbitrary PE#. PHB3 doesn't have
-M64DT, indicating that one M64 segment can only be pinned to the
-fixed PE#. In order to have similar logic to support M64 for PHB3
-and P7IOC, we just provide 128 M64 (16 BARs) segments and fixed
-mapping between PE# and M64 segment# on P7IOC. In turn, we just
-need different phb->init_m64() hooks for P7IOC and PHB3 to support
-M64.
+Currently, PowerPC PowerNV platform utilizes ppc_md.pcibios_fixup(),
+which is called for once after PCI probing and resource assignment
+are completed, to allocate platform required resources for PCI devices:
+PE#, IO and MMIO mapping, DMA address translation (TCE) table etc.
+Obviously, it's not hotplug friendly.
+
+The patch adds weak function pcibios_setup_bridge(), which is called
+by pci_setup_bridge(). PowerPC PowerNV platform will reuse the function
+to assign above platform required resources to newly added PCI devices,
+in order to support PCI hotplug in subsequent patches.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
 v5:
-  * Pinned OPAL API return value type to "int64_t"
-  * Don't initialize M64 callbacks for unknown PHB type
-  * Fixed comments as suggested by aik
-  * Fixed coding style complained by checkpatch.pl
+  * Corrected subject as Bjorn suggested
+  * pci_setup_bridge() calls pcibios_setup_bridge() and __pci_setup_bridge()
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 110 ++++++++++++++++++++++++++----
- 1 file changed, 98 insertions(+), 12 deletions(-)
+ drivers/pci/setup-bus.c | 5 +++++
+ include/linux/pci.h     | 1 +
+ 2 files changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 573b07a..245ef81 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -174,6 +174,69 @@ static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
- 	clear_bit(pe, phb->ioda.pe_alloc);
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 4fd0cac..623dee3 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -693,11 +693,16 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
  }
  
-+static int pnv_ioda1_init_m64(struct pnv_phb *phb)
++void __weak pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
 +{
-+	struct resource *r;
-+	int seg;
-+
-+	/* There are as many M64 segments as the maximum number
-+	 * of PEs, which is 128.
-+	 */
-+	for (seg = 0; seg < phb->ioda.total_pe; seg += 8) {
-+		unsigned long base;
-+		int64_t rc;
-+
-+		base = phb->ioda.m64_base + seg * phb->ioda.m64_segsize;
-+		rc = opal_pci_set_phb_mem_window(phb->opal_id,
-+						 OPAL_M64_WINDOW_TYPE,
-+						 seg / 8,
-+						 base,
-+						 0, /* unused */
-+						 8 * phb->ioda.m64_segsize);
-+		if (rc != OPAL_SUCCESS) {
-+			pr_warn("  Error %lld setting M64 PHB#%d-BAR#%d\n",
-+				rc, phb->hose->global_number, seg / 8);
-+			goto fail;
-+		}
-+
-+		rc = opal_pci_phb_mmio_enable(phb->opal_id,
-+					      OPAL_M64_WINDOW_TYPE,
-+					      seg / 8,
-+					      OPAL_ENABLE_M64_SPLIT);
-+		if (rc != OPAL_SUCCESS) {
-+			pr_warn("  Error %lld enabling M64 PHB#%d-BAR#%d\n",
-+				rc, phb->hose->global_number, seg / 8);
-+			goto fail;
-+		}
-+	}
-+
-+	/* Strip off the segment used by the reserved PE, which
-+	 * is expected to be 0 or last supported PE#. The PHB's
-+	 * first memory window traces the 32-bits MMIO range
-+	 * while the second one traces the 64-bits prefetchable
-+	 * MMIO range that the PHB supports.
-+	 */
-+	r = &phb->hose->mem_resources[1];
-+	if (phb->ioda.reserved_pe == 0)
-+		r->start += phb->ioda.m64_segsize;
-+	else if (phb->ioda.reserved_pe == (phb->ioda.total_pe - 1))
-+		r->end -= phb->ioda.m64_segsize;
-+	else
-+		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
-+			phb->ioda.reserved_pe);
-+
-+	return 0;
-+
-+fail:
-+	for ( ; seg >= 0; seg -= 8)
-+		opal_pci_phb_mmio_enable(phb->opal_id,
-+					 OPAL_M64_WINDOW_TYPE,
-+					 seg / 8,
-+					 OPAL_DISABLE_M64);
-+
-+	return -EIO;
 +}
 +
- /* The default M64 BAR is shared by all PEs */
- static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+ void pci_setup_bridge(struct pci_bus *bus)
  {
-@@ -231,7 +294,7 @@ fail:
- 	return -EIO;
+ 	unsigned long type = IORESOURCE_IO | IORESOURCE_MEM |
+ 				  IORESOURCE_PREFETCH;
+ 
++	pcibios_setup_bridge(bus, type);
+ 	__pci_setup_bridge(bus, type);
  }
  
--static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
-+static void pnv_ioda_reserve_m64_pe(struct pnv_phb *phb)
- {
- 	resource_size_t sgsz = phb->ioda.m64_segsize;
- 	struct pci_dev *pdev;
-@@ -257,8 +320,8 @@ static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
- 	}
- }
- 
--static int pnv_ioda2_pick_m64_pe(struct pnv_phb *phb,
--				 struct pci_bus *bus, int all)
-+static int pnv_ioda_pick_m64_pe(struct pnv_phb *phb,
-+				struct pci_bus *bus, int all)
- {
- 	resource_size_t segsz = phb->ioda.m64_segsize;
- 	struct pci_dev *pdev;
-@@ -355,6 +418,26 @@ done:
- 			pe->master = master_pe;
- 			list_add_tail(&pe->list, &master_pe->slaves);
- 		}
-+
-+		/* P7IOC supports M64DT, which helps mapping M64 segment
-+		 * to one particular PE#. However, PHB3 has fixed mapping
-+		 * between M64 segment and PE#. In order to have same logic
-+		 * for P7IOC and PHB3, we enforce fixed mapping between M64
-+		 * segment and PE# on P7IOC.
-+		 */
-+		if (phb->type == PNV_PHB_IODA1) {
-+			int64_t rc;
-+
-+			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-+							 pe->pe_number,
-+							 OPAL_M64_WINDOW_TYPE,
-+							 pe->pe_number / 8,
-+							 pe->pe_number % 8);
-+			if (rc != OPAL_SUCCESS)
-+				pr_warn("%s: Error %lld mapping M64 for PHB#%d-PE#%d\n",
-+					__func__, rc, phb->hose->global_number,
-+					pe->pe_number);
-+		}
- 	}
- 
- 	kfree(pe_alloc);
-@@ -369,12 +452,6 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
- 	const u32 *r;
- 	u64 pci_addr;
- 
--	/* FIXME: Support M64 for P7IOC */
--	if (phb->type != PNV_PHB_IODA2) {
--		pr_info("  Not support M64 window\n");
--		return;
--	}
--
- 	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
- 		pr_info("  Firmware too old to support M64 window\n");
- 		return;
-@@ -403,9 +480,18 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
- 
- 	/* Use last M64 BAR to cover M64 window */
- 	phb->ioda.m64_bar_idx = 15;
--	phb->init_m64 = pnv_ioda2_init_m64;
--	phb->reserve_m64_pe = pnv_ioda2_reserve_m64_pe;
--	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
-+	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
-+	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
-+	switch (phb->type) {
-+	case PNV_PHB_IODA1:
-+		phb->init_m64 = pnv_ioda1_init_m64;
-+		break;
-+	case PNV_PHB_IODA2:
-+		phb->init_m64 = pnv_ioda2_init_m64;
-+		break;
-+	default:
-+		pr_debug(" Cannot support M64 for unknown type of PHB\n");
-+	}
- }
- 
- static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 94bacfa..5aacd0a 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -811,6 +811,7 @@ void pci_stop_and_remove_bus_device_locked(struct pci_dev *dev);
+ void pci_stop_root_bus(struct pci_bus *bus);
+ void pci_remove_root_bus(struct pci_bus *bus);
+ void pci_setup_cardbus(struct pci_bus *bus);
++void pcibios_setup_bridge(struct pci_bus *bus, unsigned long type);
+ void pci_sort_breadthfirst(void);
+ #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
+ #define dev_is_pf(d) ((dev_is_pci(d) ? to_pci_dev(d)->is_physfn : false))
 -- 
 2.1.0
