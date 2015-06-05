@@ -1,43 +1,26 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
+ [IPv6:2607:f8b0:4001:c05::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 463411A03E5
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jun 2015 04:18:14 +1000 (AEST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 5 Jun 2015 12:18:11 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 373A01FF0049
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 12:08:34 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t55IGn9u29294806
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 11:16:49 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t55IHN5R031704
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 12:17:24 -0600
-Date: Fri, 5 Jun 2015 11:16:45 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Jiri Olsa <jolsa@redhat.com>, mingo@redhat.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, namhyung@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v14 15/19] perf, tools: Support long descriptions with
- perf list
-Message-ID: <20150605181645.GA25927@us.ibm.com>
-References: <1433485647-9314-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1433485647-9314-16-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150605102138.GB29934@krava.redhat.com>
- <20150605161926.GU1187@tassilo.jf.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 641FB1A08B5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jun 2015 05:44:38 +1000 (AEST)
+Received: by igbsb11 with SMTP id sb11so22290107igb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Jun 2015 12:44:36 -0700 (PDT)
+Date: Fri, 5 Jun 2015 14:44:32 -0500
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, aik@ozlabs.ru,
+ panto@antoniou-consulting.com, robherring2@gmail.com,
+ grant.likely@linaro.org
+Subject: Re: [PATCH v5 01/42] PCI: Add pcibios_setup_bridge()
+Message-ID: <20150605194432.GN3631@google.com>
+References: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1433400131-18429-2-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150605161926.GU1187@tassilo.jf.intel.com>
+In-Reply-To: <1433400131-18429-2-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,63 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andi Kleen [ak@linux.intel.com] wrote:
-| On Fri, Jun 05, 2015 at 12:21:38PM +0200, Jiri Olsa wrote:
-| > On Thu, Jun 04, 2015 at 11:27:23PM -0700, Sukadev Bhattiprolu wrote:
-| > 
-| > SNIP
-| > 
-| > > ---
-| > >  tools/perf/builtin-list.c |   11 ++++++++---
-| > >  1 file changed, 8 insertions(+), 3 deletions(-)
-| > > 
-| > > diff --git a/tools/perf/builtin-list.c b/tools/perf/builtin-list.c
-| > > index 3f058f7..d0f7a18 100644
-| > > --- a/tools/perf/builtin-list.c
-| > > +++ b/tools/perf/builtin-list.c
-| > > @@ -22,10 +22,13 @@ int cmd_list(int argc, const char **argv, const char *prefix __maybe_unused)
-| > >  {
-| > >  	int i;
-| > >  	bool raw_dump = false;
-| > > +	bool long_desc_flag = false;
-| > >  	struct option list_options[] = {
-| > >  		OPT_BOOLEAN(0, "raw-dump", &raw_dump, "Dump raw events"),
-| > >  		OPT_BOOLEAN('d', "desc", &desc_flag,
-| > >  			    "Print extra event descriptions. --no-desc to not print."),
-| > > +		OPT_BOOLEAN('d', "long-desc", &long_desc_flag,
-| > > +			    "Print longer event descriptions."),
-| > 
-| > hum, it should be 'v' , right?
+On Thu, Jun 04, 2015 at 04:41:30PM +1000, Gavin Shan wrote:
+> Currently, PowerPC PowerNV platform utilizes ppc_md.pcibios_fixup(),
+> which is called for once after PCI probing and resource assignment
+> are completed, to allocate platform required resources for PCI devices:
+> PE#, IO and MMIO mapping, DMA address translation (TCE) table etc.
+> Obviously, it's not hotplug friendly.
+> 
+> The patch adds weak function pcibios_setup_bridge(), which is called
+> by pci_setup_bridge(). PowerPC PowerNV platform will reuse the function
+> to assign above platform required resources to newly added PCI devices,
+> in order to support PCI hotplug in subsequent patches.
+> 
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Good catch. Fixed.
-| 
-| Yes that's right.
-| 
-| Also BTW need to add the new option to the usage line a few lines below.
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-How about we do this for consistency with 'perf stat'(and shows the
-long options exactly once with 'perf list -h')?
-
-diff --git a/tools/perf/builtin-list.c b/tools/perf/builtin-list.c
-index d0f7a18..f800927 100644
---- a/tools/perf/builtin-list.c
-+++ b/tools/perf/builtin-list.c
-@@ -27,12 +27,12 @@ int cmd_list(int argc, const char **argv, const char *prefi
-                OPT_BOOLEAN(0, "raw-dump", &raw_dump, "Dump raw events"),
-                OPT_BOOLEAN('d', "desc", &desc_flag,
-                            "Print extra event descriptions. --no-desc to not p
--               OPT_BOOLEAN('d', "long-desc", &long_desc_flag,
-+               OPT_BOOLEAN('v', "long-desc", &long_desc_flag,
-                            "Print longer event descriptions."),
-                OPT_END()
-        };
-        const char * const list_usage[] = {
--               "perf list [--no-desc] [hw|sw|cache|tracepoint|pmu|event_glob]"
-+               "perf list [<options>] [hw|sw|cache|tracepoint|pmu|event_glob]"
-                NULL
-        };
-| 
-| -Andi
-| 
-| -- 
-| ak@linux.intel.com -- Speaking for myself only
+> ---
+> v5:
+>   * Corrected subject as Bjorn suggested
+>   * pci_setup_bridge() calls pcibios_setup_bridge() and __pci_setup_bridge()
+> ---
+>  drivers/pci/setup-bus.c | 5 +++++
+>  include/linux/pci.h     | 1 +
+>  2 files changed, 6 insertions(+)
+> 
+> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+> index 4fd0cac..623dee3 100644
+> --- a/drivers/pci/setup-bus.c
+> +++ b/drivers/pci/setup-bus.c
+> @@ -693,11 +693,16 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+>  	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+>  }
+>  
+> +void __weak pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
+> +{
+> +}
+> +
+>  void pci_setup_bridge(struct pci_bus *bus)
+>  {
+>  	unsigned long type = IORESOURCE_IO | IORESOURCE_MEM |
+>  				  IORESOURCE_PREFETCH;
+>  
+> +	pcibios_setup_bridge(bus, type);
+>  	__pci_setup_bridge(bus, type);
+>  }
+>  
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 94bacfa..5aacd0a 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -811,6 +811,7 @@ void pci_stop_and_remove_bus_device_locked(struct pci_dev *dev);
+>  void pci_stop_root_bus(struct pci_bus *bus);
+>  void pci_remove_root_bus(struct pci_bus *bus);
+>  void pci_setup_cardbus(struct pci_bus *bus);
+> +void pcibios_setup_bridge(struct pci_bus *bus, unsigned long type);
+>  void pci_sort_breadthfirst(void);
+>  #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
+>  #define dev_is_pf(d) ((dev_is_pci(d) ? to_pci_dev(d)->is_physfn : false))
+> -- 
+> 2.1.0
+> 
