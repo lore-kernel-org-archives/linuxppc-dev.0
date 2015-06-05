@@ -1,38 +1,37 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47F261A08B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 16:28:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6DC561A1D43
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 16:36:45 +1000 (AEST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 5 Jun 2015 00:28:18 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 30FF71FF001E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 00:19:26 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t556Q1928454398
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Jun 2015 23:26:01 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t556SFBF008384
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 00:28:15 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: mingo@redhat.com, ak@linux.intel.com,
- Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH v14 19/19] perf,
- tools: Add README for info on parsing JSON/map files
-Date: Thu,  4 Jun 2015 23:27:27 -0700
-Message-Id: <1433485647-9314-20-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1433485647-9314-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1433485647-9314-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Fri, 5 Jun 2015 16:36:36 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id F3C7A2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 16:36:33 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t556aOmo54984704
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 16:36:32 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t556a117014598
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 16:36:01 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH kernel v12 00/34] powerpc/iommu/vfio: Enable Dynamic DMA
+ windows
+Date: Fri,  5 Jun 2015 16:34:52 +1000
+Message-Id: <1433486126-23551-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,139 +41,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- tools/perf/pmu-events/README |  122 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 122 insertions(+)
- create mode 100644 tools/perf/pmu-events/README
 
-diff --git a/tools/perf/pmu-events/README b/tools/perf/pmu-events/README
-new file mode 100644
-index 0000000..da57cb5
---- /dev/null
-+++ b/tools/perf/pmu-events/README
-@@ -0,0 +1,122 @@
-+
-+The contents of this directory allow users to specify PMU events in
-+their CPUs by their symbolic names rather than raw event codes (see
-+example below).
-+
-+The main program in this directory, is the 'jevents', which is built and
-+executed _before_ the perf binary itself is built.
-+
-+The 'jevents' program tries to locate and process JSON files in the directory
-+tree tools/perf/pmu-events/arch/foo.
-+
-+	- Regular files with '.json' extension in the name are assumed to be
-+	  JSON files, each of which describes a set of PMU events.
-+
-+	- Regular files with basename starting with 'mapfile.csv' are assumed
-+	  to be a CSV file that maps a specific CPU to its set of PMU events.
-+	  (see below for mapfile format)
-+
-+	- Directories are traversed, but all other files are ignored.
-+
-+Using the JSON files and the mapfile, 'jevents' generates the C source file,
-+'pmu-events.c', which encodes the two sets of tables:
-+
-+	- Set of 'PMU events tables' for all known CPUs in the architecture,
-+	  (one table like the following, per JSON file; table name 'pme_power8'
-+	  is derived from JSON file name, 'power8.json').
-+
-+		struct pmu_event pme_power8[] = {
-+
-+			...
-+
-+			{
-+				.name = "pm_1plus_ppc_cmpl",
-+				.event = "event=0x100f2",
-+				.desc = "1 or more ppc insts finished,",
-+			},
-+
-+			...
-+		}
-+
-+	- A 'mapping table' that maps each CPU of the architecture, to its
-+	  'PMU events table'
-+
-+		struct pmu_events_map pmu_events_map[] = {
-+		{
-+			.cpuid = "004b0000",
-+			.version = "1",
-+			.type = "core",
-+			.table = pme_power8
-+		},
-+			...
-+
-+		};
-+
-+After the 'pmu-events.c' is generated, it is compiled and the resulting
-+'pmu-events.o' is added to 'libperf.a' which is then used to build perf.
-+
-+NOTES:
-+	1. Several CPUs can support same set of events and hence use a common
-+	   JSON file. Hence several entries in the pmu_events_map[] could map
-+	   to a single 'PMU events table'.
-+
-+	2. The 'pmu-events.h' has an extern declaration for the mapping table
-+	   and the generated 'pmu-events.c' defines this table.
-+
-+	3. _All_ known CPU tables for architecture are included in the perf
-+	   binary.
-+
-+At run time, perf determines the actual CPU it is running on, finds the
-+matching events table and builds aliases for those events. This allows
-+users to specify events by their name:
-+
-+	$ perf stat -e pm_1plus_ppc_cmpl sleep 1
-+
-+where 'pm_1plus_ppc_cmpl' is a Power8 PMU event.
-+
-+In case of errors when processing files in the tools/perf/pmu-events/arch
-+directory, 'jevents' tries to create an empty mapping file to allow the perf
-+build to succeed even if the PMU event aliases cannot be used.
-+
-+However some errors in processing may cause the perf build to fail.
-+
-+Mapfile format
-+===============
-+
-+The mapfile.csv format is expected to be:
-+
-+	Header line
-+	CPUID,Version,File/path/name.json,Type
-+
-+where:
-+
-+	Comma:
-+		is the required field delimiter (i.e other fields cannot
-+		have commas within them).
-+
-+	Comments:
-+		Lines in which the first character is either '\n' or '#'
-+		are ignored.
-+
-+	Header line
-+		The header line is the first line in the file, which is
-+		_IGNORED_. It can be a comment (begin with '#') or empty.
-+
-+	CPUID:
-+		CPUID is an arch-specific char string, that can be used
-+		to identify CPU (and associate it with a set of PMU events
-+		it supports). Multiple CPUIDS can point to the same
-+		File/path/name.json.
-+
-+		Example:
-+			CPUID == 'GenuineIntel-6-2E' (on x86).
-+			CPUID == '004b0100' (PVR value in Powerpc)
-+	Version:
-+		is the Version of the mapfile.
-+
-+	File/path/name.json:
-+		is the pathname for the JSON file, relative to the directory
-+		containing the mapfile.csv
-+
-+	Type:
-+		indicates whether the events or "core" or "uncore" events.
+This enables sPAPR defined feature called Dynamic DMA windows (DDW).
+
+Each Partitionable Endpoint (IOMMU group) has an address range on a PCI bus
+where devices are allowed to do DMA. These ranges are called DMA windows.
+By default, there is a single DMA window, 1 or 2GB big, mapped at zero
+on a PCI bus.
+
+Hi-speed devices may suffer from the limited size of the window.
+The recent host kernels use a TCE bypass window on POWER8 CPU which implements
+direct PCI bus address range mapping (with offset of 1<<59) to the host memory.
+
+For guests, PAPR defines a DDW RTAS API which allows pseries guests
+querying the hypervisor about DDW support and capabilities (page size mask
+for now). A pseries guest may request an additional (to the default)
+DMA windows using this RTAS API.
+The existing pseries Linux guests request an additional window as big as
+the guest RAM and map the entire guest window which effectively creates
+direct mapping of the guest memory to a PCI bus.
+
+The multiple DMA windows feature is supported by POWER7/POWER8 CPUs; however
+this patchset only adds support for POWER8 as TCE tables are implemented
+in POWER7 in a quite different way ans POWER7 is not the highest priority.
+
+This patchset reworks PPC64 IOMMU code and adds necessary structures
+to support big windows.
+
+Once a Linux guest discovers the presence of DDW, it does:
+1. query hypervisor about number of available windows and page size masks;
+2. create a window with the biggest possible page size (today 4K/64K/16M);
+3. map the entire guest RAM via H_PUT_TCE* hypercalls;
+4. switche dma_ops to direct_dma_ops on the selected PE.
+
+Once this is done, H_PUT_TCE is not called anymore for 64bit devices and
+the guest does not waste time on DMA map/unmap operations.
+
+Note that 32bit devices won't use DDW and will keep using the default
+DMA window so KVM optimizations will be required (to be posted later).
+
+This is pushed to git@github.com:aik/linux.git
+ + 93b347697...5ba9cbd vfio-for-github -> vfio-for-github (forced update)
+
+The pushed branch contains all patches from this patchset and KVM
+acceleration patches as well to give an idea about the current state
+of in-kernel acceleration support.
+
+Changes:
+v12:
+* fixed few issues in multilevel TCE tables
+* fixed locked_vm counting in "userspace-to-physical addresses translation cache"
+* fixed some commit logs
+* rebased on 4.1-rc6
+
+v11:
+* reworked locking in pinned pages cache
+
+v10:
+* fixed&tested on SRIOV system
+* fixed multiple comments from David
+* added bunch of iommu device attachment reworks
+
+v9:
+* rebased on top of SRIOV (which is in upstream now)
+* fixed multiple comments from David
+* reworked ownership patches
+* removed vfio: powerpc/spapr: Do cleanup when releasing the group (used to be #2)
+as updated #1 should do this
+* moved "powerpc/powernv: Implement accessor to TCE entry" to a separate patch
+* added a patch which moves TCE Kill register address to PE from IOMMU table
+
+v8:
+* fixed a bug in error fallback in "powerpc/mmu: Add userspace-to-physical
+addresses translation cache"
+* fixed subject in "vfio: powerpc/spapr: Check that IOMMU page is fully
+contained by system page"
+* moved v2 documentation to the correct patch
+* added checks for failed vzalloc() in "powerpc/iommu: Add userspace view
+of TCE table"
+
+v7:
+* moved memory preregistration to the current process's MMU context
+* added code preventing unregistration if some pages are still mapped;
+for this, there is a userspace view of the table is stored in iommu_table
+* added locked_vm counting for DDW tables (including userspace view of those)
+
+v6:
+* fixed a bunch of errors in "vfio: powerpc/spapr: Support Dynamic DMA windows"
+* moved static IOMMU properties from iommu_table_group to iommu_table_group_ops
+
+v5:
+* added SPAPR_TCE_IOMMU_v2 to tell the userspace that there is a memory
+pre-registration feature
+* added backward compatibility
+* renamed few things (mostly powerpc_iommu -> iommu_table_group)
+
+v4:
+* moved patches around to have VFIO and PPC patches separated as much as
+possible
+* now works with the existing upstream QEMU
+
+v3:
+* redesigned the whole thing
+* multiple IOMMU groups per PHB -> one PHB is needed for VFIO in the guest ->
+no problems with locked_vm counting; also we save memory on actual tables
+* guest RAM preregistration is required for DDW
+* PEs (IOMMU groups) are passed to VFIO with no DMA windows at all so
+we do not bother with iommu_table::it_map anymore
+* added multilevel TCE tables support to support really huge guests
+
+v2:
+* added missing __pa() in "powerpc/powernv: Release replaced TCE"
+* reposted to make some noise
+
+
+
+
+Alexey Kardashevskiy (34):
+  powerpc/eeh/ioda2: Use device::iommu_group to check IOMMU group
+  powerpc/iommu/powernv: Get rid of set_iommu_table_base_and_group
+  powerpc/powernv/ioda: Clean up IOMMU group registration
+  powerpc/iommu: Put IOMMU group explicitly
+  powerpc/iommu: Always release iommu_table in iommu_free_table()
+  vfio: powerpc/spapr: Move page pinning from arch code to VFIO IOMMU
+    driver
+  vfio: powerpc/spapr: Check that IOMMU page is fully contained by
+    system page
+  vfio: powerpc/spapr: Use it_page_size
+  vfio: powerpc/spapr: Move locked_vm accounting to helpers
+  vfio: powerpc/spapr: Disable DMA mappings on disabled container
+  vfio: powerpc/spapr: Moving pinning/unpinning to helpers
+  vfio: powerpc/spapr: Rework groups attaching
+  powerpc/powernv: Do not set "read" flag if direction==DMA_NONE
+  powerpc/iommu: Move tce_xxx callbacks from ppc_md to iommu_table
+  powerpc/powernv/ioda/ioda2: Rework TCE invalidation in
+    tce_build()/tce_free()
+  powerpc/spapr: vfio: Replace iommu_table with iommu_table_group
+  powerpc/spapr: vfio: Switch from iommu_table to new iommu_table_group
+  vfio: powerpc/spapr/iommu/powernv/ioda2: Rework IOMMU ownership
+    control
+  powerpc/iommu: Fix IOMMU ownership control functions
+  powerpc/powernv/ioda2: Move TCE kill register address to PE
+  powerpc/powernv/ioda2: Add TCE invalidation for all attached groups
+  powerpc/powernv: Implement accessor to TCE entry
+  powerpc/iommu/powernv: Release replaced TCE
+  powerpc/powernv/ioda2: Rework iommu_table creation
+  powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages
+  powerpc/powernv/ioda2: Introduce pnv_pci_ioda2_set_window
+  powerpc/powernv: Implement multilevel TCE tables
+  vfio: powerpc/spapr: powerpc/powernv/ioda: Define and implement DMA
+    windows API
+  powerpc/powernv/ioda2: Use new helpers to do proper cleanup on PE
+    release
+  powerpc/iommu/ioda2: Add get_table_size() to calculate the size of
+    future table
+  vfio: powerpc/spapr: powerpc/powernv/ioda2: Use DMA windows API in
+    ownership control
+  powerpc/mmu: Add userspace-to-physical addresses translation cache
+  vfio: powerpc/spapr: Register memory and define IOMMU v2
+  vfio: powerpc/spapr: Support Dynamic DMA windows
+
+ Documentation/vfio.txt                      |   50 +-
+ arch/powerpc/include/asm/iommu.h            |  119 ++-
+ arch/powerpc/include/asm/machdep.h          |   25 -
+ arch/powerpc/include/asm/mmu-hash64.h       |    3 +
+ arch/powerpc/include/asm/mmu_context.h      |   18 +
+ arch/powerpc/include/asm/pci-bridge.h       |    2 +-
+ arch/powerpc/kernel/eeh.c                   |    4 +-
+ arch/powerpc/kernel/iommu.c                 |  247 +++---
+ arch/powerpc/kernel/setup_64.c              |    3 +
+ arch/powerpc/kernel/vio.c                   |    5 +
+ arch/powerpc/mm/Makefile                    |    1 +
+ arch/powerpc/mm/mmu_context_hash64.c        |    6 +
+ arch/powerpc/mm/mmu_context_iommu.c         |  316 ++++++++
+ arch/powerpc/platforms/cell/iommu.c         |    8 +-
+ arch/powerpc/platforms/pasemi/iommu.c       |    7 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c   |  775 ++++++++++++++-----
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |   35 +-
+ arch/powerpc/platforms/powernv/pci.c        |  168 ++--
+ arch/powerpc/platforms/powernv/pci.h        |   24 +-
+ arch/powerpc/platforms/pseries/iommu.c      |  177 +++--
+ arch/powerpc/sysdev/dart_iommu.c            |   12 +-
+ drivers/vfio/vfio_iommu_spapr_tce.c         | 1109 ++++++++++++++++++++++++---
+ include/uapi/linux/vfio.h                   |   88 ++-
+ 23 files changed, 2585 insertions(+), 617 deletions(-)
+ create mode 100644 arch/powerpc/mm/mmu_context_iommu.c
+
 -- 
-1.7.9.5
+2.4.0.rc3.8.gfb3e7d5
