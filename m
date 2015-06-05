@@ -1,25 +1,25 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 976C31A1AA0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99B7A1A1AA3
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 16:38:15 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 5 Jun 2015 16:38:14 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7E4F2357805C
+ Fri, 5 Jun 2015 16:38:15 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E04123578065
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 16:38:12 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t556ann366125928
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 16:36:57 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t556aodI40501448
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 16:36:58 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t556aPin015257
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 16:36:25 +1000
+ t556aPDO015324
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 5 Jun 2015 16:36:26 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -28,10 +28,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
  Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH kernel v12 07/34] vfio: powerpc/spapr: Check that IOMMU page
- is fully contained by system page
-Date: Fri,  5 Jun 2015 16:34:59 +1000
-Message-Id: <1433486126-23551-8-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v12 25/34] powerpc/powernv/ioda2: Introduce helpers to
+ allocate TCE pages
+Date: Fri,  5 Jun 2015 16:35:17 +1000
+Message-Id: <1433486126-23551-26-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1433486126-23551-1-git-send-email-aik@ozlabs.ru>
 References: <1433486126-23551-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,66 +43,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This checks that the TCE table page size is not bigger that the size of
-a page we just pinned and going to put its physical address to the table.
+This is a part of moving TCE table allocation into an iommu_ops
+callback to support multiple IOMMU groups per one VFIO container.
 
-Otherwise the hardware gets unwanted access to physical memory between
-the end of the actual page and the end of the aligned up TCE page.
+This moves the code which allocates the actual TCE tables to helpers:
+pnv_pci_ioda2_table_alloc_pages() and pnv_pci_ioda2_table_free_pages().
+These do not allocate/free the iommu_table struct.
 
-Since compound_order() and compound_head() work correctly on non-huge
-pages, there is no need for additional check whether the page is huge.
+This enforces window size to be a power of two.
+
+This should cause no behavioural change.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-[aw: for the vfio related changes]
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 Changes:
-v8: changed subject
+v10:
+* removed @table_group parameter from pnv_pci_create_table as it was not used
+* removed *tce_table_allocated from pnv_alloc_tce_table_pages()
+* pnv_pci_create_table/pnv_pci_free_table renamed to
+pnv_pci_ioda2_table_alloc_pages/pnv_pci_ioda2_table_free_pages and moved
+back to pci-ioda.c as these only allocate pages for IODA2 and there is
+no chance they will be reused for IODA1/P5IOC2
+* shortened subject line
 
-v6:
-* the helper is simplified to one line
-
-v4:
-* s/tce_check_page_size/tce_page_is_contained/
+v9:
+* moved helpers to the common powernv pci.c file from pci-ioda.c
+* moved bits from pnv_pci_create_table() to pnv_alloc_tce_table_pages()
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 83 +++++++++++++++++++++++--------
+ 1 file changed, 63 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index b95fa2b..735b308 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -47,6 +47,16 @@ struct tce_container {
- 	bool enabled;
- };
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 95d3121..38d53dc 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -40,6 +40,7 @@
+ #include <asm/debug.h>
+ #include <asm/firmware.h>
+ #include <asm/pnv-pci.h>
++#include <asm/mmzone.h>
  
-+static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-+{
-+	/*
-+	 * Check that the TCE table granularity is not bigger than the size of
-+	 * a page we just found. Otherwise the hardware can get access to
-+	 * a bigger memory chunk that it should.
-+	 */
-+	return (PAGE_SHIFT + compound_order(compound_head(page))) >= page_shift;
+ #include <misc/cxl.h>
+ 
+@@ -49,6 +50,8 @@
+ /* 256M DMA window, 4K TCE pages, 8 bytes TCE */
+ #define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
+ 
++static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
++
+ static void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ 			    const char *fmt, ...)
+ {
+@@ -1313,8 +1316,8 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+ 		iommu_group_put(pe->table_group.group);
+ 		BUG_ON(pe->table_group.group);
+ 	}
++	pnv_pci_ioda2_table_free_pages(tbl);
+ 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+-	free_pages(addr, get_order(TCE32_TABLE_SIZE));
+ }
+ 
+ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+@@ -2032,13 +2035,62 @@ static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb)
+ 	phb->ioda.tce_inval_reg = ioremap(phb->ioda.tce_inval_reg_phys, 8);
+ }
+ 
+-static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+-				       struct pnv_ioda_pe *pe)
++static __be64 *pnv_pci_ioda2_table_do_alloc_pages(int nid, unsigned shift)
+ {
+ 	struct page *tce_mem = NULL;
++	__be64 *addr;
++	unsigned order = max_t(unsigned, shift, PAGE_SHIFT) - PAGE_SHIFT;
++
++	tce_mem = alloc_pages_node(nid, GFP_KERNEL, order);
++	if (!tce_mem) {
++		pr_err("Failed to allocate a TCE memory, order=%d\n", order);
++		return NULL;
++	}
++	addr = page_address(tce_mem);
++	memset(addr, 0, 1UL << (order + PAGE_SHIFT));
++
++	return addr;
 +}
 +
- static int tce_iommu_enable(struct tce_container *container)
- {
- 	int ret = 0;
-@@ -189,6 +199,12 @@ static long tce_iommu_build(struct tce_container *container,
- 			ret = -EFAULT;
- 			break;
- 		}
++static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
++		__u32 page_shift, __u64 window_size, struct iommu_table *tbl)
++{
+ 	void *addr;
++	const unsigned window_shift = ilog2(window_size);
++	unsigned entries_shift = window_shift - page_shift;
++	unsigned table_shift = max_t(unsigned, entries_shift + 3, PAGE_SHIFT);
++	const unsigned long tce_table_size = 1UL << table_shift;
 +
-+		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
-+			ret = -EPERM;
-+			break;
-+		}
++	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
++		return -EINVAL;
 +
- 		hva = (unsigned long) page_address(page) + offset;
++	/* Allocate TCE table */
++	addr = pnv_pci_ioda2_table_do_alloc_pages(nid, table_shift);
++	if (!addr)
++		return -ENOMEM;
++
++	/* Setup linux iommu table */
++	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, bus_offset,
++			page_shift);
++
++	pr_devel("Created TCE table: ws=%08llx ts=%lx @%08llx\n",
++			window_size, tce_table_size, bus_offset);
++
++	return 0;
++}
++
++static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
++{
++	if (!tbl->it_size)
++		return;
++
++	free_pages(tbl->it_base, get_order(tbl->it_size << 3));
++}
++
++static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
++				       struct pnv_ioda_pe *pe)
++{
+ 	struct iommu_table *tbl;
+-	unsigned int tce_table_size, end;
+ 	int64_t rc;
  
- 		ret = iommu_tce_build(tbl, entry + i, hva, direction);
+ 	/* We shouldn't already have a 32-bit DMA associated */
+@@ -2055,24 +2107,16 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 
+ 	/* The PE will reserve all possible 32-bits space */
+ 	pe->tce32_seg = 0;
+-	end = (1 << ilog2(phb->ioda.m32_pci_base));
+-	tce_table_size = (end / 0x1000) * 8;
+ 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
+-		end);
++		phb->ioda.m32_pci_base);
+ 
+-	/* Allocate TCE table */
+-	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
+-				   get_order(tce_table_size));
+-	if (!tce_mem) {
+-		pe_err(pe, "Failed to allocate a 32-bit TCE memory\n");
++	/* Setup linux iommu table */
++	rc = pnv_pci_ioda2_table_alloc_pages(pe->phb->hose->node,
++			0, IOMMU_PAGE_SHIFT_4K, phb->ioda.m32_pci_base, tbl);
++	if (rc) {
++		pe_err(pe, "Failed to create 32-bit TCE table, err %ld", rc);
+ 		goto fail;
+ 	}
+-	addr = page_address(tce_mem);
+-	memset(addr, 0, tce_table_size);
+-
+-	/* Setup linux iommu table */
+-	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+-			IOMMU_PAGE_SHIFT_4K);
+ 
+ 	tbl->it_ops = &pnv_ioda2_iommu_ops;
+ 	iommu_init_table(tbl, phb->hose->node);
+@@ -2118,9 +2162,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ fail:
+ 	if (pe->tce32_seg >= 0)
+ 		pe->tce32_seg = -1;
+-	if (tce_mem)
+-		__free_pages(tce_mem, get_order(tce_table_size));
+ 	if (tbl) {
++		pnv_pci_ioda2_table_free_pages(tbl);
+ 		pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
+ 		iommu_free_table(tbl, "pnv");
+ 	}
 -- 
 2.4.0.rc3.8.gfb3e7d5
