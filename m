@@ -1,23 +1,33 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Aisheng.Dong@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 086701A08C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Jun 2015 20:29:16 +1000 (AEST)
-Date: Fri, 5 Jun 2015 12:29:07 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: mingo@redhat.com, ak@linux.intel.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, namhyung@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V14 00/14] perf, tools: Add support for PMU events in
- JSON format
-Message-ID: <20150605102907.GA17556@krava.redhat.com>
-References: <1433485647-9314-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AEDA71A08B0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Jun 2015 01:29:11 +1000 (AEST)
+Date: Fri, 5 Jun 2015 22:53:26 +0800
+From: Dong Aisheng <b29396@freescale.com>
+To: Suman Tripathi <stripathi@apm.com>
+CC: <aisheng.dong@freescale.com>, Chris Ball <chris@printf.net>, "Anton
+ Vorontsov" <anton@enomsg.org>, Arnd Bergmann <arnd@arndb.de>, Michal Simek
+ <michal.simek@xilinx.com>, linux-mmc <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Don Dutile <ddutile@redhat.com>, "Jon
+ Masters" <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>, patches
+ <patches@apm.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RESEND v7 2/2] mmc: host: sdhci: Add support to disable
+ SDR104/SDR50/DDR50 based on capability register 0.
+Message-ID: <20150605145323.GA15110@shlinux1.ap.freescale.net>
+References: <1432197817-22110-1-git-send-email-stripathi@apm.com>
+ <1432197817-22110-3-git-send-email-stripathi@apm.com>
+ <CAPDyKFpxkNF9C8AOJ6+18CEcpZTKycPR0i5OuwPRr1Zc+VPJ5Q@mail.gmail.com>
+ <CAOHikRASDmy7PwFjqmX7JAjW52DYR+d3RkE3yd_45NN5sHK7Pg@mail.gmail.com>
+ <CAOHikRBB9Uyh4Z34_pFTdmA0A-vnV09zTi8iYEU+01XvmzSr_A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1433485647-9314-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <CAOHikRBB9Uyh4Z34_pFTdmA0A-vnV09zTi8iYEU+01XvmzSr_A@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +37,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 04, 2015 at 11:27:08PM -0700, Sukadev Bhattiprolu wrote:
-
-SNIP
-
-> 	- All known events tables for the architecture are included in the
-> 	  perf binary.
+On Mon, Jun 01, 2015 at 01:38:47PM +0530, Suman Tripathi wrote:
+>    Hi Aisheng,
+>    On Wed, May 27, 2015 at 7:46 PM, Suman Tripathi <[1]stripathi@apm.com>
+>    wrote:
 > 
-> 	- For architectures that don't have any JSON files, an empty mapping
-> 	  table is created and they should continue to build)
+>      On Tue, May 26, 2015 at 6:06 PM, Ulf Hansson <[2]ulf.hansson@linaro.org>
+>      wrote:
 > 
-> Thanks to input from Andi Kleen, Jiri Olsa, Namhyung Kim and Ingo Molnar.
+>        On 21 May 2015 at 10:43, Suman Tripathi <[3]stripathi@apm.com> wrote:
+>        > The sdhci framework disables SDR104/SDR50/DDR50 based on only quirk.
+>        > This patch adds the support to disable SDR104/SDR50/DDR50 based on
+>        > reading the capability register 0.
+>        >
+>        > Signed-off-by: Suman Tripathi <[4]stripathi@apm.com>
+>        > ---
+>        > ---
+>        >  drivers/mmc/host/sdhci.c | 3 ++-
+>        >  1 file changed, 2 insertions(+), 1 deletion(-)
+>        >
+>        > diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+>        > index 58c1770..a3d9b8a 100644
+>        > --- a/drivers/mmc/host/sdhci.c
+>        > +++ b/drivers/mmc/host/sdhci.c
+>        > @@ -3118,7 +3118,8 @@ int sdhci_add_host(struct sdhci_host *host)
+>        >                 }
+>        >         }
+>        >
+>        > -       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V)
+>        > +       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V ||
+>        > +           !(caps[0] & SDHCI_CAN_VDD_180))
+>        >                 caps[1] &= ~(SDHCI_SUPPORT_SDR104 |
+>        SDHCI_SUPPORT_SDR50 |
+>        >                        SDHCI_SUPPORT_DDR50);
+>        >
+>        > --
+>        > 1.8.2.1
+>        >
 > 
-> These patches are available from:
+>        I have no problem with this patch, except that it would be nice to get
+>        a few "tested by" to make sure it doesn't break UHS support for some
+>        SoCs.
 > 
-> 	https://github.com:sukadev/linux.git 
-> 	
-> 		Branch			Description
-> 		------------------------------------------------------
-> 		json-v14		Source Code only 
-> 		json-files-3		x86 and Powerpc datafiles only
-> 		json-v14-with-data	Both code and data (build/test)
-> 	
-> NOTE: 	Only "source code" patches (i.e those in json-v14) are being emailed.
-> 	Please pull the "data files" from the json-files-3 branch.
+>        Kind regards
+>        Uffe
 > 
-> Changelog[v14]
-> 	Comments from Jiri Olsa:
-> 	- Change parameter name/type for pmu_add_cpu_aliases (from void *data
-> 	  to list_head *head)
-> 	- Use asprintf() in file_name_to_tablename() and simplify/reorg code.
-> 	- Use __weak definition from <linux/compile.h>
-> 	- Use fopen() with mode "w" and eliminate unlink()
-> 	- Remove minor TODO.
-> 	- Add error check for return value from strdup() in print_pmu_events().
-> 	- Move independent changes from patches 3,11,12 .. to separate patches
-> 	  for easier review/backport.
-> 	- Clarify mapfile's "header line support" in patch description.
-> 	- Fix build failure with DEBUG=1
+>      Can anyone test this in some other SoC ? Appreciate your help ..
+> 
+>    Can you test this patch  on imx SoC ?
+> 
 
-all my comments were addressed and apart from 2 small comments,
-for the patchset:
+(Your email have some format issue.)
 
-Acked-by: Jiri Olsa <jolsa@kernel.org>
+I have tested this patch and it does not break imx SoC.
+You can add my tag.
+Tested-by: Dong Aisheng <aisheng.dong@freescale.com>
 
-thanks,
-jirka
+However, it looks to me SDHCI_CAN_VDD_180 is only indicating the host VDD
+capabiliies, not IO voltage capability.
+SD3.0 cards require 1.8v IO voltage support.
+So should this bit affect SD3.0 support?
+e.g. some hosts can only work at VDD_330 (most VDD of SD slot on IMX boards
+is using external regulator and is fixed to 3.3v), but it can support 1.8v
+IO voltage, so it can support SD3.0 cards as well.
+
+Ulf,
+Can you help confirm it?
+
+Regards
+Dong Aisheng
+
+>      --
+>      Thanks,
+>      with regards,
+>      Suman Tripathi
+> 
+>    --
+>    Thanks,
+>    with regards,
+>    Suman Tripathi
+> 
+> References
+> 
+>    Visible links
+>    1. mailto:stripathi@apm.com
+>    2. mailto:ulf.hansson@linaro.org
+>    3. mailto:stripathi@apm.com
+>    4. mailto:stripathi@apm.com
+> perl: warning: Setting locale failed.
+> perl: warning: Please check that your locale settings:
+> 	LANGUAGE = (unset),
+> 	LC_ALL = (unset),
+> 	LC_TIME = "zh_CN.UTF-8",
+> 	LC_MONETARY = "zh_CN.UTF-8",
+> 	LC_ADDRESS = "zh_CN.UTF-8",
+> 	LC_TELEPHONE = "zh_CN.UTF-8",
+> 	LC_NAME = "zh_CN.UTF-8",
+> 	LC_MEASUREMENT = "zh_CN.UTF-8",
+> 	LC_IDENTIFICATION = "zh_CN.UTF-8",
+> 	LC_NUMERIC = "zh_CN.UTF-8",
+> 	LC_PAPER = "zh_CN.UTF-8",
+> 	LANG = "en_US.UTF-8"
+>     are supported and installed on your system.
+> perl: warning: Falling back to the standard locale ("C").
