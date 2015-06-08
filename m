@@ -1,39 +1,22 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qc0-f178.google.com (mail-qc0-f178.google.com
- [209.85.216.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0115.outbound.protection.outlook.com [157.56.110.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D91BA1A0E28
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2015 18:38:24 +1000 (AEST)
-Received: by qcxw10 with SMTP id w10so47914743qcx.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2015 01:38:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48A3B1A0414
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2015 20:13:00 +1000 (AEST)
+From: Lu Y.B. <yangbo.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
+Subject: RE: powerpc/corenet: enable eSDHC
+Date: Mon, 8 Jun 2015 10:12:52 +0000
+Message-ID: <BY1PR0301MB119286F6B8EBD6EED07C8B15F2BF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
+References: <1430893748-38821-1-git-send-email-yangbo.lu@freescale.com>
+ <20150530000331.GA9143@home.buserror.net>
+In-Reply-To: <20150530000331.GA9143@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFqk1_B-wH0Z2QwfxftJy8LLH6Ey9cg56eFxAj7zmeFmOg@mail.gmail.com>
-References: <1432197817-22110-1-git-send-email-stripathi@apm.com>
- <1432197817-22110-3-git-send-email-stripathi@apm.com>
- <CAPDyKFpxkNF9C8AOJ6+18CEcpZTKycPR0i5OuwPRr1Zc+VPJ5Q@mail.gmail.com>
- <CAOHikRASDmy7PwFjqmX7JAjW52DYR+d3RkE3yd_45NN5sHK7Pg@mail.gmail.com>
- <CAOHikRBB9Uyh4Z34_pFTdmA0A-vnV09zTi8iYEU+01XvmzSr_A@mail.gmail.com>
- <20150605145323.GA15110@shlinux1.ap.freescale.net>
- <CAOHikRCXuJryKgo7pjehi-SyosE1Rr2zFjc+9yWJwke_ib=Azw@mail.gmail.com>
- <CAPDyKFqk1_B-wH0Z2QwfxftJy8LLH6Ey9cg56eFxAj7zmeFmOg@mail.gmail.com>
-Date: Mon, 8 Jun 2015 10:38:22 +0200
-Message-ID: <CAPDyKFqA5BGXUV+_r63Xwtpm6Bzi2HB=UN0pDcu6FkjtHOaqew@mail.gmail.com>
-Subject: Re: [PATCH RESEND v7 2/2] mmc: host: sdhci: Add support to disable
- SDR104/SDR50/DDR50 based on capability register 0.
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Suman Tripathi <stripathi@apm.com>, Dong Aisheng <b29396@freescale.com>
-Cc: Dong Aisheng <aisheng.dong@freescale.com>, Chris Ball <chris@printf.net>,
- Anton Vorontsov <anton@enomsg.org>, Arnd Bergmann <arnd@arndb.de>,
- Michal Simek <michal.simek@xilinx.com>,
- linux-mmc <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Don Dutile <ddutile@redhat.com>,
- Jon Masters <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>,
- patches <patches@apm.com>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,51 +26,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8 June 2015 at 10:37, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> [...]
->
->>> >
->>> >    Can you test this patch  on imx SoC ?
->>> >
->>>
->>> (Your email have some format issue.)
->>
->> Yeah missed to sent in plain text mode.
->>
->>>
->>> I have tested this patch and it does not break imx SoC.
->>> You can add my tag.
->>> Tested-by: Dong Aisheng <aisheng.dong@freescale.com>
->>
->> Thanks Dong !!
->>
->>>
->>> However, it looks to me SDHCI_CAN_VDD_180 is only indicating the host VDD
->>> capabiliies, not IO voltage capability.
->
-> I think Dong is correct. I don't think SDHCI_CAN_VDD_180 is not
+Thanks a lot, Scott.
+And now a patch was merged on git://git.linaro.org/people/ulf.hansson/mmc.g=
+it next branch to fix this issue.
+It should be no problem.
 
-/s /is not /is
 
-> related to UHS modes at all.
->
-> At least the name of the field (SDHCI_CAN_VDD_180) indicates it's
-> about VDD/VCC, the core power and not the IO voltage.
->
->> Are you sure on this ?? If SDHCI host VDD is  1.8V then the cards are
->> also capable to operate at 1.8V ? Didn't understand what you mean by
->> IO voltage capability
->>
->>
->>> SD3.0 cards require 1.8v IO voltage support.
->>> So should this bit affect SD3.0 support?
->>
->> The preset value resgister says that  SDR modes requires 1.8V and we
->> disable the modes based on capability or quirk.
->
-> It requires 1.8V *IO voltage*, not VDD/VCC.
->
-> [...]
->
-> Kind regards
-> Uffe
+>From 5fd26c7ecb32082745b0bd33c8e35badd1cb5a91 Mon Sep 17 00:00:00 2001
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Fri, 5 Jun 2015 11:40:08 +0200
+Subject: [PATCH] mmc: sdhci: Restore behavior while creating OCR mask
+
+Commit 3a48edc4bd68 ("mmc: sdhci: Use mmc core regulator infrastucture")
+changed the behavior for how to assign the ocr_avail mask for the mmc
+host. More precisely it started to mask the bits instead of assigning
+them.
+
+Restore the behavior, but also make it clear that an OCR mask created
+from an external regulator overrides the other ones. The OCR mask is
+determined by one of the following with this priority:
+
+1. Supported ranges of external regulator if one supplies VDD
+2. Host OCR mask if set by the driver (based on DT properties)
+3. The capabilities reported by the controller itself
+
+Fixes: 3a48edc4bd68 ("mmc: sdhci: Use mmc core regulator infrastucture")
+Cc: Tim Kryger <tim.kryger@gmail.com>
+Reported-by: Yangbo Lu <yangbo.lu@freescale.com>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Tim Kryger <tim.kryger@gmail.com>
+---
+ drivers/mmc/host/sdhci.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 1b4861d..706bb60 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -3256,13 +3256,14 @@ int sdhci_add_host(struct sdhci_host *host)
+ 				   SDHCI_MAX_CURRENT_MULTIPLIER;
+ 	}
+=20
+-	/* If OCR set by external regulators, use it instead */
++	/* If OCR set by host, use it instead. */
++	if (host->ocr_mask)
++		ocr_avail =3D host->ocr_mask;
++
++	/* If OCR set by external regulators, give it highest prio. */
+ 	if (mmc->ocr_avail)
+ 		ocr_avail =3D mmc->ocr_avail;
+=20
+-	if (host->ocr_mask)
+-		ocr_avail &=3D host->ocr_mask;
+-
+ 	mmc->ocr_avail =3D ocr_avail;
+ 	mmc->ocr_avail_sdio =3D ocr_avail;
+ 	if (host->ocr_avail_sdio)
+--=20
+2.1.0.27.g96db324
+
+
+
+Best regards,
+Yangbo Lu
+
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Saturday, May 30, 2015 8:04 AM
+> To: Lu Yangbo-B47093
+> Cc: linuxppc-dev@lists.ozlabs.org; linux-mmc@vger.kernel.org
+> Subject: Re: powerpc/corenet: enable eSDHC
+>=20
+> On Wed, May 06, 2015 at 02:29:08PM +0800, Yangbo Lu wrote:
+> > Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
+> > ---
+> >  arch/powerpc/configs/corenet32_smp_defconfig | 2 ++
+> > arch/powerpc/configs/corenet64_smp_defconfig | 2 ++
+> >  2 files changed, 4 insertions(+)
+> >
+> > diff --git a/arch/powerpc/configs/corenet32_smp_defconfig
+> > b/arch/powerpc/configs/corenet32_smp_defconfig
+> > index ca7957b..17fb2e0 100644
+> > --- a/arch/powerpc/configs/corenet32_smp_defconfig
+> > +++ b/arch/powerpc/configs/corenet32_smp_defconfig
+> > @@ -130,6 +130,8 @@ CONFIG_USB_OHCI_HCD_PPC_OF_LE=3Dy
+> > CONFIG_USB_STORAGE=3Dy  CONFIG_MMC=3Dy  CONFIG_MMC_SDHCI=3Dy
+> > +CONFIG_MMC_SDHCI_PLTFM=3Dy
+> > +CONFIG_MMC_SDHCI_OF_ESDHC=3Dy
+> >  CONFIG_EDAC=3Dy
+> >  CONFIG_EDAC_MM_EDAC=3Dy
+> >  CONFIG_EDAC_MPC85XX=3Dy
+> > diff --git a/arch/powerpc/configs/corenet64_smp_defconfig
+> > b/arch/powerpc/configs/corenet64_smp_defconfig
+> > index 04737aa..4605a55 100644
+> > --- a/arch/powerpc/configs/corenet64_smp_defconfig
+> > +++ b/arch/powerpc/configs/corenet64_smp_defconfig
+> > @@ -112,6 +112,8 @@ CONFIG_USB_EHCI_FSL=3Dy  CONFIG_USB_STORAGE=3Dy
+> > CONFIG_MMC=3Dy  CONFIG_MMC_SDHCI=3Dy
+> > +CONFIG_MMC_SDHCI_PLTFM=3Dy
+> > +CONFIG_MMC_SDHCI_OF_ESDHC=3Dy
+> >  CONFIG_EDAC=3Dy
+> >  CONFIG_EDAC_MM_EDAC=3Dy
+> >  CONFIG_RTC_CLASS=3Dy
+>=20
+> With this on t4240rdb I'm continually spammed with:
+> sdhci-esdhc ffe114000.sdhc: no support for card's volts
+> mmc0: error -22 whilst initialising SD card sdhci-esdhc ffe114000.sdhc:
+> no support for card's volts
+> mmc0: error -22 whilst initialising SD card
+>=20
+> Releveant boot messages include:
+> sdhci: Secure Digital Host Controller Interface driver
+> sdhci: Copyright(c) Pierre Ossman
+> sdhci-pltfm: SDHCI platform and OF driver helper sdhci-esdhc
+> ffe114000.sdhc: No vmmc regulator found sdhci-esdhc ffe114000.sdhc: No
+> vqmmc regulator found
+> mmc0: SDHCI controller on ffe114000.sdhc [ffe114000.sdhc] using ADMA ...
+> mmc0: error -22 whilst initialising SD card ...
+> sdhci-esdhc ffe114000.sdhc: no support for card's volts
+> mmc0: error -22 whilst initialising SD card
+>=20
+> -Scott
