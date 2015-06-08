@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <xose.vazquez@gmail.com>
+Received: from mail-wi0-x234.google.com (mail-wi0-x234.google.com
+ [IPv6:2a00:1450:400c:c05::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E0581A03E5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 07:10:35 +1000 (AEST)
-Message-ID: <1433797819.4526.168.camel@kernel.crashing.org>
-Subject: Re: [lockdep] cpufreq/ppc: possible circular locking dependency
- detected
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 09 Jun 2015 07:10:19 +1000
-In-Reply-To: <CAOJe8K3Mtj9UMOYwjAuh7DYQxHR-ZLbEBAQJ+t3oSDphwu5+Hg@mail.gmail.com>
-References: <CAOJe8K3Mtj9UMOYwjAuh7DYQxHR-ZLbEBAQJ+t3oSDphwu5+Hg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4B1D1A0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2015 23:24:58 +1000 (AEST)
+Received: by wibdq8 with SMTP id dq8so85190677wib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Jun 2015 06:24:54 -0700 (PDT)
+Received: from localhost ([47.59.123.37])
+ by mx.google.com with ESMTPSA id wi1sm4285309wjb.41.2015.06.08.06.24.53
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Mon, 08 Jun 2015 06:24:53 -0700 (PDT)
+Message-ID: <557597A2.1030309@gmail.com>
+Date: Mon, 08 Jun 2015 15:24:50 +0200
+From: Xose Vazquez Perez <xose.vazquez@gmail.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Generic kernel features that need architecture(powerpc) support
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,184 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-06-08 at 18:45 +0300, Denis Kirjanov wrote:
-> Hi,
-> 
-> I see the following lockdep splat on my RackMac machine on boot:
+Hi,
 
-I don't completely understand what lockdep is trying to tell us here...
-I don't "see" the deadlock.
+If there is anything wrong, please report it in this thread:
+https://marc.info/?t=143332955700003
 
-Ben.
 
-> [    6.002593] Registering G5 CPU frequency driver
-> [    6.011288] Frequency method: i2c/pfunc, Voltage method: i2c/pfunc
-> [    6.023605] Low: 1800 Mhz, High: 2300 Mhz, Cur: 1800 MHz
-> 
-> [    6.038022] ======================================================
-> [    6.042080] windfarm: CPUs control loops started.
-> [    6.042084] wf_rm31: Backside control loop started.
-> [    6.042086] wf_rm31: Slots control loop started.
-> [    6.078644] [ INFO: possible circular locking dependency detected ]
-> [    6.091149] 4.1.0-rc6-01265-g908e80d-dirty #15 Not tainted
-> [    6.102083] -------------------------------------------------------
-> [    6.114586] swapper/0/1 is trying to acquire lock:
-> [    6.124136]  (&bus->mutex){+.+.+.}, at: [<c00000000004d450>]
-> .pmac_i2c_open+0x30/0x100
-> [    6.139933]
-> but task is already holding lock:
-> [    6.151569]  (&policy->rwsem){+.+.+.}, at: [<c000000000620bbc>]
-> .__cpufreq_add_dev.isra.29+0x34c/0xad0
-> [    6.170143]
-> which lock already depends on the new lock.
-> 
-> [    6.186464]
-> the existing dependency chain (in reverse order) is:
-> [    6.201401]
-> -> #4 (&policy->rwsem){+.+.+.}:
-> [    6.210077]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
-> [    6.222061]        [<c0000000007a411c>] .down_write+0x6c/0x110
-> [    6.233690]        [<c000000000620bbc>]
-> .__cpufreq_add_dev.isra.29+0x34c/0xad0
-> [    6.248104]        [<c000000000489dd8>] .subsys_interface_register+0xc8/0x120
-> [    6.262336]        [<c0000000006215f8>] .cpufreq_register_driver+0x138/0x310
-> [    6.276404]        [<c000000000adeca8>] .g5_cpufreq_init+0x9cc/0xa28
-> [    6.289079]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
-> [    6.301577]        [<c000000000aaa778>] .kernel_init_freeable+0x190/0x270
-> [    6.315120]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
-> [    6.326928]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
-> [    6.340467]
-> -> #3 (subsys mutex#2){+.+.+.}:
-> [    6.349149]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
-> [    6.361130]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
-> [    6.373980]        [<c00000000048aff4>] .bus_probe_device+0x44/0xf0
-> [    6.386477]        [<c000000000488318>] .device_add+0x508/0x730
-> [    6.398284]        [<c00000000048fb8c>] .register_cpu+0xfc/0x150
-> [    6.410266]        [<c000000000aaf27c>] .topology_init+0x108/0x1c0
-> [    6.422595]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
-> [    6.435092]        [<c000000000aaa778>] .kernel_init_freeable+0x190/0x270
-> [    6.448637]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
-> [    6.460444]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
-> [    6.473983]
-> -> #2 (cpu_add_remove_lock){+.+.+.}:
-> [    6.483536]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
-> [    6.495517]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
-> [    6.508361]        [<c0000000000781ac>] .cpu_maps_update_begin+0x1c/0x30
-> [    6.521732]        [<c000000000070220>] .register_power_pmu+0xa0/0x128
-> [    6.534752]        [<c000000000abed50>] .init_ppc970_pmu+0x6c/0x8c
-> [    6.547081]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
-> [    6.559578]        [<c000000000aaa698>] .kernel_init_freeable+0xb0/0x270
-> [    6.572950]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
-> [    6.584758]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
-> [    6.598297]
-> -> #1 (&host->mutex){+.+.+.}:
-> [    6.606633]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
-> [    6.618615]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
-> [    6.631458]        [<c00000000004d408>] .kw_i2c_open+0x18/0x30
-> [    6.643092]        [<c00000000004d4b4>] .pmac_i2c_open+0x94/0x100
-> [    6.655247]        [<c000000000abb174>] .smp_core99_probe+0x260/0x410
-> [    6.668097]        [<c000000000ab2f94>] .smp_prepare_cpus+0x1ec/0x220
-> [    6.680941]        [<c000000000aaa670>] .kernel_init_freeable+0x88/0x270
-> [    6.694313]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
-> [    6.706121]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
-> [    6.719660]
-> -> #0 (&bus->mutex){+.+.+.}:
-> [    6.727822]        [<c0000000000d5304>] .__lock_acquire+0x1194/0x1b70
-> [    6.740672]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
-> [    6.752647]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
-> [    6.765497]        [<c00000000004d450>] .pmac_i2c_open+0x30/0x100
-> [    6.777652]        [<c00000000004da34>] .pmac_i2c_do_begin+0x34/0x120
-> [    6.790501]        [<c0000000000517e0>] .pmf_call_one+0x50/0xd0
-> [    6.802302]        [<c0000000006265ec>] .g5_pfunc_switch_volt+0x2c/0xc0
-> [    6.815501]        [<c00000000062659c>] .g5_pfunc_switch_freq+0x1cc/0x1f0
-> [    6.829040]        [<c0000000006262fc>] .g5_cpufreq_target+0x2c/0x40
-> [    6.841716]        [<c00000000061de40>] .__cpufreq_driver_target+0x230/0x400
-> [    6.855783]        [<c000000000622bec>]
-> .cpufreq_governor_performance+0x3c/0x60
-> [    6.870364]        [<c00000000061f0d0>] .__cpufreq_governor+0xc0/0x390
-> [    6.883389]        [<c00000000061f9fc>] .cpufreq_set_policy+0x25c/0x2c0
-> [    6.896581]        [<c0000000006206d4>] .cpufreq_init_policy+0x84/0xe0
-> [    6.909605]        [<c0000000006212ec>]
-> .__cpufreq_add_dev.isra.29+0xa7c/0xad0
-> [    6.924013]        [<c000000000489dd8>] .subsys_interface_register+0xc8/0x120
-> [    6.938253]        [<c0000000006215f8>] .cpufreq_register_driver+0x138/0x310
-> [    6.952314]        [<c000000000adeca8>] .g5_cpufreq_init+0x9cc/0xa28
-> [    6.964991]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
-> [    6.977488]        [<c000000000aaa778>] .kernel_init_freeable+0x190/0x270
-> [    6.991033]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
-> [    7.002841]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
-> [    7.016380]
-> other info that might help us debug this:
-> 
-> [    7.032354] Chain exists of:
->   &bus->mutex --> subsys mutex#2 --> &policy->rwsem
-> 
-> [    7.047635]  Possible unsafe locking scenario:
-> 
-> [    7.059439]        CPU0                    CPU1
-> [    7.068467]        ----                    ----
-> [    7.077495]   lock(&policy->rwsem);
-> [    7.084440]                                lock(subsys mutex#2);
-> [    7.096422]                                lock(&policy->rwsem);
-> [    7.108400]   lock(&bus->mutex);
-> [    7.114829]
->  *** DEADLOCK ***
-> 
-> [    7.126633] 3 locks held by swapper/0/1:
-> [    7.134445]  #0:  (subsys mutex#2){+.+.+.}, at:
-> [<c000000000489d60>] .subsys_interface_register+0x50/0x120
-> [    7.153719]  #1:  (cpufreq_rwsem){.+.+.+}, at: [<c00000000062093c>]
-> .__cpufreq_add_dev.isra.29+0xcc/0xad0
-> [    7.172817]  #2:  (&policy->rwsem){+.+.+.}, at:
-> [<c000000000620bbc>] .__cpufreq_add_dev.isra.29+0x34c/0xad0
-> [    7.192261]
-> stack backtrace:
-> [    7.200945] CPU: 1 PID: 1 Comm: swapper/0 Not tainted
-> 4.1.0-rc6-01265-g908e80d-dirty #15
-> [    7.217091] Call Trace:
-> [    7.221953] [c0000000790beab0] [c0000000007ad48c]
-> .dump_stack+0x98/0xd4 (unreliable)
-> [    7.237407] [c0000000790beb30] [c0000000007a9094]
-> .print_circular_bug+0x364/0x39c
-> [    7.252336] [c0000000790bebe0] [c0000000000d0e40] .check_prev_add+0x8d0/0x8e0
-> [    7.266575] [c0000000790becf0] [c0000000000d5304]
-> .__lock_acquire+0x1194/0x1b70
-> [    7.281156] [c0000000790bee20] [c0000000000d6380] .lock_acquire+0x80/0x100
-> [    7.294874] [c0000000790beef0] [c0000000007a0ccc]
-> .mutex_lock_nested+0xac/0x5a0
-> [    7.309456] [c0000000790bf010] [c00000000004d450] .pmac_i2c_open+0x30/0x100
-> [    7.323349] [c0000000790bf0a0] [c00000000004da34]
-> .pmac_i2c_do_begin+0x34/0x120
-> [    7.337931] [c0000000790bf130] [c0000000000517e0] .pmf_call_one+0x50/0xd0
-> [    7.351477] [c0000000790bf1c0] [c0000000006265ec]
-> .g5_pfunc_switch_volt+0x2c/0xc0
-> [    7.366405] [c0000000790bf230] [c00000000062659c]
-> .g5_pfunc_switch_freq+0x1cc/0x1f0
-> [    7.381688] [c0000000790bf300] [c0000000006262fc]
-> .g5_cpufreq_target+0x2c/0x40
-> [    7.396096] [c0000000790bf370] [c00000000061de40]
-> .__cpufreq_driver_target+0x230/0x400
-> [    7.411893] [c0000000790bf430] [c000000000622bec]
-> .cpufreq_governor_performance+0x3c/0x60
-> [    7.428219] [c0000000790bf4a0] [c00000000061f0d0]
-> .__cpufreq_governor+0xc0/0x390
-> [    7.442975] [c0000000790bf530] [c00000000061f9fc]
-> .cpufreq_set_policy+0x25c/0x2c0
-> [    7.457904] [c0000000790bf5c0] [c0000000006206d4]
-> .cpufreq_init_policy+0x84/0xe0
-> [    7.472666] [c0000000790bf920] [c0000000006212ec]
-> .__cpufreq_add_dev.isra.29+0xa7c/0xad0
-> [    7.488810] [c0000000790bfa10] [c000000000489dd8]
-> .subsys_interface_register+0xc8/0x120
-> [    7.504782] [c0000000790bfab0] [c0000000006215f8]
-> .cpufreq_register_driver+0x138/0x310
-> [    7.520586] [c0000000790bfb50] [c000000000adeca8]
-> .g5_cpufreq_init+0x9cc/0xa28
-> [    7.534993] [c0000000790bfc10] [c00000000000a714] .do_one_initcall+0xd4/0x270
-> [    7.549233] [c0000000790bfd00] [c000000000aaa778]
-> .kernel_init_freeable+0x190/0x270
-> [    7.564510] [c0000000790bfdb0] [c00000000000b17c] .kernel_init+0x1c/0x120
-> [    7.578056] [c0000000790bfe30] [c0000000000095b4]
-> .ret_from_kernel_thread+0x58/0xa4
-> 
-> Thanks.
+The meaning of entries in the tables is:
+
+    | ok |  # feature supported by the architecture
+    |TODO|  # feature not yet supported by the architecture
+    | .. |  # feature cannot be supported by the hardware
+
+#
+# Kernel feature support matrix of the 'powerpc' architecture:
+#
+      time/ irq-time-acct        :  ..  |            HAVE_IRQ_TIME_ACCOUNTING #  arch supports precise IRQ time accounting
+      core/ BPF-JIT              :  ok  |                        HAVE_BPF_JIT #  arch supports BPF JIT optimizations
+      core/ generic-idle-thread  :  ok  |             GENERIC_SMP_IDLE_THREAD #  arch makes use of the generic SMP idle thread facility
+      core/ jump-labels          :  ok  |                HAVE_ARCH_JUMP_LABEL #  arch supports live patched, high efficiency branches
+      core/ tracehook            :  ok  |                 HAVE_ARCH_TRACEHOOK #  arch supports tracehook (ptrace) register handling APIs
+     debug/ gcov-profile-all     :  ok  |           ARCH_HAS_GCOV_PROFILE_ALL #  arch supports whole-kernel GCOV code coverage profiling
+     debug/ kgdb                 :  ok  |                      HAVE_ARCH_KGDB #  arch supports the kGDB kernel debugger
+     debug/ kprobes              :  ok  |                        HAVE_KPROBES #  arch supports live patched kernel probe
+     debug/ kretprobes           :  ok  |                     HAVE_KRETPROBES #  arch supports kernel function-return probes
+     debug/ uprobes              :  ok  |               ARCH_SUPPORTS_UPROBES #  arch supports live patched user probes
+        io/ dma-api-debug        :  ok  |                  HAVE_DMA_API_DEBUG #  arch supports DMA debug facilities
+        io/ dma_map_attrs        :  ok  |                      HAVE_DMA_ATTRS #  arch provides dma_*map*_attrs() APIs
+        io/ sg-chain             :  ok  |                   ARCH_HAS_SG_CHAIN #  arch supports chained scatter-gather lists
+   locking/ lockdep              :  ok  |                     LOCKDEP_SUPPORT #  arch supports the runtime locking correctness debug facility
+      perf/ kprobes-event        :  ok  |      HAVE_REGS_AND_STACK_ACCESS_API #  arch supports kprobes with perf events
+     sched/ numa-balancing       :  ok  |        ARCH_SUPPORTS_NUMA_BALANCING #  arch supports NUMA balancing
+      time/ arch-tick-broadcast  :  ok  |             ARCH_HAS_TICK_BROADCAST #  arch provides tick_broadcast()
+      time/ clockevents          :  ok  |                 GENERIC_CLOCKEVENTS #  arch support generic clock events
+      time/ context-tracking     :  ok  |               HAVE_CONTEXT_TRACKING #  arch supports context tracking for NO_HZ_FULL
+      time/ modern-timekeeping   :  ok  |            !ARCH_USES_GETTIMEOFFSET #  arch does not use arch_gettimeoffset() anymore
+      time/ virt-cpuacct         :  ok  |            HAVE_VIRT_CPU_ACCOUNTING #  arch supports precise virtual CPU time accounting
+        vm/ ELF-ASLR             :  ok  |              ARCH_HAS_ELF_RANDOMIZE #  arch randomizes the stack, heap and binary images of ELF binaries
+        vm/ ioremap_prot         :  ok  |                   HAVE_IOREMAP_PROT #  arch has ioremap_prot()
+        vm/ numa-memblock        :  ok  |              HAVE_MEMBLOCK_NODE_MAP #  arch supports NUMA aware memblocks
+        vm/ pmdp_splitting_flush :  ok  |    __HAVE_ARCH_PMDP_SPLITTING_FLUSH #  arch supports the pmdp_splitting_flush() VM API
+        vm/ pte_special          :  ok  |             __HAVE_ARCH_PTE_SPECIAL #  arch supports the pte_special()/pte_mkspecial() VM APIs
+        vm/ THP                  :  ok  |      HAVE_ARCH_TRANSPARENT_HUGEPAGE #  arch supports transparent hugepages
+     debug/ KASAN                : TODO |                     HAVE_ARCH_KASAN #  arch supports the KASAN runtime memory checker
+     debug/ kprobes-on-ftrace    : TODO |              HAVE_KPROBES_ON_FTRACE #  arch supports combined kprobes and ftrace live patching
+     debug/ optprobes            : TODO |                      HAVE_OPTPROBES #  arch supports live patched optprobes
+     debug/ stackprotector       : TODO |              HAVE_CC_STACKPROTECTOR #  arch supports compiler driven stack overflow protection
+     debug/ user-ret-profiler    : TODO |           HAVE_USER_RETURN_NOTIFIER #  arch supports user-space return from system call profiler
+        io/ dma-contiguous       : TODO |                 HAVE_DMA_CONTIGUOUS #  arch supports the DMA CMA (continuous memory allocator)
+       lib/ strncasecmp          : TODO |             __HAVE_ARCH_STRNCASECMP #  arch provides an optimized strncasecmp() function
+   locking/ cmpxchg-local        : TODO |                  HAVE_CMPXCHG_LOCAL #  arch supports the this_cpu_cmpxchg() API
+   locking/ queued-rwlocks       : TODO |             ARCH_USE_QUEUED_RWLOCKS #  arch supports queued rwlocks
+   locking/ queued-spinlocks     : TODO |           ARCH_USE_QUEUED_SPINLOCKS #  arch supports queued spinlocks
+   locking/ rwsem-optimized      : TODO |               Optimized asm/rwsem.h #  arch provides optimized rwsem APIs
+      perf/ perf-regs            : TODO |                      HAVE_PERF_REGS #  arch supports perf events register access
+      perf/ perf-stackdump       : TODO |           HAVE_PERF_USER_STACK_DUMP #  arch supports perf events stack dumps
+   seccomp/ seccomp-filter       : TODO |            HAVE_ARCH_SECCOMP_FILTER #  arch supports seccomp filters
+        vm/ huge-vmap            : TODO |                 HAVE_ARCH_HUGE_VMAP #  arch supports the ioremap_pud_enabled() and ioremap_pmd_enabled() VM APIs
+        vm/ PG_uncached          : TODO |               ARCH_USES_PG_UNCACHED #  arch supports the PG_uncached page flag
