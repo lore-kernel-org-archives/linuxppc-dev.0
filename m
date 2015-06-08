@@ -1,37 +1,37 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE6DE1A06CE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2015 21:38:44 +1000 (AEST)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6136D1A0C12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2015 21:38:45 +1000 (AEST)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D993A1401DE
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2015 21:38:43 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id ACFDB140283
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2015 21:38:44 +1000 (AEST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Mon, 8 Jun 2015 17:08:42 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 2FBDE1258053
- for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2015 17:11:08 +0530 (IST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0B6AD125804F
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2015 17:11:09 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t58BcXRT4718670
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2015 17:08:34 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t58BcX3K49020956
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2015 17:08:33 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t58BcWvR022056
- for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2015 17:08:33 +0530
+ t58BcWOP022038
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2015 17:08:32 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com, mikey@neuling.org
-Subject: [PATCH V8 08/10] powerpc,
- perf: Change POWER8 PMU configuration to work with SW filters
-Date: Mon,  8 Jun 2015 17:08:29 +0530
-Message-Id: <1433763511-5270-8-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V8 06/10] powerpc,
+ lib: Add new branch analysis support functions
+Date: Mon,  8 Jun 2015 17:08:27 +0530
+Message-Id: <1433763511-5270-6-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,89 +43,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel now supports SW based branch filters for book3s systems with
-some specific requirements while dealing with HW supported branch filters
-in order to achieve overall OR semantics prevailing in perf branch stack
-sampling framework. This patch adapts the BHRB branch filter configuration
-to meet those protocols. POWER8 PMU can only handle one HW based branch
-filter request at any point of time. For all other combinations PMU will
-pass it on to the SW.
+Generic powerpc branch analysis support added in the code patching
+library which will help the subsequent patch on SW based filtering
+of branch records in perf.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power8-pmu.c | 51 ++++++++++++++++++++++++++++++++++++------
- 1 file changed, 44 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/code-patching.h | 15 ++++++++
+ arch/powerpc/lib/code-patching.c         | 66 ++++++++++++++++++++++++++++++++
+ 2 files changed, 81 insertions(+)
 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 5e17cb5..8fccf6c 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -656,6 +656,16 @@ static int power8_generic_events[] = {
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index 840a550..0a6f0d8 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -22,6 +22,16 @@
+ #define BRANCH_SET_LINK	0x1
+ #define BRANCH_ABSOLUTE	0x2
  
- static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
- {
-+	u64 x, pmu_bhrb_filter;
++#define XL_FORM_LR  0x4C000020
++#define XL_FORM_CTR 0x4C000420
++#define XL_FORM_TAR 0x4C000460
 +
-+	pmu_bhrb_filter = 0;
-+	*bhrb_filter = 0;
++#define BO_ALWAYS    0x02800000
++#define BO_CTR       0x02000000
++#define BO_CRBI_OFF  0x00800000
++#define BO_CRBI_ON   0x01800000
++#define BO_CRBI_HINT 0x00400000
 +
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY) {
-+		*bhrb_filter = PERF_SAMPLE_BRANCH_ANY;
-+		return pmu_bhrb_filter;
-+	}
-+
- 	/* BHRB and regular PMU events share the same privilege state
- 	 * filter configuration. BHRB is always recorded along with a
- 	 * regular PMU event. As the privilege state filter is handled
-@@ -666,15 +676,42 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
- 	/* Ignore user, kernel, hv bits */
- 	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
- 
--	/* No branch filter requested */
--	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
--		return 0;
-+	/*
-+	 * POWER8 does not support ORing of PMU HW branch filters. Hence
-+	 * if multiple branch filters are requested which may include filters
-+	 * supported in PMU, still go ahead and clear the PMU based HW branch
-+	 * filter component as in this case all the filters will be processed
-+	 * in SW.
-+	 */
- 
--	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL)
--		return POWER8_MMCRA_IFM1;
-+	for_each_branch_sample_type(x) {
-+		/* Ignore privilege branch filters */
-+		if ((x == PERF_SAMPLE_BRANCH_USER)
-+			|| (x == PERF_SAMPLE_BRANCH_KERNEL)
-+				|| (x == PERF_SAMPLE_BRANCH_HV))
-+			continue;
-+
-+		if (!(branch_sample_type & x))
-+			continue;
-+
-+		/* Supported individual PMU branch filters */
-+		if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
-+			branch_sample_type &= ~PERF_SAMPLE_BRANCH_ANY_CALL;
-+			if (branch_sample_type) {
-+				/* Multiple filters will be processed in SW */
-+				pmu_bhrb_filter = 0;
-+				*bhrb_filter = 0;
-+				return pmu_bhrb_filter;
-+			} else {
-+				/* Individual filter will be processed in HW */
-+				pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
-+				*bhrb_filter    |= PERF_SAMPLE_BRANCH_ANY_CALL;
-+				return pmu_bhrb_filter;
-+			}
-+		}
-+	}
- 
--	/* Every thing else is unsupported */
--	return -1;
-+	return pmu_bhrb_filter;
+ unsigned int create_branch(const unsigned int *addr,
+ 			   unsigned long target, int flags);
+ unsigned int create_cond_branch(const unsigned int *addr,
+@@ -99,4 +109,9 @@ static inline unsigned long ppc_global_function_entry(void *func)
+ #endif
  }
  
- static void power8_config_bhrb(u64 pmu_bhrb_filter)
++bool instr_is_return_branch(unsigned int instr);
++bool instr_is_conditional_branch(unsigned int instr);
++bool instr_is_func_call(unsigned int instr);
++bool instr_is_indirect_func_call(unsigned int instr);
++
+ #endif /* _ASM_POWERPC_CODE_PATCHING_H */
+diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
+index d5edbeb..15b7b88 100644
+--- a/arch/powerpc/lib/code-patching.c
++++ b/arch/powerpc/lib/code-patching.c
+@@ -87,6 +87,72 @@ static int instr_is_branch_bform(unsigned int instr)
+ 	return branch_opcode(instr) == 16;
+ }
+ 
++static int instr_is_branch_xlform(unsigned int instr)
++{
++	return branch_opcode(instr) == 19;
++}
++
++static int is_xlform_lr(unsigned int instr)
++{
++	return (instr & XL_FORM_LR) == XL_FORM_LR;
++}
++
++static int is_bo_always(unsigned int instr)
++{
++	return (instr & BO_ALWAYS) == BO_ALWAYS;
++}
++
++static int is_branch_link_set(unsigned int instr)
++{
++	return (instr & BRANCH_SET_LINK) == BRANCH_SET_LINK;
++}
++
++bool instr_is_return_branch(unsigned int instr)
++{
++	/*
++	 * Conditional and unconditional branch to LR register
++	 * without seting the link register.
++	 */
++	if (is_xlform_lr(instr) && !is_branch_link_set(instr))
++		return true;
++
++	return false;
++}
++
++bool instr_is_conditional_branch(unsigned int instr)
++{
++	/* I-form instruction - excluded */
++	if (instr_is_branch_iform(instr))
++		return false;
++
++	/* B-form or XL-form instruction */
++	if (instr_is_branch_bform(instr) || instr_is_branch_xlform(instr))  {
++
++		/* Not branch always */
++		if (!is_bo_always(instr))
++			return true;
++	}
++	return false;
++}
++
++bool instr_is_func_call(unsigned int instr)
++{
++	/* LR should be set */
++	if (is_branch_link_set(instr))
++		return true;
++
++	return false;
++}
++
++bool instr_is_indirect_func_call(unsigned int instr)
++{
++	/* XL-form instruction with LR set */
++	if (instr_is_branch_xlform(instr) && is_branch_link_set(instr))
++		return true;
++
++	return false;
++}
++
+ int instr_is_relative_branch(unsigned int instr)
+ {
+ 	if (instr & BRANCH_ABSOLUTE)
 -- 
 2.1.0
