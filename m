@@ -1,21 +1,21 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0145.outbound.protection.outlook.com [157.56.110.145])
+ (mail-bn1bon0142.outbound.protection.outlook.com [157.56.111.142])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 902991A035C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 06:30:47 +1000 (AEST)
-Message-ID: <1433795433.2477.62.camel@freescale.com>
-Subject: Re: powerpc/corenet: enable eSDHC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04F4B1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 06:36:29 +1000 (AEST)
+Message-ID: <1433795774.2477.64.camel@freescale.com>
+Subject: Re: [PATCH v2] powerpc/cache: add cache flush operation for various
+ e500
 From: Scott Wood <scottwood@freescale.com>
-To: Lu Yangbo-B47093 <yangbo.lu@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
-Date: Mon, 8 Jun 2015 15:30:33 -0500
-In-Reply-To: <BY1PR0301MB119286F6B8EBD6EED07C8B15F2BF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1430893748-38821-1-git-send-email-yangbo.lu@freescale.com>
- <20150530000331.GA9143@home.buserror.net>
- <BY1PR0301MB119286F6B8EBD6EED07C8B15F2BF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
+To: <Yuantian.Tang@freescale.com>
+CC: <b07421@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Tang Yuantian <Yuantian.Tang@feescale.com>
+Date: Mon, 8 Jun 2015 15:36:14 -0500
+In-Reply-To: <1433757985-11653-1-git-send-email-Yuantian.Tang@freescale.com>
+References: <1433757985-11653-1-git-send-email-Yuantian.Tang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,18 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-06-08 at 05:12 -0500, Lu Yangbo-B47093 wrote:
-> Thanks a lot, Scott.
-> And now a patch was merged on 
-> git://git.linaro.org/people/ulf.hansson/mmc.git next branch to fix 
-> this issue.
-> It should be no problem.
+On Mon, 2015-06-08 at 18:06 +0800, Yuantian.Tang@freescale.com wrote:
+> +
+> +_GLOBAL(flush_caches_e500v2)
+> +     mflr r0
+> +     bl      flush_dcache_L1
+> +     mtlr r0
+> +     blr
+> +
+> +_GLOBAL(flush_caches_e500mc)
+> +_GLOBAL(flush_caches_e5500)
+> +     mflr r0
+> +     bl      flush_dcache_L1
+> +     bl      flush_backside_L2_cache
+> +     mtlr r0
+> +     blr
 
-Assuming that patch fixes it and gets pulled for 4.2, this config 
-patch can go in for 4.3.
+s/flush_caches/cpu_down_flush/g
 
-That said, it would be nice if, apart from fixing the problem itself, 
-the MMC code failed more gracefully instead of endlessly repeating and 
-filling up the log/console.
+
+> +
+> +/* L1 Data Cache of e6500 contains no modified data, no flush is 
+> required */
+> +_GLOBAL(flush_caches_e6500)
+> +     blr
+> diff --git a/arch/powerpc/kernel/cputable.c 
+> b/arch/powerpc/kernel/cputable.c
+> index 60262fd..ed388c7 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -2021,6 +2021,7 @@ static struct cpu_spec __initdata cpu_specs[] =
+> {
+>               .cpu_setup              = __setup_cpu_e500v2,
+>               .machine_check          = machine_check_e500,
+>               .platform               = "ppc8548",
+> +             .cpu_down_flush = flush_caches_e500v2,
+>       },
+>  #else
+>       {       /* e500mc */
+> @@ -2040,6 +2041,7 @@ static struct cpu_spec __initdata cpu_specs[] =
+> {
+>               .cpu_setup              = __setup_cpu_e500mc,
+>               .machine_check          = machine_check_e500mc,
+>               .platform               = "ppce500mc",
+> +             .cpu_down_flush = flush_caches_e500mc,
+>       },
+
+Please keep whitespace consistent with the rest of the structure.
 
 -Scott
