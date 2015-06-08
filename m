@@ -1,23 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0142.outbound.protection.outlook.com [157.56.111.142])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04F4B1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 06:36:29 +1000 (AEST)
-Message-ID: <1433795774.2477.64.camel@freescale.com>
-Subject: Re: [PATCH v2] powerpc/cache: add cache flush operation for various
- e500
-From: Scott Wood <scottwood@freescale.com>
-To: <Yuantian.Tang@freescale.com>
-CC: <b07421@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, Chenhui Zhao <chenhui.zhao@freescale.com>,
- Tang Yuantian <Yuantian.Tang@feescale.com>
-Date: Mon, 8 Jun 2015 15:36:14 -0500
-In-Reply-To: <1433757985-11653-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1433757985-11653-1-git-send-email-Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86A4E1A01C8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 06:58:21 +1000 (AEST)
+Message-ID: <1433797073.4526.163.camel@kernel.crashing.org>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@linaro.org>
+Cc: Rob Herring <robherring2@gmail.com>, Pantelis Antoniou
+ <panto@antoniou-consulting.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Date: Tue, 09 Jun 2015 06:57:53 +1000
+In-Reply-To: <20150607075422.6ECE9C40A12@trevor.secretlab.ca>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+ <1430493730.7979.58.camel@kernel.crashing.org>
+ <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
+ <1430521038.7979.70.camel@kernel.crashing.org>
+ <A6DF99C6-7059-4670-86D0-6926861F0164@antoniou-consulting.com>
+ <1430774063.7979.139.camel@kernel.crashing.org>
+ <1431560124.20218.91.camel@kernel.crashing.org>
+ <CAL_JsqKqTa5eg3eOqx3bkeNdO_920WwDiRbQaxwWLEWpCypFmA@mail.gmail.com>
+ <1431564871.4160.8.camel@kernel.crashing.org>
+ <20150607075422.6ECE9C40A12@trevor.secretlab.ca>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-06-08 at 18:06 +0800, Yuantian.Tang@freescale.com wrote:
-> +
-> +_GLOBAL(flush_caches_e500v2)
-> +     mflr r0
-> +     bl      flush_dcache_L1
-> +     mtlr r0
-> +     blr
-> +
-> +_GLOBAL(flush_caches_e500mc)
-> +_GLOBAL(flush_caches_e5500)
-> +     mflr r0
-> +     bl      flush_dcache_L1
-> +     bl      flush_backside_L2_cache
-> +     mtlr r0
-> +     blr
+On Sun, 2015-06-07 at 08:54 +0100, Grant Likely wrote:
+> > IE. conceptually, what overlays do today is quite rooted around the idea
+> > of having a fixed "base" DT and some pre-compiled DTB overlays that
+> > get added/removed. The design completely ignore the idea of a FW that
+> > maintains a "live" tree which we want to keep in sync, which is what we
+> > want to do here, or what we could do with a "live" open firmware
+> > implementation.
+> 
+> Right, which is exactly the reason for the changeset/overlay split.
+> Overlays assume a fixed base, and that overlays are kind of like plug-in
+> modules. changeset makes no such assumption.
 
-s/flush_caches/cpu_down_flush/g
+So you suggest we create a function that takes an fdt and an "anchor" as input,
+and expands that FDT below that anchor, but does so by using the changeset API
+under the hood ?
 
+Even that looks somewhat tricky (turn that bit of FDT into a pile of changeset
+actions), however, I can see how we could create a new function inside changeset
+to attach a subtree.
 
-> +
-> +/* L1 Data Cache of e6500 contains no modified data, no flush is 
-> required */
-> +_GLOBAL(flush_caches_e6500)
-> +     blr
-> diff --git a/arch/powerpc/kernel/cputable.c 
-> b/arch/powerpc/kernel/cputable.c
-> index 60262fd..ed388c7 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -2021,6 +2021,7 @@ static struct cpu_spec __initdata cpu_specs[] =
-> {
->               .cpu_setup              = __setup_cpu_e500v2,
->               .machine_check          = machine_check_e500,
->               .platform               = "ppc8548",
-> +             .cpu_down_flush = flush_caches_e500v2,
->       },
->  #else
->       {       /* e500mc */
-> @@ -2040,6 +2041,7 @@ static struct cpu_spec __initdata cpu_specs[] =
-> {
->               .cpu_setup              = __setup_cpu_e500mc,
->               .machine_check          = machine_check_e500mc,
->               .platform               = "ppce500mc",
-> +             .cpu_down_flush = flush_caches_e500mc,
->       },
+Ie. of_attach_subtree() (which could have it's own reconfig action but we
+don't care that much yet), which takes an expanded subtree and an anchor, and
+calls of_attach_node() in effect for all nodes in there.
 
-Please keep whitespace consistent with the rest of the structure.
+We could then have a two pass mechanism in our hotplug code:
 
--Scott
+ - Expand the bit of fdt into a separate tree
+ - Use of_attach_subtree to "add" that subtree to the main tree
+
+What do you think ?
+
+Ben.
