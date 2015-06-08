@@ -1,20 +1,39 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0103.outbound.protection.outlook.com [207.46.100.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E86D1A0454
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2015 20:43:40 +1000 (AEST)
-From: <Yuantian.Tang@freescale.com>
-To: <b07421@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, "Tang
- Yuantian" <Yuantian.Tang@freescale.com>, Chenhui Zhao
- <chenhui.zhao@freescale.com>, Tang Yuantian <Yuantian.Tang@feescale.com>
-Subject: [PATCH v2] powerpc/cache: add cache flush operation for various e500
-Date: Mon, 8 Jun 2015 18:06:25 +0800
-Message-ID: <1433757985-11653-1-git-send-email-Yuantian.Tang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D82F1A0437
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Jun 2015 21:38:40 +1000 (AEST)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 934B0140216
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2015 21:38:39 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 8 Jun 2015 17:08:37 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id EC59D3940048
+ for <linuxppc-dev@ozlabs.org>; Mon,  8 Jun 2015 17:08:34 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t58BcXAO60162062
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2015 17:08:34 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t58BcWTZ022072
+ for <linuxppc-dev@ozlabs.org>; Mon, 8 Jun 2015 17:08:33 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com, mikey@neuling.org
+Subject: [PATCH V8 09/10] powerpc,
+ perf: Enable privilege mode SW branch filters
+Date: Mon,  8 Jun 2015 17:08:30 +0530
+Message-Id: <1433763511-5270-9-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,361 +43,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+From: "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>
 
-Various e500 core have different cache architecture, so they
-need different cache flush operations. Therefore, add a callback
-function cpu_flush_caches to the struct cpu_spec. The cache flush
-operation for the specific kind of e500 is selected at init time.
-The callback function will flush all caches inside the current cpu.
+This patch enables privilege mode SW branch filters. Also modifies
+POWER8 PMU branch filter configuration so that the privilege mode
+branch filter implemented as part of base PMU event configuration
+is reflected in bhrb filter mask. As a result, the SW will skip and
+not try to process the privilege mode branch filters itself.
 
-Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@feescale.com>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
-v2:
-	- remove some function's prefix "__"
-	- remove redundent CONFIG_PPC_E500MC micro
+ arch/powerpc/include/asm/perf_event_server.h |  3 +++
+ arch/powerpc/perf/core-book3s.c              | 38 ++++++++++++++++++++++++++--
+ arch/powerpc/perf/power8-pmu.c               | 13 ++++++++--
+ 3 files changed, 50 insertions(+), 4 deletions(-)
 
- arch/powerpc/include/asm/cacheflush.h     |   2 -
- arch/powerpc/include/asm/cputable.h       |  11 +++
- arch/powerpc/kernel/asm-offsets.c         |   3 +
- arch/powerpc/kernel/cpu_setup_fsl_booke.S | 114 +++++++++++++++++++++++++++++-
- arch/powerpc/kernel/cputable.c            |   4 ++
- arch/powerpc/kernel/head_fsl_booke.S      |  74 -------------------
- arch/powerpc/platforms/85xx/smp.c         |   3 +-
- 7 files changed, 133 insertions(+), 78 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index 30b35ff..729fde4 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -30,8 +30,6 @@ extern void flush_dcache_page(struct page *page);
- #define flush_dcache_mmap_lock(mapping)		do { } while (0)
- #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index cb7ca1a..23d68d3 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -85,6 +85,9 @@ extern unsigned long int read_bhrb(int n);
+ 		for ((x) = PERF_SAMPLE_BRANCH_USER; \
+ 			(x) < PERF_SAMPLE_BRANCH_MAX; (x) <<= 1)
  
--extern void __flush_disable_L1(void);
--
- extern void flush_icache_range(unsigned long, unsigned long);
- extern void flush_icache_user_range(struct vm_area_struct *vma,
- 				    struct page *page, unsigned long addr,
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 6367b83..43fffef 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -43,6 +43,13 @@ extern int machine_check_e500(struct pt_regs *regs);
- extern int machine_check_e200(struct pt_regs *regs);
- extern int machine_check_47x(struct pt_regs *regs);
- 
-+#if defined(CONFIG_E500)
-+extern void flush_caches_e500v2(void);
-+extern void flush_caches_e500mc(void);
-+extern void flush_caches_e5500(void);
-+extern void flush_caches_e6500(void);
-+#endif
++#define POWER_ADDR_USER		0
++#define POWER_ADDR_KERNEL	1
 +
- /* NOTE WELL: Update identify_cpu() if fields are added or removed! */
- struct cpu_spec {
- 	/* CPU is matched via (PVR & pvr_mask) == pvr_value */
-@@ -59,6 +66,10 @@ struct cpu_spec {
- 	unsigned int	icache_bsize;
- 	unsigned int	dcache_bsize;
- 
-+#if defined(CONFIG_E500)
-+	/* flush caches inside the current cpu */
-+	void (*cpu_down_flush)(void);
-+#endif
- 	/* number of performance monitor counters */
- 	unsigned int	num_pmcs;
- 	enum powerpc_pmc_type pmc_type;
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 0034b6b..52efca9 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -373,6 +373,9 @@ int main(void)
- 	DEFINE(CPU_SPEC_FEATURES, offsetof(struct cpu_spec, cpu_features));
- 	DEFINE(CPU_SPEC_SETUP, offsetof(struct cpu_spec, cpu_setup));
- 	DEFINE(CPU_SPEC_RESTORE, offsetof(struct cpu_spec, cpu_restore));
-+#if defined(CONFIG_E500)
-+	DEFINE(CPU_DOWN_FLUSH, offsetof(struct cpu_spec, cpu_down_flush));
-+#endif
- 
- 	DEFINE(pbe_address, offsetof(struct pbe, address));
- 	DEFINE(pbe_orig_address, offsetof(struct pbe, orig_address));
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index dddba3e..4c857a6a 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -1,7 +1,7 @@
  /*
-  * This file contains low level CPU setup functions.
-  * Kumar Gala <galak@kernel.crashing.org>
-- * Copyright 2009 Freescale Semiconductor, Inc.
-+ * Copyright 2009, 2015 Freescale Semiconductor, Inc.
-  *
-  * Based on cpu_setup_6xx code by
-  * Benjamin Herrenschmidt <benh@kernel.crashing.org>
-@@ -13,11 +13,13 @@
-  *
+  * Only override the default definitions in include/linux/perf_event.h
+  * if we have hardware PMU support.
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 9a682c9..c151399 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -20,6 +20,7 @@
+ #include <asm/firmware.h>
+ #include <asm/ptrace.h>
+ #include <asm/code-patching.h>
++#include <asm/cputable.h>
+ 
+ #define BHRB_MAX_ENTRIES	32
+ #define BHRB_TARGET		0x0000000000000002
+@@ -465,10 +466,10 @@ static bool check_instruction(unsigned int *addr, u64 sw_filter)
+  * Access the instruction contained in the address and then check
+  * whether it complies with the applicable SW branch filters.
   */
+-static bool keep_branch(u64 from, u64 sw_filter)
++static bool keep_branch(u64 from, u64 to, u64 sw_filter)
+ {
+ 	unsigned int instr;
+-	bool ret;
++	bool to_plm, ret, flag;
  
-+#include <asm/page.h>
- #include <asm/processor.h>
- #include <asm/cputable.h>
- #include <asm/ppc_asm.h>
- #include <asm/mmu-book3e.h>
- #include <asm/asm-offsets.h>
-+#include <asm/mpc85xx.h>
+ 	/*
+ 	 * The "from" branch for every branch record has to go
+@@ -478,6 +479,38 @@ static bool keep_branch(u64 from, u64 sw_filter)
+ 	if (sw_filter == 0)
+ 		return true;
  
- _GLOBAL(__e500_icache_setup)
- 	mfspr	r0, SPRN_L1CSR1
-@@ -233,3 +235,113 @@ _GLOBAL(__setup_cpu_e5500)
- 	mtlr	r5
- 	blr
- #endif
++	to_plm = is_kernel_addr(to) ? POWER_ADDR_KERNEL : POWER_ADDR_USER;
 +
-+/* flush L1 date cache, it can apply to e500v2, e500mc and e5500 */
-+_GLOBAL(flush_dcache_L1)
-+	mfmsr	r10
-+	wrteei	0
++	/*
++	 * XXX: Applying the privilege mode SW branch filters first on
++	 * the 'TO' address creates an AND semantic with other SW branch
++	 * filters which are ORed with each other being applied on the
++	 * 'FROM' address there after.
++	 */
++	if (sw_filter & PERF_SAMPLE_BRANCH_PLM_ALL) {
++		flag = false;
 +
-+	mfspr	r3,SPRN_L1CFG0
-+	rlwinm	r5,r3,9,3	/* Extract cache block size */
-+	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
-+				 * are currently defined.
-+				 */
-+	li	r4,32
-+	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
-+				 *      log2(number of ways)
-+				 */
-+	slw	r5,r4,r5	/* r5 = cache block size */
++		if (sw_filter & PERF_SAMPLE_BRANCH_USER) {
++			if (to_plm == POWER_ADDR_USER)
++				flag = true;
++		}
 +
-+	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
-+	mulli	r7,r7,13	/* An 8-way cache will require 13
-+				 * loads per set.
-+				 */
-+	slw	r7,r7,r6
++		if (sw_filter & PERF_SAMPLE_BRANCH_KERNEL) {
++			if (to_plm == POWER_ADDR_KERNEL)
++				flag = true;
++		}
 +
-+	/* save off HID0 and set DCFA */
-+	mfspr	r8,SPRN_HID0
-+	ori	r9,r8,HID0_DCFA@l
-+	mtspr	SPRN_HID0,r9
-+	isync
++		if (sw_filter & PERF_SAMPLE_BRANCH_HV) {
++			if (cpu_has_feature(CPU_FTR_HVMODE)) {
++				if (to_plm == POWER_ADDR_KERNEL)
++					flag = true;
++			}
++		}
 +
-+	LOAD_REG_IMMEDIATE(r6, KERNELBASE)
-+	mr	r4, r6
-+	mtctr	r7
++		if (!flag)
++			return false;
++	}
 +
-+1:	lwz	r3,0(r4)	/* Load... */
-+	add	r4,r4,r5
-+	bdnz	1b
-+
-+	msync
-+	mr	r4, r6
-+	mtctr	r7
-+
-+1:	dcbf	0,r4		/* ...and flush. */
-+	add	r4,r4,r5
-+	bdnz	1b
-+
-+	/* restore HID0 */
-+	mtspr	SPRN_HID0,r8
-+	isync
-+
-+	wrtee r10
-+
-+	blr
-+
-+has_L2_cache:
-+	/* skip L2 cache on P2040/P2040E as they have no L2 cache */
-+	mfspr	r3, SPRN_SVR
-+	/* shift right by 8 bits and clear E bit of SVR */
-+	rlwinm	r4, r3, 24, ~0x800
-+
-+	lis	r3, SVR_P2040@h
-+	ori	r3, r3, SVR_P2040@l
-+	cmpw	r4, r3
-+	beq	1f
-+
-+	li	r3, 1
-+	blr
-+1:
-+	li	r3, 0
-+	blr
-+
-+/* flush backside L2 cache */
-+flush_backside_L2_cache:
-+	mflr	r10
-+	bl	has_L2_cache
-+	mtlr	r10
-+	cmpwi	r3, 0
-+	beq	2f
-+
-+	/* Flush the L2 cache */
-+	mfspr	r3, SPRN_L2CSR0
-+	ori	r3, r3, L2CSR0_L2FL@l
-+	msync
-+	isync
-+	mtspr	SPRN_L2CSR0,r3
-+	isync
-+
-+	/* check if it is complete */
-+1:	mfspr	r3,SPRN_L2CSR0
-+	andi.	r3, r3, L2CSR0_L2FL@l
-+	bne	1b
-+2:
-+	blr
-+
-+_GLOBAL(flush_caches_e500v2)
-+	mflr r0
-+	bl	flush_dcache_L1
-+	mtlr r0
-+	blr
-+
-+_GLOBAL(flush_caches_e500mc)
-+_GLOBAL(flush_caches_e5500)
-+	mflr r0
-+	bl	flush_dcache_L1
-+	bl	flush_backside_L2_cache
-+	mtlr r0
-+	blr
-+
-+/* L1 Data Cache of e6500 contains no modified data, no flush is required */
-+_GLOBAL(flush_caches_e6500)
-+	blr
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 60262fd..ed388c7 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2021,6 +2021,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_e500v2,
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppc8548",
-+		.cpu_down_flush = flush_caches_e500v2,
- 	},
- #else
- 	{	/* e500mc */
-@@ -2040,6 +2041,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_e500mc,
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce500mc",
-+		.cpu_down_flush = flush_caches_e500mc,
- 	},
- #endif /* CONFIG_PPC_E500MC */
- #endif /* CONFIG_PPC32 */
-@@ -2064,6 +2066,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce5500",
-+		.cpu_down_flush = flush_caches_e5500,
- 	},
- 	{	/* e6500 */
- 		.pvr_mask		= 0xffff0000,
-@@ -2086,6 +2089,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce6500",
-+		.cpu_down_flush = flush_caches_e6500,
- 	},
- #endif /* CONFIG_PPC_E500MC */
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index fffd1f9..709bc50 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1075,80 +1075,6 @@ _GLOBAL(set_context)
- 	isync			/* Force context change */
- 	blr
+ 	if (is_kernel_addr(from)) {
+ 		return check_instruction((unsigned int *) from, sw_filter);
+ 	} else {
+@@ -567,6 +600,7 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
  
--_GLOBAL(flush_dcache_L1)
--	mfspr	r3,SPRN_L1CFG0
--
--	rlwinm	r5,r3,9,3	/* Extract cache block size */
--	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
--				 * are currently defined.
--				 */
--	li	r4,32
--	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
--				 *      log2(number of ways)
--				 */
--	slw	r5,r4,r5	/* r5 = cache block size */
--
--	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
--	mulli	r7,r7,13	/* An 8-way cache will require 13
--				 * loads per set.
--				 */
--	slw	r7,r7,r6
--
--	/* save off HID0 and set DCFA */
--	mfspr	r8,SPRN_HID0
--	ori	r9,r8,HID0_DCFA@l
--	mtspr	SPRN_HID0,r9
--	isync
--
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	lwz	r3,0(r4)	/* Load... */
--	add	r4,r4,r5
--	bdnz	1b
--
--	msync
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	dcbf	0,r4		/* ...and flush. */
--	add	r4,r4,r5
--	bdnz	1b
--	
--	/* restore HID0 */
--	mtspr	SPRN_HID0,r8
--	isync
--
--	blr
--
--/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
--_GLOBAL(__flush_disable_L1)
--	mflr	r10
--	bl	flush_dcache_L1	/* Flush L1 d-cache */
--	mtlr	r10
--
--	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	msync
--	isync
--	mtspr	SPRN_L1CSR0, r4
--	isync
--
--1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
--	andi.	r4, r4, 2
--	bne	1b
--
--	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	mtspr	SPRN_L1CSR1, r4
--	isync
--
--	blr
--
- #ifdef CONFIG_SMP
- /* When we get here, r24 needs to hold the CPU # */
- 	.globl __secondary_start
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 8631ac5..16b366f 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -139,7 +139,8 @@ static void smp_85xx_mach_cpu_die(void)
+ 		/* Apply SW branch filters and drop the entry if required */
+ 		if (!keep_branch(cpuhw->bhrb_entries[u_index].from,
++					cpuhw->bhrb_entries[u_index].to,
+ 						cpuhw->bhrb_sw_filter))
+ 			u_index--;
+ 		u_index++;
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 8fccf6c..b56afc6 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -670,9 +670,19 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
+ 	 * filter configuration. BHRB is always recorded along with a
+ 	 * regular PMU event. As the privilege state filter is handled
+ 	 * in the basic PMC configuration of the accompanying regular
+-	 * PMU event, we ignore any separate BHRB specific request.
++	 * PMU event, we ignore any separate BHRB specific request. But
++	 * this needs to be communicated with the branch filter mask.
+ 	 */
  
- 	mtspr(SPRN_TCR, 0);
- 
--	__flush_disable_L1();
-+	cur_cpu_spec->cpu_down_flush();
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_USER)
++		*bhrb_filter |= PERF_SAMPLE_BRANCH_USER;
 +
- 	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
- 	mtspr(SPRN_HID0, tmp);
- 	isync();
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_KERNEL)
++		*bhrb_filter |= PERF_SAMPLE_BRANCH_KERNEL;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_HV)
++		*bhrb_filter |= PERF_SAMPLE_BRANCH_HV;
++
+ 	/* Ignore user, kernel, hv bits */
+ 	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
+ 
+@@ -700,7 +710,6 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
+ 			if (branch_sample_type) {
+ 				/* Multiple filters will be processed in SW */
+ 				pmu_bhrb_filter = 0;
+-				*bhrb_filter = 0;
+ 				return pmu_bhrb_filter;
+ 			} else {
+ 				/* Individual filter will be processed in HW */
 -- 
-2.1.0.27.g96db324
+2.1.0
