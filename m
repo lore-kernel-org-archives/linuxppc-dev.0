@@ -1,41 +1,43 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 23F9D1A0099
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 16:09:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4AACF1A0099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 16:11:41 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 9 Jun 2015 16:09:13 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3F91C3578048
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 16:09:10 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t59691To63307942
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 16:09:09 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5968b7V022647
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 16:08:37 +1000
-Date: Tue, 9 Jun 2015 16:08:12 +1000
+ Tue, 9 Jun 2015 16:11:30 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6617B2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 16:11:28 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t596BINa38666374
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 16:11:26 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t596Atnc023326
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 16:10:56 +1000
+Date: Tue, 9 Jun 2015 16:10:30 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, aik@ozlabs.ru, panto@antoniou-consulting.com,
- robherring2@gmail.com, grant.likely@linaro.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org, aik@ozlabs.ru,
+ panto@antoniou-consulting.com, robherring2@gmail.com,
+ grant.likely@linaro.org
 Subject: Re: [PATCH v5 42/42] pci/hotplug: PowerPC PowerNV PCI hotplug driver
-Message-ID: <20150609060812.GA30787@gwshan>
+Message-ID: <20150609061030.GB30787@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1433400131-18429-43-git-send-email-gwshan@linux.vnet.ibm.com>
  <20150605201110.GP3631@google.com>
+ <1433535495.4526.107.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150605201110.GP3631@google.com>
+In-Reply-To: <1433535495.4526.107.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,110 +47,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 05, 2015 at 03:11:10PM -0500, Bjorn Helgaas wrote:
->On Thu, Jun 04, 2015 at 04:42:11PM +1000, Gavin Shan wrote:
->> The patch intends to add standalone driver to support PCI hotplug
->> for PowerPC PowerNV platform, which runs on top of skiboot firmware.
->> The firmware identified hotpluggable slots and marked their device
->> tree node with proper "ibm,slot-pluggable" and "ibm,reset-by-firmware".
->> The driver simply scans device-tree to create/register PCI hotplug slot
->> accordingly.
+On Sat, Jun 06, 2015 at 06:18:15AM +1000, Benjamin Herrenschmidt wrote:
+>On Fri, 2015-06-05 at 15:11 -0500, Bjorn Helgaas wrote:
+>
+>> You didn't add this, but "pcibios_add_pci_devices" doesn't seem like the
+>> right name.  "pcibios" generally refers to an arch-specific hook that's
+>> called by the generic PCI core.  In this case, pcibios_add_pci_devices()
+>> contains powerpc-specific code, and it's only called from powerpc code, so
+>> I think using "pcibios_" in the name is a bit misleading.
+>
+>Maybe but just calling it pci_add_* makes it easy to confuse with a core
+>function and ppc_add_* is gross :-)
+>
+>> > +	/* Remove all devices behind the slot */
+>> > +	pci_lock_rescan_remove();
+>> > +	pcibios_remove_pci_devices(slot->bus);
 >> 
->> If the skiboot firmware doesn't support slot status retrieval, the PCI
->> slot device node shouldn't have property "ibm,reset-by-firmware". In
->> that case, none of valid PCI slots will be detected from device tree.
->> The skiboot firmware doesn't export the capability to access attention
->> LEDs yet and it's something for TBD.
+>> Same comment for pcibios_remove_pci_devices().  It would be better if the
+>> name didn't suggest that this was part of the pcibios_ interface between
+>> the PCI core and the arch code, because it's not.
 >> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> > +	/* Slot indentifier */
+>> 
+>> s/indentifier/identifier/
+>> 
+>> > +	if (!php_slot_get_id(dn, &id))
+>> > +		return NULL;
+>> > +
+>> 
+>> > +	/* PCI bus */
+>> > +	bus = pcibios_find_pci_bus(dn);
+>> 
+>> And pcibios_find_pci_bus() (it's also powerpc-specific).
 >
->Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->
->But I do have a few comments (my ack is valid whether you do anything with
->them or not):
->
-
-Thanks for your review, Bjorn.
-
->> +static void slot_power_off_handler(struct powernv_php_slot *slot)
->> +{
->> +	int ret;
->> +
->> +	/* Release the firmware data for the child device nodes */
->> +	remove_child_pdn(slot->dn);
->> +
->> +	/*
->> +	 * Release the child device nodes. If the sub-tree was
->> +	 * built with the help of overlay, we just need revert
->> +	 * the changes introduced by the overlay
->> +	 */
->> +	if (slot->overlay_id >= 0) {
->> +		ret = of_overlay_destroy(slot->overlay_id);
->> +		if (ret)
->> +			pr_warn("%s: Error %d destroying overlay %d\n",
->> +				__func__, ret, slot->overlay_id);
->
->For this and similar messages: isn't there a device you can use with
->dev_warn() here?  I think a device name would be much better than a
->function name.
+>This one could actually move to of_pci.c and be generic, something like
+>of_pci_node_to_bus()
 >
 
-There is PCI bus referred (struct powernv_php_slot::bus), but it's
-not always valid. So I'll add one more field "struct pci_dev *pdev"
-which is initialized to the parent PCI device of the slot, then print
-those messages with dev_warn().
+Thanks, Ben. I'll rename those functions as below if Bjorn won't object:
 
->> +scan:
->> +	switch (presence) {
->> +	case POWERNV_PHP_SLOT_PRESENT:
->> +		if (rescan) {
->> +			pci_lock_rescan_remove();
->> +			pcibios_add_pci_devices(slot->bus);
->
->You didn't add this, but "pcibios_add_pci_devices" doesn't seem like the
->right name.  "pcibios" generally refers to an arch-specific hook that's
->called by the generic PCI core.  In this case, pcibios_add_pci_devices()
->contains powerpc-specific code, and it's only called from powerpc code, so
->I think using "pcibios_" in the name is a bit misleading.
->
-
-Ben already suggested some better names in another reply. I'll pick
-it if you agree: pci_add_pci_devices().
-
->> +	/* Remove all devices behind the slot */
->> +	pci_lock_rescan_remove();
->> +	pcibios_remove_pci_devices(slot->bus);
->
->Same comment for pcibios_remove_pci_devices().  It would be better if the
->name didn't suggest that this was part of the pcibios_ interface between
->the PCI core and the arch code, because it's not.
->
-
-According to Ben's suggestion in another reply, it would be pci_remove_pci_devices()
-if you agree :-)
-
->> +	/* Slot indentifier */
->
->s/indentifier/identifier/
->
-
-Thanks for pointing it out. I'll fix it up in next revision.
-
->> +	if (!php_slot_get_id(dn, &id))
->> +		return NULL;
->> +
->
->> +	/* PCI bus */
->> +	bus = pcibios_find_pci_bus(dn);
->
->And pcibios_find_pci_bus() (it's also powerpc-specific).
->
-
-I'll pick Ben's suggested name if you agree: of_pci_node_to_bus().
+pcibios_add_pci_devices()           pci_add_pci_devices()
+pcibios_remove_pci_devices()        pci_remove_pci_devices()
+pcibios_find_pci_bus()              of_node_to_pci_bus()
 
 Thanks,
 Gavin
 
-
->Bjorn
+>Ben.
+>
 >
