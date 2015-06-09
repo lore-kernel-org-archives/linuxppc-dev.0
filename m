@@ -1,10 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 622E91A02D6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EEE61A0414
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 14:56:59 +1000 (AEST)
-Date: Tue, 9 Jun 2015 14:22:12 +1000
+Date: Tue, 9 Jun 2015 14:23:24 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -12,15 +12,15 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
  Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v12 09/34] vfio: powerpc/spapr: Move locked_vm
- accounting to helpers
-Message-ID: <20150609042212.GE11000@voom.redhat.com>
+Subject: Re: [PATCH kernel v12 26/34] powerpc/powernv/ioda2: Introduce
+ pnv_pci_ioda2_set_window
+Message-ID: <20150609042324.GF11000@voom.redhat.com>
 References: <1433486126-23551-1-git-send-email-aik@ozlabs.ru>
- <1433486126-23551-10-git-send-email-aik@ozlabs.ru>
+ <1433486126-23551-27-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Ns7jmDPpOpCD+GE/"
-In-Reply-To: <1433486126-23551-10-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="xkXJwpr35CY/Lc3I"
+In-Reply-To: <1433486126-23551-27-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +31,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---Ns7jmDPpOpCD+GE/
+--xkXJwpr35CY/Lc3I
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jun 05, 2015 at 04:35:01PM +1000, Alexey Kardashevskiy wrote:
-> There moves locked pages accounting to helpers.
-> Later they will be reused for Dynamic DMA windows (DDW).
+On Fri, Jun 05, 2015 at 04:35:18PM +1000, Alexey Kardashevskiy wrote:
+> This is a part of moving DMA window programming to an iommu_ops
+> callback. pnv_pci_ioda2_set_window() takes an iommu_table_group as
+> a first parameter (not pnv_ioda_pe) as it is going to be used as
+> a callback for VFIO DDW code.
 >=20
-> This reworks debug messages to show the current value and the limit.
->=20
-> This stores the locked pages number in the container so when unlocking
-> the iommu table pointer won't be needed. This does not have an effect
-> now but it will with the multiple tables per container as then we will
-> allow attaching/detaching groups on fly and we may end up having
-> a container with no group attached but with the counter incremented.
->=20
-> While we are here, update the comment explaining why RLIMIT_MEMLOCK
-> might be required to be bigger than the guest RAM. This also prints
-> pid of the current process in pr_warn/pr_debug.
+> This should cause no behavioural change.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> [aw: for the vfio related changes]
-> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 > Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 > Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
 > Changes:
 > v12:
-> * added WARN_ON_ONCE() to decrement_locked_vm() for the sake of
-> documentation
+> * removed comment from commit log about pnv_pci_ioda2_tvt_invalidate()/
+> pnv_pci_ioda2_invalidate_entire()
+
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
@@ -71,25 +62,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---Ns7jmDPpOpCD+GE/
+--xkXJwpr35CY/Lc3I
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVdmn0AAoJEGw4ysog2bOSRV0QAObnpOLGL5MY3VqDAlEaH43I
-O8P3262HmefTVf5DPP5aZgBMhuMYvrXQ7Ezb4OuZQ4rXqOFDKHc5hHkRP3CJY6JO
-JOxSWOX6kcH0REC64YO+Qm7QsTyJgz5JhrhlmPfSnqhd1pVLbwOgSIAyvFVAShDV
-XFUgEME15ePhbWG5BIth60gc2fWqkryMAiNy7GnoZUIGIs7Lq9yThZOvw4vicCdk
-ekAwLKwDpjwNApSnIh9TIsBy37E1hsFuAhFE5oz4ajoJqPsVD2gzl/7X+2/mRHNp
-alReEb0tG/xF8jy0BiOHW+hwaqah/213H35NMCzyCojkkBKQl+5bOJy/h8c4uhfY
-kIM0W0aMoZHhr6VoXTcf8TiZcl4y1IVTtd2XRoMY1J7TreRkMtPBIZtJcPy8QnQU
-W580mmk82QHZ7qFzzaMDrYahPyvTKLqezize54S8ZluCEaBULbgGiXR5l9i1+4Ow
-Izhc6CDJO7a1gZfM/CuhovtGZMKthgZqE8bri4246Yj/8zqyhCorBlaPPtaUyFwY
-O7bGzTbpg7D61zCZFaWeu8YEzh1/8MTq8pvD8Kj5/nwt4voyCzA2tvG9Srwaju+X
-MIndZEoprI4j0v23E5k2qHvMSg7EBOsmY4O5ljtqFtE5WWCVCspgreQL0z/Wb9ZB
-ccAi3qzw8d8CvXCS0OJ9
-=nyie
+iQIcBAEBAgAGBQJVdmo8AAoJEGw4ysog2bOSf28P/jndHLM9Fb7U6qbB7WgFWxIL
+/XJAan1cf912B02DjQscPUbiESodOWB13Ihal9jSrZxf8iIvX0ZxWqE5TqTwEHGs
+ryuUHzIF/g65AZsfoNwIkhjTkwewnmxW3tWozQRZgApEgDyk3JI431768pAF1X7V
+N3+8a2nkzm7FORiIWOCfIxYvnU3GCnlX1YKTAnXQEBIV03gq9PWzbhunRBY2ueKP
+WcI/7tnlBk+gJMnaD8A1miC7J8y8YzzrCXAYJ+BJskW7fxkiN22W9bF8HdG90B5X
+tvyTgBC8uOo4IBW/MGPiUdQLkcyCAlHDOEFqKzzDpNiFnTxgRZZqV6yrEfboF9po
+Cq1gzH4041Gly91CyCEv59NMAIBB68SxlqF162kEvHdx9tlszHxy3n/KAydWrO12
+B8vZWl15Ud06z5WJHfQQP8AWOmfPDP5fd7Qqtm+vlLNvKNnxADqjhZfYjrsmMz6/
+katXZwNWwRWKhfbB+hUQZraHxr0dIHqBBBieV68tVtEs8dntt4euhza5rCu4X7we
+AonXZV+MQBQIzipmo7OIOH8ufTCO/KiJSzczWLsyCb95YSrH4IEcpty2zyO0Cyjh
+0110QAfelCeHlCTX0I6IJaKZsXRbXonPuIm5TJubP5lG/C81CRYnI75dHEDaTnpN
+5LnAMX90F0GFruRkQuGx
+=+F5e
 -----END PGP SIGNATURE-----
 
---Ns7jmDPpOpCD+GE/--
+--xkXJwpr35CY/Lc3I--
