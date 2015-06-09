@@ -1,26 +1,26 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E1401A02D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 12:19:41 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "edubezval@gmail.com" <edubezval@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com"
- <rui.zhang@intel.com>
-Subject: RE: [PATCH V2] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
-Date: Tue, 9 Jun 2015 02:19:29 +0000
-Message-ID: <BLUPR03MB149DC0A753423EB27293931E1BE0@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1429085868-47577-1-git-send-email-hongtao.jia@freescale.com>
- <BLUPR03MB1498C018F80A754767DF48FE1CC0@BLUPR03MB149.namprd03.prod.outlook.com>
- <1432669078.7862.13.camel@freescale.com>
-In-Reply-To: <1432669078.7862.13.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 72B291A02D6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 13:37:34 +1000 (AEST)
+Date: Tue, 9 Jun 2015 12:36:32 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v12 17/34] powerpc/spapr: vfio: Switch from
+ iommu_table to new iommu_table_group
+Message-ID: <20150609023632.GA11000@voom.redhat.com>
+References: <1433486126-23551-1-git-send-email-aik@ozlabs.ru>
+ <1433486126-23551-18-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="x+6KMIRAuhnl3hBn"
+In-Reply-To: <1433486126-23551-18-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,113 +30,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IFdlZG5lc2RheSwgTWF5IDI3LCAyMDE1IDM6MzggQU0NCj4gVG86IEppYSBIb25n
-dGFvLUIzODk1MQ0KPiBDYzogZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc7DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyByb2JoK2R0QGtlcm5l
-bC5vcmc7IHJ1aS56aGFuZ0BpbnRlbC5jb20NCj4gU3ViamVjdDogUmU6IFtQQVRDSCBWMl0gUW9y
-SVEvVE1VOiBhZGQgVE1VIG5vZGUgdG8gZGV2aWNlIHRyZWUgZm9yIFFvcklRDQo+IFQxMDR4DQo+
-IA0KPiBPbiBUdWUsIDIwMTUtMDUtMjYgYXQgMDE6MzMgLTA1MDAsIEppYSBIb25ndGFvLUIzODk1
-MSB3cm90ZToNCj4gPiBIaSBTY290dCwNCj4gPg0KPiA+IEVkdWFyZG8gaW5kaWNhdGVkIHRoYXQg
-ImNhbGlicmF0aW9uIiBwcm9wZXJ0eSBzaG91bGQgYWRkICJmc2wiDQo+ID4gcHJlZml4Lg0KPiA+
-IEkgdXBkYXRlZCB0aGUgcGF0Y2guDQo+ID4gQW55IG90aGVyIGNvbW1lbnRzPw0KPiA+IElmIG5v
-dCBJIHdpbGwgc2VuZCBWMyBzb29uLg0KPiA+DQo+ID4gVGhhbmtzLg0KPiANCj4gSSdkIGdvIHdp
-dGggImZzbCx0bXUtY2FsaWJyYXRpb24iIHJhdGhlciB0aGFuICJmc2wsY2FsaWJyYXRpb24iIGJ1
-dCBub3QgYQ0KPiBiaWcgZGVhbCBlaXRoZXIgd2F5Lg0KDQpUaGFua3MgZm9yIHRoZSBhZHZpY2Uu
-DQoNCj4gDQo+ID4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3Jp
-cS10bXUtdDEwNHhzaS5kdHNpDQo+ID4gPiBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9y
-aXEtdG11LXQxMDR4c2kuZHRzaQ0KPiA+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gPiA+IGlu
-ZGV4IDAwMDAwMDAuLmQ4NWM3N2QNCj4gPiA+IC0tLSAvZGV2L251bGwNCj4gPiA+ICsrKyBiL2Fy
-Y2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtdG11LXQxMDR4c2kuZHRzaQ0KPiA+ID4gQEAg
-LTAsMCArMSw4MiBAQA0KPiA+ID4gKy8qDQo+ID4gPiArICogUW9ySVEgVE1VIGRldmljZSB0cmVl
-IHN0dWIgWyBjb250cm9sbGVyIEAgb2Zmc2V0IDB4ZjAwMDAgXQ0KPiA+ID4gKyAqDQo+ID4gPiAr
-ICogQ29weXJpZ2h0IDIwMTUgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgSW5jLg0KPiA+ID4gKyAq
-DQo+ID4gPiArICogUmVkaXN0cmlidXRpb24gYW5kIHVzZSBpbiBzb3VyY2UgYW5kIGJpbmFyeSBm
-b3Jtcywgd2l0aCBvcg0KPiA+ID4gd2l0aG91dA0KPiA+ID4gKyAqIG1vZGlmaWNhdGlvbiwgYXJl
-IHBlcm1pdHRlZCBwcm92aWRlZCB0aGF0IHRoZSBmb2xsb3dpbmcNCj4gPiA+IGNvbmRpdGlvbnMN
-Cj4gPiA+IGFyZSBtZXQ6DQo+ID4gPiArICogICAgICogUmVkaXN0cmlidXRpb25zIG9mIHNvdXJj
-ZSBjb2RlIG11c3QgcmV0YWluIHRoZSBhYm92ZQ0KPiA+ID4gY29weXJpZ2h0DQo+ID4gPiArICog
-ICAgICAgbm90aWNlLCB0aGlzIGxpc3Qgb2YgY29uZGl0aW9ucyBhbmQgdGhlIGZvbGxvd2luZw0K
-PiA+ID4gZGlzY2xhaW1lci4NCj4gPiA+ICsgKiAgICAgKiBSZWRpc3RyaWJ1dGlvbnMgaW4gYmlu
-YXJ5IGZvcm0gbXVzdCByZXByb2R1Y2UgdGhlIGFib3ZlDQo+ID4gPiBjb3B5cmlnaHQNCj4gPiA+
-ICsgKiAgICAgICBub3RpY2UsIHRoaXMgbGlzdCBvZiBjb25kaXRpb25zIGFuZCB0aGUgZm9sbG93
-aW5nDQo+ID4gPiBkaXNjbGFpbWVyIGluDQo+ID4gPiB0aGUNCj4gPiA+ICsgKiAgICAgICBkb2N1
-bWVudGF0aW9uIGFuZC9vciBvdGhlciBtYXRlcmlhbHMgcHJvdmlkZWQgd2l0aCB0aGUNCj4gPiA+
-IGRpc3RyaWJ1dGlvbi4NCj4gPiA+ICsgKiAgICAgKiBOZWl0aGVyIHRoZSBuYW1lIG9mIEZyZWVz
-Y2FsZSBTZW1pY29uZHVjdG9yIG5vciB0aGUNCj4gPiA+ICsgKiAgICAgICBuYW1lcyBvZiBpdHMg
-Y29udHJpYnV0b3JzIG1heSBiZSB1c2VkIHRvIGVuZG9yc2Ugb3INCj4gPiA+IHByb21vdGUNCj4g
-PiA+IHByb2R1Y3RzDQo+ID4gPiArICogICAgICAgZGVyaXZlZCBmcm9tIHRoaXMgc29mdHdhcmUg
-d2l0aG91dCBzcGVjaWZpYyBwcmlvciB3cml0dGVuDQo+ID4gPiBwZXJtaXNzaW9uLg0KPiA+ID4g
-KyAqDQo+ID4gPiArICoNCj4gPiA+ICsgKiBBTFRFUk5BVElWRUxZLCB0aGlzIHNvZnR3YXJlIG1h
-eSBiZSBkaXN0cmlidXRlZCB1bmRlciB0aGUNCj4gPiA+IHRlcm1zIG9mDQo+ID4gPiB0aGUNCj4g
-PiA+ICsgKiBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSAoIkdQTCIpIGFzIHB1Ymxpc2hlZCBi
-eSB0aGUgRnJlZQ0KPiA+ID4gU29mdHdhcmUNCj4gPiA+ICsgKiBGb3VuZGF0aW9uLCBlaXRoZXIg
-dmVyc2lvbiAyIG9mIHRoYXQgTGljZW5zZSBvciAoYXQgeW91cg0KPiA+ID4gb3B0aW9uKSBhbnkN
-Cj4gPiA+ICsgKiBsYXRlciB2ZXJzaW9uLg0KPiA+ID4gKyAqDQo+ID4gPiArICogVEhJUyBTT0ZU
-V0FSRSBJUyBQUk9WSURFRCBCWSBGcmVlc2NhbGUgU2VtaWNvbmR1Y3RvciBgYEFTIElTJycNCj4g
-PiA+IEFORA0KPiA+ID4gQU5ZDQo+ID4gPiArICogRVhQUkVTUyBPUiBJTVBMSUVEIFdBUlJBTlRJ
-RVMsIElOQ0xVRElORywgQlVUIE5PVCBMSU1JVEVEIFRPLA0KPiA+ID4gVEhFDQo+ID4gPiBJTVBM
-SUVEDQo+ID4gPiArICogV0FSUkFOVElFUyBPRiBNRVJDSEFOVEFCSUxJVFkgQU5EIEZJVE5FU1Mg
-Rk9SIEEgUEFSVElDVUxBUg0KPiA+ID4gUFVSUE9TRQ0KPiA+ID4gQVJFDQo+ID4gPiArICogRElT
-Q0xBSU1FRC4gSU4gTk8gRVZFTlQgU0hBTEwgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgQkUNCj4g
-PiA+IExJQUJMRSBGT1INCj4gPiA+IEFOWQ0KPiA+ID4gKyAqIERJUkVDVCwgSU5ESVJFQ1QsIElO
-Q0lERU5UQUwsIFNQRUNJQUwsIEVYRU1QTEFSWSwgT1INCj4gPiA+IENPTlNFUVVFTlRJQUwNCj4g
-PiA+IERBTUFHRVMNCj4gPiA+ICsgKiAoSU5DTFVESU5HLCBCVVQgTk9UIExJTUlURUQgVE8sIFBS
-T0NVUkVNRU5UIE9GIFNVQlNUSVRVVEUNCj4gPiA+IEdPT0RTIE9SDQo+ID4gPiBTRVJWSUNFUzsN
-Cj4gPiA+ICsgKiBMT1NTIE9GIFVTRSwgREFUQSwgT1IgUFJPRklUUzsgT1IgQlVTSU5FU1MgSU5U
-RVJSVVBUSU9OKQ0KPiA+ID4gSE9XRVZFUg0KPiA+ID4gQ0FVU0VEIEFORA0KPiA+ID4gKyAqIE9O
-IEFOWSBUSEVPUlkgT0YgTElBQklMSVRZLCBXSEVUSEVSIElOIENPTlRSQUNULCBTVFJJQ1QNCj4g
-PiA+IExJQUJJTElUWSwgT1INCj4gPiA+IFRPUlQNCj4gPiA+ICsgKiAoSU5DTFVESU5HIE5FR0xJ
-R0VOQ0UgT1IgT1RIRVJXSVNFKSBBUklTSU5HIElOIEFOWSBXQVkgT1VUIE9GDQo+ID4gPiBUSEUg
-VVNFDQo+ID4gPiBPRiBUSElTDQo+ID4gPiArICogU09GVFdBUkUsIEVWRU4gSUYgQURWSVNFRCBP
-RiBUSEUgUE9TU0lCSUxJVFkgT0YgU1VDSCBEQU1BR0UuDQo+ID4gPiArICovDQo+ID4gPiArDQo+
-ID4gPiAgK3RtdUBmMDAwMHsNCj4gPiA+ICsgICBjb21wYXRpYmxlID0gImZzbCxxb3JpcS10bXUi
-Ow0KPiA+ID4gKyAgIHJlZyA9IDwweGYwMDAwIDB4MTAwMD47DQo+ID4gPiArICAgaW50ZXJydXB0
-cyA9IDwxOCAyIDAgMD47DQo+ID4gPiArICAgY2FsaWJyYXRpb24gPSA8MHgwMDAwMDAwMCAweDAw
-MDAwMDBmDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwMSAweDAwMDAwMDE3DQo+
-ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwMiAweDAwMDAwMDFlDQo+ID4gPiArICAg
-ICAgICAgICAgICAgICAgMHgwMDAwMDAwMyAweDAwMDAwMDI2DQo+ID4gPiArICAgICAgICAgICAg
-ICAgICAgMHgwMDAwMDAwNCAweDAwMDAwMDJlDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgw
-MDAwMDAwNSAweDAwMDAwMDM1DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwNiAw
-eDAwMDAwMDNkDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwNyAweDAwMDAwMDQ0
-DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwOCAweDAwMDAwMDRjDQo+ID4gPiAr
-ICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwOSAweDAwMDAwMDUzDQo+ID4gPiArICAgICAgICAg
-ICAgICAgICAgMHgwMDAwMDAwYSAweDAwMDAwMDViDQo+ID4gPiArICAgICAgICAgICAgICAgICAg
-MHgwMDAwMDAwYiAweDAwMDAwMDYyDQo+ID4gPiArDQo+ID4gPiArICAgICAgICAgICAgICAgICAg
-MHgwMDAxMDAwMCAweDAwMDAwMDExDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAw
-MSAweDAwMDAwMDE5DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwMiAweDAwMDAw
-MDIxDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwMyAweDAwMDAwMDJhDQo+ID4g
-PiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwNCAweDAwMDAwMDMyDQo+ID4gPiArICAgICAg
-ICAgICAgICAgICAgMHgwMDAxMDAwNSAweDAwMDAwMDNhDQo+ID4gPiArICAgICAgICAgICAgICAg
-ICAgMHgwMDAxMDAwNiAweDAwMDAwMDQyDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAx
-MDAwNyAweDAwMDAwMDRiDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwOCAweDAw
-MDAwMDUzDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwOSAweDAwMDAwMDViDQo+
-ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwYSAweDAwMDAwMDYzDQo+ID4gPiArDQo+
-ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwMCAweDAwMDAwMDEyDQo+ID4gPiArICAg
-ICAgICAgICAgICAgICAgMHgwMDAyMDAwMSAweDAwMDAwMDFiDQo+ID4gPiArICAgICAgICAgICAg
-ICAgICAgMHgwMDAyMDAwMiAweDAwMDAwMDI0DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgw
-MDAyMDAwMyAweDAwMDAwMDJjDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNCAw
-eDAwMDAwMDM1DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNSAweDAwMDAwMDNk
-DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNiAweDAwMDAwMDQ2DQo+ID4gPiAr
-ICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNyAweDAwMDAwMDRlDQo+ID4gPiArICAgICAgICAg
-ICAgICAgICAgMHgwMDAyMDAwOCAweDAwMDAwMDU3DQo+ID4gPiArDQo+ID4gPiArICAgICAgICAg
-ICAgICAgICAgMHgwMDAzMDAwMCAweDAwMDAwMDA5DQo+ID4gPiArICAgICAgICAgICAgICAgICAg
-MHgwMDAzMDAwMSAweDAwMDAwMDExDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAw
-MiAweDAwMDAwMDE5DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAwMyAweDAwMDAw
-MDIxDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAwNCAweDAwMDAwMDI5DQo+ID4g
-PiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAwNSAweDAwMDAwMDMxDQo+ID4gPiArICAgICAg
-ICAgICAgICAgICAgMHgwMDAzMDAwNiAweDAwMDAwMDM5DQo+ID4gPiArICAgICAgICAgICAgICAg
-ICAgMHgwMDAzMDAwNyAweDAwMDAwMDQxPjsgfTsNCj4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bv
-d2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9zdC5kdHNpDQo+ID4gPiBiL2FyY2gvcG93ZXJw
-Yy9ib290L2R0cy9mc2wvdDEwNDBzaS1wb3N0LmR0c2kNCj4gPiA+IGluZGV4IDE1YWU0NjIuLmJi
-OWY3OTIgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQw
-c2ktcG9zdC5kdHNpDQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQw
-c2ktcG9zdC5kdHNpDQo+ID4gPiBAQCAtMzQ1LDYgKzM0NSw3IEBADQo+ID4gPiAgICAgICAgICAg
-ICByZWcgICAgICAgID0gPDB4ZWEwMDAgMHg0MDAwPjsNCj4gPiA+ICAgICB9Ow0KPiA+ID4NCj4g
-PiA+ICsvaW5jbHVkZS8gInFvcmlxLXRtdS10MTA0eHNpLmR0c2kiDQo+ID4gPiAgL2luY2x1ZGUv
-ICJlbG8zLWRtYS0wLmR0c2kiDQo+ID4gPiAgL2luY2x1ZGUvICJlbG8zLWRtYS0xLmR0c2kiDQo+
-ID4gPiAgL2luY2x1ZGUvICJxb3JpcS1lc3BpLTAuZHRzaSINCj4gDQo+IFdoeSBpcyB0aGlzIGNo
-aXAtc3BlY2lmaWMgZW5vdWdoIHRvIGJlIGNhbGxlZCAidDEwNHhzaSIsIGJ1dCBub3QgY2hpcC0N
-Cj4gc3BlY2lmaWMgZW5vdWdoIHRvIGp1c3QgZ28gZGlyZWN0bHkgaW50byB0MTA0MHNpLXBvc3Q/
-DQoNClQxMDR4IHBsYXRmb3JtIHNoYXJlIHRoZSBzYW1lIGNhbGlicmF0aW9uIGRhdGEuDQoNCi1I
-b25ndGFvLg0KDQo+IA0KPiAtU0NvdHQNCj4gDQoNCg==
+
+--x+6KMIRAuhnl3hBn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Jun 05, 2015 at 04:35:09PM +1000, Alexey Kardashevskiy wrote:
+> So far one TCE table could only be used by one IOMMU group. However
+> IODA2 hardware allows programming the same TCE table address to
+> multiple PE allowing sharing tables.
+>=20
+> This replaces a single pointer to a group in a iommu_table struct
+> with a linked list of groups which provides the way of invalidating
+> TCE cache for every PE when an actual TCE table is updated. This adds pnv=
+_pci_link_table_and_group() and pnv_pci_unlink_table_and_group() helpers to=
+ manage the list. However without VFIO, it is still going
+> to be a single IOMMU group per iommu_table.
+>=20
+> This changes iommu_add_device() to add a device to a first group
+> from the group list of a table as it is only called from the platform
+> init code or PCI bus notifier and at these moments there is only
+> one group per table.
+>=20
+> This does not change TCE invalidation code to loop through all
+> attached groups in order to simplify this patch and because
+> it is not really needed in most cases. IODA2 is fixed in a later
+> patch.
+>=20
+> This should cause no behavioural change.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> [aw: for the vfio related changes]
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--x+6KMIRAuhnl3hBn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIbBAEBAgAGBQJVdlEwAAoJEGw4ysog2bOSLtkP91iljpnAadgepMxaeDxDAesu
+Qz7bkm3zabt60YSjntFDCpNhuvRccoAMPIAQkDMI8EPVpLoPq4Moq0pT9sbFxgtT
+W8AlrU/6md+WeQFaKXl99I1lbQ+f9zf6yntBjcU8TCBs616AYTt21I4ZN77/P616
+q/36gGU/INBYiYB0v0RgEubgkZefIq8EztkGxnmDhGHQHEQNScyFtHyH8w0WfC44
+dUKcUcNboA5kRQs+1gbiRy563J6Fp9DKAJVXJu2TCth+G0CwW+GZTxrp1HOZLFeU
+sxNHHMe10BbOjNtaHVtuG+06LZj63sShfoHiZ9Zsf62K0kn+BqHQhGlL6ruPhnPh
+PUiVDl0L/k0xZ4Ix7N7XfQsFR4Abf3DtcOAUDUDdg+kQsjcozANcUvdGsaHoXERp
+/AWmMpeJIPcuvIlkODwxx/SzBdj5Z8XRB6u2q79UEHU7WpSIJdKXPhH9vZDnxF5Y
+WFk739kjgK8Iikl6turP0w8geKf891YYrDYOpTUjQoXWY0nNa++k0XwoVRvsoTuL
+Qvtgsk82/EnPf4TJo6Hhc/V9YxaDmstQDymqphi4hsX9S2mwKiy9rwMzbKqF700z
+wyH6OJhIP8SW0D1jbjpgybkcJWPK1WoTWR/amhesYLaR6ivcRHj6BWCG64itVuPc
+pHHsBEP4VhHui5G5OeA=
+=vC9I
+-----END PGP SIGNATURE-----
+
+--x+6KMIRAuhnl3hBn--
