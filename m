@@ -1,41 +1,41 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D2B5C1A0DDE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 16:11:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BF1D1A01C8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 21:43:36 +1000 (AEST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 9 Jun 2015 16:11:53 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9C52E2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 16:11:50 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t596BgOH917848
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 16:11:50 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t596BHgh006083
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 16:11:17 +1000
-Date: Tue, 9 Jun 2015 16:10:52 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, aik@ozlabs.ru, panto@antoniou-consulting.com,
- robherring2@gmail.com, grant.likely@linaro.org
-Subject: Re: [PATCH v5 31/42] powerpc/pci: Move pcibios_find_pci_bus() around
-Message-ID: <20150609061052.GA387@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1433400131-18429-32-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150605194730.GO3631@google.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 9 Jun 2015 21:43:34 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 993A52BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 21:43:30 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t59Bg6Wg59244642
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 21:42:15 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t59Bfgt1009422
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 9 Jun 2015 21:41:42 +1000
+Message-ID: <5576D0D8.8070304@linux.vnet.ibm.com>
+Date: Tue, 09 Jun 2015 17:11:12 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150605194730.GO3631@google.com>
+To: Daniel Axtens <dja@axtens.net>
+CC: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Stephane Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH v1 7/9]powerpc/powernv: Event attr creation and PMU
+ registration
+References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433260778-26497-8-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433293592.438.74.camel@axtens.net>
+In-Reply-To: <1433293592.438.74.camel@axtens.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,124 +45,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 05, 2015 at 02:47:30PM -0500, Bjorn Helgaas wrote:
->"Move pcibios_find_pci_bus() from pSeries to generic powerpc code"?
->
->On Thu, Jun 04, 2015 at 04:42:00PM +1000, Gavin Shan wrote:
->> The patch moves pcibios_find_pci_bus() to PPC kerenl directory so
->
->s/kerenl/kernel/
->
 
-Thanks. I'll fix it in next revision.
 
-Thanks,
-Gavin
-
->> that it can be reused by hotplug code for pSeries and PowerNV
->> platform at the same time.
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Wednesday 03 June 2015 06:36 AM, Daniel Axtens wrote:
+> On Tue, 2015-06-02 at 21:29 +0530, Madhavan Srinivasan wrote:
+>> Patch adds common event attribute function and Nest pmu registration call.
+>>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+>> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> Cc: Stephane Eranian <eranian@google.com>
+>> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 >> ---
->> v5:
->>   * Derived from PATCH[v4 12/21]
->> ---
->>  arch/powerpc/kernel/pci-hotplug.c          | 36 ++++++++++++++++++++++++++++++
->>  arch/powerpc/platforms/pseries/pci_dlpar.c | 32 --------------------------
->>  2 files changed, 36 insertions(+), 32 deletions(-)
->> 
->> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
->> index ca392fc..1482bc1 100644
->> --- a/arch/powerpc/kernel/pci-hotplug.c
->> +++ b/arch/powerpc/kernel/pci-hotplug.c
->> @@ -21,6 +21,42 @@
->>  #include <asm/firmware.h>
->>  #include <asm/eeh.h>
+>>  arch/powerpc/perf/nest-pmu.c | 52 ++++++++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 52 insertions(+)
+>>
+>> diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+>> index 514a0be..dd84fd7 100644
+>> --- a/arch/powerpc/perf/nest-pmu.c
+>> +++ b/arch/powerpc/perf/nest-pmu.c
+>> @@ -244,6 +244,49 @@ static int update_pmu_ops(struct nest_pmu *pmu)
+>>  	return 0;
+>>  }
 >>  
->> +static struct pci_bus *find_pci_bus(struct pci_bus *bus,
->> +				    struct device_node *dn)
->> +{
->> +	struct pci_bus *tmp, *child = NULL;
->> +	struct device_node *busdn;
->> +
->> +	busdn = pci_bus_to_OF_node(bus);
->> +	if (busdn == dn)
->> +		return bus;
->> +
->> +	list_for_each_entry(tmp, &bus->children, node) {
->> +		child = find_pci_bus(tmp, dn);
->> +		if (child)
->> +			break;
->> +	}
->> +
->> +	return child;
->> +}
->> +
->> +/**
->> + * pcibios_find_pci_bus - find PCI bus according to the given device node
->> + * @dn: Device node
->> + *
->> + * Find the corresponding PCI bus according to the given device node.
+>> +/*
+>> + * Populate event name and string in attribute
 >> + */
->> +struct pci_bus *pcibios_find_pci_bus(struct device_node *dn)
+>> +struct attribute *dev_str_attr(char *name, char *str)
 >> +{
->> +	struct pci_dn *pdn = PCI_DN(dn);
+>> +	struct perf_pmu_events_attr *attr;
 >> +
->> +	if (!pdn  || !pdn->phb || !pdn->phb->bus)
->> +		return NULL;
+>> +	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
 >> +
->> +	return find_pci_bus(pdn->phb->bus, dn);
+>> +	attr->event_str = (const char *)str;
+> Erk. Two things:
+>  - Is str const or not? If you're treating it as const here, should you
+> pass that through the function signature?
+>  - Who is responsible for the memory behind it? It looks like a caller
+> can't construct str dynamically, pass it to this function and then free
+> it, because that will invalidate attr->event_str. Is this documented?
+Yes. Valid point. str should be and it is const. My bad, will fix the
+function
+signature.
+
+>> +	attr->attr.attr.name = name;
+>> +	attr->attr.attr.mode = 0444;
+>> +	attr->attr.show = perf_event_sysfs_show;
+>> +
+>> +	return &attr->attr.attr;
+> If you're returning the address of attr->attr.attr, then:
+>  - why don't you just deal directly with struct attribute * in the
+> function? Why an entire struct perf_pmu_events_attr *?
+>  - with the function as written, if you return just &attr->attr.attr,
+> don't attr->event_str and attr->attr.show get lost?
+
+Kindly have should look at perf_event_sysfs_show function in
+include/linux/perf_event.h.
+Even though we return only &attr->attr.attr, we are not freeing the
+memory of
+perf_pmu_event_attr, hence will not be lost :) .
 >> +}
->> +EXPORT_SYMBOL_GPL(pcibios_find_pci_bus);
 >> +
->>  /**
->>   * pcibios_release_device - release PCI device
->>   * @dev: PCI device
->> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
->> index 5d4a3df..906dbaa 100644
->> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
->> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
->> @@ -34,38 +34,6 @@
->>  
->>  #include "pseries.h"
->>  
->> -static struct pci_bus *
->> -find_bus_among_children(struct pci_bus *bus,
->> -                        struct device_node *dn)
->> -{
->> -	struct pci_bus *child = NULL;
->> -	struct pci_bus *tmp;
->> -	struct device_node *busdn;
->> -
->> -	busdn = pci_bus_to_OF_node(bus);
->> -	if (busdn == dn)
->> -		return bus;
->> -
->> -	list_for_each_entry(tmp, &bus->children, node) {
->> -		child = find_bus_among_children(tmp, dn);
->> -		if (child)
->> -			break;
->> -	};
->> -	return child;
->> -}
->> -
->> -struct pci_bus *
->> -pcibios_find_pci_bus(struct device_node *dn)
->> -{
->> -	struct pci_dn *pdn = dn->data;
->> -
->> -	if (!pdn  || !pdn->phb || !pdn->phb->bus)
->> -		return NULL;
->> -
->> -	return find_bus_among_children(pdn->phb->bus, dn);
->> -}
->> -EXPORT_SYMBOL_GPL(pcibios_find_pci_bus);
->> -
->>  struct pci_controller *init_phb_dynamic(struct device_node *dn)
+>> +int update_events_in_group(
+>> +	struct ppc64_nest_ima_events *p8_events, int idx,
+>> +		struct nest_pmu *pmu)
+>> +{
+>> +	struct attribute_group *attr_group;
+>> +	struct attribute **attrs;
+>> +	int i;
+>> +
+>> +	attr_group = kzalloc(((sizeof(struct attribute *) * (idx + 1)) +
+>> +				sizeof(*attr_group)), GFP_KERNEL);
+>> +	if (!attr_group)
+>> +		return -ENOMEM;
+>> +
+>> +	attrs = (struct attribute **)(attr_group + 1);
+>> +	attr_group->name = "events";
+>> +	attr_group->attrs = attrs;
+>> +
+>> +	for (i=0; i< idx; i++, p8_events++)
+>> +		attrs[i] = dev_str_attr((char *)p8_events->ev_name,
+>> +						(char *)p8_events->ev_value);
+>> +
+>> +	pmu->attr_groups[0] = attr_group;
+>> +	return 0;
+>> +}
+> I'm very confused by what this function is trying to do. Could you add
+> some comments? I'm particularly confused by the relationship between
+> attrs and attr_group.
+
+This function mainly creates a "event" attribute group for this PMU.
+It does so with the list of event files parsed from the device tree
+for this pmu in the nest_pmu_create function.
+
+WIll add comments in the next version.
+
+>> +
+>> +
+>>  static int nest_pmu_create(struct device_node *dev, int pmu_index)
 >>  {
->>  	struct pci_controller *phb;
->> -- 
->> 2.1.0
->> 
+>>  	struct ppc64_nest_ima_events **p8_events_arr;
+>> @@ -364,6 +407,15 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+>>  		}
+>>  	}
+>>  
+>> +	update_events_in_group(
+>> +		(struct ppc64_nest_ima_events *)p8_events_arr,
+>> +							idx, pmu_ptr);
+>> +	update_pmu_ops(pmu_ptr);
+>> +
+>> +	/* Register the pmu */
+>> +	perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
+>> +	printk(KERN_INFO "Nest PMU %s Registered\n", pmu_ptr->pmu.name);
+>> +
+>>  	return 0;
+>>  }
+>>  
+> Regards,
+> Daniel
 >
+Apologizes on late response to this mail. Missed it.
+Thanks for review
+Maddy
