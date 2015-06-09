@@ -1,20 +1,26 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0135.outbound.protection.outlook.com [157.56.111.135])
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB4DC1A02D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 12:13:42 +1000 (AEST)
-From: <Yuantian.Tang@freescale.com>
-To: <b07421@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, "Tang
- Yuantian" <Yuantian.Tang@freescale.com>, Chenhui Zhao
- <chenhui.zhao@freescale.com>, Tang Yuantian <Yuantian.Tang@feescale.com>
-Subject: [PATCH v3] powerpc/cache: add cache flush operation for various e500
-Date: Tue, 9 Jun 2015 09:53:47 +0800
-Message-ID: <1433814827-10431-1-git-send-email-Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E1401A02D6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Jun 2015 12:19:41 +1000 (AEST)
+From: Hongtao Jia <hongtao.jia@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "edubezval@gmail.com" <edubezval@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com"
+ <rui.zhang@intel.com>
+Subject: RE: [PATCH V2] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
+Date: Tue, 9 Jun 2015 02:19:29 +0000
+Message-ID: <BLUPR03MB149DC0A753423EB27293931E1BE0@BLUPR03MB149.namprd03.prod.outlook.com>
+References: <1429085868-47577-1-git-send-email-hongtao.jia@freescale.com>
+ <BLUPR03MB1498C018F80A754767DF48FE1CC0@BLUPR03MB149.namprd03.prod.outlook.com>
+ <1432669078.7862.13.camel@freescale.com>
+In-Reply-To: <1432669078.7862.13.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,355 +30,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
-
-Various e500 core have different cache architecture, so they
-need different cache flush operations. Therefore, add a callback
-function cpu_flush_caches to the struct cpu_spec. The cache flush
-operation for the specific kind of e500 is selected at init time.
-The callback function will flush all caches inside the current cpu.
-
-Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@feescale.com>
----
-v3:
-	- change all flush_caches to cpu_down_flush
-	- replace whitespace with tab
-v2:
-	- remove some function's prefix "__"
-	- remove redundent CONFIG_PPC_E500MC micro
-
- arch/powerpc/include/asm/cacheflush.h     |   2 -
- arch/powerpc/include/asm/cputable.h       |  11 +++
- arch/powerpc/kernel/asm-offsets.c         |   3 +
- arch/powerpc/kernel/cpu_setup_fsl_booke.S | 112 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/cputable.c            |   4 ++
- arch/powerpc/kernel/head_fsl_booke.S      |  74 --------------------
- arch/powerpc/platforms/85xx/smp.c         |   3 +-
- 7 files changed, 132 insertions(+), 77 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index 30b35ff..729fde4 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -30,8 +30,6 @@ extern void flush_dcache_page(struct page *page);
- #define flush_dcache_mmap_lock(mapping)		do { } while (0)
- #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
- 
--extern void __flush_disable_L1(void);
--
- extern void flush_icache_range(unsigned long, unsigned long);
- extern void flush_icache_user_range(struct vm_area_struct *vma,
- 				    struct page *page, unsigned long addr,
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 6367b83..0444469 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -43,6 +43,13 @@ extern int machine_check_e500(struct pt_regs *regs);
- extern int machine_check_e200(struct pt_regs *regs);
- extern int machine_check_47x(struct pt_regs *regs);
- 
-+#if defined(CONFIG_E500)
-+extern void cpu_down_flush_e500v2(void);
-+extern void cpu_down_flush_e500mc(void);
-+extern void cpu_down_flush_e5500(void);
-+extern void cpu_down_flush_e6500(void);
-+#endif
-+
- /* NOTE WELL: Update identify_cpu() if fields are added or removed! */
- struct cpu_spec {
- 	/* CPU is matched via (PVR & pvr_mask) == pvr_value */
-@@ -59,6 +66,10 @@ struct cpu_spec {
- 	unsigned int	icache_bsize;
- 	unsigned int	dcache_bsize;
- 
-+#if defined(CONFIG_E500)
-+	/* flush caches inside the current cpu */
-+	void (*cpu_down_flush)(void);
-+#endif
- 	/* number of performance monitor counters */
- 	unsigned int	num_pmcs;
- 	enum powerpc_pmc_type pmc_type;
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 0034b6b..52efca9 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -373,6 +373,9 @@ int main(void)
- 	DEFINE(CPU_SPEC_FEATURES, offsetof(struct cpu_spec, cpu_features));
- 	DEFINE(CPU_SPEC_SETUP, offsetof(struct cpu_spec, cpu_setup));
- 	DEFINE(CPU_SPEC_RESTORE, offsetof(struct cpu_spec, cpu_restore));
-+#if defined(CONFIG_E500)
-+	DEFINE(CPU_DOWN_FLUSH, offsetof(struct cpu_spec, cpu_down_flush));
-+#endif
- 
- 	DEFINE(pbe_address, offsetof(struct pbe, address));
- 	DEFINE(pbe_orig_address, offsetof(struct pbe, orig_address));
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index dddba3e..462aed9 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -13,11 +13,13 @@
-  *
-  */
- 
-+#include <asm/page.h>
- #include <asm/processor.h>
- #include <asm/cputable.h>
- #include <asm/ppc_asm.h>
- #include <asm/mmu-book3e.h>
- #include <asm/asm-offsets.h>
-+#include <asm/mpc85xx.h>
- 
- _GLOBAL(__e500_icache_setup)
- 	mfspr	r0, SPRN_L1CSR1
-@@ -233,3 +235,113 @@ _GLOBAL(__setup_cpu_e5500)
- 	mtlr	r5
- 	blr
- #endif
-+
-+/* flush L1 date cache, it can apply to e500v2, e500mc and e5500 */
-+_GLOBAL(flush_dcache_L1)
-+	mfmsr	r10
-+	wrteei	0
-+
-+	mfspr	r3,SPRN_L1CFG0
-+	rlwinm	r5,r3,9,3	/* Extract cache block size */
-+	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
-+				 * are currently defined.
-+				 */
-+	li	r4,32
-+	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
-+				 *      log2(number of ways)
-+				 */
-+	slw	r5,r4,r5	/* r5 = cache block size */
-+
-+	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
-+	mulli	r7,r7,13	/* An 8-way cache will require 13
-+				 * loads per set.
-+				 */
-+	slw	r7,r7,r6
-+
-+	/* save off HID0 and set DCFA */
-+	mfspr	r8,SPRN_HID0
-+	ori	r9,r8,HID0_DCFA@l
-+	mtspr	SPRN_HID0,r9
-+	isync
-+
-+	LOAD_REG_IMMEDIATE(r6, KERNELBASE)
-+	mr	r4, r6
-+	mtctr	r7
-+
-+1:	lwz	r3,0(r4)	/* Load... */
-+	add	r4,r4,r5
-+	bdnz	1b
-+
-+	msync
-+	mr	r4, r6
-+	mtctr	r7
-+
-+1:	dcbf	0,r4		/* ...and flush. */
-+	add	r4,r4,r5
-+	bdnz	1b
-+
-+	/* restore HID0 */
-+	mtspr	SPRN_HID0,r8
-+	isync
-+
-+	wrtee r10
-+
-+	blr
-+
-+has_L2_cache:
-+	/* skip L2 cache on P2040/P2040E as they have no L2 cache */
-+	mfspr	r3, SPRN_SVR
-+	/* shift right by 8 bits and clear E bit of SVR */
-+	rlwinm	r4, r3, 24, ~0x800
-+
-+	lis	r3, SVR_P2040@h
-+	ori	r3, r3, SVR_P2040@l
-+	cmpw	r4, r3
-+	beq	1f
-+
-+	li	r3, 1
-+	blr
-+1:
-+	li	r3, 0
-+	blr
-+
-+/* flush backside L2 cache */
-+flush_backside_L2_cache:
-+	mflr	r10
-+	bl	has_L2_cache
-+	mtlr	r10
-+	cmpwi	r3, 0
-+	beq	2f
-+
-+	/* Flush the L2 cache */
-+	mfspr	r3, SPRN_L2CSR0
-+	ori	r3, r3, L2CSR0_L2FL@l
-+	msync
-+	isync
-+	mtspr	SPRN_L2CSR0,r3
-+	isync
-+
-+	/* check if it is complete */
-+1:	mfspr	r3,SPRN_L2CSR0
-+	andi.	r3, r3, L2CSR0_L2FL@l
-+	bne	1b
-+2:
-+	blr
-+
-+_GLOBAL(cpu_down_flush_e500v2)
-+	mflr r0
-+	bl	flush_dcache_L1
-+	mtlr r0
-+	blr
-+
-+_GLOBAL(cpu_down_flush_e500mc)
-+_GLOBAL(cpu_down_flush_e5500)
-+	mflr r0
-+	bl	flush_dcache_L1
-+	bl	flush_backside_L2_cache
-+	mtlr r0
-+	blr
-+
-+/* L1 Data Cache of e6500 contains no modified data, no flush is required */
-+_GLOBAL(cpu_down_flush_e6500)
-+	blr
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 60262fd..8d78e8e 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2021,6 +2021,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_e500v2,
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppc8548",
-+		.cpu_down_flush	= cpu_down_flush_e500v2,
- 	},
- #else
- 	{	/* e500mc */
-@@ -2040,6 +2041,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_e500mc,
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce500mc",
-+		.cpu_down_flush	= cpu_down_flush_e500mc,
- 	},
- #endif /* CONFIG_PPC_E500MC */
- #endif /* CONFIG_PPC32 */
-@@ -2064,6 +2066,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce5500",
-+		.cpu_down_flush	= cpu_down_flush_e5500,
- 	},
- 	{	/* e6500 */
- 		.pvr_mask		= 0xffff0000,
-@@ -2086,6 +2089,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce6500",
-+		.cpu_down_flush	= cpu_down_flush_e6500,
- 	},
- #endif /* CONFIG_PPC_E500MC */
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index fffd1f9..709bc50 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1075,80 +1075,6 @@ _GLOBAL(set_context)
- 	isync			/* Force context change */
- 	blr
- 
--_GLOBAL(flush_dcache_L1)
--	mfspr	r3,SPRN_L1CFG0
--
--	rlwinm	r5,r3,9,3	/* Extract cache block size */
--	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
--				 * are currently defined.
--				 */
--	li	r4,32
--	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
--				 *      log2(number of ways)
--				 */
--	slw	r5,r4,r5	/* r5 = cache block size */
--
--	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
--	mulli	r7,r7,13	/* An 8-way cache will require 13
--				 * loads per set.
--				 */
--	slw	r7,r7,r6
--
--	/* save off HID0 and set DCFA */
--	mfspr	r8,SPRN_HID0
--	ori	r9,r8,HID0_DCFA@l
--	mtspr	SPRN_HID0,r9
--	isync
--
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	lwz	r3,0(r4)	/* Load... */
--	add	r4,r4,r5
--	bdnz	1b
--
--	msync
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	dcbf	0,r4		/* ...and flush. */
--	add	r4,r4,r5
--	bdnz	1b
--	
--	/* restore HID0 */
--	mtspr	SPRN_HID0,r8
--	isync
--
--	blr
--
--/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
--_GLOBAL(__flush_disable_L1)
--	mflr	r10
--	bl	flush_dcache_L1	/* Flush L1 d-cache */
--	mtlr	r10
--
--	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	msync
--	isync
--	mtspr	SPRN_L1CSR0, r4
--	isync
--
--1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
--	andi.	r4, r4, 2
--	bne	1b
--
--	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	mtspr	SPRN_L1CSR1, r4
--	isync
--
--	blr
--
- #ifdef CONFIG_SMP
- /* When we get here, r24 needs to hold the CPU # */
- 	.globl __secondary_start
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 8631ac5..16b366f 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -139,7 +139,8 @@ static void smp_85xx_mach_cpu_die(void)
- 
- 	mtspr(SPRN_TCR, 0);
- 
--	__flush_disable_L1();
-+	cur_cpu_spec->cpu_down_flush();
-+
- 	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
- 	mtspr(SPRN_HID0, tmp);
- 	isync();
--- 
-2.1.0.27.g96db324
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IFdlZG5lc2RheSwgTWF5IDI3LCAyMDE1IDM6MzggQU0NCj4gVG86IEppYSBIb25n
+dGFvLUIzODk1MQ0KPiBDYzogZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyByb2JoK2R0QGtlcm5l
+bC5vcmc7IHJ1aS56aGFuZ0BpbnRlbC5jb20NCj4gU3ViamVjdDogUmU6IFtQQVRDSCBWMl0gUW9y
+SVEvVE1VOiBhZGQgVE1VIG5vZGUgdG8gZGV2aWNlIHRyZWUgZm9yIFFvcklRDQo+IFQxMDR4DQo+
+IA0KPiBPbiBUdWUsIDIwMTUtMDUtMjYgYXQgMDE6MzMgLTA1MDAsIEppYSBIb25ndGFvLUIzODk1
+MSB3cm90ZToNCj4gPiBIaSBTY290dCwNCj4gPg0KPiA+IEVkdWFyZG8gaW5kaWNhdGVkIHRoYXQg
+ImNhbGlicmF0aW9uIiBwcm9wZXJ0eSBzaG91bGQgYWRkICJmc2wiDQo+ID4gcHJlZml4Lg0KPiA+
+IEkgdXBkYXRlZCB0aGUgcGF0Y2guDQo+ID4gQW55IG90aGVyIGNvbW1lbnRzPw0KPiA+IElmIG5v
+dCBJIHdpbGwgc2VuZCBWMyBzb29uLg0KPiA+DQo+ID4gVGhhbmtzLg0KPiANCj4gSSdkIGdvIHdp
+dGggImZzbCx0bXUtY2FsaWJyYXRpb24iIHJhdGhlciB0aGFuICJmc2wsY2FsaWJyYXRpb24iIGJ1
+dCBub3QgYQ0KPiBiaWcgZGVhbCBlaXRoZXIgd2F5Lg0KDQpUaGFua3MgZm9yIHRoZSBhZHZpY2Uu
+DQoNCj4gDQo+ID4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3Jp
+cS10bXUtdDEwNHhzaS5kdHNpDQo+ID4gPiBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9y
+aXEtdG11LXQxMDR4c2kuZHRzaQ0KPiA+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gPiA+IGlu
+ZGV4IDAwMDAwMDAuLmQ4NWM3N2QNCj4gPiA+IC0tLSAvZGV2L251bGwNCj4gPiA+ICsrKyBiL2Fy
+Y2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9yaXEtdG11LXQxMDR4c2kuZHRzaQ0KPiA+ID4gQEAg
+LTAsMCArMSw4MiBAQA0KPiA+ID4gKy8qDQo+ID4gPiArICogUW9ySVEgVE1VIGRldmljZSB0cmVl
+IHN0dWIgWyBjb250cm9sbGVyIEAgb2Zmc2V0IDB4ZjAwMDAgXQ0KPiA+ID4gKyAqDQo+ID4gPiAr
+ICogQ29weXJpZ2h0IDIwMTUgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgSW5jLg0KPiA+ID4gKyAq
+DQo+ID4gPiArICogUmVkaXN0cmlidXRpb24gYW5kIHVzZSBpbiBzb3VyY2UgYW5kIGJpbmFyeSBm
+b3Jtcywgd2l0aCBvcg0KPiA+ID4gd2l0aG91dA0KPiA+ID4gKyAqIG1vZGlmaWNhdGlvbiwgYXJl
+IHBlcm1pdHRlZCBwcm92aWRlZCB0aGF0IHRoZSBmb2xsb3dpbmcNCj4gPiA+IGNvbmRpdGlvbnMN
+Cj4gPiA+IGFyZSBtZXQ6DQo+ID4gPiArICogICAgICogUmVkaXN0cmlidXRpb25zIG9mIHNvdXJj
+ZSBjb2RlIG11c3QgcmV0YWluIHRoZSBhYm92ZQ0KPiA+ID4gY29weXJpZ2h0DQo+ID4gPiArICog
+ICAgICAgbm90aWNlLCB0aGlzIGxpc3Qgb2YgY29uZGl0aW9ucyBhbmQgdGhlIGZvbGxvd2luZw0K
+PiA+ID4gZGlzY2xhaW1lci4NCj4gPiA+ICsgKiAgICAgKiBSZWRpc3RyaWJ1dGlvbnMgaW4gYmlu
+YXJ5IGZvcm0gbXVzdCByZXByb2R1Y2UgdGhlIGFib3ZlDQo+ID4gPiBjb3B5cmlnaHQNCj4gPiA+
+ICsgKiAgICAgICBub3RpY2UsIHRoaXMgbGlzdCBvZiBjb25kaXRpb25zIGFuZCB0aGUgZm9sbG93
+aW5nDQo+ID4gPiBkaXNjbGFpbWVyIGluDQo+ID4gPiB0aGUNCj4gPiA+ICsgKiAgICAgICBkb2N1
+bWVudGF0aW9uIGFuZC9vciBvdGhlciBtYXRlcmlhbHMgcHJvdmlkZWQgd2l0aCB0aGUNCj4gPiA+
+IGRpc3RyaWJ1dGlvbi4NCj4gPiA+ICsgKiAgICAgKiBOZWl0aGVyIHRoZSBuYW1lIG9mIEZyZWVz
+Y2FsZSBTZW1pY29uZHVjdG9yIG5vciB0aGUNCj4gPiA+ICsgKiAgICAgICBuYW1lcyBvZiBpdHMg
+Y29udHJpYnV0b3JzIG1heSBiZSB1c2VkIHRvIGVuZG9yc2Ugb3INCj4gPiA+IHByb21vdGUNCj4g
+PiA+IHByb2R1Y3RzDQo+ID4gPiArICogICAgICAgZGVyaXZlZCBmcm9tIHRoaXMgc29mdHdhcmUg
+d2l0aG91dCBzcGVjaWZpYyBwcmlvciB3cml0dGVuDQo+ID4gPiBwZXJtaXNzaW9uLg0KPiA+ID4g
+KyAqDQo+ID4gPiArICoNCj4gPiA+ICsgKiBBTFRFUk5BVElWRUxZLCB0aGlzIHNvZnR3YXJlIG1h
+eSBiZSBkaXN0cmlidXRlZCB1bmRlciB0aGUNCj4gPiA+IHRlcm1zIG9mDQo+ID4gPiB0aGUNCj4g
+PiA+ICsgKiBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSAoIkdQTCIpIGFzIHB1Ymxpc2hlZCBi
+eSB0aGUgRnJlZQ0KPiA+ID4gU29mdHdhcmUNCj4gPiA+ICsgKiBGb3VuZGF0aW9uLCBlaXRoZXIg
+dmVyc2lvbiAyIG9mIHRoYXQgTGljZW5zZSBvciAoYXQgeW91cg0KPiA+ID4gb3B0aW9uKSBhbnkN
+Cj4gPiA+ICsgKiBsYXRlciB2ZXJzaW9uLg0KPiA+ID4gKyAqDQo+ID4gPiArICogVEhJUyBTT0ZU
+V0FSRSBJUyBQUk9WSURFRCBCWSBGcmVlc2NhbGUgU2VtaWNvbmR1Y3RvciBgYEFTIElTJycNCj4g
+PiA+IEFORA0KPiA+ID4gQU5ZDQo+ID4gPiArICogRVhQUkVTUyBPUiBJTVBMSUVEIFdBUlJBTlRJ
+RVMsIElOQ0xVRElORywgQlVUIE5PVCBMSU1JVEVEIFRPLA0KPiA+ID4gVEhFDQo+ID4gPiBJTVBM
+SUVEDQo+ID4gPiArICogV0FSUkFOVElFUyBPRiBNRVJDSEFOVEFCSUxJVFkgQU5EIEZJVE5FU1Mg
+Rk9SIEEgUEFSVElDVUxBUg0KPiA+ID4gUFVSUE9TRQ0KPiA+ID4gQVJFDQo+ID4gPiArICogRElT
+Q0xBSU1FRC4gSU4gTk8gRVZFTlQgU0hBTEwgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgQkUNCj4g
+PiA+IExJQUJMRSBGT1INCj4gPiA+IEFOWQ0KPiA+ID4gKyAqIERJUkVDVCwgSU5ESVJFQ1QsIElO
+Q0lERU5UQUwsIFNQRUNJQUwsIEVYRU1QTEFSWSwgT1INCj4gPiA+IENPTlNFUVVFTlRJQUwNCj4g
+PiA+IERBTUFHRVMNCj4gPiA+ICsgKiAoSU5DTFVESU5HLCBCVVQgTk9UIExJTUlURUQgVE8sIFBS
+T0NVUkVNRU5UIE9GIFNVQlNUSVRVVEUNCj4gPiA+IEdPT0RTIE9SDQo+ID4gPiBTRVJWSUNFUzsN
+Cj4gPiA+ICsgKiBMT1NTIE9GIFVTRSwgREFUQSwgT1IgUFJPRklUUzsgT1IgQlVTSU5FU1MgSU5U
+RVJSVVBUSU9OKQ0KPiA+ID4gSE9XRVZFUg0KPiA+ID4gQ0FVU0VEIEFORA0KPiA+ID4gKyAqIE9O
+IEFOWSBUSEVPUlkgT0YgTElBQklMSVRZLCBXSEVUSEVSIElOIENPTlRSQUNULCBTVFJJQ1QNCj4g
+PiA+IExJQUJJTElUWSwgT1INCj4gPiA+IFRPUlQNCj4gPiA+ICsgKiAoSU5DTFVESU5HIE5FR0xJ
+R0VOQ0UgT1IgT1RIRVJXSVNFKSBBUklTSU5HIElOIEFOWSBXQVkgT1VUIE9GDQo+ID4gPiBUSEUg
+VVNFDQo+ID4gPiBPRiBUSElTDQo+ID4gPiArICogU09GVFdBUkUsIEVWRU4gSUYgQURWSVNFRCBP
+RiBUSEUgUE9TU0lCSUxJVFkgT0YgU1VDSCBEQU1BR0UuDQo+ID4gPiArICovDQo+ID4gPiArDQo+
+ID4gPiAgK3RtdUBmMDAwMHsNCj4gPiA+ICsgICBjb21wYXRpYmxlID0gImZzbCxxb3JpcS10bXUi
+Ow0KPiA+ID4gKyAgIHJlZyA9IDwweGYwMDAwIDB4MTAwMD47DQo+ID4gPiArICAgaW50ZXJydXB0
+cyA9IDwxOCAyIDAgMD47DQo+ID4gPiArICAgY2FsaWJyYXRpb24gPSA8MHgwMDAwMDAwMCAweDAw
+MDAwMDBmDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwMSAweDAwMDAwMDE3DQo+
+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwMiAweDAwMDAwMDFlDQo+ID4gPiArICAg
+ICAgICAgICAgICAgICAgMHgwMDAwMDAwMyAweDAwMDAwMDI2DQo+ID4gPiArICAgICAgICAgICAg
+ICAgICAgMHgwMDAwMDAwNCAweDAwMDAwMDJlDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgw
+MDAwMDAwNSAweDAwMDAwMDM1DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwNiAw
+eDAwMDAwMDNkDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwNyAweDAwMDAwMDQ0
+DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwOCAweDAwMDAwMDRjDQo+ID4gPiAr
+ICAgICAgICAgICAgICAgICAgMHgwMDAwMDAwOSAweDAwMDAwMDUzDQo+ID4gPiArICAgICAgICAg
+ICAgICAgICAgMHgwMDAwMDAwYSAweDAwMDAwMDViDQo+ID4gPiArICAgICAgICAgICAgICAgICAg
+MHgwMDAwMDAwYiAweDAwMDAwMDYyDQo+ID4gPiArDQo+ID4gPiArICAgICAgICAgICAgICAgICAg
+MHgwMDAxMDAwMCAweDAwMDAwMDExDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAw
+MSAweDAwMDAwMDE5DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwMiAweDAwMDAw
+MDIxDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwMyAweDAwMDAwMDJhDQo+ID4g
+PiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwNCAweDAwMDAwMDMyDQo+ID4gPiArICAgICAg
+ICAgICAgICAgICAgMHgwMDAxMDAwNSAweDAwMDAwMDNhDQo+ID4gPiArICAgICAgICAgICAgICAg
+ICAgMHgwMDAxMDAwNiAweDAwMDAwMDQyDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAx
+MDAwNyAweDAwMDAwMDRiDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwOCAweDAw
+MDAwMDUzDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwOSAweDAwMDAwMDViDQo+
+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAxMDAwYSAweDAwMDAwMDYzDQo+ID4gPiArDQo+
+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwMCAweDAwMDAwMDEyDQo+ID4gPiArICAg
+ICAgICAgICAgICAgICAgMHgwMDAyMDAwMSAweDAwMDAwMDFiDQo+ID4gPiArICAgICAgICAgICAg
+ICAgICAgMHgwMDAyMDAwMiAweDAwMDAwMDI0DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgw
+MDAyMDAwMyAweDAwMDAwMDJjDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNCAw
+eDAwMDAwMDM1DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNSAweDAwMDAwMDNk
+DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNiAweDAwMDAwMDQ2DQo+ID4gPiAr
+ICAgICAgICAgICAgICAgICAgMHgwMDAyMDAwNyAweDAwMDAwMDRlDQo+ID4gPiArICAgICAgICAg
+ICAgICAgICAgMHgwMDAyMDAwOCAweDAwMDAwMDU3DQo+ID4gPiArDQo+ID4gPiArICAgICAgICAg
+ICAgICAgICAgMHgwMDAzMDAwMCAweDAwMDAwMDA5DQo+ID4gPiArICAgICAgICAgICAgICAgICAg
+MHgwMDAzMDAwMSAweDAwMDAwMDExDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAw
+MiAweDAwMDAwMDE5DQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAwMyAweDAwMDAw
+MDIxDQo+ID4gPiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAwNCAweDAwMDAwMDI5DQo+ID4g
+PiArICAgICAgICAgICAgICAgICAgMHgwMDAzMDAwNSAweDAwMDAwMDMxDQo+ID4gPiArICAgICAg
+ICAgICAgICAgICAgMHgwMDAzMDAwNiAweDAwMDAwMDM5DQo+ID4gPiArICAgICAgICAgICAgICAg
+ICAgMHgwMDAzMDAwNyAweDAwMDAwMDQxPjsgfTsNCj4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bv
+d2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9zdC5kdHNpDQo+ID4gPiBiL2FyY2gvcG93ZXJw
+Yy9ib290L2R0cy9mc2wvdDEwNDBzaS1wb3N0LmR0c2kNCj4gPiA+IGluZGV4IDE1YWU0NjIuLmJi
+OWY3OTIgMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQw
+c2ktcG9zdC5kdHNpDQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQw
+c2ktcG9zdC5kdHNpDQo+ID4gPiBAQCAtMzQ1LDYgKzM0NSw3IEBADQo+ID4gPiAgICAgICAgICAg
+ICByZWcgICAgICAgID0gPDB4ZWEwMDAgMHg0MDAwPjsNCj4gPiA+ICAgICB9Ow0KPiA+ID4NCj4g
+PiA+ICsvaW5jbHVkZS8gInFvcmlxLXRtdS10MTA0eHNpLmR0c2kiDQo+ID4gPiAgL2luY2x1ZGUv
+ICJlbG8zLWRtYS0wLmR0c2kiDQo+ID4gPiAgL2luY2x1ZGUvICJlbG8zLWRtYS0xLmR0c2kiDQo+
+ID4gPiAgL2luY2x1ZGUvICJxb3JpcS1lc3BpLTAuZHRzaSINCj4gDQo+IFdoeSBpcyB0aGlzIGNo
+aXAtc3BlY2lmaWMgZW5vdWdoIHRvIGJlIGNhbGxlZCAidDEwNHhzaSIsIGJ1dCBub3QgY2hpcC0N
+Cj4gc3BlY2lmaWMgZW5vdWdoIHRvIGp1c3QgZ28gZGlyZWN0bHkgaW50byB0MTA0MHNpLXBvc3Q/
+DQoNClQxMDR4IHBsYXRmb3JtIHNoYXJlIHRoZSBzYW1lIGNhbGlicmF0aW9uIGRhdGEuDQoNCi1I
+b25ndGFvLg0KDQo+IA0KPiAtU0NvdHQNCj4gDQoNCg==
