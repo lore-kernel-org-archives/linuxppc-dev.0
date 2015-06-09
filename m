@@ -1,25 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0143.outbound.protection.outlook.com [65.55.169.143])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F3621A0099
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 03:47:45 +1000 (AEST)
-Message-ID: <1433872049.2477.80.camel@freescale.com>
-Subject: Re: [PATCH V2] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BE521A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 08:28:39 +1000 (AEST)
+Message-ID: <1433888900.2477.104.camel@freescale.com>
+Subject: Re: [PATCH v3] powerpc/cache: add cache flush operation for various
+ e500
 From: Scott Wood <scottwood@freescale.com>
-To: Jia Hongtao-B38951 <hongtao.jia@freescale.com>
-CC: "edubezval@gmail.com" <edubezval@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com"
- <rui.zhang@intel.com>
-Date: Tue, 9 Jun 2015 12:47:29 -0500
-In-Reply-To: <BLUPR03MB149DC0A753423EB27293931E1BE0@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1429085868-47577-1-git-send-email-hongtao.jia@freescale.com>
- <BLUPR03MB1498C018F80A754767DF48FE1CC0@BLUPR03MB149.namprd03.prod.outlook.com>
- <1432669078.7862.13.camel@freescale.com>
- <BLUPR03MB149DC0A753423EB27293931E1BE0@BLUPR03MB149.namprd03.prod.outlook.com>
+To: <Yuantian.Tang@freescale.com>
+CC: <b07421@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Tang Yuantian <Yuantian.Tang@feescale.com>
+Date: Tue, 9 Jun 2015 17:28:20 -0500
+In-Reply-To: <1433814827-10431-1-git-send-email-Yuantian.Tang@freescale.com>
+References: <1433814827-10431-1-git-send-email-Yuantian.Tang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,40 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-06-08 at 21:19 -0500, Jia Hongtao-B38951 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, May 27, 2015 3:38 AM
-> > To: Jia Hongtao-B38951
-> > Cc: edubezval@gmail.com; linuxppc-dev@lists.ozlabs.org;
-> > devicetree@vger.kernel.org; robh+dt@kernel.org; rui.zhang@intel.com
-> > Subject: Re: [PATCH V2] QorIQ/TMU: add TMU node to device tree for 
-> > QorIQ
-> > T104x
-> > 
-> > On Tue, 2015-05-26 at 01:33 -0500, Jia Hongtao-B38951 wrote:
-> > > diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-> > > > b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-> > > > index 15ae462..bb9f792 100644
-> > > > --- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-> > > > +++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-> > > > @@ -345,6 +345,7 @@
-> > > >             reg        = <0xea000 0x4000>;
-> > > >     };
-> > > > 
-> > > > +/include/ "qoriq-tmu-t104xsi.dtsi"
-> > > >  /include/ "elo3-dma-0.dtsi"
-> > > >  /include/ "elo3-dma-1.dtsi"
-> > > >  /include/ "qoriq-espi-0.dtsi"
-> > 
-> > Why is this chip-specific enough to be called "t104xsi", but not 
-> > chip-
-> > specific enough to just go directly into t1040si-post?
+On Tue, 2015-06-09 at 09:53 +0800, Yuantian.Tang@freescale.com wrote:
+> From: Tang Yuantian <Yuantian.Tang@freescale.com>
 > 
-> T104x platform share the same calibration data.
+> Various e500 core have different cache architecture, so they
+> need different cache flush operations. Therefore, add a callback
+> function cpu_flush_caches to the struct cpu_spec. The cache flush
+> operation for the specific kind of e500 is selected at init time.
+> The callback function will flush all caches inside the current cpu.
+> 
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@feescale.com>
+> ---
+> v3:
+>       - change all flush_caches to cpu_down_flush
+>       - replace whitespace with tab
+[snip]
+                .cpu_setup              = __setup_cpu_e500v2,
+>               .machine_check          = machine_check_e500,
+>               .platform               = "ppc8548",
+> +             .cpu_down_flush = cpu_down_flush_e500v2,
 
-Which t104x are you referring to that doesn't use t1040si-post.dtsi?  
-Plus, given the numbering scheme it's always possible that a new t104x 
-comes out that has little to do with existing t104x.
+It's still not lined up.  I'm not a fan of the "line up all the =" 
+style, as it's a pain to maintain (and can be harder to read if the "=" 
+is too far to the right), but mixing the two is worse.
 
 -Scott
