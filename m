@@ -1,20 +1,43 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 265251A0023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 22:07:22 +1000 (AEST)
-From: Igal.Liberman <igal.liberman@freescale.com>
-To: <netdev@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
- <madalin.bucur@freescale.com>, Igal Liberman <igal.liberman@freescale.com>
-Subject: [00/12] Freescale DPAA FMan
-Date: Wed, 10 Jun 2015 11:00:01 +0300
-Message-ID: <1433923201-22205-1-git-send-email-igal.liberman@freescale.com>
-Reply-To: <igal.liberman@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411081A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 22:09:10 +1000 (AEST)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 33B7B14028F
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 22:09:09 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 10 Jun 2015 17:39:06 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id AA8FEE0059
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 17:42:26 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5AC8kpT47251470
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 17:38:47 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5AC8jAH002495
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 17:38:46 +0530
+Message-ID: <557828CB.9080806@linux.vnet.ibm.com>
+Date: Wed, 10 Jun 2015 17:38:43 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Daniel Axtens <dja@axtens.net>
+CC: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
+Subject: Re: [PATCH V8 02/10] powerpc, perf: Restore privillege level filter
+ support for BHRB
+References: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1433763511-5270-2-git-send-email-khandual@linux.vnet.ibm.com>
+ <1433907837.3096.11.camel@axtens.net>
+In-Reply-To: <1433907837.3096.11.camel@axtens.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,163 +47,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Igal Liberman <igal.liberman@freescale.com>
+On 06/10/2015 09:13 AM, Daniel Axtens wrote:
+> In the subject line, privilege should only have 1 l, and I think it
+> should probably start with "powerpc/perf:" rather than "powerpc, perf:".
 
-The Freescale Data Path Acceleration Architecture (DPAA)
-is a set of hardware components on specific QorIQ multicore
-processors. This architecture provides the infrastructure to
-support simplified sharing of networking interfaces and
-accelerators by multiple CPU cores and the accelerators.
+Will fix the typo here. Have been using "powerpc, perf:" format for some
+time now :) Seems to be more cleaner compared to "powerpc/perf:" format.
+But again its subjective.
 
-One of the DPAA accelerators is the Frame Manager (FMan)
-which contains a series of hardware blocks:
-ports, Ethernet MACs, a multi user RAM (MURAM) and
-Storage Profile (SP).
+ > > On Mon, 2015-06-08 at 17:08 +0530, Anshuman Khandual wrote:
+>> From: "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>
+>>
+>> 'commit 9de5cb0f6df8 ("powerpc/perf: Add per-event excludes on Power8")'
+> Does this need a 'Fixes:' tag then?
 
-This patch set introduced the FMan driver code that configures
-and initializes the FMan hardware blocks, offering support for
-three different types of MACs.
-The first 6 patches present the FMan Foundation Libraries (FLIBs),
-the FMan FLib provides the basic API used by the FMan drivers
-to configure and control the FMan hardware.
-The following patches present the FMan driver itself,
-split into patches for each required hardware module.
+Not really, it only fixes the BHRB privilege request cases not other
+scenarios which are impacted by this previous commit.
+ 
+> 
+>> broke the PMU based BHRB privilege level filter. BHRB depends on the
+>> same MMCR0 bits for privilege level filter which was used to freeze all
+>> the PMCs as a group. Once we moved to individual event based privilege
+>> filters through MMCR2 register on POWER8, event associated privilege
+>> filters are no longer applicable to the BHRB captured branches.
+>>
+>> This patch solves the problem by restoring to the previous method of
+>> privilege level filters for the event in case BHRB based branch stack
+>> sampling is requested. This patch also changes 'check_excludes' for
+>> the same reason.
+>>
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/perf/core-book3s.c | 19 +++++++++++--------
+>>  1 file changed, 11 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+>> index c246e65..ae61629 100644
+>> --- a/arch/powerpc/perf/core-book3s.c
+>> +++ b/arch/powerpc/perf/core-book3s.c
+>> @@ -930,7 +930,7 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
+>>   * added events.
+>>   */
+> Does this comment need to be updated?
 
-This submission is based on prior Freescale DPAA FMan V3,RFC submission.
-Several issues addresses in this submission:
-	- Reduced MAC layering and complexity
-	- Reduced code base
-	- T1024/T2080 10G best effort support
-	
-Igal Liberman (12):
-  fsl/fman: Add the FMan FLIB headers
-  fsl/fman: Add the FMan FLIB
-  fsl/fman: Add the FMan port FLIB headers
-  fsl/fman: Add the FMan port FLIB
-  fsl/fman: Add the FMan MAC FLIB headers
-  fsl/fman: Add the FMan MAC FLIB
-  fsl/fman: Add FMan MURAM support
-  fsl/fman: Add Frame Manager support
-  fsl/fman: Add FMan MAC support
-  fsl/fman: Add FMan SP support
-  fsl/fman: Add FMan Port Support
-  fsl/fman: Add FMan MAC driver
+Not really. The previous commit did not update it, hence this patch would
+skip it as well.
 
- drivers/net/ethernet/freescale/Kconfig             |    1 +
- drivers/net/ethernet/freescale/Makefile            |    2 +
- drivers/net/ethernet/freescale/fman/Kconfig        |   46 +
- drivers/net/ethernet/freescale/fman/Makefile       |   12 +
- .../ethernet/freescale/fman/flib/common/general.h  |   41 +
- .../net/ethernet/freescale/fman/flib/fman_common.h |   73 +
- .../net/ethernet/freescale/fman/flib/fsl_enet.h    |  275 +++
- .../net/ethernet/freescale/fman/flib/fsl_fman.h    |  609 ++++++
- .../ethernet/freescale/fman/flib/fsl_fman_dtsec.h  |  791 ++++++++
- .../freescale/fman/flib/fsl_fman_dtsec_mii_acc.h   |  103 +
- .../ethernet/freescale/fman/flib/fsl_fman_memac.h  |  453 +++++
- .../freescale/fman/flib/fsl_fman_memac_mii_acc.h   |   76 +
- .../ethernet/freescale/fman/flib/fsl_fman_port.h   |  427 ++++
- .../net/ethernet/freescale/fman/flib/fsl_fman_sp.h |   54 +
- .../ethernet/freescale/fman/flib/fsl_fman_tgec.h   |  409 ++++
- drivers/net/ethernet/freescale/fman/fm.c           | 2036 ++++++++++++++++++++
- drivers/net/ethernet/freescale/fman/fm.h           |  407 ++++
- drivers/net/ethernet/freescale/fman/fm_common.h    |  576 ++++++
- drivers/net/ethernet/freescale/fman/fm_drv.c       |  933 +++++++++
- drivers/net/ethernet/freescale/fman/fm_drv.h       |  125 ++
- drivers/net/ethernet/freescale/fman/fm_muram.c     |  127 ++
- drivers/net/ethernet/freescale/fman/fm_port_drv.c  |  496 +++++
- drivers/net/ethernet/freescale/fman/fm_sp_common.h |  104 +
- drivers/net/ethernet/freescale/fman/fman.c         |  973 ++++++++++
- .../ethernet/freescale/fman/inc/crc_mac_addr_ext.h |  343 ++++
- drivers/net/ethernet/freescale/fman/inc/enet_ext.h |  199 ++
- drivers/net/ethernet/freescale/fman/inc/fm_ext.h   |  453 +++++
- .../net/ethernet/freescale/fman/inc/fm_muram_ext.h |  103 +
- .../net/ethernet/freescale/fman/inc/fm_port_ext.h  |  376 ++++
- .../net/ethernet/freescale/fman/inc/fsl_fman_drv.h |  195 ++
- drivers/net/ethernet/freescale/fman/inc/mac.h      |  136 ++
- drivers/net/ethernet/freescale/fman/inc/net_ext.h  |  534 +++++
- drivers/net/ethernet/freescale/fman/inc/service.h  |   90 +
- drivers/net/ethernet/freescale/fman/mac/Makefile   |    8 +
- drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c | 1089 +++++++++++
- drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h |  227 +++
- .../ethernet/freescale/fman/mac/fm_dtsec_mii_acc.c |   82 +
- .../ethernet/freescale/fman/mac/fm_dtsec_mii_acc.h |   43 +
- drivers/net/ethernet/freescale/fman/mac/fm_mac.h   |  250 +++
- drivers/net/ethernet/freescale/fman/mac/fm_memac.c |  741 +++++++
- drivers/net/ethernet/freescale/fman/mac/fm_memac.h |  124 ++
- .../ethernet/freescale/fman/mac/fm_memac_mii_acc.c |   66 +
- .../ethernet/freescale/fman/mac/fm_memac_mii_acc.h |   50 +
- drivers/net/ethernet/freescale/fman/mac/fm_tgec.c  |  652 +++++++
- drivers/net/ethernet/freescale/fman/mac/fm_tgec.h  |  126 ++
- .../net/ethernet/freescale/fman/mac/fman_dtsec.c   |  571 ++++++
- .../freescale/fman/mac/fman_dtsec_mii_acc.c        |  168 ++
- .../net/ethernet/freescale/fman/mac/fman_memac.c   |  365 ++++
- .../freescale/fman/mac/fman_memac_mii_acc.c        |  217 +++
- .../net/ethernet/freescale/fman/mac/fman_tgec.c    |  217 +++
- drivers/net/ethernet/freescale/fman/mac/mac-api.c  |  765 ++++++++
- drivers/net/ethernet/freescale/fman/mac/mac.c      |  526 +++++
- drivers/net/ethernet/freescale/fman/port/Makefile  |    3 +
- drivers/net/ethernet/freescale/fman/port/fm_port.c | 1435 ++++++++++++++
- drivers/net/ethernet/freescale/fman/port/fm_port.h |  527 +++++
- .../net/ethernet/freescale/fman/port/fman_port.c   |  619 ++++++
- drivers/net/ethernet/freescale/fman/sp/Makefile    |    3 +
- drivers/net/ethernet/freescale/fman/sp/fm_sp.c     |  398 ++++
- 58 files changed, 20850 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/fman/Kconfig
- create mode 100644 drivers/net/ethernet/freescale/fman/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/common/general.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fman_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_enet.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_tgec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_muram.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_port_drv.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_sp_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fman.c
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/enet_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_muram_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_port_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/mac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/net_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/service.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_mac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_tgec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac-api.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac.c
- create mode 100644 drivers/net/ethernet/freescale/fman/port/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.c
- create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.h
- create mode 100644 drivers/net/ethernet/freescale/fman/port/fman_port.c
- create mode 100644 drivers/net/ethernet/freescale/fman/sp/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/sp/fm_sp.c
+>>  static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
+>> -			  int n_prev, int n_new)
+>> +			  int n_prev, int n_new, int bhrb_users)
+>>  {
+>>  	int eu = 0, ek = 0, eh = 0;
+>>  	int i, n, first;
+>> @@ -941,7 +941,7 @@ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
+>>  	 * don't need to do any of this logic. NB. This assumes no PMU has both
+>>  	 * per event exclude and limited PMCs.
+>>  	 */
+> Likewise, does this comment need to be updated?
 
--- 
-1.7.9.5
+Yeah, will update it.
+
+>> -	if (ppmu->flags & PPMU_ARCH_207S)
+>> +	if ((ppmu->flags & PPMU_ARCH_207S) && !bhrb_users)
+>>  		return 0;
+>>  
+>>  	n = n_prev + n_new;
+>> @@ -1259,7 +1259,7 @@ static void power_pmu_enable(struct pmu *pmu)
+>>  		goto out;
+>>  	}
+>>  
+>> -	if (!(ppmu->flags & PPMU_ARCH_207S)) {
+>> +	if (!(ppmu->flags & PPMU_ARCH_207S) || cpuhw->bhrb_users)
+
+> You're using cpuhw->bhrb_users as a bool here, where it's an int. Could
+> you make the test more specific so that it's clear exactly what you're
+> expecting bhrb_users to contain?
+
+Using cpuhw->bhrb_users as a bool just verifies whether it contains
+zero or non-zero value in it. The test seems to be doing that as
+expected. But yes, we can move it as a nested conditional block as
+well if that is better.
+
+>>  {
+>>  		/*
+>>  		 * Add in MMCR0 freeze bits corresponding to the attr.exclude_*
+>>  		 * bits for the first event. We have already checked that all
+>> @@ -1284,7 +1284,7 @@ static void power_pmu_enable(struct pmu *pmu)
+>>  	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+>>  	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
+>>  				| MMCR0_FC);
+>> -	if (ppmu->flags & PPMU_ARCH_207S)
+>> +	if ((ppmu->flags & PPMU_ARCH_207S) && !cpuhw->bhrb_users)
+>>  		mtspr(SPRN_MMCR2, cpuhw->mmcr[3]);
+>>  
+>>  	/*
+>> @@ -1436,7 +1436,8 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
+>>  	if (cpuhw->group_flag & PERF_EVENT_TXN)
+>>  		goto nocheck;
+>>  
+>> -	if (check_excludes(cpuhw->event, cpuhw->flags, n0, 1))
+>> +	if (check_excludes(cpuhw->event, cpuhw->flags,
+>> +				n0, 1, cpuhw->bhrb_users))
+>>  		goto out;
+>>  	if (power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n0 + 1))
+>>  		goto out;
+>> @@ -1615,7 +1616,7 @@ static int power_pmu_commit_txn(struct pmu *pmu)
+>>  		return -EAGAIN;
+>>  	cpuhw = this_cpu_ptr(&cpu_hw_events);
+>>  	n = cpuhw->n_events;
+>> -	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n))
+>> +	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n, cpuhw->bhrb_users))
+>>  		return -EAGAIN;
+>>  	i = power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n);
+>>  	if (i < 0)
+>> @@ -1828,10 +1829,12 @@ static int power_pmu_event_init(struct perf_event *event)
+>>  	events[n] = ev;
+>>  	ctrs[n] = event;
+>>  	cflags[n] = flags;
+>> -	if (check_excludes(ctrs, cflags, n, 1))
+>> +	cpuhw = &get_cpu_var(cpu_hw_events);
+> Should this be using a this_cpu_ptr rather than a get_cpu_var? (as with
+> the power_pmu_commit_txn case?)
+>> +	if (check_excludes(ctrs, cflags, n, 1, cpuhw->bhrb_users)) {
+>> +		put_cpu_var(cpu_hw_events);
+> Likewise with this?
+>>  		return -EINVAL;
+>> +	}
+>>  
+>> -	cpuhw = &get_cpu_var(cpu_hw_events);
+
+This patch just moves the existing code couple of lines above without
+changing it in any manner.
