@@ -1,24 +1,21 @@
-Return-Path: <madalin.bucur@freescale.com>
+Return-Path: <zidan.wang@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0147.outbound.protection.outlook.com [65.55.169.147])
+ (mail-bl2on0114.outbound.protection.outlook.com [65.55.169.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4033C1A2C41
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 17:38:14 +1000 (AEST)
-From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jianhua Xie
- <Jianhua.Xie@freescale.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [RFC,v3 02/10] dpaa_eth: add support for DPAA Ethernet
-Date: Wed, 10 Jun 2015 07:38:06 +0000
-Message-ID: <BL2PR03MB545CA85B1FE886FCD07DE26E6BD0@BL2PR03MB545.namprd03.prod.outlook.com>
-References: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
- <DM2PR0301MB086380B3D89425345562F384F3BD0@DM2PR0301MB0863.namprd03.prod.outlook.com>
-In-Reply-To: <DM2PR0301MB086380B3D89425345562F384F3BD0@DM2PR0301MB0863.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 643B81A086D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 18:24:58 +1000 (AEST)
+From: Zidan Wang <zidan.wang@freescale.com>
+To: <nicoleotsuka@gmail.com>
+CC: <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.de>, <timur@tabi.org>,
+ <Xiubo.Lee@gmail.com>, <devicetree@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <alsa-devel@alsa-project.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Zidan Wang <zidan.wang@freescale.com>
+Subject: [alsa-devel][PATCH] ASoC: fsl: add imx-wm8960 machine driver
+Date: Wed, 10 Jun 2015 16:26:27 +0800
+Message-ID: <b2a3c323a0507f3706041e1da98da8375aa61576.1433923593.git.zidan.wang@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +25,857 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgRXJpYywNCg0KQ2FuIHlvdSBwbGVhc2UgdGVsbCB1cyBpZiB0aGlzIGNoYW5nZSB3b3VsZCBi
-ZSBmb3IgdGhlIGJldHRlcj8NCg0KSSB3YXMgYWJvdXQgdG8gc2F5IHllcyB0byB0aGlzIHJlcXVl
-c3QgYnV0IGNoZWNrZWQgYW5kIG5vIG90aGVyIEV0aGVybmV0IGRyaXZlciBzZWVtcyB0byB1c2Ug
-dGhlIHF1ZXVlIHRyYW5zX3N0YXJ0Lg0KSSB3YXMgYWJsZSB0byBmaW5kIHlvdXIgcGF0Y2ggIm5l
-dDogdHggc2NhbGFiaWxpdHkgd29ya3MgOiB0cmFuc19zdGFydCIgWyBodHRwOi8vcGF0Y2h3b3Jr
-Lm96bGFicy5vcmcvcGF0Y2gvMjcxMDQvIF0gYnV0IGRpZCBub3QgZmluZCBtb3JlIGFib3V0IHRo
-aXMgdG9waWMuDQogDQpUaGFuayB5b3UsDQpNYWRhbGluDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCj4gRnJvbTogWGllIEppYW5odWEtQjI5NDA4DQo+IFNlbnQ6IFdlZG5lc2RheSwg
-SnVuZSAxMCwgMjAxNSA5OjAwIEFNDQo+IFRvOiBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcx
-NjsgbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMu
-b3JnDQo+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJFOiBb
-UkZDLHYzIDAyLzEwXSBkcGFhX2V0aDogYWRkIHN1cHBvcnQgZm9yIERQQUEgRXRoZXJuZXQNCj4g
-DQo+IA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IExpbnV4
-cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gPiBib3VuY2VzK2ppYW5odWEueGllPWZy
-ZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mDQo+IE1hZGFsaW4NCj4g
-PiBCdWN1cg0KPiA+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMjksIDIwMTUgMTA6NTcgUE0NCj4g
-PiBUbzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
-cmcNCj4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgQnVjdXIgTWFkYWxpbi1D
-cmlzdGlhbi1CMzI3MTYNCj4gPiBTdWJqZWN0OiBbUkZDLHYzIDAyLzEwXSBkcGFhX2V0aDogYWRk
-IHN1cHBvcnQgZm9yIERQQUEgRXRoZXJuZXQNCj4gPg0KPiA+IFRoaXMgaW50cm9kdWNlcyB0aGUg
-RnJlZXNjYWxlIERhdGEgUGF0aCBBY2NlbGVyYXRpb24gQXJjaGl0ZWN0dXJlDQo+ID4gKERQQUEp
-IEV0aGVybmV0IGRyaXZlciAoZHBhYV9ldGgpIHRoYXQgYnVpbGRzIHVwb24gdGhlIERQQUEgUU1h
-biwNCj4gPiBCTWFuLCBQQU1VIGFuZCBGTWFuIGRyaXZlcnMgdG8gZGVsaXZlciBFdGhlcm5ldCBj
-b25uZWN0aXZpdHkgb24NCj4gPiB0aGUgRnJlZXNjYWxlIERQQUEgUW9ySVEgcGxhdGZvcm1zLg0K
-PiA+DQo+IFNuaXAuLi4uLi4NCj4gDQo+ID4gKw0KPiA+ICsJaWYgKHVubGlrZWx5KGRwYV94bWl0
-KHByaXYsIHBlcmNwdV9zdGF0cywgcXVldWVfbWFwcGluZywgJmZkKSA8IDApKQ0KPiA+ICsJCWdv
-dG8geG1pdF9mYWlsZWQ7DQo+ID4gKw0KPiA+ICsJbmV0X2Rldi0+dHJhbnNfc3RhcnQgPSBqaWZm
-aWVzOw0KPiANCj4gSXQgaXMgcHJvYmFibHkgYmV0dGVyIHRvIHVzZSBuZXRkZXZfcXVldWUtPnRy
-YW5zX3N0YXJ0IHRvIGluc3RlYWQgb2YNCj4gbmV0X2Rldi0+dHJhbnNfc3RhcnQgb24gU01QLg0K
-PiANCj4gQmVzdCBSZWdhcmRzLA0KPiBKaWFuaHVhDQo+IA0KPiA+ICsJcmV0dXJuIE5FVERFVl9U
-WF9PSzsNCj4gPiArDQo+ID4gK3htaXRfZmFpbGVkOg0KPiA+ICsJaWYgKGZkLmNtZCAmIEZNX0ZE
-X0NNRF9GQ08pIHsNCj4gPiArCQkoKmNvdW50cHRyKS0tOw0KPiA+ICsJCWRwYV9mZF9yZWxlYXNl
-KG5ldF9kZXYsICZmZCk7DQo+ID4gKwkJcGVyY3B1X3N0YXRzLT50eF9lcnJvcnMrKzsNCj4gPiAr
-CQlyZXR1cm4gTkVUREVWX1RYX09LOw0KPiA+ICsJfQ0KPiA+ICsJX2RwYV9jbGVhbnVwX3R4X2Zk
-KHByaXYsICZmZCk7DQo+ID4gKwlwZXJjcHVfc3RhdHMtPnR4X2Vycm9ycysrOw0KPiA+ICsJZGV2
-X2tmcmVlX3NrYihza2IpOw0KPiA+ICsJcmV0dXJuIE5FVERFVl9UWF9PSzsNCj4gPiArfQ0KPiA+
-IC0tDQo+ID4gMS43LjExLjcNCj4gPg0KPiA+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fDQo+ID4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdA0KPiA+IExp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3Jn
-L2xpc3RpbmZvL2xpbnV4cHBjLWRldg0K
+This imx-wm8960 device-tree-only machine driver works with sai driver
+and have below feature.
+* support codec master and slave mode
+* support headphone jack detect
+* support headphone and micphone jack event
+* support asrc<->sai<->wm8960 mode
+
+Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+---
+ .../devicetree/bindings/sound/imx-audio-wm8960.txt |  68 ++
+ sound/soc/fsl/Kconfig                              |  13 +
+ sound/soc/fsl/Makefile                             |   2 +
+ sound/soc/fsl/imx-wm8960.c                         | 711 +++++++++++++++++++++
+ 4 files changed, 794 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/sound/imx-audio-wm8960.txt
+ create mode 100644 sound/soc/fsl/imx-wm8960.c
+
+diff --git a/Documentation/devicetree/bindings/sound/imx-audio-wm8960.txt b/Documentation/devicetree/bindings/sound/imx-audio-wm8960.txt
+new file mode 100644
+index 0000000..300d027
+--- /dev/null
++++ b/Documentation/devicetree/bindings/sound/imx-audio-wm8960.txt
+@@ -0,0 +1,68 @@
++Freescale i.MX audio complex with WM8960 codec
++
++Required properties:
++
++  - compatible		: "fsl,imx-audio-wm8960"
++
++  - model		: The user-visible name of this sound complex
++
++  - audio-codec		: The phandle of the WM8960 audio codec
++
++  - hp-det		: ADCLRC/GPIO1, LINPUT3/JD2 and RINPUT3/JD3 pins can
++			  be selected as headphone jack detect inputs to
++			  automatically disable the speaker output and enable
++			  the headphone output.
++			  hp-det = <hp-det-pin hp-det-polarity>;
++			  hp-det-pin = 1: ADCLRC/GPIO1 used as detect pin
++			  hp-det-pin = 2: LINPUT3/JD2 used as detect pin
++			  hp-det-pin = 3: RINPUT3/JD3 used as detect pin
++			  hp-det-polarity = 0: hp detect high for headphone
++			  hp-det-polarity = 1: hp detect high for speaker
++
++  - codec-master	: If "codec-master" present, codec works as master.
++			  Otherwise, codec works as slave.
++
++  - audio-routing	: A list of the connections between audio components.
++			  Each entry is a pair of strings, the first being the
++			  connection's sink, the second being the connection's
++			  source. Valid names could be power supplies, WM8962
++			  pins, and the jacks on the board:
++
++			  Power supplies:
++			   * MICB
++
++			  Board connectors:
++			   * Hp MIC
++			   * Main MIC
++			   * Headset Jack
++			   * Ext Spk
++
++Example:
++
++sound {
++		compatible = "fsl,imx6ul-evk-wm8960",
++			   "fsl,imx-audio-wm8960";
++		model = "wm8960-audio";
++		cpu-dai = <&sai2>;
++		audio-codec = <&codec>;
++		asrc-controller = <&asrc>;
++		codec-master;
++		hp-det = <3 0>;
++		audio-routing =
++			"Headset Jack", "HP_L",
++			"Headset Jack", "HP_R",
++			"Ext Spk", "SPK_LP",
++			"Ext Spk", "SPK_LN",
++			"Ext Spk", "SPK_RP",
++			"Ext Spk", "SPK_RN",
++			"LINPUT2", "Hp MIC",
++			"LINPUT3", "Hp MIC",
++			"RINPUT1", "Main MIC",
++			"RINPUT2", "Main MIC",
++			"Hp MIC", "MICB",
++			"Main MIC", "MICB",
++			"CPU-Playback", "ASRC-Playback",
++			"Playback", "CPU-Playback",
++			"ASRC-Capture", "CPU-Capture",
++			"CPU-Capture", "Capture";
++};
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 19c302b..0d9aa56 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -229,6 +229,19 @@ config SND_SOC_EUKREA_TLV320
+ 	  Enable I2S based access to the TLV320AIC23B codec attached
+ 	  to the SSI interface
+ 
++config SND_SOC_IMX_WM8960
++	tristate "SoC Audio support for i.MX boards with wm8960"
++	depends on OF && I2C
++	select SND_SOC_WM8960
++	select SND_SOC_IMX_PCM_DMA
++	select SND_SOC_FSL_SAI
++	select SND_SOC_FSL_UTILS
++	select SND_KCTL_JACK
++	help
++	 SoC Audio support for i.MX boards with WM8960
++	 Say Y if you want to add support for SoC audio on an i.MX board with
++	 a wm8960 codec.
++
+ config SND_SOC_IMX_WM8962
+ 	tristate "SoC Audio support for i.MX boards with wm8962"
+ 	depends on OF && I2C && INPUT
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index d28dc25..84a9a10 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -54,6 +54,7 @@ snd-soc-mx27vis-aic32x4-objs := mx27vis-aic32x4.o
+ snd-soc-wm1133-ev1-objs := wm1133-ev1.o
+ snd-soc-imx-es8328-objs := imx-es8328.o
+ snd-soc-imx-sgtl5000-objs := imx-sgtl5000.o
++snd-soc-imx-wm8960-objs := imx-wm8960.o
+ snd-soc-imx-wm8962-objs := imx-wm8962.o
+ snd-soc-imx-spdif-objs := imx-spdif.o
+ snd-soc-imx-mc13783-objs := imx-mc13783.o
+@@ -64,6 +65,7 @@ obj-$(CONFIG_SND_SOC_MX27VIS_AIC32X4) += snd-soc-mx27vis-aic32x4.o
+ obj-$(CONFIG_SND_MXC_SOC_WM1133_EV1) += snd-soc-wm1133-ev1.o
+ obj-$(CONFIG_SND_SOC_IMX_ES8328) += snd-soc-imx-es8328.o
+ obj-$(CONFIG_SND_SOC_IMX_SGTL5000) += snd-soc-imx-sgtl5000.o
++obj-$(CONFIG_SND_SOC_IMX_WM8960) += snd-soc-imx-wm8960.o
+ obj-$(CONFIG_SND_SOC_IMX_WM8962) += snd-soc-imx-wm8962.o
+ obj-$(CONFIG_SND_SOC_IMX_SPDIF) += snd-soc-imx-spdif.o
+ obj-$(CONFIG_SND_SOC_IMX_MC13783) += snd-soc-imx-mc13783.o
+diff --git a/sound/soc/fsl/imx-wm8960.c b/sound/soc/fsl/imx-wm8960.c
+new file mode 100644
+index 0000000..ddd17cb
+--- /dev/null
++++ b/sound/soc/fsl/imx-wm8960.c
+@@ -0,0 +1,711 @@
++/*
++ * Copyright (C) 2015 Freescale Semiconductor, Inc.
++ *
++ * The code contained herein is licensed under the GNU General Public
++ * License. You may obtain a copy of the GNU General Public License
++ * Version 2 or later at the following locations:
++ *
++ * http://www.opensource.org/licenses/gpl-license.html
++ * http://www.gnu.org/copyleft/gpl.html
++ */
++
++#include <linux/module.h>
++#include <linux/of_platform.h>
++#include <linux/i2c.h>
++#include <linux/of_gpio.h>
++#include <linux/slab.h>
++#include <linux/gpio.h>
++#include <linux/clk.h>
++#include <sound/soc.h>
++#include <sound/jack.h>
++#include <sound/control.h>
++#include <sound/pcm_params.h>
++#include <sound/soc-dapm.h>
++#include <linux/pinctrl/consumer.h>
++#include <linux/mfd/syscon.h>
++#include "../codecs/wm8960.h"
++
++#define DAI_NAME_SIZE	32
++
++struct imx_wm8960_data {
++	struct snd_soc_card card;
++	char codec_dai_name[DAI_NAME_SIZE];
++	char platform_name[DAI_NAME_SIZE];
++	struct clk *codec_clk;
++	unsigned int clk_frequency;
++	bool is_codec_master;
++	bool is_stream_in_use[2];
++	struct regmap *gpr;
++	unsigned int hp_det[2];
++	u32 asrc_rate;
++	u32 asrc_format;
++};
++
++struct imx_priv {
++	int hp_set_gpio;
++	int hp_active_low;
++	struct snd_kcontrol *headset_kctl;
++	struct snd_soc_codec *codec;
++	struct platform_device *pdev;
++	struct platform_device *asrc_pdev;
++	struct snd_card *snd_card;
++};
++
++static struct imx_priv card_priv;
++
++static struct snd_soc_jack imx_hp_set;
++static struct snd_soc_jack_pin imx_hp_set_pins[] = {
++	{
++		.pin = "Headset Jack",
++		.mask = SND_JACK_HEADSET,
++	},
++};
++static struct snd_soc_jack_gpio imx_hp_set_gpio = {
++	.name = "headset detect",
++	.report = SND_JACK_HEADSET,
++	.debounce_time = 250,
++	.invert = 1,
++};
++
++static int hp_set_status_check(void *data)
++{
++	struct imx_priv *priv = &card_priv;
++	struct platform_device *pdev = priv->pdev;
++	char *envp[3], *buf;
++	int hp_status, ret;
++
++	if (!gpio_is_valid(priv->hp_set_gpio))
++		return 0;
++
++	hp_status = gpio_get_value(priv->hp_set_gpio) ? 1 : 0;
++	buf = kmalloc(32, GFP_ATOMIC);
++	if (!buf) {
++		dev_err(&pdev->dev, "%s kmalloc failed\n", __func__);
++		return -ENOMEM;
++	}
++
++	if (hp_status != priv->hp_active_low) {
++		snprintf(buf, 32, "STATE=%d", 2);
++		snd_soc_dapm_disable_pin(&priv->codec->dapm, "Ext Spk");
++		snd_soc_dapm_disable_pin(&priv->codec->dapm, "Main MIC");
++		ret = imx_hp_set_gpio.report;
++
++		/*
++		 *  As the hp MIC only connect the input for left channel, we
++		 *  need to route it for right channel.
++		 */
++		snd_soc_update_bits(priv->codec, WM8960_ADDCTL1, 3<<2, 1<<2);
++
++		snd_kctl_jack_report(priv->snd_card, priv->headset_kctl, 1);
++	} else {
++		snprintf(buf, 32, "STATE=%d", 0);
++		snd_soc_dapm_enable_pin(&priv->codec->dapm, "Ext Spk");
++		snd_soc_dapm_enable_pin(&priv->codec->dapm, "Main MIC");
++		ret = 0;
++
++		/*
++		 *  As the Main MIC only connect the input for right channel,
++		 *  we need to route it for left channel.
++		 */
++		snd_soc_update_bits(priv->codec, WM8960_ADDCTL1, 3<<2, 2<<2);
++
++		snd_kctl_jack_report(priv->snd_card, priv->headset_kctl, 0);
++	}
++
++	envp[0] = "NAME=headset";
++	envp[1] = buf;
++	envp[2] = NULL;
++	kobject_uevent_env(&pdev->dev.kobj, KOBJ_CHANGE, envp);
++	kfree(buf);
++
++	return ret;
++}
++
++static const struct snd_soc_dapm_widget imx_wm8960_dapm_widgets[] = {
++	SND_SOC_DAPM_HP("Headset Jack", NULL),
++	SND_SOC_DAPM_SPK("Ext Spk", NULL),
++	SND_SOC_DAPM_MIC("Hp MIC", NULL),
++	SND_SOC_DAPM_MIC("Main MIC", NULL),
++};
++
++static int imx_wm8960_gpio_init(struct snd_soc_card *card)
++{
++	struct snd_soc_dai *codec_dai = card->rtd[0].codec_dai;
++	struct snd_soc_codec *codec = codec_dai->codec;
++	struct imx_priv *priv = &card_priv;
++	int ret;
++
++	priv->codec = codec;
++
++	if (gpio_is_valid(priv->hp_set_gpio)) {
++		imx_hp_set_gpio.gpio = priv->hp_set_gpio;
++		imx_hp_set_gpio.jack_status_check = hp_set_status_check;
++
++		ret = snd_soc_card_jack_new(card, "Headset Jack",
++				SND_JACK_HEADSET, &imx_hp_set,
++				imx_hp_set_pins, ARRAY_SIZE(imx_hp_set_pins));
++		if (ret)
++			return ret;
++		ret = snd_soc_jack_add_gpios(&imx_hp_set, 1,
++						&imx_hp_set_gpio);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++static ssize_t show_headphone(struct device_driver *dev, char *buf)
++{
++	struct imx_priv *priv = &card_priv;
++	int hp_status;
++
++	if (!gpio_is_valid(priv->hp_set_gpio)) {
++		strcpy(buf, "no detect gpio connected\n");
++		return strlen(buf);
++	}
++
++	/* Check if headphone is plugged in */
++	hp_status = gpio_get_value(priv->hp_set_gpio) ? 1 : 0;
++
++	if (hp_status != priv->hp_active_low)
++		strcpy(buf, "Headphone\n");
++	else
++		strcpy(buf, "Speaker\n");
++
++	return strlen(buf);
++}
++
++static ssize_t show_micphone(struct device_driver *dev, char *buf)
++{
++	struct imx_priv *priv = &card_priv;
++	int hp_status;
++
++	if (!gpio_is_valid(priv->hp_set_gpio)) {
++		strcpy(buf, "no detect gpio connected\n");
++		return strlen(buf);
++	}
++
++	/* Check if headphone is plugged in */
++	hp_status = gpio_get_value(priv->hp_set_gpio) ? 1 : 0;
++
++	if (hp_status != priv->hp_active_low)
++		strcpy(buf, "Hp MIC\n");
++	else
++		strcpy(buf, "Main MIC\n");
++
++	return strlen(buf);
++}
++static DRIVER_ATTR(headphone, S_IRUGO | S_IWUSR, show_headphone, NULL);
++static DRIVER_ATTR(micphone, S_IRUGO | S_IWUSR, show_micphone, NULL);
++
++static void wm8960_init(struct snd_soc_card *card)
++{
++	struct snd_soc_dai *codec_dai = card->rtd[0].codec_dai;
++	struct snd_soc_codec *codec = codec_dai->codec;
++	struct imx_wm8960_data *data = snd_soc_card_get_drvdata(card);
++
++	/*
++	 * codec ADCLRC pin configured as GPIO, DACLRC pin is used as
++	 * a frame clock for ADCs and DACs
++	 */
++	snd_soc_update_bits(codec, WM8960_IFACE2, 1<<6, 1<<6);
++
++	/* GPIO1 used as headphone detect output */
++	snd_soc_update_bits(codec, WM8960_ADDCTL4, 7<<4, 3<<4);
++
++	/* Enable headphone jack detect */
++	snd_soc_update_bits(codec, WM8960_ADDCTL2, 1<<6, 1<<6);
++	snd_soc_update_bits(codec, WM8960_ADDCTL2, 1<<5, data->hp_det[1]<<5);
++	snd_soc_update_bits(codec, WM8960_ADDCTL4, 3<<2, data->hp_det[0]<<2);
++	snd_soc_update_bits(codec, WM8960_ADDCTL1, 3, 3);
++
++	/* route ADC left channel to right channel in default */
++	snd_soc_update_bits(codec, WM8960_ADDCTL1, 3<<2, 1<<2);
++}
++
++/* -1 for reserved value */
++static const int sysclk_divs[] = { 1, -1, 2, -1 };
++
++/* Multiply 256 for internal 256 div */
++static const int dac_divs[] = { 256, 384, 512, 768, 1024, 1408, 1536 };
++
++/* Multiply 10 to eliminate decimials */
++static const int bclk_divs[] = {
++	10, 15, 20, 30, 40, 55, 60, 80, 110,
++	120, 160, 220, 240, 320, 320, 320
++};
++
++static int imx_hifi_hw_params(struct snd_pcm_substream *substream,
++		struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_dai *codec_dai = rtd->codec_dai;
++	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
++	struct snd_soc_card *card = rtd->card;
++	struct imx_wm8960_data *data = snd_soc_card_get_drvdata(card);
++	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
++	struct device *dev = card->dev;
++	unsigned int sample_rate = params_rate(params);
++	unsigned int sysclk, pll_in, pll_out;
++	int i, j, k, ret = 0;
++	int bclk = snd_soc_params_to_bclk(params);
++	unsigned int fmt, plln;
++
++	if (params_channels(params) == 1)
++		bclk *= 2;
++
++	data->is_stream_in_use[tx] = true;
++
++	if (data->is_stream_in_use[!tx])
++		return 0;
++
++	if (data->is_codec_master)
++		fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
++			SND_SOC_DAIFMT_CBM_CFM;
++	else
++		fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
++			SND_SOC_DAIFMT_CBS_CFS;
++
++	/* set cpu DAI configuration */
++	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
++	if (ret) {
++		dev_err(dev, "failed to set cpu dai fmt: %d\n", ret);
++		return ret;
++	}
++	/* set codec DAI configuration */
++	ret = snd_soc_dai_set_fmt(codec_dai, fmt);
++	if (ret) {
++		dev_err(dev, "failed to set codec dai fmt: %d\n", ret);
++		return ret;
++	}
++
++	if (!data->is_codec_master) {
++		ret = snd_soc_dai_set_tdm_slot(cpu_dai,
++				0, 0, 2, params_width(params));
++		if (ret) {
++			dev_err(dev,
++				"failed to set cpu dai tdm slot: %d\n", ret);
++			return ret;
++		}
++
++		ret = snd_soc_dai_set_sysclk(cpu_dai, 0, 0, SND_SOC_CLOCK_OUT);
++		if (ret) {
++			dev_err(dev, "failed to set cpu sysclk: %d\n", ret);
++			return ret;
++		}
++		return 0;
++	} else {
++		ret = snd_soc_dai_set_sysclk(cpu_dai, 0, 0, SND_SOC_CLOCK_IN);
++		if (ret) {
++			dev_err(dev, "failed to set cpu sysclk: %d\n", ret);
++			return ret;
++		}
++	}
++
++	data->clk_frequency = clk_get_rate(data->codec_clk);
++
++	/* Use MCLK to provide sysclk directly */
++	sysclk = data->clk_frequency;
++
++	for (i = 0; i < ARRAY_SIZE(sysclk_divs); ++i) {
++		if (sysclk_divs[i] == -1)
++			continue;
++		sysclk /= sysclk_divs[i];
++		for (j = 0; j < ARRAY_SIZE(dac_divs); ++j) {
++			if (sysclk == sample_rate * dac_divs[j]) {
++				for (k = 0; k < ARRAY_SIZE(bclk_divs); ++k)
++					if (sysclk == bclk * bclk_divs[k] / 10)
++						break;
++				if (k != ARRAY_SIZE(bclk_divs))
++					break;
++			}
++		}
++		if (j != ARRAY_SIZE(dac_divs))
++			break;
++	}
++	if (i != ARRAY_SIZE(sysclk_divs)) {
++		/* Set codec sysclk */
++		snd_soc_dai_set_sysclk(codec_dai,
++				       WM8960_SYSCLK_MCLK, sysclk, 0);
++		snd_soc_dai_set_clkdiv(codec_dai, WM8960_SYSCLKDIV, i << 1);
++		return 0;
++	}
++
++	/* Use PLL to provide sysclk */
++	pll_in = data->clk_frequency;
++
++	for (i = 0; i < ARRAY_SIZE(sysclk_divs); ++i) {
++		if (sysclk_divs[i] == -1)
++			continue;
++		for (j = 0; j < ARRAY_SIZE(dac_divs); ++j) {
++			sysclk = sample_rate * dac_divs[j];
++			pll_out = sysclk * sysclk_divs[i];
++			/*
++			 * we should make sure 5 < plln < 13, or we can't get
++			 * such pll_out.
++			 */
++			plln = pll_out * 4 / pll_in;
++			if (plln < 6)
++				plln *= 2;
++			if ((plln < 6) || (plln > 12))
++				continue;
++			for (k = 0; k < ARRAY_SIZE(bclk_divs); ++k) {
++				if (sysclk == bclk * bclk_divs[k] / 10) {
++					/* Set codec pll */
++					ret = snd_soc_dai_set_pll(codec_dai, 0,
++							0, data->clk_frequency,
++							pll_out);
++					if (ret != 0)
++						continue;
++					else
++						break;
++				}
++			}
++			if (k != ARRAY_SIZE(bclk_divs))
++				break;
++		}
++		if (j != ARRAY_SIZE(dac_divs))
++			break;
++	}
++	if (i != ARRAY_SIZE(sysclk_divs)) {
++		/* Set codec sysclk */
++		snd_soc_dai_set_sysclk(codec_dai, WM8960_SYSCLK_PLL, sysclk, 0);
++		snd_soc_dai_set_clkdiv(codec_dai, WM8960_SYSCLKDIV, i << 1);
++		return 0;
++	}
++
++	dev_err(dev, "failed to configure system clock");
++	return -EINVAL;
++}
++
++static int imx_hifi_hw_free(struct snd_pcm_substream *substream)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_dai *codec_dai = rtd->codec_dai;
++	struct snd_soc_card *card = rtd->card;
++	struct imx_wm8960_data *data = snd_soc_card_get_drvdata(card);
++	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
++
++	data->is_stream_in_use[tx] = false;
++
++	/* Power down PLL to save power*/
++	if (data->is_codec_master && !data->is_stream_in_use[!tx])
++		snd_soc_dai_set_pll(codec_dai, 0, 0, 0, 0);
++
++	return 0;
++}
++
++static u32 imx_wm8960_rates[] = { 8000, 16000, 32000, 48000 };
++static struct snd_pcm_hw_constraint_list imx_wm8960_rate_constraints = {
++	.count = ARRAY_SIZE(imx_wm8960_rates),
++	.list = imx_wm8960_rates,
++};
++
++static int imx_hifi_startup(struct snd_pcm_substream *substream)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_card *card = rtd->card;
++	struct imx_wm8960_data *data = snd_soc_card_get_drvdata(card);
++	int ret = 0;
++
++	if (!data->is_codec_master) {
++		ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
++				SNDRV_PCM_HW_PARAM_RATE,
++				&imx_wm8960_rate_constraints);
++		if (ret)
++			return ret;
++	}
++
++	/* codec mclk should be enabled early to avoid jack detect error */
++	ret = clk_prepare_enable(data->codec_clk);
++	if (ret) {
++		dev_err(card->dev, "Failed to enable MCLK: %d\n", ret);
++		return ret;
++	}
++
++	return ret;
++}
++
++static void imx_hifi_shutdown(struct snd_pcm_substream *substream)
++{
++	struct snd_soc_pcm_runtime *rtd = substream->private_data;
++	struct snd_soc_card *card = rtd->card;
++	struct imx_wm8960_data *data = snd_soc_card_get_drvdata(card);
++
++	clk_disable_unprepare(data->codec_clk);
++}
++
++static struct snd_soc_ops imx_hifi_ops = {
++	.hw_params = imx_hifi_hw_params,
++	.hw_free = imx_hifi_hw_free,
++	.startup   = imx_hifi_startup,
++	.shutdown  = imx_hifi_shutdown,
++};
++
++static int imx_wm8960_late_probe(struct snd_soc_card *card)
++{
++	struct imx_wm8960_data *data = snd_soc_card_get_drvdata(card);
++
++	/* set SAI2_MCLK_DIR to enable codec MCLK */
++	if (data->gpr)
++		regmap_update_bits(data->gpr, 4, 1<<20, 1<<20);
++
++	wm8960_init(card);
++	return 0;
++}
++
++static int be_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
++			struct snd_pcm_hw_params *params)
++{
++	struct snd_soc_card *card = rtd->card;
++	struct imx_wm8960_data *data = snd_soc_card_get_drvdata(card);
++	struct imx_priv *priv = &card_priv;
++	struct snd_interval *rate;
++	struct snd_mask *mask;
++
++	if (!priv->asrc_pdev)
++		return -EINVAL;
++
++	rate = hw_param_interval(params, SNDRV_PCM_HW_PARAM_RATE);
++	rate->max = rate->min = data->asrc_rate;
++
++	mask = hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT);
++	snd_mask_none(mask);
++	snd_mask_set(mask, data->asrc_format);
++
++	return 0;
++}
++
++static struct snd_soc_dai_link imx_wm8960_dai[] = {
++	{
++		.name = "HiFi",
++		.stream_name = "HiFi",
++		.codec_dai_name = "wm8960-hifi",
++		.ops = &imx_hifi_ops,
++	},
++	{
++		.name = "HiFi-ASRC-FE",
++		.stream_name = "HiFi-ASRC-FE",
++		.codec_name = "snd-soc-dummy",
++		.codec_dai_name = "snd-soc-dummy-dai",
++		.dynamic = 1,
++		.ignore_pmdown_time = 1,
++		.dpcm_playback = 1,
++		.dpcm_capture = 1,
++	},
++	{
++		.name = "HiFi-ASRC-BE",
++		.stream_name = "HiFi-ASRC-BE",
++		.codec_dai_name = "wm8960-hifi",
++		.platform_name = "snd-soc-dummy",
++		.no_pcm = 1,
++		.ignore_pmdown_time = 1,
++		.dpcm_playback = 1,
++		.dpcm_capture = 1,
++		.ops = &imx_hifi_ops,
++		.be_hw_params_fixup = be_hw_params_fixup,
++	},
++};
++
++static int imx_wm8960_probe(struct platform_device *pdev)
++{
++	struct device_node *cpu_np, *codec_np, *gpr_np;
++	struct platform_device *cpu_pdev;
++	struct imx_priv *priv = &card_priv;
++	struct i2c_client *codec_dev;
++	struct imx_wm8960_data *data;
++	struct platform_device *asrc_pdev = NULL;
++	struct device_node *asrc_np;
++	u32 width;
++	int ret;
++
++	priv->pdev = pdev;
++
++	cpu_np = of_parse_phandle(pdev->dev.of_node, "cpu-dai", 0);
++	if (!cpu_np) {
++		dev_err(&pdev->dev, "cpu dai phandle missing or invalid\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	codec_np = of_parse_phandle(pdev->dev.of_node, "audio-codec", 0);
++	if (!codec_np) {
++		dev_err(&pdev->dev, "phandle missing or invalid\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	cpu_pdev = of_find_device_by_node(cpu_np);
++	if (!cpu_pdev) {
++		dev_err(&pdev->dev, "failed to find SAI platform device\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	codec_dev = of_find_i2c_device_by_node(codec_np);
++	if (!codec_dev || !codec_dev->dev.driver) {
++		dev_err(&pdev->dev, "failed to find codec platform device\n");
++		ret = -EINVAL;
++		goto fail;
++	}
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data) {
++		ret = -ENOMEM;
++		goto fail;
++	}
++
++	if (of_property_read_bool(pdev->dev.of_node, "codec-master"))
++		data->is_codec_master = true;
++
++	data->codec_clk = devm_clk_get(&codec_dev->dev, "mclk");
++	if (IS_ERR(data->codec_clk)) {
++		ret = PTR_ERR(data->codec_clk);
++		dev_err(&pdev->dev, "failed to get codec clk: %d\n", ret);
++		goto fail;
++	}
++
++	gpr_np = of_parse_phandle(pdev->dev.of_node, "gpr", 0);
++	if (gpr_np) {
++		data->gpr = syscon_node_to_regmap(gpr_np);
++		if (IS_ERR(data->gpr)) {
++			ret = PTR_ERR(data->gpr);
++			dev_err(&pdev->dev, "failed to get gpr regmap\n");
++			goto fail;
++		}
++	}
++
++	/*
++	 * hp-det = <hp-det-pin hp-det-polarity>;
++	 * hp-det-pin: JD1 JD2 or JD3
++	 * hp-det-polarity = 0: hp detect high for headphone
++	 * hp-det-polarity = 1: hp detect high for speaker
++	 */
++	of_property_read_u32_array(pdev->dev.of_node,
++				   "hp-det", data->hp_det, 2);
++
++	asrc_np = of_parse_phandle(pdev->dev.of_node, "asrc-controller", 0);
++	if (asrc_np) {
++		asrc_pdev = of_find_device_by_node(asrc_np);
++		priv->asrc_pdev = asrc_pdev;
++	}
++
++	data->card.dai_link = imx_wm8960_dai;
++
++	imx_wm8960_dai[0].codec_of_node	= codec_np;
++	imx_wm8960_dai[0].cpu_dai_name = dev_name(&cpu_pdev->dev);
++	imx_wm8960_dai[0].platform_of_node = cpu_np;
++
++	if (!asrc_pdev) {
++		data->card.num_links = 1;
++	} else {
++		imx_wm8960_dai[1].cpu_of_node = asrc_np;
++		imx_wm8960_dai[1].platform_of_node = asrc_np;
++		imx_wm8960_dai[2].codec_of_node	= codec_np;
++		imx_wm8960_dai[2].cpu_dai_name = dev_name(&cpu_pdev->dev);
++		data->card.num_links = 3;
++
++		ret = of_property_read_u32(asrc_np, "fsl,asrc-rate",
++				&data->asrc_rate);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to get output rate\n");
++			ret = -EINVAL;
++			goto fail;
++		}
++
++		ret = of_property_read_u32(asrc_np, "fsl,asrc-width", &width);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to get output rate\n");
++			ret = -EINVAL;
++			goto fail;
++		}
++
++		if (width == 24)
++			data->asrc_format = SNDRV_PCM_FORMAT_S24_LE;
++		else
++			data->asrc_format = SNDRV_PCM_FORMAT_S16_LE;
++	}
++
++	data->card.dev = &pdev->dev;
++	ret = snd_soc_of_parse_card_name(&data->card, "model");
++	if (ret)
++		goto fail;
++	data->card.dapm_widgets = imx_wm8960_dapm_widgets;
++	data->card.num_dapm_widgets = ARRAY_SIZE(imx_wm8960_dapm_widgets);
++
++	ret = snd_soc_of_parse_audio_routing(&data->card, "audio-routing");
++	if (ret)
++		goto fail;
++
++	data->card.late_probe = imx_wm8960_late_probe;
++
++	platform_set_drvdata(pdev, &data->card);
++	snd_soc_card_set_drvdata(&data->card, data);
++	ret = devm_snd_soc_register_card(&pdev->dev, &data->card);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register card (%d)\n", ret);
++		goto fail;
++	}
++
++	priv->snd_card = data->card.snd_card;
++
++	priv->hp_set_gpio = of_get_named_gpio_flags(pdev->dev.of_node,
++			"hp-det-gpios", 0,
++			(enum of_gpio_flags *)&priv->hp_active_low);
++	if (IS_ERR(ERR_PTR(priv->hp_set_gpio)))
++		goto fail;
++
++	priv->headset_kctl = snd_kctl_jack_new("Headset", priv->snd_card);
++	ret = snd_ctl_add(data->card.snd_card, priv->headset_kctl);
++	if (ret)
++		goto fail;
++
++	ret = imx_wm8960_gpio_init(&data->card);
++
++	if (gpio_is_valid(priv->hp_set_gpio)) {
++		ret = driver_create_file(pdev->dev.driver,
++				&driver_attr_headphone);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"create hp attr failed (%d)\n", ret);
++			goto fail;
++		}
++		ret = driver_create_file(pdev->dev.driver,
++				&driver_attr_micphone);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"create mic attr failed (%d)\n", ret);
++			goto fail;
++		}
++	}
++fail:
++	if (cpu_np)
++		of_node_put(cpu_np);
++	if (codec_np)
++		of_node_put(codec_np);
++
++	return ret;
++}
++
++static const struct of_device_id imx_wm8960_dt_ids[] = {
++	{ .compatible = "fsl,imx-audio-wm8960", },
++	{ /* sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, imx_wm8960_dt_ids);
++
++static struct platform_driver imx_wm8960_driver = {
++	.driver = {
++		.name = "imx-wm8960",
++		.owner = THIS_MODULE,
++		.pm = &snd_soc_pm_ops,
++		.of_match_table = imx_wm8960_dt_ids,
++	},
++	.probe = imx_wm8960_probe,
++};
++module_platform_driver(imx_wm8960_driver);
++
++MODULE_AUTHOR("Freescale Semiconductor, Inc.");
++MODULE_DESCRIPTION("Freescale i.MX WM8960 ASoC machine driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:imx-wm8960");
+-- 
+1.9.1
