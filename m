@@ -1,26 +1,13 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-qg0-x22a.google.com (mail-qg0-x22a.google.com
- [IPv6:2607:f8b0:400d:c04::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41BFC1A0E02
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 02:56:07 +1000 (AEST)
-Received: by qgf75 with SMTP id 75so18309915qgf.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 09:56:04 -0700 (PDT)
-Date: Wed, 10 Jun 2015 09:55:45 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Timur Tabi <timur@tabi.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org
-Subject: Re: [patch] ASoC: fsl: add an error check
-Message-ID: <20150610165544.GA8552@Asurada>
-References: <20150610153723.GB10549@mwanda>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150610153723.GB10549@mwanda>
+Return-Path: <geoff@infradead.org>
+Message-ID: <1433956788.4524.15.camel@infradead.org>
+Subject: [PATCH] net/ps3_gelic: Fix build error with DEBUG
+From: Geoff Levand <geoff@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ cbe-oss-dev@lists.ozlabs.org
+Date: Wed, 10 Jun 2015 10:19:48 -0700
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +17,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 10, 2015 at 06:37:23PM +0300, Dan Carpenter wrote:
-> My static checker complains that:
-> 
-> 	sound/soc/fsl/imx-wm8962.c:196 imx_wm8962_probe() warn:
-> 	we tested 'ret' before and it was 'false'
-> 
-> The intent was that we use "ret" to check imx_audmux_v2_configure_port().
-> 
-> Fixes: 8de2ae2a7f1f ('ASoC: fsl: add imx-wm8962 machine driver')
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+When the DEBUG preprocessor macro is defined the ps3_gelic_net driver build
+fails due to an undeclared routine gelic_descr_get_status().  This problem
+was introduced during the code cleanup of commit
+6b0c21cede22be1f68f0a632c0ca38008ce1abe7 (net: Fix p3_gelic_net sparse warnings),
+which re-arranged the ordering of some of the gelic routines.
 
-Could you please use an subject like:
-ASoC: imx-wm8962: Add a missing error check
-(Since it only applies to this file)
+This change just moves the gelic_descr_get_status() routine up in the
+ps3_gelic_net.c source file. There is no functional change.
 
-Otherwise, Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Fixes build errors like these:
 
-Thank you indeed for the fix
-Nicolin
+  drivers/net/ethernet/toshiba/ps3_gelic_net.c: error: implicit declaration of function gelic_descr_get_status
 
-> ---
-> I assume checking for an error here will not change anything but I have
-> not tested this patch.
-> 
-> diff --git a/sound/soc/fsl/imx-wm8962.c b/sound/soc/fsl/imx-wm8962.c
-> index cd146d4..b38b98c 100644
-> --- a/sound/soc/fsl/imx-wm8962.c
-> +++ b/sound/soc/fsl/imx-wm8962.c
-> @@ -190,7 +190,7 @@ static int imx_wm8962_probe(struct platform_device *pdev)
->  		dev_err(&pdev->dev, "audmux internal port setup failed\n");
->  		return ret;
->  	}
-> -	imx_audmux_v2_configure_port(ext_port,
-> +	ret = imx_audmux_v2_configure_port(ext_port,
->  			IMX_AUDMUX_V2_PTCR_SYN,
->  			IMX_AUDMUX_V2_PDCR_RXDSEL(int_port));
->  	if (ret) {
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+---
+Dave, please apply.
+
+-Geoff
+
+The following changes since commit d4a4f75cd8f29cd9464a5a32e9224a91571d6649:
+
+  Linux 4.1-rc7 (2015-06-07 20:23:50 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-merge-1
+
+ drivers/net/ethernet/toshiba/ps3_gelic_net.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+index ac62a5e..79f0ec4 100644
+--- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
++++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
+@@ -102,6 +102,18 @@ static void gelic_card_get_ether_port_status(struct gelic_card *card,
+ 	}
+ }
+ 
++/**
++ * gelic_descr_get_status -- returns the status of a descriptor
++ * @descr: descriptor to look at
++ *
++ * returns the status as in the dmac_cmd_status field of the descriptor
++ */
++static enum gelic_descr_dma_status
++gelic_descr_get_status(struct gelic_descr *descr)
++{
++	return be32_to_cpu(descr->dmac_cmd_status) & GELIC_DESCR_DMA_STAT_MASK;
++}
++
+ static int gelic_card_set_link_mode(struct gelic_card *card, int mode)
+ {
+ 	int status;
+@@ -278,18 +290,6 @@ void gelic_card_down(struct gelic_card *card)
+ }
+ 
+ /**
+- * gelic_descr_get_status -- returns the status of a descriptor
+- * @descr: descriptor to look at
+- *
+- * returns the status as in the dmac_cmd_status field of the descriptor
+- */
+-static enum gelic_descr_dma_status
+-gelic_descr_get_status(struct gelic_descr *descr)
+-{
+-	return be32_to_cpu(descr->dmac_cmd_status) & GELIC_DESCR_DMA_STAT_MASK;
+-}
+-
+-/**
+  * gelic_card_free_chain - free descriptor chain
+  * @card: card structure
+  * @descr_in: address of desc
+-- 
+2.1.0
