@@ -1,36 +1,30 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 708181A0E41
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 15:08:43 +1000 (AEST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Wed, 10 Jun 2015 10:38:41 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id E1ADC125804F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:41:07 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5A58bjk9306442
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:38:37 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5A58bPc009043
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:38:37 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
-Cc: linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com, anton@samba.org
-Subject: Re: [RFC PATCH] powerpc/numa: initialize distance lookup table from
- drconf path
-In-Reply-To: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
-References: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
-Date: Wed, 10 Jun 2015 10:38:35 +0530
-Message-ID: <87lhfs5ewc.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8DC31A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 15:34:10 +1000 (AEST)
+Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c02::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D90F51402AE
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 15:34:09 +1000 (AEST)
+Received: by pdbnf5 with SMTP id nf5so29915419pdb.2
+ for <linuxppc-dev@ozlabs.org>; Tue, 09 Jun 2015 22:34:08 -0700 (PDT)
+Message-ID: <1433914391.3096.40.camel@axtens.net>
+Subject: Re: [PATCH V8 06/10] powerpc, lib: Add new branch analysis support
+ functions
+From: Daniel Axtens <dja@axtens.net>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
+Date: Wed, 10 Jun 2015 15:33:11 +1000
+In-Reply-To: <1433763511-5270-6-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1433763511-5270-6-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-3yDoaZAD8cNuiNvHpKpl"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,91 +35,96 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Reworded commit log:
+--=-3yDoaZAD8cNuiNvHpKpl
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 
-powerpc/numa: initialize distance lookup table from drconf path
+> +static int instr_is_branch_xlform(unsigned int instr)
+> +{
+> +	return branch_opcode(instr) =3D=3D 19;
+> +}
+Why do these not return bool? The functions below do.
+> +
+> +static int is_xlform_lr(unsigned int instr)
+> +{
+> +	return (instr & XL_FORM_LR) =3D=3D XL_FORM_LR;
+> +}
+> +
+> +static int is_bo_always(unsigned int instr)
+> +{
+> +	return (instr & BO_ALWAYS) =3D=3D BO_ALWAYS;
+> +}
+> +
+> +static int is_branch_link_set(unsigned int instr)
+> +{
+> +	return (instr & BRANCH_SET_LINK) =3D=3D BRANCH_SET_LINK;
+> +}
+> +
+> +bool instr_is_return_branch(unsigned int instr)
+> +{
+> +	/*
+> +	 * Conditional and unconditional branch to LR register
+> +	 * without seting the link register.
+setting
+> +	 */
+> +	if (is_xlform_lr(instr) && !is_branch_link_set(instr))
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
 
-In some situations, a NUMA guest that supports
-ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
-distances between nodes. This is because of two problems in the
-current code.
 
-1) Different representations of associativity lists.
 
-   There is an assumption about the associativity list in
-   initialize_distance_lookup_table(). Associativity list has two forms:
 
-   a) [cpu,memory]@x/ibm,associativity has following
-      format:
-           <N> <N integers>
+> +bool instr_is_func_call(unsigned int instr)
+> +{
+> +	/* LR should be set */
+> +	if (is_branch_link_set(instr))
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+> +bool instr_is_indirect_func_call(unsigned int instr)
+> +{
+> +	/* XL-form instruction with LR set */
+> +	if (instr_is_branch_xlform(instr) && is_branch_link_set(instr))
+> +		return true;
+> +
+> +	return false;
+> +}
+Both of these functions could be made into a single 'return' statement,
+right?
+> +
+>  int instr_is_relative_branch(unsigned int instr)
+>  {
+>  	if (instr & BRANCH_ABSOLUTE)
 
-   b) ibm,dynamic-reconfiguration-memory/ibm,associativity-lookup-arrays
 
-           <M> <N> <M associativity lists each having N integers>
-           M = the number of associativity lists
-           N = the number of entries per associativity list
+--=-3yDoaZAD8cNuiNvHpKpl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-   Fix initialize_distance_lookup_table() so that it does not assume
-   "case a". And update the caller to skip the length field before
-   sending the associativity list.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
 
-2) Distance table not getting updated from drconf path.
+iQIcBAABCAAGBQJVd8wYAAoJEPC3R3P2I92FDd4P/2Qth6RdfTTYfr8osaDP5eXl
+O9dkSTnaLpWy1u6565atcuac9GO0AUgLaa5DlAFZ15O2sPmAHhgPsRaXhzsu2/46
+/VWa/OthKbFmloUUwM7rhiz7zjLf1sfRtfFK9hS3BJcrkbal6t68LKIUn4nZI5ws
+W5D7V1mSovaQxB6Yzdl4xwm0oqo1dyABEKrbXszJo8LVa7vQPTxor5CXZRRRfCri
+QGpGmI35CUyNLS3/jbj+/mDKXmW+urBisWz5OZnsQfGE3W+shOc+LPP+4EAaHuBq
+eFsaDSwA6q6ZTmLLAfj09jUGac+sycUVtvZtEn2m1dXMUJ2YPuZKeY9a2Txd6ooQ
+bB0IuLzlUeY5OIShVf2LW6Fz2qwF2KR+lriSH9MmcZa3fihrd6UB+JEtc16Q/Jd7
+KJLqLVhr3iT6s287BX/+BYnSjXkOBsw2DIiqTfjDkTvQBr2hjNlzvk1XGPe6W8QC
+QXHP+KomCQl0ndLaAFgNLHAAa3PmF4sBHCu7iROu2CmOmV9p+uucV6Fxdbt5vhI2
+W08NEL7LfFQAeU5RfMjaTCvv5nZ11IAiBPIprSnnvKEEm2KhIx3y6u3oXH1d2l7t
+uw+rh2ZOF2YzPZZ4RQeCS3rpZcZs4KUkZw6msvmE8uEU9PGuk6Sqqd8ilUM0EeRi
+aQd53Mumnc9hAMThJ86L
+=dVPz
+-----END PGP SIGNATURE-----
 
-   Node distance table will not get initialized in certain cases as
-   ibm,dynamic-reconfiguration-memory path does not initialize the
-   lookup table.
-
-   Call initialize_distance_lookup_table() from drconf path with
-   appropriate associativity list.
-
-Reported-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 5e80621..8b9502a 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -225,7 +225,7 @@ static void initialize_distance_lookup_table(int nid,
- 	for (i = 0; i < distance_ref_points_depth; i++) {
- 		const __be32 *entry;
- 
--		entry = &associativity[be32_to_cpu(distance_ref_points[i])];
-+		entry = &associativity[be32_to_cpu(distance_ref_points[i]) - 1];
- 		distance_lookup_table[nid][i] = of_read_number(entry, 1);
- 	}
- }
-@@ -248,8 +248,12 @@ static int associativity_to_nid(const __be32 *associativity)
- 		nid = -1;
- 
- 	if (nid > 0 &&
--	    of_read_number(associativity, 1) >= distance_ref_points_depth)
--		initialize_distance_lookup_table(nid, associativity);
-+		of_read_number(associativity, 1) >= distance_ref_points_depth) {
-+		/*
-+		 * Skip the length field and send start of associativity array
-+		 */
-+		initialize_distance_lookup_table(nid, associativity + 1);
-+	}
- 
- out:
- 	return nid;
-@@ -507,6 +511,12 @@ static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
- 
- 		if (nid == 0xffff || nid >= MAX_NUMNODES)
- 			nid = default_nid;
-+
-+		if (nid > 0) {
-+			index = drmem->aa_index * aa->array_sz;
-+			initialize_distance_lookup_table(nid,
-+							&aa->arrays[index]);
-+		}
- 	}
- 
- 	return nid;
--- 
-1.8.3.1
+--=-3yDoaZAD8cNuiNvHpKpl--
