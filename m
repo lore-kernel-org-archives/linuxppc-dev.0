@@ -1,17 +1,19 @@
 Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0135.outbound.protection.outlook.com [157.56.110.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1398B1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 01:23:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 911D31A0E3C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 01:23:22 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>
-CC: <scottwood@freescale.com>, Madalin Bucur <madalin.bucur@freescale.com>
-Subject: [PATCH 00/12] Freescale DPAA FMan
-Date: Wed, 10 Jun 2015 18:21:40 +0300
-Message-ID: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
+CC: <scottwood@freescale.com>, Igal Liberman <Igal.Liberman@freescale.com>
+Subject: [PATCH 07/12] fsl/fman: Add FMan MURAM support
+Date: Wed, 10 Jun 2015 18:21:41 +0300
+Message-ID: <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
+References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -24,173 +26,290 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Freescale Data Path Acceleration Architecture (DPAA)
-is a set of hardware components on specific QorIQ multicore
-processors. This architecture provides the infrastructure to
-support simplified sharing of networking interfaces and
-accelerators by multiple CPU cores and the accelerators.
+From: Igal Liberman <Igal.Liberman@freescale.com>
 
-One of the DPAA accelerators is the Frame Manager (FMan)
-which contains a series of hardware blocks: ports, Ethernet
-MACs, a multi user RAM (MURAM) and Storage Profile (SP).
+Add Frame Manager Multi-User RAM support.
 
-This patch set introduced the FMan driver code that configures
-and initializes the FMan hardware blocks, offering support for
-three different types of MACs (DTSEC, TGEC, MEMAC).
-
-The first 6 patches present the FMan Foundation Libraries (FLIBs).
-The FMan drivers make use of the basic API the FMan FLib provides
-to configure and control the FMan hardware. The remaining patches
-present the required FMan hardware module drivers.
-
-The driver structure and a hint on file naming:
- --------------------------------
-|      FMan MAC driver           |	mac* files
- ------ ------ ----- ------- ----
-| FMan | Port | MAC | MURAM | SP |	fm_* files
- ------ ------ ----- ------- ----
-:      : FLib :     :             	fman_* files
- -------------------
-
-This submission is based on the prior Freescale DPAA FMan V3,RFC
-submission. Several issues addresses in this submission:
-	- Reduced MAC layering and complexity
-	- Reduced code base
-	- T1024/T2080 10G best effort support
-
-Igal Liberman (12):
-  fsl/fman: Add the FMan FLIB headers
-  fsl/fman: Add the FMan FLIB
-  fsl/fman: Add the FMan port FLIB headers
-  fsl/fman: Add the FMan port FLIB
-  fsl/fman: Add the FMan MAC FLIB headers
-  fsl/fman: Add the FMan MAC FLIB
-  fsl/fman: Add FMan MURAM support
-  fsl/fman: Add Frame Manager support
-  fsl/fman: Add FMan MAC support
-  fsl/fman: Add FMan SP support
-  fsl/fman: Add FMan Port Support
-  fsl/fman: Add FMan MAC driver
-
- drivers/net/ethernet/freescale/Kconfig             |    1 +
- drivers/net/ethernet/freescale/Makefile            |    2 +
- drivers/net/ethernet/freescale/fman/Kconfig        |   46 +
- drivers/net/ethernet/freescale/fman/Makefile       |   12 +
- .../ethernet/freescale/fman/flib/common/general.h  |   41 +
- .../net/ethernet/freescale/fman/flib/fman_common.h |   73 +
- .../net/ethernet/freescale/fman/flib/fsl_enet.h    |  275 +++
- .../net/ethernet/freescale/fman/flib/fsl_fman.h    |  609 ++++++
- .../ethernet/freescale/fman/flib/fsl_fman_dtsec.h  |  791 ++++++++
- .../freescale/fman/flib/fsl_fman_dtsec_mii_acc.h   |  103 +
- .../ethernet/freescale/fman/flib/fsl_fman_memac.h  |  453 +++++
- .../freescale/fman/flib/fsl_fman_memac_mii_acc.h   |   76 +
- .../ethernet/freescale/fman/flib/fsl_fman_port.h   |  427 ++++
- .../net/ethernet/freescale/fman/flib/fsl_fman_sp.h |   54 +
- .../ethernet/freescale/fman/flib/fsl_fman_tgec.h   |  409 ++++
- drivers/net/ethernet/freescale/fman/fm.c           | 2036 ++++++++++++++++++++
- drivers/net/ethernet/freescale/fman/fm.h           |  407 ++++
- drivers/net/ethernet/freescale/fman/fm_common.h    |  576 ++++++
- drivers/net/ethernet/freescale/fman/fm_drv.c       |  933 +++++++++
- drivers/net/ethernet/freescale/fman/fm_drv.h       |  125 ++
- drivers/net/ethernet/freescale/fman/fm_muram.c     |  127 ++
- drivers/net/ethernet/freescale/fman/fm_port_drv.c  |  496 +++++
- drivers/net/ethernet/freescale/fman/fm_sp_common.h |  104 +
- drivers/net/ethernet/freescale/fman/fman.c         |  973 ++++++++++
- .../ethernet/freescale/fman/inc/crc_mac_addr_ext.h |  343 ++++
- drivers/net/ethernet/freescale/fman/inc/enet_ext.h |  199 ++
- drivers/net/ethernet/freescale/fman/inc/fm_ext.h   |  453 +++++
- .../net/ethernet/freescale/fman/inc/fm_muram_ext.h |  103 +
- .../net/ethernet/freescale/fman/inc/fm_port_ext.h  |  376 ++++
- .../net/ethernet/freescale/fman/inc/fsl_fman_drv.h |  195 ++
- drivers/net/ethernet/freescale/fman/inc/mac.h      |  136 ++
- drivers/net/ethernet/freescale/fman/inc/net_ext.h  |  534 +++++
- drivers/net/ethernet/freescale/fman/inc/service.h  |   90 +
- drivers/net/ethernet/freescale/fman/mac/Makefile   |    8 +
- drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c | 1089 +++++++++++
- drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h |  227 +++
- .../ethernet/freescale/fman/mac/fm_dtsec_mii_acc.c |   82 +
- .../ethernet/freescale/fman/mac/fm_dtsec_mii_acc.h |   43 +
- drivers/net/ethernet/freescale/fman/mac/fm_mac.h   |  250 +++
- drivers/net/ethernet/freescale/fman/mac/fm_memac.c |  741 +++++++
- drivers/net/ethernet/freescale/fman/mac/fm_memac.h |  124 ++
- .../ethernet/freescale/fman/mac/fm_memac_mii_acc.c |   66 +
- .../ethernet/freescale/fman/mac/fm_memac_mii_acc.h |   50 +
- drivers/net/ethernet/freescale/fman/mac/fm_tgec.c  |  652 +++++++
- drivers/net/ethernet/freescale/fman/mac/fm_tgec.h  |  126 ++
- .../net/ethernet/freescale/fman/mac/fman_dtsec.c   |  571 ++++++
- .../freescale/fman/mac/fman_dtsec_mii_acc.c        |  168 ++
- .../net/ethernet/freescale/fman/mac/fman_memac.c   |  365 ++++
- .../freescale/fman/mac/fman_memac_mii_acc.c        |  217 +++
- .../net/ethernet/freescale/fman/mac/fman_tgec.c    |  217 +++
- drivers/net/ethernet/freescale/fman/mac/mac-api.c  |  765 ++++++++
- drivers/net/ethernet/freescale/fman/mac/mac.c      |  526 +++++
- drivers/net/ethernet/freescale/fman/port/Makefile  |    3 +
- drivers/net/ethernet/freescale/fman/port/fm_port.c | 1435 ++++++++++++++
- drivers/net/ethernet/freescale/fman/port/fm_port.h |  527 +++++
- .../net/ethernet/freescale/fman/port/fman_port.c   |  619 ++++++
- drivers/net/ethernet/freescale/fman/sp/Makefile    |    3 +
- drivers/net/ethernet/freescale/fman/sp/fm_sp.c     |  398 ++++
- 58 files changed, 20850 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/fman/Kconfig
- create mode 100644 drivers/net/ethernet/freescale/fman/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/common/general.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fman_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_enet.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_tgec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.h
+Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+---
+ drivers/net/ethernet/freescale/fman/Kconfig        |   1 +
+ drivers/net/ethernet/freescale/fman/Makefile       |   6 +-
+ drivers/net/ethernet/freescale/fman/fm_muram.c     | 127 +++++++++++++++++++++
+ .../net/ethernet/freescale/fman/inc/fm_muram_ext.h | 103 +++++++++++++++++
+ 4 files changed, 235 insertions(+), 2 deletions(-)
  create mode 100644 drivers/net/ethernet/freescale/fman/fm_muram.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_port_drv.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_sp_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fman.c
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/enet_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_ext.h
  create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_muram_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_port_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/mac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/net_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/service.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_mac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac_mii_acc.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.h
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac_mii_acc.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_tgec.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac-api.c
- create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac.c
- create mode 100644 drivers/net/ethernet/freescale/fman/port/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.c
- create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.h
- create mode 100644 drivers/net/ethernet/freescale/fman/port/fman_port.c
- create mode 100644 drivers/net/ethernet/freescale/fman/sp/Makefile
- create mode 100644 drivers/net/ethernet/freescale/fman/sp/fm_sp.c
 
+diff --git a/drivers/net/ethernet/freescale/fman/Kconfig b/drivers/net/ethernet/freescale/fman/Kconfig
+index af42c3a..825a0d5 100644
+--- a/drivers/net/ethernet/freescale/fman/Kconfig
++++ b/drivers/net/ethernet/freescale/fman/Kconfig
+@@ -1,6 +1,7 @@
+ config FSL_FMAN
+ 	bool "FMan support"
+ 	depends on FSL_SOC || COMPILE_TEST
++	select GENERIC_ALLOCATOR
+ 	default n
+ 	help
+ 		Freescale Data-Path Acceleration Architecture Frame Manager
+diff --git a/drivers/net/ethernet/freescale/fman/Makefile b/drivers/net/ethernet/freescale/fman/Makefile
+index 1841b03..55c91bd 100644
+--- a/drivers/net/ethernet/freescale/fman/Makefile
++++ b/drivers/net/ethernet/freescale/fman/Makefile
+@@ -1,8 +1,10 @@
+-subdir-ccflags-y += -I$(srctree)/drivers/net/ethernet/freescale/fman/flib
++subdir-ccflags-y += -I$(srctree)/drivers/net/ethernet/freescale/fman/flib \
++				     -I$(srctree)/drivers/net/ethernet/freescale/fman/inc \
++				     -I$(srctree)/drivers/net/ethernet/freescale/fman
+ 
+ obj-y		+= fsl_fman.o
+ 
+-fsl_fman-objs	:= fman.o
++fsl_fman-objs	:= fman.o fm_muram.o
+ 
+ obj-y	+= port/
+ obj-y	+= mac/
+diff --git a/drivers/net/ethernet/freescale/fman/fm_muram.c b/drivers/net/ethernet/freescale/fman/fm_muram.c
+new file mode 100644
+index 0000000..f62042a
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/fm_muram.c
+@@ -0,0 +1,127 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/* FM MURAM ... */
++#include "fm_muram_ext.h"
++
++#include <linux/io.h>
++#include <linux/string.h>
++#include <linux/slab.h>
++#include <linux/genalloc.h>
++
++struct muram_info {
++	struct gen_pool *pool;
++	void __iomem *vbase;
++	uint64_t size;
++	phys_addr_t pbase;
++};
++
++struct muram_info *fm_muram_init(phys_addr_t base, uint64_t size)
++{
++	struct muram_info *p_muram;
++	void __iomem *vaddr;
++	int ret;
++
++	p_muram = kzalloc(sizeof(*p_muram), GFP_KERNEL);
++	if (!p_muram)
++		return NULL;
++
++	p_muram->pool = gen_pool_create(ilog2(64), -1);
++	if (!p_muram->pool) {
++		pr_err("%s(): MURAM pool create failed\n", __func__);
++		return NULL;
++	}
++
++	vaddr = ioremap(base, size);
++	if (!vaddr) {
++		pr_err("%s(): MURAM ioremap failed\n", __func__);
++		return NULL;
++	}
++
++	ret = gen_pool_add_virt(p_muram->pool, (unsigned long)vaddr,
++				base, size, -1);
++	if (ret < 0) {
++		pr_err("%s(): MURAM pool add failed\n", __func__);
++		iounmap(vaddr);
++		return NULL;
++	}
++
++	memset_io(vaddr, 0, (int)size);
++
++	p_muram->vbase = vaddr;
++	p_muram->pbase = base;
++	return p_muram;
++}
++
++void fm_muram_free(struct muram_info *p_muram)
++{
++	/* Destroy pool */
++	gen_pool_destroy(p_muram->pool);
++	/* Unmap memory */
++	iounmap(p_muram->vbase);
++	/* Free pointer */
++	kfree(p_muram);
++}
++
++unsigned long fm_muram_vbase_to_offset(struct muram_info *p_muram,
++				       unsigned long vaddr)
++{
++	return vaddr - (unsigned long)p_muram->vbase;
++}
++
++unsigned long fm_muram_offset_to_vbase(struct muram_info *p_muram,
++				       unsigned long offset)
++{
++	return offset + (unsigned long)p_muram->vbase;
++}
++
++int fm_muram_alloc(struct muram_info *p_muram, uint32_t size)
++{
++	unsigned long vaddr;
++
++	vaddr = gen_pool_alloc(p_muram->pool, size);
++	if (!vaddr)
++		return -ENOMEM;
++
++	memset_io((void __iomem *)vaddr, 0, (int)size);
++
++	return fm_muram_vbase_to_offset(p_muram, vaddr);
++}
++
++void fm_muram_free_mem(struct muram_info *p_muram, uint32_t offset,
++		       uint32_t size)
++{
++	unsigned long addr = fm_muram_offset_to_vbase(p_muram, offset);
++
++	gen_pool_free(p_muram->pool, addr, size);
++}
++
+diff --git a/drivers/net/ethernet/freescale/fman/inc/fm_muram_ext.h b/drivers/net/ethernet/freescale/fman/inc/fm_muram_ext.h
+new file mode 100644
+index 0000000..bc25764
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/inc/fm_muram_ext.h
+@@ -0,0 +1,103 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/* File          fm_muram_ext.h
++ * Description   FM MURAM Application Programming Interface.
++ */
++#ifndef __FM_MURAM_EXT
++#define __FM_MURAM_EXT
++
++#include "linux/types.h"
++
++#define FM_MURAM_INVALID_ALLOCATION	-1
++
++/* Structure for FM MURAM information */
++struct muram_info;
++
++/* FM MURAM initialization API functions, definitions and enums */
++
++/* Function	fm_muram_init
++ * Description	Creates partition in the MURAM.
++ *		The routine returns a pointer to the MURAM partition.
++ *		This pointer must be passed as first parameter to all other
++ *		FM-MURAM function calls.
++ *		No actual initialization or configuration of FM_MURAM hardware
++ *		is done by this routine.
++ * Param[in]	base - Pointer to base of memory mapped FM-MURAM.
++ * Param[in]	size - Size of the FM-MURAM partition.
++ * Return	pointer to FM-MURAM object, or NULL for Failure.
++ */
++struct muram_info *fm_muram_init(phys_addr_t base, uint64_t size);
++
++/* Function	fm_muram_free
++ * Description	Frees all resources that were assigned to FM-MURAM module.
++ *		Calling this routine invalidates the pointer.
++ * Param[in]	p_muram - FM-MURAM module pointer.
++ */
++void fm_muram_free(struct muram_info *p_muram);
++
++/* Function	fm_muram_vbase_to_offset
++ * Description	gives the offset of the memory region in the MURAM
++ * Param[in]	p_muram - FM-MURAM module pointer.
++ * Param[in]	vaddr - the virtual address of the memoru block
++ * Return	the offset of the memory block
++ */
++unsigned long fm_muram_vbase_to_offset(struct muram_info *p_muram,
++				       unsigned long vaddr);
++
++/* Function	fm_muram_vbase_to_offset
++ * Description	gives the address of the memory region from specific oddset
++ * Param[in]	p_muram - FM-MURAM module pointer.
++ * Param[in]	offset - the offset of the memory block
++ * Return	the address of the memory blocl
++ */
++unsigned long fm_muram_offset_to_vbase(struct muram_info *p_muram,
++				       unsigned long offset);
++
++/* Function	fm_muram_alloc
++ * Description	Allocate some memory from FM-MURAM partition.
++ * Param[in]	p_muram   - FM-MURAM module pointer.
++ * Param[in]	size      - size of the memory to be allocated.
++ * Return	address of the allocated memory; NULL otherwise.
++ */
++int fm_muram_alloc(struct muram_info *p_muram, uint32_t size);
++
++/* Function	fm_muram_free_mem
++ * Description	Free an allocated memory from FM-MURAM partition.
++ * Param[in]	p_muram   - FM-MURAM module pointer.
++ * Param[in]	offset    - offset of the memory region to be freed.
++ * Param[in]	size      - size of the memory to be freed.
++ */
++void fm_muram_free_mem(struct muram_info *p_muram, uint32_t offset,
++		       uint32_t size);
++
++#endif /* __FM_MURAM_EXT */
 -- 
 1.7.11.7
-
-I'm re-sending this as Igal's emails to netdev are not getting through.
-
-Madalin
