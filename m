@@ -2,41 +2,40 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A1A7F1A1052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 22:11:30 +1000 (AEST)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9DB91A0FCD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 22:12:21 +1000 (AEST)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 751DE14028F
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 22:11:30 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id CAB4814029E
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 22:12:20 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 10 Jun 2015 22:11:29 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D115A2BB0040
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 22:11:26 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5ACBIGk58523878
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 22:11:27 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5ACArPp027082
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 22:10:54 +1000
-Message-ID: <5578293B.9060506@linux.vnet.ibm.com>
-Date: Wed, 10 Jun 2015 17:40:35 +0530
+ Wed, 10 Jun 2015 17:42:18 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A1FB51258059
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 17:44:45 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5AC52sH62193740
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 17:42:14 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5AC2Kwj017593
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 17:32:22 +0530
+Message-ID: <5578274A.8080402@linux.vnet.ibm.com>
+Date: Wed, 10 Jun 2015 17:32:18 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Daniel Axtens <dja@axtens.net>
 CC: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
-Subject: Re: [PATCH V8 08/10] powerpc, perf: Change POWER8 PMU configuration
- to work with SW filters
+Subject: Re: [PATCH V8 01/10] powerpc, perf: Drop the branch sample when 'from'
+ cannot be fetched
 References: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1433763511-5270-8-git-send-email-khandual@linux.vnet.ibm.com>
- <1433915365.3096.44.camel@axtens.net>
-In-Reply-To: <1433915365.3096.44.camel@axtens.net>
+ <1433906475.3096.1.camel@axtens.net>
+In-Reply-To: <1433906475.3096.1.camel@axtens.net>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -47,37 +46,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/10/2015 11:19 AM, Daniel Axtens wrote:
-> On Mon, 2015-06-08 at 17:08 +0530, Anshuman Khandual wrote:
->> > The kernel now supports SW based branch filters for book3s systems with
->> > some specific requirements while dealing with HW supported branch filters
->> > in order to achieve overall OR semantics prevailing in perf branch stack
->> > sampling framework. This patch adapts the BHRB branch filter configuration
->> > to meet those protocols. POWER8 PMU can only handle one HW based branch
->> > filter request at any point of time. For all other combinations PMU will
->> > pass it on to the SW.
->> > 
->> > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> > ---
->> >  arch/powerpc/perf/power8-pmu.c | 51 ++++++++++++++++++++++++++++++++++++------
->> >  1 file changed, 44 insertions(+), 7 deletions(-)
->> > 
->> > diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
->> > index 5e17cb5..8fccf6c 100644
->> > --- a/arch/powerpc/perf/power8-pmu.c
->> > +++ b/arch/powerpc/perf/power8-pmu.c
->> > @@ -656,6 +656,16 @@ static int power8_generic_events[] = {
->> >  
-> This is, I think, the third time you've modified this function in this
-> patch series. I appreciate the fact that you're trying to keep logical
-> changes separate, but it seems to me like this change might be able to
-> be combined with patch 4, and given a single commit message that clearly
-> explains the complete scope of the changes.
+On 06/10/2015 08:51 AM, Daniel Axtens wrote:
+> Hi Anshuman,
+> 
+> Was there a cover letter for this series that I missed?
 
-Here I have to disagree with you. The changes in this patch like PMU
-should not handle multiple filter requests as it does not support the
-OR semantic required in the protocol, the fact that we need to pass
-on the entire branch filtering responsibility to the SW comes into
-picture after we have enabled the SW branch filtering support in the
-previous patch. So these changes have to follow that up logically and
-sequentially in that order.
+This is the continuation (rebased and reworked) of the series
+posted at https://lkml.org/lkml/2014/5/5/153 (which is V6). I
+remember to have incremented the count for the re-send of the
+first four patches of the series to Peter Z for generic review
+which got pulled in last year. These patches here are the
+remaining powerpc part of the original series. Will list down
+the current changes as well next time around along with the new
+ones.
+
+> 
+> On Mon, 2015-06-08 at 17:08 +0530, Anshuman Khandual wrote:
+>> BHRB is a rolling buffer. Hence we might end up in a situation where
+> Could you spell out what BHRB stands for?
+
+Branch History Rolling Buffer, would you like to have that in the
+commit message as well ?
+
+> 
+>> we have read one target address but when we try to read the next entry
+>>  indicating the from address of the targe, the buffer just overflows.
+> target?
+
+Yeah its target address.
+
+> 
+>> In this case, the captured from address will be zero which indicates
+>> the end of the buffer.
+>>
+> In what sort of situations would this occur? It seems like something we
+> would want to avoid if possible?
+
+Its not avoidable. During regular flow of branch recording, the HW would
+have written both the records correctly but then the new ones came in and
+we just happen to loose one of them causing this situation.
