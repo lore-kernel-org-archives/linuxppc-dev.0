@@ -1,13 +1,25 @@
-Return-Path: <geoff@infradead.org>
-Message-ID: <1433956788.4524.15.camel@infradead.org>
-Subject: [PATCH] net/ps3_gelic: Fix build error with DEBUG
-From: Geoff Levand <geoff@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- cbe-oss-dev@lists.ozlabs.org
-Date: Wed, 10 Jun 2015 10:19:48 -0700
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D7AF1A0E02
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 03:33:37 +1000 (AEST)
+Date: Wed, 10 Jun 2015 18:33:22 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ kernel-janitors@vger.kernel.org
+Message-ID: <20150610173322.GN14071@sirena.org.uk>
+References: <20150610153723.GB10549@mwanda>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="6PH4sE4TNvTKzKhJ"
+In-Reply-To: <20150610153723.GB10549@mwanda>
+Subject: Re: [patch] ASoC: fsl: add an error check
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,77 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the DEBUG preprocessor macro is defined the ps3_gelic_net driver build
-fails due to an undeclared routine gelic_descr_get_status().  This problem
-was introduced during the code cleanup of commit
-6b0c21cede22be1f68f0a632c0ca38008ce1abe7 (net: Fix p3_gelic_net sparse warnings),
-which re-arranged the ordering of some of the gelic routines.
 
-This change just moves the gelic_descr_get_status() routine up in the
-ps3_gelic_net.c source file. There is no functional change.
+--6PH4sE4TNvTKzKhJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Fixes build errors like these:
+On Wed, Jun 10, 2015 at 06:37:23PM +0300, Dan Carpenter wrote:
+> My static checker complains that:
+>=20
+> 	sound/soc/fsl/imx-wm8962.c:196 imx_wm8962_probe() warn:
+> 	we tested 'ret' before and it was 'false'
 
-  drivers/net/ethernet/toshiba/ps3_gelic_net.c: error: implicit declaration of function gelic_descr_get_status
+Applied, thanks.
 
-Signed-off-by: Geoff Levand <geoff@infradead.org>
----
-Dave, please apply.
+--6PH4sE4TNvTKzKhJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
--Geoff
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-The following changes since commit d4a4f75cd8f29cd9464a5a32e9224a91571d6649:
+iQEcBAEBCAAGBQJVeHThAAoJECTWi3JdVIfQSaUH/1tsyvDV53+1YCX/srzK2hrX
+iACRMxDjE/SUz/lPGaEkhGWT3a7Y40szgW6h2HnNVX9/RksSAHuTQeFHzvCgVgS2
+Scfdl6uNkzuwGTqTqV5j4wlE5ir966+D5uI0L5mhSjrnyEeIbPPT61PSY1O3OXIQ
+4g0Vac4AcCkWGGCdPlHBtrfsZO9KuIn1seR03hut1MmBrKiPfAr+f/crOCND+Sm6
+yQH9I1WSSpWPFlIlaVtL8TKt3ZSP5F73ReUc9PojIc4B2mif/4hM8gHkj2nXeRKH
+g6VpN2kwpUqI1VvCdJWxfNZlCk8HhYMzN1i0B3XZtB/wwhREkkZMyZeK6pIEcSI=
+=wzMN
+-----END PGP SIGNATURE-----
 
-  Linux 4.1-rc7 (2015-06-07 20:23:50 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-merge-1
-
- drivers/net/ethernet/toshiba/ps3_gelic_net.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/net/ethernet/toshiba/ps3_gelic_net.c b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-index ac62a5e..79f0ec4 100644
---- a/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-+++ b/drivers/net/ethernet/toshiba/ps3_gelic_net.c
-@@ -102,6 +102,18 @@ static void gelic_card_get_ether_port_status(struct gelic_card *card,
- 	}
- }
- 
-+/**
-+ * gelic_descr_get_status -- returns the status of a descriptor
-+ * @descr: descriptor to look at
-+ *
-+ * returns the status as in the dmac_cmd_status field of the descriptor
-+ */
-+static enum gelic_descr_dma_status
-+gelic_descr_get_status(struct gelic_descr *descr)
-+{
-+	return be32_to_cpu(descr->dmac_cmd_status) & GELIC_DESCR_DMA_STAT_MASK;
-+}
-+
- static int gelic_card_set_link_mode(struct gelic_card *card, int mode)
- {
- 	int status;
-@@ -278,18 +290,6 @@ void gelic_card_down(struct gelic_card *card)
- }
- 
- /**
-- * gelic_descr_get_status -- returns the status of a descriptor
-- * @descr: descriptor to look at
-- *
-- * returns the status as in the dmac_cmd_status field of the descriptor
-- */
--static enum gelic_descr_dma_status
--gelic_descr_get_status(struct gelic_descr *descr)
--{
--	return be32_to_cpu(descr->dmac_cmd_status) & GELIC_DESCR_DMA_STAT_MASK;
--}
--
--/**
-  * gelic_card_free_chain - free descriptor chain
-  * @card: card structure
-  * @descr_in: address of desc
--- 
-2.1.0
+--6PH4sE4TNvTKzKhJ--
