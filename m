@@ -1,21 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0147.outbound.protection.outlook.com [65.55.169.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DAF661A1903
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 17:33:07 +1000 (AEST)
-In-Reply-To: <1433486126-23551-18-git-send-email-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [kernel, v12,
- 17/34] powerpc/spapr: vfio: Switch from iommu_table to new
- iommu_table_group
-Message-Id: <20150610073307.948391402AE@ozlabs.org>
-Date: Wed, 10 Jun 2015 17:33:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4033C1A2C41
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 17:38:14 +1000 (AEST)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jianhua Xie
+ <Jianhua.Xie@freescale.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [RFC,v3 02/10] dpaa_eth: add support for DPAA Ethernet
+Date: Wed, 10 Jun 2015 07:38:06 +0000
+Message-ID: <BL2PR03MB545CA85B1FE886FCD07DE26E6BD0@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
+ <DM2PR0301MB086380B3D89425345562F384F3BD0@DM2PR0301MB0863.namprd03.prod.outlook.com>
+In-Reply-To: <DM2PR0301MB086380B3D89425345562F384F3BD0@DM2PR0301MB0863.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-05-06 at 06:35:09 UTC, Alexey Kardashevskiy wrote:
-> So far one TCE table could only be used by one IOMMU group. However
-> IODA2 hardware allows programming the same TCE table address to
-> multiple PE allowing sharing tables.
-
-...
-
-> +	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
-> +	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
-> +		pnv_pci_link_table_and_group(phb->hose->node, 0,
-> +				tbl, &phb->p5ioc2.table_group);
-
-> +long pnv_pci_link_table_and_group(int node, int num,
-> +		struct iommu_table *tbl,
-> +		struct iommu_table_group *table_group)
-> +{
-> +	struct iommu_table_group_link *tgl = NULL;
-> +
-> +	BUG_ON(!tbl);
-> +	BUG_ON(!table_group);
-> +	BUG_ON(!table_group->group);
-> +
-> +	tgl = kzalloc_node(sizeof(struct iommu_table_group_link), GFP_KERNEL,
-> +			node);
-> +	if (!tgl)
-> +		return -ENOMEM;
-> +
-> +	tgl->table_group = table_group;
-> +	list_add_rcu(&tgl->next, &tbl->it_group_list);
-> +
-> +	table_group->tables[num] = tbl;
-> +
-> +	return 0;
-
-I'm not a fan of the BUG_ONs here.
-
-This routine is so important that you have to BUG_ON three times at the start,
-yet you never check the return code if it fails? That doesn't make sense to me.
-
-If anything this should be sufficient:
-
-	if (WARN_ON(!tbl || !table_group))
-		return -EINVAL;
-
-cheers
+SGkgRXJpYywNCg0KQ2FuIHlvdSBwbGVhc2UgdGVsbCB1cyBpZiB0aGlzIGNoYW5nZSB3b3VsZCBi
+ZSBmb3IgdGhlIGJldHRlcj8NCg0KSSB3YXMgYWJvdXQgdG8gc2F5IHllcyB0byB0aGlzIHJlcXVl
+c3QgYnV0IGNoZWNrZWQgYW5kIG5vIG90aGVyIEV0aGVybmV0IGRyaXZlciBzZWVtcyB0byB1c2Ug
+dGhlIHF1ZXVlIHRyYW5zX3N0YXJ0Lg0KSSB3YXMgYWJsZSB0byBmaW5kIHlvdXIgcGF0Y2ggIm5l
+dDogdHggc2NhbGFiaWxpdHkgd29ya3MgOiB0cmFuc19zdGFydCIgWyBodHRwOi8vcGF0Y2h3b3Jr
+Lm96bGFicy5vcmcvcGF0Y2gvMjcxMDQvIF0gYnV0IGRpZCBub3QgZmluZCBtb3JlIGFib3V0IHRo
+aXMgdG9waWMuDQogDQpUaGFuayB5b3UsDQpNYWRhbGluDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
+YWdlLS0tLS0NCj4gRnJvbTogWGllIEppYW5odWEtQjI5NDA4DQo+IFNlbnQ6IFdlZG5lc2RheSwg
+SnVuZSAxMCwgMjAxNSA5OjAwIEFNDQo+IFRvOiBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcx
+NjsgbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMu
+b3JnDQo+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJFOiBb
+UkZDLHYzIDAyLzEwXSBkcGFhX2V0aDogYWRkIHN1cHBvcnQgZm9yIERQQUEgRXRoZXJuZXQNCj4g
+DQo+IA0KPiANCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IExpbnV4
+cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gPiBib3VuY2VzK2ppYW5odWEueGllPWZy
+ZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mDQo+IE1hZGFsaW4NCj4g
+PiBCdWN1cg0KPiA+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMjksIDIwMTUgMTA6NTcgUE0NCj4g
+PiBUbzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
+cmcNCj4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgQnVjdXIgTWFkYWxpbi1D
+cmlzdGlhbi1CMzI3MTYNCj4gPiBTdWJqZWN0OiBbUkZDLHYzIDAyLzEwXSBkcGFhX2V0aDogYWRk
+IHN1cHBvcnQgZm9yIERQQUEgRXRoZXJuZXQNCj4gPg0KPiA+IFRoaXMgaW50cm9kdWNlcyB0aGUg
+RnJlZXNjYWxlIERhdGEgUGF0aCBBY2NlbGVyYXRpb24gQXJjaGl0ZWN0dXJlDQo+ID4gKERQQUEp
+IEV0aGVybmV0IGRyaXZlciAoZHBhYV9ldGgpIHRoYXQgYnVpbGRzIHVwb24gdGhlIERQQUEgUU1h
+biwNCj4gPiBCTWFuLCBQQU1VIGFuZCBGTWFuIGRyaXZlcnMgdG8gZGVsaXZlciBFdGhlcm5ldCBj
+b25uZWN0aXZpdHkgb24NCj4gPiB0aGUgRnJlZXNjYWxlIERQQUEgUW9ySVEgcGxhdGZvcm1zLg0K
+PiA+DQo+IFNuaXAuLi4uLi4NCj4gDQo+ID4gKw0KPiA+ICsJaWYgKHVubGlrZWx5KGRwYV94bWl0
+KHByaXYsIHBlcmNwdV9zdGF0cywgcXVldWVfbWFwcGluZywgJmZkKSA8IDApKQ0KPiA+ICsJCWdv
+dG8geG1pdF9mYWlsZWQ7DQo+ID4gKw0KPiA+ICsJbmV0X2Rldi0+dHJhbnNfc3RhcnQgPSBqaWZm
+aWVzOw0KPiANCj4gSXQgaXMgcHJvYmFibHkgYmV0dGVyIHRvIHVzZSBuZXRkZXZfcXVldWUtPnRy
+YW5zX3N0YXJ0IHRvIGluc3RlYWQgb2YNCj4gbmV0X2Rldi0+dHJhbnNfc3RhcnQgb24gU01QLg0K
+PiANCj4gQmVzdCBSZWdhcmRzLA0KPiBKaWFuaHVhDQo+IA0KPiA+ICsJcmV0dXJuIE5FVERFVl9U
+WF9PSzsNCj4gPiArDQo+ID4gK3htaXRfZmFpbGVkOg0KPiA+ICsJaWYgKGZkLmNtZCAmIEZNX0ZE
+X0NNRF9GQ08pIHsNCj4gPiArCQkoKmNvdW50cHRyKS0tOw0KPiA+ICsJCWRwYV9mZF9yZWxlYXNl
+KG5ldF9kZXYsICZmZCk7DQo+ID4gKwkJcGVyY3B1X3N0YXRzLT50eF9lcnJvcnMrKzsNCj4gPiAr
+CQlyZXR1cm4gTkVUREVWX1RYX09LOw0KPiA+ICsJfQ0KPiA+ICsJX2RwYV9jbGVhbnVwX3R4X2Zk
+KHByaXYsICZmZCk7DQo+ID4gKwlwZXJjcHVfc3RhdHMtPnR4X2Vycm9ycysrOw0KPiA+ICsJZGV2
+X2tmcmVlX3NrYihza2IpOw0KPiA+ICsJcmV0dXJuIE5FVERFVl9UWF9PSzsNCj4gPiArfQ0KPiA+
+IC0tDQo+ID4gMS43LjExLjcNCj4gPg0KPiA+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fDQo+ID4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdA0KPiA+IExp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3Jn
+L2xpc3RpbmZvL2xpbnV4cHBjLWRldg0K
