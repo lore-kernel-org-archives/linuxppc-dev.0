@@ -1,27 +1,33 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
- [209.85.220.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A317C1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 14:44:07 +1000 (AEST)
-Received: by pabqy3 with SMTP id qy3so26650501pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2015 21:44:05 -0700 (PDT)
-Message-ID: <5577C08D.1050900@ozlabs.ru>
-Date: Wed, 10 Jun 2015 14:43:57 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-CC: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, bhelgaas@google.com,
- panto@antoniou-consulting.com, robherring2@gmail.com,
- grant.likely@linaro.org, Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH v5 12/42] powerpc/pci: Cleanup on pci_controller_ops
-References: <1433400131-18429-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1433400131-18429-13-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1433400131-18429-13-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9AB9D1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 14:50:38 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Wed, 10 Jun 2015 10:20:34 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4F87DE005C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:23:54 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5A4oQkF52953148
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:20:26 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5A4oQ35022050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:20:26 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Cc: linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, anton@samba.org
+Subject: [RFC PATCH] powerpc/numa: initialize distance lookup table from
+ drconf path
+Date: Wed, 10 Jun 2015 10:20:16 +0530
+Message-Id: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,58 +37,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/04/2015 04:41 PM, Gavin Shan wrote:
-> Each PHB maintains one instance of "struct pci_controller_ops",
-> which includes various callbacks called by PCI subsystem. In the
-> definition of this struct, some callbacks have explicit names for
-> its arguments, but the left don't have.
->
-> The patch removes all explicit names of the arguments to the
-> callbacks in "struct pci_controller_ops" to keep the code look
-> consistent.
+Node distance will not get initialized in certain cases as
+dynamic-reconfiguration path does not initialize the lookup table.
 
-imho it is a bad idea. Self-documeted code gets less self-documented - how 
-do I know what "unsigned long" parameters are for without grepping?
+There is an assumption about the associativity list in
+initialize_distance_lookup_table(). Associativity list has two forms:
 
+a) [cpu,memory]@x/ibm,associativity has following
+   format:
 
->
-> Cc: Daniel Axtens <dja@axtens.net>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
-> v5:
->    * Newly introduced
-> ---
->   arch/powerpc/include/asm/pci-bridge.h | 8 ++++----
->   1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index 744884b..1252cd5 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -18,8 +18,8 @@ struct device_node;
->    * PCI controller operations
->    */
->   struct pci_controller_ops {
-> -	void		(*dma_dev_setup)(struct pci_dev *dev);
-> -	void		(*dma_bus_setup)(struct pci_bus *bus);
-> +	void		(*dma_dev_setup)(struct pci_dev *);
-> +	void		(*dma_bus_setup)(struct pci_bus *);
->
->   	int		(*probe_mode)(struct pci_bus *);
->
-> @@ -28,8 +28,8 @@ struct pci_controller_ops {
->   	bool		(*enable_device_hook)(struct pci_dev *);
->
->   	/* Called during PCI resource reassignment */
-> -	resource_size_t (*window_alignment)(struct pci_bus *, unsigned long type);
-> -	void		(*reset_secondary_bus)(struct pci_dev *dev);
-> +	resource_size_t (*window_alignment)(struct pci_bus *, unsigned long);
-> +	void		(*reset_secondary_bus)(struct pci_dev *);
->   };
->
->   /*
->
+    <N> <N integers>
 
+b) ibm,dynamic-reconfiguration-memory/ibm,associativity-lookup-arrays
 
+   <M> <N> <M*N integers>
+   M = the number of associativity lists
+   N = the number of entries per associativity list
+
+Fix initialize_distance_lookup_table() so that it does not assume
+"case a". And update the caller to skip the length field before
+sending the associativity list.
+
+Call initialize_distance_lookup_table() from drconf path with
+appropriate associativity list.
+
+Reported-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 5e80621..8b9502a 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -225,7 +225,7 @@ static void initialize_distance_lookup_table(int nid,
+ 	for (i = 0; i < distance_ref_points_depth; i++) {
+ 		const __be32 *entry;
+ 
+-		entry = &associativity[be32_to_cpu(distance_ref_points[i])];
++		entry = &associativity[be32_to_cpu(distance_ref_points[i]) - 1];
+ 		distance_lookup_table[nid][i] = of_read_number(entry, 1);
+ 	}
+ }
+@@ -248,8 +248,12 @@ static int associativity_to_nid(const __be32 *associativity)
+ 		nid = -1;
+ 
+ 	if (nid > 0 &&
+-	    of_read_number(associativity, 1) >= distance_ref_points_depth)
+-		initialize_distance_lookup_table(nid, associativity);
++		of_read_number(associativity, 1) >= distance_ref_points_depth) {
++		/*
++		 * Skip the length field and send start of associativity array
++		 */
++		initialize_distance_lookup_table(nid, associativity + 1);
++	}
+ 
+ out:
+ 	return nid;
+@@ -507,6 +511,12 @@ static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
+ 
+ 		if (nid == 0xffff || nid >= MAX_NUMNODES)
+ 			nid = default_nid;
++
++		if (nid > 0) {
++			index = drmem->aa_index * aa->array_sz;
++			initialize_distance_lookup_table(nid,
++							&aa->arrays[index]);
++		}
+ 	}
+ 
+ 	return nid;
 -- 
-Alexey
+1.8.3.1
