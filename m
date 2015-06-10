@@ -1,52 +1,23 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <wenweitaowenwei@gmail.com>
+Received: from mail-pa0-x242.google.com (mail-pa0-x242.google.com
+ [IPv6:2607:f8b0:400e:c03::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 943E61A0452
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 16:58:07 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 10 Jun 2015 16:58:06 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 494122BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 16:58:04 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5A6ufIJ57475294
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 16:56:49 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5A6uFH7011789
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 16:56:16 +1000
-Date: Wed, 10 Jun 2015 16:55:51 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Grant Likely <grant.likely@linaro.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Rob Herring <robherring2@gmail.com>,
- Pantelis Antoniou <panto@antoniou-consulting.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
-Message-ID: <20150610065551.GE10935@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
- <1430521038.7979.70.camel@kernel.crashing.org>
- <A6DF99C6-7059-4670-86D0-6926861F0164@antoniou-consulting.com>
- <1430774063.7979.139.camel@kernel.crashing.org>
- <1431560124.20218.91.camel@kernel.crashing.org>
- <CAL_JsqKqTa5eg3eOqx3bkeNdO_920WwDiRbQaxwWLEWpCypFmA@mail.gmail.com>
- <1431564871.4160.8.camel@kernel.crashing.org>
- <20150607075422.6ECE9C40A12@trevor.secretlab.ca>
- <1433797073.4526.163.camel@kernel.crashing.org>
- <CACxGe6uMijVvU_yK_Yk3GSABHjqxYAwY76WcOJcxAhoPcW02sQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CACxGe6uMijVvU_yK_Yk3GSABHjqxYAwY76WcOJcxAhoPcW02sQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B5E431A0047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 16:32:16 +1000 (AEST)
+Received: by pablj1 with SMTP id lj1so8051124pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Jun 2015 23:32:14 -0700 (PDT)
+From: Wenwei Tao <wenweitaowenwei@gmail.com>
+To: izik.eidus@ravellosystems.com, aarcange@redhat.com, chrisw@sous-sol.org,
+ hughd@google.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+ x86@kernel.org, viro@zeniv.linux.org.uk
+Cc: linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, wenweitaowenwei@gmail.com
+Subject: [RFC PATCH 0/6] add defer mechanism to ksm to make it more suitable
+ for Android devices
+Date: Wed, 10 Jun 2015 14:27:13 +0800
+Message-Id: <1433917639-31699-1-git-send-email-wenweitaowenwei@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,48 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 08, 2015 at 10:34:13PM +0100, Grant Likely wrote:
->On Mon, Jun 8, 2015 at 9:57 PM, Benjamin Herrenschmidt
-><benh@kernel.crashing.org> wrote:
->> On Sun, 2015-06-07 at 08:54 +0100, Grant Likely wrote:
->>> > IE. conceptually, what overlays do today is quite rooted around the idea
->>> > of having a fixed "base" DT and some pre-compiled DTB overlays that
->>> > get added/removed. The design completely ignore the idea of a FW that
->>> > maintains a "live" tree which we want to keep in sync, which is what we
->>> > want to do here, or what we could do with a "live" open firmware
->>> > implementation.
->>>
->>> Right, which is exactly the reason for the changeset/overlay split.
->>> Overlays assume a fixed base, and that overlays are kind of like plug-in
->>> modules. changeset makes no such assumption.
->>
->> So you suggest we create a function that takes an fdt and an "anchor" as input,
->> and expands that FDT below that anchor, but does so by using the changeset API
->> under the hood ?
->>
->> Even that looks somewhat tricky (turn that bit of FDT into a pile of changeset
->> actions), however, I can see how we could create a new function inside changeset
->> to attach a subtree.
->>
->> Ie. of_attach_subtree() (which could have it's own reconfig action but we
->> don't care that much yet), which takes an expanded subtree and an anchor, and
->> calls of_attach_node() in effect for all nodes in there.
->>
->> We could then have a two pass mechanism in our hotplug code:
->>
->>  - Expand the bit of fdt into a separate tree
->>  - Use of_attach_subtree to "add" that subtree to the main tree
->>
->> What do you think ?
->
->I like that.
->
+I observe that it is unlikely for KSM to merge new pages from an area
+that has already been scanned twice on Android mobile devices, so it's
+a waste of power to scan these areas in high frequency. In this patchset,
+a defer mechanism is introduced which is borrowed from page compaction to KSM.
 
-Thanks, Grant and Ben. Currently, I'm collecting more feedbacks for v5. So
-it's something I will address in v6.
+A new slot list called active_slot is added into ksm_scan. MMs which have
+VMA marked for merging via madvise are added (MM is new to KSM) or moved to
+(MM is in the ksm_scan.mm_slot list) active_slot. In "scan_get_next_rmap_item()",
+the active_slot list will be scaned firstly unless it is empty, then the mm_slot list.
+MMs in the active_slot list will be scaned twice, after that they will be moved
+to mm_slot list. Once scanning the mm_slot list, the defer mechanism will be activated:
 
-Thanks,
-Gavin
+a) if KSM scans "ksm_thread_pages_to_scan" pages but none of them get
+merged or become unstable, increase the ksm_defer_shift(new member of ksm_scan)
+by one (no more than 6 by now). And in the next "1UL << ksm_scan.ksm_defer_shift"
+times KSM been scheduled or woken up it will not do the actual scan, compare
+and merge job, it just schedule out.
 
->g.
->
+b) if KSM scans "ksm_thread_pages_to_scan" pages and more than zero of them
+get merged or become unstable, reset the ksm_defer_shift and ksm_considered
+to zero.
+
+Some applications may continue to produce new mergeable VMAs to KSM, in order
+to avoid scanning VMAs of these applications that have already been scanned twice,
+we use VM_HUGETLB to indicate new mergeable VMAs since hugetlb vm are not
+supported by KSM.
+
+Wenwei Tao (6):
+  mm: add defer mechanism to ksm to make it more suitable
+  mm: change the condition of identifying hugetlb vm
+  perf: change the condition of identifying hugetlb vm
+  fs/binfmt_elf.c: change the condition of identifying hugetlb vm
+  x86/mm: change the condition of identifying hugetlb vm
+  powerpc/kvm: change the condition of identifying hugetlb vm
+
+ arch/powerpc/kvm/e500_mmu_host.c |    3 +-
+ arch/x86/mm/tlb.c                |    3 +-
+ fs/binfmt_elf.c                  |    2 +-
+ include/linux/hugetlb_inline.h   |    2 +-
+ include/linux/mempolicy.h        |    2 +-
+ kernel/events/core.c             |    2 +-
+ mm/gup.c                         |    6 +-
+ mm/huge_memory.c                 |   17 ++-
+ mm/ksm.c                         |  230 +++++++++++++++++++++++++++++++++-----
+ mm/madvise.c                     |    6 +-
+ mm/memory.c                      |    5 +-
+ mm/mprotect.c                    |    6 +-
+ 12 files changed, 238 insertions(+), 46 deletions(-)
+
+-- 
+1.7.9.5
