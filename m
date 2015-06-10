@@ -1,17 +1,38 @@
-Return-Path: <jim@jim.sh>
-Date: Wed, 10 Jun 2015 15:09:16 -0400
-From: Jim Paris <jim@jtan.com>
-To: Geoff Levand <geoff@infradead.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Geert Uytterhoeven <geert@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] block/ps3vram: Minor updates and fixes
-Message-ID: <20150610190916.GA29131@psychosis.jim.sh>
-References: <cover.1433959045.git.geoff@infradead.org>
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B3EC41A0AAA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 08:55:22 +1000 (AEST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 10 Jun 2015 16:55:20 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 7FA251FF004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 16:46:27 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t5AMshvU30081248
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 15:54:43 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5AMtGth002105
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 16:55:17 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, joel@jms.id.au, vaibhav@linux.vnet.ibm.com,
+ Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Subject: Re: [PATCH v8] powerpc/powernv: Poweroff (EPOW,
+ DPO) events support for PowerNV platform
+In-Reply-To: <1433965909-9910-1-git-send-email-vipin@linux.vnet.ibm.com>
+References: <1433965909-9910-1-git-send-email-vipin@linux.vnet.ibm.com>
+Date: Thu, 11 Jun 2015 08:55:15 +1000
+Message-ID: <m3fv5zdvho.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1433959045.git.geoff@infradead.org>
-Sender: jim@jim.sh
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +42,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Geoff Levand wrote:
-> Hi Jens,
-> 
-> Here are a few minor updates for the ps3vram driver.  The third patch adds me
-> as co-maintainer of the driver, which I think is fitting as I have been
-> maintaining it for the last few years and expect I would be involved in any
-> future inquiries regarding it.
+Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
+> This patch adds support for FSP (Flexible Service Processor)
+> EPOW (Early Power Off Warning) and DPO (Delayed Power Off) events for
 
-Thanks Geoff.
-
-Acked-by: Jim Paris <jim@jtan.com>
-
-Jim
-
-> 
-> Please apply, thanks.
-> 
-> -Geoff
-> 
-> The following changes since commit d4a4f75cd8f29cd9464a5a32e9224a91571d6649:
-> 
->   Linux 4.1-rc7 (2015-06-07 20:23:50 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/geoff/ps3-linux.git for-merge-2
-> 
-> for you to fetch changes up to 1d082300a03a735c006739907e6aea082007663c:
-> 
->   MAINTAINERS: Update ps3vram block driver (2015-06-10 10:46:25 -0700)
-> 
-> ----------------------------------------------------------------
-> Geert Uytterhoeven (1):
->       block/ps3vram: Remove obsolete reference to MTD
-> 
-> Geoff Levand (2):
->       block/ps3vram: Fix sparse warnings
->       MAINTAINERS: Update ps3vram block driver
-> 
->  MAINTAINERS             |  2 ++
->  drivers/block/ps3vram.c | 34 +++++++++++++++++-----------------
->  2 files changed, 19 insertions(+), 17 deletions(-)
-> 
-> -- 
-> 2.1.0
+Not restricted to FSP systems, it's a generic OPAL API that any platform
+could implement.
