@@ -1,30 +1,36 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 854E31A0023
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 15:08:03 +1000 (AEST)
-Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
- [IPv6:2607:f8b0:400e:c02::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C0F651402AB
- for <linuxppc-dev@ozlabs.org>; Wed, 10 Jun 2015 15:08:01 +1000 (AEST)
-Received: by pdjm12 with SMTP id m12so29382511pdj.3
- for <linuxppc-dev@ozlabs.org>; Tue, 09 Jun 2015 22:07:59 -0700 (PDT)
-Message-ID: <1433912822.3096.31.camel@axtens.net>
-Subject: Re: [PATCH V8 04/10] powerpc, perf: Re organize PMU based branch
- filter processing in POWER8
-From: Daniel Axtens <dja@axtens.net>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
-Date: Wed, 10 Jun 2015 15:07:02 +1000
-In-Reply-To: <1433763511-5270-4-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1433763511-5270-4-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-azs/bSmJKgUdiSE8Y+sW"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 708181A0E41
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 15:08:43 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Wed, 10 Jun 2015 10:38:41 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id E1ADC125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:41:07 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5A58bjk9306442
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:38:37 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5A58bPc009043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:38:37 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Cc: linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com, anton@samba.org
+Subject: Re: [RFC PATCH] powerpc/numa: initialize distance lookup table from
+ drconf path
+In-Reply-To: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
+References: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
+Date: Wed, 10 Jun 2015 10:38:35 +0530
+Message-ID: <87lhfs5ewc.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,43 +41,91 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-azs/bSmJKgUdiSE8Y+sW
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Reworded commit log:
 
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 
->  	/* Every thing else is unsupported */
->  	return -1;
-You're returning -1 as a unsigned 64bit number. Other code that reads
-this value tests for -1 and I think it works everywhere just because it
-wraps around consistently. But I would still rather not do this and I'm
-surprised it doesn't throw a warning.
+powerpc/numa: initialize distance lookup table from drconf path
 
-Regards,
-Daniel
+In some situations, a NUMA guest that supports
+ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
+distances between nodes. This is because of two problems in the
+current code.
 
---=-azs/bSmJKgUdiSE8Y+sW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+1) Different representations of associativity lists.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
+   There is an assumption about the associativity list in
+   initialize_distance_lookup_table(). Associativity list has two forms:
 
-iQIcBAABCAAGBQJVd8X3AAoJEPC3R3P2I92FkYQQAMiHC/3u3sWRnLUz7e8JwYWm
-StAzphhggJv/dT0bgpNvMoMCB8+XAfciA5A0TF+tuoZqsL6Xit87wzEAsqgd992N
-GVQU004L5ZVM96xU7NGXTCcEpujh5FHhYiVTbfOQz5n7NjrB9JF0osZusvBKT25L
-j+zY7tnYsg6ds3ljnAUW6b3FHBeCTB4zTDYHhfNzXd8DlAiGpAlfbUUN1sWmHMRk
-xskBsr0C40su0MIXlYzk2QFy1H+GrI+3Hrl4vZ0cSWrbZQRMm2wqOcpYSpdYao1S
-nevqWU4YKCOXuh61XcoxTLOo6xnYWfY6gfIwJYw6Pto4335q8mMDvRx5VBlwaILY
-jWQnnxNxgAaJIQ6yQ0g0PxsH6nEmC4EFwrAKatpLp9ZEUHjQMNVDyFyzn3tf12xE
-KIUBIhIRBvMU0S7Nl/jxwYVYmnAyAgAFyTgeTuBG6erYG+Fnftax0G3NJ+Gv6PkG
-RnJ+dzx/nAc8REpOWd/TQYnHycJiRMwmM50QjouxQQeYozzSe5yCbXt4pW4dRrBk
-5lXinx4uNnNPL8Uh6ChAV+dHUNElGyrxcs9QYD6k+da6iTR0wfAop9nO8v+Y4Ry4
-2rSgQIaH5GB4p28jI62Hz/zlsP9otiN1d5sk4ft4Q8+fZCEUisR4dEpbAMrZj0vV
-yu5kJHataQRcfefbxruK
-=qo4E
------END PGP SIGNATURE-----
+   a) [cpu,memory]@x/ibm,associativity has following
+      format:
+           <N> <N integers>
 
---=-azs/bSmJKgUdiSE8Y+sW--
+   b) ibm,dynamic-reconfiguration-memory/ibm,associativity-lookup-arrays
+
+           <M> <N> <M associativity lists each having N integers>
+           M = the number of associativity lists
+           N = the number of entries per associativity list
+
+   Fix initialize_distance_lookup_table() so that it does not assume
+   "case a". And update the caller to skip the length field before
+   sending the associativity list.
+
+2) Distance table not getting updated from drconf path.
+
+   Node distance table will not get initialized in certain cases as
+   ibm,dynamic-reconfiguration-memory path does not initialize the
+   lookup table.
+
+   Call initialize_distance_lookup_table() from drconf path with
+   appropriate associativity list.
+
+Reported-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 5e80621..8b9502a 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -225,7 +225,7 @@ static void initialize_distance_lookup_table(int nid,
+ 	for (i = 0; i < distance_ref_points_depth; i++) {
+ 		const __be32 *entry;
+ 
+-		entry = &associativity[be32_to_cpu(distance_ref_points[i])];
++		entry = &associativity[be32_to_cpu(distance_ref_points[i]) - 1];
+ 		distance_lookup_table[nid][i] = of_read_number(entry, 1);
+ 	}
+ }
+@@ -248,8 +248,12 @@ static int associativity_to_nid(const __be32 *associativity)
+ 		nid = -1;
+ 
+ 	if (nid > 0 &&
+-	    of_read_number(associativity, 1) >= distance_ref_points_depth)
+-		initialize_distance_lookup_table(nid, associativity);
++		of_read_number(associativity, 1) >= distance_ref_points_depth) {
++		/*
++		 * Skip the length field and send start of associativity array
++		 */
++		initialize_distance_lookup_table(nid, associativity + 1);
++	}
+ 
+ out:
+ 	return nid;
+@@ -507,6 +511,12 @@ static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
+ 
+ 		if (nid == 0xffff || nid >= MAX_NUMNODES)
+ 			nid = default_nid;
++
++		if (nid > 0) {
++			index = drmem->aa_index * aa->array_sz;
++			initialize_distance_lookup_table(nid,
++							&aa->arrays[index]);
++		}
+ 	}
+ 
+ 	return nid;
+-- 
+1.8.3.1
