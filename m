@@ -1,38 +1,21 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17B1B1A0E0A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 17:26:35 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 10 Jun 2015 03:26:33 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A792338C8051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 03:26:31 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5A7QV6Q57802894
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 07:26:31 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5A7QTJB015860
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 03:26:31 -0400
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: mingo@redhat.com, ak@linux.intel.com,
- Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v15 19/19] perf,
- tools: Add README for info on parsing JSON/map files
-Date: Wed, 10 Jun 2015 00:25:23 -0700
-Message-Id: <1433921123-25327-20-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1433921123-25327-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1433921123-25327-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DAF661A1903
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 17:33:07 +1000 (AEST)
+In-Reply-To: <1433486126-23551-18-git-send-email-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kernel, v12,
+ 17/34] powerpc/spapr: vfio: Switch from iommu_table to new
+ iommu_table_group
+Message-Id: <20150610073307.948391402AE@ozlabs.org>
+Date: Wed, 10 Jun 2015 17:33:07 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,140 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Jiri Olsa <jolsa@redhat.com>
----
- tools/perf/pmu-events/README | 122 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 122 insertions(+)
- create mode 100644 tools/perf/pmu-events/README
+On Fri, 2015-05-06 at 06:35:09 UTC, Alexey Kardashevskiy wrote:
+> So far one TCE table could only be used by one IOMMU group. However
+> IODA2 hardware allows programming the same TCE table address to
+> multiple PE allowing sharing tables.
 
-diff --git a/tools/perf/pmu-events/README b/tools/perf/pmu-events/README
-new file mode 100644
-index 0000000..da57cb5
---- /dev/null
-+++ b/tools/perf/pmu-events/README
-@@ -0,0 +1,122 @@
-+
-+The contents of this directory allow users to specify PMU events in
-+their CPUs by their symbolic names rather than raw event codes (see
-+example below).
-+
-+The main program in this directory, is the 'jevents', which is built and
-+executed _before_ the perf binary itself is built.
-+
-+The 'jevents' program tries to locate and process JSON files in the directory
-+tree tools/perf/pmu-events/arch/foo.
-+
-+	- Regular files with '.json' extension in the name are assumed to be
-+	  JSON files, each of which describes a set of PMU events.
-+
-+	- Regular files with basename starting with 'mapfile.csv' are assumed
-+	  to be a CSV file that maps a specific CPU to its set of PMU events.
-+	  (see below for mapfile format)
-+
-+	- Directories are traversed, but all other files are ignored.
-+
-+Using the JSON files and the mapfile, 'jevents' generates the C source file,
-+'pmu-events.c', which encodes the two sets of tables:
-+
-+	- Set of 'PMU events tables' for all known CPUs in the architecture,
-+	  (one table like the following, per JSON file; table name 'pme_power8'
-+	  is derived from JSON file name, 'power8.json').
-+
-+		struct pmu_event pme_power8[] = {
-+
-+			...
-+
-+			{
-+				.name = "pm_1plus_ppc_cmpl",
-+				.event = "event=0x100f2",
-+				.desc = "1 or more ppc insts finished,",
-+			},
-+
-+			...
-+		}
-+
-+	- A 'mapping table' that maps each CPU of the architecture, to its
-+	  'PMU events table'
-+
-+		struct pmu_events_map pmu_events_map[] = {
-+		{
-+			.cpuid = "004b0000",
-+			.version = "1",
-+			.type = "core",
-+			.table = pme_power8
-+		},
-+			...
-+
-+		};
-+
-+After the 'pmu-events.c' is generated, it is compiled and the resulting
-+'pmu-events.o' is added to 'libperf.a' which is then used to build perf.
-+
-+NOTES:
-+	1. Several CPUs can support same set of events and hence use a common
-+	   JSON file. Hence several entries in the pmu_events_map[] could map
-+	   to a single 'PMU events table'.
-+
-+	2. The 'pmu-events.h' has an extern declaration for the mapping table
-+	   and the generated 'pmu-events.c' defines this table.
-+
-+	3. _All_ known CPU tables for architecture are included in the perf
-+	   binary.
-+
-+At run time, perf determines the actual CPU it is running on, finds the
-+matching events table and builds aliases for those events. This allows
-+users to specify events by their name:
-+
-+	$ perf stat -e pm_1plus_ppc_cmpl sleep 1
-+
-+where 'pm_1plus_ppc_cmpl' is a Power8 PMU event.
-+
-+In case of errors when processing files in the tools/perf/pmu-events/arch
-+directory, 'jevents' tries to create an empty mapping file to allow the perf
-+build to succeed even if the PMU event aliases cannot be used.
-+
-+However some errors in processing may cause the perf build to fail.
-+
-+Mapfile format
-+===============
-+
-+The mapfile.csv format is expected to be:
-+
-+	Header line
-+	CPUID,Version,File/path/name.json,Type
-+
-+where:
-+
-+	Comma:
-+		is the required field delimiter (i.e other fields cannot
-+		have commas within them).
-+
-+	Comments:
-+		Lines in which the first character is either '\n' or '#'
-+		are ignored.
-+
-+	Header line
-+		The header line is the first line in the file, which is
-+		_IGNORED_. It can be a comment (begin with '#') or empty.
-+
-+	CPUID:
-+		CPUID is an arch-specific char string, that can be used
-+		to identify CPU (and associate it with a set of PMU events
-+		it supports). Multiple CPUIDS can point to the same
-+		File/path/name.json.
-+
-+		Example:
-+			CPUID == 'GenuineIntel-6-2E' (on x86).
-+			CPUID == '004b0100' (PVR value in Powerpc)
-+	Version:
-+		is the Version of the mapfile.
-+
-+	File/path/name.json:
-+		is the pathname for the JSON file, relative to the directory
-+		containing the mapfile.csv
-+
-+	Type:
-+		indicates whether the events or "core" or "uncore" events.
--- 
-1.8.3.1
+...
+
+> +	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
+> +	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
+> +		pnv_pci_link_table_and_group(phb->hose->node, 0,
+> +				tbl, &phb->p5ioc2.table_group);
+
+> +long pnv_pci_link_table_and_group(int node, int num,
+> +		struct iommu_table *tbl,
+> +		struct iommu_table_group *table_group)
+> +{
+> +	struct iommu_table_group_link *tgl = NULL;
+> +
+> +	BUG_ON(!tbl);
+> +	BUG_ON(!table_group);
+> +	BUG_ON(!table_group->group);
+> +
+> +	tgl = kzalloc_node(sizeof(struct iommu_table_group_link), GFP_KERNEL,
+> +			node);
+> +	if (!tgl)
+> +		return -ENOMEM;
+> +
+> +	tgl->table_group = table_group;
+> +	list_add_rcu(&tgl->next, &tbl->it_group_list);
+> +
+> +	table_group->tables[num] = tbl;
+> +
+> +	return 0;
+
+I'm not a fan of the BUG_ONs here.
+
+This routine is so important that you have to BUG_ON three times at the start,
+yet you never check the return code if it fails? That doesn't make sense to me.
+
+If anything this should be sufficient:
+
+	if (WARN_ON(!tbl || !table_group))
+		return -EINVAL;
+
+cheers
