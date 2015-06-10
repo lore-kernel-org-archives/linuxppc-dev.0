@@ -1,25 +1,23 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-ie0-x231.google.com (mail-ie0-x231.google.com
+ [IPv6:2607:f8b0:4001:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D7AF1A0E02
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 03:33:37 +1000 (AEST)
-Date: Wed, 10 Jun 2015 18:33:22 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- kernel-janitors@vger.kernel.org
-Message-ID: <20150610173322.GN14071@sirena.org.uk>
-References: <20150610153723.GB10549@mwanda>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="6PH4sE4TNvTKzKhJ"
-In-Reply-To: <20150610153723.GB10549@mwanda>
-Subject: Re: [patch] ASoC: fsl: add an error check
+ by lists.ozlabs.org (Postfix) with ESMTPS id 088BE1A0E02
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 03:56:08 +1000 (AEST)
+Received: by iesa3 with SMTP id a3so39771502ies.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 10:56:04 -0700 (PDT)
+Message-ID: <1433958961.27504.15.camel@edumazet-glaptop2.roam.corp.google.com>
+Subject: Re: [RFC,v3 02/10] dpaa_eth: add support for DPAA Ethernet
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: madalin.bucur@freescale.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Wed, 10 Jun 2015 10:56:01 -0700
+In-Reply-To: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
+References: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2015-04-29 at 17:56 +0300, Madalin Bucur wrote:
+> This introduces the Freescale Data Path Acceleration Architecture
+> (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
+> BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
+> the Freescale DPAA QorIQ platforms.
+...
 
---6PH4sE4TNvTKzKhJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> +	/* We're going to store the skb backpointer at the beginning
+> +	 * of the data buffer, so we need a privately owned skb
+> +	 */
+> +
+> +	/* Code borrowed from skb_unshare(). */
+> +	if (skb_cloned(skb)) {
+> +		struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
+> +
+> +		/* Finally, create a contig FD from this skb */
+> +		skb_to_contig_fd(priv, skb, &fd, countptr, &offset);
+> +
+> +		kfree_skb(skb);
+> +		skb = nskb;
+> +		/* skb_copy() has now linearized the skbuff. */
+> +	}
+> +
 
-On Wed, Jun 10, 2015 at 06:37:23PM +0300, Dan Carpenter wrote:
-> My static checker complains that:
->=20
-> 	sound/soc/fsl/imx-wm8962.c:196 imx_wm8962_probe() warn:
-> 	we tested 'ret' before and it was 'false'
+You know that TCP packets are clones, right ?
+This code is killing performance.
 
-Applied, thanks.
+TCP allows the headers part being modified by a driver if needed.
 
---6PH4sE4TNvTKzKhJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVeHThAAoJECTWi3JdVIfQSaUH/1tsyvDV53+1YCX/srzK2hrX
-iACRMxDjE/SUz/lPGaEkhGWT3a7Y40szgW6h2HnNVX9/RksSAHuTQeFHzvCgVgS2
-Scfdl6uNkzuwGTqTqV5j4wlE5ir966+D5uI0L5mhSjrnyEeIbPPT61PSY1O3OXIQ
-4g0Vac4AcCkWGGCdPlHBtrfsZO9KuIn1seR03hut1MmBrKiPfAr+f/crOCND+Sm6
-yQH9I1WSSpWPFlIlaVtL8TKt3ZSP5F73ReUc9PojIc4B2mif/4hM8gHkj2nXeRKH
-g6VpN2kwpUqI1VvCdJWxfNZlCk8HhYMzN1i0B3XZtB/wwhREkkZMyZeK6pIEcSI=
-=wzMN
------END PGP SIGNATURE-----
-
---6PH4sE4TNvTKzKhJ--
+You should use skb_header_cloned() instead.
