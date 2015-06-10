@@ -1,24 +1,20 @@
 Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0127.outbound.protection.outlook.com [65.55.169.127])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0135.outbound.protection.outlook.com [157.56.110.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C059B1A0E2C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 01:23:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D80031A0DF2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 01:23:20 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>
 CC: <scottwood@freescale.com>, Igal Liberman <Igal.Liberman@freescale.com>
-Subject: [PATCH 03/12] fsl/fman: Add the FMan port FLIB headers
-Date: Wed, 10 Jun 2015 18:21:46 +0300
-Message-ID: <1433949712-5648-7-git-send-email-madalin.bucur@freescale.com>
-In-Reply-To: <1433949712-5648-6-git-send-email-madalin.bucur@freescale.com>
+Subject: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
+Date: Wed, 10 Jun 2015 18:21:42 +0300
+Message-ID: <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
 References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
  <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-4-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-5-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-6-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -33,25 +29,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Igal Liberman <Igal.Liberman@freescale.com>
 
-The FMan Port Flib provides basic API used by the drivers to
-configure and control the FMan Port hardware.
+This patch presents the FMan Foundation Libraries (FLIB) headers.
+The FMan FLib provides the basic API used by the FMan drivers to
+configure and control the FMan hardware.
 
 Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 ---
- .../net/ethernet/freescale/fman/flib/fman_common.h |  73 ++++
- .../ethernet/freescale/fman/flib/fsl_fman_port.h   | 427 +++++++++++++++++++++
- .../net/ethernet/freescale/fman/flib/fsl_fman_sp.h |  54 +++
- 3 files changed, 554 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fman_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h
- create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h
+ .../ethernet/freescale/fman/flib/common/general.h  |  41 ++
+ .../net/ethernet/freescale/fman/flib/fsl_fman.h    | 609 +++++++++++++++++++++
+ 2 files changed, 650 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/common/general.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
 
-diff --git a/drivers/net/ethernet/freescale/fman/flib/fman_common.h b/drivers/net/ethernet/freescale/fman/flib/fman_common.h
+diff --git a/drivers/net/ethernet/freescale/fman/flib/common/general.h b/drivers/net/ethernet/freescale/fman/flib/common/general.h
 new file mode 100644
-index 0000000..e186ed9
+index 0000000..0501f01
 --- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/flib/fman_common.h
-@@ -0,0 +1,73 @@
++++ b/drivers/net/ethernet/freescale/fman/flib/common/general.h
+@@ -0,0 +1,41 @@
 +/*
 + * Copyright 2008 - 2015 Freescale Semiconductor Inc.
 + *
@@ -83,54 +78,22 @@ index 0000000..e186ed9
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#ifndef __FMAN_COMMON_H
-+#define __FMAN_COMMON_H
++#ifndef __GENERAL_H
++#define __GENERAL_H
 +
-+/* NIA Description */
-+#define NIA_ORDER_RESTOR			0x00800000
-+#define NIA_ENG_FM_CTL				0x00000000
-+#define NIA_ENG_PRS				0x00440000
-+#define NIA_ENG_KG				0x00480000
-+#define NIA_ENG_PLCR				0x004C0000
-+#define NIA_ENG_BMI				0x00500000
-+#define NIA_ENG_QMI_ENQ				0x00540000
-+#define NIA_ENG_QMI_DEQ				0x00580000
-+#define NIA_ENG_MASK				0x007C0000
++#include <linux/types.h>
++#include <linux/io.h>
 +
-+#define NIA_FM_CTL_AC_CC			0x00000006
-+#define NIA_FM_CTL_AC_HC			0x0000000C
-+#define NIA_FM_CTL_AC_IND_MODE_TX		0x00000008
-+#define NIA_FM_CTL_AC_IND_MODE_RX		0x0000000A
-+#define NIA_FM_CTL_AC_FRAG			0x0000000e
-+#define NIA_FM_CTL_AC_PRE_FETCH			0x00000010
-+#define NIA_FM_CTL_AC_POST_FETCH_PCD		0x00000012
-+#define NIA_FM_CTL_AC_POST_FETCH_PCD_UDP_LEN	0x00000018
-+#define NIA_FM_CTL_AC_POST_FETCH_NO_PCD		0x00000012
-+#define NIA_FM_CTL_AC_FRAG_CHECK		0x00000014
-+#define NIA_FM_CTL_AC_PRE_CC			0x00000020
++#define iowrite32be(val, addr)		out_be32(&(*addr), val)
++#define ioread32be(addr)		in_be32(&(*addr))
 +
-+#define NIA_BMI_AC_ENQ_FRAME			0x00000002
-+#define NIA_BMI_AC_TX_RELEASE			0x000002C0
-+#define NIA_BMI_AC_RELEASE			0x000000C0
-+#define NIA_BMI_AC_DISCARD			0x000000C1
-+#define NIA_BMI_AC_TX				0x00000274
-+#define NIA_BMI_AC_FETCH			0x00000208
-+#define NIA_BMI_AC_MASK				0x000003FF
-+
-+#define NIA_KG_DIRECT				0x00000100
-+#define NIA_KG_CC_EN				0x00000200
-+#define NIA_PLCR_ABSOLUTE			0x00008000
-+
-+#define NIA_BMI_AC_ENQ_FRAME_WITHOUT_DMA	0x00000202
-+#define NIA_BMI_AC_FETCH_ALL_FRAME		0x0000020c
-+
-+#endif	/* __FMAN_COMMON_H */
-diff --git a/drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h b/drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h
++#endif	/* __GENERAL_H */
+diff --git a/drivers/net/ethernet/freescale/fman/flib/fsl_fman.h b/drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
 new file mode 100644
-index 0000000..719d15e
+index 0000000..95eef30
 --- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h
-@@ -0,0 +1,427 @@
++++ b/drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
+@@ -0,0 +1,609 @@
 +/*
 + * Copyright 2008 - 2015 Freescale Semiconductor Inc.
 + *
@@ -162,461 +125,583 @@ index 0000000..719d15e
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#ifndef __FSL_FMAN_PORT_H
-+#define __FSL_FMAN_PORT_H
-+
-+#include "fsl_fman_sp.h"
-+
-+/* Registers bit fields */
-+
-+/* BMI defines */
-+#define BMI_EBD_EN				0x80000000
-+
-+#define BMI_PORT_CFG_EN				0x80000000
-+#define BMI_PORT_CFG_FDOVR			0x02000000
-+
-+#define BMI_PORT_STATUS_BSY			0x80000000
-+
-+#define BMI_DMA_ATTR_SWP_SHIFT			FMAN_SP_DMA_ATTR_SWP_SHIFT
-+#define BMI_DMA_ATTR_IC_STASH_ON		0x10000000
-+#define BMI_DMA_ATTR_HDR_STASH_ON		0x04000000
-+#define BMI_DMA_ATTR_SG_STASH_ON		0x01000000
-+#define BMI_DMA_ATTR_WRITE_OPTIMIZE		FMAN_SP_DMA_ATTR_WRITE_OPTIMIZE
-+
-+#define BMI_RX_FIFO_PRI_ELEVATION_SHIFT	16
-+#define BMI_RX_FIFO_THRESHOLD_ETHE		0x80000000
-+
-+#define BMI_RX_FRAME_END_CS_IGNORE_SHIFT	24
-+#define BMI_RX_FRAME_END_CUT_SHIFT		16
-+
-+#define BMI_IC_TO_EXT_SHIFT			FMAN_SP_IC_TO_EXT_SHIFT
-+#define BMI_IC_FROM_INT_SHIFT			FMAN_SP_IC_FROM_INT_SHIFT
-+
-+#define BMI_INT_BUF_MARG_SHIFT			28
-+#define BMI_EXT_BUF_MARG_START_SHIFT		FMAN_SP_EXT_BUF_MARG_START_SHIFT
-+
-+#define BMI_CMD_MR_LEAC				0x00200000
-+#define BMI_CMD_MR_SLEAC			0x00100000
-+#define BMI_CMD_MR_MA				0x00080000
-+#define BMI_CMD_MR_DEAS				0x00040000
-+#define BMI_CMD_RX_MR_DEF			(BMI_CMD_MR_LEAC | \
-+						BMI_CMD_MR_SLEAC | \
-+						BMI_CMD_MR_MA | \
-+						BMI_CMD_MR_DEAS)
-+#define BMI_CMD_TX_MR_DEF			0
-+#define BMI_CMD_OP_MR_DEF			(BMI_CMD_MR_DEAS | \
-+						BMI_CMD_MR_MA)
-+
-+#define BMI_CMD_ATTR_ORDER			0x80000000
-+#define BMI_CMD_ATTR_SYNC			0x02000000
-+#define BMI_CMD_ATTR_COLOR_SHIFT		26
-+
-+#define BMI_FIFO_PIPELINE_DEPTH_SHIFT		12
-+#define BMI_NEXT_ENG_FD_BITS_SHIFT		24
-+#define BMI_FRAME_END_CS_IGNORE_SHIFT		24
-+
-+#define BMI_COUNTERS_EN				0x80000000
-+
-+#define BMI_EXT_BUF_POOL_VALID			FMAN_SP_EXT_BUF_POOL_VALID
-+#define BMI_EXT_BUF_POOL_EN_COUNTER		FMAN_SP_EXT_BUF_POOL_EN_COUNTER
-+#define BMI_EXT_BUF_POOL_BACKUP		FMAN_SP_EXT_BUF_POOL_BACKUP
-+#define BMI_EXT_BUF_POOL_ID_SHIFT		16
-+#define BMI_EXT_BUF_POOL_ID_MASK		0x003F0000
-+#define BMI_POOL_DEP_NUM_OF_POOLS_SHIFT	16
-+
-+#define BMI_TX_FIFO_MIN_FILL_SHIFT		16
-+
-+#define BMI_SG_DISABLE				FMAN_SP_SG_DISABLE
-+
-+/* QMI defines */
-+#define QMI_PORT_CFG_EN				0x80000000
-+#define QMI_PORT_CFG_EN_COUNTERS		0x10000000
-+#define QMI_PORT_STATUS_DEQ_FD_BSY		0x20000000
-+
-+#define QMI_DEQ_CFG_PRI				0x80000000
-+#define QMI_DEQ_CFG_TYPE1			0x10000000
-+#define QMI_DEQ_CFG_TYPE2			0x20000000
-+#define QMI_DEQ_CFG_TYPE3			0x30000000
-+#define QMI_DEQ_CFG_PREFETCH_PARTIAL		0x01000000
-+#define QMI_DEQ_CFG_PREFETCH_FULL		0x03000000
-+#define QMI_DEQ_CFG_SP_MASK			0xf
-+#define QMI_DEQ_CFG_SP_SHIFT			20
-+
-+/* General port defines */
-+#define FMAN_PORT_MAX_EXT_POOLS_NUM	8
-+#define FMAN_PORT_OBS_EXT_POOLS_NUM	2
-+#define FMAN_PORT_CG_MAP_NUM		8
-+#define FMAN_PORT_PRS_RESULT_WORDS_NUM	8
-+#define FMAN_PORT_BMI_FIFO_UNITS	0x100
-+#define FMAN_PORT_IC_OFFSET_UNITS	0x10
-+
-+/* FM Port Register Map */
-+
-+/* BMI Rx port register map */
-+struct fman_port_rx_bmi_regs {
-+	uint32_t fmbm_rcfg;		/* Rx Configuration */
-+	uint32_t fmbm_rst;		/* Rx Status */
-+	uint32_t fmbm_rda;		/* Rx DMA attributes*/
-+	uint32_t fmbm_rfp;		/* Rx FIFO Parameters*/
-+	uint32_t fmbm_rfed;		/* Rx Frame End Data*/
-+	uint32_t fmbm_ricp;		/* Rx Internal Context Parameters*/
-+	uint32_t fmbm_rim;		/* Rx Internal Buffer Margins*/
-+	uint32_t fmbm_rebm;		/* Rx External Buffer Margins*/
-+	uint32_t fmbm_rfne;		/* Rx Frame Next Engine*/
-+	uint32_t fmbm_rfca;		/* Rx Frame Command Attributes.*/
-+	uint32_t fmbm_rfpne;		/* Rx Frame Parser Next Engine*/
-+	uint32_t fmbm_rpso;		/* Rx Parse Start Offset*/
-+	uint32_t fmbm_rpp;		/* Rx Policer Profile  */
-+	uint32_t fmbm_rccb;		/* Rx Coarse Classification Base */
-+	uint32_t fmbm_reth;		/* Rx Excessive Threshold */
-+	uint32_t reserved003c[1];	/* (0x03C 0x03F) */
-+	uint32_t fmbm_rprai[FMAN_PORT_PRS_RESULT_WORDS_NUM];
-+					/* Rx Parse Results Array Init*/
-+	uint32_t fmbm_rfqid;		/* Rx Frame Queue ID*/
-+	uint32_t fmbm_refqid;		/* Rx Error Frame Queue ID*/
-+	uint32_t fmbm_rfsdm;		/* Rx Frame Status Discard Mask*/
-+	uint32_t fmbm_rfsem;		/* Rx Frame Status Error Mask*/
-+	uint32_t fmbm_rfene;		/* Rx Frame Enqueue Next Engine */
-+	uint32_t reserved0074[0x2];	/* (0x074-0x07C)  */
-+	uint32_t fmbm_rcmne; /* Rx Frame Continuous Mode Next Engine */
-+	uint32_t reserved0080[0x20];/* (0x080 0x0FF)  */
-+	uint32_t fmbm_ebmpi[FMAN_PORT_MAX_EXT_POOLS_NUM];
-+					/* Buffer Manager pool Information-*/
-+	uint32_t fmbm_acnt[FMAN_PORT_MAX_EXT_POOLS_NUM];
-+					/* Allocate Counter-*/
-+	uint32_t reserved0130[8];
-+					/* 0x130/0x140 - 0x15F reserved -*/
-+	uint32_t fmbm_rcgm[FMAN_PORT_CG_MAP_NUM];
-+					/* Congestion Group Map*/
-+	uint32_t fmbm_mpd;		/* BM Pool Depletion  */
-+	uint32_t reserved0184[0x1F];	/* (0x184 0x1FF) */
-+	uint32_t fmbm_rstc;		/* Rx Statistics Counters*/
-+	uint32_t fmbm_rfrc;		/* Rx Frame Counter*/
-+	uint32_t fmbm_rfbc;		/* Rx Bad Frames Counter*/
-+	uint32_t fmbm_rlfc;		/* Rx Large Frames Counter*/
-+	uint32_t fmbm_rffc;		/* Rx Filter Frames Counter*/
-+	uint32_t fmbm_rfdc;		/* Rx Frame Discard Counter*/
-+	uint32_t fmbm_rfldec;		/* Rx Frames List DMA Error Counter*/
-+	uint32_t fmbm_rodc;		/* Rx Out of Buffers Discard nntr*/
-+	uint32_t fmbm_rbdc;		/* Rx Buffers Deallocate Counter*/
-+	uint32_t reserved0224[0x17];	/* (0x224 0x27F) */
-+	uint32_t fmbm_rpc;		/* Rx Performance Counters*/
-+	uint32_t fmbm_rpcp;		/* Rx Performance Count Parameters*/
-+	uint32_t fmbm_rccn;		/* Rx Cycle Counter*/
-+	uint32_t fmbm_rtuc;		/* Rx Tasks Utilization Counter*/
-+	uint32_t fmbm_rrquc;		/* Rx Receive Queue Utilization cntr*/
-+	uint32_t fmbm_rduc;		/* Rx DMA Utilization Counter*/
-+	uint32_t fmbm_rfuc;		/* Rx FIFO Utilization Counter*/
-+	uint32_t fmbm_rpac;		/* Rx Pause Activation Counter*/
-+	uint32_t reserved02a0[0x18];	/* (0x2A0 0x2FF) */
-+	uint32_t fmbm_rdbg;		/* Rx Debug-*/
-+};
-+
-+/* BMI Tx port register map */
-+struct fman_port_tx_bmi_regs {
-+	uint32_t fmbm_tcfg;		/* Tx Configuration */
-+	uint32_t fmbm_tst;		/* Tx Status */
-+	uint32_t fmbm_tda;		/* Tx DMA attributes */
-+	uint32_t fmbm_tfp;		/* Tx FIFO Parameters */
-+	uint32_t fmbm_tfed;		/* Tx Frame End Data */
-+	uint32_t fmbm_ticp;		/* Tx Internal Context Parameters */
-+	uint32_t fmbm_tfdne;		/* Tx Frame Dequeue Next Engine. */
-+	uint32_t fmbm_tfca;		/* Tx Frame Command attribute. */
-+	uint32_t fmbm_tcfqid;		/* Tx Confirmation Frame Queue ID. */
-+	uint32_t fmbm_tefqid;		/* Tx Frame Error Queue ID */
-+	uint32_t fmbm_tfene;		/* Tx Frame Enqueue Next Engine */
-+	uint32_t fmbm_trlmts;		/* Tx Rate Limiter Scale */
-+	uint32_t fmbm_trlmt;		/* Tx Rate Limiter */
-+	uint32_t reserved0034[0x0e];	/* (0x034-0x6c) */
-+	uint32_t fmbm_tccb;		/* Tx Coarse Classification base */
-+	uint32_t fmbm_tfne;		/* Tx Frame Next Engine */
-+	/* Tx Priority based Flow Control (PFC) Mapping */
-+	uint32_t fmbm_tpfcm[0x02];
-+	/* Tx Frame Continuous Mode Next Engine */
-+	uint32_t fmbm_tcmne;
-+	uint32_t reserved0080[0x60];	/* (0x080-0x200) */
-+	uint32_t fmbm_tstc;		/* Tx Statistics Counters */
-+	uint32_t fmbm_tfrc;		/* Tx Frame Counter */
-+	uint32_t fmbm_tfdc;		/* Tx Frames Discard Counter */
-+	uint32_t fmbm_tfledc;		/* Tx Frame len error discard cntr */
-+	uint32_t fmbm_tfufdc;		/* Tx Frame unsprt frmt discard cntr*/
-+	uint32_t fmbm_tbdc;		/* Tx Buffers Deallocate Counter */
-+	uint32_t reserved0218[0x1A];	/* (0x218-0x280) */
-+	uint32_t fmbm_tpc;		/* Tx Performance Counters*/
-+	uint32_t fmbm_tpcp;		/* Tx Performance Count Parameters*/
-+	uint32_t fmbm_tccn;		/* Tx Cycle Counter*/
-+	uint32_t fmbm_ttuc;		/* Tx Tasks Utilization Counter*/
-+	uint32_t fmbm_ttcquc;		/* Tx Transmit conf Q util Counter*/
-+	uint32_t fmbm_tduc;		/* Tx DMA Utilization Counter*/
-+	uint32_t fmbm_tfuc;		/* Tx FIFO Utilization Counter*/
-+};
-+
-+/* BMI O/H port register map */
-+struct fman_port_oh_bmi_regs {
-+	uint32_t fmbm_ocfg;		/* O/H Configuration  */
-+	uint32_t fmbm_ost;		/* O/H Status */
-+	uint32_t fmbm_oda;		/* O/H DMA attributes  */
-+	uint32_t fmbm_oicp;		/* O/H Internal Context Parameters */
-+	uint32_t fmbm_ofdne;		/* O/H Frame Dequeue Next Engine  */
-+	uint32_t fmbm_ofne;		/* O/H Frame Next Engine  */
-+	uint32_t fmbm_ofca;		/* O/H Frame Command Attributes.  */
-+	uint32_t fmbm_ofpne;		/* O/H Frame Parser Next Engine	 */
-+	uint32_t fmbm_opso;		/* O/H Parse Start Offset  */
-+	uint32_t fmbm_opp;		/* O/H Policer Profile */
-+	uint32_t fmbm_occb;		/* O/H Coarse Classification base */
-+	uint32_t fmbm_oim;		/* O/H Internal margins*/
-+	uint32_t fmbm_ofp;		/* O/H Fifo Parameters*/
-+	uint32_t fmbm_ofed;		/* O/H Frame End Data*/
-+	uint32_t reserved0030[2];	/* (0x038 - 0x03F) */
-+	uint32_t fmbm_oprai[FMAN_PORT_PRS_RESULT_WORDS_NUM];
-+				/* O/H Parse Results Array Initialization  */
-+	uint32_t fmbm_ofqid;		/* O/H Frame Queue ID  */
-+	uint32_t fmbm_oefqid;		/* O/H Error Frame Queue ID  */
-+	uint32_t fmbm_ofsdm;		/* O/H Frame Status Discard Mask  */
-+	uint32_t fmbm_ofsem;		/* O/H Frame Status Error Mask	*/
-+	uint32_t fmbm_ofene;		/* O/H Frame Enqueue Next Engine  */
-+	uint32_t fmbm_orlmts;		/* O/H Rate Limiter Scale  */
-+	uint32_t fmbm_orlmt;		/* O/H Rate Limiter  */
-+	uint32_t fmbm_ocmne;		/* O/H Continuous Mode Next Engine  */
-+	uint32_t reserved0080[0x20];	/* 0x080 - 0x0FF Reserved */
-+	uint32_t fmbm_oebmpi[2];	/* Buf Mngr Observed Pool Info */
-+	uint32_t reserved0108[0x16];	/* 0x108 - 0x15F Reserved */
-+	uint32_t fmbm_ocgm;		/* Observed Congestion Group Map */
-+	uint32_t reserved0164[0x7];	/* 0x164 - 0x17F Reserved */
-+	uint32_t fmbm_ompd;		/* Observed BMan Pool Depletion */
-+	uint32_t reserved0184[0x1F];	/* 0x184 - 0x1FF Reserved */
-+	uint32_t fmbm_ostc;		/* O/H Statistics Counters  */
-+	uint32_t fmbm_ofrc;		/* O/H Frame Counter  */
-+	uint32_t fmbm_ofdc;		/* O/H Frames Discard Counter  */
-+	uint32_t fmbm_ofledc;		/* O/H Frames Len Err Discard Cntr */
-+	uint32_t fmbm_ofufdc;		/* O/H Frames Unsprtd Discard Cutr  */
-+	uint32_t fmbm_offc;		/* O/H Filter Frames Counter  */
-+	uint32_t fmbm_ofwdc;		/* Rx Frames WRED Discard Counter  */
-+	uint32_t fmbm_ofldec;		/* O/H Frames List DMA Error Cntr */
-+	uint32_t fmbm_obdc;		/* O/H Buffers Deallocate Counter */
-+	uint32_t reserved0218[0x17];	/* (0x218 - 0x27F) */
-+	uint32_t fmbm_opc;		/* O/H Performance Counters  */
-+	uint32_t fmbm_opcp;		/* O/H Performance Count Parameters */
-+	uint32_t fmbm_occn;		/* O/H Cycle Counter  */
-+	uint32_t fmbm_otuc;		/* O/H Tasks Utilization Counter  */
-+	uint32_t fmbm_oduc;		/* O/H DMA Utilization Counter */
-+	uint32_t fmbm_ofuc;		/* O/H FIFO Utilization Counter */
-+};
-+
-+/* BMI port register map */
-+union fman_port_bmi_regs {
-+	struct fman_port_rx_bmi_regs rx;
-+	struct fman_port_tx_bmi_regs tx;
-+	struct fman_port_oh_bmi_regs oh;
-+};
-+
-+/* QMI port register map */
-+struct fman_port_qmi_regs {
-+	uint32_t fmqm_pnc;		/* PortID n Configuration Register */
-+	uint32_t fmqm_pns;		/* PortID n Status Register */
-+	uint32_t fmqm_pnts;		/* PortID n Task Status Register */
-+	uint32_t reserved00c[4];	/* 0xn00C - 0xn01B */
-+	uint32_t fmqm_pnen;		/* PortID n Enqueue NIA Register */
-+	uint32_t fmqm_pnetfc;		/* PortID n Enq Total Frame Counter */
-+	uint32_t reserved024[2];	/* 0xn024 - 0x02B */
-+	uint32_t fmqm_pndn;		/* PortID n Dequeue NIA Register */
-+	uint32_t fmqm_pndc;		/* PortID n Dequeue Config Register */
-+	uint32_t fmqm_pndtfc;		/* PortID n Dequeue tot Frame cntr */
-+	uint32_t fmqm_pndfdc;		/* PortID n Dequeue FQID Dflt Cntr */
-+	uint32_t fmqm_pndcc;		/* PortID n Dequeue Confirm Counter */
-+};
-+
-+enum fman_port_dma_swap {
-+	E_FMAN_PORT_DMA_NO_SWAP,	/* No swap, transfer data as is */
-+	E_FMAN_PORT_DMA_SWAP_LE,
-+	/* The transferred data should be swapped in PPC Little Endian mode */
-+	E_FMAN_PORT_DMA_SWAP_BE
-+	/* The transferred data should be swapped in Big Endian mode */
-+};
-+
-+/* Default port color */
-+enum fman_port_color {
-+	E_FMAN_PORT_COLOR_GREEN,	/* Default port color is green */
-+	E_FMAN_PORT_COLOR_YELLOW,	/* Default port color is yellow */
-+	E_FMAN_PORT_COLOR_RED,		/* Default port color is red */
-+	E_FMAN_PORT_COLOR_OVERRIDE	/* Ignore color */
-+};
-+
-+/* QMI dequeue from the SP channel - types */
-+enum fman_port_deq_type {
-+	E_FMAN_PORT_DEQ_BY_PRI,
-+	/* Priority precedence and Intra-Class scheduling */
-+	E_FMAN_PORT_DEQ_ACTIVE_FQ,
-+	/* Active FQ precedence and Intra-Class scheduling */
-+	E_FMAN_PORT_DEQ_ACTIVE_FQ_NO_ICS
-+	/* Active FQ precedence and override Intra-Class scheduling */
-+};
-+
-+/* QMI dequeue prefetch modes */
-+enum fman_port_deq_prefetch {
-+	E_FMAN_PORT_DEQ_NO_PREFETCH, /* No prefetch mode */
-+	E_FMAN_PORT_DEQ_PART_PREFETCH, /* Partial prefetch mode */
-+	E_FMAN_PORT_DEQ_FULL_PREFETCH /* Full prefetch mode */
-+};
-+
-+/* FM Port configuration structure, used at init */
-+struct fman_port_cfg {
-+	/* BMI parameters */
-+	enum fman_port_dma_swap dma_swap_data;
-+	bool dma_ic_stash_on;
-+	bool dma_header_stash_on;
-+	bool dma_sg_stash_on;
-+	bool dma_write_optimize;
-+	uint16_t ic_ext_offset;
-+	uint8_t ic_int_offset;
-+	uint16_t ic_size;
-+	enum fman_port_color color;
-+	bool sync_req;
-+	bool discard_override;
-+	uint8_t checksum_bytes_ignore;
-+	uint8_t rx_cut_end_bytes;
-+	uint32_t rx_pri_elevation;
-+	uint32_t rx_fifo_thr;
-+	uint8_t rx_fd_bits;
-+	uint8_t int_buf_start_margin;
-+	uint16_t ext_buf_start_margin;
-+	uint16_t ext_buf_end_margin;
-+	uint32_t tx_fifo_min_level;
-+	uint32_t tx_fifo_low_comf_level;
-+	uint8_t tx_fifo_deq_pipeline_depth;
-+	/* QMI parameters */
-+	bool deq_high_pri;
-+	enum fman_port_deq_type deq_type;
-+	enum fman_port_deq_prefetch deq_prefetch_opt;
-+	uint16_t deq_byte_cnt;
-+	bool no_scatter_gather;
-+	int errata_A006675;
-+	int errata_A006320;
-+	int excessive_threshold_register;
-+	int fmbm_rebm_has_sgd;
-+	int fmbm_tfne_has_features;
-+	int qmi_deq_options_support;
-+};
-+
-+enum fman_port_type {
-+	E_FMAN_PORT_TYPE_OP = 0,	/* Offline parsing port */
-+	E_FMAN_PORT_TYPE_RX,		/* 1G Rx port */
-+	E_FMAN_PORT_TYPE_RX_10G,	/* 10G Rx port */
-+	E_FMAN_PORT_TYPE_TX,		/* 1G Tx port */
-+	E_FMAN_PORT_TYPE_TX_10G,	/* 10G Tx port */
-+	E_FMAN_PORT_TYPE_DUMMY
-+};
-+
-+struct fman_port_params {
-+	uint32_t discard_mask;
-+	uint32_t err_mask;
-+	uint32_t dflt_fqid;
-+	uint32_t err_fqid;
-+	uint8_t deq_sp;
-+	bool dont_release_buf;
-+};
-+
-+/* Port context - used by most API functions */
-+struct fman_port {
-+	enum fman_port_type type;
-+	uint8_t fm_rev_maj;
-+	uint8_t fm_rev_min;
-+	union fman_port_bmi_regs __iomem *bmi_regs;
-+	struct fman_port_qmi_regs __iomem *qmi_regs;
-+	uint8_t ext_pools_num;
-+};
-+
-+/* External buffer pools configuration */
-+struct fman_port_bpools {
-+	uint8_t count;			/* Num of pools to set up */
-+	bool counters_enable;		/* Enable allocate counters */
-+	uint8_t grp_bp_depleted_num;
-+	/* Number of depleted pools - if reached the BMI indicates
-+	 * the MAC to send a pause frame
-+	 */
-+	struct {
-+		uint8_t bpid;		/* BM pool ID */
-+		uint16_t size;
-+		/* Pool's size - must be in ascending order */
-+		bool is_backup;
-+		/* If this is a backup pool */
-+		bool grp_bp_depleted;
-+		/* Consider this buffer in multiple pools depletion criteria*/
-+		bool single_bp_depleted;
-+		/* Consider this buffer in single pool depletion criteria */
-+	} bpool[FMAN_PORT_MAX_EXT_POOLS_NUM];
-+};
-+
-+
-+/*   FM Port API */
-+void fman_port_defconfig(struct fman_port_cfg *cfg, enum fman_port_type type);
-+int fman_port_init(struct fman_port *port,
-+		   struct fman_port_cfg *cfg, struct fman_port_params *params);
-+int fman_port_enable(struct fman_port *port);
-+int fman_port_disable(const struct fman_port *port);
-+int fman_port_set_bpools(const struct fman_port *port,
-+			 const struct fman_port_bpools *bp);
-+
-+#endif	/* __FSL_FMAN_PORT_H */
-diff --git a/drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h b/drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h
-new file mode 100644
-index 0000000..42fa27b
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h
-@@ -0,0 +1,54 @@
-+/*
-+ * Copyright 2008 - 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef __FSL_FMAN_SP_H
-+#define __FSL_FMAN_SP_H
++#ifndef __FSL_FMAN_H
++#define __FSL_FMAN_H
 +
 +#include "common/general.h"
-+#include "fsl_fman.h"
++#include <linux/delay.h>
 +
-+/* Registers bit fields */
-+#define FMAN_SP_EXT_BUF_POOL_EN_COUNTER	    0x40000000
-+#define FMAN_SP_EXT_BUF_POOL_VALID		    0x80000000
-+#define FMAN_SP_EXT_BUF_POOL_BACKUP		    0x20000000
-+#define FMAN_SP_DMA_ATTR_WRITE_OPTIMIZE	    0x00100000
-+#define FMAN_SP_SG_DISABLE			    0x80000000
++typedef struct fm_prs_result_t fm_prs_result;
++typedef enum e_enet_mode enet_mode_t;
++
++struct fman_revision_info {
++	uint8_t major_rev;			/* Major revision */
++	uint8_t minor_rev;			/* Minor revision */
++};
++
++/* sizes */
++#define OFFSET_UNITS				16
++#define MAX_INT_OFFSET				240
++#define MAX_IC_SIZE				256
++#define MAX_EXT_OFFSET				496
++#define MAX_EXT_BUFFER_OFFSET			511
++
++/* Memory Mapped Registers */
++#define FMAN_LIODN_TBL	64	/* size of LIODN table */
++
++struct fman_fpm_regs {
++	uint32_t fmfp_tnc;	/* FPM TNUM Control 0x00 */
++	uint32_t fmfp_prc;	/* FPM Port_ID FmCtl Association 0x04 */
++	uint32_t fmfp_brkc;		/* FPM Breakpoint Control 0x08 */
++	uint32_t fmfp_mxd;	/* FPM Flush Control 0x0c */
++	uint32_t fmfp_dist1;	/* FPM Dispatch Thresholds1 0x10 */
++	uint32_t fmfp_dist2;	/* FPM Dispatch Thresholds2 0x14 */
++	uint32_t fm_epi;	/* FM Error Pending Interrupts 0x18 */
++	uint32_t fm_rie;	/* FM Error Interrupt Enable 0x1c */
++	uint32_t fmfp_fcev[4];	/* FPM FMan-Controller Event 1-4 0x20-0x2f */
++	uint32_t res0030[4];	/* res 0x30 - 0x3f */
++	uint32_t fmfp_cee[4];	/* PM FMan-Controller Event 1-4 0x40-0x4f */
++	uint32_t res0050[4];	/* res 0x50-0x5f */
++	uint32_t fmfp_tsc1;	/* FPM TimeStamp Control1 0x60 */
++	uint32_t fmfp_tsc2;	/* FPM TimeStamp Control2 0x64 */
++	uint32_t fmfp_tsp;	/* FPM Time Stamp 0x68 */
++	uint32_t fmfp_tsf;	/* FPM Time Stamp Fraction 0x6c */
++	uint32_t fm_rcr;	/* FM Rams Control 0x70 */
++	uint32_t fmfp_extc;	/* FPM External Requests Control 0x74 */
++	uint32_t fmfp_ext1;	/* FPM External Requests Config1 0x78 */
++	uint32_t fmfp_ext2;	/* FPM External Requests Config2 0x7c */
++	uint32_t fmfp_drd[16];	/* FPM Data_Ram Data 0-15 0x80 - 0xbf */
++	uint32_t fmfp_dra;	/* FPM Data Ram Access 0xc0 */
++	uint32_t fm_ip_rev_1;	/* FM IP Block Revision 1 0xc4 */
++	uint32_t fm_ip_rev_2;	/* FM IP Block Revision 2 0xc8 */
++	uint32_t fm_rstc;	/* FM Reset Command 0xcc */
++	uint32_t fm_cld;	/* FM Classifier Debug 0xd0 */
++	uint32_t fm_npi;	/* FM Normal Pending Interrupts 0xd4 */
++	uint32_t fmfp_exte;	/* FPM External Requests Enable 0xd8 */
++	uint32_t fmfp_ee;	/* FPM Event&Mask 0xdc */
++	uint32_t fmfp_cev[4];	/* FPM CPU Event 1-4 0xe0-0xef */
++	uint32_t res00f0[4];	/* res 0xf0-0xff */
++	uint32_t fmfp_ps[50];	/* FPM Port Status 0x100-0x1c7 */
++	uint32_t res01c8[14];	/* res 0x1c8-0x1ff */
++	uint32_t fmfp_clfabc;	/* FPM CLFABC 0x200 */
++	uint32_t fmfp_clfcc;	/* FPM CLFCC 0x204 */
++	uint32_t fmfp_clfaval;	/* FPM CLFAVAL 0x208 */
++	uint32_t fmfp_clfbval;	/* FPM CLFBVAL 0x20c */
++	uint32_t fmfp_clfcval;	/* FPM CLFCVAL 0x210 */
++	uint32_t fmfp_clfamsk;	/* FPM CLFAMSK 0x214 */
++	uint32_t fmfp_clfbmsk;	/* FPM CLFBMSK 0x218 */
++	uint32_t fmfp_clfcmsk;	/* FPM CLFCMSK 0x21c */
++	uint32_t fmfp_clfamc;	/* FPM CLFAMC 0x220 */
++	uint32_t fmfp_clfbmc;	/* FPM CLFBMC 0x224 */
++	uint32_t fmfp_clfcmc;	/* FPM CLFCMC 0x228 */
++	uint32_t fmfp_decceh;	/* FPM DECCEH 0x22c */
++	uint32_t res0230[116];	/* res 0x230 - 0x3ff */
++	uint32_t fmfp_ts[128];	/* 0x400: FPM Task Status 0x400 - 0x5ff */
++	uint32_t res0600[0x400 - 384];
++};
++
++struct fman_bmi_regs {
++	uint32_t fmbm_init; /* BMI Initialization 0x00 */
++	uint32_t fmbm_cfg1; /* BMI Configuration 1 0x04 */
++	uint32_t fmbm_cfg2; /* BMI Configuration 2 0x08 */
++	uint32_t res000c[5]; /* 0x0c - 0x1f */
++	uint32_t fmbm_ievr; /* Interrupt Event Register 0x20 */
++	uint32_t fmbm_ier; /* Interrupt Enable Register 0x24 */
++	uint32_t fmbm_ifr; /* Interrupt Force Register 0x28 */
++	uint32_t res002c[5]; /* 0x2c - 0x3f */
++	uint32_t fmbm_arb[8]; /* BMI Arbitration 0x40 - 0x5f */
++	uint32_t res0060[12]; /*0x60 - 0x8f */
++	uint32_t fmbm_dtc[3]; /* Debug Trap Counter 0x90 - 0x9b */
++	uint32_t res009c; /* 0x9c */
++	uint32_t fmbm_dcv[3][4]; /* Debug Compare val 0xa0-0xcf */
++	uint32_t fmbm_dcm[3][4]; /* Debug Compare Mask 0xd0-0xff */
++	uint32_t fmbm_gde; /* BMI Global Debug Enable 0x100 */
++	uint32_t fmbm_pp[63]; /* BMI Port Parameters 0x104 - 0x1ff */
++	uint32_t res0200; /* 0x200 */
++	uint32_t fmbm_pfs[63]; /* BMI Port FIFO Size 0x204 - 0x2ff */
++	uint32_t res0300; /* 0x300 */
++	uint32_t fmbm_spliodn[63]; /* Port Partition ID 0x304 - 0x3ff */
++};
++
++struct fman_qmi_regs {
++	uint32_t fmqm_gc; /* General Configuration Register 0x00 */
++	uint32_t res0004; /* 0x04 */
++	uint32_t fmqm_eie; /* Error Interrupt Event Register 0x08 */
++	uint32_t fmqm_eien; /* Error Interrupt Enable Register 0x0c */
++	uint32_t fmqm_eif; /* Error Interrupt Force Register 0x10 */
++	uint32_t fmqm_ie; /* Interrupt Event Register 0x14 */
++	uint32_t fmqm_ien; /* Interrupt Enable Register 0x18 */
++	uint32_t fmqm_if; /* Interrupt Force Register 0x1c */
++	uint32_t fmqm_gs; /* Global Status Register 0x20 */
++	uint32_t fmqm_ts; /* Task Status Register 0x24 */
++	uint32_t fmqm_etfc; /* Enqueue Total Frame Counter 0x28 */
++	uint32_t fmqm_dtfc; /* Dequeue Total Frame Counter 0x2c */
++	uint32_t fmqm_dc0; /* Dequeue Counter 0 0x30 */
++	uint32_t fmqm_dc1; /* Dequeue Counter 1 0x34 */
++	uint32_t fmqm_dc2; /* Dequeue Counter 2 0x38 */
++	uint32_t fmqm_dc3; /* Dequeue Counter 3 0x3c */
++	uint32_t fmqm_dfdc; /* Dequeue FQID from Default Counter 0x40 */
++	uint32_t fmqm_dfcc; /* Dequeue FQID from Context Counter 0x44 */
++	uint32_t fmqm_dffc; /* Dequeue FQID from FD Counter 0x48 */
++	uint32_t fmqm_dcc; /* Dequeue Confirm Counter 0x4c */
++	uint32_t res0050[7]; /* 0x50 - 0x6b */
++	uint32_t fmqm_tapc; /* Tnum Aging Period Control 0x6c */
++	uint32_t fmqm_dmcvc; /* Dequeue MAC Command Valid Counter 0x70 */
++	uint32_t fmqm_difdcc; /* Dequeue Invalid FD Command Counter 0x74 */
++	uint32_t fmqm_da1v; /* Dequeue A1 Valid Counter 0x78 */
++	uint32_t res007c; /* 0x7c */
++	uint32_t fmqm_dtc; /* 0x80 Debug Trap Counter 0x80 */
++	uint32_t fmqm_efddd; /* 0x84 Enqueue Frame desc Dynamic dbg 0x84 */
++	uint32_t res0088[2]; /* 0x88 - 0x8f */
++	struct {
++		uint32_t fmqm_dtcfg1; /* 0x90 dbg trap cfg 1 Register 0x00 */
++		uint32_t fmqm_dtval1; /* Debug Trap Value 1 Register 0x04 */
++		uint32_t fmqm_dtm1; /* Debug Trap Mask 1 Register 0x08 */
++		uint32_t fmqm_dtc1; /* Debug Trap Counter 1 Register 0x0c */
++		uint32_t fmqm_dtcfg2; /* dbg Trap cfg 2 Register 0x10 */
++		uint32_t fmqm_dtval2; /* Debug Trap Value 2 Register 0x14 */
++		uint32_t fmqm_dtm2; /* Debug Trap Mask 2 Register 0x18 */
++		uint32_t res001c; /* 0x1c */
++	} dbg_traps[3];	/* 0x90 - 0xef */
++	uint8_t res00f0[0x400 - 0xf0]; /* 0xf0 - 0x3ff */
++};
++
++struct fman_dma_regs {
++	uint32_t fmdmsr; /* FM DMA status register 0x00 */
++	uint32_t fmdmmr; /* FM DMA mode register 0x04 */
++	uint32_t fmdmtr; /* FM DMA bus threshold register 0x08 */
++	uint32_t fmdmhy; /* FM DMA bus hysteresis register 0x0c */
++	uint32_t fmdmsetr; /* FM DMA SOS emergency Threshold Register 0x10 */
++	uint32_t fmdmtah; /* FM DMA transfer bus address high reg 0x14 */
++	uint32_t fmdmtal; /* FM DMA transfer bus address low reg 0x18 */
++	uint32_t fmdmtcid; /* FM DMA transfer bus communication ID reg 0x1c */
++	uint32_t fmdmra; /* FM DMA bus internal ram address register 0x20 */
++	uint32_t fmdmrd; /* FM DMA bus internal ram data register 0x24 */
++	uint32_t fmdmwcr; /* FM DMA CAM watchdog counter value 0x28 */
++	uint32_t fmdmebcr; /* FM DMA CAM base in MURAM register 0x2c */
++	uint32_t fmdmccqdr; /* FM DMA CAM and CMD Queue Debug reg 0x30 */
++	uint32_t fmdmccqvr1; /* FM DMA CAM and CMD Queue Value reg #1 0x34 */
++	uint32_t fmdmccqvr2; /* FM DMA CAM and CMD Queue Value reg #2 0x38 */
++	uint32_t fmdmcqvr3; /* FM DMA CMD Queue Value register #3 0x3c */
++	uint32_t fmdmcqvr4; /* FM DMA CMD Queue Value register #4 0x40 */
++	uint32_t fmdmcqvr5; /* FM DMA CMD Queue Value register #5 0x44 */
++	uint32_t fmdmsefrc; /* FM DMA Semaphore Entry Full Reject Cntr 0x48 */
++	uint32_t fmdmsqfrc; /* FM DMA Semaphore Queue Full Reject Cntr 0x4c */
++	uint32_t fmdmssrc; /* FM DMA Semaphore SYNC Reject Counter 0x50 */
++	uint32_t fmdmdcr;  /* FM DMA Debug Counter 0x54 */
++	uint32_t fmdmemsr; /* FM DMA Emergency Smoother Register 0x58 */
++	uint32_t res005c; /* 0x5c */
++	uint32_t fmdmplr[FMAN_LIODN_TBL / 2]; /* DMA LIODN regs 0x60-0xdf */
++	uint32_t res00e0[0x400 - 56];
++};
++
++struct fman_rg {
++	struct fman_fpm_regs __iomem *fpm_rg;
++	struct fman_dma_regs __iomem *dma_rg;
++	struct fman_bmi_regs __iomem *bmi_rg;
++	struct fman_qmi_regs __iomem *qmi_rg;
++};
++
++enum fman_dma_cache_override {
++	E_FMAN_DMA_NO_CACHE_OR = 0, /* No override of the Cache field */
++	E_FMAN_DMA_NO_STASH_DATA, /* No data stashing in system level cache */
++	E_FMAN_DMA_MAY_STASH_DATA, /* Stashing allowed in sys level cache */
++	E_FMAN_DMA_STASH_DATA /* Stashing performed in system level cache */
++};
++
++enum fman_dma_aid_mode {
++	E_FMAN_DMA_AID_OUT_PORT_ID = 0,		  /* 4 LSB of PORT_ID */
++	E_FMAN_DMA_AID_OUT_TNUM			  /* 4 LSB of TNUM */
++};
++
++enum fman_dma_dbg_cnt_mode {
++	E_FMAN_DMA_DBG_NO_CNT = 0, /* No counting */
++	E_FMAN_DMA_DBG_CNT_DONE, /* Count DONE commands */
++	E_FMAN_DMA_DBG_CNT_COMM_Q_EM, /* command Q emergency signal */
++	E_FMAN_DMA_DBG_CNT_INT_READ_EM,	/* Read buf emergency signal */
++	E_FMAN_DMA_DBG_CNT_INT_WRITE_EM, /* Write buf emergency signal */
++	E_FMAN_DMA_DBG_CNT_FPM_WAIT, /* FPM WAIT signal */
++	E_FMAN_DMA_DBG_CNT_SIGLE_BIT_ECC, /* Single bit ECC errors */
++	E_FMAN_DMA_DBG_CNT_RAW_WAR_PROT	/* RAW&WAR protection counter */
++};
++
++enum fman_dma_emergency_level {
++	E_FMAN_DMA_EM_EBS = 0, /* EBS emergency */
++	E_FMAN_DMA_EM_SOS /* SOS emergency */
++};
++
++enum fman_catastrophic_err {
++	E_FMAN_CATAST_ERR_STALL_PORT = 0, /* Port_ID stalled reset required */
++	E_FMAN_CATAST_ERR_STALL_TASK /* Only erroneous task is stalled */
++};
++
++enum fman_dma_err {
++	E_FMAN_DMA_ERR_CATASTROPHIC = 0, /* Catastrophic DMA error */
++	E_FMAN_DMA_ERR_REPORT /* Reported DMA error */
++};
++
++struct fman_cfg {
++	uint8_t disp_limit_tsh;
++	uint8_t prs_disp_tsh;
++	uint8_t plcr_disp_tsh;
++	uint8_t kg_disp_tsh;
++	uint8_t bmi_disp_tsh;
++	uint8_t qmi_enq_disp_tsh;
++	uint8_t qmi_deq_disp_tsh;
++	uint8_t fm_ctl1_disp_tsh;
++	uint8_t fm_ctl2_disp_tsh;
++	enum fman_dma_cache_override dma_cache_override;
++	enum fman_dma_aid_mode dma_aid_mode;
++	bool dma_aid_override;
++	uint8_t dma_axi_dbg_num_of_beats;
++	uint8_t dma_cam_num_of_entries;
++	uint32_t dma_watchdog;
++	uint8_t dma_comm_qtsh_asrt_emer;
++	uint8_t dma_write_buf_tsh_asrt_emer;
++	uint8_t dma_read_buf_tsh_asrt_emer;
++	uint8_t dma_comm_qtsh_clr_emer;
++	uint8_t dma_write_buf_tsh_clr_emer;
++	uint8_t dma_read_buf_tsh_clr_emer;
++	uint32_t dma_sos_emergency;
++	enum fman_dma_dbg_cnt_mode dma_dbg_cnt_mode;
++	bool dma_stop_on_bus_error;
++	bool dma_en_emergency;
++	uint32_t dma_emergency_bus_select;
++	enum fman_dma_emergency_level dma_emergency_level;
++	bool dma_en_emergency_smoother;
++	uint32_t dma_emergency_switch_counter;
++	bool halt_on_external_activ;
++	bool halt_on_unrecov_ecc_err;
++	enum fman_catastrophic_err catastrophic_err;
++	enum fman_dma_err dma_err;
++	bool en_muram_test_mode;
++	bool en_iram_test_mode;
++	bool external_ecc_rams_enable;
++	uint16_t tnum_aging_period;
++	uint32_t exceptions;
++	uint16_t clk_freq;
++	bool pedantic_dma;
++	uint32_t cam_base_addr;
++	uint32_t fifo_base_addr;
++	uint32_t total_fifo_size;
++	uint8_t total_num_of_tasks;
++	bool qmi_deq_option_support;
++	uint32_t qmi_def_tnums_thresh;
++	uint8_t num_of_fman_ctrl_evnt_regs;
++};
++
++/* Exceptions */
++#define FMAN_EX_DMA_BUS_ERROR			0x80000000
++#define FMAN_EX_DMA_READ_ECC			0x40000000
++#define FMAN_EX_DMA_SYSTEM_WRITE_ECC		0x20000000
++#define FMAN_EX_DMA_FM_WRITE_ECC		0x10000000
++#define FMAN_EX_FPM_STALL_ON_TASKS		0x08000000
++#define FMAN_EX_FPM_SINGLE_ECC			0x04000000
++#define FMAN_EX_FPM_DOUBLE_ECC			0x02000000
++#define FMAN_EX_QMI_SINGLE_ECC			0x01000000
++#define FMAN_EX_QMI_DEQ_FROM_UNKNOWN_PORTID	0x00800000
++#define FMAN_EX_QMI_DOUBLE_ECC			0x00400000
++#define FMAN_EX_BMI_LIST_RAM_ECC		0x00200000
++#define FMAN_EX_BMI_PIPELINE_ECC		0x00100000
++#define FMAN_EX_BMI_STATISTICS_RAM_ECC		0x00080000
++#define FMAN_EX_IRAM_ECC			0x00040000
++#define FMAN_EX_NURAM_ECC			0x00020000
++#define FMAN_EX_BMI_DISPATCH_RAM_ECC		0x00010000
++
++enum fman_exceptions {
++	E_FMAN_EX_DMA_BUS_ERROR = 0, /* DMA bus error. */
++	E_FMAN_EX_DMA_READ_ECC,	/* Read Buffer ECC error */
++	E_FMAN_EX_DMA_SYSTEM_WRITE_ECC,	/* Write Buffer ECC err on sys side */
++	E_FMAN_EX_DMA_FM_WRITE_ECC, /* Write Buffer ECC error on FM side */
++	E_FMAN_EX_FPM_STALL_ON_TASKS, /* Stall of tasks on FPM */
++	E_FMAN_EX_FPM_SINGLE_ECC, /* Single ECC on FPM. */
++	E_FMAN_EX_FPM_DOUBLE_ECC, /* Double ECC error on FPM ram access */
++	E_FMAN_EX_QMI_SINGLE_ECC, /* Single ECC on QMI. */
++	E_FMAN_EX_QMI_DOUBLE_ECC, /* Double bit ECC occurred on QMI */
++	E_FMAN_EX_QMI_DEQ_FROM_UNKNOWN_PORTID,/* DeQ from unknown port id */
++	E_FMAN_EX_BMI_LIST_RAM_ECC, /* Linked List RAM ECC error */
++	E_FMAN_EX_BMI_STORAGE_PROFILE_ECC, /* storage profile */
++	E_FMAN_EX_BMI_STATISTICS_RAM_ECC, /* Statistics RAM ECC Err Enable */
++	E_FMAN_EX_BMI_DISPATCH_RAM_ECC,	/* Dispatch RAM ECC Error Enable */
++	E_FMAN_EX_IRAM_ECC, /* Double bit ECC occurred on IRAM*/
++	E_FMAN_EX_MURAM_ECC /* Double bit ECC occurred on MURAM*/
++};
++
++#define FPM_PRT_FM_CTL1			0x00000001
++#define FPM_PRT_FM_CTL2			0x00000002
++
++/* DMA definitions */
++
++/* masks */
++#define DMA_MODE_AID_OR			0x20000000
++#define DMA_MODE_SBER			0x10000000
++#define DMA_MODE_BER			0x00200000
++#define DMA_MODE_ECC			0x00000020
++#define DMA_MODE_SECURE_PROT		0x00000800
++#define DMA_MODE_EMER_READ		0x00080000
++#define DMA_MODE_AXI_DBG_MASK		0x0F000000
++
++#define DMA_TRANSFER_PORTID_MASK	0xFF000000
++#define DMA_TRANSFER_TNUM_MASK		0x00FF0000
++#define DMA_TRANSFER_LIODN_MASK	0x00000FFF
++
++#define DMA_STATUS_BUS_ERR		0x08000000
++#define DMA_STATUS_READ_ECC		0x04000000
++#define DMA_STATUS_SYSTEM_WRITE_ECC	0x02000000
++#define DMA_STATUS_FM_WRITE_ECC	0x01000000
++#define DMA_STATUS_FM_SPDAT_ECC	0x00080000
++
++#define FM_LIODN_BASE_MASK		0x00000FFF
 +
 +/* shifts */
-+#define FMAN_SP_EXT_BUF_MARG_START_SHIFT	    16
-+#define FMAN_SP_DMA_ATTR_SWP_SHIFT		    30
-+#define FMAN_SP_IC_TO_EXT_SHIFT		    16
-+#define FMAN_SP_IC_FROM_INT_SHIFT		    8
++#define DMA_MODE_CACHE_OR_SHIFT		30
++#define DMA_MODE_AXI_DBG_SHIFT			24
++#define DMA_MODE_CEN_SHIFT			13
++#define DMA_MODE_DBG_SHIFT			7
++#define DMA_MODE_EMER_LVL_SHIFT		6
++#define DMA_MODE_AID_MODE_SHIFT		4
++#define DMA_MODE_MAX_AXI_DBG_NUM_OF_BEATS	16
 +
-+/* defaults */
-+#define DEFAULT_FMAN_SP_NO_SCATTER_GATHER		      false
++#define DMA_THRESH_COMMQ_SHIFT			24
++#define DMA_THRESH_READ_INT_BUF_SHIFT		16
 +
-+#endif	/* __FSL_FMAN_SP_H */
++#define DMA_LIODN_SHIFT				16
++
++#define DMA_TRANSFER_PORTID_SHIFT		24
++#define DMA_TRANSFER_TNUM_SHIFT		16
++
++/* sizes */
++#define DMA_MAX_WATCHDOG			0xffffffff
++
++/* others */
++#define DMA_CAM_SIZEOF_ENTRY			0x40
++#define DMA_CAM_ALIGN				0x40
++#define DMA_CAM_UNITS				8
++
++/* General defines */
++#define FM_DEBUG_STATUS_REGISTER_OFFSET	0x000d1084UL
++
++/* FPM defines */
++
++/* masks */
++#define FPM_EV_MASK_DOUBLE_ECC		0x80000000
++#define FPM_EV_MASK_STALL		0x40000000
++#define FPM_EV_MASK_SINGLE_ECC		0x20000000
++#define FPM_EV_MASK_RELEASE_FM		0x00010000
++#define FPM_EV_MASK_DOUBLE_ECC_EN	0x00008000
++#define FPM_EV_MASK_STALL_EN		0x00004000
++#define FPM_EV_MASK_SINGLE_ECC_EN	0x00002000
++#define FPM_EV_MASK_EXTERNAL_HALT	0x00000008
++#define FPM_EV_MASK_ECC_ERR_HALT	0x00000004
++
++#define FPM_RAM_RAMS_ECC_EN		0x80000000
++#define FPM_RAM_IRAM_ECC_EN		0x40000000
++#define FPM_RAM_MURAM_ECC		0x00008000
++#define FPM_RAM_IRAM_ECC		0x00004000
++#define FPM_RAM_MURAM_TEST_ECC		0x20000000
++#define FPM_RAM_IRAM_TEST_ECC		0x10000000
++#define FPM_RAM_RAMS_ECC_EN_SRC_SEL	0x08000000
++
++#define FPM_IRAM_ECC_ERR_EX_EN		0x00020000
++#define FPM_MURAM_ECC_ERR_EX_EN	0x00040000
++
++#define FPM_REV1_MAJOR_MASK		0x0000FF00
++#define FPM_REV1_MINOR_MASK		0x000000FF
++
++#define FPM_TS_CTL_EN			0x80000000
++
++#define FPM_RSTC_FM_RESET		0x80000000
++
++/* shifts */
++#define FPM_DISP_LIMIT_SHIFT		24
++
++#define FPM_THR1_PRS_SHIFT		24
++#define FPM_THR1_KG_SHIFT		16
++#define FPM_THR1_PLCR_SHIFT		8
++#define FPM_THR1_BMI_SHIFT		0
++
++#define FPM_THR2_QMI_ENQ_SHIFT		24
++#define FPM_THR2_QMI_DEQ_SHIFT		0
++#define FPM_THR2_FM_CTL1_SHIFT		16
++#define FPM_THR2_FM_CTL2_SHIFT		8
++
++#define FPM_EV_MASK_CAT_ERR_SHIFT	1
++#define FPM_EV_MASK_DMA_ERR_SHIFT	0
++
++#define FPM_REV1_MAJOR_SHIFT		8
++#define FPM_REV1_MINOR_SHIFT		0
++
++#define FPM_TS_INT_SHIFT		16
++
++#define FPM_PORT_FM_CTL_PORTID_SHIFT	24
++
++#define FPM_PRC_ORA_FM_CTL_SEL_SHIFT	16
++
++/* others */
++#define FPM_MAX_DISP_LIMIT		31
++#define FPM_RSTC_FM_RESET		0x80000000
++#define FPM_RSTC_MAC0_RESET		0x40000000
++#define FPM_RSTC_MAC1_RESET		0x20000000
++#define FPM_RSTC_MAC2_RESET		0x10000000
++#define FPM_RSTC_MAC3_RESET		0x08000000
++#define FPM_RSTC_MAC8_RESET		0x04000000
++#define FPM_RSTC_MAC4_RESET		0x02000000
++#define FPM_RSTC_MAC5_RESET		0x01000000
++#define FPM_RSTC_MAC6_RESET		0x00800000
++#define FPM_RSTC_MAC7_RESET		0x00400000
++#define FPM_RSTC_MAC9_RESET		0x00200000
++/* BMI defines */
++/* masks */
++#define BMI_INIT_START				0x80000000
++#define BMI_ERR_INTR_EN_STORAGE_PROFILE_ECC	0x80000000
++#define BMI_ERR_INTR_EN_LIST_RAM_ECC		0x40000000
++#define BMI_ERR_INTR_EN_STATISTICS_RAM_ECC	0x20000000
++#define BMI_ERR_INTR_EN_DISPATCH_RAM_ECC	0x10000000
++#define BMI_NUM_OF_TASKS_MASK			0x3F000000
++#define BMI_NUM_OF_EXTRA_TASKS_MASK		0x000F0000
++#define BMI_NUM_OF_DMAS_MASK			0x00000F00
++#define BMI_NUM_OF_EXTRA_DMAS_MASK		0x0000000F
++#define BMI_FIFO_SIZE_MASK			0x000003FF
++#define BMI_EXTRA_FIFO_SIZE_MASK		0x03FF0000
++#define BMI_CFG2_DMAS_MASK			0x0000003F
++
++/* shifts */
++#define BMI_CFG2_TASKS_SHIFT		16
++#define BMI_CFG2_DMAS_SHIFT		0
++#define BMI_CFG1_FIFO_SIZE_SHIFT	16
++#define BMI_EXTRA_FIFO_SIZE_SHIFT	16
++#define BMI_NUM_OF_TASKS_SHIFT		24
++#define BMI_EXTRA_NUM_OF_TASKS_SHIFT	16
++#define BMI_NUM_OF_DMAS_SHIFT		8
++#define BMI_EXTRA_NUM_OF_DMAS_SHIFT	0
++
++/* others */
++#define BMI_FIFO_ALIGN			0x100
++#define FMAN_BMI_FIFO_UNITS		0x100
++
++/* QMI defines */
++/* masks */
++#define QMI_CFG_ENQ_EN			0x80000000
++#define QMI_CFG_DEQ_EN			0x40000000
++#define QMI_CFG_EN_COUNTERS		0x10000000
++#define QMI_CFG_DEQ_MASK		0x0000003F
++#define QMI_CFG_ENQ_MASK		0x00003F00
++
++#define QMI_ERR_INTR_EN_DOUBLE_ECC	0x80000000
++#define QMI_ERR_INTR_EN_DEQ_FROM_DEF	0x40000000
++#define QMI_INTR_EN_SINGLE_ECC		0x80000000
++
++/* shifts */
++#define QMI_TAPC_TAP			22
++
++#define QMI_GS_HALT_NOT_BUSY		0x00000002
++
++/* IRAM defines */
++/* masks */
++#define IRAM_IADD_AIE			0x80000000
++#define IRAM_READY			0x80000000
++
++uint32_t fman_get_bmi_err_event(struct fman_bmi_regs __iomem *bmi_rg);
++uint32_t fman_get_qmi_err_event(struct fman_qmi_regs __iomem *qmi_rg);
++uint32_t fman_get_dma_com_id(struct fman_dma_regs __iomem *dma_rg);
++uint64_t fman_get_dma_addr(struct fman_dma_regs __iomem *dma_rg);
++uint32_t fman_get_dma_err_event(struct fman_dma_regs __iomem *dma_rg);
++uint32_t fman_get_fpm_err_event(struct fman_fpm_regs __iomem *fpm_rg);
++uint32_t fman_get_muram_err_event(struct fman_fpm_regs __iomem *fpm_rg);
++uint32_t fman_get_iram_err_event(struct fman_fpm_regs __iomem *fpm_rg);
++uint32_t fman_get_qmi_event(struct fman_qmi_regs __iomem *qmi_rg);
++uint32_t fman_get_fpm_error_interrupts(struct fman_fpm_regs __iomem *fpm_rg);
++uint8_t fman_get_qmi_deq_th(struct fman_qmi_regs __iomem *qmi_rg);
++uint8_t fman_get_qmi_enq_th(struct fman_qmi_regs __iomem *qmi_rg);
++uint16_t fman_get_size_of_fifo(struct fman_bmi_regs __iomem *bmi_rg,
++			       uint8_t port_id);
++uint16_t fman_get_size_of_extra_fifo(struct fman_bmi_regs __iomem *bmi_rg,
++				     uint8_t port_id);
++uint8_t fman_get_num_of_tasks(struct fman_bmi_regs __iomem *bmi_rg,
++			      uint8_t port_id);
++uint8_t fman_get_num_extra_tasks(struct fman_bmi_regs __iomem *bmi_rg,
++				 uint8_t port_id);
++uint8_t fman_get_num_of_dmas(struct fman_bmi_regs __iomem *bmi_rg,
++			     uint8_t port_id);
++uint8_t fman_get_num_extra_dmas(struct fman_bmi_regs __iomem *bmi_rg,
++				uint8_t port_id);
++uint32_t fman_get_normal_pending(struct fman_fpm_regs __iomem *fpm_rg);
++uint32_t fman_get_controller_event(struct fman_fpm_regs __iomem *fpm_rg,
++				   uint8_t reg_id);
++uint32_t fman_get_error_pending(struct fman_fpm_regs __iomem *fpm_rg);
++void fman_get_revision(struct fman_fpm_regs __iomem *fpm_rg, uint8_t *major,
++		       uint8_t *minor);
++
++int fman_set_erratum_10gmac_a004_wa(struct fman_fpm_regs __iomem *fpm_rg);
++void fman_set_order_restoration_per_port(struct fman_fpm_regs __iomem *fpm_rg,
++					 uint8_t port_id, bool is_rx_port);
++void fman_set_qmi_enq_th(struct fman_qmi_regs __iomem *qmi_rg, uint8_t val);
++void fman_set_qmi_deq_th(struct fman_qmi_regs __iomem *qmi_rg, uint8_t val);
++void fman_set_liodn_per_port(struct fman_rg *fman_rg,
++			     uint8_t port_id,
++			     uint16_t liodn_base, uint16_t liodn_offset);
++void fman_set_size_of_fifo(struct fman_bmi_regs __iomem *bmi_rg,
++			   uint8_t port_id,
++			   uint32_t size_of_fifo, uint32_t extra_size_of_fifo);
++void fman_set_num_of_tasks(struct fman_bmi_regs __iomem *bmi_rg,
++			   uint8_t port_id,
++			   uint8_t num_of_tasks, uint8_t num_of_extra_tasks);
++void fman_set_num_of_open_dmas(struct fman_bmi_regs __iomem *bmi_rg,
++			       uint8_t port_id,
++			       uint8_t num_of_open_dmas,
++			       uint8_t num_of_extra_open_dmas,
++			       uint8_t total_num_of_dmas);
++int fman_set_exception(struct fman_rg *fman_rg,
++		       enum fman_exceptions exception, bool enable);
++
++void fman_defconfig(struct fman_cfg *cfg);
++int fman_fpm_init(struct fman_fpm_regs __iomem *fpm_rg, struct fman_cfg *cfg);
++int fman_bmi_init(struct fman_bmi_regs __iomem *bmi_rg, struct fman_cfg *cfg);
++int fman_qmi_init(struct fman_qmi_regs __iomem *qmi_rg, struct fman_cfg *cfg);
++int fman_dma_init(struct fman_dma_regs __iomem *dma_rg, struct fman_cfg *cfg);
++void fman_free_resources(struct fman_rg *fman_rg);
++int fman_enable(struct fman_rg *fman_rg, struct fman_cfg *cfg);
++void fman_resume(struct fman_fpm_regs __iomem *fpm_rg);
++
++void fman_enable_time_stamp(struct fman_fpm_regs __iomem *fpm_rg,
++			    uint8_t count1ubit, uint16_t fm_clk_freq);
++void fman_enable_rams_ecc(struct fman_fpm_regs __iomem *fpm_rg);
++void fman_disable_rams_ecc(struct fman_fpm_regs __iomem *fpm_rg);
++int fman_reset_mac(struct fman_fpm_regs __iomem *fpm_rg, uint8_t mac_id);
++bool fman_rams_ecc_is_external_ctl(struct fman_fpm_regs __iomem *fpm_rg);
++bool fman_is_qmi_halt_not_busy_state(struct fman_qmi_regs __iomem *qmi_rg);
++
++/* default values */
++#define DEFAULT_CATASTROPHIC_ERR		E_FMAN_CATAST_ERR_STALL_PORT
++#define DEFAULT_DMA_ERR				E_FMAN_DMA_ERR_CATASTROPHIC
++/* do not change! if changed, must be disabled for rev1 ! */
++#define DEFAULT_HALT_ON_EXTERNAL_ACTIVATION	false
++/* do not change! if changed, must be disabled for rev1 ! */
++#define DEFAULT_HALT_ON_UNRECOVERABLE_ECC_ERROR false
++#define DEFAULT_EXTERNAL_ECC_RAMS_ENABLE	false
++#define DEFAULT_AID_OVERRIDE			false
++#define DEFAULT_AID_MODE			E_FMAN_DMA_AID_OUT_TNUM
++#define DEFAULT_DMA_COMM_Q_LOW			0x2A
++#define DEFAULT_DMA_COMM_Q_HIGH		0x3F
++#define DEFAULT_CACHE_OVERRIDE			E_FMAN_DMA_NO_CACHE_OR
++#define DEFAULT_DMA_CAM_NUM_OF_ENTRIES		64
++#define DEFAULT_DMA_DBG_CNT_MODE		E_FMAN_DMA_DBG_NO_CNT
++#define DEFAULT_DMA_EN_EMERGENCY		false
++#define DEFAULT_DMA_SOS_EMERGENCY		0
++#define DEFAULT_DMA_WATCHDOG			0	/* disabled */
++#define DEFAULT_DMA_EN_EMERGENCY_SMOOTHER	false
++#define DEFAULT_DMA_EMERGENCY_SWITCH_COUNTER	0
++#define DEFAULT_DISP_LIMIT			0
++#define DEFAULT_PRS_DISP_TH			16
++#define DEFAULT_PLCR_DISP_TH			16
++#define DEFAULT_KG_DISP_TH			16
++#define DEFAULT_BMI_DISP_TH			16
++#define DEFAULT_QMI_ENQ_DISP_TH		16
++#define DEFAULT_QMI_DEQ_DISP_TH		16
++#define DEFAULT_FM_CTL1_DISP_TH		16
++#define DEFAULT_FM_CTL2_DISP_TH		16
++#define DEFAULT_TNUM_AGING_PERIOD		4
++
++#endif	/* __FSL_FMAN_H */
 -- 
 1.7.11.7
