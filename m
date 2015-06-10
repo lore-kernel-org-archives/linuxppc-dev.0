@@ -1,24 +1,27 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-vn0-x22c.google.com (mail-vn0-x22c.google.com
+ [IPv6:2607:f8b0:400c:c0f::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 699C81A0018
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 04:09:28 +1000 (AEST)
-Date: Wed, 10 Jun 2015 19:09:12 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Zidan Wang <zidan.wang@freescale.com>
-Cc: nicoleotsuka@gmail.com, perex@perex.cz, tiwai@suse.de, timur@tabi.org,
- Xiubo.Lee@gmail.com, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org
-Message-ID: <20150610180912.GQ14071@sirena.org.uk>
-References: <b2a3c323a0507f3706041e1da98da8375aa61576.1433923593.git.zidan.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BDD11A0E41
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 04:18:19 +1000 (AEST)
+Received: by vnbf62 with SMTP id f62so9523780vnb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Jun 2015 11:18:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="geeFENrZXK6HHgAa"
-In-Reply-To: <b2a3c323a0507f3706041e1da98da8375aa61576.1433923593.git.zidan.wang@freescale.com>
-Subject: Re: [alsa-devel][PATCH] ASoC: fsl: add imx-wm8960 machine driver
+Sender: robherring2@gmail.com
+In-Reply-To: <557853D5.1040207@c-s.fr>
+References: <5572D773.1090008@c-s.fr>
+ <CAL_JsqLRFfjOkzw24EttG4kZtafxki+SgRHXFYoLDfjDBwGmbg@mail.gmail.com>
+ <557853D5.1040207@c-s.fr>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 10 Jun 2015 13:17:53 -0500
+Message-ID: <CAL_JsqKuEpBEf6noqjU-N1a38pL8L--Fv-3qfx-xA14oF_+6rg@mail.gmail.com>
+Subject: Re: [BUG] mpc8323_rdb platform doesn't boot since kernel 3.16
+To: leroy christophe <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,133 +31,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Jun 10, 2015 at 10:12 AM, leroy christophe
+<christophe.leroy@c-s.fr> wrote:
+> Le 06/06/2015 17:32, Rob Herring a =C3=A9crit :
+>>
+>> On Sat, Jun 6, 2015 at 6:20 AM, christophe leroy
+>> <christophe.leroy@c-s.fr> wrote:
+>>>
+>>> I've got a MPC8323 RDB evaluation platform from freescale
+>>> kernel 4.0 doesn't boot
+>>> kernel 3.16 doesn't boot
+>>> kernel 3.15 boots ok
+>>>
+>>> I disected the issue down to your commit "of/fdt: Convert FDT functions
+>>> to
+>>> use libfdt" (e6a6928c3ea1d0195ed75a091e345696b916c09b)
+>>>
+>>> Do you have an idea of what the issue could be ?
+>>
+>> Is your dtb older version of the dtb format (before 0x10)? libfdt
+>> doesn't work on the older versions.
+>
+> Yes, dtb has version 0x11, which seems to be the issue (see below)
 
---geeFENrZXK6HHgAa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+In that your bootloader doesn't understand 0x11.
 
-On Wed, Jun 10, 2015 at 04:26:27PM +0800, Zidan Wang wrote:
+>> If not, do you have logs with debug enabled in drivers/of/fdt.c?
+>
+> I get "unflatten: error -11 processing FDT"
 
-> +  - hp-det		: ADCLRC/GPIO1, LINPUT3/JD2 and RINPUT3/JD3 pins can
-> +			  be selected as headphone jack detect inputs to
-> +			  automatically disable the speaker output and enable
-> +			  the headphone output.
-> +			  hp-det = <hp-det-pin hp-det-polarity>;
-> +			  hp-det-pin = 1: ADCLRC/GPIO1 used as detect pin
-> +			  hp-det-pin = 2: LINPUT3/JD2 used as detect pin
-> +			  hp-det-pin = 3: RINPUT3/JD3 used as detect pin
-> +			  hp-det-polarity = 0: hp detect high for headphone
-> +			  hp-det-polarity = 1: hp detect high for speaker
+Can I get the full debug prints.
 
-This looks like something that should be in the DT binding for the
-CODEC, not the machine driver.
+> Indeed, Uboot (version 1.1.6 - installed on that evaluation board) adds a
+> node called "chosen" at the end of the BLOB.
+> But Uboot doesn't update the FDT len in the BLOB header, therefore the
+> following test fails in fdt_offset_ptr()
+>
+>     if (fdt_version(fdt) >=3D 0x11)
+>         if (((offset + len) < offset)
+>             || ((offset + len) > fdt_size_dt_struct(fdt)))
+>             return NULL;
+>
+>
+> If I comment this test out, Linux 3.16 to 4.0 work properly on my evaluat=
+ion
+> board.
+>
+> Can we find a proper workaround for this issue ?
 
-> +static int hp_set_status_check(void *data)
-> +{
+The options are:
 
-Why is this in the driver?
+- update the ancient bootloader
+- make dtc build 0x10 version dtb for this platform (-V option will do this=
+)
+- make the kernel fix the field (I'm not sure how we get the correct
+length. dt_string offset minus dt_struct offset?)
+- make the kernel force the version to 0x10 (I don't think there are
+any other changes from 0x10 to 0x11.)
 
-> +	hp_status = gpio_get_value(priv->hp_set_gpio) ? 1 : 0;
+I'd probably lean toward the 2nd option. This is what the bootloader
+is compatible with and won't break if we rev the format again. I
+believe there is already some plumbing to pass per platform options to
+dtc. The question is what other platforms have this problem.
 
-gpio_get_value() already returns a boolean.
+Rob
 
-> +	if (hp_status != priv->hp_active_low) {
-> +		snprintf(buf, 32, "STATE=%d", 2);
-> +		snd_soc_dapm_disable_pin(&priv->codec->dapm, "Ext Spk");
-> +		snd_soc_dapm_disable_pin(&priv->codec->dapm, "Main MIC");
-> +		ret = imx_hp_set_gpio.report;
-
-The generic jack code already has support for disabling and enabling
-pins, though disabling the speaker looks like a policy decision which
-probably doesn't belong here.
-
-> +		/*
-> +		 *  As the hp MIC only connect the input for left channel, we
-> +		 *  need to route it for right channel.
-> +		 */
-> +		snd_soc_update_bits(priv->codec, WM8960_ADDCTL1, 3<<2, 1<<2);
-
-This looks like routing which we'd expect userspace to be doing.
-
-> +		snd_kctl_jack_report(priv->snd_card, priv->headset_kctl, 1);
-
-Use the ASoC level helpers.
-
-> +	envp[0] = "NAME=headset";
-> +	envp[1] = buf;
-> +	envp[2] = NULL;
-> +	kobject_uevent_env(&pdev->dev.kobj, KOBJ_CHANGE, envp);
-> +	kfree(buf);
-
-Let the core deal with notifying userspace - it looks like you want to
-implement extcon integration there.
-
-> +	/* set cpu DAI configuration */
-> +	ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-> +	if (ret) {
-> +		dev_err(dev, "failed to set cpu dai fmt: %d\n", ret);
-> +		return ret;
-> +	}
-> +	/* set codec DAI configuration */
-> +	ret = snd_soc_dai_set_fmt(codec_dai, fmt);
-> +	if (ret) {
-> +		dev_err(dev, "failed to set codec dai fmt: %d\n", ret);
-> +		return ret;
-> +	}
-
-Initialise these in the dai_link structure.
-
-> +	for (i = 0; i < ARRAY_SIZE(sysclk_divs); ++i) {
-> +		if (sysclk_divs[i] == -1)
-> +			continue;
-> +		sysclk /= sysclk_divs[i];
-> +		for (j = 0; j < ARRAY_SIZE(dac_divs); ++j) {
-> +			if (sysclk == sample_rate * dac_divs[j]) {
-> +				for (k = 0; k < ARRAY_SIZE(bclk_divs); ++k)
-> +					if (sysclk == bclk * bclk_divs[k] / 10)
-> +						break;
-> +				if (k != ARRAY_SIZE(bclk_divs))
-> +					break;
-> +			}
-> +		}
-> +		if (j != ARRAY_SIZE(dac_divs))
-> +			break;
-> +	}
-> +	if (i != ARRAY_SIZE(sysclk_divs)) {
-> +		/* Set codec sysclk */
-> +		snd_soc_dai_set_sysclk(codec_dai,
-> +				       WM8960_SYSCLK_MCLK, sysclk, 0);
-> +		snd_soc_dai_set_clkdiv(codec_dai, WM8960_SYSCLKDIV, i << 1);
-> +		return 0;
-> +	}
-
-Better, upgrade the CODEC driver to do this.
-
-> +	/* codec mclk should be enabled early to avoid jack detect error */
-> +	ret = clk_prepare_enable(data->codec_clk);
-> +	if (ret) {
-> +		dev_err(card->dev, "Failed to enable MCLK: %d\n", ret);
-> +		return ret;
-> +	}
-
-Similarly integrating clock API support into the CODEC is better - it
-makes all the DT stuff work a lot more smoothly and avoids things having
-to get duplicated.
-
---geeFENrZXK6HHgAa
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVeH1HAAoJECTWi3JdVIfQ5lwH/2utWkhCU4tFs2hA7lIqV0wl
-L5MieRLa3IF89cZtChKY8iskWpyYEUfH4/2GGqVK/bZN4Wzr/Xg818LDeBYPpm4s
-LKx+2+hSt0Iahugg4z5ULQ5Qeddc58GUaFkD1UOGhSXCJYE+0l8q7hT36/ZGrhG9
-ygAgBklPxmfpaEN2Vb01v/6MY8H8HYQbvPFdaG2m6fSmL7XQ0EeAIN147YaUI7fK
-8qN0vdAkzXwEcaFgemN2TZJ/iMkc0sVLjAmSjI+vNL5hYyogcb8LZPvsXqU3purj
-qdBU70gsyxIv5qxYga4eD5ywzFvwyFHm4zikbcSYzKhW0zv4OPMoPvX/dnYKUW4=
-=wo1m
------END PGP SIGNATURE-----
-
---geeFENrZXK6HHgAa--
+> Christophe
+>
+>
