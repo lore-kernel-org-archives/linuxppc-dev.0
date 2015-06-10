@@ -1,21 +1,19 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0118.outbound.protection.outlook.com [65.55.169.118])
+ (mail-bl2on0111.outbound.protection.outlook.com [65.55.169.111])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 73CBE1A0E3B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 04:54:20 +1000 (AEST)
-Message-ID: <1433962446.2477.121.camel@freescale.com>
-Subject: Re: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15E8B1A0E41
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 05:08:29 +1000 (AEST)
+Message-ID: <1433962332.2477.118.camel@freescale.com>
+Subject: Re: [PATCH 00/12] Freescale DPAA FMan
 From: Scott Wood <scottwood@freescale.com>
 To: <madalin.bucur@freescale.com>
 CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Igal Liberman <Igal.Liberman@freescale.com>
-Date: Wed, 10 Jun 2015 13:54:06 -0500
-In-Reply-To: <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
+ <linuxppc-dev@lists.ozlabs.org>, Igal.Liberman <igal.liberman@freescale.com>
+Date: Wed, 10 Jun 2015 13:52:12 -0500
+In-Reply-To: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
 References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,44 +26,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, 2015-06-10 at 18:21 +0300, Madalin Bucur wrote:
-> From: Igal Liberman <Igal.Liberman@freescale.com>
+> The Freescale Data Path Acceleration Architecture (DPAA)
+> is a set of hardware components on specific QorIQ multicore
+> processors. This architecture provides the infrastructure to
+> support simplified sharing of networking interfaces and
+> accelerators by multiple CPU cores and the accelerators.
 > 
-> This patch presents the FMan Foundation Libraries (FLIB) headers.
-> The FMan FLib provides the basic API used by the FMan drivers to
-> configure and control the FMan hardware.
+> One of the DPAA accelerators is the Frame Manager (FMan)
+> which contains a series of hardware blocks: ports, Ethernet
+> MACs, a multi user RAM (MURAM) and Storage Profile (SP).
 > 
-> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> ---
->  .../ethernet/freescale/fman/flib/common/general.h  |  41 ++
->  .../net/ethernet/freescale/fman/flib/fsl_fman.h    | 609 
-> +++++++++++++++++++++
->  2 files changed, 650 insertions(+)
->  create mode 100644 
-> drivers/net/ethernet/freescale/fman/flib/common/general.h
->  create mode 100644 
-> drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
-
-Why do we need separate patches just for headers?
-
-What does "common" refer to?
-
-What does the flib directory mean, in the context of Linux?  If 
-someone were to add code to this driver, how do they know if the code 
-should go into the flib directory or not?
-
+> This patch set introduced the FMan driver code that configures
+> and initializes the FMan hardware blocks, offering support for
+> three different types of MACs (DTSEC, TGEC, MEMAC).
 > 
-> +#define iowrite32be(val, addr)               out_be32(&(*addr), val)
-> +#define ioread32be(addr)             in_be32(&(*addr))
+> The first 6 patches present the FMan Foundation Libraries (FLIBs).
+> The FMan drivers make use of the basic API the FMan FLib provides
+> to configure and control the FMan hardware. The remaining patches
+> present the required FMan hardware module drivers.
+> 
+> The driver structure and a hint on file naming:
+>  --------------------------------
+> >      FMan MAC driver           |    mac* files
+>  ------ ------ ----- ------- ----
+> > FMan | Port | MAC | MURAM | SP |    fm_* files
+>  ------ ------ ----- ------- ----
+> :      : FLib :     :                 fman_* files
+>  -------------------
+> 
+> This submission is based on the prior Freescale DPAA FMan V3,RFC
+> submission. Several issues addresses in this submission:
+>       - Reduced MAC layering and complexity
+>       - Reduced code base
+>       - T1024/T2080 10G best effort support
 
-iowrite32be()/ioread32be() are already defined for all relevant 
-architectures.  Why are you redefining them into something PPC-
-specific?
+How is this different from the patchset Igal posted 7 hours earlier?
 
-> +/* do not change! if changed, must be disabled for rev1 ! */
-> +#define DEFAULT_HALT_ON_EXTERNAL_ACTIVATION  false
-> +/* do not change! if changed, must be disabled for rev1 ! */
-> +#define DEFAULT_HALT_ON_UNRECOVERABLE_ECC_ERROR false
+Please don't use the chained reply option in git send-email (and the 
+patches are in the wrong order, which makes the chained reply 
+especially bad).
 
-rev1 of what chip?
+I don't see any mention of a dependency on the qbman patches.
+Where is the actual ethernet driver -- the part that sends and 
+receives packets?
 
 -Scott
