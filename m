@@ -1,37 +1,26 @@
-Return-Path: <apopple@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <pebolle@tiscali.nl>
+Received: from lb2-smtp-cloud6.xs4all.net (lb2-smtp-cloud6.xs4all.net
+ [194.109.24.28])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3AAB1A0615
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 19:28:11 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8601814028F
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:28:11 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <apopple@au1.ibm.com>;
- Thu, 11 Jun 2015 19:27:59 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 289C1357804F
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:27:58 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5B9QXBk62652650
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:26:41 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5B9QApf011504
- for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:26:10 +1000
-From: Alistair Popple <alistair@popple.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH] powerpc/powernv: Bump opal_init initcall priority
-Date: Thu, 11 Jun 2015 19:25:29 +1000
-Message-Id: <1434014729-12068-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481341A0615
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 19:37:54 +1000 (AEST)
+Message-ID: <1434015469.2271.83.camel@x220>
+Subject: Re: [PATCH 08/12] fsl/fman: Add Frame Manager support
+From: Paul Bolle <pebolle@tiscali.nl>
+To: madalin.bucur@freescale.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com, Igal Liberman
+ <Igal.Liberman@freescale.com>
+Date: Thu, 11 Jun 2015 11:37:49 +0200
+In-Reply-To: <1434012956.2271.58.camel@x220>
+References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
+ <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
+ <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
+ <1433949712-5648-4-git-send-email-madalin.bucur@freescale.com>
+ <1434012956.2271.58.camel@x220>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,57 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-opal_init() is called via a machine_subsys_initcall(). Due to a hack
-in the eeh code the eeh driver is initialised with at the same
-initcall level. This means depending on link ordering the following
-error can occur because the opal irchip has not been initialised:
+So I couldn't help having yet another look at the code, just to drive
+home my point.
 
-irq: XICS didn't like hwirq-0x9 to VIRQ17 mapping (rc=-22)
-pnv_eeh_post_init: Can't request OPAL event interrupt (0)
+On Thu, 2015-06-11 at 10:55 +0200, Paul Bolle wrote:
+> > +void *fm_drv_init(void)
+> 
+> static.
+> 
+> > +{
+> > +	memset(&fm_drvs, 0, sizeof(fm_drvs));
 
-This patch solves the issue by making sure opal_init is called prior
-to the subsystems that may need it.
+fm_drvs is an external variable. It is guaranteed to be zero, isn't it?
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
-Reported-by: Daniel Axtens <dja@axtens.net>
----
+> > +	mutex_init(&fm_drv_mutex);
+> > +
+> > +	/* Register to the DTB for basic FM API */
+> > +	platform_driver_register(&fm_driver);
+> > +
+> > +	return &fm_drvs;
 
-Michael,
+You're returning a pointer to external variable. How's that useful?
 
-This fixes a problem in your next tree introduced by my opal irqchip
-series. I encountered similar problems when moving some of the other
-subsystems across to the new interface which was the motivation behind
-the first patch in that series (powerpc/powernv: Reorder OPAL
-subsystem initialisation). I missed this one due to a quirk in the
-generic eeh code.
+And note this is the last time we'll ever see fm_drvs. So I think that
+all this variable does for the code is getting initialized to zero,
+twice.
 
-It seems that initcall dependencies are not well defined (or at least
-my understanding of the dependencies isn't), so I'm not overly
-comfortable with this fix. To be honest I don't have a clear
-understanding of what side effects bumping this up a level might have
-- it boots, everything seems to "work", and a quick grep reveals
-nothing obvious. However I'm open to suggestions for a better fix...
+> > +}
+> > +
+> > +int fm_drv_free(void *p_fm_drv)
+> 
+> static.
+> 
+> > +{
+> > +	platform_driver_unregister(&fm_driver);
+> > +	mutex_destroy(&fm_drv_mutex);
+> > +
+> > +	return 0;
 
-In the meantime this should fix the problem in your branch until I get
-a chance to dig further.
+This function has one caller, which doesn't check the return value. So
+this should be a function returning void. Of course, a wrapper of two
+lines called only once means you should actually not put this into a
+separate function.
 
-- Alistair
+> > +}
 
- arch/powerpc/platforms/powernv/opal.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> > +static void *p_fm_drv;
+> 
+> > +static int __init __cold fm_load(void)
+> > +{
+> > +	p_fm_drv = fm_drv_init();
+> > +	if (!p_fm_drv) {
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 9e9c483..cc3ba5f 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -718,7 +718,7 @@ static int __init opal_init(void)
+fm_drv_init() returns a pointer to an external variable. So how can this
+happen?
 
- 	return 0;
- }
--machine_subsys_initcall(powernv, opal_init);
-+machine_arch_initcall(powernv, opal_init);
+> > +		pr_err("Failed to init FM wrapper!\n");
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	pr_info("Freescale FM module\n");
+> > +	return 0;
+> > +}
 
- void opal_shutdown(void)
- {
---
-1.7.10.4
+This is all rather basic. It must be, otherwise I wouldn't spot it.
+
+So I keep spotting these basic oddities, with every cup of coffee I
+treat myself to while reading through this, wherever I look. By now I'm
+sure there's no need for the netdev people to look at this, not yet. 
+
+
+Paul Bolle
