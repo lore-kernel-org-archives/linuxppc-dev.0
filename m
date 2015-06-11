@@ -1,37 +1,23 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 77D291A09BF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 15:28:15 +1000 (AEST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Thu, 11 Jun 2015 15:28:14 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 942D62BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 15:28:12 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5B5Qlcq1048924
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 15:26:56 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5B5QOoM032650
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 15:26:25 +1000
-Message-ID: <55791BEE.50009@linux.vnet.ibm.com>
-Date: Thu, 11 Jun 2015 10:56:06 +0530
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-CC: mpe@ellerman.id.au, joel@jms.id.au, vaibhav@linux.vnet.ibm.com
-Subject: Re: [PATCH v8] powerpc/powernv: Poweroff (EPOW, DPO) events support
- for PowerNV platform
-References: <1433965909-9910-1-git-send-email-vipin@linux.vnet.ibm.com>
- <m3fv5zdvho.fsf@oc8180480414.ibm.com>
-In-Reply-To: <m3fv5zdvho.fsf@oc8180480414.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id D77E41A0214
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 15:43:18 +1000 (AEST)
+Message-ID: <1434001398.28304.3.camel@ellerman.id.au>
+Subject: Re: [PATCH V3] drivers/mtd: add powernv flash MTD abstraction driver
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Richard Weinberger <richard.weinberger@gmail.com>
+Cc: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org, Brian Norris
+ <computersforpeace@gmail.com>, "linux-mtd@lists.infradead.org"
+ <linux-mtd@lists.infradead.org>
+Date: Thu, 11 Jun 2015 15:43:18 +1000
+In-Reply-To: <CAFLxGvxM1V8EMmZotqhSUG-q0cy+NpufeksChjJrD0qSJCSB0g@mail.gmail.com>
+References: <1433219169-5115-1-git-send-email-cyrilbur@gmail.com>
+ <1433479201.3379.10.camel@cyril>
+ <CAFLxGvxM1V8EMmZotqhSUG-q0cy+NpufeksChjJrD0qSJCSB0g@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,14 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2015-06-05 at 10:16 +0200, Richard Weinberger wrote:
+> On Fri, Jun 5, 2015 at 6:40 AM, Cyril Bur <cyrilbur@gmail.com> wrote:
+> > On Tue, 2015-06-02 at 14:26 +1000, Cyril Bur wrote:
+> >> Powerpc powernv platforms allow access to certain system flash devices
+> >> through a firmwarwe interface. This change adds an mtd driver for these
+> >> flash devices.
+> >>
+> >> Minor updates from Jeremy Kerr and Joel Stanley.
+> >>
+> >> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> >> Signed-off-by: Joel Stanley <joel@jms.id.au>
+> >> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> >> ---
+> >> Hello Brian and MTD folk,
+> >> Could I please get an ACK for Michael to take this through the powerpc
+> >
+> > As we have some deadlines approaching, I am getting pressure to ensure
+> > this gets merged upstream as quickly as possible, please let me know if
+> > there is anything more which can be done.
+>
+> FYI, Brian is not available for the next 1.5 weeks.
+> So I fear this driver has to wait for the next merge window.
 
-On 06/11/2015 04:25 AM, Stewart Smith wrote:
-> Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
->> This patch adds support for FSP (Flexible Service Processor)
->> EPOW (Early Power Off Warning) and DPO (Delayed Power Off) events for
-> Not restricted to FSP systems, it's a generic OPAL API that any platform
-> could implement.
+OK. We'll merge it via the powerpc tree and if there are any problems with it
+we can fix them later.
 
-Yes EPOW and DPO APIs are generic any can be used on any platform.
-But the text describes that it adds support for EPOW, DPO events which
-exists only for FSP based system as if today.
+cheers
