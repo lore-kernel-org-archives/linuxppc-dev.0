@@ -1,18 +1,37 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <apopple@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B0D31A0615
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 19:23:12 +1000 (AEST)
-In-Reply-To: <1432887618-23666-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [V2] powerpc/mm: Limit the max memory we can support
-Message-Id: <20150611092312.14C161402B2@ozlabs.org>
-Date: Thu, 11 Jun 2015 19:23:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B3AAB1A0615
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 19:28:11 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8601814028F
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:28:11 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <apopple@au1.ibm.com>;
+ Thu, 11 Jun 2015 19:27:59 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 289C1357804F
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:27:58 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5B9QXBk62652650
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:26:41 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5B9QApf011504
+ for <linuxppc-dev@ozlabs.org>; Thu, 11 Jun 2015 19:26:10 +1000
+From: Alistair Popple <alistair@popple.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH] powerpc/powernv: Bump opal_init initcall priority
+Date: Thu, 11 Jun 2015 19:25:29 +1000
+Message-Id: <1434014729-12068-1-git-send-email-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,96 +41,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-29-05 at 08:20:18 UTC, "Aneesh Kumar K.V" wrote:
-> We need to limit the max memory based on Linux page table format.
-> Add checks to limit memory based on pte size. Also limit the memory
-> based on MAX_PHSYSMEM_BITS.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> Changes from V1:
-> * Update commit message. 4K can handle 64TB
-> * Also limit based on MAX_PHSYSMEM_BITS
-> 
->  arch/powerpc/include/asm/mmu.h       |  8 ++++++++
->  arch/powerpc/include/asm/sparsemem.h |  2 --
->  arch/powerpc/kernel/prom.c           | 25 ++++++++++++++++++++++---
->  3 files changed, 30 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-> index 3d5abfe6ba67..d44d49093c8d 100644
-> --- a/arch/powerpc/include/asm/mmu.h
-> +++ b/arch/powerpc/include/asm/mmu.h
-> @@ -200,6 +200,14 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
->  #  include <asm/mmu-8xx.h>
->  #endif
->  
-> +#ifdef CONFIG_PHYS_64BIT
-> +/*
-> + * Max supported memory on 64bit system is 64TB.
+opal_init() is called via a machine_subsys_initcall(). Due to a hack
+in the eeh code the eeh driver is initialised with at the same
+initcall level. This means depending on link ordering the following
+error can occur because the opal irchip has not been initialised:
 
-Can you document in the comment where the limit comes from?
+irq: XICS didn't like hwirq-0x9 to VIRQ17 mapping (rc=-22)
+pnv_eeh_post_init: Can't request OPAL event interrupt (0)
 
-> + */
-> +#define MAX_PHYSMEM_BITS        46
-> +#else
-> +#define MAX_PHYSMEM_BITS        32
-> +#endif
->  
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_POWERPC_MMU_H_ */
-> diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-> index f6fc0ee813d7..fc3808378893 100644
-> --- a/arch/powerpc/include/asm/sparsemem.h
-> +++ b/arch/powerpc/include/asm/sparsemem.h
-> @@ -11,8 +11,6 @@
->  #define SECTION_SIZE_BITS       24
->  
->  #define MAX_PHYSADDR_BITS       46
-> -#define MAX_PHYSMEM_BITS        46
+This patch solves the issue by making sure opal_init is called prior
+to the subsystems that may need it.
 
-Is there now no link between those two?
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Reported-by: Daniel Axtens <dja@axtens.net>
+---
 
->  #ifdef CONFIG_MEMORY_HOTPLUG
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 308c5e15676b..c09315b32ca7 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -698,9 +698,28 @@ void __init early_init_devtree(void *params)
->  #endif
->  		reserve_crashkernel();
->  	early_reserve_mem();
-> -
-> -	/* Ensure that total memory size is page-aligned. */
-> -	limit = ALIGN(memory_limit ?: memblock_phys_mem_size(), PAGE_SIZE);
-> +	/*
-> +	 * if not specified limit the memory based on the pfn count that
-> +	 * we can fit in pte_t. Also ensure that total memory size is
-> +	 * page-aligned.
+Michael,
 
-Shouldn't you do the logic below even if memory_limit is specified? Otherwise
-someone can specify a really large memory_limit which will then overflow.
+This fixes a problem in your next tree introduced by my opal irqchip
+series. I encountered similar problems when moving some of the other
+subsystems across to the new interface which was the motivation behind
+the first patch in that series (powerpc/powernv: Reorder OPAL
+subsystem initialisation). I missed this one due to a quirk in the
+generic eeh code.
 
-> +	 */
-> +	if (!memory_limit) {
-> +		int bit_count;
-> +		phys_addr_t pte_mem_limit;
-> +
-> +		limit = memblock_phys_mem_size();
-> +		if (limit >= (1ULL << MAX_PHYSMEM_BITS))
-> +			limit = (1ULL << MAX_PHYSMEM_BITS) - 1;
-> +
-> +		BUILD_BUG_ON(sizeof(pte_basic_t) > 8);
-> +		bit_count = (sizeof(pte_basic_t) * 8) - PTE_RPN_SHIFT + PAGE_SHIFT;
-> +		pte_mem_limit = ~0ULL >> (64 - bit_count);
+It seems that initcall dependencies are not well defined (or at least
+my understanding of the dependencies isn't), so I'm not overly
+comfortable with this fix. To be honest I don't have a clear
+understanding of what side effects bumping this up a level might have
+- it boots, everything seems to "work", and a quick grep reveals
+nothing obvious. However I'm open to suggestions for a better fix...
 
-It's fairly obvious what you're doing here, but a bit of a comment wouldn't hurt.
+In the meantime this should fix the problem in your branch until I get
+a chance to dig further.
 
-> +		if (limit > pte_mem_limit)
-> +			limit = pte_mem_limit;
-> +	} else
-> +		limit = memory_limit;
-> +
-> +	limit = ALIGN(limit, PAGE_SIZE);
+- Alistair
 
-cheers
+ arch/powerpc/platforms/powernv/opal.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 9e9c483..cc3ba5f 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -718,7 +718,7 @@ static int __init opal_init(void)
+
+ 	return 0;
+ }
+-machine_subsys_initcall(powernv, opal_init);
++machine_arch_initcall(powernv, opal_init);
+
+ void opal_shutdown(void)
+ {
+--
+1.7.10.4
