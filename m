@@ -1,19 +1,23 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <lambert.quentin@gmail.com>
+Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
+ [IPv6:2a00:1450:400c:c05::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49F621A09BF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 17:57:29 +1000 (AEST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <scottwood@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <robh+dt@kernel.org>, <edubezval@gmail.com>, <hongtao.jia@freescale.com>
-Subject: [PATCH V3] QorIQ/TMU: add TMU node to device tree for QorIQ T1040
-Date: Thu, 11 Jun 2015 15:53:08 +0800
-Message-ID: <1434009188-25644-1-git-send-email-hongtao.jia@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id B13E21A09BF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 18:04:41 +1000 (AEST)
+Received: by wiga1 with SMTP id a1so67950492wig.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 01:04:38 -0700 (PDT)
+From: Quentin Lambert <lambert.quentin@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org
+Cc: kernel-janitors@vger.kernel.org,
+ Quentin Lambert <lambert.quentin@gmail.com>
+Subject: [PATCH v2] ALSA: aoa: convert bus code to use dev_groups
+Date: Thu, 11 Jun 2015 10:03:38 +0200
+Message-Id: <1434009818-16711-1-git-send-email-lambert.quentin@gmail.com>
+In-Reply-To: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,145 +27,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is Thermal Monitoring Unit for QorIQ platform.
 
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+The dev_attrs field of struct bus_type is going away, use dev_groups instead.
+This converts the soundbus code to use the correct field.
+
+Given that all other usages of the macro define the struct attribute
+*xxx_attrs[] in the same file they assign the .dev_groups field, this patch
+merges sysfs.c into core.c.
+
+These modifications were made using Coccinelle.
+
+Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
 ---
-Changes of V3:
-* Put TMU node directly into t1040si-post.dtsi file.
-* Add "fsl,tmu-range" property.
-* Change "calibration" property to "fsl,tmu-calibration".
-* Update the calibration data.
+ Changes since v1:
+  - Fix the commit message to actually talk about soundbus rather than MDIO
+  - This version attempt to fix a problem resulting from the macro
+    ATTRIBUTE_GROUPS declaring the structure as static by merging sysfs.c into
+    core.c. I understand that this may not be the prefered solution since 
+    Takashi suggested that adding a comment line to the previous version could
+    be acceptable. 
 
-Changes of V2:
-* Provide more details on compatible and calibration properties.
+ sound/aoa/soundbus/Makefile   |    2 -
+ sound/aoa/soundbus/core.c     |   44 +++++++++++++++++++++++++++++++++++++++++-
+ sound/aoa/soundbus/soundbus.h |    2 -
+ sound/aoa/soundbus/sysfs.c    |   42 ----------------------------------------
+ 4 files changed, 44 insertions(+), 46 deletions(-)
 
- .../devicetree/bindings/thermal/qoriq-thermal.txt  | 63 ++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        | 42 +++++++++++++++
- 2 files changed, 105 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-
-diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-new file mode 100644
-index 0000000..2bc9cb3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-@@ -0,0 +1,63 @@
-+* Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
-+
-+Required properties:
-+- compatible : Must include "fsl,qoriq-tmu". The version of the device is
-+	determined by the TMU IP Block Revision Register (IPBRR0) at
-+	offset 0x0BF8.
-+	Table of correspondences between IPBRR0 values and example  chips:
-+		Value           Device
-+		----------      -----
-+		0x01900102      T1040
-+- reg : Address range of TMU registers.
-+- interrupts : Contains the interrupt for TMU.
-+- fsl,tmu-range : Temperature range for TMU. Including the starting
-+	temperature and number of calibration points for each range.
-+- fsl,tmu-calibration : Calibration table for TMU. This is required to
-+	determine what a specific sensor reading translates to in degrees
-+	Celsius. There are four calibration ranges, for each range we need
-+	a couple of calibration data formatted like <TTCFGR, TSCFGR>.
-+	Freescale provides the data required.
-+
-+Example:
-+
-+tmu@f0000 {
-+	compatible = "fsl,qoriq-tmu";
-+	reg = <0xf0000 0x1000>;
-+	interrupts = <18 2 0 0>;
-+	fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
-+	fsl,tmu-calibration = <0x00000000 0x00000025
-+			       0x00000001 0x00000028
-+			       0x00000002 0x0000002d
-+			       0x00000003 0x00000031
-+			       0x00000004 0x00000036
-+			       0x00000005 0x0000003a
-+			       0x00000006 0x00000040
-+			       0x00000007 0x00000044
-+			       0x00000008 0x0000004a
-+			       0x00000009 0x0000004f
-+			       0x0000000a 0x00000054
-+
-+			       0x00010000 0x0000000d
-+			       0x00010001 0x00000013
-+			       0x00010002 0x00000019
-+			       0x00010003 0x0000001f
-+			       0x00010004 0x00000025
-+			       0x00010005 0x0000002d
-+			       0x00010006 0x00000033
-+			       0x00010007 0x00000043
-+			       0x00010008 0x0000004b
-+			       0x00010009 0x00000053
-+
-+			       0x00020000 0x00000010
-+			       0x00020001 0x00000017
-+			       0x00020002 0x0000001f
-+			       0x00020003 0x00000029
-+			       0x00020004 0x00000031
-+			       0x00020005 0x0000003c
-+			       0x00020006 0x00000042
-+			       0x00020007 0x0000004d
-+			       0x00020008 0x00000056
-+
-+			       0x00030000 0x00000012
-+			       0x00030001 0x0000001d>;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index 5cc01be..6d9ca4d 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -407,6 +407,48 @@
- 		reg	   = <0xea000 0x4000>;
- 	};
+--- a/sound/aoa/soundbus/Makefile
++++ b/sound/aoa/soundbus/Makefile
+@@ -1,3 +1,3 @@
+ obj-$(CONFIG_SND_AOA_SOUNDBUS) += snd-aoa-soundbus.o
+-snd-aoa-soundbus-objs := core.o sysfs.o
++snd-aoa-soundbus-objs := core.o
+ obj-$(CONFIG_SND_AOA_SOUNDBUS_I2S) += i2sbus/
+--- a/sound/aoa/soundbus/core.c
++++ b/sound/aoa/soundbus/core.c
+@@ -150,6 +150,48 @@ static int soundbus_device_resume(struct
  
-+	tmu@f0000 {
-+		compatible = "fsl,qoriq-tmu";
-+		reg = <0xf0000 0x1000>;
-+		interrupts = <18 2 0 0>;
-+		fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
-+		fsl,tmu-calibration = <0x00000000 0x00000025
-+				       0x00000001 0x00000028
-+				       0x00000002 0x0000002d
-+				       0x00000003 0x00000031
-+				       0x00000004 0x00000036
-+				       0x00000005 0x0000003a
-+				       0x00000006 0x00000040
-+				       0x00000007 0x00000044
-+				       0x00000008 0x0000004a
-+				       0x00000009 0x0000004f
-+				       0x0000000a 0x00000054
+ #endif /* CONFIG_PM */
+ 
++#define soundbus_config_of_attr(field, format_string)			\
++static ssize_t								\
++field##_show (struct device *dev, struct device_attribute *attr,	\
++              char *buf)						\
++{									\
++	struct soundbus_dev *mdev = to_soundbus_device (dev);		\
++	return sprintf (buf, format_string, mdev->ofdev.dev.of_node->field); \
++}
 +
-+				       0x00010000 0x0000000d
-+				       0x00010001 0x00000013
-+				       0x00010002 0x00000019
-+				       0x00010003 0x0000001f
-+				       0x00010004 0x00000025
-+				       0x00010005 0x0000002d
-+				       0x00010006 0x00000033
-+				       0x00010007 0x00000043
-+				       0x00010008 0x0000004b
-+				       0x00010009 0x00000053
++static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	struct soundbus_dev *sdev = to_soundbus_device(dev);
++	struct platform_device *of = &sdev->ofdev;
++	int length;
 +
-+				       0x00020000 0x00000010
-+				       0x00020001 0x00000017
-+				       0x00020002 0x0000001f
-+				       0x00020003 0x00000029
-+				       0x00020004 0x00000031
-+				       0x00020005 0x0000003c
-+				       0x00020006 0x00000042
-+				       0x00020007 0x0000004d
-+				       0x00020008 0x00000056
++	if (*sdev->modalias) {
++		strlcpy(buf, sdev->modalias, sizeof(sdev->modalias) + 1);
++		strcat(buf, "\n");
++		length = strlen(buf);
++	} else {
++		length = sprintf(buf, "of:N%sT%s\n",
++				 of->dev.of_node->name, of->dev.of_node->type);
++	}
 +
-+				       0x00030000 0x00000012
-+				       0x00030001 0x0000001d>;
-+	};
++	return length;
++}
++static DEVICE_ATTR_RO(modalias);
 +
- /include/ "elo3-dma-0.dtsi"
- /include/ "elo3-dma-1.dtsi"
- /include/ "qoriq-espi-0.dtsi"
--- 
-2.1.0.27.g96db324
++soundbus_config_of_attr (name, "%s\n");
++static DEVICE_ATTR_RO(name);
++soundbus_config_of_attr (type, "%s\n");
++static DEVICE_ATTR_RO(type);
++
++struct attribute *soundbus_dev_attrs[] = {
++	&dev_attr_name.attr,
++	&dev_attr_type.attr,
++	&dev_attr_modalias.attr,
++	NULL,
++};
++ATTRIBUTE_GROUPS(soundbus_dev);
++
+ static struct bus_type soundbus_bus_type = {
+ 	.name		= "aoa-soundbus",
+ 	.probe		= soundbus_probe,
+@@ -160,7 +202,7 @@ static struct bus_type soundbus_bus_type
+ 	.suspend	= soundbus_device_suspend,
+ 	.resume		= soundbus_device_resume,
+ #endif
+-	.dev_attrs	= soundbus_dev_attrs,
++	.dev_groups	= soundbus_dev_groups,
+ };
+ 
+ int soundbus_add_one(struct soundbus_dev *dev)
+--- a/sound/aoa/soundbus/soundbus.h
++++ b/sound/aoa/soundbus/soundbus.h
+@@ -199,6 +199,4 @@ struct soundbus_driver {
+ extern int soundbus_register_driver(struct soundbus_driver *drv);
+ extern void soundbus_unregister_driver(struct soundbus_driver *drv);
+ 
+-extern struct device_attribute soundbus_dev_attrs[];
+-
+ #endif /* __SOUNDBUS_H */
+--- a/sound/aoa/soundbus/sysfs.c
++++ /dev/null
+@@ -1,42 +0,0 @@
+-#include <linux/kernel.h>
+-#include <linux/stat.h>
+-/* FIX UP */
+-#include "soundbus.h"
+-
+-#define soundbus_config_of_attr(field, format_string)			\
+-static ssize_t								\
+-field##_show (struct device *dev, struct device_attribute *attr,	\
+-              char *buf)						\
+-{									\
+-	struct soundbus_dev *mdev = to_soundbus_device (dev);		\
+-	return sprintf (buf, format_string, mdev->ofdev.dev.of_node->field); \
+-}
+-
+-static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
+-			     char *buf)
+-{
+-	struct soundbus_dev *sdev = to_soundbus_device(dev);
+-	struct platform_device *of = &sdev->ofdev;
+-	int length;
+-
+-	if (*sdev->modalias) {
+-		strlcpy(buf, sdev->modalias, sizeof(sdev->modalias) + 1);
+-		strcat(buf, "\n");
+-		length = strlen(buf);
+-	} else {
+-		length = sprintf(buf, "of:N%sT%s\n",
+-				 of->dev.of_node->name, of->dev.of_node->type);
+-	}
+-
+-	return length;
+-}
+-
+-soundbus_config_of_attr (name, "%s\n");
+-soundbus_config_of_attr (type, "%s\n");
+-
+-struct device_attribute soundbus_dev_attrs[] = {
+-	__ATTR_RO(name),
+-	__ATTR_RO(type),
+-	__ATTR_RO(modalias),
+-	__ATTR_NULL
+-};
