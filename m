@@ -1,27 +1,22 @@
-Return-Path: <axboe@kernel.dk>
-Received: from mail-ie0-f180.google.com (mail-ie0-f180.google.com
- [209.85.223.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <B18196@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C43AD1A09FE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 00:54:47 +1000 (AEST)
-Received: by iebps5 with SMTP id ps5so7212993ieb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 07:54:45 -0700 (PDT)
-Message-ID: <5579A135.1010208@kernel.dk>
-Date: Thu, 11 Jun 2015 08:54:45 -0600
-From: Jens Axboe <axboe@kernel.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6142B1A09FC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 00:57:04 +1000 (AEST)
+Message-ID: <55799E38.1000004@freescale.com>
+Date: Thu, 11 Jun 2015 17:42:00 +0300
+From: Cristian Stoica <cristian.stoica@freescale.com>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
- Geoff Levand <geoff@infradead.org>
-CC: Jim Paris <jim@jtan.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "cbe-oss-dev@lists.ozlabs.org" <cbe-oss-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] block/ps3vram: Remove obsolete reference to MTD
-References: <cover.1433959045.git.geoff@infradead.org>	<c5254081722274cb11fd7d2bc4f3a91b95f0f9f6.1433959045.git.geoff@infradead.org>
- <CAMuHMdU=e=6UwQmZ0LJJhjf5DjG+Q7WsTBpm44uxeqGRqygs-Q@mail.gmail.com>
-In-Reply-To: <CAMuHMdU=e=6UwQmZ0LJJhjf5DjG+Q7WsTBpm44uxeqGRqygs-Q@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: <gregkh@linuxfoundation.org>
+CC: <horia.geanta@freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2] powerpc: support sizes greater than an unsigned long
+References: <1431620684-20123-1-git-send-email-cristian.stoica@freescale.com>
+ <1431683064-29584-1-git-send-email-cristian.stoica@freescale.com>
+In-Reply-To: <1431683064-29584-1-git-send-email-cristian.stoica@freescale.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,35 +26,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/2015 07:04 AM, Geert Uytterhoeven wrote:
-> On Wed, Jun 10, 2015 at 8:00 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> did not write:
->> The ps3vram driver is a plain block device driver since commit
->> f507cd22035fdadd5dbb476dd05e9e7ee21c3b84 ("ps3/block: Replace mtd/ps3vram
->> by block/ps3vram").
->>
->> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->> Signed-off-by: Geoff Levand <geoff@infradead.org>
->
-> For the record: while I did send out this patch back in 2013, I didn't resend it
-> yesterday.
->
-> Geoff:
->    1. Please fix your scripts (start using git-send-email?), to avoid sending
->       fake email. Thanks!
+Hi Greg,
 
-Indeed, 2/3 of these patches ended up in my spam.
+Can you have a look at this patch?
 
->    2. I am grateful you didn't forget about this patch, and that it got applied.
+https://patchwork.kernel.org/patch/6413191/
 
-I'll add:
+Thanks,
+Cristian S.
 
-3. Your git base should be the base of where you want this to be pulled 
-in, or prior. Yours was 4.1-rc7, and I'm not pulling in tons of 
-unrelated changes for 3 patches. If you are targeting the next release 
-and don't depend on existing block changes, then your base should be 
-4.0. If you are dependent on changes in the block tree, the block tree 
-should be your base.
 
--- 
-Jens Axboe
+On 05/15/2015 12:44 PM, Cristian Stoica wrote:
+> Use resource_size_t to accommodate sizes greater than the size of an
+> unsigned long int on platforms that have more than 32 bit
+> physical addresses
+> 
+> Signed-off-by: Cristian Stoica <cristian.stoica@freescale.com>
+> 
+> Changes in v2:
+> - update definitions is pgtable_64.c as well - or else we get broken builds on 64
+> - minor reformatting in pgtable_64.c to satisfy checkpatch
+> 
+> ---
+>  arch/powerpc/include/asm/io.h | 14 +++++++-------
+>  arch/powerpc/mm/pgtable_32.c  | 10 +++++-----
+>  arch/powerpc/mm/pgtable_64.c  | 22 +++++++++++-----------
+>  3 files changed, 23 insertions(+), 23 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+> index a8d2ef3..749c66e 100644
+> --- a/arch/powerpc/include/asm/io.h
+> +++ b/arch/powerpc/include/asm/io.h
+> @@ -716,24 +716,24 @@ static inline void iosync(void)
+>   *   be hooked (but can be used by a hook on iounmap)
+>   *
+>   */
+> -extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
+> -extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
+> +extern void __iomem *ioremap(phys_addr_t address, resource_size_t size);
+> +extern void __iomem *ioremap_prot(phys_addr_t address, resource_size_t size,
+>  				  unsigned long flags);
+> -extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
+> +extern void __iomem *ioremap_wc(phys_addr_t address, resource_size_t size);
+>  #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+>  
+>  extern void iounmap(volatile void __iomem *addr);
+>  
+> -extern void __iomem *__ioremap(phys_addr_t, unsigned long size,
+> +extern void __iomem *__ioremap(phys_addr_t, resource_size_t size,
+>  			       unsigned long flags);
+> -extern void __iomem *__ioremap_caller(phys_addr_t, unsigned long size,
+> +extern void __iomem *__ioremap_caller(phys_addr_t, resource_size_t size,
+>  				      unsigned long flags, void *caller);
+>  
+>  extern void __iounmap(volatile void __iomem *addr);
+>  
+>  extern void __iomem * __ioremap_at(phys_addr_t pa, void *ea,
+> -				   unsigned long size, unsigned long flags);
+> -extern void __iounmap_at(void *ea, unsigned long size);
+> +				   resource_size_t size, unsigned long flags);
+> +extern void __iounmap_at(void *ea, resource_size_t size);
+>  
+>  /*
+>   * When CONFIG_PPC_INDIRECT_PIO is set, we use the generic iomap implementation
+> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+> index 7692d1b..a7d5137 100644
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -135,7 +135,7 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
+>  }
+>  
+>  void __iomem *
+> -ioremap(phys_addr_t addr, unsigned long size)
+> +ioremap(phys_addr_t addr, resource_size_t size)
+>  {
+>  	return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
+>  				__builtin_return_address(0));
+> @@ -143,7 +143,7 @@ ioremap(phys_addr_t addr, unsigned long size)
+>  EXPORT_SYMBOL(ioremap);
+>  
+>  void __iomem *
+> -ioremap_wc(phys_addr_t addr, unsigned long size)
+> +ioremap_wc(phys_addr_t addr, resource_size_t size)
+>  {
+>  	return __ioremap_caller(addr, size, _PAGE_NO_CACHE,
+>  				__builtin_return_address(0));
+> @@ -151,7 +151,7 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
+>  EXPORT_SYMBOL(ioremap_wc);
+>  
+>  void __iomem *
+> -ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+> +ioremap_prot(phys_addr_t addr, resource_size_t size, unsigned long flags)
+>  {
+>  	/* writeable implies dirty for kernel addresses */
+>  	if ((flags & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO)
+> @@ -173,13 +173,13 @@ ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+>  EXPORT_SYMBOL(ioremap_prot);
+>  
+>  void __iomem *
+> -__ioremap(phys_addr_t addr, unsigned long size, unsigned long flags)
+> +__ioremap(phys_addr_t addr, resource_size_t size, unsigned long flags)
+>  {
+>  	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+>  }
+>  
+>  void __iomem *
+> -__ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+> +__ioremap_caller(phys_addr_t addr, resource_size_t size, unsigned long flags,
+>  		 void *caller)
+>  {
+>  	unsigned long v, i;
+> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+> index 59daa5e..64dd7a9 100644
+> --- a/arch/powerpc/mm/pgtable_64.c
+> +++ b/arch/powerpc/mm/pgtable_64.c
+> @@ -168,8 +168,8 @@ int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
+>   * __ioremap_at - Low level function to establish the page tables
+>   *                for an IO mapping
+>   */
+> -void __iomem * __ioremap_at(phys_addr_t pa, void *ea, unsigned long size,
+> -			    unsigned long flags)
+> +void __iomem *__ioremap_at(phys_addr_t pa, void *ea, resource_size_t size,
+> +			   unsigned long flags)
+>  {
+>  	unsigned long i;
+>  
+> @@ -202,7 +202,7 @@ void __iomem * __ioremap_at(phys_addr_t pa, void *ea, unsigned long size,
+>   *                  are manipulated manually, like partial unmapping of
+>   *                  PCI IOs or ISA space.
+>   */
+> -void __iounmap_at(void *ea, unsigned long size)
+> +void __iounmap_at(void *ea, resource_size_t size)
+>  {
+>  	WARN_ON(((unsigned long)ea) & ~PAGE_MASK);
+>  	WARN_ON(size & ~PAGE_MASK);
+> @@ -210,8 +210,8 @@ void __iounmap_at(void *ea, unsigned long size)
+>  	unmap_kernel_range((unsigned long)ea, size);
+>  }
+>  
+> -void __iomem * __ioremap_caller(phys_addr_t addr, unsigned long size,
+> -				unsigned long flags, void *caller)
+> +void __iomem *__ioremap_caller(phys_addr_t addr, resource_size_t size,
+> +			       unsigned long flags, void *caller)
+>  {
+>  	phys_addr_t paligned;
+>  	void __iomem *ret;
+> @@ -255,13 +255,13 @@ void __iomem * __ioremap_caller(phys_addr_t addr, unsigned long size,
+>  	return ret;
+>  }
+>  
+> -void __iomem * __ioremap(phys_addr_t addr, unsigned long size,
+> -			 unsigned long flags)
+> +void __iomem *__ioremap(phys_addr_t addr, resource_size_t size,
+> +			unsigned long flags)
+>  {
+>  	return __ioremap_caller(addr, size, flags, __builtin_return_address(0));
+>  }
+>  
+> -void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+> +void __iomem *ioremap(phys_addr_t addr, resource_size_t size)
+>  {
+>  	unsigned long flags = _PAGE_NO_CACHE | _PAGE_GUARDED;
+>  	void *caller = __builtin_return_address(0);
+> @@ -271,7 +271,7 @@ void __iomem * ioremap(phys_addr_t addr, unsigned long size)
+>  	return __ioremap_caller(addr, size, flags, caller);
+>  }
+>  
+> -void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
+> +void __iomem *ioremap_wc(phys_addr_t addr, resource_size_t size)
+>  {
+>  	unsigned long flags = _PAGE_NO_CACHE;
+>  	void *caller = __builtin_return_address(0);
+> @@ -281,8 +281,8 @@ void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
+>  	return __ioremap_caller(addr, size, flags, caller);
+>  }
+>  
+> -void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+> -			     unsigned long flags)
+> +void __iomem *ioremap_prot(phys_addr_t addr, resource_size_t size,
+> +			   unsigned long flags)
+>  {
+>  	void *caller = __builtin_return_address(0);
+>  
+> 
