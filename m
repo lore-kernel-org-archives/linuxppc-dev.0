@@ -1,37 +1,38 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1AD051A09FE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 15:18:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D56171A0CFD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 15:18:11 +1000 (AEST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 11 Jun 2015 10:48:06 +0530
+ Thu, 11 Jun 2015 10:48:09 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5464CE0056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 10:51:27 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 3B67F125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 10:50:36 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5B5I3Th000470
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 10:48:03 +0530
+ t5B5I54f64749800
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 10:48:05 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5B5I1st000776
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 10:48:02 +0530
+ t5B5I4K4000943
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 10:48:04 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: rusty@rustcorp.com.au, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>, Jeremy Kerr <jk@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  Stephane Eranian <eranian@google.com>
-Subject: [PATCH v2 1/7]powerpc/powernv: Data structure and macros definition
-Date: Thu, 11 Jun 2015 10:47:48 +0530
-Message-Id: <1433999874-2043-2-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/7]powerpc/powernv: Add OPAL support for Nest PMU
+Date: Thu, 11 Jun 2015 10:47:49 +0530
+Message-Id: <1433999874-2043-3-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,11 +44,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create new header file "nest-pmu.h" to add the data structures
-and macros needed for the nest pmu support.
+Nest Counters can be configured via PORE Engine and OPAL
+provides an interface to start/stop it.
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
+OPAL side patches are posted in the skiboot mailing.
+
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: Jeremy Kerr <jk@ozlabs.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Anton Blanchard <anton@samba.org>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
@@ -55,68 +60,46 @@ Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/nest-pmu.h | 53 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
- create mode 100644 arch/powerpc/perf/nest-pmu.h
+ arch/powerpc/include/asm/opal-api.h            | 3 ++-
+ arch/powerpc/include/asm/opal.h                | 2 ++
+ arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
+ 3 files changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/nest-pmu.h b/arch/powerpc/perf/nest-pmu.h
-new file mode 100644
-index 0000000..ebe7689
---- /dev/null
-+++ b/arch/powerpc/perf/nest-pmu.h
-@@ -0,0 +1,53 @@
-+/*
-+ * Nest Performance Monitor counter support for POWER8 processors.
-+ *
-+ * Copyright (C) 2015 Madhavan Srinivasan, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0321a90..8011a75 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -153,7 +153,8 @@
+ #define OPAL_FLASH_READ				110
+ #define OPAL_FLASH_WRITE			111
+ #define OPAL_FLASH_ERASE			112
+-#define OPAL_LAST				112
++#define OPAL_NEST_IMA_CONTROL			116
++#define OPAL_LAST				116
+ 
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 042af1a..f86e5e9 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -201,6 +201,8 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
+ int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
+ 		uint64_t token);
+ 
++int64_t opal_nest_ima_control(uint32_t value);
 +
-+#include <linux/perf_event.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
-+#include <asm/opal.h>
-+
-+#define P8_MAX_CHIP		32
-+#define MAX_PMU_NAME_LEN	256
-+#define MAX_EVENTS_SUPPORTED    256
-+#define P8_NEST_ENGINE_START	1
-+#define P8_NEST_ENGINE_STOP	0
-+#define P8_MAX_NEST_PMUS	32
-+
-+/*
-+ * Structure to hold per chip specific memory address
-+ * information for nest pmus. Nest Counter data are exported
-+ * in per-chip reserved memory region by the PORE Engine.
-+ */
-+struct perchip_nest_info {
-+	uint32_t chip_id;
-+	uint64_t pbase;
-+	uint64_t vbase;
-+	uint32_t size;
-+};
-+
-+/*
-+ * Place holder for nest pmu events and values.
-+ */
-+struct ppc64_nest_ima_events {
-+	const char *ev_name;
-+	const char *ev_value;
-+};
-+
-+/*
-+ * Device tree parser code detects nest pmu support and
-+ * registers new nest pmus. This structure will
-+ * hold the pmu functions and attrs for each nest pmu and
-+ * will be referenced at the time of pmu registration.
-+ */
-+struct nest_pmu {
-+	struct pmu pmu;
-+	const struct attribute_group *attr_groups[4];
-+};
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+ 				   int depth, void *data);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index a7ade94..ce36a68 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -295,3 +295,4 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+ OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+ OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+ OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
++OPAL_CALL(opal_nest_ima_control,		OPAL_NEST_IMA_CONTROL);
 -- 
 1.9.1
