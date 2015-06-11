@@ -1,24 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0142.outbound.protection.outlook.com [65.55.169.142])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 83C421A07C2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 07:28:13 +1000 (AEST)
-Message-ID: <1434058075.2477.178.camel@freescale.com>
-Subject: Re: [PATCH v2] powerpc: support sizes greater than an unsigned long
-From: Scott Wood <scottwood@freescale.com>
-To: Cristian Stoica <cristian.stoica@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <horia.geanta@freescale.com>
-Date: Thu, 11 Jun 2015 16:27:55 -0500
-In-Reply-To: <5579B2FC.4010008@freescale.com>
-References: <1431620684-20123-1-git-send-email-cristian.stoica@freescale.com>
- <1431683064-29584-1-git-send-email-cristian.stoica@freescale.com>
- <55799E38.1000004@freescale.com> <20150611153835.GB5058@kroah.com>
- <5579B2FC.4010008@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id E5ECD1A07C2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 08:21:28 +1000 (AEST)
+Date: Thu, 11 Jun 2015 15:21:25 -0700 (PDT)
+Message-Id: <20150611.152125.2297229639938532767.davem@davemloft.net>
+To: fabf@skynet.be
+Cc: linux-kernel@vger.kernel.org, Julia.Lawall@lip6.fr,
+ pantelis.antoniou@gmail.com, vbordug@ru.mvista.com,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/1 linux-next] net: fs_enet: use swap() in
+ fs_enet_rx_napi()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1433953999-24740-1-git-send-email-fabf@skynet.be>
+References: <1433953999-24740-1-git-send-email-fabf@skynet.be>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-06-11 at 19:10 +0300, Cristian Stoica wrote:
-> On 06/11/2015 06:38 PM, Greg KH wrote:
-> > On Thu, Jun 11, 2015 at 05:42:00PM +0300, Cristian Stoica wrote:
-> > 
-> > Why?
-> > 
+From: Fabian Frederick <fabf@skynet.be>
+Date: Wed, 10 Jun 2015 18:33:19 +0200
+
+> Use kernel.h macro definition.
 > 
-> This patch matches the input argument "size" of ioremap() with the 
-> output of request_mem_region() (which is
-> resource_size_t).
-> Since the latter is used as input to the former, the types should 
-> match (even though mapping more than 4G is not usually
-> expected). There are a lot of such differences in the code and this 
-> is an attempt to reduce that.
+> Thanks to Julia Lawall for Coccinelle scripting support.
+> 
+> Signed-off-by: Fabian Frederick <fabf@skynet.be>
 
-Dropping the upper bits of the size harms the ability to detect error 
-scenarios where unmappably large -- but not power-of-two -- regions 
-are requested to be mapped.
-
-However, this patch doesn't fix that.  It just postpones the loss of 
-the upper 32 bits until __ioremap_caller() calls get_vm_area_caller().
-
-There's also no error checking at all for the size of ioremap() done 
-during early boot (!slab_is_available()).
-
-Don't just blindly turn static analyzer reports into patches -- and 
-why didn't the analyzer complain about the call to 
-get_vm_area_caller() after this patch?
-
--Scott
+Applied.
