@@ -1,24 +1,23 @@
-Return-Path: <zidan.wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-lb0-x22c.google.com (mail-lb0-x22c.google.com
+ [IPv6:2a00:1450:4010:c04::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED8E21A09BF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 21:12:01 +1000 (AEST)
-Date: Thu, 11 Jun 2015 19:10:00 +0800
-From: Zidan Wang <zidan.wang@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-CC: <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.de>, <timur@tabi.org>,
- <Xiubo.Lee@gmail.com>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <alsa-devel@alsa-project.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [alsa-devel][PATCH] ASoC: fsl: add imx-wm8960 machine driver
-Message-ID: <20150611110958.GA23742@shlinux2>
-References: <b2a3c323a0507f3706041e1da98da8375aa61576.1433923593.git.zidan.wang@freescale.com>
- <20150610183619.GA3103@Asurada-CZ80>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150610183619.GA3103@Asurada-CZ80>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 816C91A09BF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 21:28:08 +1000 (AEST)
+Received: by lbcue7 with SMTP id ue7so2623105lbc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 04:28:04 -0700 (PDT)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Ian Munsie <imunsie@au1.ibm.com>,
+	Michael Neuling <mikey@neuling.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Joe Perches <joe@perches.com>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/2] cxl: Add explicit precision specifiers
+Date: Thu, 11 Jun 2015 13:27:51 +0200
+Message-Id: <1434022072-31754-1-git-send-email-linux@rasmusvillemoes.dk>
+In-Reply-To: <1424751969-sup-7377@delenn.ozlabs.ibm.com>
+References: <1424751969-sup-7377@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 10, 2015 at 11:36:21AM -0700, Nicolin Chen wrote:
-> On Wed, Jun 10, 2015 at 04:26:27PM +0800, Zidan Wang wrote:
-> > This imx-wm8960 device-tree-only machine driver works with sai driver
-> > and have below feature.
-> > * support codec master and slave mode
-> > * support headphone jack detect
-> > * support headphone and micphone jack event
-> > * support asrc<->sai<->wm8960 mode
-> > 
-> > Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
-> 
-> Above all, could you merge this into fsl-asoc-card?
-> 
-> It'd be nicer to have jack detection over there. And we can
-> put PLL settings to the codec driver as Mark suggested.
-> 
-Hi Nicolin,
+C99 says that a precision given as simply '.' with no following digits
+or * should be interpreted as 0. The kernel's printf implementation,
+however, treats this case as if the precision was omitted. C99 also
+says that if both the precision and value are 0, no digits should be
+printed. Even if the kernel followed C99 to the letter, I don't think
+that would be particularly useful in these cases. For consistency with
+most other format strings in the file, use an explicit precision of 16
+and add a 0x prefix.
 
-I want to modify imx-wm8960 and upstream it because our release is using it now. After
-upstreaming imx-wm8960, i will try to merge it to fsl-asoc-card.
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+v3: same as v2, just resending along with a followup patch doing what
+Joe suggested.
 
-Best Regards,
-Zidan Wang
-> Thanks
-> Nicolin
+ drivers/misc/cxl/irq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index c8929c526691..4b73f4b9e7f1 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -147,7 +147,7 @@ static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+ 	if (dsisr & CXL_PSL_DSISR_An_PE)
+ 		return handle_psl_slice_error(ctx, dsisr, irq_info->errstat);
+ 	if (dsisr & CXL_PSL_DSISR_An_AE) {
+-		pr_devel("CXL interrupt: AFU Error %.llx\n", irq_info->afu_err);
++		pr_devel("CXL interrupt: AFU Error 0x%.16llx\n", irq_info->afu_err);
+ 
+ 		if (ctx->pending_afu_err) {
+ 			/*
+@@ -158,7 +158,7 @@ static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+ 			 * probably best that we log them somewhere:
+ 			 */
+ 			dev_err_ratelimited(&ctx->afu->dev, "CXL AFU Error "
+-					    "undelivered to pe %i: %.llx\n",
++					    "undelivered to pe %i: 0x%.16llx\n",
+ 					    ctx->pe, irq_info->afu_err);
+ 		} else {
+ 			spin_lock(&ctx->lock);
+-- 
+2.1.3
