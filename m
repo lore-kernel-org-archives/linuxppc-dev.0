@@ -1,23 +1,34 @@
-Return-Path: <lambert.quentin@gmail.com>
-Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
- [IPv6:2a00:1450:400c:c05::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B13E21A09BF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 18:04:41 +1000 (AEST)
-Received: by wiga1 with SMTP id a1so67950492wig.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 01:04:38 -0700 (PDT)
-From: Quentin Lambert <lambert.quentin@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org
-Cc: kernel-janitors@vger.kernel.org,
- Quentin Lambert <lambert.quentin@gmail.com>
-Subject: [PATCH v2] ALSA: aoa: convert bus code to use dev_groups
-Date: Thu, 11 Jun 2015 10:03:38 +0200
-Message-Id: <1434009818-16711-1-git-send-email-lambert.quentin@gmail.com>
-In-Reply-To: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 240CC1A09BF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 18:43:57 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 11 Jun 2015 14:13:55 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id C1204394005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 14:13:51 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5B8hkre49021094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 14:13:47 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5B8hiDN015083
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Jun 2015 14:13:45 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sukadev@linux.vnet.ibm.com, eranian@google.com,
+ khandual@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: [PATCH 0/8]powerpc/perf: Export memory hierarchy level
+Date: Thu, 11 Jun 2015 14:13:29 +0530
+Message-Id: <1434012217-9776-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,150 +38,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Power8 Perforence Monitoring Unit (PMU) supports different
+sampling modes (SM) Random Instruction Sampling (RIS),
+Random Load/Store Facility Sampling (RLS) and Random Branch
+Sampling (RBS). This patchset enabled RLS mode to mark
+Load/Store instructions to save the memory hierarchy level
+(eg: L2, L3) for cache reload. Event used here to sample
+is "marked instruction complete".
 
-The dev_attrs field of struct bus_type is going away, use dev_groups instead.
-This converts the soundbus code to use the correct field.
+This patchset exports the hierarchy information to the user via the
+perf_mem_data_src object. Patchset is based on and derived from
+Sukadev Bhattiprolu work[1]. It exports the memory hierarchy
+information only to Power8 processor based system, since
+similiar event or modes are not supported in Power7
 
-Given that all other usages of the macro define the struct attribute
-*xxx_attrs[] in the same file they assign the .dev_groups field, this patch
-merges sysfs.c into core.c.
+[1]:https://lkml.org/lkml/2013/10/15/858
 
-These modifications were made using Coccinelle.
+perf interface sample. Workload used here is "ebizzy"
 
-Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
----
- Changes since v1:
-  - Fix the commit message to actually talk about soundbus rather than MDIO
-  - This version attempt to fix a problem resulting from the macro
-    ATTRIBUTE_GROUPS declaring the structure as static by merging sysfs.c into
-    core.c. I understand that this may not be the prefered solution since 
-    Takashi suggested that adding a comment line to the previous version could
-    be acceptable. 
+# perf report -n --mem-mode --sort=mem,sym,dso,symbol_daddr --stdio
+# To display the perf.data header info, please use --header/--header-only options.
+#
+# Samples: 33  of event 'cpu/mem_access/'
+# Total weight : 33
+# Sort order   : mem,sym,dso,symbol_daddr
+#
+# Overhead       Samples             Memory access                              Symbol      Shared Object                                Data Symbol
+# ........  ............  ........................  ..................................  .................  .........................................
+#
+    12.12%             4  L2 hit                    [k] __do_softirq                    [kernel.kallsyms]  [k] softirq_vec+0x8
+     6.06%             2  L2 hit                    [k] __schedule                      [kernel.kallsyms]  [k] 0xc0000003bb975df0
+     6.06%             2  Remote Cache (1 hop) hit  [k] scheduler_tick                  [kernel.kallsyms]  [k] 0xc0000003feb1e4b0
+     3.03%             1  L2 hit                    [k] __acct_update_integrals         [kernel.kallsyms]  [k] 0xc0000003b79d8a30
+     3.03%             1  L2 hit                    [.] __memcpy_power7                 libc-2.17.so       [.] 0x0000010021349b00
+     3.03%             1  L2 hit                    [.] __memcpy_power7                 libc-2.17.so       [.] 0x000001002134a030
+     3.03%             1  L2 hit                    [k] __mmdrop                        [kernel.kallsyms]  [k] pgtable_cache+0x58
+     3.03%             1  L2 hit                    [k] __update_cpu_load               [kernel.kallsyms]  [k] 0xc0000003feb1dc60
+     3.03%             1  L2 hit                    [.] _int_malloc                     libc-2.17.so       [.] 0x00003fff90000090
+     3.03%             1  L2 hit                    [k] account_system_time             [kernel.kallsyms]  [k] 0xc0000003feb08088
+.....
 
- sound/aoa/soundbus/Makefile   |    2 -
- sound/aoa/soundbus/core.c     |   44 +++++++++++++++++++++++++++++++++++++++++-
- sound/aoa/soundbus/soundbus.h |    2 -
- sound/aoa/soundbus/sysfs.c    |   42 ----------------------------------------
- 4 files changed, 44 insertions(+), 46 deletions(-)
+Madhavan Srinivasan (8):
+ powerpc/perf: Remove PME_ prefix for power7 events
+ powerpc/perf: Export Power8 generic events in sysfs
+ powerpc/perf: EVENT macro for exporting generic events
+ powerpc/perf: Add Power8 mem_access event to sysfs
+ powerpc/perf: Define big-endian version of perf_mem_data_src
+ powerpc/perf: Export Power8 memory hierarchy info to user space
+ powerpc/perf: Set data source value
+ powerpc/perf: cleanup in perf_event_print_debug()
 
---- a/sound/aoa/soundbus/Makefile
-+++ b/sound/aoa/soundbus/Makefile
-@@ -1,3 +1,3 @@
- obj-$(CONFIG_SND_AOA_SOUNDBUS) += snd-aoa-soundbus.o
--snd-aoa-soundbus-objs := core.o sysfs.o
-+snd-aoa-soundbus-objs := core.o
- obj-$(CONFIG_SND_AOA_SOUNDBUS_I2S) += i2sbus/
---- a/sound/aoa/soundbus/core.c
-+++ b/sound/aoa/soundbus/core.c
-@@ -150,6 +150,48 @@ static int soundbus_device_resume(struct
- 
- #endif /* CONFIG_PM */
- 
-+#define soundbus_config_of_attr(field, format_string)			\
-+static ssize_t								\
-+field##_show (struct device *dev, struct device_attribute *attr,	\
-+              char *buf)						\
-+{									\
-+	struct soundbus_dev *mdev = to_soundbus_device (dev);		\
-+	return sprintf (buf, format_string, mdev->ofdev.dev.of_node->field); \
-+}
-+
-+static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
-+{
-+	struct soundbus_dev *sdev = to_soundbus_device(dev);
-+	struct platform_device *of = &sdev->ofdev;
-+	int length;
-+
-+	if (*sdev->modalias) {
-+		strlcpy(buf, sdev->modalias, sizeof(sdev->modalias) + 1);
-+		strcat(buf, "\n");
-+		length = strlen(buf);
-+	} else {
-+		length = sprintf(buf, "of:N%sT%s\n",
-+				 of->dev.of_node->name, of->dev.of_node->type);
-+	}
-+
-+	return length;
-+}
-+static DEVICE_ATTR_RO(modalias);
-+
-+soundbus_config_of_attr (name, "%s\n");
-+static DEVICE_ATTR_RO(name);
-+soundbus_config_of_attr (type, "%s\n");
-+static DEVICE_ATTR_RO(type);
-+
-+struct attribute *soundbus_dev_attrs[] = {
-+	&dev_attr_name.attr,
-+	&dev_attr_type.attr,
-+	&dev_attr_modalias.attr,
-+	NULL,
-+};
-+ATTRIBUTE_GROUPS(soundbus_dev);
-+
- static struct bus_type soundbus_bus_type = {
- 	.name		= "aoa-soundbus",
- 	.probe		= soundbus_probe,
-@@ -160,7 +202,7 @@ static struct bus_type soundbus_bus_type
- 	.suspend	= soundbus_device_suspend,
- 	.resume		= soundbus_device_resume,
- #endif
--	.dev_attrs	= soundbus_dev_attrs,
-+	.dev_groups	= soundbus_dev_groups,
- };
- 
- int soundbus_add_one(struct soundbus_dev *dev)
---- a/sound/aoa/soundbus/soundbus.h
-+++ b/sound/aoa/soundbus/soundbus.h
-@@ -199,6 +199,4 @@ struct soundbus_driver {
- extern int soundbus_register_driver(struct soundbus_driver *drv);
- extern void soundbus_unregister_driver(struct soundbus_driver *drv);
- 
--extern struct device_attribute soundbus_dev_attrs[];
--
- #endif /* __SOUNDBUS_H */
---- a/sound/aoa/soundbus/sysfs.c
-+++ /dev/null
-@@ -1,42 +0,0 @@
--#include <linux/kernel.h>
--#include <linux/stat.h>
--/* FIX UP */
--#include "soundbus.h"
--
--#define soundbus_config_of_attr(field, format_string)			\
--static ssize_t								\
--field##_show (struct device *dev, struct device_attribute *attr,	\
--              char *buf)						\
--{									\
--	struct soundbus_dev *mdev = to_soundbus_device (dev);		\
--	return sprintf (buf, format_string, mdev->ofdev.dev.of_node->field); \
--}
--
--static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
--			     char *buf)
--{
--	struct soundbus_dev *sdev = to_soundbus_device(dev);
--	struct platform_device *of = &sdev->ofdev;
--	int length;
--
--	if (*sdev->modalias) {
--		strlcpy(buf, sdev->modalias, sizeof(sdev->modalias) + 1);
--		strcat(buf, "\n");
--		length = strlen(buf);
--	} else {
--		length = sprintf(buf, "of:N%sT%s\n",
--				 of->dev.of_node->name, of->dev.of_node->type);
--	}
--
--	return length;
--}
--
--soundbus_config_of_attr (name, "%s\n");
--soundbus_config_of_attr (type, "%s\n");
--
--struct device_attribute soundbus_dev_attrs[] = {
--	__ATTR_RO(name),
--	__ATTR_RO(type),
--	__ATTR_RO(modalias),
--	__ATTR_NULL
--};
+ arch/powerpc/include/asm/perf_event_server.h |  4 +-
+ arch/powerpc/perf/core-book3s.c              | 17 ++++-
+ arch/powerpc/perf/power7-pmu.c               | 18 ++---
+ arch/powerpc/perf/power8-events-list.h       | 21 ++++++
+ arch/powerpc/perf/power8-pmu.c               | 98 ++++++++++++++++++++++++++--
+ include/uapi/linux/perf_event.h              | 16 +++++
+ 6 files changed, 155 insertions(+), 19 deletions(-)
+ create mode 100644 arch/powerpc/perf/power8-events-list.h
+
+-- 
+1.9.1
