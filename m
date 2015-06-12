@@ -1,25 +1,29 @@
-Return-Path: <zidan.wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0111.outbound.protection.outlook.com [157.56.110.111])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-pd0-f178.google.com (mail-pd0-f178.google.com
+ [209.85.192.178])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 59D231A02D5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 18:11:33 +1000 (AEST)
-Date: Fri, 12 Jun 2015 16:09:32 +0800
-From: Zidan Wang <zidan.wang@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-CC: <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.de>, <timur@tabi.org>,
- <Xiubo.Lee@gmail.com>, <devicetree@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <alsa-devel@alsa-project.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [alsa-devel][PATCH] ASoC: fsl: add imx-wm8960 machine driver
-Message-ID: <20150612080930.GB23608@shlinux2>
-References: <b2a3c323a0507f3706041e1da98da8375aa61576.1433923593.git.zidan.wang@freescale.com>
- <20150610183619.GA3103@Asurada-CZ80> <20150611110958.GA23742@shlinux2>
- <20150611155106.GA3036@Asurada>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150611155106.GA3036@Asurada>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 966451A0EC4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 18:11:49 +1000 (AEST)
+Received: by pdbki1 with SMTP id ki1so20035660pdb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 01:11:47 -0700 (PDT)
+From: Baolin Wang <baolin.wang@linaro.org>
+To: benh@kernel.crashing.org
+Cc: arnd@arndb.de, peterz@infradead.org, paulus@samba.org, mpe@ellerman.id.au,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+ rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
+ fweisbec@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, baolin.wang@linaro.org,
+ y2038@lists.linaro.org
+Subject: [PATCH v5 22/24] cputime: Introduce
+ cputime_to_timespec64()/timespec64_to_cputime()
+Date: Fri, 12 Jun 2015 16:10:32 +0800
+Message-Id: <cc09682885e4883e38c7f89701df343f8e56acdf.1434079263.git.baolin.wang@linaro.org>
+In-Reply-To: <lfywpz1987>
+References: <lfywpz1987>
+In-Reply-To: <cover.1434079262.git.baolin.wang@linaro.org>
+References: <cover.1434079262.git.baolin.wang@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +33,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 11, 2015 at 08:51:07AM -0700, Nicolin Chen wrote:
-> On Thu, Jun 11, 2015 at 07:10:00PM +0800, Zidan Wang wrote:
-> 
-> > > > This imx-wm8960 device-tree-only machine driver works with sai driver
-> > > > and have below feature.
-> > > > * support codec master and slave mode
-> > > > * support headphone jack detect
-> > > > * support headphone and micphone jack event
-> > > > * support asrc<->sai<->wm8960 mode
-> > > > 
-> > > > Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
-> > > 
-> > > Above all, could you merge this into fsl-asoc-card?
-> > > 
-> > > It'd be nicer to have jack detection over there. And we can
-> > > put PLL settings to the codec driver as Mark suggested.
-> 
-> > I want to modify imx-wm8960 and upstream it because our release is using it now. After
-> > upstreaming imx-wm8960, i will try to merge it to fsl-asoc-card.
-> 
-> I knew your intention. That's why I suggested you to merge it directly
-> to fsl-asoc-card instead of making a duplicated copy of that. Remember
-> that getting code upstream should be a chance for us to improve thing.
-> 
-> If you find painstaking to handle it in parallel, you can focus on the
-> improvements of the WM8960 driver while I would help you on the dai-
-> link part. How about this?
-> 
-> Nicolin
+The cputime_to_timespec() and timespec_to_cputime() functions are
+not year 2038 safe on 32bit systems due to the struct timepsec will
+overflow in 2038 year. Introduce cputime_to_timespec64() and
+timespec64_to_cputime() functions which use struct timespec64,
+as well as for arch/s390 and arch/powerpc architecture.
 
-The new imx7 release have two new codec wm8958 and wm8960. So we have two machine driver
-imx-wm8960 and imx-wm8958 which should be upstreamed. I am appreciate that you can help me
-merge the imx-wm8960 to fsl-asoc-card. And i will focus on wm8960 and wm8958 driver. And i
-will try to merge imx-wm8958 to fsl-asoc-card.
+The cputime_to_timespec() and timespec_to_cputime() functions are
+moved to include/linux/cputime.h file as 'static inline' for removing
+conveniently in future.
 
-Best Regards,
-Zidan Wang 
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+ arch/powerpc/include/asm/cputime.h    |    6 +++---
+ arch/s390/include/asm/cputime.h       |    8 ++++----
+ include/asm-generic/cputime_jiffies.h |   10 +++++-----
+ include/asm-generic/cputime_nsecs.h   |    6 +++---
+ include/linux/cputime.h               |   16 ++++++++++++++++
+ 5 files changed, 31 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index e245255..5dda5c0 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -154,9 +154,9 @@ static inline cputime_t secs_to_cputime(const unsigned long sec)
+ }
+ 
+ /*
+- * Convert cputime <-> timespec
++ * Convert cputime <-> timespec64
+  */
+-static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
++static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *p)
+ {
+ 	u64 x = (__force u64) ct;
+ 	unsigned int frac;
+@@ -168,7 +168,7 @@ static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
+ 	p->tv_nsec = x;
+ }
+ 
+-static inline cputime_t timespec_to_cputime(const struct timespec *p)
++static inline cputime_t timespec64_to_cputime(const struct timespec64 *p)
+ {
+ 	u64 ct;
+ 
+diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
+index 221b454..3319b51 100644
+--- a/arch/s390/include/asm/cputime.h
++++ b/arch/s390/include/asm/cputime.h
+@@ -81,16 +81,16 @@ static inline cputime_t secs_to_cputime(const unsigned int s)
+ }
+ 
+ /*
+- * Convert cputime to timespec and back.
++ * Convert cputime to timespec64 and back.
+  */
+-static inline cputime_t timespec_to_cputime(const struct timespec *value)
++static inline cputime_t timespec64_to_cputime(const struct timespec64 *value)
+ {
+ 	unsigned long long ret = value->tv_sec * CPUTIME_PER_SEC;
+ 	return (__force cputime_t)(ret + __div(value->tv_nsec * CPUTIME_PER_USEC, NSEC_PER_USEC));
+ }
+ 
+-static inline void cputime_to_timespec(const cputime_t cputime,
+-				       struct timespec *value)
++static inline void cputime_to_timespec64(const cputime_t cputime,
++					 struct timespec64 *value)
+ {
+ 	unsigned long long __cputime = (__force unsigned long long) cputime;
+ 	value->tv_nsec = (__cputime % CPUTIME_PER_SEC) * NSEC_PER_USEC / CPUTIME_PER_USEC;
+diff --git a/include/asm-generic/cputime_jiffies.h b/include/asm-generic/cputime_jiffies.h
+index fe386fc..54e034c 100644
+--- a/include/asm-generic/cputime_jiffies.h
++++ b/include/asm-generic/cputime_jiffies.h
+@@ -44,12 +44,12 @@ typedef u64 __nocast cputime64_t;
+ #define secs_to_cputime(sec)		jiffies_to_cputime((sec) * HZ)
+ 
+ /*
+- * Convert cputime to timespec and back.
++ * Convert cputime to timespec64 and back.
+  */
+-#define timespec_to_cputime(__val)	\
+-	jiffies_to_cputime(timespec_to_jiffies(__val))
+-#define cputime_to_timespec(__ct,__val)	\
+-	jiffies_to_timespec(cputime_to_jiffies(__ct),__val)
++#define timespec64_to_cputime(__val)	\
++	jiffies_to_cputime(timespec64_to_jiffies(__val))
++#define cputime_to_timespec64(__ct,__val)	\
++	jiffies_to_timespec64(cputime_to_jiffies(__ct),__val)
+ 
+ /*
+  * Convert cputime to timeval and back.
+diff --git a/include/asm-generic/cputime_nsecs.h b/include/asm-generic/cputime_nsecs.h
+index 0419485..c0cafc0 100644
+--- a/include/asm-generic/cputime_nsecs.h
++++ b/include/asm-generic/cputime_nsecs.h
+@@ -71,14 +71,14 @@ typedef u64 __nocast cputime64_t;
+ 	(__force cputime_t)((__secs) * NSEC_PER_SEC)
+ 
+ /*
+- * Convert cputime <-> timespec (nsec)
++ * Convert cputime <-> timespec64 (nsec)
+  */
+-static inline cputime_t timespec_to_cputime(const struct timespec *val)
++static inline cputime_t timespec64_to_cputime(const struct timespec64 *val)
+ {
+ 	u64 ret = val->tv_sec * NSEC_PER_SEC + val->tv_nsec;
+ 	return (__force cputime_t) ret;
+ }
+-static inline void cputime_to_timespec(const cputime_t ct, struct timespec *val)
++static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *val)
+ {
+ 	u32 rem;
+ 
+diff --git a/include/linux/cputime.h b/include/linux/cputime.h
+index f2eb2ee..cd638a0 100644
+--- a/include/linux/cputime.h
++++ b/include/linux/cputime.h
+@@ -13,4 +13,20 @@
+ 	usecs_to_cputime((__nsecs) / NSEC_PER_USEC)
+ #endif
+ 
++static inline cputime_t timespec_to_cputime(const struct timespec *ts)
++{
++	struct timespec64 ts64 = timespec_to_timespec64(*ts);
++
++	return timespec64_to_cputime(&ts64);
++}
++
++static inline void cputime_to_timespec(const cputime_t cputime,
++				       struct timespec *value)
++{
++	struct timespec64 ts64;
++
++	cputime_to_timespec64(cputime, &ts64);
++	*value = timespec64_to_timespec(ts64);
++}
++
+ #endif /* __LINUX_CPUTIME_H */
+-- 
+1.7.9.5
