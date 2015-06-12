@@ -1,28 +1,34 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 79BE51A06DF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 22:05:24 +1000 (AEST)
-Message-ID: <557ACAFC.90608@suse.cz>
-Date: Fri, 12 Jun 2015 14:05:16 +0200
-From: Vlastimil Babka <vbabka@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 388B51A06DF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 23:16:46 +1000 (AEST)
+Date: Fri, 12 Jun 2015 15:16:11 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Baolin Wang <baolin.wang@linaro.org>
+cc: arnd@arndb.de, john.stultz@linaro.org, heenasirwani@gmail.com,
+ pang.xunlei@linaro.org, peterz@infradead.org, rafael.j.wysocki@intel.com,
+ gregkh@linuxfoundation.org, richardcochran@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+ rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
+ fweisbec@gmail.com, ahh@google.com, pjt@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, serge.hallyn@canonical.com,
+ james.l.morris@oracle.com, serge@hallyn.com, pmoore@redhat.com,
+ tiwai@suse.de, jeffv@google.com, jlayton@primarydata.com,
+ keescook@chromium.org, sds@tycho.nsa.gov, mark.d.rustad@intel.com,
+ linux-security-module@vger.kernel.org, y2038@lists.linaro.org
+Subject: Re: [PATCH v5 00/24] Convert the posix_clock_operations and k_clock
+ structure to ready for 2038
+In-Reply-To: <cover.1434079262.git.baolin.wang@linaro.org>
+Message-ID: <alpine.DEB.2.11.1506121512180.3786@nanos>
+References: <lfywpz1987> <cover.1434079262.git.baolin.wang@linaro.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
- Eric B Munson <emunson@akamai.com>
-CC: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [RESEND PATCH V2 0/3] Allow user to request memory to be locked
- on page fault
-References: <1433942810-7852-1-git-send-email-emunson@akamai.com>	<20150610145929.b22be8647887ea7091b09ae1@linux-foundation.org>	<5579DFBA.80809@akamai.com>
- <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
-In-Reply-To: <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,85 +38,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/2015 09:34 PM, Andrew Morton wrote:
-> On Thu, 11 Jun 2015 15:21:30 -0400 Eric B Munson <emunson@akamai.com> wrote:
->
->>> Ditto mlockall(MCL_ONFAULT) followed by munlock().  I'm not sure
->>> that even makes sense but the behaviour should be understood and
->>> tested.
->>
->> I have extended the kselftest for lock-on-fault to try both of these
->> scenarios and they work as expected.  The VMA is split and the VM
->> flags are set appropriately for the resulting VMAs.
->
-> munlock() should do vma merging as well.  I *think* we implemented
-> that.  More tests for you to add ;)
->
-> How are you testing the vma merging and splitting, btw?  Parsing
-> the profcs files?
->
->>> What's missing here is a syscall to set VM_LOCKONFAULT on an
->>> arbitrary range of memory - mlock() for lock-on-fault.  It's a
->>> shame that mlock() didn't take a `mode' argument.  Perhaps we
->>> should add such a syscall - that would make the mmap flag unneeded
->>> but I suppose it should be kept for symmetry.
->>
->> Do you want such a system call as part of this set?  I would need some
->> time to make sure I had thought through all the possible corners one
->> could get into with such a call, so it would delay a V3 quite a bit.
->> Otherwise I can send a V3 out immediately.
->
-> I think the way to look at this is to pretend that mm/mlock.c doesn't
-> exist and ask "how should we design these features".
->
-> And that would be:
->
-> - mmap() takes a `flags' argument: MAP_LOCKED|MAP_LOCKONFAULT.
+On Fri, 12 Jun 2015, Baolin Wang wrote:
 
-Note that the semantic of MAP_LOCKED can be subtly surprising:
+Sigh. Again threading of the series failed. Some patches are, the
+whole series is not. Can you please get your tools straight?
 
-"mlock(2) fails if the memory range cannot get populated to guarantee
-that no future major faults will happen on the range. mmap(MAP_LOCKED) 
-on the other hand silently succeeds even if the range was populated only
-partially."
+You neither managed to cc me on the security patch.
 
-( from http://marc.info/?l=linux-mm&m=143152790412727&w=2 )
+> - Modify the subject line and the changelog:
 
-So MAP_LOCKED can silently behave like MAP_LOCKONFAULT. While 
-MAP_LOCKONFAULT doesn't suffer from such problem, I wonder if that's 
-sufficient reason not to extend mmap by new mlock() flags that can be 
-instead applied to the VMA after mmapping, using the proposed mlock2() 
-with flags. So I think instead we could deprecate MAP_LOCKED more 
-prominently. I doubt the overhead of calling the extra syscall matters here?
+>   timekeeping: Change the implementation of timekeeping_clocktai()
 
-> - mlock() takes a `flags' argument.  Presently that's
->    MLOCK_LOCKED|MLOCK_LOCKONFAULT.
->
-> - munlock() takes a `flags' arument.  MLOCK_LOCKED|MLOCK_LOCKONFAULT
->    to specify which flags are being cleared.
->
-> - mlockall() and munlockall() ditto.
->
->
-> IOW, LOCKED and LOCKEDONFAULT are treated identically and independently.
->
-> Now, that's how we would have designed all this on day one.  And I
-> think we can do this now, by adding new mlock2() and munlock2()
-> syscalls.  And we may as well deprecate the old mlock() and munlock(),
-> not that this matters much.
->
-> *should* we do this?  I'm thinking "yes" - it's all pretty simple
-> boilerplate and wrappers and such, and it gets the interface correct,
-> and extensible.
+Sigh. How is that better than the previous one? It's more accurate,
+but equally useless.
 
-If the new LOCKONFAULT functionality is indeed desired (I haven't still 
-decided myself) then I agree that would be the cleanest way.
+And of course you did not address my request to change the macro mess
+in
 
-> What do others think?
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+>   posix-timers: Introduce {get,put}_timespec and {get,put}_itimerspec
+
+according to the discussion with Arnd.
+
+Thanks,
+
+	tglx
