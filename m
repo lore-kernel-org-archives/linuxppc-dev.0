@@ -1,20 +1,24 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-lb0-f176.google.com (mail-lb0-f176.google.com
- [209.85.217.176])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <B18196@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0104.outbound.protection.outlook.com [157.56.110.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A85AE1A0689
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 17:33:41 +1000 (AEST)
-Received: by lbbtu8 with SMTP id tu8so15172275lbb.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 00:33:37 -0700 (PDT)
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: benh@kernel.crashing.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	Denis Kirjanov <kda@linux-powerpc.org>
-Subject: [PATCH] agp/uninorth: fix a memleak in create_gatt_table
-Date: Fri, 12 Jun 2015 09:57:11 +0300
-Message-Id: <1434092231-4155-1-git-send-email-kda@linux-powerpc.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1B781A0689
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 17:53:22 +1000 (AEST)
+Message-ID: <557A8FF5.10709@freescale.com>
+Date: Fri, 12 Jun 2015 10:53:25 +0300
+From: Cristian Stoica <cristian.stoica@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <horia.geanta@freescale.com>
+Subject: Re: [PATCH v2] powerpc: support sizes greater than an unsigned long
+References: <1431620684-20123-1-git-send-email-cristian.stoica@freescale.com>
+ <1431683064-29584-1-git-send-email-cristian.stoica@freescale.com>
+ <55799E38.1000004@freescale.com> <20150611153835.GB5058@kroah.com>
+ <5579B2FC.4010008@freescale.com> <1434058075.2477.178.camel@freescale.com>
+In-Reply-To: <1434058075.2477.178.camel@freescale.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,82 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix the memory leak in create_gatt_table:
-we've lost a kfree on the exit path for the pages array allocated
-in uninorth_create_gatt_table
+On 06/12/2015 12:27 AM, Scott Wood wrote:
+> Dropping the upper bits of the size harms the ability to detect error 
+> scenarios where unmappably large -- but not power-of-two -- regions 
+> are requested to be mapped.
+> 
+> However, this patch doesn't fix that.  It just postpones the loss of 
+> the upper 32 bits until __ioremap_caller() calls get_vm_area_caller().
+>
+> There's also no error checking at all for the size of ioremap() done 
+> during early boot (!slab_is_available()).
 
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
----
- drivers/char/agp/uninorth-agp.c | 16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+Thanks for the explanation. I'll have a another look at the code.
 
-diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
-index a56ee9b..0575544 100644
---- a/drivers/char/agp/uninorth-agp.c
-+++ b/drivers/char/agp/uninorth-agp.c
-@@ -361,6 +361,10 @@ static int agp_uninorth_resume(struct pci_dev *pdev)
- }
- #endif /* CONFIG_PM */
- 
-+static struct {
-+	struct page **pages_arr;
-+} uninorth_priv;
-+
- static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
- {
- 	char *table;
-@@ -371,7 +375,6 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
- 	int i;
- 	void *temp;
- 	struct page *page;
--	struct page **pages;
- 
- 	/* We can't handle 2 level gatt's */
- 	if (bridge->driver->size_type == LVL2_APER_SIZE)
-@@ -400,8 +403,8 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
- 	if (table == NULL)
- 		return -ENOMEM;
- 
--	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
--	if (pages == NULL)
-+	uninorth_priv.pages_arr = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
-+	if (uninorth_priv.pages_arr == NULL)
- 		goto enomem;
- 
- 	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
-@@ -409,14 +412,14 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
- 	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
- 	     page++, i++) {
- 		SetPageReserved(page);
--		pages[i] = page;
-+		uninorth_priv.pages_arr[i] = page;
- 	}
- 
- 	bridge->gatt_table_real = (u32 *) table;
- 	/* Need to clear out any dirty data still sitting in caches */
- 	flush_dcache_range((unsigned long)table,
- 			   (unsigned long)table_end + 1);
--	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
-+	bridge->gatt_table = vmap(uninorth_priv.pages_arr, (1 << page_order), 0, PAGE_KERNEL_NCG);
- 
- 	if (bridge->gatt_table == NULL)
- 		goto enomem;
-@@ -434,7 +437,7 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
- 	return 0;
- 
- enomem:
--	kfree(pages);
-+	kfree(uninorth_priv.pages_arr);
- 	if (table)
- 		free_pages((unsigned long)table, page_order);
- 	return -ENOMEM;
-@@ -456,6 +459,7 @@ static int uninorth_free_gatt_table(struct agp_bridge_data *bridge)
- 	 */
- 
- 	vunmap(bridge->gatt_table);
-+	kfree(uninorth_priv.pages_arr);
- 	table = (char *) bridge->gatt_table_real;
- 	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
- 
--- 
-2.4.0
+> Don't just blindly turn static analyzer reports into patches -- and 
+> why didn't the analyzer complain about the call to 
+> get_vm_area_caller() after this patch?
+
+The analysis that lead to this patch was targeted to a specific driver - in hindsight this is probably not the best
+approach.
+
+Cristian S.
