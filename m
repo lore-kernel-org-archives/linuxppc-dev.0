@@ -1,24 +1,27 @@
-Return-Path: <B18196@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0104.outbound.protection.outlook.com [157.56.110.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <lambert.quentin@gmail.com>
+Received: from mail-wg0-x229.google.com (mail-wg0-x229.google.com
+ [IPv6:2a00:1450:400c:c00::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1B781A0689
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 17:53:22 +1000 (AEST)
-Message-ID: <557A8FF5.10709@freescale.com>
-Date: Fri, 12 Jun 2015 10:53:25 +0300
-From: Cristian Stoica <cristian.stoica@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8FC211A0689
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 17:55:24 +1000 (AEST)
+Received: by wgme6 with SMTP id e6so18630750wgm.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 00:55:20 -0700 (PDT)
+Message-ID: <557A9065.5020608@gmail.com>
+Date: Fri, 12 Jun 2015 09:55:17 +0200
+From: Quentin Lambert <lambert.quentin@gmail.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <horia.geanta@freescale.com>
-Subject: Re: [PATCH v2] powerpc: support sizes greater than an unsigned long
-References: <1431620684-20123-1-git-send-email-cristian.stoica@freescale.com>
- <1431683064-29584-1-git-send-email-cristian.stoica@freescale.com>
- <55799E38.1000004@freescale.com> <20150611153835.GB5058@kroah.com>
- <5579B2FC.4010008@freescale.com> <1434058075.2477.178.camel@freescale.com>
-In-Reply-To: <1434058075.2477.178.camel@freescale.com>
-Content-Type: text/plain; charset="windows-1252"
+To: Takashi Iwai <tiwai@suse.de>
+CC: Johannes Berg <johannes@sipsolutions.net>,
+ Jaroslav Kysela <perex@perex.cz>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, kernel-janitors@vger.kernel.org
+Subject: Re: [alsa-devel] [PATCH v2] ALSA: aoa: convert bus code to use
+ dev_groups
+References: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>	<1434009818-16711-1-git-send-email-lambert.quentin@gmail.com>	<s5hlhfqlfzu.wl-tiwai@suse.de>	<5579795D.9080109@gmail.com>
+ <s5heglil9de.wl-tiwai@suse.de>
+In-Reply-To: <s5heglil9de.wl-tiwai@suse.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/12/2015 12:27 AM, Scott Wood wrote:
-> Dropping the upper bits of the size harms the ability to detect error 
-> scenarios where unmappably large -- but not power-of-two -- regions 
-> are requested to be mapped.
-> 
-> However, this patch doesn't fix that.  It just postpones the loss of 
-> the upper 32 bits until __ioremap_caller() calls get_vm_area_caller().
->
-> There's also no error checking at all for the size of ioremap() done 
-> during early boot (!slab_is_available()).
 
-Thanks for the explanation. I'll have a another look at the code.
 
-> Don't just blindly turn static analyzer reports into patches -- and 
-> why didn't the analyzer complain about the call to 
-> get_vm_area_caller() after this patch?
+On 11/06/2015 14:25, Takashi Iwai wrote:
+> At Thu, 11 Jun 2015 14:04:45 +0200,
+> Quentin Lambert wrote:
+>>
+>>
+>> On 11/06/2015 12:02, Takashi Iwai wrote:
+>>> At Thu, 11 Jun 2015 10:03:38 +0200,
+>>> Quentin Lambert wrote:
+>>>> The dev_attrs field of struct bus_type is going away, use dev_groups instead.
+>>>> This converts the soundbus code to use the correct field.
+>>>>
+>>>> Given that all other usages of the macro define the struct attribute
+>>>> *xxx_attrs[] in the same file they assign the .dev_groups field, this patch
+>>>> merges sysfs.c into core.c.
+>>>>
+>>>> These modifications were made using Coccinelle.
+>>>>
+>>>> Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
+>>>> ---
+>>>>    Changes since v1:
+>>>>     - Fix the commit message to actually talk about soundbus rather than MDIO
+>>>>     - This version attempt to fix a problem resulting from the macro
+>>>>       ATTRIBUTE_GROUPS declaring the structure as static by merging sysfs.c into
+>>>>       core.c. I understand that this may not be the prefered solution since
+>>>>       Takashi suggested that adding a comment line to the previous version could
+>>>>       be acceptable.
+>>> Hmm, the patch doesn't look as mentioned here.
+>>> It's rather bigger than the previous patch.  Is this intentional?
+>>>
+>> Well as mentionned in the change log it is bigger because it moves the
+>> code from sysfs.c to
+>> core.c. I realise as I am writing this that this patch should have
+>> really been two patches.
+>> The first one removing sysfs.c and the second one removing the use of
+>> the dev_attrs.
+> Yes, that'd be better.  OTOH, do we really need to copy many codes at
+> all?  I really prefer shorter changes, if possible.
+All right, I will send a third version following the comments you made 
+on the fist version. I just wanted to propose this idea in case it 
+suited you.
 
-The analysis that lead to this patch was targeted to a specific driver - in hindsight this is probably not the best
-approach.
-
-Cristian S.
+Quentin
