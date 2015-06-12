@@ -1,27 +1,25 @@
-Return-Path: <lambert.quentin@gmail.com>
-Received: from mail-wg0-x229.google.com (mail-wg0-x229.google.com
- [IPv6:2a00:1450:400c:c00::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <zidan.wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0111.outbound.protection.outlook.com [157.56.110.111])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FC211A0689
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 17:55:24 +1000 (AEST)
-Received: by wgme6 with SMTP id e6so18630750wgm.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 00:55:20 -0700 (PDT)
-Message-ID: <557A9065.5020608@gmail.com>
-Date: Fri, 12 Jun 2015 09:55:17 +0200
-From: Quentin Lambert <lambert.quentin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59D231A02D5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 18:11:33 +1000 (AEST)
+Date: Fri, 12 Jun 2015 16:09:32 +0800
+From: Zidan Wang <zidan.wang@freescale.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+CC: <broonie@kernel.org>, <perex@perex.cz>, <tiwai@suse.de>, <timur@tabi.org>,
+ <Xiubo.Lee@gmail.com>, <devicetree@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <alsa-devel@alsa-project.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [alsa-devel][PATCH] ASoC: fsl: add imx-wm8960 machine driver
+Message-ID: <20150612080930.GB23608@shlinux2>
+References: <b2a3c323a0507f3706041e1da98da8375aa61576.1433923593.git.zidan.wang@freescale.com>
+ <20150610183619.GA3103@Asurada-CZ80> <20150611110958.GA23742@shlinux2>
+ <20150611155106.GA3036@Asurada>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Johannes Berg <johannes@sipsolutions.net>,
- Jaroslav Kysela <perex@perex.cz>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, kernel-janitors@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH v2] ALSA: aoa: convert bus code to use
- dev_groups
-References: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>	<1434009818-16711-1-git-send-email-lambert.quentin@gmail.com>	<s5hlhfqlfzu.wl-tiwai@suse.de>	<5579795D.9080109@gmail.com>
- <s5heglil9de.wl-tiwai@suse.de>
-In-Reply-To: <s5heglil9de.wl-tiwai@suse.de>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20150611155106.GA3036@Asurada>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Jun 11, 2015 at 08:51:07AM -0700, Nicolin Chen wrote:
+> On Thu, Jun 11, 2015 at 07:10:00PM +0800, Zidan Wang wrote:
+> 
+> > > > This imx-wm8960 device-tree-only machine driver works with sai driver
+> > > > and have below feature.
+> > > > * support codec master and slave mode
+> > > > * support headphone jack detect
+> > > > * support headphone and micphone jack event
+> > > > * support asrc<->sai<->wm8960 mode
+> > > > 
+> > > > Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+> > > 
+> > > Above all, could you merge this into fsl-asoc-card?
+> > > 
+> > > It'd be nicer to have jack detection over there. And we can
+> > > put PLL settings to the codec driver as Mark suggested.
+> 
+> > I want to modify imx-wm8960 and upstream it because our release is using it now. After
+> > upstreaming imx-wm8960, i will try to merge it to fsl-asoc-card.
+> 
+> I knew your intention. That's why I suggested you to merge it directly
+> to fsl-asoc-card instead of making a duplicated copy of that. Remember
+> that getting code upstream should be a chance for us to improve thing.
+> 
+> If you find painstaking to handle it in parallel, you can focus on the
+> improvements of the WM8960 driver while I would help you on the dai-
+> link part. How about this?
+> 
+> Nicolin
 
+The new imx7 release have two new codec wm8958 and wm8960. So we have two machine driver
+imx-wm8960 and imx-wm8958 which should be upstreamed. I am appreciate that you can help me
+merge the imx-wm8960 to fsl-asoc-card. And i will focus on wm8960 and wm8958 driver. And i
+will try to merge imx-wm8958 to fsl-asoc-card.
 
-On 11/06/2015 14:25, Takashi Iwai wrote:
-> At Thu, 11 Jun 2015 14:04:45 +0200,
-> Quentin Lambert wrote:
->>
->>
->> On 11/06/2015 12:02, Takashi Iwai wrote:
->>> At Thu, 11 Jun 2015 10:03:38 +0200,
->>> Quentin Lambert wrote:
->>>> The dev_attrs field of struct bus_type is going away, use dev_groups instead.
->>>> This converts the soundbus code to use the correct field.
->>>>
->>>> Given that all other usages of the macro define the struct attribute
->>>> *xxx_attrs[] in the same file they assign the .dev_groups field, this patch
->>>> merges sysfs.c into core.c.
->>>>
->>>> These modifications were made using Coccinelle.
->>>>
->>>> Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
->>>> ---
->>>>    Changes since v1:
->>>>     - Fix the commit message to actually talk about soundbus rather than MDIO
->>>>     - This version attempt to fix a problem resulting from the macro
->>>>       ATTRIBUTE_GROUPS declaring the structure as static by merging sysfs.c into
->>>>       core.c. I understand that this may not be the prefered solution since
->>>>       Takashi suggested that adding a comment line to the previous version could
->>>>       be acceptable.
->>> Hmm, the patch doesn't look as mentioned here.
->>> It's rather bigger than the previous patch.  Is this intentional?
->>>
->> Well as mentionned in the change log it is bigger because it moves the
->> code from sysfs.c to
->> core.c. I realise as I am writing this that this patch should have
->> really been two patches.
->> The first one removing sysfs.c and the second one removing the use of
->> the dev_attrs.
-> Yes, that'd be better.  OTOH, do we really need to copy many codes at
-> all?  I really prefer shorter changes, if possible.
-All right, I will send a third version following the comments you made 
-on the fist version. I just wanted to propose this idea in case it 
-suited you.
-
-Quentin
+Best Regards,
+Zidan Wang 
