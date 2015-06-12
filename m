@@ -1,16 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <lambert.quentin@gmail.com>
+Received: from mail-wi0-x22d.google.com (mail-wi0-x22d.google.com
+ [IPv6:2a00:1450:400c:c05::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE0BD1A0456
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 20:00:29 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: shreyas@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/powernv: pnv_init_idle_states() should only run on
- powernv
-Date: Fri, 12 Jun 2015 20:00:20 +1000
-Message-Id: <1434103220-8591-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D31591A09D6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 20:01:48 +1000 (AEST)
+Received: by wigg3 with SMTP id g3so12175509wig.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 03:01:44 -0700 (PDT)
+Message-ID: <557AAE06.7020002@gmail.com>
+Date: Fri, 12 Jun 2015 12:01:42 +0200
+From: Quentin Lambert <lambert.quentin@gmail.com>
+MIME-Version: 1.0
+To: Andreas Schwab <schwab@linux-m68k.org>
+CC: Johannes Berg <johannes@sipsolutions.net>,
+ Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH v3] ALSA: aoa: convert bus code to use dev_groups
+References: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>	<1434098322-12178-1-git-send-email-lambert.quentin@gmail.com>
+ <87mw05w8kz.fsf@igel.home>
+In-Reply-To: <87mw05w8kz.fsf@igel.home>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,24 +31,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Although this init call checks for device tree properties before doing
-anything, it should still only run on powernv machines.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/idle.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index bd39a120bd60..e8168cf13812 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -289,5 +289,4 @@ out_free:
- out:
- 	return 0;
- }
--
--subsys_initcall(pnv_init_idle_states);
-+machine_subsys_initcall(powernv, pnv_init_idle_states);
--- 
-2.1.0
+On 12/06/2015 11:59, Andreas Schwab wrote:
+> Quentin Lambert <lambert.quentin@gmail.com> writes:
+>
+>> The dev_attrs field of struct bus_type is going away, sue dev_groups instead.
+> s/sue/use/
+I meant use do you need to fix something else or should I resend with 
+the typo correction ?
+
+Quentin
