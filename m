@@ -1,17 +1,37 @@
-Return-Path: <ppc@mindchasers.com>
-Received: from resqmta-ch2-02v.sys.comcast.net
- (resqmta-ch2-02v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:34])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D5EB1A06DB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 13:29:01 +1000 (AEST)
-Message-ID: <557A5000.9090207@mindchasers.com>
-Date: Thu, 11 Jun 2015 23:20:32 -0400
-From: Bob Cochran <ppc@mindchasers.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCA211A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 16:21:34 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Fri, 12 Jun 2015 16:21:33 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 77D7B2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 16:21:31 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5C6K6ab48103436
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 16:20:15 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5C6Jhwd027752
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 16:19:44 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: mainline vs. QorIQ SDK for production with FSL SoCs...
-Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH kernel] powerpc/powernv/ioda2: Add devices only from buses
+ which belong to PE
+Date: Fri, 12 Jun 2015 16:19:17 +1000
+Message-Id: <1434089957-27135-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,38 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The existing code puts all devices from a root PE to the same IOMMU group.
+However it is a possible situation when subordinate buses belong to
+separate PEs, in this case devices from these subordinate buses
+should be added to lower level PE rather to the root PE.
 
-Please correct me if I'm mistaken and / or provide your own insight on 
-the following:
+This limits pnv_ioda_setup_bus_dma() invocation to only PEs which own
+all subordinate buses.
 
-I'm under the impression that it's better to develop with the mainline 
-(eventually freezing for production on a stable release / branch ) than 
-use the QorIQ SDK if the needed code (e.g., DPAA drivers) has been 
-upstreamed and is included in the mainline.
+Suggested-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-It's my perception that it is preferable to develop with the mainline 
-because there are more active open-source developers working with this 
-code and actively reviewing / testing it than with the SDK and 
-backported or stale drivers (e.g., WiFi)
+This would be nice to have together with the DDW patchset.
+This does not fix anything DDW patchset did, it fixes IOMMU
+groups management which is essential for the whole feature to work.
 
-I'm sure that there are at least dozens of FSL developers working with 
-the SDK on a daily basis, but this is behind the FSL firewall, and open 
-source developers, such as myself, don't have access to FSL patches 
-except for every six months when a new SDK is released.
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-It seems to me that there will be a much better chance of hearing about 
-new bugs from others and getting help debugging problems if we're using 
-the mainline.  But again, the caveat is that the necessary kernel 
-technology for the product is included in the mainline ( SDK contains 
-some source for drivers and libraries only available under an FSL EULA ).
-
-FYI - at this point, we're testing & developing with both the SDK 3.12 
-kernel and the mainline kernel, but it would be nice to drop the former.
-
-Lastly, for something like the p1010, we have found it to stable with 
-the mainline for quite some time.
-
-Thank you,
-
-Bob
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index a0b00c1..3b1dc79 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1702,7 +1702,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+ 		set_iommu_table_base(&dev->dev, pe->table_group.tables[0]);
+ 		iommu_add_device(&dev->dev);
+ 
+-		if (dev->subordinate)
++		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+ 			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
+ 	}
+ }
+-- 
+2.4.0.rc3.8.gfb3e7d5
