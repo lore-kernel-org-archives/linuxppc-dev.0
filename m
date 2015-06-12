@@ -1,24 +1,28 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2E7C1A0456
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 20:08:05 +1000 (AEST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Quentin Lambert <lambert.quentin@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH v3] ALSA: aoa: convert bus code to use dev_groups
-References: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>
- <1434098322-12178-1-git-send-email-lambert.quentin@gmail.com>
-Date: Fri, 12 Jun 2015 11:59:40 +0200
-In-Reply-To: <1434098322-12178-1-git-send-email-lambert.quentin@gmail.com>
- (Quentin Lambert's message of "Fri, 12 Jun 2015 10:38:41 +0200")
-Message-ID: <87mw05w8kz.fsf@igel.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79BE51A06DF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 22:05:24 +1000 (AEST)
+Message-ID: <557ACAFC.90608@suse.cz>
+Date: Fri, 12 Jun 2015 14:05:16 +0200
+From: Vlastimil Babka <vbabka@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Eric B Munson <emunson@akamai.com>
+CC: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 0/3] Allow user to request memory to be locked
+ on page fault
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>	<20150610145929.b22be8647887ea7091b09ae1@linux-foundation.org>	<5579DFBA.80809@akamai.com>
+ <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
+In-Reply-To: <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +32,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quentin Lambert <lambert.quentin@gmail.com> writes:
+On 06/11/2015 09:34 PM, Andrew Morton wrote:
+> On Thu, 11 Jun 2015 15:21:30 -0400 Eric B Munson <emunson@akamai.com> wrote:
+>
+>>> Ditto mlockall(MCL_ONFAULT) followed by munlock().  I'm not sure
+>>> that even makes sense but the behaviour should be understood and
+>>> tested.
+>>
+>> I have extended the kselftest for lock-on-fault to try both of these
+>> scenarios and they work as expected.  The VMA is split and the VM
+>> flags are set appropriately for the resulting VMAs.
+>
+> munlock() should do vma merging as well.  I *think* we implemented
+> that.  More tests for you to add ;)
+>
+> How are you testing the vma merging and splitting, btw?  Parsing
+> the profcs files?
+>
+>>> What's missing here is a syscall to set VM_LOCKONFAULT on an
+>>> arbitrary range of memory - mlock() for lock-on-fault.  It's a
+>>> shame that mlock() didn't take a `mode' argument.  Perhaps we
+>>> should add such a syscall - that would make the mmap flag unneeded
+>>> but I suppose it should be kept for symmetry.
+>>
+>> Do you want such a system call as part of this set?  I would need some
+>> time to make sure I had thought through all the possible corners one
+>> could get into with such a call, so it would delay a V3 quite a bit.
+>> Otherwise I can send a V3 out immediately.
+>
+> I think the way to look at this is to pretend that mm/mlock.c doesn't
+> exist and ask "how should we design these features".
+>
+> And that would be:
+>
+> - mmap() takes a `flags' argument: MAP_LOCKED|MAP_LOCKONFAULT.
 
-> The dev_attrs field of struct bus_type is going away, sue dev_groups instead.
+Note that the semantic of MAP_LOCKED can be subtly surprising:
 
-s/sue/use/
+"mlock(2) fails if the memory range cannot get populated to guarantee
+that no future major faults will happen on the range. mmap(MAP_LOCKED) 
+on the other hand silently succeeds even if the range was populated only
+partially."
 
-Andreas.
+( from http://marc.info/?l=linux-mm&m=143152790412727&w=2 )
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+So MAP_LOCKED can silently behave like MAP_LOCKONFAULT. While 
+MAP_LOCKONFAULT doesn't suffer from such problem, I wonder if that's 
+sufficient reason not to extend mmap by new mlock() flags that can be 
+instead applied to the VMA after mmapping, using the proposed mlock2() 
+with flags. So I think instead we could deprecate MAP_LOCKED more 
+prominently. I doubt the overhead of calling the extra syscall matters here?
+
+> - mlock() takes a `flags' argument.  Presently that's
+>    MLOCK_LOCKED|MLOCK_LOCKONFAULT.
+>
+> - munlock() takes a `flags' arument.  MLOCK_LOCKED|MLOCK_LOCKONFAULT
+>    to specify which flags are being cleared.
+>
+> - mlockall() and munlockall() ditto.
+>
+>
+> IOW, LOCKED and LOCKEDONFAULT are treated identically and independently.
+>
+> Now, that's how we would have designed all this on day one.  And I
+> think we can do this now, by adding new mlock2() and munlock2()
+> syscalls.  And we may as well deprecate the old mlock() and munlock(),
+> not that this matters much.
+>
+> *should* we do this?  I'm thinking "yes" - it's all pretty simple
+> boilerplate and wrappers and such, and it gets the interface correct,
+> and extensible.
+
+If the new LOCKONFAULT functionality is indeed desired (I haven't still 
+decided myself) then I agree that would be the cleanest way.
+
+> What do others think?
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
