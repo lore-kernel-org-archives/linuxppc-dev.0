@@ -1,44 +1,20 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-lb0-f176.google.com (mail-lb0-f176.google.com
+ [209.85.217.176])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F5701A0456
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 17:26:55 +1000 (AEST)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B397F140348
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2015 17:26:54 +1000 (AEST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Fri, 12 Jun 2015 12:56:52 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 08525125804B
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2015 12:59:20 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5C7QjN515794302
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2015 12:56:46 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5C6WSIT012390
- for <linuxppc-dev@ozlabs.org>; Fri, 12 Jun 2015 12:02:29 +0530
-Message-ID: <557A89B3.8020005@linux.vnet.ibm.com>
-Date: Fri, 12 Jun 2015 12:56:43 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>
-CC: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
-Subject: Re: [PATCH V8 10/10] selftests, powerpc: Add test for BHRB branch
- filters (HW & SW)
-References: <1433763511-5270-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1433763511-5270-10-git-send-email-khandual@linux.vnet.ibm.com>
- <1433988561.31423.27.camel@axtens.net> <557A8414.8010500@linux.vnet.ibm.com>
-In-Reply-To: <557A8414.8010500@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id A85AE1A0689
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 17:33:41 +1000 (AEST)
+Received: by lbbtu8 with SMTP id tu8so15172275lbb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Jun 2015 00:33:37 -0700 (PDT)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: benh@kernel.crashing.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH] agp/uninorth: fix a memleak in create_gatt_table
+Date: Fri, 12 Jun 2015 09:57:11 +0300
+Message-Id: <1434092231-4155-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,412 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fix the memory leak in create_gatt_table:
+we've lost a kfree on the exit path for the pages array allocated
+in uninorth_create_gatt_table
 
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
+ drivers/char/agp/uninorth-agp.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-On Friday 12 June 2015 12:32 PM, Anshuman Khandual wrote:
-> On 06/11/2015 07:39 AM, Daniel Axtens wrote:
->> Hi,
->>
->> On Mon, 2015-06-08 at 17:08 +0530, Anshuman Khandual wrote:
->>> diff --git a/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c
->>> new file mode 100644
->>> index 0000000..13e6b72
->>> --- /dev/null
->>> +++ b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c
->>> @@ -0,0 +1,513 @@
->>> +/*
->>> + * BHRB filter test (HW & SW)
->>> + *
->>> + * Copyright 2015 Anshuman Khandual, IBM Corporation.
->>> + *
->>> + * This program is free software; you can redistribute it and/or
->>> + * modify it under the terms of the GNU General Public License
->>> + * as published by the Free Software Foundation; either version
->>> + * 2 of the License, or (at your option) any later version.
->>> + */
->> This should also be gpl2 only.
-> Why ? Any special reason ? I can see similar existing statements here
-> in this file as well "powerpcC/primitives/load_unaligned_zeropad.c"
-For the new files, mpe suggested to use gpl2 only version of the license.
-
- This program is free software; you can redistribute it and/or modify it
- under the terms of the GNU General Public License version 2 as published
- by the Free Software Foundation.
+diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
+index a56ee9b..0575544 100644
+--- a/drivers/char/agp/uninorth-agp.c
++++ b/drivers/char/agp/uninorth-agp.c
+@@ -361,6 +361,10 @@ static int agp_uninorth_resume(struct pci_dev *pdev)
+ }
+ #endif /* CONFIG_PM */
  
-Also, preferred format for Copyright line is to have "(C)" next to word
-Copyright
-
-   
-http://git.kernel.org/cgit/linux/kernel/git/stable/linux-stable.git/tree/COPYING#n9
-
-Maddy
->>> +#include <unistd.h>
->>> +#include <stdio.h>
->>> +#include <stdlib.h>
->>> +#include <signal.h>
->>> +#include <poll.h>
->>> +#include <sys/shm.h>
->>> +#include <sys/types.h>
->>> +#include <sys/wait.h>
->>> +#include <sys/mman.h>
->>> +
->>> +#include "bhrb_filters.h"
->>> +#include "utils.h"
->>> +#include "../event.h"
->>> +#include "../lib.h"
->>> +
->>> +/* Fetched address counts */
->>> +#define ALL_MAX		32
->>> +#define CALL_MAX	12
->>> +#define RET_MAX		10
->>> +#define COND_MAX	8
->>> +#define IND_MAX		4
->>> +
->>> +/* Test tunables */
->>> +#define LOOP_COUNT	10
->>> +#define SAMPLE_PERIOD	10000
->>> +
->>> +static int branch_sample_type;
->>> +static int branch_test_set[27] = {
->> Do you need to explicitly provide the count here?
-> Not really, will fix it.
->
->>> +		PERF_SAMPLE_BRANCH_ANY_CALL,		/* Single filters */
->>> +		PERF_SAMPLE_BRANCH_ANY_RETURN,
->>> +		PERF_SAMPLE_BRANCH_COND,
->>> +		PERF_SAMPLE_BRANCH_IND_CALL,
->>> +		PERF_SAMPLE_BRANCH_ANY,
->>> +
->>> +		PERF_SAMPLE_BRANCH_ANY_CALL |		/* Tripple filters */
->> s/Tripple/Triple/
-> Sure.will fix it.
->
->>> +		PERF_SAMPLE_BRANCH_ANY_RETURN |
->>> +		PERF_SAMPLE_BRANCH_COND,
->>> +
->>
->>> +
->>> +static void *ring_buffer_mask(struct ring_buffer *r, void *p)
->> Is this actually returning a mask? It looks more like it's calculating
->> an offset, and that seems to be how you use it below.
-> Yeah it does calculate an offset. Will change the function name to
-> ring_buffer_offset instead.
->
->>> +{
->>> +	unsigned long l = (unsigned long)p;
->>> +
->>> +	return (void *)(r->ring_base + ((l - r->ring_base) & r->mask));
->>> +}
->> That's a lot of casts, especially when you then load it into a int64_t
->> pointer below...
-> Will it cause any problem ? I can return here int64_t * instead to void *
-> to match the receiving pointer.
->
->>> +
->>> +static void dump_sample(struct perf_event_header *hdr, struct ring_buffer *r)
->>> +{
->>> +	unsigned long from, to, flag;
->>> +	int i, nr;
->>> +	int64_t *v;
->>> +
->>> +	/* NR Branches */
->>> +	v = ring_buffer_mask(r, hdr + 1);
->> ...here. (and everywhere else I can see that you're using the
->> ring_buffer_mask function)
->>> +
->>> +	nr = *v;
->> You are dereferencing a int64_t pointer into an int. Should nr be an
->> int64_t? Or should v be a different pointer type?
-> hmm, int64_t sounds good.
->
->>> +
->>> +	/* Branches */
->>> +	for (i = 0; i < nr; i++) {
->>> +		v = ring_buffer_mask(r, v + 1);
->>> +		from = *v;
->> Now you're dereferencing an *int64_t into an unsigned long.
-> Just wanted to have 64 bits for that field. To achieve some uniformity
-> will change all of v, nr, from, to, flags as int64_t type variables.
-> Also will make ring_buffer_mask function return in64_t * pointer type
-> instead. Will change ring_buffer_mask into ring_buffer_offset as well. 
->
->>> +
->>> +		v = ring_buffer_mask(r, v + 1);
->>> +		to = *v;
->>> +
->>> +		v = ring_buffer_mask(r, v + 1);
->>> +		flag = *v;
->>> +
->>> +		if (!check_branch(from, to)) {
->>> +			has_failed = true;
->>> +			printf("[Filter: %d] From: %lx To: %lx Flags: %lx\n",
->>> +					branch_sample_type, from, to, flag);
->>> +		}
->>> +	}
->>> +}
->>> +
->>> +static void read_ring_buffer(struct event *e)
->>> +{
->>> +	struct ring_buffer *r = &e->ring_buffer;
->>> +	struct perf_event_header *hdr;
->>> +	int old, head;
->> Why not tail and head?
-> Sure, will change it.
->
->>> +
->>> +	head = r->page->data_head & r->mask;
->>> +
->>> +	asm volatile ("sync": : :"memory");
->>> +
->>> +	old = r->page->data_tail & r->mask;
->>> +
->> Can you explain the logic of syncing between reading head and tail? Is
->> there an expectation that head is not likely to change?
->>
->> As a more general comment, what is sync trying to achieve? If you're
->> trying to synchronise something, what's the sync actually achieving? Is
->> there a corresponding memory barrier somewhere else? What race
->> conditions are you trying to guard against and does this actually guard
->> against them?
-> Once we wake up from poll and try to read the ring buffer, head is not
-> going to change. We keep increment the tail and process the record till
-> we dont reach the head position. Once there we just write head into the
-> data_tail to inform kernel that the processing is over and kernel may
-> start filling up the ring buffer again. For more details , please look
-> into this file include/uapi/linux/perf_event.h (perf_event_mmap_page).
->
->         /*
->          * Control data for the mmap() data buffer.
->          *
->          * User-space reading the @data_head value should issue an smp_rmb(),
->          * after reading this value.
->          *
->          * When the mapping is PROT_WRITE the @data_tail value should be
->          * written by userspace to reflect the last read data, after issueing
->          * an smp_mb() to separate the data read from the ->data_tail store.
->          * In this case the kernel will not over-write unread data.
->
->>> +	while (old != head) {
->>> +		hdr = (struct perf_event_header *)(r->ring_base + old);
->>> +
->>> +		if ((old & r->mask) + hdr->size !=
->>> +					((old + hdr->size) & r->mask))
->>> +			++record_overlap;
->>> +
->>> +		if (hdr->type == PERF_RECORD_SAMPLE) {
->>> +			++record_sample;
->>> +			dump_sample(hdr, r);
->>> +		}
->>> +
->>> +		if (hdr->type == PERF_RECORD_MMAP)
->>> +			++record_mmap;
->>> +
->>> +		if (hdr->type == PERF_RECORD_LOST)
->>> +			++record_lost;
->>> +
->>> +		if (hdr->type == PERF_RECORD_THROTTLE)
->>> +			++record_throttle;
->>> +
->>> +		if (hdr->type == PERF_RECORD_UNTHROTTLE)
->>> +			++record_unthrottle;
->>> +
->>> +		old = (old + hdr->size) & r->mask;
->>> +	}
->>> +	r->page->data_tail = old;
->> What happens if data_tail moves while you're doing the loop?
-> I believe that is not possible. Kernel wont change it unless we
-> we write head position into that after processing entire data.
->
->>
->>
->>> +static int filter_test(void)
->>> +{
->>> +	struct pollfd pollfd;
->>> +	struct event ebhrb;
->>> +	pid_t pid;
->>> +	int ret, loop = 0;
->>> +
->>> +	has_failed = false;
->>> +	pid = fork();
->>> +	if (pid == -1) {
->>> +		perror("fork() failed");
->>> +		return 1;
->>> +	}
->>> +
->>> +	/* Run child */
->>> +	if (pid == 0) {
->>> +		start_loop();
->>> +		exit(0);
->>> +	}
->>> +
->>> +	/* Prepare event */
->>> +	event_init_opts(&ebhrb, PERF_COUNT_HW_INSTRUCTIONS,
->>> +				PERF_TYPE_HARDWARE, "insturctions");
->> Is instructions deliberately spelled incorrectly?
-> :) No, its a mistake. Will fix it.
->
->>> +	ebhrb.attr.sample_type = PERF_SAMPLE_BRANCH_STACK;
->>> +	ebhrb.attr.disabled = 1;
->>> +	ebhrb.attr.mmap = 1;
->>> +	ebhrb.attr.mmap_data = 1;
->>> +	ebhrb.attr.sample_period = SAMPLE_PERIOD;
->>> +	ebhrb.attr.exclude_user = 0;
->>> +	ebhrb.attr.exclude_kernel = 1;
->>> +	ebhrb.attr.exclude_hv = 1;
->>> +	ebhrb.attr.branch_sample_type = branch_sample_type;
->>> +
->>> +	/* Open event */
->>> +	event_open_with_pid(&ebhrb, pid);
->>> +
->>> +	/* Mmap ring buffer and enable event */
->>> +	event_mmap(&ebhrb);
->>> +	FAIL_IF(event_enable(&ebhrb));
->>> +
->>> +	/* Prepare polling */
->>> +	pollfd.fd = ebhrb.fd;
->>> +	pollfd.events = POLLIN;
->>> +
->>> +	for (loop = 0; loop < LOOP_COUNT; loop++) {
->>> +		ret = poll(&pollfd, 1, -1);
->>> +		if (ret == -1) {
->>> +			perror("poll() failed");
->>> +			return 1;
->>> +		}
->>> +		if (ret == 0) {
->>> +			perror("poll() timeout");
->>> +			return 1;
->>> +		}
->>> +		read_ring_buffer(&ebhrb);
->>> +		if (has_failed)
->>> +			return 1;
->> 1) I don't see anything that sets has_failed after it's initalised.
-> Its initialized to 'false' in the beginning of each test and would be
-> set to 'true' inside dump_sample function if any of the captured branches
-> does not match the applied filter.
->
->> 2) Should these error cases also explicitly terminate the child? Do you
->> need something like this perhaps?
->>
->> 		if (ret == 0) {
->> 			perror("poll() failed");
->> 			goto err;
->> 		}
->>
->> 		...
->> 	
->> 	}
->>
->> 	...
->>
->> 	return 0;
->>
->> 	err:
->> 	kill(pid, SIGTERM); // maybe even sigkill in the error case?
->> 	return 1;
-> Right, will change it.
->
->>> +	}
->>> +
->>> +	/* Disable and close event */
->>> +	FAIL_IF(event_disable(&ebhrb));
->>> +	event_close(&ebhrb);
->> Again, do these need to be replicated in the error path?
-> Right, will change it.
->
->>> +
->>> +	/* Terminate child */
->>> +	kill(pid, SIGKILL);
->> SIGKILL seems a bit harsh: wouldn't SIGTERM work?
->>> +	return 0;
->>> +}
->>> +
->>> +static int  bhrb_filters_test(void)
->>> +{
->>> +	int i;
->>> +
->>> +	/* Fetch branches */
->>> +	fetch_branches();
->>> +	init_branch_stats();
->>> +	init_perf_mmap_stats();
->>> +
->>> +	for (i = 0; i < sizeof(branch_test_set)/sizeof(int); i++) {
->>> +		branch_sample_type = branch_test_set[i];
->>> +		if (filter_test())
->> Couldn't branch_sample_type be passed to filter_test as a parameter,
->> rather than as a global?
-> Yeah it can be. Will change it.
->
->>> +			return 1;
->>> +	}
->>> +
->>
->>> diff --git a/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h
->>> new file mode 100644
->>> index 0000000..072375a
->>> --- /dev/null
->>> +++ b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h
->>> @@ -0,0 +1,16 @@
->>> +/*
->>> + * Copyright 2015 Anshuman Khandual, IBM Corporation.
->>> + *
->>> + * This program is free software; you can redistribute it and/or
->>> + * modify it under the terms of the GNU General Public License
->>> + * as published by the Free Software Foundation; either version
->>> + * 2 of the License, or (at your option) any later version.
->> License again. (And in the other files in this patch.)
->>
->>
->>> +_GLOBAL(start_loop)
->>> +label:
->>> +	b label0			/* ANY */
->>> +	blr				/* ANY_RETURN */
->>> +label0:
->>> +	b label1			/* ANY */
->>> +
->>> +label1:
->>> +	b label2			/* ANY */
->>> +
->>> +label2:
->>> +	b label3			/* ANY */
->>> +
->>> +label3:
->>> +	mflr LR_SAVE
->>> +	bl label4			/* ANY | ANY_CALL */
->>> +	mtlr LR_SAVE
->>> +	b start_loop			/* ANY */
->>> +label4:
->>> +	mflr LR_SAVE
->>> +	li 20, 12
->>> +	cmpi 3, 20, 12
->>> +	bcl 12, 4 * cr3+2, label5	/* ANY | ANY_CALL | COND */
->>> +	li 20, 12
->>> +	cmpi 4, 20, 20
->>> +	bcl 12, 4 * cr4+0, label5	/* ANY | ANY_CALL | COND */
->>> +	LOAD_ADDR(20, label5)
->>> +	mtctr 20
->>> +	li 22, 10
->>> +	cmpi 0, 22, 10
->>> +	bcctrl 12, 4*cr0+2		/* ANY | NY_CALL | IND_CALL | COND */
->>> +	LOAD_ADDR(20, label5)
->>> +	mtlr 20
->>> +	li      20, 10
->>> +	cmpi    0, 20, 10
->>> +	bclrl   12, 4*cr0+2		/* ANY | ANY_CALL | IND_CALL | COND */
->>> +	mtlr LR_SAVE
->>> +	blr				/* ANY | ANY_RETURN */
->>> +
->>> +label5:
->>> +	blr				/* ANY | ANY_RETURN */
->>> +
->> Could these labels have more descriptive names?
-> Initially I had one label with same numeric numbering for each kind of
-> branch instruction it was intended for but then it seemed to be overkill
-> for that purpose. Compacted them to accommodate more branches per label
-> and here we are. What kind of descriptive names will each of these
-> label assume when each one accommodates multiple branches now ? Any
-> thoughts ? Though I am willing to change them.
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
++static struct {
++	struct page **pages_arr;
++} uninorth_priv;
++
+ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
+ {
+ 	char *table;
+@@ -371,7 +375,6 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
+ 	int i;
+ 	void *temp;
+ 	struct page *page;
+-	struct page **pages;
+ 
+ 	/* We can't handle 2 level gatt's */
+ 	if (bridge->driver->size_type == LVL2_APER_SIZE)
+@@ -400,8 +403,8 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
+ 	if (table == NULL)
+ 		return -ENOMEM;
+ 
+-	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
+-	if (pages == NULL)
++	uninorth_priv.pages_arr = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
++	if (uninorth_priv.pages_arr == NULL)
+ 		goto enomem;
+ 
+ 	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+@@ -409,14 +412,14 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
+ 	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
+ 	     page++, i++) {
+ 		SetPageReserved(page);
+-		pages[i] = page;
++		uninorth_priv.pages_arr[i] = page;
+ 	}
+ 
+ 	bridge->gatt_table_real = (u32 *) table;
+ 	/* Need to clear out any dirty data still sitting in caches */
+ 	flush_dcache_range((unsigned long)table,
+ 			   (unsigned long)table_end + 1);
+-	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
++	bridge->gatt_table = vmap(uninorth_priv.pages_arr, (1 << page_order), 0, PAGE_KERNEL_NCG);
+ 
+ 	if (bridge->gatt_table == NULL)
+ 		goto enomem;
+@@ -434,7 +437,7 @@ static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
+ 	return 0;
+ 
+ enomem:
+-	kfree(pages);
++	kfree(uninorth_priv.pages_arr);
+ 	if (table)
+ 		free_pages((unsigned long)table, page_order);
+ 	return -ENOMEM;
+@@ -456,6 +459,7 @@ static int uninorth_free_gatt_table(struct agp_bridge_data *bridge)
+ 	 */
+ 
+ 	vunmap(bridge->gatt_table);
++	kfree(uninorth_priv.pages_arr);
+ 	table = (char *) bridge->gatt_table_real;
+ 	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+ 
+-- 
+2.4.0
