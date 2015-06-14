@@ -1,17 +1,19 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id B110F1A06DF
+ by lists.ozlabs.org (Postfix) with ESMTP id 7F6561A06AD
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2015 23:08:12 +1000 (AEST)
-Message-Id: <20150614074610.054663362@telegraphics.com.au>
-Date: Sun, 14 Jun 2015 17:46:18 +1000
+Message-Id: <20150614074609.036850762@telegraphics.com.au>
+Date: Sun, 14 Jun 2015 17:46:14 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v2 11/24] m68k/atari: Implement arch_nvram_ops methods and
- enable CONFIG_HAVE_ARCH_NVRAM_OPS
+ <linuxppc-dev@lists.ozlabs.org>,
+ Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+ Darren Hart <dvhart@infradead.org>, ibm-acpi-devel@lists.sourceforge.net,
+ platform-driver-x86@vger.kernel.org
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: [RFC v2 07/24] x86/thinkpad_acpi: Use arch_nvram_ops methods instead
+ of nvram_read_byte() and nvram_write_byte()
 References: <20150614074607.242676098@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,95 +24,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Atari RTC NVRAM has a checksum so implement the remaining arch_nvram_ops
-methods for the set_checksum and initialize ioctls. Enable
-CONFIG_HAVE_ARCH_NVRAM_OPS.
+Make use of arch_nvram_ops in the thinkpad_acpi driver so that the
+nvram_* function exports can be removed.
+
+This patch series was tested on a ThinkPad T43.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Reviewed-by: Darren Hart <dvhart@linux.intel.com>
 
 ---
+ drivers/platform/x86/thinkpad_acpi.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-This re-enables the nvram module for Atari.
-
----
- arch/m68k/Kconfig       |    3 +++
- arch/m68k/atari/nvram.c |   24 ++++++++++++++++++++++++
- drivers/char/Kconfig    |    2 +-
- 3 files changed, 28 insertions(+), 1 deletion(-)
-
-Index: linux/arch/m68k/atari/nvram.c
+Index: linux/drivers/platform/x86/thinkpad_acpi.c
 ===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-06-14 17:45:39.000000000 +1000
-+++ linux/arch/m68k/atari/nvram.c	2015-06-14 17:45:47.000000000 +1000
-@@ -73,6 +73,26 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
- }
+--- linux.orig/drivers/platform/x86/thinkpad_acpi.c	2015-06-14 17:45:34.000000000 +1000
++++ linux/drivers/platform/x86/thinkpad_acpi.c	2015-06-14 17:45:42.000000000 +1000
+@@ -2311,30 +2311,30 @@ static void hotkey_read_nvram(struct tp_
+ 	u8 d;
  
-+static long nvram_set_checksum(void)
-+{
-+	spin_lock_irq(&rtc_lock);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
-+static long nvram_initialize(void)
-+{
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	for (i = 0; i < NVRAM_BYTES; ++i)
-+		__nvram_write_byte(0, i);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
- static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
+ 	if (m & TP_NVRAM_HKEY_GROUP_HK2) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_HK2);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_HK2);
+ 		n->thinkpad_toggle = !!(d & TP_NVRAM_MASK_HKT_THINKPAD);
+ 		n->zoom_toggle = !!(d & TP_NVRAM_MASK_HKT_ZOOM);
+ 		n->display_toggle = !!(d & TP_NVRAM_MASK_HKT_DISPLAY);
+ 		n->hibernate_toggle = !!(d & TP_NVRAM_MASK_HKT_HIBERNATE);
+ 	}
+ 	if (m & TP_ACPI_HKEY_THNKLGHT_MASK) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_THINKLIGHT);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_THINKLIGHT);
+ 		n->thinklight_toggle = !!(d & TP_NVRAM_MASK_THINKLIGHT);
+ 	}
+ 	if (m & TP_ACPI_HKEY_DISPXPAND_MASK) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_VIDEO);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_VIDEO);
+ 		n->displayexp_toggle =
+ 				!!(d & TP_NVRAM_MASK_HKT_DISPEXPND);
+ 	}
+ 	if (m & TP_NVRAM_HKEY_GROUP_BRIGHTNESS) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
+ 		n->brightness_level = (d & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+ 				>> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
+ 		n->brightness_toggle =
+ 				!!(d & TP_NVRAM_MASK_HKT_BRIGHTNESS);
+ 	}
+ 	if (m & TP_NVRAM_HKEY_GROUP_VOLUME) {
+-		d = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
++		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
+ 		n->volume_level = (d & TP_NVRAM_MASK_LEVEL_VOLUME)
+ 				>> TP_NVRAM_POS_LEVEL_VOLUME;
+ 		n->mute = !!(d & TP_NVRAM_MASK_MUTE);
+@@ -6155,7 +6155,7 @@ static unsigned int tpacpi_brightness_nv
  {
- 	char *p = buf;
-@@ -119,6 +139,8 @@ static ssize_t nvram_write(char *buf, si
+ 	u8 lnvram;
  
- static ssize_t nvram_get_size(void)
- {
-+	if (!MACH_IS_ATARI)
-+		return -ENODEV;
- 	return NVRAM_BYTES;
- }
+-	lnvram = (nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
++	lnvram = (arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
+ 		  & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+ 		  >> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
+ 	lnvram &= bright_maxlvl;
+@@ -6180,7 +6180,7 @@ static void tpacpi_brightness_checkpoint
+ 	if (unlikely(!acpi_ec_read(TP_EC_BACKLIGHT, &lec)))
+ 		goto unlock;
+ 	lec &= TP_EC_BACKLIGHT_LVLMSK;
+-	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
++	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
  
-@@ -126,6 +148,8 @@ const struct nvram_ops arch_nvram_ops =
- 	.read           = nvram_read,
- 	.write          = nvram_write,
- 	.get_size       = nvram_get_size,
-+	.set_checksum   = nvram_set_checksum,
-+	.initialize     = nvram_initialize,
- };
- EXPORT_SYMBOL(arch_nvram_ops);
+ 	if (lec != ((b_nvram & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+ 			     >> TP_NVRAM_POS_LEVEL_BRIGHTNESS)) {
+@@ -6188,7 +6188,7 @@ static void tpacpi_brightness_checkpoint
+ 		b_nvram &= ~(TP_NVRAM_MASK_LEVEL_BRIGHTNESS <<
+ 				TP_NVRAM_POS_LEVEL_BRIGHTNESS);
+ 		b_nvram |= lec;
+-		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
++		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
+ 		dbg_printk(TPACPI_DBG_BRGHT,
+ 			   "updated NVRAM backlight level to %u (0x%02x)\n",
+ 			   (unsigned int) lec, (unsigned int) b_nvram);
+@@ -6796,13 +6796,13 @@ static void tpacpi_volume_checkpoint_nvr
+ 	if (unlikely(!acpi_ec_read(TP_EC_AUDIO, &lec)))
+ 		goto unlock;
+ 	lec &= ec_mask;
+-	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
++	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
  
-Index: linux/drivers/char/Kconfig
-===================================================================
---- linux.orig/drivers/char/Kconfig	2015-06-14 17:45:35.000000000 +1000
-+++ linux/drivers/char/Kconfig	2015-06-14 17:45:47.000000000 +1000
-@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
- 
- config NVRAM
- 	tristate "/dev/nvram support"
--	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
-+	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
- 	---help---
- 	  If you say Y here and create a character special file /dev/nvram
- 	  with major number 10 and minor number 144 using mknod ("man mknod"),
-Index: linux/arch/m68k/Kconfig
-===================================================================
---- linux.orig/arch/m68k/Kconfig	2015-06-14 17:45:34.000000000 +1000
-+++ linux/arch/m68k/Kconfig	2015-06-14 17:45:47.000000000 +1000
-@@ -71,6 +71,9 @@ config PGTABLE_LEVELS
- 	default 2 if SUN3 || COLDFIRE
- 	default 3
- 
-+config HAVE_ARCH_NVRAM_OPS
-+	def_bool ATARI
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
+ 	if (lec != (b_nvram & ec_mask)) {
+ 		/* NVRAM needs update */
+ 		b_nvram &= ~ec_mask;
+ 		b_nvram |= lec;
+-		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
++		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
+ 		dbg_printk(TPACPI_DBG_MIXER,
+ 			   "updated NVRAM mixer status to 0x%02x (0x%02x)\n",
+ 			   (unsigned int) lec, (unsigned int) b_nvram);
