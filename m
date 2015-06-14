@@ -1,28 +1,17 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 567921A0601
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2015 10:29:07 +1000 (AEST)
-Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
- [IPv6:2607:f8b0:400e:c02::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B259C140295
- for <linuxppc-dev@ozlabs.org>; Sun, 14 Jun 2015 10:29:00 +1000 (AEST)
-Received: by pdjn11 with SMTP id n11so47125981pdj.0
- for <linuxppc-dev@ozlabs.org>; Sat, 13 Jun 2015 17:28:57 -0700 (PDT)
-Message-ID: <1434241677.4003.4.camel@axtens.net>
-Subject: Re: [PATCH] powerpc/powernv: Bump opal_init initcall priority
-From: Daniel Axtens <dja@axtens.net>
-To: Alistair Popple <alistair@popple.id.au>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org, Gavin
- Shan <gwshan@linux.vnet.ibm.com>
-Date: Sun, 14 Jun 2015 10:27:57 +1000
-In-Reply-To: <1434014729-12068-1-git-send-email-alistair@popple.id.au>
-References: <1434014729-12068-1-git-send-email-alistair@popple.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9C9D71A06B9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2015 23:08:10 +1000 (AEST)
+Message-Id: <20150614074607.524658883@telegraphics.com.au>
+Date: Sun, 14 Jun 2015 17:46:08 +1000
+From: Finn Thain <fthain@telegraphics.com.au>
+To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [RFC v2 01/24] macintosh/nvram: Remove as unused
+References: <20150614074607.242676098@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +21,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-06-11 at 19:25 +1000, Alistair Popple wrote:
-> opal_init() is called via a machine_subsys_initcall(). Due to a hack
-> in the eeh code the eeh driver is initialised with at the same
-> initcall level. This means depending on link ordering the following
-> error can occur because the opal irchip has not been initialised:
-> 
-> irq: XICS didn't like hwirq-0x9 to VIRQ17 mapping (rc=-22)
-> pnv_eeh_post_init: Can't request OPAL event interrupt (0)
-> 
-> This patch solves the issue by making sure opal_init is called prior
-> to the subsystems that may need it.
-> 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> Reported-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-This fixes the bug I was experiencing.
-Tested-by: Daniel Axtens <dja@axtens.net>
+---
+ drivers/macintosh/nvram.c |  130 ----------------------------------------------
+ 1 file changed, 130 deletions(-)
 
--- 
-Regards,
-Daniel
+Index: linux/drivers/macintosh/nvram.c
+===================================================================
+--- linux.orig/drivers/macintosh/nvram.c	2015-06-14 17:45:34.000000000 +1000
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,130 +0,0 @@
+-/*
+- * /dev/nvram driver for Power Macintosh.
+- */
+-
+-#define NVRAM_VERSION "1.0"
+-
+-#include <linux/module.h>
+-
+-#include <linux/types.h>
+-#include <linux/errno.h>
+-#include <linux/fs.h>
+-#include <linux/miscdevice.h>
+-#include <linux/fcntl.h>
+-#include <linux/nvram.h>
+-#include <linux/init.h>
+-#include <asm/uaccess.h>
+-#include <asm/nvram.h>
+-
+-#define NVRAM_SIZE	8192
+-
+-static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+-{
+-	switch (origin) {
+-	case 0:
+-		break;
+-	case 1:
+-		offset += file->f_pos;
+-		break;
+-	case 2:
+-		offset += NVRAM_SIZE;
+-		break;
+-	default:
+-		offset = -1;
+-	}
+-	if (offset < 0)
+-		return -EINVAL;
+-
+-	file->f_pos = offset;
+-	return file->f_pos;
+-}
+-
+-static ssize_t read_nvram(struct file *file, char __user *buf,
+-			  size_t count, loff_t *ppos)
+-{
+-	unsigned int i;
+-	char __user *p = buf;
+-
+-	if (!access_ok(VERIFY_WRITE, buf, count))
+-		return -EFAULT;
+-	if (*ppos >= NVRAM_SIZE)
+-		return 0;
+-	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count)
+-		if (__put_user(nvram_read_byte(i), p))
+-			return -EFAULT;
+-	*ppos = i;
+-	return p - buf;
+-}
+-
+-static ssize_t write_nvram(struct file *file, const char __user *buf,
+-			   size_t count, loff_t *ppos)
+-{
+-	unsigned int i;
+-	const char __user *p = buf;
+-	char c;
+-
+-	if (!access_ok(VERIFY_READ, buf, count))
+-		return -EFAULT;
+-	if (*ppos >= NVRAM_SIZE)
+-		return 0;
+-	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count) {
+-		if (__get_user(c, p))
+-			return -EFAULT;
+-		nvram_write_byte(c, i);
+-	}
+-	*ppos = i;
+-	return p - buf;
+-}
+-
+-static long nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+-{
+-	switch(cmd) {
+-		case PMAC_NVRAM_GET_OFFSET:
+-		{
+-			int part, offset;
+-			if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
+-				return -EFAULT;
+-			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
+-				return -EINVAL;
+-			offset = pmac_get_partition(part);
+-			if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
+-				return -EFAULT;
+-			break;
+-		}
+-
+-		default:
+-			return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-
+-const struct file_operations nvram_fops = {
+-	.owner		= THIS_MODULE,
+-	.llseek		= nvram_llseek,
+-	.read		= read_nvram,
+-	.write		= write_nvram,
+-	.unlocked_ioctl	= nvram_ioctl,
+-};
+-
+-static struct miscdevice nvram_dev = {
+-	NVRAM_MINOR,
+-	"nvram",
+-	&nvram_fops
+-};
+-
+-int __init nvram_init(void)
+-{
+-	printk(KERN_INFO "Macintosh non-volatile memory driver v%s\n",
+-		NVRAM_VERSION);
+-	return misc_register(&nvram_dev);
+-}
+-
+-void __exit nvram_cleanup(void)
+-{
+-        misc_deregister( &nvram_dev );
+-}
+-
+-module_init(nvram_init);
+-module_exit(nvram_cleanup);
+-MODULE_LICENSE("GPL");
