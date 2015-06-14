@@ -1,16 +1,17 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 9C9D71A06B9
+ by lists.ozlabs.org (Postfix) with ESMTP id 97EF61A06A7
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2015 23:08:10 +1000 (AEST)
-Message-Id: <20150614074607.524658883@telegraphics.com.au>
-Date: Sun, 14 Jun 2015 17:46:08 +1000
+Message-Id: <20150614074607.774668609@telegraphics.com.au>
+Date: Sun, 14 Jun 2015 17:46:09 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [RFC v2 01/24] macintosh/nvram: Remove as unused
+ <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "James E.J. Bottomley" <JBottomley@odin.com>,
+ Michael Schmitz <schmitzmic@gmail.com>, linux-scsi@vger.kernel.org
+Subject: [RFC v2 02/24] scsi/atari_scsi: Dont select CONFIG_NVRAM
 References: <20150614074607.242676098@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,145 +22,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On powerpc, setting CONFIG_NVRAM=n builds a kernel with no NVRAM support.
+Setting CONFIG_NVRAM=m enables the /dev/nvram misc device module without
+enabling NVRAM support in drivers. Setting CONFIG_NVRAM=y enables the
+misc device (built-in) and also enables NVRAM support in drivers.
+
+m68k shares the valkyriefb driver with powerpc, and since that driver uses
+NVRAM, it is affected by CONFIG_ATARI_SCSI, because of the use of
+"select NVRAM".
+
+Adopt the powerpc convention on m68k to avoid surprises.
+
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 ---
- drivers/macintosh/nvram.c |  130 ----------------------------------------------
- 1 file changed, 130 deletions(-)
 
-Index: linux/drivers/macintosh/nvram.c
+This patch temporarily disables CONFIG_NVRAM on Atari, to prevent build
+failures when bisecting the rest of this patch series. It gets enabled
+again with the introduction of CONFIG_HAVE_ARCH_NVRAM_OPS, once the
+nvram_* global functions have been moved to an ops struct.
+
+The removal of "select NVRAM" may mean that some kernel configs (such
+as Debian/m68k) may need tweaking.
+
+---
+ drivers/char/Kconfig      |    5 +----
+ drivers/scsi/Kconfig      |    6 +++---
+ drivers/scsi/atari_scsi.c |    8 ++++----
+ 3 files changed, 8 insertions(+), 11 deletions(-)
+
+Index: linux/drivers/char/Kconfig
 ===================================================================
---- linux.orig/drivers/macintosh/nvram.c	2015-06-14 17:45:34.000000000 +1000
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,130 +0,0 @@
--/*
-- * /dev/nvram driver for Power Macintosh.
-- */
+--- linux.orig/drivers/char/Kconfig	2015-06-14 17:45:34.000000000 +1000
++++ linux/drivers/char/Kconfig	2015-06-14 17:45:35.000000000 +1000
+@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
+ 
+ config NVRAM
+ 	tristate "/dev/nvram support"
+-	depends on ATARI || X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
++	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/nvram
+ 	  with major number 10 and minor number 144 using mknod ("man mknod"),
+@@ -265,9 +265,6 @@ config NVRAM
+ 	  should NEVER idly tamper with it. See Ralf Brown's interrupt list
+ 	  for a guide to the use of CMOS bytes by your BIOS.
+ 
+-	  On Atari machines, /dev/nvram is always configured and does not need
+-	  to be selected.
 -
--#define NVRAM_VERSION "1.0"
--
--#include <linux/module.h>
--
--#include <linux/types.h>
--#include <linux/errno.h>
--#include <linux/fs.h>
--#include <linux/miscdevice.h>
--#include <linux/fcntl.h>
--#include <linux/nvram.h>
--#include <linux/init.h>
--#include <asm/uaccess.h>
--#include <asm/nvram.h>
--
--#define NVRAM_SIZE	8192
--
--static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
--{
--	switch (origin) {
--	case 0:
--		break;
--	case 1:
--		offset += file->f_pos;
--		break;
--	case 2:
--		offset += NVRAM_SIZE;
--		break;
--	default:
--		offset = -1;
--	}
--	if (offset < 0)
--		return -EINVAL;
--
--	file->f_pos = offset;
--	return file->f_pos;
--}
--
--static ssize_t read_nvram(struct file *file, char __user *buf,
--			  size_t count, loff_t *ppos)
--{
--	unsigned int i;
--	char __user *p = buf;
--
--	if (!access_ok(VERIFY_WRITE, buf, count))
--		return -EFAULT;
--	if (*ppos >= NVRAM_SIZE)
--		return 0;
--	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count)
--		if (__put_user(nvram_read_byte(i), p))
--			return -EFAULT;
--	*ppos = i;
--	return p - buf;
--}
--
--static ssize_t write_nvram(struct file *file, const char __user *buf,
--			   size_t count, loff_t *ppos)
--{
--	unsigned int i;
--	const char __user *p = buf;
--	char c;
--
--	if (!access_ok(VERIFY_READ, buf, count))
--		return -EFAULT;
--	if (*ppos >= NVRAM_SIZE)
--		return 0;
--	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count) {
--		if (__get_user(c, p))
--			return -EFAULT;
--		nvram_write_byte(c, i);
--	}
--	*ppos = i;
--	return p - buf;
--}
--
--static long nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
--{
--	switch(cmd) {
--		case PMAC_NVRAM_GET_OFFSET:
--		{
--			int part, offset;
--			if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
--				return -EFAULT;
--			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
--				return -EINVAL;
--			offset = pmac_get_partition(part);
--			if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
--				return -EFAULT;
--			break;
--		}
--
--		default:
--			return -EINVAL;
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called nvram.
+ 
+Index: linux/drivers/scsi/Kconfig
+===================================================================
+--- linux.orig/drivers/scsi/Kconfig	2015-06-14 17:45:34.000000000 +1000
++++ linux/drivers/scsi/Kconfig	2015-06-14 17:45:35.000000000 +1000
+@@ -1592,14 +1592,14 @@ config ATARI_SCSI
+ 	tristate "Atari native SCSI support"
+ 	depends on ATARI && SCSI
+ 	select SCSI_SPI_ATTRS
+-	select NVRAM
+ 	---help---
+ 	  If you have an Atari with built-in NCR5380 SCSI controller (TT,
+ 	  Falcon, ...) say Y to get it supported. Of course also, if you have
+ 	  a compatible SCSI controller (e.g. for Medusa).
+ 
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called atari_scsi.
++	  To compile this driver as a module, choose M here: the module will
++	  be called atari_scsi. If you also enable NVRAM support, the SCSI
++	  host's ID is taken from the setting in TT RTC NVRAM.
+ 
+ 	  This driver supports both styles of NCR integration into the
+ 	  system: the TT style (separate DMA), and the Falcon style (via
+Index: linux/drivers/scsi/atari_scsi.c
+===================================================================
+--- linux.orig/drivers/scsi/atari_scsi.c	2015-06-14 17:45:34.000000000 +1000
++++ linux/drivers/scsi/atari_scsi.c	2015-06-14 17:45:35.000000000 +1000
+@@ -875,9 +875,10 @@ static int __init atari_scsi_probe(struc
+ 	if (ATARIHW_PRESENT(TT_SCSI) && setup_sg_tablesize >= 0)
+ 		atari_scsi_template.sg_tablesize = setup_sg_tablesize;
+ 
+-	if (setup_hostid >= 0) {
++	if (setup_hostid >= 0)
+ 		atari_scsi_template.this_id = setup_hostid & 7;
+-	} else {
++#ifdef CONFIG_NVRAM
++	else
+ 		/* Test if a host id is set in the NVRam */
+ 		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
+ 			unsigned char b = nvram_read_byte(14);
+@@ -888,8 +889,7 @@ static int __init atari_scsi_probe(struc
+ 			if (b & 0x80)
+ 				atari_scsi_template.this_id = b & 7;
+ 		}
 -	}
 -
--	return 0;
--}
--
--const struct file_operations nvram_fops = {
--	.owner		= THIS_MODULE,
--	.llseek		= nvram_llseek,
--	.read		= read_nvram,
--	.write		= write_nvram,
--	.unlocked_ioctl	= nvram_ioctl,
--};
--
--static struct miscdevice nvram_dev = {
--	NVRAM_MINOR,
--	"nvram",
--	&nvram_fops
--};
--
--int __init nvram_init(void)
--{
--	printk(KERN_INFO "Macintosh non-volatile memory driver v%s\n",
--		NVRAM_VERSION);
--	return misc_register(&nvram_dev);
--}
--
--void __exit nvram_cleanup(void)
--{
--        misc_deregister( &nvram_dev );
--}
--
--module_init(nvram_init);
--module_exit(nvram_cleanup);
--MODULE_LICENSE("GPL");
++#endif
+ 
+ #ifdef REAL_DMA
+ 	/* If running on a Falcon and if there's TT-Ram (i.e., more than one
