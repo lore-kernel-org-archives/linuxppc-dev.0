@@ -1,27 +1,24 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-f50.google.com (mail-la0-f50.google.com
- [209.85.215.50])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 074101A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 13:26:38 +1000 (AEST)
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C32D1A03ED
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 12:33:11 +1000 (AEST)
-Received: by labbc20 with SMTP id bc20so12678266lab.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2015 19:33:07 -0700 (PDT)
-Message-ID: <557E39DE.4070802@linux.com>
-Date: Mon, 15 Jun 2015 05:35:10 +0300
-From: Alexander Popov <alex.popov@linux.com>
-Reply-To: alex.popov@linux.com
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: pantelis.antoniou@gmail.com, vbordug@ru.mvista.com,
- christophe.leroy@c-s.fr, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] net: fs_enet: Disable NETIF_F_SG feature for Freescale
- MPC5121
-References: <1433894262-28900-1-git-send-email-alex.popov@linux.com>
- <20150609.171441.861174213383180358.davem@davemloft.net>
-In-Reply-To: <20150609.171441.861174213383180358.davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ by ozlabs.org (Postfix) with ESMTPS id 14A86140216
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 13:26:35 +1000 (AEST)
+Received: by pacyx8 with SMTP id yx8so56648736pac.2
+ for <linuxppc-dev@ozlabs.org>; Sun, 14 Jun 2015 20:26:32 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] powerpc: Set the correct kernel taint on machine check errors.
+Date: Mon, 15 Jun 2015 13:25:19 +1000
+Message-Id: <1434338719-8416-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,17 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-10.06.2015 03:14, David Miller пишет:
-> From: Alexander Popov <alex.popov@linux.com>
-> Date: Wed, 10 Jun 2015 02:57:42 +0300
->
->> skb_copy_from_linear_data() which doesn't work well for non-linear sk_buff:
->
-> The correct fix is to use an SKB copy routine which can
-> handle non-linear data.
+This means the 'M' flag will work properly when the kernel prints a backtrace.
 
-Thanks, David.
-I'll prepare the second version of the patch.
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ arch/powerpc/kernel/traps.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Best regards,
-Alexander
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 6530f1b..37de90f 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -297,6 +297,8 @@ long machine_check_early(struct pt_regs *regs)
+ 
+ 	__this_cpu_inc(irq_stat.mce_exceptions);
+ 
++	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
++
+ 	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+ 		handled = cur_cpu_spec->machine_check_early(regs);
+ 	return handled;
+-- 
+2.1.4
