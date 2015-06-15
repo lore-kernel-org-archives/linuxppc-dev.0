@@ -1,22 +1,35 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B93A41A0377
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 13:46:10 +1000 (AEST)
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [150.101.137.141]) by ozlabs.org (Postfix) with ESMTP id 62A371401F0
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 13:46:10 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/powernv: Bump opal_init initcall priority
-Date: Mon, 15 Jun 2015 13:44:44 +1000
-Message-ID: <6999655.JGazEvKYOi@mexican>
-In-Reply-To: <20150612094735.C2DAB1402B4@ozlabs.org>
-References: <20150612094735.C2DAB1402B4@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D6961A0E28
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 14:57:46 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Mon, 15 Jun 2015 14:57:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2ABED2BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 14:57:41 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5F4vWgq38666394
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 14:57:41 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5F4v7u5002121
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 14:57:08 +1000
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, acme@kernel.org, mingo@kernel.org,
+ mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
+ maddy@linux.vnet.ibm.com, warrier@linux.vnet.ibm.com,
+ srikar@linux.vnet.ibm.com, paulus@samba.org, scottwood@freescale.com,
+ Hemant Kumar <hemant@linux.vnet.ibm.com>
+Subject: [PATCH RESEND v4 1/3] kvm/powerpc: Export kvm exit reasons
+Date: Mon, 15 Jun 2015 10:26:07 +0530
+Message-Id: <1434344169-32438-1-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,71 +39,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 12 Jun 2015 19:47:35 Michael Ellerman wrote:
-> On Thu, 2015-11-06 at 09:25:29 UTC, Alistair Popple wrote:
-> > opal_init() is called via a machine_subsys_initcall(). Due to a hack
-> > in the eeh code the eeh driver is initialised with at the same
-> > initcall level. This means depending on link ordering the following
-> > error can occur because the opal irchip has not been initialised:
-> > 
-> > irq: XICS didn't like hwirq-0x9 to VIRQ17 mapping (rc=-22)
-> > pnv_eeh_post_init: Can't request OPAL event interrupt (0)
-> > 
-> > This patch solves the issue by making sure opal_init is called prior
-> > to the subsystems that may need it.
-> 
-> What is the hack in the eeh code?
-> 
-> I'm seeing eeh_ops->post_init() called from eeh_init() which is
-> core_initcall_sync(), is that what you're talking about?
+To analyze the kvm exits with perf, we will need to map the exit codes
+with the exit reasons. Such a mapping exists today in trace_book3s.h.
+Currently its not exported to perf.
 
-Yes, but there is this at the start of eeh_init():
+This patch moves these kvm exit reasons and their mapping from
+"arch/powerpc/kvm/trace_book3s.h" to
+"arch/powerpc/include/uapi/asm/trace_book3s.h".
+Accordingly change the include files in "trace_hv.h" and "trace_pr.h".
 
-	/*
-	 * We have to delay the initialization on PowerNV after
-	 * the PCI hierarchy tree has been built because the PEs
-	 * are figured out based on PCI devices instead of device
-	 * tree nodes
-	 */
-	if (machine_is(powernv) && cnt++ <= 0)
-		return ret;
+Also, add a file kvm_perf_book3s.h which defines the kvm tracepoints to
+trace for kvm exit events. This is added to indicate that the
+tracepoints are book3s specific. Generic "kvm_perf.h" then can just
+include "kvm_perf_book3s.h".
 
-Which basically stops eeh_init() running from the core initcall level on 
-PowerNV. Instead on PowerNV eeh_init() gets called from pnv_pci_ioda_fixup() 
-which itself is called via the PCI layer from a subsys_initcall (ie. the same 
-level as opal_init() is called at without this patch). This is why I missed 
-this during my testing - apparently I got lucky during my compilations and 
-opal_init() must have been called prior to the pci subsystem initialisation.
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+---
+Resend :
+- Rebased to the latest tip.
+- Added few people to cc list.
 
-Ideally I'd like to change the way eeh_init() is called and make it an 
-explicit call for each machine type, however that is a more invasive change 
-which will take some time as there seem to be a bunch of subtle dependencies 
-between initcalls for different platforms that aren't well documented and I'm 
-not convinced I understand them all yet. Hence this "quick" fix.
+Changes :
+- Moved the uapi related changes from the perf side patchset to this
+  patchset.
+- Made name space changes to indicate changes specific to book3s
+  (Suggested by Scott Wood)
 
-> Then pnv_eeh_post_init() is the powernv version of eeh_ops->post_init, and 
-it
-> calls opal_event_request().
-> 
-> So you'd need the irq_chip setup by then I think?
+ arch/powerpc/include/uapi/asm/kvm_perf.h        |  6 +++++
+ arch/powerpc/include/uapi/asm/kvm_perf_book3s.h | 15 ++++++++++++
+ arch/powerpc/include/uapi/asm/trace_book3s.h    | 32 +++++++++++++++++++++++++
+ arch/powerpc/kvm/trace_book3s.h                 | 32 -------------------------
+ arch/powerpc/kvm/trace_hv.h                     |  2 +-
+ arch/powerpc/kvm/trace_pr.h                     |  2 +-
+ 6 files changed, 55 insertions(+), 34 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+ create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+ create mode 100644 arch/powerpc/include/uapi/asm/trace_book3s.h
+ delete mode 100644 arch/powerpc/kvm/trace_book3s.h
 
-Yeah, it needs to be setup prior to eeh_post_init() being called. 
-
-> So I guess I'm missing the hack you're talking about.
-> 
-> Regardless of which level it needs to be at, the only thing that needs to 
-run
-> early is opal_event_init() am I right? Not all of opal_init().
-
-Yes, that is correct. But I was trying to avoid doing the thing which seemed 
-to have got us in this mess in the first place (ie. just making everything 
-that needs to run "early" run from a core_initcall). However I guess just 
-running opal_event_init() earlier is less likely to have unintended side 
-effects than running all of opal_init() earlier. Let me know what you'd 
-prefer.
-
-Thanks.
-
-- Alistair
-
-> cheers
+diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
+new file mode 100644
+index 0000000..5ed2ff3
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_POWERPC_KVM_PERF_H
++#define _ASM_POWERPC_KVM_PERF_H
++
++#include <asm/kvm_perf_book3s.h>
++
++#endif
+diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+new file mode 100644
+index 0000000..735901f
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+@@ -0,0 +1,15 @@
++#ifndef _ASM_POWERPC_KVM_PERF_BOOK3S_H
++#define _ASM_POWERPC_KVM_PERF_BOOK3S_H
++
++#include <asm/trace_book3s.h>
++#include <asm/kvm.h>
++
++#define DECODE_STR_LEN 20
++
++#define VCPU_ID "vcpu_id"
++
++#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
++#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
++#define KVM_EXIT_REASON "trap"
++
++#endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
+diff --git a/arch/powerpc/include/uapi/asm/trace_book3s.h b/arch/powerpc/include/uapi/asm/trace_book3s.h
+new file mode 100644
+index 0000000..f647ce0
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/trace_book3s.h
+@@ -0,0 +1,32 @@
++#if !defined(_TRACE_KVM_BOOK3S_H)
++#define _TRACE_KVM_BOOK3S_H
++
++/*
++ * Common defines used by the trace macros in trace_pr.h and trace_hv.h
++ */
++
++#define kvm_trace_symbol_exit \
++	{0x100, "SYSTEM_RESET"}, \
++	{0x200, "MACHINE_CHECK"}, \
++	{0x300, "DATA_STORAGE"}, \
++	{0x380, "DATA_SEGMENT"}, \
++	{0x400, "INST_STORAGE"}, \
++	{0x480, "INST_SEGMENT"}, \
++	{0x500, "EXTERNAL"}, \
++	{0x501, "EXTERNAL_LEVEL"}, \
++	{0x502, "EXTERNAL_HV"}, \
++	{0x600, "ALIGNMENT"}, \
++	{0x700, "PROGRAM"}, \
++	{0x800, "FP_UNAVAIL"}, \
++	{0x900, "DECREMENTER"}, \
++	{0x980, "HV_DECREMENTER"}, \
++	{0xc00, "SYSCALL"}, \
++	{0xd00, "TRACE"}, \
++	{0xe00, "H_DATA_STORAGE"}, \
++	{0xe20, "H_INST_STORAGE"}, \
++	{0xe40, "H_EMUL_ASSIST"}, \
++	{0xf00, "PERFMON"}, \
++	{0xf20, "ALTIVEC"}, \
++	{0xf40, "VSX"}
++
++#endif
+diff --git a/arch/powerpc/kvm/trace_book3s.h b/arch/powerpc/kvm/trace_book3s.h
+deleted file mode 100644
+index f647ce0..0000000
+--- a/arch/powerpc/kvm/trace_book3s.h
++++ /dev/null
+@@ -1,32 +0,0 @@
+-#if !defined(_TRACE_KVM_BOOK3S_H)
+-#define _TRACE_KVM_BOOK3S_H
+-
+-/*
+- * Common defines used by the trace macros in trace_pr.h and trace_hv.h
+- */
+-
+-#define kvm_trace_symbol_exit \
+-	{0x100, "SYSTEM_RESET"}, \
+-	{0x200, "MACHINE_CHECK"}, \
+-	{0x300, "DATA_STORAGE"}, \
+-	{0x380, "DATA_SEGMENT"}, \
+-	{0x400, "INST_STORAGE"}, \
+-	{0x480, "INST_SEGMENT"}, \
+-	{0x500, "EXTERNAL"}, \
+-	{0x501, "EXTERNAL_LEVEL"}, \
+-	{0x502, "EXTERNAL_HV"}, \
+-	{0x600, "ALIGNMENT"}, \
+-	{0x700, "PROGRAM"}, \
+-	{0x800, "FP_UNAVAIL"}, \
+-	{0x900, "DECREMENTER"}, \
+-	{0x980, "HV_DECREMENTER"}, \
+-	{0xc00, "SYSCALL"}, \
+-	{0xd00, "TRACE"}, \
+-	{0xe00, "H_DATA_STORAGE"}, \
+-	{0xe20, "H_INST_STORAGE"}, \
+-	{0xe40, "H_EMUL_ASSIST"}, \
+-	{0xf00, "PERFMON"}, \
+-	{0xf20, "ALTIVEC"}, \
+-	{0xf40, "VSX"}
+-
+-#endif
+diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
+index 33d9daf..02d0a07 100644
+--- a/arch/powerpc/kvm/trace_hv.h
++++ b/arch/powerpc/kvm/trace_hv.h
+@@ -2,7 +2,7 @@
+ #define _TRACE_KVM_HV_H
+ 
+ #include <linux/tracepoint.h>
+-#include "trace_book3s.h"
++#include <uapi/asm/trace_book3s.h>
+ #include <asm/hvcall.h>
+ #include <asm/kvm_asm.h>
+ 
+diff --git a/arch/powerpc/kvm/trace_pr.h b/arch/powerpc/kvm/trace_pr.h
+index 810507c..a9850c6 100644
+--- a/arch/powerpc/kvm/trace_pr.h
++++ b/arch/powerpc/kvm/trace_pr.h
+@@ -3,7 +3,7 @@
+ #define _TRACE_KVM_PR_H
+ 
+ #include <linux/tracepoint.h>
+-#include "trace_book3s.h"
++#include <uapi/asm/trace_book3s.h>
+ 
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM kvm_pr
+-- 
+1.9.3
