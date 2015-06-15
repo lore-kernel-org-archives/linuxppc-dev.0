@@ -1,23 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <lizefan@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BE8E1A06DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 15:40:06 +1000 (AEST)
-Date: Mon, 15 Jun 2015 15:37:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Hemant Kumar <hemant@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com,
- srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- acme@kernel.org, scottwood@freescale.com,
- warrier@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com, mingo@kernel.org
-Subject: Re: [PATCH RESEND v4 3/3] kvm/powerpc: Export HCALL reason codes
-Message-ID: <20150615053720.GA15637@pale.ozlabs.ibm.com>
-References: <1434344169-32438-1-git-send-email-hemant@linux.vnet.ibm.com>
- <1434344169-32438-3-git-send-email-hemant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C1101A0377
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 13:38:49 +1000 (AEST)
+Message-ID: <557E4741.70606@huawei.com>
+Date: Mon, 15 Jun 2015 11:32:17 +0800
+From: Zefan Li <lizefan@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1434344169-32438-3-git-send-email-hemant@linux.vnet.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: <stable@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: stable: Please include commit bb344ca5b90 ("powerpc/mpc85xx:
+ Add ranges to etsec2 nodes")
+References: <20150326211427.GA20872@home.buserror.net>
+In-Reply-To: <20150326211427.GA20872@home.buserror.net>
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,11 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 15, 2015 at 10:26:09AM +0530, Hemant Kumar wrote:
-> For perf to analyze the KVM events like hcalls, we need the
-> hypervisor calls and their codes to be exported through uapi.
+On 2015/3/27 5:14, Scott Wood wrote:
+> Commit bb344ca5b90df6 ("powerpc/mpc85xx: Add ranges to etsec2 nodes")
+> fixes a bug that was exposed by commit 746c9e9f92dd ("of/base: Fix
+> PowerPC address parsing hack").  The latter commit was applied to stable
+> trees, so the former should be as well.
+> 
 
-Why?  The hcall codes are defined externally to the kernel (in the
-PAPR document) and won't change.  They're not kernel API.
-
-Paul.
+Queued up for 3.4. Thanks!
