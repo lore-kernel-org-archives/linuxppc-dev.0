@@ -2,39 +2,36 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 207801A0E50
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:11:18 +1000 (AEST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDF2E1A0E51
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:11:20 +1000 (AEST)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6FEDB140216
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:11:17 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id B1E011402AC
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:11:19 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 15 Jun 2015 17:41:15 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C5881125805C
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:43:46 +0530 (IST)
+ Mon, 15 Jun 2015 17:41:17 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2D719394004E
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:41:15 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5FCBC1k3998124
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:41:13 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5FCBAHe65863690
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:41:11 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5FBD4mm025093
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 16:43:05 +0530
+ t5FBD3Ir024931
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 16:43:04 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: dja@axtens.net, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
  mikey@neuling.org
-Subject: [PATCH V9 12/13] powerpc,
- perf: Enable privilege mode SW branch filters
-Date: Mon, 15 Jun 2015 17:41:07 +0530
-Message-Id: <1434370268-19056-13-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V9 00/13] powerpc, perf: Enable SW branch filters
+Date: Mon, 15 Jun 2015 17:40:55 +0530
+Message-Id: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,136 +41,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables privilege mode SW branch filters. Also modifies
-POWER8 PMU branch filter configuration so that the privilege mode
-branch filter implemented as part of base PMU event configuration
-is reflected in bhrb filter mask. As a result, the SW will skip and
-not try to process the privilege mode branch filters itself.
+	This is the continuation (rebased and reworked) of the series
+posted at https://lkml.org/lkml/2014/5/5/153 (which is V6). I remember
+to have incremented the version count for the re-send of the first four
+patches of the series to Peter Z for generic review which got pulled in
+last year. These patches here are the remaining powerpc part of the
+original series.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/perf_event_server.h |  3 +++
- arch/powerpc/perf/core-book3s.c              | 37 ++++++++++++++++++++++++++--
- arch/powerpc/perf/power8-pmu.c               | 13 ++++++++--
- 3 files changed, 49 insertions(+), 4 deletions(-)
+Changes in V9
+=============
+(1) Changed some of the commit messages and fixed some typos
+(2) Variable 'bhrb_users' type changed from int to unsigned int
+(3) Replaced the last usage of 'get_cpu_var' with 'this_cpu_ptr'
+(4) Conditional checks for 'cpuhw->bhrb_users' changed to test against zero
+(5) Updated in-code documentation inside 'check_excludes' function
+(6) Changed the name & type of 'pred' variable in 'power_pmu_bhrb_read'
+(7) Changed the name of 'tmp' to 'to_addr' inside 'power_pmu_bhrb_read'
+(8) Changed return values for branch instruction analysis functions
+(9) Changed the name of 'flag' variable to 'select_branch' inside 'keep_branch'
+(10) Fixed one nested conditional statement inside 'keep_branch' function
+(11) Changed function name from 'update_branch_entry' to 'insert_branch'
+(12) Fixed copyright and license statements for new selftest related files
+(13) Improved helper assembly functions with some macro definitions
+(14) Improved the core test program at various places
+(15) Added .gitignore file for the new test case
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index cb7ca1a..23d68d3 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -85,6 +85,9 @@ extern unsigned long int read_bhrb(int n);
- 		for ((x) = PERF_SAMPLE_BRANCH_USER; \
- 			(x) < PERF_SAMPLE_BRANCH_MAX; (x) <<= 1)
- 
-+#define POWER_ADDR_USER		0
-+#define POWER_ADDR_KERNEL	1
-+
- /*
-  * Only override the default definitions in include/linux/perf_event.h
-  * if we have hardware PMU support.
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index a66c53c..69781577 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -20,6 +20,7 @@
- #include <asm/firmware.h>
- #include <asm/ptrace.h>
- #include <asm/code-patching.h>
-+#include <asm/cputable.h>
- 
- #define BHRB_MAX_ENTRIES	32
- #define BHRB_TARGET		0x0000000000000002
-@@ -465,10 +466,10 @@ static bool check_instruction(unsigned int *addr, u64 sw_filter)
-  * Access the instruction contained in the address and then check
-  * whether it complies with the applicable SW branch filters.
-  */
--static bool keep_branch(u64 from, u64 sw_filter)
-+static bool keep_branch(u64 from, u64 to, u64 sw_filter)
- {
- 	unsigned int instr;
--	bool ret;
-+	bool to_plm, ret, select_branch;
- 
- 	/*
- 	 * The "from" branch for every branch record has to go
-@@ -478,6 +479,37 @@ static bool keep_branch(u64 from, u64 sw_filter)
- 	if (sw_filter == 0)
- 		return true;
- 
-+	to_plm = is_kernel_addr(to) ? POWER_ADDR_KERNEL : POWER_ADDR_USER;
-+
-+	/*
-+	 * XXX: Applying the privilege mode SW branch filters first on
-+	 * the 'TO' address creates an AND semantic with other SW branch
-+	 * filters which are ORed with each other being applied on the
-+	 * 'FROM' address there after.
-+	 */
-+	if (sw_filter & PERF_SAMPLE_BRANCH_PLM_ALL) {
-+		select_branch = false;
-+
-+		if (sw_filter & PERF_SAMPLE_BRANCH_USER) {
-+			if (to_plm == POWER_ADDR_USER)
-+				select_branch = true;
-+		}
-+
-+		if (sw_filter & PERF_SAMPLE_BRANCH_KERNEL) {
-+			if (to_plm == POWER_ADDR_KERNEL)
-+				select_branch = true;
-+		}
-+
-+		if (sw_filter & PERF_SAMPLE_BRANCH_HV) {
-+			if (cpu_has_feature(CPU_FTR_HVMODE)
-+				&& (to_plm == POWER_ADDR_KERNEL))
-+					select_branch = true;
-+		}
-+
-+		if (!select_branch)
-+			return false;
-+	}
-+
- 	if (is_kernel_addr(from)) {
- 		return check_instruction((unsigned int *) from, sw_filter);
- 	} else {
-@@ -568,6 +600,7 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- 
- 		/* Apply SW branch filters and drop the entry if required */
- 		if (!keep_branch(cpuhw->bhrb_entries[u_index].from,
-+					cpuhw->bhrb_entries[u_index].to,
- 						cpuhw->bhrb_sw_filter))
- 			u_index--;
- 		u_index++;
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 8fccf6c..b56afc6 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -670,9 +670,19 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
- 	 * filter configuration. BHRB is always recorded along with a
- 	 * regular PMU event. As the privilege state filter is handled
- 	 * in the basic PMC configuration of the accompanying regular
--	 * PMU event, we ignore any separate BHRB specific request.
-+	 * PMU event, we ignore any separate BHRB specific request. But
-+	 * this needs to be communicated with the branch filter mask.
- 	 */
- 
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_USER)
-+		*bhrb_filter |= PERF_SAMPLE_BRANCH_USER;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_KERNEL)
-+		*bhrb_filter |= PERF_SAMPLE_BRANCH_KERNEL;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_HV)
-+		*bhrb_filter |= PERF_SAMPLE_BRANCH_HV;
-+
- 	/* Ignore user, kernel, hv bits */
- 	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
- 
-@@ -700,7 +710,6 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
- 			if (branch_sample_type) {
- 				/* Multiple filters will be processed in SW */
- 				pmu_bhrb_filter = 0;
--				*bhrb_filter = 0;
- 				return pmu_bhrb_filter;
- 			} else {
- 				/* Individual filter will be processed in HW */
+Changes in V8 (http://patchwork.ozlabs.org/patch/481848/)
+=============
+(1) Fixed BHRB privilege mode branch filter request processing
+(2) Dropped branch records where 'from' cannot be fetched
+(3) Added in-code documenation at various places in the patch series
+(4) Added one comprehensive seltest case to verify all the filters
+
+Changes in V7
+=============
+(1) Incremented the version count while requesting pull for generic changes
+
+Changes in V6 (https://lkml.org/lkml/2014/5/5/153)
+=============
+(1) Rebased the patchset against the master
+(2) Added "Reviewed-by: Andi Kleen" in the first four patches in the series which changes the
+    generic or X86 perf code. [https://lkml.org/lkml/2014/4/7/130]
+
+Changes in V5 (https://lkml.org/lkml/2014/3/7/101)
+=============
+(1) Added a precursor patch to cleanup the indentation problem in power_pmu_bhrb_read
+(2) Added a precursor patch to re-arrange P8 PMU BHRB filter config which improved the clarity
+(3) Merged the previous 10th patch into the 8th patch
+(4) Moved SW based branch analysis code from core perf into code-patching library as suggested by Michael
+(5) Simplified the logic in branch analysis library
+(6) Fixed some ambiguities in documentation at various places
+(7) Added some more in-code documentation blocks at various places
+(8) Renamed some local variable and function names
+(9) Fixed some indentation and white space errors in the code
+(10) Implemented almost all the review comments and suggestions made by Michael Ellerman on V4 patchset
+(11) Enabled privilege mode SW branch filter
+(12) Simplified and generalized the SW implemented conditional branch filter
+(13) PERF_SAMPLE_BRANCH_COND filter is now supported only through SW implementation
+(14) Adjusted other patches to deal with the above changes
+
+Changes in V4 (https://lkml.org/lkml/2013/12/4/168)
+=============
+(1) Changed the commit message for patch (01/10)
+(2) Changed the patch (02/10) to accommodate review comments from Michael Ellerman
+(3) Rebased the patchset against latest Linus's tree
+
+Changes in V3 (https://lkml.org/lkml/2013/10/16/59)
+=============
+(1) Split the SW branch filter enablement into multiple patches
+(2) Added PMU neutral SW branch filtering code, PMU specific HW branch filtering code
+(3) Added new instruction analysis functionality into powerpc code-patching library
+(4) Changed name for some of the functions
+(5) Fixed couple of spelling mistakes
+(6) Changed code documentation in multiple places
+
+Changes in V2 (https://lkml.org/lkml/2013/8/30/10)
+=============
+(1) Enabled PPC64 SW branch filtering support
+(2) Incorporated changes required for all previous comments
+
+Anshuman Khandual (13):
+  powerpc, perf: Drop the branch sample when 'from' cannot be fetched
+  powerpc, perf: Change type of the bhrb_users variable
+  powerpc, perf: Replace last usage of get_cpu_var with this_cpu_ptr
+  powerpc, perf: Restore privilege level filter support for BHRB
+  powerpc, perf: Change name & type of 'pred' in power_pmu_bhrb_read
+  powerpc, perf: Re organize BHRB processing
+  powerpc, perf: Re organize PMU branch filter processing on POWER8
+  powerpc, perf: Change the name of HW PMU branch filter tracking variable
+  powerpc, lib: Add new branch analysis support functions
+  powerpc, perf: Enable SW filtering in branch stack sampling framework
+  powerpc, perf: Change POWER8 PMU configuration to work with SW filters
+  powerpc, perf: Enable privilege mode SW branch filters
+  selftests, powerpc: Add test for BHRB branch filters (HW & SW)
+
+ arch/powerpc/include/asm/code-patching.h           |  15 +
+ arch/powerpc/include/asm/perf_event_server.h       |  10 +-
+ arch/powerpc/lib/code-patching.c                   |  60 +++
+ arch/powerpc/perf/core-book3s.c                    | 361 +++++++++++---
+ arch/powerpc/perf/power8-pmu.c                     |  70 ++-
+ tools/testing/selftests/powerpc/pmu/Makefile       |  11 +-
+ .../testing/selftests/powerpc/pmu/bhrb/.gitignore  |   1 +
+ tools/testing/selftests/powerpc/pmu/bhrb/Makefile  |  13 +
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters.c      | 535 +++++++++++++++++++++
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters.h      |  15 +
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S  | 263 ++++++++++
+ tools/testing/selftests/powerpc/pmu/event.h        |   5 +
+ 12 files changed, 1267 insertions(+), 92 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S
+
 -- 
 2.1.0
