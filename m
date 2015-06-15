@@ -1,28 +1,29 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0134.outbound.protection.outlook.com [157.56.110.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BAC21A0E87
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 00:39:27 +1000 (AEST)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Paul Bolle <pebolle@tiscali.nl>, Madalin-Cristian Bucur
- <madalin.bucur@freescale.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH 08/12] fsl/fman: Add Frame Manager support
-Date: Mon, 15 Jun 2015 14:23:14 +0000
-Message-ID: <DM2PR03MB383A5275392BBBD604FE71BE6B80@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-4-git-send-email-madalin.bucur@freescale.com>
- <1434012956.2271.58.camel@x220> <1434015469.2271.83.camel@x220>
-In-Reply-To: <1434015469.2271.83.camel@x220>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
+ [72.246.2.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 5F0A11A0E97
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 00:39:36 +1000 (AEST)
+Date: Mon, 15 Jun 2015 10:39:34 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 0/3] Allow user to request memory to be locked
+ on page fault
+Message-ID: <20150615143934.GA12300@akamai.com>
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
+ <20150610145929.b22be8647887ea7091b09ae1@linux-foundation.org>
+ <5579DFBA.80809@akamai.com>
+ <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
+In-Reply-To: <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +33,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgUGF1bCwNClRoYW5rIHlvdSB2ZXJ5IG11Y2ggZm9yIHlvdXIgZmVlZGJhY2suDQoNCkknbSBw
-bGFubmluZyB0byBhZGRyZXNzIHRoZSBpc3N1ZXMgeW91J3ZlIHJhaXNlZCBpbiB0aGUgbmV4dCBz
-dWJtaXNzaW9uLg0KDQpSZWdhcmRzLA0KSWdhbCBMaWJlcm1hbi4NCg0KPiAtLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYXVsIEJvbGxlIFttYWlsdG86cGVib2xsZUB0aXNjYWxp
-Lm5sXQ0KPiBTZW50OiBUaHVyc2RheSwgSnVuZSAxMSwgMjAxNSAxMjozOCBQTQ0KPiBUbzogQnVj
-dXIgTWFkYWxpbi1DcmlzdGlhbi1CMzI3MTYNCj4gQ2M6IG5ldGRldkB2Z2VyLmtlcm5lbC5vcmc7
-IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3ps
-YWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjE7IExpYmVybWFuIElnYWwtQjMxOTUwDQo+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggMDgvMTJdIGZzbC9mbWFuOiBBZGQgRnJhbWUgTWFuYWdlciBzdXBwb3J0
-DQo+IA0KPiBTbyBJIGNvdWxkbid0IGhlbHAgaGF2aW5nIHlldCBhbm90aGVyIGxvb2sgYXQgdGhl
-IGNvZGUsIGp1c3QgdG8gZHJpdmUgaG9tZSBteQ0KPiBwb2ludC4NCj4gDQo+IE9uIFRodSwgMjAx
-NS0wNi0xMSBhdCAxMDo1NSArMDIwMCwgUGF1bCBCb2xsZSB3cm90ZToNCj4gPiA+ICt2b2lkICpm
-bV9kcnZfaW5pdCh2b2lkKQ0KPiA+DQo+ID4gc3RhdGljLg0KPiA+DQo+ID4gPiArew0KPiA+ID4g
-KwltZW1zZXQoJmZtX2RydnMsIDAsIHNpemVvZihmbV9kcnZzKSk7DQo+IA0KPiBmbV9kcnZzIGlz
-IGFuIGV4dGVybmFsIHZhcmlhYmxlLiBJdCBpcyBndWFyYW50ZWVkIHRvIGJlIHplcm8sIGlzbid0
-IGl0Pw0KPiANCj4gPiA+ICsJbXV0ZXhfaW5pdCgmZm1fZHJ2X211dGV4KTsNCj4gPiA+ICsNCj4g
-PiA+ICsJLyogUmVnaXN0ZXIgdG8gdGhlIERUQiBmb3IgYmFzaWMgRk0gQVBJICovDQo+ID4gPiAr
-CXBsYXRmb3JtX2RyaXZlcl9yZWdpc3RlcigmZm1fZHJpdmVyKTsNCj4gPiA+ICsNCj4gPiA+ICsJ
-cmV0dXJuICZmbV9kcnZzOw0KPiANCj4gWW91J3JlIHJldHVybmluZyBhIHBvaW50ZXIgdG8gZXh0
-ZXJuYWwgdmFyaWFibGUuIEhvdydzIHRoYXQgdXNlZnVsPw0KPiANCj4gQW5kIG5vdGUgdGhpcyBp
-cyB0aGUgbGFzdCB0aW1lIHdlJ2xsIGV2ZXIgc2VlIGZtX2RydnMuIFNvIEkgdGhpbmsgdGhhdCBh
-bGwgdGhpcw0KPiB2YXJpYWJsZSBkb2VzIGZvciB0aGUgY29kZSBpcyBnZXR0aW5nIGluaXRpYWxp
-emVkIHRvIHplcm8sIHR3aWNlLg0KPiANCj4gPiA+ICt9DQo+ID4gPiArDQo+ID4gPiAraW50IGZt
-X2Rydl9mcmVlKHZvaWQgKnBfZm1fZHJ2KQ0KPiA+DQo+ID4gc3RhdGljLg0KPiA+DQo+ID4gPiAr
-ew0KPiA+ID4gKwlwbGF0Zm9ybV9kcml2ZXJfdW5yZWdpc3RlcigmZm1fZHJpdmVyKTsNCj4gPiA+
-ICsJbXV0ZXhfZGVzdHJveSgmZm1fZHJ2X211dGV4KTsNCj4gPiA+ICsNCj4gPiA+ICsJcmV0dXJu
-IDA7DQo+IA0KPiBUaGlzIGZ1bmN0aW9uIGhhcyBvbmUgY2FsbGVyLCB3aGljaCBkb2Vzbid0IGNo
-ZWNrIHRoZSByZXR1cm4gdmFsdWUuIFNvIHRoaXMNCj4gc2hvdWxkIGJlIGEgZnVuY3Rpb24gcmV0
-dXJuaW5nIHZvaWQuIE9mIGNvdXJzZSwgYSB3cmFwcGVyIG9mIHR3byBsaW5lcyBjYWxsZWQNCj4g
-b25seSBvbmNlIG1lYW5zIHlvdSBzaG91bGQgYWN0dWFsbHkgbm90IHB1dCB0aGlzIGludG8gYSBz
-ZXBhcmF0ZSBmdW5jdGlvbi4NCj4gDQo+ID4gPiArfQ0KPiANCj4gPiA+ICtzdGF0aWMgdm9pZCAq
-cF9mbV9kcnY7DQo+ID4NCj4gPiA+ICtzdGF0aWMgaW50IF9faW5pdCBfX2NvbGQgZm1fbG9hZCh2
-b2lkKSB7DQo+ID4gPiArCXBfZm1fZHJ2ID0gZm1fZHJ2X2luaXQoKTsNCj4gPiA+ICsJaWYgKCFw
-X2ZtX2Rydikgew0KPiANCj4gZm1fZHJ2X2luaXQoKSByZXR1cm5zIGEgcG9pbnRlciB0byBhbiBl
-eHRlcm5hbCB2YXJpYWJsZS4gU28gaG93IGNhbiB0aGlzDQo+IGhhcHBlbj8NCj4gDQo+ID4gPiAr
-CQlwcl9lcnIoIkZhaWxlZCB0byBpbml0IEZNIHdyYXBwZXIhXG4iKTsNCj4gPiA+ICsJCXJldHVy
-biAtRU5PREVWOw0KPiA+ID4gKwl9DQo+ID4gPiArDQo+ID4gPiArCXByX2luZm8oIkZyZWVzY2Fs
-ZSBGTSBtb2R1bGVcbiIpOw0KPiA+ID4gKwlyZXR1cm4gMDsNCj4gPiA+ICt9DQo+IA0KPiBUaGlz
-IGlzIGFsbCByYXRoZXIgYmFzaWMuIEl0IG11c3QgYmUsIG90aGVyd2lzZSBJIHdvdWxkbid0IHNw
-b3QgaXQuDQo+IA0KPiBTbyBJIGtlZXAgc3BvdHRpbmcgdGhlc2UgYmFzaWMgb2RkaXRpZXMsIHdp
-dGggZXZlcnkgY3VwIG9mIGNvZmZlZSBJIHRyZWF0DQo+IG15c2VsZiB0byB3aGlsZSByZWFkaW5n
-IHRocm91Z2ggdGhpcywgd2hlcmV2ZXIgSSBsb29rLiBCeSBub3cgSSdtIHN1cmUNCj4gdGhlcmUn
-cyBubyBuZWVkIGZvciB0aGUgbmV0ZGV2IHBlb3BsZSB0byBsb29rIGF0IHRoaXMsIG5vdCB5ZXQu
-DQo+IA0KPiANCj4gUGF1bCBCb2xsZQ0KDQo=
+
+--3MwIy2ne0vdjdPXF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 11 Jun 2015, Andrew Morton wrote:
+
+> On Thu, 11 Jun 2015 15:21:30 -0400 Eric B Munson <emunson@akamai.com> wro=
+te:
+>=20
+> > > Ditto mlockall(MCL_ONFAULT) followed by munlock().  I'm not sure
+> > > that even makes sense but the behaviour should be understood and
+> > > tested.
+> >
+> > I have extended the kselftest for lock-on-fault to try both of these
+> > scenarios and they work as expected.  The VMA is split and the VM
+> > flags are set appropriately for the resulting VMAs.
+>=20
+> munlock() should do vma merging as well.  I *think* we implemented
+> that.  More tests for you to add ;)
+>=20
+> How are you testing the vma merging and splitting, btw?  Parsing
+> the profcs files?
+
+The lock-on-fault test now covers VMA splitting and merging by parsing
+/proc/self/maps.  VMA splitting and merging works as it should with both
+MAP_LOCKONFAULT and MCL_ONFAULT.
+
+>=20
+> > > What's missing here is a syscall to set VM_LOCKONFAULT on an
+> > > arbitrary range of memory - mlock() for lock-on-fault.  It's a
+> > > shame that mlock() didn't take a `mode' argument.  Perhaps we
+> > > should add such a syscall - that would make the mmap flag unneeded
+> > > but I suppose it should be kept for symmetry.
+> >=20
+> > Do you want such a system call as part of this set?  I would need some
+> > time to make sure I had thought through all the possible corners one
+> > could get into with such a call, so it would delay a V3 quite a bit.
+> > Otherwise I can send a V3 out immediately.
+>=20
+> I think the way to look at this is to pretend that mm/mlock.c doesn't
+> exist and ask "how should we design these features".
+>=20
+> And that would be:
+>=20
+> - mmap() takes a `flags' argument: MAP_LOCKED|MAP_LOCKONFAULT.
+>=20
+> - mlock() takes a `flags' argument.  Presently that's
+>   MLOCK_LOCKED|MLOCK_LOCKONFAULT.
+>=20
+> - munlock() takes a `flags' arument.  MLOCK_LOCKED|MLOCK_LOCKONFAULT
+>   to specify which flags are being cleared.
+>=20
+> - mlockall() and munlockall() ditto.
+>=20
+>=20
+> IOW, LOCKED and LOCKEDONFAULT are treated identically and independently.
+>=20
+> Now, that's how we would have designed all this on day one.  And I
+> think we can do this now, by adding new mlock2() and munlock2()
+> syscalls.  And we may as well deprecate the old mlock() and munlock(),
+> not that this matters much.
+>=20
+> *should* we do this?  I'm thinking "yes" - it's all pretty simple
+> boilerplate and wrappers and such, and it gets the interface correct,
+> and extensible.
+>=20
+> What do others think?
+
+I am working on V3 which will introduce the new system calls.
+
+--3MwIy2ne0vdjdPXF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVfuOmAAoJELbVsDOpoOa9s3IP/3PHZ6S5YUFkxUlalwmhJoDD
+YtCVtwakGJ0GjPMI4iM+H1TsCym6AYH/Kv0dxfnTbFMTqClzHq7V3QZt9IHJH7Pb
+Z8gBH247JOk7opOsB3Cb3gLvAkQ4bfgXObSsgvPLCID2GumlUOINBpXwYBpNLh00
++4blC/0gdEp0C8xAPbJIzguSEI5wAwmOISlSQipb2ptEl+aAFjxRLARl47pD6EES
+N6pYgeVfNZ/F63Ywoley/s2RE7pvm3ofCVcrNC8AH1lolbbEZgrQBJKB/Sq5RC2W
+pcO4Z6Y3UOziTyNuWcHRVOGjK/gpoFnncdFJzmjMubx8N+8dus1Wl3xwvXidYT8e
+bLqc3acsUy2zLFQJRZIxuR9PPXVpKLCc0GF5Ufqa6ej5PKEsMJ2Baqy7x5Ujgyts
+ceNH2d1JRtkxdVw+WqBetjatM2icb+Yf/e3hOzr85thaAVGyoNJtlyhAciY4aIbW
+JhCpFuhvCuUcag2nNrrN5Ry3noGv3pm2AuqmUVSEZjorLsQnN5/3FxntVSb4YWkg
+VSLD4QHMiE0UeWnhCzKN7I5e/QhrnJ+HABx0GfTgjcXt1VQiKwxEp9A8+JsRmGiF
+G0oOTWsE/oUx+KCluuIRPpKuuiX0Nc50IEH3vklCIAkAWriMfh/jZvDTIeR1Wtci
+3BTlJ2Z0erX8IPh+BVnI
+=jO18
+-----END PGP SIGNATURE-----
+
+--3MwIy2ne0vdjdPXF--
