@@ -1,24 +1,22 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 074101A0015
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 13:26:38 +1000 (AEST)
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 14A86140216
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 13:26:35 +1000 (AEST)
-Received: by pacyx8 with SMTP id yx8so56648736pac.2
- for <linuxppc-dev@ozlabs.org>; Sun, 14 Jun 2015 20:26:32 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH] powerpc: Set the correct kernel taint on machine check errors.
-Date: Mon, 15 Jun 2015 13:25:19 +1000
-Message-Id: <1434338719-8416-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B93A41A0377
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 13:46:10 +1000 (AEST)
+Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
+ [150.101.137.141]) by ozlabs.org (Postfix) with ESMTP id 62A371401F0
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 13:46:10 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: powerpc/powernv: Bump opal_init initcall priority
+Date: Mon, 15 Jun 2015 13:44:44 +1000
+Message-ID: <6999655.JGazEvKYOi@mexican>
+In-Reply-To: <20150612094735.C2DAB1402B4@ozlabs.org>
+References: <20150612094735.C2DAB1402B4@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This means the 'M' flag will work properly when the kernel prints a backtrace.
+On Fri, 12 Jun 2015 19:47:35 Michael Ellerman wrote:
+> On Thu, 2015-11-06 at 09:25:29 UTC, Alistair Popple wrote:
+> > opal_init() is called via a machine_subsys_initcall(). Due to a hack
+> > in the eeh code the eeh driver is initialised with at the same
+> > initcall level. This means depending on link ordering the following
+> > error can occur because the opal irchip has not been initialised:
+> > 
+> > irq: XICS didn't like hwirq-0x9 to VIRQ17 mapping (rc=-22)
+> > pnv_eeh_post_init: Can't request OPAL event interrupt (0)
+> > 
+> > This patch solves the issue by making sure opal_init is called prior
+> > to the subsystems that may need it.
+> 
+> What is the hack in the eeh code?
+> 
+> I'm seeing eeh_ops->post_init() called from eeh_init() which is
+> core_initcall_sync(), is that what you're talking about?
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/kernel/traps.c | 2 ++
- 1 file changed, 2 insertions(+)
+Yes, but there is this at the start of eeh_init():
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 6530f1b..37de90f 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -297,6 +297,8 @@ long machine_check_early(struct pt_regs *regs)
- 
- 	__this_cpu_inc(irq_stat.mce_exceptions);
- 
-+	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
-+
- 	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
- 		handled = cur_cpu_spec->machine_check_early(regs);
- 	return handled;
--- 
-2.1.4
+	/*
+	 * We have to delay the initialization on PowerNV after
+	 * the PCI hierarchy tree has been built because the PEs
+	 * are figured out based on PCI devices instead of device
+	 * tree nodes
+	 */
+	if (machine_is(powernv) && cnt++ <= 0)
+		return ret;
+
+Which basically stops eeh_init() running from the core initcall level on 
+PowerNV. Instead on PowerNV eeh_init() gets called from pnv_pci_ioda_fixup() 
+which itself is called via the PCI layer from a subsys_initcall (ie. the same 
+level as opal_init() is called at without this patch). This is why I missed 
+this during my testing - apparently I got lucky during my compilations and 
+opal_init() must have been called prior to the pci subsystem initialisation.
+
+Ideally I'd like to change the way eeh_init() is called and make it an 
+explicit call for each machine type, however that is a more invasive change 
+which will take some time as there seem to be a bunch of subtle dependencies 
+between initcalls for different platforms that aren't well documented and I'm 
+not convinced I understand them all yet. Hence this "quick" fix.
+
+> Then pnv_eeh_post_init() is the powernv version of eeh_ops->post_init, and 
+it
+> calls opal_event_request().
+> 
+> So you'd need the irq_chip setup by then I think?
+
+Yeah, it needs to be setup prior to eeh_post_init() being called. 
+
+> So I guess I'm missing the hack you're talking about.
+> 
+> Regardless of which level it needs to be at, the only thing that needs to 
+run
+> early is opal_event_init() am I right? Not all of opal_init().
+
+Yes, that is correct. But I was trying to avoid doing the thing which seemed 
+to have got us in this mess in the first place (ie. just making everything 
+that needs to run "early" run from a core_initcall). However I guess just 
+running opal_event_init() earlier is less likely to have unintended side 
+effects than running all of opal_init() earlier. Let me know what you'd 
+prefer.
+
+Thanks.
+
+- Alistair
+
+> cheers
