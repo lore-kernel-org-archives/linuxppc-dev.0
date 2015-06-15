@@ -1,27 +1,43 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-yh0-x22e.google.com (mail-yh0-x22e.google.com
- [IPv6:2607:f8b0:4002:c01::22e])
+Return-Path: <keescook@google.com>
+Received: from mail-yk0-x232.google.com (mail-yk0-x232.google.com
+ [IPv6:2607:f8b0:4002:c07::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D37391A06F0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 01:08:21 +1000 (AEST)
-Received: by yhid80 with SMTP id d80so44710898yhi.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 08:08:18 -0700 (PDT)
-Message-ID: <1434380895.27504.128.camel@edumazet-glaptop2.roam.corp.google.com>
-Subject: Re: [RFC,v3 02/10] dpaa_eth: add support for DPAA Ethernet
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Date: Mon, 15 Jun 2015 08:08:15 -0700
-In-Reply-To: <BL2PR03MB54503B16A47056DBA9653C0E6B80@BL2PR03MB545.namprd03.prod.outlook.com>
-References: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
- <1433958961.27504.15.camel@edumazet-glaptop2.roam.corp.google.com>
- <BL2PR03MB54503B16A47056DBA9653C0E6B80@BL2PR03MB545.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id E9BCB1A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 06:44:44 +1000 (AEST)
+Received: by ykaz81 with SMTP id z81so66745556yka.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 13:44:42 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
+References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
+Date: Mon, 15 Jun 2015 13:44:42 -0700
+Message-ID: <CAGXu5jJ7i6qgUOXuaNJ8vT7+D+6_C_hrOwWHZA+6f9zFJQ+Vbw@mail.gmail.com>
+Subject: Re: [PATCH 0/2] Consolidate redundant register/stack access code
+From: Kees Cook <keescook@chromium.org>
+To: David Long <dave.long@linaro.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
+ Anton Blanchard <anton@samba.org>,
+ Behan Webster <behanw@converseincode.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Eric Paris <eparis@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Jan Willeke <willeke@de.ibm.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nikolay Borisov <Nikolay.Borisov@arm.com>,
+ Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Richard Kuo <rkuo@codeaurora.org>,
+ Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
+ Russell King <linux@arm.linux.org.uk>, Tejun Heo <tj@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-hexagon@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ linux-sh <linux-sh@vger.kernel.org>,
+ "linux390@de.ibm.com" <linux390@de.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,73 +47,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-06-15 at 13:40 +0000, Madalin-Cristian Bucur wrote:
-> > -----Original Message-----
-> > From: Eric Dumazet [mailto:eric.dumazet@gmail.com]
-> > 
-> > On Wed, 2015-04-29 at 17:56 +0300, Madalin Bucur wrote:
-> > > This introduces the Freescale Data Path Acceleration Architecture
-> > > (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
-> > > BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
-> > > the Freescale DPAA QorIQ platforms.
-> > ...
-> > 
-> > > +	/* We're going to store the skb backpointer at the beginning
-> > > +	 * of the data buffer, so we need a privately owned skb
-> > > +	 */
-> > > +
-> > > +	/* Code borrowed from skb_unshare(). */
-> > > +	if (skb_cloned(skb)) {
-> > > +		struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
-> > > +
-> > > +		/* Finally, create a contig FD from this skb */
-> > > +		skb_to_contig_fd(priv, skb, &fd, countptr, &offset);
-> > > +
-> > > +		kfree_skb(skb);
-> > > +		skb = nskb;
-> > > +		/* skb_copy() has now linearized the skbuff. */
-> > > +	}
-> > > +
-> > 
-> > You know that TCP packets are clones, right ?
-> > This code is killing performance.
-> > 
-> > TCP allows the headers part being modified by a driver if needed.
-> > 
-> > You should use skb_header_cloned() instead.
-> 
-> Thank you, I'll address this. I plan to do something like this:
-> 
-> +       if (!nonlinear) {
-> +               /* We're going to store the skb backpointer at the beginning
-> +                * of the data buffer, so we need a privately owned skb
-> +                */
-> +
-> +               /* make sure skb is not shared, skb_cow_head() assumes it's not */
-> +               skb = skb_share_check(skb, GFP_ATOMIC);
-> +               if (!skb)
-> +                       goto enomem;
-> +
-> +               /* verify the skb head is not cloned */
-> +               if (skb_cow_head(skb, priv->tx_headroom))
-> +                       goto enomem;
-> +
-> +               nonlinear = skb_is_nonlinear(skb);
-> +       }
-> 
-> but I'm not sure the skb_share_check() is required on tx.
-> I'm also a bit puzzled by the aliasing between shared and cloned terms
-> (i.e. skb_unshare() could be named something like skb_unclone();
->  the skb_share_check() not only checks but also unshares an skb so
->  the already taken skb_unshare() name would probably fit too).
+On Mon, Jun 15, 2015 at 9:42 AM, David Long <dave.long@linaro.org> wrote:
+> From: "David A. Long" <dave.long@linaro.org>
+>
+> Move duplicate and functionally equivalent code for accessing registers
+> and stack (CONFIG_HAVE_REGS_AND_STACK_ACCESS_API) from arch subdirs into
+> common kernel files.
+>
+> Note: Help regression testing s390, hexagon, and sh would be appreciated.
+>       Powerpc builds but I have not verified the functionality.
+>
+> David A. Long (2):
+>   Move the pt_regs_offset struct definition from arch to common include
+>     file
+>   Consolidate redundant register/stack access code
+>
+>  arch/arm/include/asm/ptrace.h          |  6 ---
+>  arch/arm/kernel/ptrace.c               | 72 +---------------------------------
+>  arch/hexagon/include/uapi/asm/ptrace.h |  3 --
+>  arch/powerpc/include/asm/ptrace.h      | 38 ------------------
+>  arch/powerpc/kernel/ptrace.c           | 39 +-----------------
+>  arch/s390/include/asm/ptrace.h         |  3 --
+>  arch/s390/kernel/ptrace.c              | 70 ++++++++++-----------------------
+>  arch/sh/include/asm/ptrace.h           | 44 ---------------------
+>  arch/sh/kernel/Makefile                |  2 +-
+>  arch/sh/kernel/ptrace.c                | 33 ----------------
+>  arch/sh/kernel/ptrace_32.c             |  2 +-
+>  arch/sh/kernel/ptrace_64.c             |  2 +-
+>  arch/x86/include/asm/ptrace.h          | 37 -----------------
+>  arch/x86/kernel/ptrace.c               | 39 +-----------------
+>  include/linux/ptrace.h                 | 51 ++++++++++++++++++++++++
+>  kernel/ptrace.c                        | 38 ++++++++++++++++++
+>  16 files changed, 116 insertions(+), 363 deletions(-)
+>  delete mode 100644 arch/sh/kernel/ptrace.c
 
-A driver can ask tx skbs to be not shared, even if pktgen is used with
-"clone=X" on it.
+I love the deletions:insertions ratio! :)
 
-dev->priv_flags         &= ~IFF_TX_SKB_SHARING;
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-This way, you can avoid skb_share_check() completely. Only pktgen will
-care.
+I wonder why arm64 doesn't define CONFIG_HAVE_REGS_AND_STACK_ACCESS_API?
 
-Most skb_share_check() calls in drivers/net are related to input paths
-on virtual drivers.
+Thanks!
+
+-Kees
+
+-- 
+Kees Cook
+Chrome OS Security
