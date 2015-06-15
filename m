@@ -2,37 +2,36 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB4BA1A0F4E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:12:09 +1000 (AEST)
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 150D61A0E59
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:12:19 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3D9631402AB
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:12:09 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 60DBC14016A
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:12:18 +1000 (AEST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 15 Jun 2015 17:42:07 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0CCBB1258061
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:44:37 +0530 (IST)
+ Mon, 15 Jun 2015 17:42:16 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 94AC0125805C
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:44:47 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5FCBAxV1769968
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:41:11 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5FCCB6h58261664
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:42:11 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5FBD3kx024977
+ t5FBD3Ti025000
  for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 16:43:04 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: dja@axtens.net, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
  mikey@neuling.org
-Subject: [PATCH V9 04/13] powerpc,
- perf: Restore privilege level filter support for BHRB
-Date: Mon, 15 Jun 2015 17:40:59 +0530
-Message-Id: <1434370268-19056-5-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V9 06/13] powerpc, perf: Re organize BHRB processing
+Date: Mon, 15 Jun 2015 17:41:01 +0530
+Message-Id: <1434370268-19056-7-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,98 +43,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-'commit 9de5cb0f6df8 ("powerpc/perf: Add per-event excludes on Power8")'
-broke the PMU based BHRB privilege level filter. BHRB depends on the
-same MMCR0 bits for privilege level filter which was used to freeze all
-the PMCs as a group. Once we moved to individual event based privilege
-filters through MMCR2 register on POWER8, event associated privilege
-filters are no longer applicable to the BHRB captured branches.
-
-This patch solves the problem by restoring to the previous method of
-privilege level filters for the event in case BHRB based branch stack
-sampling is requested. This patch also changes 'check_excludes' for
-the same reason.
+This patch cleans up some existing indentation problem in code and
+re organizes the BHRB processing code with an helper function named
+'update_branch_entry' making it more readable. This patch does not
+change any functionality.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/core-book3s.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+ arch/powerpc/perf/core-book3s.c | 109 ++++++++++++++++++++--------------------
+ 1 file changed, 54 insertions(+), 55 deletions(-)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 7a03cce..892340e 100644
+index a7be394..ea77057 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -930,7 +930,7 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
-  * added events.
-  */
- static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
--			  int n_prev, int n_new)
-+			  int n_prev, int n_new, int bhrb_users)
+@@ -412,11 +412,19 @@ static __u64 power_pmu_bhrb_to(u64 addr)
+ 	return target - (unsigned long)&instr + addr;
+ }
+ 
++static void insert_branch(struct cpu_hw_events *cpuhw,
++			int index, u64 from, u64 to, int mispred)
++{
++	cpuhw->bhrb_entries[index].from = from;
++	cpuhw->bhrb_entries[index].to = to;
++	cpuhw->bhrb_entries[index].mispred = mispred;
++	cpuhw->bhrb_entries[index].predicted = ~mispred;
++}
++
+ /* Processing BHRB entries */
+ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
  {
- 	int eu = 0, ek = 0, eh = 0;
- 	int i, n, first;
-@@ -939,9 +939,10 @@ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
- 	/*
- 	 * If the PMU we're on supports per event exclude settings then we
- 	 * don't need to do any of this logic. NB. This assumes no PMU has both
--	 * per event exclude and limited PMCs.
-+	 * per event exclude and limited PMCs. But again if the event has also
-+	 * requested for branch stack sampling, then process the logic here.
- 	 */
--	if (ppmu->flags & PPMU_ARCH_207S)
-+	if ((ppmu->flags & PPMU_ARCH_207S) && !bhrb_users)
- 		return 0;
+-	u64 val;
+-	u64 addr;
++	u64 val, addr, to_addr;
+ 	int r_index, u_index;
+ 	bool mispred;
  
- 	n = n_prev + n_new;
-@@ -1259,7 +1260,7 @@ static void power_pmu_enable(struct pmu *pmu)
- 		goto out;
+@@ -428,65 +436,56 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 		if (!val)
+ 			/* Terminal marker: End of valid BHRB entries */
+ 			break;
+-		else {
+-			addr = val & BHRB_EA;
+-			mispred = val & BHRB_PREDICTION;
+ 
+-			if (!addr)
+-				/* invalid entry */
+-				continue;
++		addr = val & BHRB_EA;
++		mispred = val & BHRB_PREDICTION;
++
++		if (!addr)
++			/* invalid entry */
++			continue;
+ 
+-			/* Branches are read most recent first (ie. mfbhrb 0 is
+-			 * the most recent branch).
+-			 * There are two types of valid entries:
+-			 * 1) a target entry which is the to address of a
+-			 *    computed goto like a blr,bctr,btar.  The next
+-			 *    entry read from the bhrb will be branch
+-			 *    corresponding to this target (ie. the actual
+-			 *    blr/bctr/btar instruction).
+-			 * 2) a from address which is an actual branch.  If a
+-			 *    target entry proceeds this, then this is the
+-			 *    matching branch for that target.  If this is not
+-			 *    following a target entry, then this is a branch
+-			 *    where the target is given as an immediate field
+-			 *    in the instruction (ie. an i or b form branch).
+-			 *    In this case we need to read the instruction from
+-			 *    memory to determine the target/to address.
++		/* Branches are read most recent first (ie. mfbhrb 0 is
++		 * the most recent branch).
++		 * There are two types of valid entries:
++		 * 1) a target entry which is the to address of a
++		 *    computed goto like a blr,bctr,btar.  The next
++		 *    entry read from the bhrb will be branch
++		 *    corresponding to this target (ie. the actual
++		 *    blr/bctr/btar instruction).
++		 * 2) a from address which is an actual branch.  If a
++		 *    target entry proceeds this, then this is the
++		 *    matching branch for that target.  If this is not
++		 *    following a target entry, then this is a branch
++		 *    where the target is given as an immediate field
++		 *    in the instruction (ie. an i or b form branch).
++		 *    In this case we need to read the instruction from
++		 *    memory to determine the target/to address.
++		 */
++		if (val & BHRB_TARGET) {
++			/* Target branches use two entries
++			 * (ie. computed gotos/XL form)
+ 			 */
++			to_addr = addr;
++
++			/* Get from address in next entry */
++			val = read_bhrb(r_index++);
++			if (!val)
++				break;
++			addr = val & BHRB_EA;
+ 			if (val & BHRB_TARGET) {
+-				/* Target branches use two entries
+-				 * (ie. computed gotos/XL form)
+-				 */
+-				cpuhw->bhrb_entries[u_index].to = addr;
+-				cpuhw->bhrb_entries[u_index].mispred = mispred;
+-				cpuhw->bhrb_entries[u_index].predicted =
+-								~mispred;
+-
+-				/* Get from address in next entry */
+-				val = read_bhrb(r_index++);
+-				if (!val)
+-					break;
+-				addr = val & BHRB_EA;
+-				if (val & BHRB_TARGET) {
+-					/* Shouldn't have two targets in a
+-					   row.. Reset index and try again */
+-					r_index--;
+-					addr = 0;
+-				}
+-				cpuhw->bhrb_entries[u_index].from = addr;
+-			} else {
+-				/* Branches to immediate field 
+-				   (ie I or B form) */
+-				cpuhw->bhrb_entries[u_index].from = addr;
+-				cpuhw->bhrb_entries[u_index].to =
+-					power_pmu_bhrb_to(addr);
+-				cpuhw->bhrb_entries[u_index].mispred = mispred;
+-				cpuhw->bhrb_entries[u_index].predicted =
+-								~mispred;
++				/* Shouldn't have two targets in a
++				   row.. Reset index and try again */
++				r_index--;
++				addr = 0;
+ 			}
+-			u_index++;
+-
++			insert_branch(cpuhw, u_index, addr, to_addr, mispred);
++		} else {
++			/* Branches to immediate field
++			   (ie I or B form) */
++			to_addr = power_pmu_bhrb_to(addr);
++			insert_branch(cpuhw, u_index, addr, to_addr, mispred);
+ 		}
++		u_index++;
  	}
- 
--	if (!(ppmu->flags & PPMU_ARCH_207S)) {
-+	if (!(ppmu->flags & PPMU_ARCH_207S) || (cpuhw->bhrb_users != 0)) {
- 		/*
- 		 * Add in MMCR0 freeze bits corresponding to the attr.exclude_*
- 		 * bits for the first event. We have already checked that all
-@@ -1284,7 +1285,7 @@ static void power_pmu_enable(struct pmu *pmu)
- 	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
- 	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
- 				| MMCR0_FC);
--	if (ppmu->flags & PPMU_ARCH_207S)
-+	if ((ppmu->flags & PPMU_ARCH_207S) && (cpuhw->bhrb_users == 0))
- 		mtspr(SPRN_MMCR2, cpuhw->mmcr[3]);
- 
- 	/*
-@@ -1436,7 +1437,8 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
- 	if (cpuhw->group_flag & PERF_EVENT_TXN)
- 		goto nocheck;
- 
--	if (check_excludes(cpuhw->event, cpuhw->flags, n0, 1))
-+	if (check_excludes(cpuhw->event, cpuhw->flags,
-+				n0, 1, cpuhw->bhrb_users))
- 		goto out;
- 	if (power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n0 + 1))
- 		goto out;
-@@ -1615,7 +1617,7 @@ static int power_pmu_commit_txn(struct pmu *pmu)
- 		return -EAGAIN;
- 	cpuhw = this_cpu_ptr(&cpu_hw_events);
- 	n = cpuhw->n_events;
--	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n))
-+	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n, cpuhw->bhrb_users))
- 		return -EAGAIN;
- 	i = power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n);
- 	if (i < 0)
-@@ -1828,10 +1830,10 @@ static int power_pmu_event_init(struct perf_event *event)
- 	events[n] = ev;
- 	ctrs[n] = event;
- 	cflags[n] = flags;
--	if (check_excludes(ctrs, cflags, n, 1))
-+	cpuhw = this_cpu_ptr(&cpu_hw_events);
-+	if (check_excludes(ctrs, cflags, n, 1, cpuhw->bhrb_users))
- 		return -EINVAL;
- 
--	cpuhw = this_cpu_ptr(&cpu_hw_events);
- 	err = power_check_constraints(cpuhw, events, cflags, n + 1);
- 
- 	if (has_branch_stack(event)) {
+ 	cpuhw->bhrb_stack.nr = u_index;
+ 	return;
 -- 
 2.1.0
