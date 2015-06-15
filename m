@@ -2,36 +2,37 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2088F1A0E97
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB4BA1A0F4E
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:12:09 +1000 (AEST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5ADC51402A9
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:12:07 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 3D9631402AB
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:12:09 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 15 Jun 2015 17:42:06 +0530
+ Mon, 15 Jun 2015 17:42:07 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id C16CA3940053
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:42:03 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0CCBB1258061
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:44:37 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5FCBAe78126778
+ t5FCBAxV1769968
  for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:41:11 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5FBD325024960
+ t5FBD3kx024977
  for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 16:43:04 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: dja@axtens.net, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
  mikey@neuling.org
-Subject: [PATCH V9 02/13] powerpc, perf: Change type of the bhrb_users variable
-Date: Mon, 15 Jun 2015 17:40:57 +0530
-Message-Id: <1434370268-19056-3-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V9 04/13] powerpc,
+ perf: Restore privilege level filter support for BHRB
+Date: Mon, 15 Jun 2015 17:40:59 +0530
+Message-Id: <1434370268-19056-5-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,27 +44,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch just changes data type of bhrb_users variable from
-int to unsigned int because it never contains a negative value.
+'commit 9de5cb0f6df8 ("powerpc/perf: Add per-event excludes on Power8")'
+broke the PMU based BHRB privilege level filter. BHRB depends on the
+same MMCR0 bits for privilege level filter which was used to freeze all
+the PMCs as a group. Once we moved to individual event based privilege
+filters through MMCR2 register on POWER8, event associated privilege
+filters are no longer applicable to the BHRB captured branches.
 
-Reported-by: Daniel Axtens <dja@axtens.net>
+This patch solves the problem by restoring to the previous method of
+privilege level filters for the event in case BHRB based branch stack
+sampling is requested. This patch also changes 'check_excludes' for
+the same reason.
+
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/core-book3s.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/perf/core-book3s.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index c246e65..9798f00 100644
+index 7a03cce..892340e 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -53,7 +53,7 @@ struct cpu_hw_events {
+@@ -930,7 +930,7 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
+  * added events.
+  */
+ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
+-			  int n_prev, int n_new)
++			  int n_prev, int n_new, int bhrb_users)
+ {
+ 	int eu = 0, ek = 0, eh = 0;
+ 	int i, n, first;
+@@ -939,9 +939,10 @@ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
+ 	/*
+ 	 * If the PMU we're on supports per event exclude settings then we
+ 	 * don't need to do any of this logic. NB. This assumes no PMU has both
+-	 * per event exclude and limited PMCs.
++	 * per event exclude and limited PMCs. But again if the event has also
++	 * requested for branch stack sampling, then process the logic here.
+ 	 */
+-	if (ppmu->flags & PPMU_ARCH_207S)
++	if ((ppmu->flags & PPMU_ARCH_207S) && !bhrb_users)
+ 		return 0;
  
- 	/* BHRB bits */
- 	u64				bhrb_filter;	/* BHRB HW branch filter */
--	int				bhrb_users;
-+	unsigned int			bhrb_users;
- 	void				*bhrb_context;
- 	struct	perf_branch_stack	bhrb_stack;
- 	struct	perf_branch_entry	bhrb_entries[BHRB_MAX_ENTRIES];
+ 	n = n_prev + n_new;
+@@ -1259,7 +1260,7 @@ static void power_pmu_enable(struct pmu *pmu)
+ 		goto out;
+ 	}
+ 
+-	if (!(ppmu->flags & PPMU_ARCH_207S)) {
++	if (!(ppmu->flags & PPMU_ARCH_207S) || (cpuhw->bhrb_users != 0)) {
+ 		/*
+ 		 * Add in MMCR0 freeze bits corresponding to the attr.exclude_*
+ 		 * bits for the first event. We have already checked that all
+@@ -1284,7 +1285,7 @@ static void power_pmu_enable(struct pmu *pmu)
+ 	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+ 	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
+ 				| MMCR0_FC);
+-	if (ppmu->flags & PPMU_ARCH_207S)
++	if ((ppmu->flags & PPMU_ARCH_207S) && (cpuhw->bhrb_users == 0))
+ 		mtspr(SPRN_MMCR2, cpuhw->mmcr[3]);
+ 
+ 	/*
+@@ -1436,7 +1437,8 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
+ 	if (cpuhw->group_flag & PERF_EVENT_TXN)
+ 		goto nocheck;
+ 
+-	if (check_excludes(cpuhw->event, cpuhw->flags, n0, 1))
++	if (check_excludes(cpuhw->event, cpuhw->flags,
++				n0, 1, cpuhw->bhrb_users))
+ 		goto out;
+ 	if (power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n0 + 1))
+ 		goto out;
+@@ -1615,7 +1617,7 @@ static int power_pmu_commit_txn(struct pmu *pmu)
+ 		return -EAGAIN;
+ 	cpuhw = this_cpu_ptr(&cpu_hw_events);
+ 	n = cpuhw->n_events;
+-	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n))
++	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n, cpuhw->bhrb_users))
+ 		return -EAGAIN;
+ 	i = power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n);
+ 	if (i < 0)
+@@ -1828,10 +1830,10 @@ static int power_pmu_event_init(struct perf_event *event)
+ 	events[n] = ev;
+ 	ctrs[n] = event;
+ 	cflags[n] = flags;
+-	if (check_excludes(ctrs, cflags, n, 1))
++	cpuhw = this_cpu_ptr(&cpu_hw_events);
++	if (check_excludes(ctrs, cflags, n, 1, cpuhw->bhrb_users))
+ 		return -EINVAL;
+ 
+-	cpuhw = this_cpu_ptr(&cpu_hw_events);
+ 	err = power_check_constraints(cpuhw, events, cflags, n + 1);
+ 
+ 	if (has_branch_stack(event)) {
 -- 
 2.1.0
