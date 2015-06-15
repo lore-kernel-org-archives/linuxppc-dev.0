@@ -1,12 +1,12 @@
 Return-Path: <dave.long@linaro.org>
-Received: from mail-qk0-f181.google.com (mail-qk0-f181.google.com
- [209.85.220.181])
+Received: from mail-qk0-f171.google.com (mail-qk0-f171.google.com
+ [209.85.220.171])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7853A1A0396
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 02:43:06 +1000 (AEST)
-Received: by qkfe185 with SMTP id e185so16190925qkf.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 09:43:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 25EC31A0394
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 02:43:08 +1000 (AEST)
+Received: by qkdm188 with SMTP id m188so35504688qkd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 09:43:06 -0700 (PDT)
 From: David Long <dave.long@linaro.org>
 To: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
  Anton Blanchard <anton@samba.org>,
@@ -26,10 +26,9 @@ To: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
  linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
  linux-sh@vger.kernel.org, linux390@de.ibm.com,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: [PATCH 1/2] Move the pt_regs_offset struct definition from arch to
- common include file
-Date: Mon, 15 Jun 2015 12:42:58 -0400
-Message-Id: <1434386579-6045-2-git-send-email-dave.long@linaro.org>
+Subject: [PATCH 2/2] Consolidate redundant register/stack access code
+Date: Mon, 15 Jun 2015 12:42:59 -0400
+Message-Id: <1434386579-6045-3-git-send-email-dave.long@linaro.org>
 In-Reply-To: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
 References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,102 +42,695 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "David A. Long" <dave.long@linaro.org>
 
-The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
- feature and has identical definitions in four different arch ptrace.h
-include files. It seems unlikely that definition would ever need to be
-changed regardless of architecture so lets move it into
-include/linux/ptrace.h.
+Several architectures have identical or functionally equivalent code
+implementing parts of the HAVE_REGS_AND_STACK_ACCESS_API feature.  Move
+that code out of the architecture directories.
 
 Signed-off-by: David A. Long <dave.long@linaro.org>
 ---
- arch/arm/kernel/ptrace.c     | 5 -----
- arch/powerpc/kernel/ptrace.c | 5 -----
- arch/sh/include/asm/ptrace.h | 5 -----
- arch/x86/kernel/ptrace.c     | 5 -----
- include/linux/ptrace.h       | 9 +++++++++
- 5 files changed, 9 insertions(+), 20 deletions(-)
+ arch/arm/include/asm/ptrace.h          |  6 ---
+ arch/arm/kernel/ptrace.c               | 67 +-------------------------------
+ arch/hexagon/include/uapi/asm/ptrace.h |  3 --
+ arch/powerpc/include/asm/ptrace.h      | 38 ------------------
+ arch/powerpc/kernel/ptrace.c           | 34 +----------------
+ arch/s390/include/asm/ptrace.h         |  3 --
+ arch/s390/kernel/ptrace.c              | 70 ++++++++++------------------------
+ arch/sh/include/asm/ptrace.h           | 39 -------------------
+ arch/sh/kernel/Makefile                |  2 +-
+ arch/sh/kernel/ptrace.c                | 33 ----------------
+ arch/sh/kernel/ptrace_32.c             |  2 +-
+ arch/sh/kernel/ptrace_64.c             |  2 +-
+ arch/x86/include/asm/ptrace.h          | 37 ------------------
+ arch/x86/kernel/ptrace.c               | 34 +----------------
+ include/linux/ptrace.h                 | 42 ++++++++++++++++++++
+ kernel/ptrace.c                        | 38 ++++++++++++++++++
+ 16 files changed, 107 insertions(+), 343 deletions(-)
+ delete mode 100644 arch/sh/kernel/ptrace.c
 
+diff --git a/arch/arm/include/asm/ptrace.h b/arch/arm/include/asm/ptrace.h
+index 51622ba..84a0ea4 100644
+--- a/arch/arm/include/asm/ptrace.h
++++ b/arch/arm/include/asm/ptrace.h
+@@ -120,12 +120,6 @@ extern unsigned long profile_pc(struct pt_regs *regs);
+ #include <linux/types.h>
+ #define MAX_REG_OFFSET (offsetof(struct pt_regs, ARM_ORIG_r0))
+ 
+-extern int regs_query_register_offset(const char *name);
+-extern const char *regs_query_register_name(unsigned int offset);
+-extern bool regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr);
+-extern unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+-					       unsigned int n);
+-
+ /**
+  * regs_get_register() - get register value from its offset
+  * @regs:	   pt_regs from which register value is gotten
 diff --git a/arch/arm/kernel/ptrace.c b/arch/arm/kernel/ptrace.c
-index ef9119f..fb45cf1 100644
+index fb45cf1..d63ad99 100644
 --- a/arch/arm/kernel/ptrace.c
 +++ b/arch/arm/kernel/ptrace.c
-@@ -59,11 +59,6 @@
- #define BREAKINST_THUMB	0xde01
- #endif
- 
--struct pt_regs_offset {
--	const char *name;
--	int offset;
--};
--
- #define REG_OFFSET_NAME(r) \
+@@ -63,7 +63,7 @@
  	{.name = #r, .offset = offsetof(struct pt_regs, ARM_##r)}
  #define REG_OFFSET_END {.name = NULL, .offset = 0}
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index f21897b..ab81733 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -52,11 +52,6 @@
- #define PARAMETER_SAVE_AREA_OFFSET	48  /* bytes */
- #endif
  
--struct pt_regs_offset {
--	const char *name;
--	int offset;
--};
--
- #define STR(s)	#s			/* convert to string */
- #define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
- #define GPR_OFFSET_NAME(num)	\
-diff --git a/arch/sh/include/asm/ptrace.h b/arch/sh/include/asm/ptrace.h
-index 2506c7d..677c72b 100644
---- a/arch/sh/include/asm/ptrace.h
-+++ b/arch/sh/include/asm/ptrace.h
-@@ -23,11 +23,6 @@
- /*
-  * kprobe-based event tracer support
-  */
--struct pt_regs_offset {
--	const char *name;
--	int offset;
--};
--
- #define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
- #define REGS_OFFSET_NAME(num)	\
- 	{.name = __stringify(r##num), .offset = offsetof(struct pt_regs, regs[num])}
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index a7bc794..f135d35 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -53,11 +53,6 @@ enum x86_regset {
- 	REGSET_IOPERM32,
+-static const struct pt_regs_offset regoffset_table[] = {
++const struct pt_regs_offset regs_offset_table[] = {
+ 	REG_OFFSET_NAME(r0),
+ 	REG_OFFSET_NAME(r1),
+ 	REG_OFFSET_NAME(r2),
+@@ -85,71 +85,6 @@ static const struct pt_regs_offset regoffset_table[] = {
+ 	REG_OFFSET_END,
  };
  
--struct pt_regs_offset {
--	const char *name;
--	int offset;
--};
+-/**
+- * regs_query_register_offset() - query register offset from its name
+- * @name:	the name of a register
+- *
+- * regs_query_register_offset() returns the offset of a register in struct
+- * pt_regs from its name. If the name is invalid, this returns -EINVAL;
+- */
+-int regs_query_register_offset(const char *name)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (!strcmp(roff->name, name))
+-			return roff->offset;
+-	return -EINVAL;
+-}
 -
+-/**
+- * regs_query_register_name() - query register name from its offset
+- * @offset:	the offset of a register in struct pt_regs.
+- *
+- * regs_query_register_name() returns the name of a register from its
+- * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
+- */
+-const char *regs_query_register_name(unsigned int offset)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (roff->offset == offset)
+-			return roff->name;
+-	return NULL;
+-}
+-
+-/**
+- * regs_within_kernel_stack() - check the address in the stack
+- * @regs:      pt_regs which contains kernel stack pointer.
+- * @addr:      address which is checked.
+- *
+- * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
+- * If @addr is within the kernel stack, it returns true. If not, returns false.
+- */
+-bool regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
+-{
+-	return ((addr & ~(THREAD_SIZE - 1))  ==
+-		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
+-}
+-
+-/**
+- * regs_get_kernel_stack_nth() - get Nth entry of the stack
+- * @regs:	pt_regs which contains kernel stack pointer.
+- * @n:		stack entry number.
+- *
+- * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
+- * is specified by @regs. If the @n th entry is NOT in the kernel stack,
+- * this returns 0.
+- */
+-unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs, unsigned int n)
+-{
+-	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
+-	addr += n;
+-	if (regs_within_kernel_stack(regs, (unsigned long)addr))
+-		return *addr;
+-	else
+-		return 0;
+-}
+-
+ /*
+  * this routine will get a word off of the processes privileged stack.
+  * the offset is how far from the base addr as stored in the THREAD.
+diff --git a/arch/hexagon/include/uapi/asm/ptrace.h b/arch/hexagon/include/uapi/asm/ptrace.h
+index 065e5b3..0afb664 100644
+--- a/arch/hexagon/include/uapi/asm/ptrace.h
++++ b/arch/hexagon/include/uapi/asm/ptrace.h
+@@ -29,9 +29,6 @@
+ #define profile_pc(regs) instruction_pointer(regs)
+ 
+ /* kprobe-based event tracer support */
+-extern int regs_query_register_offset(const char *name);
+-extern const char *regs_query_register_name(unsigned int offset);
+-
+ #define current_pt_regs() \
+ 	((struct pt_regs *) \
+ 	 ((unsigned long)current_thread_info() + THREAD_SIZE) - 1)
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index c0c61fa..64b9b3d 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -156,8 +156,6 @@ do {									      \
+ 
+ #include <linux/stddef.h>
+ #include <linux/thread_info.h>
+-extern int regs_query_register_offset(const char *name);
+-extern const char *regs_query_register_name(unsigned int offset);
+ #define MAX_REG_OFFSET (offsetof(struct pt_regs, dsisr))
+ 
+ /**
+@@ -177,42 +175,6 @@ static inline unsigned long regs_get_register(struct pt_regs *regs,
+ 	return *(unsigned long *)((unsigned long)regs + offset);
+ }
+ 
+-/**
+- * regs_within_kernel_stack() - check the address in the stack
+- * @regs:      pt_regs which contains kernel stack pointer.
+- * @addr:      address which is checked.
+- *
+- * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
+- * If @addr is within the kernel stack, it returns true. If not, returns false.
+- */
+-
+-static inline bool regs_within_kernel_stack(struct pt_regs *regs,
+-						unsigned long addr)
+-{
+-	return ((addr & ~(THREAD_SIZE - 1))  ==
+-		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
+-}
+-
+-/**
+- * regs_get_kernel_stack_nth() - get Nth entry of the stack
+- * @regs:	pt_regs which contains kernel stack pointer.
+- * @n:		stack entry number.
+- *
+- * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
+- * is specified by @regs. If the @n th entry is NOT in the kernel stack,
+- * this returns 0.
+- */
+-static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+-						      unsigned int n)
+-{
+-	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
+-	addr += n;
+-	if (regs_within_kernel_stack(regs, (unsigned long)addr))
+-		return *addr;
+-	else
+-		return 0;
+-}
+-
+ #endif /* __ASSEMBLY__ */
+ 
+ #ifndef __powerpc64__
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index ab81733..e35c731 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -58,7 +58,7 @@
+ 	{.name = STR(gpr##num), .offset = offsetof(struct pt_regs, gpr[num])}
+ #define REG_OFFSET_END {.name = NULL, .offset = 0}
+ 
+-static const struct pt_regs_offset regoffset_table[] = {
++const struct pt_regs_offset regs_offset_table[] = {
+ 	GPR_OFFSET_NAME(0),
+ 	GPR_OFFSET_NAME(1),
+ 	GPR_OFFSET_NAME(2),
+@@ -108,38 +108,6 @@ static const struct pt_regs_offset regoffset_table[] = {
+ 	REG_OFFSET_END,
+ };
+ 
+-/**
+- * regs_query_register_offset() - query register offset from its name
+- * @name:	the name of a register
+- *
+- * regs_query_register_offset() returns the offset of a register in struct
+- * pt_regs from its name. If the name is invalid, this returns -EINVAL;
+- */
+-int regs_query_register_offset(const char *name)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (!strcmp(roff->name, name))
+-			return roff->offset;
+-	return -EINVAL;
+-}
+-
+-/**
+- * regs_query_register_name() - query register name from its offset
+- * @offset:	the offset of a register in struct pt_regs.
+- *
+- * regs_query_register_name() returns the name of a register from its
+- * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
+- */
+-const char *regs_query_register_name(unsigned int offset)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (roff->offset == offset)
+-			return roff->name;
+-	return NULL;
+-}
+-
+ /*
+  * does not yet catch signals sent when the child dies.
+  * in exit.c or in signal.c.
+diff --git a/arch/s390/include/asm/ptrace.h b/arch/s390/include/asm/ptrace.h
+index 6feda25..d4f9ad3 100644
+--- a/arch/s390/include/asm/ptrace.h
++++ b/arch/s390/include/asm/ptrace.h
+@@ -163,10 +163,7 @@ static inline void instruction_pointer_set(struct pt_regs *regs,
+ 	regs->psw.addr = val | PSW_ADDR_AMODE;
+ }
+ 
+-int regs_query_register_offset(const char *name);
+-const char *regs_query_register_name(unsigned int offset);
+ unsigned long regs_get_register(struct pt_regs *regs, unsigned int offset);
+-unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs, unsigned int n);
+ 
+ static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
+ {
+diff --git a/arch/s390/kernel/ptrace.c b/arch/s390/kernel/ptrace.c
+index d363c9c..a7eb15f 100644
+--- a/arch/s390/kernel/ptrace.c
++++ b/arch/s390/kernel/ptrace.c
+@@ -1474,9 +1474,27 @@ const struct user_regset_view *task_user_regset_view(struct task_struct *task)
+ 	return &user_s390_view;
+ }
+ 
+-static const char *gpr_names[NUM_GPRS] = {
+-	"r0", "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",
+-	"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
++#define REG_OFFSET_NAME(r) {.name = "r" #r, .offset = r}
++#define REG_OFFSET_END {.name = NULL, .offset = 0}
++
++const struct pt_regs_offset regs_offset_table[NUM_GPRS+1] = {
++	REG_OFFSET_NAME(0),
++	REG_OFFSET_NAME(1),
++	REG_OFFSET_NAME(2),
++	REG_OFFSET_NAME(3),
++	REG_OFFSET_NAME(4),
++	REG_OFFSET_NAME(5),
++	REG_OFFSET_NAME(6),
++	REG_OFFSET_NAME(7),
++	REG_OFFSET_NAME(8),
++	REG_OFFSET_NAME(9),
++	REG_OFFSET_NAME(10),
++	REG_OFFSET_NAME(11),
++	REG_OFFSET_NAME(12),
++	REG_OFFSET_NAME(13),
++	REG_OFFSET_NAME(14),
++	REG_OFFSET_NAME(15),
++	REG_OFFSET_END
+ };
+ 
+ unsigned long regs_get_register(struct pt_regs *regs, unsigned int offset)
+@@ -1485,49 +1503,3 @@ unsigned long regs_get_register(struct pt_regs *regs, unsigned int offset)
+ 		return 0;
+ 	return regs->gprs[offset];
+ }
+-
+-int regs_query_register_offset(const char *name)
+-{
+-	unsigned long offset;
+-
+-	if (!name || *name != 'r')
+-		return -EINVAL;
+-	if (kstrtoul(name + 1, 10, &offset))
+-		return -EINVAL;
+-	if (offset >= NUM_GPRS)
+-		return -EINVAL;
+-	return offset;
+-}
+-
+-const char *regs_query_register_name(unsigned int offset)
+-{
+-	if (offset >= NUM_GPRS)
+-		return NULL;
+-	return gpr_names[offset];
+-}
+-
+-static int regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
+-{
+-	unsigned long ksp = kernel_stack_pointer(regs);
+-
+-	return (addr & ~(THREAD_SIZE - 1)) == (ksp & ~(THREAD_SIZE - 1));
+-}
+-
+-/**
+- * regs_get_kernel_stack_nth() - get Nth entry of the stack
+- * @regs:pt_regs which contains kernel stack pointer.
+- * @n:stack entry number.
+- *
+- * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
+- * is specifined by @regs. If the @n th entry is NOT in the kernel stack,
+- * this returns 0.
+- */
+-unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs, unsigned int n)
+-{
+-	unsigned long addr;
+-
+-	addr = kernel_stack_pointer(regs) + n * sizeof(long);
+-	if (!regs_within_kernel_stack(regs, addr))
+-		return 0;
+-	return *(unsigned long *)addr;
+-}
+diff --git a/arch/sh/include/asm/ptrace.h b/arch/sh/include/asm/ptrace.h
+index 677c72b..acfdc81 100644
+--- a/arch/sh/include/asm/ptrace.h
++++ b/arch/sh/include/asm/ptrace.h
+@@ -31,10 +31,6 @@
+ #define REG_OFFSET_END {.name = NULL, .offset = 0}
+ 
+ /* Query offset/name of register from its name/offset */
+-extern int regs_query_register_offset(const char *name);
+-extern const char *regs_query_register_name(unsigned int offset);
+-
+-extern const struct pt_regs_offset regoffset_table[];
+ 
+ /**
+  * regs_get_register() - get register value from its offset
+@@ -53,41 +49,6 @@ static inline unsigned long regs_get_register(struct pt_regs *regs,
+ 	return *(unsigned long *)((unsigned long)regs + offset);
+ }
+ 
+-/**
+- * regs_within_kernel_stack() - check the address in the stack
+- * @regs:	pt_regs which contains kernel stack pointer.
+- * @addr:	address which is checked.
+- *
+- * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
+- * If @addr is within the kernel stack, it returns true. If not, returns false.
+- */
+-static inline int regs_within_kernel_stack(struct pt_regs *regs,
+-					   unsigned long addr)
+-{
+-	return ((addr & ~(THREAD_SIZE - 1))  ==
+-		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
+-}
+-
+-/**
+- * regs_get_kernel_stack_nth() - get Nth entry of the stack
+- * @regs:	pt_regs which contains kernel stack pointer.
+- * @n:		stack entry number.
+- *
+- * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
+- * is specified by @regs. If the @n th entry is NOT in the kernel stack,
+- * this returns 0.
+- */
+-static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+-						      unsigned int n)
+-{
+-	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
+-	addr += n;
+-	if (regs_within_kernel_stack(regs, (unsigned long)addr))
+-		return *addr;
+-	else
+-		return 0;
+-}
+-
+ struct perf_event;
+ struct perf_sample_data;
+ 
+diff --git a/arch/sh/kernel/Makefile b/arch/sh/kernel/Makefile
+index 2ccf36c..4ae9a11 100644
+--- a/arch/sh/kernel/Makefile
++++ b/arch/sh/kernel/Makefile
+@@ -14,7 +14,7 @@ CFLAGS_REMOVE_return_address.o = -pg
+ obj-y	:= debugtraps.o dma-nommu.o dumpstack.o 		\
+ 	   idle.o io.o irq.o irq_$(BITS).o kdebugfs.o			\
+ 	   machvec.o nmi_debug.o process.o				\
+-	   process_$(BITS).o ptrace.o ptrace_$(BITS).o			\
++	   process_$(BITS).o ptrace_$(BITS).o				\
+ 	   reboot.o return_address.o					\
+ 	   setup.o signal_$(BITS).o sys_sh.o 				\
+ 	   syscalls_$(BITS).o time.o topology.o traps.o			\
+diff --git a/arch/sh/kernel/ptrace.c b/arch/sh/kernel/ptrace.c
+deleted file mode 100644
+index 0a05983..0000000
+--- a/arch/sh/kernel/ptrace.c
++++ /dev/null
+@@ -1,33 +0,0 @@
+-#include <linux/ptrace.h>
+-
+-/**
+- * regs_query_register_offset() - query register offset from its name
+- * @name:	the name of a register
+- *
+- * regs_query_register_offset() returns the offset of a register in struct
+- * pt_regs from its name. If the name is invalid, this returns -EINVAL;
+- */
+-int regs_query_register_offset(const char *name)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (!strcmp(roff->name, name))
+-			return roff->offset;
+-	return -EINVAL;
+-}
+-
+-/**
+- * regs_query_register_name() - query register name from its offset
+- * @offset:	the offset of a register in struct pt_regs.
+- *
+- * regs_query_register_name() returns the name of a register from its
+- * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
+- */
+-const char *regs_query_register_name(unsigned int offset)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (roff->offset == offset)
+-			return roff->name;
+-	return NULL;
+-}
+diff --git a/arch/sh/kernel/ptrace_32.c b/arch/sh/kernel/ptrace_32.c
+index c1a6b89..839f4e7 100644
+--- a/arch/sh/kernel/ptrace_32.c
++++ b/arch/sh/kernel/ptrace_32.c
+@@ -276,7 +276,7 @@ static int dspregs_active(struct task_struct *target,
+ }
+ #endif
+ 
+-const struct pt_regs_offset regoffset_table[] = {
++const struct pt_regs_offset regs_offset_table[] = {
+ 	REGS_OFFSET_NAME(0),
+ 	REGS_OFFSET_NAME(1),
+ 	REGS_OFFSET_NAME(2),
+diff --git a/arch/sh/kernel/ptrace_64.c b/arch/sh/kernel/ptrace_64.c
+index 5cea973..68faa1f 100644
+--- a/arch/sh/kernel/ptrace_64.c
++++ b/arch/sh/kernel/ptrace_64.c
+@@ -252,7 +252,7 @@ static int fpregs_active(struct task_struct *target,
+ }
+ #endif
+ 
+-const struct pt_regs_offset regoffset_table[] = {
++const struct pt_regs_offset regs_offset_table[] = {
+ 	REG_OFFSET_NAME(pc),
+ 	REG_OFFSET_NAME(sr),
+ 	REG_OFFSET_NAME(syscall_nr),
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index 5fabf13..c01247c 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -157,8 +157,6 @@ static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
+ #include <asm-generic/ptrace.h>
+ 
+ /* Query offset/name of register from its name/offset */
+-extern int regs_query_register_offset(const char *name);
+-extern const char *regs_query_register_name(unsigned int offset);
+ #define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
+ 
+ /**
+@@ -187,41 +185,6 @@ static inline unsigned long regs_get_register(struct pt_regs *regs,
+ 	return *(unsigned long *)((unsigned long)regs + offset);
+ }
+ 
+-/**
+- * regs_within_kernel_stack() - check the address in the stack
+- * @regs:	pt_regs which contains kernel stack pointer.
+- * @addr:	address which is checked.
+- *
+- * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
+- * If @addr is within the kernel stack, it returns true. If not, returns false.
+- */
+-static inline int regs_within_kernel_stack(struct pt_regs *regs,
+-					   unsigned long addr)
+-{
+-	return ((addr & ~(THREAD_SIZE - 1))  ==
+-		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
+-}
+-
+-/**
+- * regs_get_kernel_stack_nth() - get Nth entry of the stack
+- * @regs:	pt_regs which contains kernel stack pointer.
+- * @n:		stack entry number.
+- *
+- * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
+- * is specified by @regs. If the @n th entry is NOT in the kernel stack,
+- * this returns 0.
+- */
+-static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+-						      unsigned int n)
+-{
+-	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
+-	addr += n;
+-	if (regs_within_kernel_stack(regs, (unsigned long)addr))
+-		return *addr;
+-	else
+-		return 0;
+-}
+-
+ #define arch_has_single_step()	(1)
+ #ifdef CONFIG_X86_DEBUGCTLMSR
+ #define arch_has_block_step()	(1)
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index f135d35..9daab75 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -56,7 +56,7 @@ enum x86_regset {
  #define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
  #define REG_OFFSET_END {.name = NULL, .offset = 0}
  
+-static const struct pt_regs_offset regoffset_table[] = {
++const struct pt_regs_offset regs_offset_table[] = {
+ #ifdef CONFIG_X86_64
+ 	REG_OFFSET_NAME(r15),
+ 	REG_OFFSET_NAME(r14),
+@@ -89,38 +89,6 @@ static const struct pt_regs_offset regoffset_table[] = {
+ 	REG_OFFSET_END,
+ };
+ 
+-/**
+- * regs_query_register_offset() - query register offset from its name
+- * @name:	the name of a register
+- *
+- * regs_query_register_offset() returns the offset of a register in struct
+- * pt_regs from its name. If the name is invalid, this returns -EINVAL;
+- */
+-int regs_query_register_offset(const char *name)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (!strcmp(roff->name, name))
+-			return roff->offset;
+-	return -EINVAL;
+-}
+-
+-/**
+- * regs_query_register_name() - query register name from its offset
+- * @offset:	the offset of a register in struct pt_regs.
+- *
+- * regs_query_register_name() returns the name of a register from its
+- * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
+- */
+-const char *regs_query_register_name(unsigned int offset)
+-{
+-	const struct pt_regs_offset *roff;
+-	for (roff = regoffset_table; roff->name != NULL; roff++)
+-		if (roff->offset == offset)
+-			return roff->name;
+-	return NULL;
+-}
+-
+ static const int arg_offs_table[] = {
+ #ifdef CONFIG_X86_32
+ 	[0] = offsetof(struct pt_regs, ax),
 diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
-index 987a73a..b0b1ee6 100644
+index b0b1ee6..055d9ac 100644
 --- a/include/linux/ptrace.h
 +++ b/include/linux/ptrace.h
-@@ -383,4 +383,13 @@ extern int task_current_syscall(struct task_struct *target, long *callno,
- 				unsigned long args[6], unsigned int maxargs,
- 				unsigned long *sp, unsigned long *pc);
+@@ -390,6 +390,48 @@ struct pt_regs_offset {
+ 	int offset;
+ };
  
-+#ifdef	CONFIG_HAVE_REGS_AND_STACK_ACCESS_API
++extern const struct pt_regs_offset regs_offset_table[];
 +
-+struct pt_regs_offset {
-+	const char *name;
-+	int offset;
-+};
++extern int regs_query_register_offset(const char *name);
++extern const char *regs_query_register_name(unsigned int offset);
 +
-+#endif	/* CONFIG_HAVE_REGS_AND_STACK_ACCESS_API */
++/**
++ * regs_within_kernel_stack() - check the address in the stack
++ * @regs:      pt_regs which contains kernel stack pointer.
++ * @addr:      address which is checked.
++ *
++ * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
++ * If @addr is within the kernel stack, it returns true. If not, returns false.
++ */
 +
++static inline bool regs_within_kernel_stack(struct pt_regs *regs,
++						unsigned long addr)
++{
++	return ((addr & ~(THREAD_SIZE - 1))  ==
++		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
++}
++
++/**
++ * regs_get_kernel_stack_nth() - get Nth entry of the stack
++ * @regs:	pt_regs which contains kernel stack pointer.
++ * @n:		stack entry number.
++ *
++ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
++ * is specified by @regs. If the @n th entry is NOT in the kernel stack,
++ * this returns 0.
++ */
++static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
++						      unsigned int n)
++{
++	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
++
++	addr += n;
++	if (regs_within_kernel_stack(regs, (unsigned long)addr))
++		return *addr;
++	else
++		return 0;
++}
++
+ #endif	/* CONFIG_HAVE_REGS_AND_STACK_ACCESS_API */
+ 
  #endif
+diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+index c8e0e05..20c08d9 100644
+--- a/kernel/ptrace.c
++++ b/kernel/ptrace.c
+@@ -1217,3 +1217,41 @@ COMPAT_SYSCALL_DEFINE4(ptrace, compat_long_t, request, compat_long_t, pid,
+ 	return ret;
+ }
+ #endif	/* CONFIG_COMPAT */
++
++#ifdef CONFIG_HAVE_REGS_AND_STACK_ACCESS_API
++
++/**
++ * regs_query_register_offset() - query register offset from its name
++ * @name:	the name of a register
++ *
++ * regs_query_register_offset() returns the offset of a register in struct
++ * pt_regs from its name. If the name is invalid, this returns -EINVAL;
++ */
++int regs_query_register_offset(const char *name)
++{
++	const struct pt_regs_offset *roff;
++
++	for (roff = regs_offset_table; roff->name != NULL; roff++)
++		if (!strcmp(roff->name, name))
++			return roff->offset;
++	return -EINVAL;
++}
++
++/**
++ * regs_query_register_name() - query register name from its offset
++ * @offset:	the offset of a register in struct pt_regs.
++ *
++ * regs_query_register_name() returns the name of a register from its
++ * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
++ */
++const char *regs_query_register_name(unsigned int offset)
++{
++	const struct pt_regs_offset *roff;
++
++	for (roff = regs_offset_table; roff->name != NULL; roff++)
++		if (roff->offset == offset)
++			return roff->name;
++	return NULL;
++}
++
++#endif /* CONFIG_HAVE_REGS_AND_STACK_ACCESS_API */
 -- 
 1.8.1.2
