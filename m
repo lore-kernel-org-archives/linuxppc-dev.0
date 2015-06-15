@@ -1,20 +1,18 @@
-Return-Path: <lizefan@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C1101A0377
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 13:38:49 +1000 (AEST)
-Message-ID: <557E4741.70606@huawei.com>
-Date: Mon, 15 Jun 2015 11:32:17 +0800
-From: Zefan Li <lizefan@huawei.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-CC: <stable@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: stable: Please include commit bb344ca5b90 ("powerpc/mpc85xx:
- Add ranges to etsec2 nodes")
-References: <20150326211427.GA20872@home.buserror.net>
-In-Reply-To: <20150326211427.GA20872@home.buserror.net>
-Content-Type: text/plain; charset="ISO-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8C1A1A0554
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 16:41:48 +1000 (AEST)
+In-Reply-To: <20150614074607.524658883@telegraphics.com.au>
+To: Finn Thain <fthain@telegraphics.com.au>, <linux-kernel@vger.kernel.org>,
+ <linux-m68k@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC,v2,01/24] macintosh/nvram: Remove as unused
+Message-Id: <20150615064148.83D59140291@ozlabs.org>
+Date: Mon, 15 Jun 2015 16:41:48 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,11 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/3/27 5:14, Scott Wood wrote:
-> Commit bb344ca5b90df6 ("powerpc/mpc85xx: Add ranges to etsec2 nodes")
-> fixes a bug that was exposed by commit 746c9e9f92dd ("of/base: Fix
-> PowerPC address parsing hack").  The latter commit was applied to stable
-> trees, so the former should be as well.
-> 
+On Sun, 2015-14-06 at 07:46:08 UTC, Finn Thain wrote:
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+>  drivers/macintosh/nvram.c |  130 ----------------------------------------------
+>  1 file changed, 130 deletions(-)
 
-Queued up for 3.4. Thanks!
+This seems uncontroversial, so I'll take it via powerpc for 4.1.
+
+In future please include the details on how/why it's unused in the changelog.
+
+Geert did the digging for you:
+
+  Removal seems to be forgotten by full-history-linux
+  commit 17c6f4635bea74e110ab3558d408c9cd218c568a
+  Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+  Date:   Fri Feb 6 14:20:56 2004 +1100
+  
+      ppc32: Rework nvram management
+  
+      move drivers/macintosh/nvram.c to drivers/char/generic_nvram.c,
+      update platform hooks,
+      fix powermac nvram driver for newer machines
+
+
+I'll fold that into the changelog.
+
+cheers
