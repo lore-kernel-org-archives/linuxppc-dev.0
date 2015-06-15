@@ -1,26 +1,26 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-oi0-x235.google.com (mail-oi0-x235.google.com
- [IPv6:2607:f8b0:4003:c06::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B9B071A1A93
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:14:59 +1000 (AEST)
-Received: by oiha141 with SMTP id a141so57354436oih.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 05:14:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0BF241A0E51
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:44:28 +1000 (AEST)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jianhua Xie
+ <Jianhua.Xie@freescale.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [RFC,v3 02/10] dpaa_eth: add support for DPAA Ethernet
+Date: Mon, 15 Jun 2015 12:44:14 +0000
+Message-ID: <BL2PR03MB54553C9839048902818ACE2E6B80@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
+ <DM2PR0301MB086380B3D89425345562F384F3BD0@DM2PR0301MB0863.namprd03.prod.outlook.com>
+ <BL2PR03MB545CA85B1FE886FCD07DE26E6BD0@BL2PR03MB545.namprd03.prod.outlook.com>
+ <1433947452.27504.9.camel@edumazet-glaptop2.roam.corp.google.com>
+In-Reply-To: <1433947452.27504.9.camel@edumazet-glaptop2.roam.corp.google.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1434365804-11523-1-git-send-email-geert@linux-m68k.org>
-References: <1434365804-11523-1-git-send-email-geert@linux-m68k.org>
-Date: Mon, 15 Jun 2015 14:14:57 +0200
-Message-ID: <CAMuHMdUmPhz+vBg2Hw8YnEmPEeJwQB1g1=Mxsdvp2fUOoz7=BQ@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.1-rc8
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "the arch/x86 maintainers" <x86@kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,52 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 15, 2015 at 12:56 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v4.1-rc8[1] to v4.1-rc7[3], the summaries are:
->   - build errors: +10/-7
-
-  + /home/kisskb/slave/src/Documentation/prctl/disable-tsc-ctxt-sw-stress-test.c:
-error: impossible register constraint in 'asm':  => 34:1
-  + /home/kisskb/slave/src/Documentation/prctl/disable-tsc-on-off-stress-test.c:
-error: impossible register constraint in 'asm':  => 36:1
-  + /home/kisskb/slave/src/Documentation/prctl/disable-tsc-test.c:
-error: impossible register constraint in 'asm':  => 36:1
-  + /home/kisskb/slave/src/Documentation/vDSO/vdso_standalone_test_x86.c:
-error: impossible register constraint in 'asm':  => 49:2
-
-i386-randconfig
-
-  + /home/kisskb/slave/src/arch/sh/mm/cache-sh4.c: error:
-'cached_to_uncached' undeclared (first use in this function):  =>
-99:17
-  + /home/kisskb/slave/src/arch/sh/mm/cache-sh4.c: error: implicit
-declaration of function 'cpu_context'
-[-Werror=implicit-function-declaration]:  => 192:2
-
-sh-randconfig
-
-  + error: No rule to make target include/config/auto.conf:  => N/A
-
-arm-randconfig
-
-  + error: aes.c: undefined reference to `.enable_kernel_altivec':  =>
-.text+0xc921e0), .text+0xc92394), .text+0xc92460)
-  + error: aes_cbc.c: undefined reference to `.enable_kernel_altivec':
- => .text+0xc92598), .text+0xc926f4)
-
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/9008/ (254 out of 257 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/8978/ (254 out of 257 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFcmljIER1bWF6ZXQgW21haWx0
+bzplcmljLmR1bWF6ZXRAZ21haWwuY29tXQ0KPiANCj4gT24gV2VkLCAyMDE1LTA2LTEwIGF0IDA3
+OjM4ICswMDAwLCBNYWRhbGluLUNyaXN0aWFuIEJ1Y3VyIHdyb3RlOg0KPiA+IEhpIEVyaWMsDQo+
+ID4NCj4gPiBDYW4geW91IHBsZWFzZSB0ZWxsIHVzIGlmIHRoaXMgY2hhbmdlIHdvdWxkIGJlIGZv
+ciB0aGUgYmV0dGVyPw0KPiA+DQo+ID4gSSB3YXMgYWJvdXQgdG8gc2F5IHllcyB0byB0aGlzIHJl
+cXVlc3QgYnV0IGNoZWNrZWQgYW5kIG5vIG90aGVyIEV0aGVybmV0DQo+IGRyaXZlciBzZWVtcyB0
+byB1c2UgdGhlIHF1ZXVlIHRyYW5zX3N0YXJ0Lg0KPiA+IEkgd2FzIGFibGUgdG8gZmluZCB5b3Vy
+IHBhdGNoICJuZXQ6IHR4IHNjYWxhYmlsaXR5IHdvcmtzIDogdHJhbnNfc3RhcnQiIFsNCj4gaHR0
+cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzI3MTA0LyBdIGJ1dCBkaWQgbm90IGZpbmQg
+bW9yZSBhYm91dCB0aGlzDQo+IHRvcGljLg0KPiA+DQo+IA0KPiBEcml2ZXJzIG5vIGxvbmdlciBo
+YXZlIHRvIHdvcnJ5IGFib3V0IHVwZGF0aW5nIHRyYW5zX3N0YXJ0IHRoZW1zZWx2ZXMuDQo+IENv
+cmUgbmV0d29ya2luZyBzdGFjayBoYW5kbGVzIHRoaXMuDQo+IA0KPiBDaGVjayB0eHFfdHJhbnNf
+dXBkYXRlKCkgZG9uZSBmcm9tIG5ldGRldl9zdGFydF94bWl0KCkNCg0KSSdsbCByZW1vdmUgdGhl
+IHVwZGF0ZXMsIHRoYW5rIHlvdS4NCg0KTWFkYWxpbg0K
