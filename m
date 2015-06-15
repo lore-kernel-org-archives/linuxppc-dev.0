@@ -1,21 +1,45 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-yk0-f177.google.com (mail-yk0-f177.google.com
+ [209.85.160.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3875D1A0E1E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 11:49:12 +1000 (AEST)
-Message-ID: <1434332951.19706.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/powernv: pnv_init_idle_states() should only run
- on powernv
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Date: Mon, 15 Jun 2015 11:49:11 +1000
-In-Reply-To: <557DAB91.7000100@linux.vnet.ibm.com>
-References: <1434103220-8591-1-git-send-email-mpe@ellerman.id.au>
- <557DAB91.7000100@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBDBE1A03ED
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 12:27:56 +1000 (AEST)
+Received: by ykaz81 with SMTP id z81so46174479yka.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Jun 2015 19:27:53 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.11.1506121512180.3786@nanos>
+References: <cover.1434079262.git.baolin.wang@linaro.org>
+ <alpine.DEB.2.11.1506121512180.3786@nanos>
+Date: Mon, 15 Jun 2015 10:27:53 +0800
+Message-ID: <CAMz4ku+yt=DWctKj+S4mTCKna-CyfXkhJhWLkJecBBXed39A7Q@mail.gmail.com>
+Subject: Re: [PATCH v5 00/24] Convert the posix_clock_operations and k_clock
+ structure to ready for 2038
+From: Baolin Wang <baolin.wang@linaro.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, John Stultz <john.stultz@linaro.org>,
+ Heena Sirwani <heenasirwani@gmail.com>, Xunlei Pang <pang.xunlei@linaro.org>,
+ peterz@infradead.org,
+ rafael.j.wysocki@intel.com, Greg KH <gregkh@linuxfoundation.org>,
+ Richard Cochran <richardcochran@gmail.com>, benh@kernel.crashing.org,
+ paulus@samba.org,
+ mpe@ellerman.id.au, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+ linux390@de.ibm.com, rth@twiddle.net, riel@redhat.com, cl@linux.com,
+ tj@kernel.org, =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+ Andrew Hunter <ahh@google.com>, Paul Turner <pjt@google.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+ Serge Hallyn <serge.hallyn@canonical.com>,
+ James Morris <james.l.morris@oracle.com>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Paul Moore <pmoore@redhat.com>,
+ Takashi Iwai <tiwai@suse.de>, Jeffrey Vander Stoep <jeffv@google.com>,
+ Jeffrey Layton <jlayton@primarydata.com>,
+ Kees Cook <keescook@chromium.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+ mark.d.rustad@intel.com,
+ linux-security-module <linux-security-module@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +49,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-06-14 at 21:58 +0530, Shreyas B Prabhu wrote:
-> 
-> On 06/12/2015 03:30 PM, Michael Ellerman wrote:
-> > Although this init call checks for device tree properties before doing
-> > anything, it should still only run on powernv machines.
-> > 
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > ---
-> >  arch/powerpc/platforms/powernv/idle.c | 3 +--
-> >  1 file changed, 1 insertion(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> > index bd39a120bd60..e8168cf13812 100644
-> > --- a/arch/powerpc/platforms/powernv/idle.c
-> > +++ b/arch/powerpc/platforms/powernv/idle.c
-> > @@ -289,5 +289,4 @@ out_free:
-> >  out:
-> >  	return 0;
-> >  }
-> > -
-> > -subsys_initcall(pnv_init_idle_states);
-> > +machine_subsys_initcall(powernv, pnv_init_idle_states);
-> > 
-> 
-> <asm/machdep.h> needs to be included, otherwise I get a build error.
+On 12 June 2015 at 21:16, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Fri, 12 Jun 2015, Baolin Wang wrote:
+>
+> Sigh. Again threading of the series failed. Some patches are, the
+> whole series is not. Can you please get your tools straight?
+>
+> You neither managed to cc me on the security patch.
+>
+>> - Modify the subject line and the changelog:
+>
+>>   timekeeping: Change the implementation of timekeeping_clocktai()
+>
+> Sigh. How is that better than the previous one? It's more accurate,
+> but equally useless.
+>
+> And of course you did not address my request to change the macro mess
+> in
+>
+>>   posix-timers: Introduce {get,put}_timespec and {get,put}_itimerspec
+>
+> according to the discussion with Arnd.
+>
+> Thanks,
+>
+>         tglx
 
-Ah yep, I built the wrong config to test :}
+Hi Thomas,
 
-> With that,
-> Reviewed-by: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Thanks for your comments, and i'll fix these problems you point out.
 
-Thanks for testing.
-
-cheers
+-- 
+Baolin.wang
+Best Regards
