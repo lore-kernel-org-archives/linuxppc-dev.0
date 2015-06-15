@@ -1,39 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-oi0-x235.google.com (mail-oi0-x235.google.com
+ [IPv6:2607:f8b0:4003:c06::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 150D61A0E59
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:12:19 +1000 (AEST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 60DBC14016A
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:12:18 +1000 (AEST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 15 Jun 2015 17:42:16 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 94AC0125805C
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:44:47 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5FCCB6h58261664
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:42:11 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5FBD3Ti025000
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 16:43:04 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: dja@axtens.net, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
- mikey@neuling.org
-Subject: [PATCH V9 06/13] powerpc, perf: Re organize BHRB processing
-Date: Mon, 15 Jun 2015 17:41:01 +0530
-Message-Id: <1434370268-19056-7-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9B071A1A93
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:14:59 +1000 (AEST)
+Received: by oiha141 with SMTP id a141so57354436oih.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 05:14:57 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1434365804-11523-1-git-send-email-geert@linux-m68k.org>
+References: <1434365804-11523-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 15 Jun 2015 14:14:57 +0200
+Message-ID: <CAMuHMdUmPhz+vBg2Hw8YnEmPEeJwQB1g1=Mxsdvp2fUOoz7=BQ@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.1-rc8
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "the arch/x86 maintainers" <x86@kernel.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,151 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch cleans up some existing indentation problem in code and
-re organizes the BHRB processing code with an helper function named
-'update_branch_entry' making it more readable. This patch does not
-change any functionality.
+On Mon, Jun 15, 2015 at 12:56 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v4.1-rc8[1] to v4.1-rc7[3], the summaries are:
+>   - build errors: +10/-7
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/perf/core-book3s.c | 109 ++++++++++++++++++++--------------------
- 1 file changed, 54 insertions(+), 55 deletions(-)
+  + /home/kisskb/slave/src/Documentation/prctl/disable-tsc-ctxt-sw-stress-test.c:
+error: impossible register constraint in 'asm':  => 34:1
+  + /home/kisskb/slave/src/Documentation/prctl/disable-tsc-on-off-stress-test.c:
+error: impossible register constraint in 'asm':  => 36:1
+  + /home/kisskb/slave/src/Documentation/prctl/disable-tsc-test.c:
+error: impossible register constraint in 'asm':  => 36:1
+  + /home/kisskb/slave/src/Documentation/vDSO/vdso_standalone_test_x86.c:
+error: impossible register constraint in 'asm':  => 49:2
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index a7be394..ea77057 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -412,11 +412,19 @@ static __u64 power_pmu_bhrb_to(u64 addr)
- 	return target - (unsigned long)&instr + addr;
- }
- 
-+static void insert_branch(struct cpu_hw_events *cpuhw,
-+			int index, u64 from, u64 to, int mispred)
-+{
-+	cpuhw->bhrb_entries[index].from = from;
-+	cpuhw->bhrb_entries[index].to = to;
-+	cpuhw->bhrb_entries[index].mispred = mispred;
-+	cpuhw->bhrb_entries[index].predicted = ~mispred;
-+}
-+
- /* Processing BHRB entries */
- static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- {
--	u64 val;
--	u64 addr;
-+	u64 val, addr, to_addr;
- 	int r_index, u_index;
- 	bool mispred;
- 
-@@ -428,65 +436,56 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- 		if (!val)
- 			/* Terminal marker: End of valid BHRB entries */
- 			break;
--		else {
--			addr = val & BHRB_EA;
--			mispred = val & BHRB_PREDICTION;
- 
--			if (!addr)
--				/* invalid entry */
--				continue;
-+		addr = val & BHRB_EA;
-+		mispred = val & BHRB_PREDICTION;
-+
-+		if (!addr)
-+			/* invalid entry */
-+			continue;
- 
--			/* Branches are read most recent first (ie. mfbhrb 0 is
--			 * the most recent branch).
--			 * There are two types of valid entries:
--			 * 1) a target entry which is the to address of a
--			 *    computed goto like a blr,bctr,btar.  The next
--			 *    entry read from the bhrb will be branch
--			 *    corresponding to this target (ie. the actual
--			 *    blr/bctr/btar instruction).
--			 * 2) a from address which is an actual branch.  If a
--			 *    target entry proceeds this, then this is the
--			 *    matching branch for that target.  If this is not
--			 *    following a target entry, then this is a branch
--			 *    where the target is given as an immediate field
--			 *    in the instruction (ie. an i or b form branch).
--			 *    In this case we need to read the instruction from
--			 *    memory to determine the target/to address.
-+		/* Branches are read most recent first (ie. mfbhrb 0 is
-+		 * the most recent branch).
-+		 * There are two types of valid entries:
-+		 * 1) a target entry which is the to address of a
-+		 *    computed goto like a blr,bctr,btar.  The next
-+		 *    entry read from the bhrb will be branch
-+		 *    corresponding to this target (ie. the actual
-+		 *    blr/bctr/btar instruction).
-+		 * 2) a from address which is an actual branch.  If a
-+		 *    target entry proceeds this, then this is the
-+		 *    matching branch for that target.  If this is not
-+		 *    following a target entry, then this is a branch
-+		 *    where the target is given as an immediate field
-+		 *    in the instruction (ie. an i or b form branch).
-+		 *    In this case we need to read the instruction from
-+		 *    memory to determine the target/to address.
-+		 */
-+		if (val & BHRB_TARGET) {
-+			/* Target branches use two entries
-+			 * (ie. computed gotos/XL form)
- 			 */
-+			to_addr = addr;
-+
-+			/* Get from address in next entry */
-+			val = read_bhrb(r_index++);
-+			if (!val)
-+				break;
-+			addr = val & BHRB_EA;
- 			if (val & BHRB_TARGET) {
--				/* Target branches use two entries
--				 * (ie. computed gotos/XL form)
--				 */
--				cpuhw->bhrb_entries[u_index].to = addr;
--				cpuhw->bhrb_entries[u_index].mispred = mispred;
--				cpuhw->bhrb_entries[u_index].predicted =
--								~mispred;
--
--				/* Get from address in next entry */
--				val = read_bhrb(r_index++);
--				if (!val)
--					break;
--				addr = val & BHRB_EA;
--				if (val & BHRB_TARGET) {
--					/* Shouldn't have two targets in a
--					   row.. Reset index and try again */
--					r_index--;
--					addr = 0;
--				}
--				cpuhw->bhrb_entries[u_index].from = addr;
--			} else {
--				/* Branches to immediate field 
--				   (ie I or B form) */
--				cpuhw->bhrb_entries[u_index].from = addr;
--				cpuhw->bhrb_entries[u_index].to =
--					power_pmu_bhrb_to(addr);
--				cpuhw->bhrb_entries[u_index].mispred = mispred;
--				cpuhw->bhrb_entries[u_index].predicted =
--								~mispred;
-+				/* Shouldn't have two targets in a
-+				   row.. Reset index and try again */
-+				r_index--;
-+				addr = 0;
- 			}
--			u_index++;
--
-+			insert_branch(cpuhw, u_index, addr, to_addr, mispred);
-+		} else {
-+			/* Branches to immediate field
-+			   (ie I or B form) */
-+			to_addr = power_pmu_bhrb_to(addr);
-+			insert_branch(cpuhw, u_index, addr, to_addr, mispred);
- 		}
-+		u_index++;
- 	}
- 	cpuhw->bhrb_stack.nr = u_index;
- 	return;
--- 
-2.1.0
+i386-randconfig
+
+  + /home/kisskb/slave/src/arch/sh/mm/cache-sh4.c: error:
+'cached_to_uncached' undeclared (first use in this function):  =>
+99:17
+  + /home/kisskb/slave/src/arch/sh/mm/cache-sh4.c: error: implicit
+declaration of function 'cpu_context'
+[-Werror=implicit-function-declaration]:  => 192:2
+
+sh-randconfig
+
+  + error: No rule to make target include/config/auto.conf:  => N/A
+
+arm-randconfig
+
+  + error: aes.c: undefined reference to `.enable_kernel_altivec':  =>
+.text+0xc921e0), .text+0xc92394), .text+0xc92460)
+  + error: aes_cbc.c: undefined reference to `.enable_kernel_altivec':
+ => .text+0xc92598), .text+0xc926f4)
+
+powerpc-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/9008/ (254 out of 257 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/8978/ (254 out of 257 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
