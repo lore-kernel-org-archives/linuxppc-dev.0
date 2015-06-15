@@ -1,16 +1,40 @@
-Return-Path: <jk@ozlabs.org>
+Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF9651A0E4E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 19:25:39 +1000 (AEST)
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Subject: [PATCH] powerpc/powernv: fix construction of opal PRD messages
-Message-Id: <1434360334.29351.605847485345.1.gpush@pablo>
-To: linuxppc-dev@lists.ozlabs.org
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Mon, 15 Jun 2015 17:25:34 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 207801A0E50
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:11:18 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6FEDB140216
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 22:11:17 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 15 Jun 2015 17:41:15 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id C5881125805C
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:43:46 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5FCBC1k3998124
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 17:41:13 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5FBD4mm025093
+ for <linuxppc-dev@ozlabs.org>; Mon, 15 Jun 2015 16:43:05 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: dja@axtens.net, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
+ mikey@neuling.org
+Subject: [PATCH V9 12/13] powerpc,
+ perf: Enable privilege mode SW branch filters
+Date: Mon, 15 Jun 2015 17:41:07 +0530
+Message-Id: <1434370268-19056-13-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,68 +44,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We currently have a bug in the PRD code, where the contents of an
-incoming message (beyond the header) will be overwritten by the list
-item manipulations when adding to to the prd_msg_queue.
+This patch enables privilege mode SW branch filters. Also modifies
+POWER8 PMU branch filter configuration so that the privilege mode
+branch filter implemented as part of base PMU event configuration
+is reflected in bhrb filter mask. As a result, the SW will skip and
+not try to process the privilege mode branch filters itself.
 
-This change reorders struct opal_prd_msg_queue_item, so that the
-message body doesn't overlap the list_head.
-
-We also clarify the memcpy of the message, as we're copying unnecessary
-bytes at the end of the message data.
-
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal-prd.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/perf_event_server.h |  3 +++
+ arch/powerpc/perf/core-book3s.c              | 37 ++++++++++++++++++++++++++--
+ arch/powerpc/perf/power8-pmu.c               | 13 ++++++++--
+ 3 files changed, 49 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
-index 64694dd..ba2e388 100644
---- a/arch/powerpc/platforms/powernv/opal-prd.c
-+++ b/arch/powerpc/platforms/powernv/opal-prd.c
-@@ -32,9 +32,13 @@
- #include <asm/uaccess.h>
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index cb7ca1a..23d68d3 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -85,6 +85,9 @@ extern unsigned long int read_bhrb(int n);
+ 		for ((x) = PERF_SAMPLE_BRANCH_USER; \
+ 			(x) < PERF_SAMPLE_BRANCH_MAX; (x) <<= 1)
  
++#define POWER_ADDR_USER		0
++#define POWER_ADDR_KERNEL	1
++
+ /*
+  * Only override the default definitions in include/linux/perf_event.h
+  * if we have hardware PMU support.
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index a66c53c..69781577 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -20,6 +20,7 @@
+ #include <asm/firmware.h>
+ #include <asm/ptrace.h>
+ #include <asm/code-patching.h>
++#include <asm/cputable.h>
  
-+/**
-+ * The msg member must be at the end of the struct, as it's followed by the
-+ * message data.
-+ */
- struct opal_prd_msg_queue_item {
--	struct opal_prd_msg_header	msg;
- 	struct list_head		list;
-+	struct opal_prd_msg_header	msg;
- };
+ #define BHRB_MAX_ENTRIES	32
+ #define BHRB_TARGET		0x0000000000000002
+@@ -465,10 +466,10 @@ static bool check_instruction(unsigned int *addr, u64 sw_filter)
+  * Access the instruction contained in the address and then check
+  * whether it complies with the applicable SW branch filters.
+  */
+-static bool keep_branch(u64 from, u64 sw_filter)
++static bool keep_branch(u64 from, u64 to, u64 sw_filter)
+ {
+ 	unsigned int instr;
+-	bool ret;
++	bool to_plm, ret, select_branch;
  
- static struct device_node *prd_node;
-@@ -351,22 +355,23 @@ static int opal_prd_msg_notifier(struct notifier_block *nb,
- 	struct opal_prd_msg_queue_item *item;
- 	struct opal_prd_msg_header *hdr;
- 	struct opal_msg *msg = _msg;
-+	int msg_size, item_size;
- 	unsigned long flags;
--	int size;
+ 	/*
+ 	 * The "from" branch for every branch record has to go
+@@ -478,6 +479,37 @@ static bool keep_branch(u64 from, u64 sw_filter)
+ 	if (sw_filter == 0)
+ 		return true;
  
- 	if (msg_type != OPAL_MSG_PRD)
- 		return 0;
++	to_plm = is_kernel_addr(to) ? POWER_ADDR_KERNEL : POWER_ADDR_USER;
++
++	/*
++	 * XXX: Applying the privilege mode SW branch filters first on
++	 * the 'TO' address creates an AND semantic with other SW branch
++	 * filters which are ORed with each other being applied on the
++	 * 'FROM' address there after.
++	 */
++	if (sw_filter & PERF_SAMPLE_BRANCH_PLM_ALL) {
++		select_branch = false;
++
++		if (sw_filter & PERF_SAMPLE_BRANCH_USER) {
++			if (to_plm == POWER_ADDR_USER)
++				select_branch = true;
++		}
++
++		if (sw_filter & PERF_SAMPLE_BRANCH_KERNEL) {
++			if (to_plm == POWER_ADDR_KERNEL)
++				select_branch = true;
++		}
++
++		if (sw_filter & PERF_SAMPLE_BRANCH_HV) {
++			if (cpu_has_feature(CPU_FTR_HVMODE)
++				&& (to_plm == POWER_ADDR_KERNEL))
++					select_branch = true;
++		}
++
++		if (!select_branch)
++			return false;
++	}
++
+ 	if (is_kernel_addr(from)) {
+ 		return check_instruction((unsigned int *) from, sw_filter);
+ 	} else {
+@@ -568,6 +600,7 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
  
--	/* Calculate total size of the item we need to store. The 'size' field
--	 * in the header includes the header itself. */
-+	/* Calculate total size of the message and item we need to store. The
-+	 * 'size' field in the header includes the header itself. */
- 	hdr = (void *)msg->params;
--	size = (sizeof(*item) - sizeof(item->msg)) + be16_to_cpu(hdr->size);
-+	msg_size = be16_to_cpu(hdr->size);
-+	item_size = msg_size + sizeof(*item) - sizeof(item->msg);
+ 		/* Apply SW branch filters and drop the entry if required */
+ 		if (!keep_branch(cpuhw->bhrb_entries[u_index].from,
++					cpuhw->bhrb_entries[u_index].to,
+ 						cpuhw->bhrb_sw_filter))
+ 			u_index--;
+ 		u_index++;
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 8fccf6c..b56afc6 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -670,9 +670,19 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
+ 	 * filter configuration. BHRB is always recorded along with a
+ 	 * regular PMU event. As the privilege state filter is handled
+ 	 * in the basic PMC configuration of the accompanying regular
+-	 * PMU event, we ignore any separate BHRB specific request.
++	 * PMU event, we ignore any separate BHRB specific request. But
++	 * this needs to be communicated with the branch filter mask.
+ 	 */
  
--	item = kzalloc(size, GFP_ATOMIC);
-+	item = kzalloc(item_size, GFP_ATOMIC);
- 	if (!item)
- 		return -ENOMEM;
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_USER)
++		*bhrb_filter |= PERF_SAMPLE_BRANCH_USER;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_KERNEL)
++		*bhrb_filter |= PERF_SAMPLE_BRANCH_KERNEL;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_HV)
++		*bhrb_filter |= PERF_SAMPLE_BRANCH_HV;
++
+ 	/* Ignore user, kernel, hv bits */
+ 	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
  
--	memcpy(&item->msg, msg->params, size);
-+	memcpy(&item->msg, msg->params, msg_size);
- 
- 	spin_lock_irqsave(&opal_prd_msg_queue_lock, flags);
- 	list_add_tail(&item->list, &opal_prd_msg_queue);
+@@ -700,7 +710,6 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
+ 			if (branch_sample_type) {
+ 				/* Multiple filters will be processed in SW */
+ 				pmu_bhrb_filter = 0;
+-				*bhrb_filter = 0;
+ 				return pmu_bhrb_filter;
+ 			} else {
+ 				/* Individual filter will be processed in HW */
+-- 
+2.1.0
