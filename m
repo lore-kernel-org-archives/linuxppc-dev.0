@@ -1,31 +1,27 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
- [72.246.2.14])
- by lists.ozlabs.org (Postfix) with ESMTP id 515DC1A02BD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 00:43:57 +1000 (AEST)
-Date: Mon, 15 Jun 2015 10:43:56 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Vlastimil Babka <vbabka@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [RESEND PATCH V2 0/3] Allow user to request memory to be locked
- on page fault
-Message-ID: <20150615144356.GB12300@akamai.com>
-References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
- <20150610145929.b22be8647887ea7091b09ae1@linux-foundation.org>
- <5579DFBA.80809@akamai.com>
- <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
- <557ACAFC.90608@suse.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="tsOsTdHNUZQcU9Ye"
-In-Reply-To: <557ACAFC.90608@suse.cz>
+Return-Path: <eric.dumazet@gmail.com>
+Received: from mail-yh0-x22e.google.com (mail-yh0-x22e.google.com
+ [IPv6:2607:f8b0:4002:c01::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D37391A06F0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 01:08:21 +1000 (AEST)
+Received: by yhid80 with SMTP id d80so44710898yhi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 08:08:18 -0700 (PDT)
+Message-ID: <1434380895.27504.128.camel@edumazet-glaptop2.roam.corp.google.com>
+Subject: Re: [RFC,v3 02/10] dpaa_eth: add support for DPAA Ethernet
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Date: Mon, 15 Jun 2015 08:08:15 -0700
+In-Reply-To: <BL2PR03MB54503B16A47056DBA9653C0E6B80@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
+ <1433958961.27504.15.camel@edumazet-glaptop2.roam.corp.google.com>
+ <BL2PR03MB54503B16A47056DBA9653C0E6B80@BL2PR03MB545.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,126 +31,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2015-06-15 at 13:40 +0000, Madalin-Cristian Bucur wrote:
+> > -----Original Message-----
+> > From: Eric Dumazet [mailto:eric.dumazet@gmail.com]
+> > 
+> > On Wed, 2015-04-29 at 17:56 +0300, Madalin Bucur wrote:
+> > > This introduces the Freescale Data Path Acceleration Architecture
+> > > (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
+> > > BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
+> > > the Freescale DPAA QorIQ platforms.
+> > ...
+> > 
+> > > +	/* We're going to store the skb backpointer at the beginning
+> > > +	 * of the data buffer, so we need a privately owned skb
+> > > +	 */
+> > > +
+> > > +	/* Code borrowed from skb_unshare(). */
+> > > +	if (skb_cloned(skb)) {
+> > > +		struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
+> > > +
+> > > +		/* Finally, create a contig FD from this skb */
+> > > +		skb_to_contig_fd(priv, skb, &fd, countptr, &offset);
+> > > +
+> > > +		kfree_skb(skb);
+> > > +		skb = nskb;
+> > > +		/* skb_copy() has now linearized the skbuff. */
+> > > +	}
+> > > +
+> > 
+> > You know that TCP packets are clones, right ?
+> > This code is killing performance.
+> > 
+> > TCP allows the headers part being modified by a driver if needed.
+> > 
+> > You should use skb_header_cloned() instead.
+> 
+> Thank you, I'll address this. I plan to do something like this:
+> 
+> +       if (!nonlinear) {
+> +               /* We're going to store the skb backpointer at the beginning
+> +                * of the data buffer, so we need a privately owned skb
+> +                */
+> +
+> +               /* make sure skb is not shared, skb_cow_head() assumes it's not */
+> +               skb = skb_share_check(skb, GFP_ATOMIC);
+> +               if (!skb)
+> +                       goto enomem;
+> +
+> +               /* verify the skb head is not cloned */
+> +               if (skb_cow_head(skb, priv->tx_headroom))
+> +                       goto enomem;
+> +
+> +               nonlinear = skb_is_nonlinear(skb);
+> +       }
+> 
+> but I'm not sure the skb_share_check() is required on tx.
+> I'm also a bit puzzled by the aliasing between shared and cloned terms
+> (i.e. skb_unshare() could be named something like skb_unclone();
+>  the skb_share_check() not only checks but also unshares an skb so
+>  the already taken skb_unshare() name would probably fit too).
 
---tsOsTdHNUZQcU9Ye
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+A driver can ask tx skbs to be not shared, even if pktgen is used with
+"clone=X" on it.
 
-On Fri, 12 Jun 2015, Vlastimil Babka wrote:
+dev->priv_flags         &= ~IFF_TX_SKB_SHARING;
 
-> On 06/11/2015 09:34 PM, Andrew Morton wrote:
-> >On Thu, 11 Jun 2015 15:21:30 -0400 Eric B Munson <emunson@akamai.com> wr=
-ote:
-> >
-> >>>Ditto mlockall(MCL_ONFAULT) followed by munlock().  I'm not sure
-> >>>that even makes sense but the behaviour should be understood and
-> >>>tested.
-> >>
-> >>I have extended the kselftest for lock-on-fault to try both of these
-> >>scenarios and they work as expected.  The VMA is split and the VM
-> >>flags are set appropriately for the resulting VMAs.
-> >
-> >munlock() should do vma merging as well.  I *think* we implemented
-> >that.  More tests for you to add ;)
-> >
-> >How are you testing the vma merging and splitting, btw?  Parsing
-> >the profcs files?
-> >
-> >>>What's missing here is a syscall to set VM_LOCKONFAULT on an
-> >>>arbitrary range of memory - mlock() for lock-on-fault.  It's a
-> >>>shame that mlock() didn't take a `mode' argument.  Perhaps we
-> >>>should add such a syscall - that would make the mmap flag unneeded
-> >>>but I suppose it should be kept for symmetry.
-> >>
-> >>Do you want such a system call as part of this set?  I would need some
-> >>time to make sure I had thought through all the possible corners one
-> >>could get into with such a call, so it would delay a V3 quite a bit.
-> >>Otherwise I can send a V3 out immediately.
-> >
-> >I think the way to look at this is to pretend that mm/mlock.c doesn't
-> >exist and ask "how should we design these features".
-> >
-> >And that would be:
-> >
-> >- mmap() takes a `flags' argument: MAP_LOCKED|MAP_LOCKONFAULT.
->=20
-> Note that the semantic of MAP_LOCKED can be subtly surprising:
->=20
-> "mlock(2) fails if the memory range cannot get populated to guarantee
-> that no future major faults will happen on the range.
-> mmap(MAP_LOCKED) on the other hand silently succeeds even if the
-> range was populated only
-> partially."
->=20
-> ( from http://marc.info/?l=3Dlinux-mm&m=3D143152790412727&w=3D2 )
->=20
-> So MAP_LOCKED can silently behave like MAP_LOCKONFAULT. While
-> MAP_LOCKONFAULT doesn't suffer from such problem, I wonder if that's
-> sufficient reason not to extend mmap by new mlock() flags that can
-> be instead applied to the VMA after mmapping, using the proposed
-> mlock2() with flags. So I think instead we could deprecate
-> MAP_LOCKED more prominently. I doubt the overhead of calling the
-> extra syscall matters here?
+This way, you can avoid skb_share_check() completely. Only pktgen will
+care.
 
-We could talk about retiring the MAP_LOCKED flag but I suspect that
-would get significantly more pushback than adding a new mmap flag.
-
-Likely that the overhead does not matter in most cases, but presumably
-there are cases where it does (as we have a MAP_LOCKED flag today).
-Even with the proposed new system calls I think we should have the
-MAP_LOCKONFAULT for parity with MAP_LOCKED.
-
->=20
-> >- mlock() takes a `flags' argument.  Presently that's
-> >   MLOCK_LOCKED|MLOCK_LOCKONFAULT.
-> >
-> >- munlock() takes a `flags' arument.  MLOCK_LOCKED|MLOCK_LOCKONFAULT
-> >   to specify which flags are being cleared.
-> >
-> >- mlockall() and munlockall() ditto.
-> >
-> >
-> >IOW, LOCKED and LOCKEDONFAULT are treated identically and independently.
-> >
-> >Now, that's how we would have designed all this on day one.  And I
-> >think we can do this now, by adding new mlock2() and munlock2()
-> >syscalls.  And we may as well deprecate the old mlock() and munlock(),
-> >not that this matters much.
-> >
-> >*should* we do this?  I'm thinking "yes" - it's all pretty simple
-> >boilerplate and wrappers and such, and it gets the interface correct,
-> >and extensible.
->=20
-> If the new LOCKONFAULT functionality is indeed desired (I haven't
-> still decided myself) then I agree that would be the cleanest way.
-
-Do you disagree with the use cases I have listed or do you think there
-is a better way of addressing those cases?
-
->=20
-> >What do others think?
-
---tsOsTdHNUZQcU9Ye
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVfuSrAAoJELbVsDOpoOa9SqoP/32pn+LLrjk0r2GNhFZF26Ig
-182hz7lG8As2Y7a1N+mtpfGq0JmrMbaytwEcmI1BpgI64DNcNOUINEqqaWXNeEBX
-idyVOQ1jeGGxDGyHLDNGfC6zlWxKGYPiKaaifSb37+hIQhOxsmXQ8U1E3GVdnRXK
-g8uPlztYSH5WN7LluiIEPXN1IPs57ADkoupTmSKzU2C9nnEUVYt9AmOm2Gt49Gmu
-F5f8rMGwvoC7WJGI83Xha60W7Fcv4hRoZeud/dspTKJmPrPERQ7kvqgwfTPoDWN+
-IvuzwjPSSCKNZie3HzEG7ae3KASKfh2Yat1zqrKZvI1/q+OSNsn/X8VjPcORIgDz
-OhzUEkL/4tTv+1a007eoPQEYUNxdgY+ZghOX7iw7OBT5gApUPc4kzwcnjTmK0l8A
-FJj6sn627osTIVoVL8ScRRWhY3BgscRhwFW2tBpRUc8GacMYyevfNEpOvX8oh2bv
-zdfo70SgsjTVseJb7WOB3TSjoXBgPV/xU0cBnMQZhLnUzdXHjWwm4lYqwRiPJZpO
-nAn32DLqbBe4GG+PtThn8Es/uddWOrypGtEaYu7ToYz6qqrLtVeMS5UTmaAijnZK
-xwEU889kELmPEg5C4rrfv+ttLUnCMkwLWxD4/fSIaPYLiz3yVIGzlTfUnyEUt8/H
-ZxlwoAMcTlbg88oH6jKj
-=u99f
------END PGP SIGNATURE-----
-
---tsOsTdHNUZQcU9Ye--
+Most skb_share_check() calls in drivers/net are related to input paths
+on virtual drivers.
