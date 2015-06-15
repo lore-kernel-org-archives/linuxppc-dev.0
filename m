@@ -1,24 +1,21 @@
 Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0102.outbound.protection.outlook.com [65.55.169.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0BF241A0E51
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 22:44:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E2C01A0452
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 23:40:53 +1000 (AEST)
 From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
 To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jianhua Xie
- <Jianhua.Xie@freescale.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Subject: RE: [RFC,v3 02/10] dpaa_eth: add support for DPAA Ethernet
-Date: Mon, 15 Jun 2015 12:44:14 +0000
-Message-ID: <BL2PR03MB54553C9839048902818ACE2E6B80@BL2PR03MB545.namprd03.prod.outlook.com>
+Date: Mon, 15 Jun 2015 13:40:46 +0000
+Message-ID: <BL2PR03MB54503B16A47056DBA9653C0E6B80@BL2PR03MB545.namprd03.prod.outlook.com>
 References: <1430319405-31280-1-git-send-email-madalin.bucur@freescale.com>
- <DM2PR0301MB086380B3D89425345562F384F3BD0@DM2PR0301MB0863.namprd03.prod.outlook.com>
- <BL2PR03MB545CA85B1FE886FCD07DE26E6BD0@BL2PR03MB545.namprd03.prod.outlook.com>
- <1433947452.27504.9.camel@edumazet-glaptop2.roam.corp.google.com>
-In-Reply-To: <1433947452.27504.9.camel@edumazet-glaptop2.roam.corp.google.com>
+ <1433958961.27504.15.camel@edumazet-glaptop2.roam.corp.google.com>
+In-Reply-To: <1433958961.27504.15.camel@edumazet-glaptop2.roam.corp.google.com>
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,16 +28,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFcmljIER1bWF6ZXQgW21haWx0
-bzplcmljLmR1bWF6ZXRAZ21haWwuY29tXQ0KPiANCj4gT24gV2VkLCAyMDE1LTA2LTEwIGF0IDA3
-OjM4ICswMDAwLCBNYWRhbGluLUNyaXN0aWFuIEJ1Y3VyIHdyb3RlOg0KPiA+IEhpIEVyaWMsDQo+
-ID4NCj4gPiBDYW4geW91IHBsZWFzZSB0ZWxsIHVzIGlmIHRoaXMgY2hhbmdlIHdvdWxkIGJlIGZv
-ciB0aGUgYmV0dGVyPw0KPiA+DQo+ID4gSSB3YXMgYWJvdXQgdG8gc2F5IHllcyB0byB0aGlzIHJl
-cXVlc3QgYnV0IGNoZWNrZWQgYW5kIG5vIG90aGVyIEV0aGVybmV0DQo+IGRyaXZlciBzZWVtcyB0
-byB1c2UgdGhlIHF1ZXVlIHRyYW5zX3N0YXJ0Lg0KPiA+IEkgd2FzIGFibGUgdG8gZmluZCB5b3Vy
-IHBhdGNoICJuZXQ6IHR4IHNjYWxhYmlsaXR5IHdvcmtzIDogdHJhbnNfc3RhcnQiIFsNCj4gaHR0
-cDovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzI3MTA0LyBdIGJ1dCBkaWQgbm90IGZpbmQg
-bW9yZSBhYm91dCB0aGlzDQo+IHRvcGljLg0KPiA+DQo+IA0KPiBEcml2ZXJzIG5vIGxvbmdlciBo
-YXZlIHRvIHdvcnJ5IGFib3V0IHVwZGF0aW5nIHRyYW5zX3N0YXJ0IHRoZW1zZWx2ZXMuDQo+IENv
-cmUgbmV0d29ya2luZyBzdGFjayBoYW5kbGVzIHRoaXMuDQo+IA0KPiBDaGVjayB0eHFfdHJhbnNf
-dXBkYXRlKCkgZG9uZSBmcm9tIG5ldGRldl9zdGFydF94bWl0KCkNCg0KSSdsbCByZW1vdmUgdGhl
-IHVwZGF0ZXMsIHRoYW5rIHlvdS4NCg0KTWFkYWxpbg0K
+bzplcmljLmR1bWF6ZXRAZ21haWwuY29tXQ0KPiANCj4gT24gV2VkLCAyMDE1LTA0LTI5IGF0IDE3
+OjU2ICswMzAwLCBNYWRhbGluIEJ1Y3VyIHdyb3RlOg0KPiA+IFRoaXMgaW50cm9kdWNlcyB0aGUg
+RnJlZXNjYWxlIERhdGEgUGF0aCBBY2NlbGVyYXRpb24gQXJjaGl0ZWN0dXJlDQo+ID4gKERQQUEp
+IEV0aGVybmV0IGRyaXZlciAoZHBhYV9ldGgpIHRoYXQgYnVpbGRzIHVwb24gdGhlIERQQUEgUU1h
+biwNCj4gPiBCTWFuLCBQQU1VIGFuZCBGTWFuIGRyaXZlcnMgdG8gZGVsaXZlciBFdGhlcm5ldCBj
+b25uZWN0aXZpdHkgb24NCj4gPiB0aGUgRnJlZXNjYWxlIERQQUEgUW9ySVEgcGxhdGZvcm1zLg0K
+PiAuLi4NCj4gDQo+ID4gKwkvKiBXZSdyZSBnb2luZyB0byBzdG9yZSB0aGUgc2tiIGJhY2twb2lu
+dGVyIGF0IHRoZSBiZWdpbm5pbmcNCj4gPiArCSAqIG9mIHRoZSBkYXRhIGJ1ZmZlciwgc28gd2Ug
+bmVlZCBhIHByaXZhdGVseSBvd25lZCBza2INCj4gPiArCSAqLw0KPiA+ICsNCj4gPiArCS8qIENv
+ZGUgYm9ycm93ZWQgZnJvbSBza2JfdW5zaGFyZSgpLiAqLw0KPiA+ICsJaWYgKHNrYl9jbG9uZWQo
+c2tiKSkgew0KPiA+ICsJCXN0cnVjdCBza19idWZmICpuc2tiID0gc2tiX2NvcHkoc2tiLCBHRlBf
+QVRPTUlDKTsNCj4gPiArDQo+ID4gKwkJLyogRmluYWxseSwgY3JlYXRlIGEgY29udGlnIEZEIGZy
+b20gdGhpcyBza2IgKi8NCj4gPiArCQlza2JfdG9fY29udGlnX2ZkKHByaXYsIHNrYiwgJmZkLCBj
+b3VudHB0ciwgJm9mZnNldCk7DQo+ID4gKw0KPiA+ICsJCWtmcmVlX3NrYihza2IpOw0KPiA+ICsJ
+CXNrYiA9IG5za2I7DQo+ID4gKwkJLyogc2tiX2NvcHkoKSBoYXMgbm93IGxpbmVhcml6ZWQgdGhl
+IHNrYnVmZi4gKi8NCj4gPiArCX0NCj4gPiArDQo+IA0KPiBZb3Uga25vdyB0aGF0IFRDUCBwYWNr
+ZXRzIGFyZSBjbG9uZXMsIHJpZ2h0ID8NCj4gVGhpcyBjb2RlIGlzIGtpbGxpbmcgcGVyZm9ybWFu
+Y2UuDQo+IA0KPiBUQ1AgYWxsb3dzIHRoZSBoZWFkZXJzIHBhcnQgYmVpbmcgbW9kaWZpZWQgYnkg
+YSBkcml2ZXIgaWYgbmVlZGVkLg0KPiANCj4gWW91IHNob3VsZCB1c2Ugc2tiX2hlYWRlcl9jbG9u
+ZWQoKSBpbnN0ZWFkLg0KDQpUaGFuayB5b3UsIEknbGwgYWRkcmVzcyB0aGlzLiBJIHBsYW4gdG8g
+ZG8gc29tZXRoaW5nIGxpa2UgdGhpczoNCg0KKyAgICAgICBpZiAoIW5vbmxpbmVhcikgew0KKyAg
+ICAgICAgICAgICAgIC8qIFdlJ3JlIGdvaW5nIHRvIHN0b3JlIHRoZSBza2IgYmFja3BvaW50ZXIg
+YXQgdGhlIGJlZ2lubmluZw0KKyAgICAgICAgICAgICAgICAqIG9mIHRoZSBkYXRhIGJ1ZmZlciwg
+c28gd2UgbmVlZCBhIHByaXZhdGVseSBvd25lZCBza2INCisgICAgICAgICAgICAgICAgKi8NCisN
+CisgICAgICAgICAgICAgICAvKiBtYWtlIHN1cmUgc2tiIGlzIG5vdCBzaGFyZWQsIHNrYl9jb3df
+aGVhZCgpIGFzc3VtZXMgaXQncyBub3QgKi8NCisgICAgICAgICAgICAgICBza2IgPSBza2Jfc2hh
+cmVfY2hlY2soc2tiLCBHRlBfQVRPTUlDKTsNCisgICAgICAgICAgICAgICBpZiAoIXNrYikNCisg
+ICAgICAgICAgICAgICAgICAgICAgIGdvdG8gZW5vbWVtOw0KKw0KKyAgICAgICAgICAgICAgIC8q
+IHZlcmlmeSB0aGUgc2tiIGhlYWQgaXMgbm90IGNsb25lZCAqLw0KKyAgICAgICAgICAgICAgIGlm
+IChza2JfY293X2hlYWQoc2tiLCBwcml2LT50eF9oZWFkcm9vbSkpDQorICAgICAgICAgICAgICAg
+ICAgICAgICBnb3RvIGVub21lbTsNCisNCisgICAgICAgICAgICAgICBub25saW5lYXIgPSBza2Jf
+aXNfbm9ubGluZWFyKHNrYik7DQorICAgICAgIH0NCg0KYnV0IEknbSBub3Qgc3VyZSB0aGUgc2ti
+X3NoYXJlX2NoZWNrKCkgaXMgcmVxdWlyZWQgb24gdHguDQpJJ20gYWxzbyBhIGJpdCBwdXp6bGVk
+IGJ5IHRoZSBhbGlhc2luZyBiZXR3ZWVuIHNoYXJlZCBhbmQgY2xvbmVkIHRlcm1zDQooaS5lLiBz
+a2JfdW5zaGFyZSgpIGNvdWxkIGJlIG5hbWVkIHNvbWV0aGluZyBsaWtlIHNrYl91bmNsb25lKCk7
+DQogdGhlIHNrYl9zaGFyZV9jaGVjaygpIG5vdCBvbmx5IGNoZWNrcyBidXQgYWxzbyB1bnNoYXJl
+cyBhbiBza2Igc28NCiB0aGUgYWxyZWFkeSB0YWtlbiBza2JfdW5zaGFyZSgpIG5hbWUgd291bGQg
+cHJvYmFibHkgZml0IHRvbykuDQoNCk1hZGFsaW4NCg==
