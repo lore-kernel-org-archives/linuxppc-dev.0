@@ -2,17 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A8C1A1A0554
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 16:41:48 +1000 (AEST)
-In-Reply-To: <20150614074607.524658883@telegraphics.com.au>
-To: Finn Thain <fthain@telegraphics.com.au>, <linux-kernel@vger.kernel.org>,
- <linux-m68k@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9680B1A06AD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Jun 2015 16:49:50 +1000 (AEST)
+In-Reply-To: <1434089957-27135-1-git-send-email-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RFC,v2,01/24] macintosh/nvram: Remove as unused
-Message-Id: <20150615064148.83D59140291@ozlabs.org>
-Date: Mon, 15 Jun 2015 16:41:48 +1000 (AEST)
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kernel] powerpc/powernv/ioda2: Add devices only from buses which
+ belong to PE
+Message-Id: <20150615064950.7C42514029E@ozlabs.org>
+Date: Mon, 15 Jun 2015 16:49:50 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-14-06 at 07:46:08 UTC, Finn Thain wrote:
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/macintosh/nvram.c |  130 ----------------------------------------------
->  1 file changed, 130 deletions(-)
+On Fri, 2015-12-06 at 06:19:17 UTC, Alexey Kardashevskiy wrote:
+> The existing code puts all devices from a root PE to the same IOMMU group.
+> However it is a possible situation when subordinate buses belong to
+> separate PEs, in this case devices from these subordinate buses
+> should be added to lower level PE rather to the root PE.
+> 
+> This limits pnv_ioda_setup_bus_dma() invocation to only PEs which own
+> all subordinate buses.
+> 
+> Suggested-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-This seems uncontroversial, so I'll take it via powerpc for 4.1.
-
-In future please include the details on how/why it's unused in the changelog.
-
-Geert did the digging for you:
-
-  Removal seems to be forgotten by full-history-linux
-  commit 17c6f4635bea74e110ab3558d408c9cd218c568a
-  Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-  Date:   Fri Feb 6 14:20:56 2004 +1100
-  
-      ppc32: Rework nvram management
-  
-      move drivers/macintosh/nvram.c to drivers/char/generic_nvram.c,
-      update platform hooks,
-      fix powermac nvram driver for newer machines
-
-
-I'll fold that into the changelog.
+Alexey/Gavin, can one of you write a better changelog for this. Explaining
+what exactly is broken without it, how it fixes the problem, and why that is
+the right fix.
 
 cheers
