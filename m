@@ -1,28 +1,52 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <schwidefsky@de.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 233EC1A0431
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 16:45:45 +1000 (AEST)
-Message-ID: <1434437144.17070.32.camel@neuling.org>
-Subject: [PATCH] cxl: Add CXL_KERNEL_API config option
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, "Manoj N.Kumar"
- <manoj@linux.vnet.ibm.com>, Brian King <brking@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "James.Bottomley"
- <James.Bottomley@HansenPartnership.com>,  Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Date: Tue, 16 Jun 2015 16:45:44 +1000
-In-Reply-To: <1434436498.17070.27.camel@neuling.org>
-References: <20150613160038.367B18EE112@bedivere.hansenpartnership.com>
- <1434235143.5042.63.camel@neuling.org>
- <3746D390-571E-4D17-83A3-4D0D36335929@ellerman.id.au>
- <1434244818.5042.68.camel@neuling.org>
- <1434379526.2170.57.camel@HansenPartnership.com>
- <1434436498.17070.27.camel@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3A79F1A0252
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 18:12:30 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
+ Tue, 16 Jun 2015 09:12:27 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id CD52C17D8059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 09:13:28 +0100 (BST)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5G8COXd23461930
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 08:12:24 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5G8CI49010146
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 02:12:23 -0600
+Date: Tue, 16 Jun 2015 10:12:16 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: David Long <dave.long@linaro.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
+ Anton Blanchard <anton@samba.org>, Behan Webster
+ <behanw@converseincode.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Eric Paris <eparis@redhat.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@redhat.com>, Jan Willeke
+ <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Nikolay Borisov <Nikolay.Borisov@arm.com>, Oleg
+ Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>, Richard Kuo
+ <rkuo@codeaurora.org>, Robert Richter <rric@kernel.org>, Roland McGrath
+ <roland@hack.frob.com>, Russell King <linux@arm.linux.org.uk>, Tejun Heo
+ <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon
+ <will.deacon@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH 0/2] Consolidate redundant register/stack access code
+Message-ID: <20150616101216.08a56f1a@mschwide>
+In-Reply-To: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
+References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,34 +56,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add CXL_KERNEL_API config option so drivers which depend on this new
-functionality won't be enabled until this is visible.
+On Mon, 15 Jun 2015 12:42:57 -0400
+David Long <dave.long@linaro.org> wrote:
 
-This is useful for merging the cxlflash driver which comes in via the SCSI
-tree.  The cxlflash driver can depend on CXL_KERNEL_API, hence it won't be
-enabled in the SCSI tree until this new config option is merged via the pow=
-erpc
-tree.  Hence all trees will be bisectable at all times.
+> From: "David A. Long" <dave.long@linaro.org>
+> 
+> Move duplicate and functionally equivalent code for accessing registers
+> and stack (CONFIG_HAVE_REGS_AND_STACK_ACCESS_API) from arch subdirs into
+> common kernel files.
+> 
+> Note: Help regression testing s390, hexagon, and sh would be appreciated.
+>       Powerpc builds but I have not verified the functionality.
+> 
+> David A. Long (2):
+>   Move the pt_regs_offset struct definition from arch to common include
+>     file
+>   Consolidate redundant register/stack access code
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Compiles & boots on a s390 box. The code for regs_query_register_offset
+and regs_query_register_name is a bit more complex for s390 compared
+to the current state of things. Should be equivalent though.
 
-diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
-index a990b39..b6db9eb 100644
---- a/drivers/misc/cxl/Kconfig
-+++ b/drivers/misc/cxl/Kconfig
-@@ -7,10 +7,15 @@ config CXL_BASE
- 	default n
- 	select PPC_COPRO_BASE
-=20
-+config CXL_KERNEL_API
-+	bool
-+	default n
-+
- config CXL
- 	tristate "Support for IBM Coherent Accelerators (CXL)"
- 	depends on PPC_POWERNV && PCI_MSI
- 	select CXL_BASE
-+	select CXL_KERNEL_API
- 	default m
- 	help
- 	  Select this option to enable driver support for IBM Coherent
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
