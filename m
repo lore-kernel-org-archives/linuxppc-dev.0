@@ -1,35 +1,23 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5EC661A024B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 12:51:59 +1000 (AEST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Tue, 16 Jun 2015 08:21:56 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 591E9394004E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 08:21:54 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5G2prKO39387330
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 08:21:53 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5G1tL4f018200
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 07:25:22 +0530
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, acme@kernel.org,
- mingo@kernel.org, sukadev@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
- srikar@linux.vnet.ibm.com, paulus@samba.org, namhyung@kernel.org,
- jolsa@kernel.org, peterz@infradead.org, dsahern@gmail.com,
- Hemant Kumar <hemant@linux.vnet.ibm.com>
-Subject: [RFC PATCH] perf/kvm: Guest Symbol Resolution for powerpc
-Date: Tue, 16 Jun 2015 08:20:53 +0530
-Message-Id: <1434423053-2173-1-git-send-email-hemant@linux.vnet.ibm.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 422681A0396
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 13:10:39 +1000 (AEST)
+Date: Tue, 16 Jun 2015 13:10:29 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Linux/m68k <linux-m68k@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
+Subject: Re: [RFC v2 23/24] m68k/mac: Fix PRAM accessors
+In-Reply-To: <CAMuHMdWzKvWjAE3u54E4xewEDX+zJqEDEvRmO2twpeD2vmBzog@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1506152213340.12762@nippy.intranet>
+References: <20150614074607.242676098@telegraphics.com.au>
+ <20150614074613.054681242@telegraphics.com.au>
+ <CAMuHMdWzKvWjAE3u54E4xewEDX+zJqEDEvRmO2twpeD2vmBzog@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,233 +27,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"perf kvm {record|report}" is used to record and report the performance
-profile of any workload on a guest. From the host, we can collect
-guest kernel statistics which is useful in finding out any contentions
-in guest kernel symbols for a certain workload.
 
-This feature is not available on powerpc because "perf" relies on the
-"cycles" event (a PMU event) to profile the guest. However, for powerpc,
-this can't be used from the host because the PMUs are controlled by the
-guest rather than the host.
+On Mon, 15 Jun 2015, Geert Uytterhoeven wrote:
 
-Due to this problem, we need a different approach to profile the
-workload in the guest. There exists a tracepoint "kvm_hv:kvm_guest_exit"
-in powerpc which is hit whenever any of the threads exit the guest
-context. The guest instruction pointer dumped along with this
-tracepoint data in the field "pc", can be used as guest instruction
-pointer while postprocessing the trace data to map this IP to symbol
-from guest.kallsyms.
+> Hi Finn,
+> 
+> On Sun, Jun 14, 2015 at 9:46 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
+> > --- linux.orig/arch/m68k/mac/misc.c     2015-06-14 17:46:02.000000000 +1000
+> > +++ linux/arch/m68k/mac/misc.c  2015-06-14 17:46:03.000000000 +1000
+> > @@ -284,11 +287,31 @@ static void via_pram_command(int command
+> >
+> >  static unsigned char via_pram_read_byte(int offset)
+> >  {
+> > -       return 0;
+> > +       unsigned char temp;
+> > +       int addr = ((offset & 0xE0) << 3) | ((offset & 0x1F) << 2);
+> 
+> Can you please add #defines for the magic values?
 
-However, to have some kind of periodicity, we can't use all the kvm
-exits, rather exits which are bound to happen in certain intervals.
-HV_DECREMENTER Interrupt forces the threads to exit after an interval
-of 10 ms.
+This is just marshalling the offset argument. I don't know how to rewrite 
+that code more clearly. I'm open to suggestions. I don't know of any 
+documentation that gives names or meanings to the different bit ranges. I 
+infered the format from the MESS source code, 
+https://github.com/mamedev/mame/blob/master/src/mess/machine/macrtc.c
 
-This patch makes use of the "kvm_guest_exit" tracepoint and checks the
-exit reason for any kvm exit. If it is HV_DECREMENTER, then the
-instruction pointer dumped along with this tracepoint is retrieved and
-mapped with the guest kallsyms.
+What I found in the MESS source code looks like the result of reverse 
+engineering. Hence the RTC code in this patch also looks like a reverse 
+engineered driver.
 
-This patch is a prototype asking for suggestions/comments as to whether
-the approach is right or is there any way better than this (like using
-a different event to profile for, etc) to profile the guest from the
-host.
+> 
+> > +
+> > +       /* Use RTC command 0x38 for XPRAM access, as per MESS source code */
+> > +       via_pram_command(addr | 0x3800 | 0x8001, &temp);
+> 
+> It seems 0x38 is already documented in <linux/pmu.h> (see below), or not 
+> (it's shifted left by 8 bits?)?
 
-Thank You.
+No, this is a RTC command not a PMU command. This RTC device is an Apple 
+custom IC that is publicly undocumented. OTOH, the PMU device is well 
+documented, since Apple publicly released PMU driver source code in 
+MkLinux and later in XNU. That's why I've been able to provide #defines 
+for the PMU commands but not the RTC commands.
 
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
----
- tools/perf/arch/powerpc/Makefile        |  1 +
- tools/perf/arch/powerpc/util/parse-tp.c | 55 +++++++++++++++++++++++++++++++++
- tools/perf/builtin-report.c             |  9 ++++++
- tools/perf/util/event.c                 |  7 ++++-
- tools/perf/util/evsel.c                 |  7 +++++
- tools/perf/util/evsel.h                 |  4 +++
- tools/perf/util/session.c               |  7 +++--
- 7 files changed, 86 insertions(+), 4 deletions(-)
- create mode 100644 tools/perf/arch/powerpc/util/parse-tp.c
+> 
+> > +
+> > +       return temp;
+> >  }
+> >
+> >  static void via_pram_write_byte(unsigned char data, int offset)
+> >  {
+> > +       unsigned char temp;
+> > +       int addr = ((offset & 0xE0) << 3) | ((offset & 0x1F) << 2);
+> > +
+> > +       /* Clear the write protect bit */
+> > +       temp = 0x55;
+> > +       via_pram_command(0x34 | 0x01, &temp);
+> > +
+> > +       /* Write the byte to XPRAM */
+> > +       temp = data;
+> > +       via_pram_command(0x3800 | 0x0001 | addr, &temp);
+> > +
+> > +       /* Set the write protect bit */
+> > +       temp = 0xD5;
+> > +       via_pram_command(0x34 | 0x01, &temp);
+> 
+> More magic values...
 
-diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-index 6f7782b..992a0d5 100644
---- a/tools/perf/arch/powerpc/Makefile
-+++ b/tools/perf/arch/powerpc/Makefile
-@@ -4,3 +4,4 @@ LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
- LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/skip-callchain-idx.o
- endif
- LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/header.o
-+LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/parse-tp.o
-diff --git a/tools/perf/arch/powerpc/util/parse-tp.c b/tools/perf/arch/powerpc/util/parse-tp.c
-new file mode 100644
-index 0000000..4c6e49c
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/parse-tp.c
-@@ -0,0 +1,55 @@
-+#include "../../util/evsel.h"
-+#include "../../util/trace-event.h"
-+#include "../../util/session.h"
-+
-+#define KVMPPC_EXIT "kvm_hv:kvm_guest_exit"
-+#define HV_DECREMENTER 2432
-+#define HV_BIT 3
-+#define PR_BIT 49
-+#define PPC_MAX 63
-+
-+/*
-+ * Get the instruction pointer from the tracepoint data
-+ */
-+u64 arch__get_ip(struct perf_evsel *evsel, struct perf_sample *data)
-+{
-+	u64 tp_ip = data->ip;
-+	int trap;
-+
-+	if (!strcmp(KVMPPC_EXIT, evsel->name)) {
-+		trap = raw_field_value(evsel->tp_format, "trap", data->raw_data);
-+
-+		if (trap == HV_DECREMENTER)
-+			tp_ip = raw_field_value(evsel->tp_format, "pc",
-+						data->raw_data);
-+	}
-+	return tp_ip;
-+}
-+
-+/*
-+ * Get the HV and PR bits and accordingly, determine the cpumode
-+ */
-+u8 arch__get_cpumode(union perf_event *event, struct perf_evsel *evsel,
-+		     struct perf_sample *data)
-+{
-+	unsigned long hv, pr, msr;
-+	u8 cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
-+
-+	if (strcmp(KVMPPC_EXIT, evsel->name))
-+		goto ret;
-+
-+	if (data->raw_data)
-+		msr = raw_field_value(evsel->tp_format, "msr", data->raw_data);
-+	else
-+		goto ret;
-+
-+	hv = msr & ((long unsigned)1 << (PPC_MAX - HV_BIT));
-+	pr = msr & ((long unsigned)1 << (PPC_MAX - PR_BIT));
-+
-+	if (!hv && pr)
-+		cpumode = PERF_RECORD_MISC_GUEST_USER;
-+	else
-+		cpumode = PERF_RECORD_MISC_GUEST_KERNEL;
-+ret:
-+	return cpumode;
-+}
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 072ae8a..e3fe5d0 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -141,6 +141,13 @@ out:
- 	return err;
- }
- 
-+u8 __weak arch__get_cpumode(union perf_event *event,
-+			    __maybe_unused struct perf_evsel *evsel,
-+			    __maybe_unused struct perf_sample *sample)
-+{
-+	return event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
-+}
-+
- static int process_sample_event(struct perf_tool *tool,
- 				union perf_event *event,
- 				struct perf_sample *sample,
-@@ -155,6 +162,8 @@ static int process_sample_event(struct perf_tool *tool,
- 	};
- 	int ret;
- 
-+	al.cpumode = arch__get_cpumode(event, evsel, sample);
-+
- 	if (perf_event__preprocess_sample(event, machine, &al, sample) < 0) {
- 		pr_debug("problem processing %d event, skipping it.\n",
- 			 event->header.type);
-diff --git a/tools/perf/util/event.c b/tools/perf/util/event.c
-index 6c6d044..693e37c 100644
---- a/tools/perf/util/event.c
-+++ b/tools/perf/util/event.c
-@@ -824,9 +824,14 @@ int perf_event__preprocess_sample(const union perf_event *event,
- 				  struct addr_location *al,
- 				  struct perf_sample *sample)
- {
--	u8 cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
- 	struct thread *thread = machine__findnew_thread(machine, sample->pid,
- 							sample->tid);
-+	u8 cpumode;
-+
-+	if (al->cpumode != PERF_RECORD_MISC_CPUMODE_UNKNOWN)
-+		cpumode = al->cpumode;
-+	else
-+		cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
- 
- 	if (thread == NULL)
- 		return -1;
-diff --git a/tools/perf/util/evsel.c b/tools/perf/util/evsel.c
-index 1e90c85..aa4dd49 100644
---- a/tools/perf/util/evsel.c
-+++ b/tools/perf/util/evsel.c
-@@ -1281,6 +1281,12 @@ static inline bool overflow(const void *endp, u16 max_size, const void *offset,
- #define OVERFLOW_CHECK_u64(offset) \
- 	OVERFLOW_CHECK(offset, sizeof(u64), sizeof(u64))
- 
-+u64 __weak arch__get_ip(__maybe_unused struct perf_evsel *evsel,
-+			__maybe_unused struct perf_sample *data)
-+{
-+	return data->ip;
-+}
-+
- int perf_evsel__parse_sample(struct perf_evsel *evsel, union perf_event *event,
- 			     struct perf_sample *data)
- {
-@@ -1454,6 +1460,7 @@ int perf_evsel__parse_sample(struct perf_evsel *evsel, union perf_event *event,
- 		OVERFLOW_CHECK(array, data->raw_size, max_size);
- 		data->raw_data = (void *)array;
- 		array = (void *)array + data->raw_size;
-+		data->ip = arch__get_ip(evsel, data);
- 	}
- 
- 	if (type & PERF_SAMPLE_BRANCH_STACK) {
-diff --git a/tools/perf/util/evsel.h b/tools/perf/util/evsel.h
-index 3862274..5c94d64 100644
---- a/tools/perf/util/evsel.h
-+++ b/tools/perf/util/evsel.h
-@@ -355,4 +355,8 @@ for ((_evsel) = list_entry((_leader)->node.next, struct perf_evsel, node); 	\
-      (_evsel) && (_evsel)->leader == (_leader);					\
-      (_evsel) = list_entry((_evsel)->node.next, struct perf_evsel, node))
- 
-+u64 arch__get_ip(struct perf_evsel *evsel, struct perf_sample *data);
-+u8 arch__get_cpumode(union perf_event *event, struct perf_evsel *evsel,
-+		     struct perf_sample *sample);
-+
- #endif /* __PERF_EVSEL_H */
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index 5f0e05a..49698cc 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -748,9 +748,10 @@ static void dump_sample(struct perf_evsel *evsel, union perf_event *event,
- static struct machine *
- 	perf_session__find_machine_for_cpumode(struct perf_session *session,
- 					       union perf_event *event,
--					       struct perf_sample *sample)
-+					       struct perf_sample *sample,
-+					       struct perf_evsel *evsel)
- {
--	const u8 cpumode = event->header.misc & PERF_RECORD_MISC_CPUMODE_MASK;
-+	u8 cpumode = arch__get_cpumode(event, evsel, sample);
- 	struct machine *machine;
- 
- 	if (perf_guest &&
-@@ -856,7 +857,7 @@ int perf_session__deliver_event(struct perf_session *session,
- 	evsel = perf_evlist__id2evsel(session->evlist, sample->id);
- 
- 	machine = perf_session__find_machine_for_cpumode(session, event,
--							 sample);
-+							 sample, evsel);
- 
- 	switch (event->header.type) {
- 	case PERF_RECORD_SAMPLE:
+When I have reliable documentation I always define macros. So I agree that 
+"command" bytes like 0x34 and 0x3800 should have names but what are the 
+correct names? Are we constructing an opcode containing RTC register file 
+addresses or are we issuing read/write accesses to chip registers?
+
+In my experience with undocumented 68k Mac hardware and its Linux port, 
+codified guesswork is worse than no documentation at all. The only useful 
+RTC documentation I've ever come across is this: 
+http://mac.linux-m68k.org/devel/plushw.php
+
+It tells us that the two least significant bits bits must equal 0b01. What 
+would you call that macro? It also tells us that the most significant bit, 
+0x80, means "read access" but it only mentions early RTC chips and so it 
+does not cover two byte opcodes. Should I have used 0x8080 here?
+
+Whatever your opinion of reverse engineered drivers, the changes in this 
+patch are consistent with the rest of the file. E.g. via_read_time() and 
+via_write_time(). If/when we have the chip data needed to correctly define 
+macros for 0x01, 0x0001, 0x80, 0x8000 or 0x8080, I think they should be 
+applied across the entire file, and in a different patch. Inconsistent use 
+of such macros would be undesirable IMHO.
+
+> 
+> >  }
+> >
+> >  /*
+> > Index: linux/include/uapi/linux/pmu.h
+> > ===================================================================
+> > --- linux.orig/include/uapi/linux/pmu.h 2015-06-14 17:45:34.000000000 +1000
+> > +++ linux/include/uapi/linux/pmu.h      2015-06-14 17:46:03.000000000 +1000
+> > @@ -18,7 +18,9 @@
+> >  #define PMU_POWER_CTRL         0x11    /* control power of some devices */
+> >  #define PMU_ADB_CMD            0x20    /* send ADB packet */
+> >  #define PMU_ADB_POLL_OFF       0x21    /* disable ADB auto-poll */
+> > +#define PMU_WRITE_XPRAM                0x32    /* write eXtended Parameter RAM */
+> >  #define PMU_WRITE_NVRAM                0x33    /* write non-volatile RAM */
+> > +#define PMU_READ_XPRAM         0x3a    /* read eXtended Parameter RAM */
+> >  #define PMU_READ_NVRAM         0x3b    /* read non-volatile RAM */
+> >  #define PMU_SET_RTC            0x30    /* set real-time clock */
+> >  #define PMU_READ_RTC           0x38    /* read real-time clock */
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+
 -- 
-1.9.3
