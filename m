@@ -1,23 +1,40 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 422681A0396
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 13:10:39 +1000 (AEST)
-Date: Tue, 16 Jun 2015 13:10:29 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux/m68k <linux-m68k@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-Subject: Re: [RFC v2 23/24] m68k/mac: Fix PRAM accessors
-In-Reply-To: <CAMuHMdWzKvWjAE3u54E4xewEDX+zJqEDEvRmO2twpeD2vmBzog@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1506152213340.12762@nippy.intranet>
-References: <20150614074607.242676098@telegraphics.com.au>
- <20150614074613.054681242@telegraphics.com.au>
- <CAMuHMdWzKvWjAE3u54E4xewEDX+zJqEDEvRmO2twpeD2vmBzog@mail.gmail.com>
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2FFF01A0431
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 13:29:06 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Tue, 16 Jun 2015 13:29:04 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C2BE23578052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 13:29:00 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5G3SqTc63766678
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 13:29:00 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5G3SROL015623
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 13:28:28 +1000
+Message-ID: <557F97C7.1090100@linux.vnet.ibm.com>
+Date: Tue, 16 Jun 2015 08:58:07 +0530
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Mackerras <paulus@samba.org>
+CC: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ acme@kernel.org, mingo@kernel.org, mpe@ellerman.id.au,
+ sukadev@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ warrier@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
+ scottwood@freescale.com
+Subject: Re: [PATCH RESEND v4 1/3] kvm/powerpc: Export kvm exit reasons
+References: <1434344169-32438-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <20150615053943.GB15637@pale.ozlabs.ibm.com>
+In-Reply-To: <20150615053943.GB15637@pale.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,116 +44,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Paul,
 
-On Mon, 15 Jun 2015, Geert Uytterhoeven wrote:
+On 06/15/2015 11:09 AM, Paul Mackerras wrote:
+> On Mon, Jun 15, 2015 at 10:26:07AM +0530, Hemant Kumar wrote:
+>> To analyze the kvm exits with perf, we will need to map the exit codes
+>> with the exit reasons. Such a mapping exists today in trace_book3s.h.
+>> Currently its not exported to perf.
+>>
+>> This patch moves these kvm exit reasons and their mapping from
+>> "arch/powerpc/kvm/trace_book3s.h" to
+>> "arch/powerpc/include/uapi/asm/trace_book3s.h".
+>> Accordingly change the include files in "trace_hv.h" and "trace_pr.h".
+> These are not really exit reasons so much as Power ISA interrupt
+> vectors, defined externally to the kernel (in the Power ISA document)
+> and not subject to change (at least, kernel developers can't change
+> them).  So I don't see why this needs to be "exported" from the
+> kernel.
+>
+> Paul.
+>
 
-> Hi Finn,
-> 
-> On Sun, Jun 14, 2015 at 9:46 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
-> > --- linux.orig/arch/m68k/mac/misc.c     2015-06-14 17:46:02.000000000 +1000
-> > +++ linux/arch/m68k/mac/misc.c  2015-06-14 17:46:03.000000000 +1000
-> > @@ -284,11 +287,31 @@ static void via_pram_command(int command
-> >
-> >  static unsigned char via_pram_read_byte(int offset)
-> >  {
-> > -       return 0;
-> > +       unsigned char temp;
-> > +       int addr = ((offset & 0xE0) << 3) | ((offset & 0x1F) << 2);
-> 
-> Can you please add #defines for the magic values?
+The exit reasons are needed in the perf userspace and we wanted to avoid
+code duplication, so, if there are any changes, we won't need to update them
+at both places.
+However, we could add them to perf userspace itself separately and let perf
+userspace use those.
 
-This is just marshalling the offset argument. I don't know how to rewrite 
-that code more clearly. I'm open to suggestions. I don't know of any 
-documentation that gives names or meanings to the different bit ranges. I 
-infered the format from the MESS source code, 
-https://github.com/mamedev/mame/blob/master/src/mess/machine/macrtc.c
-
-What I found in the MESS source code looks like the result of reverse 
-engineering. Hence the RTC code in this patch also looks like a reverse 
-engineered driver.
-
-> 
-> > +
-> > +       /* Use RTC command 0x38 for XPRAM access, as per MESS source code */
-> > +       via_pram_command(addr | 0x3800 | 0x8001, &temp);
-> 
-> It seems 0x38 is already documented in <linux/pmu.h> (see below), or not 
-> (it's shifted left by 8 bits?)?
-
-No, this is a RTC command not a PMU command. This RTC device is an Apple 
-custom IC that is publicly undocumented. OTOH, the PMU device is well 
-documented, since Apple publicly released PMU driver source code in 
-MkLinux and later in XNU. That's why I've been able to provide #defines 
-for the PMU commands but not the RTC commands.
-
-> 
-> > +
-> > +       return temp;
-> >  }
-> >
-> >  static void via_pram_write_byte(unsigned char data, int offset)
-> >  {
-> > +       unsigned char temp;
-> > +       int addr = ((offset & 0xE0) << 3) | ((offset & 0x1F) << 2);
-> > +
-> > +       /* Clear the write protect bit */
-> > +       temp = 0x55;
-> > +       via_pram_command(0x34 | 0x01, &temp);
-> > +
-> > +       /* Write the byte to XPRAM */
-> > +       temp = data;
-> > +       via_pram_command(0x3800 | 0x0001 | addr, &temp);
-> > +
-> > +       /* Set the write protect bit */
-> > +       temp = 0xD5;
-> > +       via_pram_command(0x34 | 0x01, &temp);
-> 
-> More magic values...
-
-When I have reliable documentation I always define macros. So I agree that 
-"command" bytes like 0x34 and 0x3800 should have names but what are the 
-correct names? Are we constructing an opcode containing RTC register file 
-addresses or are we issuing read/write accesses to chip registers?
-
-In my experience with undocumented 68k Mac hardware and its Linux port, 
-codified guesswork is worse than no documentation at all. The only useful 
-RTC documentation I've ever come across is this: 
-http://mac.linux-m68k.org/devel/plushw.php
-
-It tells us that the two least significant bits bits must equal 0b01. What 
-would you call that macro? It also tells us that the most significant bit, 
-0x80, means "read access" but it only mentions early RTC chips and so it 
-does not cover two byte opcodes. Should I have used 0x8080 here?
-
-Whatever your opinion of reverse engineered drivers, the changes in this 
-patch are consistent with the rest of the file. E.g. via_read_time() and 
-via_write_time(). If/when we have the chip data needed to correctly define 
-macros for 0x01, 0x0001, 0x80, 0x8000 or 0x8080, I think they should be 
-applied across the entire file, and in a different patch. Inconsistent use 
-of such macros would be undesirable IMHO.
-
-> 
-> >  }
-> >
-> >  /*
-> > Index: linux/include/uapi/linux/pmu.h
-> > ===================================================================
-> > --- linux.orig/include/uapi/linux/pmu.h 2015-06-14 17:45:34.000000000 +1000
-> > +++ linux/include/uapi/linux/pmu.h      2015-06-14 17:46:03.000000000 +1000
-> > @@ -18,7 +18,9 @@
-> >  #define PMU_POWER_CTRL         0x11    /* control power of some devices */
-> >  #define PMU_ADB_CMD            0x20    /* send ADB packet */
-> >  #define PMU_ADB_POLL_OFF       0x21    /* disable ADB auto-poll */
-> > +#define PMU_WRITE_XPRAM                0x32    /* write eXtended Parameter RAM */
-> >  #define PMU_WRITE_NVRAM                0x33    /* write non-volatile RAM */
-> > +#define PMU_READ_XPRAM         0x3a    /* read eXtended Parameter RAM */
-> >  #define PMU_READ_NVRAM         0x3b    /* read non-volatile RAM */
-> >  #define PMU_SET_RTC            0x30    /* set real-time clock */
-> >  #define PMU_READ_RTC           0x38    /* read real-time clock */
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
+What would you suggest?
 
 -- 
+Thanks,
+Hemant Kumar
