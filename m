@@ -1,44 +1,28 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 390B01A0431
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 16:28:19 +1000 (AEST)
-Received: from /spool/local
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 16 Jun 2015 02:28:16 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 104E76E803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 02:20:02 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5G6SFFO65405022
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 06:28:15 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5G6SEcC017092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 02:28:14 -0400
-Message-ID: <557FC1F9.5010607@linux.vnet.ibm.com>
-Date: Tue, 16 Jun 2015 11:58:09 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-CC: Peter Zijlstra <peterz@infradead.org>, rusty@rustcorp.com.au,
- Stephane Eranian <eranian@google.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 7/7]powerpc/powernv: nest pmu cpumask and cpu hotplug
- support
-References: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433999874-2043-8-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1433999874-2043-8-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 233EC1A0431
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 16:45:45 +1000 (AEST)
+Message-ID: <1434437144.17070.32.camel@neuling.org>
+Subject: [PATCH] cxl: Add CXL_KERNEL_API config option
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, "Manoj N.Kumar"
+ <manoj@linux.vnet.ibm.com>, Brian King <brking@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "James.Bottomley"
+ <James.Bottomley@HansenPartnership.com>,  Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Date: Tue, 16 Jun 2015 16:45:44 +1000
+In-Reply-To: <1434436498.17070.27.camel@neuling.org>
+References: <20150613160038.367B18EE112@bedivere.hansenpartnership.com>
+ <1434235143.5042.63.camel@neuling.org>
+ <3746D390-571E-4D17-83A3-4D0D36335929@ellerman.id.au>
+ <1434244818.5042.68.camel@neuling.org>
+ <1434379526.2170.57.camel@HansenPartnership.com>
+ <1434436498.17070.27.camel@neuling.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,199 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/2015 10:47 AM, Madhavan Srinivasan wrote:
-> Adds cpumask attribute to be used by each nest pmu since nest
-> units are per-chip. Only one cpu (first online cpu) from each node/chip
-> is designated to read counters.
-> 
-> On cpu hotplug, dying cpu is checked to see whether it is one of the
-> designated cpus, if yes, next online cpu from the same node/chip is designated
-> as new cpu to read counters.
-> 
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: Stephane Eranian <eranian@google.com>
-> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
-> +static void nest_change_cpu_context(int old_cpu, int new_cpu)
-> +{
-> +	int i;
-> +
-> +	if (new_cpu >= 0) {
-> +		for (i = 0; per_nest_pmu_arr[i] != NULL; i++)
-> +			perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
-> +							old_cpu, new_cpu);
-> +	}
-> +}
-> +
-> +static void nest_exit_cpu(int cpu)
-> +{
-> +	int i, nid, target = -1;
-> +	const struct cpumask *l_cpumask;
-> +	int src_chipid;
-> +
-> +	/*
-> +	 * Check in the designated list for this cpu. Dont bother
-> +	 * if not one of them.
-> +	 */
-> +	if (!cpumask_test_and_clear_cpu(cpu, &cpu_mask_nest_pmu))
-> +		return;
-> +
-> +	/*
-> +	 * Now that this cpu is one of the designated,
-> +	 * find a new cpu a) which is not dying and
+Add CXL_KERNEL_API config option so drivers which depend on this new
+functionality won't be enabled until this is visible.
 
-This comment is not right. nest_exit_cpu() is called in the hotplug
-path, so another cpu cannot be dying in parallel. Hotplug operations are
-done serially. The comment ought to be "a) which is online" instead.
+This is useful for merging the cxlflash driver which comes in via the SCSI
+tree.  The cxlflash driver can depend on CXL_KERNEL_API, hence it won't be
+enabled in the SCSI tree until this new config option is merged via the pow=
+erpc
+tree.  Hence all trees will be bisectable at all times.
 
-> +	 * b) is in same node/chip.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-node is not the same as a chip right ? And you are interested in cpus on
-the same chip alone. So shouldn't the above comment be b) in the same chip ?
-
-> +	 */
-> +	nid = cpu_to_node(cpu);
-> +	src_chipid = topology_physical_package_id(cpu);
-
-What is the relation between a node and a chip ? Can't we have a
-function which returns the cpumask of a chip straight away, since that
-is what you seem to be more interested in ? You can then simply choose
-the next cpu in this cpumask rather than going through the below loop.
-
-
-> +	l_cpumask = cpumask_of_node(nid);
-> +	for_each_cpu(i, l_cpumask) {
-> +		if (i == cpu)
-> +			continue;
-> +		if (src_chipid == topology_physical_package_id(i)) {
-> +			target = i;
-> +			break;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * Update the cpumask with the target cpu and
-> +	 * migrate the context if needed
-> +	 */
-> +	if (target >= 0) {
-
-You already check for target >= 0 here. So you don't need to check for
-new_cpu >= 0 in nest_change_cpu_context() above ?
-
-> +		cpumask_set_cpu(target, &cpu_mask_nest_pmu);
-> +		nest_change_cpu_context (cpu, target);
-> +	}
-> +}
-> +
-> +static void nest_init_cpu(int cpu)
-> +{
-> +	int i, src_chipid;
-> +
-> +	/*
-> +	 * Search for any existing designated thread from
-> +	 * the incoming cpu's node/chip. If found, do nothing.
-> +	 */
-> +	src_chipid = topology_physical_package_id(cpu);
-> +	for_each_cpu(i, &cpu_mask_nest_pmu)
-> +		if (src_chipid == topology_physical_package_id(i))
-> +			return;
-> +
-> +	/*
-> +	 * Make incoming cpu as a designated thread for
-> +	 * this node/chip
-> +	 */
-> +	cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
-
-Why can't we simply check if cpu is the first one coming online in the
-chip and designate it as the cpu_mask_nest_pmu for that chip ? If it is
-not the first cpu, it means that another cpu in the same chip already
-took over this duty and it needn't bother.
-
-And shouldn't we also call nest_init() on this cpu, just like you do in
-cpumask_chip() on all cpu_mask_nest_pmu cpus ?
-
-> +}
-> +
-> +static int nest_cpu_notifier(struct notifier_block *self,
-> +				unsigned long action, void *hcpu)
-> +{
-> +	long cpu = (long)hcpu;
-> +
-> +	switch (action & ~CPU_TASKS_FROZEN) {
-> +	case CPU_DOWN_FAILED:
-
-Why do we need to handle the DOWN_FAILED case ? In DOWN_PREPARE, you
-have ensured that the function moves on to another cpu. So even if the
-offline failed, its no issue. The duty is safely taken over.
-
-> +	case CPU_STARTING:
-
-I would suggest initializing nest in the CPU_ONLINE stage. This is
-because CPU_STARTING phase can fail. In that case, we will be
-unnecessarily initializing nest pre-maturely. CPU_ONLINE phase assures
-that the cpu is successfully online and you can then initiate nest.
-
-> +		nest_init_cpu(cpu);
-> +		break;
-> +	case CPU_DOWN_PREPARE:
-> +		nest_exit_cpu(cpu);
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +
-> +	return NOTIFY_OK;
-> +}
-> +
-> +static struct notifier_block nest_cpu_nb = {
-> +	.notifier_call  = nest_cpu_notifier,
-> +	.priority       = CPU_PRI_PERF + 1,
-> +};
-> +
-> +void cpumask_chip(void)
-
-This name ^^ is not apt IMO. You are initiating the cpumask necessary
-for nest pmu. So why not call it nest_pmu_cpumask_init() ?
-
-> +{
-> +	const struct cpumask *l_cpumask;
-> +	int cpu, nid;
-> +
-> +	if (!cpumask_empty(&cpu_mask_nest_pmu))
-
-When can this condition become true ?
-
-> +		return;
-> +
-> +	cpu_notifier_register_begin();
-> +
-> +	/*
-> +	 * Nest PMUs are per-chip counters. So designate a cpu
-> +	 * from each node/chip for counter collection.
-> +	 */
-> +	for_each_online_node(nid) {
-> +		l_cpumask = cpumask_of_node(nid);
-> +
-> +		/* designate first online cpu in this node */
-> +		cpu = cpumask_first(l_cpumask);
-> +		cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
-> +	}
-> +
-> +	/* Initialize Nest PMUs in each node using designated cpus */
-> +	on_each_cpu_mask(&cpu_mask_nest_pmu, (smp_call_func_t)nest_init, NULL, 1);
-> +
-> +	__register_cpu_notifier(&nest_cpu_nb);
-> +
-> +	cpu_notifier_register_done();
-> +}
-
-Regards
-Preeti U Murthy
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+index a990b39..b6db9eb 100644
+--- a/drivers/misc/cxl/Kconfig
++++ b/drivers/misc/cxl/Kconfig
+@@ -7,10 +7,15 @@ config CXL_BASE
+ 	default n
+ 	select PPC_COPRO_BASE
+=20
++config CXL_KERNEL_API
++	bool
++	default n
++
+ config CXL
+ 	tristate "Support for IBM Coherent Accelerators (CXL)"
+ 	depends on PPC_POWERNV && PCI_MSI
+ 	select CXL_BASE
++	select CXL_KERNEL_API
+ 	default m
+ 	help
+ 	  Select this option to enable driver support for IBM Coherent
