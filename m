@@ -1,42 +1,28 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rric.net@gmail.com>
+Received: from mail-wg0-x22f.google.com (mail-wg0-x22f.google.com
+ [IPv6:2a00:1450:400c:c00::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 137861A0252
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 18:51:28 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 16 Jun 2015 18:51:26 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 10ADE2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 18:51:23 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5G8pECL49676426
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 18:51:23 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5G8onKu011841
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 18:50:50 +1000
-Date: Tue, 16 Jun 2015 16:50:24 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH V7 06/10] powerpc/eeh: Create PE for VFs
-Message-ID: <20150616085024.GA1230@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-7-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150601234645.GF3631@google.com> <20150603033142.GA22584@richard>
- <20150603051023.GA26652@gwshan> <20150603154638.GL3631@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7EF571A05C7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 19:29:03 +1000 (AEST)
+Received: by wgez8 with SMTP id z8so7770636wge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Jun 2015 02:28:59 -0700 (PDT)
+Sender: Robert Richter <rric.net@gmail.com>
+Date: Tue, 16 Jun 2015 11:28:55 +0200
+From: Robert Richter <rric@kernel.org>
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, mingo@redhat.com,
+ ak@linux.intel.com, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, namhyung@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v13 04/14] perf, tools: Allow events with dot
+Message-ID: <20150616092855.GB26569@rric.localhost>
+References: <1433265135-20426-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1433265135-20426-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150603103204.GI1828@krava.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150603154638.GL3631@google.com>
+In-Reply-To: <20150603103204.GI1828@krava.redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,69 +32,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 03, 2015 at 10:46:38AM -0500, Bjorn Helgaas wrote:
->On Wed, Jun 03, 2015 at 03:10:23PM +1000, Gavin Shan wrote:
->> It's correct. "The following operations" refers to eeh_add_device_late()
->> and eeh_sysfs_add_device(). The former one requires the resources for
->> one particular PCI device (VF here) are finalized (assigned). eeh_sysfs_add_device()
->> will fail if the sysfs entry for the PCI device isn't populated yet.
->
->eeh_add_device_late() contains several things that read config space:
->eeh_save_bars() caches the entire config header, and
->eeh_addr_cache_insert_dev() looks at the device resources (which are
->determined by BARs in config space).  I think this is an error-prone
->approach.  I think it would be simpler and safer for you to capture what
->you need in your PCI config accessors.
->
->eeh_add_device_late() also contains code to deal with an EEH cache that
->"might not be removed correctly because of unbalanced kref to the device
->during unplug time."  That's unrelated to this patch series, but it sounds
->... like a hacky workaround for some bug in the unplug path.
->
->> >>> +	eeh_add_device_early(pdn);
->> >>> +	eeh_add_device_late(pdev);
->> >>> +	eeh_sysfs_add_device(pdev);
->> >>> +}
->> >>> +DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_eeh_vf_final_fixup);
->> >>
->> >>Ugh.  This is powerpc code, but I don't like using fixups as a hook like
->> >>this.  There is a pcibios_add_device() -- could this be done there?
->> >>
->> >
->> >I don't like it neither :-) But looks we can't put it in the
->> >pcibios_add_device().
->> >
->> >>If not, what happens after pcibios_add_device() that is required for this
->> >>code?  Maybe we need a pcibios_bus_add_device() hook?
->> >
->> >The pnv_eeh_vf_final_fixup() will try to create sysfs for VFs. This requires
->> >the VF sysfs(kobj) is initialized properly. If we put these into
->> >pcibios_add_device(), the eeh_sysfs_add_device() would fail.
->> >
->> >Below is the call flow for your reference:
->> >
->> >pci_device_add()
->> >    pcibios_add_device()
->> >    device_add()                <--- kobj initialized here
->> >
->> 
->> We can put it into pcibios_bus_add_device(), but we don't it currently. If
->> Bjorn agree to add pcibios_bus_add_device(), I'm fine to move the block code
->> there.
->
->I think I'm OK with adding a pcibios_bus_add_device().  I think that would
->be better than using the fixup mechanism for this.
->
+On 03.06.15 12:32:04, Jiri Olsa wrote:
+> On Tue, Jun 02, 2015 at 10:12:04AM -0700, Sukadev Bhattiprolu wrote:
+> > From: Andi Kleen <ak@linux.intel.com>
+> > 
+> > The Intel events use a dot to separate event name and unit mask.
+> > Allow dot in names in the scanner, and remove special handling
+> > of dot as EOF. Also remove the hack in jevents to replace dot
+> > with underscore. This way dotted events can be specified
+> > directly by the user.
+> > 
+> > I'm not fully sure this change to the scanner is correct
+> > (what was the dot special case good for?), but I haven't
+> > found anything that breaks with it so far at least.
+> 
+> can't see anything either
+> 
+> Robert,
+> does it ring a bell? seems like you introduced it ;-)
 
-Hi, Bjorn, Gavin,
+It is not a dot, it is a regex to handle any other char or <eof> to
+return from <event> state to <INITIAL> and rescan the text again.
 
-Been working on some bug recently, just got a chance to this one.
+The change below does not only add the dot for config but also for
+names of groups, pmus and tracepoints (might not be complete, see
+PE_NAME).
 
-Would you mind giving me some hint, where you suggest to put the
-pcibios_bus_add_device()?
+To be sure this is only valid in config syntax, add
 
->Bjorn
+ name_config               [a-zA-Z_*?][a-zA-Z0-9_*?.]*
 
--- 
-Richard Yang
-Help you, Help me
+and change name to name_config in <config>.
+
+This should be cleaned up with name_minus by merging both.
+
+I also think we can remove PE_NAME from event_term: at all. We need to
+return PE_TERM then instead from <config>.
+
+If you need help with the changes, I could then prepare something and
+send it to you, let me know.
+
+-Robert
+
+> 
+> thanks,
+> jirka
+> 
+> 
+> > 
+> > V2: Add the dot to name too, to handle events outside cpu//
+> > Acked-by: Namhyung Kim <namhyung@kernel.org>
+> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> > ---
+> >  tools/perf/util/parse-events.l |    5 ++---
+> >  1 file changed, 2 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
+> > index 09e738f..13cef3c 100644
+> > --- a/tools/perf/util/parse-events.l
+> > +++ b/tools/perf/util/parse-events.l
+> > @@ -119,8 +119,8 @@ event		[^,{}/]+
+> >  num_dec		[0-9]+
+> >  num_hex		0x[a-fA-F0-9]+
+> >  num_raw_hex	[a-fA-F0-9]+
+> > -name		[a-zA-Z_*?][a-zA-Z0-9_*?]*
+> > -name_minus	[a-zA-Z_*?][a-zA-Z0-9\-_*?]*
+> > +name		[a-zA-Z_*?][a-zA-Z0-9_*?.]*
+> > +name_minus	[a-zA-Z_*?][a-zA-Z0-9\-_*?.]*
+> >  /* If you add a modifier you need to update check_modifier() */
+> >  modifier_event	[ukhpGHSDI]+
+> >  modifier_bp	[rwx]{1,3}
+> > @@ -165,7 +165,6 @@ modifier_bp	[rwx]{1,3}
+> >  			return PE_EVENT_NAME;
+> >  		}
+> >  
+> > -.		|
+> >  <<EOF>>		{
+> >  			BEGIN(INITIAL);
+> >  			REWIND(0);
+> > -- 
+> > 1.7.9.5
+> > 
