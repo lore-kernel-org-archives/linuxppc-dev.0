@@ -1,27 +1,47 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0104.outbound.protection.outlook.com [157.56.111.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dave.long@linaro.org>
+Received: from mail-qc0-f182.google.com (mail-qc0-f182.google.com
+ [209.85.216.182])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B29AE1A0AE3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 03:58:06 +1000 (AEST)
-Message-ID: <1434563871.2353.90.camel@freescale.com>
-Subject: Re: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
-From: Scott Wood <scottwood@freescale.com>
-To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-CC: Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 17 Jun 2015 12:57:51 -0500
-In-Reply-To: <DM2PR03MB3830ADD2B503C6738BB27E7E6A60@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
- <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
- <1433962446.2477.121.camel@freescale.com>
- <DM2PR03MB3830ADD2B503C6738BB27E7E6A60@DM2PR03MB383.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 322781A0AE8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 04:33:01 +1000 (AEST)
+Received: by qcsf5 with SMTP id f5so16487221qcs.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2015 11:32:59 -0700 (PDT)
+Message-ID: <5581BCD0.2040405@linaro.org>
+Date: Wed, 17 Jun 2015 14:30:40 -0400
+From: David Long <dave.long@linaro.org>
 MIME-Version: 1.0
+To: Rob Herring <robherring2@gmail.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
+ Anton Blanchard <anton@samba.org>,
+ Behan Webster <behanw@converseincode.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Eric Paris <eparis@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>,
+ Jan Willeke <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nikolay Borisov <Nikolay.Borisov@arm.com>,
+ Oleg Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Richard Kuo <rkuo@codeaurora.org>,
+ Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-hexagon@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-s390@vger.kernel.org, SH-Linux <linux-sh@vger.kernel.org>,
+ linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
+ to common include file
+References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
+ <1434386579-6045-2-git-send-email-dave.long@linaro.org>
+ <CAL_JsqK3L9Hv9bhAtwAAXVYjLJBTOG9=4ddOo-SFqnD-_KieCQ@mail.gmail.com>
+In-Reply-To: <CAL_JsqK3L9Hv9bhAtwAAXVYjLJBTOG9=4ddOo-SFqnD-_KieCQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,84 +51,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-06-17 at 09:59 -0500, Liberman Igal-B31950 wrote:
-> 
-> Regards,
-> Igal Liberman.
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, June 10, 2015 9:54 PM
-> > To: Bucur Madalin-Cristian-B32716
-> > Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org; Liberman Igal-B31950
-> > Subject: Re: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
-> > 
-> > On Wed, 2015-06-10 at 18:21 +0300, Madalin Bucur wrote:
-> > > From: Igal Liberman <Igal.Liberman@freescale.com>
-> > > 
-> > > This patch presents the FMan Foundation Libraries (FLIB) headers.
-> > > The FMan FLib provides the basic API used by the FMan drivers to
-> > > configure and control the FMan hardware.
-> > > 
-> > > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> > > ---
-> > >  .../ethernet/freescale/fman/flib/common/general.h  |  41 ++
-> > >  .../net/ethernet/freescale/fman/flib/fsl_fman.h    | 609
-> > > +++++++++++++++++++++
-> > >  2 files changed, 650 insertions(+)
-> > >  create mode 100644
-> > > drivers/net/ethernet/freescale/fman/flib/common/general.h
-> > >  create mode 100644
-> > > drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
-> > 
-> > Why do we need separate patches just for headers?
-> > 
-> 
-> We wanted to make the patches smaller, it's the main reason for this 
-> separation.
+On 06/16/15 09:17, Rob Herring wrote:
+> On Mon, Jun 15, 2015 at 11:42 AM, David Long <dave.long@linaro.org> wrote:
+>> From: "David A. Long" <dave.long@linaro.org>
+>>
+>> The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
+>>   feature and has identical definitions in four different arch ptrace.h
+>> include files. It seems unlikely that definition would ever need to be
+>> changed regardless of architecture so lets move it into
+>> include/linux/ptrace.h.
+>>
+>> Signed-off-by: David A. Long <dave.long@linaro.org>
+>> ---
+>>   arch/arm/kernel/ptrace.c     | 5 -----
+>>   arch/powerpc/kernel/ptrace.c | 5 -----
+>>   arch/sh/include/asm/ptrace.h | 5 -----
+>>   arch/x86/kernel/ptrace.c     | 5 -----
+>>   include/linux/ptrace.h       | 9 +++++++++
+>>   5 files changed, 9 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/arch/arm/kernel/ptrace.c b/arch/arm/kernel/ptrace.c
+>> index ef9119f..fb45cf1 100644
+>> --- a/arch/arm/kernel/ptrace.c
+>> +++ b/arch/arm/kernel/ptrace.c
+>> @@ -59,11 +59,6 @@
+>>   #define BREAKINST_THUMB        0xde01
+>>   #endif
+>>
+>> -struct pt_regs_offset {
+>> -       const char *name;
+>> -       int offset;
+>> -};
+>> -
+>>   #define REG_OFFSET_NAME(r) \
+>>          {.name = #r, .offset = offsetof(struct pt_regs, ARM_##r)}
+>>   #define REG_OFFSET_END {.name = NULL, .offset = 0}
+>
+> Can't you also move these? ARM is complicated with the "ARM_"
+> prefixing, but the others appear to be the same. Maybe you can remove
+> the prefix or redefine the macro for ARM.
+>
+> Rob
+>
 
-Patches should be divided by function, not arbitrarily in order to 
-decrease size.  Splitting like this makes it harder to see the whole 
-picture, to search for identifiers, etc.
+That would mandate that all the architecture-specific pt_regs structures 
+would have to use a top-level named field for each named register.  That 
+seems to me like an unnecessary restriction when the point of 
+regs_offset_table is to provide the offset of the register inside an 
+arbitarily complex pt_regs struct.  The often redundant definition of 
+these two macros doesn't seem to me that high a price for that.
 
-The right way to make these patches smaller is to remove unnecessary 
-features.
-
-
-> > What does the flib directory mean, in the context of Linux?  If 
-> > someone were
-> > to add code to this driver, how do they know if the code should go 
-> > into the
-> > flib directory or not?
-> > 
-> > > 
-> > > +#define iowrite32be(val, addr)               out_be32(&(*addr), 
-> > > val)
-> > > +#define ioread32be(addr)             in_be32(&(*addr))
-> > 
-> > iowrite32be()/ioread32be() are already defined for all relevant 
-> > architectures.
-> > Why are you redefining them into something PPC- specific?
-> > 
-> 
-> Removed those. 
-
-Please don't stop at the specific things I'm pointing out.
-
-> > > +/* do not change! if changed, must be disabled for rev1 ! */ 
-> > > #define
-> > > +DEFAULT_HALT_ON_EXTERNAL_ACTIVATION  false
-> > > +/* do not change! if changed, must be disabled for rev1 ! */ 
-> > > #define
-> > > +DEFAULT_HALT_ON_UNRECOVERABLE_ECC_ERROR false
-> > 
-> > rev1 of what chip?
-> > 
-> 
-> P4080. I'll update the comments. 
-
-No.  p4080rev1 is not supported, and in any case this is not the right 
-way to select different errata for different chips.
-
--Scott
+-dl
