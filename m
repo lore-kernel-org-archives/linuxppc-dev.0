@@ -1,25 +1,26 @@
-Return-Path: <Igal.Liberman@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
+ (mail-bn1bbn0104.outbound.protection.outlook.com [157.56.111.104])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D11E51A0AE3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 00:59:45 +1000 (AEST)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Madalin-Cristian Bucur
- <madalin.bucur@freescale.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id B29AE1A0AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 03:58:06 +1000 (AEST)
+Message-ID: <1434563871.2353.90.camel@freescale.com>
+Subject: Re: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
+From: Scott Wood <scottwood@freescale.com>
+To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
+CC: Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
-Date: Wed, 17 Jun 2015 14:59:37 +0000
-Message-ID: <DM2PR03MB3830ADD2B503C6738BB27E7E6A60@DM2PR03MB383.namprd03.prod.outlook.com>
+Date: Wed, 17 Jun 2015 12:57:51 -0500
+In-Reply-To: <DM2PR03MB3830ADD2B503C6738BB27E7E6A60@DM2PR03MB383.namprd03.prod.outlook.com>
 References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
  <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
  <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
  <1433962446.2477.121.camel@freescale.com>
-In-Reply-To: <1433962446.2477.121.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <DM2PR03MB3830ADD2B503C6738BB27E7E6A60@DM2PR03MB383.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,41 +31,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVuZSAx
-MCwgMjAxNSA5OjU0IFBNDQo+IFRvOiBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNg0KPiBD
-YzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsg
-bGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0K
-PiBTdWJqZWN0OiBSZTogW1BBVENIIDAxLzEyXSBmc2wvZm1hbjogQWRkIHRoZSBGTWFuIEZMSUIg
-aGVhZGVycw0KPiANCj4gT24gV2VkLCAyMDE1LTA2LTEwIGF0IDE4OjIxICswMzAwLCBNYWRhbGlu
-IEJ1Y3VyIHdyb3RlOg0KPiA+IEZyb206IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJtYW5AZnJl
-ZXNjYWxlLmNvbT4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggcHJlc2VudHMgdGhlIEZNYW4gRm91bmRh
-dGlvbiBMaWJyYXJpZXMgKEZMSUIpIGhlYWRlcnMuDQo+ID4gVGhlIEZNYW4gRkxpYiBwcm92aWRl
-cyB0aGUgYmFzaWMgQVBJIHVzZWQgYnkgdGhlIEZNYW4gZHJpdmVycyB0bw0KPiA+IGNvbmZpZ3Vy
-ZSBhbmQgY29udHJvbCB0aGUgRk1hbiBoYXJkd2FyZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
-IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4g
-PiAgLi4uL2V0aGVybmV0L2ZyZWVzY2FsZS9mbWFuL2ZsaWIvY29tbW9uL2dlbmVyYWwuaCAgfCAg
-NDEgKysNCj4gPiAgLi4uL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9mbGliL2ZzbF9mbWFu
-LmggICAgfCA2MDkNCj4gPiArKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMiBmaWxlcyBjaGFu
-Z2VkLCA2NTAgaW5zZXJ0aW9ucygrKQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4gPiBkcml2
-ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9mbGliL2NvbW1vbi9nZW5lcmFsLmgNCj4g
-PiAgY3JlYXRlIG1vZGUgMTAwNjQ0DQo+ID4gZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxl
-L2ZtYW4vZmxpYi9mc2xfZm1hbi5oDQo+IA0KPiBXaHkgZG8gd2UgbmVlZCBzZXBhcmF0ZSBwYXRj
-aGVzIGp1c3QgZm9yIGhlYWRlcnM/DQo+IA0KDQpXZSB3YW50ZWQgdG8gbWFrZSB0aGUgcGF0Y2hl
-cyBzbWFsbGVyLCBpdCdzIHRoZSBtYWluIHJlYXNvbiBmb3IgdGhpcyBzZXBhcmF0aW9uLg0KDQo+
-IFdoYXQgZG9lcyAiY29tbW9uIiByZWZlciB0bz8NCj4gDQoNCkkgcmVtb3ZlZCAuL2ZsaWIvY29t
-bW9uLg0KDQo+IFdoYXQgZG9lcyB0aGUgZmxpYiBkaXJlY3RvcnkgbWVhbiwgaW4gdGhlIGNvbnRl
-eHQgb2YgTGludXg/ICBJZiBzb21lb25lIHdlcmUNCj4gdG8gYWRkIGNvZGUgdG8gdGhpcyBkcml2
-ZXIsIGhvdyBkbyB0aGV5IGtub3cgaWYgdGhlIGNvZGUgc2hvdWxkIGdvIGludG8gdGhlDQo+IGZs
-aWIgZGlyZWN0b3J5IG9yIG5vdD8NCj4gDQo+ID4NCj4gPiArI2RlZmluZSBpb3dyaXRlMzJiZSh2
-YWwsIGFkZHIpICAgICAgICAgICAgICAgb3V0X2JlMzIoJigqYWRkciksIHZhbCkNCj4gPiArI2Rl
-ZmluZSBpb3JlYWQzMmJlKGFkZHIpICAgICAgICAgICAgIGluX2JlMzIoJigqYWRkcikpDQo+IA0K
-PiBpb3dyaXRlMzJiZSgpL2lvcmVhZDMyYmUoKSBhcmUgYWxyZWFkeSBkZWZpbmVkIGZvciBhbGwg
-cmVsZXZhbnQgYXJjaGl0ZWN0dXJlcy4NCj4gV2h5IGFyZSB5b3UgcmVkZWZpbmluZyB0aGVtIGlu
-dG8gc29tZXRoaW5nIFBQQy0gc3BlY2lmaWM/DQo+IA0KDQpSZW1vdmVkIHRob3NlLiANCg0KPiA+
-ICsvKiBkbyBub3QgY2hhbmdlISBpZiBjaGFuZ2VkLCBtdXN0IGJlIGRpc2FibGVkIGZvciByZXYx
-ICEgKi8gI2RlZmluZQ0KPiA+ICtERUZBVUxUX0hBTFRfT05fRVhURVJOQUxfQUNUSVZBVElPTiAg
-ZmFsc2UNCj4gPiArLyogZG8gbm90IGNoYW5nZSEgaWYgY2hhbmdlZCwgbXVzdCBiZSBkaXNhYmxl
-ZCBmb3IgcmV2MSAhICovICNkZWZpbmUNCj4gPiArREVGQVVMVF9IQUxUX09OX1VOUkVDT1ZFUkFC
-TEVfRUNDX0VSUk9SIGZhbHNlDQo+IA0KPiByZXYxIG9mIHdoYXQgY2hpcD8NCj4gDQoNClA0MDgw
-LiBJJ2xsIHVwZGF0ZSB0aGUgY29tbWVudHMuIA0KDQo+IC1TY290dA0KDQpJZ2FsLg0KDQo=
+On Wed, 2015-06-17 at 09:59 -0500, Liberman Igal-B31950 wrote:
+> 
+> Regards,
+> Igal Liberman.
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, June 10, 2015 9:54 PM
+> > To: Bucur Madalin-Cristian-B32716
+> > Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org; Liberman Igal-B31950
+> > Subject: Re: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
+> > 
+> > On Wed, 2015-06-10 at 18:21 +0300, Madalin Bucur wrote:
+> > > From: Igal Liberman <Igal.Liberman@freescale.com>
+> > > 
+> > > This patch presents the FMan Foundation Libraries (FLIB) headers.
+> > > The FMan FLib provides the basic API used by the FMan drivers to
+> > > configure and control the FMan hardware.
+> > > 
+> > > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> > > ---
+> > >  .../ethernet/freescale/fman/flib/common/general.h  |  41 ++
+> > >  .../net/ethernet/freescale/fman/flib/fsl_fman.h    | 609
+> > > +++++++++++++++++++++
+> > >  2 files changed, 650 insertions(+)
+> > >  create mode 100644
+> > > drivers/net/ethernet/freescale/fman/flib/common/general.h
+> > >  create mode 100644
+> > > drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
+> > 
+> > Why do we need separate patches just for headers?
+> > 
+> 
+> We wanted to make the patches smaller, it's the main reason for this 
+> separation.
+
+Patches should be divided by function, not arbitrarily in order to 
+decrease size.  Splitting like this makes it harder to see the whole 
+picture, to search for identifiers, etc.
+
+The right way to make these patches smaller is to remove unnecessary 
+features.
+
+
+> > What does the flib directory mean, in the context of Linux?  If 
+> > someone were
+> > to add code to this driver, how do they know if the code should go 
+> > into the
+> > flib directory or not?
+> > 
+> > > 
+> > > +#define iowrite32be(val, addr)               out_be32(&(*addr), 
+> > > val)
+> > > +#define ioread32be(addr)             in_be32(&(*addr))
+> > 
+> > iowrite32be()/ioread32be() are already defined for all relevant 
+> > architectures.
+> > Why are you redefining them into something PPC- specific?
+> > 
+> 
+> Removed those. 
+
+Please don't stop at the specific things I'm pointing out.
+
+> > > +/* do not change! if changed, must be disabled for rev1 ! */ 
+> > > #define
+> > > +DEFAULT_HALT_ON_EXTERNAL_ACTIVATION  false
+> > > +/* do not change! if changed, must be disabled for rev1 ! */ 
+> > > #define
+> > > +DEFAULT_HALT_ON_UNRECOVERABLE_ECC_ERROR false
+> > 
+> > rev1 of what chip?
+> > 
+> 
+> P4080. I'll update the comments. 
+
+No.  p4080rev1 is not supported, and in any case this is not the right 
+way to select different errata for different chips.
+
+-Scott
