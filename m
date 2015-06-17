@@ -1,43 +1,26 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06E281A0E20
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2015 22:05:33 +1000 (AEST)
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5BF4514028E
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2015 22:05:32 +1000 (AEST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Wed, 17 Jun 2015 17:35:29 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 06A2AE005B
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2015 17:38:54 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5HC5MmJ2687272
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2015 17:35:23 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5HC4Efa025863
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Jun 2015 17:34:14 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Thomas Huth <thuth@redhat.com>
-Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, aik@ozlabs.ru,
- dvaleev@suse.com
-Subject: Re: [PATCH SLOF] disk-label: add support for booting from GPT FAT
- partition
-In-Reply-To: <87fv5qeeax.fsf@linux.vnet.ibm.com>
-References: <1434017929-1792-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <20150617122248.77211775@thh440s> <87fv5qeeax.fsf@linux.vnet.ibm.com>
-Date: Wed, 17 Jun 2015 17:34:13 +0530
-Message-ID: <87d20uee2q.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D11E51A0AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 00:59:45 +1000 (AEST)
+From: Liberman Igal <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Madalin-Cristian Bucur
+ <madalin.bucur@freescale.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 01/12] fsl/fman: Add the FMan FLIB headers
+Date: Wed, 17 Jun 2015 14:59:37 +0000
+Message-ID: <DM2PR03MB3830ADD2B503C6738BB27E7E6A60@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1433949712-5648-1-git-send-email-madalin.bucur@freescale.com>
+ <1433949712-5648-2-git-send-email-madalin.bucur@freescale.com>
+ <1433949712-5648-3-git-send-email-madalin.bucur@freescale.com>
+ <1433962446.2477.121.camel@freescale.com>
+In-Reply-To: <1433962446.2477.121.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,48 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> writes:
-
-> Thomas Huth <thuth@redhat.com> writes:
->>> +\ Check for GPT MSFT BASIC DATA GUID - vfat based
->>> +EBD0A0A2     CONSTANT GPT-BASIC-DATA-PARTITION-1
->>> +B9E5         CONSTANT GPT-BASIC-DATA-PARTITION-2
->>> +4433         CONSTANT GPT-BASIC-DATA-PARTITION-3
->>> +87C0         CONSTANT GPT-BASIC-DATA-PARTITION-4
->>> +68B6B72699C7 CONSTANT GPT-BASIC-DATA-PARTITION-5
->>> +
->>> +: gpt-basic-data-partition? ( -- true|false )
->>> +   block gpt-part-entry>part-type-guid l@-le GPT-BASIC-DATA-PARTITION-=
-1 =3D IF
->>> +      block gpt-part-entry>part-type-guid 4 + w@-le
->>> +      GPT-BASIC-DATA-PARTITION-2 =3D IF
->>> +         block gpt-part-entry>part-type-guid 6 + w@-le
->>> +         GPT-BASIC-DATA-PARTITION-3 =3D IF
->>> +            block gpt-part-entry>part-type-guid 8 + w@
->>
->> Don't you have to byte-swap (w@-le) here, too? Looks somehow strange
->> that the other UID parts are read byte-swapped but this one is not?
->
-> Interesting observation, I had used code from gpt-prep-partition? and
-> did not doubt the validity of it. But that is how I see it in the memory
-> though.
->
-> 4 >  7e50d000 10 dump=20
-> 7e50d000: a2 a0 d0 eb e5 b9 33 44 87 c0 68 b6 b7 26 99 c7  ......3D..h..&=
-.. ok
-> 4 >
-
-And here the answer for that:
-
-    https://en.wikipedia.org/wiki/GUID_Partition_Table#cite_note-26
-=20=20=20=20
-    The GUIDs in this table are written assuming a little-endian byte
-    order. For example, the GUID for an EFI System partition is written
-    as C12A7328-F81F-11D2-BA4B-00A0C93EC93B here, which corresponds to
-    the 16 byte sequence 28h 73h 2Ah C1h 1Fh F8h D2h 11h BAh 4Bh 00h A0h
-    C9h 3Eh C9h 3Bh =E2=80=93 only the first three blocks are byte-swapped.
-
-"only the first three blocks are byte-swapped"
-
-Regards,
-Nikunj
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVuZSAx
+MCwgMjAxNSA5OjU0IFBNDQo+IFRvOiBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNg0KPiBD
+YzogbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsg
+bGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0K
+PiBTdWJqZWN0OiBSZTogW1BBVENIIDAxLzEyXSBmc2wvZm1hbjogQWRkIHRoZSBGTWFuIEZMSUIg
+aGVhZGVycw0KPiANCj4gT24gV2VkLCAyMDE1LTA2LTEwIGF0IDE4OjIxICswMzAwLCBNYWRhbGlu
+IEJ1Y3VyIHdyb3RlOg0KPiA+IEZyb206IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJtYW5AZnJl
+ZXNjYWxlLmNvbT4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggcHJlc2VudHMgdGhlIEZNYW4gRm91bmRh
+dGlvbiBMaWJyYXJpZXMgKEZMSUIpIGhlYWRlcnMuDQo+ID4gVGhlIEZNYW4gRkxpYiBwcm92aWRl
+cyB0aGUgYmFzaWMgQVBJIHVzZWQgYnkgdGhlIEZNYW4gZHJpdmVycyB0bw0KPiA+IGNvbmZpZ3Vy
+ZSBhbmQgY29udHJvbCB0aGUgRk1hbiBoYXJkd2FyZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
+IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4g
+PiAgLi4uL2V0aGVybmV0L2ZyZWVzY2FsZS9mbWFuL2ZsaWIvY29tbW9uL2dlbmVyYWwuaCAgfCAg
+NDEgKysNCj4gPiAgLi4uL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9mbGliL2ZzbF9mbWFu
+LmggICAgfCA2MDkNCj4gPiArKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMiBmaWxlcyBjaGFu
+Z2VkLCA2NTAgaW5zZXJ0aW9ucygrKQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4gPiBkcml2
+ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9mbGliL2NvbW1vbi9nZW5lcmFsLmgNCj4g
+PiAgY3JlYXRlIG1vZGUgMTAwNjQ0DQo+ID4gZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxl
+L2ZtYW4vZmxpYi9mc2xfZm1hbi5oDQo+IA0KPiBXaHkgZG8gd2UgbmVlZCBzZXBhcmF0ZSBwYXRj
+aGVzIGp1c3QgZm9yIGhlYWRlcnM/DQo+IA0KDQpXZSB3YW50ZWQgdG8gbWFrZSB0aGUgcGF0Y2hl
+cyBzbWFsbGVyLCBpdCdzIHRoZSBtYWluIHJlYXNvbiBmb3IgdGhpcyBzZXBhcmF0aW9uLg0KDQo+
+IFdoYXQgZG9lcyAiY29tbW9uIiByZWZlciB0bz8NCj4gDQoNCkkgcmVtb3ZlZCAuL2ZsaWIvY29t
+bW9uLg0KDQo+IFdoYXQgZG9lcyB0aGUgZmxpYiBkaXJlY3RvcnkgbWVhbiwgaW4gdGhlIGNvbnRl
+eHQgb2YgTGludXg/ICBJZiBzb21lb25lIHdlcmUNCj4gdG8gYWRkIGNvZGUgdG8gdGhpcyBkcml2
+ZXIsIGhvdyBkbyB0aGV5IGtub3cgaWYgdGhlIGNvZGUgc2hvdWxkIGdvIGludG8gdGhlDQo+IGZs
+aWIgZGlyZWN0b3J5IG9yIG5vdD8NCj4gDQo+ID4NCj4gPiArI2RlZmluZSBpb3dyaXRlMzJiZSh2
+YWwsIGFkZHIpICAgICAgICAgICAgICAgb3V0X2JlMzIoJigqYWRkciksIHZhbCkNCj4gPiArI2Rl
+ZmluZSBpb3JlYWQzMmJlKGFkZHIpICAgICAgICAgICAgIGluX2JlMzIoJigqYWRkcikpDQo+IA0K
+PiBpb3dyaXRlMzJiZSgpL2lvcmVhZDMyYmUoKSBhcmUgYWxyZWFkeSBkZWZpbmVkIGZvciBhbGwg
+cmVsZXZhbnQgYXJjaGl0ZWN0dXJlcy4NCj4gV2h5IGFyZSB5b3UgcmVkZWZpbmluZyB0aGVtIGlu
+dG8gc29tZXRoaW5nIFBQQy0gc3BlY2lmaWM/DQo+IA0KDQpSZW1vdmVkIHRob3NlLiANCg0KPiA+
+ICsvKiBkbyBub3QgY2hhbmdlISBpZiBjaGFuZ2VkLCBtdXN0IGJlIGRpc2FibGVkIGZvciByZXYx
+ICEgKi8gI2RlZmluZQ0KPiA+ICtERUZBVUxUX0hBTFRfT05fRVhURVJOQUxfQUNUSVZBVElPTiAg
+ZmFsc2UNCj4gPiArLyogZG8gbm90IGNoYW5nZSEgaWYgY2hhbmdlZCwgbXVzdCBiZSBkaXNhYmxl
+ZCBmb3IgcmV2MSAhICovICNkZWZpbmUNCj4gPiArREVGQVVMVF9IQUxUX09OX1VOUkVDT1ZFUkFC
+TEVfRUNDX0VSUk9SIGZhbHNlDQo+IA0KPiByZXYxIG9mIHdoYXQgY2hpcD8NCj4gDQoNClA0MDgw
+LiBJJ2xsIHVwZGF0ZSB0aGUgY29tbWVudHMuIA0KDQo+IC1TY290dA0KDQpJZ2FsLg0KDQo=
