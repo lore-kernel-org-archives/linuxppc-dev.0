@@ -1,37 +1,32 @@
-Return-Path: <fransklaver@gmail.com>
-MIME-Version: 1.0
-In-Reply-To: <55821936.4040704@codeaurora.org>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-2-git-send-email-linux@roeck-us.net>
- <55821936.4040704@codeaurora.org>
-Date: Thu, 18 Jun 2015 08:53:50 +0200
-Message-ID: <CAH6sp9P7rq2y_hiQPHKUP85CwnEmp87yC7Psh4=29h-pYnb_yw@mail.gmail.com>
-Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
-From: Frans Klaver <fransklaver@gmail.com>
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Guenter Roeck <linux@roeck-us.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-m32r-ja@ml.linux-m32r.org,
- linux-mips@linux-mips.org, linux-efi@vger.kernel.org,
- linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
- linux-sh@vger.kernel.org,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pavel Machek <pavel@ucw.cz>, devel@driverdev.osuosl.org,
- linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
- linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
- Alexander Graf <agraf@suse.de>, linux-acpi <linux-acpi@vger.kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org,
- Len Brown <len.brown@intel.com>, user-mode-linux-devel@lists.sourceforge.net,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- linux-xtensa@linux-xtensa.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
- linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
- openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com,
- linux-parisc@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Romain Perier <romain.perier@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5DA0E1A0E3B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 18:06:57 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Thu, 18 Jun 2015 13:36:54 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id AAE7EE0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 13:40:20 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5I86lmJ50856032
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 13:36:47 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5I78vXW020219
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 12:38:57 +0530
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V8 00/10] VF EEH on Power8
+Date: Thu, 18 Jun 2015 16:06:35 +0800
+Message-Id: <1434614805-19002-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,45 +36,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 18, 2015 at 3:04 AM, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> On 10/06/2014 10:28 PM, Guenter Roeck wrote:
->> Various drivers implement architecture and/or device specific means to
->> remove power from the system.  For the most part, those drivers set the
->> global variable pm_power_off to point to a function within the driver.
->>
->> This mechanism has a number of drawbacks.  Typically only one scheme
->> to remove power is supported (at least if pm_power_off is used).
->> At least in theory there can be multiple means remove power, some of
->> which may be less desirable. For example, some mechanisms may only
->> power off the CPU or the CPU card, while another may power off the
->> entire system.  Others may really just execute a restart sequence
->> or drop into the ROM monitor. Using pm_power_off can also be racy
->> if the function pointer is set from a driver built as module, as the
->> driver may be in the process of being unloaded when pm_power_off is
->> called. If there are multiple poweroff handlers in the system, removing
->> a module with such a handler may inadvertently reset the pointer to
->> pm_power_off to NULL, leaving the system with no means to remove power.
->>
->> Introduce a system poweroff handler call chain to solve the described
->> problems.  This call chain is expected to be executed from the
->> architecture specific machine_power_off() function.  Drivers providing
->> system poweroff functionality are expected to register with this call chain.
->> By using the priority field in the notifier block, callers can control
->> poweroff handler execution sequence and thus ensure that the poweroff
->> handler with the optimal capabilities to remove power for a given system
->> is called first.
->
-> What happened to this series? I want to add shutdown support to my
-> platform and I need to write a register on the PMIC in one driver to
-> configure it for shutdown instead of restart and then write an MMIO
-> register to tell the PMIC to actually do the shutdown in another driver.
-> It seems that the notifier solves this case for me, albeit with the
-> slight complication that I need to order the two with some priority.
+This patchset enables EEH on SRIOV VFs. The general idea is to create proper
+VF edev and VF PE and handle them properly.
 
-I was wondering the same thing. I did find out that things kind of
-stalled after Linus cast doubt on the chosen path [1]. I'm not sure
-there's any consensus on what would be best to do instead.
+Different from the Bus PE, VF PE just contain one VF. This introduces the
+difference of EEH error handling on a VF PE. Generally, it has several
+differences.
 
-Frans
+First, the VF's removal and re-enumerate rely on its PF. VF has a tight
+relationship between its PF. This is not proper to enumerate a VF by usual
+scan procedure. That's why virtfn_add/virtfn_remove are exported in this patch
+set.
 
-[1] https://lkml.org/lkml/2014/11/6/641
+Second, the reset/restore of a VF is done in kernel space. FW is not aware of
+the VF, this means the usual reset function done in FW will not work. One of
+the patch will imitate the reset/restore function in kernel space.
+
+Third, the VF may be removed during the PF's error_detected function. In this
+case, the original error_detected->slot_reset->resume sequence is not proper
+to those removed VFs, since they are re-created by PF in a fresh state. A flag
+in eeh_dev is introduce to mark the eeh_dev is in error state. By doing so, we
+track whether this device needs to be reset or not.
+
+This has been tested both on host and in guest on Power8 with latest kernel
+version.
+
+v8:
+   * fix on checking the return value of pnv_eeh_do_flr()
+   * introduced a weak function pcibios_bus_add_device() to create PE for VFs
+   * rebase it on v4.1-rc8
+v7:
+   * fix compile error when PCI_IOV is not set
+v6:
+   * code / commit log refactor by Gavin
+v5:
+   * remove the compound field, iterate on Master VF PE instead
+   * some code refine on PCI config restore and reset on VF
+     the wait time for assert and deassert
+     PCI device address format
+     check on edev->pcie_cap and edev->aer_cap before access them
+v4:
+   * refine the change logs, comment and code style
+   * change pnv_pci_fixup_vf_eeh() to pnv_eeh_vf_final_fixup() and remove the
+     CONFIG_PCI_IOV macro
+   * reorder patch 5/6 to make the logic more reasonable
+   * remove remove_dev_pci_data()
+   * remove the EEH_DEV_VF flag, use edev->physfn to identify a VF EEH DEV and
+     remove related CONFIG_PCI_IOV macro
+   * add the option for VF reset
+   * fix the pnv_eeh_cfg_blocked() logic
+   * replace pnv_pci_cfg_{read,write} with eeh_ops->{read,write}_config in
+     pnv_eeh_vf_restore_config()
+   * rename pnv_eeh_vf_restore_config() to pnv_eeh_restore_vf_config()
+   * rename pnv_pci_fixup_vf_caps() to pnv_pci_vf_header_fixup() and move it
+     to arch/powerpc/platforms/powernv/pci.c
+   * add a field compound in pnv_ioda_pe to link compound PEs
+   * handle compound PE for VF PEs
+v3:
+   * add back vf_index in pci_dn to track the VF's index
+   * rename ppdev in eeh_dev to physfn for consistency
+   * move edev->physfn assignment before dev->dev.archdata.edev is set
+   * move pnv_pci_fixup_vf_eeh() and pnv_pci_fixup_vf_caps() to eeh-powernv.c
+   * more clear and detail in commit log and comment in code
+   * merge eeh_rmv_virt_device() with eeh_rmv_device()
+   * move the cfg_blocked check logic from pnv_eeh_read/write_config() to
+     pnv_eeh_cfg_blocked()
+   * move the vf reset/restore logic into its own patch, two patches are
+     created.
+     powerpc/powernv: Support PCI config restore for VFs
+     powerpc/powernv: Support EEH reset for VFs
+   * simplify the vf reset logic
+v2:
+   * add prefix pci_iov_ to virtfn_add/virtfn_remove
+   * use EEH_DEV_VF as a flag for a VF's eeh_dev
+   * use eeh_dev instead of edev in change log
+   * remove vf_index in eeh_dev, calculate it from pdn->busno and devfn
+   * do eeh_add_device_late() and eeh_sysfs_add_device() both after pci_dev is
+     well initialized
+   * do FLR to reset a VF PE
+   * imitate the restore function in FW for VF
+   * remove the reverse order patch, since it is still under discussion
+
+Wei Yang (10):
+  PCI/IOV: Rename and export virtfn_add/virtfn_remove
+  powerpc/pci: Cache VF index in pci_dn
+  powerpc/pci: Remove VFs prior to PF
+  powerpc/eeh: Cache only BARs, not windows or IOV BARs
+  powerpc/powernv: EEH device for VF
+  powerpc/eeh: Create PE for VFs
+  powerpc/powernv: Support EEH reset for VF PE
+  powerpc/powernv: Support PCI config restore for VFs
+  powerpc/eeh: Support error recovery for VF PE
+  powerpc/powernv: compound PE for VFs
+
+ arch/powerpc/include/asm/eeh.h               |    4 +
+ arch/powerpc/include/asm/pci-bridge.h        |    2 +
+ arch/powerpc/kernel/eeh.c                    |    8 +
+ arch/powerpc/kernel/eeh_cache.c              |    6 +-
+ arch/powerpc/kernel/eeh_driver.c             |  100 +++++++++---
+ arch/powerpc/kernel/eeh_pe.c                 |   13 +-
+ arch/powerpc/kernel/pci-hotplug.c            |    2 +-
+ arch/powerpc/kernel/pci_dn.c                 |   16 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  220 +++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c    |   46 +++++-
+ arch/powerpc/platforms/powernv/pci.c         |   35 +++-
+ drivers/pci/bus.c                            |    2 +
+ drivers/pci/iov.c                            |   10 +-
+ include/linux/pci.h                          |    8 +
+ 14 files changed, 427 insertions(+), 45 deletions(-)
+
+-- 
+1.7.9.5
