@@ -1,36 +1,20 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9FF141A0E3C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 15:32:55 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 18 Jun 2015 15:32:54 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 992772BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 15:32:52 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5I5VTo865536148
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 15:31:37 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5I5V4mC029410
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 15:31:05 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, benh <benh@kernel.crashing.org>,
- Ian Munsie <ianmunsi@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2D4F51A0AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 15:57:45 +1000 (AEST)
+Message-ID: <1434607064.25157.2.camel@ellerman.id.au>
 Subject: Re: [PATCH] cxl: Fix typo in debug print
-In-reply-to: <1434604510.2942.33.camel@neuling.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Neuling <mikey@neuling.org>
+Cc: benh <benh@kernel.crashing.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Ian Munsie <ianmunsi@au1.ibm.com>
+Date: Thu, 18 Jun 2015 15:57:44 +1000
+In-Reply-To: <1434604510.2942.33.camel@neuling.org>
 References: <1434604510.2942.33.camel@neuling.org>
-Date: Thu, 18 Jun 2015 15:30:40 +1000
-Message-Id: <1434605427-sup-6805@delenn.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,4 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+On Thu, 2015-06-18 at 15:15 +1000, Michael Neuling wrote:
+> Fix typo in debug print.  p1->p2.  No functional change.
+
+That's not "no functional change", it changes the behaviour, unless p2_base()
+implements the same logic as p1_base()?
+
+cheers
+
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 1ef0164..8515791 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -204,7 +204,7 @@ static void dump_cxl_config_space(struct pci_dev *dev)
+>  	dev_info(&dev->dev, "p1 regs: %#llx, len: %#llx\n",
+>  		p1_base(dev), p1_size(dev));
+>  	dev_info(&dev->dev, "p2 regs: %#llx, len: %#llx\n",
+> -		p1_base(dev), p2_size(dev));
+> +		p2_base(dev), p2_size(dev));
+>  	dev_info(&dev->dev, "BAR 4/5: %#llx, len: %#llx\n",
+>  		pci_resource_start(dev, 4), pci_resource_len(dev, 4));
+>  
+> 
+> 
