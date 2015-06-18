@@ -1,24 +1,18 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id E916D1A041B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 14:49:28 +1000 (AEST)
-Date: Thu, 18 Jun 2015 14:49:15 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linux/m68k <linux-m68k@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-Subject: Re: [RFC v2 23/24] m68k/mac: Fix PRAM accessors
-In-Reply-To: <alpine.LNX.2.00.1506152213340.12762@nippy.intranet>
-Message-ID: <alpine.LNX.2.00.1506181417260.30499@nippy.intranet>
-References: <20150614074607.242676098@telegraphics.com.au>
- <20150614074613.054681242@telegraphics.com.au>
- <CAMuHMdWzKvWjAE3u54E4xewEDX+zJqEDEvRmO2twpeD2vmBzog@mail.gmail.com>
- <alpine.LNX.2.00.1506152213340.12762@nippy.intranet>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7640D1A0AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 15:15:10 +1000 (AEST)
+Message-ID: <1434604510.2942.33.camel@neuling.org>
+Subject: [PATCH] cxl: Fix typo in debug print
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, benh <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ian Munsie
+ <ianmunsi@au1.ibm.com>
+Date: Thu, 18 Jun 2015 15:15:10 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fix typo in debug print.  p1->p2.  No functional change.
 
-Hi Geert,
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Further to my previous email,
-
-On Tue, 16 Jun 2015, in which I wrote:
-
-> 
-> On Mon, 15 Jun 2015, Geert Uytterhoeven wrote:
-> 
-> > 
-> > More magic values...
-> 
-> [...] The only useful RTC documentation I've ever come across is this: 
-> http://mac.linux-m68k.org/devel/plushw.php
-
-This document appears to be Inside Macintosh vol. III ch. 2. It describes 
-the early RTC chip that lacks two-byte operations and XPRAM, and pre-dates 
-all Mac hardware supported in mainline Linux. But it does offer some 
-useful data, though not enough to answer all of your criticisms (as I 
-said).
-
-> [...] I think they should be applied across the entire file, and in a 
-> different patch. Inconsistent use of such macros would be undesirable 
-> IMHO.
-
-So, unless you have other ideas, I will revise this patch and insert an 
-earlier patch to address existing code, and codify what little reliable 
-chip data we have.
-
--- 
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 1ef0164..8515791 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -204,7 +204,7 @@ static void dump_cxl_config_space(struct pci_dev *dev)
+ 	dev_info(&dev->dev, "p1 regs: %#llx, len: %#llx\n",
+ 		p1_base(dev), p1_size(dev));
+ 	dev_info(&dev->dev, "p2 regs: %#llx, len: %#llx\n",
+-		p1_base(dev), p2_size(dev));
++		p2_base(dev), p2_size(dev));
+ 	dev_info(&dev->dev, "BAR 4/5: %#llx, len: %#llx\n",
+ 		pci_resource_start(dev, 4), pci_resource_len(dev, 4));
+=20
