@@ -1,21 +1,43 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <nikunj@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 199101A0AE3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 16:12:08 +1000 (AEST)
-Message-ID: <1434607927.20454.3.camel@neuling.org>
-Subject: Re: [PATCH] cxl: Fix typo in debug print
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: benh <benh@kernel.crashing.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Ian Munsie <ianmunsi@au1.ibm.com>
-Date: Thu, 18 Jun 2015 16:12:07 +1000
-In-Reply-To: <1434607064.25157.2.camel@ellerman.id.au>
-References: <1434604510.2942.33.camel@neuling.org>
- <1434607064.25157.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACD421A0AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 16:25:17 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 60A891401F6
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2015 16:25:17 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Thu, 18 Jun 2015 16:25:16 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4E77A2BB0067
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2015 16:25:13 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5I6P4nT35193042
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2015 16:25:13 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5I6Oexp005933
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Jun 2015 16:24:40 +1000
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Thomas Huth <thuth@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, aik@ozlabs.ru,
+ dvaleev@suse.com
+Subject: Re: [PATCH SLOF] disk-label: add support for booting from GPT FAT
+ partition
+In-Reply-To: <20150617122248.77211775@thh440s>
+References: <1434017929-1792-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <20150617122248.77211775@thh440s>
+Date: Thu, 18 Jun 2015 11:54:13 +0530
+Message-ID: <874mm5edpu.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +47,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-06-18 at 15:57 +1000, Michael Ellerman wrote:
-> On Thu, 2015-06-18 at 15:15 +1000, Michael Neuling wrote:
-> > Fix typo in debug print.  p1->p2.  No functional change.
->=20
-> That's not "no functional change", it changes the behaviour, unless p2_ba=
-se()
-> implements the same logic as p1_base()?
+Thomas Huth <thuth@redhat.com> writes:
 
-Maybe I should change it to "Only debug output printing change"?
+> On Thu, 11 Jun 2015 15:48:49 +0530
+> Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
+>
+>> +   block-size * to seek-pos
+>> +   block gpt>part-entry-size l@-le to gpt-part-size
+>> +   block gpt>num-part-entry l@-le dup 0= IF FALSE EXIT THEN
+>> +   1+ 1 ?DO
+>> +      seek-pos 0 seek drop
+>> +      block gpt-part-size read drop
+>
+> Can you be sure that gpt-part-size is only smaller than 4096 bytes
+> here? 
 
-Mikey
+So the size is usually 128, so this should be fine.
 
->=20
-> cheers
->=20
-> > diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> > index 1ef0164..8515791 100644
-> > --- a/drivers/misc/cxl/pci.c
-> > +++ b/drivers/misc/cxl/pci.c
-> > @@ -204,7 +204,7 @@ static void dump_cxl_config_space(struct pci_dev *d=
-ev)
-> >  	dev_info(&dev->dev, "p1 regs: %#llx, len: %#llx\n",
-> >  		p1_base(dev), p1_size(dev));
-> >  	dev_info(&dev->dev, "p2 regs: %#llx, len: %#llx\n",
-> > -		p1_base(dev), p2_size(dev));
-> > +		p2_base(dev), p2_size(dev));
-> >  	dev_info(&dev->dev, "BAR 4/5: %#llx, len: %#llx\n",
-> >  		pci_resource_start(dev, 4), pci_resource_len(dev, 4));
-> > =20
-> >=20
-> >=20
->=20
->=20
->=20
->=20
+https://en.wikipedia.org/wiki/GUID_Partition_Table
+
+Section: GPT header format
+
+"84 (0x54)	4 bytes	Size of a single partition entry (usually 128)"
+
+> If not, you might overflow the block array, don't you?
+
+Regards
+Nikunj
