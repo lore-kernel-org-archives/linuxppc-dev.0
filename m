@@ -1,34 +1,15 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10D7F1A199D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 18:09:44 +1000 (AEST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 18 Jun 2015 18:09:43 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C133F3578048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 18:09:41 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5I88HBk1114420
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 18:08:25 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5I87r80020424
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 18:07:53 +1000
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V8 07/10] powerpc/powernv: Support EEH reset for VF PE
-Date: Thu, 18 Jun 2015 16:06:42 +0800
-Message-Id: <1434614805-19002-8-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1434614805-19002-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1434614805-19002-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8933A1A0E85
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 18:41:14 +1000 (AEST)
+Message-ID: <55828426.2080204@c-s.fr>
+Date: Thu, 18 Jun 2015 10:41:10 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Oops in 3.18.14 in destroy_inode()
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,196 +19,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PEs for VFs don't have primary bus. So they have to have their own reset
-backend, which is used during EEH recovery. The patch implements the reset
-backend for VF's PE by issuing FLR or AF FLR to the VFs, which are contained
-in the PE.
+[46796.501487] Unable to handle kernel paging request for data at 
+address 0x000002dd
+[46796.514365] Faulting instruction address: 0xc00c5978
+[46796.524217] Oops: Kernel access of bad area, sig: 11 [#1]
+[46796.529351] PREEMPT CMPC885
+[46796.532144] CPU: 0 PID: 1107 Comm: snmpd Not tainted 3.18.14 #43
+[46796.539790] task: c682d340 ti: c6728000 task.ti: c6728000
+[46796.545119] NIP: c00c5978 LR: c00c5974 CTR: c00efeb4
+[46796.550033] REGS: c6729e00 TRAP: 0300   Not tainted (3.18.14)
+[46796.557497] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24042424 XER: 20000000
+[46796.564043] DAR: 000002dd DSISR: c0000000
+[46796.564043] GPR00: c00c5974 c6729eb0 c682d340 00000000 c5a02734 
+00000003 00000000 00851d4a
+[46796.564043] GPR08: 000005ae 000002b9 00009032 000001e4 24042424 
+1001c8cc 7fc835f8 100ad378
+[46796.564043] GPR16: 00000000 7fc835f0 7fc835e8 7fc835e0 7fc835d8 
+7fc835d0 7fc835c8 7fc835c0
+[46796.564043] GPR24: 0fe59f14 000002ac c6a44b48 c6056110 c5e03168 
+c5a026e0 c6728000 c1a026e0
+[46796.596017] NIP [c00c5978] destroy_inode+0x38/0x84
+[46796.600736] LR [c00c5974] destroy_inode+0x34/0x84
+[46796.605344] Call Trace:
+[46796.607793] [c6729eb0] [c00c5974] destroy_inode+0x34/0x84 (unreliable)
+[46796.614271] [c6729ec0] [c00c1d90] __dentry_kill+0x2a8/0x304
+[46796.619763] [c6729ee0] [c00c27c8] dput+0xd0/0x1d8
+[46796.624416] [c6729f00] [c00adf54] __fput+0x134/0x1fc
+[46796.629319] [c6729f20] [c002de28] task_work_run+0xac/0xf4
+[46796.634655] [c6729f40] [c000bba4] do_user_signal+0x74/0xc4
+[46796.640023] Instruction dump:
+[46796.642955] 39430078 93e1000c 90010014 7c7f1b78 81230078 7d295278 
+7d290034 5529d97e
+[46796.650612] 69290001 0f090000 4bffff45 813f0014 <81290024> 81290004 
+2f890000 419e0020
+[46796.658466] ---[ end trace 0abe99599a8bf31d ]---
 
-[gwshan: changelog and code refactoring]
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h               |    1 +
- arch/powerpc/platforms/powernv/eeh-powernv.c |  134 +++++++++++++++++++++++++-
- 2 files changed, 134 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index c1fde48..3d64cf3 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -134,6 +134,7 @@ struct eeh_dev {
- 	int pcix_cap;			/* Saved PCIx capability	*/
- 	int pcie_cap;			/* Saved PCIe capability	*/
- 	int aer_cap;			/* Saved AER capability		*/
-+	int af_cap;			/* Saved AF capability		*/
- 	struct eeh_pe *pe;		/* Associated PE		*/
- 	struct list_head list;		/* Form link list in the PE	*/
- 	struct pci_controller *phb;	/* Associated PHB		*/
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 4ec1d2e..fe1d1e5 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -402,6 +402,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
- 	edev->pcix_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
- 	edev->pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
- 	edev->aer_cap  = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
-+	edev->af_cap   = pnv_eeh_find_cap(pdn, PCI_CAP_ID_AF);
- 	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
- 		edev->mode |= EEH_DEV_BRIDGE;
- 		if (edev->pcie_cap) {
-@@ -891,6 +892,127 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- 	return 0;
- }
- 
-+static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, int pos,
-+				     u16 mask, bool af_flr_rst)
-+{
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+	int status, i;
-+
-+	/* Wait for Transaction Pending bit to be cleared */
-+	for (i = 0; i < 4; i++) {
-+		eeh_ops->read_config(pdn, pos, 2, &status);
-+		if (!(status & mask))
-+			return;
-+
-+		msleep((1 << i) * 100);
-+	}
-+
-+	pr_warn("%s: Pending transaction while issuing %s FLR to "
-+		"%04x:%02x:%02x.%01x\n",
-+		__func__, af_flr_rst ? "AF" : "",
-+		edev->phb->global_number, pdn->busno,
-+		PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
-+}
-+
-+static int pnv_eeh_do_flr(struct pci_dn *pdn, int option)
-+{
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+	u32 reg;
-+
-+	if (!edev->pcie_cap)
-+		return -ENOTTY;
-+
-+	eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP, 4, &reg);
-+	if (!(reg & PCI_EXP_DEVCAP_FLR))
-+		return -ENOTTY;
-+
-+	switch (option) {
-+	case EEH_RESET_HOT:
-+	case EEH_RESET_FUNDAMENTAL:
-+		pnv_eeh_wait_for_pending(pdn, edev->pcie_cap + PCI_EXP_DEVSTA,
-+					 PCI_EXP_DEVSTA_TRPND, false);
-+		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				     4, &reg);
-+		reg |= PCI_EXP_DEVCTL_BCR_FLR;
-+		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				      4, reg);
-+		msleep(EEH_PE_RST_HOLD_TIME);
-+		break;
-+	case EEH_RESET_DEACTIVATE:
-+		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				     4, &reg);
-+		reg &= ~PCI_EXP_DEVCTL_BCR_FLR;
-+		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-+				      4, reg);
-+		msleep(EEH_PE_RST_SETTLE_TIME);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pnv_eeh_do_af_flr(struct pci_dn *pdn, int option)
-+{
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+	u32 cap;
-+
-+	if (!edev->af_cap)
-+		return -ENOTTY;
-+
-+	eeh_ops->read_config(pdn, edev->af_cap + PCI_AF_CAP, 1, &cap);
-+	if (!(cap & PCI_AF_CAP_TP) || !(cap & PCI_AF_CAP_FLR))
-+		return -ENOTTY;
-+
-+	switch (option) {
-+	case EEH_RESET_HOT:
-+	case EEH_RESET_FUNDAMENTAL:
-+		/*
-+		 * Wait for Transaction Pending bit to clear. A word-aligned
-+		 * test is used, so we use the conrol offset rather than status
-+		 * and shift the test bit to match.
-+		 */
-+		pnv_eeh_wait_for_pending(pdn, edev->af_cap + PCI_AF_CTRL,
-+					 PCI_AF_STATUS_TP << 8, true);
-+		eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL,
-+				      1, PCI_AF_CTRL_FLR);
-+		msleep(EEH_PE_RST_HOLD_TIME);
-+		break;
-+	case EEH_RESET_DEACTIVATE:
-+		eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL, 1, 0);
-+		msleep(EEH_PE_RST_SETTLE_TIME);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pnv_eeh_reset_vf(struct pci_dn *pdn, int option)
-+{
-+	int ret;
-+
-+	ret = pnv_eeh_do_flr(pdn, option);
-+	if (ret != -ENOTTY)
-+		return ret;
-+
-+	return pnv_eeh_do_af_flr(pdn, option);
-+}
-+
-+static int pnv_eeh_vf_pe_reset(struct eeh_pe *pe, int option)
-+{
-+	struct eeh_dev *edev, *tmp;
-+	struct pci_dn *pdn;
-+	int ret;
-+
-+	eeh_pe_for_each_dev(pe, edev, tmp) {
-+		pdn = eeh_dev_to_pdn(edev);
-+		ret = pnv_eeh_reset_vf(pdn, option);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
- void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
- {
- 	struct pci_controller *hose;
-@@ -966,7 +1088,9 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
- 		}
- 
- 		bus = eeh_pe_bus_get(pe);
--		if (pci_is_root_bus(bus) ||
-+		if (pe->type & EEH_PE_VF)
-+			ret = pnv_eeh_vf_pe_reset(pe, option);
-+		else if (pci_is_root_bus(bus) ||
- 			pci_is_root_bus(bus->parent))
- 			ret = pnv_eeh_root_reset(hose, option);
- 		else
-@@ -1106,6 +1230,14 @@ static inline bool pnv_eeh_cfg_blocked(struct pci_dn *pdn)
- 	if (!edev || !edev->pe)
- 		return false;
- 
-+	/*
-+	 * We will issue FLR or AF FLR to all VFs, which are contained
-+	 * in VF PE. It relies on the EEH PCI config accessors. So we
-+	 * can't block them during the window.
-+	 */
-+	if ((edev->physfn) && (edev->pe->state & EEH_PE_RESET))
-+		return false;
-+
- 	if (edev->pe->state & EEH_PE_CFG_BLOCKED)
- 		return true;
- 
--- 
-1.7.9.5
+c00c5940 <destroy_inode>:
+     struct inode *inode = container_of(head, struct inode, i_rcu);
+     kmem_cache_free(inode_cachep, inode);
+}
+
+static void destroy_inode(struct inode *inode)
+{
+c00c5940:    7c 08 02 a6     mflr    r0
+c00c5944:    94 21 ff f0     stwu    r1,-16(r1)
+     BUG_ON(!list_empty(&inode->i_lru));
+c00c5948:    39 43 00 78     addi    r10,r3,120
+     struct inode *inode = container_of(head, struct inode, i_rcu);
+     kmem_cache_free(inode_cachep, inode);
+}
+
+static void destroy_inode(struct inode *inode)
+{
+c00c594c:    93 e1 00 0c     stw     r31,12(r1)
+c00c5950:    90 01 00 14     stw     r0,20(r1)
+c00c5954:    7c 7f 1b 78     mr      r31,r3
+     BUG_ON(!list_empty(&inode->i_lru));
+c00c5958:    81 23 00 78     lwz     r9,120(r3)
+c00c595c:    7d 29 52 78     xor     r9,r9,r10
+c00c5960:    7d 29 00 34     cntlzw  r9,r9
+c00c5964:    55 29 d9 7e     rlwinm  r9,r9,27,5,31
+c00c5968:    69 29 00 01     xori    r9,r9,1
+c00c596c:    0f 09 00 00     twnei   r9,0
+     __destroy_inode(inode);
+c00c5970:    4b ff ff 45     bl      c00c58b4 <__destroy_inode>
+     if (inode->i_sb->s_op->destroy_inode)
+c00c5974:    81 3f 00 14     lwz     r9,20(r31)
+==> c00c5978:    81 29 00 24     lwz     r9,36(r9)
+c00c597c:    81 29 00 04     lwz     r9,4(r9)
+c00c5980:    2f 89 00 00     cmpwi   cr7,r9,0
+c00c5984:    41 9e 00 20     beq     cr7,c00c59a4 <destroy_inode+0x64>
+         inode->i_sb->s_op->destroy_inode(inode);
+     else
+         call_rcu(&inode->i_rcu, i_callback);
+}
+c00c5988:    80 01 00 14     lwz     r0,20(r1)
+
+Looks like inode->i_sb (apparently contained in r9) has value 0x2b9 
+which is obviously wrong, hence the bad access at 0x2dd when trying to 
+get inode->i_sb->s_op
+
+What else can I look at to investigate this issue ?
+
+Christophe
