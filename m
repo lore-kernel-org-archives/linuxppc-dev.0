@@ -1,20 +1,20 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8090F1A105B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 02:25:36 +1000 (AEST)
-Date: Thu, 18 Jun 2015 18:25:33 +0200
-From: Torsten Duwe <duwe@lst.de>
-To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [RESEND PATCH 4/4] ppc64 ftrace_with_regs recursion protection
-Message-ID: <20150618162533.GE6546@lst.de>
+Return-Path: <rostedt@goodmis.org>
+Received: from smtprelay.hostedemail.com (smtprelay0196.hostedemail.com
+ [216.40.44.196])
+ by lists.ozlabs.org (Postfix) with ESMTP id CF67A1A041B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 02:49:06 +1000 (AEST)
+Date: Thu, 18 Jun 2015 12:49:00 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [RESEND PATCH 1/4] ppc64 FTRACE_WITH_REGS implementation
+Message-ID: <20150618124900.7a57dff7@gandalf.local.home>
+In-Reply-To: <20150618162107.GB6546@lst.de>
 References: <20150611095338.GA4492@lst.de> <20150618161727.GA6546@lst.de>
+ <20150618162107.GB6546@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150618161727.GA6546@lst.de>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an *emergency* parachute to avoid an endless recursion and
-consecutively a kernel stack overflow, should any function within some
-ftrace framework cause an access fault, which calls _mcount / ftrace_caller
-in return and so on. It might also call an ftrace'd function directly.
+On Thu, 18 Jun 2015 18:21:07 +0200
+Torsten Duwe <duwe@lst.de> wrote:
 
-As Michael Ellerman pointed out, it is a tedious and error-prone task
-to maintain a complete list of those functions that _might_ get called
-from *_access_fault or any dynamic tracer function. So we'll
-concentrate on the most frequent cases to enhance performance later,
-while for now sticking with this fill-in. It will later serve as a backup
-protection.
+> +	
+>  _GLOBAL(ftrace_stub)
+> +	nop
+> +	nop
+> +.localentry ftrace_stub,.-ftrace_stub	
 
-  * arch/powerpc/kernel/entry_64.S:
-    - test-and-set TRACE_FTRACE_BIT in task_struct's trace_recursion,
-      do not call the actual tracer function if set, clear flag on return.
+You might want to run checkpatch and fix your whitespace errors.
 
-Signed-off-by: Torsten Duwe <duwe@suse.de>
---
- arch/powerpc/kernel/asm-offsets.c |    1 +
- arch/powerpc/kernel/entry_64.S    |   15 +++++++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
---
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 4717859..ae10752 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -72,6 +72,7 @@ int main(void)
- 	DEFINE(THREAD, offsetof(struct task_struct, thread));
- 	DEFINE(MM, offsetof(struct task_struct, mm));
- 	DEFINE(MMCONTEXTID, offsetof(struct mm_struct, context.id));
-+	DEFINE(TASK_TRACEREC, offsetof(struct task_struct, trace_recursion));
- #ifdef CONFIG_PPC64
- 	DEFINE(AUDITCONTEXT, offsetof(struct task_struct, audit_context));
- 	DEFINE(SIGSEGV, SIGSEGV);
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index a4132ef..4768104 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -1202,7 +1202,13 @@ _GLOBAL(ftrace_caller)
- 	SAVE_8GPRS(16,r1)
- 	SAVE_8GPRS(24,r1)
- 
--
-+	ld	r3, PACACURRENT(r13)
-+	ld	r4, TASK_TRACEREC(r3)
-+	andi.	r5, r4, 0x0010 // ( 1 << TRACE_FTRACE_BIT )
-+	ori	r4, r4, 0x0010
-+	std	r4, TASK_TRACEREC(r3)
-+	bne-	3f		// ftrace in progress - avoid recursion!
-+	
- 	LOAD_REG_IMMEDIATE(r3,function_trace_op)
- 	ld	r5,0(r3)
- 
-@@ -1224,9 +1230,14 @@ ftrace_call:
- 	bl	ftrace_stub
- 	nop
- 
-+	ld	r3, PACACURRENT(r13)
-+	ld	r4, TASK_TRACEREC(r3)
-+	andi.	r4, r4, 0xffef // ~( 1 << TRACE_FTRACE_BIT )
-+	std	r4, TASK_TRACEREC(r3)
-+
- 	ld	r3, _NIP(r1)
- 	mtlr	r3
--
-+3:
- 	REST_8GPRS(0,r1)
- 	REST_8GPRS(8,r1)
- 	REST_8GPRS(16,r1)
+-- Steve
+
+>  	blr
+>  #else
+>  _GLOBAL_TOC(_mcount)
+> @@ -1211,12 +1286,12 @@ _GLOBAL(ftrace_stub)
