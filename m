@@ -2,16 +2,15 @@ Return-Path: <duwe@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE1A41A0E3B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 02:24:34 +1000 (AEST)
-Date: Thu, 18 Jun 2015 18:24:30 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8090F1A105B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 02:25:36 +1000 (AEST)
+Date: Thu, 18 Jun 2015 18:25:33 +0200
 From: Torsten Duwe <duwe@lst.de>
 To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [RESEND PATCH 3/4] ppc64 ftrace_with_regs: spare early boot and
- low level code
-Message-ID: <20150618162430.GD6546@lst.de>
+Subject: [RESEND PATCH 4/4] ppc64 ftrace_with_regs recursion protection
+Message-ID: <20150618162533.GE6546@lst.de>
 References: <20150611095338.GA4492@lst.de> <20150618161727.GA6546@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,41 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Using -mprofile-kernel on early boot code not only confuses the checker
-but is also useless, as the infrastructure is not yet in place. Proceed
-like with -pg (remove it from CFLAGS), equally with time.o and ftrace itself.
+This is an *emergency* parachute to avoid an endless recursion and
+consecutively a kernel stack overflow, should any function within some
+ftrace framework cause an access fault, which calls _mcount / ftrace_caller
+in return and so on. It might also call an ftrace'd function directly.
 
-  * arch/powerpc/kernel/Makefile:
-    - remove -mprofile-kernel from low level and boot code objects' CFLAGS
-      for FUNCTION_TRACER configurations.
+As Michael Ellerman pointed out, it is a tedious and error-prone task
+to maintain a complete list of those functions that _might_ get called
+from *_access_fault or any dynamic tracer function. So we'll
+concentrate on the most frequent cases to enhance performance later,
+while for now sticking with this fill-in. It will later serve as a backup
+protection.
+
+  * arch/powerpc/kernel/entry_64.S:
+    - test-and-set TRACE_FTRACE_BIT in task_struct's trace_recursion,
+      do not call the actual tracer function if set, clear flag on return.
 
 Signed-off-by: Torsten Duwe <duwe@suse.de>
 --
- arch/powerpc/kernel/Makefile |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/asm-offsets.c |    1 +
+ arch/powerpc/kernel/entry_64.S    |   15 +++++++++++++--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 --
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 502cf69..fb33fc5 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -17,14 +17,14 @@ endif
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 4717859..ae10752 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -72,6 +72,7 @@ int main(void)
+ 	DEFINE(THREAD, offsetof(struct task_struct, thread));
+ 	DEFINE(MM, offsetof(struct task_struct, mm));
+ 	DEFINE(MMCONTEXTID, offsetof(struct mm_struct, context.id));
++	DEFINE(TASK_TRACEREC, offsetof(struct task_struct, trace_recursion));
+ #ifdef CONFIG_PPC64
+ 	DEFINE(AUDITCONTEXT, offsetof(struct task_struct, audit_context));
+ 	DEFINE(SIGSEGV, SIGSEGV);
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index a4132ef..4768104 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -1202,7 +1202,13 @@ _GLOBAL(ftrace_caller)
+ 	SAVE_8GPRS(16,r1)
+ 	SAVE_8GPRS(24,r1)
  
- ifdef CONFIG_FUNCTION_TRACER
- # Do not trace early boot code
--CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
--CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog -mprofile-kernel
-+CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog -mprofile-kernel
-+CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog -mprofile-kernel
-+CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog -mprofile-kernel
- # do not trace tracer code
--CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog -mprofile-kernel
- # timers used by tracing
--CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
-+CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog -mprofile-kernel
- endif
+-
++	ld	r3, PACACURRENT(r13)
++	ld	r4, TASK_TRACEREC(r3)
++	andi.	r5, r4, 0x0010 // ( 1 << TRACE_FTRACE_BIT )
++	ori	r4, r4, 0x0010
++	std	r4, TASK_TRACEREC(r3)
++	bne-	3f		// ftrace in progress - avoid recursion!
++	
+ 	LOAD_REG_IMMEDIATE(r3,function_trace_op)
+ 	ld	r5,0(r3)
  
- obj-y				:= cputable.o ptrace.o syscalls.o \
+@@ -1224,9 +1230,14 @@ ftrace_call:
+ 	bl	ftrace_stub
+ 	nop
+ 
++	ld	r3, PACACURRENT(r13)
++	ld	r4, TASK_TRACEREC(r3)
++	andi.	r4, r4, 0xffef // ~( 1 << TRACE_FTRACE_BIT )
++	std	r4, TASK_TRACEREC(r3)
++
+ 	ld	r3, _NIP(r1)
+ 	mtlr	r3
+-
++3:
+ 	REST_8GPRS(0,r1)
+ 	REST_8GPRS(8,r1)
+ 	REST_8GPRS(16,r1)
