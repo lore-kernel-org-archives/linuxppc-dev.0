@@ -1,29 +1,36 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x232.google.com (mail-ob0-x232.google.com
- [IPv6:2607:f8b0:4003:c01::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8DD8E1A0E3B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 16:59:26 +1000 (AEST)
-Received: by obbsn1 with SMTP id sn1so48281254obb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Jun 2015 23:59:24 -0700 (PDT)
+Return-Path: <fransklaver@gmail.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <alpine.LNX.2.00.1506181417260.30499@nippy.intranet>
-References: <20150614074607.242676098@telegraphics.com.au>
- <20150614074613.054681242@telegraphics.com.au>
- <CAMuHMdWzKvWjAE3u54E4xewEDX+zJqEDEvRmO2twpeD2vmBzog@mail.gmail.com>
- <alpine.LNX.2.00.1506152213340.12762@nippy.intranet>
- <alpine.LNX.2.00.1506181417260.30499@nippy.intranet>
-Date: Thu, 18 Jun 2015 08:59:24 +0200
-Message-ID: <CAMuHMdX9BaBj4gFW4aP_t_GFsPQi_wU8-sQsUFr_A0cksr4MJQ@mail.gmail.com>
-Subject: Re: [RFC v2 23/24] m68k/mac: Fix PRAM accessors
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Linux/m68k" <linux-m68k@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
+In-Reply-To: <55821936.4040704@codeaurora.org>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+ <55821936.4040704@codeaurora.org>
+Date: Thu, 18 Jun 2015 08:53:50 +0200
+Message-ID: <CAH6sp9P7rq2y_hiQPHKUP85CwnEmp87yC7Psh4=29h-pYnb_yw@mail.gmail.com>
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+From: Frans Klaver <fransklaver@gmail.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Guenter Roeck <linux@roeck-us.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-m32r-ja@ml.linux-m32r.org,
+ linux-mips@linux-mips.org, linux-efi@vger.kernel.org,
+ linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
+ linux-sh@vger.kernel.org,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pavel Machek <pavel@ucw.cz>, devel@driverdev.osuosl.org,
+ linux-s390@vger.kernel.org, lguest@lists.ozlabs.org,
+ linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>, linux-acpi <linux-acpi@vger.kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org,
+ Len Brown <len.brown@intel.com>, user-mode-linux-devel@lists.sourceforge.net,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ linux-xtensa@linux-xtensa.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org,
+ linux-am33-list@redhat.com, linux-tegra@vger.kernel.org,
+ openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com,
+ linux-parisc@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ Romain Perier <romain.perier@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,41 +41,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Finn,
-
-On Thu, Jun 18, 2015 at 6:49 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
-> On Tue, 16 Jun 2015, in which I wrote:
->> On Mon, 15 Jun 2015, Geert Uytterhoeven wrote:
->> > More magic values...
+On Thu, Jun 18, 2015 at 3:04 AM, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> On 10/06/2014 10:28 PM, Guenter Roeck wrote:
+>> Various drivers implement architecture and/or device specific means to
+>> remove power from the system.  For the most part, those drivers set the
+>> global variable pm_power_off to point to a function within the driver.
 >>
->> [...] The only useful RTC documentation I've ever come across is this:
->> http://mac.linux-m68k.org/devel/plushw.php
+>> This mechanism has a number of drawbacks.  Typically only one scheme
+>> to remove power is supported (at least if pm_power_off is used).
+>> At least in theory there can be multiple means remove power, some of
+>> which may be less desirable. For example, some mechanisms may only
+>> power off the CPU or the CPU card, while another may power off the
+>> entire system.  Others may really just execute a restart sequence
+>> or drop into the ROM monitor. Using pm_power_off can also be racy
+>> if the function pointer is set from a driver built as module, as the
+>> driver may be in the process of being unloaded when pm_power_off is
+>> called. If there are multiple poweroff handlers in the system, removing
+>> a module with such a handler may inadvertently reset the pointer to
+>> pm_power_off to NULL, leaving the system with no means to remove power.
+>>
+>> Introduce a system poweroff handler call chain to solve the described
+>> problems.  This call chain is expected to be executed from the
+>> architecture specific machine_power_off() function.  Drivers providing
+>> system poweroff functionality are expected to register with this call chain.
+>> By using the priority field in the notifier block, callers can control
+>> poweroff handler execution sequence and thus ensure that the poweroff
+>> handler with the optimal capabilities to remove power for a given system
+>> is called first.
 >
-> This document appears to be Inside Macintosh vol. III ch. 2. It describes
-> the early RTC chip that lacks two-byte operations and XPRAM, and pre-dates
-> all Mac hardware supported in mainline Linux. But it does offer some
-> useful data, though not enough to answer all of your criticisms (as I
-> said).
+> What happened to this series? I want to add shutdown support to my
+> platform and I need to write a register on the PMIC in one driver to
+> configure it for shutdown instead of restart and then write an MMIO
+> register to tell the PMIC to actually do the shutdown in another driver.
+> It seems that the notifier solves this case for me, albeit with the
+> slight complication that I need to order the two with some priority.
 
-I understand.
+I was wondering the same thing. I did find out that things kind of
+stalled after Linus cast doubt on the chosen path [1]. I'm not sure
+there's any consensus on what would be best to do instead.
 
->> [...] I think they should be applied across the entire file, and in a
->> different patch. Inconsistent use of such macros would be undesirable
->> IMHO.
->
-> So, unless you have other ideas, I will revise this patch and insert an
-> earlier patch to address existing code, and codify what little reliable
-> chip data we have.
+Frans
 
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+[1] https://lkml.org/lkml/2014/11/6/641
