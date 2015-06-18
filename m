@@ -1,34 +1,32 @@
-Return-Path: <sboyd@codeaurora.org>
-Message-ID: <55821936.4040704@codeaurora.org>
-Date: Wed, 17 Jun 2015 18:04:54 -0700
-From: Stephen Boyd <sboyd@codeaurora.org>
-MIME-Version: 1.0
-To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
-CC: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org,
- linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org,
- Heiko Stuebner <heiko@sntech.de>,
- Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org,
- Pavel Machek <pavel@ucw.cz>,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
- Alexander Graf <agraf@suse.de>,
- linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- xen-devel@lists.xenproject.org, devicetree@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Romain Perier <romain.perier@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-2-git-send-email-linux@roeck-us.net>
-In-Reply-To: <1412659726-29957-2-git-send-email-linux@roeck-us.net>
-Content-Type: text/plain; charset=windows-1252
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F31C1A0431
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 11:42:40 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 18 Jun 2015 11:42:37 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1272A2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 11:42:35 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5I1gQ2j590226
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 11:42:34 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5I1g1lO019162
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Jun 2015 11:42:01 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru, mpe@ellerman.id.au
+Subject: [PATCH] powerpc/powernv: Fix wrong IOMMU table in
+ pnv_ioda_setup_bus_dma()
+Date: Thu, 18 Jun 2015 11:41:36 +1000
+Message-Id: <1434591696-16920-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,48 +36,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/06/2014 10:28 PM, Guenter Roeck wrote:
-> Various drivers implement architecture and/or device specific means to
-> remove power from the system.  For the most part, those drivers set the
-> global variable pm_power_off to point to a function within the driver.
->
-> This mechanism has a number of drawbacks.  Typically only one scheme
-> to remove power is supported (at least if pm_power_off is used).
-> At least in theory there can be multiple means remove power, some of
-> which may be less desirable. For example, some mechanisms may only
-> power off the CPU or the CPU card, while another may power off the
-> entire system.  Others may really just execute a restart sequence
-> or drop into the ROM monitor. Using pm_power_off can also be racy
-> if the function pointer is set from a driver built as module, as the
-> driver may be in the process of being unloaded when pm_power_off is
-> called. If there are multiple poweroff handlers in the system, removing
-> a module with such a handler may inadvertently reset the pointer to
-> pm_power_off to NULL, leaving the system with no means to remove power.
->
-> Introduce a system poweroff handler call chain to solve the described
-> problems.  This call chain is expected to be executed from the
-> architecture specific machine_power_off() function.  Drivers providing
-> system poweroff functionality are expected to register with this call chain.
-> By using the priority field in the notifier block, callers can control
-> poweroff handler execution sequence and thus ensure that the poweroff
-> handler with the optimal capabilities to remove power for a given system
-> is called first.
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-What happened to this series? I want to add shutdown support to my
-platform and I need to write a register on the PMIC in one driver to
-configure it for shutdown instead of restart and then write an MMIO
-register to tell the PMIC to actually do the shutdown in another driver.
-It seems that the notifier solves this case for me, albeit with the
-slight complication that I need to order the two with some priority.
+When pnv_pci_ioda_fixup() is called during PHB fixup time, each PE in
+the sorted list of PEs (phb::pe_dma_list) is iterated to setup the PE's
+DMA32 space by pnv_ioda_setup_bus_dma() if the PE's DMA32 weight is bigger
+than zero. The function also assigns all the subordinate PCI devices of
+the PE's primary bus with the PE's DMA32 IOMMU table. It causes the PCI
+devicess in the child PEs, which don't have DMA weight, receives wrong
+IOMMU table and then IOMMU group.
 
-I'm also considering putting the PMIC configuration part into the reboot
-notifier chain, because it only does things to change the configuration
-and not actually any shutdown/restart itself. That removes any
-requirement to get the priority of notifiers right. This series will
-still be useful for the MMIO register that needs to be toggled though.
-Right now I have to assign pm_power_off or hook the reboot notifier with
-a different priority to make this work.
+The patch fixes above issue by more check on the PE's coverage and don't
+assign IOMMU table to those PCI devices, which belong to the child PEs.
+The problem was found on Firestone platform initially.
 
+Suggested-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+v2: reworked commitlog
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 8424f5c..5738d31 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1661,7 +1661,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+ 		set_iommu_table_base(&dev->dev, pe->table_group.tables[0]);
+ 		iommu_add_device(&dev->dev);
+ 
+-		if (dev->subordinate)
++		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+ 			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
+ 	}
+ }
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.1.0
