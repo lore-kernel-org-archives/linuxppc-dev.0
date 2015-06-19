@@ -1,35 +1,20 @@
-Return-Path: <sboyd@codeaurora.org>
-Message-ID: <55833AC2.5080700@codeaurora.org>
-Date: Thu, 18 Jun 2015 14:40:18 -0700
-From: Stephen Boyd <sboyd@codeaurora.org>
-MIME-Version: 1.0
-To: Guenter Roeck <linux@roeck-us.net>
-CC: linux-kernel@vger.kernel.org, linux-m32r-ja@ml.linux-m32r.org,
- linux-mips@linux-mips.org, linux-efi@vger.kernel.org,
- linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>,
- Len Brown <len.brown@intel.com>,
- linux-xtensa@linux-xtensa.org, Pavel Machek <pavel@ucw.cz>,
- devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
- lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org,
- linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org,
- Alexander Graf <agraf@suse.de>,
- linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- xen-devel@lists.xenproject.org, devicetree@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-parisc@vger.kernel.org, linux-cris-kernel@axis.com,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-alpha@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- Romain Perier <romain.perier@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-2-git-send-email-linux@roeck-us.net>
- <55821936.4040704@codeaurora.org> <20150618153003.GA19224@roeck-us.net>
-In-Reply-To: <20150618153003.GA19224@roeck-us.net>
-Content-Type: text/plain; charset=windows-1252
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C4411A0762
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 11:09:10 +1000 (AEST)
+Message-ID: <1434676130.3678.124.camel@kernel.crashing.org>
+Subject: Re: [PATCH] agp/uninorth: fix a memleak in create_gatt_table
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, airlied@gmail.com
+Date: Fri, 19 Jun 2015 11:08:50 +1000
+In-Reply-To: <CAOJe8K0UrsVQraHrxKUptOB9sVr_U9LEB3Ji6j4nMenHKNt2dg@mail.gmail.com>
+References: <1434092231-4155-1-git-send-email-kda@linux-powerpc.org>
+ <CAOJe8K0UrsVQraHrxKUptOB9sVr_U9LEB3Ji6j4nMenHKNt2dg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,26 +24,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/18/2015 08:30 AM, Guenter Roeck wrote:
-> On Wed, Jun 17, 2015 at 06:04:54PM -0700, Stephen Boyd wrote:
-> [ ... ]
->> What happened to this series? I want to add shutdown support to my
->> platform and I need to write a register on the PMIC in one driver to
->> configure it for shutdown instead of restart and then write an MMIO
->> register to tell the PMIC to actually do the shutdown in another driver.
->> It seems that the notifier solves this case for me, albeit with the
->> slight complication that I need to order the two with some priority.
->>
-> Can you use the .shutdown driver callback instead ?
->
-> I see other drivers use that, and check for system_state == SYSTEM_POWER_OFF
-> to power off the hardware.
->
+On Thu, 2015-06-18 at 17:34 +0300, Denis Kirjanov wrote:
+> On 6/12/15, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> > Fix the memory leak in create_gatt_table:
+> > we've lost a kfree on the exit path for the pages array allocated
+> > in uninorth_create_gatt_table
+> >
+> > Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> 
+> Hi Ben, Michael
+> 
+> Will you take the patch through your trees or do I need to send it to
+> Dave Airlie?
 
-Yes I think that will work. I'll still have to hook pm_power_off() for
-the mmio register, but I guess that's ok and I don't need to worry about
-this series then.
+I haven't had a chance to review yet...
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Ben.
+
+> Thanks
+> > ---
+> >  drivers/char/agp/uninorth-agp.c | 16 ++++++++++------
+> >  1 file changed, 10 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/char/agp/uninorth-agp.c
+> > b/drivers/char/agp/uninorth-agp.c
+> > index a56ee9b..0575544 100644
+> > --- a/drivers/char/agp/uninorth-agp.c
+> > +++ b/drivers/char/agp/uninorth-agp.c
+> > @@ -361,6 +361,10 @@ static int agp_uninorth_resume(struct pci_dev *pdev)
+> >  }
+> >  #endif /* CONFIG_PM */
+> >
+> > +static struct {
+> > +	struct page **pages_arr;
+> > +} uninorth_priv;
+> > +
+> >  static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
+> >  {
+> >  	char *table;
+> > @@ -371,7 +375,6 @@ static int uninorth_create_gatt_table(struct
+> > agp_bridge_data *bridge)
+> >  	int i;
+> >  	void *temp;
+> >  	struct page *page;
+> > -	struct page **pages;
+> >
+> >  	/* We can't handle 2 level gatt's */
+> >  	if (bridge->driver->size_type == LVL2_APER_SIZE)
+> > @@ -400,8 +403,8 @@ static int uninorth_create_gatt_table(struct
+> > agp_bridge_data *bridge)
+> >  	if (table == NULL)
+> >  		return -ENOMEM;
+> >
+> > -	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
+> > -	if (pages == NULL)
+> > +	uninorth_priv.pages_arr = kmalloc((1 << page_order) * sizeof(struct
+> > page*), GFP_KERNEL);
+> > +	if (uninorth_priv.pages_arr == NULL)
+> >  		goto enomem;
+> >
+> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+> > @@ -409,14 +412,14 @@ static int uninorth_create_gatt_table(struct
+> > agp_bridge_data *bridge)
+> >  	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
+> >  	     page++, i++) {
+> >  		SetPageReserved(page);
+> > -		pages[i] = page;
+> > +		uninorth_priv.pages_arr[i] = page;
+> >  	}
+> >
+> >  	bridge->gatt_table_real = (u32 *) table;
+> >  	/* Need to clear out any dirty data still sitting in caches */
+> >  	flush_dcache_range((unsigned long)table,
+> >  			   (unsigned long)table_end + 1);
+> > -	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
+> > +	bridge->gatt_table = vmap(uninorth_priv.pages_arr, (1 << page_order), 0,
+> > PAGE_KERNEL_NCG);
+> >
+> >  	if (bridge->gatt_table == NULL)
+> >  		goto enomem;
+> > @@ -434,7 +437,7 @@ static int uninorth_create_gatt_table(struct
+> > agp_bridge_data *bridge)
+> >  	return 0;
+> >
+> >  enomem:
+> > -	kfree(pages);
+> > +	kfree(uninorth_priv.pages_arr);
+> >  	if (table)
+> >  		free_pages((unsigned long)table, page_order);
+> >  	return -ENOMEM;
+> > @@ -456,6 +459,7 @@ static int uninorth_free_gatt_table(struct
+> > agp_bridge_data *bridge)
+> >  	 */
+> >
+> >  	vunmap(bridge->gatt_table);
+> > +	kfree(uninorth_priv.pages_arr);
+> >  	table = (char *) bridge->gatt_table_real;
+> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+> >
+> > --
+> > 2.4.0
+> >
+> >
