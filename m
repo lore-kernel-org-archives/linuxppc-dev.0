@@ -1,17 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yh0-f44.google.com (mail-yh0-f44.google.com
+ [209.85.213.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B4AEE1A0EF5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 17:12:14 +1000 (AEST)
-In-Reply-To: <dd848073cfae511453b9f558c0fbb3859909f268.1434071179.git.sam.bobroff@au1.ibm.com>
-To: Sam bobroff <sam.bobroff@au1.ibm.com>, benh@kernel.crashing.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
-Subject: Re: [1/1] powerpc/tm: Abort syscalls in active transactions (v2)
-Message-Id: <20150619071214.97DEB140213@ozlabs.org>
-Date: Fri, 19 Jun 2015 17:12:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 376D31A0EF6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 17:15:47 +1000 (AEST)
+Received: by yhnv31 with SMTP id v31so46786933yhn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 00:15:45 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20150618161727.GA6546@lst.de>
+References: <20150611095338.GA4492@lst.de>
+	<20150618161727.GA6546@lst.de>
+Date: Fri, 19 Jun 2015 10:15:44 +0300
+Message-ID: <CAOJe8K3B4fEfSpMO3L6WNYxvPfj_rE87dpWZSLY-3EFLOrPyTQ@mail.gmail.com>
+Subject: Re: [RESEND PATCH 0/4] ppc64 LE ABI v2 ftrace-with-regs implementation
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,49 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-12-06 at 01:06:32 UTC, Sam bobroff wrote:
-> This patch changes the syscall handler to doom (tabort) active
-> transactions when a syscall is made and return very early without
-> performing the syscall and keeping side effects to a minimum (no CPU
-> accounting or system call tracing is performed). Also included is a
-> new HWCAP2 bit, PPC_FEATURE2_HTM_NOSC, to indicate this
-> behaviour to userspace.
+On 6/18/15, Torsten Duwe <duwe@lst.de> wrote:
+> Did I miss anything else? I have the notrace optimisations and
+> kernel live patching in the queue, which depends on this, so I'd
+> really appreciate a comment whether it is acceptable in this form
+> or not. Thanks in advance!
 
-> ---
->  Documentation/powerpc/transactional_memory.txt  | 32 ++++++++++++-------------
->  arch/powerpc/include/asm/cputable.h             | 10 ++++----
->  arch/powerpc/include/uapi/asm/cputable.h        |  1 +
->  arch/powerpc/include/uapi/asm/tm.h              |  2 +-
->  arch/powerpc/kernel/cputable.c                  |  4 +++-
->  arch/powerpc/kernel/entry_64.S                  | 28 ++++++++++++++++++++++
->  tools/testing/selftests/powerpc/tm/tm-syscall.c |  3 ++-
+Hi Torsten,
 
-You forgot to add the tm-syscall test back into the Makefile, when I do that I get:
+could you provide a description how you did test that.
 
-  In file included from tm-syscall.c:21:0:
-  tm-syscall.c: In function ‘tm_syscall’:
-  tm-syscall.c:86:7: error: ‘PPC_FEATURE2_HTM_NOSC’ undeclared (first use in this function)
-       & PPC_FEATURE2_HTM_NOSC));
-         ^
-
-Because the toolchain headers don't contain that definition.
-
-To fix it you need to include the generated kernel headers:
-
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-index 1b616fa79e93..4bea62a319dc 100644
---- a/tools/testing/selftests/powerpc/tm/Makefile
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -5,7 +5,7 @@ all: $(TEST_PROGS)
- $(TEST_PROGS): ../harness.c
- 
- tm-syscall: tm-syscall-asm.S
--tm-syscall: CFLAGS += -mhtm
-+tm-syscall: CFLAGS += -mhtm -I../../../../../usr/include
- 
- include ../../lib.mk
- 
-
-I've fixed it up for you.
-
-cheers
+Thanks.
+>
+> 	Torsten
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
