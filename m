@@ -1,20 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C4411A0762
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 11:09:10 +1000 (AEST)
-Message-ID: <1434676130.3678.124.camel@kernel.crashing.org>
-Subject: Re: [PATCH] agp/uninorth: fix a memleak in create_gatt_table
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, airlied@gmail.com
-Date: Fri, 19 Jun 2015 11:08:50 +1000
-In-Reply-To: <CAOJe8K0UrsVQraHrxKUptOB9sVr_U9LEB3Ji6j4nMenHKNt2dg@mail.gmail.com>
-References: <1434092231-4155-1-git-send-email-kda@linux-powerpc.org>
- <CAOJe8K0UrsVQraHrxKUptOB9sVr_U9LEB3Ji6j4nMenHKNt2dg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C85831A0EF5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:27:23 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 19 Jun 2015 12:27:21 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2D5AE2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:27:18 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5J2R7A865077334
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:27:15 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5J2Qig9023214
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:26:45 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 1/4] powerpc/powernv: Allow to reserve one PE for multiple
+ times
+Date: Fri, 19 Jun 2015 12:26:16 +1000
+Message-Id: <1434680779-20194-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1434680779-20194-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1434680779-20194-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,105 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-06-18 at 17:34 +0300, Denis Kirjanov wrote:
-> On 6/12/15, Denis Kirjanov <kda@linux-powerpc.org> wrote:
-> > Fix the memory leak in create_gatt_table:
-> > we've lost a kfree on the exit path for the pages array allocated
-> > in uninorth_create_gatt_table
-> >
-> > Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
-> 
-> Hi Ben, Michael
-> 
-> Will you take the patch through your trees or do I need to send it to
-> Dave Airlie?
+The PE numbers are reserved according to root port's M64 window,
+which is aligned to M64 segment finely. So one PE shouldn't be
+reserved for multiple times. We will reserve PE numbers according
+to the M64 BARs of PCI device in subsequent patches, which aren't
+aligned to M64 segment size finely. It means one particular PE
+could be reserved for multiple times.
 
-I haven't had a chance to review yet...
+The patch allows one PE to be reserved for multiple times and we
+print the warning message at debugging level.
 
-Ben.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-> Thanks
-> > ---
-> >  drivers/char/agp/uninorth-agp.c | 16 ++++++++++------
-> >  1 file changed, 10 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/char/agp/uninorth-agp.c
-> > b/drivers/char/agp/uninorth-agp.c
-> > index a56ee9b..0575544 100644
-> > --- a/drivers/char/agp/uninorth-agp.c
-> > +++ b/drivers/char/agp/uninorth-agp.c
-> > @@ -361,6 +361,10 @@ static int agp_uninorth_resume(struct pci_dev *pdev)
-> >  }
-> >  #endif /* CONFIG_PM */
-> >
-> > +static struct {
-> > +	struct page **pages_arr;
-> > +} uninorth_priv;
-> > +
-> >  static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
-> >  {
-> >  	char *table;
-> > @@ -371,7 +375,6 @@ static int uninorth_create_gatt_table(struct
-> > agp_bridge_data *bridge)
-> >  	int i;
-> >  	void *temp;
-> >  	struct page *page;
-> > -	struct page **pages;
-> >
-> >  	/* We can't handle 2 level gatt's */
-> >  	if (bridge->driver->size_type == LVL2_APER_SIZE)
-> > @@ -400,8 +403,8 @@ static int uninorth_create_gatt_table(struct
-> > agp_bridge_data *bridge)
-> >  	if (table == NULL)
-> >  		return -ENOMEM;
-> >
-> > -	pages = kmalloc((1 << page_order) * sizeof(struct page*), GFP_KERNEL);
-> > -	if (pages == NULL)
-> > +	uninorth_priv.pages_arr = kmalloc((1 << page_order) * sizeof(struct
-> > page*), GFP_KERNEL);
-> > +	if (uninorth_priv.pages_arr == NULL)
-> >  		goto enomem;
-> >
-> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
-> > @@ -409,14 +412,14 @@ static int uninorth_create_gatt_table(struct
-> > agp_bridge_data *bridge)
-> >  	for (page = virt_to_page(table), i = 0; page <= virt_to_page(table_end);
-> >  	     page++, i++) {
-> >  		SetPageReserved(page);
-> > -		pages[i] = page;
-> > +		uninorth_priv.pages_arr[i] = page;
-> >  	}
-> >
-> >  	bridge->gatt_table_real = (u32 *) table;
-> >  	/* Need to clear out any dirty data still sitting in caches */
-> >  	flush_dcache_range((unsigned long)table,
-> >  			   (unsigned long)table_end + 1);
-> > -	bridge->gatt_table = vmap(pages, (1 << page_order), 0, PAGE_KERNEL_NCG);
-> > +	bridge->gatt_table = vmap(uninorth_priv.pages_arr, (1 << page_order), 0,
-> > PAGE_KERNEL_NCG);
-> >
-> >  	if (bridge->gatt_table == NULL)
-> >  		goto enomem;
-> > @@ -434,7 +437,7 @@ static int uninorth_create_gatt_table(struct
-> > agp_bridge_data *bridge)
-> >  	return 0;
-> >
-> >  enomem:
-> > -	kfree(pages);
-> > +	kfree(uninorth_priv.pages_arr);
-> >  	if (table)
-> >  		free_pages((unsigned long)table, page_order);
-> >  	return -ENOMEM;
-> > @@ -456,6 +459,7 @@ static int uninorth_free_gatt_table(struct
-> > agp_bridge_data *bridge)
-> >  	 */
-> >
-> >  	vunmap(bridge->gatt_table);
-> > +	kfree(uninorth_priv.pages_arr);
-> >  	table = (char *) bridge->gatt_table_real;
-> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
-> >
-> > --
-> > 2.4.0
-> >
-> >
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 8424f5c..d5bfa76 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -140,11 +140,9 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
+ 		return;
+ 	}
+ 
+-	if (test_and_set_bit(pe_no, phb->ioda.pe_alloc)) {
+-		pr_warn("%s: PE %d was assigned on PHB#%x\n",
+-			__func__, pe_no, phb->hose->global_number);
+-		return;
+-	}
++	if (test_and_set_bit(pe_no, phb->ioda.pe_alloc))
++		pr_debug("%s: PE %d was reserved on PHB#%x\n",
++			 __func__, pe_no, phb->hose->global_number);
+ 
+ 	phb->ioda.pe_array[pe_no].phb = phb;
+ 	phb->ioda.pe_array[pe_no].pe_number = pe_no;
+-- 
+2.1.0
