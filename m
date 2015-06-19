@@ -1,44 +1,27 @@
-Return-Path: <dave.long@linaro.org>
-Received: from mail-qk0-f173.google.com (mail-qk0-f173.google.com
- [209.85.220.173])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 617B61A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2015 00:14:46 +1000 (AEST)
-Received: by qkhu186 with SMTP id u186so61542789qkh.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 07:14:44 -0700 (PDT)
-Message-ID: <5584234E.2040701@linaro.org>
-Date: Fri, 19 Jun 2015 10:12:30 -0400
-From: David Long <dave.long@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 259401A0EF5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2015 00:57:14 +1000 (AEST)
+Date: Fri, 19 Jun 2015 16:57:08 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Eric B Munson <emunson@akamai.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 1/3] Add mmap flag to request pages are locked
+ after page fault
+Message-ID: <20150619145708.GG4913@dhcp22.suse.cz>
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
+ <1433942810-7852-2-git-send-email-emunson@akamai.com>
+ <20150618152907.GG5858@dhcp22.suse.cz>
+ <20150618203048.GB2329@akamai.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
- Anton Blanchard <anton@samba.org>,
- Behan Webster <behanw@converseincode.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Eric Paris <eparis@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Ingo Molnar <mingo@redhat.com>,
- Jan Willeke <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Nikolay Borisov <Nikolay.Borisov@arm.com>,
- Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>,
- Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
- Russell King <linux@arm.linux.org.uk>,
- Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
- to common include file
-References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>	
- <1434386579-6045-2-git-send-email-dave.long@linaro.org>
- <1434687583.23771.5.camel@ellerman.id.au>
-In-Reply-To: <1434687583.23771.5.camel@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150618203048.GB2329@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,50 +31,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/15 00:19, Michael Ellerman wrote:
-> On Mon, 2015-06-15 at 12:42 -0400, David Long wrote:
->> From: "David A. Long" <dave.long@linaro.org>
->>
->> The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
->>   feature and has identical definitions in four different arch ptrace.h
->> include files. It seems unlikely that definition would ever need to be
->> changed regardless of architecture so lets move it into
->> include/linux/ptrace.h.
->>
->> Signed-off-by: David A. Long <dave.long@linaro.org>
->> ---
->>   arch/powerpc/kernel/ptrace.c | 5 -----
->
-> Built and booted on powerpc, but is there an easy way to actually test the code
-> paths in question?
->
+On Thu 18-06-15 16:30:48, Eric B Munson wrote:
+> On Thu, 18 Jun 2015, Michal Hocko wrote:
+[...]
+> > Wouldn't it be much more reasonable and straightforward to have
+> > MAP_FAULTPOPULATE as a counterpart for MAP_POPULATE which would
+> > explicitly disallow any form of pre-faulting? It would be usable for
+> > other usecases than with MAP_LOCKED combination.
+> 
+> I don't see a clear case for it being more reasonable, it is one
+> possible way to solve the problem.
 
-There is an easy way to "smoke test" it on all archiectures that also 
-implement kprobes (which powerpc does).  If I'm understanding the 
-powerpc code correctly (WRT register naming conventions) just do the 
-following:
+MAP_FAULTPOPULATE would be usable for other cases as well. E.g. fault
+around is all or nothing feature. Either all mappings (which support
+this) fault around or none. There is no way to tell the kernel that
+this particular mapping shouldn't fault around. I haven't seen such a
+request yet but we have seen requests to have a way to opt out from
+a global policy in the past (e.g. per-process opt out from THP). So
+I can imagine somebody will come with a request to opt out from any
+speculative operations on the mapped area in the future.
 
-cd /sys/kernel/debug/tracing
-echo 'p do_fork %gpr0' > kprobe_events
-echo 1 > events/kprobes/enable
-ls
-cat trace
-echo 0 > events/kprobes/enable
+> But I think it leaves us in an even
+> more akward state WRT VMA flags.  As you noted in your fix for the
+> mmap() man page, one can get into a state where a VMA is VM_LOCKED, but
+> not present.  Having VM_LOCKONFAULT states that this was intentional, if
+> we go to using MAP_FAULTPOPULATE instead of MAP_LOCKONFAULT, we no
+> longer set VM_LOCKONFAULT (unless we want to start mapping it to the
+> presence of two MAP_ flags).  This can make detecting the MAP_LOCKED +
+> populate failure state harder.
 
-Every fork() call done on the system between those two echo commands 
-(hence the "ls") should append a line to the trace file.  For a more 
-exhaustive test one could repeat this sequence for every register in the 
-architecture.
+I am not sure I understand your point here. Could you be more specific
+how would you check for that and what for?
 
-This should work the same on all architectures supporting kprobes.  You 
-just have to use the appropriate register names for your architecture 
-after the "%".
+>From my understanding MAP_LOCKONFAULT is essentially
+MAP_FAULTPOPULATE|MAP_LOCKED with a quite obvious semantic (unlike
+single MAP_LOCKED unfortunately). I would love to also have
+MAP_LOCKED|MAP_POPULATE (aka full mlock semantic) but I am really
+skeptical considering how my previous attempt to make MAP_POPULATE
+reasonable went.
 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->
-> cheers
->
->
+> If this is the preferred path for mmap(), I am fine with that. 
 
-Thanks,
--dl
+> However,
+> I would like to see the new system calls that Andrew mentioned (and that
+> I am testing patches for) go in as well. 
+
+mlock with flags sounds like a good step but I am not sure it will make
+sense in the future. POSIX has screwed that and I am not sure how many
+applications would use it. This ship has sailed long time ago.
+
+> That way we give users the
+> ability to request VM_LOCKONFAULT for memory allocated using something
+> other than mmap.
+
+mmap(MAP_FAULTPOPULATE); mlock() would have the same semantic even
+without changing mlock syscall.
+ 
+> > > This patch introduces the ability to request that pages are not
+> > > pre-faulted, but are placed on the unevictable LRU when they are finally
+> > > faulted in.
+> > > 
+> > > To keep accounting checks out of the page fault path, users are billed
+> > > for the entire mapping lock as if MAP_LOCKED was used.
+> > > 
+> > > Signed-off-by: Eric B Munson <emunson@akamai.com>
+> > > Cc: Michal Hocko <mhocko@suse.cz>
+> > > Cc: linux-alpha@vger.kernel.org
+> > > Cc: linux-kernel@vger.kernel.org
+> > > Cc: linux-mips@linux-mips.org
+> > > Cc: linux-parisc@vger.kernel.org
+> > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > Cc: sparclinux@vger.kernel.org
+> > > Cc: linux-xtensa@linux-xtensa.org
+> > > Cc: linux-mm@kvack.org
+> > > Cc: linux-arch@vger.kernel.org
+> > > Cc: linux-api@vger.kernel.org
+> > > ---
+[...]
+-- 
+Michal Hocko
+SUSE Labs
