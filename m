@@ -1,10 +1,10 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+ (mail-by2on0102.outbound.protection.outlook.com [207.46.100.102])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB2EA1A0F4C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:49:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4801F1A0F57
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:49:48 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: Mike Turquette <mturquette@linaro.org>, Tang Yuantian
  <Yuantian.Tang@freescale.com>
@@ -14,10 +14,9 @@ CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liberman Igal-B31950
  <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>, "Scott
  Wood" <scottwood@freescale.com>
-Subject: [RFC PATCH 7/8] clk: qoriq: Expose OF clocks directly from the
- clockgen node
-Date: Thu, 18 Jun 2015 21:49:17 -0500
-Message-ID: <1434682158-7243-8-git-send-email-scottwood@freescale.com>
+Subject: [RFC PATCH 8/8] powerpc/fsl: Use new clockgen binding
+Date: Thu, 18 Jun 2015 21:49:18 -0500
+Message-ID: <1434682158-7243-9-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
 References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -31,101 +30,1000 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This allows the "clocks" property to be used in the absence of
-legacy nodes, and for clocks that the legacy nodes do not describe.
+The driver retains compatibility with old device trees, but we don't
+want the old nodes lying around to be copied, or used as a reference
+(some of the mux options are incorrect), or even just being clutter.
+
+We will also need the #clock-cells in the clockgen node in order to
+add fman nodes.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- drivers/clk/clk-qoriq.c | 63 ++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 62 insertions(+), 1 deletion(-)
+ arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi     |  4 +-
+ arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi     |  8 +--
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi       | 15 ------
+ arch/powerpc/boot/dts/fsl/p2041si-post.dtsi    | 18 -------
+ arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi     |  8 +--
+ arch/powerpc/boot/dts/fsl/p3041si-post.dtsi    | 18 -------
+ arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi     |  8 +--
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi    | 70 --------------------------
+ arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi     | 16 +++---
+ arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi     |  4 +-
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi    | 18 -------
+ arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi     |  8 +--
+ arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi | 50 +-----------------
+ arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi | 33 +-----------
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi    | 16 ------
+ arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi     |  4 +-
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi    | 44 ----------------
+ arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi     |  8 +--
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi    | 22 --------
+ arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi     |  8 +--
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi    | 61 ----------------------
+ arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi     | 24 ++++-----
+ 22 files changed, 54 insertions(+), 411 deletions(-)
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index f6aa106..e408965 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -938,6 +938,61 @@ static void __init pltfrm_pll_init(struct device_node *np)
- 	legacy_pll_init(np, PLATFORM_PLL);
- }
+diff --git a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+index 338af7e..9cfeaef 100644
+--- a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+@@ -64,14 +64,14 @@
+ 		cpu0: PowerPC,e6500@0 {
+ 			device_type = "cpu";
+ 			reg = <0 1>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu1: PowerPC,e6500@2 {
+ 			device_type = "cpu";
+ 			reg = <2 3>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+diff --git a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+index 1948f73..bc914f2 100644
+--- a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
+@@ -64,28 +64,28 @@
+ 		cpu0: PowerPC,e6500@0 {
+ 			device_type = "cpu";
+ 			reg = <0 1>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu1: PowerPC,e6500@2 {
+ 			device_type = "cpu";
+ 			reg = <2 3>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu2: PowerPC,e6500@4 {
+ 			device_type = "cpu";
+ 			reg = <4 5>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu3: PowerPC,e6500@6 {
+ 			device_type = "cpu";
+ 			reg = <6 7>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+index 603910a..004477d 100644
+--- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -398,21 +398,6 @@
+ 	};
  
-+static struct clk *clockgen_clk_get(struct of_phandle_args *clkspec, void *data)
-+{
-+	struct clockgen *cg = data;
-+	struct clk *clk;
-+	struct clockgen_pll *pll;
-+	u32 type, idx;
-+
-+	if (clkspec->args_count < 2) {
-+		pr_err("%s: insufficient phandle args\n", __func__);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	type = clkspec->args[0];
-+	idx = clkspec->args[1];
-+
-+	switch (type) {
-+	case 0:
-+		if (idx != 0)
-+			goto bad_args;
-+		clk = cg->sysclk;
-+		break;
-+	case 1:
-+		if (idx >= ARRAY_SIZE(cg->cmux))
-+			goto bad_args;
-+		clk = cg->cmux[idx];
-+		break;
-+	case 2:
-+		if (idx >= ARRAY_SIZE(cg->hwaccel))
-+			goto bad_args;
-+		clk = cg->hwaccel[idx];
-+		break;
-+	case 3:
-+		if (idx >= ARRAY_SIZE(cg->fman))
-+			goto bad_args;
-+		clk = cg->fman[idx];
-+		break;
-+	case 4:
-+		pll = &cg->pll[PLATFORM_PLL];
-+		if (idx >= ARRAY_SIZE(pll->div))
-+			goto bad_args;
-+		clk = pll->div[idx].clk;
-+		break;
-+	default:
-+		goto bad_args;
-+	}
-+
-+	if (!clk)
-+		return ERR_PTR(-ENOENT);
-+	return clk;
-+
-+bad_args:
-+	pr_err("%s: Bad phandle args %u %u\n", __func__, type, idx);
-+	return ERR_PTR(-EINVAL);
-+}
-+
- #ifdef CONFIG_PPC
- #include <asm/mpc85xx.h>
+ /include/ "qoriq-clockgen2.dtsi"
+-	clockgen: global-utilities@e1000 {
+-		compatible = "fsl,b4-clockgen", "fsl,qoriq-clockgen-2.0";
+-		reg = <0xe1000 0x1000>;
+-
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				<&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll0-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux0";
+-		};
+-	};
  
-@@ -982,7 +1037,7 @@ static bool __init has_erratum_a4510(void)
+ 	rcpm: global-utilities@e2000 {
+ 		compatible = "fsl,b4-rcpm", "fsl,qoriq-rcpm-2.0";
+diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
+index 04ad177..9c16a16 100644
+--- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
+@@ -327,24 +327,6 @@
+ /include/ "qoriq-clockgen1.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,p2041-clockgen", "fsl,qoriq-clockgen-1.0";
+-
+-		mux2: mux2@40 {
+-			#clock-cells = <0>;
+-			reg = <0x40 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux2";
+-		};
+-
+-		mux3: mux3@60 {
+-			#clock-cells = <0>;
+-			reg = <0x60 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux3";
+-		};
+ 	};
  
- static void __init clockgen_init(struct device_node *np)
- {
--	int i;
-+	int i, ret;
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
+index b1ea147..0babd84 100644
+--- a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
+@@ -81,7 +81,7 @@
+ 		cpu0: PowerPC,e500mc@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_0>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+@@ -91,7 +91,7 @@
+ 		cpu1: PowerPC,e500mc@1 {
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+@@ -101,7 +101,7 @@
+ 		cpu2: PowerPC,e500mc@2 {
+ 			device_type = "cpu";
+ 			reg = <2>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+@@ -111,7 +111,7 @@
+ 		cpu3: PowerPC,e500mc@3 {
+ 			device_type = "cpu";
+ 			reg = <3>;
+-			clocks = <&mux3>;
++			clocks = <&clockgen 1 3>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
+index 2cab18a..eeefc09 100644
+--- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
+@@ -354,24 +354,6 @@
+ /include/ "qoriq-clockgen1.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,p3041-clockgen", "fsl,qoriq-clockgen-1.0";
+-
+-		mux2: mux2@40 {
+-			#clock-cells = <0>;
+-			reg = <0x40 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux2";
+-		};
+-
+-		mux3: mux3@60 {
+-			#clock-cells = <0>;
+-			reg = <0x60 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux3";
+-		};
+ 	};
  
- 	clockgen.node = np;
- 	clockgen.regs = of_iomap(np, 0);
-@@ -1028,6 +1083,12 @@ static void __init clockgen_init(struct device_node *np)
- 	if (clockgen.info.init_periph)
- 		clockgen.info.init_periph(&clockgen);
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
+index dc5f4b3..2b331b2 100644
+--- a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
+@@ -82,7 +82,7 @@
+ 		cpu0: PowerPC,e500mc@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_0>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+@@ -92,7 +92,7 @@
+ 		cpu1: PowerPC,e500mc@1 {
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+@@ -102,7 +102,7 @@
+ 		cpu2: PowerPC,e500mc@2 {
+ 			device_type = "cpu";
+ 			reg = <2>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+@@ -112,7 +112,7 @@
+ 		cpu3: PowerPC,e500mc@3 {
+ 			device_type = "cpu";
+ 			reg = <3>;
+-			clocks = <&mux3>;
++			clocks = <&clockgen 1 3>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+index dfc76bc..b4403dd 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+@@ -374,76 +374,6 @@
+ /include/ "qoriq-clockgen1.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,p4080-clockgen", "fsl,qoriq-clockgen-1.0";
+-
+-		pll2: pll2@840 {
+-			#clock-cells = <1>;
+-			reg = <0x840 0x4>;
+-			compatible = "fsl,qoriq-core-pll-1.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "pll2", "pll2-div2";
+-		};
+-
+-		pll3: pll3@860 {
+-			#clock-cells = <1>;
+-			reg = <0x860 0x4>;
+-			compatible = "fsl,qoriq-core-pll-1.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "pll3", "pll3-div2";
+-		};
+-
+-		mux2: mux2@40 {
+-			#clock-cells = <0>;
+-			reg = <0x40 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux2";
+-		};
+-
+-		mux3: mux3@60 {
+-			#clock-cells = <0>;
+-			reg = <0x60 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux3";
+-		};
+-
+-		mux4: mux4@80 {
+-			#clock-cells = <0>;
+-			reg = <0x80 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
+-			clock-names = "pll2", "pll2-div2", "pll3", "pll3-div2";
+-			clock-output-names = "cmux4";
+-		};
+-
+-		mux5: mux5@a0 {
+-			#clock-cells = <0>;
+-			reg = <0xa0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
+-			clock-names = "pll2", "pll2-div2", "pll3", "pll3-div2";
+-			clock-output-names = "cmux5";
+-		};
+-
+-		mux6: mux6@c0 {
+-			#clock-cells = <0>;
+-			reg = <0xc0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
+-			clock-names = "pll2", "pll2-div2", "pll3", "pll3-div2";
+-			clock-output-names = "cmux6";
+-		};
+-
+-		mux7: mux7@e0 {
+-			#clock-cells = <0>;
+-			reg = <0xe0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll2 0>, <&pll2 1>, <&pll3 0>, <&pll3 1>;
+-			clock-names = "pll2", "pll2-div2", "pll3", "pll3-div2";
+-			clock-output-names = "cmux7";
+-		};
+ 	};
  
-+	ret = of_clk_add_provider(np, clockgen_clk_get, &clockgen);
-+	if (ret) {
-+		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
-+		       __func__, np->name, ret);
-+	}
-+
- 	return;
- err:
- 	iounmap(clockgen.regs);
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
+index 38bde09..a3ea73c 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
+@@ -81,7 +81,7 @@
+ 		cpu0: PowerPC,e500mc@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_0>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+@@ -91,7 +91,7 @@
+ 		cpu1: PowerPC,e500mc@1 {
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+@@ -101,7 +101,7 @@
+ 		cpu2: PowerPC,e500mc@2 {
+ 			device_type = "cpu";
+ 			reg = <2>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+@@ -111,7 +111,7 @@
+ 		cpu3: PowerPC,e500mc@3 {
+ 			device_type = "cpu";
+ 			reg = <3>;
+-			clocks = <&mux3>;
++			clocks = <&clockgen 1 3>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+@@ -121,7 +121,7 @@
+ 		cpu4: PowerPC,e500mc@4 {
+ 			device_type = "cpu";
+ 			reg = <4>;
+-			clocks = <&mux4>;
++			clocks = <&clockgen 1 4>;
+ 			next-level-cache = <&L2_4>;
+ 			fsl,portid-mapping = <0x08000000>;
+ 			L2_4: l2-cache {
+@@ -131,7 +131,7 @@
+ 		cpu5: PowerPC,e500mc@5 {
+ 			device_type = "cpu";
+ 			reg = <5>;
+-			clocks = <&mux5>;
++			clocks = <&clockgen 1 5>;
+ 			next-level-cache = <&L2_5>;
+ 			fsl,portid-mapping = <0x04000000>;
+ 			L2_5: l2-cache {
+@@ -141,7 +141,7 @@
+ 		cpu6: PowerPC,e500mc@6 {
+ 			device_type = "cpu";
+ 			reg = <6>;
+-			clocks = <&mux6>;
++			clocks = <&clockgen 1 6>;
+ 			next-level-cache = <&L2_6>;
+ 			fsl,portid-mapping = <0x02000000>;
+ 			L2_6: l2-cache {
+@@ -151,7 +151,7 @@
+ 		cpu7: PowerPC,e500mc@7 {
+ 			device_type = "cpu";
+ 			reg = <7>;
+-			clocks = <&mux7>;
++			clocks = <&clockgen 1 7>;
+ 			next-level-cache = <&L2_7>;
+ 			fsl,portid-mapping = <0x01000000>;
+ 			L2_7: l2-cache {
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+index 1cc61e1..f3b2188 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+@@ -88,7 +88,7 @@
+ 		cpu0: PowerPC,e5500@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_0>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+@@ -98,7 +98,7 @@
+ 		cpu1: PowerPC,e5500@1 {
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+index 6d21452..8ba35ca 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+@@ -319,24 +319,6 @@
+ /include/ "qoriq-clockgen1.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,p5040-clockgen", "fsl,qoriq-clockgen-1.0";
+-
+-		mux2: mux2@40 {
+-			#clock-cells = <0>;
+-			reg = <0x40 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux2";
+-		};
+-
+-		mux3: mux3@60 {
+-			#clock-cells = <0>;
+-			reg = <0x60 0x4>;
+-			compatible = "fsl,qoriq-core-mux-1.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-			clock-output-names = "cmux3";
+-		};
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
+index b048a2b..a32e256 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
+@@ -81,7 +81,7 @@
+ 		cpu0: PowerPC,e5500@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_0>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+@@ -91,7 +91,7 @@
+ 		cpu1: PowerPC,e5500@1 {
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+@@ -101,7 +101,7 @@
+ 		cpu2: PowerPC,e5500@2 {
+ 			device_type = "cpu";
+ 			reg = <2>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+@@ -111,7 +111,7 @@
+ 		cpu3: PowerPC,e5500@3 {
+ 			device_type = "cpu";
+ 			reg = <3>;
+-			clocks = <&mux3>;
++			clocks = <&clockgen 1 3>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi
+index 4ece1ed..463c1ed 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi
+@@ -32,54 +32,8 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-global-utilities@e1000 {
++clockgen: global-utilities@e1000 {
+ 	compatible = "fsl,qoriq-clockgen-1.0";
+-	ranges = <0x0 0xe1000 0x1000>;
+ 	reg = <0xe1000 0x1000>;
+-	clock-frequency = <0>;
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-
+-	sysclk: sysclk {
+-		#clock-cells = <0>;
+-		compatible = "fsl,qoriq-sysclk-1.0", "fixed-clock";
+-		clock-output-names = "sysclk";
+-	};
+-	pll0: pll0@800 {
+-		#clock-cells = <1>;
+-		reg = <0x800 0x4>;
+-		compatible = "fsl,qoriq-core-pll-1.0";
+-		clocks = <&sysclk>;
+-		clock-output-names = "pll0", "pll0-div2";
+-	};
+-	pll1: pll1@820 {
+-		#clock-cells = <1>;
+-		reg = <0x820 0x4>;
+-		compatible = "fsl,qoriq-core-pll-1.0";
+-		clocks = <&sysclk>;
+-		clock-output-names = "pll1", "pll1-div2";
+-	};
+-	mux0: mux0@0 {
+-		#clock-cells = <0>;
+-		reg = <0x0 0x4>;
+-		compatible = "fsl,qoriq-core-mux-1.0";
+-		clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-		clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-		clock-output-names = "cmux0";
+-	};
+-	mux1: mux1@20 {
+-		#clock-cells = <0>;
+-		reg = <0x20 0x4>;
+-		compatible = "fsl,qoriq-core-mux-1.0";
+-		clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
+-		clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
+-		clock-output-names = "cmux1";
+-	};
+-	platform_pll: platform-pll@c00 {
+-		#clock-cells = <1>;
+-		reg = <0xc00 0x4>;
+-		compatible = "fsl,qoriq-platform-pll-1.0";
+-		clocks = <&sysclk>;
+-		clock-output-names = "platform-pll", "platform-pll-div2";
+-	};
++	#clock-cells = <2>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+index 48e0b6e..0361050 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+@@ -32,37 +32,8 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-global-utilities@e1000 {
++clockgen: global-utilities@e1000 {
+ 	compatible = "fsl,qoriq-clockgen-2.0";
+-	ranges = <0x0 0xe1000 0x1000>;
+ 	reg = <0xe1000 0x1000>;
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-
+-	sysclk: sysclk {
+-		#clock-cells = <0>;
+-		compatible = "fsl,qoriq-sysclk-2.0", "fixed-clock";
+-		clock-output-names = "sysclk";
+-	};
+-	pll0: pll0@800 {
+-		#clock-cells = <1>;
+-		reg = <0x800 0x4>;
+-		compatible = "fsl,qoriq-core-pll-2.0";
+-		clocks = <&sysclk>;
+-		clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+-	};
+-	pll1: pll1@820 {
+-		#clock-cells = <1>;
+-		reg = <0x820 0x4>;
+-		compatible = "fsl,qoriq-core-pll-2.0";
+-		clocks = <&sysclk>;
+-		clock-output-names = "pll1", "pll1-div2", "pll1-div4";
+-	};
+-	platform_pll: platform-pll@c00 {
+-		#clock-cells = <1>;
+-		reg = <0xc00 0x4>;
+-		compatible = "fsl,qoriq-platform-pll-2.0";
+-		clocks = <&sysclk>;
+-		clock-output-names = "platform-pll", "platform-pll-div2";
+-	};
++	#clock-cells = <2>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+index df1f068..61aea79 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+@@ -242,22 +242,6 @@
+ /include/ "qoriq-clockgen2.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,t1023-clockgen", "fsl,qoriq-clockgen-2.0";
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 4>;
+-			compatible = "fsl,core-mux-clock";
+-			clocks = <&pll0 0>, <&pll0 1>;
+-			clock-names = "pll0_0", "pll0_1";
+-			clock-output-names = "cmux0";
+-		};
+-		mux1: mux1@20 {
+-			#clock-cells = <0>;
+-			reg = <0x20 4>;
+-			compatible = "fsl,core-mux-clock";
+-			clocks = <&pll0 0>, <&pll0 1>;
+-			clock-names = "pll0_0", "pll0_1";
+-			clock-output-names = "cmux1";
+-		};
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
+index 1f1a9f8..cc52fa4 100644
+--- a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
+@@ -68,7 +68,7 @@
+ 		cpu0: PowerPC,e5500@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+@@ -77,7 +77,7 @@
+ 		cpu1: PowerPC,e5500@1 {
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_2>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+index 9e9f7e2..b738a95 100644
+--- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+@@ -423,50 +423,6 @@
+ /include/ "qoriq-clockgen2.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,t1040-clockgen", "fsl,qoriq-clockgen-2.0";
+-
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll1-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux0";
+-		};
+-
+-		mux1: mux1@20 {
+-			#clock-cells = <0>;
+-			reg = <0x20 4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll1-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux1";
+-		};
+-
+-		mux2: mux2@40 {
+-			#clock-cells = <0>;
+-			reg = <0x40 4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll1-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux2";
+-		};
+-
+-		mux3: mux3@60 {
+-			#clock-cells = <0>;
+-			reg = <0x60 4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0_0", "pll0_1", "pll0_2",
+-				"pll1_0", "pll1_1", "pll1_2";
+-			clock-output-names = "cmux3";
+-		};
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+index bbb7025..74538ae 100644
+--- a/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+@@ -67,7 +67,7 @@
+ 		cpu0: PowerPC,e5500@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+@@ -76,7 +76,7 @@
+ 		cpu1: PowerPC,e5500@1 {
+ 			device_type = "cpu";
+ 			reg = <1>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_2>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+@@ -85,7 +85,7 @@
+ 		cpu2: PowerPC,e5500@2 {
+ 			device_type = "cpu";
+ 			reg = <2>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_3>;
+ 			L2_3: l2-cache {
+ 				next-level-cache = <&cpc>;
+@@ -94,7 +94,7 @@
+ 		cpu3: PowerPC,e5500@3 {
+ 			device_type = "cpu";
+ 			reg = <3>;
+-			clocks = <&mux3>;
++			clocks = <&clockgen 1 3>;
+ 			next-level-cache = <&L2_4>;
+ 			L2_4: l2-cache {
+ 				next-level-cache = <&cpc>;
+diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+index 32c790a..f836bc3 100644
+--- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+@@ -535,28 +535,6 @@
+ /include/ "qoriq-clockgen2.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,t2080-clockgen", "fsl,qoriq-clockgen-2.0";
+-
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll0-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux0";
+-		};
+-
+-		mux1: mux1@20 {
+-			#clock-cells = <0>;
+-			reg = <0x20 4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
+-			clock-names = "pll0", "pll0-div2", "pll0-div4",
+-				"pll1", "pll1-div2", "pll1-div4";
+-			clock-output-names = "cmux1";
+-		};
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+index e71ceb0..1b4139f 100644
+--- a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+@@ -70,28 +70,28 @@
+ 		cpu0: PowerPC,e6500@0 {
+ 			device_type = "cpu";
+ 			reg = <0 1>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu1: PowerPC,e6500@2 {
+ 			device_type = "cpu";
+ 			reg = <2 3>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu2: PowerPC,e6500@4 {
+ 			device_type = "cpu";
+ 			reg = <4 5>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu3: PowerPC,e6500@6 {
+ 			device_type = "cpu";
+ 			reg = <6 7>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+index d806360..c6a51ad 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
+@@ -950,67 +950,6 @@
+ /include/ "qoriq-clockgen2.dtsi"
+ 	global-utilities@e1000 {
+ 		compatible = "fsl,t4240-clockgen", "fsl,qoriq-clockgen-2.0";
+-
+-		pll2: pll2@840 {
+-			#clock-cells = <1>;
+-			reg = <0x840 0x4>;
+-			compatible = "fsl,qoriq-core-pll-2.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "pll2", "pll2-div2", "pll2-div4";
+-		};
+-
+-		pll3: pll3@860 {
+-			#clock-cells = <1>;
+-			reg = <0x860 0x4>;
+-			compatible = "fsl,qoriq-core-pll-2.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "pll3", "pll3-div2", "pll3-div4";
+-		};
+-
+-		pll4: pll4@880 {
+-			#clock-cells = <1>;
+-			reg = <0x880 0x4>;
+-			compatible = "fsl,qoriq-core-pll-2.0";
+-			clocks = <&sysclk>;
+-			clock-output-names = "pll4", "pll4-div2", "pll4-div4";
+-		};
+-
+-		mux0: mux0@0 {
+-			#clock-cells = <0>;
+-			reg = <0x0 0x4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				<&pll1 0>, <&pll1 1>, <&pll1 2>,
+-				<&pll2 0>, <&pll2 1>, <&pll2 2>;
+-			clock-names = "pll0", "pll0-div2", "pll0-div4",
+-				"pll1", "pll1-div2", "pll1-div4",
+-				"pll2", "pll2-div2", "pll2-div4";
+-			clock-output-names = "cmux0";
+-		};
+-
+-		mux1: mux1@20 {
+-			#clock-cells = <0>;
+-			reg = <0x20 0x4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+-				<&pll1 0>, <&pll1 1>, <&pll1 2>,
+-				<&pll2 0>, <&pll2 1>, <&pll2 2>;
+-			clock-names = "pll0", "pll0-div2", "pll0-div4",
+-				"pll1", "pll1-div2", "pll1-div4",
+-				"pll2", "pll2-div2", "pll2-div4";
+-			clock-output-names = "cmux1";
+-		};
+-
+-		mux2: mux2@40 {
+-			#clock-cells = <0>;
+-			reg = <0x40 0x4>;
+-			compatible = "fsl,qoriq-core-mux-2.0";
+-			clocks = <&pll3 0>, <&pll3 1>, <&pll3 2>,
+-				<&pll4 0>, <&pll4 1>, <&pll4 2>;
+-			clock-names = "pll3", "pll3-div2", "pll3-div4",
+-				"pll4", "pll4-div2", "pll4-div4";
+-			clock-output-names = "cmux2";
+-		};
+ 	};
+ 
+ 	rcpm: global-utilities@e2000 {
+diff --git a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
+index 261a3abb..ae6752d 100644
+--- a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
+@@ -68,84 +68,84 @@
+ 		cpu0: PowerPC,e6500@0 {
+ 			device_type = "cpu";
+ 			reg = <0 1>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu1: PowerPC,e6500@2 {
+ 			device_type = "cpu";
+ 			reg = <2 3>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu2: PowerPC,e6500@4 {
+ 			device_type = "cpu";
+ 			reg = <4 5>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu3: PowerPC,e6500@6 {
+ 			device_type = "cpu";
+ 			reg = <6 7>;
+-			clocks = <&mux0>;
++			clocks = <&clockgen 1 0>;
+ 			next-level-cache = <&L2_1>;
+ 			fsl,portid-mapping = <0x80000000>;
+ 		};
+ 		cpu4: PowerPC,e6500@8 {
+ 			device_type = "cpu";
+ 			reg = <8 9>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 		};
+ 		cpu5: PowerPC,e6500@10 {
+ 			device_type = "cpu";
+ 			reg = <10 11>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 		};
+ 		cpu6: PowerPC,e6500@12 {
+ 			device_type = "cpu";
+ 			reg = <12 13>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 		};
+ 		cpu7: PowerPC,e6500@14 {
+ 			device_type = "cpu";
+ 			reg = <14 15>;
+-			clocks = <&mux1>;
++			clocks = <&clockgen 1 1>;
+ 			next-level-cache = <&L2_2>;
+ 			fsl,portid-mapping = <0x40000000>;
+ 		};
+ 		cpu8: PowerPC,e6500@16 {
+ 			device_type = "cpu";
+ 			reg = <16 17>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 		};
+ 		cpu9: PowerPC,e6500@18 {
+ 			device_type = "cpu";
+ 			reg = <18 19>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 		};
+ 		cpu10: PowerPC,e6500@20 {
+ 			device_type = "cpu";
+ 			reg = <20 21>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 		};
+ 		cpu11: PowerPC,e6500@22 {
+ 			device_type = "cpu";
+ 			reg = <22 23>;
+-			clocks = <&mux2>;
++			clocks = <&clockgen 1 2>;
+ 			next-level-cache = <&L2_3>;
+ 			fsl,portid-mapping = <0x20000000>;
+ 		};
 -- 
 2.1.4
