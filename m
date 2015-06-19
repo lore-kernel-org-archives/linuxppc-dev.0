@@ -3,8 +3,8 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 602A91A0EF5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:49:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54F721A0EF5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:49:40 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: Mike Turquette <mturquette@linaro.org>, Tang Yuantian
  <Yuantian.Tang@freescale.com>
@@ -13,11 +13,11 @@ CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liberman Igal-B31950
  <madalin.bucur@freescale.com>, <linux-clk@vger.kernel.org>,
  <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>, "Scott
- Wood" <scottwood@freescale.com>, Jingchang Lu <b35083@freescale.com>, "Shawn
- Guo" <shawn.guo@linaro.org>
-Subject: [RFC PATCH 1/8] ARM: dts: ls1021a: Fix clockgen node
-Date: Thu, 18 Jun 2015 21:49:11 -0500
-Message-ID: <1434682158-7243-2-git-send-email-scottwood@freescale.com>
+ Wood" <scottwood@freescale.com>
+Subject: [RFC PATCH 2/8] cpufreq: qoriq: Don't look at clock implementation
+ details
+Date: Thu, 18 Jun 2015 21:49:12 -0500
+Message-ID: <1434682158-7243-3-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
 References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -31,45 +31,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The binding requires compatible and reg properties, but the ls1021a
-device tree does not contain them.  This will break with subsequent
-clock driver changes.  If required (it's not clear to me whether the
-ls1 code currently works at all -- I tried multi_v7_defconfig and it
-didn't boot, whereas I was able to boot an SDK kernel), backwards
-compatibility can be retained with a device tree fixup.
+Get the CPU clock's potential parent clocks from the clock interface
+itself, rather than manually parsing the clocks property to find a
+phandle, looking at the clock-names property of that, and assuming that
+those are valid parent clocks for the cpu clock.
 
-LS1021A also deviates from existing QorIQ clockgen practice by making
-the sysclk node be a fixed-clock node rather than the U-Boot
-compatibility hack of having a clock-frequency property in the clockgen
-node itself, and a fsl,qoriq-sysclk-... node that exports the clock.
-While this is not a violation of the existing binding, the upcoming
-rework of the clock driver requires that a driver for the clockgen node
-itself be able to find the input clock.  Thus, a clocks property is
-added to reference the sysclk node.
+This is necessary for cpufreq to continue working once the clocks
+are generated based on the clock driver's knowledge of the chip
+rather than a fragile device-tree description of the mux options.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Jingchang Lu <b35083@freescale.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>
 ---
- arch/arm/boot/dts/ls1021a.dtsi | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpufreq/qoriq-cpufreq.c | 47 ++++++++++++++++-------------------------
+ 1 file changed, 18 insertions(+), 29 deletions(-)
 
-diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
-index c70bb27..a0a1c51 100644
---- a/arch/arm/boot/dts/ls1021a.dtsi
-+++ b/arch/arm/boot/dts/ls1021a.dtsi
-@@ -146,9 +146,12 @@
- 		};
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 358f075..32ab99e 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -11,6 +11,7 @@
+ #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
  
- 		clockgen: clocking@1ee1000 {
-+			compatible = "fsl,ls201a-clockgen";
- 			#address-cells = <1>;
- 			#size-cells = <1>;
-+			reg = <0 0x1ee1000 0x10000>;
- 			ranges = <0x0 0x0 0x1ee1000 0x10000>;
-+			clocks = <&sysclk>;
+ #include <linux/clk.h>
++#include <linux/clk-provider.h>
+ #include <linux/cpufreq.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+@@ -99,9 +100,10 @@ static u32 get_bus_freq(void)
+ 	return sysfreq;
+ }
  
- 			sysclk: sysclk {
- 				compatible = "fixed-clock";
+-static struct device_node *cpu_to_clk_node(int cpu)
++static struct clk *cpu_to_clk(int cpu)
+ {
+-	struct device_node *np, *clk_np;
++	struct device_node *np;
++	struct clk *clk;
+ 
+ 	if (!cpu_present(cpu))
+ 		return NULL;
+@@ -110,37 +112,32 @@ static struct device_node *cpu_to_clk_node(int cpu)
+ 	if (!np)
+ 		return NULL;
+ 
+-	clk_np = of_parse_phandle(np, "clocks", 0);
+-	if (!clk_np)
+-		return NULL;
+-
++	clk = of_clk_get(np, 0);
+ 	of_node_put(np);
+-
+-	return clk_np;
++	return clk;
+ }
+ 
+ /* traverse cpu nodes to get cpu mask of sharing clock wire */
+ static void set_affected_cpus(struct cpufreq_policy *policy)
+ {
+-	struct device_node *np, *clk_np;
+ 	struct cpumask *dstp = policy->cpus;
++	struct clk *clk;
++	const char *ourname, *theirname;
+ 	int i;
+ 
+-	np = cpu_to_clk_node(policy->cpu);
+-	if (!np)
+-		return;
++	ourname = __clk_get_name(policy->clk);
+ 
+ 	for_each_present_cpu(i) {
+-		clk_np = cpu_to_clk_node(i);
+-		if (!clk_np)
++		clk = cpu_to_clk(i);
++		if (IS_ERR(clk)) {
++			pr_err("%s: no clock for cpu %d\n", __func__, i);
+ 			continue;
++		}
+ 
+-		if (clk_np == np)
++		theirname = __clk_get_name(clk);
++		if (!strcmp(ourname, theirname))
+ 			cpumask_set_cpu(i, dstp);
+-
+-		of_node_put(clk_np);
+ 	}
+-	of_node_put(np);
+ }
+ 
+ /* reduce the duplicated frequencies in frequency table */
+@@ -219,17 +216,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_nomem2;
+ 	}
+ 
+-	pnode = of_parse_phandle(np, "clocks", 0);
+-	if (!pnode) {
+-		pr_err("%s: could not get clock information\n", __func__);
+-		goto err_nomem2;
+-	}
++	count = __clk_get_num_parents(policy->clk);
+ 
+-	count = of_property_count_strings(pnode, "clock-names");
+ 	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
+ 	if (!data->pclk) {
+ 		pr_err("%s: no memory\n", __func__);
+-		goto err_node;
++		goto err_nomem2;
+ 	}
+ 
+ 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
+@@ -244,7 +236,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		mask = 0x0;
+ 
+ 	for (i = 0; i < count; i++) {
+-		clk = of_clk_get(pnode, i);
++		clk = clk_get_parent_by_index(policy->clk, i);
+ 		data->pclk[i] = clk;
+ 		freq = clk_get_rate(clk);
+ 		/*
+@@ -288,10 +280,7 @@ err_nomem1:
+ 	kfree(table);
+ err_pclk:
+ 	kfree(data->pclk);
+-err_node:
+-	of_node_put(pnode);
+ err_nomem2:
+-	policy->driver_data = NULL;
+ 	kfree(data);
+ err_np:
+ 	of_node_put(np);
 -- 
 2.1.4
