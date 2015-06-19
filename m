@@ -1,46 +1,44 @@
-Return-Path: <keescook@google.com>
-Received: from mail-yh0-x22c.google.com (mail-yh0-x22c.google.com
- [IPv6:2607:f8b0:4002:c01::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 452951A0EF6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2015 02:58:48 +1000 (AEST)
-Received: by yhak3 with SMTP id k3so82144276yha.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 09:58:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C97E1A0EF6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2015 03:47:17 +1000 (AEST)
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 88CA01401CB
+ for <linuxppc-dev@ozlabs.org>; Sat, 20 Jun 2015 03:47:16 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Fri, 19 Jun 2015 23:17:13 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 03B4DE0058
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2015 23:20:41 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5JHl9Lo6750556
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2015 23:17:09 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5JHl8nN018182
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Jun 2015 23:17:08 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Thomas Huth <thuth@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, aik@ozlabs.ru,
+ dvaleev@suse.com
+Subject: Re: [PATCH SLOF] disk-label: add support for booting from GPT FAT
+ partition
+In-Reply-To: <20150619182713.5981cabf@thh440s>
+References: <1434017929-1792-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <20150617122248.77211775@thh440s> <87fv5qeeax.fsf@linux.vnet.ibm.com>
+ <87d20uee2q.fsf@linux.vnet.ibm.com> <20150619182713.5981cabf@thh440s>
+Date: Fri, 19 Jun 2015 23:17:03 +0530
+Message-ID: <87y4jfd208.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <5584234E.2040701@linaro.org>
-References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
- <1434386579-6045-2-git-send-email-dave.long@linaro.org>
- <1434687583.23771.5.camel@ellerman.id.au>
- <5584234E.2040701@linaro.org>
-Date: Fri, 19 Jun 2015 09:58:45 -0700
-Message-ID: <CAGXu5jJFkv=ma0SJ-5N+GKQ3xoPw8193+kxO0F3M0c0_c=ZTtg@mail.gmail.com>
-Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
- to common include file
-From: Kees Cook <keescook@chromium.org>
-To: David Long <dave.long@linaro.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, "H. Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@amacapital.net>, Anton Blanchard <anton@samba.org>,
- Behan Webster <behanw@converseincode.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Eric Paris <eparis@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Jan Willeke <willeke@de.ibm.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Nikolay Borisov <Nikolay.Borisov@arm.com>, Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>,
- Robert Richter <rric@kernel.org>,
- Roland McGrath <roland@hack.frob.com>, Russell King <linux@arm.linux.org.uk>,
- Tejun Heo <tj@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-hexagon@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- linux-sh <linux-sh@vger.kernel.org>,
- "linux390@de.ibm.com" <linux390@de.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,67 +48,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 19, 2015 at 7:12 AM, David Long <dave.long@linaro.org> wrote:
-> On 06/19/15 00:19, Michael Ellerman wrote:
->>
->> On Mon, 2015-06-15 at 12:42 -0400, David Long wrote:
->>>
->>> From: "David A. Long" <dave.long@linaro.org>
->>>
->>> The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
->>>   feature and has identical definitions in four different arch ptrace.h
->>> include files. It seems unlikely that definition would ever need to be
->>> changed regardless of architecture so lets move it into
->>> include/linux/ptrace.h.
->>>
->>> Signed-off-by: David A. Long <dave.long@linaro.org>
->>> ---
->>>   arch/powerpc/kernel/ptrace.c | 5 -----
->>
->>
->> Built and booted on powerpc, but is there an easy way to actually test the
->> code
->> paths in question?
->>
->
-> There is an easy way to "smoke test" it on all archiectures that also
-> implement kprobes (which powerpc does).  If I'm understanding the powerpc
-> code correctly (WRT register naming conventions) just do the following:
->
-> cd /sys/kernel/debug/tracing
-> echo 'p do_fork %gpr0' > kprobe_events
-> echo 1 > events/kprobes/enable
-> ls
-> cat trace
-> echo 0 > events/kprobes/enable
->
-> Every fork() call done on the system between those two echo commands (hence
-> the "ls") should append a line to the trace file.  For a more exhaustive
-> test one could repeat this sequence for every register in the architecture.
->
-> This should work the same on all architectures supporting kprobes.  You just
-> have to use the appropriate register names for your architecture after the
-> "%".
+Thomas Huth <thuth@redhat.com> writes:
 
-Is this something we could codify into the selftests directory? It
-seems like a great thing to capture in a single place somewhere (the
-register lists, that is).
-
--Kees
-
+> On Wed, 17 Jun 2015 17:34:13 +0530
+> Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
 >
->> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->>
->> cheers
->>
->>
+>> Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> writes:
+>>=20
+>> > Thomas Huth <thuth@redhat.com> writes:
+>> >>> +\ Check for GPT MSFT BASIC DATA GUID - vfat based
+>> >>> +EBD0A0A2     CONSTANT GPT-BASIC-DATA-PARTITION-1
+>> >>> +B9E5         CONSTANT GPT-BASIC-DATA-PARTITION-2
+>> >>> +4433         CONSTANT GPT-BASIC-DATA-PARTITION-3
+>> >>> +87C0         CONSTANT GPT-BASIC-DATA-PARTITION-4
+>> >>> +68B6B72699C7 CONSTANT GPT-BASIC-DATA-PARTITION-5
+>> >>> +
+>> >>> +: gpt-basic-data-partition? ( -- true|false )
+>> >>> +   block gpt-part-entry>part-type-guid l@-le GPT-BASIC-DATA-PARTITI=
+ON-1 =3D IF
+>> >>> +      block gpt-part-entry>part-type-guid 4 + w@-le
+>> >>> +      GPT-BASIC-DATA-PARTITION-2 =3D IF
+>> >>> +         block gpt-part-entry>part-type-guid 6 + w@-le
+>> >>> +         GPT-BASIC-DATA-PARTITION-3 =3D IF
+>> >>> +            block gpt-part-entry>part-type-guid 8 + w@
+>> >>
+>> >> Don't you have to byte-swap (w@-le) here, too? Looks somehow strange
+>> >> that the other UID parts are read byte-swapped but this one is not?
+>> >
+>> > Interesting observation, I had used code from gpt-prep-partition? and
+>> > did not doubt the validity of it. But that is how I see it in the memo=
+ry
+>> > though.
+>> >
+>> > 4 >  7e50d000 10 dump=20
+>> > 7e50d000: a2 a0 d0 eb e5 b9 33 44 87 c0 68 b6 b7 26 99 c7  ......3D..h=
+..&.. ok
+>> > 4 >
+>>=20
+>> And here the answer for that:
+>>=20
+>>     https://en.wikipedia.org/wiki/GUID_Partition_Table#cite_note-26
+>>=20=20=20=20=20
+>>     The GUIDs in this table are written assuming a little-endian byte
+>>     order. For example, the GUID for an EFI System partition is written
+>>     as C12A7328-F81F-11D2-BA4B-00A0C93EC93B here, which corresponds to
+>>     the 16 byte sequence 28h 73h 2Ah C1h 1Fh F8h D2h 11h BAh 4Bh 00h A0h
+>>     C9h 3Eh C9h 3Bh =E2=80=93 only the first three blocks are byte-swapp=
+ed.
+>>=20
+>> "only the first three blocks are byte-swapped"
 >
-> Thanks,
-> -dl
+> Ok, this seems to be a GUID specialty (as opposed to UUIDs), also see:
 >
+> https://en.wikipedia.org/wiki/Globally_unique_identifier#Binary_encoding
+>
+> ... but that means that the last 8 bytes are always "big endian", so I
+> think you could simplify your code here and check the last 8 bytes at
+> once instead of checking 2 + 6 bytes separately, can't you?
 
+Yes, I am making these changes, will be sending the series after
+testing.
 
-
--- 
-Kees Cook
-Chrome OS Security
+Regards
+Nikunj
