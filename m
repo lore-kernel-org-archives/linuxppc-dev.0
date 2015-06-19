@@ -1,20 +1,44 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dave.long@linaro.org>
+Received: from mail-qk0-f173.google.com (mail-qk0-f173.google.com
+ [209.85.220.173])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1591C1A1C08
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2015 00:09:59 +1000 (AEST)
-Date: Fri, 19 Jun 2015 16:09:55 +0200
-From: Torsten Duwe <duwe@lst.de>
-To: Steven Rostedt <rostedt@goodmis.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/4] ppc64 ftrace_with_regs recursion protection
-Message-ID: <20150619140955.GD8824@lst.de>
-References: <20150619140403.GA8681@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 617B61A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Jun 2015 00:14:46 +1000 (AEST)
+Received: by qkhu186 with SMTP id u186so61542789qkh.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 07:14:44 -0700 (PDT)
+Message-ID: <5584234E.2040701@linaro.org>
+Date: Fri, 19 Jun 2015 10:12:30 -0400
+From: David Long <dave.long@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150619140403.GA8681@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
+ Anton Blanchard <anton@samba.org>,
+ Behan Webster <behanw@converseincode.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Eric Paris <eparis@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>,
+ Jan Willeke <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Nikolay Borisov <Nikolay.Borisov@arm.com>,
+ Oleg Nesterov <oleg@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>,
+ Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
+ to common include file
+References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>	
+ <1434386579-6045-2-git-send-email-dave.long@linaro.org>
+ <1434687583.23771.5.camel@ellerman.id.au>
+In-Reply-To: <1434687583.23771.5.camel@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +48,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an *emergency* parachute to avoid an endless recursion and
-consecutively a kernel stack overflow, should any function within some
-ftrace framework cause an access fault, which calls _mcount / ftrace_caller
-in return and so on. It might also call an ftrace'd function directly.
+On 06/19/15 00:19, Michael Ellerman wrote:
+> On Mon, 2015-06-15 at 12:42 -0400, David Long wrote:
+>> From: "David A. Long" <dave.long@linaro.org>
+>>
+>> The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
+>>   feature and has identical definitions in four different arch ptrace.h
+>> include files. It seems unlikely that definition would ever need to be
+>> changed regardless of architecture so lets move it into
+>> include/linux/ptrace.h.
+>>
+>> Signed-off-by: David A. Long <dave.long@linaro.org>
+>> ---
+>>   arch/powerpc/kernel/ptrace.c | 5 -----
+>
+> Built and booted on powerpc, but is there an easy way to actually test the code
+> paths in question?
+>
 
-As Michael Ellerman pointed out, it is a tedious and error-prone task
-to maintain a complete list of those functions that _might_ get called
-from *_access_fault or any dynamic tracer function. So we'll
-concentrate on the most frequent cases to enhance performance later,
-while for now sticking with this fill-in. It will later serve as a backup
-protection.
+There is an easy way to "smoke test" it on all archiectures that also 
+implement kprobes (which powerpc does).  If I'm understanding the 
+powerpc code correctly (WRT register naming conventions) just do the 
+following:
 
-  * arch/powerpc/kernel/entry_64.S:
-    - test-and-set TRACE_FTRACE_BIT in task_struct's trace_recursion,
-      do not call the actual tracer function if set, clear flag on return.
+cd /sys/kernel/debug/tracing
+echo 'p do_fork %gpr0' > kprobe_events
+echo 1 > events/kprobes/enable
+ls
+cat trace
+echo 0 > events/kprobes/enable
 
-Signed-off-by: Torsten Duwe <duwe@suse.de>
----
- arch/powerpc/kernel/asm-offsets.c |    1 +
- arch/powerpc/kernel/entry_64.S    |   15 +++++++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+Every fork() call done on the system between those two echo commands 
+(hence the "ls") should append a line to the trace file.  For a more 
+exhaustive test one could repeat this sequence for every register in the 
+architecture.
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 4717859..ae10752 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -72,6 +72,7 @@ int main(void)
- 	DEFINE(THREAD, offsetof(struct task_struct, thread));
- 	DEFINE(MM, offsetof(struct task_struct, mm));
- 	DEFINE(MMCONTEXTID, offsetof(struct mm_struct, context.id));
-+	DEFINE(TASK_TRACEREC, offsetof(struct task_struct, trace_recursion));
- #ifdef CONFIG_PPC64
- 	DEFINE(AUDITCONTEXT, offsetof(struct task_struct, audit_context));
- 	DEFINE(SIGSEGV, SIGSEGV);
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index a4132ef..4768104 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -1202,7 +1202,13 @@ _GLOBAL(ftrace_caller)
- 	SAVE_8GPRS(16,r1)
- 	SAVE_8GPRS(24,r1)
- 
--
-+	ld	r3, PACACURRENT(r13)
-+	ld	r4, TASK_TRACEREC(r3)
-+	andi.	r5, r4, 0x0010 // ( 1 << TRACE_FTRACE_BIT )
-+	ori	r4, r4, 0x0010
-+	std	r4, TASK_TRACEREC(r3)
-+	bne-	3f		// ftrace in progress - avoid recursion!
-+
- 	LOAD_REG_IMMEDIATE(r3,function_trace_op)
- 	ld	r5,0(r3)
- 
-@@ -1224,9 +1230,14 @@ ftrace_call:
- 	bl	ftrace_stub
- 	nop
- 
-+	ld	r3, PACACURRENT(r13)
-+	ld	r4, TASK_TRACEREC(r3)
-+	andi.	r4, r4, 0xffef // ~( 1 << TRACE_FTRACE_BIT )
-+	std	r4, TASK_TRACEREC(r3)
-+
- 	ld	r3, _NIP(r1)
- 	mtlr	r3
--
-+3:
- 	REST_8GPRS(0,r1)
- 	REST_8GPRS(8,r1)
- 	REST_8GPRS(16,r1)
+This should work the same on all architectures supporting kprobes.  You 
+just have to use the appropriate register names for your architecture 
+after the "%".
+
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> cheers
+>
+>
+
+Thanks,
+-dl
