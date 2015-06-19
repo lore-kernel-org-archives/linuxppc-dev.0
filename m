@@ -3,8 +3,8 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EFB1C1A0F36
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:49:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E18121A0F44
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Jun 2015 12:49:44 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: Mike Turquette <mturquette@linaro.org>, Tang Yuantian
  <Yuantian.Tang@freescale.com>
@@ -14,9 +14,9 @@ CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liberman Igal-B31950
  <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-arm-kernel@lists.infradead.org>, <devicetree@vger.kernel.org>, "Scott
  Wood" <scottwood@freescale.com>
-Subject: [RFC PATCH 5/8] clk: qoriq: Redirect legacy clock nodes to new clocks
-Date: Thu, 18 Jun 2015 21:49:15 -0500
-Message-ID: <1434682158-7243-6-git-send-email-scottwood@freescale.com>
+Subject: [RFC PATCH 6/8] cpufreq: qoriq: Remove frequency masking and minimum
+Date: Thu, 18 Jun 2015 21:49:16 -0500
+Message-ID: <1434682158-7243-7-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
 References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -30,419 +30,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Having multiple clock implementations pointing at the same hardware is
-asking for trouble if both get used -- for example, cached values will be
-incorrect.  Point the legacy nodes at the new clocks, before anything
-starts using the new clocks.  The pll/mux details in old device trees
-will be ignored, but "clocks" properties pointing at the old nodes will
-still work.
+The clock driver now takes care of ensuring that the mux only
+exposes options that are valid.  The driver was currently being overly
+conservative in some cases -- for example, the "min_cpufreq =
+get_bus_freq()" restriction only applies to chips with erratum
+A-004510, and whether the freq_mask used on p5020 is needed depends on
+the actual frequencies of the PLLs (FWIW, p5040 has a similar
+limitation but its .freq_mask was zero).
 
-This also lets us get rid of most of the legacy code.
+Further, the freq_mask mechanism makes assumptions about the number and
+order of the clock parents.  The new driver does not adhere to those
+assumptions (in particular, it removes invalid options).
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- drivers/clk/clk-qoriq.c | 348 ++++++++----------------------------------------
- 1 file changed, 54 insertions(+), 294 deletions(-)
+ drivers/cpufreq/qoriq-cpufreq.c | 92 +----------------------------------------
+ 1 file changed, 2 insertions(+), 90 deletions(-)
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index b94dc2f..f6aa106 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -763,233 +763,24 @@ static void __init create_muxes(struct clockgen *cg)
- }
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 32ab99e..514395f 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -36,53 +36,6 @@ struct cpu_data {
+ 	struct cpufreq_frequency_table *table;
+ };
  
- /* Legacy node */
--struct cmux_clk {
--	struct clk_hw hw;
--	void __iomem *reg;
--	unsigned int clk_per_pll;
--	u32 flags;
+-/**
+- * struct soc_data - SoC specific data
+- * @freq_mask: mask the disallowed frequencies
+- * @flag: unique flags
+- */
+-struct soc_data {
+-	u32 freq_mask[4];
+-	u32 flag;
 -};
 -
--#define PLL_KILL			BIT(31)
--#define CLKSEL_ADJUST		BIT(0)
--#define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
--
--static int cmux_set_parent(struct clk_hw *hw, u8 idx)
--{
--	struct cmux_clk *clk = to_cmux_clk(hw);
--	u32 clksel;
--
--	clksel = ((idx / clk->clk_per_pll) << 2) + idx % clk->clk_per_pll;
--	if (clk->flags & CLKSEL_ADJUST)
--		clksel += 8;
--	clksel = (clksel & 0xf) << CLKSEL_SHIFT;
--	iowrite32be(clksel, clk->reg);
--
--	return 0;
--}
--
--static u8 cmux_get_parent(struct clk_hw *hw)
--{
--	struct cmux_clk *clk = to_cmux_clk(hw);
--	u32 clksel;
--
--	clksel = ioread32be(clk->reg);
--	clksel = (clksel >> CLKSEL_SHIFT) & 0xf;
--	if (clk->flags & CLKSEL_ADJUST)
--		clksel -= 8;
--	clksel = (clksel >> 2) * clk->clk_per_pll + clksel % 4;
--
--	return clksel;
--}
--
--static const struct clk_ops legacy_cmux_ops = {
--	.get_parent = cmux_get_parent,
--	.set_parent = cmux_set_parent,
+-#define FREQ_MASK	1
+-/* see hardware specification for the allowed frqeuencies */
+-static const struct soc_data sdata[] = {
+-	{ /* used by p2041 and p3041 */
+-		.freq_mask = {0x8, 0x8, 0x2, 0x2},
+-		.flag = FREQ_MASK,
+-	},
+-	{ /* used by p5020 */
+-		.freq_mask = {0x8, 0x2},
+-		.flag = FREQ_MASK,
+-	},
+-	{ /* used by p4080, p5040 */
+-		.freq_mask = {0},
+-		.flag = 0,
+-	},
 -};
 -
- static void __init core_mux_init(struct device_node *np)
+-/*
+- * the minimum allowed core frequency, in Hz
+- * for chassis v1.0, >= platform frequency
+- * for chassis v2.0, >= platform frequency / 2
+- */
+-static u32 min_cpufreq;
+-static const u32 *fmask;
+-
+-#if defined(CONFIG_ARM)
+-static int get_cpu_physical_id(int cpu)
+-{
+-	return topology_core_id(cpu);
+-}
+-#else
+-static int get_cpu_physical_id(int cpu)
+-{
+-	return get_hard_smp_processor_id(cpu);
+-}
+-#endif
+-
+ static u32 get_bus_freq(void)
  {
+ 	struct device_node *soc;
+@@ -195,7 +148,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct device_node *np, *pnode;
+ 	int i, count, ret;
+-	u32 freq, mask;
++	u32 freq;
  	struct clk *clk;
--	struct clk_init_data init;
--	struct cmux_clk *cmux_clk;
--	struct device_node *node;
--	int rc, count, i;
--	u32	offset;
--	const char *clk_name;
--	const char **parent_names;
--	struct of_phandle_args clkspec;
-+	struct resource res;
-+	int idx, rc;
- 
--	rc = of_property_read_u32(np, "reg", &offset);
--	if (rc) {
--		pr_err("%s: could not get reg property\n", np->name);
-+	if (of_address_to_resource(np, 0, &res))
- 		return;
--	}
--
--	/* get the input clock source count */
--	count = of_property_count_strings(np, "clock-names");
--	if (count < 0) {
--		pr_err("%s: get clock count error\n", np->name);
--		return;
--	}
--	parent_names = kcalloc(count, sizeof(char *), GFP_KERNEL);
--	if (!parent_names)
--		return;
--
--	for (i = 0; i < count; i++)
--		parent_names[i] = of_clk_get_parent_name(np, i);
--
--	cmux_clk = kzalloc(sizeof(*cmux_clk), GFP_KERNEL);
--	if (!cmux_clk)
--		goto err_name;
- 
--	cmux_clk->reg = of_iomap(np, 0);
--	if (!cmux_clk->reg) {
--		pr_err("%s: could not map register\n", __func__);
--		goto err_clk;
--	}
--
--	rc = of_parse_phandle_with_args(np, "clocks", "#clock-cells", 0,
--					&clkspec);
--	if (rc) {
--		pr_err("%s: parse clock node error\n", __func__);
--		goto err_clk;
--	}
--
--	cmux_clk->clk_per_pll = of_property_count_strings(clkspec.np,
--			"clock-output-names");
--	of_node_put(clkspec.np);
--
--	node = of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen");
--	if (node && (offset >= 0x80))
--		cmux_clk->flags = CLKSEL_ADJUST;
--
--	rc = of_property_read_string_index(np, "clock-output-names",
--					   0, &clk_name);
--	if (rc) {
--		pr_err("%s: read clock names error\n", np->name);
--		goto err_clk;
--	}
--
--	init.name = clk_name;
--	init.ops = &legacy_cmux_ops;
--	init.parent_names = parent_names;
--	init.num_parents = count;
--	init.flags = 0;
--	cmux_clk->hw.init = &init;
--
--	clk = clk_register(NULL, &cmux_clk->hw);
--	if (IS_ERR(clk)) {
--		pr_err("%s: could not register clock\n", clk_name);
--		goto err_clk;
--	}
-+	idx = (res.start & 0xf0) >> 5;
-+	clk = clockgen.cmux[idx];
- 
- 	rc = of_clk_add_provider(np, of_clk_src_simple_get, clk);
- 	if (rc) {
--		pr_err("Could not register clock provider for node:%s\n",
--		       np->name);
--		goto err_clk;
--	}
--	goto err_name;
--
--err_clk:
--	kfree(cmux_clk);
--err_name:
--	/* free *_names because they are reallocated when registered */
--	kfree(parent_names);
--}
--
--/* Legacy node */
--static void __init core_pll_init(struct device_node *np)
--{
--	u32 mult;
--	int i, rc, count;
--	const char *clk_name, *parent_name;
--	struct clk_onecell_data *onecell_data;
--	struct clk      **subclks;
--	void __iomem *base;
--
--	base = of_iomap(np, 0);
--	if (!base) {
--		pr_err("iomap error\n");
-+		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
-+		       __func__, np->name, rc);
- 		return;
+ 	struct cpufreq_frequency_table *table;
+ 	struct cpu_data *data;
+@@ -230,23 +183,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_pclk;
  	}
+ 
+-	if (fmask)
+-		mask = fmask[get_cpu_physical_id(cpu)];
+-	else
+-		mask = 0x0;
 -
--	/* get the multiple of PLL */
--	mult = ioread32be(base);
--
--	/* check if this PLL is disabled */
--	if (mult & PLL_KILL) {
--		pr_debug("PLL:%s is disabled\n", np->name);
--		goto err_map;
--	}
--	mult = (mult >> 1) & 0x3f;
--
--	parent_name = of_clk_get_parent_name(np, 0);
--	if (!parent_name) {
--		pr_err("PLL: %s must have a parent\n", np->name);
--		goto err_map;
--	}
--
--	count = of_property_count_strings(np, "clock-output-names");
--	if (count < 0 || count > 4) {
--		pr_err("%s: clock is not supported\n", np->name);
--		goto err_map;
--	}
--
--	subclks = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
--	if (!subclks)
--		goto err_map;
--
--	onecell_data = kmalloc(sizeof(*onecell_data), GFP_KERNEL);
--	if (!onecell_data)
--		goto err_clks;
--
--	for (i = 0; i < count; i++) {
--		rc = of_property_read_string_index(np, "clock-output-names",
--						   i, &clk_name);
--		if (rc) {
--			pr_err("%s: could not get clock names\n", np->name);
--			goto err_cell;
--		}
--
+ 	for (i = 0; i < count; i++) {
+ 		clk = clk_get_parent_by_index(policy->clk, i);
+ 		data->pclk[i] = clk;
+ 		freq = clk_get_rate(clk);
 -		/*
--		 * when count == 4, there are 4 output clocks:
--		 * /1, /2, /3, /4 respectively
--		 * when count < 4, there are at least 2 output clocks:
--		 * /1, /2, (/4, if count == 3) respectively.
+-		 * the clock is valid if its frequency is not masked
+-		 * and large than minimum allowed frequency.
 -		 */
--		if (count == 4)
--			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
--					parent_name, 0, mult, 1 + i);
+-		if (freq < min_cpufreq || (mask & (1 << i)))
+-			table[i].frequency = CPUFREQ_ENTRY_INVALID;
 -		else
--
--			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
--					parent_name, 0, mult, 1 << i);
--
--		if (IS_ERR(subclks[i])) {
--			pr_err("%s: could not register clock\n", clk_name);
--			goto err_cell;
--		}
--	}
--
--	onecell_data->clks = subclks;
--	onecell_data->clk_num = count;
--
--	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
--	if (rc) {
--		pr_err("Could not register clk provider for node:%s\n",
--		       np->name);
--		goto err_cell;
--	}
--
--	iounmap(base);
--	return;
--err_cell:
--	kfree(onecell_data);
--err_clks:
--	kfree(subclks);
--err_map:
--	iounmap(base);
- }
- 
- static struct clk * __init create_sysclk(struct device_node *clockgen,
-@@ -1027,21 +818,14 @@ static struct clk * __init create_sysclk(struct device_node *clockgen,
- /* Legacy node */
- static void __init sysclk_init(struct device_node *node)
- {
--	struct device_node *np = of_get_parent(node);
--	struct clk *clk;
-+	struct clk *clk = clockgen.sysclk;
- 
--	if (!np) {
--		pr_err("could not get parent node\n");
--		return;
--	}
--
--	clk = create_sysclk(np, "sysclk");
--	of_node_put(np);
--
--	if (!IS_ERR(clk))
-+	if (clk)
- 		of_clk_add_provider(node, of_clk_src_simple_get, clk);
- }
- 
-+#define PLL_KILL BIT(31)
-+
- static void __init create_one_pll(struct clockgen *cg, int idx)
- {
- 	u32 __iomem *reg;
-@@ -1097,85 +881,61 @@ static void __init create_plls(struct clockgen *cg)
- 		create_one_pll(cg, i);
- }
- 
--/* Legacy node */
--static void __init pltfrm_pll_init(struct device_node *np)
-+static void __init legacy_pll_init(struct device_node *np, int idx)
- {
--	void __iomem *base;
--	uint32_t mult;
--	const char *parent_name, *clk_name;
--	int i, _errno;
--	struct clk_onecell_data *cod;
--
--	base = of_iomap(np, 0);
--	if (!base) {
--		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
--		return;
--	}
--
--	/* Get the multiple of PLL */
--	mult = ioread32be(base);
--
--	iounmap(base);
-+	struct clockgen_pll *pll;
-+	struct clk_onecell_data *onecell_data;
-+	struct clk **subclks;
-+	int count, rc, i;
- 
--	/* Check if this PLL is disabled */
--	if (mult & PLL_KILL) {
--		pr_debug("%s(): %s: Disabled\n", __func__, np->name);
--		return;
--	}
--	mult = (mult & GENMASK(6, 1)) >> 1;
-+	pll = &clockgen.pll[idx];
-+	count = ARRAY_SIZE(pll->div);
- 
--	parent_name = of_clk_get_parent_name(np, 0);
--	if (!parent_name) {
--		pr_err("%s(): %s: of_clk_get_parent_name() failed\n",
--		       __func__, np->name);
-+	subclks = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
-+	if (!subclks)
- 		return;
--	}
- 
--	i = of_property_count_strings(np, "clock-output-names");
--	if (i < 0) {
--		pr_err("%s(): %s: of_property_count_strings(clock-output-names) = %d\n",
--		       __func__, np->name, i);
--		return;
--	}
-+	onecell_data = kmalloc(sizeof(*onecell_data), GFP_KERNEL);
-+	if (!onecell_data)
-+		goto err_clks;
- 
--	cod = kmalloc(sizeof(*cod) + i * sizeof(struct clk *), GFP_KERNEL);
--	if (!cod)
--		return;
--	cod->clks = (struct clk **)(cod + 1);
--	cod->clk_num = i;
--
--	for (i = 0; i < cod->clk_num; i++) {
--		_errno = of_property_read_string_index(np, "clock-output-names",
--						       i, &clk_name);
--		if (_errno < 0) {
--			pr_err("%s(): %s: of_property_read_string_index(clock-output-names) = %d\n",
--			       __func__, np->name, _errno);
--			goto return_clk_unregister;
--		}
-+	for (i = 0; i < count; i++)
-+		subclks[i] = pll->div[i].clk;
- 
--		cod->clks[i] = clk_register_fixed_factor(NULL, clk_name,
--					       parent_name, 0, mult, 1 + i);
--		if (IS_ERR(cod->clks[i])) {
--			pr_err("%s(): %s: clk_register_fixed_factor(%s) = %ld\n",
--			       __func__, np->name,
--			       clk_name, PTR_ERR(cod->clks[i]));
--			goto return_clk_unregister;
--		}
--	}
-+	onecell_data->clks = subclks;
-+	onecell_data->clk_num = count;
- 
--	_errno = of_clk_add_provider(np, of_clk_src_onecell_get, cod);
--	if (_errno < 0) {
--		pr_err("%s(): %s: of_clk_add_provider() = %d\n",
--		       __func__, np->name, _errno);
--		goto return_clk_unregister;
-+	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
-+	if (rc) {
-+		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
-+		       __func__, np->name, rc);
-+		goto err_cell;
+-			table[i].frequency = freq / 1000;
++		table[i].frequency = freq / 1000;
+ 		table[i].driver_data = i;
  	}
+ 	freq_table_redup(table, count);
+@@ -321,38 +262,9 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.attr		= cpufreq_generic_attr,
+ };
  
- 	return;
-+err_cell:
-+	kfree(onecell_data);
-+err_clks:
-+	kfree(subclks);
-+}
+-static const struct of_device_id node_matches[] __initconst = {
+-	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
+-	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
+-	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
+-	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
+-	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
+-	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+-	{}
+-};
+-
+ static int __init qoriq_cpufreq_init(void)
+ {
+ 	int ret;
+-	struct device_node  *np;
+-	const struct of_device_id *match;
+-	const struct soc_data *data;
+-
+-	np = of_find_matching_node(NULL, node_matches);
+-	if (!np)
+-		return -ENODEV;
+-
+-	match = of_match_node(node_matches, np);
+-	data = match->data;
+-	if (data) {
+-		if (data->flag)
+-			fmask = data->freq_mask;
+-		min_cpufreq = get_bus_freq();
+-	} else {
+-		min_cpufreq = get_bus_freq() / 2;
+-	}
+-
+-	of_node_put(np);
  
--return_clk_unregister:
--	while (--i >= 0)
--		clk_unregister(cod->clks[i]);
--	kfree(cod);
-+/* Legacy node */
-+static void __init core_pll_init(struct device_node *np)
-+{
-+	struct resource res;
-+	int idx;
-+
-+	if (of_address_to_resource(np, 0, &res))
-+		return;
-+
-+	idx = (res.start & 0xf0) >> 5;
-+	legacy_pll_init(np, CGA_PLL1 + idx);
-+}
-+
-+/* Legacy node */
-+static void __init pltfrm_pll_init(struct device_node *np)
-+{
-+	legacy_pll_init(np, PLATFORM_PLL);
- }
- 
- #ifdef CONFIG_PPC
+ 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
+ 	if (!ret)
 -- 
 2.1.4
