@@ -2,38 +2,36 @@ Return-Path: <nikunj@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 586FC1A09C0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 18:00:05 +1000 (AEST)
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 567011A0F49
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 18:00:13 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DC636140319
- for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 18:00:03 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 6B8D8140311
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 18:00:06 +1000 (AEST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
  Mon, 22 Jun 2015 13:29:54 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0412BE0069
- for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 13:33:26 +0530 (IST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 9AC6CE0064
+ for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 13:33:25 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5M7xpc32752904
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5M7xpBC1573238
  for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 13:29:51 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5M7xnsp008349
+ t5M7xnAW008346
  for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 13:29:50 +0530
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, thuth@redhat.com
 Cc: benh@kernel.crashing.org, aik@ozlabs.ru, dvaleev@suse.com,
  nikunj@linux.vnet.ibm.com
-Subject: [PATCH SLOF 1/5] disk-label: simplify gpt-prep-partition? routine
-Date: Mon, 22 Jun 2015 13:29:43 +0530
-Message-Id: <1434959987-8530-2-git-send-email-nikunj@linux.vnet.ibm.com>
-In-Reply-To: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
-References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
+Subject: [PATCH SLOF 0/5] GPT fixes/cleanup and LVM support with FAT
+Date: Mon, 22 Jun 2015 13:29:42 +0530
+Message-Id: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,59 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
----
- slof/fs/packages/disk-label.fs | 36 +++++++++++++-----------------------
- 1 file changed, 13 insertions(+), 23 deletions(-)
+Following patchset implements some improvements and cleanup for the
+GPT booting code:
 
-diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
-index fe1c25e..2305eee 100644
---- a/slof/fs/packages/disk-label.fs
-+++ b/slof/fs/packages/disk-label.fs
-@@ -352,31 +352,21 @@ CONSTANT /gpt-part-entry
-    drop 0
- ;
- 
--\ Check for GPT PReP partition GUID
--9E1A2D38     CONSTANT GPT-PREP-PARTITION-1
--C612         CONSTANT GPT-PREP-PARTITION-2
--4316         CONSTANT GPT-PREP-PARTITION-3
--AA26         CONSTANT GPT-PREP-PARTITION-4
--8B49521E5A8B CONSTANT GPT-PREP-PARTITION-5
-+\ Check for GPT PReP partition GUID. Only first 3 blocks are
-+\ byte-swapped treating last two blocks as contigous for simplifying
-+\ comparison
-+9E1A2D38            CONSTANT GPT-PREP-PARTITION-1
-+C612                CONSTANT GPT-PREP-PARTITION-2
-+4316                CONSTANT GPT-PREP-PARTITION-3
-+AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
- 
- : gpt-prep-partition? ( -- true|false )
--   block gpt-part-entry>part-type-guid l@-le GPT-PREP-PARTITION-1 = IF
--      block gpt-part-entry>part-type-guid 4 + w@-le
--      GPT-PREP-PARTITION-2 = IF
--         block gpt-part-entry>part-type-guid 6 + w@-le
--         GPT-PREP-PARTITION-3 = IF
--            block gpt-part-entry>part-type-guid 8 + w@
--            GPT-PREP-PARTITION-4 = IF
--               block gpt-part-entry>part-type-guid a + w@
--               block gpt-part-entry>part-type-guid c + l@ swap lxjoin
--               GPT-PREP-PARTITION-5 = IF
--                   TRUE EXIT
--               THEN
--            THEN
--         THEN
--      THEN
--   THEN
--   FALSE
-+   block gpt-part-entry>part-type-guid
-+   dup l@-le     GPT-PREP-PARTITION-1 <> IF DROP FALSE EXIT THEN
-+   dup 4 + w@-le GPT-PREP-PARTITION-2 <> IF DROP FALSE EXIT THEN
-+   dup 6 + w@-le GPT-PREP-PARTITION-3 <> IF DROP FALSE EXIT THEN
-+       8 + x@    GPT-PREP-PARTITION-4 <> IF FALSE EXIT THEN
-+   TRUE
- ;
- 
- : load-from-gpt-prep-partition ( addr -- size )
+patch 1: Simplify the gpt detection code with lesser scopes and add
+         comments.
+patch 2: Introduce 8byte LE helpers: x@-le and x!-le
+patch 3: As we need to detect FAT partition, implement a helper that
+      	 can be used both from GPT code and "try-dos-files"
+patch 4: Implement GPT FAT for LVM suport.
+patch 5: Make GPT detection code robust 
+
+Nikunj A Dadhania (5):
+  disk-label: simplify gpt-prep-partition? routine
+  introduce 8-byte LE helpers
+  disk-label: introduce helper to check fat filesystem
+  disk-label: add support for booting from GPT FAT partition
+  disk-label: make gpt detection code more robust
+
+ slof/fs/little-endian.fs       |   6 ++
+ slof/fs/packages/disk-label.fs | 141 +++++++++++++++++++++++++++--------------
+ 2 files changed, 101 insertions(+), 46 deletions(-)
+
 -- 
 1.8.3.1
