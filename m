@@ -1,44 +1,33 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mstsxfx@gmail.com>
+Received: from mail-wi0-x232.google.com (mail-wi0-x232.google.com
+ [IPv6:2a00:1450:400c:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D6171A0EF1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:16:32 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 22 Jun 2015 19:16:30 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 890333578055
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:16:27 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5M9GJo531916136
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:16:27 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5M9FsZk004737
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:15:55 +1000
-Message-ID: <5587D21C.8080303@linux.vnet.ibm.com>
-Date: Mon, 22 Jun 2015 14:45:08 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CEE5A1A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 22:38:32 +1000 (AEST)
+Received: by wiwl6 with SMTP id l6so35833218wiw.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 05:38:28 -0700 (PDT)
+Sender: Michal Hocko <mstsxfx@gmail.com>
+Date: Mon, 22 Jun 2015 14:38:26 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Eric B Munson <emunson@akamai.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 1/3] Add mmap flag to request pages are locked
+ after page fault
+Message-ID: <20150622123826.GF4430@dhcp22.suse.cz>
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
+ <1433942810-7852-2-git-send-email-emunson@akamai.com>
+ <20150618152907.GG5858@dhcp22.suse.cz>
+ <20150618203048.GB2329@akamai.com>
+ <20150619145708.GG4913@dhcp22.suse.cz>
+ <20150619164333.GD2329@akamai.com>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-CC: Peter Zijlstra <peterz@infradead.org>, rusty@rustcorp.com.au,
- Stephane Eranian <eranian@google.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 7/7]powerpc/powernv: nest pmu cpumask and cpu hotplug
- support
-References: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433999874-2043-8-git-send-email-maddy@linux.vnet.ibm.com>
- <557FC1F9.5010607@linux.vnet.ibm.com>
-In-Reply-To: <557FC1F9.5010607@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150619164333.GD2329@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,202 +37,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri 19-06-15 12:43:33, Eric B Munson wrote:
+> On Fri, 19 Jun 2015, Michal Hocko wrote:
+> 
+> > On Thu 18-06-15 16:30:48, Eric B Munson wrote:
+> > > On Thu, 18 Jun 2015, Michal Hocko wrote:
+> > [...]
+> > > > Wouldn't it be much more reasonable and straightforward to have
+> > > > MAP_FAULTPOPULATE as a counterpart for MAP_POPULATE which would
+> > > > explicitly disallow any form of pre-faulting? It would be usable for
+> > > > other usecases than with MAP_LOCKED combination.
+> > > 
+> > > I don't see a clear case for it being more reasonable, it is one
+> > > possible way to solve the problem.
+> > 
+> > MAP_FAULTPOPULATE would be usable for other cases as well. E.g. fault
+> > around is all or nothing feature. Either all mappings (which support
+> > this) fault around or none. There is no way to tell the kernel that
+> > this particular mapping shouldn't fault around. I haven't seen such a
+> > request yet but we have seen requests to have a way to opt out from
+> > a global policy in the past (e.g. per-process opt out from THP). So
+> > I can imagine somebody will come with a request to opt out from any
+> > speculative operations on the mapped area in the future.
+> > 
+> > > But I think it leaves us in an even
+> > > more akward state WRT VMA flags.  As you noted in your fix for the
+> > > mmap() man page, one can get into a state where a VMA is VM_LOCKED, but
+> > > not present.  Having VM_LOCKONFAULT states that this was intentional, if
+> > > we go to using MAP_FAULTPOPULATE instead of MAP_LOCKONFAULT, we no
+> > > longer set VM_LOCKONFAULT (unless we want to start mapping it to the
+> > > presence of two MAP_ flags).  This can make detecting the MAP_LOCKED +
+> > > populate failure state harder.
+> > 
+> > I am not sure I understand your point here. Could you be more specific
+> > how would you check for that and what for?
+> 
+> My thought on detecting was that someone might want to know if they had
+> a VMA that was VM_LOCKED but had not been made present becuase of a
+> failure in mmap.  We don't have a way today, but adding VM_LOCKONFAULT
+> is at least explicit about what is happening which would make detecting
+> the VM_LOCKED but not present state easier. 
 
+One could use /proc/<pid>/pagemap to query the residency.
 
-On Tuesday 16 June 2015 11:58 AM, Preeti U Murthy wrote:
-> On 06/11/2015 10:47 AM, Madhavan Srinivasan wrote:
->> Adds cpumask attribute to be used by each nest pmu since nest
->> units are per-chip. Only one cpu (first online cpu) from each node/chip
->> is designated to read counters.
->>
->> On cpu hotplug, dying cpu is checked to see whether it is one of the
->> designated cpus, if yes, next online cpu from the same node/chip is designated
->> as new cpu to read counters.
->>
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Anton Blanchard <anton@samba.org>
->> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> Cc: Stephane Eranian <eranian@google.com>
->> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> Cc: Ingo Molnar <mingo@kernel.org>
->> Cc: Peter Zijlstra <peterz@infradead.org>
->> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->> ---
->> +static void nest_change_cpu_context(int old_cpu, int new_cpu)
->> +{
->> +	int i;
->> +
->> +	if (new_cpu >= 0) {
->> +		for (i = 0; per_nest_pmu_arr[i] != NULL; i++)
->> +			perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
->> +							old_cpu, new_cpu);
->> +	}
->> +}
->> +
->> +static void nest_exit_cpu(int cpu)
->> +{
->> +	int i, nid, target = -1;
->> +	const struct cpumask *l_cpumask;
->> +	int src_chipid;
->> +
->> +	/*
->> +	 * Check in the designated list for this cpu. Dont bother
->> +	 * if not one of them.
->> +	 */
->> +	if (!cpumask_test_and_clear_cpu(cpu, &cpu_mask_nest_pmu))
->> +		return;
->> +
->> +	/*
->> +	 * Now that this cpu is one of the designated,
->> +	 * find a new cpu a) which is not dying and
-> This comment is not right. nest_exit_cpu() is called in the hotplug
-> path, so another cpu cannot be dying in parallel. Hotplug operations are
-> done serially. The comment ought to be "a) which is online" instead.
-Ok will change it.
+> This assumes that
+> MAP_FAULTPOPULATE does not translate to a VMA flag, but it sounds like
+> it would have to.
 
->> +	 * b) is in same node/chip.
-> node is not the same as a chip right ? And you are interested in cpus on
-> the same chip alone. So shouldn't the above comment be b) in the same chip ?
-I was hoping it to be, but i will change  comment to chip.
+Yes, it would have to have a VM flag for the vma.
 
->> +	 */
->> +	nid = cpu_to_node(cpu);
->> +	src_chipid = topology_physical_package_id(cpu);
-> What is the relation between a node and a chip ? Can't we have a
-> function which returns the cpumask of a chip straight away, since that
-> is what you seem to be more interested in ? You can then simply choose
-> the next cpu in this cpumask rather than going through the below loop.
->
-Make sense. I can separate it out.
+> > From my understanding MAP_LOCKONFAULT is essentially
+> > MAP_FAULTPOPULATE|MAP_LOCKED with a quite obvious semantic (unlike
+> > single MAP_LOCKED unfortunately). I would love to also have
+> > MAP_LOCKED|MAP_POPULATE (aka full mlock semantic) but I am really
+> > skeptical considering how my previous attempt to make MAP_POPULATE
+> > reasonable went.
+> 
+> Are you objecting to the addition of the VMA flag VM_LOCKONFAULT, or the
+> new MAP_LOCKONFAULT flag (or both)? 
 
->> +	l_cpumask = cpumask_of_node(nid);
->> +	for_each_cpu(i, l_cpumask) {
->> +		if (i == cpu)
->> +			continue;
->> +		if (src_chipid == topology_physical_package_id(i)) {
->> +			target = i;
->> +			break;
->> +		}
->> +	}
->> +
->> +	/*
->> +	 * Update the cpumask with the target cpu and
->> +	 * migrate the context if needed
->> +	 */
->> +	if (target >= 0) {
-> You already check for target >= 0 here. So you don't need to check for
-> new_cpu >= 0 in nest_change_cpu_context() above ?
-I guess i was way too cautious :) Will change it
+I thought the MAP_FAULTPOPULATE (or any other better name) would
+directly translate into VM_FAULTPOPULATE and wouldn't be tight to the
+locked semantic. We already have VM_LOCKED for that. The direct effect
+of the flag would be to prevent from population other than the direct
+page fault - including any speculative actions like fault around or
+read-ahead.
 
->> +		cpumask_set_cpu(target, &cpu_mask_nest_pmu);
->> +		nest_change_cpu_context (cpu, target);
->> +	}
->> +}
->> +
->> +static void nest_init_cpu(int cpu)
->> +{
->> +	int i, src_chipid;
->> +
->> +	/*
->> +	 * Search for any existing designated thread from
->> +	 * the incoming cpu's node/chip. If found, do nothing.
->> +	 */
->> +	src_chipid = topology_physical_package_id(cpu);
->> +	for_each_cpu(i, &cpu_mask_nest_pmu)
->> +		if (src_chipid == topology_physical_package_id(i))
->> +			return;
->> +
->> +	/*
->> +	 * Make incoming cpu as a designated thread for
->> +	 * this node/chip
->> +	 */
->> +	cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
-> Why can't we simply check if cpu is the first one coming online in the
-> chip and designate it as the cpu_mask_nest_pmu for that chip ? If it is
-> not the first cpu, it means that another cpu in the same chip already
-> took over this duty and it needn't bother.
-Looks to be right. let me try it out.
+> If you prefer that MAP_LOCKED |
+> MAP_FAULTPOPULATE means that VM_LOCKONFAULT is set, I am fine with that
+> instead of introducing MAP_LOCKONFAULT.  I went with the new flag
+> because to date, we have a one to one mapping of MAP_* to VM_* flags.
+> 
+> > 
+> > > If this is the preferred path for mmap(), I am fine with that. 
+> > 
+> > > However,
+> > > I would like to see the new system calls that Andrew mentioned (and that
+> > > I am testing patches for) go in as well. 
+> > 
+> > mlock with flags sounds like a good step but I am not sure it will make
+> > sense in the future. POSIX has screwed that and I am not sure how many
+> > applications would use it. This ship has sailed long time ago.
+> 
+> I don't know either, but the code is the question, right?  I know that
+> we have at least one team that wants it here.
+> 
+> > 
+> > > That way we give users the
+> > > ability to request VM_LOCKONFAULT for memory allocated using something
+> > > other than mmap.
+> > 
+> > mmap(MAP_FAULTPOPULATE); mlock() would have the same semantic even
+> > without changing mlock syscall.
+> 
+> That is true as long as MAP_FAULTPOPULATE set a flag in the VMA(s).  It
+> doesn't cover the actual case I was asking about, which is how do I get
+> lock on fault on malloc'd memory?
 
-> And shouldn't we also call nest_init() on this cpu, just like you do in
-> cpumask_chip() on all cpu_mask_nest_pmu cpus ?
-Yes. I missed that. We should init. Nice catch.
-
->> +}
->> +
->> +static int nest_cpu_notifier(struct notifier_block *self,
->> +				unsigned long action, void *hcpu)
->> +{
->> +	long cpu = (long)hcpu;
->> +
->> +	switch (action & ~CPU_TASKS_FROZEN) {
->> +	case CPU_DOWN_FAILED:
-> Why do we need to handle the DOWN_FAILED case ? In DOWN_PREPARE, you
-> have ensured that the function moves on to another cpu. So even if the
-> offline failed, its no issue. The duty is safely taken over.
->
->> +	case CPU_STARTING:
-> I would suggest initializing nest in the CPU_ONLINE stage. This is
-> because CPU_STARTING phase can fail. In that case, we will be
-> unnecessarily initializing nest pre-maturely. CPU_ONLINE phase assures
-> that the cpu is successfully online and you can then initiate nest.
-Ok sure. Will do that.
-
->> +		nest_init_cpu(cpu);
->> +		break;
->> +	case CPU_DOWN_PREPARE:
->> +		nest_exit_cpu(cpu);
->> +		break;
->> +	default:
->> +		break;
->> +	}
->> +
->> +	return NOTIFY_OK;
->> +}
->> +
->> +static struct notifier_block nest_cpu_nb = {
->> +	.notifier_call  = nest_cpu_notifier,
->> +	.priority       = CPU_PRI_PERF + 1,
->> +};
->> +
->> +void cpumask_chip(void)
-> This name ^^ is not apt IMO. You are initiating the cpumask necessary
-> for nest pmu. So why not call it nest_pmu_cpumask_init() ?
-
-Ok.
->> +{
->> +	const struct cpumask *l_cpumask;
->> +	int cpu, nid;
->> +
->> +	if (!cpumask_empty(&cpu_mask_nest_pmu))
-> When can this condition become true ?
-My bad. This code ended up here from the initial RFC patch, but after
-reviewing this again, i dont think this is needed. Once again nice catch.
-
->> +		return;
->> +
->> +	cpu_notifier_register_begin();
->> +
->> +	/*
->> +	 * Nest PMUs are per-chip counters. So designate a cpu
->> +	 * from each node/chip for counter collection.
->> +	 */
->> +	for_each_online_node(nid) {
->> +		l_cpumask = cpumask_of_node(nid);
->> +
->> +		/* designate first online cpu in this node */
->> +		cpu = cpumask_first(l_cpumask);
->> +		cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
->> +	}
->> +
->> +	/* Initialize Nest PMUs in each node using designated cpus */
->> +	on_each_cpu_mask(&cpu_mask_nest_pmu, (smp_call_func_t)nest_init, NULL, 1);
->> +
->> +	__register_cpu_notifier(&nest_cpu_nb);
->> +
->> +	cpu_notifier_register_done();
->> +}
-> Regards
-> Preeti U Murthy
+OK I see your point now. We would indeed need a flag argument for mlock.
+-- 
+Michal Hocko
+SUSE Labs
