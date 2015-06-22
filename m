@@ -1,43 +1,30 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 99B1A1A0021
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 23:51:59 +1000 (AEST)
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8455214012C
- for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 23:51:57 +1000 (AEST)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Mon, 22 Jun 2015 14:51:54 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0E1F617D805D
- for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 14:52:59 +0100 (BST)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5MDppAY22282310
- for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 13:51:51 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5MDposY015894
- for <linuxppc-dev@ozlabs.org>; Mon, 22 Jun 2015 07:51:51 -0600
-Message-ID: <5588132F.7040803@linux.vnet.ibm.com>
-Date: Mon, 22 Jun 2015 15:52:47 +0200
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
+ [72.246.2.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id A05601A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 00:18:08 +1000 (AEST)
+Date: Mon, 22 Jun 2015 10:18:06 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 1/3] Add mmap flag to request pages are locked
+ after page fault
+Message-ID: <20150622141806.GE2329@akamai.com>
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
+ <1433942810-7852-2-git-send-email-emunson@akamai.com>
+ <20150618152907.GG5858@dhcp22.suse.cz>
+ <20150618203048.GB2329@akamai.com>
+ <20150619145708.GG4913@dhcp22.suse.cz>
+ <20150619164333.GD2329@akamai.com>
+ <20150622123826.GF4430@dhcp22.suse.cz>
 MIME-Version: 1.0
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-CC: mikey@neuling.org, linuxppc-dev@ozlabs.org, imunsie@au1.ibm.com,
- capi-linux <capi-linux@lists.linux.ibm.com>
-Subject: Re: [PATCH V2] cxl: Set up and enable PSL Timebase
-References: <1433944919-8013-1-git-send-email-felix@linux.vnet.ibm.com>
-In-Reply-To: <1433944919-8013-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="8vCeF2GUdMpe9ZbK"
+In-Reply-To: <20150622123826.GF4430@dhcp22.suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,144 +34,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Philippe Bergheaud wrote:
-> This patch configures the PSL Timebase function and enables it,
-> after the CAPP has been initialized by OPAL.
-> 
-> V2:
->  - Clear CXL_PSL_ErrIVTE_tberror bit
->  - Define the sync count unit
->  - Wait 1ms before each test
->  - Use negative error code
->  - Do not ignore errors
->  - Except if timebase is not supported by OPAL
->  - Be silent on success
-> 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> ---
->  drivers/misc/cxl/cxl.h |    5 ++++
->  drivers/misc/cxl/pci.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++-
->  2 files changed, 61 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index a1cee47..38a7cf9 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -82,8 +82,10 @@ static const cxl_p1_reg_t CXL_PSL_AFUSEL  = {0x00B0};
->  /* 0x00C0:7EFF Implementation dependent area */
->  static const cxl_p1_reg_t CXL_PSL_FIR1      = {0x0100};
->  static const cxl_p1_reg_t CXL_PSL_FIR2      = {0x0108};
-> +static const cxl_p1_reg_t CXL_PSL_Timebase  = {0x0110};
->  static const cxl_p1_reg_t CXL_PSL_VERSION   = {0x0118};
->  static const cxl_p1_reg_t CXL_PSL_RESLCKTO  = {0x0128};
-> +static const cxl_p1_reg_t CXL_PSL_TB_CTLSTAT = {0x0140};
->  static const cxl_p1_reg_t CXL_PSL_FIR_CNTL  = {0x0148};
->  static const cxl_p1_reg_t CXL_PSL_DSNDCTL   = {0x0150};
->  static const cxl_p1_reg_t CXL_PSL_SNWRALLOC = {0x0158};
-> @@ -151,6 +153,9 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
->  #define CXL_PSL_SPAP_Size_Shift 4
->  #define CXL_PSL_SPAP_V    0x0000000000000001ULL
->  
-> +/****** CXL_PSL_Control ****************************************************/
-> +#define CXL_PSL_Control_tb 0x0000000000000001ULL
-> +
->  /****** CXL_PSL_DLCNTL *****************************************************/
->  #define CXL_PSL_DLCNTL_D (0x1ull << (63-28))
->  #define CXL_PSL_DLCNTL_C (0x1ull << (63-29))
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index fc938de..ea1a79f 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -360,6 +360,55 @@ static int init_implementation_adapter_regs(struct cxl *adapter, struct pci_dev
->  	return 0;
->  }
->  
-> +#define TBSYNC_CNT(n) (((u64)n & 0x7) << (63-6))
-> +#define _2048_250MHZ_CYCLES 1
-> +
-> +static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
-> +{
-> +	u64 psl_tb;
-> +	int delta;
-> +	unsigned int retry = 0;
-> +	struct device_node *np;
-> +
-> +	if (!(np = pnv_pci_to_phb_node(dev)))
-> +		return -ENODEV;
-> +
-> +	/* Do not fail when CAPP timebase sync is not supported by OPAL */
-> +	of_node_get(np);
-> +	if (! of_get_property(np, "ibm,capp-timebase-sync", NULL)) {
-> +		of_node_put(np);
-> +		pr_err("PSL: Timebase sync: OPAL support missing\n");
-> +		return 0;
-> +	}
-> +	of_node_put(np);
-> +
-> +	/*
-> +	 * Setup PSL Timebase Control and Status register
-> +	 * with the recommended Timebase Sync Count value
-> +	 */
-> +	cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT,
-> +		     TBSYNC_CNT(2 * _2048_250MHZ_CYCLES));
-> +
-> +	/* Enable PSL Timebase */
-> +	cxl_p1_write(adapter, CXL_PSL_Control, 0x0000000000000000);
-> +	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
-> +
-> +	/* Wait until CORE TB and PSL TB difference <= 16usecs */
-> +	do {
-> +		msleep(1);
-> +		if (retry++ > 5) {
-> +			pr_err("PSL: Timebase sync: giving up!\n");
-> +			return -EIO;
-> +		}
-> +		psl_tb = cxl_p1_read(adapter, CXL_PSL_Timebase);
-> +		delta = mftb() - psl_tb;
-> +		if (delta < 0)
-> +			delta = -delta;
-> +	} while (cputime_to_usecs(delta) > 16);
-> +
-> +	return 0;
-> +}
-> +
->  static int init_implementation_afu_regs(struct cxl_afu *afu)
->  {
->  	/* read/write masks for this slice */
-> @@ -952,9 +1001,12 @@ static struct cxl *cxl_alloc_adapter(struct pci_dev *dev)
->  	return adapter;
->  }
->  
-> +#define CXL_PSL_ErrIVTE_tberror (0x1ull << (63-31))
-> +
->  static int sanitise_adapter_regs(struct cxl *adapter)
->  {
-> -	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
-> +	/* Clear PSL tberror bit by writing 1 to it */
-> +	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, CXL_PSL_ErrIVTE_tberror);
->  	return cxl_tlb_slb_invalidate(adapter);
->  }
->  
-> @@ -995,6 +1047,9 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
->  	if ((rc = pnv_phb_to_cxl(dev, OPAL_PHB_CAPI_MODE_CAPI)))
->  		goto err3;
->  
-> +	if ((rc = cxl_setup_psl_timebase(adapter, dev)))
-> +		goto err3;
-> +
->  	if ((rc = cxl_register_psl_err_irq(adapter)))
->  		goto err3;
->  
-Update.
 
-With ipmitool:
-PSL timebase sync always succeeds
+--8vCeF2GUdMpe9ZbK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-With bml:
-1. PSL timebase sync fails after a clean shutdown / reboot
-2. PSL timebase sync succeeds after a checkstop halt / reboot
-3. PSL timebase sync succeeds after a pci off / on cycle
+On Mon, 22 Jun 2015, Michal Hocko wrote:
 
-It seems that PERST does not reset the PSL correctly, with bml.
+> On Fri 19-06-15 12:43:33, Eric B Munson wrote:
+> > On Fri, 19 Jun 2015, Michal Hocko wrote:
+> >=20
+> > > On Thu 18-06-15 16:30:48, Eric B Munson wrote:
+> > > > On Thu, 18 Jun 2015, Michal Hocko wrote:
+> > > [...]
+> > > > > Wouldn't it be much more reasonable and straightforward to have
+> > > > > MAP_FAULTPOPULATE as a counterpart for MAP_POPULATE which would
+> > > > > explicitly disallow any form of pre-faulting? It would be usable =
+for
+> > > > > other usecases than with MAP_LOCKED combination.
+> > > >=20
+> > > > I don't see a clear case for it being more reasonable, it is one
+> > > > possible way to solve the problem.
+> > >=20
+> > > MAP_FAULTPOPULATE would be usable for other cases as well. E.g. fault
+> > > around is all or nothing feature. Either all mappings (which support
+> > > this) fault around or none. There is no way to tell the kernel that
+> > > this particular mapping shouldn't fault around. I haven't seen such a
+> > > request yet but we have seen requests to have a way to opt out from
+> > > a global policy in the past (e.g. per-process opt out from THP). So
+> > > I can imagine somebody will come with a request to opt out from any
+> > > speculative operations on the mapped area in the future.
+> > >=20
+> > > > But I think it leaves us in an even
+> > > > more akward state WRT VMA flags.  As you noted in your fix for the
+> > > > mmap() man page, one can get into a state where a VMA is VM_LOCKED,=
+ but
+> > > > not present.  Having VM_LOCKONFAULT states that this was intentiona=
+l, if
+> > > > we go to using MAP_FAULTPOPULATE instead of MAP_LOCKONFAULT, we no
+> > > > longer set VM_LOCKONFAULT (unless we want to start mapping it to the
+> > > > presence of two MAP_ flags).  This can make detecting the MAP_LOCKE=
+D +
+> > > > populate failure state harder.
+> > >=20
+> > > I am not sure I understand your point here. Could you be more specific
+> > > how would you check for that and what for?
+> >=20
+> > My thought on detecting was that someone might want to know if they had
+> > a VMA that was VM_LOCKED but had not been made present becuase of a
+> > failure in mmap.  We don't have a way today, but adding VM_LOCKONFAULT
+> > is at least explicit about what is happening which would make detecting
+> > the VM_LOCKED but not present state easier.=20
+>=20
+> One could use /proc/<pid>/pagemap to query the residency.
+>=20
+> > This assumes that
+> > MAP_FAULTPOPULATE does not translate to a VMA flag, but it sounds like
+> > it would have to.
+>=20
+> Yes, it would have to have a VM flag for the vma.
+>=20
+> > > From my understanding MAP_LOCKONFAULT is essentially
+> > > MAP_FAULTPOPULATE|MAP_LOCKED with a quite obvious semantic (unlike
+> > > single MAP_LOCKED unfortunately). I would love to also have
+> > > MAP_LOCKED|MAP_POPULATE (aka full mlock semantic) but I am really
+> > > skeptical considering how my previous attempt to make MAP_POPULATE
+> > > reasonable went.
+> >=20
+> > Are you objecting to the addition of the VMA flag VM_LOCKONFAULT, or the
+> > new MAP_LOCKONFAULT flag (or both)?=20
+>=20
+> I thought the MAP_FAULTPOPULATE (or any other better name) would
+> directly translate into VM_FAULTPOPULATE and wouldn't be tight to the
+> locked semantic. We already have VM_LOCKED for that. The direct effect
+> of the flag would be to prevent from population other than the direct
+> page fault - including any speculative actions like fault around or
+> read-ahead.
 
-Philippe
+I like the ability to control other speculative population, but I am not
+sure about overloading it with the VM_LOCKONFAULT case.  Here is my
+concern.  If we are using VM_FAULTPOPULATE | VM_LOCKED to denote
+LOCKONFAULT, how can we tell the difference between someone that wants
+to avoid read-ahead and wants to use mlock()?  This might lead to some
+interesting states with mlock() and munlock() that take flags.  For
+instance, using VM_LOCKONFAULT mlock(MLOCK_ONFAULT) followed by
+munlock(MLOCK_LOCKED) leaves the VMAs in the same state with
+VM_LOCKONFAULT set.  If we use VM_FAULTPOPULATE, the same pair of calls
+would clear VM_LOCKED, but leave VM_FAULTPOPULATE.  It may not matter in
+the end, but I am concerned about the subtleties here.
+
+>=20
+> > If you prefer that MAP_LOCKED |
+> > MAP_FAULTPOPULATE means that VM_LOCKONFAULT is set, I am fine with that
+> > instead of introducing MAP_LOCKONFAULT.  I went with the new flag
+> > because to date, we have a one to one mapping of MAP_* to VM_* flags.
+> >=20
+> > >=20
+> > > > If this is the preferred path for mmap(), I am fine with that.=20
+> > >=20
+> > > > However,
+> > > > I would like to see the new system calls that Andrew mentioned (and=
+ that
+> > > > I am testing patches for) go in as well.=20
+> > >=20
+> > > mlock with flags sounds like a good step but I am not sure it will ma=
+ke
+> > > sense in the future. POSIX has screwed that and I am not sure how many
+> > > applications would use it. This ship has sailed long time ago.
+> >=20
+> > I don't know either, but the code is the question, right?  I know that
+> > we have at least one team that wants it here.
+> >=20
+> > >=20
+> > > > That way we give users the
+> > > > ability to request VM_LOCKONFAULT for memory allocated using someth=
+ing
+> > > > other than mmap.
+> > >=20
+> > > mmap(MAP_FAULTPOPULATE); mlock() would have the same semantic even
+> > > without changing mlock syscall.
+> >=20
+> > That is true as long as MAP_FAULTPOPULATE set a flag in the VMA(s).  It
+> > doesn't cover the actual case I was asking about, which is how do I get
+> > lock on fault on malloc'd memory?
+>=20
+> OK I see your point now. We would indeed need a flag argument for mlock.
+> --=20
+> Michal Hocko
+> SUSE Labs
+
+--8vCeF2GUdMpe9ZbK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJViBkeAAoJELbVsDOpoOa9pkcQALlaWWdIjaV+PbMT84IJJRE8
+xU+rL1vQjFbf3KGAXPxta7KjvT0OS2mPJ15WQE58XhTeGslpwB/Ujsd9n+H3TeQ8
+lk/F5wFrTvwGn5WcijHJ9xUslamjI2ewEzCUX8BIQWh/bG2X3pIpjdgNJHW1Ofb0
+FpUYTqL/4EnYzDqhY2CFW6OSruru9YagVJQ2NPu6+wkdkhAtt/CpESTVF+vbJoKW
+ewpOGghLVYWnjbRPB5PFAnXhjmtEpzPIOLeE62GkuQDQWdFNdnqlUMz/ZZmUyRGB
+RBmPUtT3jhlUlhnkI0qY/z27S9w+mB2yvIBclPUBrGtv/73QICHmHd+rYE11YGXf
+8zIglfn69cX5deCUBmdkmUsGiOZpbwVNVkI1HmvL+wMDZEwZyT3bZnSyAMyUe385
+FVt+HGvq5Afxk5ooL6zPty283KGLZiKURj8Zw/g5YRBO6/B/7NRvct9x+0OzSdW0
+C3u9sTfLa5wI581qumQt0cODGdhdO3SNjov9SpeZs8firqxEKhxn0pNjs7heFu7i
+HQHoRJGhc8RXqjp8QsxeQL4+tepDvuAnxU53YJZxBwze6AwuWQ8WEomP51ebTnKW
+xNwU2AVf6WZ3KFLyL7gjn7YxfkQll67pHPwn6BddK4SGdT5VVgX1h3MUfvo86f2V
+uvYltwMOPPyaFw18cEx1
+=67XH
+-----END PGP SIGNATURE-----
+
+--8vCeF2GUdMpe9ZbK--
