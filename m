@@ -1,26 +1,37 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A0991A0F69
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 05:41:18 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A592914010F
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 05:41:15 +1000 (AEST)
-Date: Mon, 22 Jun 2015 14:35:55 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, thuth@redhat.com, aik@ozlabs.ru, dvaleev@suse.com
-Subject: Re: [PATCH SLOF 3/5] disk-label: introduce helper to check fat
- filesystem
-Message-ID: <20150622193555.GD19845@gate.crashing.org>
-References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <1434959987-8530-4-git-send-email-nikunj@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1434959987-8530-4-git-send-email-nikunj@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AF13D1A0F69
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 06:54:30 +1000 (AEST)
+Received: from /spool/local
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 22 Jun 2015 16:54:26 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1C552C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 16:45:30 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5MKsNDL58654932
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 20:54:23 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5MKsN9t012983
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 16:54:23 -0400
+Received: from [9.41.105.93] (dhcp-9-41-105-93.austin.ibm.com [9.41.105.93])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ t5MKsNkX012937
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 16:54:23 -0400
+Message-ID: <558875FF.2040000@linux.vnet.ibm.com>
+Date: Mon, 22 Jun 2015 15:54:23 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 0/6] pseries: Move CPU dlpar into the kernel
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +41,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 22, 2015 at 01:29:45PM +0530, Nikunj A Dadhania wrote:
-> +: has-fat-filesystem ( block -- true | false )
-> +   \ block 0 byte 0-2 is a jump instruction in all FAT
-> +   \ filesystems.
+To better support CPU hotplug in PowerKVM and PowerVM environments, the
+handling of CPU dlpar should be done entirely in the kernel. This will allow
+a common entry point for PowerVM and PowerKVM CPU dlpar requests. For both
+environments, the entry point is the same one introduced in a previous
+patch set that moved memory hotplug into the kernel. The entry point accepts
+a rtas hotplug event which is either constructed when using the 
+/sys/kernel/dlpar interface or is passed to the kernel when handling a
+ras epow interrupt.
 
-"block" there is not a block number, just a host address.  So it's not
-a good name.  Maybe do a better name for this word as well, something
-saying it looks at a disk block.
+-Nathan
 
-> +   \ e9 and eb are jump instructions in x86 assembler.
-> +   dup c@ e9 <> IF
-> +      dup c@ eb <> swap
-> +      2+  c@ 90 <> or
-> +      IF false EXIT THEN
-> +   ELSE DROP THEN
-> +   TRUE
-> +;
+Patch 1/6:
+- Consolidate cpu hotplug code from pseries/dlpar.c to pseries/hotplug-cpu.c
 
-Don't write DROP and TRUE in caps please.  The purpose of having the
-structure words in caps is to make them stand out more, to make things
-more readable; putting other things in caps as well destroys that.
+Patch 2/6:
+- Factor out common code pieces for both environments
 
-Since you factored this, it becomes more readable if you invert the
-conditions:
+Patch 3/6:
+- Update cpu dlpar error recovery
 
-: fat-bootblock? ( addr -- flag )
-   \ byte 0-2 of the bootblock is a jump instruction in
-   \ all FAT filesystems.
-   \ e9 and eb are jump instructions in x86 assembler.
-   dup c@ e9 = IF drop true EXIT THEN
-   dup c@ eb = swap 2+ c@ 90 = and ;
+Patch 4/6:
+- Add cpu hotplug remove capability
 
-(not tested, etc.)
+Patch 5/6:
+- Add cpu hotplug add capability
 
+Patch 6/6:
+- Enable sysfs interface for cpu hotplug
 
-Segher
+ dlpar.c       |  195 -------------------
+ hotplug-cpu.c |  578 +++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ pseries.h     |    5 
+ 3 files changed, 549 insertions(+), 229 deletions(-)
