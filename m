@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B056E1A0CA9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 14:32:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 121CE1A0F52
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 14:32:13 +1000 (AEST)
 Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id t5M4W5Ng022065
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2015 23:32:06 -0500
-Message-ID: <1434947525.27935.27.camel@kernel.crashing.org>
-Subject: [PATCH 2/3] powerpc/iommu: Cleanup setting of DMA base/offset
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id t5M4W9Dd022068
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2015 23:32:10 -0500
+Message-ID: <1434947529.27935.28.camel@kernel.crashing.org>
+Subject: [PATCH 3/3] powerpc/iommu: Support "hybrid" iommu/direct DMA ops
+ for coherent_mask < dma_mask
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 22 Jun 2015 14:32:05 +1000
+Date: Mon, 22 Jun 2015 14:32:09 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,177 +24,254 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that the table and the offset can co-exist, we no longer need
-to flip/flop, we can just establish both once at boot time.
+This patch adds the ability to the DMA direct ops to fallback to the IOMMU
+ops for coherent alloc/free if the coherent mask of the device isn't
+suitable for accessing the direct DMA space and the device also happens
+to have an active IOMMU table.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 50 +++++++++++--------------------
- arch/powerpc/platforms/pseries/iommu.c    |  3 +-
- arch/powerpc/sysdev/dart_iommu.c          | 16 ++--------
- 3 files changed, 22 insertions(+), 47 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 5ac7c60..3b3c16e 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1621,11 +1621,9 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
- 	if (bypass) {
- 		dev_info(&pdev->dev, "Using 64-bit DMA iommu bypass\n");
- 		set_dma_ops(&pdev->dev, &dma_direct_ops);
--		set_dma_offset(&pdev->dev, pe->tce_bypass_base);
- 	} else {
- 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
- 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
--		set_iommu_table_base(&pdev->dev, pe->tce32_table);
- 	}
- 	*pdev->dev.dma_mask = dma_mask;
- 	return 0;
-@@ -1653,22 +1651,22 @@ static u64 pnv_pci_ioda_dma_get_required_mask(struct pnv_phb *phb,
- 	return mask;
+v2: Implement a custom dma_set_coherent_mask() to work around the fact
+that dma_supported() will fail otherwise.
+
+v3: Add missing symbol export
+
+v4: Split and rebase
+---
+ arch/powerpc/Kconfig                   |   4 ++
+ arch/powerpc/include/asm/dma-mapping.h |  10 +--
+ arch/powerpc/kernel/dma-iommu.c        |   2 +-
+ arch/powerpc/kernel/dma-swiotlb.c      |   4 +-
+ arch/powerpc/kernel/dma.c              | 111 +++++++++++++++++++++++++++------
+ 5 files changed, 105 insertions(+), 26 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 22b0940..cd46474 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -82,6 +82,9 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+ 
++config ARCH_HAS_DMA_SET_COHERENT_MASK
++        bool
++
+ config PPC
+ 	bool
+ 	default y
+@@ -152,6 +155,7 @@ config PPC
+ 	select DCACHE_WORD_ACCESS if PPC64 && CPU_LITTLE_ENDIAN
+ 	select NO_BOOTMEM
+ 	select HAVE_GENERIC_RCU_GUP
++	select ARCH_HAS_DMA_SET_COHERENT_MASK
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 35b9965..2e12366 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -21,12 +21,12 @@
+ #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
+ 
+ /* Some dma direct funcs must be visible for use in other dma_ops */
+-extern void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+-				       dma_addr_t *dma_handle, gfp_t flag,
++extern void *__dma_direct_alloc_coherent(struct device *dev, size_t size,
++					 dma_addr_t *dma_handle, gfp_t flag,
++					 struct dma_attrs *attrs);
++extern void __dma_direct_free_coherent(struct device *dev, size_t size,
++				       void *vaddr, dma_addr_t dma_handle,
+ 				       struct dma_attrs *attrs);
+-extern void dma_direct_free_coherent(struct device *dev, size_t size,
+-				     void *vaddr, dma_addr_t dma_handle,
+-				     struct dma_attrs *attrs);
+ extern int dma_direct_mmap_coherent(struct device *dev,
+ 				    struct vm_area_struct *vma,
+ 				    void *cpu_addr, dma_addr_t handle,
+diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+index 4c68bfe..41a7d9d 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -73,7 +73,7 @@ static void dma_iommu_unmap_sg(struct device *dev, struct scatterlist *sglist,
  }
  
-+static void pnv_ioda_setup_dev_dma(struct pnv_ioda_pe *pe,
-+				   struct pci_dev *dev)
+ /* We support DMA to/from any memory page via the iommu */
+-static int dma_iommu_dma_supported(struct device *dev, u64 mask)
++int dma_iommu_dma_supported(struct device *dev, u64 mask)
+ {
+ 	struct iommu_table *tbl = get_iommu_table_base(dev);
+ 
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 7359797..81b81cd 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -47,8 +47,8 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
+  * for everything else.
+  */
+ struct dma_map_ops swiotlb_dma_ops = {
+-	.alloc = dma_direct_alloc_coherent,
+-	.free = dma_direct_free_coherent,
++	.alloc = __dma_direct_alloc_coherent,
++	.free = __dma_direct_free_coherent,
+ 	.mmap = dma_direct_mmap_coherent,
+ 	.map_sg = swiotlb_map_sg_attrs,
+ 	.unmap_sg = swiotlb_unmap_sg_attrs,
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 484b2d4..b0c4faa 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -16,6 +16,7 @@
+ #include <asm/bug.h>
+ #include <asm/machdep.h>
+ #include <asm/swiotlb.h>
++#include <asm/iommu.h>
+ 
+ /*
+  * Generic direct DMA implementation
+@@ -39,9 +40,31 @@ static u64 __maybe_unused get_pfn_limit(struct device *dev)
+ 	return pfn;
+ }
+ 
+-void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+-				dma_addr_t *dma_handle, gfp_t flag,
+-				struct dma_attrs *attrs)
++static int dma_direct_dma_supported(struct device *dev, u64 mask)
 +{
-+	set_iommu_table_base_and_group(&dev->dev, pe->tce32_table);
-+	set_dma_offset(&dev->dev, pe->tce_bypass_base);
++#ifdef CONFIG_PPC64
++	u64 limit = get_dma_offset(dev) + (memblock_end_of_DRAM() - 1);
++
++	/* Limit fits in the mask, we are good */
++	if (mask >= limit)
++		return 1;
++
++#ifdef CONFIG_FSL_SOC
++	/* Freescale gets another chance via ZONE_DMA/ZONE_DMA32, however
++	 * that will have to be refined if/when they support iommus
++	 */
++	return 1;
++#endif
++	/* Sorry ... */
++	return 0;
++#else
++	return 1;
++#endif
 +}
 +
- static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
--				   struct pci_bus *bus,
--				   bool add_to_iommu_group)
-+				   struct pci_bus *bus)
++void *__dma_direct_alloc_coherent(struct device *dev, size_t size,
++				  dma_addr_t *dma_handle, gfp_t flag,
++				  struct dma_attrs *attrs)
  {
- 	struct pci_dev *dev;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		if (add_to_iommu_group)
--			set_iommu_table_base_and_group(&dev->dev,
--						       pe->tce32_table);
--		else
--			set_iommu_table_base(&dev->dev, pe->tce32_table);
--
-+		pnv_ioda_setup_dev_dma(pe, dev);
- 		if (dev->subordinate)
--			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
--					       add_to_iommu_group);
-+			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
- 	}
+ 	void *ret;
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+@@ -96,9 +119,9 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ #endif
  }
  
-@@ -1841,11 +1839,11 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	if (pe->flags & PNV_IODA_PE_DEV) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
-+		pnv_ioda_setup_dev_dma(pe, pe->pdev);
- 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
-+		pnv_ioda_setup_bus_dma(pe, pe->pbus);
- 	} else if (pe->flags & PNV_IODA_PE_VF) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
-@@ -1882,17 +1880,6 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
- 						     window_id,
- 						     pe->tce_bypass_base,
- 						     0);
--
--		/*
--		 * EEH needs the mapping between IOMMU table and group
--		 * of those VFIO/KVM pass-through devices. We can postpone
--		 * resetting DMA ops until the DMA mask is configured in
--		 * host side.
--		 */
--		if (pe->pdev)
--			set_iommu_table_base(&pe->pdev->dev, tbl);
--		else
--			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
- 	}
- 	if (rc)
- 		pe_err(pe, "OPAL error %lld configuring bypass window\n", rc);
-@@ -1977,23 +1964,22 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	}
- 	iommu_init_table(tbl, phb->hose->node);
+-void dma_direct_free_coherent(struct device *dev, size_t size,
+-			      void *vaddr, dma_addr_t dma_handle,
+-			      struct dma_attrs *attrs)
++void __dma_direct_free_coherent(struct device *dev, size_t size,
++				void *vaddr, dma_addr_t dma_handle,
++				struct dma_attrs *attrs)
+ {
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+ 	__dma_free_coherent(size, vaddr);
+@@ -107,6 +130,51 @@ void dma_direct_free_coherent(struct device *dev, size_t size,
+ #endif
+ }
  
-+	/* Also create a bypass window */
-+	if (!pnv_iommu_bypass_disabled)
-+		pnv_pci_ioda2_setup_bypass_pe(phb, pe);
++static void *dma_direct_alloc_coherent(struct device *dev, size_t size,
++				       dma_addr_t *dma_handle, gfp_t flag,
++				       struct dma_attrs *attrs)
++{
++	struct iommu_table *iommu;
 +
- 	if (pe->flags & PNV_IODA_PE_DEV) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
-+		pnv_ioda_setup_dev_dma(pe, pe->pdev);
- 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
-+		pnv_ioda_setup_bus_dma(pe, pe->pbus);
- 	} else if (pe->flags & PNV_IODA_PE_VF) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
- 	}
--
--	/* Also create a bypass window */
--	if (!pnv_iommu_bypass_disabled)
--		pnv_pci_ioda2_setup_bypass_pe(phb, pe);
--
- 	return;
- fail:
- 	if (pe->tce32_seg >= 0)
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 7803a19..0acab86 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -1161,11 +1161,10 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
- 		}
- 	}
- 
--	/* fall back on iommu ops, restore table pointer with ops */
-+	/* fall back on iommu ops */
- 	if (!ddw_enabled && get_dma_ops(dev) != &dma_iommu_ops) {
- 		dev_info(dev, "Restoring 32-bit DMA via iommu\n");
- 		set_dma_ops(dev, &dma_iommu_ops);
--		pci_dma_dev_setup_pSeriesLP(pdev);
- 	}
- 
- check_mask:
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index 9e5353f..6cf033d 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -306,20 +306,11 @@ static void iommu_table_dart_setup(void)
- 	set_bit(iommu_table_dart.it_size - 1, iommu_table_dart.it_map);
++	/* The coherent mask may be smaller than the real mask, check if
++	 * we can really use the direct ops
++	 */
++	if (dma_direct_dma_supported(dev, dev->coherent_dma_mask))
++		return __dma_direct_alloc_coherent(dev, size, dma_handle,
++						   flag, attrs);
++
++	/* Ok we can't ... do we have an iommu ? If not, fail */
++	iommu = get_iommu_table_base(dev);
++	if (!iommu)
++		return NULL;
++
++	/* Try to use the iommu */
++	return iommu_alloc_coherent(dev, iommu, size, dma_handle,
++				    dev->coherent_dma_mask, flag,
++				    dev_to_node(dev));
++}
++
++static void dma_direct_free_coherent(struct device *dev, size_t size,
++				     void *vaddr, dma_addr_t dma_handle,
++				     struct dma_attrs *attrs)
++{
++	struct iommu_table *iommu;
++
++	/* See comments in dma_direct_alloc_coherent() */
++	if (dma_direct_dma_supported(dev, dev->coherent_dma_mask))
++		return __dma_direct_free_coherent(dev, size, vaddr, dma_handle,
++						  attrs);
++	/* Maybe we used an iommu ... */
++	iommu = get_iommu_table_base(dev);
++
++	/* If we hit that we should have never allocated in the first
++	 * place so how come we are freeing ?
++	 */
++	if (WARN_ON(!iommu))
++		return;
++	iommu_free_coherent(iommu, size, vaddr, dma_handle);
++}
++
+ int dma_direct_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
+ 			     void *cpu_addr, dma_addr_t handle, size_t size,
+ 			     struct dma_attrs *attrs)
+@@ -147,18 +215,6 @@ static void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sg,
+ {
  }
  
--static void dma_dev_setup_dart(struct device *dev)
+-static int dma_direct_dma_supported(struct device *dev, u64 mask)
 -{
--	/* We only have one iommu table on the mac for now, which makes
--	 * things simple. Setup all PCI devices to point to this table
+-#ifdef CONFIG_PPC64
+-	/* Could be improved so platforms can set the limit in case
+-	 * they have limited DMA windows
 -	 */
--	if (get_dma_ops(dev) == &dma_direct_ops)
--		set_dma_offset(dev, DART_U4_BYPASS_BASE);
--	else
--		set_iommu_table_base(dev, &iommu_table_dart);
+-	return mask >= get_dma_offset(dev) + (memblock_end_of_DRAM() - 1);
+-#else
+-	return 1;
+-#endif
 -}
 -
- static void pci_dma_dev_setup_dart(struct pci_dev *dev)
+ static u64 dma_direct_get_required_mask(struct device *dev)
  {
--	dma_dev_setup_dart(&dev->dev);
-+	if (dart_is_u4)
-+		set_dma_offset(&dev->dev, DART_U4_BYPASS_BASE);
-+	set_iommu_table_base(&dev->dev, &iommu_table_dart);
- }
+ 	u64 end, mask;
+@@ -230,6 +286,25 @@ struct dma_map_ops dma_direct_ops = {
+ };
+ EXPORT_SYMBOL(dma_direct_ops);
  
- static void pci_dma_bus_setup_dart(struct pci_bus *bus)
-@@ -363,7 +354,6 @@ static int dart_dma_set_mask(struct device *dev, u64 dma_mask)
- 		dev_info(dev, "Using 32-bit DMA via iommu\n");
- 		set_dma_ops(dev, &dma_iommu_ops);
- 	}
--	dma_dev_setup_dart(dev);
++int dma_set_coherent_mask(struct device *dev, u64 mask)
++{
++	if (!dma_supported(dev, mask)) {
++		/*
++		 * We need to special case the direct DMA ops which can
++		 * support a fallback for coherent allocations. There
++		 * is no dma_op->set_coherent_mask() so we have to do
++		 * things the hard way:
++		 */
++		if (get_dma_ops(dev) != &dma_direct_ops ||
++		    get_iommu_table_base(dev) == NULL ||
++		    !dma_iommu_dma_supported(dev, mask))
++			return -EIO;
++	}
++	dev->coherent_dma_mask = mask;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(dma_set_coherent_mask);
++
+ #define PREALLOC_DMA_DEBUG_ENTRIES (1 << 16)
  
- 	*dev->dma_mask = dma_mask;
- 	return 0;
+ int __dma_set_mask(struct device *dev, u64 dma_mask)
