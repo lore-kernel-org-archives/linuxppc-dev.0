@@ -1,31 +1,19 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 074841A03ED
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 13:46:50 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 22 Jun 2015 13:46:49 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2D0362CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 13:46:46 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5M3kbtm4587888
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 13:46:46 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5M3kDO8019268
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 13:46:13 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 890831A041B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 14:32:05 +1000 (AEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id t5M4W0RV022059
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Jun 2015 23:32:01 -0500
+Message-ID: <1434947520.27935.26.camel@kernel.crashing.org>
+Subject: [PATCH 1/3] powerpc/iommu: Remove dma_data union
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/powernv: Include VF PE in PELTV of PF PE
-Date: Mon, 22 Jun 2015 13:45:47 +1000
-Message-Id: <1434944747-6028-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Mon, 22 Jun 2015 14:32:00 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,27 +23,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PELTV of PF PE should include VF PE, which is missed by current
-code, so that the VF PE is frozen automatically when freezing PF PE.
-The patch fixes the PELTV of PF PE to include VF PE.
+To support "hybrid" DMA ops in a subsequent patch, we will need both
+a direct DMA offset and an iommu pointer. Those are currently exclusive
+(a union), so change them to be separate fields.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+While there, also type iommu_table_base properly and make exist only
+on CONFIG_PPC64 since it's not referenced on 32-bit at all.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/device.h      | 15 +++++++++------
+ arch/powerpc/include/asm/dma-mapping.h |  4 ++--
+ arch/powerpc/include/asm/iommu.h       | 31 +++++++++++++++++++++++++------
+ 3 files changed, 36 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 726c7ee..b1248ca 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -622,7 +622,7 @@ static int pnv_ioda_set_peltv(struct pnv_phb *phb,
- 		pdev = pe->pdev->bus->self;
- #ifdef CONFIG_PCI_IOV
- 	else if (pe->flags & PNV_IODA_PE_VF)
--		pdev = pe->parent_dev->bus->self;
-+		pdev = pe->parent_dev;
- #endif /* CONFIG_PCI_IOV */
- 	while (pdev) {
- 		struct pci_dn *pdn = pci_get_pdn(pdev);
--- 
-2.1.0
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 9f1371b..9ce2199 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -10,6 +10,7 @@ struct dma_map_ops;
+ struct device_node;
+ #ifdef CONFIG_PPC64
+ struct pci_dn;
++struct iommu_table;
+ #endif
+ 
+ /*
+@@ -23,13 +24,15 @@ struct dev_archdata {
+ 	struct dma_map_ops	*dma_ops;
+ 
+ 	/*
+-	 * When an iommu is in use, dma_data is used as a ptr to the base of the
+-	 * iommu_table.  Otherwise, it is a simple numerical offset.
++	 * These two used to be a union. However, with the hybrid ops we need
++	 * both so here we store both a DMA offset for direct mappings and
++	 * an iommu_table for remapped DMA.
+ 	 */
+-	union {
+-		dma_addr_t	dma_offset;
+-		void		*iommu_table_base;
+-	} dma_data;
++	dma_addr_t		dma_offset;
++
++#ifdef CONFIG_PPC64
++	struct iommu_table	*iommu_table_base;
++#endif
+ 
+ #ifdef CONFIG_IOMMU_API
+ 	void			*iommu_domain;
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 894d538..35b9965 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -106,7 +106,7 @@ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+ static inline dma_addr_t get_dma_offset(struct device *dev)
+ {
+ 	if (dev)
+-		return dev->archdata.dma_data.dma_offset;
++		return dev->archdata.dma_offset;
+ 
+ 	return PCI_DRAM_OFFSET;
+ }
+@@ -114,7 +114,7 @@ static inline dma_addr_t get_dma_offset(struct device *dev)
+ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ {
+ 	if (dev)
+-		dev->archdata.dma_data.dma_offset = off;
++		dev->archdata.dma_offset = off;
+ }
+ 
+ /* this will be removed soon */
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index e2abbe8..e67e678 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -93,16 +93,21 @@ int get_iommu_order(unsigned long size, struct iommu_table *tbl)
+ 
+ struct scatterlist;
+ 
+-static inline void set_iommu_table_base(struct device *dev, void *base)
++#ifdef CONFIG_PPC64
++
++static inline void set_iommu_table_base(struct device *dev,
++					struct iommu_table *base)
+ {
+-	dev->archdata.dma_data.iommu_table_base = base;
++	dev->archdata.iommu_table_base = base;
+ }
+ 
+ static inline void *get_iommu_table_base(struct device *dev)
+ {
+-	return dev->archdata.dma_data.iommu_table_base;
++	return dev->archdata.iommu_table_base;
+ }
+ 
++extern int dma_iommu_dma_supported(struct device *dev, u64 mask);
++
+ /* Frees table for an individual device node */
+ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+ 
+@@ -146,6 +151,20 @@ static inline void set_iommu_table_base_and_group(struct device *dev,
+ 	iommu_add_device(dev);
+ }
+ 
++#else
++
++static inline void *get_iommu_table_base(struct device *dev)
++{
++	return NULL;
++}
++
++static inline int dma_iommu_dma_supported(struct device *dev, u64 mask)
++{
++	return 0;
++}
++
++#endif /* CONFIG_PPC64 */
++
+ extern int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 			    struct scatterlist *sglist, int nelems,
+ 			    unsigned long mask,
