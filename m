@@ -1,38 +1,26 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0535E1A1147
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:03:25 +1000 (AEST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Tue, 23 Jun 2015 12:33:18 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id DD249394006D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 12:33:13 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5N739ZU49283138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 12:33:12 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5N62NqR030180
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 11:32:24 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH] powerpc/numa: initialize distance lookup table from
- drconf path
-In-Reply-To: <20150623111648.1e31a497@kryten>
-References: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <87lhfs5ewc.fsf@linux.vnet.ibm.com> <20150623111648.1e31a497@kryten>
-Date: Tue, 23 Jun 2015 12:33:09 +0530
-Message-ID: <87d20mewk2.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DBBCB1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:08:52 +1000 (AEST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A2092140157
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 17:08:52 +1000 (AEST)
+Date: Tue, 23 Jun 2015 09:08:43 +0200
+From: Thomas Huth <thuth@redhat.com>
+To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, aik@ozlabs.ru,
+ dvaleev@suse.com
+Subject: Re: [PATCH SLOF 1/5] disk-label: simplify gpt-prep-partition? routine
+Message-ID: <20150623090843.6a4cf0a7@thh440s>
+In-Reply-To: <1434959987-8530-2-git-send-email-nikunj@linux.vnet.ibm.com>
+References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <1434959987-8530-2-git-send-email-nikunj@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,25 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 22 Jun 2015 13:29:43 +0530
+Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
 
-Hi Anton,
+> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+> ---
+>  slof/fs/packages/disk-label.fs | 36 +++++++++++++-----------------------
+>  1 file changed, 13 insertions(+), 23 deletions(-)
+> 
+> diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
+> index fe1c25e..2305eee 100644
+> --- a/slof/fs/packages/disk-label.fs
+> +++ b/slof/fs/packages/disk-label.fs
+> @@ -352,31 +352,21 @@ CONSTANT /gpt-part-entry
+>     drop 0
+>  ;
+>  
+> -\ Check for GPT PReP partition GUID
+> -9E1A2D38     CONSTANT GPT-PREP-PARTITION-1
+> -C612         CONSTANT GPT-PREP-PARTITION-2
+> -4316         CONSTANT GPT-PREP-PARTITION-3
+> -AA26         CONSTANT GPT-PREP-PARTITION-4
+> -8B49521E5A8B CONSTANT GPT-PREP-PARTITION-5
+> +\ Check for GPT PReP partition GUID. Only first 3 blocks are
+> +\ byte-swapped treating last two blocks as contigous for simplifying
+> +\ comparison
+> +9E1A2D38            CONSTANT GPT-PREP-PARTITION-1
+> +C612                CONSTANT GPT-PREP-PARTITION-2
+> +4316                CONSTANT GPT-PREP-PARTITION-3
+> +AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+>  
+>  : gpt-prep-partition? ( -- true|false )
+> -   block gpt-part-entry>part-type-guid l@-le GPT-PREP-PARTITION-1 = IF
+> -      block gpt-part-entry>part-type-guid 4 + w@-le
+> -      GPT-PREP-PARTITION-2 = IF
+> -         block gpt-part-entry>part-type-guid 6 + w@-le
+> -         GPT-PREP-PARTITION-3 = IF
+> -            block gpt-part-entry>part-type-guid 8 + w@
+> -            GPT-PREP-PARTITION-4 = IF
+> -               block gpt-part-entry>part-type-guid a + w@
+> -               block gpt-part-entry>part-type-guid c + l@ swap lxjoin
+> -               GPT-PREP-PARTITION-5 = IF
+> -                   TRUE EXIT
+> -               THEN
+> -            THEN
+> -         THEN
+> -      THEN
+> -   THEN
+> -   FALSE
+> +   block gpt-part-entry>part-type-guid
+> +   dup l@-le     GPT-PREP-PARTITION-1 <> IF DROP FALSE EXIT THEN
+> +   dup 4 + w@-le GPT-PREP-PARTITION-2 <> IF DROP FALSE EXIT THEN
+> +   dup 6 + w@-le GPT-PREP-PARTITION-3 <> IF DROP FALSE EXIT THEN
+> +       8 + x@    GPT-PREP-PARTITION-4 <> IF FALSE EXIT THEN
+> +   TRUE
+>  ;
+>  
+>  : load-from-gpt-prep-partition ( addr -- size )
 
-Anton Blanchard <anton@samba.org> writes:
-> Hi Nikunj,
->
->> From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
->> 
->> powerpc/numa: initialize distance lookup table from drconf path
->> 
->> In some situations, a NUMA guest that supports
->> ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
->> distances between nodes. This is because of two problems in the
->> current code.
->
-> Thanks for the patch. Have we tested that this doesn't regress the
-> non dynamic representation?
+Also change DROP, FALSE and TRUE to lowercase, as Segher
+suggested with patch 3? Apart from that, looks fine to me.
 
-Yes, that is tested. And works as expected.
-
-Regards
-Nikunj
+Reviewed-by: Thomas Huth <thuth@redhat.com>
