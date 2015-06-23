@@ -1,22 +1,42 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 136B31A01FC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 11:16:50 +1000 (AEST)
-Date: Tue, 23 Jun 2015 11:16:48 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH] powerpc/numa: initialize distance lookup table from
- drconf path
-Message-ID: <20150623111648.1e31a497@kryten>
-In-Reply-To: <87lhfs5ewc.fsf@linux.vnet.ibm.com>
-References: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <87lhfs5ewc.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F0B11A01FC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 11:50:48 +1000 (AEST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 22 Jun 2015 19:50:45 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C57353E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:50:41 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5N1o1cC52101154
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 18:50:01 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5N1oeAT017272
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:50:41 -0600
+Date: Mon, 22 Jun 2015 18:49:49 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ rusty@rustcorp.com.au, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH v2 6/7]powerpc/powernv: generic nest pmu event functions
+Message-ID: <20150623014949.GE25856@us.ibm.com>
+References: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433999874-2043-7-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1433999874-2043-7-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,103 +46,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nikunj,
+Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
+| From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+| Subject: [PATCH v2 6/7]powerpc/powernv: generic nest pmu event functions
+| 
+| Add generic format attribute and set of generic nest pmu related
+| event functions to be used by each nest pmu. Add code to register nest pmus.
+| 
+| Cc: Michael Ellerman <mpe@ellerman.id.au>
+| Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+| Cc: Paul Mackerras <paulus@samba.org>
+| Cc: Anton Blanchard <anton@samba.org>
+| Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+| Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+| Cc: Stephane Eranian <eranian@google.com>
+| Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+| ---
+|  arch/powerpc/perf/nest-pmu.c | 109 +++++++++++++++++++++++++++++++++++++++++++
+|  1 file changed, 109 insertions(+)
+| 
+| diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+| index 8fad2d9..a662c14 100644
+| --- a/arch/powerpc/perf/nest-pmu.c
+| +++ b/arch/powerpc/perf/nest-pmu.c
+| @@ -13,6 +13,108 @@
+|  static struct perchip_nest_info p8_perchip_nest_info[P8_MAX_CHIP];
+|  static struct nest_pmu *per_nest_pmu_arr[P8_MAX_NEST_PMUS];
+| 
+| +PMU_FORMAT_ATTR(event, "config:0-20");
+| +struct attribute *p8_nest_format_attrs[] = {
+| +	&format_attr_event.attr,
+| +	NULL,
+| +};
+| +
+| +struct attribute_group p8_nest_format_group = {
+| +	.name = "format",
+| +	.attrs = p8_nest_format_attrs,
+| +};
 
-> From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-> 
-> powerpc/numa: initialize distance lookup table from drconf path
-> 
-> In some situations, a NUMA guest that supports
-> ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
-> distances between nodes. This is because of two problems in the
-> current code.
+Could this be included in previous/separate patch? That way,
+this patch could focus on just registering the nest-pmu.
 
-Thanks for the patch. Have we tested that this doesn't regress the
-non dynamic representation?
+| +
+| +static int p8_nest_event_init(struct perf_event *event)
+| +{
+| +	int chip_id;
+| +
+| +	if (event->attr.type != event->pmu->type)
+| +		return -ENOENT;
+| +
+| +	/* Sampling not supported yet */
+| +	if (event->hw.sample_period)
+| +		return -EINVAL;
+| +
+| +	/* unsupported modes and filters */
+| +	if (event->attr.exclude_user   ||
+| +	    event->attr.exclude_kernel ||
+| +	    event->attr.exclude_hv     ||
+| +	    event->attr.exclude_idle   ||
+| +	    event->attr.exclude_host   ||
+| +	    event->attr.exclude_guest)
+| +		return -EINVAL;
+| +
+| +	if (event->cpu < 0)
+| +		return -EINVAL;
+| +
+| +	chip_id = topology_physical_package_id(event->cpu);
+| +	event->hw.event_base = event->attr.config +
+| +				p8_perchip_nest_info[chip_id].vbase;
+| +
+| +	return 0;
+| +}
+| +
+| +static void p8_nest_read_counter(struct perf_event *event)
+| +{
+| +	u64 *addr;
+| 
 
-Regards,
-Anton
+Define as uint64_t so we can eliminate one cast below? Would also
+be consistent with p8_nest_perf_event_update().
 
-> 1) Different representations of associativity lists.
-> 
->    There is an assumption about the associativity list in
->    initialize_distance_lookup_table(). Associativity list has two
-> forms:
-> 
->    a) [cpu,memory]@x/ibm,associativity has following
->       format:
->            <N> <N integers>
-> 
->    b)
-> ibm,dynamic-reconfiguration-memory/ibm,associativity-lookup-arrays
-> 
->            <M> <N> <M associativity lists each having N integers>
->            M = the number of associativity lists
->            N = the number of entries per associativity list
-> 
->    Fix initialize_distance_lookup_table() so that it does not assume
->    "case a". And update the caller to skip the length field before
->    sending the associativity list.
-> 
-> 2) Distance table not getting updated from drconf path.
-> 
->    Node distance table will not get initialized in certain cases as
->    ibm,dynamic-reconfiguration-memory path does not initialize the
->    lookup table.
-> 
->    Call initialize_distance_lookup_table() from drconf path with
->    appropriate associativity list.
-> 
-> Reported-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c | 16 +++++++++++++---
->  1 file changed, 13 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 5e80621..8b9502a 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -225,7 +225,7 @@ static void initialize_distance_lookup_table(int
-> nid, for (i = 0; i < distance_ref_points_depth; i++) {
->  		const __be32 *entry;
->  
-> -		entry =
-> &associativity[be32_to_cpu(distance_ref_points[i])];
-> +		entry =
-> &associativity[be32_to_cpu(distance_ref_points[i]) - 1];
-> distance_lookup_table[nid][i] = of_read_number(entry, 1); }
->  }
-> @@ -248,8 +248,12 @@ static int associativity_to_nid(const __be32
-> *associativity) nid = -1;
->  
->  	if (nid > 0 &&
-> -	    of_read_number(associativity, 1) >=
-> distance_ref_points_depth)
-> -		initialize_distance_lookup_table(nid, associativity);
-> +		of_read_number(associativity, 1) >=
-> distance_ref_points_depth) {
-> +		/*
-> +		 * Skip the length field and send start of
-> associativity array
-> +		 */
-> +		initialize_distance_lookup_table(nid, associativity
-> + 1);
-> +	}
->  
->  out:
->  	return nid;
-> @@ -507,6 +511,12 @@ static int of_drconf_to_nid_single(struct
-> of_drconf_cell *drmem, 
->  		if (nid == 0xffff || nid >= MAX_NUMNODES)
->  			nid = default_nid;
-> +
-> +		if (nid > 0) {
-> +			index = drmem->aa_index * aa->array_sz;
-> +			initialize_distance_lookup_table(nid,
-> +
-> &aa->arrays[index]);
-> +		}
->  	}
->  
->  	return nid;
+| 
+| +	u64 data = 0;
+| +
+| +	addr = (u64 *)event->hw.event_base;
+| +	data = __be64_to_cpu((uint64_t)*addr);
+| +	local64_set(&event->hw.prev_count, data);
+| +}
+| +
+| +static void p8_nest_perf_event_update(struct perf_event *event)
+| +{
+| +	u64 counter_prev, counter_new, final_count;
+| +	uint64_t *addr;
+| +
+| +	addr = (u64 *)event->hw.event_base;
+
+uint64_t *?
+
+| +	counter_prev = local64_read(&event->hw.prev_count);
+| +	counter_new = __be64_to_cpu((uint64_t)*addr);
+
+Redundant cast? addr is already uint64_t *?
+
+| +	final_count = counter_new - counter_prev;
+| +
+| +	local64_set(&event->hw.prev_count, counter_new);
+| +	local64_add(final_count, &event->count);
+| +}
+| +
+| +static void p8_nest_event_start(struct perf_event *event, int flags)
+| +{
+
+Check PERF_EF_RELOAD before reloading?
+
+| +	event->hw.state = 0;
+| +	p8_nest_read_counter(event);
+| +}
+| +
+| +static void p8_nest_event_stop(struct perf_event *event, int flags)
+| +{
+
+Check PERF_EF_UPDATE when stopping?
+
+| +	p8_nest_perf_event_update(event);
+| +}
+| +
+| +static int p8_nest_event_add(struct perf_event *event, int flags)
+| +{
+
+Check PERF_EF_START flags before starting the counter on an ->add()?
+
+| +	p8_nest_event_start(event, flags);
+| +	return 0;
+| +}
+| +
+| +/*
+| + * Populate pmu ops in the structure
+| + */
+| +static int update_pmu_ops(struct nest_pmu *pmu)
+| +{
+| +	if (!pmu)
+| +		return -EINVAL;
+| +
+| +	pmu->pmu.task_ctx_nr = perf_invalid_context;
+| +	pmu->pmu.event_init = p8_nest_event_init;
+| +	pmu->pmu.add = p8_nest_event_add;
+| +	pmu->pmu.del = p8_nest_event_stop;
+| +	pmu->pmu.start = p8_nest_event_start;
+| +	pmu->pmu.stop = p8_nest_event_stop;
+| +	pmu->pmu.read = p8_nest_perf_event_update;
+| +	pmu->pmu.attr_groups = pmu->attr_groups;
+| +
+| +	return 0;
+| +}
+| +
+|  /*
+|   * Populate event name and string in attribute
+|   */
+| @@ -106,6 +208,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+|  			/* Save the name to register the PMU with it */
+|  			sprintf(buf, "Nest_%s", (char *)pp->value);
+|  			pmu_ptr->pmu.name = (char *)buf;
+| +			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
+|  		}
+| 
+|  		/* Skip these, we dont need it */
+| @@ -179,6 +282,12 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+|  		(struct ppc64_nest_ima_events *)p8_events_arr,
+|  							idx, pmu_ptr);
+| 
+| +	update_pmu_ops(pmu_ptr);
+| +
+| +	/* Register the pmu */
+| +	perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
+
+There is a small chance that perf_pmu_register() can fail.
+
+| +	printk(KERN_INFO "Nest PMU %s Registered\n", pmu_ptr->pmu.name);
+| +
+|  	return 0;
+|  }
+| 
+| -- 
+| 1.9.1
+| 
