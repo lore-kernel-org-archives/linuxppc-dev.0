@@ -1,31 +1,38 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F13621A0018
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:02:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0535E1A1147
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:03:25 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 23 Jun 2015 17:02:14 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7FBCB2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:02:12 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5N723UY45809910
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:02:12 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5N71cDL018846
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:01:39 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/powernv: Unfreeze VF PE on releasing it
-Date: Tue, 23 Jun 2015 17:01:13 +1000
-Message-Id: <1435042873-9486-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Tue, 23 Jun 2015 12:33:18 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id DD249394006D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 12:33:13 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5N739ZU49283138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 12:33:12 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5N62NqR030180
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 11:32:24 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH] powerpc/numa: initialize distance lookup table from
+ drconf path
+In-Reply-To: <20150623111648.1e31a497@kryten>
+References: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <87lhfs5ewc.fsf@linux.vnet.ibm.com> <20150623111648.1e31a497@kryten>
+Date: Tue, 23 Jun 2015 12:33:09 +0530
+Message-ID: <87d20mewk2.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +42,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When releasing PE for SRIOV VF, the PE is forced to be frozen
-wrongly. When the same PE is picked for another VF, it won't
-work anyhow. The patch fixes the issue by unfreezing, not
-freezing the VF PE when releasing it.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hi Anton,
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index b1248ca..88c00ff 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -701,7 +701,7 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
- 		parent = parent->bus->self;
- 	}
- 
--	opal_pci_eeh_freeze_set(phb->opal_id, pe->pe_number,
-+	opal_pci_eeh_freeze_clear(phb->opal_id, pe->pe_number,
- 				  OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
- 
- 	/* Disassociate PE in PELT */
--- 
-2.1.0
+Anton Blanchard <anton@samba.org> writes:
+> Hi Nikunj,
+>
+>> From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+>> 
+>> powerpc/numa: initialize distance lookup table from drconf path
+>> 
+>> In some situations, a NUMA guest that supports
+>> ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
+>> distances between nodes. This is because of two problems in the
+>> current code.
+>
+> Thanks for the patch. Have we tested that this doesn't regress the
+> non dynamic representation?
+
+Yes, that is tested. And works as expected.
+
+Regards
+Nikunj
