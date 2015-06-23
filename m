@@ -1,19 +1,43 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id DAFD01A0F81
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 15:38:32 +1000 (AEST)
-Message-Id: <0636b88c7d11acb6a4d638e39bfcbb98c1d86045.1435036850.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1435036849.git.christophe.leroy@c-s.fr>
-References: <cover.1435036849.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 1/2] powerpc32: checksum_wrappers_64 becomes
- checksum_wrappers
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 23 Jun 2015 07:38:25 +0200 (CEST)
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 030871A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 16:06:40 +1000 (AEST)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4ECEA140157
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 16:06:39 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Tue, 23 Jun 2015 11:36:29 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 57537E0054
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 11:40:03 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5N66QCX6226330
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 11:36:27 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5N66Psb031458
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 11:36:26 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, thuth@redhat.com, aik@ozlabs.ru, dvaleev@suse.com
+Subject: Re: [PATCH SLOF 3/5] disk-label: introduce helper to check fat
+ filesystem
+In-Reply-To: <20150622193555.GD19845@gate.crashing.org>
+References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <1434959987-8530-4-git-send-email-nikunj@linux.vnet.ibm.com>
+ <20150622193555.GD19845@gate.crashing.org>
+Date: Tue, 23 Jun 2015 11:36:24 +0530
+Message-ID: <87fv5jdkm7.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +47,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The powerpc64 checksum wrapper functions adds the csum_and_copy_to_user() which
-otherwise is implemented in include/net/checksum.h by using csum_partial() then
-copy_to_user()
 
-Those two wrapper fonctions are also applicable to powerpc32 as it is based on
-the use of csum_partial_copy_generic() which also exists on powerpc32
+Hi Segher,
 
-This patch renames arch/powerpc/lib/checksum_wrappers_64.c to
-arch/powerpc/lib/checksum_wrappers.c and
-makes it non-conditional to CONFIG_WORD_SIZE
+Segher Boessenkool <segher@kernel.crashing.org> writes:
+> On Mon, Jun 22, 2015 at 01:29:45PM +0530, Nikunj A Dadhania wrote:
+>> +: has-fat-filesystem ( block -- true | false )
+>> +   \ block 0 byte 0-2 is a jump instruction in all FAT
+>> +   \ filesystems.
+>
+> "block" there is not a block number, just a host address.  So it's not
+> a good name.  Maybe do a better name for this word as well, something
+> saying it looks at a disk block.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v2: no change, patch reformatted with format-patch -M -C
+Sure.
 
- arch/powerpc/include/asm/checksum.h                              | 9 ---------
- arch/powerpc/lib/Makefile                                        | 3 +--
- arch/powerpc/lib/{checksum_wrappers_64.c => checksum_wrappers.c} | 0
- 3 files changed, 1 insertion(+), 11 deletions(-)
- rename arch/powerpc/lib/{checksum_wrappers_64.c => checksum_wrappers.c} (100%)
+>
+>> +   \ e9 and eb are jump instructions in x86 assembler.
+>> +   dup c@ e9 <> IF
+>> +      dup c@ eb <> swap
+>> +      2+  c@ 90 <> or
+>> +      IF false EXIT THEN
+>> +   ELSE DROP THEN
+>> +   TRUE
+>> +;
+>
+> Don't write DROP and TRUE in caps please.  The purpose of having the
+> structure words in caps is to make them stand out more, to make things
+> more readable; putting other things in caps as well destroys that.
 
-diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-index 8251a3b..0ffd793 100644
---- a/arch/powerpc/include/asm/checksum.h
-+++ b/arch/powerpc/include/asm/checksum.h
-@@ -56,21 +56,12 @@ extern __wsum csum_partial_copy_generic(const void *src, void *dst,
- 					      int len, __wsum sum,
- 					      int *src_err, int *dst_err);
- 
--#ifdef __powerpc64__
- #define _HAVE_ARCH_COPY_AND_CSUM_FROM_USER
- extern __wsum csum_and_copy_from_user(const void __user *src, void *dst,
- 				      int len, __wsum sum, int *err_ptr);
- #define HAVE_CSUM_COPY_USER
- extern __wsum csum_and_copy_to_user(const void *src, void __user *dst,
- 				    int len, __wsum sum, int *err_ptr);
--#else
--/*
-- * the same as csum_partial, but copies from src to dst while it
-- * checksums.
-- */
--#define csum_partial_copy_from_user(src, dst, len, sum, errp)   \
--        csum_partial_copy_generic((__force const void *)(src), (dst), (len), (sum), (errp), NULL)
--#endif
- 
- #define csum_partial_copy_nocheck(src, dst, len, sum)   \
-         csum_partial_copy_generic((src), (dst), (len), (sum), NULL, NULL)
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index a47e142..e46b068 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -22,8 +22,7 @@ obj64-$(CONFIG_SMP)	+= locks.o
- obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
- 
- ifeq ($(CONFIG_GENERIC_CSUM),)
--obj-y			+= checksum_$(CONFIG_WORD_SIZE).o
--obj-$(CONFIG_PPC64)	+= checksum_wrappers_64.o
-+obj-y			+= checksum_$(CONFIG_WORD_SIZE).o checksum_wrappers.o
- endif
- 
- obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
-diff --git a/arch/powerpc/lib/checksum_wrappers_64.c b/arch/powerpc/lib/checksum_wrappers.c
-similarity index 100%
-rename from arch/powerpc/lib/checksum_wrappers_64.c
-rename to arch/powerpc/lib/checksum_wrappers.c
--- 
-2.1.0
+Sure, will take care.
+
+> Since you factored this, it becomes more readable if you invert the
+> conditions:
+
+Sure.
+
+> : fat-bootblock? ( addr -- flag )
+>    \ byte 0-2 of the bootblock is a jump instruction in
+>    \ all FAT filesystems.
+>    \ e9 and eb are jump instructions in x86 assembler.
+>    dup c@ e9 = IF drop true EXIT THEN
+>    dup c@ eb = swap 2+ c@ 90 = and ;
+>
+> (not tested, etc.)
+Will test.
+
+Regards,
+Nikunj
