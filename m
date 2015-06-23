@@ -1,20 +1,29 @@
-Return-Path: <shengjiu.wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0140.outbound.protection.outlook.com [157.56.111.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 660021A0018
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 20:40:23 +1000 (AEST)
-From: Shengjiu Wang <shengjiu.wang@freescale.com>
-To: <timur@tabi.org>, <nicoleotsuka@gmail.com>, <Xiubo.Lee@gmail.com>,
- <lgirdwood@gmail.com>, <broonie@kernel.org>, <perex@perex.cz>,
- <tiwai@suse.de>
-CC: <alsa-devel@alsa-project.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] ASoC: fsl: Add dedicated DMA buffer size for each cpu dai
-Date: Tue, 23 Jun 2015 18:23:53 +0800
-Message-ID: <1435055033-12608-1-git-send-email-shengjiu.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B62F51A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 22:45:24 +1000 (AEST)
+Message-ID: <558954DD.4060405@suse.cz>
+Date: Tue, 23 Jun 2015 14:45:17 +0200
+From: Vlastimil Babka <vbabka@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Eric B Munson <emunson@akamai.com>, Michal Hocko <mhocko@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 1/3] Add mmap flag to request pages are locked
+ after page fault
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
+ <1433942810-7852-2-git-send-email-emunson@akamai.com>
+ <20150618152907.GG5858@dhcp22.suse.cz> <20150618203048.GB2329@akamai.com>
+ <20150619145708.GG4913@dhcp22.suse.cz> <20150619164333.GD2329@akamai.com>
+ <20150622123826.GF4430@dhcp22.suse.cz> <20150622141806.GE2329@akamai.com>
+In-Reply-To: <20150622141806.GE2329@akamai.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,161 +33,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As the ssi is not the only cpu dai, there are esai, spdif, sai.
-and imx_pcm_dma can be used by all of them. Especially ESAI need
-a larger DMA buffer size. So Add dedicated DMA buffer for each cpu
-dai.
+On 06/22/2015 04:18 PM, Eric B Munson wrote:
+> On Mon, 22 Jun 2015, Michal Hocko wrote:
+>
+>> On Fri 19-06-15 12:43:33, Eric B Munson wrote:
+>>> On Fri, 19 Jun 2015, Michal Hocko wrote:
+>>>
+>>>> On Thu 18-06-15 16:30:48, Eric B Munson wrote:
+>>>>> On Thu, 18 Jun 2015, Michal Hocko wrote:
+>>>> [...]
+>>>>>> Wouldn't it be much more reasonable and straightforward to have
+>>>>>> MAP_FAULTPOPULATE as a counterpart for MAP_POPULATE which would
+>>>>>> explicitly disallow any form of pre-faulting? It would be usable for
+>>>>>> other usecases than with MAP_LOCKED combination.
+>>>>>
+>>>>> I don't see a clear case for it being more reasonable, it is one
+>>>>> possible way to solve the problem.
+>>>>
+>>>> MAP_FAULTPOPULATE would be usable for other cases as well. E.g. fault
+>>>> around is all or nothing feature. Either all mappings (which support
+>>>> this) fault around or none. There is no way to tell the kernel that
+>>>> this particular mapping shouldn't fault around. I haven't seen such a
+>>>> request yet but we have seen requests to have a way to opt out from
+>>>> a global policy in the past (e.g. per-process opt out from THP). So
+>>>> I can imagine somebody will come with a request to opt out from any
+>>>> speculative operations on the mapped area in the future.
 
-Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
----
- sound/soc/fsl/fsl_esai.c    |    2 +-
- sound/soc/fsl/fsl_sai.c     |    2 +-
- sound/soc/fsl/fsl_spdif.c   |    2 +-
- sound/soc/fsl/fsl_ssi.c     |    2 +-
- sound/soc/fsl/imx-pcm-dma.c |   25 +++++++++++++++++++++----
- sound/soc/fsl/imx-pcm.h     |    9 +++++++--
- sound/soc/fsl/imx-ssi.c     |    2 +-
- 7 files changed, 33 insertions(+), 11 deletions(-)
+That sounds like something where new madvise() flag would make more 
+sense than a new mmap flag, and conflating it with locking behavior 
+would lead to all kinds of weird corner cases as Eric mentioned.
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index 5c75971..8c2ddc1 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -839,7 +839,7 @@ static int fsl_esai_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	ret = imx_pcm_dma_init(pdev);
-+	ret = imx_pcm_dma_init(pdev, IMX_ESAI_DMABUF_SIZE);
- 	if (ret)
- 		dev_err(&pdev->dev, "failed to init imx pcm dma: %d\n", ret);
- 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 5c73bea..a18fd92 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -791,7 +791,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		return ret;
- 
- 	if (sai->sai_on_imx)
--		return imx_pcm_dma_init(pdev);
-+		return imx_pcm_dma_init(pdev, IMX_SAI_DMABUF_SIZE);
- 	else
- 		return devm_snd_dmaengine_pcm_register(&pdev->dev, NULL, 0);
- }
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index 8e93221..d1e9be7 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -1255,7 +1255,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	ret = imx_pcm_dma_init(pdev);
-+	ret = imx_pcm_dma_init(pdev, IMX_SPDIF_DMABUF_SIZE);
- 	if (ret)
- 		dev_err(&pdev->dev, "imx_pcm_dma_init failed: %d\n", ret);
- 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index c7647e0..e122dab 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -1257,7 +1257,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
- 		if (ret)
- 			goto error_pcm;
- 	} else {
--		ret = imx_pcm_dma_init(pdev);
-+		ret = imx_pcm_dma_init(pdev, IMX_SSI_DMABUF_SIZE);
- 		if (ret)
- 			goto error_pcm;
- 	}
-diff --git a/sound/soc/fsl/imx-pcm-dma.c b/sound/soc/fsl/imx-pcm-dma.c
-index 0db94f49..1fc01ed 100644
---- a/sound/soc/fsl/imx-pcm-dma.c
-+++ b/sound/soc/fsl/imx-pcm-dma.c
-@@ -40,7 +40,7 @@ static const struct snd_pcm_hardware imx_pcm_hardware = {
- 		SNDRV_PCM_INFO_MMAP_VALID |
- 		SNDRV_PCM_INFO_PAUSE |
- 		SNDRV_PCM_INFO_RESUME,
--	.buffer_bytes_max = IMX_SSI_DMABUF_SIZE,
-+	.buffer_bytes_max = IMX_DEFAULT_DMABUF_SIZE,
- 	.period_bytes_min = 128,
- 	.period_bytes_max = 65535, /* Limited by SDMA engine */
- 	.periods_min = 2,
-@@ -52,13 +52,30 @@ static const struct snd_dmaengine_pcm_config imx_dmaengine_pcm_config = {
- 	.pcm_hardware = &imx_pcm_hardware,
- 	.prepare_slave_config = snd_dmaengine_pcm_prepare_slave_config,
- 	.compat_filter_fn = filter,
--	.prealloc_buffer_size = IMX_SSI_DMABUF_SIZE,
-+	.prealloc_buffer_size = IMX_DEFAULT_DMABUF_SIZE,
- };
- 
--int imx_pcm_dma_init(struct platform_device *pdev)
-+int imx_pcm_dma_init(struct platform_device *pdev, size_t size)
- {
-+	struct snd_dmaengine_pcm_config *config;
-+	struct snd_pcm_hardware *pcm_hardware;
-+
-+	config = devm_kzalloc(&pdev->dev,
-+			sizeof(struct snd_dmaengine_pcm_config), GFP_KERNEL);
-+	*config = imx_dmaengine_pcm_config;
-+	if (size)
-+		config->prealloc_buffer_size = size;
-+
-+	pcm_hardware = devm_kzalloc(&pdev->dev,
-+			sizeof(struct snd_pcm_hardware), GFP_KERNEL);
-+	*pcm_hardware = imx_pcm_hardware;
-+	if (size)
-+		pcm_hardware->buffer_bytes_max = size;
-+
-+	config->pcm_hardware = pcm_hardware;
-+
- 	return devm_snd_dmaengine_pcm_register(&pdev->dev,
--		&imx_dmaengine_pcm_config,
-+		config,
- 		SND_DMAENGINE_PCM_FLAG_COMPAT);
- }
- EXPORT_SYMBOL_GPL(imx_pcm_dma_init);
-diff --git a/sound/soc/fsl/imx-pcm.h b/sound/soc/fsl/imx-pcm.h
-index c79cb27..133c4470a 100644
---- a/sound/soc/fsl/imx-pcm.h
-+++ b/sound/soc/fsl/imx-pcm.h
-@@ -20,6 +20,11 @@
-  */
- #define IMX_SSI_DMABUF_SIZE	(64 * 1024)
- 
-+#define IMX_DEFAULT_DMABUF_SIZE	(64 * 1024)
-+#define IMX_SAI_DMABUF_SIZE	(64 * 1024)
-+#define IMX_SPDIF_DMABUF_SIZE	(64 * 1024)
-+#define IMX_ESAI_DMABUF_SIZE	(256 * 1024)
-+
- static inline void
- imx_pcm_dma_params_init_data(struct imx_dma_data *dma_data,
- 	int dma, enum sdma_peripheral_type peripheral_type)
-@@ -39,9 +44,9 @@ struct imx_pcm_fiq_params {
- };
- 
- #if IS_ENABLED(CONFIG_SND_SOC_IMX_PCM_DMA)
--int imx_pcm_dma_init(struct platform_device *pdev);
-+int imx_pcm_dma_init(struct platform_device *pdev, size_t size);
- #else
--static inline int imx_pcm_dma_init(struct platform_device *pdev)
-+static inline int imx_pcm_dma_init(struct platform_device *pdev, size_t size)
- {
- 	return -ENODEV;
- }
-diff --git a/sound/soc/fsl/imx-ssi.c b/sound/soc/fsl/imx-ssi.c
-index 461ce27..48b2d24 100644
---- a/sound/soc/fsl/imx-ssi.c
-+++ b/sound/soc/fsl/imx-ssi.c
-@@ -603,7 +603,7 @@ static int imx_ssi_probe(struct platform_device *pdev)
- 	ssi->fiq_params.dma_params_tx = &ssi->dma_params_tx;
- 
- 	ssi->fiq_init = imx_pcm_fiq_init(pdev, &ssi->fiq_params);
--	ssi->dma_init = imx_pcm_dma_init(pdev);
-+	ssi->dma_init = imx_pcm_dma_init(pdev, IMX_SSI_DMABUF_SIZE);
- 
- 	if (ssi->fiq_init && ssi->dma_init) {
- 		ret = ssi->fiq_init;
--- 
-1.7.9.5
+>>>>
+>>>>> But I think it leaves us in an even
+>>>>> more akward state WRT VMA flags.  As you noted in your fix for the
+>>>>> mmap() man page, one can get into a state where a VMA is VM_LOCKED, but
+>>>>> not present.  Having VM_LOCKONFAULT states that this was intentional, if
+>>>>> we go to using MAP_FAULTPOPULATE instead of MAP_LOCKONFAULT, we no
+>>>>> longer set VM_LOCKONFAULT (unless we want to start mapping it to the
+>>>>> presence of two MAP_ flags).  This can make detecting the MAP_LOCKED +
+>>>>> populate failure state harder.
+>>>>
+>>>> I am not sure I understand your point here. Could you be more specific
+>>>> how would you check for that and what for?
+>>>
+>>> My thought on detecting was that someone might want to know if they had
+>>> a VMA that was VM_LOCKED but had not been made present becuase of a
+>>> failure in mmap.  We don't have a way today, but adding VM_LOCKONFAULT
+>>> is at least explicit about what is happening which would make detecting
+>>> the VM_LOCKED but not present state easier.
+>>
+>> One could use /proc/<pid>/pagemap to query the residency.
+
+I think that's all too much complex scenario for a little gain. If 
+someone knows that mmap(MAP_LOCKED|MAP_POPULATE) is not perfect, he 
+should either mlock() separately from mmap(), or fault the range 
+manually with a for loop. Why try to detect if the corner case was hit?
+
+>>
+>>> This assumes that
+>>> MAP_FAULTPOPULATE does not translate to a VMA flag, but it sounds like
+>>> it would have to.
+>>
+>> Yes, it would have to have a VM flag for the vma.
+
+So with your approach, VM_LOCKED flag is enough, right? The new MAP_ / 
+MLOCK_ flags just cause setting VM_LOCKED to not fault the whole vma, 
+but otherwise nothing changes.
+
+If that's true, I think it's better than a new vma flag.
+
+>>
+>>>>  From my understanding MAP_LOCKONFAULT is essentially
+>>>> MAP_FAULTPOPULATE|MAP_LOCKED with a quite obvious semantic (unlike
+>>>> single MAP_LOCKED unfortunately). I would love to also have
+>>>> MAP_LOCKED|MAP_POPULATE (aka full mlock semantic) but I am really
+>>>> skeptical considering how my previous attempt to make MAP_POPULATE
+>>>> reasonable went.
+>>>
+>>> Are you objecting to the addition of the VMA flag VM_LOCKONFAULT, or the
+>>> new MAP_LOCKONFAULT flag (or both)?
+>>
+>> I thought the MAP_FAULTPOPULATE (or any other better name) would
+>> directly translate into VM_FAULTPOPULATE and wouldn't be tight to the
+>> locked semantic. We already have VM_LOCKED for that. The direct effect
+>> of the flag would be to prevent from population other than the direct
+>> page fault - including any speculative actions like fault around or
+>> read-ahead.
+>
+> I like the ability to control other speculative population, but I am not
+> sure about overloading it with the VM_LOCKONFAULT case.  Here is my
+> concern.  If we are using VM_FAULTPOPULATE | VM_LOCKED to denote
+> LOCKONFAULT, how can we tell the difference between someone that wants
+> to avoid read-ahead and wants to use mlock()?  This might lead to some
+> interesting states with mlock() and munlock() that take flags.  For
+> instance, using VM_LOCKONFAULT mlock(MLOCK_ONFAULT) followed by
+> munlock(MLOCK_LOCKED) leaves the VMAs in the same state with
+> VM_LOCKONFAULT set.  If we use VM_FAULTPOPULATE, the same pair of calls
+> would clear VM_LOCKED, but leave VM_FAULTPOPULATE.  It may not matter in
+> the end, but I am concerned about the subtleties here.
+
+Right.
+
+>>
+>>> If you prefer that MAP_LOCKED |
+>>> MAP_FAULTPOPULATE means that VM_LOCKONFAULT is set, I am fine with that
+>>> instead of introducing MAP_LOCKONFAULT.  I went with the new flag
+>>> because to date, we have a one to one mapping of MAP_* to VM_* flags.
+>>>
+>>>>
+>>>>> If this is the preferred path for mmap(), I am fine with that.
+>>>>
+>>>>> However,
+>>>>> I would like to see the new system calls that Andrew mentioned (and that
+>>>>> I am testing patches for) go in as well.
+>>>>
+>>>> mlock with flags sounds like a good step but I am not sure it will make
+>>>> sense in the future. POSIX has screwed that and I am not sure how many
+>>>> applications would use it. This ship has sailed long time ago.
+>>>
+>>> I don't know either, but the code is the question, right?  I know that
+>>> we have at least one team that wants it here.
+>>>
+>>>>
+>>>>> That way we give users the
+>>>>> ability to request VM_LOCKONFAULT for memory allocated using something
+>>>>> other than mmap.
+>>>>
+>>>> mmap(MAP_FAULTPOPULATE); mlock() would have the same semantic even
+>>>> without changing mlock syscall.
+>>>
+>>> That is true as long as MAP_FAULTPOPULATE set a flag in the VMA(s).  It
+>>> doesn't cover the actual case I was asking about, which is how do I get
+>>> lock on fault on malloc'd memory?
+>>
+>> OK I see your point now. We would indeed need a flag argument for mlock.
+>> --
+>> Michal Hocko
+>> SUSE Labs
