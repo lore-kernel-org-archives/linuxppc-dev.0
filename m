@@ -1,42 +1,36 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F0B11A01FC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 11:50:48 +1000 (AEST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 22 Jun 2015 19:50:45 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C57353E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:50:41 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5N1o1cC52101154
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 18:50:01 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5N1oeAT017272
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Jun 2015 19:50:41 -0600
-Date: Mon, 22 Jun 2015 18:49:49 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- rusty@rustcorp.com.au, Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH v2 6/7]powerpc/powernv: generic nest pmu event functions
-Message-ID: <20150623014949.GE25856@us.ibm.com>
-References: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433999874-2043-7-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1433999874-2043-7-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7FF2B1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 13:32:09 +1000 (AEST)
+Message-ID: <1435030328.28070.5.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
+ to common include file
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: David Long <dave.long@linaro.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
+ Anton Blanchard <anton@samba.org>, Behan Webster
+ <behanw@converseincode.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Eric Paris <eparis@redhat.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@redhat.com>, Jan Willeke
+ <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>, Martin Schwidefsky
+ <schwidefsky@de.ibm.com>, Nikolay Borisov <Nikolay.Borisov@arm.com>, Oleg
+ Nesterov <oleg@redhat.com>, Paul Mackerras <paulus@samba.org>, Richard Kuo
+ <rkuo@codeaurora.org>,  Robert Richter <rric@kernel.org>, Roland McGrath
+ <roland@hack.frob.com>, Russell King <linux@arm.linux.org.uk>, Tejun Heo
+ <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon
+ <will.deacon@arm.com>,  linux-arm-kernel@lists.infradead.org,
+ linux-hexagon@vger.kernel.org,  linux-kernel@vger.kernel.org,
+ linux-s390@vger.kernel.org,  linux-sh@vger.kernel.org, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org,  x86@kernel.org, mahesh@linux.vnet.ibm.com
+Date: Tue, 23 Jun 2015 13:32:08 +1000
+In-Reply-To: <5584234E.2040701@linaro.org>
+References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
+ <1434386579-6045-2-git-send-email-dave.long@linaro.org>
+ <1434687583.23771.5.camel@ellerman.id.au> <5584234E.2040701@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,187 +40,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
-| From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-| Subject: [PATCH v2 6/7]powerpc/powernv: generic nest pmu event functions
-| 
-| Add generic format attribute and set of generic nest pmu related
-| event functions to be used by each nest pmu. Add code to register nest pmus.
-| 
-| Cc: Michael Ellerman <mpe@ellerman.id.au>
-| Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-| Cc: Paul Mackerras <paulus@samba.org>
-| Cc: Anton Blanchard <anton@samba.org>
-| Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-| Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-| Cc: Stephane Eranian <eranian@google.com>
-| Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-| ---
-|  arch/powerpc/perf/nest-pmu.c | 109 +++++++++++++++++++++++++++++++++++++++++++
-|  1 file changed, 109 insertions(+)
-| 
-| diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-| index 8fad2d9..a662c14 100644
-| --- a/arch/powerpc/perf/nest-pmu.c
-| +++ b/arch/powerpc/perf/nest-pmu.c
-| @@ -13,6 +13,108 @@
-|  static struct perchip_nest_info p8_perchip_nest_info[P8_MAX_CHIP];
-|  static struct nest_pmu *per_nest_pmu_arr[P8_MAX_NEST_PMUS];
-| 
-| +PMU_FORMAT_ATTR(event, "config:0-20");
-| +struct attribute *p8_nest_format_attrs[] = {
-| +	&format_attr_event.attr,
-| +	NULL,
-| +};
-| +
-| +struct attribute_group p8_nest_format_group = {
-| +	.name = "format",
-| +	.attrs = p8_nest_format_attrs,
-| +};
+On Fri, 2015-06-19 at 10:12 -0400, David Long wrote:
+> On 06/19/15 00:19, Michael Ellerman wrote:
+> > On Mon, 2015-06-15 at 12:42 -0400, David Long wrote:
+> >> From: "David A. Long" <dave.long@linaro.org>
+> >>
+> >> The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
+> >>   feature and has identical definitions in four different arch ptrace.h
+> >> include files. It seems unlikely that definition would ever need to be
+> >> changed regardless of architecture so lets move it into
+> >> include/linux/ptrace.h.
+> >>
+> >> Signed-off-by: David A. Long <dave.long@linaro.org>
+> >> ---
+> >>   arch/powerpc/kernel/ptrace.c | 5 -----
+> >
+> > Built and booted on powerpc, but is there an easy way to actually test the code
+> > paths in question?
+> >
+> 
+> There is an easy way to "smoke test" it on all archiectures that also 
+> implement kprobes (which powerpc does).  If I'm understanding the 
+> powerpc code correctly (WRT register naming conventions) just do the 
+> following:
+> 
+> cd /sys/kernel/debug/tracing
+> echo 'p do_fork %gpr0' > kprobe_events
+> echo 1 > events/kprobes/enable
+> ls
+> cat trace
+> echo 0 > events/kprobes/enable
+> 
+> Every fork() call done on the system between those two echo commands 
+> (hence the "ls") should append a line to the trace file.  For a more 
+> exhaustive test one could repeat this sequence for every register in the 
+> architecture.
 
-Could this be included in previous/separate patch? That way,
-this patch could focus on just registering the nest-pmu.
+OK, so I went the whole hog and did:
 
-| +
-| +static int p8_nest_event_init(struct perf_event *event)
-| +{
-| +	int chip_id;
-| +
-| +	if (event->attr.type != event->pmu->type)
-| +		return -ENOENT;
-| +
-| +	/* Sampling not supported yet */
-| +	if (event->hw.sample_period)
-| +		return -EINVAL;
-| +
-| +	/* unsupported modes and filters */
-| +	if (event->attr.exclude_user   ||
-| +	    event->attr.exclude_kernel ||
-| +	    event->attr.exclude_hv     ||
-| +	    event->attr.exclude_idle   ||
-| +	    event->attr.exclude_host   ||
-| +	    event->attr.exclude_guest)
-| +		return -EINVAL;
-| +
-| +	if (event->cpu < 0)
-| +		return -EINVAL;
-| +
-| +	chip_id = topology_physical_package_id(event->cpu);
-| +	event->hw.event_base = event->attr.config +
-| +				p8_perchip_nest_info[chip_id].vbase;
-| +
-| +	return 0;
-| +}
-| +
-| +static void p8_nest_read_counter(struct perf_event *event)
-| +{
-| +	u64 *addr;
-| 
+$ echo 'p do_fork %gpr0 %gpr1 %gpr2 %gpr3 %gpr4 %gpr5 %gpr6 %gpr7 %gpr8 %gpr9 %gpr10 %gpr11 %gpr12 %gpr13 %gpr14 %gpr15 %gpr16 %gpr17 %gpr18 %gpr19 %gpr20 %gpr21 %gpr22 %gpr23 %gpr24 %gpr25 %gpr26 %gpr27 %gpr28 %gpr29 %gpr30 %gpr31 %nip %msr %ctr %link %xer %ccr %softe %trap %dar %dsisr' > kprobe_events
 
-Define as uint64_t so we can eliminate one cast below? Would also
-be consistent with p8_nest_perf_event_update().
+And I get:
 
-| 
-| +	u64 data = 0;
-| +
-| +	addr = (u64 *)event->hw.event_base;
-| +	data = __be64_to_cpu((uint64_t)*addr);
-| +	local64_set(&event->hw.prev_count, data);
-| +}
-| +
-| +static void p8_nest_perf_event_update(struct perf_event *event)
-| +{
-| +	u64 counter_prev, counter_new, final_count;
-| +	uint64_t *addr;
-| +
-| +	addr = (u64 *)event->hw.event_base;
+            bash-2057  [001] d...   535.433941: p_do_fork_0: (do_fork+0x8/0x490) arg1=0xc0000000000094d0 arg2=0xc0000001fbe9be30 arg3=0xc000000001133bb8 arg4=0x1200011 arg5=0x0 arg6=0x0 arg7=0x0 arg8=0x3fff7c885940 arg9=0x1 arg10=0xc0000001fbe9bea0 arg11=0x0 arg12=0xc01 arg13=0xc0000000000094c8 arg14=0xc00000000fdc0480 arg15=0x0 arg16=0x22000000 arg17=0x1016d6e8 arg18=0x0 arg19=0x44000000 arg20=0x0 arg21=0x10037c82208 arg22=0x1017b008 arg23=0x10143d18 arg24=0x10178854 arg25=0x10144f90 arg26=0x10037c821e8 arg27=0x0 arg28=0x0 arg29=0x0 arg30=0x0 arg31=0x809 arg32=0x3ffff788c010 arg33=0xc0000000000a7fe8 arg34=0x8000000000029033 arg35=0xc0000000000094c8 arg36=0xc0000000000094d0 arg37=0x0 arg38=0x42222844 arg39=0x1 arg40=0x700 arg41=0xc0000001fbe9bd50 arg42=0xc0000001fbe9bd30
 
-uint64_t *?
+Which is ugly as hell, but appears unchanged since before your patch.
 
-| +	counter_prev = local64_read(&event->hw.prev_count);
-| +	counter_new = __be64_to_cpu((uint64_t)*addr);
+I take it it's expected that the names are not decoded in the output?
 
-Redundant cast? addr is already uint64_t *?
+Also I wonder why we choose "gpr" when "r" is the more usual prefix on powerpc.
+I guess we can add new aliases to the table.
 
-| +	final_count = counter_new - counter_prev;
-| +
-| +	local64_set(&event->hw.prev_count, counter_new);
-| +	local64_add(final_count, &event->count);
-| +}
-| +
-| +static void p8_nest_event_start(struct perf_event *event, int flags)
-| +{
-
-Check PERF_EF_RELOAD before reloading?
-
-| +	event->hw.state = 0;
-| +	p8_nest_read_counter(event);
-| +}
-| +
-| +static void p8_nest_event_stop(struct perf_event *event, int flags)
-| +{
-
-Check PERF_EF_UPDATE when stopping?
-
-| +	p8_nest_perf_event_update(event);
-| +}
-| +
-| +static int p8_nest_event_add(struct perf_event *event, int flags)
-| +{
-
-Check PERF_EF_START flags before starting the counter on an ->add()?
-
-| +	p8_nest_event_start(event, flags);
-| +	return 0;
-| +}
-| +
-| +/*
-| + * Populate pmu ops in the structure
-| + */
-| +static int update_pmu_ops(struct nest_pmu *pmu)
-| +{
-| +	if (!pmu)
-| +		return -EINVAL;
-| +
-| +	pmu->pmu.task_ctx_nr = perf_invalid_context;
-| +	pmu->pmu.event_init = p8_nest_event_init;
-| +	pmu->pmu.add = p8_nest_event_add;
-| +	pmu->pmu.del = p8_nest_event_stop;
-| +	pmu->pmu.start = p8_nest_event_start;
-| +	pmu->pmu.stop = p8_nest_event_stop;
-| +	pmu->pmu.read = p8_nest_perf_event_update;
-| +	pmu->pmu.attr_groups = pmu->attr_groups;
-| +
-| +	return 0;
-| +}
-| +
-|  /*
-|   * Populate event name and string in attribute
-|   */
-| @@ -106,6 +208,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
-|  			/* Save the name to register the PMU with it */
-|  			sprintf(buf, "Nest_%s", (char *)pp->value);
-|  			pmu_ptr->pmu.name = (char *)buf;
-| +			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
-|  		}
-| 
-|  		/* Skip these, we dont need it */
-| @@ -179,6 +282,12 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
-|  		(struct ppc64_nest_ima_events *)p8_events_arr,
-|  							idx, pmu_ptr);
-| 
-| +	update_pmu_ops(pmu_ptr);
-| +
-| +	/* Register the pmu */
-| +	perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
-
-There is a small chance that perf_pmu_register() can fail.
-
-| +	printk(KERN_INFO "Nest PMU %s Registered\n", pmu_ptr->pmu.name);
-| +
-|  	return 0;
-|  }
-| 
-| -- 
-| 1.9.1
-| 
+cheers
