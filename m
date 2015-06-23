@@ -1,43 +1,31 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 030871A0018
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 16:06:40 +1000 (AEST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4ECEA140157
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 16:06:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F13621A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:02:15 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Tue, 23 Jun 2015 11:36:29 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 57537E0054
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 11:40:03 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5N66QCX6226330
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 11:36:27 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5N66Psb031458
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 11:36:26 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, thuth@redhat.com, aik@ozlabs.ru, dvaleev@suse.com
-Subject: Re: [PATCH SLOF 3/5] disk-label: introduce helper to check fat
- filesystem
-In-Reply-To: <20150622193555.GD19845@gate.crashing.org>
-References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <1434959987-8530-4-git-send-email-nikunj@linux.vnet.ibm.com>
- <20150622193555.GD19845@gate.crashing.org>
-Date: Tue, 23 Jun 2015 11:36:24 +0530
-Message-ID: <87fv5jdkm7.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 23 Jun 2015 17:02:14 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7FBCB2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:02:12 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5N723UY45809910
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:02:12 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5N71cDL018846
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Jun 2015 17:01:39 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/powernv: Unfreeze VF PE on releasing it
+Date: Tue, 23 Jun 2015 17:01:13 +1000
+Message-Id: <1435042873-9486-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,51 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When releasing PE for SRIOV VF, the PE is forced to be frozen
+wrongly. When the same PE is picked for another VF, it won't
+work anyhow. The patch fixes the issue by unfreezing, not
+freezing the VF PE when releasing it.
 
-Hi Segher,
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
-> On Mon, Jun 22, 2015 at 01:29:45PM +0530, Nikunj A Dadhania wrote:
->> +: has-fat-filesystem ( block -- true | false )
->> +   \ block 0 byte 0-2 is a jump instruction in all FAT
->> +   \ filesystems.
->
-> "block" there is not a block number, just a host address.  So it's not
-> a good name.  Maybe do a better name for this word as well, something
-> saying it looks at a disk block.
-
-Sure.
-
->
->> +   \ e9 and eb are jump instructions in x86 assembler.
->> +   dup c@ e9 <> IF
->> +      dup c@ eb <> swap
->> +      2+  c@ 90 <> or
->> +      IF false EXIT THEN
->> +   ELSE DROP THEN
->> +   TRUE
->> +;
->
-> Don't write DROP and TRUE in caps please.  The purpose of having the
-> structure words in caps is to make them stand out more, to make things
-> more readable; putting other things in caps as well destroys that.
-
-Sure, will take care.
-
-> Since you factored this, it becomes more readable if you invert the
-> conditions:
-
-Sure.
-
-> : fat-bootblock? ( addr -- flag )
->    \ byte 0-2 of the bootblock is a jump instruction in
->    \ all FAT filesystems.
->    \ e9 and eb are jump instructions in x86 assembler.
->    dup c@ e9 = IF drop true EXIT THEN
->    dup c@ eb = swap 2+ c@ 90 = and ;
->
-> (not tested, etc.)
-Will test.
-
-Regards,
-Nikunj
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index b1248ca..88c00ff 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -701,7 +701,7 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+ 		parent = parent->bus->self;
+ 	}
+ 
+-	opal_pci_eeh_freeze_set(phb->opal_id, pe->pe_number,
++	opal_pci_eeh_freeze_clear(phb->opal_id, pe->pe_number,
+ 				  OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
+ 
+ 	/* Disassociate PE in PELT */
+-- 
+2.1.0
