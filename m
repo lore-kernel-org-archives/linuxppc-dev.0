@@ -1,43 +1,44 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C59711A1140
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 15:34:24 +1000 (AEST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2B115140309
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 15:34:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C5701A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:48:00 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Wed, 24 Jun 2015 11:04:21 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id EBD13E0054
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:07:53 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5O5YH051573336
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:04:17 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5O4WvpS032112
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 10:02:58 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Thomas Huth <thuth@redhat.com>
-Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, aik@ozlabs.ru,
- dvaleev@suse.com
-Subject: Re: [PATCH SLOF 5/5] disk-label: make gpt detection code more robust
-In-Reply-To: <20150623094654.413b3c29@thh440s>
-References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <1434959987-8530-6-git-send-email-nikunj@linux.vnet.ibm.com>
- <20150623094654.413b3c29@thh440s>
-Date: Wed, 24 Jun 2015 11:04:16 +0530
-Message-ID: <87twtx7jqf.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 24 Jun 2015 16:47:59 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4E99E2CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:47:56 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5O6lmij35586270
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:47:56 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5O6lNiB001268
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:47:23 +1000
+Message-ID: <558A5251.5030204@linux.vnet.ibm.com>
+Date: Wed, 24 Jun 2015 12:16:41 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+CC: Peter Zijlstra <peterz@infradead.org>, rusty@rustcorp.com.au,
+ Stephane Eranian <eranian@google.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 7/7]powerpc/powernv: nest pmu cpumask and cpu hotplug
+ support
+References: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433999874-2043-8-git-send-email-maddy@linux.vnet.ibm.com>
+ <557FC1F9.5010607@linux.vnet.ibm.com> <5587D21C.8080303@linux.vnet.ibm.com>
+In-Reply-To: <5587D21C.8080303@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,97 +48,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thomas Huth <thuth@redhat.com> writes:
 
-> On Mon, 22 Jun 2015 13:29:47 +0530
-> Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
->
->> * Check for Protective MBR Magic
->> * Check for valid GPT Signature
->> * Boundary check for allocated block size before reading into the
->>   buffer
->> 
->> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
->> ---
->>  slof/fs/packages/disk-label.fs | 21 +++++++++++++++++----
->>  1 file changed, 17 insertions(+), 4 deletions(-)
->> 
->> diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
->> index 821e959..d9c3a8d 100644
->> --- a/slof/fs/packages/disk-label.fs
->> +++ b/slof/fs/packages/disk-label.fs
->> @@ -20,6 +20,7 @@ false VALUE debug-disk-label?
->>  \ If we ever want to put a large kernel with initramfs from a PREP partition
->>  \ we might need to increase this value. The default value is 65536 blocks (32MB)
->>  d# 65536 value max-prep-partition-blocks
->> +d# 4096 value block-array-size
->>  
->>  s" disk-label" device-name
->>  
->> @@ -152,8 +153,8 @@ CONSTANT /gpt-part-entry
->>  : init-block ( -- )
->>     s" block-size" ['] $call-parent CATCH IF ABORT" parent has no block-size." THEN
->>     to block-size
->> -   d# 4096 alloc-mem
->> -   dup d# 4096 erase
->> +   block-array-size alloc-mem
->> +   dup block-array-size erase
->>     to block
->>     debug-disk-label? IF
->>        ." init-block: block-size=" block-size .d ." block=0x" block u. cr
->> @@ -175,10 +176,18 @@ CONSTANT /gpt-part-entry
->>     block mbr>magic w@-le aa55 <>
->>  ;
->>  
->> +\
->> +\ GPT Signature
->> +\ ("EFI PART", 45h 46h 49h 20h 50h 41h 52h 54h)
->> +\
->> +4546492050415254 CONSTANT GPT-SIGNATURE
->> +
->>  \ This word returns true if the currently loaded block has _NO_ GPT partition id
->>  : no-gpt? ( -- true|false )
->>     0 read-sector
->> -   1 partition>part-entry part-entry>id c@ ee <>
->> +   1 partition>part-entry part-entry>id c@ ee <> IF TRUE EXIT THEN
->> +   block mbr>magic w@-le aa55 <> IF TRUE EXIT THEN
->> +   1 read-sector block gpt>signature x@ GPT-SIGNATURE <>
->
-> The comment above the function talks about the "currently loaded
-> block", so I'd maybe avoid to load another sector here.
-> Maybe move this gpt>signature check to "load-from-gpt-partition" where
-> this block gets loaded anyway?
 
-Sure.
+On Monday 22 June 2015 02:45 PM, Madhavan Srinivasan wrote:
+>
+> On Tuesday 16 June 2015 11:58 AM, Preeti U Murthy wrote:
+>> On 06/11/2015 10:47 AM, Madhavan Srinivasan wrote:
+>>> Adds cpumask attribute to be used by each nest pmu since nest
+>>> units are per-chip. Only one cpu (first online cpu) from each node/chip
+>>> is designated to read counters.
+>>>
+>>> On cpu hotplug, dying cpu is checked to see whether it is one of the
+>>> designated cpus, if yes, next online cpu from the same node/chip is designated
+>>> as new cpu to read counters.
+>>>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Paul Mackerras <paulus@samba.org>
+>>> Cc: Anton Blanchard <anton@samba.org>
+>>> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+>>> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>> Cc: Stephane Eranian <eranian@google.com>
+>>> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>>> Cc: Ingo Molnar <mingo@kernel.org>
+>>> Cc: Peter Zijlstra <peterz@infradead.org>
+>>> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>>> ---
+>>> +static void nest_change_cpu_context(int old_cpu, int new_cpu)
+>>> +{
+>>> +	int i;
+>>> +
+>>> +	if (new_cpu >= 0) {
+>>> +		for (i = 0; per_nest_pmu_arr[i] != NULL; i++)
+>>> +			perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
+>>> +							old_cpu, new_cpu);
+>>> +	}
+>>> +}
+>>> +
+>>> +static void nest_exit_cpu(int cpu)
+>>> +{
+>>> +	int i, nid, target = -1;
+>>> +	const struct cpumask *l_cpumask;
+>>> +	int src_chipid;
+>>> +
+>>> +	/*
+>>> +	 * Check in the designated list for this cpu. Dont bother
+>>> +	 * if not one of them.
+>>> +	 */
+>>> +	if (!cpumask_test_and_clear_cpu(cpu, &cpu_mask_nest_pmu))
+>>> +		return;
+>>> +
+>>> +	/*
+>>> +	 * Now that this cpu is one of the designated,
+>>> +	 * find a new cpu a) which is not dying and
+>> This comment is not right. nest_exit_cpu() is called in the hotplug
+>> path, so another cpu cannot be dying in parallel. Hotplug operations are
+>> done serially. The comment ought to be "a) which is online" instead.
+> Ok will change it.
+>
+>>> +	 * b) is in same node/chip.
+>> node is not the same as a chip right ? And you are interested in cpus on
+>> the same chip alone. So shouldn't the above comment be b) in the same chip ?
+> I was hoping it to be, but i will change  comment to chip.
+>
+>>> +	 */
+>>> +	nid = cpu_to_node(cpu);
+>>> +	src_chipid = topology_physical_package_id(cpu);
+>> What is the relation between a node and a chip ? Can't we have a
+>> function which returns the cpumask of a chip straight away, since that
+>> is what you seem to be more interested in ? You can then simply choose
+>> the next cpu in this cpumask rather than going through the below loop.
+>>
+> Make sense. I can separate it out.
+>
+>>> +	l_cpumask = cpumask_of_node(nid);
+>>> +	for_each_cpu(i, l_cpumask) {
+>>> +		if (i == cpu)
+>>> +			continue;
+>>> +		if (src_chipid == topology_physical_package_id(i)) {
+>>> +			target = i;
+>>> +			break;
+>>> +		}
+>>> +	}
+>>> +
+>>> +	/*
+>>> +	 * Update the cpumask with the target cpu and
+>>> +	 * migrate the context if needed
+>>> +	 */
+>>> +	if (target >= 0) {
+>> You already check for target >= 0 here. So you don't need to check for
+>> new_cpu >= 0 in nest_change_cpu_context() above ?
+> I guess i was way too cautious :) Will change it
+>
+>>> +		cpumask_set_cpu(target, &cpu_mask_nest_pmu);
+>>> +		nest_change_cpu_context (cpu, target);
+>>> +	}
+>>> +}
+>>> +
+>>> +static void nest_init_cpu(int cpu)
+>>> +{
+>>> +	int i, src_chipid;
+>>> +
+>>> +	/*
+>>> +	 * Search for any existing designated thread from
+>>> +	 * the incoming cpu's node/chip. If found, do nothing.
+>>> +	 */
+>>> +	src_chipid = topology_physical_package_id(cpu);
+>>> +	for_each_cpu(i, &cpu_mask_nest_pmu)
+>>> +		if (src_chipid == topology_physical_package_id(i))
+>>> +			return;
+>>> +
+>>> +	/*
+>>> +	 * Make incoming cpu as a designated thread for
+>>> +	 * this node/chip
+>>> +	 */
+>>> +	cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
+>> Why can't we simply check if cpu is the first one coming online in the
+>> chip and designate it as the cpu_mask_nest_pmu for that chip ? If it is
+>> not the first cpu, it means that another cpu in the same chip already
+>> took over this duty and it needn't bother.
+> Looks to be right. let me try it out.
+>
+>> And shouldn't we also call nest_init() on this cpu, just like you do in
+>> cpumask_chip() on all cpu_mask_nest_pmu cpus ?
+> Yes. I missed that. We should init. Nice catch.
+I guess, we dont need to init again, since we dont stop the pore engine,
+we are ok.
 
+>>> +}
+>>> +
+>>> +static int nest_cpu_notifier(struct notifier_block *self,
+>>> +				unsigned long action, void *hcpu)
+>>> +{
+>>> +	long cpu = (long)hcpu;
+>>> +
+>>> +	switch (action & ~CPU_TASKS_FROZEN) {
+>>> +	case CPU_DOWN_FAILED:
+>> Why do we need to handle the DOWN_FAILED case ? In DOWN_PREPARE, you
+>> have ensured that the function moves on to another cpu. So even if the
+>> offline failed, its no issue. The duty is safely taken over.
+>>
+>>> +	case CPU_STARTING:
+>> I would suggest initializing nest in the CPU_ONLINE stage. This is
+>> because CPU_STARTING phase can fail. In that case, we will be
+>> unnecessarily initializing nest pre-maturely. CPU_ONLINE phase assures
+>> that the cpu is successfully online and you can then initiate nest.
+> Ok sure. Will do that.
 >
->>  ;
->>  
->>  : pc-extended-partition? ( part-entry-addr -- true|false )
->> @@ -411,6 +420,10 @@ B9E5                CONSTANT GPT-BASIC-DATA-PARTITION-2
->>     1 read-sector block gpt>part-entry-lba x@-le
->>     block-size * to seek-pos
->>     block gpt>part-entry-size l@-le to gpt-part-size
->> +   gpt-part-size block-array-size > IF
->> +       cr ." GPT part size exceeds buffer allocated " cr
+>>> +		nest_init_cpu(cpu);
+>>> +		break;
+>>> +	case CPU_DOWN_PREPARE:
+>>> +		nest_exit_cpu(cpu);
+>>> +		break;
+>>> +	default:
+>>> +		break;
+>>> +	}
+>>> +
+>>> +	return NOTIFY_OK;
+>>> +}
+>>> +
+>>> +static struct notifier_block nest_cpu_nb = {
+>>> +	.notifier_call  = nest_cpu_notifier,
+>>> +	.priority       = CPU_PRI_PERF + 1,
+>>> +};
+>>> +
+>>> +void cpumask_chip(void)
+>> This name ^^ is not apt IMO. You are initiating the cpumask necessary
+>> for nest pmu. So why not call it nest_pmu_cpumask_init() ?
+> Ok.
+>>> +{
+>>> +	const struct cpumask *l_cpumask;
+>>> +	int cpu, nid;
+>>> +
+>>> +	if (!cpumask_empty(&cpu_mask_nest_pmu))
+>> When can this condition become true ?
+> My bad. This code ended up here from the initial RFC patch, but after
+> reviewing this again, i dont think this is needed. Once again nice catch.
 >
-> Isn't there this "addr" parameter on the stack which you might need to
-> drop here?
-
-Will check
-
->
->> +       FALSE EXIT
->> +   THEN
->>     block gpt>num-part-entry l@-le dup 0= IF FALSE EXIT THEN
->>     1+ 1 ?DO
->>        seek-pos 0 seek drop
->> @@ -646,7 +659,7 @@ B9E5                CONSTANT GPT-BASIC-DATA-PARTITION-2
->>  
->>  : close ( -- )
->>     debug-disk-label? IF ." Closing disk-label: block=0x" block u. ." block-size=" block-size .d cr THEN
->> -   block d# 4096 free-mem
->> +   block block-array-size free-mem
->>  ;
->
->  Thomas
+>>> +		return;
+>>> +
+>>> +	cpu_notifier_register_begin();
+>>> +
+>>> +	/*
+>>> +	 * Nest PMUs are per-chip counters. So designate a cpu
+>>> +	 * from each node/chip for counter collection.
+>>> +	 */
+>>> +	for_each_online_node(nid) {
+>>> +		l_cpumask = cpumask_of_node(nid);
+>>> +
+>>> +		/* designate first online cpu in this node */
+>>> +		cpu = cpumask_first(l_cpumask);
+>>> +		cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
+>>> +	}
+>>> +
+>>> +	/* Initialize Nest PMUs in each node using designated cpus */
+>>> +	on_each_cpu_mask(&cpu_mask_nest_pmu, (smp_call_func_t)nest_init, NULL, 1);
+>>> +
+>>> +	__register_cpu_notifier(&nest_cpu_nb);
+>>> +
+>>> +	cpu_notifier_register_done();
+>>> +}
+>> Regards
+>> Preeti U Murthy
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
