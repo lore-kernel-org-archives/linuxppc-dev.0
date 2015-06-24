@@ -1,42 +1,41 @@
 Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DB851A0034
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 15:33:42 +1000 (AEST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id C59711A1140
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 15:34:24 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A65F0140309
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 15:33:41 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 2B115140309
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 15:34:24 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Wed, 24 Jun 2015 11:03:39 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 55015E0057
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:07:11 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5O5XZ8J2031880
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:03:35 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5O4U9sw004284
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 10:00:09 +0530
+ Wed, 24 Jun 2015 11:04:21 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id EBD13E0054
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:07:53 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5O5YH051573336
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:04:17 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5O4WvpS032112
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 10:02:58 +0530
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 To: Thomas Huth <thuth@redhat.com>
 Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, aik@ozlabs.ru,
  dvaleev@suse.com
-Subject: Re: [PATCH SLOF 4/5] disk-label: add support for booting from GPT FAT
- partition
-In-Reply-To: <20150623093444.18481f04@thh440s>
+Subject: Re: [PATCH SLOF 5/5] disk-label: make gpt detection code more robust
+In-Reply-To: <20150623094654.413b3c29@thh440s>
 References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <1434959987-8530-5-git-send-email-nikunj@linux.vnet.ibm.com>
- <20150623093444.18481f04@thh440s>
-Date: Wed, 24 Jun 2015 11:03:34 +0530
-Message-ID: <87wpyt7jrl.fsf@linux.vnet.ibm.com>
+ <1434959987-8530-6-git-send-email-nikunj@linux.vnet.ibm.com>
+ <20150623094654.413b3c29@thh440s>
+Date: Wed, 24 Jun 2015 11:04:16 +0530
+Message-ID: <87twtx7jqf.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -50,165 +49,95 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Thomas Huth <thuth@redhat.com> writes:
 
-> On Mon, 22 Jun 2015 13:29:46 +0530
+> On Mon, 22 Jun 2015 13:29:47 +0530
 > Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
 >
->> For a GPT+LVM combination disk, older bootloader that does not support
->> LVM, cannot load kernel from LVM.
+>> * Check for Protective MBR Magic
+>> * Check for valid GPT Signature
+>> * Boundary check for allocated block size before reading into the
+>>   buffer
 >> 
->> The patch add support to read from BASIC_DATA UUID
->> partition. Installer has installed CHRP-BOOT config on a FAT file
->> system.
->
-> Maybe better: The patch adds support to read from BASIC_DATA UUID
-> partitions for the case that the OS installer has installed
-> the CHRP-BOOT config on a FAT file system.
->
-> ?
->
 >> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 >> ---
->>  slof/fs/packages/disk-label.fs | 54 +++++++++++++++++++++++++++++++++++++-----
->>  1 file changed, 48 insertions(+), 6 deletions(-)
+>>  slof/fs/packages/disk-label.fs | 21 +++++++++++++++++----
+>>  1 file changed, 17 insertions(+), 4 deletions(-)
 >> 
 >> diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
->> index e317e93..821e959 100644
+>> index 821e959..d9c3a8d 100644
 >> --- a/slof/fs/packages/disk-label.fs
 >> +++ b/slof/fs/packages/disk-label.fs
->> @@ -266,7 +266,10 @@ CONSTANT /gpt-part-entry
+>> @@ -20,6 +20,7 @@ false VALUE debug-disk-label?
+>>  \ If we ever want to put a large kernel with initramfs from a PREP partition
+>>  \ we might need to increase this value. The default value is 65536 blocks (32MB)
+>>  d# 65536 value max-prep-partition-blocks
+>> +d# 4096 value block-array-size
 >>  
->>  : try-dos-partition ( -- okay? )
->>     \ Read partition table and check magic.
->> -   no-mbr? IF cr ." No DOS disk-label found." cr false EXIT THEN
->> +   no-mbr? IF
->> +       debug-disk-label? IF cr ." No DOS disk-label found." cr THEN
->> +       false EXIT
->> +   THEN
+>>  s" disk-label" device-name
 >>  
->>     count-dos-logical-partitions TO dos-logical-partitions
->>  
->> @@ -381,18 +384,38 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
->>     TRUE
+>> @@ -152,8 +153,8 @@ CONSTANT /gpt-part-entry
+>>  : init-block ( -- )
+>>     s" block-size" ['] $call-parent CATCH IF ABORT" parent has no block-size." THEN
+>>     to block-size
+>> -   d# 4096 alloc-mem
+>> -   dup d# 4096 erase
+>> +   block-array-size alloc-mem
+>> +   dup block-array-size erase
+>>     to block
+>>     debug-disk-label? IF
+>>        ." init-block: block-size=" block-size .d ." block=0x" block u. cr
+>> @@ -175,10 +176,18 @@ CONSTANT /gpt-part-entry
+>>     block mbr>magic w@-le aa55 <>
 >>  ;
 >>  
->> -: load-from-gpt-prep-partition ( addr -- size )
->> +\ Check for GPT MSFT BASIC DATA GUID - fat based
->> +EBD0A0A2            CONSTANT GPT-BASIC-DATA-PARTITION-1
->> +B9E5                CONSTANT GPT-BASIC-DATA-PARTITION-2
->> +4433                CONSTANT GPT-BASIC-DATA-PARTITION-3
->> +87C068B6B72699C7    CONSTANT GPT-BASIC-DATA-PARTITION-4
+>> +\
+>> +\ GPT Signature
+>> +\ ("EFI PART", 45h 46h 49h 20h 50h 41h 52h 54h)
+>> +\
+>> +4546492050415254 CONSTANT GPT-SIGNATURE
 >> +
->> +: gpt-basic-data-partition? ( -- true|false )
->> +   block gpt-part-entry>part-type-guid
->> +   dup l@-le     GPT-BASIC-DATA-PARTITION-1 <> IF DROP FALSE EXIT THEN
->> +   dup 4 + w@-le GPT-BASIC-DATA-PARTITION-2 <> IF DROP FALSE EXIT THEN
->> +   dup 6 + w@-le GPT-BASIC-DATA-PARTITION-3 <> IF DROP FALSE EXIT THEN
->> +       8 + x@    GPT-BASIC-DATA-PARTITION-4 <> IF FALSE EXIT THEN
->> +   TRUE
->> +;
->> +
->> +\ Can be called from two path
->> +\ 1) load-from-boot-partition for GPT PReP partition
->> +\ 2) try-partitions for gpt basic data partition having fat chrp-boot
+>>  \ This word returns true if the currently loaded block has _NO_ GPT partition id
+>>  : no-gpt? ( -- true|false )
+>>     0 read-sector
+>> -   1 partition>part-entry part-entry>id c@ ee <>
+>> +   1 partition>part-entry part-entry>id c@ ee <> IF TRUE EXIT THEN
+>> +   block mbr>magic w@-le aa55 <> IF TRUE EXIT THEN
+>> +   1 read-sector block gpt>signature x@ GPT-SIGNATURE <>
 >
-> What did you want to achieve with the above comment? Caller locations
-> can change with later patches, but it's unlikely that everybody
-> remembers to update such comments in that case. So unlikely you've got
-> a good reason for above comment (but in that case, it maybe should be
-> written in a different way), I'd suggest to drop it.
+> The comment above the function talks about the "currently loaded
+> block", so I'd maybe avoid to load another sector here.
+> Maybe move this gpt>signature check to "load-from-gpt-partition" where
+> this block gets loaded anyway?
 
-I will redo this word and split it so that do not have confusing
-signature.
+Sure.
 
 >
->> +: load-from-gpt-partition ( [ addr ] -- size | TRUE )
->
-> What do you mean with addr in square brackets? Is it optional?
->
->>     no-gpt? IF drop FALSE EXIT THEN
->>     debug-disk-label? IF
->>        cr ." GPT partition found " cr
->>     THEN
->> -   1 read-sector block gpt>part-entry-lba l@-le
->> +   1 read-sector block gpt>part-entry-lba x@-le
+>>  ;
+>>  
+>>  : pc-extended-partition? ( part-entry-addr -- true|false )
+>> @@ -411,6 +420,10 @@ B9E5                CONSTANT GPT-BASIC-DATA-PARTITION-2
+>>     1 read-sector block gpt>part-entry-lba x@-le
 >>     block-size * to seek-pos
 >>     block gpt>part-entry-size l@-le to gpt-part-size
+>> +   gpt-part-size block-array-size > IF
+>> +       cr ." GPT part size exceeds buffer allocated " cr
+>
+> Isn't there this "addr" parameter on the stack which you might need to
+> drop here?
+
+Will check
+
+>
+>> +       FALSE EXIT
+>> +   THEN
 >>     block gpt>num-part-entry l@-le dup 0= IF FALSE EXIT THEN
 >>     1+ 1 ?DO
 >>        seek-pos 0 seek drop
->> -      block gpt-part-size read drop gpt-prep-partition? IF
->> +       block gpt-part-size read drop
->> +       gpt-prep-partition? IF
->
-> You've changed the level of indentation here. Please try to avoid that
-> (unless you've got a good reason, e.g. because the previous indentation
-> was obviously wrong)
-
-Not intentional, I try to make sure I do not change the indentation.
-
->
->>           debug-disk-label? IF
->>              ." GPT PReP partition found " cr
->>           THEN
->> @@ -404,6 +427,24 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
->>           0 0 seek drop             ( addr len )
->>           block-size * read         ( size )
->>           UNLOOP EXIT
->> +     THEN
->> +     gpt-basic-data-partition? IF
->
-> Hmm, I wonder whether we need a proper coding conventions spec for
-> writing Forth code ... (at least about the indentation depths ...) ;-)
->
->> +         debug-disk-label? IF
->> +            ." GPT LINUX DATA partition found " cr
->> +         THEN
->> +         block gpt-part-entry>first-lba x@ xbflip
->> +         dup to part-start
->> +         block gpt-part-entry>last-lba x@ xbflip
->> +         over - 1+                 ( addr offset len )
->> +         dup block-size * to part-size
->> +         swap                      ( addr len offset )
->> +         block-size * to part-offset
->> +         0 0 seek
->> +         block block-size read
->> +         3drop
->> +         block has-fat-filesystem 0= IF false UNLOOP EXIT THEN
->> +         TRUE
->> +         UNLOOP EXIT
->>        THEN
->>        seek-pos gpt-part-size i * + to seek-pos
->>     LOOP
->> @@ -495,11 +536,11 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+>> @@ -646,7 +659,7 @@ B9E5                CONSTANT GPT-BASIC-DATA-PARTITION-2
 >>  
->>     debug-disk-label? IF ." Trying CHRP boot " .s cr THEN
->>     1 disk-chrp-boot !
->> -   dup load-chrp-boot-file ?dup 0 <> IF .s cr nip EXIT THEN
->> +   dup load-chrp-boot-file ?dup 0 <> IF nip EXIT THEN
->>     0 disk-chrp-boot !
->>  
->>     debug-disk-label? IF ." Trying GPT boot " .s cr THEN
->> -   load-from-gpt-prep-partition
->> +   load-from-gpt-partition
->
-> So here the function is called with an "addr" parameter on the stack ...
->
->>     \ More boot partition formats ...
+>>  : close ( -- )
+>>     debug-disk-label? IF ." Closing disk-label: block=0x" block u. ." block-size=" block-size .d cr THEN
+>> -   block d# 4096 free-mem
+>> +   block block-array-size free-mem
 >>  ;
->>  
->> @@ -594,6 +635,7 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
->>  
->>  : try-partitions ( -- found? )
->>     try-dos-partition IF try-files EXIT THEN
->> +   load-from-gpt-partition IF try-files EXIT THEN
 >
-> ... but here it is called without an "addr" parameter? *Confusing*
-> How does this work?
-
-Yes :-)
-
-Let me rework on this to break it up for readabilty and better stack
-debugging.
-
-Regards
-Nikunj
+>  Thomas
