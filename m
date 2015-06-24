@@ -1,38 +1,24 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
+ [IPv6:2607:f8b0:400e:c02::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E13FB1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:49:46 +1000 (AEST)
-Received: from /spool/local
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 24 Jun 2015 02:49:43 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 73D5C6E8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 02:41:27 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5O6neVn49020946
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 06:49:40 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5O6neBm010820
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 02:49:40 -0400
-Subject: [PATCH] tick/idle/powerpc: Do not register idle states with
- CPUIDLE_FLAG_TIMER_STOP set in periodic mode
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net
-Cc: mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org,
- mpe@ellerman.id.au, will.deacon@arm.com, linux-kernel@vger.kernel.org,
- shreyas@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 24 Jun 2015 01:48:01 -0500
-Message-ID: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 568CC1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 17:00:45 +1000 (AEST)
+Received: by pdcu2 with SMTP id u2so24156970pdc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 00:00:42 -0700 (PDT)
+Date: Wed, 24 Jun 2015 00:00:37 -0700
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@freescale.com>
+Cc: timur@tabi.org, Xiubo.Lee@gmail.com, lgirdwood@gmail.com,
+ broonie@kernel.org, perex@perex.cz, tiwai@suse.de,
+ alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] ASoC: fsl: Add dedicated DMA buffer size for each cpu dai
+Message-ID: <20150624070037.GA2926@Asurada-CZ80>
+References: <1435055033-12608-1-git-send-email-shengjiu.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1435055033-12608-1-git-send-email-shengjiu.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,79 +28,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On some archs, the local clockevent device stops in deep cpuidle states.
-The broadcast framework is used to wakeup cpus in these idle states, in
-which either an external clockevent device is used to send wakeup ipis
-or the hrtimer broadcast framework kicks in in the absence of such a
-device. One cpu is nominated as the broadcast cpu and this cpu sends
-wakeup ipis to sleeping cpus at the appropriate time. This is the
-implementation in the oneshot mode of broadcast.
+On Tue, Jun 23, 2015 at 06:23:53PM +0800, Shengjiu Wang wrote:
+> As the ssi is not the only cpu dai, there are esai, spdif, sai.
+> and imx_pcm_dma can be used by all of them. Especially ESAI need
+> a larger DMA buffer size. So Add dedicated DMA buffer for each cpu
+> dai.
+> 
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@freescale.com>
 
-In periodic mode of broadcast however, the presence of such cpuidle
-states results in the cpuidle driver calling tick_broadcast_enable()
-which shuts down the local clockevent devices of all the cpus and
-appoints the tick broadcast device as the clockevent device for each of
-them. This works on those archs where the tick broadcast device is a
-real clockevent device.  But on archs which depend on the hrtimer mode
-of broadcast, the tick broadcast device hapens to be a pseudo device.
-The consequence is that the local clockevent devices of all cpus are
-shutdown and the kernel hangs at boot time in periodic mode.
+Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
 
-Let us thus not register the cpuidle states which have
-CPUIDLE_FLAG_TIMER_STOP flag set, on archs which depend on the hrtimer
-mode of broadcast in periodic mode. This patch takes care of doing this
-on powerpc. The cpus would not have entered into such deep cpuidle
-states in periodic mode on powerpc anyway. So there is no loss here.
+Thanks
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c |   15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 5937207..3442764 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -60,6 +60,8 @@ static int nap_loop(struct cpuidle_device *dev,
- 	return index;
- }
- 
-+/* Register for fastsleep only in oneshot mode of broadcast */
-+#ifdef CONFIG_TICK_ONESHOT
- static int fastsleep_loop(struct cpuidle_device *dev,
- 				struct cpuidle_driver *drv,
- 				int index)
-@@ -83,7 +85,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- 
- 	return index;
- }
--
-+#endif
- /*
-  * States for dedicated partition case.
-  */
-@@ -209,7 +211,14 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = &nap_loop;
--		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-+		}
-+
-+		/*
-+		 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set must come
-+		 * within this config dependency check.
-+		 */
-+#ifdef CONFIG_TICK_ONESHOT
-+		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
- 			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
- 			/* Add FASTSLEEP state */
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
-@@ -218,7 +227,7 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].target_residency = 300000;
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
- 		}
--
-+#endif
- 		powernv_states[nr_idle_states].exit_latency =
- 				((unsigned int)latency_ns[i]) / 1000;
- 
+> ---
+>  sound/soc/fsl/fsl_esai.c    |    2 +-
+>  sound/soc/fsl/fsl_sai.c     |    2 +-
+>  sound/soc/fsl/fsl_spdif.c   |    2 +-
+>  sound/soc/fsl/fsl_ssi.c     |    2 +-
+>  sound/soc/fsl/imx-pcm-dma.c |   25 +++++++++++++++++++++----
+>  sound/soc/fsl/imx-pcm.h     |    9 +++++++--
+>  sound/soc/fsl/imx-ssi.c     |    2 +-
+>  7 files changed, 33 insertions(+), 11 deletions(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+> index 5c75971..8c2ddc1 100644
+> --- a/sound/soc/fsl/fsl_esai.c
+> +++ b/sound/soc/fsl/fsl_esai.c
+> @@ -839,7 +839,7 @@ static int fsl_esai_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> -	ret = imx_pcm_dma_init(pdev);
+> +	ret = imx_pcm_dma_init(pdev, IMX_ESAI_DMABUF_SIZE);
+>  	if (ret)
+>  		dev_err(&pdev->dev, "failed to init imx pcm dma: %d\n", ret);
+>  
+> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> index 5c73bea..a18fd92 100644
+> --- a/sound/soc/fsl/fsl_sai.c
+> +++ b/sound/soc/fsl/fsl_sai.c
+> @@ -791,7 +791,7 @@ static int fsl_sai_probe(struct platform_device *pdev)
+>  		return ret;
+>  
+>  	if (sai->sai_on_imx)
+> -		return imx_pcm_dma_init(pdev);
+> +		return imx_pcm_dma_init(pdev, IMX_SAI_DMABUF_SIZE);
+>  	else
+>  		return devm_snd_dmaengine_pcm_register(&pdev->dev, NULL, 0);
+>  }
+> diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
+> index 8e93221..d1e9be7 100644
+> --- a/sound/soc/fsl/fsl_spdif.c
+> +++ b/sound/soc/fsl/fsl_spdif.c
+> @@ -1255,7 +1255,7 @@ static int fsl_spdif_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> -	ret = imx_pcm_dma_init(pdev);
+> +	ret = imx_pcm_dma_init(pdev, IMX_SPDIF_DMABUF_SIZE);
+>  	if (ret)
+>  		dev_err(&pdev->dev, "imx_pcm_dma_init failed: %d\n", ret);
+>  
+> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+> index c7647e0..e122dab 100644
+> --- a/sound/soc/fsl/fsl_ssi.c
+> +++ b/sound/soc/fsl/fsl_ssi.c
+> @@ -1257,7 +1257,7 @@ static int fsl_ssi_imx_probe(struct platform_device *pdev,
+>  		if (ret)
+>  			goto error_pcm;
+>  	} else {
+> -		ret = imx_pcm_dma_init(pdev);
+> +		ret = imx_pcm_dma_init(pdev, IMX_SSI_DMABUF_SIZE);
+>  		if (ret)
+>  			goto error_pcm;
+>  	}
+> diff --git a/sound/soc/fsl/imx-pcm-dma.c b/sound/soc/fsl/imx-pcm-dma.c
+> index 0db94f49..1fc01ed 100644
+> --- a/sound/soc/fsl/imx-pcm-dma.c
+> +++ b/sound/soc/fsl/imx-pcm-dma.c
+> @@ -40,7 +40,7 @@ static const struct snd_pcm_hardware imx_pcm_hardware = {
+>  		SNDRV_PCM_INFO_MMAP_VALID |
+>  		SNDRV_PCM_INFO_PAUSE |
+>  		SNDRV_PCM_INFO_RESUME,
+> -	.buffer_bytes_max = IMX_SSI_DMABUF_SIZE,
+> +	.buffer_bytes_max = IMX_DEFAULT_DMABUF_SIZE,
+>  	.period_bytes_min = 128,
+>  	.period_bytes_max = 65535, /* Limited by SDMA engine */
+>  	.periods_min = 2,
+> @@ -52,13 +52,30 @@ static const struct snd_dmaengine_pcm_config imx_dmaengine_pcm_config = {
+>  	.pcm_hardware = &imx_pcm_hardware,
+>  	.prepare_slave_config = snd_dmaengine_pcm_prepare_slave_config,
+>  	.compat_filter_fn = filter,
+> -	.prealloc_buffer_size = IMX_SSI_DMABUF_SIZE,
+> +	.prealloc_buffer_size = IMX_DEFAULT_DMABUF_SIZE,
+>  };
+>  
+> -int imx_pcm_dma_init(struct platform_device *pdev)
+> +int imx_pcm_dma_init(struct platform_device *pdev, size_t size)
+>  {
+> +	struct snd_dmaengine_pcm_config *config;
+> +	struct snd_pcm_hardware *pcm_hardware;
+> +
+> +	config = devm_kzalloc(&pdev->dev,
+> +			sizeof(struct snd_dmaengine_pcm_config), GFP_KERNEL);
+> +	*config = imx_dmaengine_pcm_config;
+> +	if (size)
+> +		config->prealloc_buffer_size = size;
+> +
+> +	pcm_hardware = devm_kzalloc(&pdev->dev,
+> +			sizeof(struct snd_pcm_hardware), GFP_KERNEL);
+> +	*pcm_hardware = imx_pcm_hardware;
+> +	if (size)
+> +		pcm_hardware->buffer_bytes_max = size;
+> +
+> +	config->pcm_hardware = pcm_hardware;
+> +
+>  	return devm_snd_dmaengine_pcm_register(&pdev->dev,
+> -		&imx_dmaengine_pcm_config,
+> +		config,
+>  		SND_DMAENGINE_PCM_FLAG_COMPAT);
+>  }
+>  EXPORT_SYMBOL_GPL(imx_pcm_dma_init);
+> diff --git a/sound/soc/fsl/imx-pcm.h b/sound/soc/fsl/imx-pcm.h
+> index c79cb27..133c4470a 100644
+> --- a/sound/soc/fsl/imx-pcm.h
+> +++ b/sound/soc/fsl/imx-pcm.h
+> @@ -20,6 +20,11 @@
+>   */
+>  #define IMX_SSI_DMABUF_SIZE	(64 * 1024)
+>  
+> +#define IMX_DEFAULT_DMABUF_SIZE	(64 * 1024)
+> +#define IMX_SAI_DMABUF_SIZE	(64 * 1024)
+> +#define IMX_SPDIF_DMABUF_SIZE	(64 * 1024)
+> +#define IMX_ESAI_DMABUF_SIZE	(256 * 1024)
+> +
+>  static inline void
+>  imx_pcm_dma_params_init_data(struct imx_dma_data *dma_data,
+>  	int dma, enum sdma_peripheral_type peripheral_type)
+> @@ -39,9 +44,9 @@ struct imx_pcm_fiq_params {
+>  };
+>  
+>  #if IS_ENABLED(CONFIG_SND_SOC_IMX_PCM_DMA)
+> -int imx_pcm_dma_init(struct platform_device *pdev);
+> +int imx_pcm_dma_init(struct platform_device *pdev, size_t size);
+>  #else
+> -static inline int imx_pcm_dma_init(struct platform_device *pdev)
+> +static inline int imx_pcm_dma_init(struct platform_device *pdev, size_t size)
+>  {
+>  	return -ENODEV;
+>  }
+> diff --git a/sound/soc/fsl/imx-ssi.c b/sound/soc/fsl/imx-ssi.c
+> index 461ce27..48b2d24 100644
+> --- a/sound/soc/fsl/imx-ssi.c
+> +++ b/sound/soc/fsl/imx-ssi.c
+> @@ -603,7 +603,7 @@ static int imx_ssi_probe(struct platform_device *pdev)
+>  	ssi->fiq_params.dma_params_tx = &ssi->dma_params_tx;
+>  
+>  	ssi->fiq_init = imx_pcm_fiq_init(pdev, &ssi->fiq_params);
+> -	ssi->dma_init = imx_pcm_dma_init(pdev);
+> +	ssi->dma_init = imx_pcm_dma_init(pdev, IMX_SSI_DMABUF_SIZE);
+>  
+>  	if (ssi->fiq_init && ssi->dma_init) {
+>  		ret = ssi->fiq_init;
+> -- 
+> 1.7.9.5
+> 
