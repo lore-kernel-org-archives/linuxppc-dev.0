@@ -1,33 +1,39 @@
-Return-Path: <mhocko@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BBC41A0601
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 19:47:46 +1000 (AEST)
-Date: Wed, 24 Jun 2015 11:47:42 +0200
-From: Michal Hocko <mhocko@suse.cz>
-To: Vlastimil Babka <vbabka@suse.cz>
-Cc: Eric B Munson <emunson@akamai.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [RESEND PATCH V2 1/3] Add mmap flag to request pages are locked
- after page fault
-Message-ID: <20150624094742.GD32756@dhcp22.suse.cz>
-References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
- <1433942810-7852-2-git-send-email-emunson@akamai.com>
- <20150618152907.GG5858@dhcp22.suse.cz>
- <20150618203048.GB2329@akamai.com>
- <20150619145708.GG4913@dhcp22.suse.cz>
- <20150619164333.GD2329@akamai.com>
- <20150622123826.GF4430@dhcp22.suse.cz>
- <20150622141806.GE2329@akamai.com> <558954DD.4060405@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0558F1A06A7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 22:13:44 +1000 (AEST)
+Received: from /spool/local
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 24 Jun 2015 08:13:41 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id B6D076E803F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 08:05:24 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5OCDcv064421984
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 12:13:38 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5OCDbXd022109
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 08:13:37 -0400
+Message-ID: <558A9EF0.3010305@linux.vnet.ibm.com>
+Date: Wed, 24 Jun 2015 07:13:36 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <558954DD.4060405@suse.cz>
+To: Bharata B Rao <bharata.rao@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@au1.ibm.com>
+Subject: Re: powerpc,numa: Memory hotplug to memory-less nodes ?
+References: <CAGZKiBrmkSa1yyhbf5hwGxubcjsE5SmkSMY4tpANERMe2UG4bg@mail.gmail.com>
+ <CAGZKiBpWtPKLR+P_gQ8LguS7p4sZt4EvyNqCW_7t8NovGmNpPg@mail.gmail.com>
+In-Reply-To: <CAGZKiBpWtPKLR+P_gQ8LguS7p4sZt4EvyNqCW_7t8NovGmNpPg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,48 +43,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 23-06-15 14:45:17, Vlastimil Babka wrote:
-> On 06/22/2015 04:18 PM, Eric B Munson wrote:
-> >On Mon, 22 Jun 2015, Michal Hocko wrote:
-> >
-> >>On Fri 19-06-15 12:43:33, Eric B Munson wrote:
-[...]
-> >>>My thought on detecting was that someone might want to know if they had
-> >>>a VMA that was VM_LOCKED but had not been made present becuase of a
-> >>>failure in mmap.  We don't have a way today, but adding VM_LOCKONFAULT
-> >>>is at least explicit about what is happening which would make detecting
-> >>>the VM_LOCKED but not present state easier.
-> >>
-> >>One could use /proc/<pid>/pagemap to query the residency.
+On 06/23/2015 11:01 PM, Bharata B Rao wrote:
+> So will it be correct to say that memory hotplug to memory-less node
+> isn't supported by PowerPC kernel ? Should I enforce the same in QEMU
+> for PowerKVM ?
+>
+
+I'm not sure if that is correct. It appears that we initialize all online
+nodes, even those without spanned_pages, at boot time. This occurs
+in setup_node_data() called from initmem_init().
+
+Looking at this I would think that we could add memory to any online node
+even if it does not have any spanned_pages. I think an interesting test
+we be to check for the node being online instead of checking to see if
+it has any memory.
+
+-Nathan
+
+> On Mon, Jun 22, 2015 at 10:18 AM, Bharata B Rao <bharata.rao@gmail.com> wrote:
+>> Hi,
+>>
+>> While developing memory hotplug support in QEMU for PoweKVM, I
+>> realized that guest kernel has specific checks to prevent hot addition
+>> of memory to a memory-less node.
+>>
+>> I am referring to arch/powerpc/mm/numa.c:hot_add_scn_to_nid() which
+>> has explicit checks to ensure that it returns a nid that has some some
+>> memory (NODE_DATA(nid)->node_spanned_pages) even when user wants to
+>> hotplug to a node that currently has zero memory.
+>>
+>> Is this limitation by design ?
+>>
+>> Regards,
+>> Bharata.
+>> --
+>> http://raobharata.wordpress.com/
 > 
-> I think that's all too much complex scenario for a little gain. If someone
-> knows that mmap(MAP_LOCKED|MAP_POPULATE) is not perfect, he should either
-> mlock() separately from mmap(), or fault the range manually with a for loop.
-> Why try to detect if the corner case was hit?
-
-No idea. I have just offered a way to do that. I do not think it is
-anyhow useful but who knows... I do agree that the mlock should be used
-for the full mlock semantic.
-
-> >>>This assumes that
-> >>>MAP_FAULTPOPULATE does not translate to a VMA flag, but it sounds like
-> >>>it would have to.
-> >>
-> >>Yes, it would have to have a VM flag for the vma.
 > 
-> So with your approach, VM_LOCKED flag is enough, right? The new MAP_ /
-> MLOCK_ flags just cause setting VM_LOCKED to not fault the whole vma, but
-> otherwise nothing changes.
-
-VM_FAULTPOPULATE would have to be sticky to prevent from other
-speculative poppulation of the mapping. I mean, is it OK to have a new
-mlock semantic (on fault) which might still populate&lock memory which
-hasn't been faulted directly? Who knows what kind of speculative things
-we will do in the future and then find out that the semantic of
-lock-on-fault is not usable anymore.
-
-[...]
-
--- 
-Michal Hocko
-SUSE Labs
+> 
