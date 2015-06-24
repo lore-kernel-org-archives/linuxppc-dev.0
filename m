@@ -2,41 +2,41 @@ Return-Path: <nikunj@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 932581A0034
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 15:30:05 +1000 (AEST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6DB851A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 15:33:42 +1000 (AEST)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E68D41401F6
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 15:30:04 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id A65F0140309
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 15:33:41 +1000 (AEST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Wed, 24 Jun 2015 11:00:02 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 27FCFE0058
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:03:36 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5O5TubE6750480
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 10:59:57 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5O5TudD002487
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 10:59:56 +0530
+ Wed, 24 Jun 2015 11:03:39 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 55015E0057
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:07:11 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5O5XZ8J2031880
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 11:03:35 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5O4U9sw004284
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 10:00:09 +0530
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Thomas Huth <thuth@redhat.com>
-Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, dvaleev@suse.com
+To: Thomas Huth <thuth@redhat.com>
+Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, aik@ozlabs.ru,
+ dvaleev@suse.com
 Subject: Re: [PATCH SLOF 4/5] disk-label: add support for booting from GPT FAT
  partition
-In-Reply-To: <20150624021013.GE19845@gate.crashing.org>
+In-Reply-To: <20150623093444.18481f04@thh440s>
 References: <1434959987-8530-1-git-send-email-nikunj@linux.vnet.ibm.com>
  <1434959987-8530-5-git-send-email-nikunj@linux.vnet.ibm.com>
- <20150623093444.18481f04@thh440s> <20150624021013.GE19845@gate.crashing.org>
-Date: Wed, 24 Jun 2015 10:59:53 +0530
-Message-ID: <87zj3p7jxq.fsf@linux.vnet.ibm.com>
+ <20150623093444.18481f04@thh440s>
+Date: Wed, 24 Jun 2015 11:03:34 +0530
+Message-ID: <87wpyt7jrl.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -48,55 +48,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool <segher@kernel.crashing.org> writes:
+Thomas Huth <thuth@redhat.com> writes:
 
-> On Tue, Jun 23, 2015 at 09:34:44AM +0200, Thomas Huth wrote:
->> > +: load-from-gpt-partition ( [ addr ] -- size | TRUE )
+> On Mon, 22 Jun 2015 13:29:46 +0530
+> Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
+>
+>> For a GPT+LVM combination disk, older bootloader that does not support
+>> LVM, cannot load kernel from LVM.
 >> 
->> What do you mean with addr in square brackets? Is it optional?
+>> The patch add support to read from BASIC_DATA UUID
+>> partition. Installer has installed CHRP-BOOT config on a FAT file
+>> system.
 >
-> And "size | TRUE"?  The code even returns "false" instead, which
-> usually is a valid size (0).  Just always return a flag?  Or maybe
-> you mean something like ( -- false | size true ) .  Not going to
-> read the code, I cannot keep track of the stack, bringing us to...
+> Maybe better: The patch adds support to read from BASIC_DATA UUID
+> partitions for the case that the OS installer has installed
+> the CHRP-BOOT config on a FAT file system.
 >
+> ?
 >
->> Hmm, I wonder whether we need a proper coding conventions spec for
->> writing Forth code ... (at least about the indentation depths ...) ;-)
+>> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+>> ---
+>>  slof/fs/packages/disk-label.fs | 54 +++++++++++++++++++++++++++++++++++++-----
+>>  1 file changed, 48 insertions(+), 6 deletions(-)
+>> 
+>> diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
+>> index e317e93..821e959 100644
+>> --- a/slof/fs/packages/disk-label.fs
+>> +++ b/slof/fs/packages/disk-label.fs
+>> @@ -266,7 +266,10 @@ CONSTANT /gpt-part-entry
+>>  
+>>  : try-dos-partition ( -- okay? )
+>>     \ Read partition table and check magic.
+>> -   no-mbr? IF cr ." No DOS disk-label found." cr false EXIT THEN
+>> +   no-mbr? IF
+>> +       debug-disk-label? IF cr ." No DOS disk-label found." cr THEN
+>> +       false EXIT
+>> +   THEN
+>>  
+>>     count-dos-logical-partitions TO dos-logical-partitions
+>>  
+>> @@ -381,18 +384,38 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+>>     TRUE
+>>  ;
+>>  
+>> -: load-from-gpt-prep-partition ( addr -- size )
+>> +\ Check for GPT MSFT BASIC DATA GUID - fat based
+>> +EBD0A0A2            CONSTANT GPT-BASIC-DATA-PARTITION-1
+>> +B9E5                CONSTANT GPT-BASIC-DATA-PARTITION-2
+>> +4433                CONSTANT GPT-BASIC-DATA-PARTITION-3
+>> +87C068B6B72699C7    CONSTANT GPT-BASIC-DATA-PARTITION-4
+>> +
+>> +: gpt-basic-data-partition? ( -- true|false )
+>> +   block gpt-part-entry>part-type-guid
+>> +   dup l@-le     GPT-BASIC-DATA-PARTITION-1 <> IF DROP FALSE EXIT THEN
+>> +   dup 4 + w@-le GPT-BASIC-DATA-PARTITION-2 <> IF DROP FALSE EXIT THEN
+>> +   dup 6 + w@-le GPT-BASIC-DATA-PARTITION-3 <> IF DROP FALSE EXIT THEN
+>> +       8 + x@    GPT-BASIC-DATA-PARTITION-4 <> IF FALSE EXIT THEN
+>> +   TRUE
+>> +;
+>> +
+>> +\ Can be called from two path
+>> +\ 1) load-from-boot-partition for GPT PReP partition
+>> +\ 2) try-partitions for gpt basic data partition having fat chrp-boot
 >
-> "Write readable code.  That means in part, do not write long definitions
-> (longer than a few lines)."
+> What did you want to achieve with the above comment? Caller locations
+> can change with later patches, but it's unlikely that everybody
+> remembers to update such comments in that case. So unlikely you've got
+> a good reason for above comment (but in that case, it maybe should be
+> written in a different way), I'd suggest to drop it.
 
-I ended up here by combining two similar looking words as they were
-doing too many similar stuff.
-
-But I guess it ended up being pretty big. I will break it up into
-smaller units and resend this patch.
+I will redo this word and split it so that do not have confusing
+signature.
 
 >
-> There, all coding conventions you'll ever need :-)
+>> +: load-from-gpt-partition ( [ addr ] -- size | TRUE )
 >
+> What do you mean with addr in square brackets? Is it optional?
 >
-> Almost all short definitions (with good names!) are easily readable
-> (with a little effort if the subject matter is tricky).  No longer
-> definitions are ever readable (well, there are exceptions; not many).
+>>     no-gpt? IF drop FALSE EXIT THEN
+>>     debug-disk-label? IF
+>>        cr ." GPT partition found " cr
+>>     THEN
+>> -   1 read-sector block gpt>part-entry-lba l@-le
+>> +   1 read-sector block gpt>part-entry-lba x@-le
+>>     block-size * to seek-pos
+>>     block gpt>part-entry-size l@-le to gpt-part-size
+>>     block gpt>num-part-entry l@-le dup 0= IF FALSE EXIT THEN
+>>     1+ 1 ?DO
+>>        seek-pos 0 seek drop
+>> -      block gpt-part-size read drop gpt-prep-partition? IF
+>> +       block gpt-part-size read drop
+>> +       gpt-prep-partition? IF
 >
-> Don't get hung up on "how many spaces should I indent"...  Since your
-> words are short, you won't have more than two levels of indent anyway :-)
+> You've changed the level of indentation here. Please try to avoid that
+> (unless you've got a good reason, e.g. because the previous indentation
+> was obviously wrong)
+
+Not intentional, I try to make sure I do not change the indentation.
+
 >
-> Adding extra spacing to group things is also very helpful.
+>>           debug-disk-label? IF
+>>              ." GPT PReP partition found " cr
+>>           THEN
+>> @@ -404,6 +427,24 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+>>           0 0 seek drop             ( addr len )
+>>           block-size * read         ( size )
+>>           UNLOOP EXIT
+>> +     THEN
+>> +     gpt-basic-data-partition? IF
 >
-> Minor things...  Most words want a stack comment.  If you need stack
-> comments inside a definition, it is too complex.  If there is any
-> significant amount of stack juggling, the word is too complex.  If
-> the word would be too complex, you need to factor it.  If you cannot
-> easily split off factors, your solution is too complex.  If it is
-> hard to think of good names for the factors, that is simply because
-> naming things is the hardest part of programming (but see also the
-> previous point).
+> Hmm, I wonder whether we need a proper coding conventions spec for
+> writing Forth code ... (at least about the indentation depths ...) ;-)
 >
-> You also want short words that do one little thing because you _do_
-> test your code.
+>> +         debug-disk-label? IF
+>> +            ." GPT LINUX DATA partition found " cr
+>> +         THEN
+>> +         block gpt-part-entry>first-lba x@ xbflip
+>> +         dup to part-start
+>> +         block gpt-part-entry>last-lba x@ xbflip
+>> +         over - 1+                 ( addr offset len )
+>> +         dup block-size * to part-size
+>> +         swap                      ( addr len offset )
+>> +         block-size * to part-offset
+>> +         0 0 seek
+>> +         block block-size read
+>> +         3drop
+>> +         block has-fat-filesystem 0= IF false UNLOOP EXIT THEN
+>> +         TRUE
+>> +         UNLOOP EXIT
+>>        THEN
+>>        seek-pos gpt-part-size i * + to seek-pos
+>>     LOOP
+>> @@ -495,11 +536,11 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+>>  
+>>     debug-disk-label? IF ." Trying CHRP boot " .s cr THEN
+>>     1 disk-chrp-boot !
+>> -   dup load-chrp-boot-file ?dup 0 <> IF .s cr nip EXIT THEN
+>> +   dup load-chrp-boot-file ?dup 0 <> IF nip EXIT THEN
+>>     0 disk-chrp-boot !
+>>  
+>>     debug-disk-label? IF ." Trying GPT boot " .s cr THEN
+>> -   load-from-gpt-prep-partition
+>> +   load-from-gpt-partition
+>
+> So here the function is called with an "addr" parameter on the stack ...
+>
+>>     \ More boot partition formats ...
+>>  ;
+>>  
+>> @@ -594,6 +635,7 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+>>  
+>>  : try-partitions ( -- found? )
+>>     try-dos-partition IF try-files EXIT THEN
+>> +   load-from-gpt-partition IF try-files EXIT THEN
+>
+> ... but here it is called without an "addr" parameter? *Confusing*
+> How does this work?
+
+Yes :-)
+
+Let me rework on this to break it up for readabilty and better stack
+debugging.
 
 Regards
 Nikunj
