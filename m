@@ -1,36 +1,31 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 978551A0034
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 17:46:37 +1000 (AEST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 24 Jun 2015 13:16:04 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 479D3E005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 13:19:38 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5O7jwkW2883954
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 13:15:58 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5O7jvSZ025591
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 13:15:58 +0530
-Message-ID: <1435131944.3310.25.camel@localhost.localdomain>
-Subject: Re: [v3] powerpc/configs: enable RTC class support
-From: Vaibhav <vaibhav@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>
-Date: Wed, 24 Jun 2015 13:15:44 +0530
-In-Reply-To: <20150617054315.9BABF140290@ozlabs.org>
-References: <20150617054315.9BABF140290@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 00C491A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 18:50:19 +1000 (AEST)
+Date: Wed, 24 Jun 2015 10:50:13 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Eric B Munson <emunson@akamai.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 1/3] Add mmap flag to request pages are locked
+ after page fault
+Message-ID: <20150624085013.GB32756@dhcp22.suse.cz>
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
+ <1433942810-7852-2-git-send-email-emunson@akamai.com>
+ <20150618152907.GG5858@dhcp22.suse.cz>
+ <20150618203048.GB2329@akamai.com>
+ <20150619145708.GG4913@dhcp22.suse.cz>
+ <20150619164333.GD2329@akamai.com>
+ <20150622123826.GF4430@dhcp22.suse.cz>
+ <20150622141806.GE2329@akamai.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150622141806.GE2329@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,50 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Behn,
-
-Need your help in understanding the historical context for having two
-rtc interfaces in the kernel (CONFIG_GEN_RTC & CONFIG_RTC_CLASS) and
-which one should be enabled for pseries_defconfig. I have posted a patch
-(http://patchwork.ozlabs.org/patch/478899/) to enable CONFIG_RTC_CLASS
-in the defconfig so that opal rtc driver (/drivers/rtc/opal-rtc.c) is
-enabled.
-
-Afaik CONFIG_RTC_CLASS is more generic and can emulate the older
-interface provided by gen_rtc. So imho it would make sense to enable
-rtc-class with pseries_defconfig as we already have an opal-rtc-driver.
-
-My limited testing with gen_rtc on a tulleta reveals issues with hwclock
-as it reports invalid rtc-time error which I suspect is due to a genrtc
-driver trying to read date time values from an rtc port that is not
-available on the tulleta.
-
-With RTC_CLASS enabled however hwclock seems to work fine.
-
-Requesting your inputs,
-
-Thanks,
-~Vaibhav
-
-On Wed, 2015-06-17 at 15:43 +1000, Michael Ellerman wrote:
-> On Mon, 2015-01-06 at 10:48:55 UTC, Vaibhav Jain wrote:
-> > A working rtc kernel driver is needed so that hwclock can synchronize
-> > system clock to rtc during shutdown/boot. We already have a rtc platform
-> > driver for power arch located at drivers/rtc/rtc-opal.c However it
-> > depends on CONFIG_RTC_CLASS which is disabled by default. So this driver
-> > is not compiled with pseries defconfig as rtc class support is missing
-> > from the kernel.
+On Mon 22-06-15 10:18:06, Eric B Munson wrote:
+> On Mon, 22 Jun 2015, Michal Hocko wrote:
+> 
+> > On Fri 19-06-15 12:43:33, Eric B Munson wrote:
+[...]
+> > > Are you objecting to the addition of the VMA flag VM_LOCKONFAULT, or the
+> > > new MAP_LOCKONFAULT flag (or both)? 
 > > 
-> > We fix this by enabling rtc class support in pseries defconfig so that
-> > this driver gets enabled and is compiled into the pseries kernel.
+> > I thought the MAP_FAULTPOPULATE (or any other better name) would
+> > directly translate into VM_FAULTPOPULATE and wouldn't be tight to the
+> > locked semantic. We already have VM_LOCKED for that. The direct effect
+> > of the flag would be to prevent from population other than the direct
+> > page fault - including any speculative actions like fault around or
+> > read-ahead.
 > 
-> So that seems fair enough.
-> 
-> But, it disables CONFIG_GEN_RTC. Which *I think* means we won't get an RTC
-> driver at all on pseries machines.
+> I like the ability to control other speculative population, but I am not
+> sure about overloading it with the VM_LOCKONFAULT case.  Here is my
+> concern.  If we are using VM_FAULTPOPULATE | VM_LOCKED to denote
+> LOCKONFAULT, how can we tell the difference between someone that wants
+> to avoid read-ahead and wants to use mlock()?
 
-> There's some history between those two options but I don't know it off the top
-> of my head. Ben should know?
-> 
-> cheers
-> 
+Not sure I understand. Something like?
+addr = mmap(VM_FAULTPOPULATE) # To prevent speculative mappings into the vma
+[...]
+mlock(addr, len) # Now I want the full mlock semantic
+
+and the later to have the full mlock semantic and populate the given
+area regardless of VM_FAULTPOPULATE being set on the vma? This would
+be an interesting question because mlock man page clearly states the
+semantic and that is to _always_ populate or fail. So I originally
+thought that it would obey VM_FAULTPOPULATE but this needs a more
+thinking.
+
+> This might lead to some
+> interesting states with mlock() and munlock() that take flags.  For
+> instance, using VM_LOCKONFAULT mlock(MLOCK_ONFAULT) followed by
+> munlock(MLOCK_LOCKED) leaves the VMAs in the same state with
+> VM_LOCKONFAULT set. 
+
+This is really confusing. Let me try to rephrase that. So you have
+mlock(addr, len, MLOCK_ONFAULT)
+munlock(addr, len, MLOCK_LOCKED)
+
+IIUC you would expect the vma still being MLOCK_ONFAULT, right? Isn't
+that behavior strange and unexpected? First of all, munlock has
+traditionally dropped the lock on the address range (e.g. what should
+happen if you did plain old munlock(addr, len)). But even without
+that. You are trying to unlock something that hasn't been locked the
+same way. So I would expect -EINVAL at least, if the two modes should be
+really represented by different flags.
+
+Or did you mean the both types of lock like:
+mlock(addr, len, MLOCK_ONFAULT) | mmap(MAP_LOCKONFAULT)
+mlock(addr, len, MLOCK_LOCKED)
+munlock(addr, len, MLOCK_LOCKED)
+
+and that should keep MLOCK_ONFAULT?
+This sounds even more weird to me because that means that the vma in
+question would be locked by two different mechanisms. MLOCK_LOCKED with
+the "always populate" semantic would rule out MLOCK_ONFAULT so what
+would be the meaning of the other flag then? Also what should regular
+munlock(addr, len) without flags unlock? Both?
+
+> If we use VM_FAULTPOPULATE, the same pair of calls
+> would clear VM_LOCKED, but leave VM_FAULTPOPULATE.  It may not matter in
+> the end, but I am concerned about the subtleties here.
+
+This sounds like the proper behavior to me. munlock should simply always
+drop VM_LOCKED and the VM_FAULTPOPULATE can live its separate life.
+
+Btw. could you be more specific about semantic of m{un}lock(addr, len, flags)
+you want to propose? The more I think about that the more I am unclear
+about it, especially munlock behavior and possible flags.
+-- 
+Michal Hocko
+SUSE Labs
