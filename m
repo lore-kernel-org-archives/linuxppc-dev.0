@@ -1,44 +1,38 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C5701A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:48:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E13FB1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:49:46 +1000 (AEST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 24 Jun 2015 16:47:59 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4E99E2CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:47:56 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5O6lmij35586270
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:47:56 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5O6lNiB001268
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 16:47:23 +1000
-Message-ID: <558A5251.5030204@linux.vnet.ibm.com>
-Date: Wed, 24 Jun 2015 12:16:41 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 24 Jun 2015 02:49:43 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 73D5C6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 02:41:27 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5O6neVn49020946
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 06:49:40 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5O6neBm010820
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 02:49:40 -0400
+Subject: [PATCH] tick/idle/powerpc: Do not register idle states with
+ CPUIDLE_FLAG_TIMER_STOP set in periodic mode
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net
+Cc: mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org,
+ mpe@ellerman.id.au, will.deacon@arm.com, linux-kernel@vger.kernel.org,
+ shreyas@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
-CC: Peter Zijlstra <peterz@infradead.org>, rusty@rustcorp.com.au,
- Stephane Eranian <eranian@google.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 7/7]powerpc/powernv: nest pmu cpumask and cpu hotplug
- support
-References: <1433999874-2043-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433999874-2043-8-git-send-email-maddy@linux.vnet.ibm.com>
- <557FC1F9.5010607@linux.vnet.ibm.com> <5587D21C.8080303@linux.vnet.ibm.com>
-In-Reply-To: <5587D21C.8080303@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Date: Wed, 24 Jun 2015 01:48:01 -0500
+Message-ID: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,209 +42,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On some archs, the local clockevent device stops in deep cpuidle states.
+The broadcast framework is used to wakeup cpus in these idle states, in
+which either an external clockevent device is used to send wakeup ipis
+or the hrtimer broadcast framework kicks in in the absence of such a
+device. One cpu is nominated as the broadcast cpu and this cpu sends
+wakeup ipis to sleeping cpus at the appropriate time. This is the
+implementation in the oneshot mode of broadcast.
 
+In periodic mode of broadcast however, the presence of such cpuidle
+states results in the cpuidle driver calling tick_broadcast_enable()
+which shuts down the local clockevent devices of all the cpus and
+appoints the tick broadcast device as the clockevent device for each of
+them. This works on those archs where the tick broadcast device is a
+real clockevent device.  But on archs which depend on the hrtimer mode
+of broadcast, the tick broadcast device hapens to be a pseudo device.
+The consequence is that the local clockevent devices of all cpus are
+shutdown and the kernel hangs at boot time in periodic mode.
 
-On Monday 22 June 2015 02:45 PM, Madhavan Srinivasan wrote:
->
-> On Tuesday 16 June 2015 11:58 AM, Preeti U Murthy wrote:
->> On 06/11/2015 10:47 AM, Madhavan Srinivasan wrote:
->>> Adds cpumask attribute to be used by each nest pmu since nest
->>> units are per-chip. Only one cpu (first online cpu) from each node/chip
->>> is designated to read counters.
->>>
->>> On cpu hotplug, dying cpu is checked to see whether it is one of the
->>> designated cpus, if yes, next online cpu from the same node/chip is designated
->>> as new cpu to read counters.
->>>
->>> Cc: Michael Ellerman <mpe@ellerman.id.au>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: Anton Blanchard <anton@samba.org>
->>> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->>> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->>> Cc: Stephane Eranian <eranian@google.com>
->>> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->>> Cc: Ingo Molnar <mingo@kernel.org>
->>> Cc: Peter Zijlstra <peterz@infradead.org>
->>> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->>> ---
->>> +static void nest_change_cpu_context(int old_cpu, int new_cpu)
->>> +{
->>> +	int i;
->>> +
->>> +	if (new_cpu >= 0) {
->>> +		for (i = 0; per_nest_pmu_arr[i] != NULL; i++)
->>> +			perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
->>> +							old_cpu, new_cpu);
->>> +	}
->>> +}
->>> +
->>> +static void nest_exit_cpu(int cpu)
->>> +{
->>> +	int i, nid, target = -1;
->>> +	const struct cpumask *l_cpumask;
->>> +	int src_chipid;
->>> +
->>> +	/*
->>> +	 * Check in the designated list for this cpu. Dont bother
->>> +	 * if not one of them.
->>> +	 */
->>> +	if (!cpumask_test_and_clear_cpu(cpu, &cpu_mask_nest_pmu))
->>> +		return;
->>> +
->>> +	/*
->>> +	 * Now that this cpu is one of the designated,
->>> +	 * find a new cpu a) which is not dying and
->> This comment is not right. nest_exit_cpu() is called in the hotplug
->> path, so another cpu cannot be dying in parallel. Hotplug operations are
->> done serially. The comment ought to be "a) which is online" instead.
-> Ok will change it.
->
->>> +	 * b) is in same node/chip.
->> node is not the same as a chip right ? And you are interested in cpus on
->> the same chip alone. So shouldn't the above comment be b) in the same chip ?
-> I was hoping it to be, but i will change  comment to chip.
->
->>> +	 */
->>> +	nid = cpu_to_node(cpu);
->>> +	src_chipid = topology_physical_package_id(cpu);
->> What is the relation between a node and a chip ? Can't we have a
->> function which returns the cpumask of a chip straight away, since that
->> is what you seem to be more interested in ? You can then simply choose
->> the next cpu in this cpumask rather than going through the below loop.
->>
-> Make sense. I can separate it out.
->
->>> +	l_cpumask = cpumask_of_node(nid);
->>> +	for_each_cpu(i, l_cpumask) {
->>> +		if (i == cpu)
->>> +			continue;
->>> +		if (src_chipid == topology_physical_package_id(i)) {
->>> +			target = i;
->>> +			break;
->>> +		}
->>> +	}
->>> +
->>> +	/*
->>> +	 * Update the cpumask with the target cpu and
->>> +	 * migrate the context if needed
->>> +	 */
->>> +	if (target >= 0) {
->> You already check for target >= 0 here. So you don't need to check for
->> new_cpu >= 0 in nest_change_cpu_context() above ?
-> I guess i was way too cautious :) Will change it
->
->>> +		cpumask_set_cpu(target, &cpu_mask_nest_pmu);
->>> +		nest_change_cpu_context (cpu, target);
->>> +	}
->>> +}
->>> +
->>> +static void nest_init_cpu(int cpu)
->>> +{
->>> +	int i, src_chipid;
->>> +
->>> +	/*
->>> +	 * Search for any existing designated thread from
->>> +	 * the incoming cpu's node/chip. If found, do nothing.
->>> +	 */
->>> +	src_chipid = topology_physical_package_id(cpu);
->>> +	for_each_cpu(i, &cpu_mask_nest_pmu)
->>> +		if (src_chipid == topology_physical_package_id(i))
->>> +			return;
->>> +
->>> +	/*
->>> +	 * Make incoming cpu as a designated thread for
->>> +	 * this node/chip
->>> +	 */
->>> +	cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
->> Why can't we simply check if cpu is the first one coming online in the
->> chip and designate it as the cpu_mask_nest_pmu for that chip ? If it is
->> not the first cpu, it means that another cpu in the same chip already
->> took over this duty and it needn't bother.
-> Looks to be right. let me try it out.
->
->> And shouldn't we also call nest_init() on this cpu, just like you do in
->> cpumask_chip() on all cpu_mask_nest_pmu cpus ?
-> Yes. I missed that. We should init. Nice catch.
-I guess, we dont need to init again, since we dont stop the pore engine,
-we are ok.
+Let us thus not register the cpuidle states which have
+CPUIDLE_FLAG_TIMER_STOP flag set, on archs which depend on the hrtimer
+mode of broadcast in periodic mode. This patch takes care of doing this
+on powerpc. The cpus would not have entered into such deep cpuidle
+states in periodic mode on powerpc anyway. So there is no loss here.
 
->>> +}
->>> +
->>> +static int nest_cpu_notifier(struct notifier_block *self,
->>> +				unsigned long action, void *hcpu)
->>> +{
->>> +	long cpu = (long)hcpu;
->>> +
->>> +	switch (action & ~CPU_TASKS_FROZEN) {
->>> +	case CPU_DOWN_FAILED:
->> Why do we need to handle the DOWN_FAILED case ? In DOWN_PREPARE, you
->> have ensured that the function moves on to another cpu. So even if the
->> offline failed, its no issue. The duty is safely taken over.
->>
->>> +	case CPU_STARTING:
->> I would suggest initializing nest in the CPU_ONLINE stage. This is
->> because CPU_STARTING phase can fail. In that case, we will be
->> unnecessarily initializing nest pre-maturely. CPU_ONLINE phase assures
->> that the cpu is successfully online and you can then initiate nest.
-> Ok sure. Will do that.
->
->>> +		nest_init_cpu(cpu);
->>> +		break;
->>> +	case CPU_DOWN_PREPARE:
->>> +		nest_exit_cpu(cpu);
->>> +		break;
->>> +	default:
->>> +		break;
->>> +	}
->>> +
->>> +	return NOTIFY_OK;
->>> +}
->>> +
->>> +static struct notifier_block nest_cpu_nb = {
->>> +	.notifier_call  = nest_cpu_notifier,
->>> +	.priority       = CPU_PRI_PERF + 1,
->>> +};
->>> +
->>> +void cpumask_chip(void)
->> This name ^^ is not apt IMO. You are initiating the cpumask necessary
->> for nest pmu. So why not call it nest_pmu_cpumask_init() ?
-> Ok.
->>> +{
->>> +	const struct cpumask *l_cpumask;
->>> +	int cpu, nid;
->>> +
->>> +	if (!cpumask_empty(&cpu_mask_nest_pmu))
->> When can this condition become true ?
-> My bad. This code ended up here from the initial RFC patch, but after
-> reviewing this again, i dont think this is needed. Once again nice catch.
->
->>> +		return;
->>> +
->>> +	cpu_notifier_register_begin();
->>> +
->>> +	/*
->>> +	 * Nest PMUs are per-chip counters. So designate a cpu
->>> +	 * from each node/chip for counter collection.
->>> +	 */
->>> +	for_each_online_node(nid) {
->>> +		l_cpumask = cpumask_of_node(nid);
->>> +
->>> +		/* designate first online cpu in this node */
->>> +		cpu = cpumask_first(l_cpumask);
->>> +		cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
->>> +	}
->>> +
->>> +	/* Initialize Nest PMUs in each node using designated cpus */
->>> +	on_each_cpu_mask(&cpu_mask_nest_pmu, (smp_call_func_t)nest_init, NULL, 1);
->>> +
->>> +	__register_cpu_notifier(&nest_cpu_nb);
->>> +
->>> +	cpu_notifier_register_done();
->>> +}
->> Regards
->> Preeti U Murthy
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-powernv.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 5937207..3442764 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -60,6 +60,8 @@ static int nap_loop(struct cpuidle_device *dev,
+ 	return index;
+ }
+ 
++/* Register for fastsleep only in oneshot mode of broadcast */
++#ifdef CONFIG_TICK_ONESHOT
+ static int fastsleep_loop(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv,
+ 				int index)
+@@ -83,7 +85,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+ 
+ 	return index;
+ }
+-
++#endif
+ /*
+  * States for dedicated partition case.
+  */
+@@ -209,7 +211,14 @@ static int powernv_add_idle_states(void)
+ 			powernv_states[nr_idle_states].flags = 0;
+ 			powernv_states[nr_idle_states].target_residency = 100;
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
+-		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
++		}
++
++		/*
++		 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set must come
++		 * within this config dependency check.
++		 */
++#ifdef CONFIG_TICK_ONESHOT
++		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+ 			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+ 			/* Add FASTSLEEP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+@@ -218,7 +227,7 @@ static int powernv_add_idle_states(void)
+ 			powernv_states[nr_idle_states].target_residency = 300000;
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+ 		}
+-
++#endif
+ 		powernv_states[nr_idle_states].exit_latency =
+ 				((unsigned int)latency_ns[i]) / 1000;
+ 
