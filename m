@@ -1,29 +1,18 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49B4F1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 15:09:41 +1000 (AEST)
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F223D140319
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 15:09:38 +1000 (AEST)
-Received: by pactm7 with SMTP id tm7so21391209pac.2
- for <linuxppc-dev@ozlabs.org>; Tue, 23 Jun 2015 22:09:36 -0700 (PDT)
-Message-ID: <1435122485.28543.34.camel@axtens.net>
-Subject: Re: [PATCH] powerpc: Set the correct kernel taint on machine check
- errors.
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Date: Wed, 24 Jun 2015 15:08:05 +1000
-In-Reply-To: <1435122019.3620.6.camel@ellerman.id.au>
-References: <1434338719-8416-1-git-send-email-dja@axtens.net>
- <1435122019.3620.6.camel@ellerman.id.au>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-x48SKaz11FLKsMU0GgOO"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D5C01A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 15:25:28 +1000 (AEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id t5O5PMAn022073
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 00:25:24 -0500
+Message-ID: <1435123522.3996.29.camel@kernel.crashing.org>
+Subject: [PATCH 1/3] powerpc/iommu: Remove dma_data union
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 24 Jun 2015 15:25:22 +1000
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,74 +23,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+To support "hybrid" DMA ops in a subsequent patch, we will need both
+a direct DMA offset and an iommu pointer. Those are currently exclusive
+(a union), so change them to be separate fields.
 
---=-x48SKaz11FLKsMU0GgOO
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+While there, also type iommu_table_base properly and make exist only
+on CONFIG_PPC64 since it's not referenced on 32-bit at all.
 
-On Wed, 2015-06-24 at 15:00 +1000, Michael Ellerman wrote:
-> On Mon, 2015-06-15 at 13:25 +1000, Daniel Axtens wrote:
-> > This means the 'M' flag will work properly when the kernel prints a bac=
-ktrace.
-> >=20
-> > Signed-off-by: Daniel Axtens <dja@axtens.net>
-> > ---
-> >  arch/powerpc/kernel/traps.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >=20
-> > diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> > index 6530f1b..37de90f 100644
-> > --- a/arch/powerpc/kernel/traps.c
-> > +++ b/arch/powerpc/kernel/traps.c
-> > @@ -297,6 +297,8 @@ long machine_check_early(struct pt_regs *regs)
-> > =20
-> >  	__this_cpu_inc(irq_stat.mce_exceptions);
-> > =20
-> > +	add_taint(TAINT_MACHINE_CHECK, LOCKDEP_NOW_UNRELIABLE);
->=20
-> I'm not sure about the lockdep bit.
->=20
-> I guess it's safer to just declare it fubar.
->=20
-I'm also not sure; I was matching x86 behaviour.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/include/asm/device.h      | 15 +++++++++------
+ arch/powerpc/include/asm/dma-mapping.h |  4 ++--
+ arch/powerpc/include/asm/iommu.h       | 31 +++++++++++++++++++++++++------
+ 3 files changed, 36 insertions(+), 14 deletions(-)
 
-> Does this fix a bug, or just nice to have?
->=20
-If you consider having the taint bits set incorrectly to be a bug, then
-it fixes a bug. Otherwise, it's just nice debug info to have: when we
-get a traceback with M set that isn't obviously related to a MCE we are
-forewarned.
-
-> cheers
->=20
->=20
-
---=20
-Regards,
-Daniel
-
---=-x48SKaz11FLKsMU0GgOO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCgAGBQJVijtGAAoJEPC3R3P2I92F4RQQAIJB02MawjSJa6a0NB8BvQuX
-wRQBDLxbLrAiOuNmyPqUnv9STmhpuINSALcLSaTC6Bgw7Pfc6N0/6RvHkshZUMeP
-Zc/eEr3Q9X2E5P4dSCvNIxK7ktalnhkQp5EAhPSY3Up/U9xIvNsJc0FPvEvvkGRm
-fMpsJscKyubN/n6HrUwkpStByhneMjrZiJ38XHKYkQYpWxdEc2CHXErCFC1tfIEY
-+SWZdVRKkOJjMyrbGVQ1O6ACR5QvK5G4YTjCozEC4au9PlIAwMKSqaY6IX6Q1k58
-AdZZMCO2im0YpvWr70Jig8/+07dEiL3R6UgEfyoVZxohiQuvltNUkix9L0EMbKIP
-IMsDaABK6k5tvVRa4duYycQD3PN/Du5plOmY1amJDLTNn6XJkdlVamVXVNWgE+nS
-dMv3O9WscbUFxi0e+lMGlHY3BBXjS5hvsVB5qtDPxmYiw4ZSMHs8hurDzym0j371
-jZGHAVKPYQsF30a/lbC/D/HyBqHAZ6mhn/zK+zxOwp7iwfuHsWgk/Va8aS8skU7O
-5l3WIjpZLwqHZ5khbNQq5MlMgYx5CTpci4NlH77RgyRwajdY3ctJxHzf5gdS30On
-Q9Oc78kbJcCksdXQx5Ha1RaTawqqNmilF3qVV0f5JsDRiHIpZbVDqf0x5YmVl1rB
-uETxOWR5DVSYrra0BFFD
-=YfWV
------END PGP SIGNATURE-----
-
---=-x48SKaz11FLKsMU0GgOO--
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index e9bdda8..406c2b1 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -10,6 +10,7 @@ struct dma_map_ops;
+ struct device_node;
+ #ifdef CONFIG_PPC64
+ struct pci_dn;
++struct iommu_table;
+ #endif
+ 
+ /*
+@@ -23,13 +24,15 @@ struct dev_archdata {
+ 	struct dma_map_ops	*dma_ops;
+ 
+ 	/*
+-	 * When an iommu is in use, dma_data is used as a ptr to the base of the
+-	 * iommu_table.  Otherwise, it is a simple numerical offset.
++	 * These two used to be a union. However, with the hybrid ops we need
++	 * both so here we store both a DMA offset for direct mappings and
++	 * an iommu_table for remapped DMA.
+ 	 */
+-	union {
+-		dma_addr_t	dma_offset;
+-		void		*iommu_table_base;
+-	} dma_data;
++	dma_addr_t		dma_offset;
++
++#ifdef CONFIG_PPC64
++	struct iommu_table	*iommu_table_base;
++#endif
+ 
+ #ifdef CONFIG_IOMMU_API
+ 	void			*iommu_domain;
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 9103687..9cbbc9e 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -106,7 +106,7 @@ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+ static inline dma_addr_t get_dma_offset(struct device *dev)
+ {
+ 	if (dev)
+-		return dev->archdata.dma_data.dma_offset;
++		return dev->archdata.dma_offset;
+ 
+ 	return PCI_DRAM_OFFSET;
+ }
+@@ -114,7 +114,7 @@ static inline dma_addr_t get_dma_offset(struct device *dev)
+ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ {
+ 	if (dev)
+-		dev->archdata.dma_data.dma_offset = off;
++		dev->archdata.dma_offset = off;
+ }
+ 
+ /* this will be removed soon */
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index ca18cff..7b87bab 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -2,17 +2,17 @@
+  * Copyright (C) 2001 Mike Corrigan & Dave Engebretsen, IBM Corporation
+  * Rewrite, cleanup:
+  * Copyright (C) 2004 Olof Johansson <olof@lixom.net>, IBM Corporation
+- * 
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+  * (at your option) any later version.
+- * 
++ *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+- * 
++ *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+@@ -131,16 +131,21 @@ int get_iommu_order(unsigned long size, struct iommu_table *tbl)
+ 
+ struct scatterlist;
+ 
+-static inline void set_iommu_table_base(struct device *dev, void *base)
++#ifdef CONFIG_PPC64
++
++static inline void set_iommu_table_base(struct device *dev,
++					struct iommu_table *base)
+ {
+-	dev->archdata.dma_data.iommu_table_base = base;
++	dev->archdata.iommu_table_base = base;
+ }
+ 
+ static inline void *get_iommu_table_base(struct device *dev)
+ {
+-	return dev->archdata.dma_data.iommu_table_base;
++	return dev->archdata.iommu_table_base;
+ }
+ 
++extern int dma_iommu_dma_supported(struct device *dev, u64 mask);
++
+ /* Frees table for an individual device node */
+ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+ 
+@@ -225,6 +230,20 @@ static inline int __init tce_iommu_bus_notifier_init(void)
+ }
+ #endif /* !CONFIG_IOMMU_API */
+ 
++#else
++
++static inline void *get_iommu_table_base(struct device *dev)
++{
++	return NULL;
++}
++
++static inline int dma_iommu_dma_supported(struct device *dev, u64 mask)
++{
++	return 0;
++}
++
++#endif /* CONFIG_PPC64 */
++
+ extern int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 			    struct scatterlist *sglist, int nelems,
+ 			    unsigned long mask,
