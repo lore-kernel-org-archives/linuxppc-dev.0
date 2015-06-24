@@ -1,46 +1,37 @@
-Return-Path: <dave.long@linaro.org>
-Received: from mail-qk0-f170.google.com (mail-qk0-f170.google.com
- [209.85.220.170])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vipin@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55E4E1A06A9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 23:52:13 +1000 (AEST)
-Received: by qkbp125 with SMTP id p125so21923388qkb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 06:52:11 -0700 (PDT)
-Message-ID: <558AB581.6050802@linaro.org>
-Date: Wed, 24 Jun 2015 09:49:53 -0400
-From: David Long <dave.long@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C33A1A0F97
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 05:18:29 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
+ Thu, 25 Jun 2015 00:48:27 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 28DAB1258062
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 00:51:02 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5OJILoW58261728
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 00:48:22 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5OIEYdS010863
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Jun 2015 23:44:34 +0530
+Message-ID: <558B027C.1060304@linux.vnet.ibm.com>
+Date: Thu, 25 Jun 2015 00:48:20 +0530
+From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>,
- Anton Blanchard <anton@samba.org>,
- Behan Webster <behanw@converseincode.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Eric Paris <eparis@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Ingo Molnar <mingo@redhat.com>,
- Jan Willeke <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Nikolay Borisov <Nikolay.Borisov@arm.com>,
- Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>,
- Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
- Russell King <linux@arm.linux.org.uk>,
- Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org, mahesh@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
- to common include file
-References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>			
- <1434386579-6045-2-git-send-email-dave.long@linaro.org>		
- <1434687583.23771.5.camel@ellerman.id.au> <5584234E.2040701@linaro.org>	
- <1435030328.28070.5.camel@ellerman.id.au> <558963A3.4070503@linaro.org>
- <1435118879.3620.5.camel@ellerman.id.au>
-In-Reply-To: <1435118879.3620.5.camel@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+CC: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc/pseries: Ratelimit EPOW event warnings
+References: <1433222291-26461-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+In-Reply-To: <1433222291-26461-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,80 +41,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/15 00:07, Michael Ellerman wrote:
-> On Tue, 2015-06-23 at 09:48 -0400, David Long wrote:
->> On 06/22/15 23:32, Michael Ellerman wrote:
->>> On Fri, 2015-06-19 at 10:12 -0400, David Long wrote:
->>>> On 06/19/15 00:19, Michael Ellerman wrote:
->>>>> On Mon, 2015-06-15 at 12:42 -0400, David Long wrote:
->>>>>> From: "David A. Long" <dave.long@linaro.org>
->>>>>>
->>>>>> The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
->>>>>>     feature and has identical definitions in four different arch ptrace.h
->>>>>> include files. It seems unlikely that definition would ever need to be
->>>>>> changed regardless of architecture so lets move it into
->>>>>> include/linux/ptrace.h.
->>>>>>
->>>>>> Signed-off-by: David A. Long <dave.long@linaro.org>
->>>>>> ---
->>>>>>     arch/powerpc/kernel/ptrace.c | 5 -----
->>>>>
->>>>> Built and booted on powerpc, but is there an easy way to actually test the code
->>>>> paths in question?
->>>>
->>>> There is an easy way to "smoke test" it on all archiectures that also
->>>> implement kprobes (which powerpc does).  If I'm understanding the
->>>> powerpc code correctly (WRT register naming conventions) just do the
->>>> following:
->>>>
->>>> cd /sys/kernel/debug/tracing
->>>> echo 'p do_fork %gpr0' > kprobe_events
->>>> echo 1 > events/kprobes/enable
->>>> ls
->>>> cat trace
->>>> echo 0 > events/kprobes/enable
->>>>
->>>> Every fork() call done on the system between those two echo commands
->>>> (hence the "ls") should append a line to the trace file.  For a more
->>>> exhaustive test one could repeat this sequence for every register in the
->>>> architecture.
->>>
->>> OK, so I went the whole hog and did:
->>>
->>> $ echo 'p do_fork %gpr0 %gpr1 %gpr2 %gpr3 %gpr4 %gpr5 %gpr6 %gpr7 %gpr8 %gpr9 %gpr10 %gpr11 %gpr12 %gpr13 %gpr14 %gpr15 %gpr16 %gpr17 %gpr18 %gpr19 %gpr20 %gpr21 %gpr22 %gpr23 %gpr24 %gpr25 %gpr26 %gpr27 %gpr28 %gpr29 %gpr30 %gpr31 %nip %msr %ctr %link %xer %ccr %softe %trap %dar %dsisr' > kprobe_events
->>>
->>> And I get:
->>>
->>>               bash-2057  [001] d...   535.433941: p_do_fork_0: (do_fork+0x8/0x490) arg1=0xc0000000000094d0 arg2=0xc0000001fbe9be30 arg3=0xc000000001133bb8 arg4=0x1200011 arg5=0x0 arg6=0x0 arg7=0x0 arg8=0x3fff7c885940 arg9=0x1 arg10=0xc0000001fbe9bea0 arg11=0x0 arg12=0xc01 arg13=0xc0000000000094c8 arg14=0xc00000000fdc0480 arg15=0x0 arg16=0x22000000 arg17=0x1016d6e8 arg18=0x0 arg19=0x44000000 arg20=0x0 arg21=0x10037c82208 arg22=0x1017b008 arg23=0x10143d18 arg24=0x10178854 arg25=0x10144f90 arg26=0x10037c821e8 arg27=0x0 arg28=0x0 arg29=0x0 arg30=0x0 arg31=0x809 arg32=0x3ffff788c010 arg33=0xc0000000000a7fe8 arg34=0x8000000000029033 arg35=0xc0000000000094c8 arg36=0xc0000000000094d0 arg37=0x0 arg38=0x42222844 arg39=0x1 arg40=0x700 arg41=0xc0000001fbe9bd50 arg42=0xc0000001fbe9bd30
->>>
->>> Which is ugly as hell, but appears unchanged since before your patch.
->>>
->>
->> Excellent.  Many thanks.
->
-> No worries.
->
-> Did I already send you an ack? Have another one in case:
->
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->
->
 
-Thanks.
-
->>> I take it it's expected that the names are not decoded in the output?
->>
->> Yes.
+On 06/02/2015 10:48 AM, Kamalesh Babulal wrote:
+> We print the respective warning after parsing EPOW interrupts,
+> prompting user to take action depending upon the severity of the
+> event.
 >
-> In fact I don't see anywhere that uses the reverse decoding, ie.
-> regs_query_register_name().
+> Some times same EPOW event warning, such as below could flood kernel
+> log, over a period of time. So Limit the warnings by using ratelimit
+> variant of pr_err. Also, merge adjacent pr_err/pr_emerg into single
+> one to reduce the number of lines printed per warning.
 >
+> May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:04:24 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:07:18 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:13:04 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:22:04 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:22:26 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:22:36 alp kernel: Non critical power or cooling issue cleared
 
-Neither did I.  I assumed it was intended to support either future 
-kernel code or custom debug modules.
+These messages are minutes apart and thus rate limiting won't help.
+One solution could be to use a flag based approach. Set a flag once a
+EPOW condition is detected and check that flag upon receiving EPOW_RESET.
+EPOW condition clear message should be logged only if a EPOW was previously
+detected i.e. flag found set.
 
-> cheers
 >
+> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Cc: Anton Blanchard <anton@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+> v2 Changes:
+>   - Merged multiple adjacent pr_err/pr_emerg into single line to reduce multi-line
+>     warnings, based on Michael's comments.
 >
-
--dl
+>   arch/powerpc/platforms/pseries/ras.c | 17 ++++++++---------
+>   1 file changed, 8 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+> index 02e4a17..3620935 100644
+> --- a/arch/powerpc/platforms/pseries/ras.c
+> +++ b/arch/powerpc/platforms/pseries/ras.c
+> @@ -145,17 +145,17 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
+>   
+>   	switch (action_code) {
+>   	case EPOW_RESET:
+> -		pr_err("Non critical power or cooling issue cleared");
+> +		pr_err_ratelimited("Non critical power or cooling issue cleared");
+>   		break;
+>   
+>   	case EPOW_WARN_COOLING:
+> -		pr_err("Non critical cooling issue reported by firmware");
+> -		pr_err("Check RTAS error log for details");
+> +		pr_err_ratelimited("Non critical cooling issue reported by firmware,"
+> +				   " Check RTAS error log for details");
+>   		break;
+>   
+>   	case EPOW_WARN_POWER:
+> -		pr_err("Non critical power issue reported by firmware");
+> -		pr_err("Check RTAS error log for details");
+> +		pr_err_ratelimited("Non critical power issue reported by firmware,"
+> +				   " Check RTAS error log for details");
+>   		break;
+>   
+>   	case EPOW_SYSTEM_SHUTDOWN:
+> @@ -169,15 +169,14 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
+>   
+>   	case EPOW_MAIN_ENCLOSURE:
+>   	case EPOW_POWER_OFF:
+> -		pr_emerg("Critical power/cooling issue reported by firmware");
+> -		pr_emerg("Check RTAS error log for details");
+> -		pr_emerg("Immediate power off");
+> +		pr_emerg("Critical power/cooling issue reported by firmware,"
+> +			 " Check RTAS error log for details. Immediate power off");
+>   		emergency_sync();
+>   		kernel_power_off();
+>   		break;
+>   
+>   	default:
+> -		pr_err("Unknown power/cooling event (action code %d)",
+> +		pr_err_ratelimited("Unknown power/cooling event (action code %d)",
+>   			action_code);
+>   	}
+>   }
