@@ -1,37 +1,29 @@
-Return-Path: <svaidy@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D510D1A06A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:44 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
- Thu, 25 Jun 2015 16:16:43 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 39F8A3578048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:40 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5P6GWIk4587780
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:40 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5P6G7Ii017343
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:07 +1000
-Date: Thu, 25 Jun 2015 11:45:46 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Fix vma page prot flags in opal-prd
- driver
-Message-ID: <20150625061546.GA4233@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <20150621182616.9866.16633.stgit@drishya>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20150621182616.9866.16633.stgit@drishya>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D3B01A06A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:19:59 +1000 (AEST)
+Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
+ [IPv6:2607:f8b0:400e:c02::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 684FE1402EE
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:19:58 +1000 (AEST)
+Received: by pdjn11 with SMTP id n11so46584464pdj.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 23:19:55 -0700 (PDT)
+Message-ID: <1435213119.4286.51.camel@axtens.net>
+Subject: Re: [PATCH V9 00/13] powerpc, perf: Enable SW branch filters
+From: Daniel Axtens <dja@axtens.net>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
+ mikey@neuling.org
+Date: Thu, 25 Jun 2015 16:18:39 +1000
+In-Reply-To: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-XTzxiw5VJHfG8f/bK2Un"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,75 +33,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2015-06-21 23:56:16]:
 
-> opal-prd driver will mmap() firmware code/data area as private
-> mapping to prd user space daemon.  Write to this page will
-> trigger COW faults.  The new COW pages are normal kernel RAM
-> pages accounted by the kernel and are not special.
-> 
-> vma->vm_page_prot value will be used at page fault time
-> for the new COW pages, while pgprot_t value passed in
-> remap_pfn_range() is used for the initial page table entry.
-> 
-> Hence:
-> * Do not add _PAGE_SPECIAL in vma, but only for remap_pfn_range()
-> * Also remap_pfn_range() will add the _PAGE_SPECIAL flag using
->   pte_mkspecial() call, hence no need to specify in the driver
-> 
-> This fix resolves the page accounting warning shown below:
-> BUG: Bad rss-counter state mm:c0000007d34ac600 idx:1 val:19
-> 
-> The above warning is triggered since _PAGE_SPECIAL was incorrectly
-> being set for the normal kernel COW pages.
-> 
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/opal-prd.c |    9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
-> index 46cb3fe..4ece8e4 100644
-> --- a/arch/powerpc/platforms/powernv/opal-prd.c
-> +++ b/arch/powerpc/platforms/powernv/opal-prd.c
-> @@ -112,6 +112,7 @@ static int opal_prd_open(struct inode *inode, struct file *file)
->  static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
->  {
->  	size_t addr, size;
-> +	pgprot_t page_prot;
->  	int rc;
->  
->  	pr_devel("opal_prd_mmap(0x%016lx, 0x%016lx, 0x%lx, 0x%lx)\n",
-> @@ -125,13 +126,11 @@ static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
->  	if (!opal_prd_range_is_valid(addr, size))
->  		return -EINVAL;
->  
-> -	vma->vm_page_prot = __pgprot(pgprot_val(phys_mem_access_prot(file,
-> -						vma->vm_pgoff,
-> -						 size, vma->vm_page_prot))
-> -					| _PAGE_SPECIAL);
-> +	page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
-> +					 size, vma->vm_page_prot);
->  
->  	rc = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, size,
-> -			vma->vm_page_prot);
-> +				page_prot);
+--=-XTzxiw5VJHfG8f/bK2Un
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Ben,
+Hi Anshuman,
 
-remap_pfn_range() is the correct method to map the firmware pages
-because we will not have struct page associated with this RAM area.
+Thanks for your continued work on this.
 
-We do a memblock_reserve() in early boot and take out this memory from
-kernel and avoid struct page allocation/init for these.
+Given that the series is now at version 9 and is 13 patches long, I
+wonder if it might be worth splitting it up.
 
-vm_insert_page() is an alternative that would have worked if kernel
-allocated the memory, in which case we can bump up the page count and
-map the page to user space.  This is already done by vm_insert_page()
-and we will not need to make the page special.
+I'd suggest:
 
-However, this use case fits remap_pfn_range() and page special
-mechanism since there is no struct page associate with this physical
-pages.
+ - Patch 1 could be sent individually as it's a bug fix.
 
---Vaidy
+ - Separating out a series of simple cleanups would make the actual
+changes in your patch set easier to understand. Patches 2, 3 and 5 are
+obvious candidates.
+
+ - It looks like the changes in patch 6 aren't used by any of the
+following patches. It might be worth separating that out or just
+dropping it entirely.
+
+
+That would give you a series with just:
+4   powerpc, perf: Restore privilege level filter support for BHRB
+7   powerpc, perf: Re organize PMU branch filter processing on POWER8
+8   powerpc, perf: Change the name of HW PMU branch filter tracking variabl=
+e
+9   powerpc, lib: Add new branch analysis support functions
+10   powerpc, perf: Enable SW filtering in branch stack sampling framework
+11   powerpc, perf: Change POWER8 PMU configuration to work with SW filters
+12   powerpc, perf: Enable privilege mode SW branch filters
+13   selftests, powerpc: Add test for BHRB branch filters (HW & SW)
+
+That might make it easier for you to start getting the ground work in,
+and make it easier for others to understand what you're trying to do.
+
+Regards,
+Daniel=20
+
+On Mon, 2015-06-15 at 17:40 +0530, Anshuman Khandual wrote:
+> 	This is the continuation (rebased and reworked) of the series
+> posted at https://lkml.org/lkml/2014/5/5/153 (which is V6). I remember
+> to have incremented the version count for the re-send of the first four
+> patches of the series to Peter Z for generic review which got pulled in
+> last year. These patches here are the remaining powerpc part of the
+> original series.
+>=20
+> Changes in V9
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Changed some of the commit messages and fixed some typos
+> (2) Variable 'bhrb_users' type changed from int to unsigned int
+> (3) Replaced the last usage of 'get_cpu_var' with 'this_cpu_ptr'
+> (4) Conditional checks for 'cpuhw->bhrb_users' changed to test against ze=
+ro
+> (5) Updated in-code documentation inside 'check_excludes' function
+> (6) Changed the name & type of 'pred' variable in 'power_pmu_bhrb_read'
+> (7) Changed the name of 'tmp' to 'to_addr' inside 'power_pmu_bhrb_read'
+> (8) Changed return values for branch instruction analysis functions
+> (9) Changed the name of 'flag' variable to 'select_branch' inside 'keep_b=
+ranch'
+> (10) Fixed one nested conditional statement inside 'keep_branch' function
+> (11) Changed function name from 'update_branch_entry' to 'insert_branch'
+> (12) Fixed copyright and license statements for new selftest related file=
+s
+> (13) Improved helper assembly functions with some macro definitions
+> (14) Improved the core test program at various places
+> (15) Added .gitignore file for the new test case
+>=20
+> Changes in V8 (http://patchwork.ozlabs.org/patch/481848/)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Fixed BHRB privilege mode branch filter request processing
+> (2) Dropped branch records where 'from' cannot be fetched
+> (3) Added in-code documenation at various places in the patch series
+> (4) Added one comprehensive seltest case to verify all the filters
+>=20
+> Changes in V7
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Incremented the version count while requesting pull for generic chang=
+es
+>=20
+> Changes in V6 (https://lkml.org/lkml/2014/5/5/153)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Rebased the patchset against the master
+> (2) Added "Reviewed-by: Andi Kleen" in the first four patches in the seri=
+es which changes the
+>     generic or X86 perf code. [https://lkml.org/lkml/2014/4/7/130]
+>=20
+> Changes in V5 (https://lkml.org/lkml/2014/3/7/101)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Added a precursor patch to cleanup the indentation problem in power_p=
+mu_bhrb_read
+> (2) Added a precursor patch to re-arrange P8 PMU BHRB filter config which=
+ improved the clarity
+> (3) Merged the previous 10th patch into the 8th patch
+> (4) Moved SW based branch analysis code from core perf into code-patching=
+ library as suggested by Michael
+> (5) Simplified the logic in branch analysis library
+> (6) Fixed some ambiguities in documentation at various places
+> (7) Added some more in-code documentation blocks at various places
+> (8) Renamed some local variable and function names
+> (9) Fixed some indentation and white space errors in the code
+> (10) Implemented almost all the review comments and suggestions made by M=
+ichael Ellerman on V4 patchset
+> (11) Enabled privilege mode SW branch filter
+> (12) Simplified and generalized the SW implemented conditional branch fil=
+ter
+> (13) PERF_SAMPLE_BRANCH_COND filter is now supported only through SW impl=
+ementation
+> (14) Adjusted other patches to deal with the above changes
+>=20
+> Changes in V4 (https://lkml.org/lkml/2013/12/4/168)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Changed the commit message for patch (01/10)
+> (2) Changed the patch (02/10) to accommodate review comments from Michael=
+ Ellerman
+> (3) Rebased the patchset against latest Linus's tree
+>=20
+> Changes in V3 (https://lkml.org/lkml/2013/10/16/59)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Split the SW branch filter enablement into multiple patches
+> (2) Added PMU neutral SW branch filtering code, PMU specific HW branch fi=
+ltering code
+> (3) Added new instruction analysis functionality into powerpc code-patchi=
+ng library
+> (4) Changed name for some of the functions
+> (5) Fixed couple of spelling mistakes
+> (6) Changed code documentation in multiple places
+>=20
+> Changes in V2 (https://lkml.org/lkml/2013/8/30/10)
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> (1) Enabled PPC64 SW branch filtering support
+> (2) Incorporated changes required for all previous comments
+>=20
+> Anshuman Khandual (13):
+>   powerpc, perf: Drop the branch sample when 'from' cannot be fetched
+>   powerpc, perf: Change type of the bhrb_users variable
+>   powerpc, perf: Replace last usage of get_cpu_var with this_cpu_ptr
+>   powerpc, perf: Restore privilege level filter support for BHRB
+>   powerpc, perf: Change name & type of 'pred' in power_pmu_bhrb_read
+>   powerpc, perf: Re organize BHRB processing
+>   powerpc, perf: Re organize PMU branch filter processing on POWER8
+>   powerpc, perf: Change the name of HW PMU branch filter tracking variabl=
+e
+>   powerpc, lib: Add new branch analysis support functions
+>   powerpc, perf: Enable SW filtering in branch stack sampling framework
+>   powerpc, perf: Change POWER8 PMU configuration to work with SW filters
+>   powerpc, perf: Enable privilege mode SW branch filters
+>   selftests, powerpc: Add test for BHRB branch filters (HW & SW)
+>=20
+>  arch/powerpc/include/asm/code-patching.h           |  15 +
+>  arch/powerpc/include/asm/perf_event_server.h       |  10 +-
+>  arch/powerpc/lib/code-patching.c                   |  60 +++
+>  arch/powerpc/perf/core-book3s.c                    | 361 +++++++++++---
+>  arch/powerpc/perf/power8-pmu.c                     |  70 ++-
+>  tools/testing/selftests/powerpc/pmu/Makefile       |  11 +-
+>  .../testing/selftests/powerpc/pmu/bhrb/.gitignore  |   1 +
+>  tools/testing/selftests/powerpc/pmu/bhrb/Makefile  |  13 +
+>  .../selftests/powerpc/pmu/bhrb/bhrb_filters.c      | 535 +++++++++++++++=
+++++++
+>  .../selftests/powerpc/pmu/bhrb/bhrb_filters.h      |  15 +
+>  .../selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S  | 263 ++++++++++
+>  tools/testing/selftests/powerpc/pmu/event.h        |   5 +
+>  12 files changed, 1267 insertions(+), 92 deletions(-)
+>  create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/.gitignore
+>  create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/Makefile
+>  create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters=
+.c
+>  create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters=
+.h
+>  create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters=
+_asm.S
+>=20
+
+--=20
+Regards,
+Daniel
+
+--=-XTzxiw5VJHfG8f/bK2Un
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAABCgAGBQJVi50/AAoJEPC3R3P2I92FV3kQAL4k5kZm6+nIaTMLGzX/P3lP
+A1xsPYPl2gZxOUe9xo01FMG5CZdbR0Xtha1hgP1mIuk2DjXsfcrddTz6gaMc0Bfb
+3PBC0VGTI4OWaDQD2Hz3GajCmNh7FmoRCyi6RF+OhnAy8Ox2dF/Es8goOEqy05ji
+rPtqqR28UpyonJCQSbbXrm9lspp0kRVhz2oVo+x/iYdWDCEAP10N+rY5jBY8eIBC
+cWYMTOpxMxRiThKaeT3HJoTFQqxdVbR4QWzgYKg4g+g7yjEn+N9Y95VYQhi5npL+
+uXnzvlZ0lXnYF2pAembe7yVH9rwi9axFliAT9NiabXhrlumwku0HI27y1SYTZl8p
+FotYwWXF586k7Sl4mZQ//igBKCIMVQf01pqUd8gm7W0NcO9xxOeARWE1DSNe+9+c
+5dqO/yB30shyHJSO2Kn4D4RMekltNfwunAnod3WnHSN4RNtiExuYmJIyPBNHi1H+
+IT58HVoVWOIvy+HQTrFkkPh/xzjWuZULv9ZL1Clb1Iyb56eX3zbbr6nr0kq0RoaW
+UoBFW2tEhcEEWQQMtSCyI1XLRsbtp0UBLk3zj/3uf3IfeWpe/9NQBna+RUJ1Uczp
+ps6eZ8fDNjWEWUaqefIVK7OPis1g6AR9aGrydviQ7fIcGIrYG6kKtQeDv7m7BDpX
+PPv5PO5jMq5ZKYKTVVgO
+=TOQV
+-----END PGP SIGNATURE-----
+
+--=-XTzxiw5VJHfG8f/bK2Un--
