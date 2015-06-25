@@ -1,30 +1,37 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B7ABF1A06A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:53:36 +1000 (AEST)
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2D507140306
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 15:53:36 +1000 (AEST)
-Received: by pabvl15 with SMTP id vl15so43297782pab.1
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 22:53:33 -0700 (PDT)
-Message-ID: <1435211538.4286.42.camel@axtens.net>
-Subject: Re: [PATCH V9 06/13] powerpc, perf: Re organize BHRB processing
-From: Daniel Axtens <dja@axtens.net>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
- mikey@neuling.org
-Date: Thu, 25 Jun 2015 15:52:18 +1000
-In-Reply-To: <1434370268-19056-7-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1434370268-19056-7-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-0TWnR2W8mkqi+KJAnr5W"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D510D1A06A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:44 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Thu, 25 Jun 2015 16:16:43 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 39F8A3578048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:40 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5P6GWIk4587780
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:40 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5P6G7Ii017343
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:16:07 +1000
+Date: Thu, 25 Jun 2015 11:45:46 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Fix vma page prot flags in opal-prd
+ driver
+Message-ID: <20150625061546.GA4233@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20150621182616.9866.16633.stgit@drishya>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20150621182616.9866.16633.stgit@drishya>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,50 +41,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> [2015-06-21 23:56:16]:
 
---=-0TWnR2W8mkqi+KJAnr5W
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> opal-prd driver will mmap() firmware code/data area as private
+> mapping to prd user space daemon.  Write to this page will
+> trigger COW faults.  The new COW pages are normal kernel RAM
+> pages accounted by the kernel and are not special.
+> 
+> vma->vm_page_prot value will be used at page fault time
+> for the new COW pages, while pgprot_t value passed in
+> remap_pfn_range() is used for the initial page table entry.
+> 
+> Hence:
+> * Do not add _PAGE_SPECIAL in vma, but only for remap_pfn_range()
+> * Also remap_pfn_range() will add the _PAGE_SPECIAL flag using
+>   pte_mkspecial() call, hence no need to specify in the driver
+> 
+> This fix resolves the page accounting warning shown below:
+> BUG: Bad rss-counter state mm:c0000007d34ac600 idx:1 val:19
+> 
+> The above warning is triggered since _PAGE_SPECIAL was incorrectly
+> being set for the normal kernel COW pages.
+> 
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/opal-prd.c |    9 ++++-----
+>  1 file changed, 4 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
+> index 46cb3fe..4ece8e4 100644
+> --- a/arch/powerpc/platforms/powernv/opal-prd.c
+> +++ b/arch/powerpc/platforms/powernv/opal-prd.c
+> @@ -112,6 +112,7 @@ static int opal_prd_open(struct inode *inode, struct file *file)
+>  static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
+>  {
+>  	size_t addr, size;
+> +	pgprot_t page_prot;
+>  	int rc;
+>  
+>  	pr_devel("opal_prd_mmap(0x%016lx, 0x%016lx, 0x%lx, 0x%lx)\n",
+> @@ -125,13 +126,11 @@ static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
+>  	if (!opal_prd_range_is_valid(addr, size))
+>  		return -EINVAL;
+>  
+> -	vma->vm_page_prot = __pgprot(pgprot_val(phys_mem_access_prot(file,
+> -						vma->vm_pgoff,
+> -						 size, vma->vm_page_prot))
+> -					| _PAGE_SPECIAL);
+> +	page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
+> +					 size, vma->vm_page_prot);
+>  
+>  	rc = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, size,
+> -			vma->vm_page_prot);
+> +				page_prot);
 
+Hi Ben,
 
-> +static void insert_branch(struct cpu_hw_events *cpuhw,
-> +			int index, u64 from, u64 to, int mispred)
-Given that your previous patch made mispred a bool, this could take a
-bool too. It could probably be an inline function as well.
-> +{
-> +	cpuhw->bhrb_entries[index].from =3D from;
-> +	cpuhw->bhrb_entries[index].to =3D to;
-> +	cpuhw->bhrb_entries[index].mispred =3D mispred;
-> +	cpuhw->bhrb_entries[index].predicted =3D ~mispred;
-> +}
-> +
-> =20
---=20
-Regards,
-Daniel
+remap_pfn_range() is the correct method to map the firmware pages
+because we will not have struct page associated with this RAM area.
 
---=-0TWnR2W8mkqi+KJAnr5W
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+We do a memblock_reserve() in early boot and take out this memory from
+kernel and avoid struct page allocation/init for these.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
+vm_insert_page() is an alternative that would have worked if kernel
+allocated the memory, in which case we can bump up the page count and
+map the page to user space.  This is already done by vm_insert_page()
+and we will not need to make the page special.
 
-iQIcBAABCgAGBQJVi5cSAAoJEPC3R3P2I92FWhcP/16y/PoRB+b+gfGluFb1E+5Z
-rZi0xdSCeL59gkXdgz/MiT6Vpr5N0nkBHiD7342M1zMEUWQM+X+KlKOPOGx+ioVO
-zpD4U00mX1MNqICgCrKn8G3wc8ylHvInJHUk8ibi2x7ymqzGVQUCjE7q0ZdOula0
-OtyzrpWL8f4fim7EBFPf/TgwLiJdNJzVKFSpcxLQkxKEIWiFHhe9MSp5XZ0Kjjfh
-VQH9dq8wG7En4kAg4cun3Gu9ftBZud0eIqTfxBPg/LAqL4PNb0ozkrLviY59u27o
-wPRbyTJaVw0iTfjFZsfnlk22StyTwfm6C9ontFUHe9MI9fY/7c5Qp4WKlHk9Pion
-bDtIMJ+I8YaY3O4BlSL3AyETu/S5vUtujTrcHWvoSr2/t18zhh+mqzbv8oYhaM1t
-ERgeV3Pwz0iOjUzUmipq7tDE43ivTrCCu3oTvXVUkY243hXe+2m7opbgYlP2DOer
-eubMDxKuXj2ffiMv+BJFTgxWofaX8JvfH+c7x6gYvDBUJbAFsC0Zcr7pBQWtbkQB
-d+bJN5zhUGThwLZDb//2pz6S7cnqkpMoAf3CV1VLDk7bfhDBxRsXugE8tHpPz1KU
-s23O8zJzHZ2qRuJLz8xUhO1R7wBAZmlNf//SfHbLNlcKqj0A6HkhrQ5yTCXvaS5f
-Dyp6HuEAVprjBu9h/UbP
-=/nj+
------END PGP SIGNATURE-----
+However, this use case fits remap_pfn_range() and page special
+mechanism since there is no struct page associate with this physical
+pages.
 
---=-0TWnR2W8mkqi+KJAnr5W--
+--Vaidy
