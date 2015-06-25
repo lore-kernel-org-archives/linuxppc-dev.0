@@ -1,36 +1,36 @@
 Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E800F1A0736
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:46:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2AC91A0F99
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:46:39 +1000 (AEST)
 Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B191E1402ED
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:38 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 72CEC1402ED
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:39 +1000 (AEST)
 Received: from /spool/local
  by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Thu, 25 Jun 2015 16:46:37 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A49C43578048
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:35 +1000 (EST)
+ Thu, 25 Jun 2015 16:46:38 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DCAAF2BB0047
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:36 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5P6kRKB54788208
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:35 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5P6kSxu50987226
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:36 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5P6k2JX022063
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:03 +1000
+ t5P6k4IE022099
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:04 +1000
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, thuth@redhat.com, segher@kernel.crashing.org
 Cc: aik@ozlabs.ru, dvaleev@suse.com, nikunj@linux.vnet.ibm.com
-Subject: [PATCH SLOF v2 2/5] introduce 8-byte LE helpers
-Date: Thu, 25 Jun 2015 12:15:26 +0530
-Message-Id: <1435214729-15952-3-git-send-email-nikunj@linux.vnet.ibm.com>
+Subject: [PATCH SLOF v2 3/5] disk-label: rename confusing "block" word
+Date: Thu, 25 Jun 2015 12:15:27 +0530
+Message-Id: <1435214729-15952-4-git-send-email-nikunj@linux.vnet.ibm.com>
 In-Reply-To: <1435214729-15952-1-git-send-email-nikunj@linux.vnet.ibm.com>
 References: <1435214729-15952-1-git-send-email-nikunj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,51 +42,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-Reviewed-by: Thomas Huth <thuth@redhat.com>
----
- slof/fs/little-endian.fs       | 6 ++++++
- slof/fs/packages/disk-label.fs | 4 ++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+"block" word is not a block number, actually its an allocated host
+address.  Rename it to disk-buf along with a associated
+size(disk-buf-size=4096) for using during allocation/free.
 
-diff --git a/slof/fs/little-endian.fs b/slof/fs/little-endian.fs
-index f2e4e8d..6b4779e 100644
---- a/slof/fs/little-endian.fs
-+++ b/slof/fs/little-endian.fs
-@@ -17,6 +17,9 @@ here c@ ef = CONSTANT ?littleendian
- 
- ?bigendian [IF]
- 
-+: x!-le >r xbflip r> x! ;
-+: x@-le x@ xbflip ;
-+
- : l!-le  >r lbflip r> l! ;
- : l@-le  l@ lbflip ;
- 
-@@ -47,6 +50,9 @@ here c@ ef = CONSTANT ?littleendian
- 
- [ELSE]
- 
-+: x!-le x! ;
-+: x@-le x@ ;
-+
- : l!-le  l! ;
- : l@-le  l@ ;
- 
+Also renaming the helper routine read-sector to read-disk-buf. This
+routine assumes the address to be disk-buf and only takes sector number
+as argument.
+
+Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+---
+ slof/fs/packages/disk-label.fs | 78 ++++++++++++++++++++++--------------------
+ 1 file changed, 41 insertions(+), 37 deletions(-)
+
 diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
-index bb64d57..8c93cfb 100644
+index 8c93cfb..0995808 100644
 --- a/slof/fs/packages/disk-label.fs
 +++ b/slof/fs/packages/disk-label.fs
-@@ -384,8 +384,8 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+@@ -33,7 +33,8 @@ s" disk-label" device-name
+ 0 INSTANCE VALUE dos-logical-partitions
+ 
+ 0 INSTANCE VALUE block-size
+-0 INSTANCE VALUE block
++0 INSTANCE VALUE disk-buf
++d# 4096    VALUE disk-buf-size
+ 
+ 0 INSTANCE VALUE args
+ 0 INSTANCE VALUE args-len
+@@ -126,11 +127,11 @@ CONSTANT /gpt-part-entry
+ ;
+ 
+ 
+-\ read sector to array "block"
+-: read-sector ( sector-number -- )
++\ read sector to array "disk-buf"
++: read-disk-buf ( sector-number -- )
+    \ block-size is 0x200 on disks, 0x800 on cdrom drives
+    block-size * 0 seek drop      \ seek to sector
+-   block block-size read drop    \ read sector
++   disk-buf block-size read drop    \ read sector
+ ;
+ 
+ : (.part-entry) ( part-entry )
+@@ -149,35 +150,35 @@ CONSTANT /gpt-part-entry
+ 
+ : (.name) r@ begin cell - dup @ <colon> = UNTIL xt>name cr type space ;
+ 
+-: init-block ( -- )
++: init-disk-buf ( -- )
+    s" block-size" ['] $call-parent CATCH IF ABORT" parent has no block-size." THEN
+    to block-size
+-   d# 4096 alloc-mem
+-   dup d# 4096 erase
+-   to block
++   disk-buf-size alloc-mem
++   dup disk-buf-size erase
++   to disk-buf
+    debug-disk-label? IF
+-      ." init-block: block-size=" block-size .d ." block=0x" block u. cr
++      ." init-disk-buf: block-size=" block-size .d ." disk-buf=0x" disk-buf u. cr
+    THEN
+ ;
+ 
+ : partition>part-entry ( partition -- part-entry )
+-   1- /partition-entry * block mbr>partition-table +
++   1- /partition-entry * disk-buf mbr>partition-table +
+ ;
+ 
+ : partition>start-sector ( partition -- sector-offset )
+    partition>part-entry part-entry>sector-offset l@-le
+ ;
+ 
+-\ This word returns true if the currently loaded block has _NO_ MBR magic
++\ This word returns true if the currently loaded disk-buf has _NO_ MBR magic
+ : no-mbr? ( -- true|false )
+-   0 read-sector
++   0 read-disk-buf
+    1 partition>part-entry part-entry>id c@ ee = IF TRUE EXIT THEN \ GPT partition found
+-   block mbr>magic w@-le aa55 <>
++   disk-buf mbr>magic w@-le aa55 <>
+ ;
+ 
+-\ This word returns true if the currently loaded block has _NO_ GPT partition id
++\ This word returns true if the currently loaded disk-buf has _NO_ GPT partition id
+ : no-gpt? ( -- true|false )
+-   0 read-sector
++   0 read-disk-buf
+    1 partition>part-entry part-entry>id c@ ee <>
+ ;
+ 
+@@ -197,7 +198,7 @@ CONSTANT /gpt-part-entry
+          part-entry>sector-offset l@-le    ( current sector )
+          dup to part-start to lpart-start  ( current )
+          BEGIN
+-            part-start read-sector          \ read EBR
++            part-start read-disk-buf          \ read EBR
+             1 partition>start-sector IF
+                \ ." Logical Partition found at " part-start .d cr
+                1+
+@@ -240,7 +241,7 @@ CONSTANT /gpt-part-entry
+             part-entry>sector-offset l@-le        ( log-part current sector )
+             dup to part-start to lpart-start      ( log-part current )
+             BEGIN
+-               part-start read-sector             \ read EBR
++               part-start read-disk-buf             \ read EBR
+                1 partition>start-sector IF        \ first partition entry
+                   1+ 2dup = IF                    ( log-part current )
+                      2drop
+@@ -306,13 +307,13 @@ CONSTANT /gpt-part-entry
+ : has-iso9660-filesystem  ( -- TRUE|FALSE )
+    \ Seek to the beginning of logical 2048-byte sector 16
+    \ refer to Chapter C.11.1 in PAPR 2.0 Spec
+-   \ was: 10 read-sector, but this might cause trouble if you
++   \ was: 10 read-disk-buf, but this might cause trouble if you
+    \ try booting an ISO image from a device with 512b sectors.
+    10 800 * 0 seek drop      \ seek to sector
+-   block 800 read drop       \ read sector
++   disk-buf 800 read drop       \ read sector
+    \ Check for CD-ROM volume magic:
+-   block c@ 1 =
+-   block 1+ 5 s" CD001"  str=
++   disk-buf c@ 1 =
++   disk-buf 1+ 5 s" CD001"  str=
+    and
+    dup IF 800 to block-size THEN
+ ;
+@@ -361,7 +362,7 @@ C612                CONSTANT GPT-PREP-PARTITION-2
+ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+ 
+ : gpt-prep-partition? ( -- true|false )
+-   block gpt-part-entry>part-type-guid
++   disk-buf gpt-part-entry>part-type-guid
+    dup l@-le     GPT-PREP-PARTITION-1 <> IF drop false EXIT THEN
+    dup 4 + w@-le GPT-PREP-PARTITION-2 <> IF drop false EXIT THEN
+    dup 6 + w@-le GPT-PREP-PARTITION-3 <> IF drop false EXIT THEN
+@@ -374,18 +375,18 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+    debug-disk-label? IF
+       cr ." GPT partition found " cr
+    THEN
+-   1 read-sector block gpt>part-entry-lba l@-le
++   1 read-disk-buf disk-buf gpt>part-entry-lba l@-le
+    block-size * to seek-pos
+-   block gpt>part-entry-size l@-le to gpt-part-size
+-   block gpt>num-part-entry l@-le dup 0= IF false EXIT THEN
++   disk-buf gpt>part-entry-size l@-le to gpt-part-size
++   disk-buf gpt>num-part-entry l@-le dup 0= IF false EXIT THEN
+    1+ 1 ?DO
+       seek-pos 0 seek drop
+-      block gpt-part-size read drop gpt-prep-partition? IF
++      disk-buf gpt-part-size read drop gpt-prep-partition? IF
           debug-disk-label? IF
              ." GPT PReP partition found " cr
           THEN
--         block gpt-part-entry>first-lba x@ xbflip
--         block gpt-part-entry>last-lba x@ xbflip
-+         block gpt-part-entry>first-lba x@-le
-+         block gpt-part-entry>last-lba x@-le
+-         block gpt-part-entry>first-lba x@-le
+-         block gpt-part-entry>last-lba x@-le
++         disk-buf gpt-part-entry>first-lba x@-le
++         disk-buf gpt-part-entry>last-lba x@-le
           over - 1+                 ( addr offset len )
           swap                      ( addr len offset )
           block-size * to part-offset
+@@ -548,12 +549,12 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+ : try-dos-files ( -- found? )
+    no-mbr? IF false EXIT THEN
+ 
+-   \ block 0 byte 0-2 is a jump instruction in all FAT
++   \ disk-buf 0 byte 0-2 is a jump instruction in all FAT
+    \ filesystems.
+    \ e9 and eb are jump instructions in x86 assembler.
+-   block c@ e9 <> IF
+-      block c@ eb <>
+-      block 2+ c@ 90 <> or
++   disk-buf c@ e9 <> IF
++      disk-buf c@ eb <>
++      disk-buf 2+ c@ 90 <> or
+       IF false EXIT THEN
+    THEN
+    s" fat-files" (interpose-filesystem)
+@@ -561,8 +562,8 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+ ;
+ 
+ : try-ext2-files ( -- found? )
+-   2 read-sector               \ read first superblock
+-   block d# 56 + w@-le         \ fetch s_magic
++   2 read-disk-buf               \ read first superblock
++   disk-buf d# 56 + w@-le         \ fetch s_magic
+    ef53 <> IF false EXIT THEN  \ s_magic found?
+    s" ext2-files" (interpose-filesystem)
+    true
+@@ -599,13 +600,16 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+ \ as defined by IEEE 1275-1994 3.8.1
+ 
+ : close ( -- )
+-   debug-disk-label? IF ." Closing disk-label: block=0x" block u. ." block-size=" block-size .d cr THEN
+-   block d# 4096 free-mem
++   debug-disk-label? IF
++      ." Closing disk-label: disk-buf=0x" disk-buf u.
++      ." block-size=" block-size .d cr
++   THEN
++   disk-buf disk-buf-size free-mem
+ ;
+ 
+ 
+ : open ( -- true|false )
+-   init-block
++   init-disk-buf
+ 
+    parse-partition 0= IF
+       close
 -- 
 2.4.3
