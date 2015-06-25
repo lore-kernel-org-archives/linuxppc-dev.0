@@ -1,25 +1,25 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E791B1A0FC2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 19:57:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9FB201A0FF6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 19:57:13 +1000 (AEST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 25 Jun 2015 15:27:10 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 498103940048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:27:08 +0530 (IST)
+ Thu, 25 Jun 2015 15:27:11 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B7FCDE005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:30:45 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5P9v6iR7012772
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:27:06 +0530
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5P9uom48258046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:26:51 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5P9v4ol003986
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:27:05 +0530
+ t5P9unM1002883
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:26:50 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
@@ -29,10 +29,9 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  Stephane Eranian <eranian@google.com>
-Subject: [PATCH v3 5/7]powerpc/powernv: add event attribute and group to nest
- pmu
-Date: Thu, 25 Jun 2015 15:26:17 +0530
-Message-Id: <1435226179-28618-6-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v3 1/7]powerpc/powernv: Data structure and macros definition
+Date: Thu, 25 Jun 2015 15:26:13 +0530
+Message-Id: <1435226179-28618-2-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1435226179-28618-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1435226179-28618-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,8 +43,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add code to create event/format attributes and attribute groups for
-each nest pmu.
+Create new header file "nest-pmu.h" to add the data structures
+and macros needed for the nest pmu support.
 
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -56,97 +55,68 @@ Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/nest-pmu.c | 57 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ arch/powerpc/perf/nest-pmu.h | 53 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+ create mode 100644 arch/powerpc/perf/nest-pmu.h
 
-diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-index 6116ff3..20ed9f8 100644
---- a/arch/powerpc/perf/nest-pmu.c
-+++ b/arch/powerpc/perf/nest-pmu.c
-@@ -13,6 +13,17 @@
- static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
- static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
- 
-+PMU_FORMAT_ATTR(event, "config:0-20");
-+struct attribute *p8_nest_format_attrs[] = {
-+	&format_attr_event.attr,
-+	NULL,
-+};
-+
-+struct attribute_group p8_nest_format_group = {
-+	.name = "format",
-+	.attrs = p8_nest_format_attrs,
-+};
-+
- static int nest_event_info(struct property *pp, char *start,
- 			struct nest_ima_events *p8_events, int flg, u32 val)
- {
-@@ -45,6 +56,48 @@ static int nest_event_info(struct property *pp, char *start,
- 	return 0;
- }
- 
+diff --git a/arch/powerpc/perf/nest-pmu.h b/arch/powerpc/perf/nest-pmu.h
+new file mode 100644
+index 0000000..ecb5d26
+--- /dev/null
++++ b/arch/powerpc/perf/nest-pmu.h
+@@ -0,0 +1,53 @@
 +/*
-+ * Populate event name and string in attribute
++ * Nest Performance Monitor counter support for POWER8 processors.
++ *
++ * Copyright (C) 2015 Madhavan Srinivasan, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
 + */
-+struct attribute *dev_str_attr(const char *name, const char *str)
-+{
-+	struct perf_pmu_events_attr *attr;
 +
-+	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
++#include <linux/perf_event.h>
++#include <linux/slab.h>
++#include <linux/of.h>
++#include <linux/io.h>
++#include <asm/opal.h>
 +
-+	attr->event_str = str;
-+	attr->attr.attr.name = name;
-+	attr->attr.attr.mode = 0444;
-+	attr->attr.show = perf_event_sysfs_show;
++#define P8_NEST_MAX_CHIPS		32
++#define P8_NEST_MAX_PMUS		32
++#define P8_NEST_MAX_PMU_NAME_LEN	256
++#define P8_NEST_MAX_EVENTS_SUPPORTED	256
++#define P8_NEST_ENGINE_START		1
++#define P8_NEST_ENGINE_STOP		0
 +
-+	return &attr->attr.attr;
-+}
++/*
++ * Structure to hold per chip specific memory address
++ * information for nest pmus. Nest Counter data are exported
++ * in per-chip reserved memory region by the PORE Engine.
++ */
++struct perchip_nest_info {
++	uint32_t chip_id;
++	uint64_t pbase;
++	uint64_t vbase;
++	uint32_t size;
++};
 +
-+int update_events_in_group(
-+	struct nest_ima_events *p8_events, int idx, struct nest_pmu *pmu)
-+{
-+	struct attribute_group *attr_group;
-+	struct attribute **attrs;
-+	int i;
++/*
++ * Place holder for nest pmu events and values.
++ */
++struct nest_ima_events {
++	const char *ev_name;
++	const char *ev_value;
++};
 +
-+	/* Allocate memory for event attribute group */
-+	attr_group = kzalloc(((sizeof(struct attribute *) * (idx + 1)) +
-+				sizeof(*attr_group)), GFP_KERNEL);
-+	if (!attr_group)
-+		return -ENOMEM;
-+
-+	attrs = (struct attribute **)(attr_group + 1);
-+	attr_group->name = "events";
-+	attr_group->attrs = attrs;
-+
-+	for (i = 0; i < idx; i++, p8_events++)
-+		attrs[i] = dev_str_attr((char *)p8_events->ev_name,
-+					(char *)p8_events->ev_value);
-+
-+	pmu->attr_groups[0] = attr_group;
-+	return 0;
-+}
-+
- static int nest_pmu_create(struct device_node *dev, int pmu_index)
- {
- 	struct nest_ima_events **p8_events_arr, *p8_events;
-@@ -91,6 +144,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
- 			/* Save the name to register it later */
- 			sprintf(buf, "Nest_%s", (char *)pp->value);
- 			pmu_ptr->pmu.name = (char *)buf;
-+			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
- 			continue;
- 		}
- 
-@@ -122,6 +176,9 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
- 		idx++;
- 	}
- 
-+	update_events_in_group(
-+		(struct nest_ima_events *)p8_events_arr, idx, pmu_ptr);
-+
- 	return 0;
- }
- 
++/*
++ * Device tree parser code detects nest pmu support and
++ * registers new nest pmus. This structure will
++ * hold the pmu functions and attrs for each nest pmu and
++ * will be referenced at the time of pmu registration.
++ */
++struct nest_pmu {
++	struct pmu pmu;
++	const struct attribute_group *attr_groups[4];
++};
 -- 
 1.9.1
