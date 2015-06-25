@@ -2,29 +2,28 @@ Return-Path: <dja@axtens.net>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B111D1A06A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:43:20 +1000 (AEST)
-Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
- [IPv6:2607:f8b0:400e:c02::22c])
+ by lists.ozlabs.org (Postfix) with ESMTPS id B7ABF1A06A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:53:36 +1000 (AEST)
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BBB831402DE
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 15:43:18 +1000 (AEST)
-Received: by pdcu2 with SMTP id u2so45917110pdc.3
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 22:43:16 -0700 (PDT)
-Message-ID: <1435210920.4286.38.camel@axtens.net>
-Subject: Re: [PATCH V9 02/13] powerpc, perf: Change type of the bhrb_users
- variable
+ by ozlabs.org (Postfix) with ESMTPS id 2D507140306
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 15:53:36 +1000 (AEST)
+Received: by pabvl15 with SMTP id vl15so43297782pab.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 22:53:33 -0700 (PDT)
+Message-ID: <1435211538.4286.42.camel@axtens.net>
+Subject: Re: [PATCH V9 06/13] powerpc, perf: Re organize BHRB processing
 From: Daniel Axtens <dja@axtens.net>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
  mikey@neuling.org
-Date: Thu, 25 Jun 2015 15:42:00 +1000
-In-Reply-To: <1434370268-19056-3-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Thu, 25 Jun 2015 15:52:18 +1000
+In-Reply-To: <1434370268-19056-7-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1434370268-19056-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <1434370268-19056-7-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-Gvwx9E4OTyn0YwyLc7+h"
+ protocol="application/pgp-signature"; boundary="=-0TWnR2W8mkqi+KJAnr5W"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,31 +35,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-Gvwx9E4OTyn0YwyLc7+h
+--=-0TWnR2W8mkqi+KJAnr5W
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-> -	int				bhrb_users;
-> +	unsigned int			bhrb_users;
 
-OK, so this is a good start.
-
-A quick git grep for bhrb_users reveals this:
-perf/core-book3s.c:     WARN_ON_ONCE(cpuhw->bhrb_users < 0);
-
-That occurs in power_pmu_bhrb_disable, immediately following a decrement
-of bhrb_users. Now that the test can never be true, this patch should
-change the function to check if bhrb_users is 0 before decrementing.
-
->  	void				*bhrb_context;
->  	struct	perf_branch_stack	bhrb_stack;
->  	struct	perf_branch_entry	bhrb_entries[BHRB_MAX_ENTRIES];
-
+> +static void insert_branch(struct cpu_hw_events *cpuhw,
+> +			int index, u64 from, u64 to, int mispred)
+Given that your previous patch made mispred a bool, this could take a
+bool too. It could probably be an inline function as well.
+> +{
+> +	cpuhw->bhrb_entries[index].from =3D from;
+> +	cpuhw->bhrb_entries[index].to =3D to;
+> +	cpuhw->bhrb_entries[index].mispred =3D mispred;
+> +	cpuhw->bhrb_entries[index].predicted =3D ~mispred;
+> +}
+> +
+> =20
 --=20
 Regards,
 Daniel
 
---=-Gvwx9E4OTyn0YwyLc7+h
+--=-0TWnR2W8mkqi+KJAnr5W
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -69,19 +65,19 @@ Content-Transfer-Encoding: 7bit
 Version: GnuPG v2
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAABCgAGBQJVi5SoAAoJEPC3R3P2I92FGI8QALc2bNuFLOJDEPe6jVDLJFsb
-scnI51hWOgnlSQFANqgnJEAFs60Rl8yUaPVHe2JyLoDG2v9pvwVasAgWd99tMiWp
-ghd30H2ozAZSjyJQE/zxuMFAqsr2OiTMNPGO5B4hlRy6u72YJc5vCrcgHokPvvDm
-p4/owuqDH1KV5DeA6rlkuKYs2mwF1vfW3cCl6YafqDBbaaSZs6/FT/TCQjZxiJ2k
-1JQlnx76OF+2CvCaoN2qyc7bnK9tR5sPnmYIvYzs7vb4gfmhsK/bLtImTBNhVSFi
-A7htAz+C6rn1UY7G5T3hIPi+IY1hpmMym+BJeWY1d8aTDk45nRQexm8b2FFidhEX
-SH98s2eDqOGHFNnhNfLM3j0X+OH1X3lXRY+CqRVQnnG2cXuQzWKjzRmGKdhNmmgj
-05hqki7rr7UFP2QCmYLak2s3g1rTp6rUTqzT3Fr15rd4xJ1C/caRHS4S3xEOBmAi
-FeB2v4tzI80w6NnAgoLikLQufM2xlrDdiPCTQHeV5Vp6zBqilHDMMSsYVCCSOffp
-0vEn1w6LF9YJbKCdtxmjcpK4c/Y/h8bovUKxCmxmlizwUsVKbml9SC9bi73eRu78
-VTtzrVxkzNH6xpRrvdOezx0sHm9ywdemV4arsvrRVsUOZkgh2SHU3u28Lz4BK4yq
-vvFMCbxl4HYIZWB26Wfv
-=Qmn2
+iQIcBAABCgAGBQJVi5cSAAoJEPC3R3P2I92FWhcP/16y/PoRB+b+gfGluFb1E+5Z
+rZi0xdSCeL59gkXdgz/MiT6Vpr5N0nkBHiD7342M1zMEUWQM+X+KlKOPOGx+ioVO
+zpD4U00mX1MNqICgCrKn8G3wc8ylHvInJHUk8ibi2x7ymqzGVQUCjE7q0ZdOula0
+OtyzrpWL8f4fim7EBFPf/TgwLiJdNJzVKFSpcxLQkxKEIWiFHhe9MSp5XZ0Kjjfh
+VQH9dq8wG7En4kAg4cun3Gu9ftBZud0eIqTfxBPg/LAqL4PNb0ozkrLviY59u27o
+wPRbyTJaVw0iTfjFZsfnlk22StyTwfm6C9ontFUHe9MI9fY/7c5Qp4WKlHk9Pion
+bDtIMJ+I8YaY3O4BlSL3AyETu/S5vUtujTrcHWvoSr2/t18zhh+mqzbv8oYhaM1t
+ERgeV3Pwz0iOjUzUmipq7tDE43ivTrCCu3oTvXVUkY243hXe+2m7opbgYlP2DOer
+eubMDxKuXj2ffiMv+BJFTgxWofaX8JvfH+c7x6gYvDBUJbAFsC0Zcr7pBQWtbkQB
+d+bJN5zhUGThwLZDb//2pz6S7cnqkpMoAf3CV1VLDk7bfhDBxRsXugE8tHpPz1KU
+s23O8zJzHZ2qRuJLz8xUhO1R7wBAZmlNf//SfHbLNlcKqj0A6HkhrQ5yTCXvaS5f
+Dyp6HuEAVprjBu9h/UbP
+=/nj+
 -----END PGP SIGNATURE-----
 
---=-Gvwx9E4OTyn0YwyLc7+h--
+--=-0TWnR2W8mkqi+KJAnr5W--
