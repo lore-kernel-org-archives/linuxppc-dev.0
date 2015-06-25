@@ -2,22 +2,21 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0356B1A05F3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 10:26:36 +1000 (AEST)
-Message-ID: <1435183570.3790.15.camel@kernel.crashing.org>
-Subject: Re: [PATCH] tick/idle/powerpc: Do not register idle states with
- CPUIDLE_FLAG_TIMER_STOP set in periodic mode
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6DE71A05F3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 11:05:11 +1000 (AEST)
+Message-ID: <1435194293.3790.27.camel@kernel.crashing.org>
+Subject: Re: [PATCH v4 1/3] powerpc/powernv: Add OPAL interfaces for
+ accessing and modifying system LED states
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, daniel.lezcano@linaro.org,
- mark.rutland@arm.com, lorenzo.pieralisi@arm.com,
- linux-pm@vger.kernel.org, mpe@ellerman.id.au, will.deacon@arm.com,
- linux-kernel@vger.kernel.org, shreyas@linux.vnet.ibm.com,
- svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 25 Jun 2015 08:06:10 +1000
-In-Reply-To: <1700583.a34yOllUuC@vostro.rjw.lan>
-References: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
- <1700583.a34yOllUuC@vostro.rjw.lan>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com,
+ cooloney@gmail.com, rpurdie@rpsys.net, mpe@ellerman.id.au,
+ khandual@linux.vnet.ibm.com
+Date: Thu, 25 Jun 2015 11:04:53 +1000
+In-Reply-To: <20150428100913.26912.81177.stgit@localhost.localdomain>
+References: <20150428100535.26912.29607.stgit@localhost.localdomain>
+ <20150428100913.26912.81177.stgit@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,11 +28,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-06-24 at 15:50 +0200, Rafael J. Wysocki wrote:
-> 4.2 material I suppose?
+On Tue, 2015-04-28 at 15:39 +0530, Vasant Hegde wrote:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> 
+> This patch registers the following two new OPAL interfaces calls
+> for the platform LED subsystem. With the help of these new OPAL calls,
+> the kernel will be able to get or set the state of various individual
+> LEDs on the system at any given location code which is passed through
+> the LED specific device tree nodes.
+> 
+> 	(1) OPAL_LEDS_GET_INDICATOR     opal_leds_get_ind
+> 	(2) OPAL_LEDS_SET_INDICATOR     opal_leds_set_ind
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-And stable. Without this, if you configure without TICK_ONESHOT, the
-machine will hang.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Cheers,
-Ben.
+> ---
+> Changes in v4:
+>   - Updated macros to reflect platform.
+> 
+>  arch/powerpc/include/asm/opal-api.h            |   29 +++++++++++++++++++++++-
+>  arch/powerpc/include/asm/opal.h                |    5 ++++
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |    2 ++
+>  3 files changed, 35 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0321a90..ff85397 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -153,7 +153,9 @@
+>  #define OPAL_FLASH_READ				110
+>  #define OPAL_FLASH_WRITE			111
+>  #define OPAL_FLASH_ERASE			112
+> -#define OPAL_LAST				112
+> +#define OPAL_LEDS_GET_INDICATOR			114
+> +#define OPAL_LEDS_SET_INDICATOR			115
+> +#define OPAL_LAST				115
+>  
+>  /* Device tree flags */
+>  
+> @@ -730,6 +732,31 @@ struct opal_i2c_request {
+>  	__be64 buffer_ra;		/* Buffer real address */
+>  };
+>  
+> +/* LED Mode */
+> +#define POWERNV_LED_MODE_LIGHT_PATH	"lightpath"
+> +#define POWERNV_LED_MODE_GUIDING_LIGHT	"guidinglight"
+> +
+> +/* LED type */
+> +#define POWERNV_LED_TYPE_IDENTIFY	"identify"
+> +#define POWERNV_LED_TYPE_FAULT		"fault"
+> +#define POWERNV_LED_TYPE_ATTENTION	"attention"
+> +
+> +/* LED location */
+> +#define POWERNV_LED_LOC_ENCLOSURE	"enclosure"
+> +#define POWERNV_LED_LOC_DESCENDENT	"descendent"
+> +
+> +enum OpalSlotLedType {
+> +	OPAL_SLOT_LED_TYPE_ID = 0,	/* IDENTIFY LED */
+> +	OPAL_SLOT_LED_TYPE_FAULT = 1,	/* FAULT LED */
+> +	OPAL_SLOT_LED_TYPE_ATTN = 2,	/* System Attention LED */
+> +	OPAL_SLOT_LED_TYPE_MAX = 3
+> +};
+> +
+> +enum OpalSlotLedState {
+> +	OPAL_SLOT_LED_STATE_OFF = 0,	/* LED is OFF */
+> +	OPAL_SLOT_LED_STATE_ON = 1	/* LED is ON */
+> +};
+> +
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* __OPAL_API_H */
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 042af1a..e06dc7e 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -193,6 +193,11 @@ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
+>  		uint64_t *msg_len);
+>  int64_t opal_i2c_request(uint64_t async_token, uint32_t bus_id,
+>  			 struct opal_i2c_request *oreq);
+> +int64_t opal_leds_get_ind(char *loc_code, u64 *led_mask,
+> +			  u64 *led_value, u64 *max_led_type);
+> +int64_t opal_leds_set_ind(uint64_t token, char *loc_code, const u64 led_mask,
+> +			  const u64 led_value, u64 *max_led_type);
+> +
+>  
+>  int64_t opal_flash_read(uint64_t id, uint64_t offset, uint64_t buf,
+>  		uint64_t size, uint64_t token);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index 4e74037..20d4da4 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -295,3 +295,5 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+>  OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+>  OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+>  OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
+> +OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
+> +OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
