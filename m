@@ -1,36 +1,38 @@
 Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F3C1A1A072B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:46:37 +1000 (AEST)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ by lists.ozlabs.org (Postfix) with ESMTPS id E800F1A0736
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 16:46:38 +1000 (AEST)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 83B7D1402ED
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:37 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id B191E1402ED
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:38 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Thu, 25 Jun 2015 16:46:35 +1000
+ Thu, 25 Jun 2015 16:46:37 +1000
 Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D605A2CE8056
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:32 +1000 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A49C43578048
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:35 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5P6kOIn64487522
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:33 +1000
+ t5P6kRKB54788208
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:35 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5P6jx2C021948
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:45:59 +1000
+ t5P6k2JX022063
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 16:46:03 +1000
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, thuth@redhat.com, segher@kernel.crashing.org
 Cc: aik@ozlabs.ru, dvaleev@suse.com, nikunj@linux.vnet.ibm.com
-Subject: [PATCH SLOF v2 0/5] GPT fixes/cleanup and LVM support with FAT
-Date: Thu, 25 Jun 2015 12:15:24 +0530
-Message-Id: <1435214729-15952-1-git-send-email-nikunj@linux.vnet.ibm.com>
+Subject: [PATCH SLOF v2 2/5] introduce 8-byte LE helpers
+Date: Thu, 25 Jun 2015 12:15:26 +0530
+Message-Id: <1435214729-15952-3-git-send-email-nikunj@linux.vnet.ibm.com>
+In-Reply-To: <1435214729-15952-1-git-send-email-nikunj@linux.vnet.ibm.com>
+References: <1435214729-15952-1-git-send-email-nikunj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,32 +42,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Following patchset implements some improvements and cleanup for the
-GPT booting code:
+Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+---
+ slof/fs/little-endian.fs       | 6 ++++++
+ slof/fs/packages/disk-label.fs | 4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-patch 1: Simplify the gpt detection code with lesser scopes and add
-	 comments.
-
-patch 2: Introduce 8byte LE helpers: x@-le and x!-le
-
-patch 3: Rename block / read-sector to indicate it a allocated buffer
-
-patch 4: As we need to detect FAT partition, implement a helper that
-	 can be used both from GPT code and "fat-bootblock?"
+diff --git a/slof/fs/little-endian.fs b/slof/fs/little-endian.fs
+index f2e4e8d..6b4779e 100644
+--- a/slof/fs/little-endian.fs
++++ b/slof/fs/little-endian.fs
+@@ -17,6 +17,9 @@ here c@ ef = CONSTANT ?littleendian
  
-patch 5: Implement GPT FAT for LVM suport and make GPT detection code
-         robust
-
-Nikunj A Dadhania (5):
-  disk-label: simplify gpt-prep-partition? routine
-  introduce 8-byte LE helpers
-  disk-label: rename confusing "block" word
-  disk-label: introduce helper to check fat filesystem
-  disk-label: add support for booting from GPT FAT partition
-
- slof/fs/little-endian.fs       |   6 ++
- slof/fs/packages/disk-label.fs | 209 +++++++++++++++++++++++++----------------
- 2 files changed, 136 insertions(+), 79 deletions(-)
-
+ ?bigendian [IF]
+ 
++: x!-le >r xbflip r> x! ;
++: x@-le x@ xbflip ;
++
+ : l!-le  >r lbflip r> l! ;
+ : l@-le  l@ lbflip ;
+ 
+@@ -47,6 +50,9 @@ here c@ ef = CONSTANT ?littleendian
+ 
+ [ELSE]
+ 
++: x!-le x! ;
++: x@-le x@ ;
++
+ : l!-le  l! ;
+ : l@-le  l@ ;
+ 
+diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
+index bb64d57..8c93cfb 100644
+--- a/slof/fs/packages/disk-label.fs
++++ b/slof/fs/packages/disk-label.fs
+@@ -384,8 +384,8 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+          debug-disk-label? IF
+             ." GPT PReP partition found " cr
+          THEN
+-         block gpt-part-entry>first-lba x@ xbflip
+-         block gpt-part-entry>last-lba x@ xbflip
++         block gpt-part-entry>first-lba x@-le
++         block gpt-part-entry>last-lba x@-le
+          over - 1+                 ( addr offset len )
+          swap                      ( addr len offset )
+          block-size * to part-offset
 -- 
 2.4.3
