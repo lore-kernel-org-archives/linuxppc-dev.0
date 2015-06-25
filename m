@@ -1,28 +1,32 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 3097C1A0BB4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 23:48:11 +1000 (AEST)
-Date: Thu, 25 Jun 2015 10:48:06 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>,
- Andi Kleen <ak@linux.intel.com>, David Ahern <dsahern@gmail.com>,
- He Kuang <hekuang@huawei.com>, Jiri Olsa <jolsa@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, Lukas Wunner <lukas@wunner.de>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Namhyung Kim <namhyung@kernel.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Stephane Eranian <eranian@google.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Wang Nan <wangnan0@huawei.com>
-Subject: Re: [GIT PULL 00/13] perf/core improvements and fixes
-Message-ID: <20150625134806.GC3253@kernel.org>
-References: <1435096047-32088-1-git-send-email-acme@kernel.org>
- <20150625073141.GA12795@gmail.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id B63661A072B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 00:16:40 +1000 (AEST)
+Date: Thu, 25 Jun 2015 10:16:38 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Vlastimil Babka <vbabka@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH V2 0/3] Allow user to request memory to be locked
+ on page fault
+Message-ID: <20150625141638.GF2329@akamai.com>
+References: <1433942810-7852-1-git-send-email-emunson@akamai.com>
+ <20150610145929.b22be8647887ea7091b09ae1@linux-foundation.org>
+ <5579DFBA.80809@akamai.com>
+ <20150611123424.4bb07cffd0e5bb146cc92231@linux-foundation.org>
+ <557ACAFC.90608@suse.cz> <20150615144356.GB12300@akamai.com>
+ <55895956.5020707@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150625073141.GA12795@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="gneEPciiIl/aKvOT"
+In-Reply-To: <55895956.5020707@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +36,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Thu, Jun 25, 2015 at 09:31:41AM +0200, Ingo Molnar escreveu:
-> Pulled, thanks a lot Arnaldo!
-> 
-> Btw., one small thing I noticed about the status line in perf top: if I ever use 
-> 'f' to freeze/unfreeze events, the following message:
-> 
->   Press 'f' to disable the events or 'h' to see other hotkeys
-> 
-> sticks around forever, even after I look into annotation and exit it, etc.
- 
-> So I don't mind some default, helpful message there (such as 'Press 'h' to see 
-> hotkeys'), but it appears this particular message is context and usage sensitive, 
-> which wasn't really the goal, right?
 
-Agreed, some more work is needed to change that message in more places,
-will do it eventually.
+--gneEPciiIl/aKvOT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-- Arnaldo
+On Tue, 23 Jun 2015, Vlastimil Babka wrote:
+
+> On 06/15/2015 04:43 PM, Eric B Munson wrote:
+> >>Note that the semantic of MAP_LOCKED can be subtly surprising:
+> >>
+> >>"mlock(2) fails if the memory range cannot get populated to guarantee
+> >>that no future major faults will happen on the range.
+> >>mmap(MAP_LOCKED) on the other hand silently succeeds even if the
+> >>range was populated only
+> >>partially."
+> >>
+> >>( from http://marc.info/?l=3Dlinux-mm&m=3D143152790412727&w=3D2 )
+> >>
+> >>So MAP_LOCKED can silently behave like MAP_LOCKONFAULT. While
+> >>MAP_LOCKONFAULT doesn't suffer from such problem, I wonder if that's
+> >>sufficient reason not to extend mmap by new mlock() flags that can
+> >>be instead applied to the VMA after mmapping, using the proposed
+> >>mlock2() with flags. So I think instead we could deprecate
+> >>MAP_LOCKED more prominently. I doubt the overhead of calling the
+> >>extra syscall matters here?
+> >
+> >We could talk about retiring the MAP_LOCKED flag but I suspect that
+> >would get significantly more pushback than adding a new mmap flag.
+>=20
+> Oh no we can't "retire" as in remove the flag, ever. Just not
+> continue the way of mmap() flags related to mlock().
+>=20
+> >Likely that the overhead does not matter in most cases, but presumably
+> >there are cases where it does (as we have a MAP_LOCKED flag today).
+> >Even with the proposed new system calls I think we should have the
+> >MAP_LOCKONFAULT for parity with MAP_LOCKED.
+>=20
+> I'm not convinced, but it's not a major issue.
+>=20
+> >>
+> >>>- mlock() takes a `flags' argument.  Presently that's
+> >>>   MLOCK_LOCKED|MLOCK_LOCKONFAULT.
+> >>>
+> >>>- munlock() takes a `flags' arument.  MLOCK_LOCKED|MLOCK_LOCKONFAULT
+> >>>   to specify which flags are being cleared.
+> >>>
+> >>>- mlockall() and munlockall() ditto.
+> >>>
+> >>>
+> >>>IOW, LOCKED and LOCKEDONFAULT are treated identically and independentl=
+y.
+> >>>
+> >>>Now, that's how we would have designed all this on day one.  And I
+> >>>think we can do this now, by adding new mlock2() and munlock2()
+> >>>syscalls.  And we may as well deprecate the old mlock() and munlock(),
+> >>>not that this matters much.
+> >>>
+> >>>*should* we do this?  I'm thinking "yes" - it's all pretty simple
+> >>>boilerplate and wrappers and such, and it gets the interface correct,
+> >>>and extensible.
+> >>
+> >>If the new LOCKONFAULT functionality is indeed desired (I haven't
+> >>still decided myself) then I agree that would be the cleanest way.
+> >
+> >Do you disagree with the use cases I have listed or do you think there
+> >is a better way of addressing those cases?
+>=20
+> I'm somewhat sceptical about the security one. Are security
+> sensitive buffers that large to matter? The performance one is more
+> convincing and I don't see a better way, so OK.
+
+They can be, the two that come to mind are medical images and high
+resolution sensor data.
+
+>=20
+> >
+> >>
+> >>>What do others think?
+>=20
+
+--gneEPciiIl/aKvOT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVjA1GAAoJELbVsDOpoOa9UuYP/0uK/Rd97QRrj7JihySL0bIp
+xR5VEgBq3dvL9zso97dWMfg427XMFyEk6ZmPzMCic6uaNOXj2wj95fMH8/JZLlGP
+VDwj+tVXUrS4cSYMlf2KoJnZE3lAU4Qjhef/B50FOd+QfnP3m7j78SeBQLefUyBF
+dh6NnpZyzqChIQsDS3j9Qy9BlUH4JRuKW5AGLbEIPrl7DdN1YqZ3h5czy3ouEN6N
+8xi145ThIaNAlEmdpNmTcEwAFQpTnX9F8B3Zi9+oPsgNvd6yb6v5ZWlxd+pdxGwn
+GzNpU6iPrWjgm62NaRlZieLP39fL+UwIZ4wijKQjCV8uHYLaCF+edchj2tX5tV1+
+K1C7Vt4SJrz/xdgfT2uXiGK7/fu2ti6jO5Vl1fdGSPmskpqlpRsUsQs9igjW0uH8
+neYV9mS1H7XhbMAfXsEiMjKNyY2X5o3+085dtwnhUG28v/PJob7AnP20DuAAzsQF
+h9sKslrlgctv2pS0ATCEj/ZrO7OheNq72YEcUhIfCgwF/5bG4PNuNmlzmpYdMmE2
+skMlXEkc6x+nc0K5D61tjTfRcIX9nILAVyWb/FdU//OLSEEPlexCyOOPnsyFPyLA
+RLHPLoIE4qnFMemYtw3QiXr1XwJZ260HIQRl/x7Qx4ppceRkXmmhbNrlMud2Ru0z
+TgY/kWkb2P90kkXjd2qQ
+=ayiS
+-----END PGP SIGNATURE-----
+
+--gneEPciiIl/aKvOT--
