@@ -1,38 +1,38 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 971381A0FD8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 19:57:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E791B1A0FC2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 19:57:12 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 25 Jun 2015 15:27:09 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id C6A7AE005B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:30:42 +0530 (IST)
+ Thu, 25 Jun 2015 15:27:10 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 498103940048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:27:08 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5P9uuv433685606
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:26:56 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5P9v6iR7012772
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:27:06 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5P9utC1003254
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:26:56 +0530
+ t5P9v4ol003986
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:27:05 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>, Jeremy Kerr <jk@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  Stephane Eranian <eranian@google.com>
-Subject: [PATCH v3 2/7]powerpc/powernv: Add OPAL support for Nest PMU
-Date: Thu, 25 Jun 2015 15:26:14 +0530
-Message-Id: <1435226179-28618-3-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v3 5/7]powerpc/powernv: add event attribute and group to nest
+ pmu
+Date: Thu, 25 Jun 2015 15:26:17 +0530
+Message-Id: <1435226179-28618-6-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1435226179-28618-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1435226179-28618-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,15 +44,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nest Counters can be configured via PORE Engine and OPAL
-provides an interface to start/stop it.
+Add code to create event/format attributes and attribute groups for
+each nest pmu.
 
-OPAL side patches are posted in the skiboot mailing.
-
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: Jeremy Kerr <jk@ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Anton Blanchard <anton@samba.org>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
@@ -60,46 +56,97 @@ Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal-api.h            | 3 ++-
- arch/powerpc/include/asm/opal.h                | 2 ++
- arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
- 3 files changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/perf/nest-pmu.c | 57 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0321a90..8011a75 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -153,7 +153,8 @@
- #define OPAL_FLASH_READ				110
- #define OPAL_FLASH_WRITE			111
- #define OPAL_FLASH_ERASE			112
--#define OPAL_LAST				112
-+#define OPAL_NEST_IMA_CONTROL			116
-+#define OPAL_LAST				116
+diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+index 6116ff3..20ed9f8 100644
+--- a/arch/powerpc/perf/nest-pmu.c
++++ b/arch/powerpc/perf/nest-pmu.c
+@@ -13,6 +13,17 @@
+ static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
+ static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
  
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 042af1a..f86e5e9 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -201,6 +201,8 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
- int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
- 		uint64_t token);
- 
-+int64_t opal_nest_ima_control(uint32_t value);
++PMU_FORMAT_ATTR(event, "config:0-20");
++struct attribute *p8_nest_format_attrs[] = {
++	&format_attr_event.attr,
++	NULL,
++};
 +
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
- 				   int depth, void *data);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index a7ade94..ce36a68 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -295,3 +295,4 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
- OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
- OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
- OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
-+OPAL_CALL(opal_nest_ima_control,		OPAL_NEST_IMA_CONTROL);
++struct attribute_group p8_nest_format_group = {
++	.name = "format",
++	.attrs = p8_nest_format_attrs,
++};
++
+ static int nest_event_info(struct property *pp, char *start,
+ 			struct nest_ima_events *p8_events, int flg, u32 val)
+ {
+@@ -45,6 +56,48 @@ static int nest_event_info(struct property *pp, char *start,
+ 	return 0;
+ }
+ 
++/*
++ * Populate event name and string in attribute
++ */
++struct attribute *dev_str_attr(const char *name, const char *str)
++{
++	struct perf_pmu_events_attr *attr;
++
++	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
++
++	attr->event_str = str;
++	attr->attr.attr.name = name;
++	attr->attr.attr.mode = 0444;
++	attr->attr.show = perf_event_sysfs_show;
++
++	return &attr->attr.attr;
++}
++
++int update_events_in_group(
++	struct nest_ima_events *p8_events, int idx, struct nest_pmu *pmu)
++{
++	struct attribute_group *attr_group;
++	struct attribute **attrs;
++	int i;
++
++	/* Allocate memory for event attribute group */
++	attr_group = kzalloc(((sizeof(struct attribute *) * (idx + 1)) +
++				sizeof(*attr_group)), GFP_KERNEL);
++	if (!attr_group)
++		return -ENOMEM;
++
++	attrs = (struct attribute **)(attr_group + 1);
++	attr_group->name = "events";
++	attr_group->attrs = attrs;
++
++	for (i = 0; i < idx; i++, p8_events++)
++		attrs[i] = dev_str_attr((char *)p8_events->ev_name,
++					(char *)p8_events->ev_value);
++
++	pmu->attr_groups[0] = attr_group;
++	return 0;
++}
++
+ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ {
+ 	struct nest_ima_events **p8_events_arr, *p8_events;
+@@ -91,6 +144,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 			/* Save the name to register it later */
+ 			sprintf(buf, "Nest_%s", (char *)pp->value);
+ 			pmu_ptr->pmu.name = (char *)buf;
++			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
+ 			continue;
+ 		}
+ 
+@@ -122,6 +176,9 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 		idx++;
+ 	}
+ 
++	update_events_in_group(
++		(struct nest_ima_events *)p8_events_arr, idx, pmu_ptr);
++
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
