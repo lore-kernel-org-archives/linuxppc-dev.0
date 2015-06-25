@@ -1,30 +1,30 @@
 Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C80AA1A06A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:03:47 +1000 (AEST)
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
+ by lists.ozlabs.org (Postfix) with ESMTPS id A80101A06A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Jun 2015 15:12:32 +1000 (AEST)
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 52616140306
- for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 15:03:42 +1000 (AEST)
-Received: by pdjn11 with SMTP id n11so45303960pdj.0
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 22:03:40 -0700 (PDT)
-Message-ID: <1435208534.4286.25.camel@axtens.net>
-Subject: Re: [PATCH V9 04/13] powerpc, perf: Restore privilege level filter
- support for BHRB
+ by ozlabs.org (Postfix) with ESMTPS id 1B1BC1402EE
+ for <linuxppc-dev@ozlabs.org>; Thu, 25 Jun 2015 15:12:31 +1000 (AEST)
+Received: by paceq1 with SMTP id eq1so42533871pac.3
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Jun 2015 22:12:29 -0700 (PDT)
+Message-ID: <1435209074.4286.30.camel@axtens.net>
+Subject: Re: [PATCH V9 05/13] powerpc, perf: Change name & type of 'pred' in
+ power_pmu_bhrb_read
 From: Daniel Axtens <dja@axtens.net>
 To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
  mikey@neuling.org
-Date: Thu, 25 Jun 2015 15:02:14 +1000
-In-Reply-To: <1434370268-19056-5-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Thu, 25 Jun 2015 15:11:14 +1000
+In-Reply-To: <1434370268-19056-6-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1434370268-19056-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1434370268-19056-5-git-send-email-khandual@linux.vnet.ibm.com>
+ <1434370268-19056-6-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-DRjsa3zAJaeVgfMlIylP"
+ protocol="application/pgp-signature"; boundary="=-IZPg9OoU+3cQgTtO02Bj"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,38 +36,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-DRjsa3zAJaeVgfMlIylP
+--=-IZPg9OoU+3cQgTtO02Bj
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
+> 				cpuhw->bhrb_entries[u_index].to =3D addr;
+> -				cpuhw->bhrb_entries[u_index].mispred =3D pred;
+> -				cpuhw->bhrb_entries[u_index].predicted =3D ~pred;
+> +				cpuhw->bhrb_entries[u_index].mispred =3D mispred;
+> +				cpuhw->bhrb_entries[u_index].predicted =3D
+> +								~mispred;
+> =20
 
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-boo=
-k3s.c
-> index 7a03cce..892340e 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -930,7 +930,7 @@ static int power_check_constraints(struct cpu_hw_even=
-ts *cpuhw,
->   * added events.
->   */
->  static int check_excludes(struct perf_event **ctrs, unsigned int cflags[=
-],
-> -			  int n_prev, int n_new)
-> +			  int n_prev, int n_new, int bhrb_users)
-Shouldn't this be an unsigned int too?
-
-> -	if (ppmu->flags & PPMU_ARCH_207S)
-> +	if ((ppmu->flags & PPMU_ARCH_207S) && !bhrb_users)
-This is now different to the others. Now that bhrb_users is unsigned,
-I'm happy if you want to revert all of them to be like this, I was just
-concerned that if bhrb_users is an int, both 1 and -1 evaluate to true
-and I wasn't sure that was the desired behaviour.
+This is much better! However, these are still bitwise rather than
+logical inversions. They will work, but would it be easier to understand
+if you used "!mispred"?
 
 --=20
 Regards,
 Daniel
 
---=-DRjsa3zAJaeVgfMlIylP
+--=-IZPg9OoU+3cQgTtO02Bj
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -76,19 +65,19 @@ Content-Transfer-Encoding: 7bit
 Version: GnuPG v2
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAABCgAGBQJVi4tgAAoJEPC3R3P2I92FGbwQAMM7GDl4rtEOl/CrAawj2Wb6
-xnaMES4J//kgdtoF+Zq9TnH2Ds6VNM87ytROstgNo+RfPJK8plaDUsVVIXOyzvhj
-i6l1wj1hPIInAxCgY1c3ffUY8oDNi5HB27t7k327szLAbBW3m9Vyu1fK3EInpUft
-BP/4jLHSJIMW00/Nc/YpFkOIycorE5suP+mBWkKTBg9ZqJz4kw5KltV9CU0vxbjm
-546YyhUR1LtUkJ18AITKKkcs/k0h6UD0X14ObGEDtvmxjBEyg9ixCdapmERynA6z
-CG29FdCzlTVhJQuY1EcmLELYty4JtuHhDse8WHQHsaNUbc/LUUyDCEyCiJTt3yIn
-OcPz6vC40rOFtqOR7T+o7bcFjvTmr8AUI11GE2jKk4qVVV1//mVJtnnLJSecQSK/
-Q442mZ/C/rM17xVxSj7ofRgRs+qSOT1gcVky0iHw7GJdpHKt7Q4mMlM2gxZSoL0N
-H1VJdN1ieXt3UJmR0V0pCstsk2dcKfCcKJO567Jwf5990XIAEE0VuzQP1LYWvN7n
-+QEyEol73uYvAHXHk8uE3/Ft/A0wIfnmXW3Nb7q938GYqlqnL+NMi42z67f52Ncb
-++UNciN6Fpth9QjsGwDZx5CH+fzJqSgIMI91cFbZCbCJ9RzL2L1i5BzV7Xx8+mx1
-Q4fPoicMSEFL5EWxInyb
-=yWq+
+iQIcBAABCgAGBQJVi41yAAoJEPC3R3P2I92F96EP/iaO5VfUiYBTpfNQqKld8YYs
+7C6mAWbN1Ww1GyK63OTGhGocgRXm4Emfqf5iI+YpV1SIWFMjKlHmEqTZXMgwNPmx
+SVn8Q1IcP1cJN0s8LuhKyElM/aKZGXpGMLC3VNki9ie+ew/WHQ9Aia8gvzKDzZkL
+kw8GNnwcC0cQFinsxA6twDoo0MscagGtoneSumBaJBIi7QAQDIDeIAxljOJN/Wu3
+E18UfE7f5oGljwI3K4l3PJn81QtkNdPdOUf1jxhPv+ife1vmThnMJLnnEU9Hlu7U
+k7h2gHVpyzkPbm8cOQs+2qFB3pLBA4JOAvpI086W9VNt/LHVmna/ikvw6L/xQpCt
+yc0+SmVqqfj0DiSE6jvHPw8Vx/GOkTqJS75w/t+aa+lBh4Dmzi92XX/BEfZpA6x2
+1Q045vGCjz1lS9leYbVgeUXdMg5r2Sfv8l4+EFCQ/gtpm9RUiT40CIxHC2oXUk3P
+pq47rckNcsFCC4GfPktkkdAR6gaJd0cosegkAQwtqiN8OcieeVjRl6mLlWQolwUu
+LpIEQRjNZuI14xiLjMKOOMfExBy7k9MVliBugRxq6JJDA7sfpCaHxEYetb1QafOa
+tsXVEQWxcRIKkdU6bbQYbaRfyxTdQ/oQpqbNv3/0zX3mDw56mapkBomelB7Bw9NF
+HAEF5Fc1KM2PUcwYC9rO
+=LIUT
 -----END PGP SIGNATURE-----
 
---=-DRjsa3zAJaeVgfMlIylP--
+--=-IZPg9OoU+3cQgTtO02Bj--
