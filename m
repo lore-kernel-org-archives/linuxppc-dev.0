@@ -1,45 +1,24 @@
-Return-Path: <dave.long@linaro.org>
-Received: from mail-qc0-f182.google.com (mail-qc0-f182.google.com
- [209.85.216.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E39FD1A0FEC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 04:35:34 +1000 (AEST)
-Received: by qcji3 with SMTP id i3so31972105qcj.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 11:35:31 -0700 (PDT)
-Message-ID: <558D9B71.2080605@linaro.org>
-Date: Fri, 26 Jun 2015 14:35:29 -0400
-From: David Long <dave.long@linaro.org>
-MIME-Version: 1.0
-To: Kees Cook <keescook@chromium.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>, "H. Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@amacapital.net>, Anton Blanchard <anton@samba.org>,
- Behan Webster <behanw@converseincode.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Eric Paris <eparis@redhat.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Jan Willeke <willeke@de.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Nikolay Borisov <Nikolay.Borisov@arm.com>,
- Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>,
- Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
- Russell King <linux@arm.linux.org.uk>,
- Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-hexagon@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- linux-sh <linux-sh@vger.kernel.org>,
- "linux390@de.ibm.com" <linux390@de.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
- to common include file
-References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>	<1434386579-6045-2-git-send-email-dave.long@linaro.org>	<1434687583.23771.5.camel@ellerman.id.au>	<5584234E.2040701@linaro.org>
- <CAGXu5jJFkv=ma0SJ-5N+GKQ3xoPw8193+kxO0F3M0c0_c=ZTtg@mail.gmail.com>
-In-Reply-To: <CAGXu5jJFkv=ma0SJ-5N+GKQ3xoPw8193+kxO0F3M0c0_c=ZTtg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40F111A03A4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 07:55:00 +1000 (AEST)
+Message-ID: <1435355687.26815.8.camel@kernel.crashing.org>
+Subject: Re: pSeries boot failure due to wrong interrupt controller
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeremy Linton <jlinton@tributary.com>
+Cc: Rob Herring <robherring2@gmail.com>, Jeremy Linton
+ <lintonrjeremy@gmail.com>, Grant Likely <grant.likely@linaro.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Paul Mackerras
+ <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Date: Sat, 27 Jun 2015 07:54:47 +1000
+In-Reply-To: <558D91C1.6030004@tributary.com>
+References: <CAEFTgiyHkf8ooYdWW0nTLcdraJ_L9FpLSVZa4KS3CcdpGWJxew@mail.gmail.com>
+ <CAL_JsqJqkUL8XyqR6yjg+-thj4YOQ6cUohGHHid71tdRFft7vw@mail.gmail.com>
+ <558D91C1.6030004@tributary.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,74 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/15 12:58, Kees Cook wrote:
-> On Fri, Jun 19, 2015 at 7:12 AM, David Long <dave.long@linaro.org> wrote:
->> On 06/19/15 00:19, Michael Ellerman wrote:
->>>
->>> On Mon, 2015-06-15 at 12:42 -0400, David Long wrote:
->>>>
->>>> From: "David A. Long" <dave.long@linaro.org>
->>>>
->>>> The pt_regs_offset structure is used for HAVE_REGS_AND_STACK_ACCESS_API
->>>>    feature and has identical definitions in four different arch ptrace.h
->>>> include files. It seems unlikely that definition would ever need to be
->>>> changed regardless of architecture so lets move it into
->>>> include/linux/ptrace.h.
->>>>
->>>> Signed-off-by: David A. Long <dave.long@linaro.org>
->>>> ---
->>>>    arch/powerpc/kernel/ptrace.c | 5 -----
->>>
->>>
->>> Built and booted on powerpc, but is there an easy way to actually test the
->>> code
->>> paths in question?
->>>
->>
->> There is an easy way to "smoke test" it on all archiectures that also
->> implement kprobes (which powerpc does).  If I'm understanding the powerpc
->> code correctly (WRT register naming conventions) just do the following:
->>
->> cd /sys/kernel/debug/tracing
->> echo 'p do_fork %gpr0' > kprobe_events
->> echo 1 > events/kprobes/enable
->> ls
->> cat trace
->> echo 0 > events/kprobes/enable
->>
->> Every fork() call done on the system between those two echo commands (hence
->> the "ls") should append a line to the trace file.  For a more exhaustive
->> test one could repeat this sequence for every register in the architecture.
->>
->> This should work the same on all architectures supporting kprobes.  You just
->> have to use the appropriate register names for your architecture after the
->> "%".
->
-> Is this something we could codify into the selftests directory? It
-> seems like a great thing to capture in a single place somewhere (the
-> register lists, that is).
-> e
-> -Kees
->
+On Fri, 2015-06-26 at 12:54 -0500, Jeremy Linton wrote:
+> Ping? Anyone?
+> 
+> I'm adding ppc-dev to see if anyone there is interested in picking up the patch..
 
-Due to the architecture-specific naming of registers this would have to 
-be added to the architecture subdirectories.  I only see powerpc and x86 
-subdirs at this time so extending that infrastructure would have to be 
-part of this.  Verifying the register contents would also require some 
-change to the kernel, possibly a simple test module, which would have to 
-be unique to each architecture.  Without that we could only check for 
-recognition of the register name, although maybe that's good enough.
+Ah I missed that completely. From your discussion, it looks correct,
+I'll see if I can find a machine to test, however I think we dropped
+support for POWER3 so it might be non-trivial to do so.
 
->>
->>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->>>
->>> cheers
->>>
->>>
->>
->> Thanks,
->> -dl
->>
+And yes, when there is no map, the parent should be the interrupt-parent
+with a fallback to the parent node if that doesn't exist.
 
+Cheers,
+Ben.
 
--dl
+> Thanks,
+> 	Jeremy
+> 
+> 
+> Ok so I messed up the formatting a little and was lazy and didn't checkpatch it
+> cause I mean, it was 1 line! If someone wants it resent I will do so.
+> 
+> 
+> 
+> 
+> 
+> On 6/23/2015 8:42 AM, Rob Herring wrote:
+> > +Grant
+> > 
+> > On Mon, Jun 22, 2015 at 2:44 PM, Jeremy Linton <lintonrjeremy@gmail.com> wrote:
+> >> The OF IRQ logic was refactored a while back, and it appears that it
+> >> broke the case where a device doesn't have an interrupt-map
+> >> (legacy/ISA platform peripherals). In particular on the older pSeries
+> >> platforms the console serial port (keyboard/etc) is attached via a
+> >> Winbond super I/O controller. With the refactored logic
+> >> of_irq_parse_raw() returns with the out_irq->np pointing at the bus,
+> >> rather than the interrupt controller. This results in the platform
+> >> logic getting confused about the appropriate interrupt host, and in
+> >> ics_rtas_host_match() it doesn't match "chrp,iic" and the xics takes
+> >> over and tries to use RTAS to map the interrupt. RTAS then crashes the
+> >> machine.
+> >>
+> >> This tweaks the "-> no map, getting parent" behavior to behave as
+> >> before, and the machine boots.
+> > 
+> > I think the real question is why doesn't of_irq_find_parent return the
+> > interrupt controller node instead of the bus node.
+> > 
+> > While I think this fix is correct, I think of_irq_parse_raw should be
+> > a nop in the case of no interrupt-map.
+> > 
+> > Rob
+> > 
+> >>
+> >> Thanks
+> >>
+> >> Signed-off-by: Jeremy Linton <lintonrjeremy@gmail.com>
+> >>
+> >>
+> >> diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+> >> index 1a79806..78b4161b 100644
+> >> --- a/drivers/of/irq.c
+> >> +++ b/drivers/of/irq.c
+> >> @@ -252,7 +252,6 @@ int of_irq_parse_raw(const __be32 *addr, struct
+> >> of_phandle_args *out_irq)
+> >>                  * Successfully parsed an interrrupt-map translation; copy new
+> >>                  * interrupt specifier into the out_irq structure
+> >>                  */
+> >> -               out_irq->np = newpar;
+> >>
+> >>                 match_array = imap - newaddrsize - newintsize;
+> >>                 for (i = 0; i < newintsize; i++)
+> >> @@ -262,6 +261,7 @@ int of_irq_parse_raw(const __be32 *addr, struct
+> >> of_phandle_args *out_irq)
+> >>
+> >>         skiplevel:
+> >>                 /* Iterate again with new parent */
+> >> +               out_irq->np = newpar;
+> >>                 pr_debug(" -> new parent: %s\n", of_node_full_name(newpar));
+> >>                 of_node_put(ipar);
+> >>                 ipar = newpar;
