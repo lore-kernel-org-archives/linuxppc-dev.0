@@ -1,22 +1,22 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from lb2-smtp-cloud3.xs4all.net (lb2-smtp-cloud3.xs4all.net
- [194.109.24.26])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0124.outbound.protection.outlook.com [207.46.100.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43AA81A0368
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 10:09:39 +1000 (AEST)
-Message-ID: <1435277374.28572.43.camel@tiscali.nl>
-Subject: Re: [v2,5/9] fsl/fman: Add Frame Manager support
-From: Paul Bolle <pebolle@tiscali.nl>
-To: igal.liberman@freescale.com, netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com,
- madalin.bucur@freescale.com
-Date: Fri, 26 Jun 2015 02:09:34 +0200
-In-Reply-To: <1435276439.28572.42.camel@tiscali.nl>
-References: <1435174555-7008-1-git-send-email-igal.liberman@freescale.com>
- <1435276439.28572.42.camel@tiscali.nl>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F3201A0285
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 10:59:44 +1000 (AEST)
+Message-ID: <1435280369.2977.4.camel@freescale.com>
+Subject: Re: [v2,9/9] fsl/fman: Add FMan MAC driver
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Bolle <pebolle@tiscali.nl>
+CC: igal.liberman@freescale.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, madalin.bucur@freescale.com
+Date: Thu, 25 Jun 2015 19:59:29 -0500
+In-Reply-To: <1435273590.28572.11.camel@tiscali.nl>
+References: <1435174672-4608-1-git-send-email-igal.liberman@freescale.com>
+ <1435273590.28572.11.camel@tiscali.nl>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,11 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-06-26 at 01:53 +0200, Paul Bolle wrote:
-> So I decided to pick one subject: exports. I think I had something to
-> comment on all eight of them.
+On Fri, 2015-06-26 at 01:06 +0200, Paul Bolle wrote:
+> (Evolution 3.16 is basically unbearable for replying to patches. 
+> Anyone
+> else running into this?) 
 
-s/eight/twelve/
+If you mean the crazy lag when selecting moderate-to-large amounts of 
+text (for snipping), yes.
 
-
-Paul Bolle
+-Scott
