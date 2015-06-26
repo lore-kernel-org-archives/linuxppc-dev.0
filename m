@@ -1,33 +1,28 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wi0-x230.google.com (mail-wi0-x230.google.com
- [IPv6:2a00:1450:400c:c05::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEADF1A0248
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 23:33:49 +1000 (AEST)
-Received: by wiwl6 with SMTP id l6so45687405wiw.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 06:33:45 -0700 (PDT)
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id 7098C1A0248
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 23:57:48 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Will Deacon <will.deacon@arm.com>, shreyas@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] tick/idle/powerpc: Do not register idle states with
+ CPUIDLE_FLAG_TIMER_STOP set in periodic mode
+Date: Fri, 26 Jun 2015 16:23:57 +0200
+Message-ID: <2128915.HHL0NLglLy@vostro.rjw.lan>
+In-Reply-To: <558B7715.1060802@linux.vnet.ibm.com>
+References: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
+ <CAJZ5v0hiKVN7Nvc4w3BP9uWmvdUkX6T+DUGh6OSZWPTrpwcyjA@mail.gmail.com>
+ <558B7715.1060802@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1434715227-27399-2-git-send-email-stripathi@apm.com>
-References: <1434715227-27399-1-git-send-email-stripathi@apm.com>
- <1434715227-27399-2-git-send-email-stripathi@apm.com>
-Date: Fri, 26 Jun 2015 19:03:45 +0530
-Message-ID: <CAOHikRCtWqvdnO1ec7dEPNPD9TMfrC=4k0V00tuiC9GLnNy7Tg@mail.gmail.com>
-Subject: Re: [PATCH v8 1/2] arm64: dts: Add the arasan mmc nodes in
- apm-storm.dtsi
-From: Suman Tripathi <stripathi@apm.com>
-To: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Michal Simek <michal.simek@xilinx.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- khilman@deeprootsystems.com, Olof Johansson <olof@lixom.net>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, arm@kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Don Dutile <ddutile@redhat.com>,
- Jon Masters <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>,
- patches <patches@apm.com>, Suman Tripathi <stripathi@apm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,99 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Any comments on this patch ??
+On Thursday, June 25, 2015 09:05:49 AM Preeti U Murthy wrote:
+> On 06/25/2015 05:36 AM, Rafael J. Wysocki wrote:
+> > On Thu, Jun 25, 2015 at 12:06 AM, Benjamin Herrenschmidt
+> > <benh@kernel.crashing.org> wrote:
+> >> On Wed, 2015-06-24 at 15:50 +0200, Rafael J. Wysocki wrote:
+> >>> 4.2 material I suppose?
+> >>
+> >> And stable. Without this, if you configure without TICK_ONESHOT, the
+> >> machine will hang.
+> > 
+> > OK, which -stable?  All of them or any specific series?
+> 
+> This needs to go into stable/linux-3.19.y,
+> stable/linux-4.0.y, stable/linux-4.1.y.
 
-On Fri, Jun 19, 2015 at 5:30 PM, Suman Tripathi <stripathi@apm.com> wrote:
-> This patch adds the arasan mmc nodes to reuse the of-arasan
-> driver for APM X-Gene SoC.
->
-> Signed-off-by: Suman Tripathi <stripathi@apm.com>
-> ---
-> ---
->  arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
->  arch/arm64/boot/dts/apm/apm-storm.dtsi  | 43 +++++++++++++++++++++++++++++++++
->  2 files changed, 47 insertions(+)
->
-> diff --git a/arch/arm64/boot/dts/apm/apm-mustang.dts b/arch/arm64/boot/dts/apm/apm-mustang.dts
-> index 83578e7..7a3ea72 100644
-> --- a/arch/arm64/boot/dts/apm/apm-mustang.dts
-> +++ b/arch/arm64/boot/dts/apm/apm-mustang.dts
-> @@ -52,3 +52,7 @@
->  &xgenet {
->         status = "ok";
->  };
-> +
-> +&mmc0 {
-> +       status = "ok";
-> +};
-> diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-> index c8d3e0e..8e03ecd 100644
-> --- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
-> +++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-> @@ -145,6 +145,40 @@
->                                 clock-output-names = "socplldiv2";
->                         };
->
-> +                       ahbclk: ahbclk@1f2ac000 {
-> +                               compatible = "apm,xgene-device-clock";
-> +                               #clock-cells = <1>;
-> +                               clocks = <&socplldiv2 0>;
-> +                               reg = <0x0 0x1f2ac000 0x0 0x1000
-> +                                       0x0 0x17000000 0x0 0x2000>;
-> +                               reg-names = "csr-reg", "div-reg";
-> +                               csr-offset = <0x0>;
-> +                               csr-mask = <0x1>;
-> +                               enable-offset = <0x8>;
-> +                               enable-mask = <0x1>;
-> +                               divider-offset = <0x164>;
-> +                               divider-width = <0x5>;
-> +                               divider-shift = <0x0>;
-> +                               clock-output-names = "ahbclk";
-> +                       };
-> +
-> +                       sdioclk: sdioclk@1f2ac000 {
-> +                               compatible = "apm,xgene-device-clock";
-> +                               #clock-cells = <1>;
-> +                               clocks = <&socplldiv2 0>;
-> +                               reg = <0x0 0x1f2ac000 0x0 0x1000
-> +                                       0x0 0x17000000 0x0 0x2000>;
-> +                               reg-names = "csr-reg", "div-reg";
-> +                               csr-offset = <0x0>;
-> +                               csr-mask = <0x2>;
-> +                               enable-offset = <0x8>;
-> +                               enable-mask = <0x2>;
-> +                               divider-offset = <0x178>;
-> +                               divider-width = <0x8>;
-> +                               divider-shift = <0x0>;
-> +                               clock-output-names = "sdioclk";
-> +                       };
-> +
->                         qmlclk: qmlclk {
->                                 compatible = "apm,xgene-device-clock";
->                                 #clock-cells = <1>;
-> @@ -533,6 +567,15 @@
->                         interrupts = <0x0 0x4f 0x4>;
->                 };
->
-> +               mmc0: mmc@1c000000 {
-> +                       compatible = "arasan,sdhci-4.9a";
-> +                       reg = <0x0 0x1c000000 0x0 0x100>;
-> +                       interrupts = <0x0 0x49 0x4>;
-> +                       dma-coherent;
-> +                       clock-names = "clk_xin", "clk_ahb";
-> +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
-> +               };
-> +
->                 phy1: phy@1f21a000 {
->                         compatible = "apm,xgene-phy";
->                         reg = <0x0 0x1f21a000 0x0 0x100>;
-> --
-> 1.8.2.1
->
-
+So essentially 3.19+.  OK, thanks!
 
 
 -- 
-Thanks,
-with regards,
-Suman Tripathi
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
