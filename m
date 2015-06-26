@@ -1,23 +1,20 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from lb3-smtp-cloud2.xs4all.net (lb3-smtp-cloud2.xs4all.net
- [194.109.24.29])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0131.outbound.protection.outlook.com [207.46.100.131])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1A191A027E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 17:01:51 +1000 (AEST)
-Message-ID: <1435302103.28572.54.camel@tiscali.nl>
-Subject: Re: [v2,9/9] fsl/fman: Add FMan MAC driver
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Scott Wood <scottwood@freescale.com>
-Cc: igal.liberman@freescale.com, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, madalin.bucur@freescale.com
-Date: Fri, 26 Jun 2015 09:01:43 +0200
-In-Reply-To: <1435280369.2977.4.camel@freescale.com>
-References: <1435174672-4608-1-git-send-email-igal.liberman@freescale.com>
- <1435273590.28572.11.camel@tiscali.nl>
- <1435280369.2977.4.camel@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37D9E1A05F3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 17:48:55 +1000 (AEST)
+From: Yuantian.Tang@freescale.com
+To: b07421@freescale.com
+CC: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, Tang Yuantian <Yuantian.Tang@freescale.com>,
+ Chenhui Zhao <chenhui.zhao@freescale.com>
+Subject: [PATCH v5] powerpc/rcpm: add RCPM driver
+Date: Fri, 26 Jun 2015 15:44:16 +0800
+Message-ID: <1435304656-34505-1-git-send-email-Yuantian.Tang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +24,639 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-06-25 at 19:59 -0500, Scott Wood wrote:
-> On Fri, 2015-06-26 at 01:06 +0200, Paul Bolle wrote:
-> > (Evolution 3.16 is basically unbearable for replying to patches. 
-> > Anyone
-> > else running into this?) 
+From: Tang Yuantian <Yuantian.Tang@freescale.com>
 
-You replied with Evolution v3.16, didn't you? Look how it wrapped that
-line. Now imagine how a patch of a few thousands lines might look like
-when replying. (Of course a patch of a few thousands lines is part of
-the issue here. As in: no one can really handle that.) 
+There is a RCPM (Run Control/Power Management) in Freescale QorIQ
+series processors. The device performs tasks associated with device
+run control and power management.
 
-And if you set certain lines to "preformatted" to undo the wrapping it
-inserts ">" in the tabs!
+The driver implements some features: mask/unmask irq, enter/exit low
+power states, freeze time base, etc.
 
-There's more. I'll stop now, as this is drifting too far off topic.
+Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+---
+v5:
+	- update chassis version for t1040 in bindings
+v4:
+	- refine bindings document
+v3:
+	- added static and __init modifier to fsl_rcpm_init
+v2:
+	- fix code style issues
+	- refine compatible string match part
 
-> If you mean the crazy lag when selecting moderate-to-large amounts of 
-> 
-> text (for snipping), yes.
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  44 +++
+ arch/powerpc/include/asm/fsl_guts.h                | 105 +++++++
+ arch/powerpc/include/asm/fsl_pm.h                  |  48 +++
+ arch/powerpc/platforms/85xx/Kconfig                |   1 +
+ arch/powerpc/sysdev/Kconfig                        |   5 +
+ arch/powerpc/sysdev/Makefile                       |   1 +
+ arch/powerpc/sysdev/fsl_rcpm.c                     | 338 +++++++++++++++++++++
+ 7 files changed, 542 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+ create mode 100644 arch/powerpc/include/asm/fsl_pm.h
+ create mode 100644 arch/powerpc/sysdev/fsl_rcpm.c
 
-One of my replies I had to do over a few times because evolution or I
-lost track of what was selected. Ie, I thought I had selected hundreds
-of lines but something much smaller was deleted. Something like that.
-As confusing as it gets, so who knows what actually happened?
-
-Yes, I know, I should ask for a refund.
-
-Thanks,
-
-
-Paul Bolle
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+new file mode 100644
+index 0000000..dc52f70
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -0,0 +1,44 @@
++* Run Control and Power Management
++
++The RCPM performs all device-level tasks associated with device run control
++and power management.
++
++Required properites:
++  - reg : Offset and length of the register set of RCPM block.
++  - compatible : Sould contain a chip-specific RCPM block compatible string
++	and (if applicable) may contain a chassis-version RCPM compatible string.
++	Chip-specific strings are of the form "fsl,<chip>-rcpm", such as:
++	* "fsl,p2041-rcpm"
++	* "fsl,p3041-rcpm"
++	* "fsl,p4080-rcpm"
++	* "fsl,p5020-rcpm"
++	* "fsl,p5040-rcpm"
++	* "fsl,t4240-rcpm"
++	* "fsl,b4420-rcpm"
++	* "fsl,b4860-rcpm"
++
++	Chassis-version RCPM strings include:
++	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
++	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
++	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
++
++All references to "1.0" and "2.0" refer to the QorIQ chassis version to
++which the chip complies.
++Chassis Version		Example Chips
++---------------		-------------------------------
++1.0					p4080, p5020, p5040, p2041, p3041
++2.0					t4240, b4860, b4420
++2.1					t1040
++
++Example:
++The RCPM node for T4240:
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
++		reg = <0xe2000 0x1000>;
++	};
++
++The RCPM node for P4080:
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,qoriq-rcpm-1.0";
++		reg = <0xe2000 0x1000>;
++	};
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index 43b6bb1..a67413c 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -188,5 +188,110 @@ static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
+ 
+ #endif
+ 
++struct ccsr_rcpm_v1 {
++	u8	res0000[4];
++	__be32	cdozsr;	    /* 0x0004 Core Doze Status Register */
++	u8	res0008[4];
++	__be32	cdozcr;	    /* 0x000c Core Doze Control Register */
++	u8	res0010[4];
++	__be32	cnapsr;	    /* 0x0014 Core Nap Status Register */
++	u8	res0018[4];
++	__be32	cnapcr;	    /* 0x001c Core Nap Control Register */
++	u8	res0020[4];
++	__be32	cdozpsr;    /* 0x0024 Core Doze Previous Status Register */
++	u8	res0028[4];
++	__be32	cnappsr;    /* 0x002c Core Nap Previous Status Register */
++	u8	res0030[4];
++	__be32	cwaitsr;    /* 0x0034 Core Wait Status Register */
++	u8	res0038[4];
++	__be32	cwdtdsr;    /* 0x003c Core Watchdog Detect Status Register */
++	__be32	powmgtcsr;  /* 0x0040 PM Control&Status Register */
++#define RCPM_POWMGTCSR_SLP	0x00020000
++	u8	res0044[12];
++	__be32	ippdexpcr;  /* 0x0050 IP Powerdown Exception Control Register */
++	u8	res0054[16];
++	__be32	cpmimr;	    /* 0x0064 Core PM IRQ Mask Register */
++	u8	res0068[4];
++	__be32	cpmcimr;    /* 0x006c Core PM Critical IRQ Mask Register */
++	u8	res0070[4];
++	__be32	cpmmcmr;    /* 0x0074 Core PM Machine Check Mask Register */
++	u8	res0078[4];
++	__be32	cpmnmimr;   /* 0x007c Core PM NMI Mask Register */
++	u8	res0080[4];
++	__be32	ctbenr;	    /* 0x0084 Core Time Base Enable Register */
++	u8	res0088[4];
++	__be32	ctbckselr;  /* 0x008c Core Time Base Clock Select Register */
++	u8	res0090[4];
++	__be32	ctbhltcr;   /* 0x0094 Core Time Base Halt Control Register */
++	u8	res0098[4];
++	__be32	cmcpmaskcr; /* 0x00a4 Core Machine Check Mask Register */
++};
++
++struct ccsr_rcpm_v2 {
++	u8	res_00[12];
++	__be32	tph10sr0;	/* Thread PH10 Status Register */
++	u8	res_10[12];
++	__be32	tph10setr0;	/* Thread PH10 Set Control Register */
++	u8	res_20[12];
++	__be32	tph10clrr0;	/* Thread PH10 Clear Control Register */
++	u8	res_30[12];
++	__be32	tph10psr0;	/* Thread PH10 Previous Status Register */
++	u8	res_40[12];
++	__be32	twaitsr0;	/* Thread Wait Status Register */
++	u8	res_50[96];
++	__be32	pcph15sr;	/* Physical Core PH15 Status Register */
++	__be32	pcph15setr;	/* Physical Core PH15 Set Control Register */
++	__be32	pcph15clrr;	/* Physical Core PH15 Clear Control Register */
++	__be32	pcph15psr;	/* Physical Core PH15 Prev Status Register */
++	u8	res_c0[16];
++	__be32	pcph20sr;	/* Physical Core PH20 Status Register */
++	__be32	pcph20setr;	/* Physical Core PH20 Set Control Register */
++	__be32	pcph20clrr;	/* Physical Core PH20 Clear Control Register */
++	__be32	pcph20psr;	/* Physical Core PH20 Prev Status Register */
++	__be32	pcpw20sr;	/* Physical Core PW20 Status Register */
++	u8	res_e0[12];
++	__be32	pcph30sr;	/* Physical Core PH30 Status Register */
++	__be32	pcph30setr;	/* Physical Core PH30 Set Control Register */
++	__be32	pcph30clrr;	/* Physical Core PH30 Clear Control Register */
++	__be32	pcph30psr;	/* Physical Core PH30 Prev Status Register */
++	u8	res_100[32];
++	__be32	ippwrgatecr;	/* IP Power Gating Control Register */
++	u8	res_124[12];
++	__be32	powmgtcsr;	/* Power Management Control & Status Reg */
++#define RCPM_POWMGTCSR_LPM20_RQ		0x00100000
++#define RCPM_POWMGTCSR_LPM20_ST		0x00000200
++#define RCPM_POWMGTCSR_P_LPM20_ST	0x00000100
++	u8	res_134[12];
++	__be32	ippdexpcr[4];	/* IP Powerdown Exception Control Reg */
++	u8	res_150[12];
++	__be32	tpmimr0;	/* Thread PM Interrupt Mask Reg */
++	u8	res_160[12];
++	__be32	tpmcimr0;	/* Thread PM Crit Interrupt Mask Reg */
++	u8	res_170[12];
++	__be32	tpmmcmr0;	/* Thread PM Machine Check Interrupt Mask Reg */
++	u8	res_180[12];
++	__be32	tpmnmimr0;	/* Thread PM NMI Mask Reg */
++	u8	res_190[12];
++	__be32	tmcpmaskcr0;	/* Thread Machine Check Mask Control Reg */
++	__be32	pctbenr;	/* Physical Core Time Base Enable Reg */
++	__be32	pctbclkselr;	/* Physical Core Time Base Clock Select */
++	__be32	tbclkdivr;	/* Time Base Clock Divider Register */
++	u8	res_1ac[4];
++	__be32	ttbhltcr[4];	/* Thread Time Base Halt Control Register */
++	__be32	clpcl10sr;	/* Cluster PCL10 Status Register */
++	__be32	clpcl10setr;	/* Cluster PCL30 Set Control Register */
++	__be32	clpcl10clrr;	/* Cluster PCL30 Clear Control Register */
++	__be32	clpcl10psr;	/* Cluster PCL30 Prev Status Register */
++	__be32	cddslpsetr;	/* Core Domain Deep Sleep Set Register */
++	__be32	cddslpclrr;	/* Core Domain Deep Sleep Clear Register */
++	__be32	cdpwroksetr;	/* Core Domain Power OK Set Register */
++	__be32	cdpwrokclrr;	/* Core Domain Power OK Clear Register */
++	__be32	cdpwrensr;	/* Core Domain Power Enable Status Register */
++	__be32	cddslsr;	/* Core Domain Deep Sleep Status Register */
++	u8	res_1e8[8];
++	__be32	dslpcntcr[8];	/* Deep Sleep Counter Cfg Register */
++	u8	res_300[3568];
++};
++
+ #endif
+ #endif
+diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
+new file mode 100644
+index 0000000..4b09f09
+--- /dev/null
++++ b/arch/powerpc/include/asm/fsl_pm.h
+@@ -0,0 +1,48 @@
++/*
++ * Support Power Management
++ *
++ * Copyright 2014-2015 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#ifndef __PPC_FSL_PM_H
++#define __PPC_FSL_PM_H
++#ifdef __KERNEL__
++
++#define E500_PM_PH10	1
++#define E500_PM_PH15	2
++#define E500_PM_PH20	3
++#define E500_PM_PH30	4
++#define E500_PM_DOZE	E500_PM_PH10
++#define E500_PM_NAP	E500_PM_PH15
++
++#define PLAT_PM_SLEEP	20
++#define PLAT_PM_LPM20	30
++
++#define FSL_PM_SLEEP		(1 << 0)
++#define FSL_PM_DEEP_SLEEP	(1 << 1)
++
++struct fsl_pm_ops {
++	/* mask pending interrupts to the RCPM from MPIC */
++	void (*irq_mask)(int cpu);
++
++	/* unmask pending interrupts to the RCPM from MPIC */
++	void (*irq_unmask)(int cpu);
++	void (*cpu_enter_state)(int cpu, int state);
++	void (*cpu_exit_state)(int cpu, int state);
++	int (*plat_enter_sleep)(void);
++	void (*freeze_time_base)(bool freeze);
++
++	/* keep the power of IP blocks during sleep/deep sleep */
++	void (*set_ip_power)(bool enable, u32 *mask);
++
++	/* get platform supported power management modes */
++	unsigned int (*get_pm_modes)(void);
++};
++
++extern const struct fsl_pm_ops *qoriq_pm_ops;
++#endif /* __KERNEL__ */
++#endif /* __PPC_FSL_PM_H */
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 2fb4b24..ae1b8a2 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -8,6 +8,7 @@ menuconfig FSL_SOC_BOOKE
+ 	select FSL_PCI if PCI
+ 	select SERIAL_8250_EXTENDED if SERIAL_8250
+ 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
++	select FSL_CORENET_RCPM if PPC_E500MC
+ 	default y
+ 
+ if FSL_SOC_BOOKE
+diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+index a19332a..52dc165 100644
+--- a/arch/powerpc/sysdev/Kconfig
++++ b/arch/powerpc/sysdev/Kconfig
+@@ -40,3 +40,8 @@ config SCOM_DEBUGFS
+ config GE_FPGA
+ 	bool
+ 	default n
++
++config FSL_CORENET_RCPM
++	bool
++	help
++	  This option enables support for RCPM (Run Control/Power Management).
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index f7cb2a1..8bbedfd 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
+ obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
++obj-$(CONFIG_FSL_CORENET_RCPM)	+= fsl_rcpm.o
+ obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+ obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+ obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
+diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
+new file mode 100644
+index 0000000..4bd2d64
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_rcpm.c
+@@ -0,0 +1,338 @@
++/*
++ * RCPM(Run Control/Power Management) support
++ *
++ * Copyright 2012-2015 Freescale Semiconductor Inc.
++ *
++ * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/of_address.h>
++#include <linux/export.h>
++
++#include <asm/io.h>
++#include <asm/fsl_guts.h>
++#include <asm/cputhreads.h>
++#include <asm/fsl_pm.h>
++
++const struct fsl_pm_ops *qoriq_pm_ops;
++
++static struct ccsr_rcpm_v1 __iomem *rcpm_v1_regs;
++static struct ccsr_rcpm_v2 __iomem *rcpm_v2_regs;
++static unsigned int fsl_supported_pm_modes;
++
++static void rcpm_v1_irq_mask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	setbits32(&rcpm_v1_regs->cpmimr, mask);
++	setbits32(&rcpm_v1_regs->cpmcimr, mask);
++	setbits32(&rcpm_v1_regs->cpmmcmr, mask);
++	setbits32(&rcpm_v1_regs->cpmnmimr, mask);
++}
++
++static void rcpm_v2_irq_mask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	setbits32(&rcpm_v2_regs->tpmimr0, mask);
++	setbits32(&rcpm_v2_regs->tpmcimr0, mask);
++	setbits32(&rcpm_v2_regs->tpmmcmr0, mask);
++	setbits32(&rcpm_v2_regs->tpmnmimr0, mask);
++}
++
++static void rcpm_v1_irq_unmask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	clrbits32(&rcpm_v1_regs->cpmimr, mask);
++	clrbits32(&rcpm_v1_regs->cpmcimr, mask);
++	clrbits32(&rcpm_v1_regs->cpmmcmr, mask);
++	clrbits32(&rcpm_v1_regs->cpmnmimr, mask);
++}
++
++static void rcpm_v2_irq_unmask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	clrbits32(&rcpm_v2_regs->tpmimr0, mask);
++	clrbits32(&rcpm_v2_regs->tpmcimr0, mask);
++	clrbits32(&rcpm_v2_regs->tpmmcmr0, mask);
++	clrbits32(&rcpm_v2_regs->tpmnmimr0, mask);
++}
++
++static void rcpm_v1_set_ip_power(bool enable, u32 *mask)
++{
++	if (enable)
++		setbits32(&rcpm_v1_regs->ippdexpcr, *mask);
++	else
++		clrbits32(&rcpm_v1_regs->ippdexpcr, *mask);
++}
++
++static void rcpm_v2_set_ip_power(bool enable, u32 *mask)
++{
++	if (enable)
++		setbits32(&rcpm_v2_regs->ippdexpcr[0], *mask);
++	else
++		clrbits32(&rcpm_v2_regs->ippdexpcr[0], *mask);
++}
++
++static void rcpm_v1_cpu_enter_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	switch (state) {
++	case E500_PM_PH10:
++		setbits32(&rcpm_v1_regs->cdozcr, mask);
++		break;
++	case E500_PM_PH15:
++		setbits32(&rcpm_v1_regs->cnapcr, mask);
++		break;
++	default:
++		pr_warn("%s: Unknown cpu PM state (%d)\n", __func__, state);
++		break;
++	}
++}
++
++static void rcpm_v2_cpu_enter_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	u32 mask = 1 << cpu_core_index_of_thread(hw_cpu);
++
++	switch (state) {
++	case E500_PM_PH10:
++		/* one bit corresponds to one thread for PH10 of 6500 */
++		setbits32(&rcpm_v2_regs->tph10setr0, 1 << hw_cpu);
++		break;
++	case E500_PM_PH15:
++		setbits32(&rcpm_v2_regs->pcph15setr, mask);
++		break;
++	case E500_PM_PH20:
++		setbits32(&rcpm_v2_regs->pcph20setr, mask);
++		break;
++	case E500_PM_PH30:
++		setbits32(&rcpm_v2_regs->pcph30setr, mask);
++		break;
++	default:
++		pr_warn("%s: Unknown cpu PM state (%d)\n", __func__, state);
++	}
++}
++
++static void rcpm_v1_cpu_exit_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	switch (state) {
++	case E500_PM_PH10:
++		clrbits32(&rcpm_v1_regs->cdozcr, mask);
++		break;
++	case E500_PM_PH15:
++		clrbits32(&rcpm_v1_regs->cnapcr, mask);
++		break;
++	default:
++		pr_warn("%s: Unknown cpu PM state (%d)\n", __func__, state);
++		break;
++	}
++}
++
++static void rcpm_v2_cpu_exit_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	u32 mask = 1 << cpu_core_index_of_thread(hw_cpu);
++
++	switch (state) {
++	case E500_PM_PH10:
++		setbits32(&rcpm_v2_regs->tph10clrr0, 1 << hw_cpu);
++		break;
++	case E500_PM_PH15:
++		setbits32(&rcpm_v2_regs->pcph15clrr, mask);
++		break;
++	case E500_PM_PH20:
++		setbits32(&rcpm_v2_regs->pcph20clrr, mask);
++		break;
++	case E500_PM_PH30:
++		setbits32(&rcpm_v2_regs->pcph30clrr, mask);
++		break;
++	default:
++		pr_warn("%s: Unknown cpu PM state (%d)\n", __func__, state);
++	}
++}
++
++static int rcpm_v1_plat_enter_state(int state)
++{
++	u32 *pmcsr_reg = &rcpm_v1_regs->powmgtcsr;
++	int ret = 0;
++	int result;
++
++	switch (state) {
++	case PLAT_PM_SLEEP:
++		setbits32(pmcsr_reg, RCPM_POWMGTCSR_SLP);
++
++		/* Upon resume, wait for RCPM_POWMGTCSR_SLP bit to be clear. */
++		result = spin_event_timeout(
++		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_SLP), 10000, 10);
++		if (!result) {
++			pr_err("%s: timeout waiting for SLP bit to be cleared\n",
++			       __func__);
++			ret = -ETIMEDOUT;
++		}
++		break;
++	default:
++		pr_warn("%s: Unknown platform PM state (%d)\n",
++		       __func__, state);
++		ret = -EINVAL;
++	}
++
++	return ret;
++}
++
++static int rcpm_v2_plat_enter_state(int state)
++{
++	u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
++	int ret = 0;
++	int result;
++
++	switch (state) {
++	case PLAT_PM_LPM20:
++		/* clear previous LPM20 status */
++		setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
++		/* enter LPM20 status */
++		setbits32(pmcsr_reg, RCPM_POWMGTCSR_LPM20_RQ);
++
++		/* At this point, the device is in LPM20 status. */
++
++		/* resume ... */
++		result = spin_event_timeout(
++		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_LPM20_ST), 10000, 10);
++		if (!result) {
++			pr_err("%s: timeout waiting for LPM20 bit to be cleared\n",
++			       __func__);
++			ret = -ETIMEDOUT;
++		}
++		break;
++	default:
++		pr_warn("%s: Unknown platform PM state (%d)\n",
++		       __func__, state);
++		ret = -EINVAL;
++	}
++
++	return ret;
++}
++
++static int rcpm_v1_plat_enter_sleep(void)
++{
++	return rcpm_v1_plat_enter_state(PLAT_PM_SLEEP);
++}
++
++static int rcpm_v2_plat_enter_sleep(void)
++{
++	return rcpm_v2_plat_enter_state(PLAT_PM_LPM20);
++}
++
++static void rcpm_common_freeze_time_base(u32 *tben_reg, int freeze)
++{
++	static u32 mask;
++
++	if (freeze) {
++		mask = in_be32(tben_reg);
++		clrbits32(tben_reg, mask);
++	} else {
++		setbits32(tben_reg, mask);
++	}
++
++	/* read back to push the previous write */
++	in_be32(tben_reg);
++}
++
++static void rcpm_v1_freeze_time_base(bool freeze)
++{
++	rcpm_common_freeze_time_base(&rcpm_v1_regs->ctbenr, freeze);
++}
++
++static void rcpm_v2_freeze_time_base(bool freeze)
++{
++	rcpm_common_freeze_time_base(&rcpm_v2_regs->pctbenr, freeze);
++}
++
++static unsigned int rcpm_get_pm_modes(void)
++{
++	return fsl_supported_pm_modes;
++}
++
++static const struct fsl_pm_ops qoriq_rcpm_v1_ops = {
++	.irq_mask = rcpm_v1_irq_mask,
++	.irq_unmask = rcpm_v1_irq_unmask,
++	.cpu_enter_state = rcpm_v1_cpu_enter_state,
++	.cpu_exit_state = rcpm_v1_cpu_exit_state,
++	.plat_enter_sleep = rcpm_v1_plat_enter_sleep,
++	.set_ip_power = rcpm_v1_set_ip_power,
++	.freeze_time_base = rcpm_v1_freeze_time_base,
++	.get_pm_modes = rcpm_get_pm_modes,
++};
++
++static const struct fsl_pm_ops qoriq_rcpm_v2_ops = {
++	.irq_mask = rcpm_v2_irq_mask,
++	.irq_unmask = rcpm_v2_irq_unmask,
++	.cpu_enter_state = rcpm_v2_cpu_enter_state,
++	.cpu_exit_state = rcpm_v2_cpu_exit_state,
++	.plat_enter_sleep = rcpm_v2_plat_enter_sleep,
++	.set_ip_power = rcpm_v2_set_ip_power,
++	.freeze_time_base = rcpm_v2_freeze_time_base,
++	.get_pm_modes = rcpm_get_pm_modes,
++};
++
++static const struct of_device_id rcpm_matches[] = {
++	{
++		.compatible = "fsl,qoriq-rcpm-1.0",
++		.data = (void *)&qoriq_rcpm_v1_ops,
++	},
++	{
++		.compatible = "fsl,qoriq-rcpm-2.0",
++		.data = (void *)&qoriq_rcpm_v2_ops,
++	},
++	{},
++};
++
++static int __init fsl_rcpm_init(void)
++{
++	struct device_node *np;
++	const struct of_device_id *match;
++	void __iomem *base;
++
++	np = of_find_matching_node_and_match(NULL, rcpm_matches, &match);
++	if (!np) {
++		pr_err("%s: can't find the rcpm node.\n", __func__);
++		return -ENODEV;
++	}
++
++	base = of_iomap(np, 0);
++	if (!base) {
++		pr_err("%s: of_iomap() error.\n", __func__);
++		return -ENOMEM;
++	}
++
++	/* support sleep by default */
++	fsl_supported_pm_modes = FSL_PM_SLEEP;
++	of_node_put(np);
++
++	rcpm_v1_regs = base;
++	rcpm_v2_regs = base;
++
++	qoriq_pm_ops = match->data;
++
++	return 0;
++}
++
++/* need to call this before SMP init */
++early_initcall(fsl_rcpm_init);
+-- 
+2.1.0.27.g96db324
