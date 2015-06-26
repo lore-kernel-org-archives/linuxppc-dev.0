@@ -1,22 +1,39 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0118.outbound.protection.outlook.com [157.56.110.118])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 68A1E1A05F3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 14:17:17 +1000 (AEST)
-Message-ID: <1435292192.6524.16.camel@freescale.com>
-Subject: Re: [PATCH v4] powerpc/rcpm: add RCPM driver
-From: Scott Wood <scottwood@freescale.com>
-To: Yuantian.Tang@freescale.com
-CC: b07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Chenhui Zhao
- <chenhui.zhao@freescale.com>
-Date: Thu, 25 Jun 2015 23:16:32 -0500
-In-Reply-To: <1435046827-7683-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1435046827-7683-1-git-send-email-Yuantian.Tang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40E941A05F3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 15:18:05 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Fri, 26 Jun 2015 15:18:05 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 832512CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 15:18:01 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5Q5HrIW4522414
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 15:18:01 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5Q5HS36011400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 15:17:28 +1000
+Message-ID: <558CE04E.6070306@linux.vnet.ibm.com>
+Date: Fri, 26 Jun 2015 10:47:02 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, cooloney@gmail.com,
+ rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org,
+ linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v4 3/3] leds/powernv: Add driver for PowerNV platform
+References: <20150428100535.26912.29607.stgit@localhost.localdomain>
+ <20150428101008.26912.38735.stgit@localhost.localdomain>
+ <1435194598.3790.32.camel@kernel.crashing.org>
+In-Reply-To: <1435194598.3790.32.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,77 +43,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-06-23 at 16:07 +0800, Yuantian.Tang@freescale.com wrote:
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
+On 06/25/2015 06:39 AM, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-04-28 at 15:40 +0530, Vasant Hegde wrote:
 > 
-> There is a RCPM (Run Control/Power Management) in Freescale QorIQ
-> series processors. The device performs tasks associated with device
-> run control and power management.
-> 
-> The driver implements some features: mask/unmask irq, enter/exit low
-> power states, freeze time base, etc.
-> 
-> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> ---
-> v4:
->       - refine bindings document
-> v3:
->       - added static and __init modifier to fsl_rcpm_init
-> v2:
->       - fix code style issues
->       - refine compatible string match part
-> 
->  Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  42 +++
->  arch/powerpc/include/asm/fsl_guts.h                | 105 +++++++
->  arch/powerpc/include/asm/fsl_pm.h                  |  48 +++
->  arch/powerpc/platforms/85xx/Kconfig                |   1 +
->  arch/powerpc/sysdev/Kconfig                        |   5 +
->  arch/powerpc/sysdev/Makefile                       |   1 +
->  arch/powerpc/sysdev/fsl_rcpm.c                     | 338 
-> +++++++++++++++++++++
->  7 files changed, 540 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/fsl/rcpm.txt
->  create mode 100644 arch/powerpc/include/asm/fsl_pm.h
->  create mode 100644 arch/powerpc/sysdev/fsl_rcpm.c
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt 
-> b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> new file mode 100644
-> index 0000000..1f58018
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> @@ -0,0 +1,42 @@
-> +* Run Control and Power Management
-> +
-> +The RCPM performs all device-level tasks associated with device run control
-> +and power management.
-> +
-> +Required properites:
-> +  - reg : Offset and length of the register set of RCPM block.
-> +  - compatible : Sould contain a chip-specific RCPM block compatible string
-> +     and (if applicable) may contain a chassis-version RCPM compatible string.
-> +     Chip-specific strings are of the form "fsl,<chip>-rcpm", such as:
-> +     * "fsl,p2041-rcpm"
-> +     * "fsl,p3041-rcpm"
-> +     * "fsl,p4080-rcpm"
-> +     * "fsl,p5020-rcpm"
-> +     * "fsl,p5040-rcpm"
-> +     * "fsl,t4240-rcpm"
-> +     * "fsl,b4420-rcpm"
-> +     * "fsl,b4860-rcpm"
-> +
-> +     Chassis-version RCPM strings include:
-> +     * "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
-> +     * "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
-> +
-> +All references to "1.0" and "2.0" refer to the QorIQ chassis version to
-> +which the chip complies.
-> +Chassis Version              Example Chips
-> +---------------              -------------------------------
-> +1.0                                  p4080, p5020, p5040, p2041, p3041
-> +2.0                                  t4240, b4860, t1040, b4420
+>> +Device Tree binding for LEDs on IBM Power Systems
+>> +-------------------------------------------------
+>> +
+>> +The 'led' node under '/ibm,opal' lists service indicators available in the
+>> +system and their capabilities.
+>> +
+>> +led {
+>> +	compatible = "ibm,opal-v3-led";
+>> +	phandle = <0x1000006b>;
+>> +	linux,phandle = <0x1000006b>;
+>> +	led-mode = "lightpath";
+>> +
+>> +	U78C9.001.RST0027-P1-C1 {
+>> +		led-types = "identify", "fault";
+>> +		led-loc = "descendent";
+>> +		phandle = <0x1000006f>;
+>> +		linux,phandle = <0x1000006f>;
+>> +	};
+>> +	...
+>> +	...
+>> +};
 
-I don't think it's accurate to call t1040 chassis 2.0.
+Ben,
 
--Scott
+> 
+> My only issue is that /led should probably have been /leds but afaik
+> this is already committed in the FW tree. Vasant, have we done a release
+> what that code yet or can we still change this ?
+
+I think we can change OPAL side as we haven't released kernel code... So no
+consumer yet.
+Will send a patch to skiboot mailing list. lets see
+
+> 
+> Also what does led-mode = "lightpath" means ? Can you describe it ?
+> Are there alternative values ? I don't see the point myself ...
+
+Yes.. Our system can work in two modes...
+   - light path --> Both identify and faults are supported
+     typically all low end servers are in this mode
+  - guiding light -> Only identify LEDs are supports . no fault indicator
+support for individual FRU
+     typically high end servers are in this mode.
+
+These modes are static in nature.. meaning we cannot change that during run time...
+AFAIK all the PowerNV boxes shipped today are in Light Path mode.. I have added
+this, so that in future if they decide to ship system with guiding light mode,
+then we don't need to make any changes.
+
+
+> 
+> Don't leave the "linux,phandle" in the description of the binding (nor
+> the phandle actually). They are implicit for all nodes, no need to
+> clutter the documentation with them.
+
+Sure. Will fix in next version.
+
+
+> 
+>> +Each node under 'led' node describes location code of FRU/Enclosure.
+>> +
+>> +The properties under each node:
+>> +
+>> +  led-types : Supported LED types (attention/identify/fault).
+>> +
+>> +  led-loc   : enclosure/descendent(FRU) location code.
+> 
+> I don't understand what that means. Please provide a more detailed
+> explanation.
+> 
+
+This describes the LED location (FRU or enclosure level).. This was added to
+identify the component (as FRU leds are overloaded and enclosure level we have
+separate LEDs for each component)...
+
+
+> Is the name of the node the loc code of the FRU ? In that case, how do
+> you deal with multiple LEDs on the same FRU without a unit address ?
+
+We use location code + LED type for node. So that we can identify multiple LEDs.
+
+Looking back again, probably we can take out above property as we are not using
+that today.
+
+-Vasant
