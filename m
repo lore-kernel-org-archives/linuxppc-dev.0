@@ -1,39 +1,23 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <pebolle@tiscali.nl>
+Received: from lb3-smtp-cloud2.xs4all.net (lb3-smtp-cloud2.xs4all.net
+ [194.109.24.29])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F0E11A027E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 16:46:42 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Fri, 26 Jun 2015 16:46:41 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2D4C82CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 16:46:37 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5Q6kQZQ1049072
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 16:46:34 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5Q6k4i4019940
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 16:46:04 +1000
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>, "Michael Ellerman" <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH] powerpc/numa: initialize distance lookup table from
- drconf path
-In-Reply-To: <87d20mewk2.fsf@linux.vnet.ibm.com>
-References: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <87lhfs5ewc.fsf@linux.vnet.ibm.com> <20150623111648.1e31a497@kryten>
- <87d20mewk2.fsf@linux.vnet.ibm.com>
-Date: Fri, 26 Jun 2015 12:15:37 +0530
-Message-ID: <87fv5fynla.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id C1A191A027E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Jun 2015 17:01:51 +1000 (AEST)
+Message-ID: <1435302103.28572.54.camel@tiscali.nl>
+Subject: Re: [v2,9/9] fsl/fman: Add FMan MAC driver
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Scott Wood <scottwood@freescale.com>
+Cc: igal.liberman@freescale.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, madalin.bucur@freescale.com
+Date: Fri, 26 Jun 2015 09:01:43 +0200
+In-Reply-To: <1435280369.2977.4.camel@freescale.com>
+References: <1435174672-4608-1-git-send-email-igal.liberman@freescale.com>
+ <1435273590.28572.11.camel@tiscali.nl>
+ <1435280369.2977.4.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2015-06-25 at 19:59 -0500, Scott Wood wrote:
+> On Fri, 2015-06-26 at 01:06 +0200, Paul Bolle wrote:
+> > (Evolution 3.16 is basically unbearable for replying to patches. 
+> > Anyone
+> > else running into this?) 
 
-Hi Anton/Michael,
+You replied with Evolution v3.16, didn't you? Look how it wrapped that
+line. Now imagine how a patch of a few thousands lines might look like
+when replying. (Of course a patch of a few thousands lines is part of
+the issue here. As in: no one can really handle that.) 
 
-Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> writes:
-> Hi Anton,
->
-> Anton Blanchard <anton@samba.org> writes:
->> Hi Nikunj,
->>
->>> From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
->>> 
->>> powerpc/numa: initialize distance lookup table from drconf path
->>> 
->>> In some situations, a NUMA guest that supports
->>> ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
->>> distances between nodes. This is because of two problems in the
->>> current code.
->>
->> Thanks for the patch. Have we tested that this doesn't regress the
->> non dynamic representation?
->
-> Yes, that is tested. And works as expected.
+And if you set certain lines to "preformatted" to undo the wrapping it
+inserts ">" in the tabs!
 
-If the patch looks fine, can this be pushed upstream ?
+There's more. I'll stop now, as this is drifting too far off topic.
 
-Regards,
-Nikunj
+> If you mean the crazy lag when selecting moderate-to-large amounts of 
+> 
+> text (for snipping), yes.
+
+One of my replies I had to do over a few times because evolution or I
+lost track of what was selected. Ie, I thought I had selected hundreds
+of lines but something much smaller was deleted. Something like that.
+As confusing as it gets, so who knows what actually happened?
+
+Yes, I know, I should ask for a refund.
+
+Thanks,
+
+
+Paul Bolle
