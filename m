@@ -1,17 +1,17 @@
 Return-Path: <festevam@gmail.com>
-Received: from mail-la0-x22e.google.com (mail-la0-x22e.google.com
- [IPv6:2a00:1450:4010:c03::22e])
+Received: from mail-la0-x234.google.com (mail-la0-x234.google.com
+ [IPv6:2a00:1450:4010:c03::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A43841A0359
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 09:06:52 +1000 (AEST)
-Received: by lagh6 with SMTP id h6so18258530lag.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 16:06:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 95A301A0359
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 09:09:34 +1000 (AEST)
+Received: by lacny3 with SMTP id ny3so89929816lac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 16:09:30 -0700 (PDT)
 MIME-Version: 1.0
 In-Reply-To: <558F28E1.7040204@maciej.szmigiero.name>
 References: <558F28E1.7040204@maciej.szmigiero.name>
-Date: Sat, 27 Jun 2015 20:06:47 -0300
-Message-ID: <CAOMZO5Cpgwg=7xvRm8cz8Dm6bbrLxo5Apm7y+3=Y+5Aga4e2fQ@mail.gmail.com>
+Date: Sat, 27 Jun 2015 20:09:30 -0300
+Message-ID: <CAOMZO5AkwGkj-Qmv6k+A7aV=SeuoPD1Mcc-hBFtuLSs2iaBSJA@mail.gmail.com>
 Subject: Re: [PATCH] ASoC: fsl_ssi: fix AC'97 mode
 From: Fabio Estevam <festevam@gmail.com>
 To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
@@ -32,28 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Maciej,
-
 On Sat, Jun 27, 2015 at 7:51 PM, Maciej S. Szmigiero
 <mail@maciej.szmigiero.name> wrote:
-> Currently the AC'97 mode in fsl_ssi driver isn't functional.
 
-Thanks for the fix. I look forward to test it on my udoo board.
+> +
+> +       ret = clk_prepare_enable(fsl_ac97_data->clk);
+> +       if (ret) {
+> +               pr_err("ac97 read clk_prepare_enable failed: %d\n",
+> +                       ret);
+> +               return -1;
 
-> This patch implements the following changes to make it work
-> properly:
-> * IPG clock have to be enabled during AC'97 CODEC
-> register access,
-> * AC'97 DAI driver struct need the same probe method as
-> I2S one to setup DMA params,
-> * AC'97 bus can support asymmetric playback/capture rates,
-> * Check whether setting AC'97 ops succeeded and
-> clean them on removal so the driver can be reloaded,
-> * AC'97 CODEC will be instantiated in AC'97 mode,
-> * Set DAI format function small fixes in AC'97 mode.
-
-It seems like a lot of changes in a single patch.
-
-Care to split it into smaller pieces?
+'return ret' would be better here.
 
 Thanks
