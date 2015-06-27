@@ -1,17 +1,23 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 28C9E1A0B76
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:47 +1000 (AEST)
-Message-Id: <20150628014203.852605978@telegraphics.com.au>
-Date: Sun, 28 Jun 2015 11:42:16 +1000
-From: Finn Thain <fthain@telegraphics.com.au>
-To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v3 17/24] nvram: Drop nvram_* symbol exports and prototypes
-References: <20150628014159.732792697@telegraphics.com.au>
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F394F1A0437
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 09:20:42 +1000 (AEST)
+Message-ID: <558F28E1.7040204@maciej.szmigiero.name>
+Date: Sun, 28 Jun 2015 00:51:13 +0200
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+MIME-Version: 1.0
+To: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+CC: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH] ASoC: fsl_ssi: fix AC'97 mode
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,137 +27,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drivers now use the arch_nvram_ops calls so remove the function exports and
-prototypes. nvram_check_checksum() is unused so remove it.
+Currently the AC'97 mode in fsl_ssi driver isn't functional.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+This patch implements the following changes to make it work
+properly:
+* IPG clock have to be enabled during AC'97 CODEC
+register access,
+* AC'97 DAI driver struct need the same probe method as
+I2S one to setup DMA params,
+* AC'97 bus can support asymmetric playback/capture rates,
+* Check whether setting AC'97 ops succeeded and
+clean them on removal so the driver can be reloaded,
+* AC'97 CODEC will be instantiated in AC'97 mode,
+* Set DAI format function small fixes in AC'97 mode.
 
----
- arch/m68k/atari/nvram.c |    6 +++---
- drivers/char/nvram.c    |   27 +++++----------------------
- include/linux/nvram.h   |    8 --------
- 3 files changed, 8 insertions(+), 33 deletions(-)
+Tested on UDOO board.
 
-Index: linux/drivers/char/nvram.c
-===================================================================
---- linux.orig/drivers/char/nvram.c	2015-06-28 11:41:44.000000000 +1000
-+++ linux/drivers/char/nvram.c	2015-06-28 11:41:48.000000000 +1000
-@@ -82,13 +82,12 @@ static ssize_t nvram_size;
-  * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
-  */
+Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
+
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index c7647e0..9a63df2 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -900,14 +900,16 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+ 		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
+ 		break;
+ 	default:
+-		return -EINVAL;
++		if (!fsl_ssi_is_ac97(ssi_private))
++			return -EINVAL;
+ 	}
  
--unsigned char __nvram_read_byte(int i)
-+static unsigned char __nvram_read_byte(int i)
- {
- 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
- }
--EXPORT_SYMBOL(__nvram_read_byte);
+ 	stcr |= strcr;
+ 	srcr |= strcr;
  
--unsigned char nvram_read_byte(int i)
-+static unsigned char nvram_read_byte(int i)
- {
- 	unsigned long flags;
- 	unsigned char c;
-@@ -98,16 +97,14 @@ unsigned char nvram_read_byte(int i)
- 	spin_unlock_irqrestore(&rtc_lock, flags);
- 	return c;
- }
--EXPORT_SYMBOL(nvram_read_byte);
+-	if (ssi_private->cpu_dai_drv.symmetric_rates) {
+-		/* Need to clear RXDIR when using SYNC mode */
++	if (ssi_private->cpu_dai_drv.symmetric_rates
++		|| fsl_ssi_is_ac97(ssi_private)) {
++		/* Need to clear RXDIR when using SYNC or AC97 mode */
+ 		srcr &= ~CCSR_SSI_SRCR_RXDIR;
+ 		scr |= CCSR_SSI_SCR_SYN;
+ 	}
+@@ -1101,6 +1103,7 @@ static const struct snd_soc_component_driver fsl_ssi_component = {
  
- /* This races nicely with trying to read with checksum checking (nvram_read) */
--void __nvram_write_byte(unsigned char c, int i)
-+static void __nvram_write_byte(unsigned char c, int i)
- {
- 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
- }
--EXPORT_SYMBOL(__nvram_write_byte);
+ static struct snd_soc_dai_driver fsl_ssi_ac97_dai = {
+ 	.bus_control = true,
++	.probe = fsl_ssi_dai_probe,
+ 	.playback = {
+ 		.stream_name = "AC97 Playback",
+ 		.channels_min = 2,
+@@ -1127,10 +1130,17 @@ static void fsl_ssi_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
+ 	struct regmap *regs = fsl_ac97_data->regs;
+ 	unsigned int lreg;
+ 	unsigned int lval;
++	int ret;
  
--void nvram_write_byte(unsigned char c, int i)
-+static void nvram_write_byte(unsigned char c, int i)
- {
- 	unsigned long flags;
+ 	if (reg > 0x7f)
+ 		return;
  
-@@ -115,14 +112,13 @@ void nvram_write_byte(unsigned char c, i
- 	__nvram_write_byte(c, i);
- 	spin_unlock_irqrestore(&rtc_lock, flags);
- }
--EXPORT_SYMBOL(nvram_write_byte);
++	ret = clk_prepare_enable(fsl_ac97_data->clk);
++	if (ret) {
++		pr_err("ac97 write clk_prepare_enable failed: %d\n",
++			ret);
++		return;
++	}
  
- /* On PCs, the checksum is built only over bytes 2..31 */
- #define PC_CKS_RANGE_START	2
- #define PC_CKS_RANGE_END	31
- #define PC_CKS_LOC		32
- 
--int __nvram_check_checksum(void)
-+static int __nvram_check_checksum(void)
- {
- 	int i;
- 	unsigned short sum = 0;
-@@ -134,19 +130,6 @@ int __nvram_check_checksum(void)
- 	    __nvram_read_byte(PC_CKS_LOC+1);
- 	return (sum & 0xffff) == expect;
- }
--EXPORT_SYMBOL(__nvram_check_checksum);
--
--int nvram_check_checksum(void)
--{
--	unsigned long flags;
--	int rv;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	rv = __nvram_check_checksum();
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return rv;
--}
--EXPORT_SYMBOL(nvram_check_checksum);
- 
- static void __nvram_set_checksum(void)
- {
-Index: linux/include/linux/nvram.h
-===================================================================
---- linux.orig/include/linux/nvram.h	2015-06-28 11:41:44.000000000 +1000
-+++ linux/include/linux/nvram.h	2015-06-28 11:41:48.000000000 +1000
-@@ -3,14 +3,6 @@
- 
- #include <uapi/linux/nvram.h>
- 
--/* __foo is foo without grabbing the rtc_lock - get it yourself */
--extern unsigned char __nvram_read_byte(int i);
--extern unsigned char nvram_read_byte(int i);
--extern void __nvram_write_byte(unsigned char c, int i);
--extern void nvram_write_byte(unsigned char c, int i);
--extern int __nvram_check_checksum(void);
--extern int nvram_check_checksum(void);
--
- struct nvram_ops {
- 	ssize_t         (*read)(char *, size_t, loff_t *);
- 	ssize_t         (*write)(char *, size_t, loff_t *);
-Index: linux/arch/m68k/atari/nvram.c
-===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-06-28 11:41:39.000000000 +1000
-+++ linux/arch/m68k/atari/nvram.c	2015-06-28 11:41:48.000000000 +1000
-@@ -33,13 +33,13 @@
-  * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
-  */
- 
--unsigned char __nvram_read_byte(int i)
-+static unsigned char __nvram_read_byte(int i)
- {
- 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
+ 	lreg = reg <<  12;
+ 	regmap_write(regs, CCSR_SSI_SACADD, lreg);
+@@ -1141,6 +1151,8 @@ static void fsl_ssi_ac97_write(struct snd_ac97 *ac97, unsigned short reg,
+ 	regmap_update_bits(regs, CCSR_SSI_SACNT, CCSR_SSI_SACNT_RDWR_MASK,
+ 			CCSR_SSI_SACNT_WR);
+ 	udelay(100);
++
++	clk_disable_unprepare(fsl_ac97_data->clk);
  }
  
- /* This races nicely with trying to read with checksum checking */
--void __nvram_write_byte(unsigned char c, int i)
-+static void __nvram_write_byte(unsigned char c, int i)
- {
- 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
- }
-@@ -51,7 +51,7 @@ void __nvram_write_byte(unsigned char c,
- #define ATARI_CKS_RANGE_END	47
- #define ATARI_CKS_LOC		48
+ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
+@@ -1151,6 +1163,14 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
+ 	unsigned short val = -1;
+ 	u32 reg_val;
+ 	unsigned int lreg;
++	int ret;
++
++	ret = clk_prepare_enable(fsl_ac97_data->clk);
++	if (ret) {
++		pr_err("ac97 read clk_prepare_enable failed: %d\n",
++			ret);
++		return -1;
++	}
  
--int __nvram_check_checksum(void)
-+static int __nvram_check_checksum(void)
- {
- 	int i;
- 	unsigned char sum = 0;
+ 	lreg = (reg & 0x7f) <<  12;
+ 	regmap_write(regs, CCSR_SSI_SACADD, lreg);
+@@ -1162,6 +1182,8 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
+ 	regmap_read(regs, CCSR_SSI_SACDAT, &reg_val);
+ 	val = (reg_val >> 4) & 0xffff;
+ 
++	clk_disable_unprepare(fsl_ac97_data->clk);
++
+ 	return val;
+ }
+ 
+@@ -1291,6 +1313,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 	void __iomem *iomem;
+ 	char name[64];
++	bool newbinding;
+ 
+ 	of_id = of_match_device(fsl_ssi_ids, &pdev->dev);
+ 	if (!of_id || !of_id->data)
+@@ -1320,7 +1343,11 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 
+ 		fsl_ac97_data = ssi_private;
+ 
+-		snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
++		ret = snd_soc_set_ac97_ops_of_reset(&fsl_ssi_ac97_ops, pdev);
++		if (ret) {
++			dev_err(&pdev->dev, "could not set AC'97 ops\n");
++			return ret;
++		}
+ 	} else {
+ 		/* Initialize this copy of the CPU DAI driver structure */
+ 		memcpy(&ssi_private->cpu_dai_drv, &fsl_ssi_dai_template,
+@@ -1357,7 +1384,9 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 
+ 	/* Are the RX and the TX clocks locked? */
+ 	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
+-		ssi_private->cpu_dai_drv.symmetric_rates = 1;
++		if (!fsl_ssi_is_ac97(ssi_private))
++			ssi_private->cpu_dai_drv.symmetric_rates = 1;
++
+ 		ssi_private->cpu_dai_drv.symmetric_channels = 1;
+ 		ssi_private->cpu_dai_drv.symmetric_samplebits = 1;
+ 	}
+@@ -1405,7 +1434,8 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 	 * that the machine driver uses new binding which does not require
+ 	 * SSI driver to trigger machine driver's probe.
+ 	 */
+-	if (!of_get_property(np, "codec-handle", NULL))
++	newbinding = !of_get_property(np, "codec-handle", NULL);
++	if (newbinding)
+ 		goto done;
+ 
+ 	/* Trigger the machine driver's probe function.  The platform driver
+@@ -1434,6 +1464,27 @@ done:
+ 		_fsl_ssi_set_dai_fmt(&pdev->dev, ssi_private,
+ 				     ssi_private->dai_fmt);
+ 
++	if (newbinding && fsl_ssi_is_ac97(ssi_private)) {
++		u32 ssi_idx;
++
++		ret = of_property_read_u32(np, "cell-index", &ssi_idx);
++		if (ret) {
++			dev_err(&pdev->dev, "cannot get SSI index property\n");
++			goto error_sound_card;
++		}
++
++		ssi_private->pdev =
++			platform_device_register_data(NULL,
++					"ac97-codec", ssi_idx, NULL, 0);
++		if (IS_ERR(ssi_private->pdev)) {
++			ret = PTR_ERR(ssi_private->pdev);
++			dev_err(&pdev->dev,
++				"failed to register AC97 codec platform: %d\n",
++				ret);
++			goto error_sound_card;
++		}
++	}
++
+ 	return 0;
+ 
+ error_sound_card:
+@@ -1458,6 +1509,9 @@ static int fsl_ssi_remove(struct platform_device *pdev)
+ 	if (ssi_private->soc->imx)
+ 		fsl_ssi_imx_clean(pdev, ssi_private);
+ 
++	if (fsl_ssi_is_ac97(ssi_private))
++		snd_soc_set_ac97_ops(NULL);
++
+ 	return 0;
+ }
+ 
