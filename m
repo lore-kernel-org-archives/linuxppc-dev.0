@@ -1,20 +1,28 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
- [IPv6:2607:f8b0:4001:c03::232])
+Return-Path: <festevam@gmail.com>
+Received: from mail-la0-x22e.google.com (mail-la0-x22e.google.com
+ [IPv6:2a00:1450:4010:c03::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 617CA1A01FC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 06:48:11 +1000 (AEST)
-Received: by iebrt9 with SMTP id rt9so94592124ieb.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 13:48:09 -0700 (PDT)
-From: Nicholas Krause <xerofoify@gmail.com>
-To: leoli@freescale.com
-Cc: balbi@ti.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] udc:Make various functions have a return type of void in the
- file fsl_qe_udc.c
-Date: Sat, 27 Jun 2015 16:48:02 -0400
-Message-Id: <1435438082-15378-1-git-send-email-xerofoify@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A43841A0359
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 09:06:52 +1000 (AEST)
+Received: by lagh6 with SMTP id h6so18258530lag.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 16:06:48 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <558F28E1.7040204@maciej.szmigiero.name>
+References: <558F28E1.7040204@maciej.szmigiero.name>
+Date: Sat, 27 Jun 2015 20:06:47 -0300
+Message-ID: <CAOMZO5Cpgwg=7xvRm8cz8Dm6bbrLxo5Apm7y+3=Y+5Aga4e2fQ@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_ssi: fix AC'97 mode
+From: Fabio Estevam <festevam@gmail.com>
+To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@tabi.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,160 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes various USB and Endpoint manipulation functions have a
-return type of void now due to these particular functions always
-running to completion successfully nor their callers putting the
-return value when calling one of these functions into a variable
-to check/use later in their own intended internal function work.
+Hi Maciej,
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- drivers/usb/gadget/udc/fsl_qe_udc.c | 36 ++++++++++++------------------------
- 1 file changed, 12 insertions(+), 24 deletions(-)
+On Sat, Jun 27, 2015 at 7:51 PM, Maciej S. Szmigiero
+<mail@maciej.szmigiero.name> wrote:
+> Currently the AC'97 mode in fsl_ssi driver isn't functional.
 
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index e0822f1..d1e4354 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -143,7 +143,7 @@ static void nuke(struct qe_ep *ep, int status)
-  * USB and Endpoint manipulate process, include parameter and register       *
-  *---------------------------------------------------------------------------*/
- /* @value: 1--set stall 0--clean stall */
--static int qe_eprx_stall_change(struct qe_ep *ep, int value)
-+static void qe_eprx_stall_change(struct qe_ep *ep, int value)
- {
- 	u16 tem_usep;
- 	u8 epnum = ep->epnum;
-@@ -157,10 +157,9 @@ static int qe_eprx_stall_change(struct qe_ep *ep, int value)
- 		tem_usep |= USB_RHS_IGNORE_OUT;
- 
- 	out_be16(&udc->usb_regs->usb_usep[epnum], tem_usep);
--	return 0;
- }
- 
--static int qe_eptx_stall_change(struct qe_ep *ep, int value)
-+static void qe_eptx_stall_change(struct qe_ep *ep, int value)
- {
- 	u16 tem_usep;
- 	u8 epnum = ep->epnum;
-@@ -175,19 +174,17 @@ static int qe_eptx_stall_change(struct qe_ep *ep, int value)
- 
- 	out_be16(&udc->usb_regs->usb_usep[epnum], tem_usep);
- 
--	return 0;
- }
- 
--static int qe_ep0_stall(struct qe_udc *udc)
-+static void qe_ep0_stall(struct qe_udc *udc)
- {
- 	qe_eptx_stall_change(&udc->eps[0], 1);
- 	qe_eprx_stall_change(&udc->eps[0], 1);
- 	udc->ep0_state = WAIT_FOR_SETUP;
- 	udc->ep0_dir = 0;
--	return 0;
- }
- 
--static int qe_eprx_nack(struct qe_ep *ep)
-+static void qe_eprx_nack(struct qe_ep *ep)
- {
- 	u8 epnum = ep->epnum;
- 	struct qe_udc *udc = ep->udc;
-@@ -203,10 +200,9 @@ static int qe_eprx_nack(struct qe_ep *ep)
- 
- 		ep->state = EP_STATE_NACK;
- 	}
--	return 0;
- }
- 
--static int qe_eprx_normal(struct qe_ep *ep)
-+static void qe_eprx_normal(struct qe_ep *ep)
- {
- 	struct qe_udc *udc = ep->udc;
- 
-@@ -224,10 +220,9 @@ static int qe_eprx_normal(struct qe_ep *ep)
- 		ep->has_data = 0;
- 	}
- 
--	return 0;
- }
- 
--static int qe_ep_cmd_stoptx(struct qe_ep *ep)
-+static void qe_ep_cmd_stoptx(struct qe_ep *ep)
- {
- 	if (ep->udc->soc_type == PORT_CPM)
- 		cpm_command(CPM_USB_STOP_TX | (ep->epnum << CPM_USB_EP_SHIFT),
-@@ -236,10 +231,9 @@ static int qe_ep_cmd_stoptx(struct qe_ep *ep)
- 		qe_issue_cmd(QE_USB_STOP_TX, QE_CR_SUBBLOCK_USB,
- 				ep->epnum, 0);
- 
--	return 0;
- }
- 
--static int qe_ep_cmd_restarttx(struct qe_ep *ep)
-+static void qe_ep_cmd_restarttx(struct qe_ep *ep)
- {
- 	if (ep->udc->soc_type == PORT_CPM)
- 		cpm_command(CPM_USB_RESTART_TX | (ep->epnum <<
-@@ -248,10 +242,9 @@ static int qe_ep_cmd_restarttx(struct qe_ep *ep)
- 		qe_issue_cmd(QE_USB_RESTART_TX, QE_CR_SUBBLOCK_USB,
- 				ep->epnum, 0);
- 
--	return 0;
- }
- 
--static int qe_ep_flushtxfifo(struct qe_ep *ep)
-+static void qe_ep_flushtxfifo(struct qe_ep *ep)
- {
- 	struct qe_udc *udc = ep->udc;
- 	int i;
-@@ -268,19 +261,17 @@ static int qe_ep_flushtxfifo(struct qe_ep *ep)
- 	ep->c_txbd = ep->txbase;
- 	ep->n_txbd = ep->txbase;
- 	qe_ep_cmd_restarttx(ep);
--	return 0;
- }
- 
--static int qe_ep_filltxfifo(struct qe_ep *ep)
-+static void qe_ep_filltxfifo(struct qe_ep *ep)
- {
- 	struct qe_udc *udc = ep->udc;
- 
- 	out_8(&udc->usb_regs->usb_uscom,
- 			USB_CMD_STR_FIFO | (USB_CMD_EP_MASK & (ep->epnum)));
--	return 0;
- }
- 
--static int qe_epbds_reset(struct qe_udc *udc, int pipe_num)
-+static void qe_epbds_reset(struct qe_udc *udc, int pipe_num)
- {
- 	struct qe_ep *ep;
- 	u32 bdring_len;
-@@ -309,10 +300,9 @@ static int qe_epbds_reset(struct qe_udc *udc, int pipe_num)
- 	}
- 	out_be32((u32 __iomem *)bd, T_W);
- 
--	return 0;
- }
- 
--static int qe_ep_reset(struct qe_udc *udc, int pipe_num)
-+static void qe_ep_reset(struct qe_udc *udc, int pipe_num)
- {
- 	struct qe_ep *ep;
- 	u16 tmpusep;
-@@ -339,13 +329,11 @@ static int qe_ep_reset(struct qe_udc *udc, int pipe_num)
- 
- 	qe_epbds_reset(udc, pipe_num);
- 
--	return 0;
- }
- 
--static int qe_ep_toggledata01(struct qe_ep *ep)
-+static void qe_ep_toggledata01(struct qe_ep *ep)
- {
- 	ep->data01 ^= 0x1;
--	return 0;
- }
- 
- static int qe_ep_bd_init(struct qe_udc *udc, unsigned char pipe_num)
--- 
-2.1.4
+Thanks for the fix. I look forward to test it on my udoo board.
+
+> This patch implements the following changes to make it work
+> properly:
+> * IPG clock have to be enabled during AC'97 CODEC
+> register access,
+> * AC'97 DAI driver struct need the same probe method as
+> I2S one to setup DMA params,
+> * AC'97 bus can support asymmetric playback/capture rates,
+> * Check whether setting AC'97 ops succeeded and
+> clean them on removal so the driver can be reloaded,
+> * AC'97 CODEC will be instantiated in AC'97 mode,
+> * Set DAI format function small fixes in AC'97 mode.
+
+It seems like a lot of changes in a single patch.
+
+Care to split it into smaller pieces?
+
+Thanks
