@@ -1,15 +1,17 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 828961A06CD
+ by lists.ozlabs.org (Postfix) with ESMTP id A797A1A0C63
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:45 +1000 (AEST)
-Message-Id: <20150628014201.912602923@telegraphics.com.au>
-Date: Sun, 28 Jun 2015 11:42:08 +1000
+Message-Id: <20150628014202.882623971@telegraphics.com.au>
+Date: Sun, 28 Jun 2015 11:42:12 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v3 09/24] char/nvram: Use generic fixed_size_llseek()
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [RFC v3 13/24] powerpc: Add missing ppc_md.nvram_size for CHRP and
+ PowerMac
 References: <20150628014159.732792697@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,36 +22,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add the nvram_size() function to those PowerPC platforms that don't already
+have one: CHRP and PowerMac. This means that the ppc_md.nvram_size()
+function can be used to implement arch_nvram_ops.get_size()
+
+Since we are addressing inconsistencies here, also rename chrp_nvram_read
+and chrp_nvram_write, which break the naming convention used across
+PowerPC platforms for NVRAM accessor functions.
+
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
- drivers/char/nvram.c |   16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
+ arch/powerpc/platforms/chrp/nvram.c     |   14 ++++++++++----
+ arch/powerpc/platforms/powermac/nvram.c |    9 +++++++++
+ 2 files changed, 19 insertions(+), 4 deletions(-)
 
-Index: linux/drivers/char/nvram.c
+Index: linux/arch/powerpc/platforms/chrp/nvram.c
 ===================================================================
---- linux.orig/drivers/char/nvram.c	2015-06-28 11:41:37.000000000 +1000
-+++ linux/drivers/char/nvram.c	2015-06-28 11:41:38.000000000 +1000
-@@ -235,21 +235,7 @@ EXPORT_SYMBOL(arch_nvram_ops);
+--- linux.orig/arch/powerpc/platforms/chrp/nvram.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/platforms/chrp/nvram.c	2015-06-28 11:41:42.000000000 +1000
+@@ -23,7 +23,7 @@ static unsigned int nvram_size;
+ static unsigned char nvram_buf[4];
+ static DEFINE_SPINLOCK(nvram_lock);
  
- static loff_t nvram_misc_llseek(struct file *file, loff_t offset, int origin)
+-static unsigned char chrp_nvram_read(int addr)
++static unsigned char chrp_nvram_read_byte(int addr)
  {
--	switch (origin) {
--	case 0:
--		/* nothing to do */
--		break;
--	case 1:
--		offset += file->f_pos;
--		break;
--	case 2:
--		offset += NVRAM_BYTES;
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return (offset >= 0) ? (file->f_pos = offset) : -EINVAL;
-+	return fixed_size_llseek(file, offset, origin, nvram_size);
+ 	unsigned int done;
+ 	unsigned long flags;
+@@ -45,7 +45,7 @@ static unsigned char chrp_nvram_read(int
+ 	return ret;
  }
  
- static ssize_t nvram_misc_read(struct file *file, char __user *buf,
+-static void chrp_nvram_write(int addr, unsigned char val)
++static void chrp_nvram_write_byte(int addr, unsigned char val)
+ {
+ 	unsigned int done;
+ 	unsigned long flags;
+@@ -63,6 +63,11 @@ static void chrp_nvram_write(int addr, u
+ 	spin_unlock_irqrestore(&nvram_lock, flags);
+ }
+ 
++static ssize_t chrp_nvram_size(void)
++{
++	return nvram_size;
++}
++
+ void __init chrp_nvram_init(void)
+ {
+ 	struct device_node *nvram;
+@@ -84,8 +89,9 @@ void __init chrp_nvram_init(void)
+ 	printk(KERN_INFO "CHRP nvram contains %u bytes\n", nvram_size);
+ 	of_node_put(nvram);
+ 
+-	ppc_md.nvram_read_val = chrp_nvram_read;
+-	ppc_md.nvram_write_val = chrp_nvram_write;
++	ppc_md.nvram_read_val  = chrp_nvram_read_byte;
++	ppc_md.nvram_write_val = chrp_nvram_write_byte;
++	ppc_md.nvram_size      = chrp_nvram_size;
+ 
+ 	return;
+ }
+Index: linux/arch/powerpc/platforms/powermac/nvram.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/powermac/nvram.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/platforms/powermac/nvram.c	2015-06-28 11:41:42.000000000 +1000
+@@ -147,6 +147,11 @@ static ssize_t core99_nvram_size(void)
+ static volatile unsigned char __iomem *nvram_addr;
+ static int nvram_mult;
+ 
++static ssize_t ppc32_nvram_size(void)
++{
++	return NVRAM_SIZE;
++}
++
+ static unsigned char direct_nvram_read_byte(int addr)
+ {
+ 	return in_8(&nvram_data[(addr & (NVRAM_SIZE - 1)) * nvram_mult]);
+@@ -590,21 +595,25 @@ int __init pmac_nvram_init(void)
+ 		nvram_mult = 1;
+ 		ppc_md.nvram_read_val	= direct_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= direct_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ 	} else if (nvram_naddrs == 1) {
+ 		nvram_data = ioremap(r1.start, s1);
+ 		nvram_mult = (s1 + NVRAM_SIZE - 1) / NVRAM_SIZE;
+ 		ppc_md.nvram_read_val	= direct_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= direct_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ 	} else if (nvram_naddrs == 2) {
+ 		nvram_addr = ioremap(r1.start, s1);
+ 		nvram_data = ioremap(r2.start, s2);
+ 		ppc_md.nvram_read_val	= indirect_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= indirect_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ 	} else if (nvram_naddrs == 0 && sys_ctrler == SYS_CTRLER_PMU) {
+ #ifdef CONFIG_ADB_PMU
+ 		nvram_naddrs = -1;
+ 		ppc_md.nvram_read_val	= pmu_nvram_read_byte;
+ 		ppc_md.nvram_write_val	= pmu_nvram_write_byte;
++		ppc_md.nvram_size	= ppc32_nvram_size;
+ #endif /* CONFIG_ADB_PMU */
+ 	} else {
+ 		printk(KERN_ERR "Incompatible type of NVRAM\n");
