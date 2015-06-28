@@ -1,10 +1,10 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 986591A0454
+ by lists.ozlabs.org (Postfix) with ESMTP id A11581A05E0
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:46 +1000 (AEST)
-Message-Id: <20150628014204.092620438@telegraphics.com.au>
-Date: Sun, 28 Jun 2015 11:42:17 +1000
+Message-Id: <20150628014203.362580884@telegraphics.com.au>
+Date: Sun, 28 Jun 2015 11:42:14 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>,
@@ -12,8 +12,7 @@ To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v3 18/24] powerpc: Remove CONFIG_GENERIC_NVRAM and adopt
- CONFIG_HAVE_ARCH_NVRAM_OPS
+Subject: [RFC v3 15/24] powerpc: Implement nvram sync ioctl
 References: <20150628014159.732792697@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,131 +23,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Switch PPC32 kernels from the generic_nvram module to the nvram module.
-
-Also fix a theoretical bug where CHRP omits the chrp_nvram_init()
-call when CONFIG_NVRAM_MODULE=m.
-
-As before, when CONFIG_PPC && !CONFIG_PPC_PMAC, the IOC_NVRAM_GET_OFFSET
-ioctl is unimplemented. For the nvram module, unimplemented ioctls return
--ENOTTY. Whereas, for the superseded generic_nvram module they would
-return -EINVAL.
+Add the powerpc-specific sync() method to struct nvram_ops and implement
+the corresponding ioctl in the nvram module. This allows the nvram module
+to replace the generic_nvram module.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
 
-This ioctl change is visible to userspace code but only in an error path.
-I didn't find any userspace code that uses the IOC_NVRAM_GET_OFFSET ioctl.
+On PPC32, the IOC_NVRAM_SYNC ioctl call always returns 0, even for those
+platforms that don't implement ppc_md.nvram_sync. This patch retains
+that quirk. It might be better to return failure (which is what PPC64 does).
 
-The change in the name of the module is also visible. The module that
-implements /dev/nvram on PowerPC now has suitable aliases, i.e.
-MODULE_ALIAS_MISCDEV(NVRAM_MINOR);
-MODULE_ALIAS("devname:nvram"); 
-so that the device special file can be automatically created and the
-module automatically loaded when needed. Previously this was not the case.
+Changed since v1:
+- Don't bother acquiring the mutex for unimplemented ioctls.
 
 ---
+ arch/powerpc/include/asm/nvram.h |    3 ---
+ arch/powerpc/kernel/setup_32.c   |    6 +++---
+ drivers/char/generic_nvram.c     |    2 +-
+ drivers/char/nvram.c             |   39 +++++++++++++++++++++++++++++++++++++++
+ include/linux/nvram.h            |    4 ++++
+ 5 files changed, 47 insertions(+), 7 deletions(-)
 
-Changes since v1:
-- Small indentation fix.
-
----
- arch/powerpc/Kconfig                    |    2 +-
- arch/powerpc/kernel/setup_32.c          |    2 +-
- arch/powerpc/platforms/chrp/Makefile    |    2 +-
- arch/powerpc/platforms/chrp/setup.c     |    2 +-
- arch/powerpc/platforms/powermac/setup.c |    3 +--
- drivers/char/Kconfig                    |   10 ++++++----
- 6 files changed, 11 insertions(+), 10 deletions(-)
-
-Index: linux/arch/powerpc/Kconfig
+Index: linux/drivers/char/nvram.c
 ===================================================================
---- linux.orig/arch/powerpc/Kconfig	2015-06-28 11:41:27.000000000 +1000
-+++ linux/arch/powerpc/Kconfig	2015-06-28 11:41:49.000000000 +1000
-@@ -178,7 +178,7 @@ config SYSVIPC_COMPAT
- 	default y
+--- linux.orig/drivers/char/nvram.c	2015-06-28 11:41:40.000000000 +1000
++++ linux/drivers/char/nvram.c	2015-06-28 11:41:44.000000000 +1000
+@@ -48,6 +48,11 @@
+ #include <linux/mutex.h>
  
- # All PPC32s use generic nvram driver through ppc_md
--config GENERIC_NVRAM
-+config HAVE_ARCH_NVRAM_OPS
- 	bool
- 	default y if PPC32
+ 
++#ifdef CONFIG_PPC
++#include <asm/nvram.h>
++#include <asm/machdep.h>
++#endif
++
+ static DEFINE_MUTEX(nvram_mutex);
+ static DEFINE_SPINLOCK(nvram_state_lock);
+ static int nvram_open_cnt;	/* #times opened */
+@@ -338,6 +343,37 @@ static long nvram_misc_ioctl(struct file
+ 	long ret = -ENOTTY;
+ 
+ 	switch (cmd) {
++#ifdef CONFIG_PPC
++#ifdef CONFIG_PPC_PMAC
++	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
++		pr_warn("nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
++		/* fall through */
++	case IOC_NVRAM_GET_OFFSET: {
++		int part, offset;
++
++		if (!machine_is(powermac))
++			return -EINVAL;
++		if (copy_from_user(&part,
++		                   (void __user *)arg, sizeof(part)) != 0)
++			return -EFAULT;
++		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
++			return -EINVAL;
++		offset = pmac_get_partition(part);
++		if (copy_to_user((void __user *)arg,
++		                 &offset, sizeof(offset)) != 0)
++			return -EFAULT;
++		ret = 0;
++		break;
++	}
++#endif
++	case IOC_NVRAM_SYNC:
++		if (arch_nvram_ops.sync != NULL) {
++			mutex_lock(&nvram_mutex);
++			ret = arch_nvram_ops.sync();
++			mutex_unlock(&nvram_mutex);
++		}
++		break;
++#else /* !CONFIG_PPC */
+ 	case NVRAM_INIT:
+ 		/* initialize NVRAM contents and checksum */
+ 		if (!capable(CAP_SYS_ADMIN))
+@@ -361,6 +397,7 @@ static long nvram_misc_ioctl(struct file
+ 			mutex_unlock(&nvram_mutex);
+ 		}
+ 		break;
++#endif /* CONFIG_PPC */
+ 	}
+ 	return ret;
+ }
+@@ -376,6 +413,7 @@ static int nvram_misc_open(struct inode
+ 		return -EBUSY;
+ 	}
+ 
++#ifndef CONFIG_PPC
+ 	/* Prevent multiple writers if the set_checksum ioctl is implemented. */
+ 	if ((arch_nvram_ops.set_checksum != NULL) &&
+ 	    (file->f_mode & FMODE_WRITE) &&
+@@ -383,6 +421,7 @@ static int nvram_misc_open(struct inode
+ 		spin_unlock(&nvram_state_lock);
+ 		return -EBUSY;
+ 	}
++#endif
+ 
+ 	if (file->f_flags & O_EXCL)
+ 		nvram_open_mode |= NVRAM_EXCL;
+Index: linux/include/linux/nvram.h
+===================================================================
+--- linux.orig/include/linux/nvram.h	2015-06-28 11:41:36.000000000 +1000
++++ linux/include/linux/nvram.h	2015-06-28 11:41:44.000000000 +1000
+@@ -17,8 +17,12 @@ struct nvram_ops {
+ 	unsigned char   (*read_byte)(int);
+ 	void            (*write_byte)(unsigned char, int);
+ 	ssize_t         (*get_size)(void);
++#ifdef CONFIG_PPC
++	long            (*sync)(void);
++#else
+ 	long            (*set_checksum)(void);
+ 	long            (*initialize)(void);
++#endif
+ };
+ 
+ extern const struct nvram_ops arch_nvram_ops;
+Index: linux/arch/powerpc/include/asm/nvram.h
+===================================================================
+--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-06-28 11:41:43.000000000 +1000
++++ linux/arch/powerpc/include/asm/nvram.h	2015-06-28 11:41:44.000000000 +1000
+@@ -78,9 +78,6 @@ extern int	pmac_get_partition(int partit
+ extern u8	pmac_xpram_read(int xpaddr);
+ extern void	pmac_xpram_write(int xpaddr, u8 data);
+ 
+-/* Synchronize NVRAM */
+-extern void	nvram_sync(void);
+-
+ /* Initialize NVRAM OS partition */
+ extern int __init nvram_init_os_partition(struct nvram_os_partition *part);
  
 Index: linux/arch/powerpc/kernel/setup_32.c
 ===================================================================
---- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:46.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:49.000000000 +1000
-@@ -168,7 +168,7 @@ int __init ppc_setup_l3cr(char *str)
+--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:43.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:44.000000000 +1000
+@@ -170,7 +170,6 @@ __setup("l3cr=", ppc_setup_l3cr);
+ 
+ #ifdef CONFIG_GENERIC_NVRAM
+ 
+-/* Generic nvram hooks used by drivers/char/gen_nvram.c */
+ unsigned char nvram_read_byte(int addr)
+ {
+ 	if (ppc_md.nvram_read_val)
+@@ -193,15 +192,16 @@ static ssize_t ppc_nvram_get_size(void)
+ 	return -ENODEV;
  }
- __setup("l3cr=", ppc_setup_l3cr);
  
--#ifdef CONFIG_GENERIC_NVRAM
-+#if IS_ENABLED(CONFIG_NVRAM)
- 
- static unsigned char ppc_nvram_read_byte(int addr)
+-void nvram_sync(void)
++static long ppc_nvram_sync(void)
  {
-Index: linux/arch/powerpc/platforms/chrp/Makefile
+ 	if (ppc_md.nvram_sync)
+ 		ppc_md.nvram_sync();
++	return 0;
+ }
+-EXPORT_SYMBOL(nvram_sync);
+ 
+ const struct nvram_ops arch_nvram_ops = {
+ 	.get_size       = ppc_nvram_get_size,
++	.sync           = ppc_nvram_sync,
+ };
+ EXPORT_SYMBOL(arch_nvram_ops);
+ 
+Index: linux/drivers/char/generic_nvram.c
 ===================================================================
---- linux.orig/arch/powerpc/platforms/chrp/Makefile	2015-06-28 11:41:27.000000000 +1000
-+++ linux/arch/powerpc/platforms/chrp/Makefile	2015-06-28 11:41:49.000000000 +1000
-@@ -1,3 +1,3 @@
- obj-y				+= setup.o time.o pegasos_eth.o pci.o
- obj-$(CONFIG_SMP)		+= smp.o
--obj-$(CONFIG_NVRAM)		+= nvram.o
-+obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
-Index: linux/arch/powerpc/platforms/chrp/setup.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/chrp/setup.c	2015-06-28 11:41:27.000000000 +1000
-+++ linux/arch/powerpc/platforms/chrp/setup.c	2015-06-28 11:41:49.000000000 +1000
-@@ -557,7 +557,7 @@ void __init chrp_init_IRQ(void)
- void __init
- chrp_init2(void)
- {
--#ifdef CONFIG_NVRAM
-+#if IS_ENABLED(CONFIG_NVRAM)
- 	chrp_nvram_init();
- #endif
- 
-Index: linux/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/powermac/setup.c	2015-06-28 11:41:27.000000000 +1000
-+++ linux/arch/powerpc/platforms/powermac/setup.c	2015-06-28 11:41:49.000000000 +1000
-@@ -321,8 +321,7 @@ static void __init pmac_setup_arch(void)
- 	find_via_pmu();
- 	smu_init();
- 
--#if defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE) || \
--    defined(CONFIG_PPC64)
-+#if IS_ENABLED(CONFIG_NVRAM) || defined(CONFIG_PPC64)
- 	pmac_nvram_init();
- #endif
- 
-Index: linux/drivers/char/Kconfig
-===================================================================
---- linux.orig/drivers/char/Kconfig	2015-06-28 11:41:39.000000000 +1000
-+++ linux/drivers/char/Kconfig	2015-06-28 11:41:49.000000000 +1000
-@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
- 
- config NVRAM
- 	tristate "/dev/nvram support"
--	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
-+	depends on X86 || (ARM && RTC_DRV_CMOS) || HAVE_ARCH_NVRAM_OPS
- 	---help---
- 	  If you say Y here and create a character special file /dev/nvram
- 	  with major number 10 and minor number 144 using mknod ("man mknod"),
-@@ -256,9 +256,11 @@ config NVRAM
- 	  and most Ataris.  The actual number of bytes varies, depending on the
- 	  nvram in the system, but is usually 114 (128-14 for the RTC).
- 
--	  This memory is conventionally called "CMOS RAM" on PCs and "NVRAM"
--	  on Ataris. /dev/nvram may be used to view settings there, or to
--	  change them (with some utility). It could also be used to frequently
-+	  This memory is conventionally called "CMOS RAM" on PCs,
-+	  "NVRAM" on Ataris and "PRAM" on Macintoshes.
-+
-+	  /dev/nvram may be used to view settings in NVRAM, or to change them
-+	  (with some utility). It could also be used to frequently
- 	  save a few bits of very important data that may not be lost over
- 	  power-off and for which writing to disk is too insecure. Note
- 	  however that most NVRAM space in a PC belongs to the BIOS and you
+--- linux.orig/drivers/char/generic_nvram.c	2015-06-28 11:41:43.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-06-28 11:41:44.000000000 +1000
+@@ -112,7 +112,7 @@ static int nvram_ioctl(struct file *file
+ 	}
+ #endif /* CONFIG_PPC_PMAC */
+ 	case IOC_NVRAM_SYNC:
+-		nvram_sync();
++		arch_nvram_ops.sync();
+ 		break;
+ 	default:
+ 		return -EINVAL;
