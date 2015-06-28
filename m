@@ -1,19 +1,17 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
- [IPv6:2607:f8b0:4001:c03::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A8B8E1A0359
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:48:52 +1000 (AEST)
-Received: by iebmu5 with SMTP id mu5so96121396ieb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 18:48:50 -0700 (PDT)
-From: Nicholas Krause <xerofoify@gmail.com>
-To: leoli@freescale.com
-Cc: balbi@ti.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] udc:Make the function txcomplete have a return type of void
-Date: Sat, 27 Jun 2015 21:48:44 -0400
-Message-Id: <1435456124-28082-1-git-send-email-xerofoify@gmail.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 99B541A06CD
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:43 +1000 (AEST)
+Message-Id: <20150628014200.712614572@telegraphics.com.au>
+Date: Sun, 28 Jun 2015 11:42:03 +1000
+From: Finn Thain <fthain@telegraphics.com.au>
+To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [RFC v3 04/24] char/nvram: Re-order functions to remove forward
+ declarations and #ifdefs
+References: <20150628014159.732792697@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +21,275 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes the function txcomplete have a return type of void
-now due to this particular function always running successfully
-nor its callers checking/using the return value from this particular
-function in their own internal work.
+Also give functions more sensible names: nvram_misc_* for misc device ops,
+nvram_proc_* for proc file ops and nvram_module_* for init and exit
+functions. This makes them distict from nvram_ops members.
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+
 ---
- drivers/usb/gadget/udc/fsl_qe_udc.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/char/nvram.c |  194 ++++++++++++++++++++++-----------------------------
+ 1 file changed, 86 insertions(+), 108 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
-index e0822f1..8c3a1ec 100644
---- a/drivers/usb/gadget/udc/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
-@@ -1139,7 +1139,7 @@ static int qe_ep_tx(struct qe_ep *ep, struct qe_frame *frame)
+Index: linux/drivers/char/nvram.c
+===================================================================
+--- linux.orig/drivers/char/nvram.c	2015-06-28 11:41:29.000000000 +1000
++++ linux/drivers/char/nvram.c	2015-06-28 11:41:32.000000000 +1000
+@@ -54,11 +54,6 @@ static int nvram_open_mode;	/* special o
+ #define NVRAM_WRITE		1 /* opened for writing (exclusive) */
+ #define NVRAM_EXCL		2 /* opened with O_EXCL */
  
- /* when a bd was transmitted, the function can
-  * handle the tx_req, not include ep0           */
--static int txcomplete(struct qe_ep *ep, unsigned char restart)
-+static void txcomplete(struct qe_ep *ep, unsigned char restart)
- {
- 	if (ep->tx_req != NULL) {
- 		struct qe_req *req = ep->tx_req;
-@@ -1184,8 +1184,6 @@ static int txcomplete(struct qe_ep *ep, unsigned char restart)
- 			ep->sent = 0;
- 		}
- 	}
+-#ifdef CONFIG_PROC_FS
+-static void pc_nvram_proc_read(unsigned char *contents, struct seq_file *seq,
+-                               void *offset);
+-#endif
 -
--	return 0;
+ /*
+  * These functions are provided to be called internally or by other parts of
+  * the kernel. It's up to the caller to ensure correct checksum before reading
+@@ -170,7 +165,7 @@ void nvram_set_checksum(void)
+  * The are the file operation function for user access to /dev/nvram
+  */
+ 
+-static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
++static loff_t nvram_misc_llseek(struct file *file, loff_t offset, int origin)
+ {
+ 	switch (origin) {
+ 	case 0:
+@@ -189,8 +184,8 @@ static loff_t nvram_llseek(struct file *
+ 	return (offset >= 0) ? (file->f_pos = offset) : -EINVAL;
  }
  
- /* give a frame and a tx_req, send some data */
--- 
-2.1.4
+-static ssize_t nvram_read(struct file *file, char __user *buf,
+-						size_t count, loff_t *ppos)
++static ssize_t nvram_misc_read(struct file *file, char __user *buf,
++                               size_t count, loff_t *ppos)
+ {
+ 	unsigned char contents[NVRAM_BYTES];
+ 	unsigned i = *ppos;
+@@ -218,8 +213,8 @@ checksum_err:
+ 	return -EIO;
+ }
+ 
+-static ssize_t nvram_write(struct file *file, const char __user *buf,
+-						size_t count, loff_t *ppos)
++static ssize_t nvram_misc_write(struct file *file, const char __user *buf,
++                                size_t count, loff_t *ppos)
+ {
+ 	unsigned char contents[NVRAM_BYTES];
+ 	unsigned i = *ppos;
+@@ -257,8 +252,8 @@ checksum_err:
+ 	return -EIO;
+ }
+ 
+-static long nvram_ioctl(struct file *file, unsigned int cmd,
+-			unsigned long arg)
++static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
++                             unsigned long arg)
+ {
+ 	int i;
+ 
+@@ -298,7 +293,7 @@ static long nvram_ioctl(struct file *fil
+ 	}
+ }
+ 
+-static int nvram_open(struct inode *inode, struct file *file)
++static int nvram_misc_open(struct inode *inode, struct file *file)
+ {
+ 	spin_lock(&nvram_state_lock);
+ 
+@@ -320,7 +315,7 @@ static int nvram_open(struct inode *inod
+ 	return 0;
+ }
+ 
+-static int nvram_release(struct inode *inode, struct file *file)
++static int nvram_misc_release(struct inode *inode, struct file *file)
+ {
+ 	spin_lock(&nvram_state_lock);
+ 
+@@ -337,100 +332,6 @@ static int nvram_release(struct inode *i
+ 	return 0;
+ }
+ 
+-#ifndef CONFIG_PROC_FS
+-static int nvram_add_proc_fs(void)
+-{
+-	return 0;
+-}
+-
+-#else
+-
+-static int nvram_proc_read(struct seq_file *seq, void *offset)
+-{
+-	unsigned char contents[NVRAM_BYTES];
+-	int i = 0;
+-
+-	spin_lock_irq(&rtc_lock);
+-	for (i = 0; i < NVRAM_BYTES; ++i)
+-		contents[i] = __nvram_read_byte(i);
+-	spin_unlock_irq(&rtc_lock);
+-
+-	pc_nvram_proc_read(contents, seq, offset);
+-
+-	return 0;
+-}
+-
+-static int nvram_proc_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, nvram_proc_read, NULL);
+-}
+-
+-static const struct file_operations nvram_proc_fops = {
+-	.owner		= THIS_MODULE,
+-	.open		= nvram_proc_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= single_release,
+-};
+-
+-static int nvram_add_proc_fs(void)
+-{
+-	if (!proc_create("driver/nvram", 0, NULL, &nvram_proc_fops))
+-		return -ENOMEM;
+-	return 0;
+-}
+-
+-#endif /* CONFIG_PROC_FS */
+-
+-static const struct file_operations nvram_fops = {
+-	.owner		= THIS_MODULE,
+-	.llseek		= nvram_llseek,
+-	.read		= nvram_read,
+-	.write		= nvram_write,
+-	.unlocked_ioctl	= nvram_ioctl,
+-	.open		= nvram_open,
+-	.release	= nvram_release,
+-};
+-
+-static struct miscdevice nvram_dev = {
+-	NVRAM_MINOR,
+-	"nvram",
+-	&nvram_fops
+-};
+-
+-static int __init nvram_init(void)
+-{
+-	int ret;
+-
+-	ret = misc_register(&nvram_dev);
+-	if (ret) {
+-		printk(KERN_ERR "nvram: can't misc_register on minor=%d\n",
+-		    NVRAM_MINOR);
+-		goto out;
+-	}
+-	ret = nvram_add_proc_fs();
+-	if (ret) {
+-		printk(KERN_ERR "nvram: can't create /proc/driver/nvram\n");
+-		goto outmisc;
+-	}
+-	ret = 0;
+-	printk(KERN_INFO "Non-volatile memory driver v" NVRAM_VERSION "\n");
+-out:
+-	return ret;
+-outmisc:
+-	misc_deregister(&nvram_dev);
+-	goto out;
+-}
+-
+-static void __exit nvram_cleanup_module(void)
+-{
+-	remove_proc_entry("driver/nvram", NULL);
+-	misc_deregister(&nvram_dev);
+-}
+-
+-module_init(nvram_init);
+-module_exit(nvram_cleanup_module);
+-
+ #ifdef CONFIG_PROC_FS
+ 
+ static char *floppy_types[] = {
+@@ -508,7 +409,84 @@ static void pc_nvram_proc_read(unsigned
+ 	return;
+ }
+ 
++static int nvram_proc_read(struct seq_file *seq, void *offset)
++{
++	unsigned char contents[NVRAM_BYTES];
++	int i = 0;
++
++	spin_lock_irq(&rtc_lock);
++	for (i = 0; i < NVRAM_BYTES; ++i)
++		contents[i] = __nvram_read_byte(i);
++	spin_unlock_irq(&rtc_lock);
++
++	pc_nvram_proc_read(contents, seq, offset);
++
++	return 0;
++}
++
++static int nvram_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, nvram_proc_read, NULL);
++}
++
++static const struct file_operations nvram_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= nvram_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ #endif /* CONFIG_PROC_FS */
+ 
++static const struct file_operations nvram_misc_fops = {
++	.owner		= THIS_MODULE,
++	.llseek		= nvram_misc_llseek,
++	.read		= nvram_misc_read,
++	.write		= nvram_misc_write,
++	.unlocked_ioctl	= nvram_misc_ioctl,
++	.open		= nvram_misc_open,
++	.release	= nvram_misc_release,
++};
++
++static struct miscdevice nvram_misc = {
++	NVRAM_MINOR,
++	"nvram",
++	&nvram_misc_fops,
++};
++
++static int __init nvram_module_init(void)
++{
++	int ret;
++
++	ret = misc_register(&nvram_misc);
++	if (ret) {
++		pr_err("nvram: can't misc_register on minor=%d\n", NVRAM_MINOR);
++		return ret;
++	}
++
++#ifdef CONFIG_PROC_FS
++	if (!proc_create("driver/nvram", 0, NULL, &nvram_proc_fops)) {
++		pr_err("nvram: can't create /proc/driver/nvram\n");
++		misc_deregister(&nvram_misc);
++		return -ENOMEM;
++	}
++#endif
++
++	pr_info("Non-volatile memory driver v" NVRAM_VERSION "\n");
++	return 0;
++}
++
++static void __exit nvram_module_exit(void)
++{
++#ifdef CONFIG_PROC_FS
++	remove_proc_entry("driver/nvram", NULL);
++#endif
++	misc_deregister(&nvram_misc);
++}
++
++module_init(nvram_module_init);
++module_exit(nvram_module_exit);
++
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS_MISCDEV(NVRAM_MINOR);
