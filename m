@@ -1,28 +1,19 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-la0-x234.google.com (mail-la0-x234.google.com
- [IPv6:2a00:1450:4010:c03::234])
+Return-Path: <xerofoify@gmail.com>
+Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c03::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95A301A0359
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 09:09:34 +1000 (AEST)
-Received: by lacny3 with SMTP id ny3so89929816lac.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 16:09:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <558F28E1.7040204@maciej.szmigiero.name>
-References: <558F28E1.7040204@maciej.szmigiero.name>
-Date: Sat, 27 Jun 2015 20:09:30 -0300
-Message-ID: <CAOMZO5AkwGkj-Qmv6k+A7aV=SeuoPD1Mcc-hBFtuLSs2iaBSJA@mail.gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_ssi: fix AC'97 mode
-From: Fabio Estevam <festevam@gmail.com>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8B8E1A0359
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:48:52 +1000 (AEST)
+Received: by iebmu5 with SMTP id mu5so96121396ieb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Jun 2015 18:48:50 -0700 (PDT)
+From: Nicholas Krause <xerofoify@gmail.com>
+To: leoli@freescale.com
+Cc: balbi@ti.com, linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] udc:Make the function txcomplete have a return type of void
+Date: Sat, 27 Jun 2015 21:48:44 -0400
+Message-Id: <1435456124-28082-1-git-send-email-xerofoify@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 27, 2015 at 7:51 PM, Maciej S. Szmigiero
-<mail@maciej.szmigiero.name> wrote:
+This makes the function txcomplete have a return type of void
+now due to this particular function always running successfully
+nor its callers checking/using the return value from this particular
+function in their own internal work.
 
-> +
-> +       ret = clk_prepare_enable(fsl_ac97_data->clk);
-> +       if (ret) {
-> +               pr_err("ac97 read clk_prepare_enable failed: %d\n",
-> +                       ret);
-> +               return -1;
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+---
+ drivers/usb/gadget/udc/fsl_qe_udc.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-'return ret' would be better here.
-
-Thanks
+diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
+index e0822f1..8c3a1ec 100644
+--- a/drivers/usb/gadget/udc/fsl_qe_udc.c
++++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
+@@ -1139,7 +1139,7 @@ static int qe_ep_tx(struct qe_ep *ep, struct qe_frame *frame)
+ 
+ /* when a bd was transmitted, the function can
+  * handle the tx_req, not include ep0           */
+-static int txcomplete(struct qe_ep *ep, unsigned char restart)
++static void txcomplete(struct qe_ep *ep, unsigned char restart)
+ {
+ 	if (ep->tx_req != NULL) {
+ 		struct qe_req *req = ep->tx_req;
+@@ -1184,8 +1184,6 @@ static int txcomplete(struct qe_ep *ep, unsigned char restart)
+ 			ep->sent = 0;
+ 		}
+ 	}
+-
+-	return 0;
+ }
+ 
+ /* give a frame and a tx_req, send some data */
+-- 
+2.1.4
