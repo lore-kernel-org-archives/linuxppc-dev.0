@@ -1,25 +1,24 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D1D51A0023
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 14:27:42 +1000 (AEST)
-Message-ID: <558F77B8.9060307@tabi.org>
-Date: Sat, 27 Jun 2015 23:27:36 -0500
-From: Timur Tabi <timur@tabi.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 910CF1A03AC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 18:06:58 +1000 (AEST)
+From: Liberman Igal <Igal.Liberman@freescale.com>
+To: Paul Bolle <pebolle@tiscali.nl>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott
+ Wood <scottwood@freescale.com>, Madalin-Cristian Bucur
+ <madalin.bucur@freescale.com>
+Subject: RE: [v2,8/9] fsl/fman: Add FMan Port Support
+Date: Sun, 28 Jun 2015 08:06:49 +0000
+Message-ID: <DM2PR03MB38337ABD2E9B11C92DCAF9FE6AB0@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1435174659-6876-1-git-send-email-igal.liberman@freescale.com>
+ <1435274929.28572.28.camel@tiscali.nl>
+In-Reply-To: <1435274929.28572.28.camel@tiscali.nl>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>,
- "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
-CC: Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_ssi: fix AC'97 mode
-References: <558F28E1.7040204@maciej.szmigiero.name>
-In-Reply-To: <558F28E1.7040204@maciej.szmigiero.name>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,9 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Maciej S. Szmigiero wrote:
-> +	if (newbinding && fsl_ssi_is_ac97(ssi_private)) {
-
-Is the "newbinding" necessary?  I thought only the original PowerPC 
-device trees were the only one that have the old binding, and they never 
-supported AC97.
+SGkgUGF1bCwNCkFsbCB0aG9zZSBleHBvcnRlZCBmdW5jdGlvbnMgYXJlIHVzZWQgYnkgRFBBQSBF
+VEggZHJpdmVyLCB3aGljaCB3YXMgc3VibWl0dGVkIGJ5IEJ1Y3VyIE1hZGFsaW4gKG9ubHkgZm1f
+cG9ydF9nZXRfYnVmZmVyX3RpbWVfc3RhbXAoKSBpcyBub3QgdXNlZCBjdXJyZW50bHksIEknbGwg
+cmVtb3ZlIGl0KS4NCg0KUmVnYXJkcywNCklnYWwgTGliZXJtYW4uDQoNCj4gLS0tLS1PcmlnaW5h
+bCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUGF1bCBCb2xsZSBbbWFpbHRvOnBlYm9sbGVAdGlzY2Fs
+aS5ubF0NCj4gU2VudDogRnJpZGF5LCBKdW5lIDI2LCAyMDE1IDI6MjkgQU0NCj4gVG86IExpYmVy
+bWFuIElnYWwtQjMxOTUwOyBuZXRkZXZAdmdlci5rZXJuZWwub3JnDQo+IENjOiBsaW51eHBwYy1k
+ZXZAbGlzdHMub3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjE7IEJ1Y3VyIE1hZGFsaW4tDQo+
+IENyaXN0aWFuLUIzMjcxNg0KPiBTdWJqZWN0OiBSZTogW3YyLDgvOV0gZnNsL2ZtYW46IEFkZCBG
+TWFuIFBvcnQgU3VwcG9ydA0KPiANCj4gT24gV2VkLCAyMDE1LTA2LTI0IGF0IDIyOjM3ICswMzAw
+LCBpZ2FsLmxpYmVybWFuQGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4gLS0tIGEvZHJpdmVycy9u
+ZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2ZtYW4vZm1fZHJ2LmMNCj4gPiArKysgYi9kcml2ZXJzL25l
+dC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9mbV9kcnYuYw0KPiANCj4gPiArc3RydWN0IGZtX3Bv
+cnRfdCAqZm1fcG9ydF9kcnZfaGFuZGxlKGNvbnN0IHN0cnVjdCBmbV9wb3J0X2Rydl90DQo+ID4g
+Kypwb3J0KSB7DQo+ID4gKwlyZXR1cm4gcG9ydC0+Zm1fcG9ydDsNCj4gPiArfQ0KPiA+ICtFWFBP
+UlRfU1lNQk9MKGZtX3BvcnRfZHJ2X2hhbmRsZSk7DQo+IA0KPiBJIGNvdWxkbid0IGZpbmQgYW55
+IHVzZXJzIG9mIHRoaXMgZnVuY3Rpb24uDQo+IA0KPiA+ICt2b2lkIGZtX3BvcnRfZ2V0X2J1ZmZf
+bGF5b3V0X2V4dF9wYXJhbXMoc3RydWN0IGZtX3BvcnRfZHJ2X3QgKnBvcnQsDQo+ID4gKz4gCT4g
+CT4gCT4gCT4gCXN0cnVjdCBmbV9wb3J0X3BhcmFtcyAqcGFyYW1zKQ0KPiANCj4gKEV2b2x1dGlv
+biAzLjE2IGlzIGEgcGllY2Ugb2YgLi4uKS4NCj4gDQo+ID4gK3sNCj4gPiArCXBhcmFtcy0+ZGF0
+YV9hbGlnbiA9IDA7DQo+ID4gK30NCj4gPiArRVhQT1JUX1NZTUJPTChmbV9wb3J0X2dldF9idWZm
+X2xheW91dF9leHRfcGFyYW1zKTsNCj4gDQo+IERpdHRvLg0KPiANCj4gPiAraW50IGZtX2dldF90
+eF9wb3J0X2NoYW5uZWwoc3RydWN0IGZtX3BvcnRfZHJ2X3QgKnBvcnQpIHsNCj4gPiArCXJldHVy
+biBwb3J0LT50eF9jaDsNCj4gPiArfQ0KPiA+ICtFWFBPUlRfU1lNQk9MKGZtX2dldF90eF9wb3J0
+X2NoYW5uZWwpOw0KPiANCj4gRGl0dG8uDQo+IA0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysg
+Yi9kcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVlc2NhbGUvZm1hbi9mbV9wb3J0X2Rydi5jDQo+IA0K
+PiA+ICt2b2lkIGZtX3NldF9yeF9wb3J0X3BhcmFtcyhzdHJ1Y3QgZm1fcG9ydF9kcnZfdCAqcG9y
+dCwNCj4gPiArCQkJICAgc3RydWN0IGZtX3BvcnRfcGFyYW1zICpwYXJhbXMpDQo+ID4gK3sNCj4g
+KwlbLi4uXQ0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0woZm1fc2V0X3J4X3BvcnRfcGFyYW1z
+KTsNCj4gDQo+IERpdHRvLg0KPiANCj4gKElmIHlvdSBoZWFyIGFib3V0IG15IGFycmVzdCBmb3Ig
+cmFuZG9tbHkgYXR0YWNraW5nIGlubm9jZW50IHBlb3BsZToNCj4gYmxhbWUgZXZvbHV0aW9uIDMu
+MTYhKQ0KPiANCj4gPiArdm9pZCBmbV9zZXRfdHhfcG9ydF9wYXJhbXMoc3RydWN0IGZtX3BvcnRf
+ZHJ2X3QgKnBvcnQsDQo+ID4gKwkJCSAgIHN0cnVjdCBmbV9wb3J0X3BhcmFtcyAqcGFyYW1zKQ0K
+PiA+ICt7DQo+ID4gKwlbLi4uXQ0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0woZm1fc2V0X3R4
+X3BvcnRfcGFyYW1zKTsNCj4gDQo+IERpdHRvLg0KPiANCj4gPiAtLS0gL2Rldi9udWxsDQo+ID4g
+KysrIGIvZHJpdmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL2ZtYW4vcG9ydC9mbV9wb3J0LmMN
+Cj4gDQo+ID4gK3U2NCAqZm1fcG9ydF9nZXRfYnVmZmVyX3RpbWVfc3RhbXAoY29uc3Qgc3RydWN0
+IGZtX3BvcnRfdA0KPiAqcF9mbV9wb3J0LA0KPiA+ICsJCQkJICAgY2hhciAqcF9kYXRhKQ0KPiA+
+ICt7DQo+ID4gKwlbLi4uXQ0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0woZm1fcG9ydF9nZXRf
+YnVmZmVyX3RpbWVfc3RhbXApOw0KPiANCj4gRGl0dG8uDQo+IA0KPiA+ICtpbnQgZm1fcG9ydF9k
+aXNhYmxlKHN0cnVjdCBmbV9wb3J0X3QgKnBfZm1fcG9ydCkgew0KPiA+ICsJWy4uLl0NCj4gPiAr
+fQ0KPiA+ICtFWFBPUlRfU1lNQk9MKGZtX3BvcnRfZGlzYWJsZSk7DQo+IA0KPiBUaGlzIGV4cG9y
+dHMgYSBmdW5jdGlvbiB0aGF0IEkgdGhpbmsgaXMgb25seSB1c2VkIGluc2lkZSB0aGlzIGZpbGUu
+DQo+IA0KPiA+ICtpbnQgZm1fcG9ydF9lbmFibGUoc3RydWN0IGZtX3BvcnRfdCAqcF9mbV9wb3J0
+KSB7DQo+ID4gKwlbLi4uXQ0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0woZm1fcG9ydF9lbmFi
+bGUpOw0KPiANCj4gQW5kIGhlcmUgSSBjb3VsZCBhZ2FpbiBmaW5kIG5vIHVzZXJzIG9mIHRoaXMg
+ZnVuY3Rpb24uDQo+IA0KPiBUaGFua3MsDQo+IA0KPiANCj4gUGF1bCBCb2xsZQ0K
