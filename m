@@ -1,15 +1,19 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 828A41A0B76
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:45 +1000 (AEST)
-Message-Id: <20150628014200.952604378@telegraphics.com.au>
-Date: Sun, 28 Jun 2015 11:42:04 +1000
+ by lists.ozlabs.org (Postfix) with ESMTP id 986591A0454
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:46 +1000 (AEST)
+Message-Id: <20150628014204.092620438@telegraphics.com.au>
+Date: Sun, 28 Jun 2015 11:42:17 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v3 05/24] char/nvram: Adopt arch_nvram_ops
+Subject: [RFC v3 18/24] powerpc: Remove CONFIG_GENERIC_NVRAM and adopt
+ CONFIG_HAVE_ARCH_NVRAM_OPS
 References: <20150628014159.732792697@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,118 +24,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Different platforms and architectures offer different NVRAM sizes and
-access methods. E.g. PPC32 has byte-at-a-time read/write functions whereas
-PPC64 has byte-range read/write functions. Adopt the nvram_ops struct so
-the nvram module can call such functions as are defined by the various 
-platforms and architectures.
+Switch PPC32 kernels from the generic_nvram module to the nvram module.
+
+Also fix a theoretical bug where CHRP omits the chrp_nvram_init()
+call when CONFIG_NVRAM_MODULE=m.
+
+As before, when CONFIG_PPC && !CONFIG_PPC_PMAC, the IOC_NVRAM_GET_OFFSET
+ioctl is unimplemented. For the nvram module, unimplemented ioctls return
+-ENOTTY. Whereas, for the superseded generic_nvram module they would
+return -EINVAL.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
 
-The #ifdefs here restrict the procfs and checksumming code to those
-architectures with PC-style RTC NVRAM. There may be a better place for
-that code but it's an open question. See https://lkml.org/lkml/2015/2/3/22
+This ioctl change is visible to userspace code but only in an error path.
+I didn't find any userspace code that uses the IOC_NVRAM_GET_OFFSET ioctl.
 
-The procfs code here, if irrelevant to ARM platforms, could be moved to
-arch/x86 (like the earlier patch does for m68k code) and the nvram ops
-could be implemented and exported by the rtc-cmos driver instead. This
-would eliminate these #ifdefs.
+The change in the name of the module is also visible. The module that
+implements /dev/nvram on PowerPC now has suitable aliases, i.e.
+MODULE_ALIAS_MISCDEV(NVRAM_MINOR);
+MODULE_ALIAS("devname:nvram"); 
+so that the device special file can be automatically created and the
+module automatically loaded when needed. Previously this was not the case.
 
 ---
- drivers/char/nvram.c  |   30 +++++++++++++++++++++++++++---
- include/linux/nvram.h |    2 ++
- 2 files changed, 29 insertions(+), 3 deletions(-)
 
-Index: linux/drivers/char/nvram.c
+Changes since v1:
+- Small indentation fix.
+
+---
+ arch/powerpc/Kconfig                    |    2 +-
+ arch/powerpc/kernel/setup_32.c          |    2 +-
+ arch/powerpc/platforms/chrp/Makefile    |    2 +-
+ arch/powerpc/platforms/chrp/setup.c     |    2 +-
+ arch/powerpc/platforms/powermac/setup.c |    3 +--
+ drivers/char/Kconfig                    |   10 ++++++----
+ 6 files changed, 11 insertions(+), 10 deletions(-)
+
+Index: linux/arch/powerpc/Kconfig
 ===================================================================
---- linux.orig/drivers/char/nvram.c	2015-06-28 11:41:32.000000000 +1000
-+++ linux/drivers/char/nvram.c	2015-06-28 11:41:34.000000000 +1000
-@@ -51,9 +51,12 @@ static DEFINE_MUTEX(nvram_mutex);
- static DEFINE_SPINLOCK(nvram_state_lock);
- static int nvram_open_cnt;	/* #times opened */
- static int nvram_open_mode;	/* special open modes */
-+static ssize_t nvram_size;
- #define NVRAM_WRITE		1 /* opened for writing (exclusive) */
- #define NVRAM_EXCL		2 /* opened with O_EXCL */
+--- linux.orig/arch/powerpc/Kconfig	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/Kconfig	2015-06-28 11:41:49.000000000 +1000
+@@ -178,7 +178,7 @@ config SYSVIPC_COMPAT
+ 	default y
  
-+#if defined(CONFIG_X86) || defined(CONFIG_ARM)
-+
- /*
-  * These functions are provided to be called internally or by other parts of
-  * the kernel. It's up to the caller to ensure correct checksum before reading
-@@ -161,6 +164,20 @@ void nvram_set_checksum(void)
+ # All PPC32s use generic nvram driver through ppc_md
+-config GENERIC_NVRAM
++config HAVE_ARCH_NVRAM_OPS
+ 	bool
+ 	default y if PPC32
+ 
+Index: linux/arch/powerpc/kernel/setup_32.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:46.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:49.000000000 +1000
+@@ -168,7 +168,7 @@ int __init ppc_setup_l3cr(char *str)
  }
- #endif  /*  0  */
+ __setup("l3cr=", ppc_setup_l3cr);
  
-+static ssize_t nvram_get_size(void)
-+{
-+	return NVRAM_BYTES;
-+}
-+
-+const struct nvram_ops arch_nvram_ops = {
-+	.read_byte      = nvram_read_byte,
-+	.write_byte     = nvram_write_byte,
-+	.get_size       = nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+
-+#endif /* CONFIG_X86 || CONFIG_ARM */
-+
- /*
-  * The are the file operation function for user access to /dev/nvram
-  */
-@@ -332,7 +349,7 @@ static int nvram_misc_release(struct ino
- 	return 0;
- }
+-#ifdef CONFIG_GENERIC_NVRAM
++#if IS_ENABLED(CONFIG_NVRAM)
  
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_PROC_FS) && (defined(CONFIG_X86) || defined(CONFIG_ARM))
- 
- static char *floppy_types[] = {
- 	"none", "5.25'' 360k", "5.25'' 1.2M", "3.5'' 720k", "3.5'' 1.44M",
-@@ -459,13 +476,20 @@ static int __init nvram_module_init(void
+ static unsigned char ppc_nvram_read_byte(int addr)
  {
- 	int ret;
- 
-+	if (arch_nvram_ops.get_size == NULL)
-+		return -ENODEV;
-+
-+	nvram_size = arch_nvram_ops.get_size();
-+	if (nvram_size < 0)
-+		return nvram_size;
-+
- 	ret = misc_register(&nvram_misc);
- 	if (ret) {
- 		pr_err("nvram: can't misc_register on minor=%d\n", NVRAM_MINOR);
- 		return ret;
- 	}
- 
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_PROC_FS) && (defined(CONFIG_X86) || defined(CONFIG_ARM))
- 	if (!proc_create("driver/nvram", 0, NULL, &nvram_proc_fops)) {
- 		pr_err("nvram: can't create /proc/driver/nvram\n");
- 		misc_deregister(&nvram_misc);
-@@ -479,7 +503,7 @@ static int __init nvram_module_init(void
- 
- static void __exit nvram_module_exit(void)
+Index: linux/arch/powerpc/platforms/chrp/Makefile
+===================================================================
+--- linux.orig/arch/powerpc/platforms/chrp/Makefile	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/platforms/chrp/Makefile	2015-06-28 11:41:49.000000000 +1000
+@@ -1,3 +1,3 @@
+ obj-y				+= setup.o time.o pegasos_eth.o pci.o
+ obj-$(CONFIG_SMP)		+= smp.o
+-obj-$(CONFIG_NVRAM)		+= nvram.o
++obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
+Index: linux/arch/powerpc/platforms/chrp/setup.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/chrp/setup.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/platforms/chrp/setup.c	2015-06-28 11:41:49.000000000 +1000
+@@ -557,7 +557,7 @@ void __init chrp_init_IRQ(void)
+ void __init
+ chrp_init2(void)
  {
--#ifdef CONFIG_PROC_FS
-+#if defined(CONFIG_PROC_FS) && (defined(CONFIG_X86) || defined(CONFIG_ARM))
- 	remove_proc_entry("driver/nvram", NULL);
+-#ifdef CONFIG_NVRAM
++#if IS_ENABLED(CONFIG_NVRAM)
+ 	chrp_nvram_init();
  #endif
- 	misc_deregister(&nvram_misc);
-Index: linux/include/linux/nvram.h
-===================================================================
---- linux.orig/include/linux/nvram.h	2015-06-28 11:41:31.000000000 +1000
-+++ linux/include/linux/nvram.h	2015-06-28 11:41:34.000000000 +1000
-@@ -14,6 +14,8 @@ extern int nvram_check_checksum(void);
- struct nvram_ops {
- 	ssize_t         (*read)(char *, size_t, loff_t *);
- 	ssize_t         (*write)(char *, size_t, loff_t *);
-+	unsigned char   (*read_byte)(int);
-+	void            (*write_byte)(unsigned char, int);
- 	ssize_t         (*get_size)(void);
- };
  
+Index: linux/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/powermac/setup.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/powerpc/platforms/powermac/setup.c	2015-06-28 11:41:49.000000000 +1000
+@@ -321,8 +321,7 @@ static void __init pmac_setup_arch(void)
+ 	find_via_pmu();
+ 	smu_init();
+ 
+-#if defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE) || \
+-    defined(CONFIG_PPC64)
++#if IS_ENABLED(CONFIG_NVRAM) || defined(CONFIG_PPC64)
+ 	pmac_nvram_init();
+ #endif
+ 
+Index: linux/drivers/char/Kconfig
+===================================================================
+--- linux.orig/drivers/char/Kconfig	2015-06-28 11:41:39.000000000 +1000
++++ linux/drivers/char/Kconfig	2015-06-28 11:41:49.000000000 +1000
+@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
+ 
+ config NVRAM
+ 	tristate "/dev/nvram support"
+-	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
++	depends on X86 || (ARM && RTC_DRV_CMOS) || HAVE_ARCH_NVRAM_OPS
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/nvram
+ 	  with major number 10 and minor number 144 using mknod ("man mknod"),
+@@ -256,9 +256,11 @@ config NVRAM
+ 	  and most Ataris.  The actual number of bytes varies, depending on the
+ 	  nvram in the system, but is usually 114 (128-14 for the RTC).
+ 
+-	  This memory is conventionally called "CMOS RAM" on PCs and "NVRAM"
+-	  on Ataris. /dev/nvram may be used to view settings there, or to
+-	  change them (with some utility). It could also be used to frequently
++	  This memory is conventionally called "CMOS RAM" on PCs,
++	  "NVRAM" on Ataris and "PRAM" on Macintoshes.
++
++	  /dev/nvram may be used to view settings in NVRAM, or to change them
++	  (with some utility). It could also be used to frequently
+ 	  save a few bits of very important data that may not be lost over
+ 	  power-off and for which writing to disk is too insecure. Note
+ 	  however that most NVRAM space in a PC belongs to the BIOS and you
