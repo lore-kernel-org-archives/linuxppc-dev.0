@@ -1,15 +1,22 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id E494C1A06CD
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:46 +1000 (AEST)
-Message-Id: <20150628014204.812612065@telegraphics.com.au>
-Date: Sun, 28 Jun 2015 11:42:20 +1000
+ by lists.ozlabs.org (Postfix) with ESMTP id 50C7F1A0CBA
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:47 +1000 (AEST)
+Message-Id: <20150628014203.602549947@telegraphics.com.au>
+Date: Sun, 28 Jun 2015 11:42:15 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [RFC v3 21/24] m68k/mac: Adopt naming and calling conventions for
- PRAM routines
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Subject: [RFC v3 16/24] powerpc,
+ fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and
+ nvram_write_byte()
 References: <20150628014159.732792697@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,248 +27,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adopt the existing *_read_byte and *_write_byte naming convention.
-Rename via_pram_readbyte and via_pram_writebyte to avoid confusion.
-Adjust calling conventions of mac_pram_* functions to match the
-arch_nvram_ops struct methods.
+Make use of arch_nvram_ops in device drivers so that the nvram_*
+function exports can be removed.
+
+Since they are no longer global symbols, rename the PPC32 nvram_* functions
+appropriately.
+
+Add the missing CONFIG_NVRAM test to imsttfb to avoid a build failure.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
+ arch/powerpc/kernel/setup_32.c             |    8 ++++----
+ drivers/char/generic_nvram.c               |    4 ++--
+ drivers/video/fbdev/controlfb.c            |    4 ++--
+ drivers/video/fbdev/imsttfb.c              |    7 +++----
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ drivers/video/fbdev/platinumfb.c           |    4 ++--
+ drivers/video/fbdev/valkyriefb.c           |    4 ++--
+ 7 files changed, 16 insertions(+), 17 deletions(-)
 
-Changes since v1:
-- Don't introduce the arch_nvram_ops struct in this patch, even if it 
-would form a logical progression. Since the struct would get replaced
-later on, some might see it as churn.
-
-Changes since v2:
-- Rename via_pram_send() and via_pram_recv() as
-via_rtc_send() and via_rtc_recv() resp.
-
----
- arch/m68k/mac/misc.c |   91 +++++++++++++++++++++++++--------------------------
- 1 file changed, 46 insertions(+), 45 deletions(-)
-
-Index: linux/arch/m68k/mac/misc.c
+Index: linux/arch/powerpc/kernel/setup_32.c
 ===================================================================
---- linux.orig/arch/m68k/mac/misc.c	2015-06-28 11:41:27.000000000 +1000
-+++ linux/arch/m68k/mac/misc.c	2015-06-28 11:41:53.000000000 +1000
-@@ -61,7 +61,7 @@ static void cuda_write_time(long data)
- 		cuda_poll();
+--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:44.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-06-28 11:41:46.000000000 +1000
+@@ -170,20 +170,18 @@ __setup("l3cr=", ppc_setup_l3cr);
+ 
+ #ifdef CONFIG_GENERIC_NVRAM
+ 
+-unsigned char nvram_read_byte(int addr)
++static unsigned char ppc_nvram_read_byte(int addr)
+ {
+ 	if (ppc_md.nvram_read_val)
+ 		return ppc_md.nvram_read_val(addr);
+ 	return 0xff;
+ }
+-EXPORT_SYMBOL(nvram_read_byte);
+ 
+-void nvram_write_byte(unsigned char val, int addr)
++static void ppc_nvram_write_byte(unsigned char val, int addr)
+ {
+ 	if (ppc_md.nvram_write_val)
+ 		ppc_md.nvram_write_val(addr, val);
+ }
+-EXPORT_SYMBOL(nvram_write_byte);
+ 
+ static ssize_t ppc_nvram_get_size(void)
+ {
+@@ -200,6 +198,8 @@ static long ppc_nvram_sync(void)
  }
  
--static __u8 cuda_read_pram(int offset)
-+static unsigned char cuda_pram_read_byte(int offset)
- {
- 	struct adb_request req;
- 	if (cuda_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
-@@ -72,7 +72,7 @@ static __u8 cuda_read_pram(int offset)
- 	return req.reply[3];
- }
- 
--static void cuda_write_pram(int offset, __u8 data)
-+static void cuda_pram_write_byte(unsigned char data, int offset)
- {
- 	struct adb_request req;
- 	if (cuda_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
-@@ -84,8 +84,8 @@ static void cuda_write_pram(int offset,
- #else
- #define cuda_read_time() 0
- #define cuda_write_time(n)
--#define cuda_read_pram NULL
--#define cuda_write_pram NULL
-+#define cuda_pram_read_byte NULL
-+#define cuda_pram_write_byte NULL
+ const struct nvram_ops arch_nvram_ops = {
++	.read_byte      = ppc_nvram_read_byte,
++	.write_byte     = ppc_nvram_write_byte,
+ 	.get_size       = ppc_nvram_get_size,
+ 	.sync           = ppc_nvram_sync,
+ };
+Index: linux/drivers/char/generic_nvram.c
+===================================================================
+--- linux.orig/drivers/char/generic_nvram.c	2015-06-28 11:41:44.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-06-28 11:41:46.000000000 +1000
+@@ -64,7 +64,7 @@ static ssize_t read_nvram(struct file *f
+ 	if (*ppos >= nvram_len)
+ 		return 0;
+ 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
+-		if (__put_user(nvram_read_byte(i), p))
++		if (__put_user(arch_nvram_ops.read_byte(i), p))
+ 			return -EFAULT;
+ 	*ppos = i;
+ 	return p - buf;
+@@ -84,7 +84,7 @@ static ssize_t write_nvram(struct file *
+ 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
+ 		if (__get_user(c, p))
+ 			return -EFAULT;
+-		nvram_write_byte(c, i);
++		arch_nvram_ops.write_byte(c, i);
+ 	}
+ 	*ppos = i;
+ 	return p - buf;
+Index: linux/drivers/video/fbdev/controlfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/controlfb.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/drivers/video/fbdev/controlfb.c	2015-06-28 11:41:46.000000000 +1000
+@@ -415,7 +415,7 @@ static int __init init_control(struct fb
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode == CMODE_NVRAM) {
+-		cmode = nvram_read_byte(NV_CMODE);
++		cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ 		if(cmode < CMODE_8 || cmode > CMODE_32)
+ 			cmode = CMODE_8;
+ 	} else
+@@ -423,7 +423,7 @@ static int __init init_control(struct fb
+ 		cmode=default_cmode;
+ #ifdef CONFIG_NVRAM
+ 	if (default_vmode == VMODE_NVRAM) {
+-		vmode = nvram_read_byte(NV_VMODE);
++		vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (vmode < 1 || vmode > VMODE_MAX ||
+ 		    control_mac_modes[vmode - 1].m[full] < cmode) {
+ 			sense = read_control_sense(p);
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-28 11:41:41.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-06-28 11:41:46.000000000 +1000
+@@ -1888,7 +1888,7 @@ static int initMatrox2(struct matrox_fb_
+ 			default_vmode = VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 		if (default_cmode == CMODE_NVRAM)
+-			default_cmode = nvram_read_byte(NV_CMODE);
++			default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 			default_cmode = CMODE_8;
+Index: linux/drivers/video/fbdev/platinumfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/platinumfb.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/drivers/video/fbdev/platinumfb.c	2015-06-28 11:41:46.000000000 +1000
+@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
+ 	printk(KERN_INFO "platinumfb: Monitor sense value = 0x%x, ", sense);
+ 	if (default_vmode == VMODE_NVRAM) {
+ #ifdef CONFIG_NVRAM
+-		default_vmode = nvram_read_byte(NV_VMODE);
++		default_vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <= 0 || default_vmode > VMODE_MAX ||
+ 		    !platinum_reg_init[default_vmode-1])
+ #endif
+@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
+ 		default_vmode = VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode == CMODE_NVRAM)
+-		default_cmode = nvram_read_byte(NV_CMODE);
++		default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 		default_cmode = CMODE_8;
+Index: linux/drivers/video/fbdev/valkyriefb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/valkyriefb.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/drivers/video/fbdev/valkyriefb.c	2015-06-28 11:41:46.000000000 +1000
+@@ -287,7 +287,7 @@ static void __init valkyrie_choose_mode(
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+ 	if (default_vmode == VMODE_NVRAM) {
+-		default_vmode = nvram_read_byte(NV_VMODE);
++		default_vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <= 0
+ 		 || default_vmode > VMODE_MAX
+ 		 || !valkyrie_reg_init[default_vmode - 1])
+@@ -300,7 +300,7 @@ static void __init valkyrie_choose_mode(
+ 		default_vmode = VMODE_640_480_67;
+ #if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
+ 	if (default_cmode == CMODE_NVRAM)
+-		default_cmode = nvram_read_byte(NV_CMODE);
++		default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
  #endif
  
- #ifdef CONFIG_ADB_PMU68K
-@@ -116,7 +116,7 @@ static void pmu_write_time(long data)
- 		pmu_poll();
- }
+ 	/*
+Index: linux/drivers/video/fbdev/imsttfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/drivers/video/fbdev/imsttfb.c	2015-06-28 11:41:46.000000000 +1000
+@@ -328,7 +328,6 @@ enum {
+ 	TVP = 1
+ };
  
--static __u8 pmu_read_pram(int offset)
-+static unsigned char pmu_pram_read_byte(int offset)
- {
- 	struct adb_request req;
- 	if (pmu_request(&req, NULL, 3, PMU_READ_NVRAM,
-@@ -127,7 +127,7 @@ static __u8 pmu_read_pram(int offset)
- 	return req.reply[3];
- }
- 
--static void pmu_write_pram(int offset, __u8 data)
-+static void pmu_pram_write_byte(unsigned char data, int offset)
- {
- 	struct adb_request req;
- 	if (pmu_request(&req, NULL, 4, PMU_WRITE_NVRAM,
-@@ -139,8 +139,8 @@ static void pmu_write_pram(int offset, _
- #else
- #define pmu_read_time() 0
- #define pmu_write_time(n)
--#define pmu_read_pram NULL
--#define pmu_write_pram NULL
-+#define pmu_pram_read_byte NULL
-+#define pmu_pram_write_byte NULL
- #endif
- 
- #if 0 /* def CONFIG_ADB_MACIISI */
-@@ -169,7 +169,7 @@ static void maciisi_write_time(long data
- 			(data >> 8) & 0xFF, data & 0xFF);
- }
- 
--static __u8 maciisi_read_pram(int offset)
-+static unsigned char maciisi_pram_read_byte(int offset)
- {
- 	struct adb_request req;
- 	if (maciisi_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
-@@ -178,7 +178,7 @@ static __u8 maciisi_read_pram(int offset
- 	return req.reply[3];
- }
- 
--static void maciisi_write_pram(int offset, __u8 data)
-+static void maciisi_pram_write_byte(unsigned char data, int offset)
- {
- 	struct adb_request req;
- 	maciisi_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
-@@ -187,8 +187,8 @@ static void maciisi_write_pram(int offse
- #else
- #define maciisi_read_time() 0
- #define maciisi_write_time(n)
--#define maciisi_read_pram NULL
--#define maciisi_write_pram NULL
-+#define maciisi_pram_read_byte NULL
-+#define maciisi_pram_write_byte NULL
- #endif
- 
- /*
-@@ -198,7 +198,7 @@ static void maciisi_write_pram(int offse
-  * the RTC should be enabled.
-  */
- 
--static __u8 via_pram_readbyte(void)
-+static __u8 via_rtc_recv(void)
- {
- 	int	i,reg;
- 	__u8	data;
-@@ -225,7 +225,7 @@ static __u8 via_pram_readbyte(void)
- 	return data;
- }
- 
--static void via_pram_writebyte(__u8 data)
-+static void via_rtc_send(__u8 data)
- {
- 	int	i,reg,bit;
- 
-@@ -262,17 +262,17 @@ static void via_pram_command(int command
- 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
- 
- 	if (command & 0xFF00) {		/* extended (two-byte) command */
--		via_pram_writebyte((command & 0xFF00) >> 8);
--		via_pram_writebyte(command & 0xFF);
-+		via_rtc_send((command & 0xFF00) >> 8);
-+		via_rtc_send(command & 0xFF);
- 		is_read = command & 0x8000;
- 	} else {			/* one-byte command */
--		via_pram_writebyte(command);
-+		via_rtc_send(command);
- 		is_read = command & 0x80;
- 	}
- 	if (is_read) {
--		*data = via_pram_readbyte();
-+		*data = via_rtc_recv();
- 	} else {
--		via_pram_writebyte(*data);
-+		via_rtc_send(*data);
+-#define USE_NV_MODES		1
+ #define INIT_BPP		8
+ #define INIT_XRES		640
+ #define INIT_YRES		480
+@@ -1391,17 +1390,17 @@ static void init_imstt(struct fb_info *i
+ 		}
  	}
  
- 	/* All done, disable the RTC */
-@@ -282,12 +282,12 @@ static void via_pram_command(int command
- 	local_irq_restore(flags);
- }
+-#if USE_NV_MODES && defined(CONFIG_PPC32)
++#if defined(CONFIG_NVRAM) && defined(CONFIG_PPC32)
+ 	{
+ 		int vmode = init_vmode, cmode = init_cmode;
  
--static __u8 via_read_pram(int offset)
-+static unsigned char via_pram_read_byte(int offset)
- {
- 	return 0;
- }
- 
--static void via_write_pram(int offset, __u8 data)
-+static void via_pram_write_byte(unsigned char data, int offset)
- {
- }
- 
-@@ -453,50 +453,51 @@ void pmu_shutdown(void)
-  *-------------------------------------------------------------------
-  */
- 
--void mac_pram_read(int offset, __u8 *buffer, int len)
-+unsigned char mac_pram_read_byte(int addr)
- {
--	__u8 (*func)(int);
--	int i;
-+	unsigned char (*func)(int);
- 
- 	switch(macintosh_config->adb_type) {
- 	case MAC_ADB_IISI:
--		func = maciisi_read_pram; break;
-+		func = maciisi_pram_read_byte;
-+		break;
- 	case MAC_ADB_PB1:
- 	case MAC_ADB_PB2:
--		func = pmu_read_pram; break;
-+		func = pmu_pram_read_byte;
-+		break;
- 	case MAC_ADB_CUDA:
--		func = cuda_read_pram; break;
-+		func = cuda_pram_read_byte;
-+		break;
- 	default:
--		func = via_read_pram;
--	}
--	if (!func)
--		return;
--	for (i = 0 ; i < len ; i++) {
--		buffer[i] = (*func)(offset++);
-+		func = via_pram_read_byte;
- 	}
-+
-+	if (func)
-+		return (*func)(addr);
-+	return 0xff;
- }
- 
--void mac_pram_write(int offset, __u8 *buffer, int len)
-+void mac_pram_write_byte(unsigned char val, int addr)
- {
--	void (*func)(int, __u8);
--	int i;
-+	void (*func)(unsigned char, int);
- 
- 	switch(macintosh_config->adb_type) {
- 	case MAC_ADB_IISI:
--		func = maciisi_write_pram; break;
-+		func = maciisi_pram_write_byte;
-+		break;
- 	case MAC_ADB_PB1:
- 	case MAC_ADB_PB2:
--		func = pmu_write_pram; break;
-+		func = pmu_pram_write_byte;
-+		break;
- 	case MAC_ADB_CUDA:
--		func = cuda_write_pram; break;
-+		func = cuda_pram_write_byte;
-+		break;
- 	default:
--		func = via_write_pram;
--	}
--	if (!func)
--		return;
--	for (i = 0 ; i < len ; i++) {
--		(*func)(offset++, buffer[i]);
-+		func = via_pram_write_byte;
- 	}
-+
-+	if (func)
-+		(*func)(val, addr);
- }
- 
- void mac_poweroff(void)
+ 		if (vmode == -1) {
+-			vmode = nvram_read_byte(NV_VMODE);
++			vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 			if (vmode <= 0 || vmode > VMODE_MAX)
+ 				vmode = VMODE_640_480_67;
+ 		}
+ 		if (cmode == -1) {
+-			cmode = nvram_read_byte(NV_CMODE);
++			cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ 			if (cmode < CMODE_8 || cmode > CMODE_32)
+ 				cmode = CMODE_8;
+ 		}
