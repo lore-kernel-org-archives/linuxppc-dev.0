@@ -1,14 +1,15 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id E49221A05FD
+ by lists.ozlabs.org (Postfix) with ESMTP id E496B1A0BA0
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Jun 2015 11:50:46 +1000 (AEST)
-Message-Id: <20150628014205.052634487@telegraphics.com.au>
-Date: Sun, 28 Jun 2015 11:42:21 +1000
+Message-Id: <20150628014205.532621991@telegraphics.com.au>
+Date: Sun, 28 Jun 2015 11:42:23 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [RFC v3 22/24] m68k/mac: Use macros for RTC accesses not magic numbers
+Subject: [RFC v3 24/24] m68k: Dispatch nvram_ops calls to Atari or Mac
+ functions
 References: <20150628014159.732792697@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,135 +20,317 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+A multi-platform kernel binary needs to decide at run-time how to dispatch
+the arch_nvram_ops calls. Add platform-independent arch_nvram_ops, for use
+when multiple platform-specific NVRAM ops implementations are needed.
+
+Enable CONFIG_HAVE_ARCH_NVRAM_OPS for Macs.
+
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
 
-This is intended to improve code style and not affect code behaviour.
-I've tested this on a Quadra 650.
-
-I don't know the meanings of the 4 undocumented write protect register
-bits 0x55, so I decided against defining 4 macros for those bits.
+Changed since v1:
+- Removed Mac and Atari ops struct definitions and the associated #ifdefs.
+- Moved extern declarations for fewer lines of code and better readability.
+- The IS_ENABLED(CONFIG_NVRAM) tests were moved to this patch, because it is
+now in this patch that CONFIG_HAVE_ARCH_NVRAM_OPS is enabled for Macs.
 
 ---
- arch/m68k/mac/misc.c |   59 +++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 41 insertions(+), 18 deletions(-)
+ arch/m68k/Kconfig           |    2 
+ arch/m68k/atari/nvram.c     |   21 ++------
+ arch/m68k/kernel/setup_mm.c |  107 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/m68k/mac/misc.c        |   18 +++++++
+ 4 files changed, 131 insertions(+), 17 deletions(-)
 
 Index: linux/arch/m68k/mac/misc.c
 ===================================================================
---- linux.orig/arch/m68k/mac/misc.c	2015-06-28 11:41:53.000000000 +1000
-+++ linux/arch/m68k/mac/misc.c	2015-06-28 11:41:54.000000000 +1000
-@@ -242,6 +242,21 @@ static void via_rtc_send(__u8 data)
+--- linux.orig/arch/m68k/mac/misc.c	2015-06-28 11:41:55.000000000 +1000
++++ linux/arch/m68k/mac/misc.c	2015-06-28 11:41:56.000000000 +1000
+@@ -61,6 +61,7 @@ static void cuda_write_time(long data)
+ 		cuda_poll();
  }
+ 
++#if IS_ENABLED(CONFIG_NVRAM)
+ static unsigned char cuda_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
+@@ -81,6 +82,8 @@ static void cuda_pram_write_byte(unsigne
+ 	while (!req.complete)
+ 		cuda_poll();
+ }
++#endif /* CONFIG_NVRAM */
++
+ #else
+ #define cuda_read_time() 0
+ #define cuda_write_time(n)
+@@ -116,6 +119,7 @@ static void pmu_write_time(long data)
+ 		pmu_poll();
+ }
+ 
++#if IS_ENABLED(CONFIG_NVRAM)
+ static unsigned char pmu_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
+@@ -139,6 +143,8 @@ static void pmu_pram_write_byte(unsigned
+ 	while (!req.complete)
+ 		pmu_poll();
+ }
++#endif /* CONFIG_NVRAM */
++
+ #else
+ #define pmu_read_time() 0
+ #define pmu_write_time(n)
+@@ -172,6 +178,7 @@ static void maciisi_write_time(long data
+ 			(data >> 8) & 0xFF, data & 0xFF);
+ }
+ 
++#if IS_ENABLED(CONFIG_NVRAM)
+ static unsigned char maciisi_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
+@@ -187,6 +194,8 @@ static void maciisi_pram_write_byte(unsi
+ 	maciisi_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
+ 			(offset >> 8) & 0xFF, offset & 0xFF, data);
+ }
++#endif /* CONFIG_NVRAM */
++
+ #else
+ #define maciisi_read_time() 0
+ #define maciisi_write_time(n)
+@@ -314,6 +323,7 @@ static void via_rtc_command(int command,
+ 	local_irq_restore(flags);
+ }
+ 
++#if IS_ENABLED(CONFIG_NVRAM)
+ static unsigned char via_pram_read_byte(int offset)
+ {
+ 	unsigned char temp;
+@@ -336,6 +346,7 @@ static void via_pram_write_byte(unsigned
+ 	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
+ 	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ }
++#endif /* CONFIG_NVRAM */
  
  /*
-+ * These values can be found in Inside Macintosh vol. III ch. 2
-+ * which has a description of the RTC chip in the original Mac.
-+ */
-+
-+#define RTC_FLG_READ            BIT(7)
-+#define RTC_FLG_WRITE_PROTECT   BIT(7)
-+#define RTC_CMD_READ(r)         (RTC_FLG_READ | (r << 2))
-+#define RTC_CMD_WRITE(r)        (r << 2)
-+#define RTC_REG_SECONDS_0       0
-+#define RTC_REG_SECONDS_1       1
-+#define RTC_REG_SECONDS_2       2
-+#define RTC_REG_SECONDS_3       3
-+#define RTC_REG_WRITE_PROTECT   13
-+
-+/*
-  * Execute a VIA PRAM/RTC command. For read commands
-  * data should point to a one-byte buffer for the
-  * resulting data. For write commands it should point
-@@ -250,13 +265,17 @@ static void via_rtc_send(__u8 data)
-  * This function disables all interrupts while running.
+  * Return the current time in seconds since January 1, 1904.
+@@ -503,6 +514,7 @@ void pmu_shutdown(void)
+  *-------------------------------------------------------------------
   */
  
--static void via_pram_command(int command, __u8 *data)
-+static void via_rtc_command(int command, __u8 *data)
++#if IS_ENABLED(CONFIG_NVRAM)
+ unsigned char mac_pram_read_byte(int addr)
  {
- 	unsigned long flags;
- 	int	is_read;
- 
- 	local_irq_save(flags);
- 
-+	/* The least significant bits must be 0b01 according to Inside Mac */
-+
-+	command = (command & ~3) | 1;
-+
- 	/* Enable the RTC and make sure the strobe line is high */
- 
- 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
-@@ -264,10 +283,10 @@ static void via_pram_command(int command
- 	if (command & 0xFF00) {		/* extended (two-byte) command */
- 		via_rtc_send((command & 0xFF00) >> 8);
- 		via_rtc_send(command & 0xFF);
--		is_read = command & 0x8000;
-+		is_read = command & (RTC_FLG_READ << 8);
- 	} else {			/* one-byte command */
- 		via_rtc_send(command);
--		is_read = command & 0x80;
-+		is_read = command & RTC_FLG_READ;
- 	}
- 	if (is_read) {
- 		*data = via_rtc_recv();
-@@ -306,10 +325,10 @@ static long via_read_time(void)
- 	} result, last_result;
- 	int count = 1;
- 
--	via_pram_command(0x81, &last_result.cdata[3]);
--	via_pram_command(0x85, &last_result.cdata[2]);
--	via_pram_command(0x89, &last_result.cdata[1]);
--	via_pram_command(0x8D, &last_result.cdata[0]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0), &last_result.cdata[3]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1), &last_result.cdata[2]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2), &last_result.cdata[1]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3), &last_result.cdata[0]);
- 
- 	/*
- 	 * The NetBSD guys say to loop until you get the same reading
-@@ -317,10 +336,14 @@ static long via_read_time(void)
- 	 */
- 
- 	while (1) {
--		via_pram_command(0x81, &result.cdata[3]);
--		via_pram_command(0x85, &result.cdata[2]);
--		via_pram_command(0x89, &result.cdata[1]);
--		via_pram_command(0x8D, &result.cdata[0]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0),
-+		                &result.cdata[3]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1),
-+		                &result.cdata[2]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2),
-+		                &result.cdata[1]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3),
-+		                &result.cdata[0]);
- 
- 		if (result.idata == last_result.idata)
- 			return result.idata - RTC_OFFSET;
-@@ -356,18 +379,18 @@ static void via_write_time(long time)
- 	/* Clear the write protect bit */
- 
- 	temp = 0x55;
--	via_pram_command(0x35, &temp);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
- 
- 	data.idata = time + RTC_OFFSET;
--	via_pram_command(0x01, &data.cdata[3]);
--	via_pram_command(0x05, &data.cdata[2]);
--	via_pram_command(0x09, &data.cdata[1]);
--	via_pram_command(0x0D, &data.cdata[0]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_0), &data.cdata[3]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_1), &data.cdata[2]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_2), &data.cdata[1]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_3), &data.cdata[0]);
- 
- 	/* Set the write protect bit */
- 
--	temp = 0xD5;
--	via_pram_command(0x35, &temp);
-+	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ 	unsigned char (*func)(int);
+@@ -550,6 +562,12 @@ void mac_pram_write_byte(unsigned char v
+ 		(*func)(val, addr);
  }
  
- static void via_shutdown(void)
++ssize_t mac_pram_get_size(void)
++{
++	return 256;
++}
++#endif /* CONFIG_NVRAM */
++
+ void mac_poweroff(void)
+ {
+ 	/*
+Index: linux/arch/m68k/atari/nvram.c
+===================================================================
+--- linux.orig/arch/m68k/atari/nvram.c	2015-06-28 11:41:48.000000000 +1000
++++ linux/arch/m68k/atari/nvram.c	2015-06-28 11:41:56.000000000 +1000
+@@ -73,7 +73,7 @@ static void __nvram_set_checksum(void)
+ 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
+ }
+ 
+-static long nvram_set_checksum(void)
++long atari_nvram_set_checksum(void)
+ {
+ 	spin_lock_irq(&rtc_lock);
+ 	__nvram_set_checksum();
+@@ -81,7 +81,7 @@ static long nvram_set_checksum(void)
+ 	return 0;
+ }
+ 
+-static long nvram_initialize(void)
++long atari_nvram_initialize(void)
+ {
+ 	loff_t i;
+ 
+@@ -93,7 +93,7 @@ static long nvram_initialize(void)
+ 	return 0;
+ }
+ 
+-static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
++ssize_t atari_nvram_read(char *buf, size_t count, loff_t *ppos)
+ {
+ 	char *p = buf;
+ 	loff_t i;
+@@ -114,7 +114,7 @@ static ssize_t nvram_read(char *buf, siz
+ 	return p - buf;
+ }
+ 
+-static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
++ssize_t atari_nvram_write(char *buf, size_t count, loff_t *ppos)
+ {
+ 	char *p = buf;
+ 	loff_t i;
+@@ -137,22 +137,11 @@ static ssize_t nvram_write(char *buf, si
+ 	return p - buf;
+ }
+ 
+-static ssize_t nvram_get_size(void)
++ssize_t atari_nvram_get_size(void)
+ {
+-	if (!MACH_IS_ATARI)
+-		return -ENODEV;
+ 	return NVRAM_BYTES;
+ }
+ 
+-const struct nvram_ops arch_nvram_ops = {
+-	.read           = nvram_read,
+-	.write          = nvram_write,
+-	.get_size       = nvram_get_size,
+-	.set_checksum   = nvram_set_checksum,
+-	.initialize     = nvram_initialize,
+-};
+-EXPORT_SYMBOL(arch_nvram_ops);
+-
+ #ifdef CONFIG_PROC_FS
+ static struct {
+ 	unsigned char val;
+Index: linux/arch/m68k/kernel/setup_mm.c
+===================================================================
+--- linux.orig/arch/m68k/kernel/setup_mm.c	2015-06-28 11:41:27.000000000 +1000
++++ linux/arch/m68k/kernel/setup_mm.c	2015-06-28 11:41:56.000000000 +1000
+@@ -23,6 +23,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/module.h>
++#include <linux/nvram.h>
+ #include <linux/initrd.h>
+ 
+ #include <asm/bootinfo.h>
+@@ -568,3 +569,109 @@ static int __init adb_probe_sync_enable
+ 
+ __setup("adb_sync", adb_probe_sync_enable);
+ #endif /* CONFIG_ADB */
++
++#if IS_ENABLED(CONFIG_NVRAM)
++extern unsigned char mac_pram_read_byte(int);
++extern void mac_pram_write_byte(unsigned char, int);
++extern ssize_t mac_pram_get_size(void);
++
++extern ssize_t atari_nvram_read(char *, size_t, loff_t *);
++extern ssize_t atari_nvram_write(char *, size_t, loff_t *);
++extern long atari_nvram_set_checksum(void);
++extern long atari_nvram_initialize(void);
++extern ssize_t atari_nvram_get_size(void);
++
++#ifdef CONFIG_MAC
++static unsigned char m68k_nvram_read_byte(int addr)
++{
++	if (MACH_IS_MAC)
++		return mac_pram_read_byte(addr);
++	return 0xff;
++}
++
++static void m68k_nvram_write_byte(unsigned char val, int addr)
++{
++	if (MACH_IS_MAC)
++		mac_pram_write_byte(val, addr);
++}
++#endif /* CONFIG_MAC */
++
++#ifdef CONFIG_ATARI
++static ssize_t m68k_nvram_read(char *buf, size_t count, loff_t *ppos)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_read(buf, count, ppos);
++	else if (MACH_IS_MAC) {
++		ssize_t size = mac_pram_get_size();
++		char *p = buf;
++		loff_t i;
++
++		for (i = *ppos; count > 0 && i < size; --count, ++i, ++p)
++			*p = mac_pram_read_byte(i);
++
++		*ppos = i;
++		return p - buf;
++	}
++	return -EINVAL;
++}
++
++static ssize_t m68k_nvram_write(char *buf, size_t count, loff_t *ppos)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_write(buf, count, ppos);
++	else if (MACH_IS_MAC) {
++		ssize_t size = mac_pram_get_size();
++		char *p = buf;
++		loff_t i;
++
++		for (i = *ppos; count > 0 && i < size; --count, ++i, ++p)
++			mac_pram_write_byte(*p, i);
++
++		*ppos = i;
++		return p - buf;
++	}
++	return -EINVAL;
++}
++
++static long m68k_nvram_set_checksum(void)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_set_checksum();
++	return -EINVAL;
++}
++
++static long m68k_nvram_initialize(void)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_initialize();
++	return -EINVAL;
++}
++#endif /* CONFIG_ATARI */
++
++static ssize_t m68k_nvram_get_size(void)
++{
++	if (MACH_IS_ATARI)
++		return atari_nvram_get_size();
++	else if (MACH_IS_MAC)
++		return mac_pram_get_size();
++	return -ENODEV;
++}
++
++/* Atari device drivers call .read (to get checksum validation) whereas
++ * Mac and PowerMac device drivers just use .read_byte.
++ */
++const struct nvram_ops arch_nvram_ops = {
++#ifdef CONFIG_MAC
++	.read_byte      = m68k_nvram_read_byte,
++	.write_byte     = m68k_nvram_write_byte,
++#endif
++#ifdef CONFIG_ATARI
++	.read           = m68k_nvram_read,
++	.write          = m68k_nvram_write,
++	.set_checksum   = m68k_nvram_set_checksum,
++	.initialize     = m68k_nvram_initialize,
++#endif
++	.get_size       = m68k_nvram_get_size,
++};
++EXPORT_SYMBOL(arch_nvram_ops);
++#endif /* CONFIG_NVRAM */
+Index: linux/arch/m68k/Kconfig
+===================================================================
+--- linux.orig/arch/m68k/Kconfig	2015-06-28 11:41:39.000000000 +1000
++++ linux/arch/m68k/Kconfig	2015-06-28 11:41:56.000000000 +1000
+@@ -72,7 +72,7 @@ config PGTABLE_LEVELS
+ 	default 3
+ 
+ config HAVE_ARCH_NVRAM_OPS
+-	def_bool ATARI
++	def_bool ATARI || MAC
+ 
+ source "init/Kconfig"
+ 
