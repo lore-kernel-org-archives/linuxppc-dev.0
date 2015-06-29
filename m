@@ -1,22 +1,22 @@
-Return-Path: <maninder1.s@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <lintonrjeremy@gmail.com>
+Received: from mail-qg0-x234.google.com (mail-qg0-x234.google.com
+ [IPv6:2607:f8b0:400d:c04::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C06E41A0D30
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 20:45:58 +1000 (AEST)
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NQP01K4HC3RRYB0@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 29 Jun 2015 19:35:51 +0900 (KST)
-From: Maninder Singh <maninder1.s@samsung.com>
-To: imunsie@au1.ibm.com, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: pankaj.m@samsung.com, Maninder Singh <maninder1.s@samsung.com>
-Subject: [PATCH 1/1] cxl/vphb.c: Use phb pointer after NULL check
-Date: Mon, 29 Jun 2015 16:05:11 +0530
-Message-id: <1435574111-45617-1-git-send-email-maninder1.s@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C46C1A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 09:50:59 +1000 (AEST)
+Received: by qgem68 with SMTP id m68so22668774qge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 16:50:55 -0700 (PDT)
+MIME-Version: 1.0
+Date: Mon, 29 Jun 2015 18:50:55 -0500
+Message-ID: <CAEFTgixGKnMuMGp2DfoksqF0m_P6-EGJ0sUjg2=ReX2X0tq2nA@mail.gmail.com>
+Subject: [PATCH] Fix pSeries boot failure, by returning interrupt controller
+ node when an interrupt-map property doesn't exist
+From: Jeremy Linton <lintonrjeremy@gmail.com>
+To: benh@kernel.crashing.org
+Cc: robherring2@gmail.com, grant.likely@linaro.org, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-static Anlaysis detected below error:-
-(error) Possible null pointer dereference: phb
+This is a reformat of the patch attached to "pSeries boot failure due
+to wrong interrupt controller".
 
-So, Use phb after NULL check.
+It allows of_irq_parse_raw() to return the node pointer of the
+interrupt controller, rather than the parent bus. This allows
+ics_rtas_host_match() to detect that the controller is a legacy 8259
+and avoid using xics. This avoids an RTAS assertion/crash during early
+kernel bootstrapping.
 
-Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
+
+
+
+Signed-off-by: Jeremy Linton <lintonrjeremy@gmail.com>
 ---
- drivers/misc/cxl/vphb.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/of/irq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index b1d1983a..2eba002 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -112,9 +112,10 @@ static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
- 	unsigned long addr;
- 
- 	phb = pci_bus_to_host(bus);
--	afu = (struct cxl_afu *)phb->private_data;
- 	if (phb == NULL)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
-+	afu = (struct cxl_afu *)phb->private_data;
-+
- 	if (cxl_pcie_cfg_record(bus->number, devfn) > afu->crs_num)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 	if (offset >= (unsigned long)phb->cfg_data)
--- 
-1.7.9.5
+diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+index 1a79806..cb4b9ae 100644
+--- a/drivers/of/irq.c
++++ b/drivers/of/irq.c
+@@ -252,8 +252,6 @@ int of_irq_parse_raw(const __be32 *addr, struct
+of_phandle_args *out_irq)
+                 * Successfully parsed an interrrupt-map translation; copy new
+                 * interrupt specifier into the out_irq structure
+                 */
+-               out_irq->np = newpar;
+-
+                match_array = imap - newaddrsize - newintsize;
+                for (i = 0; i < newintsize; i++)
+                        out_irq->args[i] = be32_to_cpup(imap - newintsize + i);
+@@ -262,6 +260,7 @@ int of_irq_parse_raw(const __be32 *addr, struct
+of_phandle_args *out_irq)
+
+        skiplevel:
+                /* Iterate again with new parent */
++               out_irq->np = newpar;
+                pr_debug(" -> new parent: %s\n", of_node_full_name(newpar));
+                of_node_put(ipar);
+                ipar = newpar;
+--
+1.8.1.4
