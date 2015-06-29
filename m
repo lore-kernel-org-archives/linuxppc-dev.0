@@ -1,26 +1,28 @@
 Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-oi0-x229.google.com (mail-oi0-x229.google.com
- [IPv6:2607:f8b0:4003:c06::229])
+Received: from mail-oi0-x22d.google.com (mail-oi0-x22d.google.com
+ [IPv6:2607:f8b0:4003:c06::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BB401A03A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 17:25:50 +1000 (AEST)
-Received: by oigb199 with SMTP id b199so112095555oig.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 00:25:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 529EE1A1811
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 17:26:58 +1000 (AEST)
+Received: by oiyy130 with SMTP id y130so112038476oiy.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 00:26:56 -0700 (PDT)
 MIME-Version: 1.0
 Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20150628014205.532621991@telegraphics.com.au>
+In-Reply-To: <20150628014200.233057221@telegraphics.com.au>
 References: <20150628014159.732792697@telegraphics.com.au>
- <20150628014205.532621991@telegraphics.com.au>
-Date: Mon, 29 Jun 2015 09:25:47 +0200
-Message-ID: <CAMuHMdX0c3BjhkSMv4fUe1WVWDHhqRMHz=K15750EBatwkJisQ@mail.gmail.com>
-Subject: Re: [RFC v3 24/24] m68k: Dispatch nvram_ops calls to Atari or Mac
- functions
+ <20150628014200.233057221@telegraphics.com.au>
+Date: Mon, 29 Jun 2015 09:26:56 +0200
+Message-ID: <CAMuHMdUY2pM4N3Uddo2TecNo2BL4t-7VVDY=2wrgsqomVnCXFg@mail.gmail.com>
+Subject: Re: [RFC v3 02/24] m68k/atari: Move Atari-specific code out of
+ drivers/char/nvram.c
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Finn Thain <fthain@telegraphics.com.au>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "Linux/m68k" <linux-m68k@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,48 +35,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Finn,
 
-> A multi-platform kernel binary needs to decide at run-time how to dispatch
-> the arch_nvram_ops calls. Add platform-independent arch_nvram_ops, for use
-> when multiple platform-specific NVRAM ops implementations are needed.
->
-> Enable CONFIG_HAVE_ARCH_NVRAM_OPS for Macs.
-
-Thanks for your patch!
-
 On Sun, Jun 28, 2015 at 3:42 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
-> --- linux.orig/arch/m68k/kernel/setup_mm.c      2015-06-28 11:41:27.000000000 +1000
-> +++ linux/arch/m68k/kernel/setup_mm.c   2015-06-28 11:41:56.000000000 +1000
+> Change the vmode calculation from logical OR to bitwise OR, since it is
+> obviously wrong.
 
-> @@ -568,3 +569,109 @@ static int __init adb_probe_sync_enable
->
->  __setup("adb_sync", adb_probe_sync_enable);
->  #endif /* CONFIG_ADB */
-> +
-> +#if IS_ENABLED(CONFIG_NVRAM)
-> +extern unsigned char mac_pram_read_byte(int);
-> +extern void mac_pram_write_byte(unsigned char, int);
-> +extern ssize_t mac_pram_get_size(void);
-> +
-> +extern ssize_t atari_nvram_read(char *, size_t, loff_t *);
-> +extern ssize_t atari_nvram_write(char *, size_t, loff_t *);
-> +extern long atari_nvram_set_checksum(void);
-> +extern long atari_nvram_initialize(void);
-> +extern ssize_t atari_nvram_get_size(void);
-
-Forward declarations belong in a header file, to be included by both
-producers and consumers.
-
-> --- linux.orig/arch/m68k/Kconfig        2015-06-28 11:41:39.000000000 +1000
-> +++ linux/arch/m68k/Kconfig     2015-06-28 11:41:56.000000000 +1000
-> @@ -72,7 +72,7 @@ config PGTABLE_LEVELS
->         default 3
->
->  config HAVE_ARCH_NVRAM_OPS
-> -       def_bool ATARI
-> +       def_bool ATARI || MAC
-
-For maintainability, it's better to just have "bool" here, and let both the
-ATARI and MAC config symbols select HAVE_ARCH_NVRAM_OPS.
+Ideally, that should be a separate patch we can put on the fast track.
 
 Gr{oetje,eeting}s,
 
