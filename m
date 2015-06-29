@@ -1,29 +1,26 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-oi0-x22d.google.com (mail-oi0-x22d.google.com
- [IPv6:2607:f8b0:4003:c06::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 529EE1A1811
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 17:26:58 +1000 (AEST)
-Received: by oiyy130 with SMTP id y130so112038476oiy.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 00:26:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C66931A03A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 18:44:21 +1000 (AEST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7D07214076D
+ for <linuxppc-dev@ozlabs.org>; Mon, 29 Jun 2015 18:44:21 +1000 (AEST)
+Date: Mon, 29 Jun 2015 10:44:12 +0200
+From: Thomas Huth <thuth@redhat.com>
+To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, segher@kernel.crashing.org, aik@ozlabs.ru,
+ dvaleev@suse.com
+Subject: Re: [PATCH SLOF v2 3/5] disk-label: rename confusing "block" word
+Message-ID: <20150629104412.426a60dc@thh440s>
+In-Reply-To: <1435214729-15952-4-git-send-email-nikunj@linux.vnet.ibm.com>
+References: <1435214729-15952-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <1435214729-15952-4-git-send-email-nikunj@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20150628014200.233057221@telegraphics.com.au>
-References: <20150628014159.732792697@telegraphics.com.au>
- <20150628014200.233057221@telegraphics.com.au>
-Date: Mon, 29 Jun 2015 09:26:56 +0200
-Message-ID: <CAMuHMdUY2pM4N3Uddo2TecNo2BL4t-7VVDY=2wrgsqomVnCXFg@mail.gmail.com>
-Subject: Re: [RFC v3 02/24] m68k/atari: Move Atari-specific code out of
- drivers/char/nvram.c
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "Linux/m68k" <linux-m68k@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,21 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Finn,
+On Thu, 25 Jun 2015 12:15:27 +0530
+Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
 
-On Sun, Jun 28, 2015 at 3:42 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
-> Change the vmode calculation from logical OR to bitwise OR, since it is
-> obviously wrong.
+> "block" word is not a block number, actually its an allocated host
+> address.  Rename it to disk-buf along with a associated
+> size(disk-buf-size=4096) for using during allocation/free.
+> 
+> Also renaming the helper routine read-sector to read-disk-buf. This
+> routine assumes the address to be disk-buf and only takes sector number
+> as argument.
+> 
+> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+> ---
+>  slof/fs/packages/disk-label.fs | 78 ++++++++++++++++++++++--------------------
+>  1 file changed, 41 insertions(+), 37 deletions(-)
 
-Ideally, that should be a separate patch we can put on the fast track.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Reviewed-by: Thomas Huth <thuth@redhat.com>
