@@ -1,39 +1,21 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F9841A0D3C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 05:38:21 +1000 (AEST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Mon, 29 Jun 2015 13:38:19 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 24E6419D803E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 13:29:17 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5TJcHlm55115814
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 12:38:17 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5TJcG27012512
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 13:38:17 -0600
-Message-ID: <55919EA7.9050806@linux.vnet.ibm.com>
-Date: Mon, 29 Jun 2015 14:38:15 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/iommu: Support "hybrid" iommu/direct DMA ops for
- coherent_mask < dma_mask
-References: <20150518064027.27A97140D18@ozlabs.org>
- <5584874D.2060402@linux.vnet.ibm.com>
- <1434754913.27935.1.camel@kernel.crashing.org>
-In-Reply-To: <1434754913.27935.1.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0023.hostedemail.com
+ [216.40.44.23])
+ by lists.ozlabs.org (Postfix) with ESMTP id D5CA41A0037
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 07:40:10 +1000 (AEST)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave05.hostedemail.com (Postfix) with ESMTP id A7517184767
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Jun 2015 21:30:46 +0000 (UTC)
+Message-ID: <1435613439.9587.56.camel@perches.com>
+Subject: [PATCH] powerpc: Remove redundant breaks
+From: Joe Perches <joe@perches.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Mon, 29 Jun 2015 14:30:39 -0700
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,36 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/2015 06:01 PM, Benjamin Herrenschmidt wrote:
-> On Fri, 2015-06-19 at 16:19 -0500, Brian King wrote:
->> On 05/18/2015 01:40 AM, Michael Ellerman wrote:
->>> On Mon, 2015-18-05 at 03:56:51 UTC, Benjamin Herrenschmidt wrote:
->>>> This patch adds the ability to the DMA direct ops to fallback to the IOMMU
->>>> ops for coherent alloc/free if the coherent mask of the device isn't
->>>> suitable for accessing the direct DMA space and the device also happens
->>>> to have an active IOMMU table.
->>>
->>> Can you do the removal of the union, the #ifdef PPC64 and the static inlines as
->>> a precursor patch, that would remove some of the noise in the diff.
->>>
->>> And can you explain the changes to dart, pseries and powernv.
->>>
->>> There's also some whitespace changes in iommu.h that I assume you didn't want?
->>
->> Hi Ben,
->>
->> Do you plan to resubmit with these changes? The patch seems to work fine in
->> my testing. Would be nice to get this merged.
-> 
-> Argh, completely forgot about it. I'll respin it next week.
+break; break; isn't useful.
 
-Anything I can do to help on this one?
+Remove one.
 
-Thanks,
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/powerpc/kernel/kvm.c | 1 -
+ arch/powerpc/xmon/xmon.c  | 1 -
+ 2 files changed, 2 deletions(-)
 
-Brian
-
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+diff --git a/arch/powerpc/kernel/kvm.c b/arch/powerpc/kernel/kvm.c
+index 33aa4dd..9ad37f8 100644
+--- a/arch/powerpc/kernel/kvm.c
++++ b/arch/powerpc/kernel/kvm.c
+@@ -649,7 +649,6 @@ static void kvm_check_ins(u32 *inst, u32 features)
+ 			kvm_patch_ins_mtsrin(inst, inst_rt, inst_rb);
+ 		}
+ 		break;
+-		break;
+ #endif
+ 	}
+ 
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index e599259..7a39f6c 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1987,7 +1987,6 @@ memex(void)
+ 			case '^':
+ 				adrs -= size;
+ 				break;
+-				break;
+ 			case '/':
+ 				if (nslash > 0)
+ 					adrs -= 1 << nslash;
