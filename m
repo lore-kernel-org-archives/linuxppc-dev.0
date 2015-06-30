@@ -1,38 +1,37 @@
-Return-Path: <elfring@users.sourceforge.net>
-Received: from mout.web.de (mout.web.de [212.227.17.12])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C8F051A01CC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 18:19:28 +1000 (AEST)
-Message-ID: <55924FC2.3070006@users.sourceforge.net>
-Date: Tue, 30 Jun 2015 10:13:54 +0200
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-CC: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
- Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH] macintosh: Delete an unnecessary check before the function
- call "of_node_put"
-References: <5307CAA2.8060406@users.sourceforge.net>
- <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
- <530A086E.8010901@users.sourceforge.net>
- <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
- <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
- <530B5FB6.6010207@users.sourceforge.net>
- <alpine.DEB.2.10.1402241710370.2074@hadrien>
- <530C5E18.1020800@users.sourceforge.net>
- <alpine.DEB.2.10.1402251014170.2080@hadrien>
- <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net> <54D282B0.90907@users.sourceforge.net>
-In-Reply-To: <54D282B0.90907@users.sourceforge.net>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC7831A100F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 18:20:39 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9E2CD1402CC
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 18:20:38 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 30 Jun 2015 13:50:35 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 103AB394005A
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 13:50:34 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5U8KXvZ66650120
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 13:50:33 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5U7DMVA029608
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 12:43:23 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mikey@neuling.org, sukadev@linux.vnet.ibm.com, dja@axtens.net,
+ mpe@ellerman.id.au
+Subject: [PATCH 0/5] BHRB fixes, improvements and cleanups
+Date: Tue, 30 Jun 2015 13:50:26 +0530
+Message-Id: <1435652431-22024-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +41,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 04.02.2015 um 21:36 schrieb SF Markus Elfring:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Wed, 4 Feb 2015 21:32:27 +0100
-> 
-> The of_node_put() function tests whether its argument is NULL and then
-> returns immediately. Thus the test around the call is not needed.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  drivers/macintosh/smu.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
-> index 10ae69b..d531f80 100644
-> --- a/drivers/macintosh/smu.c
-> +++ b/drivers/macintosh/smu.c
-> @@ -557,8 +557,7 @@ int __init smu_init (void)
->  	return 0;
->  
->  fail_msg_node:
-> -	if (smu->msg_node)
-> -		of_node_put(smu->msg_node);
-> +	of_node_put(smu->msg_node);
->  fail_db_node:
->  	of_node_put(smu->db_node);
->  fail_bootmem:
-> 
+	The five generic patches from BHRB SW branch filter enablement
+series have been separated and grouped together in this series. These
+patches are required to be applied before using the upcoming V10 of the
+BHRB SW branch filter patch series.
 
-Would you like to integrate this update suggestion
-into another source code repository?
+Anshuman Khandual (5):
+  powerpc/perf: Drop the branch sample when 'from' cannot be fetched
+  powerpc/perf: Change type of the bhrb_users variable
+  powerpc/perf: Replace last usage of get_cpu_var with this_cpu_ptr
+  powerpc/perf: Change name & type of 'pred' in power_pmu_bhrb_read
+  powerpc/perf: Re organize PMU branch filter processing on POWER8
 
-Regards,
-Markus
+ arch/powerpc/perf/core-book3s.c | 29 +++++++++++++++--------------
+ arch/powerpc/perf/power8-pmu.c  | 22 +++++++---------------
+ 2 files changed, 22 insertions(+), 29 deletions(-)
+
+-- 
+2.1.0
