@@ -2,37 +2,37 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B82B51A01CC
+ by lists.ozlabs.org (Postfix) with ESMTPS id B82C21A06A6
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 18:34:38 +1000 (AEST)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E762D14030D
+ by ozlabs.org (Postfix) with ESMTPS id D6F8814031F
  for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 18:34:37 +1000 (AEST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Tue, 30 Jun 2015 14:04:35 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 84AF4E005C
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:08:13 +0530 (IST)
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id EDF8DE0075
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:08:10 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5U8YRoa49610764
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:04:30 +0530
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5U8YQL611534536
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:04:27 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5U8YPBo020316
+ t5U8YPnU020305
  for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:04:26 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mikey@neuling.org, sukadev@linux.vnet.ibm.com, dja@axtens.net,
  mpe@ellerman.id.au
-Subject: [PATCH V10 3/8] powerpc/perf: Change the name of HW PMU branch filter
- tracking variable
-Date: Tue, 30 Jun 2015 14:04:17 +0530
-Message-Id: <1435653262-24258-4-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V10 1/8] powerpc/perf: Restore privilege level filter support
+ for BHRB
+Date: Tue, 30 Jun 2015 14:04:15 +0530
+Message-Id: <1435653262-24258-2-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1435653262-24258-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1435653262-24258-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,59 +44,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch simply changes the name of the variable from 'bhrb_filter' to
-'bhrb_hw_filter' in order to add one more variable which will track SW
-filters in generic powerpc book3s code which will be implemented in the
-subsequent patch. This patch does not change any functionality.
+'commit 9de5cb0f6df8 ("powerpc/perf: Add per-event excludes on Power8")'
+broke the PMU based BHRB privilege level filter. BHRB depends on the
+same MMCR0 bits for privilege level filter which was used to freeze all
+the PMCs as a group. Once we moved to individual event based privilege
+filters through MMCR2 register on POWER8, event associated privilege
+filters are no longer applicable to the BHRB captured branches.
+
+This patch solves the problem by restoring to the previous method of
+privilege level filters for the event in case BHRB based branch stack
+sampling is requested. This patch also changes 'check_excludes' for
+the same reason.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/core-book3s.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/perf/core-book3s.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 6935660..ef0ff05 100644
+index ddc0424..b7710b9 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -52,7 +52,7 @@ struct cpu_hw_events {
- 	int n_txn_start;
+@@ -942,7 +942,7 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
+  * added events.
+  */
+ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
+-			  int n_prev, int n_new)
++			  int n_prev, int n_new, unsigned int bhrb_users)
+ {
+ 	int eu = 0, ek = 0, eh = 0;
+ 	int i, n, first;
+@@ -951,9 +951,10 @@ static int check_excludes(struct perf_event **ctrs, unsigned int cflags[],
+ 	/*
+ 	 * If the PMU we're on supports per event exclude settings then we
+ 	 * don't need to do any of this logic. NB. This assumes no PMU has both
+-	 * per event exclude and limited PMCs.
++	 * per event exclude and limited PMCs. But again if the event has also
++	 * requested for branch stack sampling, then process the logic here.
+ 	 */
+-	if (ppmu->flags & PPMU_ARCH_207S)
++	if ((ppmu->flags & PPMU_ARCH_207S) && !bhrb_users)
+ 		return 0;
  
- 	/* BHRB bits */
--	u64				bhrb_filter;	/* BHRB HW branch filter */
-+	u64				bhrb_hw_filter;	/* BHRB HW filter */
- 	unsigned int			bhrb_users;
- 	void				*bhrb_context;
- 	struct	perf_branch_stack	bhrb_stack;
-@@ -1357,7 +1357,7 @@ static void power_pmu_enable(struct pmu *pmu)
- 
- 	mb();
- 	if (cpuhw->bhrb_users)
--		ppmu->config_bhrb(cpuhw->bhrb_filter);
-+		ppmu->config_bhrb(cpuhw->bhrb_hw_filter);
- 
- 	write_mmcr0(cpuhw, mmcr0);
- 
-@@ -1465,7 +1465,7 @@ nocheck:
-  out:
- 	if (has_branch_stack(event)) {
- 		power_pmu_bhrb_enable(event);
--		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
- 					event->attr.branch_sample_type);
+ 	n = n_prev + n_new;
+@@ -1271,7 +1272,7 @@ static void power_pmu_enable(struct pmu *pmu)
+ 		goto out;
  	}
  
-@@ -1848,10 +1848,10 @@ static int power_pmu_event_init(struct perf_event *event)
+-	if (!(ppmu->flags & PPMU_ARCH_207S)) {
++	if (!(ppmu->flags & PPMU_ARCH_207S) || cpuhw->bhrb_users) {
+ 		/*
+ 		 * Add in MMCR0 freeze bits corresponding to the attr.exclude_*
+ 		 * bits for the first event. We have already checked that all
+@@ -1296,7 +1297,7 @@ static void power_pmu_enable(struct pmu *pmu)
+ 	mtspr(SPRN_MMCR1, cpuhw->mmcr[1]);
+ 	mtspr(SPRN_MMCR0, (cpuhw->mmcr[0] & ~(MMCR0_PMC1CE | MMCR0_PMCjCE))
+ 				| MMCR0_FC);
+-	if (ppmu->flags & PPMU_ARCH_207S)
++	if ((ppmu->flags & PPMU_ARCH_207S) && !cpuhw->bhrb_users)
+ 		mtspr(SPRN_MMCR2, cpuhw->mmcr[3]);
+ 
+ 	/*
+@@ -1448,7 +1449,8 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
+ 	if (cpuhw->group_flag & PERF_EVENT_TXN)
+ 		goto nocheck;
+ 
+-	if (check_excludes(cpuhw->event, cpuhw->flags, n0, 1))
++	if (check_excludes(cpuhw->event, cpuhw->flags,
++				n0, 1, cpuhw->bhrb_users))
+ 		goto out;
+ 	if (power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n0 + 1))
+ 		goto out;
+@@ -1627,7 +1629,7 @@ static int power_pmu_commit_txn(struct pmu *pmu)
+ 		return -EAGAIN;
+ 	cpuhw = this_cpu_ptr(&cpu_hw_events);
+ 	n = cpuhw->n_events;
+-	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n))
++	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n, cpuhw->bhrb_users))
+ 		return -EAGAIN;
+ 	i = power_check_constraints(cpuhw, cpuhw->events, cpuhw->flags, n);
+ 	if (i < 0)
+@@ -1840,10 +1842,10 @@ static int power_pmu_event_init(struct perf_event *event)
+ 	events[n] = ev;
+ 	ctrs[n] = event;
+ 	cflags[n] = flags;
+-	if (check_excludes(ctrs, cflags, n, 1))
++	cpuhw = this_cpu_ptr(&cpu_hw_events);
++	if (check_excludes(ctrs, cflags, n, 1, cpuhw->bhrb_users))
+ 		return -EINVAL;
+ 
+-	cpuhw = this_cpu_ptr(&cpu_hw_events);
  	err = power_check_constraints(cpuhw, events, cflags, n + 1);
  
  	if (has_branch_stack(event)) {
--		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
- 					event->attr.branch_sample_type);
- 
--		if (cpuhw->bhrb_filter == -1)
-+		if (cpuhw->bhrb_hw_filter == -1)
- 			return -EOPNOTSUPP;
- 	}
- 
 -- 
 2.1.0
