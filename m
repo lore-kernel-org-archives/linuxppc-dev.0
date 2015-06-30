@@ -1,18 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id E48EE1A1004
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 23:56:43 +1000 (AEST)
-Message-Id: <67cf476f657e87b2ea586951a57ae3ba3c1e3c0c.1435655732.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1435655732.git.christophe.leroy@c-s.fr>
-References: <cover.1435655732.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/2] powerpc32: optimise csum_partial() loop
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 30 Jun 2015 15:56:40 +0200 (CEST)
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wg0-f42.google.com (mail-wg0-f42.google.com [74.125.82.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C5CFF1A06A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Jul 2015 02:02:04 +1000 (AEST)
+Received: by wgjx7 with SMTP id x7so13791805wgj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 09:02:00 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH] Fix pSeries boot failure, by returning
+ =?iso-8859-1?Q?interrupt=0D?= controller node when an interrupt-map
+ property doesn't exist
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jeremy Linton
+ <lintonrjeremy@gmail.com>
+Cc: robherring2@gmail.com, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+In-Reply-To: <1435634613.26815.78.camel@kernel.crashing.org>
+References: <CAEFTgixGKnMuMGp2DfoksqF0m_P6-EGJ0sUjg2=ReX2X0tq2nA@mail.gmail.com>
+ <1435634613.26815.78.camel@kernel.crashing.org>
+Date: Tue, 30 Jun 2015 17:01:56 +0100
+Message-Id: <20150630160156.7010DC405A7@trevor.secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,43 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the 8xx, load latency is 2 cycles and taking branches also takes
-2 cycles. So let's unroll the loop.
+On Tue, 30 Jun 2015 13:23:33 +1000
+, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ wrote:
+> On Mon, 2015-06-29 at 18:50 -0500, Jeremy Linton wrote:
+> > This is a reformat of the patch attached to "pSeries boot failure due
+> > to wrong interrupt controller".
+> > 
+> > It allows of_irq_parse_raw() to return the node pointer of the
+> > interrupt controller, rather than the parent bus. This allows
+> > ics_rtas_host_match() to detect that the controller is a legacy 8259
+> > and avoid using xics. This avoids an RTAS assertion/crash during early
+> > kernel bootstrapping
+> > 
+> > Signed-off-by: Jeremy Linton <lintonrjeremy@gmail.com>
+> 
+> Reviewed-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Rob, do you want to take this or should we ?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/lib/checksum_32.S | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+Merged, thanks.
 
-diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-index 2e4879c..9c48ee0 100644
---- a/arch/powerpc/lib/checksum_32.S
-+++ b/arch/powerpc/lib/checksum_32.S
-@@ -75,10 +75,24 @@ _GLOBAL(csum_partial)
- 	srwi.	r6,r4,2		/* # words to do */
- 	adde	r5,r5,r0
- 	beq	3f
--1:	mtctr	r6
-+1:	andi.	r6,r6,3		/* Prepare to handle words 4 by 4 */
-+	beq	21f
-+	mtctr	r6
- 2:	lwzu	r0,4(r3)
- 	adde	r5,r5,r0
- 	bdnz	2b
-+21:	srwi.	r6,r4,4		/* # blocks of 4 words to do */
-+	beq	3f
-+	mtctr	r6
-+22:	lwzu	r0,4(r3)
-+	lwzu	r6,4(r3)
-+	lwzu	r7,4(r3)
-+	lwzu	r8,4(r3)
-+	adde	r5,r5,r0
-+	adde	r5,r5,r6
-+	adde	r5,r5,r7
-+	adde	r5,r5,r8
-+	bdnz	22b
- 3:	andi.	r0,r4,2
- 	beq+	4f
- 	lhz	r0,4(r3)
--- 
-2.1.0
+Jeremy, please check your mailer configuration. The patch was mangled
+and would not apply. I had to fix it up manually.
+
+Also, does this patch need to be backported into stable? What commit
+introduced this bug, and which kernel does it first appear in?
+
+Thanks,
+g.
+
+> 
+> > ---
+> >  drivers/of/irq.c | 3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+> > index 1a79806..cb4b9ae 100644
+> > --- a/drivers/of/irq.c
+> > +++ b/drivers/of/irq.c
+> > @@ -252,8 +252,6 @@ int of_irq_parse_raw(const __be32 *addr, struct
+> > of_phandle_args *out_irq)
+> >                  * Successfully parsed an interrrupt-map translation; copy new
+> >                  * interrupt specifier into the out_irq structure
+> >                  */
+> > -               out_irq->np = newpar;
+> > -
+> >                 match_array = imap - newaddrsize - newintsize;
+> >                 for (i = 0; i < newintsize; i++)
+> >                         out_irq->args[i] = be32_to_cpup(imap - newintsize + i);
+> > @@ -262,6 +260,7 @@ int of_irq_parse_raw(const __be32 *addr, struct
+> > of_phandle_args *out_irq)
+> > 
+> >         skiplevel:
+> >                 /* Iterate again with new parent */
+> > +               out_irq->np = newpar;
+> >                 pr_debug(" -> new parent: %s\n", of_node_full_name(newpar));
+> >                 of_node_put(ipar);
+> >                 ipar = newpar;
+> > --
+> > 1.8.1.4
+> 
+> 
