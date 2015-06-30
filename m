@@ -1,40 +1,38 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2E29A1A1007
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 13:29:06 +1000 (AEST)
-Message-ID: <1435634945.24866.2.camel@ellerman.id.au>
-Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
- to common include file
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Long <dave.long@linaro.org>
-Cc: Rob Herring <robherring2@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@amacapital.net>, Anton Blanchard <anton@samba.org>,
- Behan Webster <behanw@converseincode.com>,  Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Eric Paris <eparis@redhat.com>, Heiko Carstens
- <heiko.carstens@de.ibm.com>,  Ingo Molnar <mingo@redhat.com>, Jan Willeke
- <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,  Martin
- Schwidefsky <schwidefsky@de.ibm.com>, Nikolay Borisov
- <Nikolay.Borisov@arm.com>, Oleg Nesterov <oleg@redhat.com>,  Paul Mackerras
- <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>, Robert Richter
- <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>, Russell King
- <linux@arm.linux.org.uk>, Tejun Heo <tj@kernel.org>,  Thomas Gleixner
- <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, linux-hexagon@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-s390@vger.kernel.org, SH-Linux <linux-sh@vger.kernel.org>,
- linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>
-Date: Tue, 30 Jun 2015 13:29:05 +1000
-In-Reply-To: <5581BCD0.2040405@linaro.org>
-References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
- <1434386579-6045-2-git-send-email-dave.long@linaro.org>
- <CAL_JsqK3L9Hv9bhAtwAAXVYjLJBTOG9=4ddOo-SFqnD-_KieCQ@mail.gmail.com>
- <5581BCD0.2040405@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C8F051A01CC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 18:19:28 +1000 (AEST)
+Message-ID: <55924FC2.3070006@users.sourceforge.net>
+Date: Tue, 30 Jun 2015 10:13:54 +0200
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+CC: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org,
+ Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH] macintosh: Delete an unnecessary check before the function
+ call "of_node_put"
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net> <54D282B0.90907@users.sourceforge.net>
+In-Reply-To: <54D282B0.90907@users.sourceforge.net>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,40 +42,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-06-17 at 14:30 -0400, David Long wrote:
-> On 06/16/15 09:17, Rob Herring wrote:
-> > On Mon, Jun 15, 2015 at 11:42 AM, David Long <dave.long@linaro.org> wrote:
-> >>
-> >>   #define REG_OFFSET_NAME(r) \
-> >>          {.name = #r, .offset = offsetof(struct pt_regs, ARM_##r)}
-> >>   #define REG_OFFSET_END {.name = NULL, .offset = 0}
-> >
-> > Can't you also move these? ARM is complicated with the "ARM_"
-> > prefixing, but the others appear to be the same. Maybe you can remove
-> > the prefix or redefine the macro for ARM.
+Am 04.02.2015 um 21:36 schrieb SF Markus Elfring:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Wed, 4 Feb 2015 21:32:27 +0100
 > 
-> That would mandate that all the architecture-specific pt_regs structures 
-> would have to use a top-level named field for each named register.
+> The of_node_put() function tests whether its argument is NULL and then
+> returns immediately. Thus the test around the call is not needed.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  drivers/macintosh/smu.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+> index 10ae69b..d531f80 100644
+> --- a/drivers/macintosh/smu.c
+> +++ b/drivers/macintosh/smu.c
+> @@ -557,8 +557,7 @@ int __init smu_init (void)
+>  	return 0;
+>  
+>  fail_msg_node:
+> -	if (smu->msg_node)
+> -		of_node_put(smu->msg_node);
+> +	of_node_put(smu->msg_node);
+>  fail_db_node:
+>  	of_node_put(smu->db_node);
+>  fail_bootmem:
+> 
 
-Why does it mandate that?
+Would you like to integrate this update suggestion
+into another source code repository?
 
-See eg. powerpc where we use REG_OFFSET_NAME for the top-level named fields and
-then a different macro for the array elements:
-
-  #define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
-  #define GPR_OFFSET_NAME(num)	\
-  	{.name = STR(gpr##num), .offset = offsetof(struct pt_regs, gpr[num])}
-  
-  static const struct pt_regs_offset regoffset_table[] = {
-  	GPR_OFFSET_NAME(0),
-  	GPR_OFFSET_NAME(1),
-  	GPR_OFFSET_NAME(2),
-  	GPR_OFFSET_NAME(3),
-  	...
-  	REG_OFFSET_NAME(nip),
-  	REG_OFFSET_NAME(msr),
-
-
-So I don't see why REG_OFFSET_NAME couldn't be common.
-
-cheers
+Regards,
+Markus
