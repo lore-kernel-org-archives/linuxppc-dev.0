@@ -1,24 +1,36 @@
-Return-Path: <joseph_myers@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 292FC1A1024
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 20:48:55 +1000 (AEST)
-Date: Tue, 30 Jun 2015 10:48:49 +0000
-From: Joseph Myers <joseph@codesourcery.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: <linux-kernel@vger.kernel.org>, <linux-alpha@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
- <linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>
-Subject: Re: [PATCH RESEND] Update kernel math-emu code from current glibc
- soft-fp
-In-Reply-To: <1435634913.24866.1.camel@ellerman.id.au>
-Message-ID: <alpine.DEB.2.10.1506301042250.2339@digraph.polyomino.org.uk>
-References: <alpine.DEB.2.10.1505192206580.28384@digraph.polyomino.org.uk>
- <alpine.DEB.2.10.1506221321340.27145@digraph.polyomino.org.uk>
- <1435634913.24866.1.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C50C41A1024
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 21:02:19 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 987CC1402C0
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 21:02:19 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Tue, 30 Jun 2015 21:02:17 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 869703578052
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 21:02:15 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5UB26uC45547764
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 21:02:15 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t5UB1gBu028791
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 21:01:42 +1000
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, thuth@redhat.com, segher@kernel.crashing.org
+Cc: aik@ozlabs.ru, dvaleev@suse.com, nikunj@linux.vnet.ibm.com
+Subject: [PATCH SLOF v3 0/5] GPT fixes/cleanup and LVM support with FAT
+Date: Tue, 30 Jun 2015 16:31:16 +0530
+Message-Id: <1435662081-4293-1-git-send-email-nikunj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 30 Jun 2015, Michael Ellerman wrote:
+Following patchset implements some improvements and cleanup for the
+GPT booting code:
 
-> Is there some way you can imagine of splitting this up into smaller chunks, so
-> that different arches can merge the pieces separately?
+patch 1: Simplify the gpt detection code with lesser scopes and add
+	 comments.
 
-Well, it could be split as:
+patch 2: Introduce 8byte LE helpers: x@-le and x!-le
 
-1. Rename include/math-emu to math-emu-old and update architectures for 
-the renaming (mechanically).
+patch 3: Rename block / read-sector to indicate it a allocated buffer
 
-2. Add new include/math-emu.
+patch 4: As we need to detect FAT partition, implement a helper that
+	 can be used both from GPT code and "fat-bootblock?"
 
-3,4,5,6,7. Move each architecture from math-emu-old to math-emu.
+patch 5: Implement GPT FAT for LVM suport and make GPT detection code
+	 robust
 
-8. Remove math-emu-old.
+Changelog V2:
+* Optimize gpt detection code
+* Fixed stack comments
+* Rename verify-gpt-partition, as it was doing more than that. Added
+  comments.
 
-You still have patch 1 affecting all five architectures, but with the 
-per-architecture changes being much simpler.
+Nikunj A Dadhania (5):
+  disk-label: simplify gpt-prep-partition? routine
+  introduce 8-byte LE helpers
+  disk-label: rename confusing "block" word
+  disk-label: introduce helper to check fat filesystem
+  disk-label: add support for booting from GPT FAT partition
+
+ slof/fs/little-endian.fs       |   6 ++
+ slof/fs/packages/disk-label.fs | 211 ++++++++++++++++++++++++++---------------
+ 2 files changed, 138 insertions(+), 79 deletions(-)
 
 -- 
-Joseph S. Myers
-joseph@codesourcery.com
+2.4.3
