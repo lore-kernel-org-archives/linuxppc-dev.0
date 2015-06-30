@@ -1,13 +1,13 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CD6E1A01CC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1ECCC1A06A6
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 18:34:38 +1000 (AEST)
 Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 502E5140316
+ by ozlabs.org (Postfix) with ESMTPS id 4F95E1402EC
  for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 18:34:37 +1000 (AEST)
 Received: from /spool/local
  by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -15,24 +15,24 @@ Received: from /spool/local
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Tue, 30 Jun 2015 14:04:34 +0530
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4FA63E0044
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:08:12 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id EE06EE007B
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:08:10 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t5U8YRQY26214506
- for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:04:30 +0530
+ t5U8YR8231719640
+ for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:04:27 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t5U8YP6H020330
+ t5U8YQCj020368
  for <linuxppc-dev@ozlabs.org>; Tue, 30 Jun 2015 14:04:26 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mikey@neuling.org, sukadev@linux.vnet.ibm.com, dja@axtens.net,
  mpe@ellerman.id.au
-Subject: [PATCH V10 5/8] powerpc/perf: Enable SW filtering in branch stack
- sampling framework
-Date: Tue, 30 Jun 2015 14:04:19 +0530
-Message-Id: <1435653262-24258-6-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V10 8/8] selftests/powerpc: Add test for BHRB branch filters
+ (HW & SW)
+Date: Tue, 30 Jun 2015 14:04:22 +0530
+Message-Id: <1435653262-24258-9-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1435653262-24258-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1435653262-24258-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,360 +44,954 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables SW based post processing of BHRB captured branches
-to be able to meet more user defined branch filtration criteria in perf
-branch stack sampling framework. These changes increase the number of
-branch filters and their valid combinations on any powerpc64 server
-platform with BHRB support. Find the summary of code changes here.
-
-(1) struct cpu_hw_event
-
-Introduced two new variables track various filter values and mask
-
-(a) bhrb_sw_filter      Tracks SW implemented branch filter flags
-(b) bhrb_filter         Tracks both (SW and HW) branch filter flags
-
-(2) Event creation
-
-Kernel will figure out supported BHRB branch filters through a PMU
-call back 'bhrb_filter_map'. This function will find out how many of
-the requested branch filters can be supported in the PMU HW. It will
-not try to invalidate any branch filter combinations. Event creation
-will not error out because of lack of HW based branch filters.
-Meanwhile it will track the overall supported branch filters in the
-'bhrb_filter' variable.
-
-Once the PMU call back returns kernel will process the user branch
-filter request against available SW filters (bhrb_sw_filter_map) while
-looking at the 'bhrb_filter'. During this phase all the branch filters
-which are still pending from the user requested list will have to be
-supported in SW failing which the event creation will error out.
-
-(3) SW branch filter
-
-During the BHRB data capture inside the PMU interrupt context, each
-of the captured 'perf_branch_entry.from' will be checked for compliance
-with applicable SW branch filters. If the entry does not conform to the
-filter requirements, it will be discarded from the final perf branch
-stack buffer.
-
-(4) Supported SW based branch filters
-
-(a) PERF_SAMPLE_BRANCH_ANY_RETURN
-(b) PERF_SAMPLE_BRANCH_IND_CALL
-(c) PERF_SAMPLE_BRANCH_ANY_CALL
-(d) PERF_SAMPLE_BRANCH_COND
-
-Please refer the patch to understand the classification of instructions
-into these branch filter categories.
-
-(5) Multiple branch filter semantics
-
-Book3 sever implementation follows the same OR semantics (as implemented
-in x86) while dealing with multiple branch filters at any point of time.
-SW branch filter analysis is carried on the data set captured in the PMU
-HW. So the resulting set of data (after applying the SW filters) will
-inherently be an AND with the HW captured set. Hence any combination of
-HW and SW branch filters will be invalid. HW based branch filters are
-more efficient and faster compared to SW implemented branch filters. So
-at first the PMU should decide whether it can support all the requested
-branch filters itself or not. In case it can support all the branch
-filters in an OR manner, we dont apply any SW branch filter on top of the
-HW captured set (which is the final set). This preserves the OR semantic
-of multiple branch filters as required. But in case where the PMU cannot
-support all the requested branch filters in an OR manner, it should not
-apply any it's filters and leave it upto the SW to handle them all. Its
-the PMU code's responsibility to uphold this protocol to be able to
-conform to the overall OR semantic of perf branch stack sampling framework.
+This patch adds a test for verifying that all the branch stack
+sampling filters supported on powerpc work correctly. It also
+adds some assembly helper functions in this regard. This patch
+extends the generic event description to handle kernel mapped
+ring buffers.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/perf_event_server.h |   7 +-
- arch/powerpc/perf/core-book3s.c              | 188 ++++++++++++++++++++++++++-
- arch/powerpc/perf/power8-pmu.c               |   2 +-
- 3 files changed, 191 insertions(+), 6 deletions(-)
+ tools/testing/selftests/powerpc/pmu/Makefile       |  11 +-
+ .../testing/selftests/powerpc/pmu/bhrb/.gitignore  |   1 +
+ tools/testing/selftests/powerpc/pmu/bhrb/Makefile  |  13 +
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters.c      | 535 +++++++++++++++++++++
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters.h      |  15 +
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S  | 263 ++++++++++
+ tools/testing/selftests/powerpc/pmu/event.h        |   5 +
+ 7 files changed, 841 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 8146221..cb7ca1a 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -38,7 +38,8 @@ struct power_pmu {
- 				unsigned long *valp);
- 	int		(*get_alternatives)(u64 event_id, unsigned int flags,
- 				u64 alt[]);
--	u64             (*bhrb_filter_map)(u64 branch_sample_type);
-+	u64             (*bhrb_filter_map)(u64 branch_sample_type,
-+							u64 *bhrb_filter);
- 	void            (*config_bhrb)(u64 pmu_bhrb_filter);
- 	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
- 	int		(*limited_pmc_event)(u64 event_id);
-@@ -80,6 +81,10 @@ extern unsigned long perf_misc_flags(struct pt_regs *regs);
- extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
- extern unsigned long int read_bhrb(int n);
+diff --git a/tools/testing/selftests/powerpc/pmu/Makefile b/tools/testing/selftests/powerpc/pmu/Makefile
+index a9099d9..2e103fd 100644
+--- a/tools/testing/selftests/powerpc/pmu/Makefile
++++ b/tools/testing/selftests/powerpc/pmu/Makefile
+@@ -4,7 +4,7 @@ noarg:
+ TEST_PROGS := count_instructions l3_bank_test per_event_excludes
+ EXTRA_SOURCES := ../harness.c event.c lib.c
  
-+#define for_each_branch_sample_type(x) \
-+		for ((x) = PERF_SAMPLE_BRANCH_USER; \
-+			(x) < PERF_SAMPLE_BRANCH_MAX; (x) <<= 1)
+-all: $(TEST_PROGS) ebb
++all: $(TEST_PROGS) ebb bhrb
+ 
+ $(TEST_PROGS): $(EXTRA_SOURCES)
+ 
+@@ -18,25 +18,32 @@ DEFAULT_RUN_TESTS := $(RUN_TESTS)
+ override define RUN_TESTS
+ 	$(DEFAULT_RUN_TESTS)
+ 	$(MAKE) -C ebb run_tests
++	$(MAKE) -C bhrb run_tests
+ endef
+ 
+ DEFAULT_EMIT_TESTS := $(EMIT_TESTS)
+ override define EMIT_TESTS
+ 	$(DEFAULT_EMIT_TESTS)
+ 	$(MAKE) -s -C ebb emit_tests
++	$(MAKE) -s -C bhrb emit_tests
+ endef
+ 
+ DEFAULT_INSTALL_RULE := $(INSTALL_RULE)
+ override define INSTALL_RULE
+ 	$(DEFAULT_INSTALL_RULE)
+ 	$(MAKE) -C ebb install
++	$(MAKE) -C bhrb install
+ endef
+ 
+ clean:
+ 	rm -f $(TEST_PROGS) loop.o
+ 	$(MAKE) -C ebb clean
++	$(MAKE) -C bhrb clean
+ 
+ ebb:
+ 	$(MAKE) -k -C $@ all
+ 
+-.PHONY: all run_tests clean ebb
++bhrb:
++	$(MAKE) -k -C $@ all
 +
- /*
-  * Only override the default definitions in include/linux/perf_event.h
-  * if we have hardware PMU support.
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index ef0ff05..59defc5 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -53,6 +53,8 @@ struct cpu_hw_events {
- 
- 	/* BHRB bits */
- 	u64				bhrb_hw_filter;	/* BHRB HW filter */
-+	u64				bhrb_sw_filter;	/* BHRB SW filter */
-+	u64				bhrb_filter;	/* Branch filter mask */
- 	unsigned int			bhrb_users;
- 	void				*bhrb_context;
- 	struct	perf_branch_stack	bhrb_stack;
-@@ -430,6 +432,84 @@ static inline void insert_branch(struct cpu_hw_events *cpuhw,
- 	cpuhw->bhrb_entries[index].predicted = !mispred;
- }
- 
-+/**
-+ * check_instruction - Instruction opcode analysis
-+ * @addr:	Instruction address
-+ * @sw_filter:	SW branch filter
++.PHONY: all run_tests clean ebb bhrb
+diff --git a/tools/testing/selftests/powerpc/pmu/bhrb/.gitignore b/tools/testing/selftests/powerpc/pmu/bhrb/.gitignore
+new file mode 100644
+index 0000000..47c1049
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/bhrb/.gitignore
+@@ -0,0 +1 @@
++bhrb_filters
+diff --git a/tools/testing/selftests/powerpc/pmu/bhrb/Makefile b/tools/testing/selftests/powerpc/pmu/bhrb/Makefile
+new file mode 100644
+index 0000000..61c032a
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/bhrb/Makefile
+@@ -0,0 +1,13 @@
++noarg:
++	$(MAKE) -C ../../
++
++TEST_PROGS := bhrb_filters
++
++all: $(TEST_PROGS)
++
++$(TEST_PROGS): ../../harness.c ../event.c ../lib.c bhrb_filters_asm.S
++
++include ../../../lib.mk
++
++clean:
++	rm -f $(TEST_PROGS)
+diff --git a/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c
+new file mode 100644
+index 0000000..84e9b9a
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c
+@@ -0,0 +1,535 @@
++/*
++ * BHRB filter test (HW & SW)
 + *
-+ * Analyse instruction opcodes and classify them into various
-+ * branch filter options available. This follows the standard
-+ * semantics of OR which means that instructions which conforms
-+ * to any of the requested branch filters get picked up.
++ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
 + */
-+static bool check_instruction(unsigned int *addr, u64 sw_filter)
++#include <unistd.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <signal.h>
++#include <poll.h>
++#include <sys/shm.h>
++#include <sys/types.h>
++#include <sys/wait.h>
++#include <sys/mman.h>
++
++#include "bhrb_filters.h"
++#include "utils.h"
++#include "../event.h"
++#include "../lib.h"
++
++/* Memory barriers */
++#define	smp_mb()	{ asm volatile ("sync" : : : "memory"); }
++
++/* Fetched address counts */
++#define ALL_MAX		32
++#define CALL_MAX	12
++#define RET_MAX		10
++#define COND_MAX	8
++#define IND_MAX		4
++
++/* Test tunables */
++#define LOOP_COUNT	10
++#define SAMPLE_PERIOD	10000
++
++static int branch_test_set[] = {
++		PERF_SAMPLE_BRANCH_ANY_CALL,		/* Single filters */
++		PERF_SAMPLE_BRANCH_ANY_RETURN,
++		PERF_SAMPLE_BRANCH_COND,
++		PERF_SAMPLE_BRANCH_IND_CALL,
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |		/* Double filters */
++		PERF_SAMPLE_BRANCH_ANY_RETURN,
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_COND,
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_IND_CALL,
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND,
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_IND_CALL,
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_IND_CALL,
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_IND_CALL |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |		/* Triple filters */
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_IND_CALL,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_IND_CALL,
++
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_IND_CALL |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |		/* Quadruple filters */
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_IND_CALL,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_IND_CALL |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_IND_CALL |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_IND_CALL |
++		PERF_SAMPLE_BRANCH_ANY,
++
++		PERF_SAMPLE_BRANCH_ANY_CALL |		/* All filters */
++		PERF_SAMPLE_BRANCH_ANY_RETURN |
++		PERF_SAMPLE_BRANCH_COND |
++		PERF_SAMPLE_BRANCH_IND_CALL |
++		PERF_SAMPLE_BRANCH_ANY };
++
++static unsigned int all_set[ALL_MAX], call_set[CALL_MAX];
++static unsigned int ret_set[RET_MAX], cond_set[COND_MAX], ind_set[IND_MAX];
++
++static bool has_failed;
++static unsigned long branch_any_call;
++static unsigned long branch_any_return;
++static unsigned long branch_cond;
++static unsigned long branch_ind_call;
++static unsigned long branch_any;
++static unsigned long branch_total;
++
++static void init_branch_stats(void)
 +{
-+	if (sw_filter & PERF_SAMPLE_BRANCH_ANY_RETURN) {
-+		if (instr_is_return_branch(*addr))
-+			return true;
-+	}
++	branch_any_call = 0;
++	branch_any_return = 0;
++	branch_cond = 0;
++	branch_ind_call = 0;
++	branch_any = 0;
++	branch_total = 0;
++}
 +
-+	if (sw_filter & PERF_SAMPLE_BRANCH_IND_CALL) {
-+		if (instr_is_indirect_func_call(*addr))
-+			return true;
-+	}
++static void show_branch_stats(void)
++{
++	printf("BRANCH STATS\n");
++	printf("ANY_CALL:	%ld\n", branch_any_call);
++	printf("ANY_RETURN:	%ld\n", branch_any_return);
++	printf("COND:		%ld\n", branch_cond);
++	printf("IND_CALL:	%ld\n", branch_ind_call);
++	printf("ANY:		%ld\n", branch_any);
++	printf("TOTAL:		%ld\n", branch_total);
 +
-+	if (sw_filter & PERF_SAMPLE_BRANCH_ANY_CALL) {
-+		if (instr_is_func_call(*addr))
-+			return true;
-+	}
++}
 +
-+	if (sw_filter & PERF_SAMPLE_BRANCH_COND) {
-+		if (instr_is_conditional_branch(*addr))
++static void fetch_branches(void)
++{
++	int i;
++
++	/* Clear */
++	memset(all_set, 0, sizeof(all_set));
++	memset(call_set, 0, sizeof(call_set));
++	memset(ret_set, 0, sizeof(ret_set));
++	memset(cond_set, 0, sizeof(cond_set));
++	memset(ind_set, 0, sizeof(ind_set));
++
++	/* Fetch */
++	fetch_all_branches(all_set);
++	fetch_all_calls(call_set);
++	fetch_all_rets(ret_set);
++	fetch_all_conds(cond_set);
++	fetch_all_inds(ind_set);
++
++	/* Display */
++	printf("ANY branches\n");
++	for (i = 0; i < ALL_MAX; i += 2)
++		printf("%x ---> %x\n", all_set[i], all_set[i + 1]);
++
++	printf("ANY_CALL branches\n");
++	for (i = 0; i < CALL_MAX; i += 2)
++		printf("%x ---> %x\n", call_set[i], call_set[i + 1]);
++
++	printf("ANY_RETURN branches\n");
++	for (i = 0; i < RET_MAX; i += 2)
++		printf("%x ---> %x\n", ret_set[i], ret_set[i + 1]);
++
++	printf("COND branches\n");
++	for (i = 0; i < COND_MAX; i += 2)
++		printf("%x ---> %x\n", cond_set[i], cond_set[i + 1]);
++
++	printf("IND_CALL branches\n");
++	for (i = 0; i < IND_MAX; i += 2)
++		printf("%x ---> %x\n", ind_set[i], ind_set[i + 1]);
++
++}
++
++/* Perf mmap stats */
++static unsigned long record_sample;
++static unsigned long record_mmap;
++static unsigned long record_lost;
++static unsigned long record_throttle;
++static unsigned long record_unthrottle;
++static unsigned long record_overlap;
++
++static void init_perf_mmap_stats(void)
++{
++	record_sample = 0;
++	record_mmap = 0;
++	record_lost = 0;
++	record_throttle = 0;
++	record_unthrottle = 0;
++	record_overlap = 0;
++}
++
++static void show_perf_mmap_stats(void)
++{
++	printf("PERF STATS\n");
++	printf("OVERLAP:		%ld\n", record_overlap);
++	printf("RECORD_SAMPLE:		%ld\n", record_sample);
++	printf("RECORD_MAP:		%ld\n", record_mmap);
++	printf("RECORD_LOST:		%ld\n", record_lost);
++	printf("RECORD_THROTTLE:	%ld\n", record_throttle);
++	printf("RECORD_UNTHROTTLE:	%ld\n", record_unthrottle);
++}
++
++static bool search_all_set(unsigned long from, unsigned long to)
++{
++	int i;
++
++	for (i = 0; i < ALL_MAX; i += 2) {
++		if ((all_set[i] == from) && (all_set[i+1] == to))
 +			return true;
 +	}
 +	return false;
 +}
 +
-+/**
-+ * keep_branch - Whether the branch conforms to applicable filter
-+ * @from:	From address
-+ * @sw_filter	SW branch filter
-+ *
-+ * Access the instruction contained in the address and then check
-+ * whether it complies with the applicable SW branch filters.
-+ */
-+static bool keep_branch(u64 from, u64 sw_filter)
++static bool search_call_set(unsigned long from, unsigned long to)
 +{
-+	unsigned int instr;
-+	bool ret;
++	int i;
 +
-+	/*
-+	 * The "from" branch for every branch record has to go
-+	 * through this filter verification. So this quick check
-+	 * here for no SW filters will improve performance.
-+	 */
-+	if (sw_filter == 0)
-+		return true;
-+
-+	if (is_kernel_addr(from)) {
-+		return check_instruction((unsigned int *) from, sw_filter);
-+	} else {
-+		/*
-+		 * Userspace address needs to be
-+		 * copied first before analysis.
-+		 */
-+		pagefault_disable();
-+		ret =  __get_user_inatomic(instr, (unsigned int __user *) from);
-+
-+		/*
-+		 * If the instruction could not be accessible
-+		 * from user space, we still 'okay' the entry.
-+		 */
-+		if (ret) {
-+			pagefault_enable();
++	for (i = 0; i < CALL_MAX; i += 2) {
++		if ((call_set[i] == from) && (call_set[i+1] == to))
 +			return true;
++	}
++	return false;
++}
++
++static bool search_ret_set(unsigned long from, unsigned long to)
++{
++	int i;
++
++	for (i = 0; i < RET_MAX; i += 2) {
++		if ((ret_set[i] == from) && (ret_set[i+1] == to))
++			return true;
++	}
++	return false;
++}
++
++static bool search_cond_set(unsigned long from, unsigned long to)
++{
++	int i;
++
++	for (i = 0; i < COND_MAX; i += 2) {
++		if ((cond_set[i] == from) && (cond_set[i+1] == to))
++			return true;
++	}
++	return false;
++}
++
++static bool search_ind_set(unsigned long from, unsigned long to)
++{
++	int i;
++
++	for (i = 0; i < IND_MAX; i += 2) {
++		if ((ind_set[i] == from) && (ind_set[i+1] == to))
++			return true;
++	}
++	return false;
++}
++
++static int check_branch(unsigned long from, unsigned long to,
++					int branch_sample_type)
++{
++	bool result = false;
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
++		if (search_call_set(from, to)) {
++			branch_any_call++;
++			result = true;
 +		}
-+		pagefault_enable();
-+		return check_instruction(&instr, sw_filter);
 +	}
-+}
 +
- /* Processing BHRB entries */
- static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- {
-@@ -494,6 +574,11 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- 			to_addr = power_pmu_bhrb_to(addr);
- 			insert_branch(cpuhw, u_index, addr, to_addr, mispred);
- 		}
-+
-+		/* Apply SW branch filters and drop the entry if required */
-+		if (!keep_branch(cpuhw->bhrb_entries[u_index].from,
-+						cpuhw->bhrb_sw_filter))
-+			u_index--;
- 		u_index++;
- 	}
- 	cpuhw->bhrb_stack.nr = u_index;
-@@ -691,6 +776,79 @@ static void pmao_restore_workaround(bool ebb)
- }
- #endif /* CONFIG_PPC64 */
- 
-+/* SW implemented branch filters */
-+static unsigned int power_sw_filter[] = { PERF_SAMPLE_BRANCH_USER,
-+					  PERF_SAMPLE_BRANCH_KERNEL,
-+					  PERF_SAMPLE_BRANCH_HV,
-+					  PERF_SAMPLE_BRANCH_ANY_CALL,
-+					  PERF_SAMPLE_BRANCH_COND,
-+					  PERF_SAMPLE_BRANCH_ANY_RETURN,
-+					  PERF_SAMPLE_BRANCH_IND_CALL };
-+
-+/**
-+ * all_filters_covered - Whether requested filters covered
-+ * @branch_sample_type:	Requested branch sample filter
-+ * @bhrb_filter:	Branch Filters covered through SW and HW
-+ *
-+ * Validate whether all the user requested branch filters are getting
-+ * processed either in the PMU HW or in SW.
-+ */
-+static int all_filters_covered(u64 branch_sample_type, u64 bhrb_filter)
-+{
-+	u64 x;
-+
-+	if (bhrb_filter == PERF_SAMPLE_BRANCH_ANY)
-+		return true;
-+
-+	for_each_branch_sample_type(x) {
-+		if (!(branch_sample_type & x))
-+			continue;
-+		/*
-+		 * Requested filter not available either
-+		 * in PMU or in SW.
-+		 */
-+		if (!(bhrb_filter & x))
-+			return false;
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN) {
++		if (search_ret_set(from, to)) {
++			branch_any_return++;
++			result = true;
++		}
 +	}
-+	return true;
-+}
 +
-+/**
-+ * bhrb_sw_filter_map - Required SW based branch filters
-+ * @branch_sample_type:	Requested branch sample type
-+ * @bhrb_filter:	Branch filters covered through HW
-+ *
-+ * This is called after figuring out what all branch filters the PMU HW
-+ * supports for the requested branch filter set. Here we will go through
-+ * all the SW implemented branch filters one by one and pick them up if
-+ * its not already supported in the PMU.
-+ */
-+static u64 bhrb_sw_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
-+{
-+	u64 branch_sw_filter = 0;
-+	unsigned int i;
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_COND) {
++		if (search_cond_set(from, to)) {
++			branch_cond++;
++			result = true;
++		}
++	}
++
++	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL) {
++		if (search_ind_set(from, to)) {
++			branch_ind_call++;
++			result = true;
++		}
++	}
 +
 +	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY) {
-+		WARN_ON(*bhrb_filter != PERF_SAMPLE_BRANCH_ANY);
-+		return branch_sw_filter;
-+	}
-+
-+	/*
-+	 * PMU supported branch filters must be implemented in SW
-+	 * when the PMU is unable to process them for some reason.
-+	 */
-+	for (i = 0; i < ARRAY_SIZE(power_sw_filter); i++) {
-+		if (branch_sample_type & power_sw_filter[i]) {
-+			if (!(*bhrb_filter & power_sw_filter[i])) {
-+				branch_sw_filter |= power_sw_filter[i];
-+				*bhrb_filter |= power_sw_filter[i];
-+			}
++		if (search_all_set(from, to)) {
++			branch_any++;
++			result = true;
 +		}
 +	}
 +
-+	return branch_sw_filter;
++	branch_total++;
++	return result;
 +}
 +
- static void perf_event_interrupt(struct pt_regs *regs);
- 
- /*
-@@ -1356,6 +1514,8 @@ static void power_pmu_enable(struct pmu *pmu)
- 	mmcr0 = ebb_switch_in(ebb, cpuhw);
- 
- 	mb();
++static int64_t *ring_buffer_offset(struct ring_buffer *r, void *p)
++{
++	unsigned long l = (unsigned long)p;
 +
-+	/* Enable PMU based branch filters */
- 	if (cpuhw->bhrb_users)
- 		ppmu->config_bhrb(cpuhw->bhrb_hw_filter);
- 
-@@ -1465,8 +1625,12 @@ nocheck:
-  out:
- 	if (has_branch_stack(event)) {
- 		power_pmu_bhrb_enable(event);
--		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
--					event->attr.branch_sample_type);
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map
-+					(event->attr.branch_sample_type,
-+							&cpuhw->bhrb_filter);
-+		cpuhw->bhrb_sw_filter = bhrb_sw_filter_map
-+					(event->attr.branch_sample_type,
-+							&cpuhw->bhrb_filter);
- 	}
- 
- 	perf_pmu_enable(event->pmu);
-@@ -1847,11 +2011,27 @@ static int power_pmu_event_init(struct perf_event *event)
- 
- 	err = power_check_constraints(cpuhw, events, cflags, n + 1);
- 
-+	/*
-+	 * BHRB branch filters implemented in PMU will take
-+	 * effect when we enable the event and data set
-+	 * collected thereafter will be compliant with those
-+	 * branch filters. Where as the SW branch filters will
-+	 * be applied during the post processing of BHRB data.
-+	 */
- 	if (has_branch_stack(event)) {
-+		/* Query available PMU branch filter support */
- 		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
--					event->attr.branch_sample_type);
-+					event->attr.branch_sample_type,
-+					&cpuhw->bhrb_filter);
++	return (int64_t *)(r->ring_base + ((l - r->ring_base) & r->mask));
++}
 +
-+		/* Query available SW branch filter support */
-+		cpuhw->bhrb_sw_filter = bhrb_sw_filter_map(
-+					event->attr.branch_sample_type,
-+					&cpuhw->bhrb_filter);
++static void dump_sample(struct perf_event_header *hdr,
++			struct ring_buffer *r, int branch_sample_type)
++{
++	int64_t from, to, flag;
++	int64_t *v, nr;
++	int i;
++
++	/* NR Branches */
++	v = ring_buffer_offset(r, hdr + 1);
++
++	nr = *v;
++
++	/* Branches */
++	for (i = 0; i < nr; i++) {
++		v = ring_buffer_offset(r, v + 1);
++		from = *v;
++
++		v = ring_buffer_offset(r, v + 1);
++		to = *v;
++
++		v = ring_buffer_offset(r, v + 1);
++		flag = *v;
++
++		if (!check_branch(from, to, branch_sample_type)) {
++			has_failed = true;
++			printf("[Filter: %d] From: %lx To: %lx Flags: %lx\n",
++					branch_sample_type, from, to, flag);
++		}
++	}
++}
++
++/*
++ * XXX: Both the memory barriers used here are as per the
++ * directive mentioned in the header include/uapi/linux/
++ * perf_event.h while describing the perf_event_mmap_page
++ * structure.
++ */
++static void read_ring_buffer(struct event *e, int branch_sample_type)
++{
++	struct ring_buffer *r = &e->ring_buffer;
++	struct perf_event_header *hdr;
++	int tail, head;
++
++	head = r->page->data_head & r->mask;
++
++	/* XXX: perf kernel interface requires read barrier */
++	smp_mb();
++
++	tail = r->page->data_tail & r->mask;
++
++	while (tail != head) {
++		hdr = (struct perf_event_header *)(r->ring_base + tail);
++
++		if ((tail & r->mask) + hdr->size !=
++					((tail + hdr->size) & r->mask))
++			++record_overlap;
++
++		if (hdr->type == PERF_RECORD_SAMPLE) {
++			++record_sample;
++			dump_sample(hdr, r, branch_sample_type);
++		}
++
++		if (hdr->type == PERF_RECORD_MMAP)
++			++record_mmap;
++
++		if (hdr->type == PERF_RECORD_LOST)
++			++record_lost;
++
++		if (hdr->type == PERF_RECORD_THROTTLE)
++			++record_throttle;
++
++		if (hdr->type == PERF_RECORD_UNTHROTTLE)
++			++record_unthrottle;
++
++		tail = (tail + hdr->size) & r->mask;
++	}
++
++	/* XXX: perf kernel interface requires read and write barrier */
++	smp_mb();
++	r->page->data_tail = tail;
++}
++
++static void event_mmap(struct event *e)
++{
++	struct ring_buffer *r = &e->ring_buffer;
++
++	r->page = mmap(NULL, 9 * getpagesize(), PROT_READ |
++					PROT_WRITE, MAP_SHARED, e->fd, 0);
++
++	if (r->page == MAP_FAILED) {
++		r->page = NULL;
++		perror("mmap() failed");
++	}
++
++	r->mask = (8 * getpagesize()) - 1;
++	r->ring_base = (unsigned long)r->page + getpagesize();
++
++}
++
++static int filter_test(int branch_sample_type)
++{
++	struct pollfd pollfd;
++	struct event ebhrb;
++	pid_t pid;
++	int ret, loop = 0;
++
++	has_failed = false;
++	pid = fork();
++	if (pid == -1) {
++		perror("fork() failed");
++		return 1;
++	}
++
++	/* Run child */
++	if (pid == 0) {
++		start_loop();
++		exit(0);
++	}
++
++	/* Prepare event */
++	event_init_opts(&ebhrb, PERF_COUNT_HW_INSTRUCTIONS,
++				PERF_TYPE_HARDWARE, "instructions");
++	ebhrb.attr.sample_type = PERF_SAMPLE_BRANCH_STACK;
++	ebhrb.attr.disabled = 1;
++	ebhrb.attr.mmap = 1;
++	ebhrb.attr.mmap_data = 1;
++	ebhrb.attr.sample_period = SAMPLE_PERIOD;
++	ebhrb.attr.exclude_user = 0;
++	ebhrb.attr.exclude_kernel = 1;
++	ebhrb.attr.exclude_hv = 1;
++	ebhrb.attr.branch_sample_type = branch_sample_type;
++
++	/* Open event */
++	event_open_with_pid(&ebhrb, pid);
++
++	/* Mmap ring buffer and enable event */
++	event_mmap(&ebhrb);
++	FAIL_IF(event_enable(&ebhrb));
++
++	/* Prepare polling */
++	pollfd.fd = ebhrb.fd;
++	pollfd.events = POLLIN;
++
++	for (loop = 0; loop < LOOP_COUNT; loop++) {
++		ret = poll(&pollfd, 1, -1);
++		if (ret == -1) {
++			perror("poll() failed");
++			goto error;
++		}
++		if (ret == 0) {
++			perror("poll() timeout");
++			goto error;
++		}
++		read_ring_buffer(&ebhrb, branch_sample_type);
++		if (has_failed)
++			goto error;
++	}
++
++	/* Disable and close event */
++	FAIL_IF(event_disable(&ebhrb));
++	event_close(&ebhrb);
++
++	/* Terminate child */
++	kill(pid, SIGKILL);
++	return 0;
++
++error:
++	/* Disable and close event */
++	FAIL_IF(event_disable(&ebhrb));
++	event_close(&ebhrb);
++
++	/* Terminate child */
++	kill(pid, SIGKILL);
++	return 1;
++}
++
++static int  bhrb_filters_test(void)
++{
++	int branch_sample_type;
++	int i;
++
++	/* Fetch branches */
++	fetch_branches();
++	init_branch_stats();
++	init_perf_mmap_stats();
++
++	for (i = 0; i < sizeof(branch_test_set)/sizeof(int); i++) {
++		branch_sample_type = branch_test_set[i];
++		if (filter_test(branch_sample_type))
++			return 1;
++	}
++
++	/* Show stats */
++	show_branch_stats();
++	show_perf_mmap_stats();
++	return 0;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(bhrb_filters_test, "bhrb_filters");
++}
+diff --git a/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h
+new file mode 100644
+index 0000000..9c12229
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h
+@@ -0,0 +1,15 @@
++/*
++ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ */
++
++/* Assembly routines */
++extern void fetch_all_branches(unsigned int *);
++extern void fetch_all_calls(unsigned int *);
++extern void fetch_all_rets(unsigned int *);
++extern void fetch_all_conds(unsigned int *);
++extern void fetch_all_inds(unsigned int *);
++extern void start_loop(void);
+diff --git a/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S
+new file mode 100644
+index 0000000..8b06af6
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S
+@@ -0,0 +1,263 @@
++/*
++ * Assembly functions for BHRB test
++ *
++ * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ */
++#define GLUE(a,b) a##b
++#define _GLOBAL(name) \
++       .section ".text"; \
++       .align 2 ; \
++       .globl name; \
++       .globl GLUE(.,name); \
++       .section ".opd","aw"; \
++name: \
++       .quad GLUE(.,name); \
++       .quad .TOC.@tocbase; \
++       .quad 0; \
++       .previous; \
++       .type GLUE(.,name),@function; \
++GLUE(.,name):
++
++#define LR_SAVE 19
++
++#define LOAD_ADDR(reg, label)			\
++	lis     reg,(label)@highest;		\
++	ori     reg,reg,(label)@higher;		\
++	rldicr  reg,reg,32,31;			\
++	oris    reg,reg,(label)@h;		\
++	ori     reg,reg,(label)@l;		\
++
++#define LOAD_LABEL(reg1, label1, reg2, label2)	\
++	lis     reg1,(label1)@highest;		\
++	ori     reg1,reg1,(label1)@higher;	\
++	rldicr  reg1,reg1,32,31;		\
++	oris    reg1,reg1,(label1)@h;		\
++	ori     reg1,reg1,(label1)@l;		\
++	lis     reg2,(label2)@highest;		\
++	ori     reg2,reg2,(label2)@higher;	\
++	rldicr  reg2,reg2,32,31;		\
++	oris    reg2,reg2,(label2)@h;		\
++	ori     reg2,reg2,(label2)@l;		\
++
++_GLOBAL(start_loop)
++label:
++	b label0			/* ANY */
++	blr				/* ANY_RETURN */
++label0:
++	b label1			/* ANY */
++
++label1:
++	b label2			/* ANY */
++
++label2:
++	b label3			/* ANY */
++
++label3:
++	mflr LR_SAVE
++	bl label4			/* ANY | ANY_CALL */
++	mtlr LR_SAVE
++	b start_loop			/* ANY */
++label4:
++	mflr LR_SAVE
++	li 20, 12
++	cmpi 3, 20, 12
++	bcl 12, 4 * cr3+2, label5	/* ANY | ANY_CALL | COND */
++	li 20, 12
++	cmpi 4, 20, 20
++	bcl 12, 4 * cr4+0, label5	/* ANY | ANY_CALL | COND */
++	LOAD_ADDR(20, label5)
++	mtctr 20
++	li 22, 10
++	cmpi 0, 22, 10
++	bcctrl 12, 4*cr0+2		/* ANY | NY_CALL | IND_CALL | COND */
++	LOAD_ADDR(20, label5)
++	mtlr 20
++	li      20, 10
++	cmpi    0, 20, 10
++	bclrl   12, 4*cr0+2		/* ANY | ANY_CALL | IND_CALL | COND */
++	mtlr LR_SAVE
++	blr				/* ANY | ANY_RETURN */
++
++label5:
++	blr				/* ANY | ANY_RETURN */
++
++/* Volatile Registers */
++#define REG1	4
++#define REG2	5
++
++_GLOBAL(fetch_all_branches)
++	LOAD_LABEL(REG1, label, REG2, label0)
++	st REG1, 0(3)
++	st REG2, 4(3)
++
++	LOAD_LABEL(REG1, label0, REG2, label1)
++	st REG1, 8(3)
++	st REG2, 12(3)
++
++	LOAD_LABEL(REG1, label1, REG2, label2)
++	st REG1, 16(3)
++	st REG2, 20(3)
++
++	LOAD_LABEL(REG1, label2, REG2, label3)
++	st REG1, 24(3)
++	st REG2, 28(3)
++
++	LOAD_LABEL(REG1, label3, REG2, label4)
++	addi REG1, REG1, 4
++	st REG1, 32(3)
++	st REG2, 36(3)
++
++	LOAD_LABEL(REG1, label3, REG2, label)
++	addi REG1, REG1, 12
++	st REG1, 40(3)
++	st REG2, 44(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 12
++	st REG1, 48(3)
++	st REG2, 52(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 24
++	st REG1, 56(3)
++	st REG2, 60(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 60
++	st REG1, 64(3)
++	st REG2, 68(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 96
++	st REG1, 72(3)
++	st REG2, 76(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 104
++	st REG1, 80(3)
++	st REG2, 84(3)
++
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 88(3)
++	addi REG2, REG2, 16
++	st REG2, 92(3)
++
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 96(3)
++	addi REG2, REG2, 28
++	st REG2, 100(3)
++
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 104(3)
++	addi REG2, REG2, 64
++	st REG2, 108(3)
++
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 112(3)
++	addi REG2, REG2, 100
++	st REG2, 116(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label3)
++	addi REG1, REG1, 104
++	st REG1, 120(3)
++	addi REG2, REG2, 8
++	st REG2, 124(3)
++	blr
++
++_GLOBAL(fetch_all_calls)
++	LOAD_LABEL(REG1, label3, REG2, label4)
++	addi REG1, REG1, 4
++	st REG1, 0(3)
++	st REG2, 4(3)
++
++	LOAD_LABEL(REG1, label3, REG2, label4)
++	addi REG1, REG1, 4
++	st REG1, 8(3)
++	st REG2, 12(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 12
++	st REG1, 16(3)
++	st REG2, 20(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 24
++	st REG1, 24(3)
++	st REG2, 28(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 60
++	st REG1, 32(3)
++	st REG2, 36(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 96
++	st REG1, 40(3)
++	st REG2, 44(3)
++	blr
++
++_GLOBAL(fetch_all_rets)
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 0(3)
++	addi REG2, REG2, 16
++	st REG2, 4(3)
++
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 8(3)
++	addi REG2, REG2, 28
++	st REG2, 12(3)
++
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 16(3)
++	addi REG2, REG2, 64
++	st REG2, 20(3)
++
++	LOAD_LABEL(REG1, label5, REG2, label4)
++	st REG1, 24(3)
++	addi REG2, REG2, 100
++	st REG2, 28(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label3)
++	addi REG1, REG1, 104
++	st REG1, 32(3)
++	addi REG2, REG2, 8
++	st REG2, 36(3)
++	blr
++
++_GLOBAL(fetch_all_conds)
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 12
++	st REG1, 0(3)
++	st REG2, 4(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 24
++	st REG1, 8(3)
++	st REG2, 12(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 60
++	st REG1, 16(3)
++	st REG2, 20(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 96
++	st REG1, 24(3)
++	st REG2, 28(3)
++	blr
++
++_GLOBAL(fetch_all_inds)
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 60
++	st REG1, 0(3)
++	st REG2, 4(3)
++
++	LOAD_LABEL(REG1, label4, REG2, label5)
++	addi REG1, REG1, 96
++	st REG1, 8(3)
++	st REG2, 12(3)
++	blr
+diff --git a/tools/testing/selftests/powerpc/pmu/event.h b/tools/testing/selftests/powerpc/pmu/event.h
+index a0ea6b1..385b1c4 100644
+--- a/tools/testing/selftests/powerpc/pmu/event.h
++++ b/tools/testing/selftests/powerpc/pmu/event.h
+@@ -11,6 +11,10 @@
  
--		if (cpuhw->bhrb_hw_filter == -1)
-+		/* Check overall coverage of branch filter request */
-+		if (!all_filters_covered(event->attr.branch_sample_type,
-+							cpuhw->bhrb_filter))
- 			return -EOPNOTSUPP;
- 	}
+ #include "utils.h"
  
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index a6c6a2c..5e17cb5 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -654,7 +654,7 @@ static int power8_generic_events[] = {
- 	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
++struct ring_buffer {
++	struct perf_event_mmap_page *page;
++	unsigned long ring_base, old, mask;
++};
+ 
+ struct event {
+ 	struct perf_event_attr attr;
+@@ -22,6 +26,7 @@ struct event {
+ 		u64 running;
+ 		u64 enabled;
+ 	} result;
++	struct ring_buffer ring_buffer;
  };
  
--static u64 power8_bhrb_filter_map(u64 branch_sample_type)
-+static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
- {
- 	/* BHRB and regular PMU events share the same privilege state
- 	 * filter configuration. BHRB is always recorded along with a
+ void event_init(struct event *e, u64 config);
 -- 
 2.1.0
