@@ -1,21 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB0541A0DA7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 13:28:33 +1000 (AEST)
-Message-ID: <1435634913.24866.1.camel@ellerman.id.au>
-Subject: Re: [PATCH RESEND] Update kernel math-emu code from current glibc
- soft-fp
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Joseph Myers <joseph@codesourcery.com>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-Date: Tue, 30 Jun 2015 13:28:33 +1000
-In-Reply-To: <alpine.DEB.2.10.1506221321340.27145@digraph.polyomino.org.uk>
-References: <alpine.DEB.2.10.1505192206580.28384@digraph.polyomino.org.uk>
- <alpine.DEB.2.10.1506221321340.27145@digraph.polyomino.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E29A1A1007
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Jun 2015 13:29:06 +1000 (AEST)
+Message-ID: <1435634945.24866.2.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
+ to common include file
+From: Michael Ellerman <michael@ellerman.id.au>
+To: David Long <dave.long@linaro.org>
+Cc: Rob Herring <robherring2@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@amacapital.net>, Anton Blanchard <anton@samba.org>,
+ Behan Webster <behanw@converseincode.com>,  Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Eric Paris <eparis@redhat.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>,  Ingo Molnar <mingo@redhat.com>, Jan Willeke
+ <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,  Martin
+ Schwidefsky <schwidefsky@de.ibm.com>, Nikolay Borisov
+ <Nikolay.Borisov@arm.com>, Oleg Nesterov <oleg@redhat.com>,  Paul Mackerras
+ <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>, Robert Richter
+ <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>, Russell King
+ <linux@arm.linux.org.uk>, Tejun Heo <tj@kernel.org>,  Thomas Gleixner
+ <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, linux-hexagon@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-s390@vger.kernel.org, SH-Linux <linux-sh@vger.kernel.org>,
+ linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>
+Date: Tue, 30 Jun 2015 13:29:05 +1000
+In-Reply-To: <5581BCD0.2040405@linaro.org>
+References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>
+ <1434386579-6045-2-git-send-email-dave.long@linaro.org>
+ <CAL_JsqK3L9Hv9bhAtwAAXVYjLJBTOG9=4ddOo-SFqnD-_KieCQ@mail.gmail.com>
+ <5581BCD0.2040405@linaro.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,73 +44,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-06-22 at 13:26 +0000, Joseph Myers wrote:
-> From: Joseph Myers <joseph@codesourcery.com>
+On Wed, 2015-06-17 at 14:30 -0400, David Long wrote:
+> On 06/16/15 09:17, Rob Herring wrote:
+> > On Mon, Jun 15, 2015 at 11:42 AM, David Long <dave.long@linaro.org> wrote:
+> >>
+> >>   #define REG_OFFSET_NAME(r) \
+> >>          {.name = #r, .offset = offsetof(struct pt_regs, ARM_##r)}
+> >>   #define REG_OFFSET_END {.name = NULL, .offset = 0}
+> >
+> > Can't you also move these? ARM is complicated with the "ARM_"
+> > prefixing, but the others appear to be the same. Maybe you can remove
+> > the prefix or redefine the macro for ARM.
 > 
-> The include/math-emu code (used for alpha powerpc sh sparc, and to a
-> very limited extent for s390) was taken from an old version of glibc's
-> soft-fp code around 15 years ago (in the pre-git era, anyway, and some
+> That would mandate that all the architecture-specific pt_regs structures 
+> would have to use a top-level named field for each named register.
 
-...
+Why does it mandate that?
 
-> This patch is unchanged from that posted at 
-> <https://lkml.org/lkml/2015/5/19/1047>, still applies to current sources 
-> and is proposed for 4.2.
+See eg. powerpc where we use REG_OFFSET_NAME for the top-level named fields and
+then a different macro for the array elements:
+
+  #define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
+  #define GPR_OFFSET_NAME(num)	\
+  	{.name = STR(gpr##num), .offset = offsetof(struct pt_regs, gpr[num])}
+  
+  static const struct pt_regs_offset regoffset_table[] = {
+  	GPR_OFFSET_NAME(0),
+  	GPR_OFFSET_NAME(1),
+  	GPR_OFFSET_NAME(2),
+  	GPR_OFFSET_NAME(3),
+  	...
+  	REG_OFFSET_NAME(nip),
+  	REG_OFFSET_NAME(msr),
 
 
-Hi Joseph,
-
-This is an awesome effort, and greatly appreciated.
-
-However in it's current form it's not easily mergeable, because it touches five
-architectures and has the potential to cause breakage on all of them.
-
-It's also too late for 4.2. The merge window for 4.2 is open now, which means
-arch maintainers have stopped taking intrusive patches 1-2 weeks ago.
-
-Is there some way you can imagine of splitting this up into smaller chunks, so
-that different arches can merge the pieces separately?
+So I don't see why REG_OFFSET_NAME couldn't be common.
 
 cheers
-
-
- arch/alpha/include/asm/sfp-machine.h    |    3 
- arch/alpha/math-emu/math.c              |  131 -
- arch/powerpc/include/asm/sfp-machine.h  |   39 
- arch/powerpc/math-emu/fadd.c            |    6 
- arch/powerpc/math-emu/fadds.c           |    6 
- arch/powerpc/math-emu/fcmpo.c           |    2 
- arch/powerpc/math-emu/fcmpu.c           |    2 
- arch/powerpc/math-emu/fctiw.c           |    2 
- arch/powerpc/math-emu/fctiwz.c          |    2 
- arch/powerpc/math-emu/fmadd.c           |    8 
- arch/powerpc/math-emu/fmadds.c          |    8 
- arch/powerpc/math-emu/fmsub.c           |    8 
- arch/powerpc/math-emu/fmsubs.c          |    8 
- arch/powerpc/math-emu/fnmadd.c          |    8 
- arch/powerpc/math-emu/fnmadds.c         |    8 
- arch/powerpc/math-emu/fnmsub.c          |    8 
- arch/powerpc/math-emu/fnmsubs.c         |    8 
- arch/powerpc/math-emu/fsub.c            |    6 
- arch/powerpc/math-emu/fsubs.c           |    6 
- arch/powerpc/math-emu/lfs.c             |   11 
- arch/powerpc/math-emu/math_efp.c        |  254 +-
- arch/powerpc/math-emu/stfs.c            |    6 
- arch/s390/include/asm/sfp-machine.h     |   10 
- arch/s390/kernel/sysinfo.c              |   11 
- arch/sh/include/asm/sfp-machine.h       |   10 
- arch/sh/math-emu/math.c                 |   51 
- arch/sparc/include/asm/sfp-machine_32.h |    3 
- arch/sparc/include/asm/sfp-machine_64.h |    3 
- arch/sparc/math-emu/math_32.c           |  144 -
- arch/sparc/math-emu/math_64.c           |  140 -
- include/math-emu/double.h               |  398 ++--
- include/math-emu/op-1.h                 |  554 +++---
- include/math-emu/op-2.h                 | 1136 ++++++------
- include/math-emu/op-4.h                 | 1457 ++++++++-------
- include/math-emu/op-8.h                 |  211 +-
- include/math-emu/op-common.h            | 2927 ++++++++++++++++++++++----------
- include/math-emu/quad.h                 |  434 +++-
- include/math-emu/single.h               |  233 +-
- include/math-emu/soft-fp.h              |  367 ++--
- 39 files changed, 5433 insertions(+), 3196 deletions(-)
