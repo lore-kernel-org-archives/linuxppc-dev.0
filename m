@@ -2,17 +2,16 @@ Return-Path: <joseph_myers@mentor.com>
 Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03A661A0FF1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 01:44:47 +1000 (AEST)
-Date: Thu, 2 Jul 2015 15:44:38 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 718DB1A0FFE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 01:46:27 +1000 (AEST)
+Date: Thu, 2 Jul 2015 15:46:21 +0000
 From: Joseph Myers <joseph@codesourcery.com>
 To: <linux-kernel@vger.kernel.org>, <linux-alpha@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
  <linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>,
  <mpe@ellerman.id.au>
-Subject: [PATCH 0/8] math-emu: Update kernel math-emu code from current glibc
- soft-fp
-Message-ID: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
+Subject: [PATCH 1/8] math-emu: Move math-emu to math-emu-old
+Message-ID: <alpine.DEB.2.10.1507021544450.29415@digraph.polyomino.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -54,173 +53,707 @@ code in <https://sourceware.org/ml/libc-alpha/2013-10/msg00345.html>,
 and since then have added the various missing features to the glibc
 version so that it is feature-complete regarding features used in the
 kernel and so that exactly the same code is usable in both places.
-This patch series updates the include/math-emu code, and its kernel
-users, so that the shared code is identical to glibc's current soft-fp
-code.
 
-Regarding what testing seems appropriate for this patch series, see my
-notes in <https://sourceware.org/ml/libc-alpha/2015-02/msg00107.html>.
-I've done that testing for powerpc (both e500 and emulation of classic
-hard float).  For reports of testing on other architectures, see
-<https://sourceware.org/ml/libc-alpha/2015-05/msg00372.html> (alpha),
-<https://sourceware.org/ml/libc-alpha/2015-04/msg00154.html> (s390),
-<http://marc.info/?l=linux-sh&m=142440262415395&w=2> (sh),
-<http://marc.info/?l=linux-sparc&m=142437304707509&w=2> (sparc); the
-fixes indicated in those reports as needed on particular architectures
-have been integrated into this version.
-
-The bulk of the changes are updating the code from glibc, and a
-detailed review of that part probably does not make sense in this
-context if you want to aim for the same code in both places.  The
-trickier part is the architecture updates for the various API changes
-in soft-fp since the version used by the kernel.  The following
-changes have occurred in the soft-fp API since the version used in the
-kernel and so are addressed in the architecture updates in this patch
-series.  (This list only includes changes relating to features used in
-the kernel, not pure new features that aren't relevant to updating
-existing code, and not pure bug fixes.)
-
-* <https://sourceware.org/ml/libc-alpha/2006-02/msg00028.html>
-
-  - Semi-raw unpacking is added, as something intermediate between raw
-    and cooked unpacking, for efficiency.
-
-  - Addition and subtraction are changed to work on semi-raw values.
-    Thus, cooked results of multiplication can't be passed directly
-    into addition, as was done in some kernel emulations of fused
-    multiply-add, but that isn't a proper fused operation anyway (a
-    proper fused operation involves using the unrounded multiplication
-    result in twice the input precision, not an intermediate value in
-    input precision plus three working bits); the appropriate fix is
-    to use the new fused multiply-add support in soft-fp.
-
-  - Conversions from one floating-point type to another now use
-    FP_EXTEND (raw) and FP_TRUNC (semi-raw) instead of FP_CONV
-    (cooked).  Those operations now deal with quieting signaling NaNs.
-
-  - Conversions from floating-point to integer now use raw inputs, and
-    require the integer variable passed to the FP_TO_INT macros to
-    have unsigned type.
-
-  - Conversions from integer to floating-point now use raw outputs.
-
-* <https://sourceware.org/ml/libc-alpha/2006-02/msg00044.html>
-
-  - Conversions from integer to floating-point now pass the name of an
-    unsigned type to the FP_FROM_INT macros, not a signed type to
-    which "unsigned" is added in the macro definition.
-
-* <https://sourceware.org/ml/libc-alpha/2013-04/msg00646.html>
-
-  - soft-fp supports the reversed quiet NaN convention used on MIPS
-    and HPPA; sfp-machine.h must define _FP_QNANNEGATEDP (to 0, for
-    architectures using the normal convention; to 1, for architectures
-    using the MIPS convention).
-
-* <https://sourceware.org/ml/libc-alpha/2013-10/msg00348.html>
-
-  - Negation now works on raw values.
-
-* <https://sourceware.org/ml/libc-alpha/2014-02/msg00068.html>
-
-  - soft-fp now supports after-rounding tininess detection for
-    architectures where that is the defined way in which tiny results
-    are detected (of the architectures for which the Linux kernel uses
-    this code, that's Alpha and SH).  sfp-machine.h must define
-    _FP_TININESS_AFTER_ROUNDING to either 0 or 1.
-
-* <https://sourceware.org/ml/libc-alpha/2014-09/msg00411.html>
-
-  - FP_CLEAR_EXCEPTIONS is removed; all uses in the Linux kernel are
-    no longer needed as, now unpacking only occurs in the correct
-    format, exceptions are already clear at that point.
-
-* <https://sourceware.org/ml/libc-alpha/2014-09/msg00461.html>
-
-  - The FP_CMP macros have an extra argument to specify when
-    exceptions should be set (0 for no exception setting, 1 for
-    exceptions only for signaling NaNs, 2 for exceptions for all
-    NaNs).  In the old version in the kernel, it was necessary for the
-    caller to handle all exception setting for comparisons.
-
-* <https://sourceware.org/ml/libc-alpha/2014-09/msg00488.html>
-
-  - FP_DENORM_ZERO does not set "inexact" when flushing to zero, as
-    that does not appear to match the documented semantics for either
-    of the architectures (Alpha and SH) for which the kernel uses
-    FP_DENORM_ZERO.  FP_DENORM_ZERO is also checked for comparisons
-    (the documentation for both Alpha and SH is explicit that their
-    corresponding control bits do apply to comparisons).
-
-* <https://sourceware.org/ml/libc-alpha/2014-09/msg00462.html>
-
-  - The more precise FP_EX_INVALID_* exceptions include more cases
-    than in the kernel version (in particular, FP_EX_INVALID_IMZ_FMA
-    is split out from FP_EX_INVALID_IMZ, so if only the latter is
-    defined then fma using the new fma support would not raise that
-    exception any more - except that this doesn't actually affect
-    powerpc because it hardcodes setting various exceptions in
-    powerpc-specific code despite also defining FP_EX_INVALID_*).
-
-Generally this patch series only does cleanups and bug fixes to
-architecture-specific code when they are closely connected to API
-changes in the new code (either required by such API changes, or the
-new API means the idiomatic way to do something has changed).  Where
-something was already odd with the old version of the code, or
-apparently did not match documented instruction set semantics, it's
-not changed if that seems unconnected to the update from glibc.  I've
-noted various such cases (especially for powerpc) that may be
-addressed in followup patch series once the main upgrade is in (or,
-where the fix seems more complicated and difficult to fix without
-convenient access to the architecture for testing, I may just list the
-issues on the relevant architecture mailing list).
-
-The following architecture-specific cleanups or bug fixes (that might
-change how the emulation behaves, or that go beyond mechanical
-conversion to new APIs) are included in this patch series because of
-their close connection to the API changes:
-
-* Alpha and SH now use after-rounding tininess detection.
-
-* On Alpha, extensions from single to double now use FP_EXTEND with
-  raw unpacking instead of the previous hardcoded code with cooked
-  unpacking; these should be equivalent and the new code, with the
-  optimizations in FP_EXTEND relative to the old FP_CONV, should be as
-  efficient as the previous hardcoded code.
-
-* On PowerPC and SH, fused multiply-add operations now use the new
-  soft-fp fma support (meaning they are properly fused rather than
-  only having 3 extra bits precision on the intermediate result of the
-  multiplication).
-
-* On PowerPC for SPE floating-point emulation, the pre-existing bug of
-  comparisons using cooked unpacking is fixed (as the structure of the
-  code meant unpacking types naturally needed specifying explicitly
-  for all operations).  This should not in fact change how the
-  emulation behaves, other than making it more efficient.  Various
-  operations that should not have unpacked at all now no longer unpack
-  instead of using cooked unpacking, so avoiding spurious exceptions
-  on signaling NaNs (on the other case of arguments that are actually
-  a different floating-point type but would wrongly be interpreted as
-  signaling NaNs by the unpacking, FP_CLEAR_EXCEPTIONS may have
-  avoided the issue).
-
-* On SPARC, comparisons now use raw unpacking (this should not in fact
-  change how the emulation behaves, just make it more efficient).
+This patch moves the include/math-emu code to math-emu-old, updating
+#includes, in preparation for importing glibc's current soft-fp code
+as include/math-emu without requiring all architectures to be updated
+for API changes at the same time.
 
 Signed-off-by: Joseph Myers <joseph@codesourcery.com>
 
 ---
 
-Compared to the previous version
-<https://lkml.org/lkml/2015/5/19/1047>, this patch series is split
-into eight patches so that each architecture's changes can be reviewed
-individually and the only patch that changes all affected
-architectures together is the first mechanical one moving math-emu to
-math-emu-old.  Patch 2 depends on patch 1, patches 3-7 depend on
-patches 1 and 2 but are independent of each other, patch 8 depends on
-all the other patches.  Applying all eight patches gives an identical
-tree to applying the previous monolithic patch.
+diff --git a/arch/alpha/math-emu/math.c b/arch/alpha/math-emu/math.c
+index 58c2669..917196e 100644
+--- a/arch/alpha/math-emu/math.c
++++ b/arch/alpha/math-emu/math.c
+@@ -6,9 +6,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include "sfp-util.h"
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/single.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/single.h>
++#include <math-emu-old/double.h>
+ 
+ #define	OPC_PAL		0x00
+ #define OPC_INTA	0x10
+diff --git a/arch/powerpc/math-emu/fadd.c b/arch/powerpc/math-emu/fadd.c
+index 0158a16..3c821be 100644
+--- a/arch/powerpc/math-emu/fadd.c
++++ b/arch/powerpc/math-emu/fadd.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fadd(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fadds.c b/arch/powerpc/math-emu/fadds.c
+index 5930f40..14bc579 100644
+--- a/arch/powerpc/math-emu/fadds.c
++++ b/arch/powerpc/math-emu/fadds.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fadds(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fcmpo.c b/arch/powerpc/math-emu/fcmpo.c
+index 5bce011..3c4afbf 100644
+--- a/arch/powerpc/math-emu/fcmpo.c
++++ b/arch/powerpc/math-emu/fcmpo.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fcmpo(u32 *ccr, int crfD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fcmpu.c b/arch/powerpc/math-emu/fcmpu.c
+index d4fb1ba..948d9db 100644
+--- a/arch/powerpc/math-emu/fcmpu.c
++++ b/arch/powerpc/math-emu/fcmpu.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fcmpu(u32 *ccr, int crfD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fctiw.c b/arch/powerpc/math-emu/fctiw.c
+index f694440..d3efc14 100644
+--- a/arch/powerpc/math-emu/fctiw.c
++++ b/arch/powerpc/math-emu/fctiw.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fctiw(u32 *frD, void *frB)
+diff --git a/arch/powerpc/math-emu/fctiwz.c b/arch/powerpc/math-emu/fctiwz.c
+index 71e782f..cce3457 100644
+--- a/arch/powerpc/math-emu/fctiwz.c
++++ b/arch/powerpc/math-emu/fctiwz.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fctiwz(u32 *frD, void *frB)
+diff --git a/arch/powerpc/math-emu/fdiv.c b/arch/powerpc/math-emu/fdiv.c
+index a29239c..f3084fd 100644
+--- a/arch/powerpc/math-emu/fdiv.c
++++ b/arch/powerpc/math-emu/fdiv.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fdiv(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fdivs.c b/arch/powerpc/math-emu/fdivs.c
+index 526bc26..4fde33b 100644
+--- a/arch/powerpc/math-emu/fdivs.c
++++ b/arch/powerpc/math-emu/fdivs.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fdivs(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fmadd.c b/arch/powerpc/math-emu/fmadd.c
+index 8c3f20a..9a2b1ff 100644
+--- a/arch/powerpc/math-emu/fmadd.c
++++ b/arch/powerpc/math-emu/fmadd.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fmadd(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/fmadds.c b/arch/powerpc/math-emu/fmadds.c
+index 794fb31..3dac172 100644
+--- a/arch/powerpc/math-emu/fmadds.c
++++ b/arch/powerpc/math-emu/fmadds.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fmadds(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/fmsub.c b/arch/powerpc/math-emu/fmsub.c
+index 626f6fe..bfcf698 100644
+--- a/arch/powerpc/math-emu/fmsub.c
++++ b/arch/powerpc/math-emu/fmsub.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fmsub(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/fmsubs.c b/arch/powerpc/math-emu/fmsubs.c
+index 3425bc8..144d43a 100644
+--- a/arch/powerpc/math-emu/fmsubs.c
++++ b/arch/powerpc/math-emu/fmsubs.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fmsubs(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/fmul.c b/arch/powerpc/math-emu/fmul.c
+index 2c19297..1ea819d 100644
+--- a/arch/powerpc/math-emu/fmul.c
++++ b/arch/powerpc/math-emu/fmul.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fmul(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fmuls.c b/arch/powerpc/math-emu/fmuls.c
+index f5ad5c9..6f62191 100644
+--- a/arch/powerpc/math-emu/fmuls.c
++++ b/arch/powerpc/math-emu/fmuls.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fmuls(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fnmadd.c b/arch/powerpc/math-emu/fnmadd.c
+index e817bc5..e290ef7 100644
+--- a/arch/powerpc/math-emu/fnmadd.c
++++ b/arch/powerpc/math-emu/fnmadd.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fnmadd(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/fnmadds.c b/arch/powerpc/math-emu/fnmadds.c
+index 4db4b7d..41a5a4c 100644
+--- a/arch/powerpc/math-emu/fnmadds.c
++++ b/arch/powerpc/math-emu/fnmadds.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fnmadds(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/fnmsub.c b/arch/powerpc/math-emu/fnmsub.c
+index f65979f..7e6168a 100644
+--- a/arch/powerpc/math-emu/fnmsub.c
++++ b/arch/powerpc/math-emu/fnmsub.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fnmsub(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/fnmsubs.c b/arch/powerpc/math-emu/fnmsubs.c
+index 9021dac..bb4a27f 100644
+--- a/arch/powerpc/math-emu/fnmsubs.c
++++ b/arch/powerpc/math-emu/fnmsubs.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fnmsubs(void *frD, void *frA, void *frB, void *frC)
+diff --git a/arch/powerpc/math-emu/frsp.c b/arch/powerpc/math-emu/frsp.c
+index ddcc146..6fda802 100644
+--- a/arch/powerpc/math-emu/frsp.c
++++ b/arch/powerpc/math-emu/frsp.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ frsp(void *frD, void *frB)
+diff --git a/arch/powerpc/math-emu/fsel.c b/arch/powerpc/math-emu/fsel.c
+index 1b0c144..681898d 100644
+--- a/arch/powerpc/math-emu/fsel.c
++++ b/arch/powerpc/math-emu/fsel.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fsel(u32 *frD, void *frA, u32 *frB, u32 *frC)
+diff --git a/arch/powerpc/math-emu/fsqrt.c b/arch/powerpc/math-emu/fsqrt.c
+index a55fc7d..f66b52e 100644
+--- a/arch/powerpc/math-emu/fsqrt.c
++++ b/arch/powerpc/math-emu/fsqrt.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fsqrt(void *frD, void *frB)
+diff --git a/arch/powerpc/math-emu/fsqrts.c b/arch/powerpc/math-emu/fsqrts.c
+index 31dccbf..b042ff6 100644
+--- a/arch/powerpc/math-emu/fsqrts.c
++++ b/arch/powerpc/math-emu/fsqrts.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fsqrts(void *frD, void *frB)
+diff --git a/arch/powerpc/math-emu/fsub.c b/arch/powerpc/math-emu/fsub.c
+index 02c5dff..aa2105f 100644
+--- a/arch/powerpc/math-emu/fsub.c
++++ b/arch/powerpc/math-emu/fsub.c
+@@ -3,8 +3,8 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ fsub(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/fsubs.c b/arch/powerpc/math-emu/fsubs.c
+index 5d9b18c..9fd6cf6 100644
+--- a/arch/powerpc/math-emu/fsubs.c
++++ b/arch/powerpc/math-emu/fsubs.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ fsubs(void *frD, void *frA, void *frB)
+diff --git a/arch/powerpc/math-emu/lfd.c b/arch/powerpc/math-emu/lfd.c
+index 79ac76d..acc5a3f 100644
+--- a/arch/powerpc/math-emu/lfd.c
++++ b/arch/powerpc/math-emu/lfd.c
+@@ -3,7 +3,7 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/double.h>
+ 
+ int
+ lfd(void *frD, void *ea)
+diff --git a/arch/powerpc/math-emu/lfs.c b/arch/powerpc/math-emu/lfs.c
+index 434ed27..582e0b8 100644
+--- a/arch/powerpc/math-emu/lfs.c
++++ b/arch/powerpc/math-emu/lfs.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ lfs(void *frD, void *ea)
+diff --git a/arch/powerpc/math-emu/math.c b/arch/powerpc/math-emu/math.c
+index ab151f0..d6e1a8f 100644
+--- a/arch/powerpc/math-emu/math.c
++++ b/arch/powerpc/math-emu/math.c
+@@ -10,7 +10,7 @@
+ #include <asm/switch_to.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/double.h>
+ 
+ #define FLOATFUNC(x)	extern int x(void *, void *, void *, void *)
+ 
+diff --git a/arch/powerpc/math-emu/math_efp.c b/arch/powerpc/math-emu/math_efp.c
+index 28337c9..8d87cf9 100644
+--- a/arch/powerpc/math-emu/math_efp.c
++++ b/arch/powerpc/math-emu/math_efp.c
+@@ -28,9 +28,9 @@
+ #define FP_EX_BOOKE_E500_SPE
+ #include <asm/sfp-machine.h>
+ 
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/single.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/single.h>
++#include <math-emu-old/double.h>
+ 
+ #define EFAPU		0x4
+ 
+diff --git a/arch/powerpc/math-emu/mcrfs.c b/arch/powerpc/math-emu/mcrfs.c
+index e948d57..f37ea50 100644
+--- a/arch/powerpc/math-emu/mcrfs.c
++++ b/arch/powerpc/math-emu/mcrfs.c
+@@ -3,7 +3,7 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
++#include <math-emu-old/soft-fp.h>
+ 
+ int
+ mcrfs(u32 *ccr, u32 crfD, u32 crfS)
+diff --git a/arch/powerpc/math-emu/mffs.c b/arch/powerpc/math-emu/mffs.c
+index 5526cf9..558e621 100644
+--- a/arch/powerpc/math-emu/mffs.c
++++ b/arch/powerpc/math-emu/mffs.c
+@@ -3,7 +3,7 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
++#include <math-emu-old/soft-fp.h>
+ 
+ int
+ mffs(u32 *frD)
+diff --git a/arch/powerpc/math-emu/mtfsb0.c b/arch/powerpc/math-emu/mtfsb0.c
+index bc98558..7c325d8 100644
+--- a/arch/powerpc/math-emu/mtfsb0.c
++++ b/arch/powerpc/math-emu/mtfsb0.c
+@@ -3,7 +3,7 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
++#include <math-emu-old/soft-fp.h>
+ 
+ int
+ mtfsb0(int crbD)
+diff --git a/arch/powerpc/math-emu/mtfsb1.c b/arch/powerpc/math-emu/mtfsb1.c
+index fe6ed5a..d15f724 100644
+--- a/arch/powerpc/math-emu/mtfsb1.c
++++ b/arch/powerpc/math-emu/mtfsb1.c
+@@ -3,7 +3,7 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
++#include <math-emu-old/soft-fp.h>
+ 
+ int
+ mtfsb1(int crbD)
+diff --git a/arch/powerpc/math-emu/mtfsf.c b/arch/powerpc/math-emu/mtfsf.c
+index 44b0fc8..b352968 100644
+--- a/arch/powerpc/math-emu/mtfsf.c
++++ b/arch/powerpc/math-emu/mtfsf.c
+@@ -3,7 +3,7 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
++#include <math-emu-old/soft-fp.h>
+ 
+ int
+ mtfsf(unsigned int FM, u32 *frB)
+diff --git a/arch/powerpc/math-emu/mtfsfi.c b/arch/powerpc/math-emu/mtfsfi.c
+index fd2acc2..8abeb3c 100644
+--- a/arch/powerpc/math-emu/mtfsfi.c
++++ b/arch/powerpc/math-emu/mtfsfi.c
+@@ -3,7 +3,7 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
++#include <math-emu-old/soft-fp.h>
+ 
+ int
+ mtfsfi(unsigned int crfD, unsigned int IMM)
+diff --git a/arch/powerpc/math-emu/stfs.c b/arch/powerpc/math-emu/stfs.c
+index 6122147..8430631 100644
+--- a/arch/powerpc/math-emu/stfs.c
++++ b/arch/powerpc/math-emu/stfs.c
+@@ -3,9 +3,9 @@
+ #include <asm/uaccess.h>
+ 
+ #include <asm/sfp-machine.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/double.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/single.h>
+ 
+ int
+ stfs(void *frS, void *ea)
+diff --git a/arch/powerpc/math-emu/udivmodti4.c b/arch/powerpc/math-emu/udivmodti4.c
+index 6172044..86e4013 100644
+--- a/arch/powerpc/math-emu/udivmodti4.c
++++ b/arch/powerpc/math-emu/udivmodti4.c
+@@ -1,6 +1,6 @@
+ /* This has so very few changes over libgcc2's __udivmoddi4 it isn't funny.  */
+ 
+-#include <math-emu/soft-fp.h>
++#include <math-emu-old/soft-fp.h>
+ 
+ #undef count_leading_zeros
+ #define count_leading_zeros  __FP_CLZ
+diff --git a/arch/s390/kernel/sysinfo.c b/arch/s390/kernel/sysinfo.c
+index 99babea..c7d8df7 100644
+--- a/arch/s390/kernel/sysinfo.c
++++ b/arch/s390/kernel/sysinfo.c
+@@ -19,8 +19,8 @@
+ 
+ /* Sigh, math-emu. Don't ask. */
+ #include <asm/sfp-util.h>
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/single.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/single.h>
+ 
+ int topology_max_mnest;
+ 
+diff --git a/arch/sh/math-emu/math.c b/arch/sh/math-emu/math.c
+index 04aa55f..0cd5ec3 100644
+--- a/arch/sh/math-emu/math.c
++++ b/arch/sh/math-emu/math.c
+@@ -19,9 +19,9 @@
+ #include <asm/io.h>
+ 
+ #include "sfp-util.h"
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/single.h>
+-#include <math-emu/double.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/single.h>
++#include <math-emu-old/double.h>
+ 
+ #define	FPUL		(fregs->fpul)
+ #define FPSCR		(fregs->fpscr)
+diff --git a/arch/sparc/math-emu/math_32.c b/arch/sparc/math-emu/math_32.c
+index 5ce8f2f..3aaaeef 100644
+--- a/arch/sparc/math-emu/math_32.c
++++ b/arch/sparc/math-emu/math_32.c
+@@ -71,10 +71,10 @@
+ #include <asm/uaccess.h>
+ 
+ #include "sfp-util_32.h"
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/single.h>
+-#include <math-emu/double.h>
+-#include <math-emu/quad.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/single.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/quad.h>
+ 
+ #define FLOATFUNC(x) extern int x(void *,void *,void *)
+ 
+diff --git a/arch/sparc/math-emu/math_64.c b/arch/sparc/math-emu/math_64.c
+index 034aadb..c720cbb 100644
+--- a/arch/sparc/math-emu/math_64.c
++++ b/arch/sparc/math-emu/math_64.c
+@@ -19,10 +19,10 @@
+ #include <asm/cacheflush.h>
+ 
+ #include "sfp-util_64.h"
+-#include <math-emu/soft-fp.h>
+-#include <math-emu/single.h>
+-#include <math-emu/double.h>
+-#include <math-emu/quad.h>
++#include <math-emu-old/soft-fp.h>
++#include <math-emu-old/single.h>
++#include <math-emu-old/double.h>
++#include <math-emu-old/quad.h>
+ 
+ /* QUAD - ftt == 3 */
+ #define FMOVQ	0x003
+diff --git a/include/math-emu/double.h b/include/math-emu-old/double.h
+similarity index 100%
+rename from include/math-emu/double.h
+rename to include/math-emu-old/double.h
+diff --git a/include/math-emu/op-1.h b/include/math-emu-old/op-1.h
+similarity index 100%
+rename from include/math-emu/op-1.h
+rename to include/math-emu-old/op-1.h
+diff --git a/include/math-emu/op-2.h b/include/math-emu-old/op-2.h
+similarity index 100%
+rename from include/math-emu/op-2.h
+rename to include/math-emu-old/op-2.h
+diff --git a/include/math-emu/op-4.h b/include/math-emu-old/op-4.h
+similarity index 100%
+rename from include/math-emu/op-4.h
+rename to include/math-emu-old/op-4.h
+diff --git a/include/math-emu/op-8.h b/include/math-emu-old/op-8.h
+similarity index 100%
+rename from include/math-emu/op-8.h
+rename to include/math-emu-old/op-8.h
+diff --git a/include/math-emu/op-common.h b/include/math-emu-old/op-common.h
+similarity index 100%
+rename from include/math-emu/op-common.h
+rename to include/math-emu-old/op-common.h
+diff --git a/include/math-emu/quad.h b/include/math-emu-old/quad.h
+similarity index 100%
+rename from include/math-emu/quad.h
+rename to include/math-emu-old/quad.h
+diff --git a/include/math-emu/single.h b/include/math-emu-old/single.h
+similarity index 100%
+rename from include/math-emu/single.h
+rename to include/math-emu-old/single.h
+diff --git a/include/math-emu/soft-fp.h b/include/math-emu-old/soft-fp.h
+similarity index 96%
+rename from include/math-emu/soft-fp.h
+rename to include/math-emu-old/soft-fp.h
+index 3f284bc..0ce1032 100644
+--- a/include/math-emu/soft-fp.h
++++ b/include/math-emu-old/soft-fp.h
+@@ -180,11 +180,11 @@ do {						\
+ 
+ #define _FP_CLS_COMBINE(x,y)	(((x) << 2) | (y))
+ 
+-#include <math-emu/op-1.h>
+-#include <math-emu/op-2.h>
+-#include <math-emu/op-4.h>
+-#include <math-emu/op-8.h>
+-#include <math-emu/op-common.h>
++#include <math-emu-old/op-1.h>
++#include <math-emu-old/op-2.h>
++#include <math-emu-old/op-4.h>
++#include <math-emu-old/op-8.h>
++#include <math-emu-old/op-common.h>
+ 
+ /* Sigh.  Silly things longlong.h needs.  */
+ #define UWtype		_FP_W_TYPE
+
 
 -- 
 Joseph S. Myers
