@@ -1,28 +1,36 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 868F01A04C5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 07:49:56 +1000 (AEST)
-Message-ID: <1435873760.10531.11.camel@freescale.com>
-Subject: Re: [RFC PATCH 6/6] powerpc/kvm: change the condition of
- identifying hugetlb vm
-From: Scott Wood <scottwood@freescale.com>
-To: Wenwei Tao <wenweitaowenwei@gmail.com>
-CC: <izik.eidus@ravellosystems.com>, <aarcange@redhat.com>,
- <chrisw@sous-sol.org>, <hughd@google.com>, <tglx@linutronix.de>,
- <mingo@redhat.com>, <hpa@zytor.com>, <x86@kernel.org>,
- <viro@zeniv.linux.org.uk>, <linux-mm@kvack.org>,
- <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <kvm@vger.kernel.org>,
- <kvm-ppc@vger.kernel.org>
-Date: Thu, 2 Jul 2015 16:49:20 -0500
-In-Reply-To: <1433917639-31699-7-git-send-email-wenweitaowenwei@gmail.com>
-References: <1433917639-31699-1-git-send-email-wenweitaowenwei@gmail.com>
- <1433917639-31699-7-git-send-email-wenweitaowenwei@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C576F1A060F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 08:38:07 +1000 (AEST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 2 Jul 2015 16:38:14 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id EEA541FF002E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2015 16:29:12 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t62Mc2fU44040368
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jul 2015 15:38:02 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t62Mc1CL008234
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jul 2015 16:38:02 -0600
+Date: Thu, 2 Jul 2015 15:38:00 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Dan Streetman <ddstreet@us.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, gustavold@linux.vnet.ibm.com
+Subject: [PATCH 0/6] drivers/nx-842: reduce verbosity of logging
+Message-ID: <20150702223800.GA1712@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,17 +40,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-06-10 at 14:27 +0800, Wenwei Tao wrote:
-> Hugetlb VMAs are not mergeable, that means a VMA couldn't have VM_HUGETLB 
-> and
-> VM_MERGEABLE been set in the same time. So we use VM_HUGETLB to indicate new
-> mergeable VMAs. Because of that a VMA which has VM_HUGETLB been set is a 
-> hugetlb
-> VMA only if it doesn't have VM_MERGEABLE been set in the same time.
+Currently, on a LPAR with the nx-842 device disabled, the following
+messages are emitted:
 
-Eww.
+nx_compress: no nx842 driver found. [1]
+Registering IBM Power 842 compression driver
+nx_compress_pseries ibm,compression-v1: nx842_OF_upd_status: status 'disabled' is not 'okay'
+nx_compress_pseries ibm,compression-v1: nx842_OF_upd: max_sync_size new:4096 old:0 [2]
+nx_compress_pseries ibm,compression-v1: nx842_OF_upd: max_sync_sg new:510 old:0
+nx_compress_pseries ibm,compression-v1: nx842_OF_upd: max_sg_len new:4080 old:0
+nx_compress_powernv: loading [3]
+nx_compress_powernv: no coprocessors found
+alg: No test for 842 (842-nx) [4]
 
-If you must overload such bit combinations, please hide it behind a 
-vm_is_hugetlb() function.
+[1] is the result of an ordering issue when the CONFIG_ options are set =y. [2]
+is the result of nx842_OF_upd_status() not returning the correct error code.
+[3] is the result of attempting to load the PowerNV platform driver on a
+non-PowerNV platform. [4] is the result of there simply not being any test for
+842 in the crypto test manager.
 
--Scott
+After the changes in the series, the same system as above emits:
+
+Registering IBM Power 842 compression driver
+nx_compress_pseries ibm,compression-v1: nx842_OF_upd: device disabled
+
+which seems to me, at least, to be far clearer.
+
+Dan, I think there is still a issue in the code. If CONFIG_DEV_NX_COMPRESS=y
+and CONFIG_DEV_NX_COMPRESS_PSERIES=m/CONFIG_DEV_NX_COMPRESS_POWERNV=m, it seems
+like the request_module() is not working properly and we simply get a "
+nx_compress: no nx842 driver found." at boot (even if I ensure the platform
+drivers are in the initrd). If I make CONFIG_DEV_NX_COMPRESS=m, though, the
+module(s) load successfully. Does it make sense/is it possible to have these
+three symbols always be the same (either all =y or all =m)?
+
+[1/6] crypto/nx-842-pseries: nx842_OF_upd_status should return ENODEV if device is not 'okay'
+ drivers/crypto/nx/nx-842-pseries.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+[2/6] nx-842-pseries: rename nx842_{init,exit} to nx842_pseries_{init,exit}
+ drivers/crypto/nx/nx-842-pseries.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+[3/6] nx-842-pseries: do not emit extra output if status is disabled
+ drivers/crypto/nx/nx-842-pseries.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+[4/6] crypto/nx-842-{powerpc,pseries}: only load on the appropriate machine type
+ drivers/crypto/nx/nx-842-powernv.c | 6 ++++++
+ drivers/crypto/nx/nx-842-pseries.c | 6 ++++++
+ drivers/crypto/nx/nx-842.h         | 1 +
+ 3 files changed, 13 insertions(+)
+[5/6] crypto/testmgr: add null test for 842 algorithm
+ crypto/testmgr.c | 3 +++
+ 1 file changed, 3 insertions(+)
+[6/6] nx-842-platform: if NX842 platform drivers are not modules, don't try to load them
+ drivers/crypto/nx/nx-842-platform.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
