@@ -1,34 +1,35 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 76FF81A1D43
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 08:41:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B77A01A1A24
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 08:42:32 +1000 (AEST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 2 Jul 2015 16:41:22 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0074A3E40030
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2015 16:41:21 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t62Mecoj56819808
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jul 2015 15:40:38 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t62MfKmj016804
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jul 2015 16:41:20 -0600
-Date: Thu, 2 Jul 2015 15:41:19 -0700
+ Thu, 2 Jul 2015 16:42:30 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 073F61FF0043
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2015 16:33:38 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t62Mflvb42729674
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jul 2015 15:41:47 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t62MgR0L018980
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jul 2015 16:42:27 -0600
+Date: Thu, 2 Jul 2015 15:42:26 -0700
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 To: Dan Streetman <ddstreet@us.ibm.com>
 Cc: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, gustavold@linux.vnet.ibm.com
-Subject: [PATCH 5/6] [RFC] crypto/testmgr: add null test for 842 algorithm
-Message-ID: <20150702224119.GF1712@linux.vnet.ibm.com>
+Subject: [PATCH 6/6] nx-842-platform: if NX842 platform drivers are not
+ modules, don't try to load them
+Message-ID: <20150702224225.GG1712@linux.vnet.ibm.com>
 References: <20150702223800.GA1712@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,34 +43,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, when the nx-842-pseries driver loads, the following message
-is emitted:
+Based off the CONFIG_SPU_FS_MODULE code, only attempt to load platform
+modules if the nx-842 pseries/powernv drivers are built as modules.
 
-alg: No test for 842 (842-nx)
+Otherwise, if CONFIG_DEV_NX_COMPRESS=y,
+CONFIG_DEV_NX_COMPRESS_PSERIES=y, CONFIG_DEV_NX_POWERNV=y, the following
+message is emitted at boot:
 
-It seems like the simplest way to fix this message (other than adding a
-proper test) is to just insert the null test into the list in the
-testmgr.
+nx_compress: no nx842 driver found.
+
+even though the drivers successfully loads.
+
+This is because in the =y case, the module_init() calls get converted to
+initcalls and the nx842_init() runs before the platform driver
+nx842_pseries_init() or nx842_powernv_init() functions, which are what
+normally set the static platform driver.
 
 Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-
+Cc: Dan Streetman <ddstreet@us.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: linux-crypto@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- crypto/testmgr.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/crypto/nx/nx-842-platform.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index d0a42bd3aae9..ff0f76e0d0b4 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -1982,6 +1982,9 @@ static int alg_test_null(const struct alg_test_desc *desc,
- /* Please keep this list sorted by algorithm name. */
- static const struct alg_test_desc alg_test_descs[] = {
- 	{
-+		.alg = "842",
-+		.test = alg_test_null,
-+	}, {
- 		.alg = "__cbc-cast5-avx",
- 		.test = alg_test_null,
- 	}, {
+diff --git a/drivers/crypto/nx/nx-842-platform.c b/drivers/crypto/nx/nx-842-platform.c
+index 664f13dd06ed..5363c72593b4 100644
+--- a/drivers/crypto/nx/nx-842-platform.c
++++ b/drivers/crypto/nx/nx-842-platform.c
+@@ -53,6 +53,7 @@ void nx842_platform_driver_unset(struct nx842_driver *_driver)
+ }
+ EXPORT_SYMBOL_GPL(nx842_platform_driver_unset);
+ 
++#if defined(CONFIG_CRYPTO_DEV_NX_COMPRESS_PSERIES_MODULE) || defined(CONFIG_CRYPTO_DEV_NX_COMPRESS_POWERNV_MODULE)
+ bool nx842_platform_driver_get(void)
+ {
+ 	bool ret = false;
+@@ -66,7 +67,6 @@ bool nx842_platform_driver_get(void)
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(nx842_platform_driver_get);
+ 
+ void nx842_platform_driver_put(void)
+ {
+@@ -77,6 +77,17 @@ void nx842_platform_driver_put(void)
+ 
+ 	spin_unlock(&driver_lock);
+ }
++#else
++bool nx842_platform_driver_get(void)
++{
++	return true;
++}
++
++void nx842_platform_driver_put(void)
++{
++}
++#endif
++EXPORT_SYMBOL_GPL(nx842_platform_driver_get);
+ EXPORT_SYMBOL_GPL(nx842_platform_driver_put);
+ 
+ MODULE_LICENSE("GPL");
 -- 
 2.1.4
