@@ -2,12 +2,12 @@ Return-Path: <nikunj@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF5C91A0FF1
+ by lists.ozlabs.org (Postfix) with ESMTPS id C0B801A0FFD
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2015 21:35:48 +1000 (AEST)
 Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 168441402B5
+ by ozlabs.org (Postfix) with ESMTPS id 177C31402BA
  for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2015 21:35:47 +1000 (AEST)
 Received: from /spool/local
  by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -15,22 +15,23 @@ Received: from /spool/local
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
  Thu, 2 Jul 2015 17:05:42 +0530
 Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id EE422125805B
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2015 17:08:28 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E96A5394005B
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Jul 2015 17:05:42 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t62BZfJB66846796
+ t62BZg3u54001764
  for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2015 17:05:42 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t62ARDRW016534
- for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2015 15:57:14 +0530
+ t62AREPY016592
+ for <linuxppc-dev@ozlabs.org>; Thu, 2 Jul 2015 15:57:15 +0530
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, thuth@redhat.com, segher@kernel.crashing.org
 Cc: aik@ozlabs.ru, dvaleev@suse.com, nikunj@linux.vnet.ibm.com
-Subject: [PATCH SLOF v4 1/4] disk-label: simplify gpt-prep-partition? routine
-Date: Thu,  2 Jul 2015 17:05:35 +0530
-Message-Id: <1435836938-22889-2-git-send-email-nikunj@linux.vnet.ibm.com>
+Subject: [PATCH SLOF v4 3/4] disk-label: introduce helper to check fat
+ filesystem
+Date: Thu,  2 Jul 2015 17:05:37 +0530
+Message-Id: <1435836938-22889-4-git-send-email-nikunj@linux.vnet.ibm.com>
 In-Reply-To: <1435836938-22889-1-git-send-email-nikunj@linux.vnet.ibm.com>
 References: <1435836938-22889-1-git-send-email-nikunj@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,78 +46,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 Reviewed-by: Thomas Huth <thuth@redhat.com>
 ---
- slof/fs/packages/disk-label.fs | 41 +++++++++++++++--------------------------
- 1 file changed, 15 insertions(+), 26 deletions(-)
+ slof/fs/packages/disk-label.fs | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
 diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
-index fe1c25e..f1f083a 100644
+index b346774..142e54f 100644
 --- a/slof/fs/packages/disk-label.fs
 +++ b/slof/fs/packages/disk-label.fs
-@@ -352,42 +352,31 @@ CONSTANT /gpt-part-entry
-    drop 0
- ;
+@@ -320,6 +320,14 @@ CONSTANT /gpt-part-entry
  
--\ Check for GPT PReP partition GUID
--9E1A2D38     CONSTANT GPT-PREP-PARTITION-1
--C612         CONSTANT GPT-PREP-PARTITION-2
--4316         CONSTANT GPT-PREP-PARTITION-3
--AA26         CONSTANT GPT-PREP-PARTITION-4
--8B49521E5A8B CONSTANT GPT-PREP-PARTITION-5
-+\ Check for GPT PReP partition GUID. Only first 3 blocks are
-+\ byte-swapped treating last two blocks as contigous for simplifying
-+\ comparison
-+9E1A2D38            CONSTANT GPT-PREP-PARTITION-1
-+C612                CONSTANT GPT-PREP-PARTITION-2
-+4316                CONSTANT GPT-PREP-PARTITION-3
-+AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+ \ Load from first active DOS boot partition.
  
- : gpt-prep-partition? ( -- true|false )
--   block gpt-part-entry>part-type-guid l@-le GPT-PREP-PARTITION-1 = IF
--      block gpt-part-entry>part-type-guid 4 + w@-le
--      GPT-PREP-PARTITION-2 = IF
--         block gpt-part-entry>part-type-guid 6 + w@-le
--         GPT-PREP-PARTITION-3 = IF
--            block gpt-part-entry>part-type-guid 8 + w@
--            GPT-PREP-PARTITION-4 = IF
--               block gpt-part-entry>part-type-guid a + w@
--               block gpt-part-entry>part-type-guid c + l@ swap lxjoin
--               GPT-PREP-PARTITION-5 = IF
--                   TRUE EXIT
--               THEN
--            THEN
--         THEN
--      THEN
++: fat-bootblock? ( addr -- flag )
++   \ byte 0-2 of the bootblock is a jump instruction in
++   \ all FAT filesystems.
++   \ e9 and eb are jump instructions in x86 assembler.
++   dup c@ e9 = IF drop true EXIT THEN
++   dup c@ eb = swap 2+ c@ 90 = and
++;
++
+ \ NOTE: block-size is always 512 bytes for DOS partition tables.
+ 
+ : load-from-dos-boot-partition ( addr -- size )
+@@ -547,14 +555,7 @@ AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+ : try-dos-files ( -- found? )
+    no-mbr? IF false EXIT THEN
+ 
+-   \ block 0 byte 0-2 is a jump instruction in all FAT
+-   \ filesystems.
+-   \ e9 and eb are jump instructions in x86 assembler.
+-   block c@ e9 <> IF
+-      block c@ eb <>
+-      block 2+ c@ 90 <> or
+-      IF false EXIT THEN
 -   THEN
--   FALSE
-+   block gpt-part-entry>part-type-guid
-+   dup l@-le     GPT-PREP-PARTITION-1 <> IF drop false EXIT THEN
-+   dup 4 + w@-le GPT-PREP-PARTITION-2 <> IF drop false EXIT THEN
-+   dup 6 + w@-le GPT-PREP-PARTITION-3 <> IF drop false EXIT THEN
-+       8 + x@    GPT-PREP-PARTITION-4 =
++   block fat-bootblock? 0= IF false EXIT THEN
+    s" fat-files" (interpose-filesystem)
+    true
  ;
- 
- : load-from-gpt-prep-partition ( addr -- size )
--   no-gpt? IF drop FALSE EXIT THEN
-+   no-gpt? IF drop false EXIT THEN
-    debug-disk-label? IF
-       cr ." GPT partition found " cr
-    THEN
-    1 read-sector block gpt>part-entry-lba l@-le
-    block-size * to seek-pos
-    block gpt>part-entry-size l@-le to gpt-part-size
--   block gpt>num-part-entry l@-le dup 0= IF FALSE EXIT THEN
-+   block gpt>num-part-entry l@-le dup 0= IF false EXIT THEN
-    1+ 1 ?DO
-       seek-pos 0 seek drop
-       block gpt-part-size read drop gpt-prep-partition? IF
-@@ -405,7 +394,7 @@ AA26         CONSTANT GPT-PREP-PARTITION-4
-       THEN
-       seek-pos gpt-part-size i * + to seek-pos
-    LOOP
--   FALSE
-+   false
- ;
- 
- \ Extract the boot loader path from a bootinfo.txt file
 -- 
 2.4.3
