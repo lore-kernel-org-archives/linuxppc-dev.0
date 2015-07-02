@@ -1,24 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 967B61A061B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2015 13:44:32 +1000 (AEST)
-Message-ID: <1435808670.10635.0.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH] powerpc/numa: initialize distance lookup table from
- drconf path
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anton Blanchard <anton@samba.org>
-Cc: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- bharata@linux.vnet.ibm.com
-Date: Thu, 02 Jul 2015 13:44:30 +1000
-In-Reply-To: <20150702083103.61151467@kryten>
-References: <1433911816-854-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <87lhfs5ewc.fsf@linux.vnet.ibm.com> <20150623111648.1e31a497@kryten>
- <87d20mewk2.fsf@linux.vnet.ibm.com> <20150702083103.61151467@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2C82B1A0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jul 2015 14:56:22 +1000 (AEST)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Add plain English description for alignment
+ exception oopses
+Date: Thu,  2 Jul 2015 14:56:20 +1000
+Message-Id: <1435812980-16360-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-07-02 at 08:31 +1000, Anton Blanchard wrote:
-> Hi Nikunj,
-> 
-> > > Thanks for the patch. Have we tested that this doesn't regress the
-> > > non dynamic representation?
-> > 
-> > Yes, that is tested. And works as expected.
-> 
-> Great, you can add:
-> 
-> Acked-by: Anton Blanchard <anton@samba.org>
+If we take an alignment exception which we cannot fix, the oops
+currently prints:
 
-Hi Nikunj,
+Unable to handle kernel paging request for unknown fault
 
-Please resend a non-RFC version, with the updated changelog and Anton's ack
-included.
+Lets print something more useful:
 
-cheers
+Unable to handle kernel paging request for unaligned access at address 0xc0000000f77bba8f
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/mm/fault.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index b396868..661ba0a 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -528,6 +528,10 @@ void bad_page_fault(struct pt_regs *regs, unsigned long address, int sig)
+ 		printk(KERN_ALERT "Unable to handle kernel paging request for "
+ 			"instruction fetch\n");
+ 		break;
++	case 0x600:
++		printk(KERN_ALERT "Unable to handle kernel paging request for "
++			"unaligned access at address 0x%08lx\n", regs->dar);
++		break;
+ 	default:
+ 		printk(KERN_ALERT "Unable to handle kernel paging request for "
+ 			"unknown fault\n");
+-- 
+2.1.4
