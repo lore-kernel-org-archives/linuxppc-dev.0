@@ -1,23 +1,33 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ADDF1A0611
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 11:30:32 +1000 (AEST)
-Message-ID: <1435887032.3665.1.camel@ellerman.id.au>
-Subject: Re: [PATCH 4/6] crypto/nx-842-{powerpc,pseries}: only load on the
- appropriate machine type
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Dan Streetman <ddstreet@us.ibm.com>, linux-crypto@vger.kernel.org,
- gustavold@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Herbert Xu
- <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
-Date: Fri, 03 Jul 2015 11:30:32 +1000
-In-Reply-To: <20150702224049.GE1712@linux.vnet.ibm.com>
-References: <20150702223800.GA1712@linux.vnet.ibm.com>
- <20150702224049.GE1712@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 954781A0456
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 15:12:47 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 3 Jul 2015 15:12:47 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1EEED2BB003F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 15:12:42 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t635CXVj51249400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jul 2015 15:12:42 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t635C9Ns008535
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jul 2015 15:12:09 +1000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: [RESEND PATCH] powerpc/configs: enable RTC class support
+Date: Fri,  3 Jul 2015 10:41:20 +0530
+Message-Id: <1435900280-12947-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,79 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-07-02 at 15:40 -0700, Nishanth Aravamudan wrote:
-> While we never would successfully load on the wrong machine type, there
-> is extra output by default regardless of machine type.
-> 
-> For instance, on a PowerVM LPAR, we see the following:
-> 
-> nx_compress_powernv: loading
-> nx_compress_powernv: no coprocessors found
-> 
-> even though those coprocessors could never be found. Similar pseries
-> messages are printed on powernv.
+A working rtc kernel driver is needed so that hwclock can synchronize
+system clock to rtc during shutdown/boot. We already have a powernv
+platform rtc driver located at drivers/rtc/rtc-opal.c. However it depends
+on CONFIG_RTC_CLASS which is disabled by default. Hence the driver isn't
+enabled and not compiled for the powernv kernel.
 
-I know I've been converting init calls to machine_initcalls() to avoid these
-sort of issues in platform code. But for a driver it should be trivial for it
-to only probe when the hardware is found.
+We fix this by enabling rtc class support in pseries defconfig which
+enables this driver and compiles it into the pseries kernel. In case
+CONFIG_PPC_POWERNV is not enabled we fallback to 'Generic RTC support'
+driver which emulates the legacy 'PC RTC driver'.
 
-By which I mean I think we shouldn't need these.
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ arch/powerpc/configs/pseries_defconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-> index 33b3b0abf4ae..6b5e5143c95b 100644
-> --- a/drivers/crypto/nx/nx-842-powernv.c
-> +++ b/drivers/crypto/nx/nx-842-powernv.c
-> @@ -594,6 +594,9 @@ static __init int nx842_powernv_init(void)
->  	BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
->  	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
->  
-> +	if (!machine_is(powernv))
-> +		return -ENODEV;
-> +
->  	pr_info("loading\n");
-
-This is just too chatty, drop it.
-
->  	for_each_compatible_node(dn, NULL, "ibm,power-nx")
-
-It shouldn't be printing anything unless it finds some devices in this loop.
-
-And you should drop the print in here:
-
-	if (!nx842_ct) {
-		pr_err("no coprocessors found\n");
-		return -ENODEV;
-	}
-
-And that should mean no output unless hardware is found I think?
-
-> @@ -625,6 +628,9 @@ static void __exit nx842_powernv_exit(void)
->  {
->  	struct nx842_coproc *coproc, *n;
->  
-> +	if (!machine_is(powernv))
-> +		return;
-
-You shouldn't need to touch the exit paths if the drivers were never loaded?
-
-> diff --git a/drivers/crypto/nx/nx-842-pseries.c b/drivers/crypto/nx/nx-842-pseries.c
-> index b84b0ceeb46e..75a7bfdc160e 100644
-> --- a/drivers/crypto/nx/nx-842-pseries.c
-> +++ b/drivers/crypto/nx/nx-842-pseries.c
-> @@ -1091,6 +1091,9 @@ static int __init nx842_pseries_init(void)
->  	struct nx842_devdata *new_devdata;
->  	int ret;
->  
-> +	if (!machine_is(pseries))
-> +		return -ENODEV;
-> +
->  	pr_info("Registering IBM Power 842 compression driver\n");
-
-Again this is too chatty, just remove it.
-
->  	if (!of_find_compatible_node(NULL, NULL, "ibm,compression"))
-		return -ENODEV;
-
-That should do the trick shouldn't it?
-
-cheers
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 0d9efce..2404271e 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -190,7 +190,8 @@ CONFIG_HVC_RTAS=y
+ CONFIG_HVCS=m
+ CONFIG_VIRTIO_CONSOLE=m
+ CONFIG_IBM_BSR=m
+-CONFIG_GEN_RTC=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_GENERIC=y
+ CONFIG_RAW_DRIVER=y
+ CONFIG_MAX_RAW_DEVS=1024
+ CONFIG_FB=y
+-- 
+2.2.1
