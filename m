@@ -1,19 +1,21 @@
-Return-Path: <michael.neuling@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A768B1A0611
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 10:27:27 +1000 (AEST)
-Message-ID: <1435883247.2425.1.camel@au1.ibm.com>
-Subject: Re: [PATCH] cxl: Test the correct mmio space before unmapping
-From: Michael Neuling <michael.neuling@au1.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
- imunsie@au.ibm.com
-Date: Fri, 03 Jul 2015 10:27:27 +1000
-In-Reply-To: <1435882996.2425.0.camel@neuling.org>
-References: <1435816521-13159-1-git-send-email-dja@axtens.net>
- <1435882996.2425.0.camel@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ADDF1A0611
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 11:30:32 +1000 (AEST)
+Message-ID: <1435887032.3665.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 4/6] crypto/nx-842-{powerpc,pseries}: only load on the
+ appropriate machine type
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Dan Streetman <ddstreet@us.ibm.com>, linux-crypto@vger.kernel.org,
+ gustavold@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, Herbert Xu
+ <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>
+Date: Fri, 03 Jul 2015 11:30:32 +1000
+In-Reply-To: <20150702224049.GE1712@linux.vnet.ibm.com>
+References: <20150702223800.GA1712@linux.vnet.ibm.com>
+ <20150702224049.GE1712@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,42 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-03 at 10:23 +1000, Michael Neuling wrote:
-> On Thu, 2015-07-02 at 15:55 +1000, Daniel Axtens wrote:
-> > Before freeing p2n, test p2n, not p1n.
-> >=20
-> > Signed-off-by: Daniel Axtens <dja@axtens.net>
->=20
-> Nice catch but can you resend with a CC stable?
+On Thu, 2015-07-02 at 15:40 -0700, Nishanth Aravamudan wrote:
+> While we never would successfully load on the wrong machine type, there
+> is extra output by default regardless of machine type.
+> 
+> For instance, on a PowerVM LPAR, we see the following:
+> 
+> nx_compress_powernv: loading
+> nx_compress_powernv: no coprocessors found
+> 
+> even though those coprocessors could never be found. Similar pseries
+> messages are printed on powernv.
 
-Actually stable is overkill, but this is a bug should to go in 4.2 as a
-bug fix.
+I know I've been converting init calls to machine_initcalls() to avoid these
+sort of issues in platform code. But for a driver it should be trivial for it
+to only probe when the hardware is found.
 
-Mikey
+By which I mean I think we shouldn't need these.
 
->=20
-> Mikey
->=20
-> >=20
-> > ---
-> >=20
-> > While a potentially nasty bug, this is only hit (at the moment)
-> > in cxl_remove, so it's probably not a candidate for stable.
-> > ---
-> >  drivers/misc/cxl/pci.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >=20
-> > diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> > index a16988d..fd43462 100644
-> > --- a/drivers/misc/cxl/pci.c
-> > +++ b/drivers/misc/cxl/pci.c
-> > @@ -540,7 +540,7 @@ err:
-> > =20
-> >  static void cxl_unmap_slice_regs(struct cxl_afu *afu)
-> >  {
-> > -	if (afu->p1n_mmio)
-> > +	if (afu->p2n_mmio)
-> >  		iounmap(afu->p2n_mmio);
-> >  	if (afu->p1n_mmio)
-> >  		iounmap(afu->p1n_mmio);
->=20
+> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+> index 33b3b0abf4ae..6b5e5143c95b 100644
+> --- a/drivers/crypto/nx/nx-842-powernv.c
+> +++ b/drivers/crypto/nx/nx-842-powernv.c
+> @@ -594,6 +594,9 @@ static __init int nx842_powernv_init(void)
+>  	BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
+>  	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
+>  
+> +	if (!machine_is(powernv))
+> +		return -ENODEV;
+> +
+>  	pr_info("loading\n");
+
+This is just too chatty, drop it.
+
+>  	for_each_compatible_node(dn, NULL, "ibm,power-nx")
+
+It shouldn't be printing anything unless it finds some devices in this loop.
+
+And you should drop the print in here:
+
+	if (!nx842_ct) {
+		pr_err("no coprocessors found\n");
+		return -ENODEV;
+	}
+
+And that should mean no output unless hardware is found I think?
+
+> @@ -625,6 +628,9 @@ static void __exit nx842_powernv_exit(void)
+>  {
+>  	struct nx842_coproc *coproc, *n;
+>  
+> +	if (!machine_is(powernv))
+> +		return;
+
+You shouldn't need to touch the exit paths if the drivers were never loaded?
+
+> diff --git a/drivers/crypto/nx/nx-842-pseries.c b/drivers/crypto/nx/nx-842-pseries.c
+> index b84b0ceeb46e..75a7bfdc160e 100644
+> --- a/drivers/crypto/nx/nx-842-pseries.c
+> +++ b/drivers/crypto/nx/nx-842-pseries.c
+> @@ -1091,6 +1091,9 @@ static int __init nx842_pseries_init(void)
+>  	struct nx842_devdata *new_devdata;
+>  	int ret;
+>  
+> +	if (!machine_is(pseries))
+> +		return -ENODEV;
+> +
+>  	pr_info("Registering IBM Power 842 compression driver\n");
+
+Again this is too chatty, just remove it.
+
+>  	if (!of_find_compatible_node(NULL, NULL, "ibm,compression"))
+		return -ENODEV;
+
+That should do the trick shouldn't it?
+
+cheers
