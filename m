@@ -1,37 +1,31 @@
-Return-Path: <apopple@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wenweitaowenwei@gmail.com>
+Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
+ [IPv6:2a00:1450:400c:c05::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F41C81A0456
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 17:40:16 +1000 (AEST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BFF8E140777
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2015 17:40:16 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <apopple@au1.ibm.com>;
- Fri, 3 Jul 2015 17:40:15 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 01FC63578052
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Jul 2015 17:40:14 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t637e3fE31719554
- for <linuxppc-dev@ozlabs.org>; Fri, 3 Jul 2015 17:40:13 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t637dc0h017786
- for <linuxppc-dev@ozlabs.org>; Fri, 3 Jul 2015 17:39:39 +1000
-From: Alistair Popple <alistair@popple.id.au>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, shreyas@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH] opal-elog: Fix opal-elog interrupt handler
-Date: Fri,  3 Jul 2015 17:39:12 +1000
-Message-Id: <1435909152-18891-1-git-send-email-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E89CB1A04C5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jul 2015 18:47:46 +1000 (AEST)
+Received: by wiar9 with SMTP id r9so124317002wia.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jul 2015 01:47:42 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1435873760.10531.11.camel@freescale.com>
+References: <1433917639-31699-1-git-send-email-wenweitaowenwei@gmail.com>
+ <1433917639-31699-7-git-send-email-wenweitaowenwei@gmail.com>
+ <1435873760.10531.11.camel@freescale.com>
+Date: Fri, 3 Jul 2015 16:47:42 +0800
+Message-ID: <CAD=trs9bjbeG=NF0UjFBTvL23rF8rry5myhKi_a-rFL4u=7EuQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 6/6] powerpc/kvm: change the condition of identifying
+ hugetlb vm
+From: wenwei tao <wenweitaowenwei@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Izik Eidus <izik.eidus@ravellosystems.com>, aarcange@redhat.com,
+ chrisw@sous-sol.org,
+ Hugh Dickins <hughd@google.com>, tglx@linutronix.de, mingo@redhat.com,
+ hpa@zytor.com,
+ x86@kernel.org, viro@zeniv.linux.org.uk, linux-mm@kvack.org,
+ linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,66 +35,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The conversion of opal events to a proper irqchip means that handlers
-are called until the relevant opal event has been cleared by
-processing it. Events that queue work should therefore use a threaded
-handler to mask the event until processing is complete.
+Hi Scott
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
- arch/powerpc/platforms/powernv/opal-elog.c | 16 +++++-----------
- 1 file changed, 5 insertions(+), 11 deletions(-)
+Thank you for your comments.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
-index 4949ef0..37f959b 100644
---- a/arch/powerpc/platforms/powernv/opal-elog.c
-+++ b/arch/powerpc/platforms/powernv/opal-elog.c
-@@ -237,7 +237,7 @@ static struct elog_obj *create_elog_obj(uint64_t id, size_t size, uint64_t type)
- 	return elog;
- }
- 
--static void elog_work_fn(struct work_struct *work)
-+static irqreturn_t elog_event(int irq, void *data)
- {
- 	__be64 size;
- 	__be64 id;
-@@ -251,7 +251,7 @@ static void elog_work_fn(struct work_struct *work)
- 	rc = opal_get_elog_size(&id, &size, &type);
- 	if (rc != OPAL_SUCCESS) {
- 		pr_err("ELOG: OPAL log info read failed\n");
--		return;
-+		return IRQ_HANDLED;
- 	}
- 
- 	elog_size = be64_to_cpu(size);
-@@ -270,16 +270,10 @@ static void elog_work_fn(struct work_struct *work)
- 	 * entries.
- 	 */
- 	if (kset_find_obj(elog_kset, name))
--		return;
-+		return IRQ_HANDLED;
- 
- 	create_elog_obj(log_id, elog_size, elog_type);
--}
--
--static DECLARE_WORK(elog_work, elog_work_fn);
- 
--static irqreturn_t elog_event(int irq, void *data)
--{
--	schedule_work(&elog_work);
- 	return IRQ_HANDLED;
- }
- 
-@@ -304,8 +298,8 @@ int __init opal_elog_init(void)
- 		return irq;
- 	}
- 
--	rc = request_irq(irq, elog_event,
--			IRQ_TYPE_LEVEL_HIGH, "opal-elog", NULL);
-+	rc = request_threaded_irq(irq, NULL, elog_event,
-+			IRQF_TRIGGER_HIGH | IRQF_ONESHOT, "opal-elog", NULL);
- 	if (rc) {
- 		pr_err("%s: Can't request OPAL event irq (%d)\n",
- 		       __func__, rc);
--- 
-2.1.4
+Kernel already has that function: is_vm_hugetlb_page() , but the
+original code didn't use it,
+in order to keep the coding style of the original code, I didn't use it either.
+
+For the sentence like: "vma->vm_flags & VM_HUGETLB" , hiding it behind
+'is_vm_hugetlb_page()' is ok,
+but the sentence like: "vma->vm_flags &
+(VM_LOCKED|VM_HUGETLB|VM_PFNMAP)" appears in the patch 2/6,
+is it better to hide the bit combinations behind the
+is_vm_hugetlb_page() ?  In my patch I just replaced it with
+"vma->vm_flags & (VM_LOCKED|VM_PFNMAP) ||  (vma->vm_flags &
+(VM_HUGETLB|VM_MERGEABLE)) == VM_HUGETLB".
+
+I am a newbie to Linux kernel, do you have any good suggestions on
+this situation?
+
+Thank you
+Wenwei
+
+2015-07-03 5:49 GMT+08:00 Scott Wood <scottwood@freescale.com>:
+> On Wed, 2015-06-10 at 14:27 +0800, Wenwei Tao wrote:
+>> Hugetlb VMAs are not mergeable, that means a VMA couldn't have VM_HUGETLB
+>> and
+>> VM_MERGEABLE been set in the same time. So we use VM_HUGETLB to indicate new
+>> mergeable VMAs. Because of that a VMA which has VM_HUGETLB been set is a
+>> hugetlb
+>> VMA only if it doesn't have VM_MERGEABLE been set in the same time.
+>
+> Eww.
+>
+> If you must overload such bit combinations, please hide it behind a
+> vm_is_hugetlb() function.
+>
+> -Scott
+>
