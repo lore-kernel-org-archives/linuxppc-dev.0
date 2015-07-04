@@ -1,23 +1,30 @@
-Return-Path: <lurodriguez@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 377751A0037
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jul 2015 04:17:20 +1000 (AEST)
-Date: Fri, 3 Jul 2015 20:17:09 +0200
-From: "Luis R. Rodriguez" <mcgrof@suse.com>
-To: linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Cc: Borislav Petkov <bp@suse.de>,
- Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
- Arnd Bergmann <arnd@arndb.de>, Toshi Kani <toshi.kani@hp.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Ingo Molnar <mingo@kernel.org>,
- "Luis R. Rodriguez" <mcgrof@do-not-panic.com>
-Subject: RFC: default ioremap_*() variant defintions
-Message-ID: <20150703181709.GD7021@wotan.suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E4721A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jul 2015 11:42:55 +1000 (AEST)
+Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
+ [209.85.220.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EE42C14077F
+ for <linuxppc-dev@ozlabs.org>; Sat,  4 Jul 2015 11:42:54 +1000 (AEST)
+Received: by pabvl15 with SMTP id vl15so64147495pab.1
+ for <linuxppc-dev@ozlabs.org>; Fri, 03 Jul 2015 18:42:52 -0700 (PDT)
+Subject: Re: [PATCH SLOF v4 1/4] disk-label: simplify gpt-prep-partition?
+ routine
+To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ thuth@redhat.com, segher@kernel.crashing.org
+References: <1435836938-22889-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <1435836938-22889-2-git-send-email-nikunj@linux.vnet.ibm.com>
+Cc: dvaleev@suse.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55973A15.1040609@ozlabs.ru>
+Date: Sat, 4 Jul 2015 11:42:45 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1435836938-22889-2-git-send-email-nikunj@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,103 +34,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/02/2015 09:35 PM, Nikunj A Dadhania wrote:
+> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+> Reviewed-by: Thomas Huth <thuth@redhat.com>
 
-The 0-day build bot detected a build issue on a patch not upstream yet that
-makes a driver use iorempa_uc(), this call is now upstream but we have no
-drivers yet using it, the patch in question makes the atyfb framebuffer driver
-use it. The build issue was the lack of the ioremap_uc() call being implemented
-on some non-x86 architectures. I *thought* I had added boiler plate code to map
-the ioremap_uc() call to ioremap_nocache() for archs that do not already define
-their own iorempa_uc() call, but upon further investigation it seems that was
-not the case but found that this may be a bit different issue altogether.
+If it does not change SLOF behaviour in any way (and it does not, right?), 
+it would be nice to see in the commit log.
 
-The way include/asm-generic/io.h works for ioremap() calls and its variants is:
 
-#ifndef CONFIG_MMU                                                              
-#ifndef ioremap                                                                 
-#define ioremap ioremap                                                         
-static inline void __iomem *ioremap(phys_addr_t offset, size_t size)            
-{                                                                               
-        return (void __iomem *)(unsigned long)offset;                           
-}                                                                               
-#endif 
-...
-#define iounmap iounmap                                                         
-                                                                                
-static inline void iounmap(void __iomem *addr)                                  
-{                                                                               
-}                                                                               
-#endif                                                                          
-#endif /* CONFIG_MMU */  
+> ---
+>   slof/fs/packages/disk-label.fs | 41 +++++++++++++++--------------------------
+>   1 file changed, 15 insertions(+), 26 deletions(-)
+>
+> diff --git a/slof/fs/packages/disk-label.fs b/slof/fs/packages/disk-label.fs
+> index fe1c25e..f1f083a 100644
+> --- a/slof/fs/packages/disk-label.fs
+> +++ b/slof/fs/packages/disk-label.fs
+> @@ -352,42 +352,31 @@ CONSTANT /gpt-part-entry
+>      drop 0
+>   ;
+>
+> -\ Check for GPT PReP partition GUID
+> -9E1A2D38     CONSTANT GPT-PREP-PARTITION-1
+> -C612         CONSTANT GPT-PREP-PARTITION-2
+> -4316         CONSTANT GPT-PREP-PARTITION-3
+> -AA26         CONSTANT GPT-PREP-PARTITION-4
+> -8B49521E5A8B CONSTANT GPT-PREP-PARTITION-5
+> +\ Check for GPT PReP partition GUID. Only first 3 blocks are
+> +\ byte-swapped treating last two blocks as contigous for simplifying
+> +\ comparison
+> +9E1A2D38            CONSTANT GPT-PREP-PARTITION-1
+> +C612                CONSTANT GPT-PREP-PARTITION-2
+> +4316                CONSTANT GPT-PREP-PARTITION-3
+> +AA268B49521E5A8B    CONSTANT GPT-PREP-PARTITION-4
+>
+>   : gpt-prep-partition? ( -- true|false )
+> -   block gpt-part-entry>part-type-guid l@-le GPT-PREP-PARTITION-1 = IF
+> -      block gpt-part-entry>part-type-guid 4 + w@-le
+> -      GPT-PREP-PARTITION-2 = IF
+> -         block gpt-part-entry>part-type-guid 6 + w@-le
+> -         GPT-PREP-PARTITION-3 = IF
+> -            block gpt-part-entry>part-type-guid 8 + w@
+> -            GPT-PREP-PARTITION-4 = IF
+> -               block gpt-part-entry>part-type-guid a + w@
+> -               block gpt-part-entry>part-type-guid c + l@ swap lxjoin
+> -               GPT-PREP-PARTITION-5 = IF
+> -                   TRUE EXIT
+> -               THEN
+> -            THEN
+> -         THEN
+> -      THEN
+> -   THEN
+> -   FALSE
+> +   block gpt-part-entry>part-type-guid
+> +   dup l@-le     GPT-PREP-PARTITION-1 <> IF drop false EXIT THEN
+> +   dup 4 + w@-le GPT-PREP-PARTITION-2 <> IF drop false EXIT THEN
+> +   dup 6 + w@-le GPT-PREP-PARTITION-3 <> IF drop false EXIT THEN
+> +       8 + x@    GPT-PREP-PARTITION-4 =
+>   ;
+>
+>   : load-from-gpt-prep-partition ( addr -- size )
+> -   no-gpt? IF drop FALSE EXIT THEN
+> +   no-gpt? IF drop false EXIT THEN
+>      debug-disk-label? IF
+>         cr ." GPT partition found " cr
+>      THEN
+>      1 read-sector block gpt>part-entry-lba l@-le
+>      block-size * to seek-pos
+>      block gpt>part-entry-size l@-le to gpt-part-size
+> -   block gpt>num-part-entry l@-le dup 0= IF FALSE EXIT THEN
+> +   block gpt>num-part-entry l@-le dup 0= IF false EXIT THEN
+>      1+ 1 ?DO
+>         seek-pos 0 seek drop
+>         block gpt-part-size read drop gpt-prep-partition? IF
+> @@ -405,7 +394,7 @@ AA26         CONSTANT GPT-PREP-PARTITION-4
+>         THEN
+>         seek-pos gpt-part-size i * + to seek-pos
+>      LOOP
+> -   FALSE
+> +   false
+>   ;
+>
+>   \ Extract the boot loader path from a bootinfo.txt file
+>
 
-That's the gist of it, but the catch here is the ioremap_*() variants and where
-they are defined. The first variant is ioremap_nocache() and then all other
-variants by default map to this one. We've been stuffing the variant definitions
-within the #ifndef CONFIG_MMU and I don't think we should be as otherwise each
-and everyone's archs will have to add their own variant default map to the
-default ioremap_nocache() or whatever. That's exaclty what we have to day, and
-from what I gather the purpose of the variant boiler plate is lost. I think
-we should keep the ioremap() and ioreunmap() tucked under the CONFIG_MMU
-but not the variants. For instance to address the build issue for ioremap_uc()
-we either define ioremap_uc() for all archs or do something like this:
 
-diff --git a/include/asm-generic/io.h b/include/asm-generic/io.h
-index f56094cfdeff..6e5e80d5dd0c 100644
---- a/include/asm-generic/io.h
-+++ b/include/asm-generic/io.h
-@@ -769,14 +769,6 @@ static inline void __iomem *ioremap_nocache(phys_addr_t offset, size_t size)
- }
- #endif
- 
--#ifndef ioremap_uc
--#define ioremap_uc ioremap_uc
--static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
--{
--	return ioremap_nocache(offset, size);
--}
--#endif
--
- #ifndef ioremap_wc
- #define ioremap_wc ioremap_wc
- static inline void __iomem *ioremap_wc(phys_addr_t offset, size_t size)
-@@ -802,6 +794,14 @@ static inline void iounmap(void __iomem *addr)
- #endif
- #endif /* CONFIG_MMU */
- 
-+#ifndef ioremap_uc
-+#define ioremap_uc ioremap_uc
-+static inline void __iomem *ioremap_uc(phys_addr_t offset, size_t size)
-+{
-+	return ioremap_nocache(offset, size);
-+}
-+#endif
-+
- #ifdef CONFIG_HAS_IOPORT_MAP
- #ifndef CONFIG_GENERIC_IOMAP
- #ifndef ioport_map
-
-This builds on x86 and other archs now and I can verify that the default
-boilerplate code is not used on x86. One small caveat:
-
-I have no idea why its not picking up asm-generic ioremap_uc() for x86,
-although this is the right thing to do the guard should not work as we never
-define ioremap_uc() as a macro but we do as an exported symbol. The way
-archs do their ioremap calls is they define externs and then they include
-asm-generic to pick up the things they don't define. In the extern calls
-for ioremap_uc() we never add a define there. Adding a simple one line
-#define right after the extern declaration to itself should suffice to
-fix paranoia but curious why this does work as-is right now.
-
-I'd like review and consensus from other architecture folks if this is
-the Right Thing To Do (TM) and if it is decide how we want to fix this.
-For instance my preference would be to just add this fix as-is after
-we've figured out the guard thing above, and then define these variants
-in the documentation on the asm-generic file as safe to not have, and
-safe to map to the default ioremap call. If you don't have a safe call
-like this we should set out different expectations, for instance having
-it depend on Kconfig symbol and then drivers depend on it, archs then
-implement the symbols and can HAVE_ARCH_FOO. If everyone agrees with
-this then there is quite a bit of cleanup possible as tons of archs do
-tons of their own variant mapping definitions.
-
-  Luis
+-- 
+Alexey
