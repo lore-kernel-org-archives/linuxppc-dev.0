@@ -1,28 +1,41 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 109321A067D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jul 2015 11:55:31 +1000 (AEST)
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FD291A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jul 2015 16:34:09 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5B2691401E7
- for <linuxppc-dev@ozlabs.org>; Sat,  4 Jul 2015 11:55:29 +1000 (AEST)
-Received: by pabvl15 with SMTP id vl15so64252341pab.1
- for <linuxppc-dev@ozlabs.org>; Fri, 03 Jul 2015 18:55:28 -0700 (PDT)
-Subject: Re: [PATCH SLOF v4 0/4] GPT fixes and LVM support with FAT
-To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- thuth@redhat.com, segher@kernel.crashing.org
-References: <1435836938-22889-1-git-send-email-nikunj@linux.vnet.ibm.com>
-Cc: dvaleev@suse.com
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55973D09.1070406@ozlabs.ru>
-Date: Sat, 4 Jul 2015 11:55:21 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 794C61409BB
+ for <linuxppc-dev@ozlabs.org>; Sat,  4 Jul 2015 16:34:08 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 4 Jul 2015 12:04:06 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id B70CA1258044
+ for <linuxppc-dev@ozlabs.org>; Sat,  4 Jul 2015 12:06:50 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t646Y1L058327206
+ for <linuxppc-dev@ozlabs.org>; Sat, 4 Jul 2015 12:04:02 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t646Y0BD008612
+ for <linuxppc-dev@ozlabs.org>; Sat, 4 Jul 2015 12:04:01 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alistair Popple <alistair@popple.id.au>, mpe@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, shreyas@linux.vnet.ibm.com,
+ Alistair Popple <alistair@popple.id.au>
+Subject: Re: [PATCH] opal-elog: Fix opal-elog interrupt handler
+In-Reply-To: <1435909152-18891-1-git-send-email-alistair@popple.id.au>
+References: <1435909152-18891-1-git-send-email-alistair@popple.id.au>
+Date: Sat, 04 Jul 2015 12:04:00 +0530
+Message-ID: <877fqgsa7b.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1435836938-22889-1-git-send-email-nikunj@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +45,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2015 09:35 PM, Nikunj A Dadhania wrote:
-> Following patchset implements some improvements and cleanup for the
-> GPT booting code:
->
-> patch 1: Simplify the gpt detection code with lesser scopes and add
-> 	 comments.
->
-> patch 2: Introduce 8byte LE helpers: x@-le and x!-le
->
-> patch 3: As we need to detect FAT partition, implement a helper that
-> 	 can be used both from GPT code and "fat-bootblock?"
->
-> patch 4: Implement GPT FAT for LVM suport and make GPT detection code
-> 	 robust
+Alistair Popple <alistair@popple.id.au> writes:
 
-Thanks, pushed to github.
+> The conversion of opal events to a proper irqchip means that handlers
+> are called until the relevant opal event has been cleared by
+> processing it. Events that queue work should therefore use a threaded
+> handler to mask the event until processing is complete.
+>
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
 
+Tested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
+> ---
+>  arch/powerpc/platforms/powernv/opal-elog.c | 16 +++++-----------
+>  1 file changed, 5 insertions(+), 11 deletions(-)
 >
-> Changelog v3:
-> * Dropped patch for renaming "block" variable
-> * Fix bug in seek-pos updation code
+> diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+> index 4949ef0..37f959b 100644
+> --- a/arch/powerpc/platforms/powernv/opal-elog.c
+> +++ b/arch/powerpc/platforms/powernv/opal-elog.c
+> @@ -237,7 +237,7 @@ static struct elog_obj *create_elog_obj(uint64_t id, size_t size, uint64_t type)
+>  	return elog;
+>  }
 >
-> Changelog V2:
-> * Optimize gpt detection code
-> * Fixed stack comments
-> * Rename verify-gpt-partition, as it was doing more than that. Added
->    comments.
+> -static void elog_work_fn(struct work_struct *work)
+> +static irqreturn_t elog_event(int irq, void *data)
+>  {
+>  	__be64 size;
+>  	__be64 id;
+> @@ -251,7 +251,7 @@ static void elog_work_fn(struct work_struct *work)
+>  	rc = opal_get_elog_size(&id, &size, &type);
+>  	if (rc != OPAL_SUCCESS) {
+>  		pr_err("ELOG: OPAL log info read failed\n");
+> -		return;
+> +		return IRQ_HANDLED;
+>  	}
 >
-> Nikunj A Dadhania (4):
->    disk-label: simplify gpt-prep-partition? routine
->    introduce 8-byte LE helpers
->    disk-label: introduce helper to check fat filesystem
->    disk-label: add support for booting from GPT FAT partition
+>  	elog_size = be64_to_cpu(size);
+> @@ -270,16 +270,10 @@ static void elog_work_fn(struct work_struct *work)
+>  	 * entries.
+>  	 */
+>  	if (kset_find_obj(elog_kset, name))
+> -		return;
+> +		return IRQ_HANDLED;
 >
->   slof/fs/little-endian.fs       |   6 ++
->   slof/fs/packages/disk-label.fs | 162 +++++++++++++++++++++++++++--------------
->   2 files changed, 112 insertions(+), 56 deletions(-)
+>  	create_elog_obj(log_id, elog_size, elog_type);
+> -}
+> -
+> -static DECLARE_WORK(elog_work, elog_work_fn);
 >
-
-
--- 
-Alexey
+> -static irqreturn_t elog_event(int irq, void *data)
+> -{
+> -	schedule_work(&elog_work);
+>  	return IRQ_HANDLED;
+>  }
+>
+> @@ -304,8 +298,8 @@ int __init opal_elog_init(void)
+>  		return irq;
+>  	}
+>
+> -	rc = request_irq(irq, elog_event,
+> -			IRQ_TYPE_LEVEL_HIGH, "opal-elog", NULL);
+> +	rc = request_threaded_irq(irq, NULL, elog_event,
+> +			IRQF_TRIGGER_HIGH | IRQF_ONESHOT, "opal-elog", NULL);
+>  	if (rc) {
+>  		pr_err("%s: Can't request OPAL event irq (%d)\n",
+>  		       __func__, rc);
+> -- 
+> 2.1.4
