@@ -1,20 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0133.outbound.protection.outlook.com [157.56.111.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5DF471A0E24
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 07:48:34 +1000 (AEST)
-Message-ID: <1436219299.2658.25.camel@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/t1024rdb: add ina220 current sense node
-From: Scott Wood <scottwood@freescale.com>
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 6 Jul 2015 16:48:19 -0500
-In-Reply-To: <1435917049-24227-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1435917049-24227-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id CECB41A0D84
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 09:42:10 +1000 (AEST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ David Ahern <david.ahern@oracle.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
+ Yijing Wang <wangyijing@huawei.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 28/36] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit resource
+ in of parsing
+Date: Mon,  6 Jul 2015 16:39:18 -0700
+Message-Id: <1436225966-27247-29-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1436225966-27247-1-git-send-email-yinghai@kernel.org>
+References: <1436225966-27247-1-git-send-email-yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-03 at 17:50 +0800, Shengzhou Liu wrote:
-> Add support for INA220 current sense.
-> 
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
->  arch/powerpc/boot/dts/t1024rdb.dts | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/arch/powerpc/boot/dts/t1024rdb.dts 
-> b/arch/powerpc/boot/dts/t1024rdb.dts
-> index 733e723..43474d9 100644
-> --- a/arch/powerpc/boot/dts/t1024rdb.dts
-> +++ b/arch/powerpc/boot/dts/t1024rdb.dts
-> @@ -114,6 +114,13 @@
->                               reg = <0x4c>;
->                       };
->  
-> +                     /* INA220 Current Sense */
+For device resource PREF bit setting under bridge 64-bit pref resource,
+we need to make sure only set PREF for 64bit resource, so set
+IORESOUCE_MEM_64 for 64bit resource during of device resource flags
+parsing.
 
-Do you mean "current sensor"?
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Yijing Wang <wangyijing@huawei.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/pci_of_scan.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Why is this comment needed here, but not in the t1023 file?
-
-> +                      ina220@40{
-
-Node names should be generic (which would also eliminate any reason for the 
-above comment).
-
--Scott
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 42e02a2..f31bfd0 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -44,8 +44,10 @@ static unsigned int pci_parse_of_flags(u32 addr0, int bridge)
+ 
+ 	if (addr0 & 0x02000000) {
+ 		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
+-		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
++		if (addr0 & 0x01000000)
++			flags |= IORESOURCE_MEM_64
++				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		if (addr0 & 0x40000000)
+ 			flags |= IORESOURCE_PREFETCH
+ 				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
+-- 
+1.8.4.5
