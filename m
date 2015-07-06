@@ -1,35 +1,33 @@
 Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06DF91A0452
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 15:05:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D2001A0452
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 15:57:48 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Mon, 6 Jul 2015 10:35:08 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E78C93940057
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 10:35:01 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6654rq54587888
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 10:35:01 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t663qwrw022508
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 09:22:58 +0530
+ Mon, 6 Jul 2015 11:27:43 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 6C436125806D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 11:30:23 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t665vWeO54394908
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 11:27:33 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t665vVll004741
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 11:27:31 +0530
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Thomas Huth <thuth@redhat.com>
-Subject: Re: [PATCH slof] README: Update with patch submittion note
-In-Reply-To: <1436155750-16815-1-git-send-email-aik@ozlabs.ru>
-References: <1436155750-16815-1-git-send-email-aik@ozlabs.ru>
-Date: Mon, 06 Jul 2015 10:33:35 +0530
-Message-ID: <87r3olri6w.fsf@linux.vnet.ibm.com>
+To: Dinar valeev <k0da@opensuse.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Dinar Valeev <dvaleev@suse.com>
+Subject: Re: [PATCH] Caps in not always shift
+In-Reply-To: <1432893503-19197-1-git-send-email-k0da@opensuse.org>
+References: <1432893503-19197-1-git-send-email-k0da@opensuse.org>
+Date: Mon, 06 Jul 2015 11:27:31 +0530
+Message-ID: <87d205rfp0.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,56 +39,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+Dinar valeev <k0da@opensuse.org> writes:
 
-> This adds a maillist and emails to be used when posting a patch for SLOF.
+> From: Dinar Valeev <dvaleev@suse.com>
 >
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Thomas Huth <thuth@redhat.com>
-> Cc: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Caps behaves like shift only for latin characters.
+> In case we're typing - for example with caps enabled, SLOF picks _ char
+> from shifted table.
+>
+> Threat caps as shift only for letters.
+>
+> Signed-off-by: Dinar Valeev <dvaleev@suse.com>
+
+Reviewed-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+
 > ---
+>  lib/libusb/usb-hid.c | 19 ++++++++++++++++---
+>  1 file changed, 16 insertions(+), 3 deletions(-)
 >
-> I was asked to describe somewhere how to post new patches so this is the first
-> attempt. Please fix my english and add/remove personal emails and any other
-> comments are also welcome. Thanks!
->
-> ---
->  README | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/README b/README
-> index 58e9294..b81fd08 100644
-> --- a/README
-> +++ b/README
-> @@ -11,6 +11,7 @@ Index
->  2.2 Overview of the source code
->  2.4 Extending the Forth engine
->  3.0 Limitations
-> +4.0 Submitting patches
->
->
->  1.0 Introduction to Slimline Open Firmware
-> @@ -236,6 +237,15 @@ To add primitives:
->   On a JS21 all memory configurations should work.
->
->
-> +4.0 Submitting patches
-> +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> diff --git a/lib/libusb/usb-hid.c b/lib/libusb/usb-hid.c
+> index f0cab8a..9e14cf5 100644
+> --- a/lib/libusb/usb-hid.c
+> +++ b/lib/libusb/usb-hid.c
+> @@ -83,6 +83,8 @@ uint8_t set_leds;
+>  const uint8_t *key_std       = NULL;
+>  const uint8_t *key_std_shift = NULL;
+>  
+> +uint8_t ctrl; /* modifiers */
 > +
-> +Patches for SLOF should be made against https://github.com/aik/SLOF,
-> +the master branch and posted to linuxppc-dev@ozlabs.org.
-
-> It is recommended also cc: to
-
-It is recommended to cc:
-
-> + aik@ozlabs.ru, nikunj@linux.vnet.ibm.com,
-> + thuth@redhat.com.
-> +
-> +
->  Documentation
->  +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->
+>  /**
+>   * read character from Keyboard-Buffer
+>   *
+> @@ -120,22 +122,27 @@ static void write_key(uint8_t key)
+>  static void get_char(uint8_t ctrl, uint8_t keypos)
+>  {
+>  	uint8_t ch;
+> +	int caps = 0;
+> +//key position for latin letters
+> +#define KEYP_LATIN_A 4
+> +#define KEYP_LATIN_Z 29
+>  
+>  #ifdef KEY_DEBUG
+>  	printf("pos %02X\n", keypos);
+>  #endif
+>  
+>  	if (set_leds & LED_CAPS_LOCK)	                /* is CAPS Lock set ? */
+> -		ctrl |= MODIFIER_SHIFT;	                    /* simulate shift */
+> +		caps = 1;
+>  
+> -	if (ctrl == 0) {
+> +	/* caps is a shift only for latin chars */
+> +	if ((caps == 0 && ctrl == 0) || (caps == 1 && (keypos < KEYP_LATIN_A || keypos > KEYP_LATIN_Z))) {
+>  		ch = key_std[keypos];
+>  		if (ch != 0)
+>  			write_key(ch);
+>  		return;
+>  	}
+>  
+> -	if (ctrl & MODIFIER_SHIFT) {
+> +	if ((ctrl & MODIFIER_SHIFT) || caps == 1) {
+>  		ch = key_std_shift[keypos];
+>  		if (ch != 0)
+>  			write_key(ch);
+> @@ -187,6 +194,12 @@ static void check_key_code(uint8_t *buf)
+>  					set_leds ^= LED_CAPS_LOCK;
+>  					break;
+>  
+> +				case 0x36:		                /*Shift pressed*/
+> +					ctrl |= MODIFIER_SHIFT;
+> +					break;
+> +				case 0xb6:		                /*Shift unpressed*/
+> +					ctrl &= ~MODIFIER_SHIFT;
+> +					break;
+>  				case 0x3a:	                        /* F1 */
+>  					write_key(0x1b);
+>  					write_key(0x5b);
 > -- 
-> 2.4.0.rc3.8.gfb3e7d5
+> 2.1.4
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
