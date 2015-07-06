@@ -1,40 +1,18 @@
-Return-Path: <dja@axtens.net>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F8701A04C2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 09:43:03 +1000 (AEST)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6344F140DB4
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Jul 2015 09:43:02 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <dja@axtens.net>;
- Mon, 6 Jul 2015 09:43:00 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3CA13357804F
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Jul 2015 09:42:57 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t65Ngkub35848356
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Jul 2015 09:42:54 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t65NgNp3000576
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Jul 2015 09:42:24 +1000
-From: Daniel Axtens <dja@axtens.net>
-To: fengguang.wu@intel.com
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH] powerpc/ppc4xx_hsta_msi: Include ppc-pci.h to fix reference
- to hose_list
-Date: Mon,  6 Jul 2015 09:40:34 +1000
-Message-Id: <1436139634-11787-1-git-send-email-dja@axtens.net>
-In-Reply-To: <201507050528.Bzp7B3rV%fengguang.wu@intel.com>
-References: <201507050528.Bzp7B3rV%fengguang.wu@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 08BEA1A0452
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 14:03:25 +1000 (AEST)
+In-Reply-To: <1435732450-7258-1-git-send-email-shreyas@linux.vnet.ibm.com>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: Re: powerpc/powernv: Fix race in updating core_idle_state
+Message-Id: <20150706040324.E78D2140DC0@ozlabs.org>
+Date: Mon,  6 Jul 2015 14:03:24 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,29 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An earlier commit referenced 'hose_list' in sysdev/ppc4xx_hsta_msi.c.
-hose_list is defined in ppc-pci.h, which was not included in that
-file. Include it, fixing the build for the akebono defconfig used
-by the kbuild test robot.
+On Wed, 2015-01-07 at 06:34:10 UTC, "Shreyas B. Prabhu" wrote:
+> core_idle_state is maintained for each core. It uses 0-7 bits to track
+> whether a thread in the core has entered fastsleep or winkle. 8th bit is
+> used as a lock bit.
+> The lock bit is set in these 2 scenarios-
+>  - The thread is first in subcore to wakeup from sleep/winkle.
+>  - If its the last thread in the core about to enter sleep/winkle
+> 
+> While the lock bit is set, if any other thread in the core wakes up, it
+> loops until the lock bit is cleared before proceeding in the wakeup
+> path. This helps prevent race conditions w.r.t fastsleep workaround and
+> prevents threads from switching to process context before core/subcore
+> resources are restored.
+> 
+> But, in the path to sleep/winkle entry, we currently don't check for
+> lock-bit. This exposes us to following race when running with subcore
+> on-
+> 
+> First thread in the subcorea		Another thread in the same
+> waking up		   		core entering sleep/winkle
+> 
+> lwarx   r15,0,r14
+> ori     r15,r15,PNV_CORE_IDLE_LOCK_BIT
+> stwcx.  r15,0,r14
+> [Code to restore subcore state]
+> 
+> 						lwarx   r15,0,r14
+> 						[clear thread bit]
+> 						stwcx.  r15,0,r14
+> 
+> andi.   r15,r15,PNV_CORE_IDLE_THREAD_BITS
+> stw     r15,0(r14)
+> 
+> Here, after the thread entering sleep clears its thread bit in
+> core_idle_state, the value is overwritten by the thread waking up.
+> This patch fixes the above race by looping on the lock bit even while
+> entering the idle states.
 
-Fixes: f2c800aaceb6 ("powerpc/ppc4xx_hsta_msi: Move MSI-related ops to pci_controller_ops")
-Reported-by: kbuild test robot <fengguang.wu@intel.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/sysdev/ppc4xx_hsta_msi.c | 1 +
- 1 file changed, 1 insertion(+)
+What are the symptoms of this bug?
 
-diff --git a/arch/powerpc/sysdev/ppc4xx_hsta_msi.c b/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
-index 2bc3367..87f9623 100644
---- a/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
-+++ b/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
-@@ -18,6 +18,7 @@
- #include <linux/pci.h>
- #include <linux/semaphore.h>
- #include <asm/msi_bitmap.h>
-+#include <asm/ppc-pci.h>
- 
- struct ppc4xx_hsta_msi {
- 	struct device *dev;
--- 
-2.1.4
+I assume they're not good. In which case this should go to stable, shouldn't
+it? If so which versions?
+
+And which commit introduced the bug?
+
+cheers
