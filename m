@@ -1,26 +1,37 @@
-Return-Path: <yinghai@kernel.org>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CECB41A0D84
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 09:42:10 +1000 (AEST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
- David Ahern <david.ahern@oracle.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
- Yijing Wang <wangyijing@huawei.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 28/36] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit resource
- in of parsing
-Date: Mon,  6 Jul 2015 16:39:18 -0700
-Message-Id: <1436225966-27247-29-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1436225966-27247-1-git-send-email-yinghai@kernel.org>
-References: <1436225966-27247-1-git-send-email-yinghai@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45F641A0D85
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 09:56:46 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 7 Jul 2015 09:56:45 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 06C52357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 09:56:42 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t66NuX1G59703430
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jul 2015 09:56:41 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t66Nu9s5026634
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jul 2015 09:56:09 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Masanari Iida <standby24x7@gmail.com>
+Cc: benh <benh@kernel.crashing.org>, mikey <mikey@neuling.org>,
+ corbet <corbet@lwn.net>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-doc <linux-doc@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Doc: powerpc: Fix typos in Documentation/powerpc
+In-reply-to: <1436193717-29870-1-git-send-email-standby24x7@gmail.com>
+References: <1436193717-29870-1-git-send-email-standby24x7@gmail.com>
+Date: Tue, 07 Jul 2015 09:55:44 +1000
+Message-Id: <1436226934-sup-8775@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +41,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For device resource PREF bit setting under bridge 64-bit pref resource,
-we need to make sure only set PREF for 64bit resource, so set
-IORESOUCE_MEM_64 for 64bit resource during of device resource flags
-parsing.
-
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Yijing Wang <wangyijing@huawei.com>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/pci_of_scan.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 42e02a2..f31bfd0 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -44,8 +44,10 @@ static unsigned int pci_parse_of_flags(u32 addr0, int bridge)
- 
- 	if (addr0 & 0x02000000) {
- 		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
--		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
- 		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
-+		if (addr0 & 0x01000000)
-+			flags |= IORESOURCE_MEM_64
-+				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
- 		if (addr0 & 0x40000000)
- 			flags |= IORESOURCE_PREFETCH
- 				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
--- 
-1.8.4.5
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
