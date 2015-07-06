@@ -1,28 +1,22 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9B1371A06E9
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 18:30:08 +1000 (AEST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Mon, 6 Jul 2015 14:00:02 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Thomas Huth <thuth@redhat.com>, Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- slof@lists.ozlabs.org, qemu-ppc@nongnu.org
-Subject: Re: [PATCH slof] README: Update with patch submittion note
-In-Reply-To: <20150706101430.6a701092@thh440s>
-References: <1436155750-16815-1-git-send-email-aik@ozlabs.ru>
- <20150706092224.414d7e5e@thh440s> <559A35F8.3080301@ozlabs.ru>
- <20150706101430.6a701092@thh440s>
-Date: Mon, 06 Jul 2015 13:59:36 +0530
-Message-ID: <87vbdxpu33.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F9B81A060F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 18:34:19 +1000 (AEST)
+Date: Mon, 6 Jul 2015 16:34:11 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Dan Streetman <ddstreet@us.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ gustavold@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/6] drivers/nx-842: reduce verbosity of logging
+Message-ID: <20150706083411.GB20800@gondor.apana.org.au>
+References: <20150702223800.GA1712@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150702223800.GA1712@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,41 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thomas Huth <thuth@redhat.com> writes:
+On Thu, Jul 02, 2015 at 03:38:00PM -0700, Nishanth Aravamudan wrote:
+> Currently, on a LPAR with the nx-842 device disabled, the following
+> messages are emitted:
 
-> On Mon, 6 Jul 2015 18:02:00 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->
->> On 07/06/2015 05:22 PM, Thomas Huth wrote:
->> > On Mon,  6 Jul 2015 14:09:10 +1000
->> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->> >
->> >> This adds a maillist and emails to be used when posting a patch for SLOF.
-> ...
->> >> I was asked to describe somewhere how to post new patches so this is the first
->> >> attempt. Please fix my english and add/remove personal emails and any other
->> >> comments are also welcome. Thanks!
->> >
->> > I think you should add least add a sentence that the subject should
->> > contain "[SLOF PATCH...]", so that people on the list can see at a
->> > first glance that the patch is about SLOF.
->> 
->> Patches for SLOF should be made against https://github.com/aik/SLOF,
->> the master branch and posted to slof@ozlabs.org.
-
-slof@lists.ozlabs.org ?
-
->
-> Great, thanks for creating the list!
->
->> It is recommended cc: to aik@ozlabs.ru, nikunj@linux.vnet.ibm.com,
->> thuth@redhat.com.
->
-> Since that list is likely low-traffic only, I think I will have a look
-> at each mail I get on that list, so you can at least remove me from the
-> CC: list here.
-
-Ditto, no need to CC me as well.
-
-Regards
-Nikunj
+Patches 1-3 applied.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
