@@ -1,20 +1,42 @@
-Return-Path: <standby24x7@gmail.com>
-Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
- [IPv6:2607:f8b0:400e:c02::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6051B1A0D95
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 00:42:06 +1000 (AEST)
-Received: by pddu5 with SMTP id u5so19726022pdd.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2015 07:42:04 -0700 (PDT)
-From: Masanari Iida <standby24x7@gmail.com>
-To: benh@kernel.crashing.org, mikey@neuling.org, imunsie@au1.ibm.com,
- corbet@lwn.net, linuxppc-dev@lists.ozlabs.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: Masanari Iida <standby24x7@gmail.com>
-Subject: [PATCH] Doc: powerpc: Fix typos in Documentation/powerpc
-Date: Mon,  6 Jul 2015 23:41:57 +0900
-Message-Id: <1436193717-29870-1-git-send-email-standby24x7@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E39F81A0D96
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 03:06:31 +1000 (AEST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Mon, 6 Jul 2015 11:06:29 -0600
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 0DF2BC9006F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 12:57:32 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t66H6PRp58523888
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 17:06:25 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t66H6NMl016770
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 13:06:25 -0400
+Date: Mon, 6 Jul 2015 10:06:21 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Dan Streetman <ddstreet@us.ibm.com>, linux-crypto@vger.kernel.org,
+ gustavold@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH v2] crypto/nx-842-{powerpc,pseries}: reduce chattiness of
+ platform drivers
+Message-ID: <20150706170621.GA3578@linux.vnet.ibm.com>
+References: <20150702223800.GA1712@linux.vnet.ibm.com>
+ <20150702224049.GE1712@linux.vnet.ibm.com>
+ <1435887032.3665.1.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1435887032.3665.1.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,71 +46,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fix some spelling typo found in Documentation/powerpc.
+On 03.07.2015 [11:30:32 +1000], Michael Ellerman wrote:
+> On Thu, 2015-07-02 at 15:40 -0700, Nishanth Aravamudan wrote:
+> > While we never would successfully load on the wrong machine type, there
+> > is extra output by default regardless of machine type.
+> > 
+> > For instance, on a PowerVM LPAR, we see the following:
+> > 
+> > nx_compress_powernv: loading
+> > nx_compress_powernv: no coprocessors found
+> > 
+> > even though those coprocessors could never be found. Similar pseries
+> > messages are printed on powernv.
+> 
+> I know I've been converting init calls to machine_initcalls() to avoid
+> these sort of issues in platform code. But for a driver it should be
+> trivial for it to only probe when the hardware is found.
+> 
+> By which I mean I think we shouldn't need these.
 
-Signed-off-by: Masanari Iida <standby24x7@gmail.com>
+Ok.
+
+> > diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+> > index 33b3b0abf4ae..6b5e5143c95b 100644
+> > --- a/drivers/crypto/nx/nx-842-powernv.c
+> > +++ b/drivers/crypto/nx/nx-842-powernv.c
+> > @@ -594,6 +594,9 @@ static __init int nx842_powernv_init(void)
+> >  	BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
+> >  	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
+> >  
+> > +	if (!machine_is(powernv))
+> > +		return -ENODEV;
+> > +
+> >  	pr_info("loading\n");
+> 
+> This is just too chatty, drop it.
+> 
+> >  	for_each_compatible_node(dn, NULL, "ibm,power-nx")
+> 
+> It shouldn't be printing anything unless it finds some devices in this loop.
+> 
+> And you should drop the print in here:
+> 
+> 	if (!nx842_ct) {
+> 		pr_err("no coprocessors found\n");
+> 		return -ENODEV;
+> 	}
+> 
+> And that should mean no output unless hardware is found I think?
+
+Yep, will adjust.
+
+> > @@ -625,6 +628,9 @@ static void __exit nx842_powernv_exit(void)
+> >  {
+> >  	struct nx842_coproc *coproc, *n;
+> >  
+> > +	if (!machine_is(powernv))
+> > +		return;
+> 
+> You shouldn't need to touch the exit paths if the drivers were never
+> loaded?
+
+Duh, yep.
+
+> > diff --git a/drivers/crypto/nx/nx-842-pseries.c b/drivers/crypto/nx/nx-842-pseries.c
+> > index b84b0ceeb46e..75a7bfdc160e 100644
+> > --- a/drivers/crypto/nx/nx-842-pseries.c
+> > +++ b/drivers/crypto/nx/nx-842-pseries.c
+> > @@ -1091,6 +1091,9 @@ static int __init nx842_pseries_init(void)
+> >  	struct nx842_devdata *new_devdata;
+> >  	int ret;
+> >  
+> > +	if (!machine_is(pseries))
+> > +		return -ENODEV;
+> > +
+> >  	pr_info("Registering IBM Power 842 compression driver\n");
+> 
+> Again this is too chatty, just remove it.
+
+Will do.
+
+> >  	if (!of_find_compatible_node(NULL, NULL, "ibm,compression"))
+> 		return -ENODEV;
+> 
+> That should do the trick shouldn't it?
+
+Yep, I think so.
+
+Thanks Michael!
+
+
+While we never would successfully load on the wrong machine type, there
+is extra output by default regardless of machine type.
+
+For instance, on a PowerVM LPAR, we see the following:
+
+nx_compress_powernv: loading
+nx_compress_powernv: no coprocessors found
+
+even though those coprocessors could never be found.
+
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Dan Streetman <ddstreet@us.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: linux-crypto@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+
 ---
- Documentation/powerpc/cxl.txt         | 2 +-
- Documentation/powerpc/dscr.txt        | 6 +++---
- Documentation/powerpc/qe_firmware.txt | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+v2:
+  Rather than not loading, just reduce the verbosity
 
-diff --git a/Documentation/powerpc/cxl.txt b/Documentation/powerpc/cxl.txt
-index 2a230d01..205c1b8 100644
---- a/Documentation/powerpc/cxl.txt
-+++ b/Documentation/powerpc/cxl.txt
-@@ -133,7 +133,7 @@ User API
-     The following file operations are supported on both slave and
-     master devices.
+ drivers/crypto/nx/nx-842-powernv.c | 10 +---------
+ drivers/crypto/nx/nx-842-pseries.c |  3 ---
+ 2 files changed, 1 insertion(+), 12 deletions(-)
+
+diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+index 33b3b0abf4ae..7e474562058d 100644
+--- a/drivers/crypto/nx/nx-842-powernv.c
++++ b/drivers/crypto/nx/nx-842-powernv.c
+@@ -594,15 +594,11 @@ static __init int nx842_powernv_init(void)
+ 	BUILD_BUG_ON(DDE_BUFFER_ALIGN % DDE_BUFFER_SIZE_MULT);
+ 	BUILD_BUG_ON(DDE_BUFFER_SIZE_MULT % DDE_BUFFER_LAST_MULT);
  
--    A userspace library libcxl is avaliable here:
-+    A userspace library libcxl is available here:
- 	https://github.com/ibm-capi/libcxl
-     This provides a C interface to this kernel API.
+-	pr_info("loading\n");
+-
+ 	for_each_compatible_node(dn, NULL, "ibm,power-nx")
+ 		nx842_powernv_probe(dn);
  
-diff --git a/Documentation/powerpc/dscr.txt b/Documentation/powerpc/dscr.txt
-index 1ff4400..ece300c 100644
---- a/Documentation/powerpc/dscr.txt
-+++ b/Documentation/powerpc/dscr.txt
-@@ -4,7 +4,7 @@
- DSCR register in powerpc allows user to have some control of prefetch of data
- stream in the processor. Please refer to the ISA documents or related manual
- for more detailed information regarding how to use this DSCR to attain this
--control of the pefetches . This document here provides an overview of kernel
-+control of the prefetches . This document here provides an overview of kernel
- support for DSCR, related kernel objects, it's functionalities and exported
- user interface.
+-	if (!nx842_ct) {
+-		pr_err("no coprocessors found\n");
++	if (!nx842_ct)
+ 		return -ENODEV;
+-	}
  
-@@ -44,7 +44,7 @@ user interface.
- 	value into every CPU's DSCR register right away and updates the current
- 	thread's DSCR value as well.
+ 	if (!nx842_platform_driver_set(&nx842_powernv_driver)) {
+ 		struct nx842_coproc *coproc, *n;
+@@ -615,8 +611,6 @@ static __init int nx842_powernv_init(void)
+ 		return -EEXIST;
+ 	}
  
--	Changing the CPU specif DSCR default value in the sysfs does exactly
-+	Changing the CPU specific DSCR default value in the sysfs does exactly
- 	the same thing as above but unlike the global one above, it just changes
- 	stuff for that particular CPU instead for all the CPUs on the system.
+-	pr_info("loaded\n");
+-
+ 	return 0;
+ }
+ module_init(nx842_powernv_init);
+@@ -631,7 +625,5 @@ static void __exit nx842_powernv_exit(void)
+ 		list_del(&coproc->list);
+ 		kfree(coproc);
+ 	}
+-
+-	pr_info("unloaded\n");
+ }
+ module_exit(nx842_powernv_exit);
+diff --git a/drivers/crypto/nx/nx-842-pseries.c b/drivers/crypto/nx/nx-842-pseries.c
+index b84b0ceeb46e..d44524da6589 100644
+--- a/drivers/crypto/nx/nx-842-pseries.c
++++ b/drivers/crypto/nx/nx-842-pseries.c
+@@ -1091,8 +1091,6 @@ static int __init nx842_pseries_init(void)
+ 	struct nx842_devdata *new_devdata;
+ 	int ret;
  
-@@ -62,7 +62,7 @@ user interface.
+-	pr_info("Registering IBM Power 842 compression driver\n");
+-
+ 	if (!of_find_compatible_node(NULL, NULL, "ibm,compression"))
+ 		return -ENODEV;
  
- 	Accessing DSCR through user level SPR (0x03) from user space will first
- 	create a facility unavailable exception. Inside this exception handler
--	all mfspr isntruction based read attempts will get emulated and returned
-+	all mfspr instruction based read attempts will get emulated and returned
- 	where as the first mtspr instruction based write attempts will enable
- 	the DSCR facility for the next time around (both for read and write) by
- 	setting DSCR facility in the FSCR register.
-diff --git a/Documentation/powerpc/qe_firmware.txt b/Documentation/powerpc/qe_firmware.txt
-index 2031ddb..e7ac24a 100644
---- a/Documentation/powerpc/qe_firmware.txt
-+++ b/Documentation/powerpc/qe_firmware.txt
-@@ -117,7 +117,7 @@ specific been defined.  This table describes the structure.
- Extended Modes
+@@ -1129,7 +1127,6 @@ static void __exit nx842_pseries_exit(void)
+ 	struct nx842_devdata *old_devdata;
+ 	unsigned long flags;
  
- This is a double word bit array (64 bits) that defines special functionality
--which has an impact on the softwarew drivers.  Each bit has its own impact
-+which has an impact on the software drivers.  Each bit has its own impact
- and has special instructions for the s/w associated with it.  This structure is
- described in this table:
- 
+-	pr_info("Exiting IBM Power 842 compression driver\n");
+ 	nx842_platform_driver_unset(&nx842_pseries_driver);
+ 	spin_lock_irqsave(&devdata_mutex, flags);
+ 	old_devdata = rcu_dereference_check(devdata,
 -- 
-2.5.0.rc1
+2.1.4
