@@ -1,24 +1,37 @@
-Return-Path: <zidan.wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0148.outbound.protection.outlook.com [157.56.110.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0AEAF1A0DA8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 19:49:14 +1000 (AEST)
-From: Zidan Wang <zidan.wang@freescale.com>
-To: <timur@tabi.org>
-CC: <nicoleotsuka@gmail.com>, <lgirdwood@gmail.com>, <broonie@kernel.org>,
- <perex@perex.cz>, <tiwai@suse.de>, <alsa-devel@alsa-project.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>, Zidan Wang
- <zidan.wang@freescale.com>
-Subject: [alsa-devel][PATCH 3/3] ASoC: fsl_sai: Add driver suspend and resume
- to support MEGA Fast
-Date: Mon, 6 Jul 2015 17:50:36 +0800
-Message-ID: <2413b8455682d5a245110dba0c12f7c40b68bbba.1436176158.git.zidan.wang@freescale.com>
-In-Reply-To: <d626b0b7ad28a96fea0a60e7db29b894fb948166.1436176158.git.zidan.wang@freescale.com>
-References: <d626b0b7ad28a96fea0a60e7db29b894fb948166.1436176158.git.zidan.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57F191A0D7D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 20:26:11 +1000 (AEST)
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A03C3140DC0
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Jul 2015 20:26:10 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 6 Jul 2015 15:56:07 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E0B453940068
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Jul 2015 15:56:02 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t66APrdT25690156
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 Jul 2015 15:55:55 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t66APpPQ027748
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 Jul 2015 15:55:51 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mikey@neuling.org
+Subject: [PATCH 1/2] powerpc/signal: Fix confusing header documentation in
+ sigcontext.h
+Date: Mon,  6 Jul 2015 15:55:33 +0530
+Message-Id: <1436178334-15496-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,77 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For i.MX6 SoloX, there is a mode of the SoC to shutdown all power source of
-modules during system suspend and resume procedure. Thus, SAI needs to save
-all the values of registers before the system suspend and restore them after
-the system resume.
+As 'vmx_reserve' array element had been expanded to contain 101 double
+words, the comment block above that needs to be updated. Also changed
+the array size declaration to reflect the logic mentioned in the comment
+block above. This change helps in explaining how the HW registers are
+represented in the array.
 
-Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- sound/soc/fsl/fsl_sai.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ arch/powerpc/include/uapi/asm/sigcontext.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 5c73bea..62187e4 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -637,6 +637,8 @@ static bool fsl_sai_readable_reg(struct device *dev, unsigned int reg)
- static bool fsl_sai_volatile_reg(struct device *dev, unsigned int reg)
- {
- 	switch (reg) {
-+	case FSL_SAI_TCSR:
-+	case FSL_SAI_RCSR:
- 	case FSL_SAI_TFR:
- 	case FSL_SAI_RFR:
- 	case FSL_SAI_TDR:
-@@ -681,6 +683,7 @@ static const struct regmap_config fsl_sai_regmap_config = {
- 	.readable_reg = fsl_sai_readable_reg,
- 	.volatile_reg = fsl_sai_volatile_reg,
- 	.writeable_reg = fsl_sai_writeable_reg,
-+	.cache_type = REGCACHE_RBTREE,
+diff --git a/arch/powerpc/include/uapi/asm/sigcontext.h b/arch/powerpc/include/uapi/asm/sigcontext.h
+index 9c1f24f..b0c5c46 100644
+--- a/arch/powerpc/include/uapi/asm/sigcontext.h
++++ b/arch/powerpc/include/uapi/asm/sigcontext.h
+@@ -28,7 +28,7 @@ struct sigcontext {
+ /*
+  * To maintain compatibility with current implementations the sigcontext is
+  * extended by appending a pointer (v_regs) to a quadword type (elf_vrreg_t)
+- * followed by an unstructured (vmx_reserve) field of 69 doublewords.  This
++ * followed by an unstructured (vmx_reserve) field of 101 doublewords. This
+  * allows the array of vector registers to be quadword aligned independent of
+  * the alignment of the containing sigcontext or ucontext. It is the
+  * responsibility of the code setting the sigcontext to set this pointer to
+@@ -80,7 +80,7 @@ struct sigcontext {
+  * registers and vscr/vrsave.
+  */
+ 	elf_vrreg_t	__user *v_regs;
+-	long		vmx_reserve[ELF_NVRREG+ELF_NVRREG+32+1];
++	long		vmx_reserve[ELF_NVRREG+ELF_NVRREG+1+32];
+ #endif
  };
  
- static int fsl_sai_probe(struct platform_device *pdev)
-@@ -802,10 +805,40 @@ static const struct of_device_id fsl_sai_ids[] = {
- 	{ /* sentinel */ }
- };
- 
-+#if CONFIG_PM_SLEEP
-+static int fsl_sai_suspend(struct device *dev)
-+{
-+	struct fsl_sai *sai = dev_get_drvdata(dev);
-+
-+	regcache_cache_only(sai->regmap, true);
-+	regcache_mark_dirty(sai->regmap);
-+
-+	return 0;
-+}
-+
-+static int fsl_sai_resume(struct device *dev)
-+{
-+	struct fsl_sai *sai = dev_get_drvdata(dev);
-+
-+	regcache_cache_only(sai->regmap, false);
-+	regmap_write(sai->regmap, FSL_SAI_TCSR, FSL_SAI_CSR_SR);
-+	regmap_write(sai->regmap, FSL_SAI_RCSR, FSL_SAI_CSR_SR);
-+	msleep(1);
-+	regmap_write(sai->regmap, FSL_SAI_TCSR, 0);
-+	regmap_write(sai->regmap, FSL_SAI_RCSR, 0);
-+	return regcache_sync(sai->regmap);
-+}
-+#endif /* CONFIG_PM_SLEEP */
-+
-+static const struct dev_pm_ops fsl_sai_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(fsl_sai_suspend, fsl_sai_resume)
-+};
-+
- static struct platform_driver fsl_sai_driver = {
- 	.probe = fsl_sai_probe,
- 	.driver = {
- 		.name = "fsl-sai",
-+		.pm = &fsl_sai_pm_ops,
- 		.of_match_table = fsl_sai_ids,
- 	},
- };
 -- 
-1.9.1
+2.1.0
