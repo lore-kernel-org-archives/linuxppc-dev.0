@@ -1,35 +1,35 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41E511A0452
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 17:28:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1ECA41A04C7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 18:00:02 +1000 (AEST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Mon, 6 Jul 2015 12:58:05 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id ED9F4394005B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 12:57:59 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t667RvZq61669584
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 12:57:58 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t667RtZN024467
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 12:57:56 +0530
-Message-ID: <1436167667.3332.23.camel@localhost.localdomain>
-Subject: Re: [RESEND] powerpc/configs: enable RTC class support
-From: Vaibhav <vaibhav@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-Date: Mon, 06 Jul 2015 12:57:47 +0530
-In-Reply-To: <20150703065901.696F21402AE@ozlabs.org>
-References: <20150703065901.696F21402AE@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Mon, 6 Jul 2015 13:29:59 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 443A0E0133
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 13:32:06 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t667w92r44695610
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 13:28:12 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t666lK3n010243
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jul 2015 12:17:20 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Dinar valeev <k0da@opensuse.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Dinar Valeev <dvaleev@suse.com>
+Subject: Re: [PATCH] Fix function keys sequence on USB
+In-Reply-To: <1432906201-25009-1-git-send-email-k0da@opensuse.org>
+References: <1432906201-25009-1-git-send-email-k0da@opensuse.org>
+Date: Mon, 06 Jul 2015 13:28:07 +0530
+Message-ID: <873811ra40.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,63 +39,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-03 at 16:59 +1000, Michael Ellerman wrote:
-> You still haven't told me what happens on a pseries machine when this
-is
-> applied.
+Dinar valeev <k0da@opensuse.org> writes:
 
-Was finally able to get my hand over a pseries guest lpar today so
-dumping the results below. I have aggregated results for each
-configuration namely host & guest version; with each with/without the
-patch. So in all results for 4 different configurations.
+> From: Dinar Valeev <dvaleev@suse.com>
+>
+> Original issue is home and end keys are not functional in grub2.
+> Later I've found other inconsistencies in f1-f12 keys.
+>
+> "Correct sequence" was crabbed by pressing key on cat running in
+> xterm.
+>
+> Tested with Home, End, F2, Del and F10 keys in grub2
 
--------------------------
-*host-kernel/without patch
--------------------------
+Few observations with more testing:
 
-Without the patch the hwclock fails with an error message:
+* In console mode F2 and F10 both are interpreted as ESC.
+* In VNC F2 works fine F10 does not.
 
-[root@tul169p1 ~]# hwclock
-hwclock: Timed out waiting for time change.
-hwclock: The Hardware Clock registers contain values that are either
-invalid (e.g. 50th day of month) or beyond the range we can handle (e.g.
-Year 2095).
+I would suggest to drop the "Fn" related changes and resend this patch
+with END/HOME. As Ctrl-c and Ctrl-x both works as expected in the grub
+edit mode.
 
-Debug message of hwclock reveal that hwclock cannot detect any tick in
-the RTC clock. This is due to older genrtc driver being used instead of
-newer rtc-opal driver.
-
--------------------------
-*host-kernel/with patch
--------------------------
-
-The patch enables the rtc-opal driver by enabling CONFIG_RTC_CLASS. So
-the hwclock starts working. Below is the command log:
-
-[root@tul169p1 ~]# hwclock -r
-Fri 03 Jul 2015 03:54:31 AM CDT  -0.876949 seconds
-
---------------------------
-*guest-kernel/without patch
----------------------------
-Without the patch hwclock still works but uses the legacy generic-rtc.
-Below is the output indicating that:
-
-linux-3bot:/ # hwclock -r
-Sun Jul  5 21:19:51 2015  -0.885070 seconds
-
-linux-3bot:/ # ls /dev/class/rtc
-ls: cannot access /dev/class/rtc: No such file or directory
-
---------------------------
-*guest-kernel/with patch
----------------------------
-With the patch, which enables the new rtc_class framework, the legacy
-behavior is still used preserved. Below is the output indicating that:
-linux-3bot:~ # hwclock -r
-Sun Jul  5 21:36:53 2015  -0.704169 seconds
-
-linux-3bot:~ # ls /sys/class/rtc
-rtc0
-
-~Vaibhav
+>
+> Signed-off-by: Dinar Valeev <dvaleev@suse.com>
+> ---
+>  lib/libusb/usb-hid.c | 40 +++++++++++++++++-----------------------
+>  1 file changed, 17 insertions(+), 23 deletions(-)
+>
+> diff --git a/lib/libusb/usb-hid.c b/lib/libusb/usb-hid.c
+> index f0cab8a..ccd5ba9 100644
+> --- a/lib/libusb/usb-hid.c
+> +++ b/lib/libusb/usb-hid.c
+> @@ -190,33 +190,29 @@ static void check_key_code(uint8_t *buf)
+>  				case 0x3a:	                        /* F1 */
+>  					write_key(0x1b);
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> -					write_key(0x31);
+> -					write_key(0x7e);
+> +					write_key(0x4f);
+> +					write_key(0x50);
+>  					break;
+>  
+>  				case 0x3b:		                /* F2 */
+>  					write_key(0x1b);
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> -					write_key(0x32);
+> -					write_key(0x7e);
+> +					write_key(0x4f);
+> +					write_key(0x51);
+>  					break;
+>  
+>  				case 0x3c:
+>  					write_key(0x1b);               /* F3 */
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> -					write_key(0x33);
+> -					write_key(0x7e);
+> +					write_key(0x4f);
+> +					write_key(0x52);
+>  					break;
+>  
+>  				case 0x3d:
+>  					write_key(0x1b);		/* F4 */
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> -					write_key(0x34);
+> -					write_key(0x7e);
+> +					write_key(0x4f);
+> +					write_key(0x53);
+>  					break;
+>  
+>  				case 0x3e:
+> @@ -254,7 +250,7 @@ static void check_key_code(uint8_t *buf)
+>  				case 0x42:
+>  					write_key(0x1b);		/* F9 */
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> +					write_key(0x32);
+>  					write_key(0x30);
+>  					write_key(0x7e);
+>  					break;
+> @@ -262,7 +258,7 @@ static void check_key_code(uint8_t *buf)
+>  				case 0x43:
+>  					write_key(0x1b);	       /* F10 */
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> +					write_key(0x32);
+>  					write_key(0x31);
+>  					write_key(0x7e);
+>  					break;
+> @@ -270,7 +266,7 @@ static void check_key_code(uint8_t *buf)
+>  				case 0x44:
+>  					write_key(0x1b);	       /* F11 */
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> +					write_key(0x32);
+>  					write_key(0x33);
+>  					write_key(0x7e);
+>  					break;
+> @@ -278,7 +274,7 @@ static void check_key_code(uint8_t *buf)
+>  				case 0x45:
+>  					write_key(0x1b);	       /* F12 */
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> +					write_key(0x32);
+>  					write_key(0x34);
+>  					write_key(0x7e);
+>  					break;
+> @@ -290,36 +286,34 @@ static void check_key_code(uint8_t *buf)
+>  				case 0x49:
+>  					write_key(0x1b);	       /* INS */
+>  					write_key(0x5b);
+> -					write_key(0x31);
+> +					write_key(0x32);
+>  					write_key(0x7e);
+>  					break;
+>  
+>  				case 0x4a:
+>  					write_key(0x1b);	      /* HOME */
+>  					write_key(0x5b);
+> -					write_key(0x32);
+> -					write_key(0x7e);
+> +					write_key(0x48);
+>  					break;
+>  
+>  				case 0x4b:
+>  					write_key(0x1b);	      /* PgUp */
+>  					write_key(0x5b);
+> -					write_key(0x33);
+> +					write_key(0x35);
+>  					write_key(0x7e);
+>  					break;
+>  
+>  				case 0x4c:
+>  					write_key(0x1b);	       /* DEL */
+>  					write_key(0x5b);
+> -					write_key(0x34);
+> +					write_key(0x33);
+>  					write_key(0x7e);
+>  					break;
+>  
+>  				case 0x4d:
+>  					write_key(0x1b);	       /* END */
+>  					write_key(0x5b);
+> -					write_key(0x35);
+> -					write_key(0x7e);
+> +					write_key(0x46);
+>  					break;
+>  
+>  				case 0x4e:
+> -- 
+> 2.1.4
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
