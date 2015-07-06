@@ -1,37 +1,28 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <festevam@gmail.com>
+Received: from mail-la0-x235.google.com (mail-la0-x235.google.com
+ [IPv6:2a00:1450:4010:c03::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 57F191A0D7D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 20:26:11 +1000 (AEST)
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A03C3140DC0
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Jul 2015 20:26:10 +1000 (AEST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 6 Jul 2015 15:56:07 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E0B453940068
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Jul 2015 15:56:02 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t66APrdT25690156
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Jul 2015 15:55:55 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t66APpPQ027748
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Jul 2015 15:55:51 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org
-Subject: [PATCH 1/2] powerpc/signal: Fix confusing header documentation in
- sigcontext.h
-Date: Mon,  6 Jul 2015 15:55:33 +0530
-Message-Id: <1436178334-15496-1-git-send-email-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59BB31A0D7D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jul 2015 20:26:30 +1000 (AEST)
+Received: by laar3 with SMTP id r3so149148690laa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jul 2015 03:26:26 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <d626b0b7ad28a96fea0a60e7db29b894fb948166.1436176158.git.zidan.wang@freescale.com>
+References: <d626b0b7ad28a96fea0a60e7db29b894fb948166.1436176158.git.zidan.wang@freescale.com>
+Date: Mon, 6 Jul 2015 07:26:26 -0300
+Message-ID: <CAOMZO5C1uY_qWAd_yEj+-yuXwGZgOOn=7Dcb+5ms16ouQRkmEw@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH 1/3] ASoC: fsl_esai: Add driver suspend and
+ resume to support MEGA Fast
+From: Fabio Estevam <festevam@gmail.com>
+To: Zidan Wang <zidan.wang@freescale.com>
+Cc: Timur Tabi <timur@tabi.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Takashi Iwai <tiwai@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +32,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As 'vmx_reserve' array element had been expanded to contain 101 double
-words, the comment block above that needs to be updated. Also changed
-the array size declaration to reflect the logic mentioned in the comment
-block above. This change helps in explaining how the HW registers are
-represented in the array.
+On Mon, Jul 6, 2015 at 6:50 AM, Zidan Wang <zidan.wang@freescale.com> wrote:
+> For i.MX6 SoloX, there is a mode of the SoC to shutdown all power source of
+> modules during system suspend and resume procedure. Thus, SAI needs to save
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/include/uapi/asm/sigcontext.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/uapi/asm/sigcontext.h b/arch/powerpc/include/uapi/asm/sigcontext.h
-index 9c1f24f..b0c5c46 100644
---- a/arch/powerpc/include/uapi/asm/sigcontext.h
-+++ b/arch/powerpc/include/uapi/asm/sigcontext.h
-@@ -28,7 +28,7 @@ struct sigcontext {
- /*
-  * To maintain compatibility with current implementations the sigcontext is
-  * extended by appending a pointer (v_regs) to a quadword type (elf_vrreg_t)
-- * followed by an unstructured (vmx_reserve) field of 69 doublewords.  This
-+ * followed by an unstructured (vmx_reserve) field of 101 doublewords. This
-  * allows the array of vector registers to be quadword aligned independent of
-  * the alignment of the containing sigcontext or ucontext. It is the
-  * responsibility of the code setting the sigcontext to set this pointer to
-@@ -80,7 +80,7 @@ struct sigcontext {
-  * registers and vscr/vrsave.
-  */
- 	elf_vrreg_t	__user *v_regs;
--	long		vmx_reserve[ELF_NVRREG+ELF_NVRREG+32+1];
-+	long		vmx_reserve[ELF_NVRREG+ELF_NVRREG+1+32];
- #endif
- };
- 
--- 
-2.1.0
+You meant ESAI, not SAI.
