@@ -1,25 +1,27 @@
 Return-Path: <chzigotzky@xenosoft.de>
 Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::5])
+ [IPv6:2a01:238:20a:202:5300::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 991741A1147
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 22:50:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 130D41A1138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 23:25:17 +1000 (AEST)
 Received: from [192.168.1.106] (ppp-93-104-86-142.dynamic.mnet-online.de
  [93.104.86.142]) by smtp.strato.de (RZmta 37.8 DYNA|AUTH)
- with ESMTPSA id v03d69r67CiD3OT
+ with ESMTPSA id e07b48r67BPBzWW
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (curve secp521r1 with 521 ECDH
  bits, eq. 15360 bits RSA)) (Client did not present a certificate)
  for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 7 Jul 2015 14:44:13 +0200 (CEST)
-Message-ID: <559BC99D.20608@xenosoft.de>
-Date: Tue, 07 Jul 2015 14:44:13 +0200
+ Tue, 7 Jul 2015 13:25:11 +0200 (CEST)
+Message-ID: <559BB716.6040001@xenosoft.de>
+Date: Tue, 07 Jul 2015 13:25:10 +0200
 From: Christian Zigotzky <chzigotzky@xenosoft.de>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
 Subject: PASEMI: PA6T board doesn't boot with the RC1 of kernel 4.2 anymore
-References: <559BB716.6040001@xenosoft.de>
-In-Reply-To: <559BB716.6040001@xenosoft.de>
+References: <1428985683-24767-1-git-send-email-dja@axtens.net>
+ <1428985683-24767-9-git-send-email-dja@axtens.net>
+ <559BAF0D.4020207@xenosoft.de>
+In-Reply-To: <559BAF0D.4020207@xenosoft.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,8 +31,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-
-
 
 Error messages images:
 
@@ -42,7 +42,7 @@ http://forum.hyperion-entertainment.biz/download/file.php?id=1774&mode=view
 On 07 July 2015 12:50 PM Christian Zigotzky wrote:
 > Dear Linuxppc-dev mailing list,
 >
-> I compiled a kernel from the git on Tuesday 23rd of June 2015. It
+> I compiled a kernel from the git on Tuesday 23rd of June 2015. It 
 > didn't boot with my PASEMI PA6T board.
 >
 > Error messages:
@@ -54,14 +54,14 @@ On 07 July 2015 12:50 PM Christian Zigotzky wrote:
 >
 > Kernel panic - not syncing: Fatal exception in interrupt
 >
-> I compiled the RC1 of kernel 4.2 last Sunday. Unfortunately it didn't
+> I compiled the RC1 of kernel 4.2 last Sunday. Unfortunately it didn't 
 > boot either. The kernel 4.1 and 4.1.1 boot without any problems.
 >
 > Could someone please explain me why it doesn't boot anymore?
 >
 > I would like to thank you very much in advance for helping me.
 >
-> If you have any questions, please don't hesitate to ask. I'm looking
+> If you have any questions, please don't hesitate to ask. I'm looking 
 > forward to getting your reply.
 >
 >
