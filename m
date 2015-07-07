@@ -1,28 +1,26 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 130D41A1138
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 23:25:17 +1000 (AEST)
-Received: from [192.168.1.106] (ppp-93-104-86-142.dynamic.mnet-online.de
- [93.104.86.142]) by smtp.strato.de (RZmta 37.8 DYNA|AUTH)
- with ESMTPSA id e07b48r67BPBzWW
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (curve secp521r1 with 521 ECDH
- bits, eq. 15360 bits RSA)) (Client did not present a certificate)
- for <linuxppc-dev@lists.ozlabs.org>;
- Tue, 7 Jul 2015 13:25:11 +0200 (CEST)
-Message-ID: <559BB716.6040001@xenosoft.de>
-Date: Tue, 07 Jul 2015 13:25:10 +0200
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4E56F1A107B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 00:01:52 +1000 (AEST)
+Date: Tue, 7 Jul 2015 22:01:37 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Dan Streetman <ddstreet@us.ibm.com>, linux-crypto@vger.kernel.org,
+ gustavold@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH v2] crypto/nx-842-{powerpc, pseries}: reduce chattiness of
+ platform drivers
+Message-ID: <20150707140137.GA3351@gondor.apana.org.au>
+References: <20150702223800.GA1712@linux.vnet.ibm.com>
+ <20150702224049.GE1712@linux.vnet.ibm.com>
+ <1435887032.3665.1.camel@ellerman.id.au>
+ <20150706170621.GA3578@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: PASEMI: PA6T board doesn't boot with the RC1 of kernel 4.2 anymore
-References: <1428985683-24767-1-git-send-email-dja@axtens.net>
- <1428985683-24767-9-git-send-email-dja@axtens.net>
- <559BAF0D.4020207@xenosoft.de>
-In-Reply-To: <559BAF0D.4020207@xenosoft.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150706170621.GA3578@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Error messages images:
+On Mon, Jul 06, 2015 at 10:06:21AM -0700, Nishanth Aravamudan wrote:
+>
+> v2:
+>   Rather than not loading, just reduce the verbosity
 
-http://forum.hyperion-entertainment.biz/download/file.php?id=1772&mode=view
-http://forum.hyperion-entertainment.biz/download/file.php?id=1774&mode=view
-
--- Christian
-
-On 07 July 2015 12:50 PM Christian Zigotzky wrote:
-> Dear Linuxppc-dev mailing list,
->
-> I compiled a kernel from the git on Tuesday 23rd of June 2015. It 
-> didn't boot with my PASEMI PA6T board.
->
-> Error messages:
->
-> Oops: Kernel access of bad area, sig: 11 [#1]
->
-> .sb600_8259_cascade+0x4c/0xac (unreliable)
-> .schedule+0x74/0x9c (unreliable)
->
-> Kernel panic - not syncing: Fatal exception in interrupt
->
-> I compiled the RC1 of kernel 4.2 last Sunday. Unfortunately it didn't 
-> boot either. The kernel 4.1 and 4.1.1 boot without any problems.
->
-> Could someone please explain me why it doesn't boot anymore?
->
-> I would like to thank you very much in advance for helping me.
->
-> If you have any questions, please don't hesitate to ask. I'm looking 
-> forward to getting your reply.
->
->
-> Kind regards,
->
-> Christian Zigotzky
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Applied.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
