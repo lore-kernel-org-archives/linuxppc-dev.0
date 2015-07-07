@@ -1,16 +1,39 @@
-Return-Path: <anton@ozlabs.org>
+Return-Path: <imunsie@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AC4061A1051
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 13:57:08 +1000 (AEST)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mikey@neuling.org, cyril.bur@au1.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: Remove mtmsrd(), use existing mtmsr()
-Date: Tue,  7 Jul 2015 13:56:59 +1000
-Message-Id: <1436241419-11153-1-git-send-email-anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F03591A1052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 15:48:03 +1000 (AEST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C30F2140291
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2015 15:48:03 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 7 Jul 2015 15:48:03 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7BA592BB0040
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2015 15:47:58 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t675loVL26542282
+ for <linuxppc-dev@ozlabs.org>; Tue, 7 Jul 2015 15:47:58 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t675lPpO016107
+ for <linuxppc-dev@ozlabs.org>; Tue, 7 Jul 2015 15:47:26 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: mpe <mpe@ellerman.id.au>
+Cc: mikey <mikey@neuling.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Matt Ochs <mrochs@us.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>, stable@vger.kernel.org
+Subject: [PATCH 1/2] cxl: Fix off by one error allowing subsequent mmap page
+ to be accessed
+Date: Tue,  7 Jul 2015 15:45:45 +1000
+Message-Id: <1436247946-16292-1-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,49 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mtmsr() does the right thing on 32bit and 64bit, so use it everywhere.
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
+It was discovered that if a process mmaped their problem state area they
+were able to access one page more than expected, potentially allowing
+them to access the problem state area of an unrelated process.
+
+This was due to a simple off by one error in the mmap fault handler
+introduced in 0712dc7e73e59d79bcead5d5520acf4e9e917e87 ("cxl: Fix issues
+when unmapping contexts"), which is fixed in this patch.
+
+Cc: stable@vger.kernel.org
+Fixes: 0712dc7e73e5 ("cxl: Fix issues when unmapping contexts")
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- arch/powerpc/include/asm/reg.h          | 3 +--
- arch/powerpc/oprofile/op_model_power4.c | 4 ++--
- 2 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/misc/cxl/context.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index af56b5c..bb27588 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -1193,8 +1193,7 @@
- #ifdef CONFIG_PPC_BOOK3S_64
- #define __mtmsrd(v, l)	asm volatile("mtmsrd %0," __stringify(l) \
- 				     : : "r" (v) : "memory")
--#define mtmsrd(v)	__mtmsrd((v), 0)
--#define mtmsr(v)	mtmsrd(v)
-+#define mtmsr(v)	__mtmsrd((v), 0)
- #else
- #define mtmsr(v)	asm volatile("mtmsr %0" : \
- 				     : "r" ((unsigned long)(v)) \
-diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
-index 962fe7b..4b32e94 100644
---- a/arch/powerpc/oprofile/op_model_power4.c
-+++ b/arch/powerpc/oprofile/op_model_power4.c
-@@ -207,7 +207,7 @@ static int power4_start(struct op_counter_config *ctr)
- 	unsigned int mmcr0;
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 2a4c80a..6c1ce51 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -113,11 +113,11 @@ static int cxl_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
  
- 	/* set the PMM bit (see comment below) */
--	mtmsrd(mfmsr() | MSR_PMM);
-+	mtmsr(mfmsr() | MSR_PMM);
+ 	if (ctx->afu->current_mode == CXL_MODE_DEDICATED) {
+ 		area = ctx->afu->psn_phys;
+-		if (offset > ctx->afu->adapter->ps_size)
++		if (offset >= ctx->afu->adapter->ps_size)
+ 			return VM_FAULT_SIGBUS;
+ 	} else {
+ 		area = ctx->psn_phys;
+-		if (offset > ctx->psn_size)
++		if (offset >= ctx->psn_size)
+ 			return VM_FAULT_SIGBUS;
+ 	}
  
- 	for (i = 0; i < cur_cpu_spec->num_pmcs; ++i) {
- 		if (ctr[i].enabled) {
-@@ -377,7 +377,7 @@ static void power4_handle_interrupt(struct pt_regs *regs,
- 	is_kernel = get_kernel(pc, mmcra);
- 
- 	/* set the PMM bit (see comment below) */
--	mtmsrd(mfmsr() | MSR_PMM);
-+	mtmsr(mfmsr() | MSR_PMM);
- 
- 	/* Check that the SIAR  valid bit in MMCRA is set to 1. */
- 	if ((mmcra & MMCRA_SIAR_VALID_MASK) == MMCRA_SIAR_VALID_MASK)
 -- 
 2.1.4
