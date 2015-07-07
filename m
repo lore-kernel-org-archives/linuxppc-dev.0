@@ -2,15 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 72C501A1059
+ by lists.ozlabs.org (Postfix) with ESMTPS id F1CA11A1059
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 20:38:02 +1000 (AEST)
-In-Reply-To: <1435574111-45617-1-git-send-email-maninder1.s@samsung.com>
-To: Maninder Singh <maninder1.s@samsung.com>, imunsie@au1.ibm.com,
- mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1434338719-8416-1-git-send-email-dja@axtens.net>
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Maninder Singh <maninder1.s@samsung.com>, pankaj.m@samsung.com
-Subject: Re: [1/1] cxl/vphb.c: Use phb pointer after NULL check
-Message-Id: <20150707103802.4FD821401EF@ozlabs.org>
+Cc: Daniel Axtens <dja@axtens.net>
+Subject: Re: powerpc: Set the correct kernel taint on machine check errors.
+Message-Id: <20150707103802.DA52B1402BE@ozlabs.org>
 Date: Tue,  7 Jul 2015 20:38:02 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,17 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-29-06 at 10:35:11 UTC, Maninder Singh wrote:
-> static Anlaysis detected below error:-
-> (error) Possible null pointer dereference: phb
+On Mon, 2015-15-06 at 03:25:19 UTC, Daniel Axtens wrote:
+> This means the 'M' flag will work properly when the kernel prints a backtrace.
 > 
-> So, Use phb after NULL check.
-> 
-> Signed-off-by: Maninder Singh <maninder1.s@samsung.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=14f21189df33bc972455d6a0ed875aa68718d7fc
+https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=27ea2c420cad57386c25668cb9a9f0f082635586
 
 cheers
