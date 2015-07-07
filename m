@@ -1,20 +1,40 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0146.outbound.protection.outlook.com [207.46.100.146])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ADD4D1A1059
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 16:56:04 +1000 (AEST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-CC: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Subject: [PATCH 2/2 v2] powerpc/t1023rdb: add ina220 current sensor node
-Date: Tue, 7 Jul 2015 14:17:41 +0800
-Message-ID: <1436249861-48406-2-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1436249861-48406-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1436249861-48406-1-git-send-email-Shengzhou.Liu@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F2B81A1055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jul 2015 17:11:33 +1000 (AEST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 14CEA1402B8
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2015 17:11:33 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 7 Jul 2015 17:11:32 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D6B012CE8050
+ for <linuxppc-dev@ozlabs.org>; Tue,  7 Jul 2015 17:11:29 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t677BL7F49414224
+ for <linuxppc-dev@ozlabs.org>; Tue, 7 Jul 2015 17:11:29 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t677AvuZ019851
+ for <linuxppc-dev@ozlabs.org>; Tue, 7 Jul 2015 17:10:57 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Cc: mikey <mikey@neuling.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ vaibhav <vaibhav@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] cxl: Set up and enable PSL Timebase
+In-reply-to: <1433944919-8013-1-git-send-email-felix@linux.vnet.ibm.com>
+References: <1433944919-8013-1-git-send-email-felix@linux.vnet.ibm.com>
+Date: Tue, 07 Jul 2015 17:10:32 +1000
+Message-Id: <1436252946-sup-4013@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +44,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for INA220 current sensor.
-
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
-v2: rename node name to 'current-sensor' for generic.
-
- arch/powerpc/boot/dts/t1023rdb.dts | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/arch/powerpc/boot/dts/t1023rdb.dts b/arch/powerpc/boot/dts/t1023rdb.dts
-index 06b090a..aa50885 100644
---- a/arch/powerpc/boot/dts/t1023rdb.dts
-+++ b/arch/powerpc/boot/dts/t1023rdb.dts
-@@ -99,6 +99,17 @@
- 		};
- 
- 		i2c@118100 {
-+			current-sensor@40 {
-+				compatible = "ti,ina220";
-+				reg = <0x40>;
-+				shunt-resistor = <1000>;
-+			};
-+
-+			current-sensor@41 {
-+				compatible = "ti,ina220";
-+				reg = <0x41>;
-+				shunt-resistor = <1000>;
-+			};
- 		};
- 	};
- 
--- 
-2.1.0.27.g96db324
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
