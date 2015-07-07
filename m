@@ -1,20 +1,20 @@
 Return-Path: <xerofoify@gmail.com>
-Received: from mail-ie0-x236.google.com (mail-ie0-x236.google.com
- [IPv6:2607:f8b0:4001:c03::236])
+Received: from mail-ie0-x234.google.com (mail-ie0-x234.google.com
+ [IPv6:2607:f8b0:4001:c03::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 88DEB1A115F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 04:07:21 +1000 (AEST)
-Received: by iecvh10 with SMTP id vh10so140038709iec.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2015 11:07:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 326C51A0D75
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 05:36:38 +1000 (AEST)
+Received: by iebmu5 with SMTP id mu5so141181960ieb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Jul 2015 12:36:35 -0700 (PDT)
 From: Nicholas Krause <xerofoify@gmail.com>
 To: leoli@freescale.com
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH] freescale:Make receive and transmit functions have a return
- type of void
-Date: Tue,  7 Jul 2015 14:07:12 -0400
-Message-Id: <1436292432-1933-1-git-send-email-xerofoify@gmail.com>
+Subject: [PATCH] freescale:Make the function ucc_geth_tx have a return type of
+ void
+Date: Tue,  7 Jul 2015 15:36:29 -0400
+Message-Id: <1436297789-31422-1-git-send-email-xerofoify@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,62 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes various receive and transmit functions that always run
-successfully to be declared to have a return of void for the driver
-file, ucc_geth.c.
+This makes the function ucc_geth_tx have a return type of void now
+due to this particular function always completing without ever
+executing a non recoverable error.
 
 Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
 ---
- drivers/net/ethernet/freescale/ucc_geth.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/net/ethernet/freescale/ucc_geth.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index 4dd40e0..78ebd73 100644
+index 78ebd73..70f3045 100644
 --- a/drivers/net/ethernet/freescale/ucc_geth.c
 +++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -1398,7 +1398,7 @@ static int adjust_enet_interface(struct ucc_geth_private *ugeth)
- 	return 0;
+@@ -3226,7 +3226,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
+ 	return howmany;
  }
  
--static int ugeth_graceful_stop_tx(struct ucc_geth_private *ugeth)
-+static void ugeth_graceful_stop_tx(struct ucc_geth_private *ugeth)
+-static int ucc_geth_tx(struct net_device *dev, u8 txQ)
++static void ucc_geth_tx(struct net_device *dev, u8 txQ)
  {
- 	struct ucc_fast_private *uccf;
- 	u32 cecr_subblock;
-@@ -1424,11 +1424,9 @@ static int ugeth_graceful_stop_tx(struct ucc_geth_private *ugeth)
- 	} while (!(temp & UCC_GETH_UCCE_GRA) && --i);
- 
- 	uccf->stopped_tx = 1;
--
+ 	/* Start from the next BD that should be filled */
+ 	struct ucc_geth_private *ugeth = netdev_priv(dev);
+@@ -3269,7 +3269,6 @@ static int ucc_geth_tx(struct net_device *dev, u8 txQ)
+ 		bd_status = in_be32((u32 __iomem *)bd);
+ 	}
+ 	ugeth->confBd[txQ] = bd;
 -	return 0;
  }
  
--static int ugeth_graceful_stop_rx(struct ucc_geth_private *ugeth)
-+static void ugeth_graceful_stop_rx(struct ucc_geth_private *ugeth)
- {
- 	struct ucc_fast_private *uccf;
- 	u32 cecr_subblock;
-@@ -1456,11 +1454,9 @@ static int ugeth_graceful_stop_rx(struct ucc_geth_private *ugeth)
- 	} while (!(temp & GRACEFUL_STOP_ACKNOWLEDGE_RX) && --i);
- 
- 	uccf->stopped_rx = 1;
--
--	return 0;
- }
- 
--static int ugeth_restart_tx(struct ucc_geth_private *ugeth)
-+static void ugeth_restart_tx(struct ucc_geth_private *ugeth)
- {
- 	struct ucc_fast_private *uccf;
- 	u32 cecr_subblock;
-@@ -1471,8 +1467,6 @@ static int ugeth_restart_tx(struct ucc_geth_private *ugeth)
- 	    ucc_fast_get_qe_cr_subblock(ugeth->ug_info->uf_info.ucc_num);
- 	qe_issue_cmd(QE_RESTART_TX, cecr_subblock, QE_CR_PROTOCOL_ETHERNET, 0);
- 	uccf->stopped_tx = 0;
--
--	return 0;
- }
- 
- static int ugeth_restart_rx(struct ucc_geth_private *ugeth)
+ static int ucc_geth_poll(struct napi_struct *napi, int budget)
 -- 
 2.1.4
