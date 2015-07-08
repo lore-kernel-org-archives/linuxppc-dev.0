@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3F9F1A1992
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 20:54:08 +1000 (AEST)
-In-Reply-To: <1436230877-14542-1-git-send-email-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26A701A1992
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 20:54:09 +1000 (AEST)
+In-Reply-To: <20150707193725.GA12395@us.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
- imunsie@au.ibm.com
-Subject: Re: cxl: Fix refcounting in kernel API
-Message-Id: <20150708105408.82DA9140AF3@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ gustavold@linux.vnet.ibm.com
+Subject: Re: powerpc/perf/24x7: Fix lockdep warning
+Message-Id: <20150708105409.131F7140B0D@ozlabs.org>
 Date: Wed,  8 Jul 2015 20:54:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,22 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-07 at 01:01:17 UTC, Michael Neuling wrote:
-> Currently the kernel API AFU dev refcounting is done on context start and stop.
-> This patch moves this refcounting to context init and release, bringing it
-> inline with how the userspace API does it.
+On Tue, 2015-07-07 at 19:37:25 UTC, Sukadev Bhattiprolu wrote:
+> >From 370152d9427e57cd9632b00189f71099f8e85544 Mon Sep 17 00:00:00 2001
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Date: Tue, 7 Jul 2015 12:21:10 -0400
+> Subject: [PATCH 1/1] powerpc/perf/24x7: Fix lockdep warning
 > 
-> Without this we've seen the refcounting on the AFU get out of whack between the
-> user and kernel API usage.  This causes the AFU structures to be freed when
-> they are actually still in use.
+> The sysfs attributes for the 24x7 counters are dynamically allocated.
+> Initialize the attributes using sysfs_attr_init() to fix following
+> warning which occurs when CONFIG_DEBUG_LOCK_VMALLOC=y.
 > 
-> This fixes some kref warnings we've been seeing and spurious ErrIVTE IRQs.
+> [    0.346249] audit: initializing netlink subsys (disabled)
+> [    0.346284] audit: type=2000 audit(1436295254.340:1): initialized
+> [    0.346489] BUG: key c0000000efe90198 not in .data!
+> [    0.346491] DEBUG_LOCKS_WARN_ON(1)
+> [    0.346502] ------------[ cut here ]------------
+> [    0.346504] WARNING: at ../kernel/locking/lockdep.c:3002
+> [    0.346506] Modules linked in:
 > 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Reported-by: Gustavo Luiz Duarte <gustavold@linux.vnet.ibm.com>
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Tested-by: Gustavo Luiz Duarte <gustavold@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=3f8dc44d88d3e86178eb9322c779c599f3745b21
+https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=442053e57a4fc58b719b6ceab60f29ef9cf4404c
 
 cheers
