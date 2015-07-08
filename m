@@ -1,29 +1,27 @@
-Return-Path: <robert.jarzmik@free.fr>
-Received: from smtp.smtpout.orange.fr (smtp04.smtpout.orange.fr
- [80.12.242.126])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <corbet@lwn.net>
+Received: from vena.lwn.net (tex.lwn.net [70.33.254.29])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 027431A1137
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 05:29:02 +1000 (AEST)
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-To: Robert Baldyga <r.baldyga@samsung.com>
-Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org,
- linux-usb@vger.kernel.org, m.szyprowski@samsung.com,
- linux-arm-kernel@lists.infradead.org, johnyoun@synopsys.com,
- linuxppc-dev@lists.ozlabs.org, cernekee@gmail.com, nicolas.ferre@atmel.com,
- michal.simek@xilinx.com, balbi@ti.com, linux-kernel@vger.kernel.org,
- haojian.zhuang@gmail.com, linux-omap@vger.kernel.org, Peter.Chen@freescale.com,
- dahlmann.thomas@arcor.de, andrzej.p@samsung.com, leoli@freescale.com,
- daniel@zonque.org, linux-geode@lists.infradead.org
-Subject: Re: [PATCH 28/37] usb: gadget: pxa27x_udc: add ep capabilities support
-References: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
- <1436353761-7107-29-git-send-email-r.baldyga@samsung.com>
-Date: Wed, 08 Jul 2015 21:26:08 +0200
-In-Reply-To: <1436353761-7107-29-git-send-email-r.baldyga@samsung.com> (Robert
- Baldyga's message of "Wed, 08 Jul 2015 13:09:12 +0200")
-Message-ID: <874mlea1tb.fsf@belgarion.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FF401A1A4A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 05:48:25 +1000 (AEST)
+Date: Wed, 8 Jul 2015 13:23:51 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Eric B Munson <emunson@akamai.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko
+ <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V3 3/5] mm: mlock: Introduce VM_LOCKONFAULT and add
+ mlock flags to enable it
+Message-ID: <20150708132351.61c13db6@lwn.net>
+In-Reply-To: <1436288623-13007-4-git-send-email-emunson@akamai.com>
+References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
+ <1436288623-13007-4-git-send-email-emunson@akamai.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,14 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Robert Baldyga <r.baldyga@samsung.com> writes:
+On Tue,  7 Jul 2015 13:03:41 -0400
+Eric B Munson <emunson@akamai.com> wrote:
 
-> Convert endpoint configuration to new capabilities model.
-The commit message is very short to judge the patch's correctness.
+> This patch introduces the ability to request that pages are not
+> pre-faulted, but are placed on the unevictable LRU when they are finally
+> faulted in.  This can be done area at a time via the
+> mlock2(MLOCK_ONFAULT) or the mlockall(MCL_ONFAULT) system calls.  These
+> calls can be undone via munlock2(MLOCK_ONFAULT) or
+> munlockall2(MCL_ONFAULT).
 
-I'll side up with Felipe's opinion. If it's fine by him, so it is by me.
+Quick, possibly dumb question: I've been beating my head against these for
+a little bit, and I can't figure out what's supposed to happen in this
+case:
 
-Cheers.
+	mlock2(addr, len, MLOCK_ONFAULT);
+	munlock2(addr, len, MLOCK_LOCKED);
 
---
-Robert
+It looks to me like it will clear VM_LOCKED without actually unlocking any
+pages.  Is that the intended result?
+
+Thanks,
+
+jon
