@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A5B4E1A18B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:20:18 +1000 (AEST)
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id C69741A18B0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:20:25 +1000 (AEST)
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NR6034NW1P2EQD0@mailout4.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:10:14 +0900 (KST)
+ with ESMTP id <0NR602P4A1OM6940@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:09:58 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH 04/37] staging: emxx_udc: add ep capabilities support
-Date: Wed, 08 Jul 2015 13:08:48 +0200
-Message-id: <1436353761-7107-5-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH 02/37] usb: gadget: add endpoint capabilities flags
+Date: Wed, 08 Jul 2015 13:08:46 +0200
+Message-id: <1436353761-7107-3-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 References: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,92 +34,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert endpoint configuration to new capabilities model.
-
-Fixed typo in "epc-nulk" to "epc-bulk".
+Introduce struct usb_ep_caps which contains information about capabilities
+of usb endpoints - supported transfer types and directions. This structure
+should be filled by UDC driver for each of its endpoints, and will be
+used in epautoconf in new ep matching mechanism which will replace ugly
+guessing of endpoint capabilities basing on its name.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/staging/emxx_udc/emxx_udc.c | 60 ++++++++++++++++++-------------------
- 1 file changed, 29 insertions(+), 31 deletions(-)
+ include/linux/usb/gadget.h | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/drivers/staging/emxx_udc/emxx_udc.c b/drivers/staging/emxx_udc/emxx_udc.c
-index 3b7aa36..0d64bee 100644
---- a/drivers/staging/emxx_udc/emxx_udc.c
-+++ b/drivers/staging/emxx_udc/emxx_udc.c
-@@ -3153,36 +3153,33 @@ static const struct usb_gadget_ops nbu2ss_gadget_ops = {
- 	.ioctl			= nbu2ss_gad_ioctl,
+diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
+index fcb0a4e..6f3e0fb 100644
+--- a/include/linux/usb/gadget.h
++++ b/include/linux/usb/gadget.h
+@@ -141,10 +141,29 @@ struct usb_ep_ops {
  };
  
--static const char g_ep0_name[] = "ep0";
--static const char g_ep1_name[] = "ep1-bulk";
--static const char g_ep2_name[] = "ep2-bulk";
--static const char g_ep3_name[] = "ep3in-int";
--static const char g_ep4_name[] = "ep4-iso";
--static const char g_ep5_name[] = "ep5-iso";
--static const char g_ep6_name[] = "ep6-bulk";
--static const char g_ep7_name[] = "ep7-bulk";
--static const char g_ep8_name[] = "ep8in-int";
--static const char g_ep9_name[] = "ep9-iso";
--static const char g_epa_name[] = "epa-iso";
--static const char g_epb_name[] = "epb-bulk";
--static const char g_epc_name[] = "epc-nulk";
--static const char g_epd_name[] = "epdin-int";
--
--static const char *gp_ep_name[NUM_ENDPOINTS] = {
--	g_ep0_name,
--	g_ep1_name,
--	g_ep2_name,
--	g_ep3_name,
--	g_ep4_name,
--	g_ep5_name,
--	g_ep6_name,
--	g_ep7_name,
--	g_ep8_name,
--	g_ep9_name,
--	g_epa_name,
--	g_epb_name,
--	g_epc_name,
--	g_epd_name,
-+static const struct {
-+	const char *name;
-+	const struct usb_ep_caps caps;
-+} ep_info[NUM_ENDPOINTS] = {
-+#define EP_INFO(_name, _type, _dir) \
-+	{ \
-+		.name = _name, \
-+		.caps = USB_EP_CAPS(USB_EP_CAPS_TYPE_ ## _type, \
-+				USB_EP_CAPS_DIR_ ## _dir), \
-+	}
+ /**
++ * struct usb_ep_caps - endpoint capabilities description
++ * @type_control:Endpoint supports control type (reserved for ep0).
++ * @type_iso:Endpoint supports isochronous transfers.
++ * @type_bulk:Endpoint supports bulk transfers.
++ * @type_int:Endpoint supports interrupt transfers.
++ * @dir_in:Endpoint supports IN direction.
++ * @dir_out:Endpoint supports OUT direction.
++ */
++struct usb_ep_caps {
++	unsigned type_control:1;
++	unsigned type_iso:1;
++	unsigned type_bulk:1;
++	unsigned type_int:1;
++	unsigned dir_in:1;
++	unsigned dir_out:1;
++};
 +
-+	EP_INFO("ep0",		CONTROL, ALL),
-+	EP_INFO("ep1-bulk",	BULK,	ALL),
-+	EP_INFO("ep2-bulk",	BULK,	ALL),
-+	EP_INFO("ep3in-int",	INT,	IN),
-+	EP_INFO("ep4-iso",	INT,	ALL),
-+	EP_INFO("ep5-iso",	ISO,	ALL),
-+	EP_INFO("ep6-bulk",	ISO,	ALL),
-+	EP_INFO("ep7-bulk",	BULK,	ALL),
-+	EP_INFO("ep8in-int",	INT,	IN),
-+	EP_INFO("ep9-iso",	ISO,	ALL),
-+	EP_INFO("epa-iso",	ISO,	ALL),
-+	EP_INFO("epb-bulk",	BULK,	ALL),
-+	EP_INFO("epc-bulk",	BULK,	ALL),
-+	EP_INFO("epdin-int",	INT,	IN),
++/**
+  * struct usb_ep - device side representation of USB endpoint
+  * @name:identifier for the endpoint, such as "ep-a" or "ep9in-bulk"
+  * @ops: Function pointers used to access hardware-specific operations.
+  * @ep_list:the gadget's ep_list holds all of its endpoints
++ * @caps:The structure describing types and directions supported by endoint.
+  * @maxpacket:The maximum packet size used on this endpoint.  The initial
+  *	value can sometimes be reduced (hardware allowing), according to
+  *      the endpoint descriptor used to configure the endpoint.
+@@ -167,12 +186,14 @@ struct usb_ep_ops {
+  * gadget->ep_list.  the control endpoint (gadget->ep0) is not in that list,
+  * and is accessed only in response to a driver setup() callback.
+  */
 +
-+#undef EP_INFO
- };
+ struct usb_ep {
+ 	void			*driver_data;
  
- /*-------------------------------------------------------------------------*/
-@@ -3200,7 +3197,8 @@ static void __init nbu2ss_drv_ep_init(struct nbu2ss_udc *udc)
- 		ep->desc = NULL;
- 
- 		ep->ep.driver_data = NULL;
--		ep->ep.name = gp_ep_name[i];
-+		ep->ep.name = ep_info[i].name;
-+		ep->ep.caps = ep_info[i].caps;
- 		ep->ep.ops = &nbu2ss_ep_ops;
- 
- 		usb_ep_set_maxpacket_limit(&ep->ep,
+ 	const char		*name;
+ 	const struct usb_ep_ops	*ops;
+ 	struct list_head	ep_list;
++	struct usb_ep_caps	caps;
+ 	bool			claimed;
+ 	unsigned		maxpacket:16;
+ 	unsigned		maxpacket_limit:16;
 -- 
 1.9.1
