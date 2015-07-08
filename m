@@ -1,23 +1,30 @@
-Return-Path: <michael.neuling@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E6871A1A37
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:25:17 +1000 (AEST)
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id E0039140D19
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:25:16 +1000 (AEST)
-Message-ID: <1436325916.13169.23.camel@au1.ibm.com>
-Subject: Re: [PATCH] rtc/rtc-opal: Disable rtc-alarms when opal doesn't
- support tpo
-From: Michael Neuling <michael.neuling@au1.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-Date: Wed, 08 Jul 2015 13:25:16 +1000
-In-Reply-To: <1433307087-11503-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-References: <1433307087-11503-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C7411A1A37
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:28:17 +1000 (AEST)
+Message-ID: <1436326077.2658.65.camel@freescale.com>
+Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xie
+ Xiaobo-R63061" <X.Xie@freescale.com>
+Date: Tue, 7 Jul 2015 22:27:57 -0500
+In-Reply-To: <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
+ <1432717920-43563-2-git-send-email-B45475@freescale.com>
+ <1432748213.4089.23.camel@freescale.com>
+ <SN1PR0301MB15500729CC3A65394FED67389BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1433398423.3415.34.camel@freescale.com>
+ <SN1PR0301MB1550B0B2F863A80559FE8B6B9BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1433457659.31070.2.camel@freescale.com>
+ <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1436324117.2658.64.camel@freescale.com>
+ <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,64 +34,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> [PATCH] rtc/rtc-opal: Disable rtc-alarms when opal doesn't support tpo
+On Tue, 2015-07-07 at 22:26 -0500, Zhao Qiang-B45475 wrote:
+> Now the point is, genalloc is not so proper to qe muram while rheap is 
+> written to manage muram,
 
-I'd prefer to avoid the double negative and extra words.  ie.
+rheap is not specific to muram.
 
-  rtc/opal: Enable alarms only when opal supports tpo
+> if use genalloc instead of rheap, there will be amounts of work to do.
 
-But looks good other than that.
+Not much.  I think I've spent more time responding to continual e-mails on 
+this topic than it would have taken to convert it. :-P
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+> I have a suggestion, how about to put rheap under drivers/soc/qe, because 
+> rheap is 
+> To manage muram when it is added to sdk.
 
+No.
 
-On Wed, 2015-06-03 at 10:21 +0530, Vaibhav Jain wrote:
-> rtc-opal driver provides support for rtc alarms via
-> times-power-on(tpo). However some platforms like BML use a fake rtc
-> clock and don't support tpo. Such platforms are indicated by the missing
-> 'has-tpo' property in the device tree.
->=20
-> Current implementation however enables callback for
-> rtc_class_ops.read/set alarm irrespective of the tpo support from the
-> platform. This results in a failed opal call when kernel tries to read
-> an existing alarms via opal_get_tpo_time during rtc device registration.
->=20
-> This patch fixes this issue by setting opal_rtc_ops.read/set_alarm
-> callback pointers only when tpo is supported.
->=20
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
->  drivers/rtc/rtc-opal.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
-> index 7061dca..1125641 100644
-> --- a/drivers/rtc/rtc-opal.c
-> +++ b/drivers/rtc/rtc-opal.c
-> @@ -190,11 +190,9 @@ exit:
->  	return rc;
->  }
-> =20
-> -static const struct rtc_class_ops opal_rtc_ops =3D {
-> +static struct rtc_class_ops opal_rtc_ops =3D {
->  	.read_time	=3D opal_get_rtc_time,
->  	.set_time	=3D opal_set_rtc_time,
-> -	.read_alarm	=3D opal_get_tpo_time,
-> -	.set_alarm	=3D opal_set_tpo_time,
->  };
-> =20
->  static int opal_rtc_probe(struct platform_device *pdev)
-> @@ -202,8 +200,11 @@ static int opal_rtc_probe(struct platform_device *pd=
-ev)
->  	struct rtc_device *rtc;
-> =20
->  	if (pdev->dev.of_node && of_get_property(pdev->dev.of_node, "has-tpo",
-> -						 NULL))
-> +						 NULL)) {
->  		device_set_wakeup_capable(&pdev->dev, true);
-> +		opal_rtc_ops.read_alarm	=3D opal_get_tpo_time;
-> +		opal_rtc_ops.set_alarm =3D opal_set_tpo_time;
-> +	}
-> =20
->  	rtc =3D devm_rtc_device_register(&pdev->dev, DRVNAME, &opal_rtc_ops,
->  				       THIS_MODULE);
+-Scott
