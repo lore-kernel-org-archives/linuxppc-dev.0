@@ -2,13 +2,13 @@ Return-Path: <r.baldyga@samsung.com>
 Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 60FEE1A18B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:20:26 +1000 (AEST)
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48E7E1A18B0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:20:33 +1000 (AEST)
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
  by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NR602P181OUQR40@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:10:06 +0900 (KST)
+ with ESMTP id <0NR602P541PH6940@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:10:29 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH 03/37] usb: gadget: add endpoint capabilities helper macros
-Date: Wed, 08 Jul 2015 13:08:47 +0200
-Message-id: <1436353761-7107-4-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH 06/37] usb: dwc2: gadget: add ep capabilities support
+Date: Wed, 08 Jul 2015 13:08:50 +0200
+Message-id: <1436353761-7107-7-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 References: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,45 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add macros useful while initializing array of endpoint capabilities
-structures. These macros makes structure initialization more compact
-to decrease number of code lines and increase readability of code.
+Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- include/linux/usb/gadget.h | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/usb/dwc2/gadget.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index 6f3e0fb..e6cbc25 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -158,6 +158,26 @@ struct usb_ep_caps {
- 	unsigned dir_out:1;
- };
+diff --git a/drivers/usb/dwc2/gadget.c b/drivers/usb/dwc2/gadget.c
+index 4d47b7c..8771b66 100644
+--- a/drivers/usb/dwc2/gadget.c
++++ b/drivers/usb/dwc2/gadget.c
+@@ -3289,6 +3289,19 @@ static void s3c_hsotg_initep(struct dwc2_hsotg *hsotg,
+ 	usb_ep_set_maxpacket_limit(&hs_ep->ep, epnum ? 1024 : EP0_MPS_LIMIT);
+ 	hs_ep->ep.ops = &s3c_hsotg_ep_ops;
  
-+#define USB_EP_CAPS_TYPE_CONTROL     0x01
-+#define USB_EP_CAPS_TYPE_ISO         0x02
-+#define USB_EP_CAPS_TYPE_BULK        0x04
-+#define USB_EP_CAPS_TYPE_INT         0x08
-+#define USB_EP_CAPS_TYPE_ALL \
-+	(USB_EP_CAPS_TYPE_ISO | USB_EP_CAPS_TYPE_BULK | USB_EP_CAPS_TYPE_INT)
-+#define USB_EP_CAPS_DIR_IN           0x01
-+#define USB_EP_CAPS_DIR_OUT          0x02
-+#define USB_EP_CAPS_DIR_ALL  (USB_EP_CAPS_DIR_IN | USB_EP_CAPS_DIR_OUT)
-+
-+#define USB_EP_CAPS(_type, _dir) \
-+	{ \
-+		.type_control = !!(_type & USB_EP_CAPS_TYPE_CONTROL), \
-+		.type_iso = !!(_type & USB_EP_CAPS_TYPE_ISO), \
-+		.type_bulk = !!(_type & USB_EP_CAPS_TYPE_BULK), \
-+		.type_int = !!(_type & USB_EP_CAPS_TYPE_INT), \
-+		.dir_in = !!(_dir & USB_EP_CAPS_DIR_IN), \
-+		.dir_out = !!(_dir & USB_EP_CAPS_DIR_OUT), \
++	if (epnum == 0) {
++		hs_ep->ep.caps.type_control = true;
++	} else {
++		hs_ep->ep.caps.type_iso = true;
++		hs_ep->ep.caps.type_bulk = true;
++		hs_ep->ep.caps.type_int = true;
 +	}
 +
- /**
-  * struct usb_ep - device side representation of USB endpoint
-  * @name:identifier for the endpoint, such as "ep-a" or "ep9in-bulk"
++	if (dir_in)
++		hs_ep->ep.caps.dir_in = true;
++	else
++		hs_ep->ep.caps.dir_out = true;
++
+ 	/*
+ 	 * if we're using dma, we need to set the next-endpoint pointer
+ 	 * to be something valid.
 -- 
 1.9.1
