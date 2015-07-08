@@ -2,18 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EE271A1992
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3F9F1A1992
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 20:54:08 +1000 (AEST)
-In-Reply-To: <1436247946-16292-1-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
+In-Reply-To: <1436230877-14542-1-git-send-email-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>, benh@kernel.crashing.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey <mikey@neuling.org>, Matt Ochs <mrochs@us.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, stable@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [1/2] cxl: Fix off by one error allowing subsequent mmap page to
- be accessed
-Message-Id: <20150708105407.D6556140788@ozlabs.org>
-Date: Wed,  8 Jul 2015 20:54:07 +1000 (AEST)
+Cc: linuxppc-dev@ozlabs.org, Michael Neuling <mikey@neuling.org>,
+ imunsie@au.ibm.com
+Subject: Re: cxl: Fix refcounting in kernel API
+Message-Id: <20150708105408.82DA9140AF3@ozlabs.org>
+Date: Wed,  8 Jul 2015 20:54:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,23 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-07 at 05:45:45 UTC, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Tue, 2015-07-07 at 01:01:17 UTC, Michael Neuling wrote:
+> Currently the kernel API AFU dev refcounting is done on context start and stop.
+> This patch moves this refcounting to context init and release, bringing it
+> inline with how the userspace API does it.
 > 
-> It was discovered that if a process mmaped their problem state area they
-> were able to access one page more than expected, potentially allowing
-> them to access the problem state area of an unrelated process.
+> Without this we've seen the refcounting on the AFU get out of whack between the
+> user and kernel API usage.  This causes the AFU structures to be freed when
+> they are actually still in use.
 > 
-> This was due to a simple off by one error in the mmap fault handler
-> introduced in 0712dc7e73e59d79bcead5d5520acf4e9e917e87 ("cxl: Fix issues
-> when unmapping contexts"), which is fixed in this patch.
+> This fixes some kref warnings we've been seeing and spurious ErrIVTE IRQs.
 > 
-> Cc: stable@vger.kernel.org
-> Fixes: 0712dc7e73e5 ("cxl: Fix issues when unmapping contexts")
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=10a5894f2dedd8a26b3132497445b314c0d952c4
+https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/commit/?h=fixes&id=3f8dc44d88d3e86178eb9322c779c599f3745b21
 
 cheers
