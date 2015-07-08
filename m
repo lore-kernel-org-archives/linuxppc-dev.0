@@ -1,46 +1,31 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-oi0-x22a.google.com (mail-oi0-x22a.google.com
- [IPv6:2607:f8b0:4003:c06::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 956FD1A1797
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 17:02:28 +1000 (AEST)
-Received: by oiab3 with SMTP id b3so41000710oia.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2015 00:02:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 698C61A18AD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 17:25:11 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xiaobo
+ Xie" <X.Xie@freescale.com>
+Subject: RE: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+Date: Wed, 8 Jul 2015 07:25:02 +0000
+Message-ID: <SN1PR0301MB155084FCD058F8EAAC5C5AEA9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
+ <1432717920-43563-2-git-send-email-B45475@freescale.com>
+ <1432748213.4089.23.camel@freescale.com>
+ <SN1PR0301MB15500729CC3A65394FED67389BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1433398423.3415.34.camel@freescale.com>
+ <SN1PR0301MB1550B0B2F863A80559FE8B6B9BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1433457659.31070.2.camel@freescale.com>
+ <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1436324117.2658.64.camel@freescale.com>
+ <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1436326077.2658.65.camel@freescale.com>
+In-Reply-To: <1436326077.2658.65.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20150708064607.GB7079@osiris>
-References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
- <1436288623-13007-3-git-send-email-emunson@akamai.com>
- <20150708064607.GB7079@osiris>
-Date: Wed, 8 Jul 2015 09:02:25 +0200
-Message-ID: <CAMuHMdUS72nYDo=chtcZMv-ZNVU0RhxvVLvMYvSFLtRk_wXrgw@mail.gmail.com>
-Subject: Re: [PATCH V3 2/5] mm: mlock: Add new mlock, munlock, and munlockall
- system calls
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Eric B Munson <emunson@akamai.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Hocko <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>,
- alpha <linux-alpha@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- Cris <linux-cris-kernel@axis.com>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- "moderated list:PANASONIC MN10300..." <linux-am33-list@redhat.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>,
- Linux-Arch <linux-arch@vger.kernel.org>, Linux MM <linux-mm@kvack.org>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,42 +35,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 8, 2015 at 8:46 AM, Heiko Carstens
-<heiko.carstens@de.ibm.com> wrote:
->> diff --git a/arch/s390/kernel/syscalls.S b/arch/s390/kernel/syscalls.S
->> index 1acad02..f6d81d6 100644
->> --- a/arch/s390/kernel/syscalls.S
->> +++ b/arch/s390/kernel/syscalls.S
->> @@ -363,3 +363,6 @@ SYSCALL(sys_bpf,compat_sys_bpf)
->>  SYSCALL(sys_s390_pci_mmio_write,compat_sys_s390_pci_mmio_write)
->>  SYSCALL(sys_s390_pci_mmio_read,compat_sys_s390_pci_mmio_read)
->>  SYSCALL(sys_execveat,compat_sys_execveat)
->> +SYSCALL(sys_mlock2,compat_sys_mlock2)                        /* 355 */
->> +SYSCALL(sys_munlock2,compat_sys_munlock2)
->> +SYSCALL(sys_munlockall2,compat_sys_munlockall2)
->
-> FWIW, you would also need to add matching lines to the two files
->
-> arch/s390/include/uapi/asm/unistd.h
-> arch/s390/kernel/compat_wrapper.c
->
-> so that the system call would be wired up on s390.
-
-Similar comment for m68k:
-
-arch/m68k/include/asm/unistd.h
-arch/m68k/include/uapi/asm/unistd.h
-
-I think you best look at the last commits that added system calls, for all
-architectures, to make sure you don't do partial updates.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+U28gSSB3aWxsIGFkZCB0d28gZnVuYyBmb3IgbXkgdXNlLCBkbyB5b3UgdGhpbmsgaXQgaXMgb2s/
+DQpJIG5lZWQgdG8gYWxpZ24gdGhlIGFkZHJlc3Mgb2YgYWxsb2NhdGVkIG11cmFtLg0KQW5kIEkg
+d2lsbCBzZXQgYWxnbyA9IGdlbl9wb29sX2ZpcnN0X2ZpdF9hbGlnbi4NCg0KK3Vuc2lnbmVkIGxv
+bmcgZ2VuX3Bvb2xfYWxsb2NfYWxpZ24oc3RydWN0IGdlbl9wb29sICpwb29sLCBzaXplX3Qgc2l6
+ZSwNCisgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGFsaWduKQ0KK3sNCisgICAgICAgc3Ry
+dWN0IGdlbl9wb29sX2NodW5rICpjaHVuazsNCisgICAgICAgdW5zaWduZWQgbG9uZyBhZGRyID0g
+MDsNCisgICAgICAgdW5zaWduZWQgbG9uZyBhbGlnbl9tYXNrOw0KKyAgICAgICBpbnQgb3JkZXIg
+PSBwb29sLT5taW5fYWxsb2Nfb3JkZXI7DQorICAgICAgIGludCBuYml0cywgc3RhcnRfYml0ID0g
+MCwgZW5kX2JpdCwgcmVtYWluOw0KKw0KKyNpZm5kZWYgQ09ORklHX0FSQ0hfSEFWRV9OTUlfU0FG
+RV9DTVBYQ0hHDQorICAgICAgIEJVR19PTihpbl9ubWkoKSk7DQorI2VuZGlmDQorDQorICAgICAg
+IGlmIChzaXplID09IDApDQorICAgICAgICAgICAgICAgcmV0dXJuIDA7DQorDQorICAgICAgIGFs
+aWduX21hc2sgPSAoKGFsaWduICsgKDFVTCA8PCBvcmRlcikgLSAxKSA+PiBvcmRlcikgLSAxOw0K
+KyAgICAgICBuYml0cyA9IChzaXplICsgKDFVTCA8PCBvcmRlcikgLSAxKSA+PiBvcmRlcjsNCisg
+ICAgICAgcmN1X3JlYWRfbG9jaygpOw0KKyAgICAgICBsaXN0X2Zvcl9lYWNoX2VudHJ5X3JjdShj
+aHVuaywgJnBvb2wtPmNodW5rcywgbmV4dF9jaHVuaykgew0KKyAgICAgICAgICAgICAgIGlmIChz
+aXplID4gYXRvbWljX3JlYWQoJmNodW5rLT5hdmFpbCkpDQorICAgICAgICAgICAgICAgICAgICAg
+ICBjb250aW51ZTsNCisNCisgICAgICAgICAgICAgICBlbmRfYml0ID0gY2h1bmtfc2l6ZShjaHVu
+aykgPj4gb3JkZXI7DQorcmV0cnk6DQorICAgICAgICAgICAgICAgc3RhcnRfYml0ID0gcG9vbC0+
+YWxnbyhjaHVuay0+Yml0cywgZW5kX2JpdCwgc3RhcnRfYml0LCBuYml0cywNCisgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgcG9vbC0+ZGF0YSwgYWxpZ25fbWFzayk7DQorICAgICAgICAg
+ICAgICAgaWYgKHN0YXJ0X2JpdCA+PSBlbmRfYml0KQ0KKyAgICAgICAgICAgICAgICAgICAgICAg
+Y29udGludWU7DQorICAgICAgICAgICAgICAgcmVtYWluID0gYml0bWFwX3NldF9sbChjaHVuay0+
+Yml0cywgc3RhcnRfYml0LCBuYml0cyk7DQorICAgICAgICAgICAgICAgaWYgKHJlbWFpbikgew0K
+KyAgICAgICAgICAgICAgICAgICAgICAgcmVtYWluID0gYml0bWFwX2NsZWFyX2xsKGNodW5rLT5i
+aXRzLCBzdGFydF9iaXQsDQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgbmJpdHMgLSByZW1haW4pOw0KKyAgICAgICAgICAgICAgICAgICAgICAgQlVHX09O
+KHJlbWFpbik7DQorICAgICAgICAgICAgICAgICAgICAgICBnb3RvIHJldHJ5Ow0KKyAgICAgICAg
+ICAgICAgIH0NCisNCisgICAgICAgICAgICAgICBhZGRyID0gY2h1bmstPnN0YXJ0X2FkZHIgKyAo
+KHVuc2lnbmVkIGxvbmcpc3RhcnRfYml0IDw8IG9yZGVyKTsNCisgICAgICAgICAgICAgICBzaXpl
+ID0gbmJpdHMgPDwgb3JkZXI7DQorICAgICAgICAgICAgICAgYXRvbWljX3N1YihzaXplLCAmY2h1
+bmstPmF2YWlsKTsNCisgICAgICAgICAgICAgICBicmVhazsNCisgICAgICAgfQ0KKyAgICAgICBy
+Y3VfcmVhZF91bmxvY2soKTsNCisgICAgICAgcmV0dXJuIGFkZHI7DQorfQ0KK0VYUE9SVF9TWU1C
+T0woZ2VuX3Bvb2xfYWxsb2MpOw0KDQorICogZ2VuX3Bvb2xfZmlyc3RfZml0X2FsaWduIC0gZmlu
+ZCB0aGUgZmlyc3QgYXZhaWxhYmxlIHJlZ2lvbg0KKyAqIG9mIG1lbW9yeSBtYXRjaGluZyB0aGUg
+c2l6ZSByZXF1aXJlbWVudC4gVGhlIHJlZ2lvbiB3aWxsIGJlIGFsaWduZWQNCisgKiB0byB0aGUg
+b3JkZXIgb2YgdGhlIHNpemUgc3BlY2lmaWVkLg0KKyAqIEBtYXA6IFRoZSBhZGRyZXNzIHRvIGJh
+c2UgdGhlIHNlYXJjaCBvbg0KKyAqIEBzaXplOiBUaGUgYml0bWFwIHNpemUgaW4gYml0cw0KKyAq
+IEBzdGFydDogVGhlIGJpdG51bWJlciB0byBzdGFydCBzZWFyY2hpbmcgYXQNCisgKiBAbnI6IFRo
+ZSBudW1iZXIgb2YgemVyb2VkIGJpdHMgd2UncmUgbG9va2luZyBmb3INCisgKiBAZGF0YTogYWRk
+aXRpb25hbCBkYXRhIC0gdW51c2VkDQorICovDQordW5zaWduZWQgbG9uZyBnZW5fcG9vbF9maXJz
+dF9maXRfYWxpZ24odW5zaWduZWQgbG9uZyAqbWFwLA0KKyAgICAgICAgICAgICAgIHVuc2lnbmVk
+IGxvbmcgc2l6ZSwgdW5zaWduZWQgbG9uZyBzdGFydCwNCisgICAgICAgICAgICAgICB1bnNpZ25l
+ZCBpbnQgbnIsIHZvaWQgKmRhdGEsIHVuc2lnbmVkIGxvbmcgYWxpZ25fbWFzaykNCit7DQorICAg
+ICAgIHJldHVybiBiaXRtYXBfZmluZF9uZXh0X3plcm9fYXJlYShtYXAsIHNpemUsIHN0YXJ0LCBu
+ciwgYWxpZ25fbWFzayk7DQorfQ0KK0VYUE9SVF9TWU1CT0woZ2VuX3Bvb2xfZmlyc3RfZml0X2Fs
+aWduKTsNCisNCg0KQmVzdCBSZWdhcmRzDQpaaGFvIFFpYW5nDQoNCg0KPiAtLS0tLU9yaWdpbmFs
+IE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBXZWRuZXNk
+YXksIEp1bHkgMDgsIDIwMTUgMTE6MjggQU0NCj4gVG86IFpoYW8gUWlhbmctQjQ1NDc1DQo+IENj
+OiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgWGllIFhpYW9iby1SNjMwNjENCj4gU3Vi
+amVjdDogUmU6IFtQQVRDSCAyLzJdIHJoZWFwOiBtb3ZlIHJoZWFwLmMgZnJvbSBhcmNoL3Bvd2Vy
+cGMvbGliLyB0bw0KPiBsaWIvDQo+IA0KPiBPbiBUdWUsIDIwMTUtMDctMDcgYXQgMjI6MjYgLTA1
+MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+IE5vdyB0aGUgcG9pbnQgaXMsIGdlbmFs
+bG9jIGlzIG5vdCBzbyBwcm9wZXIgdG8gcWUgbXVyYW0gd2hpbGUgcmhlYXAgaXMNCj4gPiB3cml0
+dGVuIHRvIG1hbmFnZSBtdXJhbSwNCj4gDQo+IHJoZWFwIGlzIG5vdCBzcGVjaWZpYyB0byBtdXJh
+bS4NCj4gDQo+ID4gaWYgdXNlIGdlbmFsbG9jIGluc3RlYWQgb2YgcmhlYXAsIHRoZXJlIHdpbGwg
+YmUgYW1vdW50cyBvZiB3b3JrIHRvIGRvLg0KPiANCj4gTm90IG11Y2guICBJIHRoaW5rIEkndmUg
+c3BlbnQgbW9yZSB0aW1lIHJlc3BvbmRpbmcgdG8gY29udGludWFsIGUtbWFpbHMNCj4gb24gdGhp
+cyB0b3BpYyB0aGFuIGl0IHdvdWxkIGhhdmUgdGFrZW4gdG8gY29udmVydCBpdC4gOi1QDQo+IA0K
+PiA+IEkgaGF2ZSBhIHN1Z2dlc3Rpb24sIGhvdyBhYm91dCB0byBwdXQgcmhlYXAgdW5kZXIgZHJp
+dmVycy9zb2MvcWUsDQo+ID4gYmVjYXVzZSByaGVhcCBpcyBUbyBtYW5hZ2UgbXVyYW0gd2hlbiBp
+dCBpcyBhZGRlZCB0byBzZGsuDQo+IA0KPiBOby4NCj4gDQo+IC1TY290dA0KDQo=
