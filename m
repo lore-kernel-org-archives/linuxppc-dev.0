@@ -1,20 +1,42 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9A591A1150
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 15:37:45 +1000 (AEST)
-Message-ID: <1436333865.17490.4.camel@ellerman.id.au>
-Subject: Re: [PATCH V2 2/2] powerpc/kexec: Reset HILE before kexec_sequence
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Date: Wed, 08 Jul 2015 15:37:45 +1000
-In-Reply-To: <1436330233-28489-2-git-send-email-sam.mj@au1.ibm.com>
-References: <1436330233-28489-1-git-send-email-sam.mj@au1.ibm.com>
- <1436330233-28489-2-git-send-email-sam.mj@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 749FB1A18F1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 16:14:48 +1000 (AEST)
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B54F51402BA
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 16:14:47 +1000 (AEST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 8 Jul 2015 00:14:45 -0600
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 8C920C90043
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 02:05:48 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t686EfMZ66977956
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 06:14:41 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t686EfQv020668
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 02:14:41 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc/kexec: Reset HILE before kexec_sequence
+In-Reply-To: <1436318605-13031-2-git-send-email-sam.mj@au1.ibm.com>
+References: <1436318605-13031-1-git-send-email-sam.mj@au1.ibm.com>
+ <1436318605-13031-2-git-send-email-sam.mj@au1.ibm.com>
+Date: Wed, 08 Jul 2015 16:14:22 +1000
+Message-ID: <m3io9v18ht.fsf@oc8180480414.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +46,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-07-08 at 14:37 +1000, Samuel Mendoza-Jonas wrote:
+Samuel Mendoza-Jonas <sam.mj@au1.ibm.com> writes:
 > On powernv secondary cpus are returned to OPAL, and will then enter the
 > target kernel in big-endian. However if it is set the HILE bit will persist,
 > causing the first exception in the target kernel to be delivered in
 > litte-endian regardless of the kernel endianess.
 > Make sure that the HILE bit is switched off before entering
 > kexec_sequence.
-> 
+>
 > Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-> ---
->  arch/powerpc/kernel/machine_kexec_64.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-> index 1a74446..2266135c 100644
-> --- a/arch/powerpc/kernel/machine_kexec_64.c
-> +++ b/arch/powerpc/kernel/machine_kexec_64.c
-> @@ -22,8 +22,10 @@
->  #include <asm/page.h>
->  #include <asm/current.h>
->  #include <asm/machdep.h>
-> +#include <asm/opal.h>
->  #include <asm/cacheflush.h>
->  #include <asm/paca.h>
-> +#include <asm/firmware.h>
->  #include <asm/mmu.h>
->  #include <asm/sections.h>	/* _end */
->  #include <asm/prom.h>
-> @@ -356,6 +358,10 @@ void default_machine_kexec(struct kimage *image)
->  	 * switched to a static version!
->  	 */
->  
-> +	/* Reset HILE in case we kexec into an older BE kernel */
-> +	if (firmware_has_feature(FW_FEATURE_OPALv3))
-> +		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
 
-It's not safe to do this here.
+Discussed with Sam on IRC, this makes kexec environment the same (or at
+least closer to) booting the initial payload, which is a Good Thing(TM).
 
-We are still in virtual mode and have external interrupts enabled, so you could
-easily take an exception of some kind and then you'd blow up. Mashing the
-keyboard during kexec might even be enough.
+The ignoring of any error from opal_reinit_cpus() (as done in this
+patch) is probably a good idea as we're either running on old firmware
+which doesn't have the call (in which case we'd explode no matter what)
+or we're on some crazy theoretical chip that doesn't do HILE=0, in which
+case this gives us the best chance for compatibility.
 
-I think a better API would be that opal_return_cpu() deals with this under the
-covers. I think we talked about that, so maybe there was some reason that
-wasn't possible.
-
-cheers
+Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
