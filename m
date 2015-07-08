@@ -1,25 +1,25 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D7291A36BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:03:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 999BA1A36C6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:03:43 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 8 Jul 2015 23:03:38 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 959EE2BB003F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:03:35 +1000 (EST)
+ Wed, 8 Jul 2015 23:03:43 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C5BEE2BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:03:40 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t68D3Rhl51183702
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:03:35 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t68D3XEN60358868
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:03:41 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t68D32LV011753
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:03:03 +1000
+ t68D37tc011882
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:03:08 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
@@ -29,10 +29,9 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  Stephane Eranian <eranian@google.com>
-Subject: [PATCH v4 5/7] powerpc/powernv: add event attribute and group to nest
- pmu
-Date: Wed,  8 Jul 2015 18:31:44 +0530
-Message-Id: <1436360506-18805-6-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v4 6/7] powerpc/powernv: generic nest pmu event functions
+Date: Wed,  8 Jul 2015 18:31:45 +0530
+Message-Id: <1436360506-18805-7-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1436360506-18805-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1436360506-18805-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,8 +43,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add code to create event/format attributes and attribute groups for
-each nest pmu.
+Add set of generic nest pmu related event functions to be used by
+each nest pmu. Add code to register nest pmus.
 
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -56,95 +55,128 @@ Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/nest-pmu.c | 57 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ arch/powerpc/perf/nest-pmu.c | 104 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
 
 diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-index 6116ff3..20ed9f8 100644
+index 20ed9f8..c2ada13 100644
 --- a/arch/powerpc/perf/nest-pmu.c
 +++ b/arch/powerpc/perf/nest-pmu.c
-@@ -13,6 +13,17 @@
- static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
- static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
+@@ -24,6 +24,100 @@ struct attribute_group p8_nest_format_group = {
+ 	.attrs = p8_nest_format_attrs,
+ };
  
-+PMU_FORMAT_ATTR(event, "config:0-20");
-+struct attribute *p8_nest_format_attrs[] = {
-+	&format_attr_event.attr,
-+	NULL,
-+};
++static int p8_nest_event_init(struct perf_event *event)
++{
++	int chip_id;
 +
-+struct attribute_group p8_nest_format_group = {
-+	.name = "format",
-+	.attrs = p8_nest_format_attrs,
-+};
++	if (event->attr.type != event->pmu->type)
++		return -ENOENT;
++
++	/* Sampling not supported yet */
++	if (event->hw.sample_period)
++		return -EINVAL;
++
++	/* unsupported modes and filters */
++	if (event->attr.exclude_user   ||
++	    event->attr.exclude_kernel ||
++	    event->attr.exclude_hv     ||
++	    event->attr.exclude_idle   ||
++	    event->attr.exclude_host   ||
++	    event->attr.exclude_guest)
++		return -EINVAL;
++
++	if (event->cpu < 0)
++		return -EINVAL;
++
++	chip_id = topology_physical_package_id(event->cpu);
++	event->hw.event_base = event->attr.config +
++					p8_nest_perchip_info[chip_id].vbase;
++
++	return 0;
++}
++
++static void p8_nest_read_counter(struct perf_event *event)
++{
++	uint64_t *addr;
++	u64 data = 0;
++
++	addr = (u64 *)event->hw.event_base;
++	data = __be64_to_cpu(*addr);
++	local64_set(&event->hw.prev_count, data);
++}
++
++static void p8_nest_perf_event_update(struct perf_event *event)
++{
++	u64 counter_prev, counter_new, final_count;
++	uint64_t *addr;
++
++	addr = (uint64_t *)event->hw.event_base;
++	counter_prev = local64_read(&event->hw.prev_count);
++	counter_new = __be64_to_cpu(*addr);
++	final_count = counter_new - counter_prev;
++
++	local64_set(&event->hw.prev_count, counter_new);
++	local64_add(final_count, &event->count);
++}
++
++static void p8_nest_event_start(struct perf_event *event, int flags)
++{
++	event->hw.state = 0;
++	p8_nest_read_counter(event);
++}
++
++static void p8_nest_event_stop(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_UPDATE)
++		p8_nest_perf_event_update(event);
++}
++
++static int p8_nest_event_add(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_START)
++		p8_nest_event_start(event, flags);
++
++	return 0;
++}
++
++/*
++ * Populate pmu ops in the structure
++ */
++static int update_pmu_ops(struct nest_pmu *pmu)
++{
++	if (!pmu)
++		return -EINVAL;
++
++	pmu->pmu.task_ctx_nr = perf_invalid_context;
++	pmu->pmu.event_init = p8_nest_event_init;
++	pmu->pmu.add = p8_nest_event_add;
++	pmu->pmu.del = p8_nest_event_stop;
++	pmu->pmu.start = p8_nest_event_start;
++	pmu->pmu.stop = p8_nest_event_stop;
++	pmu->pmu.read = p8_nest_perf_event_update;
++	pmu->pmu.attr_groups = pmu->attr_groups;
++
++	return 0;
++}
 +
  static int nest_event_info(struct property *pp, char *start,
  			struct nest_ima_events *p8_events, int flg, u32 val)
  {
-@@ -45,6 +56,48 @@ static int nest_event_info(struct property *pp, char *start,
- 	return 0;
- }
+@@ -179,6 +273,16 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 	update_events_in_group(
+ 		(struct nest_ima_events *)p8_events_arr, idx, pmu_ptr);
  
-+/*
-+ * Populate event name and string in attribute
-+ */
-+struct attribute *dev_str_attr(const char *name, const char *str)
-+{
-+	struct perf_pmu_events_attr *attr;
++	update_pmu_ops(pmu_ptr);
++	/* Register the pmu */
++	ret = perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
++	if (ret) {
++		pr_err("Nest PMU %s Register failed\n", pmu_ptr->pmu.name);
++		return ret;
++	}
 +
-+	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
-+
-+	attr->event_str = str;
-+	attr->attr.attr.name = name;
-+	attr->attr.attr.mode = 0444;
-+	attr->attr.show = perf_event_sysfs_show;
-+
-+	return &attr->attr.attr;
-+}
-+
-+int update_events_in_group(
-+	struct nest_ima_events *p8_events, int idx, struct nest_pmu *pmu)
-+{
-+	struct attribute_group *attr_group;
-+	struct attribute **attrs;
-+	int i;
-+
-+	/* Allocate memory for event attribute group */
-+	attr_group = kzalloc(((sizeof(struct attribute *) * (idx + 1)) +
-+				sizeof(*attr_group)), GFP_KERNEL);
-+	if (!attr_group)
-+		return -ENOMEM;
-+
-+	attrs = (struct attribute **)(attr_group + 1);
-+	attr_group->name = "events";
-+	attr_group->attrs = attrs;
-+
-+	for (i = 0; i < idx; i++, p8_events++)
-+		attrs[i] = dev_str_attr((char *)p8_events->ev_name,
-+					(char *)p8_events->ev_value);
-+
-+	pmu->attr_groups[0] = attr_group;
-+	return 0;
-+}
-+
- static int nest_pmu_create(struct device_node *dev, int pmu_index)
- {
- 	struct nest_ima_events **p8_events_arr, *p8_events;
-@@ -91,6 +144,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
- 			/* Save the name to register it later */
- 			sprintf(buf, "Nest_%s", (char *)pp->value);
- 			pmu_ptr->pmu.name = (char *)buf;
-+			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
- 			continue;
- 		}
- 
-@@ -122,6 +176,9 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
- 		idx++;
- 	}
- 
-+	update_events_in_group(
-+		(struct nest_ima_events *)p8_events_arr, idx, pmu_ptr);
-+
++	pr_info("%s performance monitor hardware support registered\n",
++			pmu_ptr->pmu.name);
  	return 0;
  }
  
