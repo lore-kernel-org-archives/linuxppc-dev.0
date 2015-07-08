@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 080D71A18C0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 60FEE1A18B0
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:20:26 +1000 (AEST)
 Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NR6034O51P9EQD0@mailout4.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:10:21 +0900 (KST)
+ with ESMTP id <0NR602P181OUQR40@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:10:06 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH 05/37] usb: chipidea: udc: add ep capabilities support
-Date: Wed, 08 Jul 2015 13:08:49 +0200
-Message-id: <1436353761-7107-6-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH 03/37] usb: gadget: add endpoint capabilities helper macros
+Date: Wed, 08 Jul 2015 13:08:47 +0200
+Message-id: <1436353761-7107-4-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 References: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,37 +34,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert endpoint configuration to new capabilities model.
+Add macros useful while initializing array of endpoint capabilities
+structures. These macros makes structure initialization more compact
+to decrease number of code lines and increase readability of code.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/chipidea/udc.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ include/linux/usb/gadget.h | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
-index 764f668..eff7cfb 100644
---- a/drivers/usb/chipidea/udc.c
-+++ b/drivers/usb/chipidea/udc.c
-@@ -1624,6 +1624,20 @@ static int init_eps(struct ci_hdrc *ci)
+diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
+index 6f3e0fb..e6cbc25 100644
+--- a/include/linux/usb/gadget.h
++++ b/include/linux/usb/gadget.h
+@@ -158,6 +158,26 @@ struct usb_ep_caps {
+ 	unsigned dir_out:1;
+ };
  
- 			hwep->ep.name      = hwep->name;
- 			hwep->ep.ops       = &usb_ep_ops;
++#define USB_EP_CAPS_TYPE_CONTROL     0x01
++#define USB_EP_CAPS_TYPE_ISO         0x02
++#define USB_EP_CAPS_TYPE_BULK        0x04
++#define USB_EP_CAPS_TYPE_INT         0x08
++#define USB_EP_CAPS_TYPE_ALL \
++	(USB_EP_CAPS_TYPE_ISO | USB_EP_CAPS_TYPE_BULK | USB_EP_CAPS_TYPE_INT)
++#define USB_EP_CAPS_DIR_IN           0x01
++#define USB_EP_CAPS_DIR_OUT          0x02
++#define USB_EP_CAPS_DIR_ALL  (USB_EP_CAPS_DIR_IN | USB_EP_CAPS_DIR_OUT)
 +
-+			if (i == 0) {
-+				hwep->ep.caps.type_control = true;
-+			} else {
-+				hwep->ep.caps.type_iso = true;
-+				hwep->ep.caps.type_bulk = true;
-+				hwep->ep.caps.type_int = true;
-+			}
++#define USB_EP_CAPS(_type, _dir) \
++	{ \
++		.type_control = !!(_type & USB_EP_CAPS_TYPE_CONTROL), \
++		.type_iso = !!(_type & USB_EP_CAPS_TYPE_ISO), \
++		.type_bulk = !!(_type & USB_EP_CAPS_TYPE_BULK), \
++		.type_int = !!(_type & USB_EP_CAPS_TYPE_INT), \
++		.dir_in = !!(_dir & USB_EP_CAPS_DIR_IN), \
++		.dir_out = !!(_dir & USB_EP_CAPS_DIR_OUT), \
++	}
 +
-+			if (j == TX)
-+				hwep->ep.caps.dir_in = true;
-+			else
-+				hwep->ep.caps.dir_out = true;
-+
- 			/*
- 			 * for ep0: maxP defined in desc, for other
- 			 * eps, maxP is set by epautoconfig() called
+ /**
+  * struct usb_ep - device side representation of USB endpoint
+  * @name:identifier for the endpoint, such as "ep-a" or "ep9in-bulk"
 -- 
 1.9.1
