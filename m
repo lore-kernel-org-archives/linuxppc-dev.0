@@ -1,30 +1,37 @@
-Return-Path: <r.baldyga@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7320F1A18B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:24:26 +1000 (AEST)
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NR600ZU51VYEBD0@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:14:22 +0900 (KST)
-From: Robert Baldyga <r.baldyga@samsung.com>
-To: gregkh@linuxfoundation.org
-Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
- dahlmann.thomas@arcor.de, nicolas.ferre@atmel.com, cernekee@gmail.com,
- leoli@freescale.com, daniel@zonque.org, haojian.zhuang@gmail.com,
- robert.jarzmik@free.fr, michal.simek@xilinx.com, devel@driverdev.osuosl.org,
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-geode@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- andrzej.p@samsung.com, m.szyprowski@samsung.com,
- Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH 29/37] usb: gadget: r8a66597-udc: add ep capabilities support
-Date: Wed, 08 Jul 2015 13:09:13 +0200
-Message-id: <1436353761-7107-30-git-send-email-r.baldyga@samsung.com>
-In-reply-to: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
-References: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 88D6D1A364A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:03:01 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 8 Jul 2015 23:03:00 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9A6BF2CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:02:53 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t68D2h9q59899996
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:02:51 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t68D2KGW011052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:02:21 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>
+Subject: [PATCH v4 0/7]powerpc/powernv: Nest Instrumentation support
+Date: Wed,  8 Jul 2015 18:31:39 +0530
+Message-Id: <1436360506-18805-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,33 +41,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert endpoint configuration to new capabilities model.
+This patchset enables Nest Instrumentation support on powerpc.
+POWER8 has per-chip Nest Intrumentation which provides various
+per-chip metrics like memory, powerbus, Xlink and Alink
+bandwidth.
 
-Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
----
- drivers/usb/gadget/udc/r8a66597-udc.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Nest Instrumentation provides an interface (via PORE Engine)
+to configure and move the nest counter data to memory. From
+kernel side, OPAL Call interface is used to activate/deactivate
+PORE Engine for nest data collection.
 
-diff --git a/drivers/usb/gadget/udc/r8a66597-udc.c b/drivers/usb/gadget/udc/r8a66597-udc.c
-index 0293f71..baa0609 100644
---- a/drivers/usb/gadget/udc/r8a66597-udc.c
-+++ b/drivers/usb/gadget/udc/r8a66597-udc.c
-@@ -1935,6 +1935,16 @@ static int r8a66597_probe(struct platform_device *pdev)
- 		ep->ep.name = r8a66597_ep_name[i];
- 		ep->ep.ops = &r8a66597_ep_ops;
- 		usb_ep_set_maxpacket_limit(&ep->ep, 512);
-+
-+		if (i == 0) {
-+			ep->ep.caps.type_control = true;
-+		} else {
-+			ep->ep.caps.type_iso = true;
-+			ep->ep.caps.type_bulk = true;
-+			ep->ep.caps.type_int = true;
-+		}
-+		ep->ep.caps.dir_in = true;
-+		ep->ep.caps.dir_out = true;
- 	}
- 	usb_ep_set_maxpacket_limit(&r8a66597->ep[0].ep, 64);
- 	r8a66597->ep[0].pipenum = 0;
--- 
+OPAL at boot, detects the feature, initializes it and pass on
+the nest units and other related information such as memory
+region, events supported so on, to kernel via device-tree.
+
+Kernel code then, parses the device-tree for nest pmu support
+and registers nest pmu with the events available. PORE Engine collects
+and accumulate nest counter data in per-chip reserved memory region, hence
+device-tree also exports per-chip nest accumulation memory region.
+And individual event offset are used as event configuration values.
+
+Here is sample perf usage to explain the interface.
+
+#./perf list
+....
+  iTLB-load-misses                                   [Hardware cache event]
+
+  Nest_Alink_BW/Alink0/                              [Kernel PMU event]
+  Nest_Alink_BW/Alink1/                              [Kernel PMU event]
+  Nest_Alink_BW/Alink2/                              [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_00/                           [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_01/                           [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_02/                           [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_03/                           [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_00/                          [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_01/                          [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_02/                          [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_03/                          [Kernel PMU event]
+  Nest_PowerBus_BW/External/                         [Kernel PMU event]
+  Nest_PowerBus_BW/Internal/                         [Kernel PMU event]
+  Nest_Xlink_BW/Xlink0/                              [Kernel PMU event]
+  Nest_Xlink_BW/Xlink1/                              [Kernel PMU event]
+  Nest_Xlink_BW/Xlink2/                              [Kernel PMU event]
+
+  rNNN                                               [Raw hardware event descriptor]
+  cpu/t1=v1[,t2=v2,t3 ...]/modifier                  [Raw hardware event descriptor]
+.....
+
+# ./perf stat -e 'Nest_Xlink_BW/Xlink1/' -a -A sleep 1
+
+ Performance counter stats for 'system wide':
+
+CPU0             15,913.18 MiB  Nest_Xlink_BW/Xlink1/
+CPU32            11,955.88 MiB  Nest_Xlink_BW/Xlink1/
+CPU64            11,042.43 MiB  Nest_Xlink_BW/Xlink1/
+CPU96            14,065.27 MiB  Nest_Xlink_BW/Xlink1/
+
+       1.001062038 seconds time elapsed
+
+# ./perf stat -e 'Nest_Alink_BW/Alink0/,Nest_Alink_BW/Alink1/,Nest_Alink_BW/Alink2/' -a -A -I 1000 sleep 5
+
+ Performance counter stats for 'system wide':
+
+CPU0                  0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU32                 0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU64                 0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU96                 0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU0              1,430.43 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU32               320.99 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU64             3,443.83 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU96             1,904.41 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU0              2,856.85 MiB  Nest_Alink_BW/Alink2/
+CPU32                 7.50 MiB  Nest_Alink_BW/Alink2/
+CPU64             4,034.29 MiB  Nest_Alink_BW/Alink2/
+CPU96               288.49 MiB  Nest_Alink_BW/Alink2/
+.....
+
+OPAL side patches are posted in the skiboot mailing list.
+
+Changelog from v3:
+
+No logic change, just a rebase to latest upstream kernel.
+
+Changelog from v2:
+
+1) Changed variable and macro names to be consistent.
+2) Made changes to commit message and code comment messages
+3) Moved "format attribute" related code from patch 6 to 5
+4) Added check for pmu register function
+5) Changed cpu_init and cpu_exit functions to use first online
+   cpu of the chip, there by making code lot simplier.
+
+Changelog from v1:
+
+1) No logic changes, re-ordered patches make each patch compile
+   without errors
+2) Added comments based on the review feedback.
+3) removed perf_event_del function and replaced it with perf_event_stop.
+4) Moved Nest feature detection code out of parser function.
+5) Optimized functions and removed some variables.
+6) squashed the makefile changes, instead of the separate patch
+7) squashed the cpumask and hotplug patches as single patch
+8) Added cpu checks in nest_change_cpu_context and nest_exit_cpu functions
+9) Made changes to commit messages.
+
+Changelog from RFC:
+
+1) Removed "uncore" code and made each Nest Unit a separate PMU.
+2) Removed uncore type abstraction and uncore related functions.
+3) Added simple cpumask function since these are per-chip counters
+4) Redesigned device-tree parser based on the latest platform enablement code
+5) Made changes to commit message
+
+Thanks to input from Sukadev Bhattiprolu, Preeti Murthy, Daniel Axtens,
+Suzuki Poulose and Michael Ellerman
+
+Kindly let me know you comments and feedback.
+
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Stephane Eranian <eranian@google.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+
+Madhavan Srinivasan (7):
+  powerpc/powernv: Data structure and macros definition
+  powerpc/powernv: Add OPAL support for Nest PMU
+  powerpc/powernv: Nest PMU detection and device tree parser
+  powerpc/powernv: detect supported nest pmus and its events
+  powerpc/powernv: add event attribute and group to nest pmu
+  powerpc/powernv: generic nest pmu event functions
+  powerpc/powernv: nest pmu cpumask and cpu hotplug support
+
+ arch/powerpc/include/asm/opal-api.h            |   3 +-
+ arch/powerpc/include/asm/opal.h                |   1 +
+ arch/powerpc/perf/Makefile                     |   2 +-
+ arch/powerpc/perf/nest-pmu.c                   | 514 +++++++++++++++++++++++++
+ arch/powerpc/perf/nest-pmu.h                   |  53 +++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ 6 files changed, 572 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/perf/nest-pmu.c
+ create mode 100644 arch/powerpc/perf/nest-pmu.h
+
+--
 1.9.1
