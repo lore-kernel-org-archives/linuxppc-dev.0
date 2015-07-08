@@ -1,43 +1,39 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 651751A19D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 08:44:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53DDC1A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 09:16:31 +1000 (AEST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 8 Jul 2015 16:44:26 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BEA8F19D8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 16:35:23 -0600 (MDT)
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Wed, 8 Jul 2015 17:16:29 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 94C141FF002E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 17:07:35 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t68MhfpS40042578
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 15:43:41 -0700
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t68NFwZw49152128
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 16:15:58 -0700
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t68MiMZj020234
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 16:44:23 -0600
-Date: Wed, 8 Jul 2015 15:43:20 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ t68NGOkd032266
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 17:16:25 -0600
+Date: Wed, 8 Jul 2015 16:16:23 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH v4 5/7] powerpc/powernv: add event attribute and group to
- nest pmu
-Message-ID: <20150708224320.GC22635@us.ibm.com>
-References: <1436360506-18805-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1436360506-18805-6-git-send-email-maddy@linux.vnet.ibm.com>
+ David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC,1/2] powerpc/numa: fix cpu_to_node() usage during boot
+Message-ID: <20150708231623.GB44862@linux.vnet.ibm.com>
+References: <20150702230202.GA2807@linux.vnet.ibm.com>
+ <20150708040056.948A1140770@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1436360506-18805-6-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <20150708040056.948A1140770@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,145 +43,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
-| Add code to create event/format attributes and attribute groups for
-| each nest pmu.
-| 
-| Cc: Michael Ellerman <mpe@ellerman.id.au>
-| Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-| Cc: Paul Mackerras <paulus@samba.org>
-| Cc: Anton Blanchard <anton@samba.org>
-| Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-| Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-| Cc: Stephane Eranian <eranian@google.com>
-| Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-| ---
-|  arch/powerpc/perf/nest-pmu.c | 57 ++++++++++++++++++++++++++++++++++++++++++++
-|  1 file changed, 57 insertions(+)
-| 
-| diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-| index 6116ff3..20ed9f8 100644
-| --- a/arch/powerpc/perf/nest-pmu.c
-| +++ b/arch/powerpc/perf/nest-pmu.c
-| @@ -13,6 +13,17 @@
-|  static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
-|  static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
-| 
-| +PMU_FORMAT_ATTR(event, "config:0-20");
-| +struct attribute *p8_nest_format_attrs[] = {
+On 08.07.2015 [14:00:56 +1000], Michael Ellerman wrote:
+> On Thu, 2015-02-07 at 23:02:02 UTC, Nishanth Aravamudan wrote:
+> > Much like on x86, now that powerpc is using USE_PERCPU_NUMA_NODE_ID, we
+> > have an ordering issue during boot with early calls to cpu_to_node().
+> 
+> "now that .." implies we changed something and broke this. What commit was
+> it that changed the behaviour?
 
-name collision unlikely, but could this be static struct?
+Well, that's something I'm trying to still unearth. In the commits
+before and after adding USE_PERCPU_NUMA_NODE_ID (8c272261194d
+"powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), the dmesg reports:
 
-| +	&format_attr_event.attr,
-| +	NULL,
-| +};
-| +
-| +struct attribute_group p8_nest_format_group = {
+pcpu-alloc: [0] 0 1 2 3 4 5 6 7
 
-static struct?
+At least prior to 8c272261194d, this might have been due to the old
+powerpc-specific cpu_to_node():
 
-| +	.name = "format",
-| +	.attrs = p8_nest_format_attrs,
-| +};
-| +
-|  static int nest_event_info(struct property *pp, char *start,
-|  			struct nest_ima_events *p8_events, int flg, u32 val)
-|  {
-| @@ -45,6 +56,48 @@ static int nest_event_info(struct property *pp, char *start,
-|  	return 0;
-|  }
-| 
-| +/*
-| + * Populate event name and string in attribute
-| + */
-| +struct attribute *dev_str_attr(const char *name, const char *str)
+static inline int cpu_to_node(int cpu)
+{
+       int nid;
 
-static function?
+       nid = numa_cpu_lookup_table[cpu];
 
-| +{
-| +	struct perf_pmu_events_attr *attr;
-| +
-| +	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
-| +
+       /*
+        * During early boot, the numa-cpu lookup table might not have
+        been
+        * setup for all CPUs yet. In such cases, default to node 0.
+        */
+       return (nid < 0) ? 0 : nid;
+}
 
-We recently needed following in 24x7 counters to keep lockdep happy:
+which might imply that no one cares or that simply no one noticed.
 
-	sysfs_attr_init(&attr->attr.attr);
+> > The value returned by those calls now depend on the per-cpu area being
+> > setup, but that is not guaranteed to be the case during boot. Instead,
+> > we need to add an early_cpu_to_node() which doesn't use the per-CPU area
+> > and call that from certain spots that are known to invoke cpu_to_node()
+> > before the per-CPU areas are not configured.
+> > 
+> > On an example 2-node NUMA system with the following topology:
+> > 
+> > available: 2 nodes (0-1)
+> > node 0 cpus: 0 1 2 3
+> > node 0 size: 2029 MB
+> > node 0 free: 1753 MB
+> > node 1 cpus: 4 5 6 7
+> > node 1 size: 2045 MB
+> > node 1 free: 1945 MB
+> > node distances:
+> > node   0   1 
+> >   0:  10  40 
+> >   1:  40  10 
+> > 
+> > we currently emit at boot:
+> > 
+> > [    0.000000] pcpu-alloc: [0] 0 1 2 3 [0] 4 5 6 7 
+> > 
+> > After this commit, we correctly emit:
+> > 
+> > [    0.000000] pcpu-alloc: [0] 0 1 2 3 [1] 4 5 6 7 
+> 
+> 
+> So it looks fairly sane, and I guess it's a bug fix.
+> 
+> But I'm a bit reluctant to put it in straight away without some time in next.
 
-| +	attr->event_str = str;
-| +	attr->attr.attr.name = name;
-| +	attr->attr.attr.mode = 0444;
-| +	attr->attr.show = perf_event_sysfs_show;
-| +
-| +	return &attr->attr.attr;
-| +}
-| +
-| +int update_events_in_group(
+I'm fine with that -- it could use some more extensive testing,
+admittedly (I only have been able to verify the pcpu areas are being
+correctly allocated on the right node so far).
 
-static function?
+I still need to test with hotplug and things like that. Hence the RFC.
 
-nit: do we need a new line before the first parameter? some functions
-in the file don't add the new line.
+> It looks like the symptom is that the per-cpu areas are all allocated on node
+> 0, is that all that goes wrong?
 
-| +	struct nest_ima_events *p8_events, int nevents, struct nest_pmu *pmu)
+Yes, that's the symptom. I cc'd a few folks to see if they could help
+indicate the performance implications of such a setup -- sorry, I should
+have been more explicit about that.
 
-s/idx/nevents/?
-
-| +{
-| +	struct attribute_group *attr_group;
-| +	struct attribute **attrs;
-| +	int i;
-| +
-| +	/* Allocate memory for event attribute group */
-| +	attr_group = kzalloc(((sizeof(struct attribute *) * (idx + 1)) +
-| +				sizeof(*attr_group)), GFP_KERNEL);
-| +	if (!attr_group)
-| +		return -ENOMEM;
-| +
-| +	attrs = (struct attribute **)(attr_group + 1);
-
-Can you add a comment on the +1?
-
-| +	attr_group->name = "events";
-| +	attr_group->attrs = attrs;
-| +
-| +	for (i = 0; i < idx; i++, p8_events++)
-| +		attrs[i] = dev_str_attr((char *)p8_events->ev_name,
-| +					(char *)p8_events->ev_value);
-| +
-| +	pmu->attr_groups[0] = attr_group;
-
-The ->attr_groups[0] is initialized here, after the ->attr_groups[1] and
-attr_groups[2] are initialized in caller. Since, ->attr_groups[1] and
-->attr_groups[2] are set to global (loop-invariant) values, can we
-initialize all the attribute-groups here? May need to rename function.
-
-| +	return 0;
-| +}
-| +
-|  static int nest_pmu_create(struct device_node *dev, int pmu_index)
-|  {
-|  	struct nest_ima_events **p8_events_arr, *p8_events;
-| @@ -91,6 +144,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
-|  			/* Save the name to register it later */
-|  			sprintf(buf, "Nest_%s", (char *)pp->value);
-|  			pmu_ptr->pmu.name = (char *)buf;
-| +			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
-|  			continue;
-|  		}
-| 
-| @@ -122,6 +176,9 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
-|  		idx++;
-|  	}
-| 
-| +	update_events_in_group(
-
-nit: need newline before first param?
-
-| +		(struct nest_ima_events *)p8_events_arr, idx, pmu_ptr);
-| +
-|  	return 0;
-|  }
-| 
-| -- 
-| 1.9.1
+Thanks,
+Nish
