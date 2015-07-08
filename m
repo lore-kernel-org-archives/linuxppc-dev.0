@@ -1,29 +1,26 @@
-Return-Path: <corbet@lwn.net>
-Received: from vena.lwn.net (tex.lwn.net [70.33.254.29])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D0611A198F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 07:17:54 +1000 (AEST)
-Date: Wed, 8 Jul 2015 15:17:50 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Eric B Munson <emunson@akamai.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko
- <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [PATCH V3 3/5] mm: mlock: Introduce VM_LOCKONFAULT and add
- mlock flags to enable it
-Message-ID: <20150708151750.75e65859@lwn.net>
-In-Reply-To: <20150708203456.GC4669@akamai.com>
-References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
- <1436288623-13007-4-git-send-email-emunson@akamai.com>
- <20150708132351.61c13db6@lwn.net>
- <20150708203456.GC4669@akamai.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 543791A19E0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 08:02:23 +1000 (AEST)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0146.outbound.protection.outlook.com [65.55.169.146])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 711641402AC
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Jul 2015 08:02:21 +1000 (AEST)
+Message-ID: <1436392928.2658.85.camel@freescale.com>
+Subject: Re: [PATCH V2 1/2] powerpc/kexec: Reset secondary cpu endianess
+ before kexec
+From: Scott Wood <scottwood@freescale.com>
+To: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+CC: <linuxppc-dev@ozlabs.org>
+Date: Wed, 8 Jul 2015 17:02:08 -0500
+In-Reply-To: <1436330233-28489-1-git-send-email-sam.mj@au1.ibm.com>
+References: <1436330233-28489-1-git-send-email-sam.mj@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 8 Jul 2015 16:34:56 -0400
-Eric B Munson <emunson@akamai.com> wrote:
+On Wed, 2015-07-08 at 14:37 +1000, Samuel Mendoza-Jonas wrote:
+> If the target kernel does not inlcude the FIXUP_ENDIAN check, coming
+> from a different-endian kernel will cause the target kernel to panic.
+> All ppc64 kernels can handle starting in big-endian mode, so return to
+> big-endian before branching into the target kernel.
+> 
+> This mainly affects pseries as secondaries on powernv are returned to
+> OPAL.
+> 
+> Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+> ---
+> v2: Add an #ifdef for subarch-specific code
+>     Neaten the endian check (and extra call to mfmsr!) by modifying the msr 
+> and
+>     branching to the target kernel in the same call to rfid.
+>  arch/powerpc/kernel/misc_64.S | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+> index 4e314b9..89f0600 100644
+> --- a/arch/powerpc/kernel/misc_64.S
+> +++ b/arch/powerpc/kernel/misc_64.S
+> @@ -475,9 +475,18 @@ _GLOBAL(kexec_wait)
+>  #ifdef CONFIG_KEXEC          /* use no memory without kexec */
+>       lwz     r4,0(r5)
+>       cmpwi   0,r4,0
+> -     bnea    0x60
+> +     beq     99b
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +     li      r10,0x60
+> +     mfmsr   r11
+> +     clrrdi  r11,r11,1       /* Clear MSR_LE */
+> +     mtsrr0  r10
+> +     mtsrr1  r11
+> +     rfid
+> +#else
+> +     b       0x60
+> +#endif
+>  #endif
+> -     b       99b
 
-> > Quick, possibly dumb question: I've been beating my head against these =
-for
-> > a little bit, and I can't figure out what's supposed to happen in this
-> > case:
-> >=20
-> > 	mlock2(addr, len, MLOCK_ONFAULT);
-> > 	munlock2(addr, len, MLOCK_LOCKED);
-> >=20
-> > It looks to me like it will clear VM_LOCKED without actually unlocking =
-any
-> > pages.  Is that the intended result? =20
->=20
-> This is not quite right, what happens when you call munlock2(addr, len,
-> MLOCK_LOCKED); is we call apply_vma_flags(addr, len, VM_LOCKED, false).
+"b 0x60" needs to be "ba 0x60".
 
-=46rom your explanation, it looks like what I said *was* right...what I was
-missing was the fact that VM_LOCKED isn't set in the first place.  So that
-call would be a no-op, clearing a flag that's already cleared.
-
-One other question...if I call mlock2(MLOCK_ONFAULT) on a range that
-already has resident pages, I believe that those pages will not be locked
-until they are reclaimed and faulted back in again, right?  I suspect that
-could be surprising to users.
-
-Thanks,
-
-jon
+-Scott
