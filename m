@@ -1,32 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0146.outbound.protection.outlook.com [157.56.110.146])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <robert.jarzmik@free.fr>
+Received: from smtp.smtpout.orange.fr (smtp04.smtpout.orange.fr
+ [80.12.242.126])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C8FF1A1A34
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 04:59:13 +1000 (AEST)
-Message-ID: <1436381938.2658.79.camel@freescale.com>
-Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xie
- Xiaobo-R63061" <X.Xie@freescale.com>
-Date: Wed, 8 Jul 2015 13:58:58 -0500
-In-Reply-To: <SN1PR0301MB155084FCD058F8EAAC5C5AEA9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
- <1432717920-43563-2-git-send-email-B45475@freescale.com>
- <1432748213.4089.23.camel@freescale.com>
- <SN1PR0301MB15500729CC3A65394FED67389BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1433398423.3415.34.camel@freescale.com>
- <SN1PR0301MB1550B0B2F863A80559FE8B6B9BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1433457659.31070.2.camel@freescale.com>
- <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1436324117.2658.64.camel@freescale.com>
- <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1436326077.2658.65.camel@freescale.com>
- <SN1PR0301MB155084FCD058F8EAAC5C5AEA9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 027431A1137
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 05:29:02 +1000 (AEST)
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+To: Robert Baldyga <r.baldyga@samsung.com>
+Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org,
+ linux-usb@vger.kernel.org, m.szyprowski@samsung.com,
+ linux-arm-kernel@lists.infradead.org, johnyoun@synopsys.com,
+ linuxppc-dev@lists.ozlabs.org, cernekee@gmail.com, nicolas.ferre@atmel.com,
+ michal.simek@xilinx.com, balbi@ti.com, linux-kernel@vger.kernel.org,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org, Peter.Chen@freescale.com,
+ dahlmann.thomas@arcor.de, andrzej.p@samsung.com, leoli@freescale.com,
+ daniel@zonque.org, linux-geode@lists.infradead.org
+Subject: Re: [PATCH 28/37] usb: gadget: pxa27x_udc: add ep capabilities support
+References: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
+ <1436353761-7107-29-git-send-email-r.baldyga@samsung.com>
+Date: Wed, 08 Jul 2015 21:26:08 +0200
+In-Reply-To: <1436353761-7107-29-git-send-email-r.baldyga@samsung.com> (Robert
+ Baldyga's message of "Wed, 08 Jul 2015 13:09:12 +0200")
+Message-ID: <874mlea1tb.fsf@belgarion.home>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,17 +33,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-07-08 at 02:25 -0500, Zhao Qiang-B45475 wrote:
-> So I will add two func for my use, do you think it is ok?
-> I need to align the address of allocated muram.
-> And I will set algo = gen_pool_first_fit_align.
-> 
-> +unsigned long gen_pool_alloc_align(struct gen_pool *pool, size_t size,
-> +               unsigned long align)
+Robert Baldyga <r.baldyga@samsung.com> writes:
 
-Again, please explain why you need this for CPM/QE.  I don't see 
-rh_alloc_align() currently being used by either.
+> Convert endpoint configuration to new capabilities model.
+The commit message is very short to judge the patch's correctness.
 
-Also, please stop top-posting.
+I'll side up with Felipe's opinion. If it's fine by him, so it is by me.
 
--Scott
+Cheers.
+
+--
+Robert
