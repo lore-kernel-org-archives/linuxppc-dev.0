@@ -1,25 +1,25 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D44411A1CFF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 12:51:46 +1000 (AEST)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 85C621A0612
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 12:51:12 +1000 (AEST)
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: York Sun <yorksun@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Jin Jason <Jason.Jin@freescale.com>
-Subject: RE: [RESEND] powerpc/diu: adjust DIU initialization entry
-Date: Wed, 8 Jul 2015 02:51:02 +0000
-Message-ID: <SN1PR0301MB1616F5B501EA02F13728829A9D910@SN1PR0301MB1616.namprd03.prod.outlook.com>
-References: <1436255497-41207-1-git-send-email-dongsheng.wang@freescale.com>
- <1436305887.2658.49.camel@freescale.com>
- <SN1PR0301MB16161F3443AF7311DB42A36E9D910@SN1PR0301MB1616.namprd03.prod.outlook.com>
- <1436323289.2658.61.camel@freescale.com>
- <SN1PR0301MB16166B5D40997C9558AA76159D910@SN1PR0301MB1616.namprd03.prod.outlook.com>
- <1436323706.2658.63.camel@freescale.com>
-In-Reply-To: <1436323706.2658.63.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id EED6B140D19
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 12:51:45 +1000 (AEST)
+Message-ID: <1436322938.2658.60.camel@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/kexec: Reset secondary cpu endianess before
+ kexec
+From: Scott Wood <scottwood@freescale.com>
+To: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+CC: <linuxppc-dev@ozlabs.org>
+Date: Tue, 7 Jul 2015 21:35:38 -0500
+In-Reply-To: <1436318605-13031-1-git-send-email-sam.mj@au1.ibm.com>
+References: <1436318605-13031-1-git-send-email-sam.mj@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,49 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDA4LCAyMDE1IDEwOjQ4IEFNDQo+IFRvOiBXYW5n
-IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IFN1biBZb3JrLVI1ODQ5NTsgbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmc7IEppbiBaaGVuZ3hpb25nLVI2NDE4OA0KPiBTdWJqZWN0OiBSZTogW1JF
-U0VORF0gcG93ZXJwYy9kaXU6IGFkanVzdCBESVUgaW5pdGlhbGl6YXRpb24gZW50cnkNCj4gDQo+
-IE9uIFR1ZSwgMjAxNS0wNy0wNyBhdCAyMTo0NiAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0
-IHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJv
-bTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgSnVseSAwOCwgMjAx
-NSAxMDo0MSBBTQ0KPiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiA+ID4gQ2M6IFN1
-biBZb3JrLVI1ODQ5NTsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEppbg0KPiA+ID4g
-Wmhlbmd4aW9uZy1SNjQxODgNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUkVTRU5EXSBwb3dlcnBjL2Rp
-dTogYWRqdXN0IERJVSBpbml0aWFsaXphdGlvbiBlbnRyeQ0KPiA+ID4NCj4gPiA+IE9uIFR1ZSwg
-MjAxNS0wNy0wNyBhdCAyMTozMCAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0K
-PiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4g
-RnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50OiBXZWRuZXNkYXksIEp1bHkg
-MDgsIDIwMTUgNTo1MSBBTQ0KPiA+ID4gPiA+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4g
-PiA+ID4gPiBDYzogU3VuIFlvcmstUjU4NDk1OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9y
-ZzsgSmluDQo+ID4gPiA+ID4gWmhlbmd4aW9uZy1SNjQxODgNCj4gPiA+ID4gPiBTdWJqZWN0OiBS
-ZTogW1JFU0VORF0gcG93ZXJwYy9kaXU6IGFkanVzdCBESVUgaW5pdGlhbGl6YXRpb24NCj4gPiA+
-ID4gPiBlbnRyeQ0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gT24gVHVlLCAyMDE1LTA3LTA3IGF0IDE1
-OjUxICswODAwLCBEb25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiA+ID4gPiA+IEZyb206IFdhbmcg
-RG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+ID4NCj4g
-PiA+ID4gPiA+IE1vdmUgZnNsX2RpdV9pbml0IGludG8gZGl1IHByb2JlIGZ1bmN0aW9uLCBiZWNh
-dXNlIGl0IHNob3VsZA0KPiA+ID4gPiA+ID4gYmUgaW5pdGlhbGl6ZWQgd2hlbiBzeXN0ZW0gZ2V0
-IGRpdSBkZXZpY2UgdHJlZSBub2RlLCBub3QNCj4gPiA+ID4gPiA+IGFsd2F5cyBkbyBpbml0aWFs
-aXphdGlvbi4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBXYW5nIERv
-bmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gPiA+IC0tLQ0K
-PiA+ID4gPiA+ID4gQ2hhbmdlczoNCj4gPiA+ID4gPiA+IFJlYmFzZSBvcmlnaW5hbCBwYXRjaCBm
-b3IgdXBzdHJlYW0gYmVjYXVzZSBmc2wtZGl1LWZiLmMgaGFzDQo+ID4gPiA+ID4gPiBtb3ZlZCB0
-byBmYmRldiBkaXIuDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gVGhpcyBwYXRjaCBpcyBhIGxv
-bmcgdGltZSBhZ28sIHRoZXJlIGlzIG5vIGZlZWRiYWNrLCBhbmQgdGhlDQo+ID4gPiA+ID4gPiBQ
-YXRjaHdvcmsgc3RhdGUgaGFzIGJlZW4gbW9kaWZpZWQgZm9yIHRoZSBjaGFuZ2VzIHJlcXVlc3Rl
-ZCwgSQ0KPiA+ID4gPiA+ID4gZG9uJ3Qga25vdw0KPiA+ID4gd2h5Lg0KPiA+ID4gPiA+ID4gU28g
-SSByZXNlbmQgdGhpcyBwYXRjaCB0byB1cHN0cmVhbS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFBs
-ZWFzZSBzZW5kIHRoaXMgdG8gdGhlIHByb3BlciBsaXN0IGFuZCBtYWludGFpbmVyLCBhbmQgd2l0
-aCBhDQo+ID4gPiA+ID4gc3ViamVjdCBwcmVmaXggdGhhdCBpbmRpY2F0ZXMgaXQncyBhbiBmYmRl
-diBwYXRjaC4NCj4gPiA+ID4gPg0KPiA+ID4gPiBUaGFua3MuDQo+ID4gPiA+DQo+ID4gPiA+IEkg
-d2lsbCBzZW5kIHRoaXMgcGF0Y2ggdG8gbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnLg0KPiA+
-ID4gPg0KPiA+ID4gPiBQbGVhc2UgaWdub3JlIHRoaXMgcGF0Y2guDQo+ID4gPg0KPiA+ID4gWW91
-IHN0aWxsIGRpZG4ndCBmaXggdGhlIHN1YmplY3QgbGluZS4uLg0KPiA+ID4NCj4gPg0KPiA+IFRo
-ZSBESVUgYmVsb25ncyB0byB0aGUgUE9XRVJQQywNCj4gDQo+IE5vLCBpdCBkb2Vzbid0IGJlbG9u
-ZyB0byBhcmNoL3Bvd2VycGMsIGl0IGJlbG9uZ3MgdG8gZHJpdmVycy92aWRlby9mYmRldi4NCj4g
-DQo+ID4gIG5lZWQgSSBmaXggdGhpcz8gZmJkZXYvZGl1Pw0KPiANCj4gInZpZGVvOiBmYmRldjog
-ZnNsLWRpdToiIHNlZW1zIHRvIGJlIHRoZSBzdHlsZSB0aGF0IHN1YnRyZWUgdXNlcy4NCg0KRml4
-IGl0IGluIG5leHQgdmVyc2lvbi4gUGxlYXNlIGNvbW1lbnQgaW4gbXkgbmV3IHBhdGNoLCBJIHdp
-bGwgZml4IGl0Lg0KDQpSZWdhcmRzLA0KLURvbmdzaGVuZw0K
+On Wed, 2015-07-08 at 11:23 +1000, Samuel Mendoza-Jonas wrote:
+> If the target kernel does not inlcude the FIXUP_ENDIAN check, coming
+> from a different-endian kernel will cause the target kernel to panic.
+> All ppc64 kernels can handle starting in big-endian mode, so return to
+> big-endian before branching into the target kernel.
+> 
+> This mainly affects pseries as secondaries on powernv are returned to
+> OPAL.
+> 
+> Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+> ---
+>  arch/powerpc/kernel/misc_64.S | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+> index 4e314b9..c73e587 100644
+> --- a/arch/powerpc/kernel/misc_64.S
+> +++ b/arch/powerpc/kernel/misc_64.S
+> @@ -475,9 +475,20 @@ _GLOBAL(kexec_wait)
+>  #ifdef CONFIG_KEXEC          /* use no memory without kexec */
+>       lwz     r4,0(r5)
+>       cmpwi   0,r4,0
+> -     bnea    0x60
+> +     beq     99b
+> +     mfmsr   r9              /* Check endianess */
+> +     clrldi. r10,r9,63
+> +     beqa    0x60            /* Already big-endian */
+> +     bcl     20,31,$+4
+> +     mflr    r10
+> +     addi    r10,r10,28
+> +     mfmsr   r11
+> +     xori    r11,r11,1
+> +     mtsrr0  r10
+> +     mtsrr1  r11
+> +     rfid
+> +     .long   0x62000048      /* ba 0x60 */
+>  #endif
+> -     b       99b
+
+Could you put a book3s ifdef around this?  The low bit of MSR is reserved on 
+book3e (and rfid doesn't exist).  Granted the bit should be zero, at least on 
+FSL book3e, but it's better to be explicit about code that is subarch-
+specific.
+
+And yes, I have book3e kexec patches coming.
+
+Also, it would be better to use label subtraction rather than hardcoding 
+"28", and the bcl instruction would be more readable as "bl <label>".
+
+-Scott
