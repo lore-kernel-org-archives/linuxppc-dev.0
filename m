@@ -1,28 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <sam.mj@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 77C7D1A1A79
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 14:22:29 +1000 (AEST)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0136.outbound.protection.outlook.com [207.46.100.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id A9E3A1A1D20
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 14:37:59 +1000 (AEST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9DE58140788
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 14:22:27 +1000 (AEST)
-Message-ID: <1436329328.2658.75.camel@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/kexec: Reset secondary cpu endianess before
- kexec
-From: Scott Wood <scottwood@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-CC: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>, <linuxppc-dev@ozlabs.org>
-Date: Tue, 7 Jul 2015 23:22:08 -0500
-In-Reply-To: <20150708040455.GA9086@pale.ozlabs.ibm.com>
-References: <1436318605-13031-1-git-send-email-sam.mj@au1.ibm.com>
- <1436322938.2658.60.camel@freescale.com>
- <20150708040455.GA9086@pale.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id 747E1140B0D
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 14:37:59 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sam.mj@au1.ibm.com>;
+ Wed, 8 Jul 2015 14:37:59 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AFF0D2CE8052
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 14:37:57 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t684bnT050135094
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 14:37:57 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t684bPwg007406
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 14:37:25 +1000
+From: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+Subject: [PATCH V2 2/2] powerpc/kexec: Reset HILE before kexec_sequence
+Date: Wed,  8 Jul 2015 14:37:13 +1000
+Message-Id: <1436330233-28489-2-git-send-email-sam.mj@au1.ibm.com>
+In-Reply-To: <1436330233-28489-1-git-send-email-sam.mj@au1.ibm.com>
+References: <1436330233-28489-1-git-send-email-sam.mj@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-07-08 at 14:04 +1000, Paul Mackerras wrote:
-> On Tue, Jul 07, 2015 at 09:35:38PM -0500, Scott Wood wrote:
-> > 
-> > Also, it would be better to use label subtraction rather than hardcoding 
-> > "28", and the bcl instruction would be more readable as "bl <label>".
-> 
-> I agree about using labels, but "bcl 20,31,foo" is not the same thing
-> as "bl foo".  The former is a form of bl that doesn't perturb the link
-> stack and is therefore better for performance when you're not going to
-> do a matching blr later (not that performance is at all critical
-> here).
+On powernv secondary cpus are returned to OPAL, and will then enter the
+target kernel in big-endian. However if it is set the HILE bit will persist,
+causing the first exception in the target kernel to be delivered in
+litte-endian regardless of the kernel endianess.
+Make sure that the HILE bit is switched off before entering
+kexec_sequence.
 
-If performance mattered I would have complained about the extra mfmsr. :-)
+Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+---
+ arch/powerpc/kernel/machine_kexec_64.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-I see that some other parts of the kernel are using that bcl instruction, but 
-if it is actually worthwhile in those places, it'd be nice to at least stick 
-it in a macro for readability...
-
--Scott
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 1a74446..2266135c 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -22,8 +22,10 @@
+ #include <asm/page.h>
+ #include <asm/current.h>
+ #include <asm/machdep.h>
++#include <asm/opal.h>
+ #include <asm/cacheflush.h>
+ #include <asm/paca.h>
++#include <asm/firmware.h>
+ #include <asm/mmu.h>
+ #include <asm/sections.h>	/* _end */
+ #include <asm/prom.h>
+@@ -356,6 +358,10 @@ void default_machine_kexec(struct kimage *image)
+ 	 * switched to a static version!
+ 	 */
+ 
++	/* Reset HILE in case we kexec into an older BE kernel */
++	if (firmware_has_feature(FW_FEATURE_OPALv3))
++		opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++
+ 	/* Some things are best done in assembly.  Finding globals with
+ 	 * a toc is easier in C, so pass in what we can.
+ 	 */
+-- 
+2.4.5
