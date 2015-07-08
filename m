@@ -1,30 +1,37 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sam.mj@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C7411A1A37
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:28:17 +1000 (AEST)
-Message-ID: <1436326077.2658.65.camel@freescale.com>
-Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xie
- Xiaobo-R63061" <X.Xie@freescale.com>
-Date: Tue, 7 Jul 2015 22:27:57 -0500
-In-Reply-To: <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
- <1432717920-43563-2-git-send-email-B45475@freescale.com>
- <1432748213.4089.23.camel@freescale.com>
- <SN1PR0301MB15500729CC3A65394FED67389BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1433398423.3415.34.camel@freescale.com>
- <SN1PR0301MB1550B0B2F863A80559FE8B6B9BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1433457659.31070.2.camel@freescale.com>
- <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1436324117.2658.64.camel@freescale.com>
- <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id F3D8E1A1A37
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:30:23 +1000 (AEST)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C480D1402BD
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 13:30:23 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sam.mj@au1.ibm.com>;
+ Wed, 8 Jul 2015 13:30:22 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B38793578052
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 13:30:19 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t683UBeG50856112
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 13:30:19 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t683Tlv6029951
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 13:29:47 +1000
+From: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+To: anton@samba.org
+Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: [kexec-lite PATCH V2] trampoline: Reset primary cpu endian to
+ big-endian
+Date: Wed,  8 Jul 2015 13:29:38 +1000
+Message-Id: <1436326178-17021-1-git-send-email-sam.mj@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +41,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-07 at 22:26 -0500, Zhao Qiang-B45475 wrote:
-> Now the point is, genalloc is not so proper to qe muram while rheap is 
-> written to manage muram,
+Older big-endian ppc64 kernels don't include the FIXUP_ENDIAN check,
+meaning if we kexec from a little-endian kernel the target kernel will
+fail to boot.
+Returning to big-endian before we enter the target kernel ensures that
+the target kernel can boot whether or not it includes FIXUP_ENDIAN.
 
-rheap is not specific to muram.
+Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+---
+V2: As suggested by Anton take advantage of the rfid call and switch off
+MSR_LE and branch to the target kernel in the same step.
 
-> if use genalloc instead of rheap, there will be amounts of work to do.
+ kexec_trampoline.S | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-Not much.  I think I've spent more time responding to continual e-mails on 
-this topic than it would have taken to convert it. :-P
-
-> I have a suggestion, how about to put rheap under drivers/soc/qe, because 
-> rheap is 
-> To manage muram when it is added to sdk.
-
-No.
-
--Scott
+diff --git a/kexec_trampoline.S b/kexec_trampoline.S
+index a3eb314..3751112 100644
+--- a/kexec_trampoline.S
++++ b/kexec_trampoline.S
+@@ -88,8 +88,15 @@ start:
+ 
+ 	li	r5,0
+ 
+-	mtctr	r4
+-	bctr
++	mtsrr0	r4
++
++	mfmsr	r5
++	clrrdi	r5,r5,1 	/* Clear MSR_LE */
++	mtsrr1	r5
++
++	li	r5,0
++
++	rfid
+ 
+ . = KERNEL_ADDR_OFFSET
+ kernel_addr:
+-- 
+2.4.5
