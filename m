@@ -1,31 +1,33 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 698C61A18AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 17:25:11 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xiaobo
- Xie" <X.Xie@freescale.com>
-Subject: RE: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
-Date: Wed, 8 Jul 2015 07:25:02 +0000
-Message-ID: <SN1PR0301MB155084FCD058F8EAAC5C5AEA9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
- <1432717920-43563-2-git-send-email-B45475@freescale.com>
- <1432748213.4089.23.camel@freescale.com>
- <SN1PR0301MB15500729CC3A65394FED67389BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1433398423.3415.34.camel@freescale.com>
- <SN1PR0301MB1550B0B2F863A80559FE8B6B9BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1433457659.31070.2.camel@freescale.com>
- <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1436324117.2658.64.camel@freescale.com>
- <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1436326077.2658.65.camel@freescale.com>
-In-Reply-To: <1436326077.2658.65.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 085071A1986
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 18:51:32 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Wed, 8 Jul 2015 14:21:29 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8C29FE0056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 14:25:14 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t688pNZ253936274
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 14:21:24 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t688oM2f026666
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 14:20:23 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: [RESEND PATCH] rtc/rtc-opal: Enable alarms only when opal supports tpo
+Date: Wed,  8 Jul 2015 14:20:07 +0530
+Message-Id: <1436345407-8924-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,64 +37,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-U28gSSB3aWxsIGFkZCB0d28gZnVuYyBmb3IgbXkgdXNlLCBkbyB5b3UgdGhpbmsgaXQgaXMgb2s/
-DQpJIG5lZWQgdG8gYWxpZ24gdGhlIGFkZHJlc3Mgb2YgYWxsb2NhdGVkIG11cmFtLg0KQW5kIEkg
-d2lsbCBzZXQgYWxnbyA9IGdlbl9wb29sX2ZpcnN0X2ZpdF9hbGlnbi4NCg0KK3Vuc2lnbmVkIGxv
-bmcgZ2VuX3Bvb2xfYWxsb2NfYWxpZ24oc3RydWN0IGdlbl9wb29sICpwb29sLCBzaXplX3Qgc2l6
-ZSwNCisgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGFsaWduKQ0KK3sNCisgICAgICAgc3Ry
-dWN0IGdlbl9wb29sX2NodW5rICpjaHVuazsNCisgICAgICAgdW5zaWduZWQgbG9uZyBhZGRyID0g
-MDsNCisgICAgICAgdW5zaWduZWQgbG9uZyBhbGlnbl9tYXNrOw0KKyAgICAgICBpbnQgb3JkZXIg
-PSBwb29sLT5taW5fYWxsb2Nfb3JkZXI7DQorICAgICAgIGludCBuYml0cywgc3RhcnRfYml0ID0g
-MCwgZW5kX2JpdCwgcmVtYWluOw0KKw0KKyNpZm5kZWYgQ09ORklHX0FSQ0hfSEFWRV9OTUlfU0FG
-RV9DTVBYQ0hHDQorICAgICAgIEJVR19PTihpbl9ubWkoKSk7DQorI2VuZGlmDQorDQorICAgICAg
-IGlmIChzaXplID09IDApDQorICAgICAgICAgICAgICAgcmV0dXJuIDA7DQorDQorICAgICAgIGFs
-aWduX21hc2sgPSAoKGFsaWduICsgKDFVTCA8PCBvcmRlcikgLSAxKSA+PiBvcmRlcikgLSAxOw0K
-KyAgICAgICBuYml0cyA9IChzaXplICsgKDFVTCA8PCBvcmRlcikgLSAxKSA+PiBvcmRlcjsNCisg
-ICAgICAgcmN1X3JlYWRfbG9jaygpOw0KKyAgICAgICBsaXN0X2Zvcl9lYWNoX2VudHJ5X3JjdShj
-aHVuaywgJnBvb2wtPmNodW5rcywgbmV4dF9jaHVuaykgew0KKyAgICAgICAgICAgICAgIGlmIChz
-aXplID4gYXRvbWljX3JlYWQoJmNodW5rLT5hdmFpbCkpDQorICAgICAgICAgICAgICAgICAgICAg
-ICBjb250aW51ZTsNCisNCisgICAgICAgICAgICAgICBlbmRfYml0ID0gY2h1bmtfc2l6ZShjaHVu
-aykgPj4gb3JkZXI7DQorcmV0cnk6DQorICAgICAgICAgICAgICAgc3RhcnRfYml0ID0gcG9vbC0+
-YWxnbyhjaHVuay0+Yml0cywgZW5kX2JpdCwgc3RhcnRfYml0LCBuYml0cywNCisgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgcG9vbC0+ZGF0YSwgYWxpZ25fbWFzayk7DQorICAgICAgICAg
-ICAgICAgaWYgKHN0YXJ0X2JpdCA+PSBlbmRfYml0KQ0KKyAgICAgICAgICAgICAgICAgICAgICAg
-Y29udGludWU7DQorICAgICAgICAgICAgICAgcmVtYWluID0gYml0bWFwX3NldF9sbChjaHVuay0+
-Yml0cywgc3RhcnRfYml0LCBuYml0cyk7DQorICAgICAgICAgICAgICAgaWYgKHJlbWFpbikgew0K
-KyAgICAgICAgICAgICAgICAgICAgICAgcmVtYWluID0gYml0bWFwX2NsZWFyX2xsKGNodW5rLT5i
-aXRzLCBzdGFydF9iaXQsDQorICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgbmJpdHMgLSByZW1haW4pOw0KKyAgICAgICAgICAgICAgICAgICAgICAgQlVHX09O
-KHJlbWFpbik7DQorICAgICAgICAgICAgICAgICAgICAgICBnb3RvIHJldHJ5Ow0KKyAgICAgICAg
-ICAgICAgIH0NCisNCisgICAgICAgICAgICAgICBhZGRyID0gY2h1bmstPnN0YXJ0X2FkZHIgKyAo
-KHVuc2lnbmVkIGxvbmcpc3RhcnRfYml0IDw8IG9yZGVyKTsNCisgICAgICAgICAgICAgICBzaXpl
-ID0gbmJpdHMgPDwgb3JkZXI7DQorICAgICAgICAgICAgICAgYXRvbWljX3N1YihzaXplLCAmY2h1
-bmstPmF2YWlsKTsNCisgICAgICAgICAgICAgICBicmVhazsNCisgICAgICAgfQ0KKyAgICAgICBy
-Y3VfcmVhZF91bmxvY2soKTsNCisgICAgICAgcmV0dXJuIGFkZHI7DQorfQ0KK0VYUE9SVF9TWU1C
-T0woZ2VuX3Bvb2xfYWxsb2MpOw0KDQorICogZ2VuX3Bvb2xfZmlyc3RfZml0X2FsaWduIC0gZmlu
-ZCB0aGUgZmlyc3QgYXZhaWxhYmxlIHJlZ2lvbg0KKyAqIG9mIG1lbW9yeSBtYXRjaGluZyB0aGUg
-c2l6ZSByZXF1aXJlbWVudC4gVGhlIHJlZ2lvbiB3aWxsIGJlIGFsaWduZWQNCisgKiB0byB0aGUg
-b3JkZXIgb2YgdGhlIHNpemUgc3BlY2lmaWVkLg0KKyAqIEBtYXA6IFRoZSBhZGRyZXNzIHRvIGJh
-c2UgdGhlIHNlYXJjaCBvbg0KKyAqIEBzaXplOiBUaGUgYml0bWFwIHNpemUgaW4gYml0cw0KKyAq
-IEBzdGFydDogVGhlIGJpdG51bWJlciB0byBzdGFydCBzZWFyY2hpbmcgYXQNCisgKiBAbnI6IFRo
-ZSBudW1iZXIgb2YgemVyb2VkIGJpdHMgd2UncmUgbG9va2luZyBmb3INCisgKiBAZGF0YTogYWRk
-aXRpb25hbCBkYXRhIC0gdW51c2VkDQorICovDQordW5zaWduZWQgbG9uZyBnZW5fcG9vbF9maXJz
-dF9maXRfYWxpZ24odW5zaWduZWQgbG9uZyAqbWFwLA0KKyAgICAgICAgICAgICAgIHVuc2lnbmVk
-IGxvbmcgc2l6ZSwgdW5zaWduZWQgbG9uZyBzdGFydCwNCisgICAgICAgICAgICAgICB1bnNpZ25l
-ZCBpbnQgbnIsIHZvaWQgKmRhdGEsIHVuc2lnbmVkIGxvbmcgYWxpZ25fbWFzaykNCit7DQorICAg
-ICAgIHJldHVybiBiaXRtYXBfZmluZF9uZXh0X3plcm9fYXJlYShtYXAsIHNpemUsIHN0YXJ0LCBu
-ciwgYWxpZ25fbWFzayk7DQorfQ0KK0VYUE9SVF9TWU1CT0woZ2VuX3Bvb2xfZmlyc3RfZml0X2Fs
-aWduKTsNCisNCg0KQmVzdCBSZWdhcmRzDQpaaGFvIFFpYW5nDQoNCg0KPiAtLS0tLU9yaWdpbmFs
-IE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBXZWRuZXNk
-YXksIEp1bHkgMDgsIDIwMTUgMTE6MjggQU0NCj4gVG86IFpoYW8gUWlhbmctQjQ1NDc1DQo+IENj
-OiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgWGllIFhpYW9iby1SNjMwNjENCj4gU3Vi
-amVjdDogUmU6IFtQQVRDSCAyLzJdIHJoZWFwOiBtb3ZlIHJoZWFwLmMgZnJvbSBhcmNoL3Bvd2Vy
-cGMvbGliLyB0bw0KPiBsaWIvDQo+IA0KPiBPbiBUdWUsIDIwMTUtMDctMDcgYXQgMjI6MjYgLTA1
-MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+IE5vdyB0aGUgcG9pbnQgaXMsIGdlbmFs
-bG9jIGlzIG5vdCBzbyBwcm9wZXIgdG8gcWUgbXVyYW0gd2hpbGUgcmhlYXAgaXMNCj4gPiB3cml0
-dGVuIHRvIG1hbmFnZSBtdXJhbSwNCj4gDQo+IHJoZWFwIGlzIG5vdCBzcGVjaWZpYyB0byBtdXJh
-bS4NCj4gDQo+ID4gaWYgdXNlIGdlbmFsbG9jIGluc3RlYWQgb2YgcmhlYXAsIHRoZXJlIHdpbGwg
-YmUgYW1vdW50cyBvZiB3b3JrIHRvIGRvLg0KPiANCj4gTm90IG11Y2guICBJIHRoaW5rIEkndmUg
-c3BlbnQgbW9yZSB0aW1lIHJlc3BvbmRpbmcgdG8gY29udGludWFsIGUtbWFpbHMNCj4gb24gdGhp
-cyB0b3BpYyB0aGFuIGl0IHdvdWxkIGhhdmUgdGFrZW4gdG8gY29udmVydCBpdC4gOi1QDQo+IA0K
-PiA+IEkgaGF2ZSBhIHN1Z2dlc3Rpb24sIGhvdyBhYm91dCB0byBwdXQgcmhlYXAgdW5kZXIgZHJp
-dmVycy9zb2MvcWUsDQo+ID4gYmVjYXVzZSByaGVhcCBpcyBUbyBtYW5hZ2UgbXVyYW0gd2hlbiBp
-dCBpcyBhZGRlZCB0byBzZGsuDQo+IA0KPiBOby4NCj4gDQo+IC1TY290dA0KDQo=
+rtc-opal driver provides support for rtc alarms via
+times-power-on(tpo). However some platforms like BML use a fake rtc
+clock and don't support tpo. Such platforms are indicated by the missing
+'has-tpo' property in the device tree.
+
+Current implementation however enables callback for
+rtc_class_ops.read/set alarm irrespective of the tpo support from the
+platform. This results in a failed opal call when kernel tries to read
+an existing alarms via opal_get_tpo_time during rtc device registration.
+
+This patch fixes is issue by setting opal_rtc_ops.read/set_alarm
+callback pointers only when tpo is supported.
+
+Acked-by: Michael Neuling <mikey@neuling.org>
+Acked-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ drivers/rtc/rtc-opal.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
+index 7061dca..1125641 100644
+--- a/drivers/rtc/rtc-opal.c
++++ b/drivers/rtc/rtc-opal.c
+@@ -190,11 +190,9 @@ exit:
+ 	return rc;
+ }
+ 
+-static const struct rtc_class_ops opal_rtc_ops = {
++static struct rtc_class_ops opal_rtc_ops = {
+ 	.read_time	= opal_get_rtc_time,
+ 	.set_time	= opal_set_rtc_time,
+-	.read_alarm	= opal_get_tpo_time,
+-	.set_alarm	= opal_set_tpo_time,
+ };
+ 
+ static int opal_rtc_probe(struct platform_device *pdev)
+@@ -202,8 +200,11 @@ static int opal_rtc_probe(struct platform_device *pdev)
+ 	struct rtc_device *rtc;
+ 
+ 	if (pdev->dev.of_node && of_get_property(pdev->dev.of_node, "has-tpo",
+-						 NULL))
++						 NULL)) {
+ 		device_set_wakeup_capable(&pdev->dev, true);
++		opal_rtc_ops.read_alarm	= opal_get_tpo_time;
++		opal_rtc_ops.set_alarm = opal_set_tpo_time;
++	}
+ 
+ 	rtc = devm_rtc_device_register(&pdev->dev, DRVNAME, &opal_rtc_ops,
+ 				       THIS_MODULE);
+-- 
+2.2.1
