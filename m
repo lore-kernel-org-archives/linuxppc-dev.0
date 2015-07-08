@@ -1,42 +1,27 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3EB251A2AB9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:03:50 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 8 Jul 2015 23:03:49 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7D9903578048
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:03:47 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t68D3dNu45154480
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:03:47 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t68D3ENp012085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jul 2015 23:03:15 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>,
- Preeti U Murthy <preetium@andrew.cmu.edu>,
- Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH v4 7/7] powerpc/powernv: nest pmu cpumask and cpu hotplug
- support
-Date: Wed,  8 Jul 2015 18:31:46 +0530
-Message-Id: <1436360506-18805-8-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1436360506-18805-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1436360506-18805-1-git-send-email-maddy@linux.vnet.ibm.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id 24B201A4512
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:23:05 +1000 (AEST)
+Date: Wed, 8 Jul 2015 09:23:02 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ Vlastimil Babka <vbabka@suse.cz>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V3 0/5] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150708132302.GB4669@akamai.com>
+References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
+ <20150707141613.f945c98279dcb71c9743d5f2@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="3uo+9/B/ebqu+fSQ"
+In-Reply-To: <20150707141613.f945c98279dcb71c9743d5f2@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,206 +31,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds cpumask attribute to be used by each nest pmu since nest
-units are per-chip. Only one cpu (first online cpu) from each node/chip
-is designated to read counters.
 
-On cpu hotplug, dying cpu is checked to see whether it is one of the
-designated cpus, if yes, next online cpu from the same node/chip is
-designated as new cpu to read counters.
+--3uo+9/B/ebqu+fSQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: Stephane Eranian <eranian@google.com>
-Cc: Preeti U Murthy <preetium@andrew.cmu.edu>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/nest-pmu.c | 146 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 146 insertions(+)
+On Tue, 07 Jul 2015, Andrew Morton wrote:
 
-diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-index c2ada13..31943c5 100644
---- a/arch/powerpc/perf/nest-pmu.c
-+++ b/arch/powerpc/perf/nest-pmu.c
-@@ -12,6 +12,7 @@
- 
- static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
- static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
-+static cpumask_t nest_pmu_cpu_mask;
- 
- PMU_FORMAT_ATTR(event, "config:0-20");
- struct attribute *p8_nest_format_attrs[] = {
-@@ -24,6 +25,147 @@ struct attribute_group p8_nest_format_group = {
- 	.attrs = p8_nest_format_attrs,
- };
- 
-+static ssize_t nest_pmu_cpumask_get_attr(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	return cpumap_print_to_pagebuf(true, buf, &nest_pmu_cpu_mask);
-+}
-+
-+static DEVICE_ATTR(cpumask, S_IRUGO, nest_pmu_cpumask_get_attr, NULL);
-+
-+static struct attribute *nest_pmu_cpumask_attrs[] = {
-+	&dev_attr_cpumask.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group nest_pmu_cpumask_attr_group = {
-+	.attrs = nest_pmu_cpumask_attrs,
-+};
-+
-+static void nest_init(void *dummy)
-+{
-+	opal_nest_ima_control(P8_NEST_ENGINE_START);
-+}
-+
-+static void nest_change_cpu_context(int old_cpu, int new_cpu)
-+{
-+	int i;
-+
-+	for (i = 0; per_nest_pmu_arr[i] != NULL; i++)
-+		perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
-+						old_cpu, new_cpu);
-+}
-+
-+static void nest_exit_cpu(int cpu)
-+{
-+	int nid, target = -1;
-+	struct cpumask *l_cpumask;
-+
-+	/*
-+	 * Check in the designated list for this cpu. Dont bother
-+	 * if not one of them.
-+	 */
-+	if (!cpumask_test_and_clear_cpu(cpu, &nest_pmu_cpu_mask))
-+		return;
-+
-+	/*
-+	 * Now that this cpu is one of the designated,
-+	 * find a next cpu a) which is online and b) in same chip.
-+	 */
-+	nid = cpu_to_node(cpu);
-+	l_cpumask = cpumask_of_node(nid);
-+	target = cpumask_next(cpu, l_cpumask);
-+
-+	/*
-+	 * Update the cpumask with the target cpu and
-+	 * migrate the context if needed
-+	 */
-+	if (target >= 0 && target <= nr_cpu_ids) {
-+		cpumask_set_cpu(target, &nest_pmu_cpu_mask);
-+		nest_change_cpu_context(cpu, target);
-+	}
-+}
-+
-+static void nest_init_cpu(int cpu)
-+{
-+	int nid, fcpu, ncpu;
-+	struct cpumask *l_cpumask, tmp_mask;
-+
-+	nid = cpu_to_node(cpu);
-+	l_cpumask = cpumask_of_node(nid);
-+
-+	/*
-+	 * if empty cpumask, just add incoming cpu and move on.
-+	 */
-+	if (!cpumask_and(&tmp_mask, l_cpumask, &nest_pmu_cpu_mask)) {
-+		cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
-+		return;
-+	}
-+
-+	/*
-+	 * Alway have the first online cpu of a chip as designated one.
-+	 */
-+	fcpu = cpumask_first(l_cpumask);
-+	ncpu = cpumask_next(cpu, l_cpumask);
-+	if (cpu == fcpu) {
-+		if (cpumask_test_and_clear_cpu(ncpu, &nest_pmu_cpu_mask)) {
-+			cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
-+			nest_change_cpu_context(ncpu, cpu);
-+		}
-+	}
-+}
-+
-+static int nest_pmu_cpu_notifier(struct notifier_block *self,
-+				unsigned long action, void *hcpu)
-+{
-+	long cpu = (long)hcpu;
-+
-+	switch (action & ~CPU_TASKS_FROZEN) {
-+	case CPU_ONLINE:
-+		nest_init_cpu(cpu);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+	       nest_exit_cpu(cpu);
-+	       break;
-+	default:
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block nest_pmu_cpu_nb = {
-+	.notifier_call  = nest_pmu_cpu_notifier,
-+	.priority       = CPU_PRI_PERF + 1,
-+};
-+
-+void nest_pmu_cpumask_init(void)
-+{
-+	const struct cpumask *l_cpumask;
-+	int cpu, nid;
-+
-+	cpu_notifier_register_begin();
-+
-+	/*
-+	 * Nest PMUs are per-chip counters. So designate a cpu
-+	 * from each chip for counter collection.
-+	 */
-+	for_each_online_node(nid) {
-+		l_cpumask = cpumask_of_node(nid);
-+
-+		/* designate first online cpu in this node */
-+		cpu = cpumask_first(l_cpumask);
-+		cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
-+	}
-+
-+	/* Initialize Nest PMUs in each node using designated cpus */
-+	on_each_cpu_mask(&nest_pmu_cpu_mask, (smp_call_func_t)nest_init, NULL, 1);
-+
-+	__register_cpu_notifier(&nest_pmu_cpu_nb);
-+
-+	cpu_notifier_register_done();
-+}
-+
- static int p8_nest_event_init(struct perf_event *event)
- {
- 	int chip_id;
-@@ -239,6 +381,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
- 			sprintf(buf, "Nest_%s", (char *)pp->value);
- 			pmu_ptr->pmu.name = (char *)buf;
- 			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
-+			pmu_ptr->attr_groups[2] = &nest_pmu_cpumask_attr_group;
- 			continue;
- 		}
- 
-@@ -363,6 +506,9 @@ static int __init nest_pmu_init(void)
- 	if (ret)
- 		return ret;
- 
-+	/* Add cpumask and register for hotplug notification */
-+	nest_pmu_cpumask_init();
-+
- 	return 0;
- }
- device_initcall(nest_pmu_init);
--- 
-1.9.1
+> On Tue,  7 Jul 2015 13:03:38 -0400 Eric B Munson <emunson@akamai.com> wro=
+te:
+>=20
+> > mlock() allows a user to control page out of program memory, but this
+> > comes at the cost of faulting in the entire mapping when it is
+> > allocated.  For large mappings where the entire area is not necessary
+> > this is not ideal.  Instead of forcing all locked pages to be present
+> > when they are allocated, this set creates a middle ground.  Pages are
+> > marked to be placed on the unevictable LRU (locked) when they are first
+> > used, but they are not faulted in by the mlock call.
+> >=20
+> > This series introduces a new mlock() system call that takes a flags
+> > argument along with the start address and size.  This flags argument
+> > gives the caller the ability to request memory be locked in the
+> > traditional way, or to be locked after the page is faulted in.  New
+> > calls are added for munlock() and munlockall() which give the called a
+> > way to specify which flags are supposed to be cleared.  A new MCL flag
+> > is added to mirror the lock on fault behavior from mlock() in
+> > mlockall().  Finally, a flag for mmap() is added that allows a user to
+> > specify that the covered are should not be paged out, but only after the
+> > memory has been used the first time.
+>=20
+> Thanks for sticking with this.  Adding new syscalls is a bit of a
+> hassle but I do think we end up with a better interface - the existing
+> mlock/munlock/mlockall interfaces just aren't appropriate for these
+> things.
+>=20
+> I don't know whether these syscalls should be documented via new
+> manpages, or if we should instead add them to the existing
+> mlock/munlock/mlockall manpages.  Michael, could you please advise?
+>=20
+
+Thanks for adding the series.  I owe you several updates (getting the
+new syscall right for all architectures and a set of tests for the new
+syscalls).  Would you prefer a new pair of patches or I update this set?
+
+Eric
+
+--3uo+9/B/ebqu+fSQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVnSQ2AAoJELbVsDOpoOa9jHcP/RLEmYajmHZ/hRFflieosbLl
+xfDDa3xIpZh7VCBCdjAu96XR7jc5Af66dF7GpeB2Vqv/PAI739slpzUqyaXSdEK9
+1HpgGkjAHYagYa/BSLRpmDCYKGph2zWsKEUK0xrCaRKbAwytEk2rw863ZoFHM4tv
+sftQYCqhB5bkdEQuVu4Hl9D7k9CnrshKl5rURSe+Ub5nj44W47IUyjFugRDi1eRO
+WbddZd8e9av7Qte7l1rtQMxch/L4WM5LICujQx9FrNiz0Cb/flG6v3JvW1G50fym
+NINBwp64GAbE4jYxpvn5zvIHc9IU8G1As6B7tcXTBzPnjx1zQQuxP7pTmpVoAsVQ
+dhJndlDWt3RhdcPz2QDtd9EbUvDdyeLmeyWciB1cx7CZbxnwzqiSXMVzswEqbXiq
+RPTEON/PJ3IsyeQ1Pi/Ygnf/LQVwQtYAut+fZZKUIEofARkUGf6V2ReWDdrBB2t5
+zdOL4Qgr+GNGpaPqp3kr+vcF7ouIFa7ldH7OblI9yqQHufVFX8slDLtial6j4xXa
+D6oU0KUJCjusSpSTbm+KxFPuaC1O+v4lit/GoMvIcdFC6CS5a/hZK+e1QNfOFCh3
+uwVDY1DpI0Qq4ESNAFgjyf/HgiKZUPwvTy5zeq42esGbvhBHgIl62NCrk96JYCoO
+nkBCH/HT50sOYD+mO/s8
+=+7yp
+-----END PGP SIGNATURE-----
+
+--3uo+9/B/ebqu+fSQ--
