@@ -1,43 +1,23 @@
-Return-Path: <sam.mj@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael.neuling@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A10261A190F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:12:20 +1000 (AEST)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 68A1F140787
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 13:12:20 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sam.mj@au1.ibm.com>;
- Wed, 8 Jul 2015 13:12:20 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D0DF22BB003F
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jul 2015 13:12:17 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t683C9uD36700382
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 13:12:17 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t683BjRL022961
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Jul 2015 13:11:45 +1000
-Reply-To: sam.mj@au1.ibm.com
-Subject: Re: [kexec-lite PATCH] trampoline: Reset primary cpu endian to
- big-endian
-References: <1436318742-13490-1-git-send-email-sam.mj@au1.ibm.com>
- <20150708115632.725120f1@kryten>
-To: Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@ozlabs.org
-From: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-Message-ID: <559C94EE.8050201@au1.ibm.com>
-Date: Wed, 8 Jul 2015 13:11:42 +1000
-MIME-Version: 1.0
-In-Reply-To: <20150708115632.725120f1@kryten>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E6871A1A37
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:25:17 +1000 (AEST)
+Received: from localhost.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id E0039140D19
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:25:16 +1000 (AEST)
+Message-ID: <1436325916.13169.23.camel@au1.ibm.com>
+Subject: Re: [PATCH] rtc/rtc-opal: Disable rtc-alarms when opal doesn't
+ support tpo
+From: Michael Neuling <michael.neuling@au1.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Date: Wed, 08 Jul 2015 13:25:16 +1000
+In-Reply-To: <1433307087-11503-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+References: <1433307087-11503-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,39 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/07/15 11:56, Anton Blanchard wrote:
-> Hi Sam,
-> 
->> Older big-endian ppc64 kernels don't include the FIXUP_ENDIAN check,
->> meaning if we kexec from a little-endian kernel the target kernel will
->> fail to boot.
->> Returning to big-endian before we enter the target kernel ensures that
->> the target kernel can boot whether or not it includes FIXUP_ENDIAN.
-> 
-> Thanks!
-> 
-> I wonder if we can do something simpler, and always enter via rfid.
-> Avoids the need for the endian trampoline. Something like:
-> 
->   	mtsrr0	r4
-> 
-> 	mfmsr	r5
-> 	clrrdi	r5,r5,1 	/* Clear MSR_LE */
-> 	mtsrr1	r5
-> 
-> 	li	r5,0
-> 
-> 	rfid
-> 
-> Anton
-> 
+> [PATCH] rtc/rtc-opal: Disable rtc-alarms when opal doesn't support tpo
 
-Ah that's a neat idea, I'll test and send a V2.
+I'd prefer to avoid the double negative and extra words.  ie.
 
-Cheers,
-Sam
+  rtc/opal: Enable alarms only when opal supports tpo
 
--- 
------------
-LTC Ozlabs
-IBM
+But looks good other than that.
+
+Acked-by: Michael Neuling <mikey@neuling.org>
+
+
+On Wed, 2015-06-03 at 10:21 +0530, Vaibhav Jain wrote:
+> rtc-opal driver provides support for rtc alarms via
+> times-power-on(tpo). However some platforms like BML use a fake rtc
+> clock and don't support tpo. Such platforms are indicated by the missing
+> 'has-tpo' property in the device tree.
+>=20
+> Current implementation however enables callback for
+> rtc_class_ops.read/set alarm irrespective of the tpo support from the
+> platform. This results in a failed opal call when kernel tries to read
+> an existing alarms via opal_get_tpo_time during rtc device registration.
+>=20
+> This patch fixes this issue by setting opal_rtc_ops.read/set_alarm
+> callback pointers only when tpo is supported.
+>=20
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+>  drivers/rtc/rtc-opal.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
+> index 7061dca..1125641 100644
+> --- a/drivers/rtc/rtc-opal.c
+> +++ b/drivers/rtc/rtc-opal.c
+> @@ -190,11 +190,9 @@ exit:
+>  	return rc;
+>  }
+> =20
+> -static const struct rtc_class_ops opal_rtc_ops =3D {
+> +static struct rtc_class_ops opal_rtc_ops =3D {
+>  	.read_time	=3D opal_get_rtc_time,
+>  	.set_time	=3D opal_set_rtc_time,
+> -	.read_alarm	=3D opal_get_tpo_time,
+> -	.set_alarm	=3D opal_set_tpo_time,
+>  };
+> =20
+>  static int opal_rtc_probe(struct platform_device *pdev)
+> @@ -202,8 +200,11 @@ static int opal_rtc_probe(struct platform_device *pd=
+ev)
+>  	struct rtc_device *rtc;
+> =20
+>  	if (pdev->dev.of_node && of_get_property(pdev->dev.of_node, "has-tpo",
+> -						 NULL))
+> +						 NULL)) {
+>  		device_set_wakeup_capable(&pdev->dev, true);
+> +		opal_rtc_ops.read_alarm	=3D opal_get_tpo_time;
+> +		opal_rtc_ops.set_alarm =3D opal_set_tpo_time;
+> +	}
+> =20
+>  	rtc =3D devm_rtc_device_register(&pdev->dev, DRVNAME, &opal_rtc_ops,
+>  				       THIS_MODULE);
