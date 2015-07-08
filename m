@@ -1,18 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0107.outbound.protection.outlook.com [157.56.110.107])
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0108.outbound.protection.outlook.com [207.46.100.108])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2281A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 12:55:30 +1000 (AEST)
-Message-ID: <1436324117.2658.64.camel@freescale.com>
-Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xie
- Xiaobo-R63061" <X.Xie@freescale.com>
-Date: Tue, 7 Jul 2015 21:55:17 -0500
-In-Reply-To: <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE8331A1903
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 13:09:23 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xiaobo
+ Xie" <X.Xie@freescale.com>
+Subject: RE: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+Date: Wed, 8 Jul 2015 02:54:36 +0000
+Message-ID: <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
  <1432717920-43563-2-git-send-email-B45475@freescale.com>
  <1432748213.4089.23.camel@freescale.com>
@@ -20,8 +19,8 @@ References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
  <1433398423.3415.34.camel@freescale.com>
  <SN1PR0301MB1550B0B2F863A80559FE8B6B9BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
  <1433457659.31070.2.camel@freescale.com>
- <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1433457659.31070.2.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,14 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-07 at 21:54 -0500, Zhao Qiang-B45475 wrote:
-> I need to ensure one thing, 
-> In your point, you want me to use lib/genalloc.c instead of rheap.c.
-> Or just think rheap.c is not proper to put into lib?
-> 
-> Best Regards
-> Zhao Qiang
-
-I want you to use lib/genalloc.c.
-
--Scott
+SSBuZWVkIHRvIGVuc3VyZSBvbmUgdGhpbmcsIA0KSW4geW91ciBwb2ludCwgeW91IHdhbnQgbWUg
+dG8gdXNlIGxpYi9nZW5hbGxvYy5jIGluc3RlYWQgb2YgcmhlYXAuYy4NCk9yIGp1c3QgdGhpbmsg
+cmhlYXAuYyBpcyBub3QgcHJvcGVyIHRvIHB1dCBpbnRvIGxpYj8NCg0KQmVzdCBSZWdhcmRzDQpa
+aGFvIFFpYW5nDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29k
+IFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBGcmlkYXksIEp1bmUgMDUsIDIwMTUgNjo0MSBBTQ0KPiBU
+bzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+OyBYaWUgWGlhb2JvLVI2MzA2MQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gcmhlYXA6IG1v
+dmUgcmhlYXAuYyBmcm9tIGFyY2gvcG93ZXJwYy9saWIvIHRvDQo+IGxpYi8NCj4gDQo+IE9uIFRo
+dSwgMjAxNS0wNi0wNCBhdCAwNDoyNyAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3JvdGU6DQo+
+ID4gT24gVGh1LCAyMDE1LTA2LTA0IGF0IDI6MTRQTSwgV29vZCBTY290dCB3cm90ZToNCj4gPg0K
+PiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBT
+Y290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFRodXJzZGF5LCBKdW5lIDA0LCAyMDE1IDI6MTQgUE0N
+Cj4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0
+cy5vemxhYnMub3JnOyBYaWUgWGlhb2JvLVI2MzA2MQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRD
+SCAyLzJdIHJoZWFwOiBtb3ZlIHJoZWFwLmMgZnJvbSBhcmNoL3Bvd2VycGMvbGliLw0KPiA+ID4g
+dG8gbGliLw0KPiA+ID4NCj4gPiA+IE9uIFRodSwgMjAxNS0wNi0wNCBhdCAwMDo1NiAtMDUwMCwg
+WmhhbyBRaWFuZy1CNDU0NzUgd3JvdGU6DQo+ID4gPiA+IE9uIFRodSwgMjAxNS0wNS0yOCBhdCAx
+OjM3QU0gKzA4MDAsIFdvb2QgU2NvdHQgd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+DQo+ID4gPiA+
+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBXb29kIFNjb3R0
+LUIwNzQyMQ0KPiA+ID4gPiA+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMjgsIDIwMTUgMTozNyBBTQ0K
+PiA+ID4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiA+ID4gPiA+IENjOiBsaW51eHBwYy1k
+ZXZAbGlzdHMub3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjE7IFhpZQ0KPiA+ID4gPiA+IFhp
+YW9iby0NCj4gPiA+ID4gPiBSNjMwNjENCj4gPiA+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDIv
+Ml0gcmhlYXA6IG1vdmUgcmhlYXAuYyBmcm9tDQo+ID4gPiA+ID4gYXJjaC9wb3dlcnBjL2xpYi8g
+dG8gbGliLw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gT24gV2VkLCAyMDE1LTA1LTI3IGF0IDE3OjEy
+ICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+ID4gPiA+ID4gcWUgbmVlZCB0byB1c2UgdGhl
+IHJoZWFwLCBzbyBtb3ZlIGl0IHRvIHB1YmxpYyBkaXJlY3RvcnkuDQo+ID4gPiA+ID4NCj4gPiA+
+ID4gPiBZb3UndmUgYmVlbiBwcmV2aW91c2x5IGFza2VkIHRvIHVzZSBsaWIvZ2VuYWxsb2MuYyBy
+YXRoZXIgdGhhbg0KPiA+ID4gPiA+IGludHJvZHVjZSBkdXBsaWNhdGUgZnVuY3Rpb25hbGl0eSBp
+bnRvIC9saWIuICBOQUNLLg0KPiA+ID4gPg0KPiA+ID4gPiBDYW4ndCB1c2UgbGliL2dlbmFsbG9j
+LmMgaW5zdGVhZCBvZiByaGVhcC5jLg0KPiA+ID4gPiBRZSBuZWVkIHRvIGFsbG9jIG11cmFtIG9m
+IHFlLCBub3QgRElNTS4NCj4gPiA+DQo+ID4gPiBsaWIvZ2VuYWxsb2MuaCBpcyBub3QgZm9yIGFs
+bG9jYXRpbmcgbWFpbiBtZW1vcnkuICBJdCBpcyBmb3INCj4gPiA+IGFsbG9jYXRpbmcgc3BlY2lh
+bCByZWdpb25zLiAgSXQgaXMgc2VydmluZyB0aGUgc2FtZSBwdXJwb3NlIGFzDQo+ID4gPiByaGVh
+cC4NCj4gPg0KPiA+IEkgbmVlZCB0byB1c2UgdGhlIGZ1bmMgInJoX2FsbG9jX2FsaWduIiwgd2hh
+dCBpdCB0aGUgc2ltaWxhciBmdW5jPw0KPiA+IEkganVzdCBmaW5kIGEgZnVuYyAiZ2VuX3Bvb2xf
+Zmlyc3RfZml0X29yZGVyX2FsaWduIi4NCj4gDQo+IEkgZG9uJ3Qgc2VlIGFueXdoZXJlIHRoZSBR
+RSBjb2RlIGN1cnJlbnRseSBjYWxscyByaF9hbGxvY19hbGlnbigpIC0tIGFuZA0KPiBjcG1fbXVy
+YW1faW5pdCgpIGNhbGxzIHJoX2luaXQoKSB3aXRoIGFuIGFsaWdubWVudCBvZiAxLg0KPiANCj4g
+SWYgeW91IGRvIG5lZWQgc29tZSBmdW5jdGlvbmFsaXR5IHRoYXQgZ2VuYWxsb2MgZG9lc24ndCBv
+ZmZlciwgYWRkIHRoZQ0KPiBmdW5jdGlvbmFsaXR5IHRvIGdlbmFsbG9jLg0KPiANCj4gLVNjb3R0
+DQoNCg==
