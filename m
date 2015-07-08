@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D031A1A18B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:19:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A5B4E1A18B0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 21:20:18 +1000 (AEST)
 Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout3.samsung.com
+ by mailout4.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NR602P0W1OFQR40@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:09:51 +0900 (KST)
+ with ESMTP id <0NR6034NW1P2EQD0@mailout4.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 08 Jul 2015 20:10:14 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, balbi@ti.com,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH 01/37] usb: gadget: encapsulate endpoint claiming mechanism
-Date: Wed, 08 Jul 2015 13:08:45 +0200
-Message-id: <1436353761-7107-2-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH 04/37] staging: emxx_udc: add ep capabilities support
+Date: Wed, 08 Jul 2015 13:08:48 +0200
+Message-id: <1436353761-7107-5-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 References: <1436353761-7107-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,93 +34,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So far it was necessary for usb functions to set ep->driver_data in
-endpoint obtained from autoconfig to non-null value, to indicate that
-endpoint is claimed by function (in autoconfig it was checked if endpoint
-has set this field to non-null value, and if it has, it was assumed that
-it is claimed). It could cause bugs becouse if some function doesn't
-set this field autoconfig could return the same endpoint more than one
-time.
+Convert endpoint configuration to new capabilities model.
 
-To help to avoid such bugs this patch adds claimed flag to struct usb_ep,
-and  encapsulates endpoint claiming mechanism inside usb_ep_autoconfig_ss()
-and usb_ep_autoconfig_reset(), so now usb functions doesn't need to perform
-any additional actions to mark endpoint obtained from autoconfig as claimed.
+Fixed typo in "epc-nulk" to "epc-bulk".
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/epautoconf.c | 11 ++++++-----
- include/linux/usb/gadget.h      |  1 +
- 2 files changed, 7 insertions(+), 5 deletions(-)
+ drivers/staging/emxx_udc/emxx_udc.c | 60 ++++++++++++++++++-------------------
+ 1 file changed, 29 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index 919cdfd..8e00ca7 100644
---- a/drivers/usb/gadget/epautoconf.c
-+++ b/drivers/usb/gadget/epautoconf.c
-@@ -53,7 +53,7 @@ ep_matches (
- 	int		num_req_streams = 0;
+diff --git a/drivers/staging/emxx_udc/emxx_udc.c b/drivers/staging/emxx_udc/emxx_udc.c
+index 3b7aa36..0d64bee 100644
+--- a/drivers/staging/emxx_udc/emxx_udc.c
++++ b/drivers/staging/emxx_udc/emxx_udc.c
+@@ -3153,36 +3153,33 @@ static const struct usb_gadget_ops nbu2ss_gadget_ops = {
+ 	.ioctl			= nbu2ss_gad_ioctl,
+ };
  
- 	/* endpoint already claimed? */
--	if (NULL != ep->driver_data)
-+	if (ep->claimed)
- 		return 0;
+-static const char g_ep0_name[] = "ep0";
+-static const char g_ep1_name[] = "ep1-bulk";
+-static const char g_ep2_name[] = "ep2-bulk";
+-static const char g_ep3_name[] = "ep3in-int";
+-static const char g_ep4_name[] = "ep4-iso";
+-static const char g_ep5_name[] = "ep5-iso";
+-static const char g_ep6_name[] = "ep6-bulk";
+-static const char g_ep7_name[] = "ep7-bulk";
+-static const char g_ep8_name[] = "ep8in-int";
+-static const char g_ep9_name[] = "ep9-iso";
+-static const char g_epa_name[] = "epa-iso";
+-static const char g_epb_name[] = "epb-bulk";
+-static const char g_epc_name[] = "epc-nulk";
+-static const char g_epd_name[] = "epdin-int";
+-
+-static const char *gp_ep_name[NUM_ENDPOINTS] = {
+-	g_ep0_name,
+-	g_ep1_name,
+-	g_ep2_name,
+-	g_ep3_name,
+-	g_ep4_name,
+-	g_ep5_name,
+-	g_ep6_name,
+-	g_ep7_name,
+-	g_ep8_name,
+-	g_ep9_name,
+-	g_epa_name,
+-	g_epb_name,
+-	g_epc_name,
+-	g_epd_name,
++static const struct {
++	const char *name;
++	const struct usb_ep_caps caps;
++} ep_info[NUM_ENDPOINTS] = {
++#define EP_INFO(_name, _type, _dir) \
++	{ \
++		.name = _name, \
++		.caps = USB_EP_CAPS(USB_EP_CAPS_TYPE_ ## _type, \
++				USB_EP_CAPS_DIR_ ## _dir), \
++	}
++
++	EP_INFO("ep0",		CONTROL, ALL),
++	EP_INFO("ep1-bulk",	BULK,	ALL),
++	EP_INFO("ep2-bulk",	BULK,	ALL),
++	EP_INFO("ep3in-int",	INT,	IN),
++	EP_INFO("ep4-iso",	INT,	ALL),
++	EP_INFO("ep5-iso",	ISO,	ALL),
++	EP_INFO("ep6-bulk",	ISO,	ALL),
++	EP_INFO("ep7-bulk",	BULK,	ALL),
++	EP_INFO("ep8in-int",	INT,	IN),
++	EP_INFO("ep9-iso",	ISO,	ALL),
++	EP_INFO("epa-iso",	ISO,	ALL),
++	EP_INFO("epb-bulk",	BULK,	ALL),
++	EP_INFO("epc-bulk",	BULK,	ALL),
++	EP_INFO("epdin-int",	INT,	IN),
++
++#undef EP_INFO
+ };
  
- 	/* only support ep0 for portable CONTROL traffic */
-@@ -240,7 +240,7 @@ find_ep (struct usb_gadget *gadget, const char *name)
-  * updated with the assigned number of streams if it is
-  * different from the original value. To prevent the endpoint
-  * from being returned by a later autoconfig call, claim it by
-- * assigning ep->driver_data to some non-null value.
-+ * assigning ep->claimed to true.
-  *
-  * On failure, this returns a null endpoint descriptor.
-  */
-@@ -323,6 +323,7 @@ struct usb_ep *usb_ep_autoconfig_ss(
- found_ep:
- 	ep->desc = NULL;
- 	ep->comp_desc = NULL;
-+	ep->claimed = true;
- 	return ep;
- }
- EXPORT_SYMBOL_GPL(usb_ep_autoconfig_ss);
-@@ -354,7 +355,7 @@ EXPORT_SYMBOL_GPL(usb_ep_autoconfig_ss);
-  * descriptor bEndpointAddress.  For bulk endpoints, the wMaxPacket value
-  * is initialized as if the endpoint were used at full speed.  To prevent
-  * the endpoint from being returned by a later autoconfig call, claim it
-- * by assigning ep->driver_data to some non-null value.
-+ * by assigning ep->claimed to true.
-  *
-  * On failure, this returns a null endpoint descriptor.
-  */
-@@ -373,7 +374,7 @@ EXPORT_SYMBOL_GPL(usb_ep_autoconfig);
-  *
-  * Use this for devices where one configuration may need to assign
-  * endpoint resources very differently from the next one.  It clears
-- * state such as ep->driver_data and the record of assigned endpoints
-+ * state such as ep->claimed and the record of assigned endpoints
-  * used by usb_ep_autoconfig().
-  */
- void usb_ep_autoconfig_reset (struct usb_gadget *gadget)
-@@ -381,7 +382,7 @@ void usb_ep_autoconfig_reset (struct usb_gadget *gadget)
- 	struct usb_ep	*ep;
+ /*-------------------------------------------------------------------------*/
+@@ -3200,7 +3197,8 @@ static void __init nbu2ss_drv_ep_init(struct nbu2ss_udc *udc)
+ 		ep->desc = NULL;
  
- 	list_for_each_entry (ep, &gadget->ep_list, ep_list) {
--		ep->driver_data = NULL;
-+		ep->claimed = false;
- 	}
- 	gadget->in_epnum = 0;
- 	gadget->out_epnum = 0;
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index 4f3dfb7..fcb0a4e 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -173,6 +173,7 @@ struct usb_ep {
- 	const char		*name;
- 	const struct usb_ep_ops	*ops;
- 	struct list_head	ep_list;
-+	bool			claimed;
- 	unsigned		maxpacket:16;
- 	unsigned		maxpacket_limit:16;
- 	unsigned		max_streams:16;
+ 		ep->ep.driver_data = NULL;
+-		ep->ep.name = gp_ep_name[i];
++		ep->ep.name = ep_info[i].name;
++		ep->ep.caps = ep_info[i].caps;
+ 		ep->ep.ops = &nbu2ss_ep_ops;
+ 
+ 		usb_ep_set_maxpacket_limit(&ep->ep,
 -- 
 1.9.1
