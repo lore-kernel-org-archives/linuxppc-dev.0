@@ -1,27 +1,21 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
- [72.246.2.14])
- by lists.ozlabs.org (Postfix) with ESMTP id 24B201A4512
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jul 2015 23:23:05 +1000 (AEST)
-Date: Wed, 8 Jul 2015 09:23:02 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- Vlastimil Babka <vbabka@suse.cz>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [PATCH V3 0/5] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150708132302.GB4669@akamai.com>
-References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
- <20150707141613.f945c98279dcb71c9743d5f2@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="3uo+9/B/ebqu+fSQ"
-In-Reply-To: <20150707141613.f945c98279dcb71c9743d5f2@linux-foundation.org>
+Return-Path: <k0da@opensuse.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9101E1A1D4B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 02:47:58 +1000 (AEST)
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 215D01402B2
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Jul 2015 02:47:57 +1000 (AEST)
+From: Dinar valeev <k0da@opensuse.org>
+To: linuxppc-dev@ozlabs.org, aik@ozlabs.ru, nikunj@linux.vnet.ibm.com,
+ thuth@redhat.com
+Cc: Dinar Valeev <dvaleev@suse.com>
+Subject: [PATCH v2] Caps in not always shift
+Date: Wed,  8 Jul 2015 18:47:44 +0200
+Message-Id: <1436374064-4116-1-git-send-email-k0da@opensuse.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,72 +25,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Dinar Valeev <dvaleev@suse.com>
 
---3uo+9/B/ebqu+fSQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Caps behaves like shift only for latin characters.
+In case we're typing - for example with caps enabled, SLOF picks _ char
+from shifted table.
 
-On Tue, 07 Jul 2015, Andrew Morton wrote:
+Threat caps as shift only for letters.
 
-> On Tue,  7 Jul 2015 13:03:38 -0400 Eric B Munson <emunson@akamai.com> wro=
-te:
->=20
-> > mlock() allows a user to control page out of program memory, but this
-> > comes at the cost of faulting in the entire mapping when it is
-> > allocated.  For large mappings where the entire area is not necessary
-> > this is not ideal.  Instead of forcing all locked pages to be present
-> > when they are allocated, this set creates a middle ground.  Pages are
-> > marked to be placed on the unevictable LRU (locked) when they are first
-> > used, but they are not faulted in by the mlock call.
-> >=20
-> > This series introduces a new mlock() system call that takes a flags
-> > argument along with the start address and size.  This flags argument
-> > gives the caller the ability to request memory be locked in the
-> > traditional way, or to be locked after the page is faulted in.  New
-> > calls are added for munlock() and munlockall() which give the called a
-> > way to specify which flags are supposed to be cleared.  A new MCL flag
-> > is added to mirror the lock on fault behavior from mlock() in
-> > mlockall().  Finally, a flag for mmap() is added that allows a user to
-> > specify that the covered are should not be paged out, but only after the
-> > memory has been used the first time.
->=20
-> Thanks for sticking with this.  Adding new syscalls is a bit of a
-> hassle but I do think we end up with a better interface - the existing
-> mlock/munlock/mlockall interfaces just aren't appropriate for these
-> things.
->=20
-> I don't know whether these syscalls should be documented via new
-> manpages, or if we should instead add them to the existing
-> mlock/munlock/mlockall manpages.  Michael, could you please advise?
->=20
+Signed-off-by: Dinar Valeev <dvaleev@suse.com>
+---
+ lib/libusb/usb-hid.c | 32 +++++++++++++++++++++++++++++---
+ 1 file changed, 29 insertions(+), 3 deletions(-)
 
-Thanks for adding the series.  I owe you several updates (getting the
-new syscall right for all architectures and a set of tests for the new
-syscalls).  Would you prefer a new pair of patches or I update this set?
-
-Eric
-
---3uo+9/B/ebqu+fSQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVnSQ2AAoJELbVsDOpoOa9jHcP/RLEmYajmHZ/hRFflieosbLl
-xfDDa3xIpZh7VCBCdjAu96XR7jc5Af66dF7GpeB2Vqv/PAI739slpzUqyaXSdEK9
-1HpgGkjAHYagYa/BSLRpmDCYKGph2zWsKEUK0xrCaRKbAwytEk2rw863ZoFHM4tv
-sftQYCqhB5bkdEQuVu4Hl9D7k9CnrshKl5rURSe+Ub5nj44W47IUyjFugRDi1eRO
-WbddZd8e9av7Qte7l1rtQMxch/L4WM5LICujQx9FrNiz0Cb/flG6v3JvW1G50fym
-NINBwp64GAbE4jYxpvn5zvIHc9IU8G1As6B7tcXTBzPnjx1zQQuxP7pTmpVoAsVQ
-dhJndlDWt3RhdcPz2QDtd9EbUvDdyeLmeyWciB1cx7CZbxnwzqiSXMVzswEqbXiq
-RPTEON/PJ3IsyeQ1Pi/Ygnf/LQVwQtYAut+fZZKUIEofARkUGf6V2ReWDdrBB2t5
-zdOL4Qgr+GNGpaPqp3kr+vcF7ouIFa7ldH7OblI9yqQHufVFX8slDLtial6j4xXa
-D6oU0KUJCjusSpSTbm+KxFPuaC1O+v4lit/GoMvIcdFC6CS5a/hZK+e1QNfOFCh3
-uwVDY1DpI0Qq4ESNAFgjyf/HgiKZUPwvTy5zeq42esGbvhBHgIl62NCrk96JYCoO
-nkBCH/HT50sOYD+mO/s8
-=+7yp
------END PGP SIGNATURE-----
-
---3uo+9/B/ebqu+fSQ--
+diff --git a/lib/libusb/usb-hid.c b/lib/libusb/usb-hid.c
+index f0cab8a..18210ae 100644
+--- a/lib/libusb/usb-hid.c
++++ b/lib/libusb/usb-hid.c
+@@ -28,6 +28,10 @@
+ #define HID_REQ_SET_IDLE                0x0A
+ #define HID_REQ_SET_PROTOCOL            0x0B
+ 
++//key position for latin letters
++#define KEYP_LATIN_A 4
++#define KEYP_LATIN_Z 29
++
+ //#define KEY_DEBUG
+ 
+ /* HID SPEC - 7.2.6 Set_Protocol Request */
+@@ -83,6 +87,8 @@ uint8_t set_leds;
+ const uint8_t *key_std       = NULL;
+ const uint8_t *key_std_shift = NULL;
+ 
++uint8_t ctrl; /* modifiers */
++
+ /**
+  * read character from Keyboard-Buffer
+  *
+@@ -111,6 +117,18 @@ static void write_key(uint8_t key)
+ }
+ 
+ /**
++ * Checks if keypos is a latin key
++ * @param  keypos
++ * @return -
++ */
++void check_latin(uint8_t keypos)
++	if (keypos > KEYP_LATIN_A || keypos < KEYP_LATIN_Z) {
++		return true;
++	} else {
++		return false;
++	}
++
++/**
+  * Convert keyboard usage-ID to ANSI-Code
+  *
+  * @param   Ctrl=Modifier Byte
+@@ -120,22 +138,24 @@ static void write_key(uint8_t key)
+ static void get_char(uint8_t ctrl, uint8_t keypos)
+ {
+ 	uint8_t ch;
++	bool caps = false;
+ 
+ #ifdef KEY_DEBUG
+ 	printf("pos %02X\n", keypos);
+ #endif
+ 
+ 	if (set_leds & LED_CAPS_LOCK)	                /* is CAPS Lock set ? */
+-		ctrl |= MODIFIER_SHIFT;	                    /* simulate shift */
++		caps = true;
+ 
+-	if (ctrl == 0) {
++	/* caps is a shift only for latin chars */
++	if ((!caps && ctrl == 0) || (caps && !check_latin(keypos))) {
+ 		ch = key_std[keypos];
+ 		if (ch != 0)
+ 			write_key(ch);
+ 		return;
+ 	}
+ 
+-	if (ctrl & MODIFIER_SHIFT) {
++	if ((ctrl & MODIFIER_SHIFT) || caps) {
+ 		ch = key_std_shift[keypos];
+ 		if (ch != 0)
+ 			write_key(ch);
+@@ -187,6 +207,12 @@ static void check_key_code(uint8_t *buf)
+ 					set_leds ^= LED_CAPS_LOCK;
+ 					break;
+ 
++				case 0x36:		                /*Shift pressed*/
++					ctrl |= MODIFIER_SHIFT;
++					break;
++				case 0xb6:		                /*Shift unpressed*/
++					ctrl &= ~MODIFIER_SHIFT;
++					break;
+ 				case 0x3a:	                        /* F1 */
+ 					write_key(0x1b);
+ 					write_key(0x5b);
+-- 
+2.1.4
