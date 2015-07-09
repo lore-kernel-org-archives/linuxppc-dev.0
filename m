@@ -1,25 +1,26 @@
 Return-Path: <rientjes@google.com>
-Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
- [IPv6:2607:f8b0:4001:c03::22f])
+Received: from mail-ig0-x231.google.com (mail-ig0-x231.google.com
+ [IPv6:2607:f8b0:4001:c05::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E93D21A0018
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 11:24:41 +1000 (AEST)
-Received: by ieru20 with SMTP id u20so23966166ier.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2015 18:24:39 -0700 (PDT)
-Date: Wed, 8 Jul 2015 18:24:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A4FF1A0DCB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 11:25:20 +1000 (AEST)
+Received: by igcqs7 with SMTP id qs7so69470587igc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jul 2015 18:25:18 -0700 (PDT)
+Date: Wed, 8 Jul 2015 18:25:16 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 cc: Michael Ellerman <mpe@ellerman.id.au>,
- Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC,1/2] powerpc/numa: fix cpu_to_node() usage during boot
-In-Reply-To: <20150708231623.GB44862@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.10.1507081823060.16585@chino.kir.corp.google.com>
+ Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/2] powerpc/smp: use early_cpu_to_node() instead of
+ direct references to numa_cpu_lookup_table
+In-Reply-To: <20150702230332.GB2807@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.10.1507081825010.16585@chino.kir.corp.google.com>
 References: <20150702230202.GA2807@linux.vnet.ibm.com>
- <20150708040056.948A1140770@ozlabs.org>
- <20150708231623.GB44862@linux.vnet.ibm.com>
+ <20150702230332.GB2807@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,16 +32,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 8 Jul 2015, Nishanth Aravamudan wrote:
+On Thu, 2 Jul 2015, Nishanth Aravamudan wrote:
 
-> > It looks like the symptom is that the per-cpu areas are all allocated on node
-> > 0, is that all that goes wrong?
+> A simple move to a wrapper function to numa_cpu_lookup_table, now that
+> power has the early_cpu_to_node() API.
 > 
-> Yes, that's the symptom. I cc'd a few folks to see if they could help
-> indicate the performance implications of such a setup -- sorry, I should
-> have been more explicit about that.
-> 
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-Yeah, not sure it's really a bugfix but rather a performance optimization 
-since cpu_to_node() with CONFIG_USE_PERCPU_NUMA_NODE_ID is only about 
-performance.
+When early_cpu_to_node() is __init:
+
+	Acked-by: David Rientjes <rientjes@google.com>
