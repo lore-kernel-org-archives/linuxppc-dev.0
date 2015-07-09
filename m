@@ -1,29 +1,19 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
- by lists.ozlabs.org (Postfix) with ESMTP id 958331A06F8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 04:46:38 +1000 (AEST)
-Date: Thu, 9 Jul 2015 14:46:35 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Michal Hocko <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [PATCH V3 3/5] mm: mlock: Introduce VM_LOCKONFAULT and add mlock
- flags to enable it
-Message-ID: <20150709184635.GE4669@akamai.com>
-References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
- <1436288623-13007-4-git-send-email-emunson@akamai.com>
- <20150708132351.61c13db6@lwn.net>
- <20150708203456.GC4669@akamai.com>
- <20150708151750.75e65859@lwn.net>
+Return-Path: <roy.pledge@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0127.outbound.protection.outlook.com [207.46.100.127])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20AB31A02BE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 06:35:53 +1000 (AEST)
+From: Roy Pledge <Roy.Pledge@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>, Roy Pledge
+ <Roy.Pledge@freescale.com>
+Subject: [PATCH 00/11] Freescale DPAA QBMan Drivers
+Date: Thu, 9 Jul 2015 16:18:10 -0400
+Message-ID: <1436473101-21202-1-git-send-email-Roy.Pledge@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="d8Lz2Tf5e5STOWUP"
-In-Reply-To: <20150708151750.75e65859@lwn.net>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,73 +24,105 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---d8Lz2Tf5e5STOWUP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The Freescale Data Path Acceleration Architecture (DPAA) is a set of hardware components on specific QorIQ multicore processors. This architecture provides the infrastructure to support simplified sharing of networking interfaces and accelerators by multiple CPU cores and the accelerators.
 
-On Wed, 08 Jul 2015, Jonathan Corbet wrote:
+The Queue Manager (QMan) is a hardware queue management block that allows software and accelerators on the datapath to enqueue and dequeue frames in order to communicate.
 
-> On Wed, 8 Jul 2015 16:34:56 -0400
-> Eric B Munson <emunson@akamai.com> wrote:
->=20
-> > > Quick, possibly dumb question: I've been beating my head against thes=
-e for
-> > > a little bit, and I can't figure out what's supposed to happen in this
-> > > case:
-> > >=20
-> > > 	mlock2(addr, len, MLOCK_ONFAULT);
-> > > 	munlock2(addr, len, MLOCK_LOCKED);
-> > >=20
-> > > It looks to me like it will clear VM_LOCKED without actually unlockin=
-g any
-> > > pages.  Is that the intended result? =20
-> >=20
-> > This is not quite right, what happens when you call munlock2(addr, len,
-> > MLOCK_LOCKED); is we call apply_vma_flags(addr, len, VM_LOCKED, false).
->=20
-> From your explanation, it looks like what I said *was* right...what I was
-> missing was the fact that VM_LOCKED isn't set in the first place.  So that
-> call would be a no-op, clearing a flag that's already cleared.
+The Buffer Manager (BMan) is a hardware buffer pool management block that allows software and accelerators on the datapath to acquire and release buffers in order to build frames.
 
-Sorry, I misread the original.  You are correct with the addition that
-the call to munlock2(MLOCK_LOCKED) is a noop in this case.
+This patch set introduces the QBMan driver code that configures initializes the QBMan hardware and provides APIs for software to use the frame queues and buffer pools the blocks provide.  These drivers provide the base fuctionality for software to communicate with the other DPAA accelerators on Freescale QorIQ processors.
 
->=20
-> One other question...if I call mlock2(MLOCK_ONFAULT) on a range that
-> already has resident pages, I believe that those pages will not be locked
-> until they are reclaimed and faulted back in again, right?  I suspect that
-> could be surprising to users.
 
-That is the case.  I am looking into what it would take to find only the
-present pages in a range and lock them, if that is the behavior that is
-preferred I can include it in the updated series.
+Emil Medve (1):
+  powerpc: re-add devm_ioremap_prot()
 
->=20
-> Thanks,
->=20
-> jon
+Geoff Thorpe (7):
+  soc/fsl: Introduce DPAA BMan device management driver
+  soc/fsl: Introduce the DPAA BMan portal driver
+  soc/fsl: Introduce drivers for the DPAA QMan
+  soc/bman: Add self-tester for BMan driver
+  soc/qman: Add self-tester for QMan driver
+  soc/bman: Add debugfs support for the BMan driver
+  soc/qman: Add debugfs support for the QMan driver
 
---d8Lz2Tf5e5STOWUP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Hai-Ying Wang (2):
+  soc/bman: Add HOTPLUG_CPU support to the BMan driver
+  soc/qman: Add HOTPLUG_CPU support to the QMan driver
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Madalin Bucur (1):
+  soc/qman: add qman_delete_cgr_safe()
 
-iQIcBAEBAgAGBQJVnsGLAAoJELbVsDOpoOa9fD4P+wfJut0yfq/Eut90zuluJASG
-y2/MKnGXk/YAwdE9jVyUs/if3S6y9E+nzr9h10jjiAzl7Ek3fbjvGQGtSJee0nxv
-xprvjrX8StCUyubIAdvuvBDAQ2uruWlWPt0/WYlTppmm3Ws7sXk6Rc9uyAaYvO8k
-cb/3b2hDUz4X3buHx7rbontLHI+PkJyOMC0wwhlgc/TnIyGAOINbxf4jYR9MTOP1
-OjpudgitD2855bIJVi9VnOkbG7tvRqJA5azlVkcwlUBqezjSKz5K+NANc4zL5xQ1
-uBN9QJXvbiGBzpKXSjmCgtQYRpUq5fN4hZOjq3lo6nill+E+F6eL415ON/5mpRvR
-8JeYOUZt/Gua6W0fxLTscnp3E5cpu4oUrzY43J9jJ5HA34s0W8mj/ssey/lDxUo/
-LzoeORqwByyNuESJHtHSYJUB24FDQeQJ1cjMLqoZmpyjlFnUoVgzFox+jdtwZ80P
-3LMoWN7h6NyQ6GtQDHF1033vsxAHBQ04x96kch9Ztx3BGoWVZoXO1Lsr6X6EHCIV
-DmQW1k8HPLsUbkXtOlGR36opxF1fbdBzAyN7V8rWXnNFiyDCl/ImUtEVKQ/VPp9k
-T2FjdgDFkTetH6KHVOztE1Ya08wHX4Yy/qxxFH1sPMfVIHFUE7ATTP+00Oc30E32
-vBEzC6L/dMQNWWAIbaEJ
-=CLFc
------END PGP SIGNATURE-----
+ arch/powerpc/include/asm/io.h                 |    3 +
+ arch/powerpc/lib/Makefile                     |    1 +
+ arch/powerpc/lib/devres.c                     |   43 +
+ arch/powerpc/platforms/85xx/corenet_generic.c |   16 +
+ arch/powerpc/platforms/85xx/p1023_rdb.c       |   14 +
+ drivers/soc/Kconfig                           |    1 +
+ drivers/soc/Makefile                          |    1 +
+ drivers/soc/fsl/Kconfig                       |    5 +
+ drivers/soc/fsl/Makefile                      |    3 +
+ drivers/soc/fsl/qbman/Kconfig                 |  192 ++
+ drivers/soc/fsl/qbman/Makefile                |   20 +
+ drivers/soc/fsl/qbman/bman-debugfs.c          |  117 +
+ drivers/soc/fsl/qbman/bman.c                  |  554 +++++
+ drivers/soc/fsl/qbman/bman.h                  |  542 +++++
+ drivers/soc/fsl/qbman/bman_api.c              | 1070 +++++++++
+ drivers/soc/fsl/qbman/bman_portal.c           |  391 ++++
+ drivers/soc/fsl/qbman/bman_priv.h             |  134 ++
+ drivers/soc/fsl/qbman/bman_test.c             |   56 +
+ drivers/soc/fsl/qbman/bman_test.h             |   34 +
+ drivers/soc/fsl/qbman/bman_test_api.c         |  184 ++
+ drivers/soc/fsl/qbman/bman_test_thresh.c      |  198 ++
+ drivers/soc/fsl/qbman/bman_utils.c            |   72 +
+ drivers/soc/fsl/qbman/dpaa_resource.c         |  359 +++
+ drivers/soc/fsl/qbman/dpaa_sys.h              |  301 +++
+ drivers/soc/fsl/qbman/qman-debugfs.c          | 1313 +++++++++++
+ drivers/soc/fsl/qbman/qman.c                  | 1015 +++++++++
+ drivers/soc/fsl/qbman/qman.h                  | 1128 ++++++++++
+ drivers/soc/fsl/qbman/qman_api.c              | 2917 +++++++++++++++++++++++++
+ drivers/soc/fsl/qbman/qman_driver.c           |   83 +
+ drivers/soc/fsl/qbman/qman_portal.c           |  673 ++++++
+ drivers/soc/fsl/qbman/qman_priv.h             |  290 +++
+ drivers/soc/fsl/qbman/qman_test.c             |   57 +
+ drivers/soc/fsl/qbman/qman_test.h             |   44 +
+ drivers/soc/fsl/qbman/qman_test_api.c         |  216 ++
+ drivers/soc/fsl/qbman/qman_test_stash.c       |  502 +++++
+ drivers/soc/fsl/qbman/qman_utils.c            |  305 +++
+ include/soc/fsl/bman.h                        |  514 +++++
+ include/soc/fsl/qman.h                        | 1968 +++++++++++++++++
+ 38 files changed, 15336 insertions(+)
+ create mode 100644 arch/powerpc/lib/devres.c
+ create mode 100644 drivers/soc/fsl/Kconfig
+ create mode 100644 drivers/soc/fsl/Makefile
+ create mode 100644 drivers/soc/fsl/qbman/Kconfig
+ create mode 100644 drivers/soc/fsl/qbman/Makefile
+ create mode 100644 drivers/soc/fsl/qbman/bman-debugfs.c
+ create mode 100644 drivers/soc/fsl/qbman/bman.c
+ create mode 100644 drivers/soc/fsl/qbman/bman.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_api.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_portal.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_priv.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_test.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_test.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_test_api.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_test_thresh.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_utils.c
+ create mode 100644 drivers/soc/fsl/qbman/dpaa_resource.c
+ create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.h
+ create mode 100644 drivers/soc/fsl/qbman/qman-debugfs.c
+ create mode 100644 drivers/soc/fsl/qbman/qman.c
+ create mode 100644 drivers/soc/fsl/qbman/qman.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_api.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_driver.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_portal.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_priv.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_api.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_stash.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_utils.c
+ create mode 100644 include/soc/fsl/bman.h
+ create mode 100644 include/soc/fsl/qman.h
 
---d8Lz2Tf5e5STOWUP--
+--
+1.7.9.5
