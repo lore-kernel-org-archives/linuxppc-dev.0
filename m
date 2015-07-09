@@ -1,21 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B6DE1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 11:42:16 +1000 (AEST)
-Message-ID: <1436406135.18682.3.camel@ellerman.id.au>
-Subject: Re: PASEMI: PA6T board doesn't boot with the RC1 of kernel 4.2 anymore
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 09 Jul 2015 11:42:15 +1000
-In-Reply-To: <1436394990.3948.113.camel@kernel.crashing.org>
-References: <559BB716.6040001@xenosoft.de> <559BC99D.20608@xenosoft.de>
- <559D653F.2060307@xenosoft.de>
- <1436394990.3948.113.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 177F51A01CC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 11:59:03 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Thu, 9 Jul 2015 11:59:02 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E7077357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 11:58:58 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t691wms730277854
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jul 2015 11:58:56 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t691wQCX026818
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jul 2015 11:58:26 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cxl: Destroy cxl_adapter_idr on module_exit
+In-reply-to: <1436368476-30592-1-git-send-email-jthumshirn@suse.de>
+References: <1436368476-30592-1-git-send-email-jthumshirn@suse.de>
+Date: Thu, 09 Jul 2015 11:58:02 +1000
+Message-Id: <1436406813-sup-5637@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +40,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-07-09 at 08:36 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2015-07-08 at 20:00 +0200, Christian Zigotzky wrote:
-> > Dear Linuxppc-dev mailing list,
-> > 
-> > I used git bisect and found out that the following commit is the problem.
-> > 
-> > commit 3ceaccdf92073d193f0bfbe24280dd736e3fed86
-> > Author: Dave Hansen <dave.hansen@linux.intel.com>
-> 
-> There is no way that commit affects anything on that platform, it only
-> changes a file in arch/x86 that isn't compiled on a powerpc build. You
-> must have made a mistake in your bisection, possibly the one "sometimes
-> boots" should be considered good, but I can't say for sure.
-> 
-> Michael has a PA6T board at work, so I assume he will see if he can
-> reproduce.
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 
-Yeah I can't reproduce here.
+We are probably also missing an idr_destroy(&afu->contexts_idr); in
+cxl_release_afu() as well if you wanted to send a patch for that.
 
-I think you need to bisect again and look for the particular crash you
-reported. If you see that crash then mark it bad, else mark it good.
-
-cheers
+Cheers,
+-Ian
