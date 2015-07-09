@@ -1,24 +1,45 @@
-Return-Path: <prvs=625981f15=julien.grall@citrix.com>
-Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70C521A1A56
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 06:56:00 +1000 (AEST)
-From: Julien Grall <julien.grall@citrix.com>
-To: <xen-devel@lists.xenproject.org>
-CC: <linux-arm-kernel@lists.infradead.org>, <ian.campbell@citrix.com>,
- <stefano.stabellini@eu.citrix.com>, <linux-kernel@vger.kernel.org>, "Julien
- Grall" <julien.grall@citrix.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, David Vrabel
- <david.vrabel@citrix.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 11/20] tty/hvc: xen: Use xen page definition
-Date: Thu, 9 Jul 2015 21:42:23 +0100
-Message-ID: <1436474552-31789-12-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1436474552-31789-1-git-send-email-julien.grall@citrix.com>
-References: <1436474552-31789-1-git-send-email-julien.grall@citrix.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADF3B1A1D0F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 07:32:08 +1000 (AEST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 9 Jul 2015 15:32:05 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 403463E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 15:32:02 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t69LVHKS59179176
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jul 2015 14:31:17 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t69LW1oY022584
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jul 2015 15:32:01 -0600
+Date: Thu, 9 Jul 2015 14:30:58 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>, peterz@infradead.org
+Subject: Re: [PATCH v4 4/7] powerpc/powernv: detect supported nest pmus and
+ its events
+Message-ID: <20150709213058.GC7255@us.ibm.com>
+References: <1436360506-18805-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1436360506-18805-5-git-send-email-maddy@linux.vnet.ibm.com>
+ <20150708220125.GA22635@us.ibm.com>
+ <559E2A7E.4040607@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <559E2A7E.4040607@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +49,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The console ring is always based on the page granularity of Xen.
+Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
+| 
+| > Are the 'start.*' and 'unit.*' files events by themselves or just attributes
+| > of events?
+| 
+| These are attributes needed for computation. unit and scale attributes
+| will be used by perf tool in post-processing the counter data. These
+| can also use by other tools like pcp.
 
-Signed-off-by: Julien Grall <julien.grall@citrix.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>
-Cc: David Vrabel <david.vrabel@citrix.com>
-Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- drivers/tty/hvc/hvc_xen.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index a9d837f..2135944 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
- 	if (r < 0 || v == 0)
- 		goto err;
- 	mfn = v;
--	info->intf = xen_remap(mfn << PAGE_SHIFT, PAGE_SIZE);
-+	info->intf = xen_remap(mfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
- 	if (info->intf == NULL)
- 		goto err;
- 	info->vtermno = HVC_COOKIE;
-@@ -392,7 +392,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
- 	if (xen_pv_domain())
- 		mfn = virt_to_mfn(info->intf);
- 	else
--		mfn = __pa(info->intf) >> PAGE_SHIFT;
-+		mfn = __pa(info->intf) >> XEN_PAGE_SHIFT;
- 	ret = gnttab_alloc_grant_references(1, &gref_head);
- 	if (ret < 0)
- 		return ret;
-@@ -476,7 +476,7 @@ static int xencons_resume(struct xenbus_device *dev)
- 	struct xencons_info *info = dev_get_drvdata(&dev->dev);
- 
- 	xencons_disconnect_backend(info);
--	memset(info->intf, 0, PAGE_SIZE);
-+	memset(info->intf, 0, XEN_PAGE_SIZE);
- 	return xencons_connect_backend(dev, info);
- }
- 
--- 
-2.1.4
+OK. Thanks for clarifying.
