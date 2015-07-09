@@ -1,38 +1,35 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0104.outbound.protection.outlook.com [65.55.169.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E33411A01CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 16:04:24 +1000 (AEST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 9 Jul 2015 11:34:21 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 79444E005C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 11:38:05 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6963rt834078774
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jul 2015 11:33:55 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6963q1m020876
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jul 2015 11:33:53 +0530
-Message-ID: <559E0EC3.4090702@linux.vnet.ibm.com>
-Date: Thu, 09 Jul 2015 11:33:47 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D4D01A0225
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 16:05:56 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xiaobo
+ Xie" <X.Xie@freescale.com>
+Subject: RE: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+Date: Thu, 9 Jul 2015 06:05:47 +0000
+Message-ID: <SN1PR0301MB1550CBF05BAD7AB19EC244519B900@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
+ <1432717920-43563-2-git-send-email-B45475@freescale.com>
+ <1432748213.4089.23.camel@freescale.com>
+ <SN1PR0301MB15500729CC3A65394FED67389BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1433398423.3415.34.camel@freescale.com>
+ <SN1PR0301MB1550B0B2F863A80559FE8B6B9BB30@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1433457659.31070.2.camel@freescale.com>
+ <SN1PR0301MB155069ED5F42D54AF2A769F09B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1436324117.2658.64.camel@freescale.com>
+ <SN1PR0301MB1550F2C30F1393CA26F4FF3B9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1436326077.2658.65.camel@freescale.com>
+ <SN1PR0301MB155084FCD058F8EAAC5C5AEA9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1436381938.2658.79.camel@freescale.com>
+ <CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900@CY1PR0301MB1545.namprd03.prod.outlook.com>
+ <1436413840.2658.113.camel@freescale.com>
+In-Reply-To: <1436413840.2658.113.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Daniel Axtens <dja@axtens.net>
-CC: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] powerpc/powernv: Fix race in updating core_idle_state
-References: <1436213363-18419-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1436228558.3341.1.camel@ellerman.id.au>
- <1436416901.28537.11.camel@axtens.net>
-In-Reply-To: <1436416901.28537.11.camel@axtens.net>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,29 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 07/09/2015 10:11 AM, Daniel Axtens wrote:
->> I recommend creating an alias or script that does:
->>
->> $ git log --pretty=fixes -n 1 $commit | xclip
->>
-> 
-> FWIW, having finally got around to doing this, I found I first needed
-> the following snippet in ~/.gitconfig from
-> https://www.kernel.org/doc/Documentation/SubmittingPatches
-> 
-> 
-> 	[core]
-> 		abbrev = 12
-> 	[pretty]
-> 		fixes = Fixes: %h (\"%s\")
-> 
-> Otherwise git doesn't know what the pretty format is.
->
-
-
-Right, thanks for the pointer!
-
-Thanks,
-Shreyas
+T24gV2VkLCAyMDE1LTA3LTA5IGF0IDExOjUxIC0wNTAwLCBXb29kIFNjb3R0IHdyb3RlOg0KDQo+
+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+
+IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDA5LCAyMDE1IDExOjUxIEFNDQo+IFRvOiBaaGFvIFFpYW5n
+LUI0NTQ3NQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBYaWFvYm8t
+UjYzMDYxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8yXSByaGVhcDogbW92ZSByaGVhcC5jIGZy
+b20gYXJjaC9wb3dlcnBjL2xpYi8gdG8NCj4gbGliLw0KPiANCj4gT24gV2VkLCAyMDE1LTA3LTA4
+IGF0IDIyOjE4IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3NSB3cm90ZToNCj4gPiA+IC0tLS0tT3Jp
+Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4g
+U2VudDogVGh1cnNkYXksIEp1bHkgMDksIDIwMTUgMjo1OSBBTQ0KPiA+ID4gVG86IFpoYW8gUWlh
+bmctQjQ1NDc1DQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBY
+aWFvYm8tUjYzMDYxDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gcmhlYXA6IG1vdmUg
+cmhlYXAuYyBmcm9tIGFyY2gvcG93ZXJwYy9saWIvDQo+ID4gPiB0byBsaWIvDQo+ID4gPg0KPiA+
+ID4gT24gV2VkLCAyMDE1LTA3LTA4IGF0IDAyOjI1IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3NSB3
+cm90ZToNCj4gPiA+ID4gU28gSSB3aWxsIGFkZCB0d28gZnVuYyBmb3IgbXkgdXNlLCBkbyB5b3Ug
+dGhpbmsgaXQgaXMgb2s/DQo+ID4gPiA+IEkgbmVlZCB0byBhbGlnbiB0aGUgYWRkcmVzcyBvZiBh
+bGxvY2F0ZWQgbXVyYW0uDQo+ID4gPiA+IEFuZCBJIHdpbGwgc2V0IGFsZ28gPSBnZW5fcG9vbF9m
+aXJzdF9maXRfYWxpZ24uDQo+ID4gPiA+DQo+ID4gPiA+ICt1bnNpZ25lZCBsb25nIGdlbl9wb29s
+X2FsbG9jX2FsaWduKHN0cnVjdCBnZW5fcG9vbCAqcG9vbCwgc2l6ZV90DQo+IHNpemUsDQo+ID4g
+PiA+ICsgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGFsaWduKQ0KPiA+ID4NCj4gPiA+IEFn
+YWluLCBwbGVhc2UgZXhwbGFpbiB3aHkgeW91IG5lZWQgdGhpcyBmb3IgQ1BNL1FFLiAgSSBkb24n
+dCBzZWUNCj4gPiA+IHJoX2FsbG9jX2FsaWduKCkgY3VycmVudGx5IGJlaW5nIHVzZWQgYnkgZWl0
+aGVyLg0KPiA+ID4NCj4gPiA+IEFsc28sIHBsZWFzZSBzdG9wIHRvcC1wb3N0aW5nLg0KPiA+DQo+
+ID4NCj4gPiB1bnNpZ25lZCBsb25nIHJoX2FsbG9jKHN0cnVjdCBfcmhfaW5mbyAqaW5mbywgaW50
+IHNpemUsIGNvbnN0IGNoYXINCj4gPiAqb3duZXIpIHsNCj4gPiAgICAgICAgIHJldHVybiByaF9h
+bGxvY19hbGlnbihpbmZvLCBzaXplLCBpbmZvLT5hbGlnbm1lbnQsIG93bmVyKTsgfQ0KPiA+IEVY
+UE9SVF9TWU1CT0xfR1BMKHJoX2FsbG9jKTsNCj4gDQo+IFRoYXQgZG9lc24ndCBpbnZvbHZlIGEg
+ZGlmZmVyZW50IGFsaWdubWVudCBmb3IgZWFjaCBhbGxvY2F0aW9uLiAgSXQgdXNlcw0KPiB0aGUg
+c2FtZSBhbGlnbm1lbnQgZm9yIGFsbCBvZiB0aGVtLCBhbmQgdGhlIGFsaWdubWVudCB0aGF0IGNw
+bV9jb21tb24uYw0KPiBwcm92aWRlcyB0byByaF9pbml0KCkgaXMgMSBieXRlLg0KPiANCj4gLi4u
+YnV0IHNpZ2gsIGNwbV9tdXJhbV9hbGxvYygpIGlzIGNoYW5naW5nIGNwbV9tdXJhbV9pbmZvLmFs
+aWdubWVudA0KPiBiZWhpbmQgdGhlIHJoZWFwIGNvZGUncyBiYWNrLiAgRGVzcGl0ZSB0aGUgZXhp
+c3RlbmNlIG9mIHJoX2FsbG9jX2FsaWduKCkuDQo+IA0KPiBTbyB5ZXMsIGFkZCBhbGlnbmVkIGFs
+bG9jYXRpb24gZnVuY3Rpb25hbGl0eSB0byBnZW5hbGxvYywgYnV0IGRvbid0DQo+IGR1cGxpY2F0
+ZQ0KPiBnZW5fcG9vbF9hbGxvYygpIHRvIGRvIHNvLiAgSW5zdGVhZCwgcmVuYW1lIGdlbl9wb29s
+X2FsbG9jKCkgdG8NCj4gZ2VuX3Bvb2xfYWxsb2NfYWxpZ24oKSB3aXRoIGFuIGFsaWdubWVudCBw
+YXJhbWV0ZXIgKGFsc28gbW9kaWZ5aW5nIHRoZQ0KPiBhbGdvIGZ1bmN0aW9uIHRvIHRha2UgYW4g
+YWxpZ25tZW50IGFyZywgd2hpY2gNCj4gZ2VuX3Bvb2xfZmlyc3RfZml0X29yZGVyX2FsaWduKCkg
+d291bGQgaWdub3JlKSwgYW5kIHByb3ZpZGUgYQ0KDQpIZXJlLCBJIGRvbuKAmXQgdW5kZXJzdGFu
+ZCBob3cgdG8gaGFuZGxlIHRoZSBhbGdvIEluIHlvdXIgbWluZC4gDQpDYW4geW91IGV4cGxhaW4g
+bW9yZSBkZXRhaWxseT8NCg0KPiBnZW5fcG9vbF9hbGxvYygpIHdyYXBwZXIgdGhhdCBzcGVjaWZp
+ZXMgMSBhcyB0aGUgcmVxdWlyZWQgYWxpZ25tZW50Lg0KPiBBbHNvIGJlIHN1cmUgdG8gQ0MgbGtt
+bCBvbiB0aGUgcGF0Y2hzZXQgc2luY2UgeW91J3JlIHRvdWNoaW5nIGNvcmUgY29kZQ0KPiB0aGF0
+IGRvZXNuJ3QgaGF2ZSBpdHMgb3duIG1haW50YWluZXIgb3IgbGlzdC4NCj4gDQo+IC1TY290dA0K
+DQo=
