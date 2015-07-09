@@ -1,17 +1,18 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0104.outbound.protection.outlook.com [65.55.169.104])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D4D01A0225
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 16:05:56 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xiaobo
- Xie" <X.Xie@freescale.com>
-Subject: RE: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
-Date: Thu, 9 Jul 2015 06:05:47 +0000
-Message-ID: <SN1PR0301MB1550CBF05BAD7AB19EC244519B900@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BF11A01CC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 16:09:18 +1000 (AEST)
+Message-ID: <1436422143.2658.121.camel@freescale.com>
+Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xie
+ Xiaobo-R63061" <X.Xie@freescale.com>
+Date: Thu, 9 Jul 2015 01:09:03 -0500
+In-Reply-To: <SN1PR0301MB1550CBF05BAD7AB19EC244519B900@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
  <1432717920-43563-2-git-send-email-B45475@freescale.com>
  <1432748213.4089.23.camel@freescale.com>
@@ -27,8 +28,8 @@ References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
  <1436381938.2658.79.camel@freescale.com>
  <CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900@CY1PR0301MB1545.namprd03.prod.outlook.com>
  <1436413840.2658.113.camel@freescale.com>
-In-Reply-To: <1436413840.2658.113.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <SN1PR0301MB1550CBF05BAD7AB19EC244519B900@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,47 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gV2VkLCAyMDE1LTA3LTA5IGF0IDExOjUxIC0wNTAwLCBXb29kIFNjb3R0IHdyb3RlOg0KDQo+
-IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+
-IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDA5LCAyMDE1IDExOjUxIEFNDQo+IFRvOiBaaGFvIFFpYW5n
-LUI0NTQ3NQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBYaWFvYm8t
-UjYzMDYxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8yXSByaGVhcDogbW92ZSByaGVhcC5jIGZy
-b20gYXJjaC9wb3dlcnBjL2xpYi8gdG8NCj4gbGliLw0KPiANCj4gT24gV2VkLCAyMDE1LTA3LTA4
-IGF0IDIyOjE4IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3NSB3cm90ZToNCj4gPiA+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4g
-U2VudDogVGh1cnNkYXksIEp1bHkgMDksIDIwMTUgMjo1OSBBTQ0KPiA+ID4gVG86IFpoYW8gUWlh
-bmctQjQ1NDc1DQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBY
-aWFvYm8tUjYzMDYxDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gcmhlYXA6IG1vdmUg
-cmhlYXAuYyBmcm9tIGFyY2gvcG93ZXJwYy9saWIvDQo+ID4gPiB0byBsaWIvDQo+ID4gPg0KPiA+
-ID4gT24gV2VkLCAyMDE1LTA3LTA4IGF0IDAyOjI1IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3NSB3
-cm90ZToNCj4gPiA+ID4gU28gSSB3aWxsIGFkZCB0d28gZnVuYyBmb3IgbXkgdXNlLCBkbyB5b3Ug
-dGhpbmsgaXQgaXMgb2s/DQo+ID4gPiA+IEkgbmVlZCB0byBhbGlnbiB0aGUgYWRkcmVzcyBvZiBh
-bGxvY2F0ZWQgbXVyYW0uDQo+ID4gPiA+IEFuZCBJIHdpbGwgc2V0IGFsZ28gPSBnZW5fcG9vbF9m
-aXJzdF9maXRfYWxpZ24uDQo+ID4gPiA+DQo+ID4gPiA+ICt1bnNpZ25lZCBsb25nIGdlbl9wb29s
-X2FsbG9jX2FsaWduKHN0cnVjdCBnZW5fcG9vbCAqcG9vbCwgc2l6ZV90DQo+IHNpemUsDQo+ID4g
-PiA+ICsgICAgICAgICAgICAgICB1bnNpZ25lZCBsb25nIGFsaWduKQ0KPiA+ID4NCj4gPiA+IEFn
-YWluLCBwbGVhc2UgZXhwbGFpbiB3aHkgeW91IG5lZWQgdGhpcyBmb3IgQ1BNL1FFLiAgSSBkb24n
-dCBzZWUNCj4gPiA+IHJoX2FsbG9jX2FsaWduKCkgY3VycmVudGx5IGJlaW5nIHVzZWQgYnkgZWl0
-aGVyLg0KPiA+ID4NCj4gPiA+IEFsc28sIHBsZWFzZSBzdG9wIHRvcC1wb3N0aW5nLg0KPiA+DQo+
-ID4NCj4gPiB1bnNpZ25lZCBsb25nIHJoX2FsbG9jKHN0cnVjdCBfcmhfaW5mbyAqaW5mbywgaW50
-IHNpemUsIGNvbnN0IGNoYXINCj4gPiAqb3duZXIpIHsNCj4gPiAgICAgICAgIHJldHVybiByaF9h
-bGxvY19hbGlnbihpbmZvLCBzaXplLCBpbmZvLT5hbGlnbm1lbnQsIG93bmVyKTsgfQ0KPiA+IEVY
-UE9SVF9TWU1CT0xfR1BMKHJoX2FsbG9jKTsNCj4gDQo+IFRoYXQgZG9lc24ndCBpbnZvbHZlIGEg
-ZGlmZmVyZW50IGFsaWdubWVudCBmb3IgZWFjaCBhbGxvY2F0aW9uLiAgSXQgdXNlcw0KPiB0aGUg
-c2FtZSBhbGlnbm1lbnQgZm9yIGFsbCBvZiB0aGVtLCBhbmQgdGhlIGFsaWdubWVudCB0aGF0IGNw
-bV9jb21tb24uYw0KPiBwcm92aWRlcyB0byByaF9pbml0KCkgaXMgMSBieXRlLg0KPiANCj4gLi4u
-YnV0IHNpZ2gsIGNwbV9tdXJhbV9hbGxvYygpIGlzIGNoYW5naW5nIGNwbV9tdXJhbV9pbmZvLmFs
-aWdubWVudA0KPiBiZWhpbmQgdGhlIHJoZWFwIGNvZGUncyBiYWNrLiAgRGVzcGl0ZSB0aGUgZXhp
-c3RlbmNlIG9mIHJoX2FsbG9jX2FsaWduKCkuDQo+IA0KPiBTbyB5ZXMsIGFkZCBhbGlnbmVkIGFs
-bG9jYXRpb24gZnVuY3Rpb25hbGl0eSB0byBnZW5hbGxvYywgYnV0IGRvbid0DQo+IGR1cGxpY2F0
-ZQ0KPiBnZW5fcG9vbF9hbGxvYygpIHRvIGRvIHNvLiAgSW5zdGVhZCwgcmVuYW1lIGdlbl9wb29s
-X2FsbG9jKCkgdG8NCj4gZ2VuX3Bvb2xfYWxsb2NfYWxpZ24oKSB3aXRoIGFuIGFsaWdubWVudCBw
-YXJhbWV0ZXIgKGFsc28gbW9kaWZ5aW5nIHRoZQ0KPiBhbGdvIGZ1bmN0aW9uIHRvIHRha2UgYW4g
-YWxpZ25tZW50IGFyZywgd2hpY2gNCj4gZ2VuX3Bvb2xfZmlyc3RfZml0X29yZGVyX2FsaWduKCkg
-d291bGQgaWdub3JlKSwgYW5kIHByb3ZpZGUgYQ0KDQpIZXJlLCBJIGRvbuKAmXQgdW5kZXJzdGFu
-ZCBob3cgdG8gaGFuZGxlIHRoZSBhbGdvIEluIHlvdXIgbWluZC4gDQpDYW4geW91IGV4cGxhaW4g
-bW9yZSBkZXRhaWxseT8NCg0KPiBnZW5fcG9vbF9hbGxvYygpIHdyYXBwZXIgdGhhdCBzcGVjaWZp
-ZXMgMSBhcyB0aGUgcmVxdWlyZWQgYWxpZ25tZW50Lg0KPiBBbHNvIGJlIHN1cmUgdG8gQ0MgbGtt
-bCBvbiB0aGUgcGF0Y2hzZXQgc2luY2UgeW91J3JlIHRvdWNoaW5nIGNvcmUgY29kZQ0KPiB0aGF0
-IGRvZXNuJ3QgaGF2ZSBpdHMgb3duIG1haW50YWluZXIgb3IgbGlzdC4NCj4gDQo+IC1TY290dA0K
-DQo=
+On Thu, 2015-07-09 at 01:05 -0500, Zhao Qiang-B45475 wrote:
+> On Wed, 2015-07-09 at 11:51 -0500, Wood Scott wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, July 09, 2015 11:51 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linuxppc-dev@lists.ozlabs.org; Xie Xiaobo-R63061
+> > Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to
+> > lib/
+> > 
+> > That doesn't involve a different alignment for each allocation.  It uses
+> > the same alignment for all of them, and the alignment that cpm_common.c
+> > provides to rh_init() is 1 byte.
+> > 
+> > ...but sigh, cpm_muram_alloc() is changing cpm_muram_info.alignment
+> > behind the rheap code's back.  Despite the existence of rh_alloc_align().
+> > 
+> > So yes, add aligned allocation functionality to genalloc, but don't
+> > duplicate
+> > gen_pool_alloc() to do so.  Instead, rename gen_pool_alloc() to
+> > gen_pool_alloc_align() with an alignment parameter (also modifying the
+> > algo function to take an alignment arg, which
+> > gen_pool_first_fit_order_align() would ignore), and provide a
+> 
+> Here, I don’t understand how to handle the algo In your mind. 
+> Can you explain more detailly?
+
+The algorithms would be unchanged except that they would receive a new 
+alignment (or alignment mask) parameter.  gen_pool_first_fit_order_align() 
+would ignore it, but the other algorithms would pass it through to the bitmap 
+allocator.
+
+-Scott
