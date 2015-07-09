@@ -1,29 +1,29 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCD461A0058
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 01:42:28 +1000 (AEST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 126231402B8
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2015 01:42:25 +1000 (AEST)
-Date: Thu, 9 Jul 2015 10:42:11 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
- Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/kexec: Reset secondary cpu endianess before
- kexec
-Message-ID: <20150709154211.GB2990@gate.crashing.org>
-References: <1436318605-13031-1-git-send-email-sam.mj@au1.ibm.com>
- <1436322938.2658.60.camel@freescale.com>
- <20150708040455.GA9086@pale.ozlabs.ibm.com>
- <1436329328.2658.75.camel@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1436329328.2658.75.camel@freescale.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
+ by lists.ozlabs.org (Postfix) with ESMTP id 958331A06F8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 04:46:38 +1000 (AEST)
+Date: Thu, 9 Jul 2015 14:46:35 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Michal Hocko <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V3 3/5] mm: mlock: Introduce VM_LOCKONFAULT and add mlock
+ flags to enable it
+Message-ID: <20150709184635.GE4669@akamai.com>
+References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
+ <1436288623-13007-4-git-send-email-emunson@akamai.com>
+ <20150708132351.61c13db6@lwn.net>
+ <20150708203456.GC4669@akamai.com>
+ <20150708151750.75e65859@lwn.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="d8Lz2Tf5e5STOWUP"
+In-Reply-To: <20150708151750.75e65859@lwn.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,25 +33,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 07, 2015 at 11:22:08PM -0500, Scott Wood wrote:
-> > I agree about using labels, but "bcl 20,31,foo" is not the same thing
-> > as "bl foo".  The former is a form of bl that doesn't perturb the link
-> > stack and is therefore better for performance when you're not going to
-> > do a matching blr later (not that performance is at all critical
-> > here).
-> 
-> If performance mattered I would have complained about the extra mfmsr. :-)
-> 
-> I see that some other parts of the kernel are using that bcl instruction, but 
-> if it is actually worthwhile in those places, it'd be nice to at least stick 
-> it in a macro for readability...
 
-How is that going to help?  It's just idiom; replacing it with some other
-idiom only means people already used to the 20,31 thing (which is quite old
-by now, btw.; 74xx days) will have to learn the new thing.
+--d8Lz2Tf5e5STOWUP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Unless you can think of a nice short name that can even be made an extended
-mnemonic?
+On Wed, 08 Jul 2015, Jonathan Corbet wrote:
 
+> On Wed, 8 Jul 2015 16:34:56 -0400
+> Eric B Munson <emunson@akamai.com> wrote:
+>=20
+> > > Quick, possibly dumb question: I've been beating my head against thes=
+e for
+> > > a little bit, and I can't figure out what's supposed to happen in this
+> > > case:
+> > >=20
+> > > 	mlock2(addr, len, MLOCK_ONFAULT);
+> > > 	munlock2(addr, len, MLOCK_LOCKED);
+> > >=20
+> > > It looks to me like it will clear VM_LOCKED without actually unlockin=
+g any
+> > > pages.  Is that the intended result? =20
+> >=20
+> > This is not quite right, what happens when you call munlock2(addr, len,
+> > MLOCK_LOCKED); is we call apply_vma_flags(addr, len, VM_LOCKED, false).
+>=20
+> From your explanation, it looks like what I said *was* right...what I was
+> missing was the fact that VM_LOCKED isn't set in the first place.  So that
+> call would be a no-op, clearing a flag that's already cleared.
 
-Segher
+Sorry, I misread the original.  You are correct with the addition that
+the call to munlock2(MLOCK_LOCKED) is a noop in this case.
+
+>=20
+> One other question...if I call mlock2(MLOCK_ONFAULT) on a range that
+> already has resident pages, I believe that those pages will not be locked
+> until they are reclaimed and faulted back in again, right?  I suspect that
+> could be surprising to users.
+
+That is the case.  I am looking into what it would take to find only the
+present pages in a range and lock them, if that is the behavior that is
+preferred I can include it in the updated series.
+
+>=20
+> Thanks,
+>=20
+> jon
+
+--d8Lz2Tf5e5STOWUP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVnsGLAAoJELbVsDOpoOa9fD4P+wfJut0yfq/Eut90zuluJASG
+y2/MKnGXk/YAwdE9jVyUs/if3S6y9E+nzr9h10jjiAzl7Ek3fbjvGQGtSJee0nxv
+xprvjrX8StCUyubIAdvuvBDAQ2uruWlWPt0/WYlTppmm3Ws7sXk6Rc9uyAaYvO8k
+cb/3b2hDUz4X3buHx7rbontLHI+PkJyOMC0wwhlgc/TnIyGAOINbxf4jYR9MTOP1
+OjpudgitD2855bIJVi9VnOkbG7tvRqJA5azlVkcwlUBqezjSKz5K+NANc4zL5xQ1
+uBN9QJXvbiGBzpKXSjmCgtQYRpUq5fN4hZOjq3lo6nill+E+F6eL415ON/5mpRvR
+8JeYOUZt/Gua6W0fxLTscnp3E5cpu4oUrzY43J9jJ5HA34s0W8mj/ssey/lDxUo/
+LzoeORqwByyNuESJHtHSYJUB24FDQeQJ1cjMLqoZmpyjlFnUoVgzFox+jdtwZ80P
+3LMoWN7h6NyQ6GtQDHF1033vsxAHBQ04x96kch9Ztx3BGoWVZoXO1Lsr6X6EHCIV
+DmQW1k8HPLsUbkXtOlGR36opxF1fbdBzAyN7V8rWXnNFiyDCl/ImUtEVKQ/VPp9k
+T2FjdgDFkTetH6KHVOztE1Ya08wHX4Yy/qxxFH1sPMfVIHFUE7ATTP+00Oc30E32
+vBEzC6L/dMQNWWAIbaEJ
+=CLFc
+-----END PGP SIGNATURE-----
+
+--d8Lz2Tf5e5STOWUP--
