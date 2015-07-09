@@ -1,20 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0134.outbound.protection.outlook.com [157.56.110.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 35C251A0D7F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 08:19:46 +1000 (AEST)
-Message-ID: <1436480372.2658.153.camel@freescale.com>
-Subject: Re: [RFC] genalloc:add an gen_pool_alloc_align func to genalloc
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB15E1A19DC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 08:27:14 +1000 (AEST)
+Message-ID: <1436480780.2658.154.camel@freescale.com>
+Subject: Re: [PATCH V3] QorIQ/TMU: add TMU node to device tree for QorIQ T1040
 From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang <B45475@freescale.com>
-CC: <lauraa@codeaurora.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <akpm@linux-foundation.org>,
- <olof@lixom.net>, <catalin.marinas@arm.com>, <X.xie@freescale.com>
-Date: Thu, 9 Jul 2015 17:19:32 -0500
-In-Reply-To: <1436428063-893-1-git-send-email-B45475@freescale.com>
-References: <1436428063-893-1-git-send-email-B45475@freescale.com>
+To: Jia Hongtao-B38951 <hongtao.jia@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, "edubezval@gmail.com"
+ <edubezval@gmail.com>
+Date: Thu, 9 Jul 2015 17:26:20 -0500
+In-Reply-To: <BLUPR03MB149A79499CAA74A15EC947FE1900@BLUPR03MB149.namprd03.prod.outlook.com>
+References: <1434009188-25644-1-git-send-email-hongtao.jia@freescale.com>
+ <BLUPR03MB149A79499CAA74A15EC947FE1900@BLUPR03MB149.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,25 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-07-09 at 15:47 +0800, Zhao Qiang wrote:
-> @@ -541,13 +562,14 @@ EXPORT_SYMBOL(gen_pool_first_fit_order_align);
->   * which we can allocate the memory.
->   */
->  unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
-> -             unsigned long start, unsigned int nr, void *data)
-> +                             unsigned long start, unsigned int nr,
-> +                             void *data, unsigned long align_mask)
->  {
->       unsigned long start_bit = size;
->       unsigned long len = size + 1;
->       unsigned long index;
->  
-> -     index = bitmap_find_next_zero_area(map, size, start, nr, 0);
-> +     index = bitmap_find_next_zero_area(map, size, start, nr, align_mask);
->  
->       while (index < size) {
->               int next_bit = find_next_bit(map, size, index + nr);
+On Thu, 2015-07-09 at 03:00 -0500, Jia Hongtao-B38951 wrote:
+> Hi Scott,
+> 
+> Patch updated to V3, please help to review.
+> Thanks.
+> 
+> ---
+> Best Regards,
+> Hongtao
 
-What about the other call to bitmap_find_next_zero_area()?
+It looks OK.
 
 -Scott
