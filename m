@@ -1,31 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=625981f15=julien.grall@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40DE31A1D6E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 06:42:34 +1000 (AEST)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0119.outbound.protection.outlook.com [157.56.110.119])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 87DB6140273
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Jul 2015 06:42:33 +1000 (AEST)
-Message-ID: <1436473657.2658.126.camel@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/kexec: Reset secondary cpu endianess before
- kexec
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>, "Samuel
- Mendoza-Jonas" <sam.mj@au1.ibm.com>
-Date: Thu, 9 Jul 2015 15:27:37 -0500
-In-Reply-To: <20150709154211.GB2990@gate.crashing.org>
-References: <1436318605-13031-1-git-send-email-sam.mj@au1.ibm.com>
- <1436322938.2658.60.camel@freescale.com>
- <20150708040455.GA9086@pale.ozlabs.ibm.com>
- <1436329328.2658.75.camel@freescale.com>
- <20150709154211.GB2990@gate.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 70C521A1A56
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 06:56:00 +1000 (AEST)
+From: Julien Grall <julien.grall@citrix.com>
+To: <xen-devel@lists.xenproject.org>
+CC: <linux-arm-kernel@lists.infradead.org>, <ian.campbell@citrix.com>,
+ <stefano.stabellini@eu.citrix.com>, <linux-kernel@vger.kernel.org>, "Julien
+ Grall" <julien.grall@citrix.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, David Vrabel
+ <david.vrabel@citrix.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 11/20] tty/hvc: xen: Use xen page definition
+Date: Thu, 9 Jul 2015 21:42:23 +0100
+Message-ID: <1436474552-31789-12-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1436474552-31789-1-git-send-email-julien.grall@citrix.com>
+References: <1436474552-31789-1-git-send-email-julien.grall@citrix.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-07-09 at 10:42 -0500, Segher Boessenkool wrote:
-> On Tue, Jul 07, 2015 at 11:22:08PM -0500, Scott Wood wrote:
-> > > I agree about using labels, but "bcl 20,31,foo" is not the same thing
-> > > as "bl foo".  The former is a form of bl that doesn't perturb the link
-> > > stack and is therefore better for performance when you're not going to
-> > > do a matching blr later (not that performance is at all critical
-> > > here).
-> > 
-> > If performance mattered I would have complained about the extra mfmsr. :-)
-> > 
-> > I see that some other parts of the kernel are using that bcl instruction, 
-> > but 
-> > if it is actually worthwhile in those places, it'd be nice to at least 
-> > stick 
-> > it in a macro for readability...
-> 
-> How is that going to help?  It's just idiom; replacing it with some other
-> idiom only means people already used to the 20,31 thing (which is quite old
-> by now, btw.; 74xx days) will have to learn the new thing.
+The console ring is always based on the page granularity of Xen.
 
-That's fine for people who are used to it (especially if it's the only number-
-based bc they routinely come across), but I had to look up what it meant.  
-Simplified mnemonics exist for a reason.
+Signed-off-by: Julien Grall <julien.grall@citrix.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.cz>
+Cc: David Vrabel <david.vrabel@citrix.com>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/tty/hvc/hvc_xen.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> Unless you can think of a nice short name that can even be made an extended
-> mnemonic?
-
-For a macro I was thinking "BL_NORET" but for a mnemonic it'd probably be 
-shortened to something like "blnr".
-
--Scott
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index a9d837f..2135944 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
+ 	if (r < 0 || v == 0)
+ 		goto err;
+ 	mfn = v;
+-	info->intf = xen_remap(mfn << PAGE_SHIFT, PAGE_SIZE);
++	info->intf = xen_remap(mfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
+ 	if (info->intf == NULL)
+ 		goto err;
+ 	info->vtermno = HVC_COOKIE;
+@@ -392,7 +392,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
+ 	if (xen_pv_domain())
+ 		mfn = virt_to_mfn(info->intf);
+ 	else
+-		mfn = __pa(info->intf) >> PAGE_SHIFT;
++		mfn = __pa(info->intf) >> XEN_PAGE_SHIFT;
+ 	ret = gnttab_alloc_grant_references(1, &gref_head);
+ 	if (ret < 0)
+ 		return ret;
+@@ -476,7 +476,7 @@ static int xencons_resume(struct xenbus_device *dev)
+ 	struct xencons_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	xencons_disconnect_backend(info);
+-	memset(info->intf, 0, PAGE_SIZE);
++	memset(info->intf, 0, XEN_PAGE_SIZE);
+ 	return xencons_connect_backend(dev, info);
+ }
+ 
+-- 
+2.1.4
