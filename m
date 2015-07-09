@@ -1,17 +1,18 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAD721A01CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 13:18:27 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xiaobo
- Xie" <X.Xie@freescale.com>
-Subject: RE: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
-Date: Thu, 9 Jul 2015 03:18:18 +0000
-Message-ID: <CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900@CY1PR0301MB1545.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8EE91A01CC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jul 2015 13:50:55 +1000 (AEST)
+Message-ID: <1436413840.2658.113.camel@freescale.com>
+Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xie
+ Xiaobo-R63061" <X.Xie@freescale.com>
+Date: Wed, 8 Jul 2015 22:50:40 -0500
+In-Reply-To: <CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900@CY1PR0301MB1545.namprd03.prod.outlook.com>
 References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
  <1432717920-43563-2-git-send-email-B45475@freescale.com>
  <1432748213.4089.23.camel@freescale.com>
@@ -25,9 +26,8 @@ References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
  <1436326077.2658.65.camel@freescale.com>
  <SN1PR0301MB155084FCD058F8EAAC5C5AEA9B910@SN1PR0301MB1550.namprd03.prod.outlook.com>
  <1436381938.2658.79.camel@freescale.com>
-In-Reply-To: <1436381938.2658.79.camel@freescale.com>
-Content-Type: multipart/alternative;
- boundary="_000_CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900CY1PR0301MB1545_"
+ <CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900@CY1PR0301MB1545.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,116 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900CY1PR0301MB1545_
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+On Wed, 2015-07-08 at 22:18 -0500, Zhao Qiang-B45475 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, July 09, 2015 2:59 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linuxppc-dev@lists.ozlabs.org; Xie Xiaobo-R63061
+> > Subject: Re: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to
+> > lib/
+> >
+> > On Wed, 2015-07-08 at 02:25 -0500, Zhao Qiang-B45475 wrote:
+> > > So I will add two func for my use, do you think it is ok?
+> > > I need to align the address of allocated muram.
+> > > And I will set algo = gen_pool_first_fit_align.
+> > >
+> > > +unsigned long gen_pool_alloc_align(struct gen_pool *pool, size_t size,
+> > > +               unsigned long align)
+> >
+> > Again, please explain why you need this for CPM/QE.  I don't see
+> > rh_alloc_align() currently being used by either.
+> >
+> > Also, please stop top-posting.
+>  
+>  
+> unsigned long rh_alloc(struct _rh_info *info, int size, const char *owner)
+> {
+>         return rh_alloc_align(info, size, info->alignment, owner);
+> }
+> EXPORT_SYMBOL_GPL(rh_alloc);
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQoNCj4gU2VudDogVGh1cnNkYXksIEp1bHkgMDksIDIwMTUgMjo1OSBBTQ0KDQo+IFRvOiBaaGFv
-IFFpYW5nLUI0NTQ3NQ0KDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgWGll
-IFhpYW9iby1SNjMwNjENCg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gcmhlYXA6IG1vdmUg
-cmhlYXAuYyBmcm9tIGFyY2gvcG93ZXJwYy9saWIvIHRvDQoNCj4gbGliLw0KDQo+DQoNCj4gT24g
-V2VkLCAyMDE1LTA3LTA4IGF0IDAyOjI1IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3NSB3cm90ZToN
-Cg0KPiA+IFNvIEkgd2lsbCBhZGQgdHdvIGZ1bmMgZm9yIG15IHVzZSwgZG8geW91IHRoaW5rIGl0
-IGlzIG9rPw0KDQo+ID4gSSBuZWVkIHRvIGFsaWduIHRoZSBhZGRyZXNzIG9mIGFsbG9jYXRlZCBt
-dXJhbS4NCg0KPiA+IEFuZCBJIHdpbGwgc2V0IGFsZ28gPSBnZW5fcG9vbF9maXJzdF9maXRfYWxp
-Z24uDQoNCj4gPg0KDQo+ID4gK3Vuc2lnbmVkIGxvbmcgZ2VuX3Bvb2xfYWxsb2NfYWxpZ24oc3Ry
-dWN0IGdlbl9wb29sICpwb29sLCBzaXplX3Qgc2l6ZSwNCg0KPiA+ICsgICAgICAgICAgICAgICB1
-bnNpZ25lZCBsb25nIGFsaWduKQ0KDQo+DQoNCj4gQWdhaW4sIHBsZWFzZSBleHBsYWluIHdoeSB5
-b3UgbmVlZCB0aGlzIGZvciBDUE0vUUUuICBJIGRvbid0IHNlZQ0KDQo+IHJoX2FsbG9jX2FsaWdu
-KCkgY3VycmVudGx5IGJlaW5nIHVzZWQgYnkgZWl0aGVyLg0KDQo+DQoNCj4gQWxzbywgcGxlYXNl
-IHN0b3AgdG9wLXBvc3RpbmcuDQoNCg0KDQoNCg0KdW5zaWduZWQgbG9uZyByaF9hbGxvYyhzdHJ1
-Y3QgX3JoX2luZm8gKmluZm8sIGludCBzaXplLCBjb25zdCBjaGFyICpvd25lcikNCg0Kew0KDQog
-ICAgICAgIHJldHVybiByaF9hbGxvY19hbGlnbihpbmZvLCBzaXplLCBpbmZvLT5hbGlnbm1lbnQs
-IG93bmVyKTsNCg0KfQ0KDQpFWFBPUlRfU1lNQk9MX0dQTChyaF9hbGxvYyk7DQoNCg0KDQo+DQoN
-Cj4gLVNjb3R0DQoNCg0K
+That doesn't involve a different alignment for each allocation.  It uses the 
+same alignment for all of them, and the alignment that cpm_common.c provides 
+to rh_init() is 1 byte.
 
---_000_CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900CY1PR0301MB1545_
-Content-Type: text/html; charset="utf-8"
-Content-Transfer-Encoding: base64
+...but sigh, cpm_muram_alloc() is changing cpm_muram_info.alignment behind 
+the rheap code's back.  Despite the existence of rh_alloc_align().
 
-PGh0bWwgeG1sbnM6dj0idXJuOnNjaGVtYXMtbWljcm9zb2Z0LWNvbTp2bWwiIHhtbG5zOm89InVy
-bjpzY2hlbWFzLW1pY3Jvc29mdC1jb206b2ZmaWNlOm9mZmljZSIgeG1sbnM6dz0idXJuOnNjaGVt
-YXMtbWljcm9zb2Z0LWNvbTpvZmZpY2U6d29yZCIgeG1sbnM6bT0iaHR0cDovL3NjaGVtYXMubWlj
-cm9zb2Z0LmNvbS9vZmZpY2UvMjAwNC8xMi9vbW1sIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcv
-VFIvUkVDLWh0bWw0MCI+DQo8aGVhZD4NCjxtZXRhIGh0dHAtZXF1aXY9IkNvbnRlbnQtVHlwZSIg
-Y29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PXV0Zi04Ij4NCjxtZXRhIG5hbWU9IkdlbmVyYXRv
-ciIgY29udGVudD0iTWljcm9zb2Z0IFdvcmQgMTIgKGZpbHRlcmVkIG1lZGl1bSkiPg0KPHN0eWxl
-PjwhLS0NCi8qIEZvbnQgRGVmaW5pdGlvbnMgKi8NCkBmb250LWZhY2UNCgl7Zm9udC1mYW1pbHk6
-5a6L5L2TOw0KCXBhbm9zZS0xOjIgMSA2IDAgMyAxIDEgMSAxIDE7fQ0KQGZvbnQtZmFjZQ0KCXtm
-b250LWZhbWlseToiQ2FtYnJpYSBNYXRoIjsNCglwYW5vc2UtMToyIDQgNSAzIDUgNCA2IDMgMiA0
-O30NCkBmb250LWZhY2UNCgl7Zm9udC1mYW1pbHk6IlxA5a6L5L2TIjsNCglwYW5vc2UtMToyIDEg
-NiAwIDMgMSAxIDEgMSAxO30NCkBmb250LWZhY2UNCgl7Zm9udC1mYW1pbHk6Q29uc29sYXM7DQoJ
-cGFub3NlLTE6MiAxMSA2IDkgMiAyIDQgMyAyIDQ7fQ0KLyogU3R5bGUgRGVmaW5pdGlvbnMgKi8N
-CnAuTXNvTm9ybWFsLCBsaS5Nc29Ob3JtYWwsIGRpdi5Nc29Ob3JtYWwNCgl7bWFyZ2luOjBpbjsN
-CgltYXJnaW4tYm90dG9tOi4wMDAxcHQ7DQoJZm9udC1zaXplOjExLjBwdDsNCglmb250LWZhbWls
-eToiQ2FsaWJyaSIsInNhbnMtc2VyaWYiO30NCmE6bGluaywgc3Bhbi5Nc29IeXBlcmxpbmsNCgl7
-bXNvLXN0eWxlLXByaW9yaXR5Ojk5Ow0KCWNvbG9yOmJsdWU7DQoJdGV4dC1kZWNvcmF0aW9uOnVu
-ZGVybGluZTt9DQphOnZpc2l0ZWQsIHNwYW4uTXNvSHlwZXJsaW5rRm9sbG93ZWQNCgl7bXNvLXN0
-eWxlLXByaW9yaXR5Ojk5Ow0KCWNvbG9yOnB1cnBsZTsNCgl0ZXh0LWRlY29yYXRpb246dW5kZXJs
-aW5lO30NCnAuTXNvUGxhaW5UZXh0LCBsaS5Nc29QbGFpblRleHQsIGRpdi5Nc29QbGFpblRleHQN
-Cgl7bXNvLXN0eWxlLXByaW9yaXR5Ojk5Ow0KCW1zby1zdHlsZS1saW5rOiJQbGFpbiBUZXh0IENo
-YXIiOw0KCW1hcmdpbjowaW47DQoJbWFyZ2luLWJvdHRvbTouMDAwMXB0Ow0KCWZvbnQtc2l6ZTox
-MC41cHQ7DQoJZm9udC1mYW1pbHk6Q29uc29sYXM7fQ0Kc3Bhbi5QbGFpblRleHRDaGFyDQoJe21z
-by1zdHlsZS1uYW1lOiJQbGFpbiBUZXh0IENoYXIiOw0KCW1zby1zdHlsZS1wcmlvcml0eTo5OTsN
-Cgltc28tc3R5bGUtbGluazoiUGxhaW4gVGV4dCI7DQoJZm9udC1mYW1pbHk6Q29uc29sYXM7fQ0K
-Lk1zb0NocERlZmF1bHQNCgl7bXNvLXN0eWxlLXR5cGU6ZXhwb3J0LW9ubHk7fQ0KQHBhZ2UgV29y
-ZFNlY3Rpb24xDQoJe3NpemU6OC41aW4gMTEuMGluOw0KCW1hcmdpbjoxLjBpbiA4Ni42NXB0IDEu
-MGluIDg2LjZwdDt9DQpkaXYuV29yZFNlY3Rpb24xDQoJe3BhZ2U6V29yZFNlY3Rpb24xO30NCi0t
-Pjwvc3R5bGU+PCEtLVtpZiBndGUgbXNvIDldPjx4bWw+DQo8bzpzaGFwZWRlZmF1bHRzIHY6ZXh0
-PSJlZGl0IiBzcGlkbWF4PSIxMDI2IiAvPg0KPC94bWw+PCFbZW5kaWZdLS0+PCEtLVtpZiBndGUg
-bXNvIDldPjx4bWw+DQo8bzpzaGFwZWxheW91dCB2OmV4dD0iZWRpdCI+DQo8bzppZG1hcCB2OmV4
-dD0iZWRpdCIgZGF0YT0iMSIgLz4NCjwvbzpzaGFwZWxheW91dD48L3htbD48IVtlbmRpZl0tLT4N
-CjwvaGVhZD4NCjxib2R5IGxhbmc9IkVOLVVTIiBsaW5rPSJibHVlIiB2bGluaz0icHVycGxlIj4N
-CjxkaXYgY2xhc3M9IldvcmRTZWN0aW9uMSI+DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij4mZ3Q7
-IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tPG86cD48L286cD48L3A+DQo8cCBjbGFzcz0iTXNv
-UGxhaW5UZXh0Ij4mZ3Q7IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxPG86cD48L286cD48L3A+DQo8
-cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij4mZ3Q7IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDA5LCAyMDE1
-IDI6NTkgQU08bzpwPjwvbzpwPjwvcD4NCjxwIGNsYXNzPSJNc29QbGFpblRleHQiPiZndDsgVG86
-IFpoYW8gUWlhbmctQjQ1NDc1PG86cD48L286cD48L3A+DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0
-Ij4mZ3Q7IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgWGllIFhpYW9iby1SNjMw
-NjE8bzpwPjwvbzpwPjwvcD4NCjxwIGNsYXNzPSJNc29QbGFpblRleHQiPiZndDsgU3ViamVjdDog
-UmU6IFtQQVRDSCAyLzJdIHJoZWFwOiBtb3ZlIHJoZWFwLmMgZnJvbSBhcmNoL3Bvd2VycGMvbGli
-LyB0bzxvOnA+PC9vOnA+PC9wPg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+Jmd0OyBsaWIvPG86
-cD48L286cD48L3A+DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij4mZ3Q7IDxvOnA+PC9vOnA+PC9w
-Pg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+Jmd0OyBPbiBXZWQsIDIwMTUtMDctMDggYXQgMDI6
-MjUgLTA1MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOjxvOnA+PC9vOnA+PC9wPg0KPHAgY2xh
-c3M9Ik1zb1BsYWluVGV4dCI+Jmd0OyAmZ3Q7IFNvIEkgd2lsbCBhZGQgdHdvIGZ1bmMgZm9yIG15
-IHVzZSwgZG8geW91IHRoaW5rIGl0IGlzIG9rPzxvOnA+PC9vOnA+PC9wPg0KPHAgY2xhc3M9Ik1z
-b1BsYWluVGV4dCI+Jmd0OyAmZ3Q7IEkgbmVlZCB0byBhbGlnbiB0aGUgYWRkcmVzcyBvZiBhbGxv
-Y2F0ZWQgbXVyYW0uPG86cD48L286cD48L3A+DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij4mZ3Q7
-ICZndDsgQW5kIEkgd2lsbCBzZXQgYWxnbyA9IGdlbl9wb29sX2ZpcnN0X2ZpdF9hbGlnbi48bzpw
-PjwvbzpwPjwvcD4NCjxwIGNsYXNzPSJNc29QbGFpblRleHQiPiZndDsgJmd0OzxvOnA+PC9vOnA+
-PC9wPg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+Jmd0OyAmZ3Q7ICYjNDM7dW5zaWduZWQgbG9u
-ZyBnZW5fcG9vbF9hbGxvY19hbGlnbihzdHJ1Y3QgZ2VuX3Bvb2wgKnBvb2wsIHNpemVfdCBzaXpl
-LDxvOnA+PC9vOnA+PC9wPg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+Jmd0OyAmZ3Q7ICYjNDM7
-Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
-c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHVuc2lnbmVkIGxvbmcgYWxpZ24pPG86cD48L286
-cD48L3A+DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij4mZ3Q7IDxvOnA+PC9vOnA+PC9wPg0KPHAg
-Y2xhc3M9Ik1zb1BsYWluVGV4dCI+Jmd0OyBBZ2FpbiwgcGxlYXNlIGV4cGxhaW4gd2h5IHlvdSBu
-ZWVkIHRoaXMgZm9yIENQTS9RRS4mbmJzcDsgSSBkb24ndCBzZWU8bzpwPjwvbzpwPjwvcD4NCjxw
-IGNsYXNzPSJNc29QbGFpblRleHQiPiZndDsgcmhfYWxsb2NfYWxpZ24oKSBjdXJyZW50bHkgYmVp
-bmcgdXNlZCBieSBlaXRoZXIuPG86cD48L286cD48L3A+DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0
-Ij4mZ3Q7IDxvOnA+PC9vOnA+PC9wPg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+Jmd0OyBBbHNv
-LCBwbGVhc2Ugc3RvcCB0b3AtcG9zdGluZy48bzpwPjwvbzpwPjwvcD4NCjxwIGNsYXNzPSJNc29Q
-bGFpblRleHQiPjxzcGFuIHN0eWxlPSJjb2xvcjpibGFjayI+PG86cD4mbmJzcDs8L286cD48L3Nw
-YW4+PC9wPg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+PHNwYW4gc3R5bGU9ImNvbG9yOmJsYWNr
-Ij48bzpwPiZuYnNwOzwvbzpwPjwvc3Bhbj48L3A+DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij48
-c3BhbiBzdHlsZT0iY29sb3I6YmxhY2siPnVuc2lnbmVkIGxvbmcgcmhfYWxsb2Moc3RydWN0IF9y
-aF9pbmZvICppbmZvLCBpbnQgc2l6ZSwgY29uc3QgY2hhciAqb3duZXIpPG86cD48L286cD48L3Nw
-YW4+PC9wPg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+PHNwYW4gc3R5bGU9ImNvbG9yOmJsYWNr
-Ij57PG86cD48L286cD48L3NwYW4+PC9wPg0KPHAgY2xhc3M9Ik1zb1BsYWluVGV4dCI+PHNwYW4g
-c3R5bGU9ImNvbG9yOmJsYWNrIj4mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
-bmJzcDsgcmV0dXJuIDwvc3Bhbj48c3BhbiBzdHlsZT0iY29sb3I6cmVkIj5yaF9hbGxvY19hbGln
-bjwvc3Bhbj48c3BhbiBzdHlsZT0iY29sb3I6YmxhY2siPihpbmZvLCBzaXplLCBpbmZvLSZndDth
-bGlnbm1lbnQsIG93bmVyKTs8bzpwPjwvbzpwPjwvc3Bhbj48L3A+DQo8cCBjbGFzcz0iTXNvUGxh
-aW5UZXh0Ij48c3BhbiBzdHlsZT0iY29sb3I6YmxhY2siPn08bzpwPjwvbzpwPjwvc3Bhbj48L3A+
-DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij48c3BhbiBzdHlsZT0iY29sb3I6YmxhY2siPkVYUE9S
-VF9TWU1CT0xfR1BMKHJoX2FsbG9jKTs8bzpwPjwvbzpwPjwvc3Bhbj48L3A+DQo8cCBjbGFzcz0i
-TXNvUGxhaW5UZXh0Ij48c3BhbiBzdHlsZT0iY29sb3I6YmxhY2siPjxvOnA+Jm5ic3A7PC9vOnA+
-PC9zcGFuPjwvcD4NCjxwIGNsYXNzPSJNc29QbGFpblRleHQiPiZndDsgPG86cD48L286cD48L3A+
-DQo8cCBjbGFzcz0iTXNvUGxhaW5UZXh0Ij4mZ3Q7IC1TY290dDxvOnA+PC9vOnA+PC9wPg0KPHAg
-Y2xhc3M9Ik1zb1BsYWluVGV4dCI+PG86cD4mbmJzcDs8L286cD48L3A+DQo8L2Rpdj4NCjwvYm9k
-eT4NCjwvaHRtbD4NCg==
+So yes, add aligned allocation functionality to genalloc, but don't duplicate 
+gen_pool_alloc() to do so.  Instead, rename gen_pool_alloc() to 
+gen_pool_alloc_align() with an alignment parameter (also modifying the algo 
+function to take an alignment arg, which gen_pool_first_fit_order_align() 
+would ignore), and provide a gen_pool_alloc() wrapper that specifies 1 as the 
+required alignment.  Also be sure to CC lkml on the patchset since you're 
+touching core code that doesn't have its own maintainer or list.
 
---_000_CY1PR0301MB1545D6DA1DDAEEF3B2FC82E79B900CY1PR0301MB1545_--
+-Scott
