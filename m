@@ -1,28 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 046761A0429
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 07:12:51 +1000 (AEST)
-Message-ID: <1436562732.2658.177.camel@freescale.com>
-Subject: Re: [PATCH 02/11] soc/fsl: Introduce DPAA BMan device management
- driver
-From: Scott Wood <scottwood@freescale.com>
-To: Pledge Roy-R01356 <roy.pledge@freescale.com>
-CC: Paul Bolle <pebolle@tiscali.nl>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Date: Fri, 10 Jul 2015 16:12:12 -0500
-In-Reply-To: <BN3PR0301MB12673A340E327986F0BC39E58C9F0@BN3PR0301MB1267.namprd03.prod.outlook.com>
-References: <1436473322-21247-1-git-send-email-Roy.Pledge@freescale.com>
- <1436473322-21247-3-git-send-email-Roy.Pledge@freescale.com>
- <1436528160.20619.159.camel@tiscali.nl>
- <1436549595.2658.159.camel@freescale.com>
- <BN3PR0301MB12673A340E327986F0BC39E58C9F0@BN3PR0301MB1267.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <hidehiro.kawai.ez@hitachi.com>
+Received: from mailx.hitachi.co.jp (fallback.hitachi.co.jp [133.145.228.49])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CAF71A0DCE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 22:17:53 +1000 (AEST)
+Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
+ by mailx.hitachi.co.jp (Postfix) with ESMTP id 00FF52168087
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 20:39:56 +0900 (JST)
+Subject: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers if kdump is
+ not available
+To: Andrew Morton <akpm@linux-foundation.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Vivek Goyal <vgoyal@redhat.com>
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: linux-mips@linux-mips.org, Baoquan He <bhe@redhat.com>,
+ linux-sh@vger.kernel.org, linux-s390@vger.kernel.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>,
+ HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Date: Fri, 10 Jul 2015 20:33:31 +0900
+Message-ID: <20150710113331.4368.63745.stgit@softrs>
+In-Reply-To: <20150710113331.4368.10495.stgit@softrs>
+References: <20150710113331.4368.10495.stgit@softrs>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-10 at 15:57 -0500, Pledge Roy-R01356 wrote:
-> > 
-> > On Fri, 2015-07-10 at 13:36 +0200, Paul Bolle wrote:
-> > > On do, 2015-07-09 at 16:21 -0400, Roy Pledge wrote:
-> > > > +#ifdef CONFIG_FSL_DPA_CHECKING
-> > > > +#define DPA_ASSERT(x) \
-> > > > +   do { \
-> > > > +           if (!(x)) { \
-> > > > +                   pr_crit("ASSERT: (%s:%d) %s\n", __FILE__, 
-> > > > __LINE__, \
-> > > > +                           __stringify_1(x)); \
-> > > > +                   dump_stack(); \
-> > > > +                   panic("assertion failure"); \
-> > > 
-> > > Not my call, but why panic() here?
-> > 
-> > I'm pretty sure I've complained about this before (as well as all the
-> > BUG_ONs).
-> > 
-> Is the concern here just the call to panic()?  I'm happy to change what 
-> happens when an issue is detected but the DPA_ASSERT() calls are very 
-> useful when testing changes to the driver and when bringing up the drivers 
-> on new silicon variants. 
+You can call panic notifiers and kmsg dumpers before kdump by
+specifying "crash_kexec_post_notifiers" as a boot parameter.
+However, it doesn't make sense if kdump is not available.  In that
+case, disable "crash_kexec_post_notifiers" boot parameter so that
+you can't change the value of the parameter.
 
-Use WARN_ON() or a variant thereof.
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>
+---
+ kernel/panic.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
--Scott
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 04e91ff..5252331 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -502,12 +502,14 @@ __visible void __stack_chk_fail(void)
+ core_param(pause_on_oops, pause_on_oops, int, 0644);
+ core_param(panic_on_warn, panic_on_warn, int, 0644);
+ 
++#ifdef CONFIG_CRASH_DUMP
+ static int __init setup_crash_kexec_post_notifiers(char *s)
+ {
+ 	crash_kexec_post_notifiers = true;
+ 	return 0;
+ }
+ early_param("crash_kexec_post_notifiers", setup_crash_kexec_post_notifiers);
++#endif
+ 
+ static int __init oops_setup(char *s)
+ {
