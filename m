@@ -1,25 +1,29 @@
-Return-Path: <roy.pledge@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ebiederm@xmission.com>
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7446F1A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 01:19:19 +1000 (AEST)
-From: Roy Pledge <roy.pledge@freescale.com>
-To: Paul Bolle <pebolle@tiscali.nl>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Scott
- Wood" <scottwood@freescale.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 03/11] soc/fsl: Introduce the DPAA BMan portal driver
-Date: Fri, 10 Jul 2015 15:19:11 +0000
-Message-ID: <BN3PR0301MB1267A318EF9DB3C193DA9FA08C9F0@BN3PR0301MB1267.namprd03.prod.outlook.com>
-References: <1436473322-21247-1-git-send-email-Roy.Pledge@freescale.com>
- <1436473322-21247-4-git-send-email-Roy.Pledge@freescale.com>
- <1436535163.20619.216.camel@tiscali.nl>
-In-Reply-To: <1436535163.20619.216.camel@tiscali.nl>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E63691A0DCE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 01:35:18 +1000 (AEST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
+ linux-mips@linux-mips.org, Baoquan He <bhe@redhat.com>,
+ linux-sh@vger.kernel.org, linux-s390@vger.kernel.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <20150710113331.4368.10495.stgit@softrs>
+ <20150710113331.4368.63745.stgit@softrs>
+Date: Fri, 10 Jul 2015 08:41:28 -0500
+In-Reply-To: <20150710113331.4368.63745.stgit@softrs> (Hidehiro Kawai's
+ message of "Fri, 10 Jul 2015 20:33:31 +0900")
+Message-ID: <87wpy82kqf.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
+Content-Type: text/plain
+Subject: Re: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers if kdump is
+ not available
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,118 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-UGF1bCwNCg0KVGhhbmtzIHlvdSBmb3IgeW91ciB2YWx1YWJsZSBmZWVkYmFjayBzbyBmYXIuICBM
-ZXQgbWUgdHJ5IHRvIGFkZHJlc3MgYSBnZW5lcmFsIGlzc3VlIHlvdSBtZW50aW9uIGJlbG93OiB1
-bnVzZWQgZXhwb3J0ZWQgQVBJcy4NCg0KVGhlIFFNYW4gYW5kIEJNYW4gZHJpdmVycyBwcm92aWRl
-IGEgYmFzZSBsYXllciBmb3Igb3RoZXIgYmxvY2tzIGJ1aWx0IG9uIHRvcCBvZiB0aGVtLCBmb3Ig
-aW5zdGFuY2UgYW4gRXRoZXJuZXQgRHJpdmVyLCBhbiBFbmNyeXB0L0RlY3J5cHQgRW5naW5lLCAg
-YSBwYXR0ZXJuIG1hdGNoZXIsIGEgY29tcHJlc3MvZGVjb21wcmVzcyBlbmdpbmUsIGV0Yy4uLg0K
-U29tZSBvZiB0aGVzZSBkcml2ZXJzIHdpbGwgYmUgcHJlc2VudGVkIGZvciByZXZpZXcgaW4gdGhl
-IG5lYXIgZnV0dXJlLCBidXQgaW4gb3JkZXIgdG8gdHJ5IGFuZCBsYXllciB0aGUgcmV2aWV3L3Vw
-IHN0cmVhbWluZyBwcm9jZXNzIHdlJ3JlIHByZXNlbnRpbmcgZWFjaCBsYXllciBhcyBpbmRlcGVu
-ZGVudGx5IGFzIHBvc3NpYmxlLg0KSWYgeW91IHJlYWxseSB3ZXJlIHRvIHN0YXJ0IGRpc3NlY3Rp
-bmcgd2hpY2ggQVBJcyBhcmUgY2FsbGVkIHlvdSB3b3VsZCBjb21lIHRvIGEgdmVyeSBzbWFsbCBz
-ZXQgb2YgcGllY2VzIHRoYXQgbWVyZWx5IGluaXRpYWxpemUgdGhlIGhhcmR3YXJlIGJ1dCBkb24n
-dCBwcm92aWRlIGFueSBvcHBvcnR1bml0eSBmb3Igb3RoZXIgdXNlcnMgdG8gaW52b2tlIHRoYXQg
-SFcuIA0KDQpJIGhvcGUgdGhhdCB0aGlzIGhlbHBzIHlvdSB1bmRlcnN0YW5kIG91ciBnb2FscyBp
-biB0cnlpbmcgdG8gdXBzdHJlYW0gdGhlc2UgZHJpdmVycy4NCg0KDQpSb3kNCg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYXVsIEJvbGxlIFttYWlsdG86cGVib2xsZUB0
-aXNjYWxpLm5sXQ0KPiBTZW50OiBGcmlkYXksIEp1bHkgMTAsIDIwMTUgOTozMyBBTQ0KPiBUbzog
-UGxlZGdlIFJveS1SMDEzNTYNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBX
-b29kIFNjb3R0LUIwNzQyMTsNCj4gbmV0ZGV2QHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDAzLzExXSBzb2MvZnNsOiBJ
-bnRyb2R1Y2UgdGhlIERQQUEgQk1hbiBwb3J0YWwgZHJpdmVyDQo+IA0KPiBPbiBkbywgMjAxNS0w
-Ny0wOSBhdCAxNjoyMSAtMDQwMCwgUm95IFBsZWRnZSB3cm90ZToNCj4gPiAtLS0gYS9kcml2ZXJz
-L3NvYy9mc2wvcWJtYW4vS2NvbmZpZw0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9xYm1hbi9L
-Y29uZmlnDQo+IA0KPiA+ICtjb25maWcgRlNMX0RQQV9QSVJRX0ZBU1QNCj4gPiArCWJvb2wNCj4g
-PiArCWRlZmF1bHQgeQ0KPiANCj4gRmlyc3QgdXNlZCBpbiAwNC8xMS4NCj4gDQo+ID4gK2NvbmZp
-ZyBGU0xfRFBBX1BJUlFfU0xPVw0KPiA+ICsJYm9vbA0KPiA+ICsJZGVmYXVsdCB5DQo+ID4gKw0K
-PiA+ICtjb25maWcgRlNMX0RQQV9QT1JUQUxfU0hBUkUNCj4gPiArCWJvb2wNCj4gPiArCWRlZmF1
-bHQgeQ0KPiANCj4gQXMgaW4gMDIvMTE6IHRoZXNlIHRocmVlIHN5bWJvbHMgZnVuY3Rpb24gYXMg
-YWxpYXNlcyBmb3IgRlNMX0RQQS4gV2h5IGFyZQ0KPiB0aGV5IG5lZWRlZD8NCj4gDQo+ID4gIGNv
-bmZpZyBGU0xfQk1BTg0KPiA+ICAJdHJpc3RhdGUgIkJNYW4gZGV2aWNlIG1hbmFnZW1lbnQiDQo+
-ID4gIAlkZWZhdWx0IG4NCj4gPiAgCWhlbHANCj4gPiAgCQlGU0wgRFBBQSBCTWFuIGRyaXZlcg0K
-PiA+DQo+ID4gK2NvbmZpZyBGU0xfQk1BTl9QT1JUQUwNCj4gPiArCXRyaXN0YXRlICJCTWFuIHBv
-cnRhbChzKSINCj4gPiArCWRlZmF1bHQgbg0KPiA+ICsJaGVscA0KPiA+ICsJCUZTTCBCTWFuIHBv
-cnRhbCBkcml2ZXINCj4gDQo+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ICsrKyBiL2RyaXZlcnMvc29j
-L2ZzbC9xYm1hbi9ibWFuX2FwaS5jDQo+IA0KPiA+ICtzdHJ1Y3QgYm1hbl9wb3J0YWwgew0KPiA+
-ICsJWy4uLl0NCj4gPiArI2lmZGVmIENPTkZJR19GU0xfRFBBX0NBTl9XQUlUX1NZTkMNCj4gDQo+
-IFRoaXMgY2hlY2sgd2lsbCBhbHdheXMgZXZhbHVhdGUgdG8gdHJ1ZSwgcmlnaHQ/IChJJ2xsIG9u
-bHkgcmVwb3J0IHRoaXMNCj4gb25jZS4pDQo+IA0KPiA+ICsJc3RydWN0IGJtYW5fcG9vbCAqcmNy
-aV9vd25lZDsgLyogb25seSAxIHJlbGVhc2UgV0FJVF9TWU5DIGF0DQo+ID4gYSB0aW1lICovDQo+
-ID4gKyNlbmRpZg0KPiA+ICsjaWZkZWYgQ09ORklHX0ZTTF9EUEFfUE9SVEFMX1NIQVJFDQo+IA0K
-PiBEaXR0by4NCj4gDQo+ID4gKwlyYXdfc3BpbmxvY2tfdCBzaGFyaW5nX2xvY2s7IC8qIG9ubHkg
-dXNlZCBpZiBpc19zaGFyZWQgKi8NCj4gPiArCWludCBpc19zaGFyZWQ7DQo+ID4gKwlzdHJ1Y3Qg
-Ym1hbl9wb3J0YWwgKnNoYXJpbmdfcmVkaXJlY3Q7ICNlbmRpZg0KPiA+ICsJWy4uLl0NCj4gPiAr
-fTsNCj4gDQo+ID4gK2NvbnN0IHN0cnVjdCBibWFuX3BvcnRhbF9jb25maWcgKmJtYW5fZ2V0X3Bv
-cnRhbF9jb25maWcodm9pZCkgew0KPiA+ICsJWy4uLl0NCj4gPiArfQ0KPiANCj4gSSBjb3VsZG4n
-dCBmaW5kIGNhbGxlcnMgb2YgdGhpcyBmdW5jdGlvbi4NCj4gDQo+ID4gK0VYUE9SVF9TWU1CT0wo
-Ym1hbl9nZXRfcG9ydGFsX2NvbmZpZyk7DQo+IA0KPiBOb3IgdXNlcnMgb2YgdGhpcyBleHBvcnQs
-IG9idmlvdXNseS4NCj4gDQo+ID4gKw0KPiA+ICt1MzIgYm1hbl9pcnFzb3VyY2VfZ2V0KHZvaWQp
-DQo+ID4gK3sNCj4gPiArCVsuLi5dDQo+ID4gK30NCj4gDQo+IERpdHRvLg0KPiANCj4gPiArRVhQ
-T1JUX1NZTUJPTChibWFuX2lycXNvdXJjZV9nZXQpOw0KPiANCj4gRGl0dG8uDQo+IA0KPiA+ICtp
-bnQgYm1hbl9wX2lycXNvdXJjZV9hZGQoc3RydWN0IGJtYW5fcG9ydGFsICpwLCBfX21heWJlX3Vu
-dXNlZCB1MzINCj4gPiArYml0cykgew0KPiA+ICsJWy4uLl0NCj4gPiArfQ0KPiA+ICtFWFBPUlRf
-U1lNQk9MKGJtYW5fcF9pcnFzb3VyY2VfYWRkKTsNCj4gDQo+IFRoZXJlIHNlZW0gdG8gYmUgbm8g
-dXNlcnMgb2YgdGhpcyBleHBvcnQuDQo+IA0KPiA+ICtpbnQgYm1hbl9pcnFzb3VyY2VfYWRkKF9f
-bWF5YmVfdW51c2VkIHUzMiBiaXRzKSB7DQo+ID4gKwlbLi4uXQ0KPiA+ICt9DQo+IA0KPiBVbnVz
-ZWQuDQo+IA0KPiA+ICtFWFBPUlRfU1lNQk9MKGJtYW5faXJxc291cmNlX2FkZCk7DQo+IA0KPiBE
-aXR0by4NCj4gDQo+ID4gK2ludCBibWFuX2lycXNvdXJjZV9yZW1vdmUodTMyIGJpdHMpDQo+ID4g
-K3sNCj4gPiArCVsuLi5dDQo+ID4gK30NCj4gDQo+IERpdHRvLg0KPiANCj4gPiArRVhQT1JUX1NZ
-TUJPTChibWFuX2lycXNvdXJjZV9yZW1vdmUpOw0KPiANCj4gRGl0dG8uDQo+IA0KPiA+ICt1MzIg
-Ym1hbl9wb2xsX3Nsb3codm9pZCkNCj4gPiArew0KPiA+ICsJWy4uLl0NCj4gPiArfQ0KPiANCj4g
-RGl0dG8uDQo+IA0KPiA+ICtFWFBPUlRfU1lNQk9MKGJtYW5fcG9sbF9zbG93KTsNCj4gDQo+IERp
-dHRvLg0KPiANCj4gPiArdm9pZCBibWFuX3BvbGwodm9pZCkNCj4gPiArew0KPiA+ICsJWy4uLl0N
-Cj4gPiArfQ0KPiANCj4gRGl0dG8uDQo+IA0KPiA+ICtFWFBPUlRfU1lNQk9MKGJtYW5fcG9sbCk7
-DQo+IA0KPiBEaXR0by4NCj4gDQo+ID4gK3N0YXRpYyBpbmxpbmUgc3RydWN0IGJtX3Jjcl9lbnRy
-eSAqdHJ5X3JlbF9zdGFydChzdHJ1Y3QgYm1hbl9wb3J0YWwNCj4gPiArKipwLCAjaWZkZWYgQ09O
-RklHX0ZTTF9EUEFfQ0FOX1dBSVQNCj4gDQo+IEFsd2F5cyB0cnVlLCByaWdodD8NCj4gDQo+ID4g
-KwkJCQkJX19tYXliZV91bnVzZWQgc3RydWN0IGJtYW5fcG9vbA0KPiAqcG9vbCwgI2VuZGlmDQo+
-ID4gKwkJCQkJX19tYXliZV91bnVzZWQgdW5zaWduZWQgbG9uZw0KPiAqaXJxZmxhZ3MsDQo+ID4g
-KwkJCQkJX19tYXliZV91bnVzZWQgdTMyIGZsYWdzKQ0KPiANCj4gQW5kIHRoaXMgaXMgYSwgd2Vs
-bCwgbm92ZWwgd2F5IHRvIGRlY2xhcmUgYSBmdW5jdGlvbi4NCj4gDQo+ID4gK3sNCj4gPiArCVsu
-Li5dDQo+ID4gK30NCj4gDQo+ID4gK2ludCBibWFuX2ZsdXNoX3N0b2NrcGlsZShzdHJ1Y3QgYm1h
-bl9wb29sICpwb29sLCB1MzIgZmxhZ3MpIHsNCj4gPiArCVsuLi5dDQo+ID4gK30NCj4gDQo+IFVu
-dXNlZCBmdW5jdGlvbi4NCj4gDQo+ID4gK0VYUE9SVF9TWU1CT0woYm1hbl9mbHVzaF9zdG9ja3Bp
-bGUpOw0KPiANCj4gU28gdW51c2VkIGV4cG9ydCB0b28uDQo+IA0KPiA+ICsjaWZkZWYgQ09ORklH
-X0ZTTF9CTUFODQo+ID4gK3UzMiBibWFuX3F1ZXJ5X2ZyZWVfYnVmZmVycyhzdHJ1Y3QgYm1hbl9w
-b29sICpwb29sKSB7DQo+ID4gKwlyZXR1cm4gYm1fcG9vbF9mcmVlX2J1ZmZlcnMocG9vbC0+cGFy
-YW1zLmJwaWQpOw0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0woYm1hbl9xdWVyeV9mcmVlX2J1
-ZmZlcnMpOw0KPiA+ICsNCj4gPiAraW50IGJtYW5fdXBkYXRlX3Bvb2xfdGhyZXNob2xkcyhzdHJ1
-Y3QgYm1hbl9wb29sICpwb29sLCBjb25zdCB1MzINCj4gPiArKnRocmVzaG9sZHMpIHsNCj4gPiAr
-CXUzMiBicGlkOw0KPiA+ICsNCj4gPiArCWJwaWQgPSBibWFuX2dldF9wYXJhbXMocG9vbCktPmJw
-aWQ7DQo+ID4gKw0KPiA+ICsJcmV0dXJuIGJtX3Bvb2xfc2V0KGJwaWQsIHRocmVzaG9sZHMpOyB9
-DQo+ID4gK0VYUE9SVF9TWU1CT0woYm1hbl91cGRhdGVfcG9vbF90aHJlc2hvbGRzKTsNCj4gDQo+
-IE1vcmUgb2YgdGhlIHNhbWUuDQo+IA0KPiA+ICsjZW5kaWYNCj4gDQo+ID4gLS0tIC9kZXYvbnVs
-bA0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9xYm1hbi9ibWFuX3BvcnRhbC5jDQo+ID4NCj4g
-PiArbW9kdWxlX2RyaXZlcihibWFuX3BvcnRhbF9kcml2ZXIsDQo+ID4gKwkgICAgICAgYm1hbl9w
-b3J0YWxfZHJpdmVyX3JlZ2lzdGVyLCBwbGF0Zm9ybV9kcml2ZXJfdW5yZWdpc3Rlcik7DQo+IA0K
-PiBObyBNT0RVTEVfTElDRU5TRSgpIGhlcmUsIG5vciBpbiB0aGUgb3RoZXIgZmlsZXMgdGhhdCBt
-YWtlIHVwIHRoaXMgbW9kdWxlLg0KPiBTbyBsb2FkaW5nIHRoaXMgbW9kdWxlIHdpbGwgdHJpZ2dl
-ciBhIHdhcm5pbmcgYW5kIHRhaW50IHRoZSBrZXJuZWwuDQo+IA0KPiA+IC0tLSAvZGV2L251bGwN
-Cj4gPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvcWJtYW4vYm1hbl91dGlscy5jDQo+IA0KPiA+ICtF
-WFBPUlRfU1lNQk9MKGJtYW5fYWxsb2NfYnBpZF9yYW5nZSk7DQo+IA0KPiBVbnVzZWQgZXhwb3J0
-Lg0KPiANCj4gPiArRVhQT1JUX1NZTUJPTChibWFuX3JlbGVhc2VfYnBpZF9yYW5nZSk7DQo+IA0K
-PiBEaXR0by4NCj4gDQo+ID4gK0VYUE9SVF9TWU1CT0woYm1hbl9zZWVkX2JwaWRfcmFuZ2UpOw0K
-PiANCj4gRGl0dG8uDQo+IA0KPiA+ICtpbnQgYm1hbl9yZXNlcnZlX2JwaWRfcmFuZ2UodTMyIGJw
-aWQsIHUzMiBjb3VudCkgew0KPiA+ICsJcmV0dXJuIGRwYWFfcmVzb3VyY2VfcmVzZXJ2ZSgmYnBh
-bGxvYywgYnBpZCwgY291bnQpOyB9DQo+ID4gK0VYUE9SVF9TWU1CT0woYm1hbl9yZXNlcnZlX2Jw
-aWRfcmFuZ2UpOw0KPiANCj4gQmVjYXVzZSBibWFuX3Jlc2VydmVfYnBpZCgpIGlzIHVudXNlZCwg
-c2VlIGJlbG93LCB0aGlzIGZ1bmN0aW9uIGFuZCB0aGlzDQo+IGV4cG9ydCBhcmUgdW51c2VkIHRv
-by4NCj4gDQo+ID4gLS0tIC9kZXYvbnVsbA0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9xYm1h
-bi9kcGFhX3Jlc291cmNlLmMNCj4gPg0KPiA+ICsjaWYgZGVmaW5lZChDT05GSUdfRlNMX0JNQU5f
-UE9SVEFMKSB8fA0KPiA+ICtkZWZpbmVkKENPTkZJR19GU0xfQk1BTl9QT1JUQUxfTU9EVUxFKQ0K
-PiANCj4gI2lmIElTX0VOQUJMRUQoQ09ORklHX0ZTTF9CTUFOX1BPUlRBTCkNCj4gDQo+ID4gKyNp
-ZmRlZiBEUEFBX1JFU09VUkNFX0RFQlVHDQo+IA0KPiBOZXZlciBkZWZpbmVkLiBTbyBEVU1QKCkg
-aXMgZGVhZCBjb2RlLg0KPiANCj4gPiAtLS0gYS9kcml2ZXJzL3NvYy9mc2wvcWJtYW4vZHBhYV9z
-eXMuaA0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2ZzbC9xYm1hbi9kcGFhX3N5cy5oDQo+ID4NCj4g
-PiArI2RlZmluZSBDT05GSUdfVFJZX0JFVFRFUl9NRU1DUFkNCj4gDQo+IFBsZWFzZSByZXBsYWNl
-IHRoZSBDT05GSUdfIHByZWZpeCB3aXRoIHNvbWV0aGluZyBlbHNlLg0KPiANCj4gPiArI2lmZGVm
-IENPTkZJR19UUllfQkVUVEVSX01FTUNQWQ0KPiANCj4gVGhpcyB3aWxsIGFsd2F5cyBiZSB0cnVl
-LCByaWdodD8NCj4gDQo+ID4gWy4uLl0NCj4gPiArI2Vsc2UNCj4gPiArI2RlZmluZSBjb3B5X3dv
-cmRzIG1lbWNweQ0KPiA+ICsjZGVmaW5lIGNvcHlfc2hvcnRzIG1lbWNweQ0KPiA+ICsjZGVmaW5l
-IGNvcHlfYnl0ZXMgbWVtY3B5DQo+ID4gKyNlbmRpZg0KPiANCj4gPiAtLS0gL2Rldi9udWxsDQo+
-ID4gKysrIGIvaW5jbHVkZS9zb2MvZnNsL2JtYW4uaA0KPiANCj4gPiArc3RhdGljIGlubGluZSBp
-bnQgYm1hbl9yZXNlcnZlX2JwaWQodTMyIGJwaWQpIHsNCj4gPiArCXJldHVybiBibWFuX3Jlc2Vy
-dmVfYnBpZF9yYW5nZShicGlkLCAxKTsgfQ0KPiANCj4gVW51c2VkLg0KPiANCj4gVGhhbmtzLA0K
-PiANCj4gDQo+IFBhdWwgQm9sbGUNCg==
+Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> writes:
+
+> You can call panic notifiers and kmsg dumpers before kdump by
+> specifying "crash_kexec_post_notifiers" as a boot parameter.
+> However, it doesn't make sense if kdump is not available.  In that
+> case, disable "crash_kexec_post_notifiers" boot parameter so that
+> you can't change the value of the parameter.
+
+Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+
+You are confusing kexec on panic and CONFIG_CRASH_DUMP
+which is about the tools for reading the state of the previous kernel.
+
+Eric
+
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Eric Biederman <ebiederm@xmission.com>
+> Cc: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  kernel/panic.c |    2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/kernel/panic.c b/kernel/panic.c
+> index 04e91ff..5252331 100644
+> --- a/kernel/panic.c
+> +++ b/kernel/panic.c
+> @@ -502,12 +502,14 @@ __visible void __stack_chk_fail(void)
+>  core_param(pause_on_oops, pause_on_oops, int, 0644);
+>  core_param(panic_on_warn, panic_on_warn, int, 0644);
+>  
+> +#ifdef CONFIG_CRASH_DUMP
+>  static int __init setup_crash_kexec_post_notifiers(char *s)
+>  {
+>  	crash_kexec_post_notifiers = true;
+>  	return 0;
+>  }
+>  early_param("crash_kexec_post_notifiers", setup_crash_kexec_post_notifiers);
+> +#endif
+>  
+>  static int __init oops_setup(char *s)
+>  {
