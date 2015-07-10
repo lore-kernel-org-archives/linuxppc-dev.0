@@ -1,12 +1,11 @@
 Return-Path: <hidehiro.kawai.ez@hitachi.com>
-Received: from mailx.hitachi.co.jp (mailx.hitachi.co.jp [133.145.228.49])
- by lists.ozlabs.org (Postfix) with ESMTP id 4EA311A0DD7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 22:17:53 +1000 (AEST)
+Received: from mailxx.hitachi.co.jp (mailxx.hitachi.co.jp [133.145.228.50])
+ by lists.ozlabs.org (Postfix) with ESMTP id 098CF1A0DCE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 22:18:48 +1000 (AEST)
 Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
- by mailx.hitachi.co.jp (Postfix) with ESMTP id 6E2252168089
+ by mailxx.hitachi.co.jp (Postfix) with ESMTP id 043BC177043D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 20:39:56 +0900 (JST)
-Subject: [PATCH 3/3] kexec: Change the timing of callbacks related to
- "crash_kexec_post_notifiers" boot option
+Subject: [PATCH 2/3] kexec: Pass panic message to crash_kexec()
 To: Andrew Morton <akpm@linux-foundation.org>,
  "Eric W. Biederman" <ebiederm@xmission.com>,
  Vivek Goyal <vgoyal@redhat.com>
@@ -20,7 +19,7 @@ Cc: linux-mips@linux-mips.org, Baoquan He <bhe@redhat.com>,
  Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
  linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Date: Fri, 10 Jul 2015 20:33:31 +0900
-Message-ID: <20150710113331.4368.77050.stgit@softrs>
+Message-ID: <20150710113331.4368.9926.stgit@softrs>
 In-Reply-To: <20150710113331.4368.10495.stgit@softrs>
 References: <20150710113331.4368.10495.stgit@softrs>
 MIME-Version: 1.0
@@ -34,221 +33,231 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes problems reported by Daniel Walker
-(https://lkml.org/lkml/2015/6/24/44), and also replaces the bug fix
-commits 5375b70 and f45d85f.
+Add an argument to crash_kexec() to pass the panic message.  This
+patch is a preparation for the next patch, and it doesn't change
+the current behavior.
 
-If "crash_kexec_post_notifiers" boot option is specified,
-other cpus are stopped by smp_send_stop() before entering
-crash_kexec(), while usually machine_crash_shutdown() called by
-crash_kexec() does that.  This behavior change leads two problems.
-
- Problem 1:
- Some function in the crash_kexec() path depend on other cpus being
- still online.  If other cpus have been offlined already, they
- doesn't work properly.
-
-  Example:
-   panic()
-    crash_kexec()
-     machine_crash_shutdown()
-      octeon_generic_shutdown() // shutdown watchdog for ONLINE cpus
-     machine_kexec()
-
- Problem 2:
- Most of architectures stop other cpus in the machine_crash_shutdown()
- path and save register information at the same time.  However, if
- smp_send_stop() is called before that, we can't save the register
- information.
-
-To solve these problems, this patch changes the timing of calling
-the callbacks instead of changing the timing of crash_kexec() if
-crash_kexec_post_notifiers boot option is specified.
-
- Before:
-  if (!crash_kexec_post_notifiers)
-      crash_kexec()
-
-  smp_send_stop()
-  atomic_notifier_call_chain()
-  kmsg_dump()
-
-  if (crash_kexec_post_notifiers)
-      crash_kexec()
-
- After:
-  crash_kexec()
-      machine_crash_shutdown()
-      if (crash_kexec_post_notifiers) {
-          atomic_notifier_call_chain()
-          kmsg_dump()
-      }
-      machine_kexec()
-
-  smp_send_stop()
-  if (!crash_kexec_post_notifiers) {
-      atomic_notifier_call_chain()
-      kmsg_dump()
-  }
-
-NOTE: In current implementation, S/390 stops other cpus in
-machine_kexec() but not machine_crash_shutdown().  This means
-the notifiers run with other cpus being alive.  In this case,
-user should use SMP-safe notifiers only.
-
-Reported-by: Daniel Walker <dwalker@fifo99.com>
-Fixes: f06e5153f4ae (kernel/panic.c: add "crash_kexec_post_notifiers" option for kdump after panic_notifers)
 Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Eric Biederman <ebiederm@xmission.com>
 Cc: Vivek Goyal <vgoyal@redhat.com>
 ---
- Documentation/kernel-parameters.txt |    4 ++++
- include/linux/kernel.h              |    1 +
- kernel/kexec.c                      |   39 +++++++++++++++++++++++++++++------
- kernel/panic.c                      |   21 ++++---------------
- 4 files changed, 42 insertions(+), 23 deletions(-)
+ arch/arm/kernel/traps.c       |    2 +-
+ arch/arm64/kernel/traps.c     |    2 +-
+ arch/metag/kernel/traps.c     |    2 +-
+ arch/mips/kernel/traps.c      |    2 +-
+ arch/powerpc/kernel/traps.c   |    2 +-
+ arch/s390/kernel/ipl.c        |    2 +-
+ arch/sh/kernel/traps.c        |    2 +-
+ arch/x86/kernel/dumpstack.c   |    2 +-
+ arch/x86/platform/uv/uv_nmi.c |    2 +-
+ include/linux/kexec.h         |    7 +++++--
+ kernel/kexec.c                |   23 ++++++++++++++++++++++-
+ kernel/panic.c                |    4 ++--
+ 12 files changed, 38 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 1d6f045..1dfaf23 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2627,6 +2627,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			Note that this also increases risks of kdump failure,
- 			because some panic notifiers can make the crashed
- 			kernel more unstable.
-+			Currently, panic-notifiers and kmsg-dumpers are
-+			called without stopping other cpus on S/390.  If you
-+			don't know if those callbacks will work	safely in
-+			that case, please don't enable this feature.
+diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
+index d358226..abb7b86 100644
+--- a/arch/arm/kernel/traps.c
++++ b/arch/arm/kernel/traps.c
+@@ -293,7 +293,7 @@ static unsigned long oops_begin(void)
+ static void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
+ {
+ 	if (regs && kexec_should_crash(current))
+-		crash_kexec(regs);
++		crash_kexec_on_oops(regs, current);
  
- 	parkbd.port=	[HW] Parallel port number the keyboard adapter is
- 			connected to, default is 0.
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 5f0be58..718b46b 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -251,6 +251,7 @@ static inline void might_fault(void) { }
+ 	bust_spinlocks(0);
+ 	die_owner = -1;
+diff --git a/arch/arm64/kernel/traps.c b/arch/arm64/kernel/traps.c
+index 566bc4c..17a6841 100644
+--- a/arch/arm64/kernel/traps.c
++++ b/arch/arm64/kernel/traps.c
+@@ -233,7 +233,7 @@ void die(const char *str, struct pt_regs *regs, int err)
+ 	ret = __die(str, err, thread, regs);
+ 
+ 	if (regs && kexec_should_crash(thread->task))
+-		crash_kexec(regs);
++		crash_kexec_on_oops(regs, thread->task);
+ 
+ 	bust_spinlocks(0);
+ 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
+diff --git a/arch/metag/kernel/traps.c b/arch/metag/kernel/traps.c
+index 17b2e2e..dca46c7 100644
+--- a/arch/metag/kernel/traps.c
++++ b/arch/metag/kernel/traps.c
+@@ -110,7 +110,7 @@ void __noreturn die(const char *str, struct pt_regs *regs,
+ 	bust_spinlocks(0);
+ 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
+ 	if (kexec_should_crash(current))
+-		crash_kexec(regs);
++		crash_kexec_on_oops(regs, current);
+ 
+ 	if (in_interrupt())
+ 		panic("Fatal exception in interrupt");
+diff --git a/arch/mips/kernel/traps.c b/arch/mips/kernel/traps.c
+index 2a7b38e..46fc9a6 100644
+--- a/arch/mips/kernel/traps.c
++++ b/arch/mips/kernel/traps.c
+@@ -402,7 +402,7 @@ void __noreturn die(const char *str, struct pt_regs *regs)
+ 	}
+ 
+ 	if (regs && kexec_should_crash(current))
+-		crash_kexec(regs);
++		crash_kexec_on_oops(regs, current);
+ 
+ 	do_exit(sig);
+ }
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 6530f1b..4e1fe20 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -163,7 +163,7 @@ static void __kprobes oops_end(unsigned long flags, struct pt_regs *regs,
+ 	 * it through the crashdump code.
+ 	 */
+ 	if (kexec_should_crash(current) || (TRAP(regs) == 0x100)) {
+-		crash_kexec(regs);
++		crash_kexec_on_oops(regs, current);
+ 
+ 		/*
+ 		 * We aren't the primary crash CPU. We need to send it
+diff --git a/arch/s390/kernel/ipl.c b/arch/s390/kernel/ipl.c
+index 52fbef91d..67c1f8b 100644
+--- a/arch/s390/kernel/ipl.c
++++ b/arch/s390/kernel/ipl.c
+@@ -1726,7 +1726,7 @@ static void __do_restart(void *ignore)
+ 	__arch_local_irq_stosm(0x04); /* enable DAT */
+ 	smp_send_stop();
+ #ifdef CONFIG_CRASH_DUMP
+-	crash_kexec(NULL);
++	crash_kexec(NULL, "restart");
  #endif
+ 	on_restart_trigger.action->fn(&on_restart_trigger);
+ 	stop_run(&on_restart_trigger);
+diff --git a/arch/sh/kernel/traps.c b/arch/sh/kernel/traps.c
+index dfdad72..4bfb519 100644
+--- a/arch/sh/kernel/traps.c
++++ b/arch/sh/kernel/traps.c
+@@ -43,7 +43,7 @@ void die(const char *str, struct pt_regs *regs, long err)
+ 	oops_exit();
  
- extern struct atomic_notifier_head panic_notifier_list;
-+extern bool crash_kexec_post_notifiers;
- extern long (*panic_blink)(int state);
- __printf(1, 2)
- void panic(const char *fmt, ...)
+ 	if (kexec_should_crash(current))
+-		crash_kexec(regs);
++		crash_kexec_on_oops(regs, current);
+ 
+ 	if (in_interrupt())
+ 		panic("Fatal exception in interrupt");
+diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
+index 9c30acf..e973a1d 100644
+--- a/arch/x86/kernel/dumpstack.c
++++ b/arch/x86/kernel/dumpstack.c
+@@ -229,7 +229,7 @@ unsigned long oops_begin(void)
+ void oops_end(unsigned long flags, struct pt_regs *regs, int signr)
+ {
+ 	if (regs && kexec_should_crash(current))
+-		crash_kexec(regs);
++		crash_kexec_on_oops(regs, current);
+ 
+ 	bust_spinlocks(0);
+ 	die_owner = -1;
+diff --git a/arch/x86/platform/uv/uv_nmi.c b/arch/x86/platform/uv/uv_nmi.c
+index 020c101..8b67644 100644
+--- a/arch/x86/platform/uv/uv_nmi.c
++++ b/arch/x86/platform/uv/uv_nmi.c
+@@ -499,7 +499,7 @@ static void uv_nmi_kdump(int cpu, int master, struct pt_regs *regs)
+ 	/* Call crash to dump system state */
+ 	if (master) {
+ 		pr_emerg("UV: NMI executing crash_kexec on CPU%d\n", cpu);
+-		crash_kexec(regs);
++		crash_kexec(regs, "UV: NMI executing crash_kexec");
+ 
+ 		pr_emerg("UV: crash_kexec unexpectedly returned, ");
+ 		if (!kexec_crash_image) {
+diff --git a/include/linux/kexec.h b/include/linux/kexec.h
+index e804306..0a2744d 100644
+--- a/include/linux/kexec.h
++++ b/include/linux/kexec.h
+@@ -237,7 +237,8 @@ extern int kexec_purgatory_get_set_symbol(struct kimage *image,
+ 					  unsigned int size, bool get_value);
+ extern void *kexec_purgatory_get_symbol_addr(struct kimage *image,
+ 					     const char *name);
+-extern void crash_kexec(struct pt_regs *);
++extern void crash_kexec(struct pt_regs *, char *msg);
++extern void crash_kexec_on_oops(struct pt_regs *, struct task_struct *p);
+ int kexec_should_crash(struct task_struct *);
+ void crash_save_cpu(struct pt_regs *regs, int cpu);
+ void crash_save_vmcoreinfo(void);
+@@ -321,7 +322,9 @@ int parse_crashkernel_low(char *cmdline, unsigned long long system_ram,
+ #else /* !CONFIG_KEXEC */
+ struct pt_regs;
+ struct task_struct;
+-static inline void crash_kexec(struct pt_regs *regs) { }
++static inline void crash_kexec(struct pt_regs *regs, char *msg) { }
++static inline void crash_kexec_on_oops(struct pt_regs *regs,
++				      struct task_struct *p) { }
+ static inline int kexec_should_crash(struct task_struct *p) { return 0; }
+ #endif /* CONFIG_KEXEC */
+ 
 diff --git a/kernel/kexec.c b/kernel/kexec.c
-index 9c7894f..c3c4279 100644
+index a785c10..9c7894f 100644
 --- a/kernel/kexec.c
 +++ b/kernel/kexec.c
-@@ -36,6 +36,7 @@
- #include <linux/syscore_ops.h>
- #include <linux/compiler.h>
- #include <linux/hugetlb.h>
-+#include <linux/kmsg_dump.h>
+@@ -1470,7 +1470,7 @@ void __weak crash_unmap_reserved_pages(void)
  
- #include <asm/page.h>
- #include <asm/uaccess.h>
-@@ -85,13 +86,6 @@ struct resource crashk_low_res = {
- int kexec_should_crash(struct task_struct *p)
- {
- 	/*
--	 * If crash_kexec_post_notifiers is enabled, don't run
--	 * crash_kexec() here yet, which must be run after panic
--	 * notifiers in panic().
--	 */
--	if (crash_kexec_post_notifiers)
--		return 0;
--	/*
- 	 * There are 4 panic() calls in do_exit() path, each of which
- 	 * corresponds to each of these 4 conditions.
- 	 */
-@@ -1472,6 +1466,8 @@ void __weak crash_unmap_reserved_pages(void)
+ #endif /* CONFIG_KEXEC_FILE */
  
- void crash_kexec(struct pt_regs *regs, char *msg)
+-void crash_kexec(struct pt_regs *regs)
++void crash_kexec(struct pt_regs *regs, char *msg)
  {
-+	int notify_done = 0;
-+
  	/* Take the kexec_mutex here to prevent sys_kexec_load
  	 * running on one cpu from replacing the crash kernel
- 	 * we are using after a panic on a different cpu.
-@@ -1487,10 +1483,39 @@ void crash_kexec(struct pt_regs *regs, char *msg)
- 			crash_setup_regs(&fixed_regs, regs);
- 			crash_save_vmcoreinfo();
- 			machine_crash_shutdown(&fixed_regs);
-+
-+			/*
-+			 * If you doubt kdump always works fine in any
-+			 * situation, "crash_kexec_post_notifiers" offers
-+			 * you a chance to run panic_notifiers and dumping
-+			 * kmsg before kdump.
-+			 *
-+			 * NOTE: Since some panic_notifiers can make crashed
-+			 * kernel more unstable, it can increase risks of
-+			 * the kdump failure too.
-+			 *
-+			 * NOTE: Some notifiers assume they run in a single
-+			 * cpu.  Most of architectures stop other cpus in
-+			 * machine_crash_shutdown(), but S/390 does it in
-+			 * machine_kexec() at this point.  Please use
-+			 * "crash_kexec_post_notifiers" carefully in that
-+			 * case.
-+			 */
-+			if (crash_kexec_post_notifiers) {
-+				atomic_notifier_call_chain(
-+					&panic_notifier_list, 0, msg);
-+				kmsg_dump(KMSG_DUMP_PANIC);
-+				notify_done = 1;
-+			}
-+
- 			machine_kexec(kexec_crash_image);
- 		}
- 		mutex_unlock(&kexec_mutex);
+@@ -1493,6 +1493,27 @@ void crash_kexec(struct pt_regs *regs)
  	}
-+
-+	if (notify_done == 0)
-+		/* Force to call panic notifiers and kmsg dumpers */
-+		crash_kexec_post_notifiers = 0;
  }
  
- void crash_kexec_on_oops(struct pt_regs *regs, struct task_struct *p)
++void crash_kexec_on_oops(struct pt_regs *regs, struct task_struct *p)
++{
++	static char buf[128];
++	char *msg = "Die for unknown reason";
++
++	if (in_interrupt())
++		msg = "Fatal exception in interrupt";
++	else if (panic_on_oops)
++		msg = "Fatal exception";
++	else if (!p->pid)
++		msg = "Attempted to kill the idle task!";
++	else if (is_global_init(p)) {
++		snprintf(buf, sizeof(buf),
++			 "Attempted to kill init! exitcode=0x%08x",
++			 p->signal->group_exit_code ?: p->exit_code);
++		msg = buf;
++	}
++
++	crash_kexec(regs, msg);
++}
++
+ size_t crash_get_memory_size(void)
+ {
+ 	size_t size = 0;
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 93008b6..834e349 100644
+index 5252331..93008b6 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -114,11 +114,8 @@ void panic(const char *fmt, ...)
- 	/*
- 	 * If we have crashed and we have a crash kernel loaded let it handle
- 	 * everything else.
--	 * If we want to run this after calling panic_notifiers, pass
--	 * the "crash_kexec_post_notifiers" option to the kernel.
+@@ -118,7 +118,7 @@ void panic(const char *fmt, ...)
+ 	 * the "crash_kexec_post_notifiers" option to the kernel.
  	 */
--	if (!crash_kexec_post_notifiers)
--		crash_kexec(NULL, buf);
-+	crash_kexec(NULL, buf);
+ 	if (!crash_kexec_post_notifiers)
+-		crash_kexec(NULL);
++		crash_kexec(NULL, buf);
  
  	/*
  	 * Note smp_send_stop is the usual smp shutdown function, which
-@@ -131,19 +128,11 @@ void panic(const char *fmt, ...)
- 	 * Run any panic handlers, including those that might need to
- 	 * add information to the kmsg dump output.
+@@ -143,7 +143,7 @@ void panic(const char *fmt, ...)
+ 	 * more unstable, it can increase risks of the kdump failure too.
  	 */
--	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-+	if (!crash_kexec_post_notifiers) {
-+		atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
- 
--	kmsg_dump(KMSG_DUMP_PANIC);
--
--	/*
--	 * If you doubt kdump always works fine in any situation,
--	 * "crash_kexec_post_notifiers" offers you a chance to run
--	 * panic_notifiers and dumping kmsg before kdump.
--	 * Note: since some panic_notifiers can make crashed kernel
--	 * more unstable, it can increase risks of the kdump failure too.
--	 */
--	if (crash_kexec_post_notifiers)
--		crash_kexec(NULL, buf);
-+		kmsg_dump(KMSG_DUMP_PANIC);
-+	}
+ 	if (crash_kexec_post_notifiers)
+-		crash_kexec(NULL);
++		crash_kexec(NULL, buf);
  
  	bust_spinlocks(0);
  
