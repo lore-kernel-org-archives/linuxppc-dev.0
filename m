@@ -1,41 +1,31 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 208231A0018
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 02:15:53 +1000 (AEST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 10 Jul 2015 10:15:52 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 23F713E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 10:15:49 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6AGF5tN18350130
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 09:15:05 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6AGFmDF020465
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 10:15:48 -0600
-Date: Fri, 10 Jul 2015 09:15:47 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
- tj@kernel.org
-Subject: Re: [RFC,1/2] powerpc/numa: fix cpu_to_node() usage during boot
-Message-ID: <20150710161546.GD44862@linux.vnet.ibm.com>
-References: <20150702230202.GA2807@linux.vnet.ibm.com>
- <20150708040056.948A1140770@ozlabs.org>
- <20150708231623.GB44862@linux.vnet.ibm.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
+ by lists.ozlabs.org (Postfix) with ESMTP id 828631A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 02:19:50 +1000 (AEST)
+Date: Fri, 10 Jul 2015 12:19:48 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Michal Hocko <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V3 3/5] mm: mlock: Introduce VM_LOCKONFAULT and add mlock
+ flags to enable it
+Message-ID: <20150710161948.GF4669@akamai.com>
+References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
+ <1436288623-13007-4-git-send-email-emunson@akamai.com>
+ <20150708132351.61c13db6@lwn.net>
+ <20150708203456.GC4669@akamai.com>
+ <20150708151750.75e65859@lwn.net>
+ <20150709184635.GE4669@akamai.com>
+ <20150710101118.5d04d627@lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150708231623.GB44862@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="B0nZA57HJSoPbsHY"
+In-Reply-To: <20150710101118.5d04d627@lwn.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,43 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08.07.2015 [16:16:23 -0700], Nishanth Aravamudan wrote:
-> On 08.07.2015 [14:00:56 +1000], Michael Ellerman wrote:
-> > On Thu, 2015-02-07 at 23:02:02 UTC, Nishanth Aravamudan wrote:
-> > > Much like on x86, now that powerpc is using USE_PERCPU_NUMA_NODE_ID, we
-> > > have an ordering issue during boot with early calls to cpu_to_node().
-> > 
-> > "now that .." implies we changed something and broke this. What commit was
-> > it that changed the behaviour?
-> 
-> Well, that's something I'm trying to still unearth. In the commits
-> before and after adding USE_PERCPU_NUMA_NODE_ID (8c272261194d
-> "powerpc/numa: Enable USE_PERCPU_NUMA_NODE_ID"), the dmesg reports:
-> 
-> pcpu-alloc: [0] 0 1 2 3 4 5 6 7
 
-Ok, I did a bisection, and it seems like prior to commit
-1a4d76076cda69b0abf15463a8cebc172406da25 ("percpu: implement
-asynchronous chunk population"), we emitted the above, e.g.:
+--B0nZA57HJSoPbsHY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-pcpu-alloc: [0] 0 1 2 3 4 5 6 7
+On Fri, 10 Jul 2015, Jonathan Corbet wrote:
 
-And after that commit, we emitted:
+> On Thu, 9 Jul 2015 14:46:35 -0400
+> Eric B Munson <emunson@akamai.com> wrote:
+>=20
+> > > One other question...if I call mlock2(MLOCK_ONFAULT) on a range that
+> > > already has resident pages, I believe that those pages will not be lo=
+cked
+> > > until they are reclaimed and faulted back in again, right?  I suspect=
+ that
+> > > could be surprising to users. =20
+> >=20
+> > That is the case.  I am looking into what it would take to find only the
+> > present pages in a range and lock them, if that is the behavior that is
+> > preferred I can include it in the updated series.
+>=20
+> For whatever my $0.02 is worth, I think that should be done.  Otherwise
+> the mlock2() interface is essentially nondeterministic; you'll never
+> really know if a specific page is locked or not.
+>=20
+> Thanks,
+>=20
+> jon
 
-pcpu-alloc: [0] 0 1 2 3 [0] 4 5 6 7
+Okay, I likely won't have the new set out today then.  This change is
+more invasive.  IIUC, I need an equivalent to __get_user_page() skips
+pages which are not present instead of faulting in and the call chain to
+get to it.  Unless there is an easier way that I am missing.
 
-I'm not exactly sure why that changed, but I'm still
-reading/understanding the commit. Tejun might be able to explain.
+Eric
 
-Tejun, for reference, I noticed on Power systems since the
-above-mentioned commit, pcpu-alloc is not reflecting the topology of the
-system correctly -- that is, the pcpu areas are all on node 0
-unconditionally (based up on pcpu-alloc's output). Prior to that, there
-was just one group, it seems like, which completely ignored the NUMA
-topology.
+--B0nZA57HJSoPbsHY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Is this just an ordering thing that changed with the introduction of the
-async code?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Thanks,
-Nish
+iQIcBAEBAgAGBQJVn/CkAAoJELbVsDOpoOa9fc8QAIYPJoEtJnOGLcp6XvlbR0qD
+EHm5hYg6euX6IzBeU/n1N4DZEv/6AHxxj33+oWf/0SvA7JpsvIZeCsy58KoiZzkO
+1z8xIe4ErMaaA4rb8O096V176BNouwx50PXJdPazalmkeWT6KFmgcLYhVLGJAFkW
+m5em8mli28pJiSRilOCcAffiHvt8+ThcCMqLqAKlQwz2AlvIcJQR8fBp59rmRE6r
+c4fYHulmiZHSsLbmvs3XoC1ChdgjUtloN7VEeDDs2Q9V3De0Vw7AzInIbW+7zwaL
+B+FnQmRpDvTcthu64eFo0cB+GBUfXSCIt+1Nugzl+Zir6N6hGPJemoEX2XzzNDnO
+L3M0uDFGR2RXyLLTfLsTFQfCLMpxtSz8QFM9/yDzQVntENCfEAainCWjaJLxSLsV
+yBPZxXiEdLgxTCFoo5hX/RL2tmge3x3WNnqReHEP9dt0r4UvxXxGOnlQk2I8TUgg
+fINo4V8a92DG4McWbhzqKofewDYrvY+rJ3I8jW2QC4QttTO8wJwycAurfhe0pv1M
+Jk9Exv6mn9JmQ7SxYQqOqz4nu92x6WsEbSaT0Syt0IFJYj4xcVUup/npgJKB9oDn
+7RXjXvHTRAUm4D+6PPW2ECmwHMWIcs/WpHoiKt3GrP3jkh1rqpXImXOagRpv/4kf
++6n7EoyLk21P33MtY3g6
+=Tkn9
+-----END PGP SIGNATURE-----
+
+--B0nZA57HJSoPbsHY--
