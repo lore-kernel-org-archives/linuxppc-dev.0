@@ -1,21 +1,20 @@
 Return-Path: <pebolle@tiscali.nl>
-Received: from lb1-smtp-cloud2.xs4all.net (lb1-smtp-cloud2.xs4all.net
- [194.109.24.21])
+Received: from lb1-smtp-cloud3.xs4all.net (lb1-smtp-cloud3.xs4all.net
+ [194.109.24.22])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D87691A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 21:36:08 +1000 (AEST)
-Message-ID: <1436528160.20619.159.camel@tiscali.nl>
-Subject: Re: [PATCH 02/11] soc/fsl: Introduce DPAA BMan device management
- driver
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC08D1A0DCE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jul 2015 23:32:51 +1000 (AEST)
+Message-ID: <1436535163.20619.216.camel@tiscali.nl>
+Subject: Re: [PATCH 03/11] soc/fsl: Introduce the DPAA BMan portal driver
 From: Paul Bolle <pebolle@tiscali.nl>
 To: Roy Pledge <Roy.Pledge@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com,
  netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Fri, 10 Jul 2015 13:36:00 +0200
-In-Reply-To: <1436473322-21247-3-git-send-email-Roy.Pledge@freescale.com>
+Date: Fri, 10 Jul 2015 15:32:43 +0200
+In-Reply-To: <1436473322-21247-4-git-send-email-Roy.Pledge@freescale.com>
 References: <1436473322-21247-1-git-send-email-Roy.Pledge@freescale.com>
- <1436473322-21247-3-git-send-email-Roy.Pledge@freescale.com>
+ <1436473322-21247-4-git-send-email-Roy.Pledge@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,101 +27,257 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On do, 2015-07-09 at 16:21 -0400, Roy Pledge wrote:
-> --- /dev/null
+> --- a/drivers/soc/fsl/qbman/Kconfig
 > +++ b/drivers/soc/fsl/qbman/Kconfig
 
-> +menuconfig FSL_DPA
-> +	bool "Freescale DPAA support"
-> +	depends on FSL_SOC || COMPILE_TEST
-
-(I already commented on COMPILE_TEST in a separate mail.)
-
-> +	default n
-> +	help
-> +		FSL Data-Path Acceleration Architecture drivers
-> +
-> +		These are not the actual Ethernet driver(s)
-> +
-> +if FSL_DPA
-> +
-> +config FSL_DPA_CHECKING
-> +	bool "additional driver checking"
-> +	default n
-> +	help
-> +		Compiles in additional checks to sanity-check the drivers and
-> +		any use of it by other code. Not recommended for performance
-
-Only recommended for people that are certain none of the 100+ asserts
-will ever trigger. See below.
-
-> +config FSL_DPA_CAN_WAIT
-> +	bool
-> +	default y
-> +
-> +config FSL_DPA_CAN_WAIT_SYNC
+> +config FSL_DPA_PIRQ_FAST
 > +	bool
 > +	default y
 
-Both these aren't actually used in this patch. The first patch that uses
-them is 3/11.
+First used in 04/11.
 
-Besides, the way these two symbols are implemented makes them function
-as aliases for FSL_DPA. So why are they needed?
+> +config FSL_DPA_PIRQ_SLOW
+> +	bool
+> +	default y
+> +
+> +config FSL_DPA_PORTAL_SHARE
+> +	bool
+> +	default y
 
-> +config FSL_BMAN
-> +	tristate "BMan device management"
+As in 02/11: these three symbols function as aliases for FSL_DPA. Why
+are they needed? 
+
+>  config FSL_BMAN
+>  	tristate "BMan device management"
+>  	default n
+>  	help
+>  		FSL DPAA BMan driver
+>  
+> +config FSL_BMAN_PORTAL
+> +	tristate "BMan portal(s)"
 > +	default n
 > +	help
-> +		FSL DPAA BMan driver
-
-(Will readers know what BMan means?)
-
-> +endif # FSL_DPA
+> +		FSL BMan portal driver
 
 > --- /dev/null
-> +++ b/drivers/soc/fsl/qbman/Makefile
+> +++ b/drivers/soc/fsl/qbman/bman_api.c
 
-> +obj-$(CONFIG_FSL_BMAN)				+= bman.o
+> +struct bman_portal {
+> +	[...]
+> +#ifdef CONFIG_FSL_DPA_CAN_WAIT_SYNC
 
-> --- /dev/null
-> +++ b/drivers/soc/fsl/qbman/bman.c
+This check will always evaluate to true, right? (I'll only report this
+once.)
 
-> +int bm_pool_set(u32 bpid, const u32 *thresholds)
+> +	struct bman_pool *rcri_owned; /* only 1 release WAIT_SYNC at 
+> a time */
+> +#endif
+> +#ifdef CONFIG_FSL_DPA_PORTAL_SHARE
+
+Ditto.
+
+> +	raw_spinlock_t sharing_lock; /* only used if is_shared */
+> +	int is_shared;
+> +	struct bman_portal *sharing_redirect;
+> +#endif
+> +	[...]
+> +};
+
+> +const struct bman_portal_config *bman_get_portal_config(void)
 > +{
-> +	if (!bm)
-> +		return -ENODEV;
-> +	bm_set_pool(bm, bpid, thresholds[0], thresholds[1],
-> +		thresholds[2], thresholds[3]);
-> +	return 0;
+> +	[...]
 > +}
-> +EXPORT_SYMBOL(bm_pool_set);
 
-Nit: the first (caller of this function and) user of this export is
-added in 3/11.
+I couldn't find callers of this function.
 
-I couldn't find a MODULE_LICENSE() in bman.c. So building this as a
-module and loading that module will generate a warning and taint the
+> +EXPORT_SYMBOL(bman_get_portal_config);
+
+Nor users of this export, obviously.
+
+> +
+> +u32 bman_irqsource_get(void)
+> +{
+> +	[...]
+> +}
+
+Ditto.
+
+> +EXPORT_SYMBOL(bman_irqsource_get);
+
+Ditto.
+
+> +int bman_p_irqsource_add(struct bman_portal *p, __maybe_unused u32 bits)
+> +{
+> +	[...]
+> +}
+> +EXPORT_SYMBOL(bman_p_irqsource_add);
+
+There seem to be no users of this export.
+
+> +int bman_irqsource_add(__maybe_unused u32 bits)
+> +{
+> +	[...]
+> +}
+
+Unused.
+
+> +EXPORT_SYMBOL(bman_irqsource_add);
+
+Ditto.
+
+> +int bman_irqsource_remove(u32 bits)
+> +{
+> +	[...]
+> +}
+
+Ditto. 
+
+> +EXPORT_SYMBOL(bman_irqsource_remove);
+
+Ditto.
+
+> +u32 bman_poll_slow(void)
+> +{
+> +	[...]
+> +}
+
+Ditto.
+
+> +EXPORT_SYMBOL(bman_poll_slow);
+
+Ditto.
+
+> +void bman_poll(void)
+> +{
+> +	[...]
+> +}
+
+Ditto.
+
+> +EXPORT_SYMBOL(bman_poll);
+
+Ditto.
+
+> +static inline struct bm_rcr_entry *try_rel_start(struct bman_portal **p,
+> +#ifdef CONFIG_FSL_DPA_CAN_WAIT
+
+Always true, right?
+
+> +					__maybe_unused struct bman_pool *pool,
+> +#endif
+> +					__maybe_unused unsigned long *irqflags,
+> +					__maybe_unused u32 flags)
+
+And this is a, well, novel way to declare a function.
+
+> +{
+> +	[...]
+> +}
+
+> +int bman_flush_stockpile(struct bman_pool *pool, u32 flags)
+> +{
+> +	[...]
+> +}
+
+Unused function.
+
+> +EXPORT_SYMBOL(bman_flush_stockpile);
+
+So unused export too.
+
+> +#ifdef CONFIG_FSL_BMAN
+> +u32 bman_query_free_buffers(struct bman_pool *pool)
+> +{
+> +	return bm_pool_free_buffers(pool->params.bpid);
+> +}
+> +EXPORT_SYMBOL(bman_query_free_buffers);
+> +
+> +int bman_update_pool_thresholds(struct bman_pool *pool, const u32 *thresholds)
+> +{
+> +	u32 bpid;
+> +
+> +	bpid = bman_get_params(pool)->bpid;
+> +
+> +	return bm_pool_set(bpid, thresholds);
+> +}
+> +EXPORT_SYMBOL(bman_update_pool_thresholds);
+
+More of the same.
+
+> +#endif
+
+> --- /dev/null
+> +++ b/drivers/soc/fsl/qbman/bman_portal.c
+> 
+> +module_driver(bman_portal_driver,
+> +	       bman_portal_driver_register, platform_driver_unregister);
+
+No MODULE_LICENSE() here, nor in the other files that make up this
+module. So loading this module will trigger a warning and taint the
 kernel.
 
 > --- /dev/null
+> +++ b/drivers/soc/fsl/qbman/bman_utils.c
+
+> +EXPORT_SYMBOL(bman_alloc_bpid_range);
+
+Unused export.
+
+> +EXPORT_SYMBOL(bman_release_bpid_range);
+
+Ditto.
+
+> +EXPORT_SYMBOL(bman_seed_bpid_range);
+
+Ditto.
+
+> +int bman_reserve_bpid_range(u32 bpid, u32 count)
+> +{
+> +	return dpaa_resource_reserve(&bpalloc, bpid, count);
+> +}
+> +EXPORT_SYMBOL(bman_reserve_bpid_range);
+
+Because bman_reserve_bpid() is unused, see below, this function and this
+export are unused too.
+
+> --- /dev/null
+> +++ b/drivers/soc/fsl/qbman/dpaa_resource.c
+> 
+> +#if defined(CONFIG_FSL_BMAN_PORTAL) || defined(CONFIG_FSL_BMAN_PORTAL_MODULE)
+
+#if IS_ENABLED(CONFIG_FSL_BMAN_PORTAL)
+
+> +#ifdef DPAA_RESOURCE_DEBUG
+
+Never defined. So DUMP() is dead code.
+
+> --- a/drivers/soc/fsl/qbman/dpaa_sys.h
 > +++ b/drivers/soc/fsl/qbman/dpaa_sys.h
+> 
+> +#define CONFIG_TRY_BETTER_MEMCPY
 
-> +#ifdef CONFIG_FSL_DPA_CHECKING
-> +#define DPA_ASSERT(x) \
-> +	do { \
-> +		if (!(x)) { \
-> +			pr_crit("ASSERT: (%s:%d) %s\n", __FILE__, __LINE__, \
-> +				__stringify_1(x)); \
-> +			dump_stack(); \
-> +			panic("assertion failure"); \
+Please replace the CONFIG_ prefix with something else.
 
-Not my call, but why panic() here?
+> +#ifdef CONFIG_TRY_BETTER_MEMCPY
 
-> +		} \
-> +	} while (0)
+This will always be true, right?
+
+> [...]
 > +#else
-> +#define DPA_ASSERT(x)
+> +#define copy_words memcpy
+> +#define copy_shorts memcpy
+> +#define copy_bytes memcpy
 > +#endif
+
+> --- /dev/null
+> +++ b/include/soc/fsl/bman.h
+
+> +static inline int bman_reserve_bpid(u32 bpid)
+> +{
+> +	return bman_reserve_bpid_range(bpid, 1);
+> +}
+
+Unused.
 
 Thanks,
 
