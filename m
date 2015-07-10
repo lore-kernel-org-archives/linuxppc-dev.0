@@ -1,25 +1,27 @@
-Return-Path: <roy.pledge@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D23941A0429
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 06:58:02 +1000 (AEST)
-From: Roy Pledge <roy.pledge@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Paul Bolle <pebolle@tiscali.nl>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 02/11] soc/fsl: Introduce DPAA BMan device management
+ by lists.ozlabs.org (Postfix) with ESMTPS id 046761A0429
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 07:12:51 +1000 (AEST)
+Message-ID: <1436562732.2658.177.camel@freescale.com>
+Subject: Re: [PATCH 02/11] soc/fsl: Introduce DPAA BMan device management
  driver
-Date: Fri, 10 Jul 2015 20:57:53 +0000
-Message-ID: <BN3PR0301MB12673A340E327986F0BC39E58C9F0@BN3PR0301MB1267.namprd03.prod.outlook.com>
+From: Scott Wood <scottwood@freescale.com>
+To: Pledge Roy-R01356 <roy.pledge@freescale.com>
+CC: Paul Bolle <pebolle@tiscali.nl>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Date: Fri, 10 Jul 2015 16:12:12 -0500
+In-Reply-To: <BN3PR0301MB12673A340E327986F0BC39E58C9F0@BN3PR0301MB1267.namprd03.prod.outlook.com>
 References: <1436473322-21247-1-git-send-email-Roy.Pledge@freescale.com>
  <1436473322-21247-3-git-send-email-Roy.Pledge@freescale.com>
  <1436528160.20619.159.camel@tiscali.nl>
  <1436549595.2658.159.camel@freescale.com>
-In-Reply-To: <1436549595.2658.159.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <BN3PR0301MB12673A340E327986F0BC39E58C9F0@BN3PR0301MB1267.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,19 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiANCj4gT24gRnJpLCAyMDE1LTA3LTEwIGF0IDEzOjM2ICswMjAwLCBQYXVsIEJvbGxlIHdyb3Rl
-Og0KPiA+IE9uIGRvLCAyMDE1LTA3LTA5IGF0IDE2OjIxIC0wNDAwLCBSb3kgUGxlZGdlIHdyb3Rl
-Og0KPiA+ID4gKyNpZmRlZiBDT05GSUdfRlNMX0RQQV9DSEVDS0lORw0KPiA+ID4gKyNkZWZpbmUg
-RFBBX0FTU0VSVCh4KSBcDQo+ID4gPiArICAgZG8geyBcDQo+ID4gPiArICAgICAgICAgICBpZiAo
-ISh4KSkgeyBcDQo+ID4gPiArICAgICAgICAgICAgICAgICAgIHByX2NyaXQoIkFTU0VSVDogKCVz
-OiVkKSAlc1xuIiwgX19GSUxFX18sIF9fTElORV9fLCBcDQo+ID4gPiArICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgX19zdHJpbmdpZnlfMSh4KSk7IFwNCj4gPiA+ICsgICAgICAgICAgICAgICAg
-ICAgZHVtcF9zdGFjaygpOyBcDQo+ID4gPiArICAgICAgICAgICAgICAgICAgIHBhbmljKCJhc3Nl
-cnRpb24gZmFpbHVyZSIpOyBcDQo+ID4NCj4gPiBOb3QgbXkgY2FsbCwgYnV0IHdoeSBwYW5pYygp
-IGhlcmU/DQo+IA0KPiBJJ20gcHJldHR5IHN1cmUgSSd2ZSBjb21wbGFpbmVkIGFib3V0IHRoaXMg
-YmVmb3JlIChhcyB3ZWxsIGFzIGFsbCB0aGUNCj4gQlVHX09OcykuDQo+IA0KSXMgdGhlIGNvbmNl
-cm4gaGVyZSBqdXN0IHRoZSBjYWxsIHRvIHBhbmljKCk/ICBJJ20gaGFwcHkgdG8gY2hhbmdlIHdo
-YXQgaGFwcGVucyB3aGVuIGFuIGlzc3VlIGlzIGRldGVjdGVkIGJ1dCB0aGUgRFBBX0FTU0VSVCgp
-IGNhbGxzIGFyZSB2ZXJ5IHVzZWZ1bCB3aGVuIHRlc3RpbmcgY2hhbmdlcyB0byB0aGUgZHJpdmVy
-IGFuZCB3aGVuIGJyaW5naW5nIHVwIHRoZSBkcml2ZXJzIG9uIG5ldyBzaWxpY29uIHZhcmlhbnRz
-LiANCg==
+On Fri, 2015-07-10 at 15:57 -0500, Pledge Roy-R01356 wrote:
+> > 
+> > On Fri, 2015-07-10 at 13:36 +0200, Paul Bolle wrote:
+> > > On do, 2015-07-09 at 16:21 -0400, Roy Pledge wrote:
+> > > > +#ifdef CONFIG_FSL_DPA_CHECKING
+> > > > +#define DPA_ASSERT(x) \
+> > > > +   do { \
+> > > > +           if (!(x)) { \
+> > > > +                   pr_crit("ASSERT: (%s:%d) %s\n", __FILE__, 
+> > > > __LINE__, \
+> > > > +                           __stringify_1(x)); \
+> > > > +                   dump_stack(); \
+> > > > +                   panic("assertion failure"); \
+> > > 
+> > > Not my call, but why panic() here?
+> > 
+> > I'm pretty sure I've complained about this before (as well as all the
+> > BUG_ONs).
+> > 
+> Is the concern here just the call to panic()?  I'm happy to change what 
+> happens when an issue is detected but the DPA_ASSERT() calls are very 
+> useful when testing changes to the driver and when bringing up the drivers 
+> on new silicon variants. 
+
+Use WARN_ON() or a variant thereof.
+
+-Scott
