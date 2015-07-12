@@ -1,17 +1,19 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id DC86D1A0CFC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 20:40:40 +1000 (AEST)
-Message-Id: <20150712102530.055904859@telegraphics.com.au>
-Date: Sun, 12 Jul 2015 20:25:38 +1000
+ by lists.ozlabs.org (Postfix) with ESMTP id D423D1A0216
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 20:40:41 +1000 (AEST)
+Message-Id: <20150712102531.015913041@telegraphics.com.au>
+Date: Sun, 12 Jul 2015 20:25:42 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v4 11/25] m68k/atari: Implement arch_nvram_ops methods and
- enable CONFIG_HAVE_ARCH_NVRAM_OPS
+Subject: [RFC v4 15/25] powerpc: Implement arch_nvram_ops.get_size() and
+ remove old nvram_* exports
 References: <20150712102527.356151908@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,112 +24,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Atari RTC NVRAM has a checksum so implement the remaining arch_nvram_ops
-methods for the set_checksum and initialize ioctls. Enable
-CONFIG_HAVE_ARCH_NVRAM_OPS.
+Implement arch_nvram_ops for PPC32 and make use of it in the generic_nvram
+misc device module so that the nvram_* function exports can be removed.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
+ arch/powerpc/include/asm/nvram.h |    3 ---
+ arch/powerpc/kernel/setup_32.c   |   10 +++++++---
+ drivers/char/generic_nvram.c     |   24 ++++++++++++------------
+ 3 files changed, 19 insertions(+), 18 deletions(-)
 
-This re-enables the nvram module for Atari.
-
-Changes since v3:
-- Use bool (and select) instead of def_bool in the definition of the
-HAVE_ARCH_NVRAM_OPS Kconfig symbol, as requested by Geert.
-
----
- arch/m68k/Kconfig         |    3 +++
- arch/m68k/Kconfig.machine |    1 +
- arch/m68k/atari/nvram.c   |   24 ++++++++++++++++++++++++
- drivers/char/Kconfig      |    2 +-
- 4 files changed, 29 insertions(+), 1 deletion(-)
-
-Index: linux/arch/m68k/atari/nvram.c
+Index: linux/arch/powerpc/include/asm/nvram.h
 ===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-07-12 20:24:58.000000000 +1000
-+++ linux/arch/m68k/atari/nvram.c	2015-07-12 20:25:05.000000000 +1000
-@@ -73,6 +73,26 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
+--- linux.orig/arch/powerpc/include/asm/nvram.h	2015-07-12 20:25:08.000000000 +1000
++++ linux/arch/powerpc/include/asm/nvram.h	2015-07-12 20:25:10.000000000 +1000
+@@ -98,7 +98,4 @@ extern int nvram_write_os_partition(stru
+ 				    unsigned int err_type,
+ 				    unsigned int error_log_cnt);
+ 
+-/* Determine NVRAM size */
+-extern ssize_t nvram_get_size(void);
+-
+ #endif /* _ASM_POWERPC_NVRAM_H */
+Index: linux/arch/powerpc/kernel/setup_32.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-12 20:25:08.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-07-12 20:25:10.000000000 +1000
+@@ -186,13 +186,12 @@ void nvram_write_byte(unsigned char val,
  }
+ EXPORT_SYMBOL(nvram_write_byte);
  
-+static long nvram_set_checksum(void)
-+{
-+	spin_lock_irq(&rtc_lock);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
-+static long nvram_initialize(void)
-+{
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	for (i = 0; i < NVRAM_BYTES; ++i)
-+		__nvram_write_byte(0, i);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+	return 0;
-+}
-+
- static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
+-ssize_t nvram_get_size(void)
++static ssize_t ppc_nvram_get_size(void)
  {
- 	char *p = buf;
-@@ -119,6 +139,8 @@ static ssize_t nvram_write(char *buf, si
+ 	if (ppc_md.nvram_size)
+ 		return ppc_md.nvram_size();
+-	return -1;
++	return -ENODEV;
+ }
+-EXPORT_SYMBOL(nvram_get_size);
  
- static ssize_t nvram_get_size(void)
+ void nvram_sync(void)
  {
-+	if (!MACH_IS_ATARI)
+@@ -201,6 +200,11 @@ void nvram_sync(void)
+ }
+ EXPORT_SYMBOL(nvram_sync);
+ 
++const struct nvram_ops arch_nvram_ops = {
++	.get_size       = ppc_nvram_get_size,
++};
++EXPORT_SYMBOL(arch_nvram_ops);
++
+ #endif /* CONFIG_NVRAM */
+ 
+ int __init ppc_init(void)
+Index: linux/drivers/char/generic_nvram.c
+===================================================================
+--- linux.orig/drivers/char/generic_nvram.c	2015-07-12 20:25:08.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-07-12 20:25:10.000000000 +1000
+@@ -28,8 +28,6 @@
+ #include <asm/machdep.h>
+ #endif
+ 
+-#define NVRAM_SIZE	8192
+-
+ static DEFINE_MUTEX(nvram_mutex);
+ static ssize_t nvram_len;
+ 
+@@ -150,20 +148,22 @@ static struct miscdevice nvram_dev = {
+ 
+ int __init nvram_init(void)
+ {
+-	int ret = 0;
++	int ret;
+ 
+-	printk(KERN_INFO "Generic non-volatile memory driver v%s\n",
+-		NVRAM_VERSION);
+-	ret = misc_register(&nvram_dev);
+-	if (ret != 0)
+-		goto out;
++	if (arch_nvram_ops.get_size == NULL)
 +		return -ENODEV;
- 	return NVRAM_BYTES;
+ 
+-	nvram_len = nvram_get_size();
++	nvram_len = arch_nvram_ops.get_size();
+ 	if (nvram_len < 0)
+-		nvram_len = NVRAM_SIZE;
++		return nvram_len;
+ 
+-out:
+-	return ret;
++	ret = misc_register(&nvram_dev);
++	if (ret)
++		return ret;
++
++	pr_info("Generic non-volatile memory driver v%s\n", NVRAM_VERSION);
++
++	return 0;
  }
  
-@@ -126,6 +148,8 @@ const struct nvram_ops arch_nvram_ops =
- 	.read           = nvram_read,
- 	.write          = nvram_write,
- 	.get_size       = nvram_get_size,
-+	.set_checksum   = nvram_set_checksum,
-+	.initialize     = nvram_initialize,
- };
- EXPORT_SYMBOL(arch_nvram_ops);
- 
-Index: linux/drivers/char/Kconfig
-===================================================================
---- linux.orig/drivers/char/Kconfig	2015-07-12 20:24:54.000000000 +1000
-+++ linux/drivers/char/Kconfig	2015-07-12 20:25:05.000000000 +1000
-@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
- 
- config NVRAM
- 	tristate "/dev/nvram support"
--	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
-+	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
- 	---help---
- 	  If you say Y here and create a character special file /dev/nvram
- 	  with major number 10 and minor number 144 using mknod ("man mknod"),
-Index: linux/arch/m68k/Kconfig
-===================================================================
---- linux.orig/arch/m68k/Kconfig	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/m68k/Kconfig	2015-07-12 20:25:05.000000000 +1000
-@@ -71,6 +71,9 @@ config PGTABLE_LEVELS
- 	default 2 if SUN3 || COLDFIRE
- 	default 3
- 
-+config HAVE_ARCH_NVRAM_OPS
-+	bool
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-Index: linux/arch/m68k/Kconfig.machine
-===================================================================
---- linux.orig/arch/m68k/Kconfig.machine	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/m68k/Kconfig.machine	2015-07-12 20:25:05.000000000 +1000
-@@ -15,6 +15,7 @@ config ATARI
- 	bool "Atari support"
- 	depends on MMU
- 	select MMU_MOTOROLA if MMU
-+	select HAVE_ARCH_NVRAM_OPS
- 	help
- 	  This option enables support for the 68000-based Atari series of
- 	  computers (including the TT, Falcon and Medusa). If you plan to use
+ void __exit nvram_cleanup(void)
