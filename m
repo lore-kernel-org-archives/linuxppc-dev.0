@@ -1,19 +1,14 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id A62C31A0CFC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 20:40:41 +1000 (AEST)
-Message-Id: <20150712102531.985915302@telegraphics.com.au>
-Date: Sun, 12 Jul 2015 20:25:46 +1000
+ by lists.ozlabs.org (Postfix) with ESMTP id A67861A0D0B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 20:40:42 +1000 (AEST)
+Message-Id: <20150712102532.945909028@telegraphics.com.au>
+Date: Sun, 12 Jul 2015 20:25:50 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v4 19/25] powerpc: Remove CONFIG_GENERIC_NVRAM and adopt
- CONFIG_HAVE_ARCH_NVRAM_OPS
+ <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [RFC v4 23/25] m68k/mac: Use macros for RTC accesses not magic numbers
 References: <20150712102527.356151908@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,131 +19,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Switch PPC32 kernels from the generic_nvram module to the nvram module.
-
-Also fix a theoretical bug where CHRP omits the chrp_nvram_init()
-call when CONFIG_NVRAM_MODULE=m.
-
-As before, when CONFIG_PPC && !CONFIG_PPC_PMAC, the IOC_NVRAM_GET_OFFSET
-ioctl is unimplemented. For the nvram module, unimplemented ioctls return
--ENOTTY. Whereas, for the superseded generic_nvram module they would
-return -EINVAL.
-
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
 
-This ioctl change is visible to userspace code but only in an error path.
-I didn't find any userspace code that uses the IOC_NVRAM_GET_OFFSET ioctl.
+This is intended to improve code style and not affect code behaviour.
+I've tested this on a Quadra 650.
 
-The change in the name of the module is also visible. The module that
-implements /dev/nvram on PowerPC now has suitable aliases, i.e.
-MODULE_ALIAS_MISCDEV(NVRAM_MINOR);
-MODULE_ALIAS("devname:nvram"); 
-so that the device special file can be automatically created and the
-module automatically loaded when needed. Previously this was not the case.
+I don't know the meanings of the 4 undocumented write protect register
+bits 0x55, so I decided against defining 4 macros for those bits.
 
 ---
+ arch/m68k/mac/misc.c |   59 +++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 41 insertions(+), 18 deletions(-)
 
-Changes since v1:
-- Small indentation fix.
-
----
- arch/powerpc/Kconfig                    |    2 +-
- arch/powerpc/kernel/setup_32.c          |    2 +-
- arch/powerpc/platforms/chrp/Makefile    |    2 +-
- arch/powerpc/platforms/chrp/setup.c     |    2 +-
- arch/powerpc/platforms/powermac/setup.c |    3 +--
- drivers/char/Kconfig                    |   10 ++++++----
- 6 files changed, 11 insertions(+), 10 deletions(-)
-
-Index: linux/arch/powerpc/Kconfig
+Index: linux/arch/m68k/mac/misc.c
 ===================================================================
---- linux.orig/arch/powerpc/Kconfig	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/powerpc/Kconfig	2015-07-12 20:25:16.000000000 +1000
-@@ -178,7 +178,7 @@ config SYSVIPC_COMPAT
- 	default y
- 
- # All PPC32s use generic nvram driver through ppc_md
--config GENERIC_NVRAM
-+config HAVE_ARCH_NVRAM_OPS
- 	bool
- 	default y if PPC32
- 
-Index: linux/arch/powerpc/kernel/setup_32.c
-===================================================================
---- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-12 20:25:13.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-07-12 20:25:16.000000000 +1000
-@@ -168,7 +168,7 @@ int __init ppc_setup_l3cr(char *str)
+--- linux.orig/arch/m68k/mac/misc.c	2015-07-12 20:25:20.000000000 +1000
++++ linux/arch/m68k/mac/misc.c	2015-07-12 20:25:22.000000000 +1000
+@@ -242,6 +242,21 @@ static void via_rtc_send(__u8 data)
  }
- __setup("l3cr=", ppc_setup_l3cr);
  
--#ifdef CONFIG_GENERIC_NVRAM
-+#if IS_ENABLED(CONFIG_NVRAM)
- 
- static unsigned char ppc_nvram_read_byte(int addr)
- {
-Index: linux/arch/powerpc/platforms/chrp/Makefile
-===================================================================
---- linux.orig/arch/powerpc/platforms/chrp/Makefile	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/powerpc/platforms/chrp/Makefile	2015-07-12 20:25:16.000000000 +1000
-@@ -1,3 +1,3 @@
- obj-y				+= setup.o time.o pegasos_eth.o pci.o
- obj-$(CONFIG_SMP)		+= smp.o
--obj-$(CONFIG_NVRAM)		+= nvram.o
-+obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
-Index: linux/arch/powerpc/platforms/chrp/setup.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/chrp/setup.c	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/powerpc/platforms/chrp/setup.c	2015-07-12 20:25:16.000000000 +1000
-@@ -557,7 +557,7 @@ void __init chrp_init_IRQ(void)
- void __init
- chrp_init2(void)
- {
--#ifdef CONFIG_NVRAM
-+#if IS_ENABLED(CONFIG_NVRAM)
- 	chrp_nvram_init();
- #endif
- 
-Index: linux/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/powermac/setup.c	2015-07-12 20:24:53.000000000 +1000
-+++ linux/arch/powerpc/platforms/powermac/setup.c	2015-07-12 20:25:16.000000000 +1000
-@@ -321,8 +321,7 @@ static void __init pmac_setup_arch(void)
- 	find_via_pmu();
- 	smu_init();
- 
--#if defined(CONFIG_NVRAM) || defined(CONFIG_NVRAM_MODULE) || \
--    defined(CONFIG_PPC64)
-+#if IS_ENABLED(CONFIG_NVRAM) || defined(CONFIG_PPC64)
- 	pmac_nvram_init();
- #endif
- 
-Index: linux/drivers/char/Kconfig
-===================================================================
---- linux.orig/drivers/char/Kconfig	2015-07-12 20:25:05.000000000 +1000
-+++ linux/drivers/char/Kconfig	2015-07-12 20:25:16.000000000 +1000
-@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
- 
- config NVRAM
- 	tristate "/dev/nvram support"
--	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
-+	depends on X86 || (ARM && RTC_DRV_CMOS) || HAVE_ARCH_NVRAM_OPS
- 	---help---
- 	  If you say Y here and create a character special file /dev/nvram
- 	  with major number 10 and minor number 144 using mknod ("man mknod"),
-@@ -256,9 +256,11 @@ config NVRAM
- 	  and most Ataris.  The actual number of bytes varies, depending on the
- 	  nvram in the system, but is usually 114 (128-14 for the RTC).
- 
--	  This memory is conventionally called "CMOS RAM" on PCs and "NVRAM"
--	  on Ataris. /dev/nvram may be used to view settings there, or to
--	  change them (with some utility). It could also be used to frequently
-+	  This memory is conventionally called "CMOS RAM" on PCs,
-+	  "NVRAM" on Ataris and "PRAM" on Macintoshes.
+ /*
++ * These values can be found in Inside Macintosh vol. III ch. 2
++ * which has a description of the RTC chip in the original Mac.
++ */
 +
-+	  /dev/nvram may be used to view settings in NVRAM, or to change them
-+	  (with some utility). It could also be used to frequently
- 	  save a few bits of very important data that may not be lost over
- 	  power-off and for which writing to disk is too insecure. Note
- 	  however that most NVRAM space in a PC belongs to the BIOS and you
++#define RTC_FLG_READ            BIT(7)
++#define RTC_FLG_WRITE_PROTECT   BIT(7)
++#define RTC_CMD_READ(r)         (RTC_FLG_READ | (r << 2))
++#define RTC_CMD_WRITE(r)        (r << 2)
++#define RTC_REG_SECONDS_0       0
++#define RTC_REG_SECONDS_1       1
++#define RTC_REG_SECONDS_2       2
++#define RTC_REG_SECONDS_3       3
++#define RTC_REG_WRITE_PROTECT   13
++
++/*
+  * Execute a VIA PRAM/RTC command. For read commands
+  * data should point to a one-byte buffer for the
+  * resulting data. For write commands it should point
+@@ -250,13 +265,17 @@ static void via_rtc_send(__u8 data)
+  * This function disables all interrupts while running.
+  */
+ 
+-static void via_pram_command(int command, __u8 *data)
++static void via_rtc_command(int command, __u8 *data)
+ {
+ 	unsigned long flags;
+ 	int	is_read;
+ 
+ 	local_irq_save(flags);
+ 
++	/* The least significant bits must be 0b01 according to Inside Mac */
++
++	command = (command & ~3) | 1;
++
+ 	/* Enable the RTC and make sure the strobe line is high */
+ 
+ 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
+@@ -264,10 +283,10 @@ static void via_pram_command(int command
+ 	if (command & 0xFF00) {		/* extended (two-byte) command */
+ 		via_rtc_send((command & 0xFF00) >> 8);
+ 		via_rtc_send(command & 0xFF);
+-		is_read = command & 0x8000;
++		is_read = command & (RTC_FLG_READ << 8);
+ 	} else {			/* one-byte command */
+ 		via_rtc_send(command);
+-		is_read = command & 0x80;
++		is_read = command & RTC_FLG_READ;
+ 	}
+ 	if (is_read) {
+ 		*data = via_rtc_recv();
+@@ -306,10 +325,10 @@ static long via_read_time(void)
+ 	} result, last_result;
+ 	int count = 1;
+ 
+-	via_pram_command(0x81, &last_result.cdata[3]);
+-	via_pram_command(0x85, &last_result.cdata[2]);
+-	via_pram_command(0x89, &last_result.cdata[1]);
+-	via_pram_command(0x8D, &last_result.cdata[0]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0), &last_result.cdata[3]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1), &last_result.cdata[2]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2), &last_result.cdata[1]);
++	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3), &last_result.cdata[0]);
+ 
+ 	/*
+ 	 * The NetBSD guys say to loop until you get the same reading
+@@ -317,10 +336,14 @@ static long via_read_time(void)
+ 	 */
+ 
+ 	while (1) {
+-		via_pram_command(0x81, &result.cdata[3]);
+-		via_pram_command(0x85, &result.cdata[2]);
+-		via_pram_command(0x89, &result.cdata[1]);
+-		via_pram_command(0x8D, &result.cdata[0]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0),
++		                &result.cdata[3]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1),
++		                &result.cdata[2]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2),
++		                &result.cdata[1]);
++		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3),
++		                &result.cdata[0]);
+ 
+ 		if (result.idata == last_result.idata)
+ 			return result.idata - RTC_OFFSET;
+@@ -356,18 +379,18 @@ static void via_write_time(long time)
+ 	/* Clear the write protect bit */
+ 
+ 	temp = 0x55;
+-	via_pram_command(0x35, &temp);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ 
+ 	data.idata = time + RTC_OFFSET;
+-	via_pram_command(0x01, &data.cdata[3]);
+-	via_pram_command(0x05, &data.cdata[2]);
+-	via_pram_command(0x09, &data.cdata[1]);
+-	via_pram_command(0x0D, &data.cdata[0]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_0), &data.cdata[3]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_1), &data.cdata[2]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_2), &data.cdata[1]);
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_3), &data.cdata[0]);
+ 
+ 	/* Set the write protect bit */
+ 
+-	temp = 0xD5;
+-	via_pram_command(0x35, &temp);
++	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
++	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ }
+ 
+ static void via_shutdown(void)
