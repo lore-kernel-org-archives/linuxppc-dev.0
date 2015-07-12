@@ -1,18 +1,14 @@
-Return-Path: <b32167@rhuath.am.freescale.net>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0060.outbound.protection.outlook.com [157.56.110.60])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 385091A0452
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 16:03:26 +1000 (AEST)
-From: Priyanka Jain <b32167@rhuath.am.freescale.net>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <scottwood@freescale.com>, Priyanka Jain <Priyanka.Jain@freescale.com>
-Subject: [PATCH] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board support
-Date: Sun, 12 Jul 2015 00:47:12 -0500
-Message-ID: <1436680032-24147-1-git-send-email-b32167@rhuath.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1E3861A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 20:40:38 +1000 (AEST)
+Message-Id: <20150712102527.356151908@telegraphics.com.au>
+Date: Sun, 12 Jul 2015 20:25:27 +1000
+From: Finn Thain <fthain@telegraphics.com.au>
+To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC v4 00/25] Re-use nvram module
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,392 +18,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
 
-T1040D4RDB/T1042D4RDB are Freescale Reference Design Board
-which can support T1040/T1042 QorIQ Power
-Architecture™ processor respectively
+The generic NVRAM module, drivers/char/generic_nvram, implements a
+/dev/nvram misc device. It is used only by 32-bit PowerPC platforms and
+isn't generic enough to be more widely used.
 
-T1040D4RDB/T1042D4RDB board Overview
--------------------------------------
-- SERDES Connections, 8 lanes supporting:
-        - PCI
-        - SGMII
-        - SATA 2.0
-        - QSGMII(only for T1040D4RDB)
-    - DDR Controller
-        - Supports rates of up to 1600 MHz data-rate
-        - Supports one DDR4 UDIMM
-    -IFC/Local Bus
-        - NAND flash: 1GB 8-bit NAND flash
-        - NOR: 128MB 16-bit NOR Flash
-    - Ethernet
-        - Two on-board RGMII 10/100/1G ethernet ports.
-        - PHY #0 remains powered up during deep-sleep
-    - CPLD
-    - Clocks
-        - System and DDR clock (SYSCLK, “DDRCLK”)
-        - SERDES clocks
-    - Power Supplies
-    - USB
-        - Supports two USB 2.0 ports with integrated PHYs
-        - Two type A ports with 5V@1.5A per port.
-    - SDHC
-        - SDHC/SDXC connector
-    - SPI
-        - On-board 64MB SPI flash
-    - I2C
-        - Devices connected: EEPROM, thermal monitor, VID controller
-    - Other IO
-        - Two Serial ports
-        - ProfiBus port
+The RTC NVRAM module, drivers/char/nvram, also implements a /dev/nvram
+misc device. It is used by x86, ARM and m68k.
 
-    Add support for T1040/T1042D4RDB board:
-    -add device tree
-    -Add entry in corenet_generic.c
+The former module cannot be used on x86, ARM or m68k because it
+cannot co-exist with the latter module, partly due to the Kconfig logic.
 
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+It is possible to modify the modules so that one kernel binary could
+have either, neither or both. However, automatically loading the
+appropriate module is then impossible; if both provide the
+char-major-10-144 alias then the wrong module will end up being loaded.
+Hence a multi-platform kernel binary needs a single generic nvram module
+with alias char-major-10-144.
+
+Therefore, drivers/char/nvram.c should be made more generic and the
+arch-specific code therein should be moved to a more appropriate
+place under arch/. Also, drivers/char/generic_nvram.c should be removed
+to reduce code duplication.
+
+In this patch series, Atari-specific code is moved from the nvram module
+to arch/m68k/atari. More arch-specific code in the nvram module could
+be moved, probably to arch/x86, but it is difficult to determine just
+what code is relevant to ARM platforms and what code is x86-only.
+
+In addressing code duplication, this patch series removes three
+inconsistent /dev/nvram misc device implementations. One of these,
+drivers/macintosh/nvram.c is entirely unused already. The other two,
+drivers/char/generic_nvram.c and the misc device implementation in
+arch/powerpc/kernel/nvram_64.c, are replaced by drivers/char/nvram.c.
+
+A benefit of this work is better consistency -- between PPC32 and PPC64
+as well as between PPC_PMAC and MAC. This new uniformity does have
+implications for userspace, that is, some error codes for some ioctl calls
+become consistent on all PowerPC platforms.
+
+The drivers/char/nvram module becomes sufficiently generic to be useful
+to other platforms and architectures, besides those with "CMOS" RTC. At the
+end of this patch series the module is adopted by the m68k Mac port, which
+already has PRAM access functions but lacks the /dev/nvram misc device.
+
+This patch series has been compile-tested for arm, m68k, powerpc and x86.
+The nvram and thinkpad_acpi modules were regression tested on a ThinkPad T43.
+The /dev/nvram functionality was also regression tested on a G3 PowerMac.
+The nvram module was also tested on a PowerBook 520 and Quadra 650.
+Note that my testing doesn't cover PPC64 or Atari.
+
+Changes since v1:
+- Minor changes to patches 7, 15 and 20 as described in commit logs.
+- Revised patches 21 and 24 to address comments from Geert.
+
+Changes since v2:
+- Dropped patch 1, "macintosh/nvram: Remove as unused", because it has
+since been merged.
+- Inserted a new patch, "m68k/mac: Use macros for RTC accesses not
+magic numbers".
+- Revised patches 21 and 23 to address comments from Geert.
+
+Changes since v3:
+- Split the patch, "m68k/atari: Move Atari-specific code out of
+drivers/char/nvram.c", as suggested by Geert.
+- Revised patches 11 and 25 to address comments from Geert.
+- Minor change to patch 21 as described in commit log.
+
 ---
- arch/powerpc/boot/dts/t1040d4rdb.dts          |   53 +++++++
- arch/powerpc/boot/dts/t1042d4rdb.dts          |   53 +++++++
- arch/powerpc/boot/dts/t104xd4rdb.dtsi         |  195 +++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/corenet_generic.c |    2 +
- 4 files changed, 303 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/t1040d4rdb.dts
- create mode 100644 arch/powerpc/boot/dts/t1042d4rdb.dts
- create mode 100644 arch/powerpc/boot/dts/t104xd4rdb.dtsi
-
-diff --git a/arch/powerpc/boot/dts/t1040d4rdb.dts b/arch/powerpc/boot/dts/t1040d4rdb.dts
-new file mode 100644
-index 0000000..0339b5d
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t1040d4rdb.dts
-@@ -0,0 +1,53 @@
-+/*
-+ * T1040D4RDB Device Tree Source
-+ *
-+ * Copyright 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/t104xsi-pre.dtsi"
-+/include/ "t104xd4rdb.dtsi"
-+
-+/ {
-+	model = "fsl,T1040D4RDB";
-+	compatible = "fsl,T1040D4RDB";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		cpld@3,0 {
-+			compatible = "fsl,t1040d4rdb-cpld",
-+					"fsl,deepsleep-cpld";
-+		};
-+	};
-+};
-+
-+/include/ "fsl/t1040si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t1042d4rdb.dts b/arch/powerpc/boot/dts/t1042d4rdb.dts
-new file mode 100644
-index 0000000..846f8c8
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t1042d4rdb.dts
-@@ -0,0 +1,53 @@
-+/*
-+ * T1042D4RDB Device Tree Source
-+ *
-+ * Copyright 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/t104xsi-pre.dtsi"
-+/include/ "t104xd4rdb.dtsi"
-+
-+/ {
-+	model = "fsl,T1042D4RDB";
-+	compatible = "fsl,T1042D4RDB";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		cpld@3,0 {
-+			compatible = "fsl,t1040d4rdb-cpld",
-+					"fsl,deepsleep-cpld";
-+		};
-+	};
-+};
-+
-+/include/ "fsl/t1040si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t104xd4rdb.dtsi b/arch/powerpc/boot/dts/t104xd4rdb.dtsi
-new file mode 100644
-index 0000000..46bcc83
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t104xd4rdb.dtsi
-@@ -0,0 +1,195 @@
-+/*
-+ * T1040D4RDB/T1042D4RDB Device Tree Source
-+ *
-+ * Copyright 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/ {
-+	reserved-memory {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+
-+		bman_fbpr: bman-fbpr {
-+			size = <0 0x1000000>;
-+			alignment = <0 0x1000000>;
-+		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
-+	};
-+
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xff800000 0x00010000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x8000000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+		nand@2,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,ifc-nand";
-+			reg = <0x2 0x0 0x10000>;
-+		};
-+
-+		cpld@3,0 {
-+			reg = <3 0 0x300>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	bportals: bman-portals@ff4000000 {
-+		ranges = <0x0 0xf 0xf4000000 0x2000000>;
-+	};
-+
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+
-+		spi@110000 {
-+			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "micron,n25q512ax3";
-+				reg = <0>;
-+				/* input clock */
-+				spi-max-frequency = <10000000>;
-+			};
-+		};
-+		i2c@118000 {
-+			adt7461@4c {
-+				compatible = "adi,adt7461";
-+				reg = <0x4c>;
-+			};
-+
-+			rtc@68 {
-+				compatible = "dallas,ds1337";
-+				reg = <0x68>;
-+				interrupts = <0x2 0x1 0 0>;
-+			};
-+		};
-+
-+		i2c@118100 {
-+			pca9546@77 {
-+				compatible = "nxp,pca9546";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
-+		};
-+
-+	};
-+
-+	pci0: pcie@ffe240000 {
-+		reg = <0xf 0xfe240000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x0 0x0 0x10000000
-+			  0x01000000 0 0x0 0xf 0xf8000000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe250000 {
-+		reg = <0xf 0xfe250000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x10000000 0 0x10000000
-+			  0x01000000 0 0 0xf 0xf8010000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe260000 {
-+		reg = <0xf 0xfe260000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci3: pcie@ffe270000 {
-+		reg = <0xf 0xfe270000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x30000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index bd839dc..b395571 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -153,6 +153,8 @@ static const char * const boards[] __initconst = {
- 	"fsl,T1023RDB",
- 	"fsl,T1024QDS",
- 	"fsl,T1024RDB",
-+	"fsl,T1040D4RDB",
-+	"fsl,T1042D4RDB",
- 	"fsl,T1040QDS",
- 	"fsl,T1042QDS",
- 	"fsl,T1040RDB",
--- 
-1.7.4.1
+ arch/m68k/Kconfig                          |    3 
+ arch/m68k/Kconfig.machine                  |    2 
+ arch/m68k/atari/Makefile                   |    2 
+ arch/m68k/atari/nvram.c                    |  291 +++++++++++
+ arch/m68k/include/asm/atarihw.h            |    6 
+ arch/m68k/include/asm/macintosh.h          |    4 
+ arch/m68k/kernel/setup_mm.c                |  100 +++
+ arch/m68k/mac/misc.c                       |  207 +++++---
+ arch/powerpc/Kconfig                       |    5 
+ arch/powerpc/include/asm/nvram.h           |    9 
+ arch/powerpc/kernel/nvram_64.c             |  203 +------
+ arch/powerpc/kernel/setup_32.c             |   27 -
+ arch/powerpc/platforms/chrp/Makefile       |    2 
+ arch/powerpc/platforms/chrp/nvram.c        |   14 
+ arch/powerpc/platforms/chrp/setup.c        |    2 
+ arch/powerpc/platforms/powermac/Makefile   |    5 
+ arch/powerpc/platforms/powermac/nvram.c    |    9 
+ arch/powerpc/platforms/powermac/setup.c    |    3 
+ arch/powerpc/platforms/pseries/nvram.c     |    2 
+ drivers/char/Kconfig                       |   13 
+ drivers/char/Makefile                      |    6 
+ drivers/char/generic_nvram.c               |  174 ------
+ drivers/char/nvram.c                       |  742 ++++++++++++-----------------
+ drivers/platform/x86/thinkpad_acpi.c       |   20 
+ drivers/scsi/Kconfig                       |    6 
+ drivers/scsi/atari_scsi.c                  |   16 
+ drivers/video/fbdev/controlfb.c            |    4 
+ drivers/video/fbdev/imsttfb.c              |    7 
+ drivers/video/fbdev/matrox/matroxfb_base.c |    4 
+ drivers/video/fbdev/platinumfb.c           |    4 
+ drivers/video/fbdev/valkyriefb.c           |    4 
+ include/linux/nvram.h                      |   23 
+ include/uapi/linux/pmu.h                   |    2 
+ 33 files changed, 986 insertions(+), 935 deletions(-)
