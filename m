@@ -1,22 +1,18 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from lb2-smtp-cloud3.xs4all.net (lb2-smtp-cloud3.xs4all.net
- [194.109.24.26])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <b32167@rhuath.am.freescale.net>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0060.outbound.protection.outlook.com [157.56.110.60])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3BC21A07E0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jul 2015 20:34:15 +1000 (AEST)
-Message-ID: <1436610848.20619.258.camel@tiscali.nl>
-Subject: Re: [PATCH 04/11] soc/fsl: Introduce drivers for the DPAA QMan
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Roy Pledge <Roy.Pledge@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, scottwood@freescale.com,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Sat, 11 Jul 2015 12:34:08 +0200
-In-Reply-To: <1436473322-21247-5-git-send-email-Roy.Pledge@freescale.com>
-References: <1436473322-21247-1-git-send-email-Roy.Pledge@freescale.com>
- <1436473322-21247-5-git-send-email-Roy.Pledge@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 385091A0452
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 16:03:26 +1000 (AEST)
+From: Priyanka Jain <b32167@rhuath.am.freescale.net>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: <scottwood@freescale.com>, Priyanka Jain <Priyanka.Jain@freescale.com>
+Subject: [PATCH] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board support
+Date: Sun, 12 Jul 2015 00:47:12 -0500
+Message-ID: <1436680032-24147-1-git-send-email-b32167@rhuath.am.freescale.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,108 +22,392 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On do, 2015-07-09 at 16:21 -0400, Roy Pledge wrote:
-> --- a/drivers/soc/fsl/qbman/Kconfig
-> +++ b/drivers/soc/fsl/qbman/Kconfig
- 
-> +config FSL_QMAN
-> +	tristate "QMan device management"
-> +	default n
-> +	help
-> +		FSL DPAA QMan driver
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
 
-> +config FSL_QMAN_POLL_LIMIT
-> +	int
-> +	default 32
+T1040D4RDB/T1042D4RDB are Freescale Reference Design Board
+which can support T1040/T1042 QorIQ Power
+Architecture™ processor respectively
 
-This Kconfig symbol will always be set to its default (32). So why
-bother with a Kconfig symbol. Can't you use, say, a preprocessor define
-directly?
+T1040D4RDB/T1042D4RDB board Overview
+-------------------------------------
+- SERDES Connections, 8 lanes supporting:
+        - PCI
+        - SGMII
+        - SATA 2.0
+        - QSGMII(only for T1040D4RDB)
+    - DDR Controller
+        - Supports rates of up to 1600 MHz data-rate
+        - Supports one DDR4 UDIMM
+    -IFC/Local Bus
+        - NAND flash: 1GB 8-bit NAND flash
+        - NOR: 128MB 16-bit NOR Flash
+    - Ethernet
+        - Two on-board RGMII 10/100/1G ethernet ports.
+        - PHY #0 remains powered up during deep-sleep
+    - CPLD
+    - Clocks
+        - System and DDR clock (SYSCLK, “DDRCLK”)
+        - SERDES clocks
+    - Power Supplies
+    - USB
+        - Supports two USB 2.0 ports with integrated PHYs
+        - Two type A ports with 5V@1.5A per port.
+    - SDHC
+        - SDHC/SDXC connector
+    - SPI
+        - On-board 64MB SPI flash
+    - I2C
+        - Devices connected: EEPROM, thermal monitor, VID controller
+    - Other IO
+        - Two Serial ports
+        - ProfiBus port
 
-> +config FSL_QMAN_CONFIG
-> +	bool "QMan device management"
-> +	default y
-> +	help
-> +	  If this linux image is running natively, you need this option. If this
-> +	  linux image is running as a guest OS under the hypervisor, only one
-> +	  guest OS ("the control plane") needs this option.
+    Add support for T1040/T1042D4RDB board:
+    -add device tree
+    -Add entry in corenet_generic.c
 
-> +config FSL_QMAN_CI_SCHED_CFG_SRCCIV
-> +	int
-> +	depends on FSL_QMAN_CONFIG
-> +	default 4
-> +
-> +config FSL_QMAN_CI_SCHED_CFG_SRQ_W
-> +	int
-> +	depends on FSL_QMAN_CONFIG
-> +	default 3
-> +
-> +config FSL_QMAN_CI_SCHED_CFG_RW_W
-> +	int
-> +	depends on FSL_QMAN_CONFIG
-> +	default 2
-> +
-> +config FSL_QMAN_CI_SCHED_CFG_BMAN_W
-> +	int
-> +	depends on FSL_QMAN_CONFIG
-> +	default 2
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+---
+ arch/powerpc/boot/dts/t1040d4rdb.dts          |   53 +++++++
+ arch/powerpc/boot/dts/t1042d4rdb.dts          |   53 +++++++
+ arch/powerpc/boot/dts/t104xd4rdb.dtsi         |  195 +++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/corenet_generic.c |    2 +
+ 4 files changed, 303 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/t1040d4rdb.dts
+ create mode 100644 arch/powerpc/boot/dts/t1042d4rdb.dts
+ create mode 100644 arch/powerpc/boot/dts/t104xd4rdb.dtsi
 
-Ditto.
-
-> +config FSL_QMAN_PIRQ_DQRR_ITHRESH
-> +	int
-> +	default 12
-> +
-> +config FSL_QMAN_PIRQ_MR_ITHRESH
-> +	int
-> +	default 4
-> +
-> +config FSL_QMAN_PIRQ_IPERIOD
-> +	int
-> +	default 100
-
-Ditto.
-
-> --- a/drivers/soc/fsl/qbman/Makefile
-> +++ b/drivers/soc/fsl/qbman/Makefile
-
-> +obj-$(CONFIG_FSL_QMAN)				+= qman_api.o qman_utils.o qman_driver.o
-
-If FSL_QMAN is set to 'm' this should generate three modules. Is three
-modules what you want? (Just to be safe: cross compiling ran into
-problems, even for PPC64, probably because of silliness on my side. So I
-couldn't check this. And I trust make's results more than I trust my
-ability to parse Makefiles.)
- 
-Besides, there's no MODULE_LICENSE() in any of their source files. So,
-whether you create one or three modules, loading a module will trigger a
-warning and taint the kernel.
-
-> +obj-$(CONFIG_FSL_QMAN_CONFIG)			+= qman.o qman_portal.o
-
-> --- /dev/null
-> +++ b/drivers/soc/fsl/qbman/qman.c
-
-> +MODULE_DEVICE_TABLE(of, of_fsl_qman_ids);
-
-qman.o is built if FSL_QMAN_CONFIG is set. FSL_QMAN_CONFIG is a bool
-symbol. The net effect is that MODULE_DEVICE_TABLE is preprocessed away.
-
-> +static struct platform_driver of_fsl_qman_driver = {
-> +	.driver = {
-> +		.name = DRV_NAME,
-> +		.of_match_table = of_fsl_qman_ids,
-> +	},
-> +	.probe = of_fsl_qman_probe,
-> +	.remove	= of_fsl_qman_remove,
-> +};
-> +
-> +module_platform_driver(of_fsl_qman_driver);
-
-As of v4.2-rc1 you can use builtin_platform_driver() for built-in only
-code.
-
-Thanks,
-
-
-Paul Bolle
+diff --git a/arch/powerpc/boot/dts/t1040d4rdb.dts b/arch/powerpc/boot/dts/t1040d4rdb.dts
+new file mode 100644
+index 0000000..0339b5d
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t1040d4rdb.dts
+@@ -0,0 +1,53 @@
++/*
++ * T1040D4RDB Device Tree Source
++ *
++ * Copyright 2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/t104xsi-pre.dtsi"
++/include/ "t104xd4rdb.dtsi"
++
++/ {
++	model = "fsl,T1040D4RDB";
++	compatible = "fsl,T1040D4RDB";
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	ifc: localbus@ffe124000 {
++		cpld@3,0 {
++			compatible = "fsl,t1040d4rdb-cpld",
++					"fsl,deepsleep-cpld";
++		};
++	};
++};
++
++/include/ "fsl/t1040si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t1042d4rdb.dts b/arch/powerpc/boot/dts/t1042d4rdb.dts
+new file mode 100644
+index 0000000..846f8c8
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t1042d4rdb.dts
+@@ -0,0 +1,53 @@
++/*
++ * T1042D4RDB Device Tree Source
++ *
++ * Copyright 2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/t104xsi-pre.dtsi"
++/include/ "t104xd4rdb.dtsi"
++
++/ {
++	model = "fsl,T1042D4RDB";
++	compatible = "fsl,T1042D4RDB";
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	ifc: localbus@ffe124000 {
++		cpld@3,0 {
++			compatible = "fsl,t1040d4rdb-cpld",
++					"fsl,deepsleep-cpld";
++		};
++	};
++};
++
++/include/ "fsl/t1040si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t104xd4rdb.dtsi b/arch/powerpc/boot/dts/t104xd4rdb.dtsi
+new file mode 100644
+index 0000000..46bcc83
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t104xd4rdb.dtsi
+@@ -0,0 +1,195 @@
++/*
++ * T1040D4RDB/T1042D4RDB Device Tree Source
++ *
++ * Copyright 2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/ {
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		bman_fbpr: bman-fbpr {
++			size = <0 0x1000000>;
++			alignment = <0 0x1000000>;
++		};
++		qman_fqd: qman-fqd {
++			size = <0 0x400000>;
++			alignment = <0 0x400000>;
++		};
++		qman_pfdr: qman-pfdr {
++			size = <0 0x2000000>;
++			alignment = <0 0x2000000>;
++		};
++	};
++
++	ifc: localbus@ffe124000 {
++		reg = <0xf 0xfe124000 0 0x2000>;
++		ranges = <0 0 0xf 0xe8000000 0x08000000
++			  2 0 0xf 0xff800000 0x00010000
++			  3 0 0xf 0xffdf0000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x8000000>;
++			bank-width = <2>;
++			device-width = <1>;
++		};
++
++		nand@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,ifc-nand";
++			reg = <0x2 0x0 0x10000>;
++		};
++
++		cpld@3,0 {
++			reg = <3 0 0x300>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
++	};
++
++	bportals: bman-portals@ff4000000 {
++		ranges = <0x0 0xf 0xf4000000 0x2000000>;
++	};
++
++	qportals: qman-portals@ff6000000 {
++		ranges = <0x0 0xf 0xf6000000 0x2000000>;
++	};
++
++	soc: soc@ffe000000 {
++		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
++		reg = <0xf 0xfe000000 0 0x00001000>;
++
++		spi@110000 {
++			flash@0 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "micron,n25q512ax3";
++				reg = <0>;
++				/* input clock */
++				spi-max-frequency = <10000000>;
++			};
++		};
++		i2c@118000 {
++			adt7461@4c {
++				compatible = "adi,adt7461";
++				reg = <0x4c>;
++			};
++
++			rtc@68 {
++				compatible = "dallas,ds1337";
++				reg = <0x68>;
++				interrupts = <0x2 0x1 0 0>;
++			};
++		};
++
++		i2c@118100 {
++			pca9546@77 {
++				compatible = "nxp,pca9546";
++				reg = <0x77>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
++		};
++
++	};
++
++	pci0: pcie@ffe240000 {
++		reg = <0xf 0xfe240000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x0 0x0 0x10000000
++			  0x01000000 0 0x0 0xf 0xf8000000 0x0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci1: pcie@ffe250000 {
++		reg = <0xf 0xfe250000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x10000000 0 0x10000000
++			  0x01000000 0 0 0xf 0xf8010000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci2: pcie@ffe260000 {
++		reg = <0xf 0xfe260000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci3: pcie@ffe270000 {
++		reg = <0xf 0xfe270000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x30000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index bd839dc..b395571 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -153,6 +153,8 @@ static const char * const boards[] __initconst = {
+ 	"fsl,T1023RDB",
+ 	"fsl,T1024QDS",
+ 	"fsl,T1024RDB",
++	"fsl,T1040D4RDB",
++	"fsl,T1042D4RDB",
+ 	"fsl,T1040QDS",
+ 	"fsl,T1042QDS",
+ 	"fsl,T1040RDB",
+-- 
+1.7.4.1
