@@ -3,13 +3,21 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 606351A027C
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC2941A0206
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:15 +1000 (AEST)
-Message-Id: <20150713135648.540293392@linutronix.de>
-Date: Mon, 13 Jul 2015 20:50:00 -0000
+Message-Id: <20150713135739.327873721@linutronix.de>
+Date: Mon, 13 Jul 2015 20:50:06 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [patch 00/20] powerpc: Interrupt cleanups and API change preparation
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Russell King <rmk+kernel@arm.linux.org.uk>,
+ Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [patch 04/20] powerpc/axon_msi: Consolidate chained IRQ handler
+ install/remove
+References: <20150713135648.540293392@linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,24 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patch series contains the following changes:
+Chained irq handlers usually set up handler data as well. We now have
+a function to set both under irq_desc->lock. Replace the two calls
+with one.
 
-    - Consolidation of chained interrupt handler setup/removal
+Search and conversion was done with coccinelle.
 
-    - Switch to functions which avoid a redundant interrupt
-      descriptor lookup
+Reported-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/platforms/cell/axon_msi.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-    - Preparation of interrupt flow handlers for the 'irq' argument
-      removal
-
-The series has no dependencies and is also available as a git branch
-for your convenience:
-
- git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git irq/arm
-
-If you want me to carry the patches in the irq/core branch of tip,
-please let me know.
-
-Thanks,
-
-	tglx
+Index: tip/arch/powerpc/platforms/cell/axon_msi.c
+===================================================================
+--- tip.orig/arch/powerpc/platforms/cell/axon_msi.c
++++ tip/arch/powerpc/platforms/cell/axon_msi.c
+@@ -390,8 +390,7 @@ static int axon_msi_probe(struct platfor
+ 		goto out_free_fifo;
+ 	}
+ 
+-	irq_set_handler_data(virq, msic);
+-	irq_set_chained_handler(virq, axon_msi_cascade);
++	irq_set_chained_handler_and_data(virq, axon_msi_cascade, msic);
+ 	pr_devel("axon_msi: irq 0x%x setup for axon_msi\n", virq);
+ 
+ 	/* Enable the MSIC hardware */
