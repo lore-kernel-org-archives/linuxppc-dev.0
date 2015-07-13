@@ -3,18 +3,17 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1119D1A0784
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:28 +1000 (AEST)
-Message-Id: <20150713135739.995056458@linutronix.de>
-Date: Mon, 13 Jul 2015 20:50:18 -0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E7731A0490
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:29 +1000 (AEST)
+Message-Id: <20150713135740.079385036@linutronix.de>
+Date: Mon, 13 Jul 2015 20:50:20 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
- Russell King <rmk+kernel@arm.linux.org.uk>,
- Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [patch 12/20] powerpc/uic: Consolidate chained IRQ handler
- install/remove
+ Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [patch 13/20] powerpc/irq: Use access helper
+ irq_data_get_affinity_mask()
 References: <20150713135648.540293392@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
@@ -27,34 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Chained irq handlers usually set up handler data as well. We now have
-a function to set both under irq_desc->lock. Replace the two calls
-with one.
+From: Jiang Liu <jiang.liu@linux.intel.com>
 
-Search and conversion was done with coccinelle.
+This is a preparatory patch for moving irq_data struct members.
 
-Reported-by: Russell King <rmk+kernel@arm.linux.org.uk>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Julia Lawall <Julia.Lawall@lip6.fr>
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/powerpc/sysdev/uic.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/irq.c           |    2 +-
+ arch/powerpc/sysdev/xics/ics-opal.c |    2 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Index: tip/arch/powerpc/sysdev/uic.c
+Index: tip/arch/powerpc/kernel/irq.c
 ===================================================================
---- tip.orig/arch/powerpc/sysdev/uic.c
-+++ tip/arch/powerpc/sysdev/uic.c
-@@ -311,8 +311,8 @@ void __init uic_init_tree(void)
+--- tip.orig/arch/powerpc/kernel/irq.c
++++ tip/arch/powerpc/kernel/irq.c
+@@ -441,7 +441,7 @@ void migrate_irqs(void)
  
- 			cascade_virq = irq_of_parse_and_map(np, 0);
+ 		chip = irq_data_get_irq_chip(data);
  
--			irq_set_handler_data(cascade_virq, uic);
--			irq_set_chained_handler(cascade_virq, uic_irq_cascade);
-+			irq_set_chained_handler_and_data(cascade_virq,
-+							 uic_irq_cascade, uic);
+-		cpumask_and(mask, data->affinity, map);
++		cpumask_and(mask, irq_data_get_affinity_mask(data), map);
+ 		if (cpumask_any(mask) >= nr_cpu_ids) {
+ 			pr_warn("Breaking affinity for irq %i\n", irq);
+ 			cpumask_copy(mask, map);
+Index: tip/arch/powerpc/sysdev/xics/ics-opal.c
+===================================================================
+--- tip.orig/arch/powerpc/sysdev/xics/ics-opal.c
++++ tip/arch/powerpc/sysdev/xics/ics-opal.c
+@@ -54,7 +54,7 @@ static void ics_opal_unmask_irq(struct i
+ 	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
+ 		return;
  
- 			/* FIXME: setup critical cascade?? */
- 		}
+-	server = xics_get_irq_server(d->irq, d->affinity, 0);
++	server = xics_get_irq_server(d->irq, irq_data_get_affinity_mask(d), 0);
+ 	server = ics_opal_mangle_server(server);
+ 
+ 	rc = opal_set_xive(hw_irq, server, DEFAULT_PRIORITY);
+Index: tip/arch/powerpc/sysdev/xics/ics-rtas.c
+===================================================================
+--- tip.orig/arch/powerpc/sysdev/xics/ics-rtas.c
++++ tip/arch/powerpc/sysdev/xics/ics-rtas.c
+@@ -47,7 +47,7 @@ static void ics_rtas_unmask_irq(struct i
+ 	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
+ 		return;
+ 
+-	server = xics_get_irq_server(d->irq, d->affinity, 0);
++	server = xics_get_irq_server(d->irq, irq_data_get_affinity_mask(d), 0);
+ 
+ 	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, hw_irq, server,
+ 				DEFAULT_PRIORITY);
