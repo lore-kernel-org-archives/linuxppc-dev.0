@@ -1,39 +1,39 @@
 Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1AF6F1A1986
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 00:11:26 +1000 (AEST)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B2CB1A1956
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 00:11:29 +1000 (AEST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E057C1402D7
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:25 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 35ED51402D7
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:28 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Tue, 14 Jul 2015 00:11:25 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id A784E2CE8040
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:23 +1000 (EST)
+ Tue, 14 Jul 2015 00:11:27 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 919952CE8040
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:25 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6DEBFk645416578
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:23 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6DEBHsY59506786
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:25 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6DEAoOR009820
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:10:51 +1000
+ t6DEArsp009870
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:10:53 +1000
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: rjw@rjwysocki.net
 Cc: viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
  Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v4 4/6] cpufreq: powernv: Call throttle_check() on receiving
- OCC_THROTTLE
-Date: Mon, 13 Jul 2015 19:40:00 +0530
-Message-Id: <1436796602-10228-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v4 5/6] cpufreq: powernv: Report Psafe only if
+ PMSR.psafe_mode_active bit is set
+Date: Mon, 13 Jul 2015 19:40:01 +0530
+Message-Id: <1436796602-10228-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 In-Reply-To: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,114 +45,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
-notification by executing *throttle_check() on any one of the cpu on
-the chip. This is a sanity check to verify if we were indeed
-throttled/unthrottled after receiving OCC_THROTTLE notification.
+On a reset cycle of OCC, although the system retires from safe
+frequency state the local pstate is not restored to Pmin or last
+requested pstate. Now if the cpufreq governor initiates a pstate
+change, the local pstate will be in Psafe and we will be reporting a
+false positive when we are not throttled.
 
-We cannot call *throttle_check() directly from the notification
-handler because we could be handling chip1's notification in chip2. So
-initiate an smp_call to execute *throttle_check(). We are irq-disabled
-in the notification handler, so use a worker thread to smp_call
-throttle_check() on any of the cpu in the chipmask.
+So in powernv_cpufreq_throttle_check() remove the condition which
+checks if local pstate is less than Pmin while checking for Psafe
+frequency. If the cpus are forced to Psafe then PMSR.psafe_mode_active
+bit will be set. So, when OCCs become active this bit will be cleared.
+Let us just rely on this bit for reporting throttling.
 
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
-Changes from v3:
-- Refer to the members of 'struct opal_occ_msg' in the patch.
-  Replace 'chip_id' with 'omsg.chip'
+No changes from v3
 
- drivers/cpufreq/powernv-cpufreq.c | 28 ++++++++++++++++++++++++++--
- 1 file changed, 26 insertions(+), 2 deletions(-)
+ drivers/cpufreq/powernv-cpufreq.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 1f59958..f2da30a 100644
+index f2da30a..d6d7e68 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -47,6 +47,8 @@ static bool rebooting, throttled, occ_reset;
- static struct chip {
- 	unsigned int id;
- 	bool throttled;
-+	cpumask_t mask;
-+	struct work_struct throttle;
- } *chips;
+@@ -39,7 +39,6 @@
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+ #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+ #define PMSR_MAX(x)		((x >> 32) & 0xFF)
+-#define PMSR_LP(x)		((x >> 48) & 0xFF)
  
- static int nr_chips;
-@@ -307,8 +309,9 @@ static inline unsigned int get_nominal_index(void)
- 	return powernv_pstate_info.max - powernv_pstate_info.nominal;
- }
- 
--static void powernv_cpufreq_throttle_check(unsigned int cpu)
-+static void powernv_cpufreq_throttle_check(void *data)
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static bool rebooting, throttled, occ_reset;
+@@ -313,7 +312,7 @@ static void powernv_cpufreq_throttle_check(void *data)
  {
-+	unsigned int cpu = smp_processor_id();
+ 	unsigned int cpu = smp_processor_id();
  	unsigned long pmsr;
- 	int pmsr_pmax, pmsr_lp, i;
+-	int pmsr_pmax, pmsr_lp, i;
++	int pmsr_pmax, i;
  
-@@ -370,7 +373,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 		return 0;
+ 	pmsr = get_pmspr(SPRN_PMSR);
  
- 	if (!throttled)
--		powernv_cpufreq_throttle_check(smp_processor_id());
-+		powernv_cpufreq_throttle_check(NULL);
- 
- 	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
- 
-@@ -415,6 +418,14 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
- 	.notifier_call = powernv_cpufreq_reboot_notifier,
- };
- 
-+void powernv_cpufreq_work_fn(struct work_struct *work)
-+{
-+	struct chip *chip = container_of(work, struct chip, throttle);
-+
-+	smp_call_function_any(&chip->mask,
-+			      powernv_cpufreq_throttle_check, NULL, 0);
-+}
-+
- static char throttle_reason[][30] = {
- 					"No throttling",
- 					"Power Cap",
-@@ -429,6 +440,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
- {
- 	struct opal_msg *msg = _msg;
- 	struct opal_occ_msg omsg;
-+	int i;
- 
- 	if (msg_type != OPAL_MSG_OCC)
- 		return 0;
-@@ -459,6 +471,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
- 			occ_reset = false;
- 			throttled = false;
- 			pr_info("OCC: Active\n");
-+
-+			for (i = 0; i < nr_chips; i++)
-+				schedule_work(&chips[i].throttle);
-+
- 			return 0;
- 		}
- 
-@@ -470,6 +486,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
- 		else if (!omsg.throttle_status)
- 			pr_info("OCC: Chip %u %s\n", (unsigned int)omsg.chip,
- 				throttle_reason[omsg.throttle_status]);
-+		else
-+			return 0;
-+
-+		for (i = 0; i < nr_chips; i++)
-+			if (chips[i].id == omsg.chip)
-+				schedule_work(&chips[i].throttle);
- 	}
- 	return 0;
- }
-@@ -521,6 +543,8 @@ static int init_chip_info(void)
- 	for (i = 0; i < nr_chips; i++) {
- 		chips[i].id = chip[i];
- 		chips[i].throttled = false;
-+		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
-+		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
+@@ -335,14 +334,9 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 			chips[i].id, pmsr_pmax);
  	}
  
- 	return 0;
+-	/*
+-	 * Check for Psafe by reading LocalPstate
+-	 * or check if Psafe_mode_active is set in PMSR.
+-	 */
++	/* Check if Psafe_mode_active is set in PMSR. */
+ next:
+-	pmsr_lp = (s8)PMSR_LP(pmsr);
+-	if ((pmsr_lp < powernv_pstate_info.min) ||
+-				(pmsr & PMSR_PSAFE_ENABLE)) {
++	if (pmsr & PMSR_PSAFE_ENABLE) {
+ 		throttled = true;
+ 		pr_info("Pstate set to safe frequency\n");
+ 	}
 -- 
 1.9.3
