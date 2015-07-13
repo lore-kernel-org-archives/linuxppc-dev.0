@@ -3,17 +3,17 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC2941A0206
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:15 +1000 (AEST)
-Message-Id: <20150713135739.327873721@linutronix.de>
-Date: Mon, 13 Jul 2015 20:50:06 -0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id A10191A0206
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:17 +1000 (AEST)
+Message-Id: <20150713135739.428026964@linutronix.de>
+Date: Mon, 13 Jul 2015 20:50:07 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Russell King <rmk+kernel@arm.linux.org.uk>,
  Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [patch 04/20] powerpc/axon_msi: Consolidate chained IRQ handler
+Subject: [patch 05/20] powerpc/cell: Consolidate chained IRQ handler
  install/remove
 References: <20150713135648.540293392@linutronix.de>
 MIME-Version: 1.0
@@ -40,20 +40,21 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/platforms/cell/axon_msi.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/interrupt.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: tip/arch/powerpc/platforms/cell/axon_msi.c
+Index: tip/arch/powerpc/platforms/cell/interrupt.c
 ===================================================================
---- tip.orig/arch/powerpc/platforms/cell/axon_msi.c
-+++ tip/arch/powerpc/platforms/cell/axon_msi.c
-@@ -390,8 +390,7 @@ static int axon_msi_probe(struct platfor
- 		goto out_free_fifo;
- 	}
- 
--	irq_set_handler_data(virq, msic);
--	irq_set_chained_handler(virq, axon_msi_cascade);
-+	irq_set_chained_handler_and_data(virq, axon_msi_cascade, msic);
- 	pr_devel("axon_msi: irq 0x%x setup for axon_msi\n", virq);
- 
- 	/* Enable the MSIC hardware */
+--- tip.orig/arch/powerpc/platforms/cell/interrupt.c
++++ tip/arch/powerpc/platforms/cell/interrupt.c
+@@ -357,8 +357,8 @@ static int __init setup_iic(void)
+ 		 * irq_data is a generic pointer that gets passed back
+ 		 * to us later, so the forced cast is fine.
+ 		 */
+-		irq_set_handler_data(cascade, (void __force *)node_iic);
+-		irq_set_chained_handler(cascade, iic_ioexc_cascade);
++		irq_set_chained_handler_and_data(cascade, iic_ioexc_cascade,
++						 (void __force *)node_iic);
+ 		out_be64(&node_iic->iic_ir,
+ 			 (1 << 12)		/* priority */ |
+ 			 (node << 4)		/* dest node */ |
