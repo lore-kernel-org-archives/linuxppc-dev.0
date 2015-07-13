@@ -1,30 +1,21 @@
-Return-Path: <dwalker@fifo99.com>
-Received: from ip-172-31-12-36.us-west-2.compute.internal
- (ec2-54-201-57-178.us-west-2.compute.amazonaws.com [54.201.57.178])
- by lists.ozlabs.org (Postfix) with ESMTP id 3F0C11A001E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:33:33 +1000 (AEST)
-Date: Mon, 13 Jul 2015 20:26:11 +0000
-From: dwalker@fifo99.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Vivek Goyal <vgoyal@redhat.com>, linux-mips@linux-mips.org,
- Baoquan He <bhe@redhat.com>, linux-sh@vger.kernel.org,
- linux-s390@vger.kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
- HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers if kdump
- is not available
-Message-ID: <20150713202611.GA16525@fifo99.com>
-References: <20150710113331.4368.10495.stgit@softrs>
- <20150710113331.4368.63745.stgit@softrs>
- <87wpy82kqf.fsf@x220.int.ebiederm.org>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0107.outbound.protection.outlook.com [65.55.169.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 545D61A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:40:18 +1000 (AEST)
+Message-ID: <1436819959.2993.16.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board support
+From: Scott Wood <scottwood@freescale.com>
+To: Priyanka Jain <b32167@rhuath.am.freescale.net>
+CC: <linuxppc-dev@lists.ozlabs.org>, Priyanka Jain
+ <Priyanka.Jain@freescale.com>
+Date: Mon, 13 Jul 2015 15:39:19 -0500
+In-Reply-To: <1436680032-24147-1-git-send-email-b32167@rhuath.am.freescale.net>
+References: <1436680032-24147-1-git-send-email-b32167@rhuath.am.freescale.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87wpy82kqf.fsf@x220.int.ebiederm.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,17 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 10, 2015 at 08:41:28AM -0500, Eric W. Biederman wrote:
-> Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> writes:
-> 
-> > You can call panic notifiers and kmsg dumpers before kdump by
-> > specifying "crash_kexec_post_notifiers" as a boot parameter.
-> > However, it doesn't make sense if kdump is not available.  In that
-> > case, disable "crash_kexec_post_notifiers" boot parameter so that
-> > you can't change the value of the parameter.
-> 
-> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+On Sun, 2015-07-12 at 00:47 -0500, Priyanka Jain wrote:
+> +/ {
+> +     model = "fsl,T1040D4RDB";
+> +     compatible = "fsl,T1040D4RDB";
+> +     #address-cells = <2>;
+> +     #size-cells = <2>;
+> +     interrupt-parent = <&mpic>;
+> +
+> +     ifc:  localbus@ffe124000{
+> +             cpld@3,0 {
+> +                     compatible = "fsl,t1040d4rdb-cpld",
+> +                                     "fsl,deepsleep-cpld";
+> +             };
+> +     };
+> +};
 
-I think it would make sense if he just replaced "kdump" with "kexec".
+What is "fsl,deepsleep-cpld"?  Besides the lack of a binding, it seems too 
+vague.  Not all deep sleep capable CPLDs are necessarily going to be 
+identical.
 
-Daniel
+> +     ifc:  localbus@ffe124000{
+> +             reg = <0xf 0xfe124000 0 0x2000>;
+> +             ranges = <0 0 0xf 0xe8000000 0x08000000
+> +                       2 0 0xf 0xff800000 0x00010000
+> +                       3 0 0xf 0xffdf0000 0x00008000>;
+> +
+> +             nor@0,0 {
+> +                     #address-cells = <1>;
+> +                     #size-cells = <1>;
+> +                     compatible = "cfi-flash";
+> +                     reg = <0x0 0x0 0x8000000>;
+> +                     bank-width = <2>;
+> +                     device-width = <1>;
+> +             };
+> +
+> +             nand@2,0 {
+> +                     #address-cells = <1>;
+> +                     #size-cells = <1>;
+> +                     compatible = "fsl,ifc-nand";
+> +                     reg = <0x2 0x0 0x10000>;
+> +             };
+> +
+> +             cpld@3,0 {
+> +                     reg = <3 0 0x300>;
+> +             };
+
+I'd rather keep reg with the compatible.
+
+> +                      adt7461@4c{
+> +                             compatible = "adi,adt7461";
+> +                             reg = <0x4c>;
+> +                     };
+
+Node names should be generic.
+
+> +              i2c@118100{
+> +                      pca9546@77{
+> +                             compatible = "nxp,pca9546";
+> +                             reg = <0x77>;
+> +                             #address-cells = <1>;
+> +                             #size-cells = <0>;
+> +                     };
+
+Likewise.
+
+-Scott
