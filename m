@@ -1,29 +1,26 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x229.google.com (mail-ie0-x229.google.com
- [IPv6:2607:f8b0:4001:c03::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0119.outbound.protection.outlook.com [157.56.110.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 955DA1A0D39
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 08:02:16 +1000 (AEST)
-Received: by iecuq6 with SMTP id uq6so224254451iec.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jul 2015 15:02:14 -0700 (PDT)
-Subject: [PATCH 3/3] IRQ: Print "unexpected IRQ" messages consistently
- across architectures
-To: Thomas Gleixner <tglx@linutronix.de>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-am33-list@redhat.com, linux-ia64@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, linux-parisc@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-alpha@vger.kernel.org, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Sun, 12 Jul 2015 17:02:11 -0500
-Message-ID: <20150712220211.7166.42035.stgit@bhelgaas-glaptop2.roam.corp.google.com>
-In-Reply-To: <20150712215559.7166.33068.stgit@bhelgaas-glaptop2.roam.corp.google.com>
-References: <20150712215559.7166.33068.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27CAF1A02BE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 12:22:35 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Laura Abbott <labbott@redhat.com>, "lauraa@codeaurora.org"
+ <lauraa@codeaurora.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "olof@lixom.net"
+ <olof@lixom.net>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "Scott
+ Wood" <scottwood@freescale.com>, Xiaobo Xie <X.Xie@freescale.com>
+Subject: RE: [RFC] genalloc:add an gen_pool_alloc_align func to genalloc
+Date: Mon, 13 Jul 2015 02:22:28 +0000
+Message-ID: <SN1PR0301MB155019048F15BB2E97330F0A9B9C0@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1436428063-893-1-git-send-email-B45475@freescale.com>
+ <559EECCF.6060702@redhat.com>
+In-Reply-To: <559EECCF.6060702@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,212 +30,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Many architectures use a variant of "unexpected IRQ trap at vector %x" to
-log unexpected IRQs.  This is confusing because (a) it prints the Linux IRQ
-number, but "vector" more often refers to a CPU vector number, and (b) it
-prints the IRQ number in hex with no base indication, while Linux IRQ
-numbers are usually printed in decimal.
 
-Print the same text ("unexpected IRQ %d") across all architectures.
 
-No functional change other than the output text.
+> -----Original Message-----
+> From: Laura Abbott [mailto:labbott@redhat.com]
+> Sent: Friday, July 10, 2015 5:51 AM
+> To: Zhao Qiang-B45475; lauraa@codeaurora.org
+> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> akpm@linux-foundation.org; olof@lixom.net; catalin.marinas@arm.com; Wood
+> Scott-B07421; Xie Xiaobo-R63061
+> Subject: Re: [RFC] genalloc:add an gen_pool_alloc_align func to genalloc
+>=20
+> On 07/09/2015 12:47 AM, Zhao Qiang wrote:
+> > Bytes alignment is required to manage some special ram, so add
+> > gen_pool_alloc_align func to genalloc.
+> > rename gen_pool_alloc to gen_pool_alloc_align with a align parameter,
+> > then provide gen_pool_alloc to call gen_pool_alloc_align with align =3D
+> > 1 Byte.
+> >
+> > Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> > ---
+> > FSL's IP block QE require this function to manage muram.
+> > QE supported only PowerPC, and its code was put under arch/powerpc
+> > directory, using arch/powerpc/lib/rheap.c to manage muram.
+> > Now it support both arm(ls1021,ls1043,ls2085 and such on) and powerpc,
+> > the code need to move from arch/powerpc to public direcory, Scott wood
+> > hopes to use genalloc to manage the muram, after discussing with
+> > scott, we decide to add gen_pool_alloc_align to meet the requirement
+> > for bytes-alignment.
+>=20
+> gen_pool supports custom allocation algorithms. I thought this was
+> discussed previously and the conclusion was that if you wanted alignment
+> you should use custom allocation algorithms. I'm failing at finding any
+> thread discussing it though.
+>=20
+> Perhaps another option would be to add another runtime argument to
+> gen_pool where you could pass the alignment to your custom allocation
+> function. This way alignment isn't inherently coded into any of the
+> algorithms.
+>=20
+> >
+> >   include/linux/genalloc.h | 10 +++++++---
+> >   lib/genalloc.c           | 38 ++++++++++++++++++++++++++++++--------
+> >   2 files changed, 37 insertions(+), 11 deletions(-)
+> >
+> > diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h index
+> > 1ccaab4..65fdf14 100644
+> > --- a/include/linux/genalloc.h
+> > +++ b/include/linux/genalloc.h
+> > @@ -96,6 +96,8 @@ static inline int gen_pool_add(struct gen_pool *pool,
+> unsigned long addr,
+> >   }
+> >   extern void gen_pool_destroy(struct gen_pool *);
+> >   extern unsigned long gen_pool_alloc(struct gen_pool *, size_t);
+> > +extern unsigned long gen_pool_alloc_align(struct gen_pool *, size_t,
+> > +		unsigned long align);
+> >   extern void *gen_pool_dma_alloc(struct gen_pool *pool, size_t size,
+> >   		dma_addr_t *dma);
+> >   extern void gen_pool_free(struct gen_pool *, unsigned long, size_t);
+> > @@ -108,14 +110,16 @@ extern void gen_pool_set_algo(struct gen_pool
+> *pool, genpool_algo_t algo,
+> >   		void *data);
+> >
+> >   extern unsigned long gen_pool_first_fit(unsigned long *map, unsigned
+> long size,
+> > -		unsigned long start, unsigned int nr, void *data);
+> > +		unsigned long start, unsigned int nr, void *data,
+> > +		unsigned long align_mask);
+> >
+> >   extern unsigned long gen_pool_first_fit_order_align(unsigned long
+> *map,
+> >   		unsigned long size, unsigned long start, unsigned int nr,
+> > -		void *data);
+> > +		void *data, unsigned long align_mask);
+> >
+> >   extern unsigned long gen_pool_best_fit(unsigned long *map, unsigned
+> long size,
+> > -		unsigned long start, unsigned int nr, void *data);
+> > +		unsigned long start, unsigned int nr, void *data,
+> > +		unsigned long align_mask);
+> >
+> >   extern struct gen_pool *devm_gen_pool_create(struct device *dev,
+> >   		int min_alloc_order, int nid);
+> > diff --git a/lib/genalloc.c b/lib/genalloc.c index d214866..dd63448
+> > 100644
+> > --- a/lib/genalloc.c
+> > +++ b/lib/genalloc.c
+> > @@ -258,19 +258,22 @@ void gen_pool_destroy(struct gen_pool *pool)
+> >   EXPORT_SYMBOL(gen_pool_destroy);
+> >
+> >   /**
+> > - * gen_pool_alloc - allocate special memory from the pool
+> > + * gen_pool_alloc_align - allocate special memory from the pool
+> >    * @pool: pool to allocate from
+> >    * @size: number of bytes to allocate from the pool
+> > + * @align: number of bytes to align
+> >    *
+> >    * Allocate the requested number of bytes from the specified pool.
+> >    * Uses the pool allocation function (with first-fit algorithm by
+> default).
+> >    * Can not be used in NMI handler on architectures without
+> >    * NMI-safe cmpxchg implementation.
+> >    */
+> > -unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
+> > +unsigned long gen_pool_alloc_align(struct gen_pool *pool, size_t size,
+> > +		unsigned long align)
+> >   {
+> >   	struct gen_pool_chunk *chunk;
+> >   	unsigned long addr =3D 0;
+> > +	unsigned long align_mask;
+> >   	int order =3D pool->min_alloc_order;
+> >   	int nbits, start_bit =3D 0, end_bit, remain;
+> >
+> > @@ -281,6 +284,7 @@ unsigned long gen_pool_alloc(struct gen_pool *pool,
+> size_t size)
+> >   	if (size =3D=3D 0)
+> >   		return 0;
+> >
+> > +	align_mask =3D ((align + (1UL << order) - 1) >> order) - 1;
+> >   	nbits =3D (size + (1UL << order) - 1) >> order;
+> >   	rcu_read_lock();
+> >   	list_for_each_entry_rcu(chunk, &pool->chunks, next_chunk) { @@
+> > -290,7 +294,7 @@ unsigned long gen_pool_alloc(struct gen_pool *pool,
+> size_t size)
+> >   		end_bit =3D chunk_size(chunk) >> order;
+> >   retry:
+> >   		start_bit =3D pool->algo(chunk->bits, end_bit, start_bit, nbits,
+> > -				pool->data);
+> > +				pool->data, align_mask);
+> >   		if (start_bit >=3D end_bit)
+> >   			continue;
+> >   		remain =3D bitmap_set_ll(chunk->bits, start_bit, nbits); @@ -
+> 309,6
+> > +313,22 @@ retry:
+> >   	rcu_read_unlock();
+> >   	return addr;
+> >   }
+> > +EXPORT_SYMBOL(gen_pool_alloc_align);
+> > +
+> > +/**
+> > + * gen_pool_alloc - allocate special memory from the pool
+> > + * @pool: pool to allocate from
+> > + * @size: number of bytes to allocate from the pool
+> > + *
+> > + * Allocate the requested number of bytes from the specified pool.
+> > + * Uses the pool allocation function (with first-fit algorithm by
+> default).
+> > + * Can not be used in NMI handler on architectures without
+> > + * NMI-safe cmpxchg implementation.
+> > + */
+> > +unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size) {
+> > +	return gen_pool_alloc_align(pool, size, 1);
+>=20
+> Passing 1 here would change the behavior of the existing algorithms which
+> were passing 0 for the align mask
 
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
----
- arch/alpha/kernel/irq.c            |    2 +-
- arch/blackfin/kernel/irqchip.c     |    2 +-
- arch/c6x/kernel/irq.c              |    2 +-
- arch/ia64/kernel/irq.c             |    2 +-
- arch/m68k/include/asm/hardirq.h    |    2 +-
- arch/mips/kernel/irq.c             |    2 +-
- arch/mn10300/kernel/irq.c          |    2 +-
- arch/parisc/include/asm/hardirq.h  |    2 +-
- arch/powerpc/include/asm/hardirq.h |    2 +-
- arch/s390/include/asm/hardirq.h    |    2 +-
- arch/sh/kernel/irq.c               |    2 +-
- arch/tile/kernel/irq.c             |    2 +-
- arch/x86/kernel/irq.c              |    2 +-
- include/asm-generic/hardirq.h      |    2 +-
- 14 files changed, 14 insertions(+), 14 deletions(-)
+When passing 1 here(align_mask =3D ((align + (1UL << order) - 1) >> order) =
+- 1), align_mask will be 0.
+It will not change the behavior of the existing algorithms.
 
-diff --git a/arch/alpha/kernel/irq.c b/arch/alpha/kernel/irq.c
-index 51f2c86..9acdc14 100644
---- a/arch/alpha/kernel/irq.c
-+++ b/arch/alpha/kernel/irq.c
-@@ -34,7 +34,7 @@ DEFINE_PER_CPU(unsigned long, irq_pmi_count);
- void ack_bad_irq(unsigned int irq)
- {
- 	irq_err_count++;
--	printk(KERN_CRIT "Unexpected IRQ trap at vector %u\n", irq);
-+	printk(KERN_CRIT "Unexpected IRQ %d\n", irq);
- }
- 
- #ifdef CONFIG_SMP 
-diff --git a/arch/blackfin/kernel/irqchip.c b/arch/blackfin/kernel/irqchip.c
-index 0ba2576..608741e 100644
---- a/arch/blackfin/kernel/irqchip.c
-+++ b/arch/blackfin/kernel/irqchip.c
-@@ -20,7 +20,7 @@ static atomic_t irq_err_count;
- void ack_bad_irq(unsigned int irq)
- {
- 	atomic_inc(&irq_err_count);
--	printk(KERN_ERR "IRQ: spurious interrupt %d\n", irq);
-+	printk(KERN_ERR "unexpected IRQ %d\n", irq);
- }
- 
- static struct irq_desc bad_irq_desc = {
-diff --git a/arch/c6x/kernel/irq.c b/arch/c6x/kernel/irq.c
-index 247e0eb..cd7fb55 100644
---- a/arch/c6x/kernel/irq.c
-+++ b/arch/c6x/kernel/irq.c
-@@ -120,7 +120,7 @@ void __init init_IRQ(void)
- 
- void ack_bad_irq(int irq)
- {
--	printk(KERN_ERR "IRQ: spurious interrupt %d\n", irq);
-+	printk(KERN_ERR "unexpected IRQ %d\n", irq);
- 	irq_err_count++;
- }
- 
-diff --git a/arch/ia64/kernel/irq.c b/arch/ia64/kernel/irq.c
-index 812a1e6..b198c69 100644
---- a/arch/ia64/kernel/irq.c
-+++ b/arch/ia64/kernel/irq.c
-@@ -31,7 +31,7 @@
-  */
- void ack_bad_irq(unsigned int irq)
- {
--	printk(KERN_ERR "Unexpected irq vector 0x%x on CPU %u!\n", irq, smp_processor_id());
-+	printk(KERN_ERR "unexpected IRQ %d on CPU %u!\n", irq, smp_processor_id());
- }
- 
- #ifdef CONFIG_IA64_GENERIC
-diff --git a/arch/m68k/include/asm/hardirq.h b/arch/m68k/include/asm/hardirq.h
-index 6c61852..5f0fe98 100644
---- a/arch/m68k/include/asm/hardirq.h
-+++ b/arch/m68k/include/asm/hardirq.h
-@@ -9,7 +9,7 @@
- 
- static inline void ack_bad_irq(unsigned int irq)
- {
--	pr_crit("unexpected IRQ trap at vector %02x\n", irq);
-+	pr_crit("unexpected IRQ %d\n", irq);
- }
- 
- /* entry.S is sensitive to the offsets of these fields */
-diff --git a/arch/mips/kernel/irq.c b/arch/mips/kernel/irq.c
-index 8eb5af8..f6b9ce9 100644
---- a/arch/mips/kernel/irq.c
-+++ b/arch/mips/kernel/irq.c
-@@ -31,7 +31,7 @@
-  */
- void ack_bad_irq(unsigned int irq)
- {
--	printk("unexpected IRQ # %d\n", irq);
-+	printk("unexpected IRQ %d\n", irq);
- }
- 
- atomic_t irq_err_count;
-diff --git a/arch/mn10300/kernel/irq.c b/arch/mn10300/kernel/irq.c
-index 480de70..c7b780d 100644
---- a/arch/mn10300/kernel/irq.c
-+++ b/arch/mn10300/kernel/irq.c
-@@ -197,7 +197,7 @@ static struct irq_chip mn10300_cpu_pic_edge = {
-  */
- void ack_bad_irq(int irq)
- {
--	printk(KERN_WARNING "unexpected IRQ trap at vector %02x\n", irq);
-+	printk(KERN_WARNING "unexpected IRQ %d\n", irq);
- }
- 
- /*
-diff --git a/arch/parisc/include/asm/hardirq.h b/arch/parisc/include/asm/hardirq.h
-index 9b3bd03..c093c4f 100644
---- a/arch/parisc/include/asm/hardirq.h
-+++ b/arch/parisc/include/asm/hardirq.h
-@@ -41,6 +41,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- 		this_cpu_write(irq_stat.__softirq_pending, (x))
- #define or_softirq_pending(x)	this_cpu_or(irq_stat.__softirq_pending, (x))
- 
--#define ack_bad_irq(irq) WARN(1, "unexpected IRQ trap at vector %02x\n", irq)
-+#define ack_bad_irq(irq) WARN(1, "unexpected IRQ %d\n", irq)
- 
- #endif /* _PARISC_HARDIRQ_H */
-diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
-index 8add8b8..aa8ebbb 100644
---- a/arch/powerpc/include/asm/hardirq.h
-+++ b/arch/powerpc/include/asm/hardirq.h
-@@ -30,7 +30,7 @@ DECLARE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- 
- static inline void ack_bad_irq(unsigned int irq)
- {
--	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
-+	printk(KERN_CRIT "unexpected IRQ %d\n", irq);
- }
- 
- extern u64 arch_irq_stat_cpu(unsigned int cpu);
-diff --git a/arch/s390/include/asm/hardirq.h b/arch/s390/include/asm/hardirq.h
-index b7eabaa..08eeacd 100644
---- a/arch/s390/include/asm/hardirq.h
-+++ b/arch/s390/include/asm/hardirq.h
-@@ -20,7 +20,7 @@
- 
- static inline void ack_bad_irq(unsigned int irq)
- {
--	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
-+	printk(KERN_CRIT "unexpected IRQ %d\n", irq);
- }
- 
- #endif /* __ASM_HARDIRQ_H */
-diff --git a/arch/sh/kernel/irq.c b/arch/sh/kernel/irq.c
-index eb10ff8..093e434 100644
---- a/arch/sh/kernel/irq.c
-+++ b/arch/sh/kernel/irq.c
-@@ -30,7 +30,7 @@ atomic_t irq_err_count;
- void ack_bad_irq(unsigned int irq)
- {
- 	atomic_inc(&irq_err_count);
--	printk("unexpected IRQ trap at vector %02x\n", irq);
-+	printk("unexpected IRQ %d\n", irq);
- }
- 
- #if defined(CONFIG_PROC_FS)
-diff --git a/arch/tile/kernel/irq.c b/arch/tile/kernel/irq.c
-index 22044fc..c8e4f88 100644
---- a/arch/tile/kernel/irq.c
-+++ b/arch/tile/kernel/irq.c
-@@ -250,7 +250,7 @@ EXPORT_SYMBOL(tile_irq_activate);
- 
- void ack_bad_irq(unsigned int irq)
- {
--	pr_err("unexpected IRQ trap at vector %02x\n", irq);
-+	pr_err("unexpected IRQ %d\n", irq);
- }
- 
- /*
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 3c6b069..a0d46d2 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -40,7 +40,7 @@ void (*x86_platform_ipi_callback)(void) = NULL;
- void ack_bad_irq(unsigned int irq)
- {
- 	if (printk_ratelimit())
--		pr_err("unexpected IRQ trap at vector %02x\n", irq);
-+		pr_err("unexpected IRQ %d\n", irq);
- 
- 	/*
- 	 * Currently unexpected vectors happen only on SMP and APIC.
-diff --git a/include/asm-generic/hardirq.h b/include/asm-generic/hardirq.h
-index 04d0a97..516ff5f 100644
---- a/include/asm-generic/hardirq.h
-+++ b/include/asm-generic/hardirq.h
-@@ -14,7 +14,7 @@ typedef struct {
- #ifndef ack_bad_irq
- static inline void ack_bad_irq(unsigned int irq)
- {
--	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
-+	printk(KERN_CRIT "unexpected IRQ %d\n", irq);
- }
- #endif
- 
+>=20
+> > +}
+> >   EXPORT_SYMBOL(gen_pool_alloc);
+> >
+> >   /**
+> > @@ -502,9 +522,10 @@ EXPORT_SYMBOL(gen_pool_set_algo);
+> >    * @data: additional data - unused
+> >    */
+> >   unsigned long gen_pool_first_fit(unsigned long *map, unsigned long
+> size,
+> > -		unsigned long start, unsigned int nr, void *data)
+> > +		unsigned long start, unsigned int nr, void *data,
+> > +		unsigned long align_mask)
+> >   {
+> > -	return bitmap_find_next_zero_area(map, size, start, nr, 0);
+> > +	return bitmap_find_next_zero_area(map, size, start, nr, align_mask);
+> >   }
+> >   EXPORT_SYMBOL(gen_pool_first_fit);
+> >
+> > @@ -520,7 +541,7 @@ EXPORT_SYMBOL(gen_pool_first_fit);
+> >    */
+> >   unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+> >   		unsigned long size, unsigned long start,
+> > -		unsigned int nr, void *data)
+> > +		unsigned int nr, void *data, unsigned long align_mask)
+> >   {
+> >   	unsigned long align_mask =3D roundup_pow_of_two(nr) - 1;
+> >
+> > @@ -541,13 +562,14 @@ EXPORT_SYMBOL(gen_pool_first_fit_order_align);
+> >    * which we can allocate the memory.
+> >    */
+> >   unsigned long gen_pool_best_fit(unsigned long *map, unsigned long
+> size,
+> > -		unsigned long start, unsigned int nr, void *data)
+> > +				unsigned long start, unsigned int nr,
+> > +				void *data, unsigned long align_mask)
+> >   {
+> >   	unsigned long start_bit =3D size;
+> >   	unsigned long len =3D size + 1;
+> >   	unsigned long index;
+> >
+> > -	index =3D bitmap_find_next_zero_area(map, size, start, nr, 0);
+> > +	index =3D bitmap_find_next_zero_area(map, size, start, nr,
+> > +align_mask);
+> >
+> >   	while (index < size) {
+> >   		int next_bit =3D find_next_bit(map, size, index + nr);
+> >
+>=20
+> Thanks,
+> Laura
