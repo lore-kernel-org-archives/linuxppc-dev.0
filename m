@@ -2,39 +2,38 @@ Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 924731A19A4
+ by lists.ozlabs.org (Postfix) with ESMTPS id 275D91A19A4
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 00:11:23 +1000 (AEST)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6F0EC1402D7
+ by ozlabs.org (Postfix) with ESMTPS id AF3481402D7
  for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:23 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Tue, 14 Jul 2015 00:11:22 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 26ED32BB0040
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:19 +1000 (EST)
+ Tue, 14 Jul 2015 00:11:23 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 60D632CE8040
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:21 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6DEBC6V4718904
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:20 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6DEBDiW61472942
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:11:21 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6DEAkMx009732
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:10:46 +1000
+ t6DEAmH6009777
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 00:10:49 +1000
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 To: rjw@rjwysocki.net
 Cc: viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org,
  linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: [PATCH v4 2/6] powerpc/powernv: Add definition of OPAL_MSG_OCC
- message type
-Date: Mon, 13 Jul 2015 19:39:58 +0530
-Message-Id: <1436796602-10228-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v4 3/6] cpufreq: powernv: Register for OCC related
+ opal_message notification
+Date: Mon, 13 Jul 2015 19:39:59 +0530
+Message-Id: <1436796602-10228-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 In-Reply-To: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,73 +45,167 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add OPAL_MSG_OCC message definition to opal_message_type to receive
-OCC events like reset, load and throttled. Host performance can be
-affected when OCC is reset or OCC throttles the max Pstate.
-We can register to opal_message_notifier to receive OPAL_MSG_OCC type
-of message and report it to the userspace so as to keep the user
-informed about the reason for a performance drop in workloads.
+OCC is an On-Chip-Controller which takes care of power and thermal
+safety of the chip. During runtime due to power failure or
+overtemperature the OCC may throttle the frequencies of the CPUs to
+remain within the power budget.
 
-The reset and load OCC events are notified to kernel when FSP sends
-OCC_RESET and OCC_LOAD commands.  Both reset and load messages are
-sent to kernel on successful completion of reset and load operation
-respectively.
+We want the cpufreq driver to be aware of such situations to be able
+to report the reason to the user. We register to opal_message_notifier
+to receive OCC messages from opal.
 
-The throttle OCC event indicates that the Pmax of the chip is reduced.
-The chip_id and throttle reason for reducing Pmax is also queued along
-with the message.
+powernv_cpufreq_throttle_check() reports any frequency throttling and
+this patch will report the reason or event that caused throttling. We
+can be throttled if OCC is reset or OCC limits Pmax due to power or
+thermal reasons. We are also notified of unthrottling after an OCC
+reset or if OCC restores Pmax on the chip.
 
-CC: Stewart Smith <stewart@linux.vnet.ibm.com>
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 ---
 Changes from v3:
-- '0d7cd8550d3 powerpc/powernv: Add opal-prd channel' this patch adds
-  the definition of OPAL_MSG_PRD, so remove it and update the
-  changelog.
-- Move the definitions of OCC_RESET, OCC_LOAD and OCC_THROTTLE from 
-  drivers/cpufreq/powernv-cpufreq.c to arch/powerpc/include/asm/opal-api.h
-- Define OCC_MAX_THROTTLE_STATUS 
-- Add a wrapper structure 'opal_occ_msg' to copy 'struct opal_msg.params[0..2]'
-  This structure will define the parameters received from firmware to
-  maintain compatibility for any future additions.
+- Move the macro definitions of OCC_RESET, OCC_LOAD, OCC_THROTTLE to
+  arch/powerpc/include/asm/opal-api.h
+- Use 'struct opal_occ_msg' to copy the 'opal_msg->params[]' and refer
+  the members of this structure in the code; Replace 'chip_id',
+  'token' and 'reason' with omsg.chip, omsg.type, omsg.throttle_status
+- Use OCC_MAX_THROTTLE_STATUS instead of the magic number.
+- Add opal_message_notifier_unregister()
 
-No change from v2
+Changes from v2:
+- Patch split in to multiple patches.
+- This patch contains only the opal_message notification handler
 
-Change from v1:
-- Update the commit changelog
+Changes from v1:
+- Add macros to define OCC_RESET, OCC_LOAD and OCC_THROTTLE
+- Define a structure to store chip id, chip mask which has bits set
+  for cpus present in the chip, throttled state and a work_struct.
+- Modify powernv_cpufreq_throttle_check() to be called via smp_call()
+- On Pmax throttling/unthrottling update 'chip.throttled' and not the
+  global 'throttled' as Pmax capping is local to the chip.
+- Remove the condition which checks if local pstate is less than Pmin
+  while checking for Psafe frequency. When OCC becomes active after
+  reset we update 'thottled' to false and when the cpufreq governor
+  initiates a pstate change, the local pstate will be in Psafe and we
+  will be reporting a false positive when we are not throttled.
+- Schedule a kworker on receiving throttling/unthrottling OCC message
+  for that chip and schedule on all chips after receiving active.
+- After an OCC reset all the cpus will be in Psafe frequency. So call
+  target() and restore the frequency to policy->cur after OCC_ACTIVE
+  and Pmax unthrottling
+- Taken care of Viresh and Preeti's comments.
 
- arch/powerpc/include/asm/opal-api.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/cpufreq/powernv-cpufreq.c | 71 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 70 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index e9e4c52..64dc9f5 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -361,6 +361,7 @@ enum opal_msg_type {
- 	OPAL_MSG_HMI_EVT,
- 	OPAL_MSG_DPO,
- 	OPAL_MSG_PRD,
-+	OPAL_MSG_OCC,
- 	OPAL_MSG_TYPE_MAX,
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index d0c18c9..1f59958 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -33,6 +33,7 @@
+ #include <asm/firmware.h>
+ #include <asm/reg.h>
+ #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
++#include <asm/opal.h>
+ 
+ #define POWERNV_MAX_PSTATES	256
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+@@ -41,7 +42,7 @@
+ #define PMSR_LP(x)		((x >> 48) & 0xFF)
+ 
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+-static bool rebooting, throttled;
++static bool rebooting, throttled, occ_reset;
+ 
+ static struct chip {
+ 	unsigned int id;
+@@ -414,6 +415,71 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+ 	.notifier_call = powernv_cpufreq_reboot_notifier,
  };
  
-@@ -700,6 +701,17 @@ struct opal_prd_msg_header {
- 
- struct opal_prd_msg;
- 
-+#define OCC_RESET                       0
-+#define OCC_LOAD                        1
-+#define OCC_THROTTLE                    2
-+#define OCC_MAX_THROTTLE_STATUS         5
++static char throttle_reason[][30] = {
++					"No throttling",
++					"Power Cap",
++					"Processor Over Temperature",
++					"Power Supply Failure",
++					"Over Current",
++					"OCC Reset"
++				     };
 +
-+struct opal_occ_msg {
-+	__be64 type;
-+	__be64 chip;
-+	__be64 throttle_status;
++static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
++				   unsigned long msg_type, void *_msg)
++{
++	struct opal_msg *msg = _msg;
++	struct opal_occ_msg omsg;
++
++	if (msg_type != OPAL_MSG_OCC)
++		return 0;
++
++	memcpy(&omsg, msg->params, sizeof(omsg));
++
++	switch (omsg.type) {
++	case OCC_RESET:
++		occ_reset = true;
++		/*
++		 * powernv_cpufreq_throttle_check() is called in
++		 * target() callback which can detect the throttle state
++		 * for governors like ondemand.
++		 * But static governors will not call target() often thus
++		 * report throttling here.
++		 */
++		if (!throttled) {
++			throttled = true;
++			pr_crit("CPU Frequency is throttled\n");
++		}
++		pr_info("OCC: Reset\n");
++		break;
++	case OCC_LOAD:
++		pr_info("OCC: Loaded\n");
++		break;
++	case OCC_THROTTLE:
++		if (occ_reset) {
++			occ_reset = false;
++			throttled = false;
++			pr_info("OCC: Active\n");
++			return 0;
++		}
++
++		if (omsg.throttle_status &&
++		    omsg.throttle_status <= OCC_MAX_THROTTLE_STATUS)
++			pr_info("OCC: Chip %u Pmax reduced due to %s\n",
++				(unsigned int)omsg.chip,
++				throttle_reason[omsg.throttle_status]);
++		else if (!omsg.throttle_status)
++			pr_info("OCC: Chip %u %s\n", (unsigned int)omsg.chip,
++				throttle_reason[omsg.throttle_status]);
++	}
++	return 0;
++}
++
++static struct notifier_block powernv_cpufreq_opal_nb = {
++	.notifier_call	= powernv_cpufreq_occ_msg,
++	.next		= NULL,
++	.priority	= 0,
 +};
 +
- /*
-  * SG entries
-  *
+ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ {
+ 	struct powernv_smp_call_data freq_data;
+@@ -481,6 +547,7 @@ static int __init powernv_cpufreq_init(void)
+ 		return rc;
+ 
+ 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
++	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
+ 	return cpufreq_register_driver(&powernv_cpufreq_driver);
+ }
+ module_init(powernv_cpufreq_init);
+@@ -488,6 +555,8 @@ module_init(powernv_cpufreq_init);
+ static void __exit powernv_cpufreq_exit(void)
+ {
+ 	unregister_reboot_notifier(&powernv_cpufreq_reboot_nb);
++	opal_message_notifier_unregister(OPAL_MSG_OCC,
++					 &powernv_cpufreq_opal_nb);
+ 	cpufreq_unregister_driver(&powernv_cpufreq_driver);
+ }
+ module_exit(powernv_cpufreq_exit);
 -- 
 1.9.3
