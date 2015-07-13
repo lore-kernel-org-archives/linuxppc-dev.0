@@ -3,17 +3,17 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A10191A0206
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:17 +1000 (AEST)
-Message-Id: <20150713135739.428026964@linutronix.de>
-Date: Mon, 13 Jul 2015 20:50:07 -0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 109421A0408
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:19 +1000 (AEST)
+Message-Id: <20150713135739.508126995@linutronix.de>
+Date: Mon, 13 Jul 2015 20:50:09 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Russell King <rmk+kernel@arm.linux.org.uk>,
  Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [patch 05/20] powerpc/cell: Consolidate chained IRQ handler
+Subject: [patch 06/20] powerpc/spider-pic: Consolidate chained IRQ handler
  install/remove
 References: <20150713135648.540293392@linutronix.de>
 MIME-Version: 1.0
@@ -40,21 +40,20 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/platforms/cell/interrupt.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/cell/spider-pic.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Index: tip/arch/powerpc/platforms/cell/interrupt.c
+Index: tip/arch/powerpc/platforms/cell/spider-pic.c
 ===================================================================
---- tip.orig/arch/powerpc/platforms/cell/interrupt.c
-+++ tip/arch/powerpc/platforms/cell/interrupt.c
-@@ -357,8 +357,8 @@ static int __init setup_iic(void)
- 		 * irq_data is a generic pointer that gets passed back
- 		 * to us later, so the forced cast is fine.
- 		 */
--		irq_set_handler_data(cascade, (void __force *)node_iic);
--		irq_set_chained_handler(cascade, iic_ioexc_cascade);
-+		irq_set_chained_handler_and_data(cascade, iic_ioexc_cascade,
-+						 (void __force *)node_iic);
- 		out_be64(&node_iic->iic_ir,
- 			 (1 << 12)		/* priority */ |
- 			 (node << 4)		/* dest node */ |
+--- tip.orig/arch/powerpc/platforms/cell/spider-pic.c
++++ tip/arch/powerpc/platforms/cell/spider-pic.c
+@@ -317,8 +317,7 @@ static void __init spider_init_one(struc
+ 	virq = spider_find_cascade_and_node(pic);
+ 	if (virq == NO_IRQ)
+ 		return;
+-	irq_set_handler_data(virq, pic);
+-	irq_set_chained_handler(virq, spider_irq_cascade);
++	irq_set_chained_handler_and_data(virq, spider_irq_cascade, pic);
+ 
+ 	printk(KERN_INFO "spider_pic: node %d, addr: 0x%lx %s\n",
+ 	       pic->node_id, addr, of_node->full_name);
