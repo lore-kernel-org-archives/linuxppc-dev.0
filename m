@@ -3,17 +3,17 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BCFC1A025F
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E6991A0270
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:15 +1000 (AEST)
-Message-Id: <20150713135739.247799155@linutronix.de>
-Date: Mon, 13 Jul 2015 20:50:04 -0000
+Message-Id: <20150713135739.160637975@linutronix.de>
+Date: Mon, 13 Jul 2015 20:50:03 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Russell King <rmk+kernel@arm.linux.org.uk>,
  Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [patch 03/20] powerpc/pq2ads: Consolidate chained IRQ handler
+Subject: [patch 02/20] powerpc/52xx: Consolidate chained IRQ handler
  install/remove
 References: <20150713135648.540293392@linutronix.de>
 MIME-Version: 1.0
@@ -40,20 +40,21 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: tip/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
+Index: tip/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
 ===================================================================
---- tip.orig/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-+++ tip/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-@@ -162,8 +162,7 @@ int __init pq2ads_pci_init_irq(void)
+--- tip.orig/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
++++ tip/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+@@ -258,8 +258,8 @@ mpc52xx_gpt_irq_setup(struct mpc52xx_gpt
+ 		return;
  	}
  
- 	priv->host = host;
--	irq_set_handler_data(irq, priv);
--	irq_set_chained_handler(irq, pq2ads_pci_irq_demux);
-+	irq_set_chained_handler_and_data(irq, pq2ads_pci_irq_demux, priv);
+-	irq_set_handler_data(cascade_virq, gpt);
+-	irq_set_chained_handler(cascade_virq, mpc52xx_gpt_irq_cascade);
++	irq_set_chained_handler_and_data(cascade_virq,
++					 mpc52xx_gpt_irq_cascade, gpt);
  
- 	of_node_put(np);
- 	return 0;
+ 	/* If the GPT is currently disabled, then change it to be in Input
+ 	 * Capture mode.  If the mode is non-zero, then the pin could be
