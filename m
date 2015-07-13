@@ -1,32 +1,32 @@
 Return-Path: <leosilva@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E227D1A18AD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 02:50:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2DF381A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 02:51:09 +1000 (AEST)
 Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <leosilva@linux.vnet.ibm.com>;
- Mon, 13 Jul 2015 13:50:20 -0300
+ Mon, 13 Jul 2015 13:51:05 -0300
 Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 51FD91DC0060
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 12:49:15 -0400 (EDT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 634781DC0060
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 12:50:02 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
  by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6DGobp54554844
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 13:50:38 -0300
-Received: from d24av05.br.ibm.com (localhost [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6DGoETr011566
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 12:50:15 -0400
-Date: Mon, 13 Jul 2015 13:50:14 -0300
+ t6DGpP1A5099688
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 13:51:25 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6DGp2k5010610
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 13:51:02 -0300
+Date: Mon, 13 Jul 2015 13:51:01 -0300
 From: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, Herbert Xu <herbert@gondor.apana.org.au>,
  pfsmorigo@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH 0/2] Uncomment VSX enable routine for instructions access
-Message-ID: <20150713165011.GA3356@bluepex.com>
+Subject: [PATCH 1/2] Uncomment and make enable_kernel_vsx() routine available
+Message-ID: <20150713165057.GA6594@bluepex.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,26 +38,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-enable_kernel_vsx() was commented since anything was using
-it. It changes with vmx_crypto driver that call VSX instructions
-and need kernel_vsx enabled in order to do it properly. Without
-a way to enable VSX instruction vmx_crypto fails into an exception.
+enable_kernel_vsx() function was commented since anything was using
+it. However, vmx-crypto driver uses VSX instructions which are
+only available if VSX is enable. Otherwise it rises an exception oops.
 
-These patches uncomment enable_kernel_vsx() rountine and put it
-available for use. Also adds it in vmx_crypto in order to
-enable kernel_vsx before use VSX instructions.
+This patch uncomment enable_kernel_vsx() routine and makes it available.
 
-Leonidas S. Barbosa (2):
-  Uncomment and make enable_kernel_vsx() routine available
-  Adding enable_kernel_vsx() to access VSX instructions
-
+Signed-off-by: Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
+---
  arch/powerpc/include/asm/switch_to.h | 1 +
  arch/powerpc/kernel/process.c        | 3 ---
- drivers/crypto/vmx/aes.c             | 3 +++
- drivers/crypto/vmx/aes_cbc.c         | 3 +++
- drivers/crypto/vmx/aes_ctr.c         | 3 +++
- drivers/crypto/vmx/ghash.c           | 4 ++++
- 6 files changed, 14 insertions(+), 3 deletions(-)
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 58abeda..15cca17 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -29,6 +29,7 @@ static inline void save_early_sprs(struct thread_struct *prev) {}
+ 
+ extern void enable_kernel_fp(void);
+ extern void enable_kernel_altivec(void);
++extern void enable_kernel_vsx(void);
+ extern int emulate_altivec(struct pt_regs *);
+ extern void __giveup_vsx(struct task_struct *);
+ extern void giveup_vsx(struct task_struct *);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 8005e18..64e6e9d 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -204,8 +204,6 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
+ #endif /* CONFIG_ALTIVEC */
+ 
+ #ifdef CONFIG_VSX
+-#if 0
+-/* not currently used, but some crazy RAID module might want to later */
+ void enable_kernel_vsx(void)
+ {
+ 	WARN_ON(preemptible());
+@@ -220,7 +218,6 @@ void enable_kernel_vsx(void)
+ #endif /* CONFIG_SMP */
+ }
+ EXPORT_SYMBOL(enable_kernel_vsx);
+-#endif
+ 
+ void giveup_vsx(struct task_struct *tsk)
+ {
 -- 
 2.1.0
