@@ -3,17 +3,17 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B34A1A08EC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:37 +1000 (AEST)
-Message-Id: <20150713135740.499139784@linutronix.de>
-Date: Mon, 13 Jul 2015 20:50:28 -0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 01A3C1A0ACC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 06:50:38 +1000 (AEST)
+Message-Id: <20150713135740.580798175@linutronix.de>
+Date: Mon, 13 Jul 2015 20:50:29 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Julia Lawall <Julia.Lawall@lip6.fr>,
  Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [patch 18/20] powerpc/mpc5121: Prepare cpld_pic_cascade for irq
- argument removal
+Subject: [patch 19/20] powerpc/85xx: Prepare cascade handlers for irq argument
+ removal
 References: <20150713135648.540293392@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
@@ -36,24 +36,39 @@ Julia Lawall.
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 Cc: Julia Lawall <Julia.Lawall@lip6.fr>
 Cc: Jiang Liu <jiang.liu@linux.intel.com>
-
 ---
- arch/powerpc/platforms/512x/mpc5121_ads_cpld.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c       |    3 ++-
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Index: tip/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
+Index: tip/arch/powerpc/platforms/85xx/mpc85xx_cds.c
 ===================================================================
---- tip.orig/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
-+++ tip/arch/powerpc/platforms/512x/mpc5121_ads_cpld.c
-@@ -105,8 +105,10 @@ cpld_pic_get_irq(int offset, u8 ignore,
+--- tip.orig/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ tip/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -192,9 +192,10 @@ void mpc85xx_cds_fixup_bus(struct pci_bu
  }
  
- static void
--cpld_pic_cascade(unsigned int irq, struct irq_desc *desc)
-+cpld_pic_cascade(unsigned int __irq, struct irq_desc *desc)
+ #ifdef CONFIG_PPC_I8259
+-static void mpc85xx_8259_cascade_handler(unsigned int irq,
++static void mpc85xx_8259_cascade_handler(unsigned int __irq,
+ 					 struct irq_desc *desc)
  {
-+	unsigned int irq;
-+
- 	irq = cpld_pic_get_irq(0, PCI_IGNORE, &cpld_regs->pci_status,
- 		&cpld_regs->pci_mask);
- 	if (irq != NO_IRQ) {
++	unsigned int irq = irq_desc_get_irq(desc);
+ 	unsigned int cascade_irq = i8259_irq();
+ 
+ 	if (cascade_irq != NO_IRQ)
+Index: tip/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+===================================================================
+--- tip.orig/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
++++ tip/arch/powerpc/platforms/85xx/socrates_fpga_pic.c
+@@ -91,8 +91,9 @@ static inline unsigned int socrates_fpga
+ 			(irq_hw_number_t)i);
+ }
+ 
+-void socrates_fpga_pic_cascade(unsigned int irq, struct irq_desc *desc)
++void socrates_fpga_pic_cascade(unsigned int __irq, struct irq_desc *desc)
+ {
++	unsigned int irq = irq_desc_get_irq(desc);
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	unsigned int cascade_irq;
+ 
