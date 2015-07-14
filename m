@@ -1,30 +1,24 @@
-Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DCC961A1BD4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 19:46:07 +1000 (AEST)
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRH0280D1STT470@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 14 Jul 2015 18:46:05 +0900 (KST)
-From: Robert Baldyga <r.baldyga@samsung.com>
-To: gregkh@linuxfoundation.org, balbi@ti.com
-Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
- nicolas.ferre@atmel.com, cernekee@gmail.com, leoli@freescale.com,
- daniel@zonque.org, haojian.zhuang@gmail.com, robert.jarzmik@free.fr,
- michal.simek@xilinx.com, devel@driverdev.osuosl.org,
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-geode@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- andrzej.p@samsung.com, m.szyprowski@samsung.com,
- Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v2 48/48] usb: gadget: epautoconf: cleanup dead code
-Date: Tue, 14 Jul 2015 11:39:36 +0200
-Message-id: <1436866776-5004-49-git-send-email-r.baldyga@samsung.com>
-In-reply-to: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
-References: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 344561A1DEE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 19:55:01 +1000 (AEST)
+Date: Tue, 14 Jul 2015 10:54:42 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-spi@vger.kernel.org,
+ kernel@pengutronix.de
+Message-ID: <20150714095442.GO11162@sirena.org.uk>
+References: <1436865596-9592-1-git-send-email-u.kleine-koenig@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="NRJnUXaAQEpDRr3z"
+In-Reply-To: <1436865596-9592-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] spi: mpc512x-psc: add support for Freescale MPC5125
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Function find_ep() is no longer needed here, so we can remove it.
-We also don't use anything from gadget_chips.h header any longer.
 
-Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
----
- drivers/usb/gadget/epautoconf.c | 14 --------------
- 1 file changed, 14 deletions(-)
+--NRJnUXaAQEpDRr3z
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index e9a8682..9a80925 100644
---- a/drivers/usb/gadget/epautoconf.c
-+++ b/drivers/usb/gadget/epautoconf.c
-@@ -20,20 +20,6 @@
- #include <linux/usb/ch9.h>
- #include <linux/usb/gadget.h>
- 
--#include "gadget_chips.h"
--
--static struct usb_ep *
--find_ep (struct usb_gadget *gadget, const char *name)
--{
--	struct usb_ep	*ep;
--
--	list_for_each_entry (ep, &gadget->ep_list, ep_list) {
--		if (0 == strcmp (ep->name, name))
--			return ep;
--	}
--	return NULL;
--}
--
- /**
-  * usb_ep_autoconfig_ss() - choose an endpoint matching the ep
-  * descriptor and ep companion descriptor
--- 
-1.9.1
+On Tue, Jul 14, 2015 at 11:19:56AM +0200, Uwe Kleine-K=F6nig wrote:
+
+>  static const struct of_device_id mpc512x_psc_spi_of_match[] =3D {
+> -	{ .compatible =3D "fsl,mpc5121-psc-spi", },
+> +	{ .compatible =3D "fsl,mpc5121-psc-spi", .data =3D (void *)TYPE_MPC5121=
+ },
+> +	{ .compatible =3D "fsl,mpc5125-psc-spi", .data =3D (void *)TYPE_MPC5125=
+ },
+>  	{},
+
+The code seems fine but this should update the binding document to
+include the new compatible string.
+
+--NRJnUXaAQEpDRr3z
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVpNxhAAoJECTWi3JdVIfQQ+oH/0seBIzXzOt9A+Sap/VyF8pm
+vqXxrsMwBRoqmTuT+VOu4+WvPI2bQ6ZlmecEyZf4yLWwPfBe/4g3H6mR2Vok2sGQ
+wvvBk9M9VkLlAURjG8AWQ+xERvN1JKMzzHwNmYdVuoLkE7PfMeAQTXpyVQrBjxAZ
+TTeKiiGH2jVoX37LucUTNVTltkX4kUJ5Cfuq/yRF7AgPtPE5HX3mdaA248VdXL0N
+RfvQSHKV9PYMiRXIZcKEXnAtbcfvjWVQqsnEaiHEIveGGOeMCHiGebij8SXM+YRP
+l8G8KXxCLBv7UC8EC4BfnEXPDu9EfbMZtGIhksAhOHHFKEm+KVeUlkTWZUp/sgA=
+=S+rD
+-----END PGP SIGNATURE-----
+
+--NRJnUXaAQEpDRr3z--
