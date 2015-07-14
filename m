@@ -1,18 +1,17 @@
 Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-lb0-f182.google.com (mail-lb0-f182.google.com
- [209.85.217.182])
+Received: from mail-la0-f48.google.com (mail-la0-f48.google.com
+ [209.85.215.48])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EE6321A08ED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 21:14:58 +1000 (AEST)
-Received: by lbbpo10 with SMTP id po10so4035216lbb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 04:14:56 -0700 (PDT)
-Subject: Re: [PATCH v2 45/48] usb: gadget: net2280: add net2280_match_ep()
- function
+ by lists.ozlabs.org (Postfix) with ESMTPS id D77EB1A1967
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 21:16:33 +1000 (AEST)
+Received: by lagw2 with SMTP id w2so3977497lag.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 04:16:30 -0700 (PDT)
+Subject: Re: [PATCH v2 48/48] usb: gadget: epautoconf: cleanup dead code
 To: Robert Baldyga <r.baldyga@samsung.com>, gregkh@linuxfoundation.org,
  balbi@ti.com
 References: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
- <1436866776-5004-46-git-send-email-r.baldyga@samsung.com>
+ <1436866776-5004-49-git-send-email-r.baldyga@samsung.com>
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com,
  dahlmann.thomas@arcor.de, nicolas.ferre@atmel.com, cernekee@gmail.com,
  leoli@freescale.com, daniel@zonque.org, haojian.zhuang@gmail.com,
@@ -22,10 +21,10 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com
 From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Message-ID: <55A4EF2E.9090306@cogentembedded.com>
-Date: Tue, 14 Jul 2015 14:14:54 +0300
+Message-ID: <55A4EF8B.7090806@cogentembedded.com>
+Date: Tue, 14 Jul 2015 14:16:27 +0300
 MIME-Version: 1.0
-In-Reply-To: <1436866776-5004-46-git-send-email-r.baldyga@samsung.com>
+In-Reply-To: <1436866776-5004-49-git-send-email-r.baldyga@samsung.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,40 +39,38 @@ Hello.
 
 On 7/14/2015 12:39 PM, Robert Baldyga wrote:
 
-> Add 'match_ep' callback to utilize chip-specific knowledge in endpoint matching
-> process. Functions does the same that was done by chip-specific code inside
-> of epautoconf. Now this code can be removed from there to separate generic code
-> from platform specific logic.
+> Function find_ep() is no longer needed here, so we can remove it.
+> We also don't use anything from gadget_chips.h header any longer.
 
 > Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
+> ---
+>   drivers/usb/gadget/epautoconf.c | 14 --------------
+>   1 file changed, 14 deletions(-)
 
-[...]
-> diff --git a/drivers/usb/gadget/udc/net2280.c b/drivers/usb/gadget/udc/net2280.c
-> index 0295cf7..4933321 100644
-> --- a/drivers/usb/gadget/udc/net2280.c
-> +++ b/drivers/usb/gadget/udc/net2280.c
-> @@ -1533,6 +1533,49 @@ static int net2280_pullup(struct usb_gadget *_gadget, int is_on)
->   	return 0;
->   }
+> diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
+> index e9a8682..9a80925 100644
+> --- a/drivers/usb/gadget/epautoconf.c
+> +++ b/drivers/usb/gadget/epautoconf.c
+> @@ -20,20 +20,6 @@
+>   #include <linux/usb/ch9.h>
+>   #include <linux/usb/gadget.h>
 >
-> +static struct usb_ep *net2280_find_ep(struct usb_gadget *_gadget,
-> +		const char *name)
+> -#include "gadget_chips.h"
+> -
+> -static struct usb_ep *
+> -find_ep (struct usb_gadget *gadget, const char *name)
+> -{
+> -	struct usb_ep	*ep;
+> -
+> -	list_for_each_entry (ep, &gadget->ep_list, ep_list) {
+> -		if (0 == strcmp (ep->name, name))
+> -			return ep;
+> -	}
+> -	return NULL;
+> -}
+> -
 
-    Shouldn't this be a generic function as before?
-
-> +{
-> +	struct usb_ep *ep;
-> +
-> +	list_for_each_entry(ep, &_gadget->ep_list, ep_list) {
-> +		if (0 == strcmp(ep->name, name))
-
-    Please make 0 the 2nd operand to ==.
-
-> +			return ep;
-> +	}
-> +
-> +	return NULL;
-> +}
-[...]
+    I don't think duplicating the function in each driver that needs it is 
+better than turniong this function into public.
 
 WBR, Sergei
