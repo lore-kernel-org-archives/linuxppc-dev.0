@@ -1,37 +1,17 @@
-Return-Path: <vgoyal@redhat.com>
+Return-Path: <thuth@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 648461A00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:23:41 +1000 (AEST)
-Date: Tue, 14 Jul 2015 14:23:36 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: dwalker@fifo99.com, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
- Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
- Baoquan He <bhe@redhat.com>, linux-sh@vger.kernel.org,
- linux-s390@vger.kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
- HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers if kdump
- is not available
-Message-ID: <20150714182336.GB3912@redhat.com>
-References: <20150714135919.GA18333@fifo99.com>
- <20150714150208.GD10792@redhat.com>
- <20150714153430.GA18766@fifo99.com>
- <20150714154040.GA3912@redhat.com>
- <20150714154833.GA18883@fifo99.com>
- <20150714161612.GH10792@redhat.com>
- <87a8uyoeig.fsf@x220.int.ebiederm.org>
- <20150714172953.GA19135@fifo99.com>
- <20150714175527.GI10792@redhat.com>
- <87si8qmxef.fsf@x220.int.ebiederm.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 576481A03DF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:43:24 +1000 (AEST)
+Message-ID: <55A55846.5080904@redhat.com>
+Date: Tue, 14 Jul 2015 20:43:18 +0200
+From: Thomas Huth <thuth@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87si8qmxef.fsf@x220.int.ebiederm.org>
+To: linuxppc-dev@lists.ozlabs.org
+CC: kvm-ppc@vger.kernel.org, anton@samba.org
+Subject: BUG: sleeping function called from ras_epow_interrupt context
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,62 +21,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 14, 2015 at 01:01:12PM -0500, Eric W. Biederman wrote:
-> Vivek Goyal <vgoyal@redhat.com> writes:
-> 
-> > On Tue, Jul 14, 2015 at 05:29:53PM +0000, dwalker@fifo99.com wrote:
-> >
-> > [..]
-> >> > >> > If a machine is failing, there are high chance it can't deliver you the
-> >> > >> > notification. Detecting that failure suing some kind of polling mechanism
-> >> > >> > might be more reliable. And it will make even kdump mechanism more
-> >> > >> > reliable so that it does not have to run panic notifiers after the crash.
-> >> > >> 
-> >> > >> I think what your suggesting is that my company should change how it's hardware works
-> >> > >> and that's not really an option for me. This isn't a simple thing like checking over the
-> >> > >> network if the machine is down or not, this is way more complex hardware design.
-> >> > >
-> >> > > That means you are ready to live with an unreliable design. There might be
-> >> > > cases where notifier does not get run properly and you will not do switch
-> >> > > despite the fact that OS has failed. I was just trying to nudge you in
-> >> > > a direction which could be more reliable mechanism.
-> >> > 
-> >> > Sigh I see some deep confusion going on here.
-> >> > 
-> >> > The panic notifiers are just that panic notifiers.  They have not been
-> >> > nor should they be tied to kexec.   If those notifiers force a switch
-> >> > over of between machines I fail to see why you would care if it was
-> >> > kexec or another panic situation that is forcing that switchover.
-> >> 
-> >> Hidehiro isn't fixing the failover situation on my side, he's fixing register
-> >> information collection when crash_kexec_post_notifiers is used.
-> >
-> > Sure. Given that we have created this new parameter, let us fix it so that
-> > we can capture the other cpu register state in crash dump.
-> >
-> > I am little disappointed that it was not tested well when this parameter was
-> > introuced. We should have atleast tested it to the extent to see if there
-> > is proper cpu state present for all cpus in the crash dump.
-> >
-> > At that point of time it looked like a simple modification
-> > to allow panic notifiers before crash_kexec().
-> 
-> Either that or we say no one cares enough, and it known broken so let's
-> just revert the fool thing.
 
-Masami, you introduced this option. Are you fine with the revert? Is it
-really being used and tested?
+ Hi all!
 
-> I honestly can't see how to support panic notifiers, before kexec.
-> There is no way to tell what is being done and all of the pieces
-> including smp_send_stop are known to be buggy.
+A colleague recently ran into some kernel BUG messages that happen when
+hot-plugging a virtio disk to a KVM guest on powerpc (with "virsh
+attach-disk"), and IIRC CONFIG_DEBUG_ATOMIC_SLEEP enabled. I've tried to
+re-create the problem with an up-to-date kernel (4.2.0-rc2) and the
+problem still seems to be there:
 
-we should be able to replace smp_send_stop() with what crash_kexec() is
-doing to stop the machine? If yes, then it should be fine I guess. This
-parameter description clearly says that specify it at your own risk. So
-we are not issuing a big support statement for successful kdump after
-panic notifiers. If it is something fixable, otherwise user needs
-to deal with it.
+The hotplug action triggers the ras_epow_interrupt() in
+arch/powerpc/platforms/pseries/ras.c, which again calls
+rtas_get_sensor(). That function then uses rtas_busy_delay() to wait in
+case the RTAS call did not succeed immediately. But rtas_busy_delay()
+uses msleep() for sleeping - which is forbidden during an atomic
+interrupt context!
 
-Thanks
-Vivek
+Following backtrace is printed out by the kernel:
+
+[   33.920528] BUG: sleeping function called from invalid context at
+/home/thuth/devel/linux-up/arch/powerpc/kernel/rtas.c:496
+[   33.920590] in_atomic(): 1, irqs_disabled(): 1, pid: 0, name: swapper/1
+[   33.920624] CPU: 1 PID: 0 Comm: swapper/1 Not tainted 4.2.0-rc2-thuth #1
+[   33.920657] Call Trace:
+[   33.920677] [c00000007ffe79b0] [c0000000007e43f4]
+.dump_stack+0x98/0xd4 (unreliable)
+[   33.920729] [c00000007ffe7a30] [c0000000000dcc78]
+.___might_sleep+0x128/0x170
+[   33.920769] [c00000007ffe7aa0] [c000000000029f38]
+.rtas_busy_delay+0x28/0xe0
+[   33.920809] [c00000007ffe7b20] [c00000000002adb4]
+.rtas_get_sensor+0x74/0xe0
+[   33.920850] [c00000007ffe7bc0] [c00000000007ff58]
+.ras_epow_interrupt+0x48/0x450
+[   33.920896] [c00000007ffe7c80] [c000000000119d94]
+.handle_irq_event_percpu+0xa4/0x310
+[   33.920942] [c00000007ffe7d70] [c00000000011a05c]
+.handle_irq_event+0x5c/0xa0
+[   33.920982] [c00000007ffe7e00] [c00000000011e7a8]
+.handle_fasteoi_irq+0xe8/0x270
+[   33.921028] [c00000007ffe7e90] [c0000000001190bc]
+.generic_handle_irq+0x4c/0x80
+[   33.921074] [c00000007ffe7f10] [c000000000010a48] .__do_irq+0x88/0x1f0
+[   33.921115] [c00000007ffe7f90] [c000000000022a0c] .call_do_irq+0x14/0x24
+[   33.921155] [c00000007e6f37e0] [c000000000010c3c] .do_IRQ+0x8c/0x100
+[   33.921195] [c00000007e6f3880] [c000000000002594]
+hardware_interrupt_common+0x114/0x180
+[   33.921243] --- interrupt: 501 at .plpar_hcall_norets+0x14/0x20
+[   33.921243]     LR = .check_and_cede_processor+0x24/0x40
+[   33.921300] [c00000007e6f3b70] [0000000000000000]           (null)
+(unreliable)
+[   33.921347] [c00000007e6f3be0] [c000000000628068]
+.shared_cede_loop+0x58/0x160
+[   33.921393] [c00000007e6f3c70] [c0000000006259ac]
+.cpuidle_enter_state+0xbc/0x3b0
+[   33.921439] [c00000007e6f3d30] [c0000000000fe32c] .call_cpuidle+0x4c/0xa0
+[   33.921479] [c00000007e6f3db0] [c0000000000fe700]
+.cpu_startup_entry+0x380/0x4a0
+[   33.921526] [c00000007e6f3ed0] [c000000000043110]
+.start_secondary+0x320/0x350
+[   33.921571] [c00000007e6f3f90] [c000000000008b6c]
+start_secondary_prolog+0x10/0x14
+
+I think that bug might have been introduced by commit
+587f83e8dd50d22bc0c62 ("Use rtas_get_sensor in RAS code") since the
+rtas_busy_delay() was not called before that commit, as far as I can see.
+
+Any suggestions how to fix this? Simply revert 587f83e8dd50d? Use
+mdelay() instead of msleep() in rtas_busy_delay()? Something more fancy?
+
+ Thanks,
+  Thomas
