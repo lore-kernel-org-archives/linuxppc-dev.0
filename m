@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C09D1A1A00
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 19:41:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DBBDA1A1A4A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 19:41:47 +1000 (AEST)
 Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout2.samsung.com
+ by mailout1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRH00ZWZ1KZ8RD0@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 14 Jul 2015 18:41:23 +0900 (KST)
+ with ESMTP id <0NRH02CEJ1LLSG20@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 14 Jul 2015 18:41:45 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v2 11/48] usb: gadget: bdc: add ep capabilities support
-Date: Tue, 14 Jul 2015 11:38:59 +0200
-Message-id: <1436866776-5004-12-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v2 14/48] usb: gadget: fsl_qe_udc: add ep capabilities support
+Date: Tue, 14 Jul 2015 11:39:02 +0200
+Message-id: <1436866776-5004-15-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
 References: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,41 +38,30 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/bdc/bdc_ep.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/usb/gadget/udc/fsl_qe_udc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/bdc/bdc_ep.c b/drivers/usb/gadget/udc/bdc/bdc_ep.c
-index b04980c..f9a8f57 100644
---- a/drivers/usb/gadget/udc/bdc/bdc_ep.c
-+++ b/drivers/usb/gadget/udc/bdc/bdc_ep.c
-@@ -1952,12 +1952,18 @@ static int init_ep(struct bdc *bdc, u32 epnum, u32 dir)
- 	ep->bdc = bdc;
- 	ep->dir = dir;
+diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
+index e0822f1..5fb6f8b 100644
+--- a/drivers/usb/gadget/udc/fsl_qe_udc.c
++++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
+@@ -2417,6 +2417,17 @@ static int qe_ep_config(struct qe_udc *udc, unsigned char pipe_num)
+ 	strcpy(ep->name, ep_name[pipe_num]);
+ 	ep->ep.name = ep_name[pipe_num];
  
-+	if (dir)
-+		ep->usb_ep.caps.dir_in = true;
-+	else
-+		ep->usb_ep.caps.dir_out = true;
++	if (pipe_num == 0) {
++		ep->ep.caps.type_control = true;
++	} else {
++		ep->ep.caps.type_iso = true;
++		ep->ep.caps.type_bulk = true;
++		ep->ep.caps.type_int = true;
++	}
 +
- 	/* ep->ep_num is the index inside bdc_ep */
- 	if (epnum == 1) {
- 		ep->ep_num = 1;
- 		bdc->bdc_ep_array[ep->ep_num] = ep;
- 		snprintf(ep->name, sizeof(ep->name), "ep%d", epnum - 1);
- 		usb_ep_set_maxpacket_limit(&ep->usb_ep, EP0_MAX_PKT_SIZE);
-+		ep->usb_ep.caps.type_control = true;
- 		ep->comp_desc = NULL;
- 		bdc->gadget.ep0 = &ep->usb_ep;
- 	} else {
-@@ -1971,6 +1977,9 @@ static int init_ep(struct bdc *bdc, u32 epnum, u32 dir)
- 			 dir & 1 ? "in" : "out");
- 
- 		usb_ep_set_maxpacket_limit(&ep->usb_ep, 1024);
-+		ep->usb_ep.caps.type_iso = true;
-+		ep->usb_ep.caps.type_bulk = true;
-+		ep->usb_ep.caps.type_int = true;
- 		ep->usb_ep.max_streams = 0;
- 		list_add_tail(&ep->usb_ep.ep_list, &bdc->gadget.ep_list);
- 	}
++	ep->ep.caps.dir_in = true;
++	ep->ep.caps.dir_out = true;
++
+ 	ep->ep.ops = &qe_ep_ops;
+ 	ep->stopped = 1;
+ 	usb_ep_set_maxpacket_limit(&ep->ep, (unsigned short) ~0);
 -- 
 1.9.1
