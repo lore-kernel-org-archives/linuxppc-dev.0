@@ -1,27 +1,20 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A1D91A0ACC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 12:32:18 +1000 (AEST)
-Received: from mail-pd0-x243.google.com (mail-pd0-x243.google.com
- [IPv6:2607:f8b0:400e:c02::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8BB491402D9
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 12:32:17 +1000 (AEST)
-Received: by pdsy3 with SMTP id y3so30497133pds.2
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2015 19:32:16 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
- imunsie@au.ibm.com, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH 8/8] cxl: EEH support
-Date: Tue, 14 Jul 2015 12:29:34 +1000
-Message-Id: <1436840974-3412-9-git-send-email-dja@axtens.net>
-In-Reply-To: <1436840974-3412-1-git-send-email-dja@axtens.net>
-References: <1436840974-3412-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38FA31A025F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 17:02:39 +1000 (AEST)
+Date: Tue, 14 Jul 2015 15:02:31 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "Leonidas S. Barbosa" <leosilva@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, pfsmorigo@linux.vnet.ibm.com,
+ mpe@ellerman.id.au
+Subject: Re: [PATCH 0/2] Uncomment VSX enable routine for instructions access
+Message-ID: <20150714070231.GA20792@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150713165011.GA3356@bluepex.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,283 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EEH (Enhanced Error Handling) allows a driver to recover from the
-temporary failure of an attached PCI card. Enable basic CXL support
-for EEH.
+Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com> wrote:
+> enable_kernel_vsx() was commented since anything was using
+> it. It changes with vmx_crypto driver that call VSX instructions
+> and need kernel_vsx enabled in order to do it properly. Without
+> a way to enable VSX instruction vmx_crypto fails into an exception.
+> 
+> These patches uncomment enable_kernel_vsx() rountine and put it
+> available for use. Also adds it in vmx_crypto in order to
+> enable kernel_vsx before use VSX instructions.
+> 
+> Leonidas S. Barbosa (2):
+>  Uncomment and make enable_kernel_vsx() routine available
+>  Adding enable_kernel_vsx() to access VSX instructions
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- drivers/misc/cxl/pci.c | 247 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 247 insertions(+)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 273e810020ef..918426f5cdb8 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -24,6 +24,7 @@
- #include <asm/io.h>
- 
- #include "cxl.h"
-+#include <misc/cxl.h>
- 
- 
- #define CXL_PCI_VSEC_ID	0x1280
-@@ -1184,10 +1185,256 @@ static void cxl_remove(struct pci_dev *dev)
- 	cxl_remove_adapter(adapter);
- }
- 
-+static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
-+						pci_channel_state_t state)
-+{
-+	struct pci_dev *afu_dev;
-+	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
-+	pci_ers_result_t afu_result = PCI_ERS_RESULT_NEED_RESET;
-+
-+	/* There should only be one entry, but go through the list
-+	 * anyway
-+	 */
-+	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
-+		if (!afu_dev->driver)
-+			continue;
-+
-+		if (afu_dev->driver->err_handler)
-+			afu_result = afu_dev->driver->err_handler->error_detected(afu_dev,
-+										  state);
-+		/* Disconnect trumps all, NONE trumps NEED_RESET */
-+		if (afu_result == PCI_ERS_RESULT_DISCONNECT)
-+			result = PCI_ERS_RESULT_DISCONNECT;
-+		else if ((afu_result == PCI_ERS_RESULT_NONE) &&
-+			 (result == PCI_ERS_RESULT_NEED_RESET))
-+			result = PCI_ERS_RESULT_NONE;
-+	}
-+	return result;
-+}
-+
-+static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
-+					       pci_channel_state_t state)
-+{
-+	struct cxl *adapter = pci_get_drvdata(pdev);
-+	struct cxl_afu *afu;
-+	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
-+	int i;
-+
-+	/* At this point, we could still have an interrupt pending.
-+	 * Let's try to get them out of the way before they do
-+	 * anything we don't like.
-+	 */
-+	schedule();
-+
-+	/* If we're permanently dead, give up. */
-+	if (state == pci_channel_io_perm_failure) {
-+		/* Tell the AFU drivers; but we don't care what they
-+		 * say, we're going away.
-+		 */
-+		for (i = 0; i < adapter->slices; i++) {
-+			afu = adapter->afu[i];
-+			cxl_vphb_error_detected(afu, state);
-+		}
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+
-+	/* Are we reflashing?
-+	 *
-+	 * If we reflash, we could come back as something entirely
-+	 * different, including a non-CAPI card. As such, by default
-+	 * we don't participate in the process. We'll be unbound and
-+	 * the slot re-probed. (TODO: check EEH doesn't blindly rebind
-+	 * us!)
-+	 *
-+	 * However, this isn't the entire story: for reliablity
-+	 * reasons, we usually want to reflash the FPGA on PERST in
-+	 * order to get back to a more reliable known-good state.
-+	 *
-+	 * This causes us a bit of a problem: if we reflash we can't
-+	 * trust that we'll come back the same - we could have a new
-+	 * image and been PERSTed in order to load that
-+	 * image. However, most of the time we actually *will* come
-+	 * back the same - for example a regular EEH event.
-+	 *
-+	 * Therefore, we allow the user to assert that the image is
-+	 * indeed the same and that we should continue on into EEH
-+	 * anyway.
-+	 */
-+	if (adapter->perst_loads_image && !adapter->perst_same_image) {
-+		/* TODO take the PHB out of CXL mode */
-+		dev_info(&pdev->dev, "reflashing, so opting out of EEH!\n");
-+		return PCI_ERS_RESULT_NONE;
-+	}
-+
-+	/*
-+	 * At this point, we want to try to recover.  We'll always
-+	 * need a complete slot reset: we don't trust any other reset.
-+	 *
-+	 * Now, we go through each AFU:
-+	 *  - We send the driver, if bound, an error_detected callback.
-+	 *    We expect it to clean up, but it can also tell us to give
-+	 *    up and permanently detach the card. To simplify things, if
-+	 *    any bound AFU driver doesn't support EEH, we give up on EEH.
-+	 *
-+	 *  - We detach all contexts associated with the AFU. This
-+	 *    does not free them, but puts them into a CLOSED state
-+	 *    which causes any the associated files to return useful
-+	 *    errors to userland. It also unmaps, but does not free,
-+	 *    any IRQs.
-+	 *
-+	 *  - We clean up our side: releasing and unmapping resources we hold
-+	 *    so we can wire them up again when the hardware comes back up.
-+	 *
-+	 * Driver authors should note:
-+	 *
-+	 *  - Any contexts you create in your kernel driver (except
-+	 *    those associated with anonymous file descriptors) are
-+	 *    your responsibility to free and recreate. Likewise with
-+	 *    any attached resources.
-+	 *
-+	 *  - We will take responsibility for re-initialising the
-+	 *    device context (the one set up for you in
-+	 *    cxl_pci_enable_device_hook and accessed through
-+	 *    cxl_get_context). If you've attached IRQs or other
-+	 *    resources to it, they remains yours to free.
-+	 *
-+	 * All calls you make into cxl that normally touch the
-+	 * hardware will not touch the hardware during recovery. So
-+	 * you can call the same functions to release resources as you
-+	 * normally would.
-+	 *
-+	 * Two examples:
-+	 *
-+	 * 1) If you normally free all your resources at the end of
-+	 *    each request, or if you use anonymous FDs, your
-+	 *    error_detected callback can simply set a flag to tell
-+	 *    your driver not to start any new calls. You can then
-+	 *    clear the flag in the resume callback.
-+	 *
-+	 * 2) If you normally allocate your resources on startup:
-+	 *     * Set a flag in error_detected as above.
-+	 *     * Let CXL detach your contexts.
-+	 *     * In slot_reset, free the old resources and allocate new ones.
-+	 *     * In resume, clear the flag to allow things to start.
-+	 */
-+	for (i = 0; i < adapter->slices; i++) {
-+		afu = adapter->afu[i];
-+
-+		result = cxl_vphb_error_detected(afu, state);
-+
-+		/* Only continue if everyone agrees on NEED_RESET */
-+		if (result != PCI_ERS_RESULT_NEED_RESET)
-+			return result;
-+
-+		cxl_context_detach_all(afu);
-+		cxl_afu_deactivate_mode(afu);
-+		cxl_deconfigure_afu(afu);
-+	}
-+	cxl_deconfigure_adapter(adapter);
-+
-+	return result;
-+}
-+
-+static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
-+{
-+	struct cxl *adapter = pci_get_drvdata(pdev);
-+	struct cxl_afu *afu;
-+	struct cxl_context *ctx;
-+	struct pci_dev *afu_dev;
-+	pci_ers_result_t afu_result = PCI_ERS_RESULT_RECOVERED;
-+	pci_ers_result_t result = PCI_ERS_RESULT_RECOVERED;
-+	int i;
-+
-+	if (cxl_configure_adapter(adapter, pdev))
-+		goto err;
-+
-+	for (i = 0; i < adapter->slices; i++) {
-+		afu = adapter->afu[i];
-+
-+		if (cxl_configure_afu(afu, adapter, pdev))
-+			goto err;
-+
-+		if (cxl_afu_select_best_mode(afu))
-+			goto err;
-+
-+		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
-+			/* Reset the device context.
-+			 * TODO: make this less disruptive
-+			 */
-+			ctx = cxl_get_context(afu_dev);
-+
-+			if (ctx && cxl_release_context(ctx))
-+				goto err;
-+
-+			ctx = cxl_dev_context_init(afu_dev);
-+			if (!ctx)
-+				goto err;
-+
-+			afu_dev->dev.archdata.cxl_ctx = ctx;
-+
-+			if (cxl_afu_check_and_enable(afu))
-+				goto err;
-+
-+			/* If there's a driver attached, allow it to
-+			 * chime in on recovery. Drivers should check
-+			 * if everything has come back OK.
-+			 */
-+			if (!afu_dev->driver)
-+				continue;
-+
-+			if (afu_dev->driver->err_handler &&
-+			    afu_dev->driver->err_handler->slot_reset)
-+				afu_result = afu_dev->driver->err_handler->slot_reset(afu_dev);
-+
-+			if (afu_result == PCI_ERS_RESULT_DISCONNECT)
-+				result = PCI_ERS_RESULT_DISCONNECT;
-+		}
-+	}
-+	return result;
-+
-+err:
-+	/* All the bits that happen in both error_detected and cxl_remove
-+	 * should be idempotent, so we don't need to worry about leaving a mix
-+	 * of unconfigured and reconfigured resources.
-+	 */
-+	dev_err(&pdev->dev, "EEH recovery failed. Asking to be disconnected.\n");
-+	return PCI_ERS_RESULT_DISCONNECT;
-+}
-+
-+static void cxl_pci_resume(struct pci_dev *pdev)
-+{
-+	struct cxl *adapter = pci_get_drvdata(pdev);
-+	struct cxl_afu *afu;
-+	struct pci_dev *afu_dev;
-+	int i;
-+
-+	/* Everything is back now. Drivers should restart work now.
-+	 * This is not the place to be checking if everything came back up
-+	 * properly, because there's no return value: do that in slot_reset.
-+	 */
-+	for (i = 0; i < adapter->slices; i++) {
-+		afu = adapter->afu[i];
-+
-+		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
-+			if (afu_dev->driver && afu_dev->driver->err_handler &&
-+			    afu_dev->driver->err_handler->resume)
-+				afu_dev->driver->err_handler->resume(afu_dev);
-+		}
-+	}
-+}
-+
-+static const struct pci_error_handlers cxl_err_handler = {
-+	.error_detected = cxl_pci_error_detected,
-+	.slot_reset = cxl_pci_slot_reset,
-+	.resume = cxl_pci_resume,
-+};
-+
-+
- struct pci_driver cxl_pci_driver = {
- 	.name = "cxl-pci",
- 	.id_table = cxl_pci_tbl,
- 	.probe = cxl_probe,
- 	.remove = cxl_remove,
- 	.shutdown = cxl_remove,
-+	.err_handler = &cxl_err_handler,
- };
+All applied.
 -- 
-2.1.4
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
