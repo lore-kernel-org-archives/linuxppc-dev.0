@@ -2,13 +2,13 @@ Return-Path: <r.baldyga@samsung.com>
 Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F0B81A091D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 19:40:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 259E71A196A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 19:40:36 +1000 (AEST)
 Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
  by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRH028JE1JDT460@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 14 Jul 2015 18:40:25 +0900 (KST)
+ with ESMTP id <0NRH024IG1JK4L70@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 14 Jul 2015 18:40:32 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v2 03/48] usb: gadget: add endpoint capabilities helper macros
-Date: Tue, 14 Jul 2015 11:38:51 +0200
-Message-id: <1436866776-5004-4-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v2 04/48] staging: emxx_udc: add ep capabilities support
+Date: Tue, 14 Jul 2015 11:38:52 +0200
+Message-id: <1436866776-5004-5-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
 References: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,45 +34,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add macros useful while initializing array of endpoint capabilities
-structures. These macros makes structure initialization more compact
-to decrease number of code lines and increase readability of code.
+Convert endpoint configuration to new capabilities model.
+
+Fixed typo in "epc-nulk" to "epc-bulk".
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- include/linux/usb/gadget.h | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/staging/emxx_udc/emxx_udc.c | 60 ++++++++++++++++++-------------------
+ 1 file changed, 29 insertions(+), 31 deletions(-)
 
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index 6f3e0fb..e6cbc25 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -158,6 +158,26 @@ struct usb_ep_caps {
- 	unsigned dir_out:1;
+diff --git a/drivers/staging/emxx_udc/emxx_udc.c b/drivers/staging/emxx_udc/emxx_udc.c
+index 3b7aa36..0d64bee 100644
+--- a/drivers/staging/emxx_udc/emxx_udc.c
++++ b/drivers/staging/emxx_udc/emxx_udc.c
+@@ -3153,36 +3153,33 @@ static const struct usb_gadget_ops nbu2ss_gadget_ops = {
+ 	.ioctl			= nbu2ss_gad_ioctl,
  };
  
-+#define USB_EP_CAPS_TYPE_CONTROL     0x01
-+#define USB_EP_CAPS_TYPE_ISO         0x02
-+#define USB_EP_CAPS_TYPE_BULK        0x04
-+#define USB_EP_CAPS_TYPE_INT         0x08
-+#define USB_EP_CAPS_TYPE_ALL \
-+	(USB_EP_CAPS_TYPE_ISO | USB_EP_CAPS_TYPE_BULK | USB_EP_CAPS_TYPE_INT)
-+#define USB_EP_CAPS_DIR_IN           0x01
-+#define USB_EP_CAPS_DIR_OUT          0x02
-+#define USB_EP_CAPS_DIR_ALL  (USB_EP_CAPS_DIR_IN | USB_EP_CAPS_DIR_OUT)
-+
-+#define USB_EP_CAPS(_type, _dir) \
+-static const char g_ep0_name[] = "ep0";
+-static const char g_ep1_name[] = "ep1-bulk";
+-static const char g_ep2_name[] = "ep2-bulk";
+-static const char g_ep3_name[] = "ep3in-int";
+-static const char g_ep4_name[] = "ep4-iso";
+-static const char g_ep5_name[] = "ep5-iso";
+-static const char g_ep6_name[] = "ep6-bulk";
+-static const char g_ep7_name[] = "ep7-bulk";
+-static const char g_ep8_name[] = "ep8in-int";
+-static const char g_ep9_name[] = "ep9-iso";
+-static const char g_epa_name[] = "epa-iso";
+-static const char g_epb_name[] = "epb-bulk";
+-static const char g_epc_name[] = "epc-nulk";
+-static const char g_epd_name[] = "epdin-int";
+-
+-static const char *gp_ep_name[NUM_ENDPOINTS] = {
+-	g_ep0_name,
+-	g_ep1_name,
+-	g_ep2_name,
+-	g_ep3_name,
+-	g_ep4_name,
+-	g_ep5_name,
+-	g_ep6_name,
+-	g_ep7_name,
+-	g_ep8_name,
+-	g_ep9_name,
+-	g_epa_name,
+-	g_epb_name,
+-	g_epc_name,
+-	g_epd_name,
++static const struct {
++	const char *name;
++	const struct usb_ep_caps caps;
++} ep_info[NUM_ENDPOINTS] = {
++#define EP_INFO(_name, _type, _dir) \
 +	{ \
-+		.type_control = !!(_type & USB_EP_CAPS_TYPE_CONTROL), \
-+		.type_iso = !!(_type & USB_EP_CAPS_TYPE_ISO), \
-+		.type_bulk = !!(_type & USB_EP_CAPS_TYPE_BULK), \
-+		.type_int = !!(_type & USB_EP_CAPS_TYPE_INT), \
-+		.dir_in = !!(_dir & USB_EP_CAPS_DIR_IN), \
-+		.dir_out = !!(_dir & USB_EP_CAPS_DIR_OUT), \
++		.name = _name, \
++		.caps = USB_EP_CAPS(USB_EP_CAPS_TYPE_ ## _type, \
++				USB_EP_CAPS_DIR_ ## _dir), \
 +	}
 +
- /**
-  * struct usb_ep - device side representation of USB endpoint
-  * @name:identifier for the endpoint, such as "ep-a" or "ep9in-bulk"
++	EP_INFO("ep0",		CONTROL, ALL),
++	EP_INFO("ep1-bulk",	BULK,	ALL),
++	EP_INFO("ep2-bulk",	BULK,	ALL),
++	EP_INFO("ep3in-int",	INT,	IN),
++	EP_INFO("ep4-iso",	INT,	ALL),
++	EP_INFO("ep5-iso",	ISO,	ALL),
++	EP_INFO("ep6-bulk",	ISO,	ALL),
++	EP_INFO("ep7-bulk",	BULK,	ALL),
++	EP_INFO("ep8in-int",	INT,	IN),
++	EP_INFO("ep9-iso",	ISO,	ALL),
++	EP_INFO("epa-iso",	ISO,	ALL),
++	EP_INFO("epb-bulk",	BULK,	ALL),
++	EP_INFO("epc-bulk",	BULK,	ALL),
++	EP_INFO("epdin-int",	INT,	IN),
++
++#undef EP_INFO
+ };
+ 
+ /*-------------------------------------------------------------------------*/
+@@ -3200,7 +3197,8 @@ static void __init nbu2ss_drv_ep_init(struct nbu2ss_udc *udc)
+ 		ep->desc = NULL;
+ 
+ 		ep->ep.driver_data = NULL;
+-		ep->ep.name = gp_ep_name[i];
++		ep->ep.name = ep_info[i].name;
++		ep->ep.caps = ep_info[i].caps;
+ 		ep->ep.ops = &nbu2ss_ep_ops;
+ 
+ 		usb_ep_set_maxpacket_limit(&ep->ep,
 -- 
 1.9.1
