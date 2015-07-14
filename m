@@ -2,13 +2,13 @@ Return-Path: <r.baldyga@samsung.com>
 Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 213CE1A0763
+ by lists.ozlabs.org (Postfix) with ESMTPS id F01851A196A
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 19:42:56 +1000 (AEST)
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
  by mailout1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRH02CGW1N1SG20@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 14 Jul 2015 18:42:37 +0900 (KST)
+ with ESMTP id <0NRH02CN61N80A20@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 14 Jul 2015 18:42:44 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v2 21/48] usb: gadget: mv_u3d_core: add ep capabilities support
-Date: Tue, 14 Jul 2015 11:39:09 +0200
-Message-id: <1436866776-5004-22-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v2 22/48] usb: gadget: mv_udc_core: add ep capabilities support
+Date: Tue, 14 Jul 2015 11:39:10 +0200
+Message-id: <1436866776-5004-23-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
 References: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,34 +38,34 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/mv_u3d_core.c | 9 +++++++++
+ drivers/usb/gadget/udc/mv_udc_core.c | 9 +++++++++
  1 file changed, 9 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/mv_u3d_core.c b/drivers/usb/gadget/udc/mv_u3d_core.c
-index ea35a24..4c48969 100644
---- a/drivers/usb/gadget/udc/mv_u3d_core.c
-+++ b/drivers/usb/gadget/udc/mv_u3d_core.c
-@@ -1324,6 +1324,9 @@ static int mv_u3d_eps_init(struct mv_u3d *u3d)
- 	ep->ep.ops = &mv_u3d_ep_ops;
+diff --git a/drivers/usb/gadget/udc/mv_udc_core.c b/drivers/usb/gadget/udc/mv_udc_core.c
+index d32160d..306a7ff 100644
+--- a/drivers/usb/gadget/udc/mv_udc_core.c
++++ b/drivers/usb/gadget/udc/mv_udc_core.c
+@@ -1257,6 +1257,9 @@ static int eps_init(struct mv_udc *udc)
  	ep->wedge = 0;
- 	usb_ep_set_maxpacket_limit(&ep->ep, MV_U3D_EP0_MAX_PKT_SIZE);
+ 	ep->stopped = 0;
+ 	usb_ep_set_maxpacket_limit(&ep->ep, EP0_MAX_PKT_SIZE);
 +	ep->ep.caps.type_control = true;
 +	ep->ep.caps.dir_in = true;
 +	ep->ep.caps.dir_out = true;
  	ep->ep_num = 0;
- 	ep->ep.desc = &mv_u3d_ep0_desc;
+ 	ep->ep.desc = &mv_ep0_desc;
  	INIT_LIST_HEAD(&ep->queue);
-@@ -1339,14 +1342,20 @@ static int mv_u3d_eps_init(struct mv_u3d *u3d)
- 		if (i & 1) {
- 			snprintf(name, sizeof(name), "ep%din", i >> 1);
- 			ep->direction = MV_U3D_EP_DIR_IN;
+@@ -1269,14 +1272,20 @@ static int eps_init(struct mv_udc *udc)
+ 		if (i % 2) {
+ 			snprintf(name, sizeof(name), "ep%din", i / 2);
+ 			ep->direction = EP_DIR_IN;
 +			ep->ep.caps.dir_in = true;
  		} else {
- 			snprintf(name, sizeof(name), "ep%dout", i >> 1);
- 			ep->direction = MV_U3D_EP_DIR_OUT;
+ 			snprintf(name, sizeof(name), "ep%dout", i / 2);
+ 			ep->direction = EP_DIR_OUT;
 +			ep->ep.caps.dir_out = true;
  		}
- 		ep->u3d = u3d;
+ 		ep->udc = udc;
  		strncpy(ep->name, name, sizeof(ep->name));
  		ep->ep.name = ep->name;
  
@@ -73,8 +73,8 @@ index ea35a24..4c48969 100644
 +		ep->ep.caps.type_bulk = true;
 +		ep->ep.caps.type_int = true;
 +
- 		ep->ep.ops = &mv_u3d_ep_ops;
+ 		ep->ep.ops = &mv_ep_ops;
+ 		ep->stopped = 0;
  		usb_ep_set_maxpacket_limit(&ep->ep, (unsigned short) ~0);
- 		ep->ep_num = i / 2;
 -- 
 1.9.1
