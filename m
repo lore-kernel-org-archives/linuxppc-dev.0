@@ -1,25 +1,25 @@
 Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B05281A090E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 12:32:05 +1000 (AEST)
-Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
- [IPv6:2607:f8b0:400e:c02::22d])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 23CFC1A0479
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 12:32:10 +1000 (AEST)
+Received: from mail-pd0-x242.google.com (mail-pd0-x242.google.com
+ [IPv6:2607:f8b0:400e:c02::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 193AB140770
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 12:32:05 +1000 (AEST)
-Received: by pdjr16 with SMTP id r16so72926704pdj.3
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2015 19:32:03 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6FDCC140771
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 12:32:09 +1000 (AEST)
+Received: by pdbcj9 with SMTP id cj9so20361456pdb.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2015 19:32:07 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
  imunsie@au.ibm.com, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  Daniel Axtens <dja@axtens.net>
-Subject: [PATCH 5/8] cxl: Clean up adapter MMIO unmap path.
-Date: Tue, 14 Jul 2015 12:29:31 +1000
-Message-Id: <1436840974-3412-6-git-send-email-dja@axtens.net>
+Subject: [PATCH 6/8] cxl: Refactor adaptor init/teardown
+Date: Tue, 14 Jul 2015 12:29:32 +1000
+Message-Id: <1436840974-3412-7-git-send-email-dja@axtens.net>
 In-Reply-To: <1436840974-3412-1-git-send-email-dja@axtens.net>
 References: <1436840974-3412-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,72 +31,265 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- - MMIO pointer unmapping is guarded by a null pointer check.
-   However, iounmap doesn't null the pointer, just invalidate it.
-   Therefore, explicitly null the pointer after unmapping.
+Some aspects of initialisation are done only once in the lifetime of
+an adapter: for example, allocating memory for the adapter,
+allocating the adapter number, or setting up sysfs/debugfs files.
 
- - afu_desc_mmio also needs to be unmapped.
+However, we may want to be able to do some parts of the
+initialisation multiple times: for example, in error recovery we
+want to be able to tear down and then re-map IO memory and IRQs.
 
- - PCI regions are allocated in cxl_map_adapter_regs.
-   Therefore they should be released in unmap, not elsewhere.
+Therefore, refactor CXL init/teardown as follows.
+
+ - Keep the overarching functions 'cxl_init_adapter' and its pair,
+   'cxl_remove_adapter'.
+
+ - Move all 'once only' allocation/freeing steps to the existing
+   'cxl_alloc_adapter' function, and its pair 'cxl_release_adapter'
+   (This involves moving allocation of the adapter number out of
+   cxl_init_adapter.)
+
+ - Create two new functions: 'cxl_configure_adapter', and its pair
+   'cxl_deconfigure_adapter'. These two functions 'wire up' the
+   hardware --- they (de)configure resources that do not need to
+   last the entire lifetime of the adapter
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- drivers/misc/cxl/pci.c | 24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
+ drivers/misc/cxl/pci.c | 138 ++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 85 insertions(+), 53 deletions(-)
 
 diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index e8d6d5560529..f65bfac1c496 100644
+index f65bfac1c496..faddfad597a2 100644
 --- a/drivers/misc/cxl/pci.c
 +++ b/drivers/misc/cxl/pci.c
-@@ -539,10 +539,18 @@ err:
+@@ -906,9 +906,7 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
+ 	CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
+ 	CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
+ 	adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+-	adapter->perst_loads_image = true;
+ 	adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+-	adapter->perst_same_image = false;
  
- static void cxl_unmap_slice_regs(struct cxl_afu *afu)
+ 	CXL_READ_VSEC_NAFUS(dev, vsec, &adapter->slices);
+ 	CXL_READ_VSEC_AFU_DESC_OFF(dev, vsec, &afu_desc_off);
+@@ -967,22 +965,34 @@ static void cxl_release_adapter(struct device *dev)
+ 
+ 	pr_devel("cxl_release_adapter\n");
+ 
++	cxl_remove_adapter_nr(adapter);
++
+ 	kfree(adapter);
+ }
+ 
+-static struct cxl *cxl_alloc_adapter(struct pci_dev *dev)
++static struct cxl *cxl_alloc_adapter(void)
  {
--	if (afu->p2n_mmio)
-+	if (afu->p2n_mmio) {
- 		iounmap(afu->p2n_mmio);
--	if (afu->p1n_mmio)
-+		afu->p2n_mmio = NULL;
-+	}
-+	if (afu->p1n_mmio) {
- 		iounmap(afu->p1n_mmio);
-+		afu->p1n_mmio = NULL;
-+	}
-+	if (afu->afu_desc_mmio) {
-+		iounmap(afu->afu_desc_mmio);
-+		afu->afu_desc_mmio = NULL;
-+	}
+ 	struct cxl *adapter;
++	int rc;
+ 
+ 	if (!(adapter = kzalloc(sizeof(struct cxl), GFP_KERNEL)))
+ 		return NULL;
+ 
+-	adapter->dev.parent = &dev->dev;
+-	adapter->dev.release = cxl_release_adapter;
+-	pci_set_drvdata(dev, adapter);
+ 	spin_lock_init(&adapter->afu_list_lock);
+ 
++	if ((rc = cxl_alloc_adapter_nr(adapter)))
++		goto err1;
++
++	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
++		goto err2;
++
+ 	return adapter;
++
++err2:
++	cxl_remove_adapter_nr(adapter);
++err1:
++	kfree(adapter);
++	return NULL;
  }
  
- static void cxl_release_afu(struct device *dev)
-@@ -860,10 +868,16 @@ err1:
+ static int sanitise_adapter_regs(struct cxl *adapter)
+@@ -991,57 +1001,95 @@ static int sanitise_adapter_regs(struct cxl *adapter)
+ 	return cxl_tlb_slb_invalidate(adapter);
+ }
  
- static void cxl_unmap_adapter_regs(struct cxl *adapter)
+-static struct cxl *cxl_init_adapter(struct pci_dev *dev)
++/* This should contain *only* operations that can safely be done in
++ * both creation and recovery.
++ */
++static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
  {
--	if (adapter->p1_mmio)
-+	if (adapter->p1_mmio) {
- 		iounmap(adapter->p1_mmio);
--	if (adapter->p2_mmio)
-+		adapter->p1_mmio = NULL;
-+		pci_release_region(to_pci_dev(adapter->dev.parent), 2);
+-	struct cxl *adapter;
+-	bool free = true;
+ 	int rc;
+ 
++	adapter->dev.parent = &dev->dev;
++	adapter->dev.release = cxl_release_adapter;
++	pci_set_drvdata(dev, adapter);
+ 
+-	if (!(adapter = cxl_alloc_adapter(dev)))
+-		return ERR_PTR(-ENOMEM);
++	if ((rc = pci_enable_device(dev))) {
++		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
++		return rc;
 +	}
-+	if (adapter->p2_mmio) {
- 		iounmap(adapter->p2_mmio);
-+		adapter->p2_mmio = NULL;
-+		pci_release_region(to_pci_dev(adapter->dev.parent), 0);
+ 
+ 	if ((rc = cxl_read_vsec(adapter, dev)))
+-		goto err1;
++		return rc;
+ 
+ 	if ((rc = cxl_vsec_looks_ok(adapter, dev)))
+-		goto err1;
++	        return rc;
+ 
+ 	if ((rc = setup_cxl_bars(dev)))
+-		goto err1;
++		return rc;
+ 
+ 	if ((rc = switch_card_to_cxl(dev)))
+-		goto err1;
+-
+-	if ((rc = cxl_alloc_adapter_nr(adapter)))
+-		goto err1;
+-
+-	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
+-		goto err2;
++		return rc;
+ 
+ 	if ((rc = cxl_update_image_control(adapter)))
+-		goto err2;
++		return rc;
+ 
+ 	if ((rc = cxl_map_adapter_regs(adapter, dev)))
+-		goto err2;
++		return rc;
+ 
+ 	if ((rc = sanitise_adapter_regs(adapter)))
+-		goto err2;
++		goto err;
+ 
+ 	if ((rc = init_implementation_adapter_regs(adapter, dev)))
+-		goto err3;
++		goto err;
+ 
+ 	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_CAPI)))
+-		goto err3;
++		goto err;
+ 
+ 	/* If recovery happened, the last step is to turn on snooping.
+ 	 * In the non-recovery case this has no effect */
+-	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON))) {
+-		goto err3;
+-	}
++	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON)))
++		goto err;
+ 
+ 	if ((rc = cxl_register_psl_err_irq(adapter)))
+-		goto err3;
++		goto err;
++
++	return 0;
++
++err:
++	cxl_unmap_adapter_regs(adapter);
++	return rc;
++
++}
++
++static void cxl_deconfigure_adapter(struct cxl *adapter)
++{
++	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
++
++	cxl_release_psl_err_irq(adapter);
++	cxl_unmap_adapter_regs(adapter);
++
++	pci_disable_device(pdev);
++}
++
++static struct cxl *cxl_init_adapter(struct pci_dev *dev)
++{
++	struct cxl *adapter;
++	int rc;
++
++	adapter = cxl_alloc_adapter();
++	if (!adapter)
++		return ERR_PTR(-ENOMEM);
++
++	/* Set defaults for parameters which need to persist over
++	 * configure/reconfigure
++	 */
++	adapter->perst_loads_image = true;
++	adapter->perst_same_image = false;
++
++	if ((rc = cxl_configure_adapter(adapter, dev))) {
++		pci_disable_device(dev);
++		cxl_release_adapter(&adapter->dev);
++		return ERR_PTR(rc);
 +	}
+ 
+ 	/* Don't care if this one fails: */
+ 	cxl_debugfs_adapter_add(adapter);
+@@ -1059,35 +1107,25 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
+ 	return adapter;
+ 
+ err_put1:
+-	device_unregister(&adapter->dev);
+-	free = false;
++	/* This should mirror cxl_remove_adapter, except without the
++	 * sysfs parts
++	 */
+ 	cxl_debugfs_adapter_remove(adapter);
+-	cxl_release_psl_err_irq(adapter);
+-err3:
+-	cxl_unmap_adapter_regs(adapter);
+-err2:
+-	cxl_remove_adapter_nr(adapter);
+-err1:
+-	if (free)
+-		kfree(adapter);
++	cxl_deconfigure_adapter(adapter);
++	device_unregister(&adapter->dev);
+ 	return ERR_PTR(rc);
  }
  
- static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
-@@ -1073,8 +1087,6 @@ static void cxl_remove_adapter(struct cxl *adapter)
+ static void cxl_remove_adapter(struct cxl *adapter)
+ {
+-	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
+-
+ 	pr_devel("cxl_remove_adapter\n");
  
- 	device_unregister(&adapter->dev);
+ 	cxl_sysfs_adapter_remove(adapter);
+ 	cxl_debugfs_adapter_remove(adapter);
+-	cxl_release_psl_err_irq(adapter);
+-	cxl_unmap_adapter_regs(adapter);
+-	cxl_remove_adapter_nr(adapter);
  
--	pci_release_region(pdev, 0);
--	pci_release_region(pdev, 2);
- 	pci_disable_device(pdev);
+-	device_unregister(&adapter->dev);
++	cxl_deconfigure_adapter(adapter);
+ 
+-	pci_disable_device(pdev);
++	device_unregister(&adapter->dev);
  }
+ 
+ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+@@ -1101,15 +1139,9 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	if (cxl_verbose)
+ 		dump_cxl_config_space(dev);
+ 
+-	if ((rc = pci_enable_device(dev))) {
+-		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
+-		return rc;
+-	}
+-
+ 	adapter = cxl_init_adapter(dev);
+ 	if (IS_ERR(adapter)) {
+ 		dev_err(&dev->dev, "cxl_init_adapter failed: %li\n", PTR_ERR(adapter));
+-		pci_disable_device(dev);
+ 		return PTR_ERR(adapter);
+ 	}
  
 -- 
 2.1.4
