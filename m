@@ -1,37 +1,38 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ebiederm@xmission.com>
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA6D31A00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:02:13 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Wed, 15 Jul 2015 04:02:12 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id CC02A2CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:02:09 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6EI1wmP60817612
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:02:06 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6EI1bgu019490
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:01:37 +1000
-Message-ID: <55A54E6E.8080808@linux.vnet.ibm.com>
-Date: Tue, 14 Jul 2015 23:31:18 +0530
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 007DF1A00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:07:39 +1000 (AEST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: dwalker@fifo99.com, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
+ Baoquan He <bhe@redhat.com>, linux-sh@vger.kernel.org,
+ linux-s390@vger.kernel.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
+ HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
+References: <20150713202611.GA16525@fifo99.com>
+ <87h9p7r0we.fsf@x220.int.ebiederm.org>
+ <20150714135919.GA18333@fifo99.com>
+ <20150714150208.GD10792@redhat.com>
+ <20150714153430.GA18766@fifo99.com> <20150714154040.GA3912@redhat.com>
+ <20150714154833.GA18883@fifo99.com>
+ <20150714161612.GH10792@redhat.com>
+ <87a8uyoeig.fsf@x220.int.ebiederm.org>
+ <20150714172953.GA19135@fifo99.com>
+ <20150714175527.GI10792@redhat.com>
+Date: Tue, 14 Jul 2015 13:01:12 -0500
+In-Reply-To: <20150714175527.GI10792@redhat.com> (Vivek Goyal's message of
+ "Tue, 14 Jul 2015 13:55:27 -0400")
+Message-ID: <87si8qmxef.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-CC: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc/pseries: Limit EPOW reset event warnings
-References: <1436886564-3373-1-git-send-email-kamalesh@linux.vnet.ibm.com>
-In-Reply-To: <1436886564-3373-1-git-send-email-kamalesh@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain
+Subject: Re: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers if kdump is
+ not available
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,153 +42,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Vivek Goyal <vgoyal@redhat.com> writes:
 
-Patch looks good. Though it seems that we can improve upon
-commit log description to better describe the problem and solution.
-Few suggestions as below:
+> On Tue, Jul 14, 2015 at 05:29:53PM +0000, dwalker@fifo99.com wrote:
+>
+> [..]
+>> > >> > If a machine is failing, there are high chance it can't deliver you the
+>> > >> > notification. Detecting that failure suing some kind of polling mechanism
+>> > >> > might be more reliable. And it will make even kdump mechanism more
+>> > >> > reliable so that it does not have to run panic notifiers after the crash.
+>> > >> 
+>> > >> I think what your suggesting is that my company should change how it's hardware works
+>> > >> and that's not really an option for me. This isn't a simple thing like checking over the
+>> > >> network if the machine is down or not, this is way more complex hardware design.
+>> > >
+>> > > That means you are ready to live with an unreliable design. There might be
+>> > > cases where notifier does not get run properly and you will not do switch
+>> > > despite the fact that OS has failed. I was just trying to nudge you in
+>> > > a direction which could be more reliable mechanism.
+>> > 
+>> > Sigh I see some deep confusion going on here.
+>> > 
+>> > The panic notifiers are just that panic notifiers.  They have not been
+>> > nor should they be tied to kexec.   If those notifiers force a switch
+>> > over of between machines I fail to see why you would care if it was
+>> > kexec or another panic situation that is forcing that switchover.
+>> 
+>> Hidehiro isn't fixing the failover situation on my side, he's fixing register
+>> information collection when crash_kexec_post_notifiers is used.
+>
+> Sure. Given that we have created this new parameter, let us fix it so that
+> we can capture the other cpu register state in crash dump.
+>
+> I am little disappointed that it was not tested well when this parameter was
+> introuced. We should have atleast tested it to the extent to see if there
+> is proper cpu state present for all cpus in the crash dump.
+>
+> At that point of time it looked like a simple modification
+> to allow panic notifiers before crash_kexec().
 
-Avoid multiple EPOW reset ..........
-is better suited as one line description of this problem.
+Either that or we say no one cares enough, and it known broken so let's
+just revert the fool thing.
 
-On 07/14/2015 08:39 PM, Kamalesh Babulal wrote:
-> We print the respective warning after parsing EPOW interrupts,
+I honestly can't see how to support panic notifiers, before kexec.
+There is no way to tell what is being done and all of the pieces
+including smp_send_stop are known to be buggy.
 
-Kernel prints respective warnings about various EPOW events for
-user information/action after parsing EPOW interrupts.
+It isn't like this latest set of patches was reviewed/tested much
+better, as the first patch was wrong.
 
-> prompting user to take action depending upon the severity of the
-> event.
-
-Please merge below line with above one.
-
->
-> Some times EPOW rest event warning, such as below could flood
-        ^                ^                                  ^^
-     At times EPOW reset  event warning is found to be flooding..
-> kernel log, over a period of time.
-
-Paste the multiple warnings log here.
-
-> Limit these warnings by use of
-
-This patch avoids these multiple EPOW reset warnings by using a boolean 
-flag.
-
-> epow_state flag, which is initialized to false and when any event
-
-This flag is initialized to false and is set to true upon arrival of 
-EPOW event.
-
-> gets reported, the flag set to true once an event gets acknowledged
-> by a reset.
->
-> The reset action is guarded by bool flag (set only if there was event
-
-This same flag is checked and reset during EPOW_RESET scenario to
-filter out valid EPOW reset events and avoid multiple warning logs.
-
-> reported previously) and ignore multiple resets, without real EPOW
-> event.
-> Also, merge adjacent pr_err/pr_emerg into single one to reduce
-               ^
-          merged
-> the number of lines printed per warning.
->
-> May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:04:24 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:07:18 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:13:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:26 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:36 alp kernel: Non critical power or cooling issue cleared
->
-> Suggested-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> ---
-> v3 Changes:
->    - Limit warning printed by EPOW RESET event, by guarding it with bool flag.
->      Instead of rate limiting all the EPOW events.
->
-> v2 Changes:
->    - Merged multiple adjacent pr_err/pr_emerg into single line to reduce multi-line
->      warnings, based on Michael's comments.
->
->   arch/powerpc/platforms/pseries/ras.c | 25 +++++++++++++++++--------
->   1 file changed, 17 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index 02e4a17..b30396a 100644
-> --- a/arch/powerpc/platforms/pseries/ras.c
-> +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -40,6 +40,9 @@ static int ras_check_exception_token;
->   #define EPOW_SENSOR_TOKEN	9
->   #define EPOW_SENSOR_INDEX	0
->
-> +/* Flag to limit EPOW RESET warning. */
-> +static bool epow_state;
-> +
->   static irqreturn_t ras_epow_interrupt(int irq, void *dev_id);
->   static irqreturn_t ras_error_interrupt(int irq, void *dev_id);
->
-> @@ -145,21 +148,27 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
->
->   	switch (action_code) {
->   	case EPOW_RESET:
-> -		pr_err("Non critical power or cooling issue cleared");
-> +		if (epow_state) {
-> +			pr_err("Non critical power or cooling issue cleared");
-> +			epow_state = false;
-> +		}
->   		break;
->
->   	case EPOW_WARN_COOLING:
-> -		pr_err("Non critical cooling issue reported by firmware");
-> -		pr_err("Check RTAS error log for details");
-> +		pr_err("Non critical cooling issue reported by firmware, "
-> +		       "Check RTAS error log for details");
-> +		epow_state = true;
->   		break;
->
->   	case EPOW_WARN_POWER:
-> -		pr_err("Non critical power issue reported by firmware");
-> -		pr_err("Check RTAS error log for details");
-> +		pr_err("Non critical power issue reported by firmware, "
-> +		       "Check RTAS error log for details");
-> +		epow_state = true;
->   		break;
->
->   	case EPOW_SYSTEM_SHUTDOWN:
->   		handle_system_shutdown(epow_log->event_modifier);
-> +		epow_state = true;
->   		break;
->
->   	case EPOW_SYSTEM_HALT:
-> @@ -169,9 +178,8 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
->
->   	case EPOW_MAIN_ENCLOSURE:
->   	case EPOW_POWER_OFF:
-> -		pr_emerg("Critical power/cooling issue reported by firmware");
-> -		pr_emerg("Check RTAS error log for details");
-> -		pr_emerg("Immediate power off");
-> +		pr_emerg("Critical power/cooling issue reported by firmware, "
-> +			 "Check RTAS error log for details. Immediate power off.");
->   		emergency_sync();
->   		kernel_power_off();
->   		break;
-> @@ -179,6 +187,7 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
->   	default:
->   		pr_err("Unknown power/cooling event (action code %d)",
->   			action_code);
-> +		epow_state = true;
->   	}
->   }
->
+Eric
