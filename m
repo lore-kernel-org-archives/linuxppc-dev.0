@@ -1,18 +1,17 @@
 Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-lb0-f182.google.com (mail-lb0-f182.google.com
- [209.85.217.182])
+Received: from mail-la0-f50.google.com (mail-la0-f50.google.com
+ [209.85.215.50])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A1D4A1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 21:04:39 +1000 (AEST)
-Received: by lblf12 with SMTP id f12so3905788lbl.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 04:04:35 -0700 (PDT)
-Subject: Re: [PATCH v2 42/48] usb: gadget: epautoconf: use 'ep_match' gadget
- callback
+ by lists.ozlabs.org (Postfix) with ESMTPS id 804311A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 21:11:08 +1000 (AEST)
+Received: by lahh5 with SMTP id h5so3929782lah.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 04:11:04 -0700 (PDT)
+Subject: Re: [PATCH v2 47/48] usb: musb: gadget: add musb_match_ep() function
 To: Robert Baldyga <r.baldyga@samsung.com>, gregkh@linuxfoundation.org,
  balbi@ti.com
 References: <1436866776-5004-1-git-send-email-r.baldyga@samsung.com>
- <1436866776-5004-43-git-send-email-r.baldyga@samsung.com>
+ <1436866776-5004-48-git-send-email-r.baldyga@samsung.com>
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com,
  dahlmann.thomas@arcor.de, nicolas.ferre@atmel.com, cernekee@gmail.com,
  leoli@freescale.com, daniel@zonque.org, haojian.zhuang@gmail.com,
@@ -22,10 +21,10 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com
 From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Message-ID: <55A4ECC0.4030205@cogentembedded.com>
-Date: Tue, 14 Jul 2015 14:04:32 +0300
+Message-ID: <55A4EE46.6000402@cogentembedded.com>
+Date: Tue, 14 Jul 2015 14:11:02 +0300
 MIME-Version: 1.0
-In-Reply-To: <1436866776-5004-43-git-send-email-r.baldyga@samsung.com>
+In-Reply-To: <1436866776-5004-48-git-send-email-r.baldyga@samsung.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,31 +39,69 @@ Hello.
 
 On 7/14/2015 12:39 PM, Robert Baldyga wrote:
 
-> If gadget has set 'ep_match' callback we prefer to call it first to allow
-> UDC driver to find the best matching endpoint basing on chip-specific "best
-> usage" knowledge.
+> Add 'match_ep' callback to utilize chip-specific knowledge in endpoint matching
+> process. Functions does the same that was done by chip-specific code inside
+> of epautoconf. Now this code can be removed from there to separate generic code
+> from platform specific logic.
 
 > Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
-> ---
->   drivers/usb/gadget/epautoconf.c | 6 ++++++
->   1 file changed, 6 insertions(+)
 
-> diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-> index ee0d4e6..92a1a4c 100644
-> --- a/drivers/usb/gadget/epautoconf.c
-> +++ b/drivers/usb/gadget/epautoconf.c
-> @@ -165,6 +165,12 @@ struct usb_ep *usb_ep_autoconfig_ss(
+[...]
+> diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
+> index 043248a..5f1eb35 100644
+> --- a/drivers/usb/musb/musb_gadget.c
+> +++ b/drivers/usb/musb/musb_gadget.c
+> @@ -1684,6 +1684,49 @@ static int musb_gadget_pullup(struct usb_gadget *gadget, int is_on)
+>   	return 0;
+>   }
 >
->   	type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
->
-> +	if (gadget->ops->match_ep) {
-> +		ep = gadget->ops->match_ep(gadget, desc, ep_comp);
-> +		if (ep)
-> +			goto found_ep;
+> +#ifdef CONFIG_BLACKFIN
+> +static struct usb_ep *musb_find_ep(struct usb_gadget *g,
+> +		const char *name)
+> +{
+> +	struct usb_ep *ep;
+> +
+> +	list_for_each_entry(ep, &g->ep_list, ep_list) {
+> +		if (0 == strcmp(ep->name, name))
+
+    Please make the immediate value the 2nd operand of ==.
+
+> +			return ep;
 > +	}
 > +
+> +	return NULL;
+> +}
+> +
+> +static struct usb_ep *match_match_ep(struct usb_gadget *g,
+> +		struct usb_endpoint_descriptor *desc,
+> +		struct usb_ss_ep_comp_descriptor *ep_comp)
+> +{
+> +	struct usb_ep *ep = NULL;
+> +	u8 type = usb_endpoint_type(desc);
+> +
+> +	if ((USB_ENDPOINT_XFER_BULK == type) ||
+> +			(USB_ENDPOINT_XFER_ISOC == type)) {
 
-    I think this patch should be merged with the previous one.
+    Likewise.
+
+> +		if (USB_DIR_IN & desc->bEndpointAddress)
+
+    The same about &.
+
+> +			ep = musb_find_ep(g, "ep5in");
+> +		else
+> +			ep = musb_find_ep(g, "ep6out");
+> +	} else if (USB_ENDPOINT_XFER_INT == type) {
+
+    Likewise.
+
+> +		if (USB_DIR_IN & desc->bEndpointAddress)
+> +			ep = musb_find_ep(g, "ep1in");
+> +		else
+> +			ep = musb_find_ep(g, "ep2out");
+> +	}
+
+    This string of *if* statements is asking to be *switch* instead.
 
 [...]
 
