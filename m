@@ -1,25 +1,25 @@
 Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 23CFC1A0479
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 12:32:10 +1000 (AEST)
-Received: from mail-pd0-x242.google.com (mail-pd0-x242.google.com
- [IPv6:2607:f8b0:400e:c02::242])
+ by lists.ozlabs.org (Postfix) with ESMTPS id D57111A08B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 12:32:13 +1000 (AEST)
+Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
+ [IPv6:2607:f8b0:400e:c03::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6FDCC140771
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 12:32:09 +1000 (AEST)
-Received: by pdbcj9 with SMTP id cj9so20361456pdb.3
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2015 19:32:07 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 52434140770
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 12:32:13 +1000 (AEST)
+Received: by pactm7 with SMTP id tm7so29158856pac.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Jul 2015 19:32:12 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
  imunsie@au.ibm.com, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  Daniel Axtens <dja@axtens.net>
-Subject: [PATCH 6/8] cxl: Refactor adaptor init/teardown
-Date: Tue, 14 Jul 2015 12:29:32 +1000
-Message-Id: <1436840974-3412-7-git-send-email-dja@axtens.net>
+Subject: [PATCH 7/8] cxl: Refactor AFU init/teardown
+Date: Tue, 14 Jul 2015 12:29:33 +1000
+Message-Id: <1436840974-3412-8-git-send-email-dja@axtens.net>
 In-Reply-To: <1436840974-3412-1-git-send-email-dja@axtens.net>
 References: <1436840974-3412-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,265 +31,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some aspects of initialisation are done only once in the lifetime of
-an adapter: for example, allocating memory for the adapter,
-allocating the adapter number, or setting up sysfs/debugfs files.
+As with an adapter, some aspects of initialisation are done only once
+in the lifetime of an AFU: for example, allocating memory, or setting
+up sysfs/debugfs files.
 
-However, we may want to be able to do some parts of the
-initialisation multiple times: for example, in error recovery we
-want to be able to tear down and then re-map IO memory and IRQs.
+However, we may want to be able to do some parts of the initialisation
+multiple times: for example, in error recovery we want to be able to
+tear down and then re-map IO memory and IRQs.
 
-Therefore, refactor CXL init/teardown as follows.
+Therefore, refactor AFU init/teardown as follows.
 
- - Keep the overarching functions 'cxl_init_adapter' and its pair,
-   'cxl_remove_adapter'.
+ - Create two new functions: 'cxl_configure_afu', and its pair
+   'cxl_deconfigure_afu'. As with the adapter functions,
+   these (de)configure resources that do not need to last the entire
+   lifetime of the AFU.
 
- - Move all 'once only' allocation/freeing steps to the existing
-   'cxl_alloc_adapter' function, and its pair 'cxl_release_adapter'
-   (This involves moving allocation of the adapter number out of
-   cxl_init_adapter.)
+ - Allocating and releasing memory remain the task of 'cxl_alloc_afu'
+   and 'cxl_release_afu'.
 
- - Create two new functions: 'cxl_configure_adapter', and its pair
-   'cxl_deconfigure_adapter'. These two functions 'wire up' the
-   hardware --- they (de)configure resources that do not need to
-   last the entire lifetime of the adapter
+ - Once-only functions that do not involve allocating/releasing memory
+   stay in the overarching 'cxl_init_afu'/'cxl_remove_afu' pair.
+   However, the task of picking an AFU mode and activating it has been
+   broken out.
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- drivers/misc/cxl/pci.c | 138 ++++++++++++++++++++++++++++++-------------------
- 1 file changed, 85 insertions(+), 53 deletions(-)
+ drivers/misc/cxl/pci.c | 87 +++++++++++++++++++++++++++++---------------------
+ 1 file changed, 50 insertions(+), 37 deletions(-)
 
 diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index f65bfac1c496..faddfad597a2 100644
+index faddfad597a2..273e810020ef 100644
 --- a/drivers/misc/cxl/pci.c
 +++ b/drivers/misc/cxl/pci.c
-@@ -906,9 +906,7 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
- 	CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
- 	CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
- 	adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
--	adapter->perst_loads_image = true;
- 	adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
--	adapter->perst_same_image = false;
- 
- 	CXL_READ_VSEC_NAFUS(dev, vsec, &adapter->slices);
- 	CXL_READ_VSEC_AFU_DESC_OFF(dev, vsec, &afu_desc_off);
-@@ -967,22 +965,34 @@ static void cxl_release_adapter(struct device *dev)
- 
- 	pr_devel("cxl_release_adapter\n");
- 
-+	cxl_remove_adapter_nr(adapter);
-+
- 	kfree(adapter);
+@@ -693,45 +693,67 @@ static int sanitise_afu_regs(struct cxl_afu *afu)
+ 	return 0;
  }
  
--static struct cxl *cxl_alloc_adapter(struct pci_dev *dev)
-+static struct cxl *cxl_alloc_adapter(void)
+-static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
++static int cxl_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pci_dev *dev)
  {
- 	struct cxl *adapter;
-+	int rc;
- 
- 	if (!(adapter = kzalloc(sizeof(struct cxl), GFP_KERNEL)))
- 		return NULL;
- 
--	adapter->dev.parent = &dev->dev;
--	adapter->dev.release = cxl_release_adapter;
--	pci_set_drvdata(dev, adapter);
- 	spin_lock_init(&adapter->afu_list_lock);
- 
-+	if ((rc = cxl_alloc_adapter_nr(adapter)))
-+		goto err1;
-+
-+	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
-+		goto err2;
-+
- 	return adapter;
-+
-+err2:
-+	cxl_remove_adapter_nr(adapter);
-+err1:
-+	kfree(adapter);
-+	return NULL;
- }
- 
- static int sanitise_adapter_regs(struct cxl *adapter)
-@@ -991,57 +1001,95 @@ static int sanitise_adapter_regs(struct cxl *adapter)
- 	return cxl_tlb_slb_invalidate(adapter);
- }
- 
--static struct cxl *cxl_init_adapter(struct pci_dev *dev)
-+/* This should contain *only* operations that can safely be done in
-+ * both creation and recovery.
-+ */
-+static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
- {
--	struct cxl *adapter;
+-	struct cxl_afu *afu;
 -	bool free = true;
  	int rc;
  
-+	adapter->dev.parent = &dev->dev;
-+	adapter->dev.release = cxl_release_adapter;
-+	pci_set_drvdata(dev, adapter);
- 
--	if (!(adapter = cxl_alloc_adapter(dev)))
--		return ERR_PTR(-ENOMEM);
-+	if ((rc = pci_enable_device(dev))) {
-+		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
-+		return rc;
-+	}
- 
- 	if ((rc = cxl_read_vsec(adapter, dev)))
--		goto err1;
-+		return rc;
- 
- 	if ((rc = cxl_vsec_looks_ok(adapter, dev)))
--		goto err1;
-+	        return rc;
- 
- 	if ((rc = setup_cxl_bars(dev)))
--		goto err1;
-+		return rc;
- 
- 	if ((rc = switch_card_to_cxl(dev)))
+-	if (!(afu = cxl_alloc_afu(adapter, slice)))
+-		return -ENOMEM;
+-
+-	if ((rc = dev_set_name(&afu->dev, "afu%i.%i", adapter->adapter_num, slice)))
 -		goto err1;
 -
--	if ((rc = cxl_alloc_adapter_nr(adapter)))
+ 	if ((rc = cxl_map_slice_regs(afu, adapter, dev)))
 -		goto err1;
--
--	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
--		goto err2;
 +		return rc;
  
- 	if ((rc = cxl_update_image_control(adapter)))
+ 	if ((rc = sanitise_afu_regs(afu)))
 -		goto err2;
-+		return rc;
++		goto err1;
  
- 	if ((rc = cxl_map_adapter_regs(adapter, dev)))
+ 	/* We need to reset the AFU before we can read the AFU descriptor */
+ 	if ((rc = __cxl_afu_reset(afu)))
 -		goto err2;
-+		return rc;
++		goto err1;
  
- 	if ((rc = sanitise_adapter_regs(adapter)))
+ 	if (cxl_verbose)
+ 		dump_afu_descriptor(afu);
+ 
+ 	if ((rc = cxl_read_afu_descriptor(afu)))
 -		goto err2;
-+		goto err;
++		goto err1;
  
- 	if ((rc = init_implementation_adapter_regs(adapter, dev)))
--		goto err3;
-+		goto err;
+ 	if ((rc = cxl_afu_descriptor_looks_ok(afu)))
+-		goto err2;
++		goto err1;
  
- 	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_CAPI)))
--		goto err3;
-+		goto err;
+ 	if ((rc = init_implementation_afu_regs(afu)))
+-		goto err2;
++		goto err1;
  
- 	/* If recovery happened, the last step is to turn on snooping.
- 	 * In the non-recovery case this has no effect */
--	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON))) {
--		goto err3;
--	}
-+	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON)))
-+		goto err;
+ 	if ((rc = cxl_register_serr_irq(afu)))
+-		goto err2;
++		goto err1;
  
- 	if ((rc = cxl_register_psl_err_irq(adapter)))
+ 	if ((rc = cxl_register_psl_irq(afu)))
 -		goto err3;
-+		goto err;
++		goto err2;
 +
 +	return 0;
 +
-+err:
-+	cxl_unmap_adapter_regs(adapter);
++err2:
++	cxl_release_serr_irq(afu);
++err1:
++	cxl_unmap_slice_regs(afu);
 +	return rc;
-+
 +}
 +
-+static void cxl_deconfigure_adapter(struct cxl *adapter)
++static void cxl_deconfigure_afu(struct cxl_afu *afu)
 +{
-+	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
-+
-+	cxl_release_psl_err_irq(adapter);
-+	cxl_unmap_adapter_regs(adapter);
-+
-+	pci_disable_device(pdev);
++	cxl_release_psl_irq(afu);
++	cxl_release_serr_irq(afu);
++	cxl_unmap_slice_regs(afu);
 +}
 +
-+static struct cxl *cxl_init_adapter(struct pci_dev *dev)
++static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
 +{
-+	struct cxl *adapter;
++	struct cxl_afu *afu;
 +	int rc;
 +
-+	adapter = cxl_alloc_adapter();
-+	if (!adapter)
-+		return ERR_PTR(-ENOMEM);
++	if (!(afu = cxl_alloc_afu(adapter, slice)))
++		return -ENOMEM;
 +
-+	/* Set defaults for parameters which need to persist over
-+	 * configure/reconfigure
-+	 */
-+	adapter->perst_loads_image = true;
-+	adapter->perst_same_image = false;
++	if ((rc = dev_set_name(&afu->dev, "afu%i.%i", adapter->adapter_num, slice)))
++		goto err_free;
 +
-+	if ((rc = cxl_configure_adapter(adapter, dev))) {
-+		pci_disable_device(dev);
-+		cxl_release_adapter(&adapter->dev);
-+		return ERR_PTR(rc);
-+	}
++	if ((rc = cxl_configure_afu(afu, adapter, dev)))
++		goto err_free;
  
- 	/* Don't care if this one fails: */
- 	cxl_debugfs_adapter_add(adapter);
-@@ -1059,35 +1107,25 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
- 	return adapter;
+ 	/* Don't care if this fails */
+ 	cxl_debugfs_afu_add(afu);
+@@ -746,10 +768,6 @@ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
+ 	if ((rc = cxl_sysfs_afu_add(afu)))
+ 		goto err_put1;
  
+-
+-	if ((rc = cxl_afu_select_best_mode(afu)))
+-		goto err_put2;
+-
+ 	adapter->afu[afu->slice] = afu;
+ 
+ 	if ((rc = cxl_pci_vphb_add(afu)))
+@@ -757,21 +775,16 @@ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
+ 
+ 	return 0;
+ 
+-err_put2:
+-	cxl_sysfs_afu_remove(afu);
  err_put1:
--	device_unregister(&adapter->dev);
+-	device_unregister(&afu->dev);
 -	free = false;
-+	/* This should mirror cxl_remove_adapter, except without the
-+	 * sysfs parts
-+	 */
- 	cxl_debugfs_adapter_remove(adapter);
--	cxl_release_psl_err_irq(adapter);
++	cxl_deconfigure_afu(afu);
+ 	cxl_debugfs_afu_remove(afu);
+-	cxl_release_psl_irq(afu);
 -err3:
--	cxl_unmap_adapter_regs(adapter);
+-	cxl_release_serr_irq(afu);
 -err2:
--	cxl_remove_adapter_nr(adapter);
+-	cxl_unmap_slice_regs(afu);
 -err1:
 -	if (free)
--		kfree(adapter);
-+	cxl_deconfigure_adapter(adapter);
-+	device_unregister(&adapter->dev);
- 	return ERR_PTR(rc);
+-		kfree(afu);
++	device_unregister(&afu->dev);
+ 	return rc;
++
++err_free:
++	kfree(afu);
++	return rc;
++
  }
  
- static void cxl_remove_adapter(struct cxl *adapter)
- {
--	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
+ static void cxl_remove_afu(struct cxl_afu *afu)
+@@ -791,10 +804,7 @@ static void cxl_remove_afu(struct cxl_afu *afu)
+ 	cxl_context_detach_all(afu);
+ 	cxl_afu_deactivate_mode(afu);
+ 
+-	cxl_release_psl_irq(afu);
+-	cxl_release_serr_irq(afu);
+-	cxl_unmap_slice_regs(afu);
 -
- 	pr_devel("cxl_remove_adapter\n");
- 
- 	cxl_sysfs_adapter_remove(adapter);
- 	cxl_debugfs_adapter_remove(adapter);
--	cxl_release_psl_err_irq(adapter);
--	cxl_unmap_adapter_regs(adapter);
--	cxl_remove_adapter_nr(adapter);
- 
--	device_unregister(&adapter->dev);
-+	cxl_deconfigure_adapter(adapter);
- 
--	pci_disable_device(pdev);
-+	device_unregister(&adapter->dev);
++	cxl_deconfigure_afu(afu);
+ 	device_unregister(&afu->dev);
  }
  
- static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
-@@ -1101,15 +1139,9 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	if (cxl_verbose)
- 		dump_cxl_config_space(dev);
- 
--	if ((rc = pci_enable_device(dev))) {
--		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
--		return rc;
--	}
--
- 	adapter = cxl_init_adapter(dev);
- 	if (IS_ERR(adapter)) {
- 		dev_err(&dev->dev, "cxl_init_adapter failed: %li\n", PTR_ERR(adapter));
--		pci_disable_device(dev);
- 		return PTR_ERR(adapter);
+@@ -1148,6 +1158,9 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	for (slice = 0; slice < adapter->slices; slice++) {
+ 		if ((rc = cxl_init_afu(adapter, slice, dev)))
+ 			dev_err(&dev->dev, "AFU %i failed to initialise: %i\n", slice, rc);
++
++		if ((rc = cxl_afu_select_best_mode(adapter->afu[slice])))
++			dev_err(&dev->dev, "AFU %i failed to start: %i\n", slice, rc);
  	}
  
+ 	return 0;
 -- 
 2.1.4
