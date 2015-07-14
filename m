@@ -1,41 +1,32 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ebiederm@xmission.com>
+Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93BF01A1BCB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 10:06:04 +1000 (AEST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 13 Jul 2015 18:06:02 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A4E1F1FF002E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 17:57:10 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6E0605n54460576
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 17:06:00 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6E05xxw016703
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jul 2015 18:06:00 -0600
-Date: Mon, 13 Jul 2015 17:05:58 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Dan Streetman <ddstreet@us.ibm.com>,
- "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, gustavold@linux.vnet.ibm.com
-Subject: Re: [PATCH 5/6] [RFC] crypto/testmgr: add null test for 842 algorithm
-Message-ID: <20150714000558.GB38815@linux.vnet.ibm.com>
-References: <20150702223800.GA1712@linux.vnet.ibm.com>
- <20150702224119.GF1712@linux.vnet.ibm.com>
- <20150704072453.GC6153@gondor.apana.org.au>
- <20150714000536.GA38815@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F2581A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 11:26:14 +1000 (AEST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: dwalker@fifo99.com
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>,
+ linux-mips@linux-mips.org, Baoquan He <bhe@redhat.com>,
+ linux-sh@vger.kernel.org, linux-s390@vger.kernel.org,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
+References: <20150710113331.4368.10495.stgit@softrs>
+ <20150710113331.4368.63745.stgit@softrs>
+ <87wpy82kqf.fsf@x220.int.ebiederm.org>
+ <20150713202611.GA16525@fifo99.com>
+Date: Mon, 13 Jul 2015 20:19:45 -0500
+In-Reply-To: <20150713202611.GA16525@fifo99.com> (dwalker@fifo99.com's message
+ of "Mon, 13 Jul 2015 20:26:11 +0000")
+Message-ID: <87h9p7r0we.fsf@x220.int.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150714000536.GA38815@linux.vnet.ibm.com>
+Content-Type: text/plain
+Subject: Re: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers if kdump is
+ not available
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,23 +36,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13.07.2015 [17:05:36 -0700], Nishanth Aravamudan wrote:
-> On 04.07.2015 [15:24:53 +0800], Herbert Xu wrote:
-> > On Thu, Jul 02, 2015 at 03:41:19PM -0700, Nishanth Aravamudan wrote:
-> > > Currently, when the nx-842-pseries driver loads, the following message
-> > > is emitted:
-> > > 
-> > > alg: No test for 842 (842-nx)
-> > > 
-> > > It seems like the simplest way to fix this message (other than adding a
-> > > proper test) is to just insert the null test into the list in the
-> > > testmgr.
-> > > 
-> > > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> > 
-> > Please add some real test vectors instead.
+dwalker@fifo99.com writes:
 
-Apologies, hit send too fast. I'll work with Dan on this when he gets
-back from vacation.
+> On Fri, Jul 10, 2015 at 08:41:28AM -0500, Eric W. Biederman wrote:
+>> Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> writes:
+>> 
+>> > You can call panic notifiers and kmsg dumpers before kdump by
+>> > specifying "crash_kexec_post_notifiers" as a boot parameter.
+>> > However, it doesn't make sense if kdump is not available.  In that
+>> > case, disable "crash_kexec_post_notifiers" boot parameter so that
+>> > you can't change the value of the parameter.
+>> 
+>> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+>
+> I think it would make sense if he just replaced "kdump" with "kexec".
 
--Nish
+It would be less insane, however it still makes no sense as without
+kexec on panic support crash_kexec is a noop.  So the value of the
+seeting makes no difference.
+
+Eric
