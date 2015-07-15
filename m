@@ -1,29 +1,32 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c05::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 00C921A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 23:35:20 +1000 (AEST)
-Date: Wed, 15 Jul 2015 15:35:07 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, linux-arch@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- Paul Mackerras <paulus@samba.org>, David Vrabel <david.vrabel@citrix.com>,
- xen-devel@lists.xenproject.org,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 3/3] sched/preempt: fix cond_resched_lock() and
- cond_resched_softirq()
-Message-ID: <20150715133507.GR19282@twins.programming.kicks-ass.net>
-References: <20150715095201.12246.49283.stgit@buzz>
- <20150715095204.12246.98268.stgit@buzz>
- <1436962596.1026.10.camel@edumazet-glaptop2.roam.corp.google.com>
- <55A65792.80903@yandex-team.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4945C1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 00:25:26 +1000 (AEST)
+Received: by igcqs7 with SMTP id qs7so108016336igc.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 07:25:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55A65792.80903@yandex-team.ru>
+Reply-To: ddstreet@ieee.org
+Sender: ddstreet@gmail.com
+In-Reply-To: <20150714000558.GB38815@linux.vnet.ibm.com>
+References: <20150702223800.GA1712@linux.vnet.ibm.com>
+ <20150702224119.GF1712@linux.vnet.ibm.com>
+ <20150704072453.GC6153@gondor.apana.org.au>
+ <20150714000536.GA38815@linux.vnet.ibm.com>
+ <20150714000558.GB38815@linux.vnet.ibm.com>
+From: Dan Streetman <ddstreet@us.ibm.com>
+Date: Wed, 15 Jul 2015 10:25:04 -0400
+Message-ID: <CALZtONDqrO=Sq56efLtvMMtgwBY54FDp4mq9=XZ5JWFD26XSbw@mail.gmail.com>
+Subject: Re: [PATCH 5/6] [RFC] crypto/testmgr: add null test for 842 algorithm
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ gustavold@linux.vnet.ibm.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,42 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 15, 2015 at 03:52:34PM +0300, Konstantin Khlebnikov wrote:
-> On 15.07.2015 15:16, Eric Dumazet wrote:
-> >On Wed, 2015-07-15 at 12:52 +0300, Konstantin Khlebnikov wrote:
-> >>These functions check should_resched() before unlocking spinlock/bh-enable:
-> >>preempt_count always non-zero => should_resched() always returns false.
-> >>cond_resched_lock() worked iff spin_needbreak is set.
-> >
-> >Interesting, this definitely used to work (linux-3.11)
-> >
-> >Any idea of which commit broke things ?
-> >
-> 
-> Searching... done
-> 
-> This one: bdb43806589096ac4272fe1307e789846ac08d7c in v3.13
-> 
-> before
-> 
-> -static inline int should_resched(void)
-> -{
-> -       return need_resched() && !(preempt_count() & PREEMPT_ACTIVE);
-> -}
-> 
-> after
-> 
-> +static __always_inline bool should_resched(void)
-> +{
-> +       return unlikely(!*preempt_count_ptr());
-> +}
+On Mon, Jul 13, 2015 at 8:05 PM, Nishanth Aravamudan
+<nacc@linux.vnet.ibm.com> wrote:
+> On 13.07.2015 [17:05:36 -0700], Nishanth Aravamudan wrote:
+>> On 04.07.2015 [15:24:53 +0800], Herbert Xu wrote:
+>> > On Thu, Jul 02, 2015 at 03:41:19PM -0700, Nishanth Aravamudan wrote:
+>> > > Currently, when the nx-842-pseries driver loads, the following message
+>> > > is emitted:
+>> > >
+>> > > alg: No test for 842 (842-nx)
+>> > >
+>> > > It seems like the simplest way to fix this message (other than adding a
+>> > > proper test) is to just insert the null test into the list in the
+>> > > testmgr.
+>> > >
+>> > > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+>> >
+>> > Please add some real test vectors instead.
+>
+> Apologies, hit send too fast. I'll work with Dan on this when he gets
+> back from vacation.
 
-Argh, indeed!
+Back from vacation! :-)
 
-> 
-> So,
-> 
-> Fixes: bdb438065890 ("sched: Extract the basic add/sub preempt_count
-> modifiers")
+I originally didn't add any test vector for NX 842 because the main
+driver was loading before the "platform" (pseries/powernv) drivers,
+and the test couldn't run as the platform driver hadn't loaded yet.
+That's now fixed so we should be able to add a real test for NX 842
+now, I can work on that patch.
 
-Thanks!
+>
+> -Nish
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-crypto" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
