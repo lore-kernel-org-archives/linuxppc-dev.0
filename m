@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7EC781A08A3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:34:10 +1000 (AEST)
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout4.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9FE01A03DF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:34:24 +1000 (AEST)
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRI003RFNKVJQ70@mailout4.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:34:07 +0900 (KST)
+ with ESMTP id <0NRI01A3MNL9W0D0@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:34:22 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v3 07/46] usb: dwc3: gadget: add ep capabilities support
-Date: Wed, 15 Jul 2015 08:31:54 +0200
-Message-id: <1436941953-1327-8-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v3 09/46] usb: gadget: at91_udc: add ep capabilities support
+Date: Wed, 15 Jul 2015 08:31:56 +0200
+Message-id: <1436941953-1327-10-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 References: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,32 +38,60 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/dwc3/gadget.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/usb/gadget/udc/at91_udc.c | 33 ++++++++++++++++++++++++---------
+ 1 file changed, 24 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/usb/dwc3/gadget.c b/drivers/usb/dwc3/gadget.c
-index 333a7c0..8d1f768 100644
---- a/drivers/usb/dwc3/gadget.c
-+++ b/drivers/usb/dwc3/gadget.c
-@@ -1713,6 +1713,19 @@ static int dwc3_gadget_init_hw_endpoints(struct dwc3 *dwc,
- 				return ret;
- 		}
+diff --git a/drivers/usb/gadget/udc/at91_udc.c b/drivers/usb/gadget/udc/at91_udc.c
+index fc42264..a04b073 100644
+--- a/drivers/usb/gadget/udc/at91_udc.c
++++ b/drivers/usb/gadget/udc/at91_udc.c
+@@ -59,15 +59,29 @@
+ #define	DRIVER_VERSION	"3 May 2006"
  
-+		if (epnum == 0) {
-+			dep->endpoint.caps.type_control = true;
-+		} else {
-+			dep->endpoint.caps.type_iso = true;
-+			dep->endpoint.caps.type_bulk = true;
-+			dep->endpoint.caps.type_int = true;
-+		}
+ static const char driver_name [] = "at91_udc";
+-static const char * const ep_names[] = {
+-	"ep0",
+-	"ep1",
+-	"ep2",
+-	"ep3-int",
+-	"ep4",
+-	"ep5",
 +
-+		if (epnum & 1)
-+			dep->endpoint.caps.dir_in = true;
-+		else
-+			dep->endpoint.caps.dir_out = true;
++static const struct {
++	const char *name;
++	const struct usb_ep_caps caps;
++} ep_info[] = {
++#define EP_INFO(_name, _type, _dir) \
++	{ \
++		.name = _name, \
++		.caps = USB_EP_CAPS(USB_EP_CAPS_TYPE_ ## _type, \
++				USB_EP_CAPS_DIR_ ## _dir), \
++	}
 +
- 		INIT_LIST_HEAD(&dep->request_list);
- 		INIT_LIST_HEAD(&dep->req_queued);
- 	}
++	EP_INFO("ep0",		CONTROL, ALL),
++	EP_INFO("ep1",		ALL,	ALL),
++	EP_INFO("ep2",		ALL,	ALL),
++	EP_INFO("ep3-int",	INT,	ALL),
++	EP_INFO("ep4",		ALL,	ALL),
++	EP_INFO("ep5",		ALL,	ALL),
++
++#undef EP_INFO
+ };
+-#define ep0name		ep_names[0]
++
++#define ep0name		ep_info[0].name
+ 
+ #define VBUS_POLL_TIMEOUT	msecs_to_jiffies(1000)
+ 
+@@ -1830,7 +1844,8 @@ static int at91udc_probe(struct platform_device *pdev)
+ 
+ 	for (i = 0; i < NUM_ENDPOINTS; i++) {
+ 		ep = &udc->ep[i];
+-		ep->ep.name = ep_names[i];
++		ep->ep.name = ep_info[i].name;
++		ep->ep.caps = ep_info[i].caps;
+ 		ep->ep.ops = &at91_ep_ops;
+ 		ep->udc = udc;
+ 		ep->int_mask = BIT(i);
 -- 
 1.9.1
