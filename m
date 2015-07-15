@@ -1,32 +1,22 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-ie0-x231.google.com (mail-ie0-x231.google.com
- [IPv6:2607:f8b0:4001:c03::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F5B01A006B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 00:33:52 +1000 (AEST)
-Received: by iebmu5 with SMTP id mu5so34670195ieb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 07:33:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFD6B1A08CA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 00:35:08 +1000 (AEST)
+Message-ID: <55A66F96.6030808@redhat.com>
+Date: Wed, 15 Jul 2015 16:35:02 +0200
+From: Thomas Huth <thuth@redhat.com>
 MIME-Version: 1.0
-Reply-To: ddstreet@ieee.org
-Sender: ddstreet@gmail.com
-In-Reply-To: <20150706170740.GB3578@linux.vnet.ibm.com>
-References: <20150702223800.GA1712@linux.vnet.ibm.com>
- <20150702224225.GG1712@linux.vnet.ibm.com>
- <20150706081307.GA20616@gondor.apana.org.au>
- <20150706170740.GB3578@linux.vnet.ibm.com>
-From: Dan Streetman <ddstreet@us.ibm.com>
-Date: Wed, 15 Jul 2015 10:33:30 -0400
-Message-ID: <CALZtONBSP+bf-Qp6VgiNOXoNErHYGzAz=T64yxbnxPCo-3x+pA@mail.gmail.com>
-Subject: Re: [PATCH 6/6] nx-842-platform: if NX842 platform drivers are not
- modules, don't try to load them
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- gustavold@linux.vnet.ibm.com
-Content-Type: text/plain; charset=UTF-8
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org, anton@samba.org, kvm-ppc@vger.kernel.org
+Subject: Re: BUG: sleeping function called from ras_epow_interrupt context
+References: <55A55846.5080904@redhat.com>
+ <1436908977.3948.266.camel@kernel.crashing.org>
+In-Reply-To: <1436908977.3948.266.camel@kernel.crashing.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,59 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 6, 2015 at 1:07 PM, Nishanth Aravamudan
-<nacc@linux.vnet.ibm.com> wrote:
-> On 06.07.2015 [16:13:07 +0800], Herbert Xu wrote:
->> On Thu, Jul 02, 2015 at 03:42:26PM -0700, Nishanth Aravamudan wrote:
->> > Based off the CONFIG_SPU_FS_MODULE code, only attempt to load platform
->> > modules if the nx-842 pseries/powernv drivers are built as modules.
->> >
->> > Otherwise, if CONFIG_DEV_NX_COMPRESS=y,
->> > CONFIG_DEV_NX_COMPRESS_PSERIES=y, CONFIG_DEV_NX_POWERNV=y, the following
->> > message is emitted at boot:
->> >
->> > nx_compress: no nx842 driver found.
->> >
->> > even though the drivers successfully loads.
->> >
->> > This is because in the =y case, the module_init() calls get converted to
->> > initcalls and the nx842_init() runs before the platform driver
->> > nx842_pseries_init() or nx842_powernv_init() functions, which are what
->> > normally set the static platform driver.
->> >
->> > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
->> > Cc: Dan Streetman <ddstreet@us.ibm.com>
->> > Cc: Herbert Xu <herbert@gondor.apana.org.au>
->> > Cc: "David S. Miller" <davem@davemloft.net>
->> > Cc: linux-crypto@vger.kernel.org
->> > Cc: linuxppc-dev@lists.ozlabs.org
->>
->> Ugh, I think this whole thing is redundant.  The whole point of
->> the crypto API is to allow the coexistence of multiple underlying
->> implementations.
->
-> Sure, that makes sense -- sorry, I was picking this up while Dan was on
-> vacation. Will provide a better v2.
->
->> Please get rid of nx-842-platform.c completely and move the crypto
->> registration into the individual platform drivers.  That is, powernv
->> and pseries should each register their own crypto driver.  They can of
->> course share a common set of crypto code which can live in its own
->> module.  There should be no need for mucking with module reference
->> counts at all.
->
-> Will do, thanks!
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Yep, I originally did it this way because I didn't realize crypto
-could register different drivers with the same alg name (but different
-driver names).  I have some patches already to start doing this but
-they weren't ready enough to send before I left for vacation; I'll
-finish them up and send them.
+On 07/14/2015 11:22 PM, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-07-14 at 20:43 +0200, Thomas Huth wrote:
+>> Any suggestions how to fix this? Simply revert 587f83e8dd50d? Use
+>> mdelay() instead of msleep() in rtas_busy_delay()? Something more
+>> fancy?
+>=20
+> A proper fix would be more fancy, the get_sensor should happen in a
+> kernel thread instead.
 
->
-> -Nish
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-crypto" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I'm not very familiar with this stuff, but isn't the EPOW interrupt
+something that is very time-critical? Moving parts of the handler into a
+kernel thread then does not sound like a very good idea to me...
+
+Another question: Can it happen at all that this get-sensor call results
+in a sleep condition? Looking at commit ID
+81b73dd92b97423b8f5324a59044da478c04f4c4 ("Fix might-sleep warning on
+removing cpus"), which apparently fixed a similar issue for CPU
+hot-plugging, indicates that at least some of the rtas calls are never
+returning the busy code? In that case we could fix this by introducing a
+similar rtas_get_sensor_fast() function? (or simply revert 587f83e8dd50d
+which would be quite similar, I think)
+
+ Thomas
+
+
+
+--QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJVpm+WAAoJEC7Z13T+cC21s0sP/igHyXofqISs9s5OiDtyn1t/
+b3C2LYLLqkVW4l5ljiRdEcLmXSuIJV3VbKqCNqBU5wIroKRQXOxuqRHC8bH3yn0m
+OXdKV9/mLHWGQ3xiGaXpJvxJnUcyRkKDRzaLJGXmSXEMchri7yXnLeExQEc75fFA
+cJHYRN5D5Zq5yyjtSb3Ei0A2F0mYtEt7pWOfMpf05aO1zErP14cKFV3NuK4nUkEb
+53Cmodxlj1rdGqbMQdDUz2qDa8PjDo/qPIr6OoyAo0Ia+VwuTW5i3/IQ+QNMiZHq
+fKEOpJtWQ0XQzthZjevtN2MYe+oeNei3tk5ZneVJu3wIrdNXo4uP4NEg2UbdHqHk
+a46p4iEMoE0kLNJOnP4lmCups99R0j4KXlVaNt6isa4O354iEE0br6TzOle8pcCF
+8LrYaYSUkeV+3Xq1MzVlgqbBAYw4E3w6cH35q2CubErcN8ub2E589GAeb4PTqYN9
+hD0vsFcZ0lvzfaTEauFkjdN5Dj4yLmPNgptnjddvwbOyhabp1S4Hc59FA39KaQcI
+9g+qWPkaq5VJ+G2M/Qn6e6Hyu728mriHdhTLY+EbA6Sr8gcPMCwtZrkQ72b90sFl
+xdG0Xe7JeNlAihTRUgBtu22y+KElvtgCaRGXuRRjbKHeCXb/AcDZyr+OEzmwHm6n
+0mDosXKNHEqD1pxnZdsX
+=rSDi
+-----END PGP SIGNATURE-----
+
+--QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2--
