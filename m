@@ -1,22 +1,33 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <keescook@google.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CFD6B1A08CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 00:35:08 +1000 (AEST)
-Message-ID: <55A66F96.6030808@redhat.com>
-Date: Wed, 15 Jul 2015 16:35:02 +0200
-From: Thomas Huth <thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20A0C1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 01:12:45 +1000 (AEST)
+Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c03::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5F12E1402B6
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2015 01:12:43 +1000 (AEST)
+Received: by iebmu5 with SMTP id mu5so35583964ieb.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 08:12:41 -0700 (PDT)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@lists.ozlabs.org, anton@samba.org, kvm-ppc@vger.kernel.org
-Subject: Re: BUG: sleeping function called from ras_epow_interrupt context
-References: <55A55846.5080904@redhat.com>
- <1436908977.3948.266.camel@kernel.crashing.org>
-In-Reply-To: <1436908977.3948.266.camel@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2"
+Sender: keescook@google.com
+In-Reply-To: <1436945834-26660-9-git-send-email-mpe@ellerman.id.au>
+References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
+ <1436945834-26660-9-git-send-email-mpe@ellerman.id.au>
+Date: Wed, 15 Jul 2015 08:12:41 -0700
+Message-ID: <CAGXu5jKX2OsQz0by52ZahiFXn89u4YQ8WHNv7b1XkpL0W+yW_w@mail.gmail.com>
+Subject: Re: [RFC PATCH 09/12] powerpc/kernel: Add SIG_SYS support for compat
+ tasks
+From: Kees Cook <keescook@chromium.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Andy Lutomirski <luto@amacapital.net>, Will Drewry <wad@chromium.org>,
+ strosake@linux.vnet.ibm.com, bogdan.purcareata@freescale.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +37,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jul 15, 2015 at 12:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> SIG_SYS was added in commit a0727e8ce513 "signal, x86: add SIGSYS info
+> and make it synchronous."
+>
+> Because we use the asm-generic struct siginfo, we got support for
+> SIG_SYS for free as part of that commit.
+>
+> However there was no compat handling added for powerpc. That means we've
+> been advertising the existence of signfo._sifields._sigsys to compat
+> tasks, but not actually filling in the fields correctly.
+>
+> Luckily it looks like no one has noticed, presumably because the only
+> user of SIGSYS in the kernel is seccomp filter, which we don't support
+> yet.
+>
+> So before we enable seccomp filter, add compat handling for SIGSYS.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/compat.h             | 7 +++++++
+>  arch/powerpc/kernel/signal_32.c               | 5 +++++
+>  tools/testing/selftests/seccomp/seccomp_bpf.c | 4 ++++
+>  3 files changed, 16 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
+> index b142b8e0ed9e..4f2df589ec1d 100644
+> --- a/arch/powerpc/include/asm/compat.h
+> +++ b/arch/powerpc/include/asm/compat.h
+> @@ -174,6 +174,13 @@ typedef struct compat_siginfo {
+>                         int _band;      /* POLL_IN, POLL_OUT, POLL_MSG */
+>                         int _fd;
+>                 } _sigpoll;
+> +
+> +               /* SIGSYS */
+> +               struct {
+> +                       unsigned int _call_addr; /* calling insn */
+> +                       int _syscall;            /* triggering system call number */
+> +                       unsigned int _arch;      /* AUDIT_ARCH_* of syscall */
+> +               } _sigsys;
+>         } _sifields;
+>  } compat_siginfo_t;
+>
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> index d3a831ac0f92..77f97284124e 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -949,6 +949,11 @@ int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
+>                 err |= __put_user(s->si_overrun, &d->si_overrun);
+>                 err |= __put_user(s->si_int, &d->si_int);
+>                 break;
+> +       case __SI_SYS >> 16:
+> +               err |= __put_user(ptr_to_compat(s->si_call_addr), &d->si_call_addr);
+> +               err |= __put_user(s->si_syscall, &d->si_syscall);
+> +               err |= __put_user(s->si_arch, &d->si_arch);
+> +               break;
+>         case __SI_RT >> 16: /* This is not generated by the kernel as of now.  */
+>         case __SI_MESGQ >> 16:
+>                 err |= __put_user(s->si_int, &d->si_int);
+> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> index c5abe7fd7590..b2374c131340 100644
+> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
+> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> @@ -645,6 +645,10 @@ static struct siginfo TRAP_info;
+>  static volatile int TRAP_nr;
+>  static void TRAP_action(int nr, siginfo_t *info, void *void_context)
+>  {
+> +       fprintf(stderr, "in TRAP_action\n");
+> +       fprintf(stderr, "info->si_call_addr %p\n", info->si_call_addr);
+> +       fprintf(stderr, "info->si_syscall %u\n", info->si_syscall);
+> +       fprintf(stderr, "info->si_arch %u\n", info->si_arch);
+>         memcpy(&TRAP_info, info, sizeof(TRAP_info));
+>         TRAP_nr = nr;
+>  }
 
-On 07/14/2015 11:22 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2015-07-14 at 20:43 +0200, Thomas Huth wrote:
->> Any suggestions how to fix this? Simply revert 587f83e8dd50d? Use
->> mdelay() instead of msleep() in rtas_busy_delay()? Something more
->> fancy?
->=20
-> A proper fix would be more fancy, the get_sensor should happen in a
-> kernel thread instead.
+This chunk looks like left-over debugging?
 
-I'm not very familiar with this stuff, but isn't the EPOW interrupt
-something that is very time-critical? Moving parts of the handler into a
-kernel thread then does not sound like a very good idea to me...
+-Kees
 
-Another question: Can it happen at all that this get-sensor call results
-in a sleep condition? Looking at commit ID
-81b73dd92b97423b8f5324a59044da478c04f4c4 ("Fix might-sleep warning on
-removing cpus"), which apparently fixed a similar issue for CPU
-hot-plugging, indicates that at least some of the rtas calls are never
-returning the busy code? In that case we could fix this by introducing a
-similar rtas_get_sensor_fast() function? (or simply revert 587f83e8dd50d
-which would be quite similar, I think)
-
- Thomas
+> --
+> 2.1.0
+>
 
 
 
---QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJVpm+WAAoJEC7Z13T+cC21s0sP/igHyXofqISs9s5OiDtyn1t/
-b3C2LYLLqkVW4l5ljiRdEcLmXSuIJV3VbKqCNqBU5wIroKRQXOxuqRHC8bH3yn0m
-OXdKV9/mLHWGQ3xiGaXpJvxJnUcyRkKDRzaLJGXmSXEMchri7yXnLeExQEc75fFA
-cJHYRN5D5Zq5yyjtSb3Ei0A2F0mYtEt7pWOfMpf05aO1zErP14cKFV3NuK4nUkEb
-53Cmodxlj1rdGqbMQdDUz2qDa8PjDo/qPIr6OoyAo0Ia+VwuTW5i3/IQ+QNMiZHq
-fKEOpJtWQ0XQzthZjevtN2MYe+oeNei3tk5ZneVJu3wIrdNXo4uP4NEg2UbdHqHk
-a46p4iEMoE0kLNJOnP4lmCups99R0j4KXlVaNt6isa4O354iEE0br6TzOle8pcCF
-8LrYaYSUkeV+3Xq1MzVlgqbBAYw4E3w6cH35q2CubErcN8ub2E589GAeb4PTqYN9
-hD0vsFcZ0lvzfaTEauFkjdN5Dj4yLmPNgptnjddvwbOyhabp1S4Hc59FA39KaQcI
-9g+qWPkaq5VJ+G2M/Qn6e6Hyu728mriHdhTLY+EbA6Sr8gcPMCwtZrkQ72b90sFl
-xdG0Xe7JeNlAihTRUgBtu22y+KElvtgCaRGXuRRjbKHeCXb/AcDZyr+OEzmwHm6n
-0mDosXKNHEqD1pxnZdsX
-=rSDi
------END PGP SIGNATURE-----
-
---QgT3AUnutxkP2RoRrRkhIOA7M41kGoGt2--
+-- 
+Kees Cook
+Chrome OS Security
