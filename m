@@ -1,32 +1,21 @@
-Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0138.outbound.protection.outlook.com [157.56.111.138])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8533C1A05C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 01:16:52 +1000 (AEST)
-Received: from mail-ie0-x22b.google.com (mail-ie0-x22b.google.com
- [IPv6:2607:f8b0:4001:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C865B1402B6
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2015 01:16:51 +1000 (AEST)
-Received: by iecuq6 with SMTP id uq6so35874828iec.2
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 08:16:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C77ED1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 03:47:28 +1000 (AEST)
+Message-ID: <1436982433.2993.81.camel@freescale.com>
+Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
+ support
+From: Scott Wood <scottwood@freescale.com>
+To: Priyanka Jain <Priyanka.Jain@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 15 Jul 2015 12:47:13 -0500
+In-Reply-To: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
+References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1436945834-26660-12-git-send-email-mpe@ellerman.id.au>
-References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
- <1436945834-26660-12-git-send-email-mpe@ellerman.id.au>
-Date: Wed, 15 Jul 2015 08:16:49 -0700
-Message-ID: <CAGXu5jK0TMJ-K6jYrZMzeMFb0QYC4Zg-9Sdd-ih+Qpj2EG9fsQ@mail.gmail.com>
-Subject: Re: [RFC PATCH 12/12] selftests/seccomp: Add powerpc support
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Andy Lutomirski <luto@amacapital.net>, Will Drewry <wad@chromium.org>,
- strosake@linux.vnet.ibm.com, bogdan.purcareata@freescale.com
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,66 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 15, 2015 at 12:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Wire up the syscall number and regs so the tests work on powerpc.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-Acked-by: Kees Cook <keescook@chromium.org>
-
--Kees
-
+On Wed, 2015-07-15 at 15:00 +0530, Priyanka Jain wrote:
+> T1040D4RDB/T1042D4RDB are Freescale Reference Design Board
+> which can support T1040/T1042 QorIQ Power
+> Architecture™ processor respectively
+> 
+> T1040D4RDB/T1042D4RDB board Overview
+> -------------------------------------
+> - SERDES Connections, 8 lanes supporting:
+>         - PCI
+>         - SGMII
+>         - SATA 2.0
+>         - QSGMII(only for T1040D4RDB)
+>     - DDR Controller
+>         - Supports rates of up to 1600 MHz data-rate
+>         - Supports one DDR4 UDIMM
+>     -IFC/Local Bus
+>         - NAND flash: 1GB 8-bit NAND flash
+>         - NOR: 128MB 16-bit NOR Flash
+>     - Ethernet
+>         - Two on-board RGMII 10/100/1G ethernet ports.
+>         - PHY #0 remains powered up during deep-sleep
+>     - CPLD
+>     - Clocks
+>         - System and DDR clock (SYSCLK, “DDRCLK”)
+>         - SERDES clocks
+>     - Power Supplies
+>     - USB
+>         - Supports two USB 2.0 ports with integrated PHYs
+>         - Two type A ports with  5V@1.5Aper port.
+>     - SDHC
+>         - SDHC/SDXC connector
+>     - SPI
+>         - On-board 64MB SPI flash
+>     - I2C
+>         - Devices connected: EEPROM, thermal monitor, VID controller
+>     - Other IO
+>         - Two Serial ports
+>         - ProfiBus port
+> 
+>     Add support for T1040/T1042D4RDB board:
+>     -add device tree
+>     -Add entry in corenet_generic.c
+> 
+> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
 > ---
->  tools/testing/selftests/seccomp/seccomp_bpf.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> index 51adb9afb511..05fcdb974df6 100644
-> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
-> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> @@ -14,6 +14,7 @@
->  #include <linux/filter.h>
->  #include <sys/prctl.h>
->  #include <sys/ptrace.h>
-> +#include <sys/types.h>
->  #include <sys/user.h>
->  #include <linux/prctl.h>
->  #include <linux/ptrace.h>
-> @@ -1209,6 +1210,10 @@ TEST_F(TRACE_poke, getpid_runs_normally)
->  # define ARCH_REGS     struct user_pt_regs
->  # define SYSCALL_NUM   regs[8]
->  # define SYSCALL_RET   regs[0]
-> +#elif defined(__powerpc__)
-> +# define ARCH_REGS     struct pt_regs
-> +# define SYSCALL_NUM   gpr[0]
-> +# define SYSCALL_RET   gpr[3]
->  #else
->  # error "Do not know how to find your architecture's registers and syscalls"
->  #endif
-> @@ -1242,7 +1247,7 @@ void change_syscall(struct __test_metadata *_metadata,
->         ret = ptrace(PTRACE_GETREGSET, tracee, NT_PRSTATUS, &iov);
->         EXPECT_EQ(0, ret);
->
-> -#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__)
-> +#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__) || defined(__powerpc__)
->         {
->                 regs.SYSCALL_NUM = syscall;
->         }
-> @@ -1406,6 +1411,8 @@ TEST_F(TRACE_syscall, syscall_dropped)
->  #  define __NR_seccomp 383
->  # elif defined(__aarch64__)
->  #  define __NR_seccomp 277
-> +# elif defined(__powerpc__)
-> +#  define __NR_seccomp 358
->  # else
->  #  warning "seccomp syscall number unknown for this architecture"
->  #  define __NR_seccomp 0xffff
-> --
-> 2.1.0
->
+>  Changes for v2:
+>       Incorporated Scott's comments on device tree
 
+You didn't respond to the comments on the CPLD node.
 
++                i2c@118100{
+> +                      mux@77{
+> +                             compatible = "nxp,pca9546";
+> +                             reg = <0x77>;
+> +                             #address-cells = <1>;
+> +                             #size-cells = <0>;
+> +                     };
+> +             };
 
--- 
-Kees Cook
-Chrome OS Security
+A mux with no nodes under it (and yet it has #address-cells/#size-cells)?  
+What is it multiplexing?
+
+-Scott
