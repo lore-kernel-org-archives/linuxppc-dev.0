@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AECB01A0926
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:37:21 +1000 (AEST)
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 403951A198A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:37:28 +1000 (AEST)
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRI01S01NQ7C570@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:37:19 +0900 (KST)
+ with ESMTP id <0NRI016AZNPTPVE0@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:37:05 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v3 34/46] usb: musb: gadget: add ep capabilities support
-Date: Wed, 15 Jul 2015 08:32:21 +0200
-Message-id: <1436941953-1327-35-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v3 32/46] usb: gadget: udc-xilinx: add ep capabilities support
+Date: Wed, 15 Jul 2015 08:32:19 +0200
+Message-id: <1436941953-1327-33-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 References: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,41 +38,34 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/musb/musb_gadget.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/usb/gadget/udc/udc-xilinx.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
-index 625d482f..043248a 100644
---- a/drivers/usb/musb/musb_gadget.c
-+++ b/drivers/usb/musb/musb_gadget.c
-@@ -1729,6 +1729,7 @@ init_peripheral_ep(struct musb *musb, struct musb_ep *ep, u8 epnum, int is_in)
- 	INIT_LIST_HEAD(&ep->end_point.ep_list);
- 	if (!epnum) {
- 		usb_ep_set_maxpacket_limit(&ep->end_point, 64);
-+		ep->end_point.caps.type_control = true;
- 		ep->end_point.ops = &musb_g_ep0_ops;
- 		musb->g.ep0 = &ep->end_point;
- 	} else {
-@@ -1736,9 +1737,20 @@ init_peripheral_ep(struct musb *musb, struct musb_ep *ep, u8 epnum, int is_in)
- 			usb_ep_set_maxpacket_limit(&ep->end_point, hw_ep->max_packet_sz_tx);
- 		else
- 			usb_ep_set_maxpacket_limit(&ep->end_point, hw_ep->max_packet_sz_rx);
-+		ep->end_point.caps.type_iso = true;
-+		ep->end_point.caps.type_bulk = true;
-+		ep->end_point.caps.type_int = true;
- 		ep->end_point.ops = &musb_ep_ops;
- 		list_add_tail(&ep->end_point.ep_list, &musb->g.ep_list);
- 	}
+diff --git a/drivers/usb/gadget/udc/udc-xilinx.c b/drivers/usb/gadget/udc/udc-xilinx.c
+index 1f24274..1cbb0ac 100644
+--- a/drivers/usb/gadget/udc/udc-xilinx.c
++++ b/drivers/usb/gadget/udc/udc-xilinx.c
+@@ -1317,12 +1317,21 @@ static void xudc_eps_init(struct xusb_udc *udc)
+ 			snprintf(ep->name, EPNAME_SIZE, "ep%d", ep_number);
+ 			ep->ep_usb.name = ep->name;
+ 			ep->ep_usb.ops = &xusb_ep_ops;
 +
-+	if (!epnum || hw_ep->is_shared_fifo) {
-+		ep->end_point.caps.dir_in = true;
-+		ep->end_point.caps.dir_out = true;
-+	} else if (is_in)
-+		ep->end_point.caps.dir_in = true;
-+	else
-+		ep->end_point.caps.dir_out = true;
- }
++			ep->ep_usb.caps.type_iso = true;
++			ep->ep_usb.caps.type_bulk = true;
++			ep->ep_usb.caps.type_int = true;
+ 		} else {
+ 			ep->ep_usb.name = ep0name;
+ 			usb_ep_set_maxpacket_limit(&ep->ep_usb, EP0_MAX_PACKET);
+ 			ep->ep_usb.ops = &xusb_ep0_ops;
++
++			ep->ep_usb.caps.type_control = true;
+ 		}
  
- /*
++		ep->ep_usb.caps.dir_in = true;
++		ep->ep_usb.caps.dir_out = true;
++
+ 		ep->udc = udc;
+ 		ep->epnumber = ep_number;
+ 		ep->desc = NULL;
 -- 
 1.9.1
