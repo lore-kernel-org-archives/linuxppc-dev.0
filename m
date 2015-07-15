@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2C6F1A1D4C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 17:37:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 91D841A1F32
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 17:37:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>, keescook@chromium.org, luto@amacapital.net,
  wad@chromium.org, strosake@linux.vnet.ibm.com,
  bogdan.purcareata@freescale.com
-Subject: [RFC PATCH 03/12] powerpc/kernel: Change the do_syscall_trace_enter()
- API
-Date: Wed, 15 Jul 2015 17:37:05 +1000
-Message-Id: <1436945834-26660-3-git-send-email-mpe@ellerman.id.au>
+Subject: [RFC PATCH 04/12] powerpc: Drop unused syscall_get_error()
+Date: Wed, 15 Jul 2015 17:37:06 +1000
+Message-Id: <1436945834-26660-4-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
 References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,173 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The API for calling do_syscall_trace_enter() is currently sensible
-enough, it just returns the (modified) syscall number.
+syscall_get_error() is unused, and never has been.
 
-However once we enable seccomp filter it will get more complicated. When
-seccomp filter runs, the seccomp kernel code (via SECCOMP_RET_ERRNO), or
-a ptracer (via SECCOMP_RET_TRACE), may reject the syscall and *may* or may
-*not* set a return value in r3.
+It's also probably wrong, as it negates r3 before returning it, but that
+depends on what the caller is expecting.
 
-That means the assembler that calls do_syscall_trace_enter() can not
-blindly return ENOSYS, it needs to only return ENOSYS if a return value
-has not already been set.
+It also doesn't deal with compat, and doesn't deal with TIF_NOERROR.
 
-There is no way to implement that logic with the current API. So change
-the do_syscall_trace_enter() API to make it deal with the return code
-juggling, and the assembler can then just return whatever return code it
-is given.
+Although we could fix those, until it has a caller and it's clear what
+semantics the caller wants it's just untested code. So drop it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/entry_32.S |  4 ++++
- arch/powerpc/kernel/entry_64.S | 23 ++++++++++++++------
- arch/powerpc/kernel/ptrace.c   | 48 ++++++++++++++++++++++++++++++++----------
- 3 files changed, 58 insertions(+), 17 deletions(-)
+ arch/powerpc/include/asm/syscall.h | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 67ecdf61f4e3..2405631e91a2 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -458,6 +458,10 @@ syscall_dotrace:
- 	lwz	r7,GPR7(r1)
- 	lwz	r8,GPR8(r1)
- 	REST_NVGPRS(r1)
-+
-+	cmplwi	r0,NR_syscalls
-+	/* Return code is already in r3 thanks to do_syscall_trace_enter() */
-+	bge-	ret_from_syscall
- 	b	syscall_dotrace_cont
- 
- syscall_exit_work:
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 8292581a42f1..41f8fcf615d7 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -151,8 +151,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 	CURRENT_THREAD_INFO(r11, r1)
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
--	bne	syscall_dotrace
--.Lsyscall_dotrace_cont:
-+	bne	syscall_dotrace		/* does not return */
- 	cmpldi	0,r0,NR_syscalls
- 	bge-	syscall_enosys
- 
-@@ -248,22 +247,34 @@ syscall_dotrace:
- 	/* Get pt_regs into r3 */
- 	mr	r3, r9
- 	bl	do_syscall_trace_enter
-+
- 	/*
--	 * Restore argument registers possibly just changed.
--	 * We use the return value of do_syscall_trace_enter
--	 * for the call number to look up in the table (r0).
-+	 * We use the return value of do_syscall_trace_enter() as the syscall
-+	 * number. If the syscall was rejected for any reason do_syscall_trace_enter()
-+	 * returns an invalid syscall number and the test below against
-+	 * NR_syscalls will fail.
- 	 */
- 	mr	r0,r3
-+
-+	/* Restore argument registers just clobbered and/or possibly changed. */
- 	ld	r3,GPR3(r1)
- 	ld	r4,GPR4(r1)
- 	ld	r5,GPR5(r1)
- 	ld	r6,GPR6(r1)
- 	ld	r7,GPR7(r1)
- 	ld	r8,GPR8(r1)
-+
-+	/* Repopulate r9 and r10 for the system_call path */
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
- 	CURRENT_THREAD_INFO(r10, r1)
- 	ld	r10,TI_FLAGS(r10)
--	b	.Lsyscall_dotrace_cont
-+
-+	cmpldi	r0,NR_syscalls
-+	blt+	system_call
-+
-+	/* Return code is already in r3 thanks to do_syscall_trace_enter() */
-+	b	.Lsyscall_exit
-+
- 
- syscall_enosys:
- 	li	r3,-ENOSYS
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index f21897b42057..7484221bb3f8 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1762,26 +1762,42 @@ long arch_ptrace(struct task_struct *child, long request,
- 	return ret;
+diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+index ff21b7a2f0cc..c6239dabcfb1 100644
+--- a/arch/powerpc/include/asm/syscall.h
++++ b/arch/powerpc/include/asm/syscall.h
+@@ -34,12 +34,6 @@ static inline void syscall_rollback(struct task_struct *task,
+ 	regs->gpr[3] = regs->orig_gpr3;
  }
  
--/*
-- * We must return the syscall number to actually look up in the table.
-- * This can be -1L to skip running any syscall at all.
-+/**
-+ * do_syscall_trace_enter() - Do syscall tracing on kernel entry.
-+ * @regs: the pt_regs of the task to trace (current)
-+ *
-+ * Performs various types of tracing on syscall entry. This includes seccomp,
-+ * ptrace, syscall tracepoints and audit.
-+ *
-+ * The pt_regs are potentially visible to userspace via ptrace, so their
-+ * contents is ABI.
-+ *
-+ * One or more of the tracers may modify the contents of pt_regs, in particular
-+ * to modify arguments or even the syscall number itself.
-+ *
-+ * It's also possible that a tracer can choose to reject the system call. In
-+ * that case this function will return an illegal syscall number, and will put
-+ * an appropriate return value in regs->r3.
-+ *
-+ * Return: the (possibly changed) syscall number.
-  */
- long do_syscall_trace_enter(struct pt_regs *regs)
+-static inline long syscall_get_error(struct task_struct *task,
+-				     struct pt_regs *regs)
+-{
+-	return (regs->ccr & 0x10000000) ? -regs->gpr[3] : 0;
+-}
+-
+ static inline long syscall_get_return_value(struct task_struct *task,
+ 					    struct pt_regs *regs)
  {
--	long ret = 0;
-+	bool abort = false;
- 
- 	user_exit();
- 
- 	secure_computing_strict(regs->gpr[0]);
- 
--	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
--	    tracehook_report_syscall_entry(regs))
-+	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
- 		/*
--		 * Tracing decided this syscall should not happen.
--		 * We'll return a bogus call number to get an ENOSYS
--		 * error, but leave the original number in regs->gpr[0].
-+		 * The tracer may decide to abort the syscall, if so tracehook
-+		 * will return !0. Note that the tracer may also just change
-+		 * regs->gpr[0] to an invalid syscall number, that is handled
-+		 * below on the exit path.
- 		 */
--		ret = -1L;
-+		abort = tracehook_report_syscall_entry(regs) != 0;
-+	}
- 
- 	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
- 		trace_sys_enter(regs, regs->gpr[0]);
-@@ -1798,7 +1814,17 @@ long do_syscall_trace_enter(struct pt_regs *regs)
- 				    regs->gpr[5] & 0xffffffff,
- 				    regs->gpr[6] & 0xffffffff);
- 
--	return ret ?: regs->gpr[0];
-+	if (abort || regs->gpr[0] >= NR_syscalls) {
-+		/*
-+		 * If we are aborting explicitly, or if the syscall number is
-+		 * now invalid, set the return value to -ENOSYS.
-+		 */
-+		regs->gpr[3] = -ENOSYS;
-+		return -1;
-+	}
-+
-+	/* Return the possibly modified but valid syscall number */
-+	return regs->gpr[0];
- }
- 
- void do_syscall_trace_leave(struct pt_regs *regs)
 -- 
 2.1.0
