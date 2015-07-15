@@ -1,17 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EAE481A2EAE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 17:37:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2240F1A2ECA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 17:37:27 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>, keescook@chromium.org, luto@amacapital.net,
  wad@chromium.org, strosake@linux.vnet.ibm.com,
  bogdan.purcareata@freescale.com
-Subject: [RFC PATCH 09/12] powerpc/kernel: Add SIG_SYS support for compat tasks
-Date: Wed, 15 Jul 2015 17:37:11 +1000
-Message-Id: <1436945834-26660-9-git-send-email-mpe@ellerman.id.au>
+Subject: [RFC PATCH 10/12] powerpc/kernel: Enable seccomp filter
+Date: Wed, 15 Jul 2015 17:37:12 +1000
+Message-Id: <1436945834-26660-10-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
 References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,77 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SIG_SYS was added in commit a0727e8ce513 "signal, x86: add SIGSYS info
-and make it synchronous."
+This commit enables seccomp filter on powerpc, now that we have all the
+necessary pieces in place.
 
-Because we use the asm-generic struct siginfo, we got support for
-SIG_SYS for free as part of that commit.
+To support seccomp's desire to modify the syscall return value under
+some circumstances, we use a different ABI to the ptrace ABI. That is we
+use r3 as the syscall return value, and orig_gpr3 is the first syscall
+parameter.
 
-However there was no compat handling added for powerpc. That means we've
-been advertising the existence of signfo._sifields._sigsys to compat
-tasks, but not actually filling in the fields correctly.
+This means the seccomp code, or a ptracer via SECCOMP_RET_TRACE, will
+see -ENOSYS preloaded in r3. This is identical to the behaviour on x86,
+and allows seccomp or the ptracer to either leave the -ENOSYS or change
+it to something else, as well as rejecting or not the syscall by
+modifying r0.
 
-Luckily it looks like no one has noticed, presumably because the only
-user of SIGSYS in the kernel is seccomp filter, which we don't support
-yet.
-
-So before we enable seccomp filter, add compat handling for SIGSYS.
+If seccomp does not reject the syscall, we restore the register state to
+match what ptrace and audit expect, ie. r3 is the first syscall
+parameter again. We do this restore using orig_gpr3, which may have been
+modified by seccomp, which allows seccomp to modify the first syscall
+paramater and allow the syscall to proceed.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/compat.h             | 7 +++++++
- arch/powerpc/kernel/signal_32.c               | 5 +++++
- tools/testing/selftests/seccomp/seccomp_bpf.c | 4 ++++
- 3 files changed, 16 insertions(+)
+ arch/powerpc/Kconfig         |  1 +
+ arch/powerpc/kernel/ptrace.c | 28 +++++++++++++++++++++++++++-
+ 2 files changed, 28 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-index b142b8e0ed9e..4f2df589ec1d 100644
---- a/arch/powerpc/include/asm/compat.h
-+++ b/arch/powerpc/include/asm/compat.h
-@@ -174,6 +174,13 @@ typedef struct compat_siginfo {
- 			int _band;	/* POLL_IN, POLL_OUT, POLL_MSG */
- 			int _fd;
- 		} _sigpoll;
-+
-+		/* SIGSYS */
-+		struct {
-+			unsigned int _call_addr; /* calling insn */
-+			int _syscall;		 /* triggering system call number */
-+			unsigned int _arch;	 /* AUDIT_ARCH_* of syscall */
-+		} _sigsys;
- 	} _sifields;
- } compat_siginfo_t;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 5ef27113b898..b6cb6a87b7a2 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -155,6 +155,7 @@ config PPC
+ 	select HAVE_PERF_EVENTS_NMI if PPC64
+ 	select EDAC_SUPPORT
+ 	select EDAC_ATOMIC_SCRUB
++	select HAVE_ARCH_SECCOMP_FILTER
  
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index d3a831ac0f92..77f97284124e 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -949,6 +949,11 @@ int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
- 		err |= __put_user(s->si_overrun, &d->si_overrun);
- 		err |= __put_user(s->si_int, &d->si_int);
- 		break;
-+	case __SI_SYS >> 16:
-+		err |= __put_user(ptr_to_compat(s->si_call_addr), &d->si_call_addr);
-+		err |= __put_user(s->si_syscall, &d->si_syscall);
-+		err |= __put_user(s->si_arch, &d->si_arch);
-+		break;
- 	case __SI_RT >> 16: /* This is not generated by the kernel as of now.  */
- 	case __SI_MESGQ >> 16:
- 		err |= __put_user(s->si_int, &d->si_int);
-diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-index c5abe7fd7590..b2374c131340 100644
---- a/tools/testing/selftests/seccomp/seccomp_bpf.c
-+++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-@@ -645,6 +645,10 @@ static struct siginfo TRAP_info;
- static volatile int TRAP_nr;
- static void TRAP_action(int nr, siginfo_t *info, void *void_context)
- {
-+	fprintf(stderr, "in TRAP_action\n");
-+	fprintf(stderr, "info->si_call_addr %p\n", info->si_call_addr);
-+	fprintf(stderr, "info->si_syscall %u\n", info->si_syscall);
-+	fprintf(stderr, "info->si_arch %u\n", info->si_arch);
- 	memcpy(&TRAP_info, info, sizeof(TRAP_info));
- 	TRAP_nr = nr;
- }
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 7484221bb3f8..de79eb5218c6 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1787,7 +1787,33 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 
+ 	user_exit();
+ 
+-	secure_computing_strict(regs->gpr[0]);
++	if (test_thread_flag(TIF_SECCOMP)) {
++		/*
++		 * The ABI we present to seccomp tracers is that r3 contains
++		 * the syscall return value and orig_gpr3 contains the first
++		 * syscall parameter. This is different to the ptrace ABI where
++		 * both r3 and orig_gpr3 contain the first syscall parameter.
++		 */
++		regs->gpr[3] = -ENOSYS;
++
++		/*
++		 * We use the __ version here because we have already checked
++		 * TIF_SECCOMP. If this fails, there is nothing left to do, we
++		 * have already loaded -ENOSYS into r3, or seccomp has put
++		 * something else in r3 (via SECCOMP_RET_ERRNO/TRACE).
++		 */
++		if (__secure_computing())
++			return -1;
++
++		/*
++		 * The syscall was allowed by seccomp, restore the register
++		 * state to what ptrace and audit expect.
++		 * Note that we use orig_gpr3, which means a seccomp tracer can
++		 * modify the first syscall parameter (in orig_gpr3) and also
++		 * allow the syscall to proceed.
++		 */
++		regs->gpr[3] = regs->orig_gpr3;
++	}
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
+ 		/*
 -- 
 2.1.0
