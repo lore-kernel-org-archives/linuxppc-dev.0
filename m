@@ -1,27 +1,32 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id AFF5A1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 15:21:36 +1000 (AEST)
-Date: Wed, 15 Jul 2015 15:21:11 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Subject: Re: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead
- of nvram_read_byte() and nvram_write_byte()
-In-Reply-To: <1436874720.3948.252.camel@kernel.crashing.org>
-Message-ID: <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
-References: <20150712102527.356151908@telegraphics.com.au>
- <20150712102531.505897278@telegraphics.com.au>
- <alpine.LNX.2.00.1507141725480.851@nippy.intranet>
- <1436874720.3948.252.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-pd0-f176.google.com (mail-pd0-f176.google.com
+ [209.85.192.176])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E39081A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 15:49:16 +1000 (AEST)
+Received: by pdjr16 with SMTP id r16so18685541pdj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 22:49:15 -0700 (PDT)
+From: Baolin Wang <baolin.wang@linaro.org>
+To: tglx@linutronix.de
+Cc: arnd@arndb.de, john.stultz@linaro.org, heenasirwani@gmail.com,
+ pang.xunlei@linaro.org, mingo@kernel.org, peterz@infradead.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+ rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
+ fweisbec@gmail.com, hofrat@osadl.org, ahh@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ serge.hallyn@canonical.com, james.l.morris@oracle.com, serge@hallyn.com,
+ paul@paul-moore.com, john.johansen@canonical.com, sds@tycho.nsa.gov,
+ casey@schaufler-ca.com, penguin-kernel@I-love.SAKURA.ne.jp, neilb@suse.de,
+ edumazet@google.com, jlayton@primarydata.com, keescook@chromium.org,
+ linux-security-module@vger.kernel.org, baolin.wang@linaro.org,
+ y2038@lists.linaro.org
+Subject: [PATCH 0/6] Introduce 64bit accessors and structures required to
+ address y2038 issues in the posix_clock subsystem
+Date: Wed, 15 Jul 2015 13:47:49 +0800
+Message-Id: <cover.1436511577.git.baolin.wang@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,58 +36,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch series change the 32-bit time types (timespec/itimerspec) to
+the 64-bit types (timespec64/itimerspec64), and add new 64bit accessor
+functions, which are required in order to avoid y2038 issues in the
+posix_clock subsystem.
 
-On Tue, 14 Jul 2015, Benjamin Herrenschmidt wrote:
+In order to avoid spamming people too much, I'm only sending the first
+few patches of the patch series, and left the other patches for later.
 
-> On Tue, 2015-07-14 at 17:58 +1000, Finn Thain wrote:
-> > Make use of arch_nvram_ops in device drivers so that the nvram_* 
-> > function exports can be removed.
-> > 
-> > Since they are no longer global symbols, rename the PPC32 nvram_* 
-> > functions appropriately.
-> > 
-> > Add the missing CONFIG_NVRAM test to imsttfb to avoid a build failure.
-> > 
-> > Add a CONFIG_PPC32 test to matroxfb because PPC64 doesn't implement 
-> > the read_byte() method.
-> 
-> This is a bit fishy in a way because some of that nvram stuff is really 
-> about powermac/apple nvram offsets, ie, "XPRAM".
+And if you are interested in the whole patch series, see:
+https://git.linaro.org/people/baolin.wang/upstream_0627.git
 
-Yes, the generalization that PPC64 does not have XPRAM is wrong, but that 
-wasn't originally my doing. If we were to address that issue, this patch 
-series may not be the best place to do so.
+Thoughts and feedback would be appreciated.
 
-The situation presently is that CONFIG_NVRAM cannot be enabled on PPC64. I 
-took advantage of that simplification, despite the corner cases where it 
-fails.
+Baolin Wang (6):
+  time: Introduce struct itimerspec64
+  timekeeping: Introduce current_kernel_time64()
+  security: Introduce security_settime64()
+  time: Introduce do_sys_settimeofday64()
+  time: Introduce timespec64_to_jiffies()/jiffies_to_timespec64()
+  cputime: Introduce cputime_to_timespec64()/timespec64_to_cputime()
 
-The corner cases are found among PPC64 systems with Matrox cards. The 
-other PowerMac video drivers are not really relevant here due to "depends 
-on PPC32" or "#if defined(CONFIG_PPC32)", meaning that nvram_read_byte() 
-isn't a problem there.
-
-Perhaps only dual-boot systems are at issue because AFAIK only Mac OS 
-offers a user friendly way to edit XPRAM settings (?) Further, does the 
-video mode setting in XPRAM relate only to the MacOS main screen and not 
-to other devices? That is, are we concerned here only with dual-boot PPC64 
-machines with one matrox card, as the main screen, and no Linux desktop 
-environment and no video mode settings on the kernel command line?
-
-> Maybe we should have a dedicated accessor for "mac_xpram" and NULL-check 
-> it rather than using ifdef's ?
-
-I wanted arch_nvram_ops to be const data, which means a NULL check won't 
-work, because defined(CONFIG_PPC_PMAC) does not imply availability of 
-XPRAM at run-time.
-
-There is a similar situation in the m68k portion of this patch series: a 
-multi-platform kernel binary might run on an Atari or a Mac. On m68k I 
-resolved this with MACH_IS_MAC(), which is analogous to 
-machine_is(powermac).
-
-So I can see how to implement XPRAM for matroxfb and imsttfb on PPC64. But 
-this is an enhancement that I would defer unless the present limitation is 
-already problematic.
+ arch/powerpc/include/asm/cputime.h    |    6 +++---
+ arch/s390/include/asm/cputime.h       |    8 ++++----
+ include/asm-generic/cputime_jiffies.h |   10 +++++-----
+ include/asm-generic/cputime_nsecs.h   |    6 +++---
+ include/linux/cputime.h               |   16 +++++++++++++++
+ include/linux/jiffies.h               |   22 ++++++++++++++++++---
+ include/linux/lsm_hooks.h             |    5 +++--
+ include/linux/security.h              |   20 ++++++++++++++++---
+ include/linux/time64.h                |   35 +++++++++++++++++++++++++++++++++
+ include/linux/timekeeping.h           |   24 +++++++++++++++++++---
+ kernel/time/time.c                    |   28 +++++++++++++++-----------
+ kernel/time/timekeeping.c             |    6 +++---
+ security/commoncap.c                  |    2 +-
+ security/security.c                   |    2 +-
+ 14 files changed, 148 insertions(+), 42 deletions(-)
 
 -- 
+1.7.9.5
