@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A7EB71A06C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:33:55 +1000 (AEST)
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4FACF1A0884
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:34:03 +1000 (AEST)
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRI01VUGNKHOI50@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:33:53 +0900 (KST)
+ with ESMTP id <0NRI01FPLNKOAZ80@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:34:00 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v3 05/46] usb: chipidea: udc: add ep capabilities support
-Date: Wed, 15 Jul 2015 08:31:52 +0200
-Message-id: <1436941953-1327-6-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v3 06/46] usb: dwc2: gadget: add ep capabilities support
+Date: Wed, 15 Jul 2015 08:31:53 +0200
+Message-id: <1436941953-1327-7-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 References: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,33 +38,32 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/chipidea/udc.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/usb/dwc2/gadget.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
-index 764f668..eff7cfb 100644
---- a/drivers/usb/chipidea/udc.c
-+++ b/drivers/usb/chipidea/udc.c
-@@ -1624,6 +1624,20 @@ static int init_eps(struct ci_hdrc *ci)
+diff --git a/drivers/usb/dwc2/gadget.c b/drivers/usb/dwc2/gadget.c
+index 4d47b7c..8771b66 100644
+--- a/drivers/usb/dwc2/gadget.c
++++ b/drivers/usb/dwc2/gadget.c
+@@ -3289,6 +3289,19 @@ static void s3c_hsotg_initep(struct dwc2_hsotg *hsotg,
+ 	usb_ep_set_maxpacket_limit(&hs_ep->ep, epnum ? 1024 : EP0_MPS_LIMIT);
+ 	hs_ep->ep.ops = &s3c_hsotg_ep_ops;
  
- 			hwep->ep.name      = hwep->name;
- 			hwep->ep.ops       = &usb_ep_ops;
++	if (epnum == 0) {
++		hs_ep->ep.caps.type_control = true;
++	} else {
++		hs_ep->ep.caps.type_iso = true;
++		hs_ep->ep.caps.type_bulk = true;
++		hs_ep->ep.caps.type_int = true;
++	}
 +
-+			if (i == 0) {
-+				hwep->ep.caps.type_control = true;
-+			} else {
-+				hwep->ep.caps.type_iso = true;
-+				hwep->ep.caps.type_bulk = true;
-+				hwep->ep.caps.type_int = true;
-+			}
++	if (dir_in)
++		hs_ep->ep.caps.dir_in = true;
++	else
++		hs_ep->ep.caps.dir_out = true;
 +
-+			if (j == TX)
-+				hwep->ep.caps.dir_in = true;
-+			else
-+				hwep->ep.caps.dir_out = true;
-+
- 			/*
- 			 * for ep0: maxP defined in desc, for other
- 			 * eps, maxP is set by epautoconfig() called
+ 	/*
+ 	 * if we're using dma, we need to set the next-endpoint pointer
+ 	 * to be something valid.
 -- 
 1.9.1
