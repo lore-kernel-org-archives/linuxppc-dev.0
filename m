@@ -1,23 +1,44 @@
-Return-Path: <khlebnikov@yandex-team.ru>
-Received: from forward-corp1o.mail.yandex.net (forward-corp1o.mail.yandex.net
- [IPv6:2a02:6b8:0:1a2d::1010])
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 381A41A08AC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 20:00:13 +1000 (AEST)
-Subject: [PATCH v2 1/3] drivers/xen/preempt: use need_resched() instead of
- should_resched()
-From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- Paul Mackerras <paulus@samba.org>, David Vrabel <david.vrabel@citrix.com>,
- xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 15 Jul 2015 12:52:01 +0300
-Message-ID: <20150715095201.12246.49283.stgit@buzz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C7D101A0250
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 20:18:28 +1000 (AEST)
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1D5EB1402BA
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 20:18:27 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Wed, 15 Jul 2015 15:48:25 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 899333940073
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 15:48:17 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6FAHdf734537476
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 15:48:15 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6FAFi8k022598
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 15:45:44 +0530
+Message-ID: <55A632CD.7060500@linux.vnet.ibm.com>
+Date: Wed, 15 Jul 2015 15:45:41 +0530
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Joel Stanley <joel@jms.id.au>
+CC: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v4 3/6] cpufreq: powernv: Register for OCC related
+ opal_message notification
+References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1436796602-10228-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1436941021.17171.12.camel@jms.id.au>
+In-Reply-To: <1436941021.17171.12.camel@jms.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +48,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This code is used only when CONFIG_PREEMPT=n and only in non-atomic context:
-xen_in_preemptible_hcall is set only in privcmd_ioctl_hypercall().
-Thus preempt_count is zero and should_resched() is equal to need_resched().
+Hi Joel,
 
-Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
----
- drivers/xen/preempt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 07/15/2015 11:47 AM, Joel Stanley wrote:
+> Hello,
+> 
+> On Mon, 2015-07-13 at 19:39 +0530, Shilpasri G Bhat wrote:
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index d0c18c9..1f59958 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -414,6 +415,71 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+>>  	.notifier_call = powernv_cpufreq_reboot_notifier,
+>>  };
+>>  
+>> +static char throttle_reason[][30] = {
+>> +					"No throttling",
+>> +					"Power Cap",
+>> +					"Processor Over Temperature",
+>> +					"Power Supply Failure",
+>> +					"Over Current",
+>> +					"OCC Reset"
+>> +				     };
+>> +
+>> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>> +				   unsigned long msg_type, void *_msg)
+>> +{
+>> +	struct opal_msg *msg = _msg;
+>> +	struct opal_occ_msg omsg;
+>> +
+>> +	if (msg_type != OPAL_MSG_OCC)
+>> +		return 0;
+>> +
+>> +	memcpy(&omsg, msg->params, sizeof(omsg));
+> 
+> You need to ensure the of the members of struct opal_occ_msg are in the
+> correct byte order when copying them over.
+> 
+> Have you tested this code with in a little endian configuration?
 
-diff --git a/drivers/xen/preempt.c b/drivers/xen/preempt.c
-index a1800c150839..08cb419eb4e6 100644
---- a/drivers/xen/preempt.c
-+++ b/drivers/xen/preempt.c
-@@ -31,7 +31,7 @@ EXPORT_SYMBOL_GPL(xen_in_preemptible_hcall);
- asmlinkage __visible void xen_maybe_preempt_hcall(void)
- {
- 	if (unlikely(__this_cpu_read(xen_in_preemptible_hcall)
--		     && should_resched())) {
-+		     && need_resched())) {
- 		/*
- 		 * Clear flag as we may be rescheduled on a different
- 		 * cpu.
+Ah yes this wont work in LE.
+I tested the below diff in both BE/LE configuration on Power8 box which has FSP.
+
+-       memcpy(&omsg, msg->params, sizeof(omsg));
++       omsg.type = be64_to_cpu(msg->params[0]);
++       omsg.chip = be64_to_cpu(msg->params[1]);
++       omsg.throttle_status = be64_to_cpu(msg->params[2]);
+> 
+> Do the messages you're sending make sense for a system that has a BMC
+> instead of a FSP?
+
+For a system with BMC, only OCC_THROTTLE will be received by the host. The
+remaining two (OCC_RESET and OCC_LOAD) are sent only in FSP based systems.
+OCC_THROTTLE is sent by opal which polls on the throttle_status byte in the
+OPAL-OCC shared memory region.
+
+> 
+> Cheers,
+> 
+> Joel
+> 
+
+Thanks and Regards,
+Shilpa
