@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55F891A1D4C
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2C6F1A1D4C
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 17:37:22 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>, keescook@chromium.org, luto@amacapital.net,
  wad@chromium.org, strosake@linux.vnet.ibm.com,
  bogdan.purcareata@freescale.com
-Subject: [RFC PATCH 02/12] powerpc/kernel: Switch to using MAX_ERRNO
-Date: Wed, 15 Jul 2015 17:37:04 +1000
-Message-Id: <1436945834-26660-2-git-send-email-mpe@ellerman.id.au>
+Subject: [RFC PATCH 03/12] powerpc/kernel: Change the do_syscall_trace_enter()
+ API
+Date: Wed, 15 Jul 2015 17:37:05 +1000
+Message-Id: <1436945834-26660-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
 References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,98 +24,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently on powerpc we have our own #define for the highest (negative)
-errno value, called _LAST_ERRNO. This is defined to be 516, for reasons
-which are not clear.
+The API for calling do_syscall_trace_enter() is currently sensible
+enough, it just returns the (modified) syscall number.
 
-The generic code, and x86, use MAX_ERRNO, which is defined to be 4095.
+However once we enable seccomp filter it will get more complicated. When
+seccomp filter runs, the seccomp kernel code (via SECCOMP_RET_ERRNO), or
+a ptracer (via SECCOMP_RET_TRACE), may reject the syscall and *may* or may
+*not* set a return value in r3.
 
-In particular seccomp uses MAX_ERRNO to restrict the value that a
-seccomp filter can return.
+That means the assembler that calls do_syscall_trace_enter() can not
+blindly return ENOSYS, it needs to only return ENOSYS if a return value
+has not already been set.
 
-Currently with the mismatch between _LAST_ERRNO and MAX_ERRNO, a seccomp
-tracer wanting to return 600, expecting it to be seen as an error, would
-instead find on powerpc that userspace sees a successful syscall with a
-return value of 600.
-
-To avoid this inconsistency, switch powerpc to use MAX_ERRNO.
-
-We are somewhat confident that generic syscalls that can return a
-non-error value above negative MAX_ERRNO have already been updated to
-use force_successful_syscall_return().
-
-I have also checked all the powerpc specific syscalls, and believe that
-none of them expect to return a non-error value between -MAX_ERRNO and
--516. So this change should be safe ...
+There is no way to implement that logic with the current API. So change
+the do_syscall_trace_enter() API to make it deal with the return code
+juggling, and the assembler can then just return whatever return code it
+is given.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/uapi/asm/errno.h | 2 --
- arch/powerpc/kernel/entry_32.S        | 3 ++-
- arch/powerpc/kernel/entry_64.S        | 5 +++--
- 3 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/entry_32.S |  4 ++++
+ arch/powerpc/kernel/entry_64.S | 23 ++++++++++++++------
+ arch/powerpc/kernel/ptrace.c   | 48 ++++++++++++++++++++++++++++++++----------
+ 3 files changed, 58 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/uapi/asm/errno.h b/arch/powerpc/include/uapi/asm/errno.h
-index 8c145fd17d86..e8b6b5f7de7c 100644
---- a/arch/powerpc/include/uapi/asm/errno.h
-+++ b/arch/powerpc/include/uapi/asm/errno.h
-@@ -6,6 +6,4 @@
- #undef	EDEADLOCK
- #define	EDEADLOCK	58	/* File locking deadlock error */
- 
--#define _LAST_ERRNO	516
--
- #endif	/* _ASM_POWERPC_ERRNO_H */
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 46fc0f4d8982..67ecdf61f4e3 100644
+index 67ecdf61f4e3..2405631e91a2 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -20,6 +20,7 @@
-  */
+@@ -458,6 +458,10 @@ syscall_dotrace:
+ 	lwz	r7,GPR7(r1)
+ 	lwz	r8,GPR8(r1)
+ 	REST_NVGPRS(r1)
++
++	cmplwi	r0,NR_syscalls
++	/* Return code is already in r3 thanks to do_syscall_trace_enter() */
++	bge-	ret_from_syscall
+ 	b	syscall_dotrace_cont
  
- #include <linux/errno.h>
-+#include <linux/err.h>
- #include <linux/sys.h>
- #include <linux/threads.h>
- #include <asm/reg.h>
-@@ -354,7 +355,7 @@ ret_from_syscall:
- 	SYNC
- 	MTMSRD(r10)
- 	lwz	r9,TI_FLAGS(r12)
--	li	r8,-_LAST_ERRNO
-+	li	r8,-MAX_ERRNO
- 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
- 	bne-	syscall_exit_work
- 	cmplw	0,r3,r8
+ syscall_exit_work:
 diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 0796c487d3db..8292581a42f1 100644
+index 8292581a42f1..41f8fcf615d7 100644
 --- a/arch/powerpc/kernel/entry_64.S
 +++ b/arch/powerpc/kernel/entry_64.S
-@@ -19,6 +19,7 @@
+@@ -151,8 +151,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ 	CURRENT_THREAD_INFO(r11, r1)
+ 	ld	r10,TI_FLAGS(r11)
+ 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
+-	bne	syscall_dotrace
+-.Lsyscall_dotrace_cont:
++	bne	syscall_dotrace		/* does not return */
+ 	cmpldi	0,r0,NR_syscalls
+ 	bge-	syscall_enosys
+ 
+@@ -248,22 +247,34 @@ syscall_dotrace:
+ 	/* Get pt_regs into r3 */
+ 	mr	r3, r9
+ 	bl	do_syscall_trace_enter
++
+ 	/*
+-	 * Restore argument registers possibly just changed.
+-	 * We use the return value of do_syscall_trace_enter
+-	 * for the call number to look up in the table (r0).
++	 * We use the return value of do_syscall_trace_enter() as the syscall
++	 * number. If the syscall was rejected for any reason do_syscall_trace_enter()
++	 * returns an invalid syscall number and the test below against
++	 * NR_syscalls will fail.
+ 	 */
+ 	mr	r0,r3
++
++	/* Restore argument registers just clobbered and/or possibly changed. */
+ 	ld	r3,GPR3(r1)
+ 	ld	r4,GPR4(r1)
+ 	ld	r5,GPR5(r1)
+ 	ld	r6,GPR6(r1)
+ 	ld	r7,GPR7(r1)
+ 	ld	r8,GPR8(r1)
++
++	/* Repopulate r9 and r10 for the system_call path */
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	CURRENT_THREAD_INFO(r10, r1)
+ 	ld	r10,TI_FLAGS(r10)
+-	b	.Lsyscall_dotrace_cont
++
++	cmpldi	r0,NR_syscalls
++	blt+	system_call
++
++	/* Return code is already in r3 thanks to do_syscall_trace_enter() */
++	b	.Lsyscall_exit
++
+ 
+ syscall_enosys:
+ 	li	r3,-ENOSYS
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index f21897b42057..7484221bb3f8 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1762,26 +1762,42 @@ long arch_ptrace(struct task_struct *child, long request,
+ 	return ret;
+ }
+ 
+-/*
+- * We must return the syscall number to actually look up in the table.
+- * This can be -1L to skip running any syscall at all.
++/**
++ * do_syscall_trace_enter() - Do syscall tracing on kernel entry.
++ * @regs: the pt_regs of the task to trace (current)
++ *
++ * Performs various types of tracing on syscall entry. This includes seccomp,
++ * ptrace, syscall tracepoints and audit.
++ *
++ * The pt_regs are potentially visible to userspace via ptrace, so their
++ * contents is ABI.
++ *
++ * One or more of the tracers may modify the contents of pt_regs, in particular
++ * to modify arguments or even the syscall number itself.
++ *
++ * It's also possible that a tracer can choose to reject the system call. In
++ * that case this function will return an illegal syscall number, and will put
++ * an appropriate return value in regs->r3.
++ *
++ * Return: the (possibly changed) syscall number.
   */
+ long do_syscall_trace_enter(struct pt_regs *regs)
+ {
+-	long ret = 0;
++	bool abort = false;
  
- #include <linux/errno.h>
-+#include <linux/err.h>
- #include <asm/unistd.h>
- #include <asm/processor.h>
- #include <asm/page.h>
-@@ -207,7 +208,7 @@ system_call:			/* label this so stack traces look sane */
- #endif /* CONFIG_PPC_BOOK3E */
+ 	user_exit();
  
- 	ld	r9,TI_FLAGS(r12)
--	li	r11,-_LAST_ERRNO
-+	li	r11,-MAX_ERRNO
- 	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
- 	bne-	syscall_exit_work
- 	cmpld	r3,r11
-@@ -279,7 +280,7 @@ syscall_exit_work:
- 	beq+	0f
- 	REST_NVGPRS(r1)
- 	b	2f
--0:	cmpld	r3,r11		/* r10 is -LAST_ERRNO */
-+0:	cmpld	r3,r11		/* r11 is -MAX_ERRNO */
- 	blt+	1f
- 	andi.	r0,r9,_TIF_NOERROR
- 	bne-	1f
+ 	secure_computing_strict(regs->gpr[0]);
+ 
+-	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+-	    tracehook_report_syscall_entry(regs))
++	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
+ 		/*
+-		 * Tracing decided this syscall should not happen.
+-		 * We'll return a bogus call number to get an ENOSYS
+-		 * error, but leave the original number in regs->gpr[0].
++		 * The tracer may decide to abort the syscall, if so tracehook
++		 * will return !0. Note that the tracer may also just change
++		 * regs->gpr[0] to an invalid syscall number, that is handled
++		 * below on the exit path.
+ 		 */
+-		ret = -1L;
++		abort = tracehook_report_syscall_entry(regs) != 0;
++	}
+ 
+ 	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+ 		trace_sys_enter(regs, regs->gpr[0]);
+@@ -1798,7 +1814,17 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 				    regs->gpr[5] & 0xffffffff,
+ 				    regs->gpr[6] & 0xffffffff);
+ 
+-	return ret ?: regs->gpr[0];
++	if (abort || regs->gpr[0] >= NR_syscalls) {
++		/*
++		 * If we are aborting explicitly, or if the syscall number is
++		 * now invalid, set the return value to -ENOSYS.
++		 */
++		regs->gpr[3] = -ENOSYS;
++		return -1;
++	}
++
++	/* Return the possibly modified but valid syscall number */
++	return regs->gpr[0];
+ }
+ 
+ void do_syscall_trace_leave(struct pt_regs *regs)
 -- 
 2.1.0
