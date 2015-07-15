@@ -1,28 +1,31 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-pd0-f175.google.com (mail-pd0-f175.google.com
- [209.85.192.175])
+Return-Path: <joel.stan@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EB861A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:17:12 +1000 (AEST)
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A9391A019F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:08:40 +1000 (AEST)
-Received: by pdrg1 with SMTP id g1so18904992pdr.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 23:08:38 -0700 (PDT)
-From: Baolin Wang <baolin.wang@linaro.org>
-To: benh@kernel.crashing.org
-Cc: arnd@arndb.de, tglx@linutronix.de, john.stultz@linaro.org,
- peterz@infradead.org, paulus@samba.org, mpe@ellerman.id.au,
- schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
- rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
- fweisbec@gmail.com, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, baolin.wang@linaro.org,
- y2038@lists.linaro.org
-Subject: [PATCH 6/6] cputime: Introduce
- cputime_to_timespec64()/timespec64_to_cputime()
-Date: Wed, 15 Jul 2015 14:07:21 +0800
-Message-Id: <a1bd8d71caeb4051d0be87aad1baae7ababa4df7.1436511577.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1436511577.git.baolin.wang@linaro.org>
-References: <cover.1436511577.git.baolin.wang@linaro.org>
+ by ozlabs.org (Postfix) with ESMTPS id E1BAB1402BA
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 16:17:11 +1000 (AEST)
+Received: by pdbqm3 with SMTP id qm3so19094772pdb.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jul 2015 23:17:08 -0700 (PDT)
+Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
+Message-ID: <1436941021.17171.12.camel@jms.id.au>
+Subject: Re: [PATCH v4 3/6] cpufreq: powernv: Register for OCC related
+ opal_message notification
+From: Joel Stanley <joel@jms.id.au>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Date: Wed, 15 Jul 2015 15:47:01 +0930
+In-Reply-To: <1436796602-10228-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1436796602-10228-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,139 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cputime_to_timespec() and timespec_to_cputime() functions are
-not year 2038 safe on 32bit systems due to that the struct timepsec
-will overflow in 2038 year. This patch introduces cputime_to_timespec64()
-and timespec64_to_cputime() functions which use struct timespec64.
-And converts arch specific implementations in arch/s390 and arch/powerpc.
+Hello,
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- arch/powerpc/include/asm/cputime.h    |    6 +++---
- arch/s390/include/asm/cputime.h       |    8 ++++----
- include/asm-generic/cputime_jiffies.h |   10 +++++-----
- include/asm-generic/cputime_nsecs.h   |    6 +++---
- include/linux/cputime.h               |   16 ++++++++++++++++
- 5 files changed, 31 insertions(+), 15 deletions(-)
+On Mon, 2015-07-13 at 19:39 +0530, Shilpasri G Bhat wrote:
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index d0c18c9..1f59958 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -414,6 +415,71 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+>  	.notifier_call = powernv_cpufreq_reboot_notifier,
+>  };
+>  
+> +static char throttle_reason[][30] = {
+> +					"No throttling",
+> +					"Power Cap",
+> +					"Processor Over Temperature",
+> +					"Power Supply Failure",
+> +					"Over Current",
+> +					"OCC Reset"
+> +				     };
+> +
+> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+> +				   unsigned long msg_type, void *_msg)
+> +{
+> +	struct opal_msg *msg = _msg;
+> +	struct opal_occ_msg omsg;
+> +
+> +	if (msg_type != OPAL_MSG_OCC)
+> +		return 0;
+> +
+> +	memcpy(&omsg, msg->params, sizeof(omsg));
 
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index e245255..5dda5c0 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -154,9 +154,9 @@ static inline cputime_t secs_to_cputime(const unsigned long sec)
- }
- 
- /*
-- * Convert cputime <-> timespec
-+ * Convert cputime <-> timespec64
-  */
--static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
-+static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *p)
- {
- 	u64 x = (__force u64) ct;
- 	unsigned int frac;
-@@ -168,7 +168,7 @@ static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
- 	p->tv_nsec = x;
- }
- 
--static inline cputime_t timespec_to_cputime(const struct timespec *p)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *p)
- {
- 	u64 ct;
- 
-diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
-index 221b454..3319b51 100644
---- a/arch/s390/include/asm/cputime.h
-+++ b/arch/s390/include/asm/cputime.h
-@@ -81,16 +81,16 @@ static inline cputime_t secs_to_cputime(const unsigned int s)
- }
- 
- /*
-- * Convert cputime to timespec and back.
-+ * Convert cputime to timespec64 and back.
-  */
--static inline cputime_t timespec_to_cputime(const struct timespec *value)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *value)
- {
- 	unsigned long long ret = value->tv_sec * CPUTIME_PER_SEC;
- 	return (__force cputime_t)(ret + __div(value->tv_nsec * CPUTIME_PER_USEC, NSEC_PER_USEC));
- }
- 
--static inline void cputime_to_timespec(const cputime_t cputime,
--				       struct timespec *value)
-+static inline void cputime_to_timespec64(const cputime_t cputime,
-+					 struct timespec64 *value)
- {
- 	unsigned long long __cputime = (__force unsigned long long) cputime;
- 	value->tv_nsec = (__cputime % CPUTIME_PER_SEC) * NSEC_PER_USEC / CPUTIME_PER_USEC;
-diff --git a/include/asm-generic/cputime_jiffies.h b/include/asm-generic/cputime_jiffies.h
-index fe386fc..54e034c 100644
---- a/include/asm-generic/cputime_jiffies.h
-+++ b/include/asm-generic/cputime_jiffies.h
-@@ -44,12 +44,12 @@ typedef u64 __nocast cputime64_t;
- #define secs_to_cputime(sec)		jiffies_to_cputime((sec) * HZ)
- 
- /*
-- * Convert cputime to timespec and back.
-+ * Convert cputime to timespec64 and back.
-  */
--#define timespec_to_cputime(__val)	\
--	jiffies_to_cputime(timespec_to_jiffies(__val))
--#define cputime_to_timespec(__ct,__val)	\
--	jiffies_to_timespec(cputime_to_jiffies(__ct),__val)
-+#define timespec64_to_cputime(__val)	\
-+	jiffies_to_cputime(timespec64_to_jiffies(__val))
-+#define cputime_to_timespec64(__ct,__val)	\
-+	jiffies_to_timespec64(cputime_to_jiffies(__ct),__val)
- 
- /*
-  * Convert cputime to timeval and back.
-diff --git a/include/asm-generic/cputime_nsecs.h b/include/asm-generic/cputime_nsecs.h
-index 0419485..c0cafc0 100644
---- a/include/asm-generic/cputime_nsecs.h
-+++ b/include/asm-generic/cputime_nsecs.h
-@@ -71,14 +71,14 @@ typedef u64 __nocast cputime64_t;
- 	(__force cputime_t)((__secs) * NSEC_PER_SEC)
- 
- /*
-- * Convert cputime <-> timespec (nsec)
-+ * Convert cputime <-> timespec64 (nsec)
-  */
--static inline cputime_t timespec_to_cputime(const struct timespec *val)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *val)
- {
- 	u64 ret = val->tv_sec * NSEC_PER_SEC + val->tv_nsec;
- 	return (__force cputime_t) ret;
- }
--static inline void cputime_to_timespec(const cputime_t ct, struct timespec *val)
-+static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *val)
- {
- 	u32 rem;
- 
-diff --git a/include/linux/cputime.h b/include/linux/cputime.h
-index f2eb2ee..cd638a0 100644
---- a/include/linux/cputime.h
-+++ b/include/linux/cputime.h
-@@ -13,4 +13,20 @@
- 	usecs_to_cputime((__nsecs) / NSEC_PER_USEC)
- #endif
- 
-+static inline cputime_t timespec_to_cputime(const struct timespec *ts)
-+{
-+	struct timespec64 ts64 = timespec_to_timespec64(*ts);
-+
-+	return timespec64_to_cputime(&ts64);
-+}
-+
-+static inline void cputime_to_timespec(const cputime_t cputime,
-+				       struct timespec *value)
-+{
-+	struct timespec64 ts64;
-+
-+	cputime_to_timespec64(cputime, &ts64);
-+	*value = timespec64_to_timespec(ts64);
-+}
-+
- #endif /* __LINUX_CPUTIME_H */
--- 
-1.7.9.5
+You need to ensure the of the members of struct opal_occ_msg are in the
+correct byte order when copying them over.
+
+Have you tested this code with in a little endian configuration?
+
+Do the messages you're sending make sense for a system that has a BMC
+instead of a FSP?
+
+Cheers,
+
+Joel
+
+> +
+> +	switch (omsg.type) {
