@@ -1,26 +1,25 @@
 Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ABA6D1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 01:16:12 +1000 (AEST)
-Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
- [IPv6:2607:f8b0:4001:c05::22b])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8533C1A05C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 01:16:52 +1000 (AEST)
+Received: from mail-ie0-x22b.google.com (mail-ie0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c03::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 25B621402AE
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2015 01:16:12 +1000 (AEST)
-Received: by igbpg9 with SMTP id pg9so38672306igb.0
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 08:16:10 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id C865B1402B6
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2015 01:16:51 +1000 (AEST)
+Received: by iecuq6 with SMTP id uq6so35874828iec.2
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 08:16:49 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <1436945834-26660-11-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1436945834-26660-12-git-send-email-mpe@ellerman.id.au>
 References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
- <1436945834-26660-11-git-send-email-mpe@ellerman.id.au>
-Date: Wed, 15 Jul 2015 08:16:10 -0700
-Message-ID: <CAGXu5j+CNxPSzA83UJDEdr_0G14qqX4yNdhr5+2YrisE8O6eeg@mail.gmail.com>
-Subject: Re: [RFC PATCH 11/12] selftests/seccomp: Make seccomp tests work on
- big endian
+ <1436945834-26660-12-git-send-email-mpe@ellerman.id.au>
+Date: Wed, 15 Jul 2015 08:16:49 -0700
+Message-ID: <CAGXu5jK0TMJ-K6jYrZMzeMFb0QYC4Zg-9Sdd-ih+Qpj2EG9fsQ@mail.gmail.com>
+Subject: Re: [RFC PATCH 12/12] selftests/seccomp: Add powerpc support
 From: Kees Cook <keescook@chromium.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -38,44 +37,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, Jul 15, 2015 at 12:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> The seccomp_bpf test uses BPF_LD|BPF_W|BPF_ABS to load 32-bit values
-> from seccomp_data->args. On big endian machines this will load the high
-> word of the argument, which is not what the test wants.
->
-> Borrow a hack from samples/seccomp/bpf-helper.h which changes the offset
-> on big endian to account for this.
+> Wire up the syscall number and regs so the tests work on powerpc.
 >
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  tools/testing/selftests/seccomp/seccomp_bpf.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> index b2374c131340..51adb9afb511 100644
-> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
-> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> @@ -82,7 +82,13 @@ struct seccomp_data {
->  };
->  #endif
->
-> +#if __BYTE_ORDER == __LITTLE_ENDIAN
->  #define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]))
-> +#elif __BYTE_ORDER == __BIG_ENDIAN
-> +#define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]) + sizeof(__u32))
-> +#else
-> +#error "wut?"
-> +#endif
 
-Ah-ha! Yes, thanks. Could you change the #error to something that
-describes the particular (impossible) failure condition? "wut? Unknown
-__BYTE_ORDER?!". Not a huge deal, but I always like verbose errors. :)
-Especially for "impossible" situations. :)
+Acked-by: Kees Cook <keescook@chromium.org>
 
 -Kees
 
+> ---
+>  tools/testing/selftests/seccomp/seccomp_bpf.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
 >
->  #define SIBLING_EXIT_UNKILLED  0xbadbeef
->  #define SIBLING_EXIT_FAILURE   0xbadface
+> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> index 51adb9afb511..05fcdb974df6 100644
+> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
+> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/filter.h>
+>  #include <sys/prctl.h>
+>  #include <sys/ptrace.h>
+> +#include <sys/types.h>
+>  #include <sys/user.h>
+>  #include <linux/prctl.h>
+>  #include <linux/ptrace.h>
+> @@ -1209,6 +1210,10 @@ TEST_F(TRACE_poke, getpid_runs_normally)
+>  # define ARCH_REGS     struct user_pt_regs
+>  # define SYSCALL_NUM   regs[8]
+>  # define SYSCALL_RET   regs[0]
+> +#elif defined(__powerpc__)
+> +# define ARCH_REGS     struct pt_regs
+> +# define SYSCALL_NUM   gpr[0]
+> +# define SYSCALL_RET   gpr[3]
+>  #else
+>  # error "Do not know how to find your architecture's registers and syscalls"
+>  #endif
+> @@ -1242,7 +1247,7 @@ void change_syscall(struct __test_metadata *_metadata,
+>         ret = ptrace(PTRACE_GETREGSET, tracee, NT_PRSTATUS, &iov);
+>         EXPECT_EQ(0, ret);
+>
+> -#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__)
+> +#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__) || defined(__powerpc__)
+>         {
+>                 regs.SYSCALL_NUM = syscall;
+>         }
+> @@ -1406,6 +1411,8 @@ TEST_F(TRACE_syscall, syscall_dropped)
+>  #  define __NR_seccomp 383
+>  # elif defined(__aarch64__)
+>  #  define __NR_seccomp 277
+> +# elif defined(__powerpc__)
+> +#  define __NR_seccomp 358
+>  # else
+>  #  warning "seccomp syscall number unknown for this architecture"
+>  #  define __NR_seccomp 0xffff
 > --
 > 2.1.0
 >
