@@ -1,30 +1,40 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mailxx.hitachi.co.jp (fallback.hitachi.co.jp [133.145.228.50])
- by lists.ozlabs.org (Postfix) with ESMTP id 8E62C1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 13:48:50 +1000 (AEST)
-Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
- by mailxx.hitachi.co.jp (Postfix) with ESMTP id 8686B177037E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 12:09:16 +0900 (JST)
-Message-ID: <55A5CED4.7050400@hitachi.com>
-Date: Wed, 15 Jul 2015 12:09:08 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A7F5D1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 14:09:23 +1000 (AEST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 14 Jul 2015 22:09:21 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 764581FF0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 22:00:28 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6F46jU744105738
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 21:06:46 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6F49GSM003731
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 22:09:17 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Cc: Alessandro Zummo <a.zummo@towertech.it>,
+ Michael Neuling <mikey@neuling.org>, rtc-linux@googlegroups.com,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] rtc/rtc-opal: Enable alarms only when opal supports tpo
+In-Reply-To: <1436860708-17058-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+References: <1436860708-17058-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+Date: Wed, 15 Jul 2015 14:09:15 +1000
+Message-ID: <m3egkaukno.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>,
- Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>, linux-mips@linux-mips.org,
- Baoquan He <bhe@redhat.com>, linux-sh@vger.kernel.org,
- linux-s390@vger.kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
- HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
- Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
- linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: Re: [PATCH 3/3] kexec: Change the timing of callbacks related
- to "crash_kexec_post_notifiers" boot option
-References: <20150710113331.4368.10495.stgit@softrs>
- <20150710113331.4368.77050.stgit@softrs> <20150714144248.GC10792@redhat.com>
-In-Reply-To: <20150714144248.GC10792@redhat.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,104 +44,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/07/14 23:42, Vivek Goyal wrote:
-> On Fri, Jul 10, 2015 at 08:33:31PM +0900, Hidehiro Kawai wrote:
->> This patch fixes problems reported by Daniel Walker
->> (https://lkml.org/lkml/2015/6/24/44), and also replaces the bug fix
->> commits 5375b70 and f45d85f.
->>
->> If "crash_kexec_post_notifiers" boot option is specified,
->> other cpus are stopped by smp_send_stop() before entering
->> crash_kexec(), while usually machine_crash_shutdown() called by
->> crash_kexec() does that.  This behavior change leads two problems.
->>
->>  Problem 1:
->>  Some function in the crash_kexec() path depend on other cpus being
->>  still online.  If other cpus have been offlined already, they
->>  doesn't work properly.
->>
->>   Example:
->>    panic()
->>     crash_kexec()
->>      machine_crash_shutdown()
->>       octeon_generic_shutdown() // shutdown watchdog for ONLINE cpus
->>      machine_kexec()
->>
->>  Problem 2:
->>  Most of architectures stop other cpus in the machine_crash_shutdown()
->>  path and save register information at the same time.  However, if
->>  smp_send_stop() is called before that, we can't save the register
->>  information.
->>
->> To solve these problems, this patch changes the timing of calling
->> the callbacks instead of changing the timing of crash_kexec() if
->> crash_kexec_post_notifiers boot option is specified.
->>
->>  Before:
->>   if (!crash_kexec_post_notifiers)
->>       crash_kexec()
->>
->>   smp_send_stop()
->>   atomic_notifier_call_chain()
->>   kmsg_dump()
->>
->>   if (crash_kexec_post_notifiers)
->>       crash_kexec()
->>
->>  After:
->>   crash_kexec()
->>       machine_crash_shutdown()
->>       if (crash_kexec_post_notifiers) {
->>           atomic_notifier_call_chain()
->>           kmsg_dump()
->>       }
->>       machine_kexec()
->>
->>   smp_send_stop()
->>   if (!crash_kexec_post_notifiers) {
->>       atomic_notifier_call_chain()
->>       kmsg_dump()
->>   }
->>
-> 
-> I think this new code flow looks bad. Now we are calling kmsg_dump()
-> and atomic_notifier_call_chain() from inside the crash_kexec() as well
-> as from inside panic(). This is bad.
-> 
-> So basic problem seems to be that cpus need to be stopped once (with
-> or without panic notifiers. So why don't we look into desiginig a 
-> function which stops cpus, saves register states first and then does
-> rest of the processing.
-> 
-> Something like.
-> 
-> stop_cpus_save_register_state;
-> 
-> if (!crash_kexec_post_notifiers)
-> 	crash_kexec()
-> 
-> atomic_notifier_call_chain()
-> kmsg_dump()
-> 
-> Here crash_kexec() will have to be modified and it will assume that cpus
-> have already been stopped and register states have already been saved.
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+> rtc-opal driver provides support for rtc alarms via
+> timed-power-on(tpo). However some Power platforms like BML use a fake
+> rtc clock and don't support tpo. Such platforms are indicated by the
+> missing 'has-tpo' property in the device tree.
+>
+> Current implementation however enables callback for
+> rtc_class_ops.read/set alarm irrespective of the tpo support from the
+> platform. This results in a failed opal call when kernel tries to read
+> an existing alarms via opal_get_tpo_time during rtc device registration.
+>
+> This patch fixes this issue by setting opal_rtc_ops.read/set_alarm
+> callback pointers only when tpo is supported.
+>
+> Acked-by: Michael Neuling <mikey@neuling.org>
+> Acked-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 
-Ah, nice! I like this idea :)
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
-> 
-> IOW, is there a reason that we can't get rid of smp_send_stop() and
-> use the mechanism crash_kexec() is using to stop cpus after panic()?
+FWIW I'm updating OPAL docs with this. The TPO calls aren't actually
+documented :(
 
-I think there is no reason why we don't do so. smp_send_stop() just
-stops other cpus, but crash's one does more (collect registers and
-stop watchdogs if needed, etc.). why don't we just replace(improve) it?
-
-Thank you!
-
-
--- 
-Masami HIRAMATSU
-Linux Technology Research Center, System Productivity Research Dept.
-Center for Technology Innovation - Systems Engineering
-Hitachi, Ltd., Research & Development Group
-E-mail: masami.hiramatsu.pt@hitachi.com
+In future, it'd be great if there was an accompanying skiboot patch
+updating the documentation there too.
