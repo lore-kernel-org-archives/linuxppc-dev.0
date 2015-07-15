@@ -1,37 +1,30 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39D5F1A0070
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 13:03:11 +1000 (AEST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 14 Jul 2015 21:03:09 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 73C5519D8041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 20:54:05 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t6F32JqK58851522
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 20:02:19 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6F335LD026906
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jul 2015 21:03:05 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [PATCH v3 6/8] perf: Rename perf_event_read_{one, group}, perf_read_hw
-Date: Tue, 14 Jul 2015 20:01:53 -0700
-Message-Id: <1436929315-28520-7-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mailxx.hitachi.co.jp (fallback.hitachi.co.jp [133.145.228.50])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8E62C1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 13:48:50 +1000 (AEST)
+Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
+ by mailxx.hitachi.co.jp (Postfix) with ESMTP id 8686B177037E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 12:09:16 +0900 (JST)
+Message-ID: <55A5CED4.7050400@hitachi.com>
+Date: Wed, 15 Jul 2015 12:09:08 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>,
+ Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, linux-mips@linux-mips.org,
+ Baoquan He <bhe@redhat.com>, linux-sh@vger.kernel.org,
+ linux-s390@vger.kernel.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
+ HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
+ Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: Re: [PATCH 3/3] kexec: Change the timing of callbacks related
+ to "crash_kexec_post_notifiers" boot option
+References: <20150710113331.4368.10495.stgit@softrs>
+ <20150710113331.4368.77050.stgit@softrs> <20150714144248.GC10792@redhat.com>
+In-Reply-To: <20150714144248.GC10792@redhat.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,78 +34,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Peter Zijlstra (Intel)" <peterz@infradead.org>
+On 2015/07/14 23:42, Vivek Goyal wrote:
+> On Fri, Jul 10, 2015 at 08:33:31PM +0900, Hidehiro Kawai wrote:
+>> This patch fixes problems reported by Daniel Walker
+>> (https://lkml.org/lkml/2015/6/24/44), and also replaces the bug fix
+>> commits 5375b70 and f45d85f.
+>>
+>> If "crash_kexec_post_notifiers" boot option is specified,
+>> other cpus are stopped by smp_send_stop() before entering
+>> crash_kexec(), while usually machine_crash_shutdown() called by
+>> crash_kexec() does that.  This behavior change leads two problems.
+>>
+>>  Problem 1:
+>>  Some function in the crash_kexec() path depend on other cpus being
+>>  still online.  If other cpus have been offlined already, they
+>>  doesn't work properly.
+>>
+>>   Example:
+>>    panic()
+>>     crash_kexec()
+>>      machine_crash_shutdown()
+>>       octeon_generic_shutdown() // shutdown watchdog for ONLINE cpus
+>>      machine_kexec()
+>>
+>>  Problem 2:
+>>  Most of architectures stop other cpus in the machine_crash_shutdown()
+>>  path and save register information at the same time.  However, if
+>>  smp_send_stop() is called before that, we can't save the register
+>>  information.
+>>
+>> To solve these problems, this patch changes the timing of calling
+>> the callbacks instead of changing the timing of crash_kexec() if
+>> crash_kexec_post_notifiers boot option is specified.
+>>
+>>  Before:
+>>   if (!crash_kexec_post_notifiers)
+>>       crash_kexec()
+>>
+>>   smp_send_stop()
+>>   atomic_notifier_call_chain()
+>>   kmsg_dump()
+>>
+>>   if (crash_kexec_post_notifiers)
+>>       crash_kexec()
+>>
+>>  After:
+>>   crash_kexec()
+>>       machine_crash_shutdown()
+>>       if (crash_kexec_post_notifiers) {
+>>           atomic_notifier_call_chain()
+>>           kmsg_dump()
+>>       }
+>>       machine_kexec()
+>>
+>>   smp_send_stop()
+>>   if (!crash_kexec_post_notifiers) {
+>>       atomic_notifier_call_chain()
+>>       kmsg_dump()
+>>   }
+>>
+> 
+> I think this new code flow looks bad. Now we are calling kmsg_dump()
+> and atomic_notifier_call_chain() from inside the crash_kexec() as well
+> as from inside panic(). This is bad.
+> 
+> So basic problem seems to be that cpus need to be stopped once (with
+> or without panic notifiers. So why don't we look into desiginig a 
+> function which stops cpus, saves register states first and then does
+> rest of the processing.
+> 
+> Something like.
+> 
+> stop_cpus_save_register_state;
+> 
+> if (!crash_kexec_post_notifiers)
+> 	crash_kexec()
+> 
+> atomic_notifier_call_chain()
+> kmsg_dump()
+> 
+> Here crash_kexec() will have to be modified and it will assume that cpus
+> have already been stopped and register states have already been saved.
 
-In order to free up the perf_event_read_group() name:
+Ah, nice! I like this idea :)
 
- s/perf_event_read_\(one\|group\)/perf_read_\1/g
- s/perf_read_hw/__perf_read/g
+> 
+> IOW, is there a reason that we can't get rid of smp_send_stop() and
+> use the mechanism crash_kexec() is using to stop cpus after panic()?
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
----
- kernel/events/core.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+I think there is no reason why we don't do so. smp_send_stop() just
+stops other cpus, but crash's one does more (collect registers and
+stop watchdogs if needed, etc.). why don't we just replace(improve) it?
 
-diff --git a/kernel/events/core.c b/kernel/events/core.c
-index b1e9a42..a83d45c 100644
---- a/kernel/events/core.c
-+++ b/kernel/events/core.c
-@@ -3675,7 +3675,7 @@ static void put_event(struct perf_event *event)
- 	 *     see the comment there.
- 	 *
- 	 *  2) there is a lock-inversion with mmap_sem through
--	 *     perf_event_read_group(), which takes faults while
-+	 *     perf_read_group(), which takes faults while
- 	 *     holding ctx->mutex, however this is called after
- 	 *     the last filedesc died, so there is no possibility
- 	 *     to trigger the AB-BA case.
-@@ -3781,7 +3781,7 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
- }
- EXPORT_SYMBOL_GPL(perf_event_read_value);
- 
--static int perf_event_read_group(struct perf_event *event,
-+static int perf_read_group(struct perf_event *event,
- 				   u64 read_format, char __user *buf)
- {
- 	struct perf_event *leader = event->group_leader, *sub;
-@@ -3829,7 +3829,7 @@ static int perf_event_read_group(struct perf_event *event,
- 	return ret;
- }
- 
--static int perf_event_read_one(struct perf_event *event,
-+static int perf_read_one(struct perf_event *event,
- 				 u64 read_format, char __user *buf)
- {
- 	u64 enabled, running;
-@@ -3867,7 +3867,7 @@ static bool is_event_hup(struct perf_event *event)
-  * Read the performance event - simple non blocking version for now
-  */
- static ssize_t
--perf_read_hw(struct perf_event *event, char __user *buf, size_t count)
-+__perf_read(struct perf_event *event, char __user *buf, size_t count)
- {
- 	u64 read_format = event->attr.read_format;
- 	int ret;
-@@ -3885,9 +3885,9 @@ perf_read_hw(struct perf_event *event, char __user *buf, size_t count)
- 
- 	WARN_ON_ONCE(event->ctx->parent_ctx);
- 	if (read_format & PERF_FORMAT_GROUP)
--		ret = perf_event_read_group(event, read_format, buf);
-+		ret = perf_read_group(event, read_format, buf);
- 	else
--		ret = perf_event_read_one(event, read_format, buf);
-+		ret = perf_read_one(event, read_format, buf);
- 
- 	return ret;
- }
-@@ -3900,7 +3900,7 @@ perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 	int ret;
- 
- 	ctx = perf_event_ctx_lock(event);
--	ret = perf_read_hw(event, buf, count);
-+	ret = __perf_read(event, buf, count);
- 	perf_event_ctx_unlock(event, ctx);
- 
- 	return ret;
+Thank you!
+
+
 -- 
-1.7.9.5
+Masami HIRAMATSU
+Linux Technology Research Center, System Productivity Research Dept.
+Center for Technology Innovation - Systems Engineering
+Hitachi, Ltd., Research & Development Group
+E-mail: masami.hiramatsu.pt@hitachi.com
