@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 403951A198A
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2EE81A1A77
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:37:28 +1000 (AEST)
-Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout3.samsung.com
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRI016AZNPTPVE0@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:37:05 +0900 (KST)
+ with ESMTP id <0NRI01VAUNQEOI60@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:37:26 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,9 +20,9 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v3 32/46] usb: gadget: udc-xilinx: add ep capabilities support
-Date: Wed, 15 Jul 2015 08:32:19 +0200
-Message-id: <1436941953-1327-33-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v3 35/46] usb: renesas: gadget: add ep capabilities support
+Date: Wed, 15 Jul 2015 08:32:22 +0200
+Message-id: <1436941953-1327-36-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 References: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,34 +38,31 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/udc-xilinx.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/usb/renesas_usbhs/mod_gadget.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/udc-xilinx.c b/drivers/usb/gadget/udc/udc-xilinx.c
-index 1f24274..1cbb0ac 100644
---- a/drivers/usb/gadget/udc/udc-xilinx.c
-+++ b/drivers/usb/gadget/udc/udc-xilinx.c
-@@ -1317,12 +1317,21 @@ static void xudc_eps_init(struct xusb_udc *udc)
- 			snprintf(ep->name, EPNAME_SIZE, "ep%d", ep_number);
- 			ep->ep_usb.name = ep->name;
- 			ep->ep_usb.ops = &xusb_ep_ops;
-+
-+			ep->ep_usb.caps.type_iso = true;
-+			ep->ep_usb.caps.type_bulk = true;
-+			ep->ep_usb.caps.type_int = true;
- 		} else {
- 			ep->ep_usb.name = ep0name;
- 			usb_ep_set_maxpacket_limit(&ep->ep_usb, EP0_MAX_PACKET);
- 			ep->ep_usb.ops = &xusb_ep0_ops;
-+
-+			ep->ep_usb.caps.type_control = true;
+diff --git a/drivers/usb/renesas_usbhs/mod_gadget.c b/drivers/usb/renesas_usbhs/mod_gadget.c
+index dc2aa32..ed8d890 100644
+--- a/drivers/usb/renesas_usbhs/mod_gadget.c
++++ b/drivers/usb/renesas_usbhs/mod_gadget.c
+@@ -1041,12 +1041,18 @@ int usbhs_mod_gadget_probe(struct usbhs_priv *priv)
+ 		if (usbhsg_is_dcp(uep)) {
+ 			gpriv->gadget.ep0 = &uep->ep;
+ 			usb_ep_set_maxpacket_limit(&uep->ep, 64);
++			uep->ep.caps.type_control = true;
  		}
+ 		/* init normal pipe */
+ 		else {
+ 			usb_ep_set_maxpacket_limit(&uep->ep, 512);
++			uep->ep.caps.type_iso = true;
++			uep->ep.caps.type_bulk = true;
++			uep->ep.caps.type_int = true;
+ 			list_add_tail(&uep->ep.ep_list, &gpriv->gadget.ep_list);
+ 		}
++		uep->ep.caps.dir_in = true;
++		uep->ep.caps.dir_out = true;
+ 	}
  
-+		ep->ep_usb.caps.dir_in = true;
-+		ep->ep_usb.caps.dir_out = true;
-+
- 		ep->udc = udc;
- 		ep->epnumber = ep_number;
- 		ep->desc = NULL;
+ 	ret = usb_add_gadget_udc(dev, &gpriv->gadget);
 -- 
 1.9.1
