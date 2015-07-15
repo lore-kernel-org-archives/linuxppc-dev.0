@@ -1,19 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70D8B1A2ECA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 17:37:29 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: <linux-kernel@vger.kernel.org>, keescook@chromium.org, luto@amacapital.net,
- wad@chromium.org, strosake@linux.vnet.ibm.com,
- bogdan.purcareata@freescale.com
-Subject: [RFC PATCH 12/12] selftests/seccomp: Add powerpc support
-Date: Wed, 15 Jul 2015 17:37:14 +1000
-Message-Id: <1436945834-26660-12-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
-References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4746B1A3178
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 17:40:34 +1000 (AEST)
+Date: Wed, 15 Jul 2015 09:40:19 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: Mark Brown <broonie@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-spi@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ kernel@pengutronix.de, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] spi: mpc512x-psc: add support for Freescale MPC5125
+Message-ID: <20150715074018.GD1426@pengutronix.de>
+References: <1436865596-9592-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20150714095442.GO11162@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20150714095442.GO11162@sirena.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wire up the syscall number and regs so the tests work on powerpc.
+On Tue, Jul 14, 2015 at 10:54:42AM +0100, Mark Brown wrote:
+> On Tue, Jul 14, 2015 at 11:19:56AM +0200, Uwe Kleine-König wrote:
+> 
+> >  static const struct of_device_id mpc512x_psc_spi_of_match[] = {
+> > -	{ .compatible = "fsl,mpc5121-psc-spi", },
+> > +	{ .compatible = "fsl,mpc5121-psc-spi", .data = (void *)TYPE_MPC5121 },
+> > +	{ .compatible = "fsl,mpc5125-psc-spi", .data = (void *)TYPE_MPC5125 },
+> >  	{},
+> 
+> The code seems fine but this should update the binding document to
+> include the new compatible string.
+I don't find fsl,mpc5121-psc-spi documented either. The best I found is
+ocumentation/devicetree/bindings/powerpc/fsl/mpc5121-psc.txt which
+describes fsl,mpc5121-psc-uart and fsl,mpc5121-psc.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- tools/testing/selftests/seccomp/seccomp_bpf.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Best regards
+Uwe
 
-diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-index 51adb9afb511..05fcdb974df6 100644
---- a/tools/testing/selftests/seccomp/seccomp_bpf.c
-+++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-@@ -14,6 +14,7 @@
- #include <linux/filter.h>
- #include <sys/prctl.h>
- #include <sys/ptrace.h>
-+#include <sys/types.h>
- #include <sys/user.h>
- #include <linux/prctl.h>
- #include <linux/ptrace.h>
-@@ -1209,6 +1210,10 @@ TEST_F(TRACE_poke, getpid_runs_normally)
- # define ARCH_REGS	struct user_pt_regs
- # define SYSCALL_NUM	regs[8]
- # define SYSCALL_RET	regs[0]
-+#elif defined(__powerpc__)
-+# define ARCH_REGS	struct pt_regs
-+# define SYSCALL_NUM	gpr[0]
-+# define SYSCALL_RET	gpr[3]
- #else
- # error "Do not know how to find your architecture's registers and syscalls"
- #endif
-@@ -1242,7 +1247,7 @@ void change_syscall(struct __test_metadata *_metadata,
- 	ret = ptrace(PTRACE_GETREGSET, tracee, NT_PRSTATUS, &iov);
- 	EXPECT_EQ(0, ret);
- 
--#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__)
-+#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__) || defined(__powerpc__)
- 	{
- 		regs.SYSCALL_NUM = syscall;
- 	}
-@@ -1406,6 +1411,8 @@ TEST_F(TRACE_syscall, syscall_dropped)
- #  define __NR_seccomp 383
- # elif defined(__aarch64__)
- #  define __NR_seccomp 277
-+# elif defined(__powerpc__)
-+#  define __NR_seccomp 358
- # else
- #  warning "seccomp syscall number unknown for this architecture"
- #  define __NR_seccomp 0xffff
 -- 
-2.1.0
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
