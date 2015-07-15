@@ -1,31 +1,27 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 79C531A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 15:17:01 +1000 (AEST)
-Message-ID: <55A5ECC3.5060803@hitachi.com>
-Date: Wed, 15 Jul 2015 14:16:51 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id AFF5A1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 15:21:36 +1000 (AEST)
+Date: Wed, 15 Jul 2015 15:21:11 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Subject: Re: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead
+ of nvram_read_byte() and nvram_write_byte()
+In-Reply-To: <1436874720.3948.252.camel@kernel.crashing.org>
+Message-ID: <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
+References: <20150712102527.356151908@telegraphics.com.au>
+ <20150712102531.505897278@telegraphics.com.au>
+ <alpine.LNX.2.00.1507141725480.851@nippy.intranet>
+ <1436874720.3948.252.camel@kernel.crashing.org>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>
-CC: dwalker@fifo99.com, Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
- Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
- Baoquan He <bhe@redhat.com>, linux-sh@vger.kernel.org,
- linux-s390@vger.kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
- HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: Re: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers
- if kdump is not available
-References: <20150714135919.GA18333@fifo99.com>
- <20150714150208.GD10792@redhat.com> <20150714153430.GA18766@fifo99.com>
- <20150714154040.GA3912@redhat.com> <20150714154833.GA18883@fifo99.com>
- <20150714161612.GH10792@redhat.com> <87a8uyoeig.fsf@x220.int.ebiederm.org>
- <20150714172953.GA19135@fifo99.com> <20150714175527.GI10792@redhat.com>
- <87si8qmxef.fsf@x220.int.ebiederm.org> <20150714182336.GB3912@redhat.com>
-In-Reply-To: <20150714182336.GB3912@redhat.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,76 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/07/15 3:23, Vivek Goyal wrote:
-> On Tue, Jul 14, 2015 at 01:01:12PM -0500, Eric W. Biederman wrote:
->> Vivek Goyal <vgoyal@redhat.com> writes:
->>
->>> On Tue, Jul 14, 2015 at 05:29:53PM +0000, dwalker@fifo99.com wrote:
->>>
->>> [..]
->>>>>>>> If a machine is failing, there are high chance it can't deliver you the
->>>>>>>> notification. Detecting that failure suing some kind of polling mechanism
->>>>>>>> might be more reliable. And it will make even kdump mechanism more
->>>>>>>> reliable so that it does not have to run panic notifiers after the crash.
->>>>>>>
->>>>>>> I think what your suggesting is that my company should change how it's hardware works
->>>>>>> and that's not really an option for me. This isn't a simple thing like checking over the
->>>>>>> network if the machine is down or not, this is way more complex hardware design.
->>>>>>
->>>>>> That means you are ready to live with an unreliable design. There might be
->>>>>> cases where notifier does not get run properly and you will not do switch
->>>>>> despite the fact that OS has failed. I was just trying to nudge you in
->>>>>> a direction which could be more reliable mechanism.
->>>>>
->>>>> Sigh I see some deep confusion going on here.
->>>>>
->>>>> The panic notifiers are just that panic notifiers.  They have not been
->>>>> nor should they be tied to kexec.   If those notifiers force a switch
->>>>> over of between machines I fail to see why you would care if it was
->>>>> kexec or another panic situation that is forcing that switchover.
->>>>
->>>> Hidehiro isn't fixing the failover situation on my side, he's fixing register
->>>> information collection when crash_kexec_post_notifiers is used.
->>>
->>> Sure. Given that we have created this new parameter, let us fix it so that
->>> we can capture the other cpu register state in crash dump.
->>>
->>> I am little disappointed that it was not tested well when this parameter was
->>> introuced. We should have atleast tested it to the extent to see if there
->>> is proper cpu state present for all cpus in the crash dump.
->>>
->>> At that point of time it looked like a simple modification
->>> to allow panic notifiers before crash_kexec().
->>
->> Either that or we say no one cares enough, and it known broken so let's
->> just revert the fool thing.
+
+On Tue, 14 Jul 2015, Benjamin Herrenschmidt wrote:
+
+> On Tue, 2015-07-14 at 17:58 +1000, Finn Thain wrote:
+> > Make use of arch_nvram_ops in device drivers so that the nvram_* 
+> > function exports can be removed.
+> > 
+> > Since they are no longer global symbols, rename the PPC32 nvram_* 
+> > functions appropriately.
+> > 
+> > Add the missing CONFIG_NVRAM test to imsttfb to avoid a build failure.
+> > 
+> > Add a CONFIG_PPC32 test to matroxfb because PPC64 doesn't implement 
+> > the read_byte() method.
 > 
-> Masami, you introduced this option. Are you fine with the revert? Is it
-> really being used and tested?
+> This is a bit fishy in a way because some of that nvram stuff is really 
+> about powermac/apple nvram offsets, ie, "XPRAM".
 
-Actually, it is tested but under very limited situation. I think we
-need a clear acceptance criteria, IOW, we need a testset for kdump
-so that we can make things better.
-Would you have it? maybe we can push it into kselftest.
+Yes, the generalization that PPC64 does not have XPRAM is wrong, but that 
+wasn't originally my doing. If we were to address that issue, this patch 
+series may not be the best place to do so.
 
->> I honestly can't see how to support panic notifiers, before kexec.
->> There is no way to tell what is being done and all of the pieces
->> including smp_send_stop are known to be buggy.
-> 
-> we should be able to replace smp_send_stop() with what crash_kexec() is
-> doing to stop the machine? If yes, then it should be fine I guess. This
-> parameter description clearly says that specify it at your own risk. So
-> we are not issuing a big support statement for successful kdump after
-> panic notifiers. If it is something fixable, otherwise user needs
-> to deal with it.
+The situation presently is that CONFIG_NVRAM cannot be enabled on PPC64. I 
+took advantage of that simplification, despite the corner cases where it 
+fails.
 
-Agreed (as I've sent in other replay).
+The corner cases are found among PPC64 systems with Matrox cards. The 
+other PowerMac video drivers are not really relevant here due to "depends 
+on PPC32" or "#if defined(CONFIG_PPC32)", meaning that nvram_read_byte() 
+isn't a problem there.
 
-Thank you,
+Perhaps only dual-boot systems are at issue because AFAIK only Mac OS 
+offers a user friendly way to edit XPRAM settings (?) Further, does the 
+video mode setting in XPRAM relate only to the MacOS main screen and not 
+to other devices? That is, are we concerned here only with dual-boot PPC64 
+machines with one matrox card, as the main screen, and no Linux desktop 
+environment and no video mode settings on the kernel command line?
+
+> Maybe we should have a dedicated accessor for "mac_xpram" and NULL-check 
+> it rather than using ifdef's ?
+
+I wanted arch_nvram_ops to be const data, which means a NULL check won't 
+work, because defined(CONFIG_PPC_PMAC) does not imply availability of 
+XPRAM at run-time.
+
+There is a similar situation in the m68k portion of this patch series: a 
+multi-platform kernel binary might run on an Atari or a Mac. On m68k I 
+resolved this with MACH_IS_MAC(), which is analogous to 
+machine_is(powermac).
+
+So I can see how to implement XPRAM for matroxfb and imsttfb on PPC64. But 
+this is an enhancement that I would defer unless the present limitation is 
+already problematic.
 
 -- 
-Masami HIRAMATSU
-Linux Technology Research Center, System Productivity Research Dept.
-Center for Technology Innovation - Systems Engineering
-Hitachi, Ltd., Research & Development Group
-E-mail: masami.hiramatsu.pt@hitachi.com
