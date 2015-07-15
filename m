@@ -1,31 +1,32 @@
-Return-Path: <hidehiro.kawai.ez@hitachi.com>
-Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
- by lists.ozlabs.org (Postfix) with ESMTP id AFED11A006B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 20:49:48 +1000 (AEST)
-Message-ID: <55A63AC6.4040806@hitachi.com>
-Date: Wed, 15 Jul 2015 19:49:42 +0900
-From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-yk0-f172.google.com (mail-yk0-f172.google.com
+ [209.85.160.172])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 61ECB1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 21:42:29 +1000 (AEST)
+Received: by ykeo3 with SMTP id o3so33384942yke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 04:42:26 -0700 (PDT)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: dwalker@fifo99.com, "Eric W. Biederman" <ebiederm@xmission.com>,
- Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
- Baoquan He <bhe@redhat.com>, linux-sh@vger.kernel.org,
- linux-s390@vger.kernel.org, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>,
- HATAYAMA Daisuke <d.hatayama@jp.fujitsu.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- linuxppc-dev@lists.ozlabs.org, linux-metag@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 1/3] panic: Disable crash_kexec_post_notifiers if kdump
- is not available
-References: <20150710113331.4368.10495.stgit@softrs>
- <20150710113331.4368.63745.stgit@softrs>
- <87wpy82kqf.fsf@x220.int.ebiederm.org> <20150713202611.GA16525@fifo99.com>
- <87h9p7r0we.fsf@x220.int.ebiederm.org> <20150714135919.GA18333@fifo99.com>
- <20150714150208.GD10792@redhat.com> <20150714153430.GA18766@fifo99.com>
- <20150714154040.GA3912@redhat.com>
-In-Reply-To: <20150714154040.GA3912@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <alpine.DEB.2.11.1507151226210.18576@nanos>
+References: <cover.1436511577.git.baolin.wang@linaro.org>
+ <a1bd8d71caeb4051d0be87aad1baae7ababa4df7.1436511577.git.baolin.wang@linaro.org>
+ <alpine.DEB.2.11.1507151226210.18576@nanos>
+Date: Wed, 15 Jul 2015 19:42:26 +0800
+Message-ID: <CAMz4kuLxBj+82trNVXs9qkuecrKvgdbXuJ3dfvDOCfyJwrDX9Q@mail.gmail.com>
+Subject: Re: [PATCH 6/6] cputime: Introduce
+ cputime_to_timespec64()/timespec64_to_cputime()
+From: Baolin Wang <baolin.wang@linaro.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: benh@kernel.crashing.org, Arnd Bergmann <arnd@arndb.de>,
+ John Stultz <john.stultz@linaro.org>, peterz@infradead.org, paulus@samba.org,
+ mpe@ellerman.id.au, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+ linux390@de.ibm.com, rth@twiddle.net, riel@redhat.com, cl@linux.com,
+ tj@kernel.org, =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arch@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,72 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2015/07/15 0:40), Vivek Goyal wrote:
-> On Tue, Jul 14, 2015 at 03:34:30PM +0000, dwalker@fifo99.com wrote:
->> On Tue, Jul 14, 2015 at 11:02:08AM -0400, Vivek Goyal wrote:
->>> On Tue, Jul 14, 2015 at 01:59:19PM +0000, dwalker@fifo99.com wrote:
->>>> On Mon, Jul 13, 2015 at 08:19:45PM -0500, Eric W. Biederman wrote:
->>>>> dwalker@fifo99.com writes:
->>>>>
->>>>>> On Fri, Jul 10, 2015 at 08:41:28AM -0500, Eric W. Biederman wrote:
->>>>>>> Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com> writes:
->>>>>>>
->>>>>>>> You can call panic notifiers and kmsg dumpers before kdump by
->>>>>>>> specifying "crash_kexec_post_notifiers" as a boot parameter.
->>>>>>>> However, it doesn't make sense if kdump is not available.  In that
->>>>>>>> case, disable "crash_kexec_post_notifiers" boot parameter so that
->>>>>>>> you can't change the value of the parameter.
->>>>>>>
->>>>>>> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
->>>>>>
->>>>>> I think it would make sense if he just replaced "kdump" with "kexec".
->>>>>
->>>>> It would be less insane, however it still makes no sense as without
->>>>> kexec on panic support crash_kexec is a noop.  So the value of the
->>>>> seeting makes no difference.
->>>>
->>>> Can you explain more, I don't really understand what you mean. Are you suggesting
->>>> the whole "crash_kexec_post_notifiers" feature has no value ?
->>>
->>> Daniel,
->>>
->>> BTW, why are you using crash_kexec_post_notifiers commandline? Why not
->>> without it?
->>
->> It was explained in the prior thread but to rehash, the notifiers are used to do a switch
->> over from the crashed machine to another redundant machine.
-> 
-> So why not detect failure using polling or issue notifications from second
-> kernel.
+On 15 July 2015 at 18:31, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 15 Jul 2015, Baolin Wang wrote:
+>
+>> The cputime_to_timespec() and timespec_to_cputime() functions are
+>> not year 2038 safe on 32bit systems due to that the struct timepsec
+>> will overflow in 2038 year.
+>
+> And how is this relevant? cputime is not based on wall clock time at
+> all. So what has 2038 to do with cputime?
+>
+> We want proper explanations WHY we need such a change.
 
-Polling is not sufficient because some kernel parts may be
-alive even if the responder of the polling is dead.  We want
-to notify the failure after stopping other CPUs.
+When converting the posix-cpu-timers, it call the
+cputime_to_timespec() function. Thus it need a conversion for this
+function.
+You can see that conversion in patch "posix-cpu-timers: Convert to
+y2038 safe callbacks" from
+https://git.linaro.org/people/baolin.wang/upstream_0627.git.
+And I also will explain this in the changelog. Thanks for your comments.
 
-Notifying from second kernel needs to wait for the kernel
-booted up and device initialization if needed, and this
-is not applicable if we want to do fast switchover.
+>
+> Thanks,
+>
+>         tglx
+>
+>
 
-Notifying just before second kernel, as Eric stated, is
-one of the reliable option although we can't do complicate
-things there.  For example, we can notify the failure by
-writing some specific I/O registers in purgatory codes
-provided by kexec command.  Since the purgatory codes are
-currently embedded into kexec command, so we might need to
-modify the mechanism to be pluggable because how to notify
-will differ among vendors.
 
-Anyway, this is the case of switchover use case.  If we want
-to save minimal information before kdump, notifiers or
-kmsg_dump() can be used.
-
-> IOW, expecting that a crashed machine will be able to deliver notification
-> reliably is falwed to begin with, IMHO.
-
-I think it depends on what callback is used.  Most of panic
-notifiers just do memory copy or I/O register access.
-Of course, there are relatively complicate notifiers too,
-and I'm preparing patch sets for hardening for that case.
-
-Regards,
-Hidehiro Kawai
+-- 
+Baolin.wang
+Best Regards
