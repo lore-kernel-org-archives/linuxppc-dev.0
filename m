@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E36B21A1BE0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:37:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 16EC71A198F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 16:38:02 +1000 (AEST)
 Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout1.samsung.com
+ by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NRI01HRENR0WQ80@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:37:48 +0900 (KST)
+ with ESMTP id <0NRI01VDVNQL6T60@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 15 Jul 2015 15:37:33 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: gregkh@linuxfoundation.org, balbi@ti.com
 Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
@@ -20,10 +20,10 @@ Cc: Peter.Chen@freescale.com, johnyoun@synopsys.com, dahlmann.thomas@arcor.de,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  andrzej.p@samsung.com, m.szyprowski@samsung.com,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v3 38/46] usb: gadget: epautoconf: remove pxa quirk from
- ep_matches()
-Date: Wed, 15 Jul 2015 08:32:25 +0200
-Message-id: <1436941953-1327-39-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v3 36/46] usb: gadget: atmel_usba_udc: add ep capabilities
+ support
+Date: Wed, 15 Jul 2015 08:32:23 +0200
+Message-id: <1436941953-1327-37-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 References: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,64 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The same effect can be achieved by using capabilities flags, so now we can
-get rid of handling of hardware specific limitations in generic code.
+Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/epautoconf.c     | 5 -----
- drivers/usb/gadget/udc/pxa25x_udc.c | 9 +++------
- 2 files changed, 3 insertions(+), 11 deletions(-)
+ drivers/usb/gadget/udc/atmel_usba_udc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index af4b10a..4f66e9d73 100644
---- a/drivers/usb/gadget/epautoconf.c
-+++ b/drivers/usb/gadget/epautoconf.c
-@@ -58,11 +58,6 @@ ep_matches (
- 		 */
- 		if (!ep->caps.type_int && !ep->caps.type_bulk)
- 			return 0;
--		/* for now, avoid PXA "interrupt-in";
--		 * it's documented as never using DATA1.
--		 */
--		if (gadget_is_pxa(gadget) && ep->caps.type_int)
--			return 0;
- 		break;
- 	}
+diff --git a/drivers/usb/gadget/udc/atmel_usba_udc.c b/drivers/usb/gadget/udc/atmel_usba_udc.c
+index 37d414e..267d84f 100644
+--- a/drivers/usb/gadget/udc/atmel_usba_udc.c
++++ b/drivers/usb/gadget/udc/atmel_usba_udc.c
+@@ -2067,6 +2067,17 @@ static struct usba_ep * usba_udc_pdata(struct platform_device *pdev,
+ 		ep->can_dma = pdata->ep[i].can_dma;
+ 		ep->can_isoc = pdata->ep[i].can_isoc;
  
-diff --git a/drivers/usb/gadget/udc/pxa25x_udc.c b/drivers/usb/gadget/udc/pxa25x_udc.c
-index 1301e29..f53e526 100644
---- a/drivers/usb/gadget/udc/pxa25x_udc.c
-+++ b/drivers/usb/gadget/udc/pxa25x_udc.c
-@@ -1898,8 +1898,7 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep5in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
--			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
--						USB_EP_CAPS_DIR_IN),
-+			.caps		= USB_EP_CAPS(0, 0),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
-@@ -1977,8 +1976,7 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep10in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
--			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
--						USB_EP_CAPS_DIR_IN),
-+			.caps		= USB_EP_CAPS(0, 0),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
-@@ -2056,8 +2054,7 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep15in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
--			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
--						USB_EP_CAPS_DIR_IN),
-+			.caps		= USB_EP_CAPS(0, 0),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
++		if (i == 0) {
++			ep->ep.caps.type_control = true;
++		} else {
++			ep->ep.caps.type_iso = ep->can_isoc;
++			ep->ep.caps.type_bulk = true;
++			ep->ep.caps.type_int = true;
++		}
++
++		ep->ep.caps.dir_in = true;
++		ep->ep.caps.dir_out = true;
++
+ 		if (i)
+ 			list_add_tail(&ep->ep.ep_list, &udc->gadget.ep_list);
+ 	}
 -- 
 1.9.1
