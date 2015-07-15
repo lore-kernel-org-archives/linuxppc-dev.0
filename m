@@ -1,26 +1,26 @@
 Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20A0C1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 01:12:45 +1000 (AEST)
-Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
- [IPv6:2607:f8b0:4001:c03::22f])
+ by lists.ozlabs.org (Postfix) with ESMTPS id ABA6D1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 01:16:12 +1000 (AEST)
+Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c05::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5F12E1402B6
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2015 01:12:43 +1000 (AEST)
-Received: by iebmu5 with SMTP id mu5so35583964ieb.1
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 08:12:41 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 25B621402AE
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2015 01:16:12 +1000 (AEST)
+Received: by igbpg9 with SMTP id pg9so38672306igb.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 08:16:10 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <1436945834-26660-9-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1436945834-26660-11-git-send-email-mpe@ellerman.id.au>
 References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
- <1436945834-26660-9-git-send-email-mpe@ellerman.id.au>
-Date: Wed, 15 Jul 2015 08:12:41 -0700
-Message-ID: <CAGXu5jKX2OsQz0by52ZahiFXn89u4YQ8WHNv7b1XkpL0W+yW_w@mail.gmail.com>
-Subject: Re: [RFC PATCH 09/12] powerpc/kernel: Add SIG_SYS support for compat
- tasks
+ <1436945834-26660-11-git-send-email-mpe@ellerman.id.au>
+Date: Wed, 15 Jul 2015 08:16:10 -0700
+Message-ID: <CAGXu5j+CNxPSzA83UJDEdr_0G14qqX4yNdhr5+2YrisE8O6eeg@mail.gmail.com>
+Subject: Re: [RFC PATCH 11/12] selftests/seccomp: Make seccomp tests work on
+ big endian
 From: Kees Cook <keescook@chromium.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -38,83 +38,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Wed, Jul 15, 2015 at 12:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> SIG_SYS was added in commit a0727e8ce513 "signal, x86: add SIGSYS info
-> and make it synchronous."
+> The seccomp_bpf test uses BPF_LD|BPF_W|BPF_ABS to load 32-bit values
+> from seccomp_data->args. On big endian machines this will load the high
+> word of the argument, which is not what the test wants.
 >
-> Because we use the asm-generic struct siginfo, we got support for
-> SIG_SYS for free as part of that commit.
->
-> However there was no compat handling added for powerpc. That means we've
-> been advertising the existence of signfo._sifields._sigsys to compat
-> tasks, but not actually filling in the fields correctly.
->
-> Luckily it looks like no one has noticed, presumably because the only
-> user of SIGSYS in the kernel is seccomp filter, which we don't support
-> yet.
->
-> So before we enable seccomp filter, add compat handling for SIGSYS.
+> Borrow a hack from samples/seccomp/bpf-helper.h which changes the offset
+> on big endian to account for this.
 >
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
->  arch/powerpc/include/asm/compat.h             | 7 +++++++
->  arch/powerpc/kernel/signal_32.c               | 5 +++++
->  tools/testing/selftests/seccomp/seccomp_bpf.c | 4 ++++
->  3 files changed, 16 insertions(+)
+>  tools/testing/selftests/seccomp/seccomp_bpf.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 >
-> diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-> index b142b8e0ed9e..4f2df589ec1d 100644
-> --- a/arch/powerpc/include/asm/compat.h
-> +++ b/arch/powerpc/include/asm/compat.h
-> @@ -174,6 +174,13 @@ typedef struct compat_siginfo {
->                         int _band;      /* POLL_IN, POLL_OUT, POLL_MSG */
->                         int _fd;
->                 } _sigpoll;
-> +
-> +               /* SIGSYS */
-> +               struct {
-> +                       unsigned int _call_addr; /* calling insn */
-> +                       int _syscall;            /* triggering system call number */
-> +                       unsigned int _arch;      /* AUDIT_ARCH_* of syscall */
-> +               } _sigsys;
->         } _sifields;
->  } compat_siginfo_t;
->
-> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-> index d3a831ac0f92..77f97284124e 100644
-> --- a/arch/powerpc/kernel/signal_32.c
-> +++ b/arch/powerpc/kernel/signal_32.c
-> @@ -949,6 +949,11 @@ int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
->                 err |= __put_user(s->si_overrun, &d->si_overrun);
->                 err |= __put_user(s->si_int, &d->si_int);
->                 break;
-> +       case __SI_SYS >> 16:
-> +               err |= __put_user(ptr_to_compat(s->si_call_addr), &d->si_call_addr);
-> +               err |= __put_user(s->si_syscall, &d->si_syscall);
-> +               err |= __put_user(s->si_arch, &d->si_arch);
-> +               break;
->         case __SI_RT >> 16: /* This is not generated by the kernel as of now.  */
->         case __SI_MESGQ >> 16:
->                 err |= __put_user(s->si_int, &d->si_int);
 > diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> index c5abe7fd7590..b2374c131340 100644
+> index b2374c131340..51adb9afb511 100644
 > --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
 > +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> @@ -645,6 +645,10 @@ static struct siginfo TRAP_info;
->  static volatile int TRAP_nr;
->  static void TRAP_action(int nr, siginfo_t *info, void *void_context)
->  {
-> +       fprintf(stderr, "in TRAP_action\n");
-> +       fprintf(stderr, "info->si_call_addr %p\n", info->si_call_addr);
-> +       fprintf(stderr, "info->si_syscall %u\n", info->si_syscall);
-> +       fprintf(stderr, "info->si_arch %u\n", info->si_arch);
->         memcpy(&TRAP_info, info, sizeof(TRAP_info));
->         TRAP_nr = nr;
->  }
+> @@ -82,7 +82,13 @@ struct seccomp_data {
+>  };
+>  #endif
+>
+> +#if __BYTE_ORDER == __LITTLE_ENDIAN
+>  #define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]))
+> +#elif __BYTE_ORDER == __BIG_ENDIAN
+> +#define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]) + sizeof(__u32))
+> +#else
+> +#error "wut?"
+> +#endif
 
-This chunk looks like left-over debugging?
+Ah-ha! Yes, thanks. Could you change the #error to something that
+describes the particular (impossible) failure condition? "wut? Unknown
+__BYTE_ORDER?!". Not a huge deal, but I always like verbose errors. :)
+Especially for "impossible" situations. :)
 
 -Kees
 
+>
+>  #define SIBLING_EXIT_UNKILLED  0xbadbeef
+>  #define SIBLING_EXIT_FAILURE   0xbadface
 > --
 > 2.1.0
 >
