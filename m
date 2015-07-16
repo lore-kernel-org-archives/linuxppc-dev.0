@@ -1,25 +1,25 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 761671A19DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 21:14:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCC8E1A19E2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 21:14:11 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 16 Jul 2015 16:44:06 +0530
+ Thu, 16 Jul 2015 16:44:10 +0530
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 745DCE0044
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 74760E0054
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 16:47:58 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6GBDZDL18022548
+ t6GBDYIT35717218
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 16:43:36 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6GBDXMS000516
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 16:43:34 +0530
+ t6GBDWhi000431
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 16:43:33 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
@@ -29,10 +29,10 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  Stephane Eranian <eranian@google.com>
-Subject: [PATCH v5 4/7] powerpc/powernv: detect supported nest pmus and its
- events
-Date: Thu, 16 Jul 2015 16:43:23 +0530
-Message-Id: <1437045206-7491-5-git-send-email-maddy@linux.vnet.ibm.com>
+Subject: [PATCH v5 3/7] powerpc/powernv: Nest PMU detection and device tree
+ parser
+Date: Thu, 16 Jul 2015 16:43:22 +0530
+Message-Id: <1437045206-7491-4-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,17 +44,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Parse device tree to detect supported nest pmu units. Traverse
-through each nest pmu unit folder to find supported events and
-corresponding unit/scale files (if any).
+Create a file "nest-pmu.c" to contain nest pmu related functions. Code
+to detect nest pmu support and parser to collect per-chip reserved memory
+region information from device tree (DT).
 
-The nest unit event file from DT, will contain the offset in the
-reserved memory region to get the counter data for a given event.
-Kernel code uses this offset as event configuration value.
+Detection mechanism is to look for specific property "ibm,ima-chip" in DT.
+For Nest pmu, device tree will have two set of information.
+1) Per-chip reserved memory region for nest pmu counter collection area.
+2) Supported Nest PMUs and events
 
-Device tree parser code also looks for scale/unit in the file name and
-passes on the file as an event attr for perf tool to use in the post
-processing.
+Device tree layout for the Nest PMU as follows.
+
+  /                     -- DT root folder
+  |
+  -nest-ima             -- Nest PMU folder
+   |
+
+   -ima-chip@<chip-id>  -- Per-chip folder for reserved region information
+    |
+    -ibm,chip-id        -- Chip id
+    -ibm,ima-chip
+    -reg                -- HOMER PORE Nest Counter collection Address (RA)
+    -size               -- size to map in kernel space
+
+   -Alink_BW            -- Nest PMU folder
+    |
+    -Alink0             -- Nest PMU Alink Event file
+    -scale.Alink0.scale -- Event scale file
+    -unit.Alink0.unit   -- Event unit file
+    -device_type        -- "nest-ima-unit" marker
+  ....
+
+Subsequent patch will parse the next part of the DT to find various
+Nest PMUs and their events.
 
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -65,159 +87,114 @@ Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Stephane Eranian <eranian@google.com>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/nest-pmu.c | 126 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 125 insertions(+), 1 deletion(-)
+ arch/powerpc/perf/Makefile   |  2 +-
+ arch/powerpc/perf/nest-pmu.c | 85 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 86 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/perf/nest-pmu.c
 
-diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-index e7d45ed4922d..c4c08e4dee55 100644
---- a/arch/powerpc/perf/nest-pmu.c
-+++ b/arch/powerpc/perf/nest-pmu.c
-@@ -11,6 +11,121 @@
- #include "nest-pmu.h"
+diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+index f9c083a5652a..6da656b50e3c 100644
+--- a/arch/powerpc/perf/Makefile
++++ b/arch/powerpc/perf/Makefile
+@@ -5,7 +5,7 @@ obj-$(CONFIG_PERF_EVENTS)	+= callchain.o
+ obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
+ obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
+ 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
+-				   power8-pmu.o
++				   power8-pmu.o nest-pmu.o
+ obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
  
- static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
-+static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
+ obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
+diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+new file mode 100644
+index 000000000000..e7d45ed4922d
+--- /dev/null
++++ b/arch/powerpc/perf/nest-pmu.c
+@@ -0,0 +1,85 @@
++/*
++ * Nest Performance Monitor counter support for POWER8 processors.
++ *
++ * Copyright (C) 2015 Madhavan Srinivasan, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
 +
-+static int nest_event_info(struct property *pp, char *name,
-+			struct nest_ima_events *p8_events, int string, u32 val)
++#include "nest-pmu.h"
++
++static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
++
++static int nest_ima_dt_parser(void)
 +{
-+	char *buf;
-+
-+	/* memory for event name */
-+	buf = kzalloc(P8_NEST_MAX_PMU_NAME_LEN, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	strncpy(buf, name, strlen(name));
-+	p8_events->ev_name = buf;
-+
-+	/* memory for content */
-+	buf = kzalloc(P8_NEST_MAX_PMU_NAME_LEN, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	if (string) {
-+		/* string content*/
-+		if (!pp->value ||
-+		   (strnlen(pp->value, pp->length) == pp->length) ||
-+		   (pp->length > P8_NEST_MAX_PMU_NAME_LEN))
-+			return -EINVAL;
-+
-+		strncpy(buf, (const char *)pp->value, pp->length);
-+	} else
-+		sprintf(buf, "event=0x%x", val);
-+
-+	p8_events->ev_value = buf;
-+	return 0;
-+}
-+
-+static int nest_pmu_create(struct device_node *dev, int pmu_index)
-+{
-+	struct nest_ima_events **p8_events_arr, *p8_events;
-+	struct nest_pmu *pmu_ptr;
-+	struct property *pp;
-+	char *buf, *start;
-+	const __be32 *lval;
-+	u32 val;
-+	int idx = 0, ret;
-+
-+	if (!dev)
-+		return -EINVAL;
-+
-+	/* memory for nest pmus */
-+	pmu_ptr = kzalloc(sizeof(struct nest_pmu), GFP_KERNEL);
-+	if (!pmu_ptr)
-+		return -ENOMEM;
-+
-+	/* Needed for hotplug/migration */
-+	per_nest_pmu_arr[pmu_index] = pmu_ptr;
-+
-+	/* memory for nest pmu events */
-+	p8_events_arr = kzalloc((sizeof(struct nest_ima_events) * 64),
-+								GFP_KERNEL);
-+	if (!p8_events_arr)
-+		return -ENOMEM;
-+	p8_events = (struct nest_ima_events *)p8_events_arr;
++	const __be32 *gcid;
++	const __be64 *chip_ima_reg;
++	const __be64 *chip_ima_size;
++	struct device_node *dev;
++	struct perchip_nest_info *p8ni;
++	int idx;
 +
 +	/*
-+	 * Loop through each property
++	 * "nest-ima" folder contains two things,
++	 * a) per-chip reserved memory region for Nest PMU Counter data
++	 * b) Support Nest PMU units and their event files
 +	 */
-+	for_each_property_of_node(dev, pp) {
-+		start = pp->name;
++	for_each_node_with_property(dev, "ibm,ima-chip") {
++		gcid = of_get_property(dev, "ibm,chip-id", NULL);
++		chip_ima_reg = of_get_property(dev, "reg", NULL);
++		chip_ima_size = of_get_property(dev, "size", NULL);
 +
-+		if (!strcmp(pp->name, "name")) {
-+			if (!pp->value ||
-+			   (strnlen(pp->value, pp->length) == pp->length) ||
-+			   (pp->length > P8_NEST_MAX_PMU_NAME_LEN))
-+				return -EINVAL;
-+
-+			buf = kzalloc(P8_NEST_MAX_PMU_NAME_LEN, GFP_KERNEL);
-+			if (!buf)
-+				return -ENOMEM;
-+
-+			/* Save the name to register it later */
-+			sprintf(buf, "Nest_%s", (char *)pp->value);
-+			pmu_ptr->pmu.name = (char *)buf;
-+			continue;
++		if ((!gcid) || (!chip_ima_reg) || (!chip_ima_size)) {
++			pr_err("Nest_PMU: device %s missing property\n",
++							dev->full_name);
++			return -ENODEV;
 +		}
 +
-+		/* Skip these, we dont need it */
-+		if (!strcmp(pp->name, "phandle") ||
-+		    !strcmp(pp->name, "device_type") ||
-+		    !strcmp(pp->name, "linux,phandle"))
-+			continue;
++		/* chip id to save reserve memory region */
++		idx = (uint32_t)be32_to_cpup(gcid);
 +
-+		if (strncmp(pp->name, "unit.", 5) == 0) {
-+			/* Skip first few chars in the name */
-+			start += 5;
-+			ret = nest_event_info(pp, start, p8_events++, 1, 0);
-+		} else if (strncmp(pp->name, "scale.", 6) == 0) {
-+			/* Skip first few chars in the name */
-+			start += 6;
-+			ret = nest_event_info(pp, start, p8_events++, 1, 0);
-+		} else {
-+			lval = of_get_property(dev, pp->name, NULL);
-+			val = (uint32_t)be32_to_cpup(lval);
-+
-+			ret = nest_event_info(pp, start, p8_events++, 0, val);
-+		}
-+
-+		if (ret)
-+			return ret;
-+
-+		/* book keeping */
-+		idx++;
++		/*
++		 * Using a local variable to make it compact and
++		 * easier to read
++		 */
++		p8ni = &p8_nest_perchip_info[idx];
++		p8ni->pbase = be64_to_cpup(chip_ima_reg);
++		p8ni->size = be64_to_cpup(chip_ima_size);
++		p8ni->vbase = (uint64_t) phys_to_virt(p8ni->pbase);
 +	}
 +
 +	return 0;
 +}
- 
- static int nest_ima_dt_parser(void)
- {
-@@ -19,7 +134,7 @@ static int nest_ima_dt_parser(void)
- 	const __be64 *chip_ima_size;
- 	struct device_node *dev;
- 	struct perchip_nest_info *p8ni;
--	int idx;
-+	int idx, ret;
- 
- 	/*
- 	 * "nest-ima" folder contains two things,
-@@ -50,6 +165,15 @@ static int nest_ima_dt_parser(void)
- 		p8ni->vbase = (uint64_t) phys_to_virt(p8ni->pbase);
- 	}
- 
-+	/* Look for supported Nest PMU units */
-+	idx = 0;
-+	for_each_node_by_type(dev, "nest-ima-unit") {
-+		ret = nest_pmu_create(dev, idx);
-+		if (ret)
-+			return ret;
-+		idx++;
-+	}
 +
- 	return 0;
- }
- 
++static int __init nest_pmu_init(void)
++{
++	int ret = -ENODEV;
++
++	/*
++	 * Lets do this only if we are hypervisor
++	 */
++	if (!cur_cpu_spec->oprofile_cpu_type ||
++	    !(strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8") == 0) ||
++	    !cpu_has_feature(CPU_FTR_HVMODE))
++		return ret;
++
++	/*
++	 * Nest PMU information is grouped under "nest-ima" node
++	 * of the top-level device-tree directory. Detect Nest PMU
++	 * by the "ibm,ima-chip" property.
++	 */
++	if (!of_find_node_with_property(NULL, "ibm,ima-chip"))
++		return ret;
++
++	/*
++	 * Parse device-tree for Nest PMU information
++	 */
++	ret = nest_ima_dt_parser();
++	if (ret)
++		return ret;
++
++	return 0;
++}
++device_initcall(nest_pmu_init);
 -- 
 1.9.1
