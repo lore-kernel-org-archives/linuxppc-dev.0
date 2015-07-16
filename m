@@ -1,24 +1,25 @@
-Return-Path: <tcminyard@gmail.com>
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <prvs=632e2375c=Stefano.Stabellini@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2EF5A1A075D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:01:33 +1000 (AEST)
-Received: by pdjr16 with SMTP id r16so45856244pdj.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 08:01:29 -0700 (PDT)
-Sender: Corey Minyard <tcminyard@gmail.com>
-Message-ID: <55A7C747.1050509@acm.org>
-Date: Thu, 16 Jul 2015 10:01:27 -0500
-From: Corey Minyard <minyard@acm.org>
-Reply-To: minyard@acm.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E09331A075F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:49:10 +1000 (AEST)
+Date: Thu, 16 Jul 2015 16:36:53 +0100
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+To: Julien Grall <julien.grall@citrix.com>
+CC: <xen-devel@lists.xenproject.org>, <linux-arm-kernel@lists.infradead.org>,
+ <ian.campbell@citrix.com>, <stefano.stabellini@eu.citrix.com>,
+ <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, David Vrabel
+ <david.vrabel@citrix.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 11/20] tty/hvc: xen: Use xen page definition
+In-Reply-To: <1436474552-31789-12-git-send-email-julien.grall@citrix.com>
+Message-ID: <alpine.DEB.2.02.1507161636470.17378@kaball.uk.xensource.com>
+References: <1436474552-31789-1-git-send-email-julien.grall@citrix.com>
+ <1436474552-31789-12-git-send-email-julien.grall@citrix.com>
 MIME-Version: 1.0
-To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, alistair@popple.id.au,
- linuxppc-dev@lists.ozlabs.org, jk@ozlabs.org
-Subject: Re: [PATCH] ipmi/powernv: Fix potential invalid pointer dereference
-References: <20150716111628.28037.80799.stgit@localhost.localdomain>
-In-Reply-To: <20150716111628.28037.80799.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ok, this looks fine.  A couple of question...
+On Thu, 9 Jul 2015, Julien Grall wrote:
+> The console ring is always based on the page granularity of Xen.
+> 
+> Signed-off-by: Julien Grall <julien.grall@citrix.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Jiri Slaby <jslaby@suse.cz>
+> Cc: David Vrabel <david.vrabel@citrix.com>
+> Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
 
-Do I need to send this upstream right now?  How well has this been tested?
+Reviewed-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
 
-Do you want this backported to 4.0 stable?
-
--corey
-
-On 07/16/2015 06:16 AM, Neelesh Gupta wrote:
-> If the OPAL call to receive the ipmi message fails, then we free up the
-> smi message and return. But, the driver still holds the reference to
-> old smi message in the 'cur_msg' which can potentially be accessed later
-> and freed again leading to kernel oops. To fix it up,
->
-> The kernel driver should reset the 'cur_msg' and send reply to the user
-> in addition to freeing the message.
->
-> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> ---
->  drivers/char/ipmi/ipmi_powernv.c |   13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
-> index 9b409c0..637486d 100644
-> --- a/drivers/char/ipmi/ipmi_powernv.c
-> +++ b/drivers/char/ipmi/ipmi_powernv.c
-> @@ -143,9 +143,16 @@ static int ipmi_powernv_recv(struct ipmi_smi_powernv *smi)
->  	pr_devel("%s:   -> %d (size %lld)\n", __func__,
->  			rc, rc == 0 ? size : 0);
->  	if (rc) {
-> -		spin_unlock_irqrestore(&smi->msg_lock, flags);
-> -		ipmi_free_smi_msg(msg);
-> -		return 0;
-> +		/* If came via the poll, and response was not yet ready */
-> +		if (rc == OPAL_EMPTY) {
-> +			spin_unlock_irqrestore(&smi->msg_lock, flags);
-> +			return 0;
-> +		} else {
-> +			smi->cur_msg = NULL;
-> +			spin_unlock_irqrestore(&smi->msg_lock, flags);
-> +			send_error_reply(smi, msg, IPMI_ERR_UNSPECIFIED);
-> +			return 0;
-> +		}
->  	}
+>  drivers/tty/hvc/hvc_xen.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+> index a9d837f..2135944 100644
+> --- a/drivers/tty/hvc/hvc_xen.c
+> +++ b/drivers/tty/hvc/hvc_xen.c
+> @@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
+>  	if (r < 0 || v == 0)
+>  		goto err;
+>  	mfn = v;
+> -	info->intf = xen_remap(mfn << PAGE_SHIFT, PAGE_SIZE);
+> +	info->intf = xen_remap(mfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
+>  	if (info->intf == NULL)
+>  		goto err;
+>  	info->vtermno = HVC_COOKIE;
+> @@ -392,7 +392,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
+>  	if (xen_pv_domain())
+>  		mfn = virt_to_mfn(info->intf);
+>  	else
+> -		mfn = __pa(info->intf) >> PAGE_SHIFT;
+> +		mfn = __pa(info->intf) >> XEN_PAGE_SHIFT;
+>  	ret = gnttab_alloc_grant_references(1, &gref_head);
+>  	if (ret < 0)
+>  		return ret;
+> @@ -476,7 +476,7 @@ static int xencons_resume(struct xenbus_device *dev)
+>  	struct xencons_info *info = dev_get_drvdata(&dev->dev);
 >  
->  	if (size < sizeof(*opal_msg)) {
->
+>  	xencons_disconnect_backend(info);
+> -	memset(info->intf, 0, PAGE_SIZE);
+> +	memset(info->intf, 0, XEN_PAGE_SIZE);
+>  	return xencons_connect_backend(dev, info);
+>  }
+>  
+> -- 
+> 2.1.4
+> 
