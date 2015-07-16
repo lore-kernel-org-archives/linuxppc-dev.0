@@ -1,20 +1,41 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F49F1A1D1F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 07:13:32 +1000 (AEST)
-Message-ID: <55A81E75.5030200@redhat.com>
-Date: Thu, 16 Jul 2015 23:13:25 +0200
-From: Thomas Huth <thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3A4C1A075D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 07:29:33 +1000 (AEST)
+Received: from /spool/local
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 16 Jul 2015 17:29:30 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 47F0FC90043
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 17:20:34 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6GLTRrE63111350
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 21:29:27 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6GLTRqQ023009
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 17:29:27 -0400
+Date: Thu, 16 Jul 2015 14:28:18 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org
+Subject: Re: [PATCH v3 3/8] perf: Add a flags parameter to pmu txn interfaces
+Message-ID: <20150716212818.GA31962@us.ibm.com>
+References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1436929315-28520-4-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150716201749.GL3644@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>, kvm-ppc@vger.kernel.org,
- Alexander Graf <agraf@suse.de>
-CC: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 1/1] KVM: PPC: Book3S: correct width in XER handling
-References: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150716201749.GL3644@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +45,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/27/2015 01:56 AM, Sam Bobroff wrote:
-> In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
-> bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
-> accessed as such.
-> 
-> This patch corrects places where it is accessed as a 32 bit field by a
-> 64 bit kernel.  In some cases this is via a 32 bit load or store
-> instruction which, depending on endianness, will cause either the
-> lower or upper 32 bits to be missed.  In another case it is cast as a
-> u32, causing the upper 32 bits to be cleared.
-> 
-> This patch corrects those places by extending the access methods to
-> 64 bits.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Peter Zijlstra [peterz@infradead.org] wrote:
+| On Tue, Jul 14, 2015 at 08:01:50PM -0700, Sukadev Bhattiprolu wrote:
+| > @@ -1604,6 +1613,12 @@ static void power_pmu_start_txn(struct pmu *pmu)
+| >  static void power_pmu_cancel_txn(struct pmu *pmu)
+| >  {
+| >  	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+| > +	int txn_flags;
+| > +
+| > +	txn_flags = cpuhw->txn_flags;
+| > +	cpuhw->txn_flags = 0;
+| > +	if (cpuhw->txn_flags & ~PERF_PMU_TXN_ADD)
+| > +		return;
+| 
+| That seems, unintentional? ;-)
 
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+Argh. Thanks for catching it.
 
-Actually this patch also fixes a bug that SLOF sometimes crashes when a
-vCPU gets kicked out of kernel mode (see the following URL for details:
-https://bugzilla.redhat.com/show_bug.cgi?id=1178502 ), and I've just
-tested that this bug does not occur with this patch anymore, so also:
-
-Tested-by: Thomas Huth <thuth@redhat.com>
+Sukadev
