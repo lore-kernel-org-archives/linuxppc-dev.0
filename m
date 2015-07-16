@@ -1,21 +1,25 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C5A8B1A06C7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 12:53:56 +1000 (AEST)
-From: Lu Y.B. <yangbo.lu@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH v2] powerpc/dts: Add and fix 1588 timer node for eTSEC
-Date: Thu, 16 Jul 2015 02:37:54 +0000
-Message-ID: <BY1PR0301MB11921FFFBC88E7ABD81D2E27F2990@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1430969347-13869-1-git-send-email-yangbo.lu@freescale.com>
-In-Reply-To: <1430969347-13869-1-git-send-email-yangbo.lu@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7913D1A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 13:38:43 +1000 (AEST)
+Message-ID: <1437017923.28475.4.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 09/12] powerpc/kernel: Add SIG_SYS support for
+ compat tasks
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, LKML
+ <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, Will
+ Drewry <wad@chromium.org>, strosake@linux.vnet.ibm.com,
+ bogdan.purcareata@freescale.com
+Date: Thu, 16 Jul 2015 13:38:43 +1000
+In-Reply-To: <CAGXu5jKX2OsQz0by52ZahiFXn89u4YQ8WHNv7b1XkpL0W+yW_w@mail.gmail.com>
+References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
+ <1436945834-26660-9-git-send-email-mpe@ellerman.id.au>
+ <CAGXu5jKX2OsQz0by52ZahiFXn89u4YQ8WHNv7b1XkpL0W+yW_w@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,236 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Any comments?
-Thanks.
+On Wed, 2015-07-15 at 08:12 -0700, Kees Cook wrote:
+> On Wed, Jul 15, 2015 at 12:37 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> > index c5abe7fd7590..b2374c131340 100644
+> > --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
+> > +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> > @@ -645,6 +645,10 @@ static struct siginfo TRAP_info;
+> >  static volatile int TRAP_nr;
+> >  static void TRAP_action(int nr, siginfo_t *info, void *void_context)
+> >  {
+> > +       fprintf(stderr, "in TRAP_action\n");
+> > +       fprintf(stderr, "info->si_call_addr %p\n", info->si_call_addr);
+> > +       fprintf(stderr, "info->si_syscall %u\n", info->si_syscall);
+> > +       fprintf(stderr, "info->si_arch %u\n", info->si_arch);
+> >         memcpy(&TRAP_info, info, sizeof(TRAP_info));
+> >         TRAP_nr = nr;
+> >  }
+> 
+> This chunk looks like left-over debugging?
 
-> -----Original Message-----
-> From: Yangbo Lu [mailto:yangbo.lu@freescale.com]
-> Sent: Thursday, May 07, 2015 11:29 AM
-> To: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood
-> Scott-B07421
-> Cc: Lu Yangbo-B47093
-> Subject: [PATCH v2] powerpc/dts: Add and fix 1588 timer node for eTSEC
->=20
-> Add 1588 timer node in files:
-> arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> arch/powerpc/boot/dts/bsc9132qds.dtsi
-> arch/powerpc/boot/dts/p1010rdb.dtsi
-> arch/powerpc/boot/dts/p1020rdb-pd.dts
-> arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> arch/powerpc/boot/dts/p1022ds.dtsi
-> arch/powerpc/boot/dts/p1025twr.dtsi
-> Fix 1588 timer node in file:
-> arch/powerpc/boot/dts/p2020rdb-pc.dtsi
->=20
-> Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
-> ---
-> Changes for v2:
-> 	- Changed hex value to decimal value in dts
-> 	- Modified commit message
-> 	- Modified 1588 node in p2020rdb-pc.dtsi
-> ---
->  arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++
-> arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++
-> arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
->  arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 12 ++++++------
->  8 files changed, 90 insertions(+), 6 deletions(-)
->=20
-> diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> index 45efcba..a6d533e 100644
-> --- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> +++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> @@ -80,6 +80,18 @@
->  		status =3D "disabled";
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <3435973837>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <249999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> index af8e888..ef75804 100644
-> --- a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> +++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> @@ -87,6 +87,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <3435973837>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <249999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		tbi-handle =3D <&tbi0>;
-> diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi
-> b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> index ea534ef..1613678 100644
-> --- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-> +++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> @@ -186,6 +186,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <10>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <2147483670>;
-> +		fsl,tmr-fiper1	=3D <999999990>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <199999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> index 987017e..52e8fe8 100644
-> --- a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> +++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> @@ -225,6 +225,18 @@
->  			};
->  		};
->=20
-> +		ptp_clock@b0e00 {
-> +			compatible =3D "fsl,etsec-ptp";
-> +			reg =3D <0xb0e00 0xb0>;
-> +			interrupts =3D <68 2 0 0 69 2 0 0>;
-> +			fsl,tclk-period	=3D <10>;
-> +			fsl,tmr-prsc	=3D <2>;
-> +			fsl,tmr-add	=3D <2147483670>;
-> +			fsl,tmr-fiper1	=3D <999999990>;
-> +			fsl,tmr-fiper2	=3D <99990>;
-> +			fsl,max-adj	=3D <199999999>;
-> +		};
-> +
->  		enet0: ethernet@b0000 {
->  			fixed-link =3D <1 1 1000 0 0>;
->  			phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> index d6274c5..a29c84a 100644
-> --- a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> +++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> @@ -224,6 +224,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <10>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <2147483670>;
-> +		fsl,tmr-fiper1	=3D <999999990>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <199999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		fixed-link =3D <1 1 1000 0 0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi
-> b/arch/powerpc/boot/dts/p1022ds.dtsi
-> index 957e0dc..50f915f 100644
-> --- a/arch/powerpc/boot/dts/p1022ds.dtsi
-> +++ b/arch/powerpc/boot/dts/p1022ds.dtsi
-> @@ -215,6 +215,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <3223239997>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <266499999>;
-> +	};
-> +
->  	ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi
-> b/arch/powerpc/boot/dts/p1025twr.dtsi
-> index 8453501..52a6c7e 100644
-> --- a/arch/powerpc/boot/dts/p1025twr.dtsi
-> +++ b/arch/powerpc/boot/dts/p1025twr.dtsi
-> @@ -138,6 +138,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <10>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <3221225505>;
-> +		fsl,tmr-fiper1	=3D <999999990>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <133333332>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> index c21d1c7..363172d 100644
-> --- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> +++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> @@ -215,12 +215,12 @@
->  	};
->=20
->  	ptp_clock@24e00 {
-> -		fsl,tclk-period =3D <5>;
-> -		fsl,tmr-prsc =3D <200>;
-> -		fsl,tmr-add =3D <0xCCCCCCCD>;
-> -		fsl,tmr-fiper1 =3D <0x3B9AC9FB>;
-> -		fsl,tmr-fiper2 =3D <0x0001869B>;
-> -		fsl,max-adj =3D <249999999>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <2863311531>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <299999999>;
->  	};
->=20
->  	enet0: ethernet@24000 {
-> --
-> 2.1.0.27.g96db324
+Urgh yep, that's ugly. Thanks for noticing.
+
+Will remove before merging :)
+
+cheers
