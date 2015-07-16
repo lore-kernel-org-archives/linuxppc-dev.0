@@ -1,28 +1,17 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id CB8901A0163
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 16:02:09 +1000 (AEST)
-Date: Thu, 16 Jul 2015 16:01:41 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
-Subject: Re: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead
- of nvram_read_byte() and nvram_write_byte()
-In-Reply-To: <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
-Message-ID: <alpine.LNX.2.00.1507161530270.19651@nippy.intranet>
-References: <20150712102527.356151908@telegraphics.com.au>
- <20150712102531.505897278@telegraphics.com.au>
- <alpine.LNX.2.00.1507141725480.851@nippy.intranet>
- <1436874720.3948.252.camel@kernel.crashing.org>
- <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 230BD1A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 16:09:50 +1000 (AEST)
+In-Reply-To: <1436178334-15496-2-git-send-email-khandual@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mikey@neuling.org
+Subject: Re: [2/2] powerpc/signal: Add helper function to fetch quad word
+ aligned pointer
+Message-Id: <20150716060950.0AF361402A0@ozlabs.org>
+Date: Thu, 16 Jul 2015 16:09:49 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Wed, 15 Jul 2015, I wrote:
-
-> On Tue, 14 Jul 2015, Benjamin Herrenschmidt wrote:
+On Mon, 2015-06-07 at 10:25:34 UTC, Anshuman Khandual wrote:
+> This patch adds one helper function 'vmx_reserve_addr' which computes
+> quad word aligned pointer for vmx_reserve array element in sigcontext
+> structure making the code more readable.
 > 
-> > Maybe we should have a dedicated accessor for "mac_xpram" ...
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/signal_64.c | 14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
 > 
-> ... I can see how to implement XPRAM for matroxfb and imsttfb 
+> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+> index c7c24d2..e8762f5 100644
+> --- a/arch/powerpc/kernel/signal_64.c
+> +++ b/arch/powerpc/kernel/signal_64.c
+> @@ -73,6 +73,12 @@ static const char fmt32[] = KERN_INFO \
+>  static const char fmt64[] = KERN_INFO \
+>  	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
+>  
+> +static elf_vrreg_t __user *vmx_reserve_addr(struct sigcontext __user *sc)
+> +{
+> +		return (elf_vrreg_t __user *)
+> +			(((unsigned long)sc->vmx_reserve + 15) & ~0xful);
 
-I'll have to retract that. The video mode and color mode settings used by 
-the PowerMac framebuffer drivers don't exist in the PRAM portion of NVRAM.
+You have more tabs here than you need. Please put it on one line, I don't care
+if it's a bit more than 80 chars.
 
-Addresses 0x140F and 0x1410 are found in the partition reserved by Apple 
-for "Name Registry properties", according to Designing PCI Cards and 
-Drivers for Power Macintosh Computers. There is no equivalent on m68k 
-Macs, AFAIK.
+Please add a comment describing what it's doing and why.
 
-This is NVRAM partition 2 on my beige g3, which begins at 0x1400. I'm not 
-sure that this is true on New World PowerMacs, and I suspect that the 
-framebuffer drivers should be calling pmac_get_partition() to determine 
-the offset of the beginning of the Name Registry partition.
+Also I think I'd prefer if it was named sigcontext_vmx_regs() or something more
+like that, ie. it's about sigcontext primarily.
 
-The arch_nvram_ops methods don't deal with structures like partitions. 
-They treat the entire 8 KiB as unstructured, because that's how /dev/nvram 
-treats it.
-
--- 
+cheers
