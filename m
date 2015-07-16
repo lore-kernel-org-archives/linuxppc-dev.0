@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 601051A1D13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 19:59:09 +1000 (AEST)
-In-Reply-To: <1434022072-31754-1-git-send-email-linux@rasmusvillemoes.dk>
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- Ian Munsie <imunsie@au1.ibm.com>, Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 816D31A19FD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 20:01:01 +1000 (AEST)
+In-Reply-To: <1435123522.3996.29.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Joe Perches <joe@perches.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v3,1/2] cxl: Add explicit precision specifiers
-Message-Id: <20150716095909.3C4701402B5@ozlabs.org>
-Date: Thu, 16 Jul 2015 19:59:09 +1000 (AEST)
+Subject: Re: [1/3] powerpc/iommu: Remove dma_data union
+Message-Id: <20150716100100.EB1FA1402C2@ozlabs.org>
+Date: Thu, 16 Jul 2015 20:01:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-11-06 at 11:27:51 UTC, Rasmus Villemoes wrote:
-> C99 says that a precision given as simply '.' with no following digits
-> or * should be interpreted as 0. The kernel's printf implementation,
-> however, treats this case as if the precision was omitted. C99 also
-> says that if both the precision and value are 0, no digits should be
-> printed. Even if the kernel followed C99 to the letter, I don't think
-> that would be particularly useful in these cases. For consistency with
-> most other format strings in the file, use an explicit precision of 16
-> and add a 0x prefix.
+On Wed, 2015-24-06 at 05:25:22 UTC, Benjamin Herrenschmidt wrote:
+> To support "hybrid" DMA ops in a subsequent patch, we will need both
+> a direct DMA offset and an iommu pointer. Those are currently exclusive
+> (a union), so change them to be separate fields.
 > 
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> While there, also type iommu_table_base properly and make exist only
+> on CONFIG_PPC64 since it's not referenced on 32-bit at all.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/80c394fab89649585089
+https://git.kernel.org/powerpc/c/2db4928bb559f8b43ca7
 
 cheers
