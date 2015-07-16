@@ -1,24 +1,20 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37DF01A0784
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 07:12:30 +1000 (AEST)
-Date: Thu, 16 Jul 2015 23:12:19 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 5/8] perf: Split perf_event_read_value()
-Message-ID: <20150716211219.GN3644@twins.programming.kicks-ass.net>
-References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1436929315-28520-6-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F49F1A1D1F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 07:13:32 +1000 (AEST)
+Message-ID: <55A81E75.5030200@redhat.com>
+Date: Thu, 16 Jul 2015 23:13:25 +0200
+From: Thomas Huth <thuth@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1436929315-28520-6-git-send-email-sukadev@linux.vnet.ibm.com>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>, kvm-ppc@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>
+CC: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 1/1] KVM: PPC: Book3S: correct width in XER handling
+References: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,62 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 14, 2015 at 08:01:52PM -0700, Sukadev Bhattiprolu wrote:
-> Move the part of perf_event_read_value() that computes the event
-> counts and event times into a new function, perf_event_compute().
+On 05/27/2015 01:56 AM, Sam Bobroff wrote:
+> In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
+> bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
+> accessed as such.
 > 
-> This would allow us to call perf_event_compute() independently.
+> This patch corrects places where it is accessed as a 32 bit field by a
+> 64 bit kernel.  In some cases this is via a 32 bit load or store
+> instruction which, depending on endianness, will cause either the
+> lower or upper 32 bits to be missed.  In another case it is cast as a
+> u32, causing the upper 32 bits to be cleared.
 > 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> This patch corrects those places by extending the access methods to
+> 64 bits.
 > 
-> Changelog[v3]
-> 	Rather than move perf_event_read() into callers and then
-> 	rename, just move the computations into a separate function
-> 	(redesign to address comment from Peter Zijlstra).
-> ---
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
-Changelog[] bits go here, below the '---' where they get discarded.
+Reviewed-by: Thomas Huth <thuth@redhat.com>
 
->  kernel/events/core.c |   37 ++++++++++++++++++++++++-------------
->  1 file changed, 24 insertions(+), 13 deletions(-)
-> 
-> diff --git a/kernel/events/core.c b/kernel/events/core.c
-> index 44fb89d..b1e9a42 100644
-> --- a/kernel/events/core.c
-> +++ b/kernel/events/core.c
-> @@ -3704,6 +3704,29 @@ static int perf_release(struct inode *inode, struct file *file)
->  	return 0;
->  }
->  
-> +static u64 perf_event_compute(struct perf_event *event, u64 *enabled,
-> +			      u64 *running)
+Actually this patch also fixes a bug that SLOF sometimes crashes when a
+vCPU gets kicked out of kernel mode (see the following URL for details:
+https://bugzilla.redhat.com/show_bug.cgi?id=1178502 ), and I've just
+tested that this bug does not occur with this patch anymore, so also:
 
-This is a horrible name, 'compute' what?
-
-> +{
-> +	struct perf_event *child;
-> +	u64 total;
-> +
-> +	total = perf_event_count(event);
-> +
-> +	*enabled += event->total_time_enabled +
-> +			atomic64_read(&event->child_total_time_enabled);
-> +	*running += event->total_time_running +
-> +			atomic64_read(&event->child_total_time_running);
-> +
-
-	lockdep_assert_held(&event->child_mutex);
-
-> +	list_for_each_entry(child, &event->child_list, child_list) {
-> +		perf_event_read(child);
-> +		total += perf_event_count(child);
-> +		*enabled += child->total_time_enabled;
-> +		*running += child->total_time_running;
-> +	}
-> +
-> +	return total;
-> +}
-> +
->  /*
->   * Remove all orphanes events from the context.
->   */
+Tested-by: Thomas Huth <thuth@redhat.com>
