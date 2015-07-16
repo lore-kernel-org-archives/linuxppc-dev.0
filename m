@@ -1,25 +1,35 @@
-Return-Path: <prvs=632e2375c=Stefano.Stabellini@citrix.com>
-Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E09331A075F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:49:10 +1000 (AEST)
-Date: Thu, 16 Jul 2015 16:36:53 +0100
-From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-To: Julien Grall <julien.grall@citrix.com>
-CC: <xen-devel@lists.xenproject.org>, <linux-arm-kernel@lists.infradead.org>,
- <ian.campbell@citrix.com>, <stefano.stabellini@eu.citrix.com>,
- <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, David Vrabel
- <david.vrabel@citrix.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 11/20] tty/hvc: xen: Use xen page definition
-In-Reply-To: <1436474552-31789-12-git-send-email-julien.grall@citrix.com>
-Message-ID: <alpine.DEB.2.02.1507161636470.17378@kaball.uk.xensource.com>
-References: <1436474552-31789-1-git-send-email-julien.grall@citrix.com>
- <1436474552-31789-12-git-send-email-julien.grall@citrix.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 807751A075F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:51:32 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Fri, 17 Jul 2015 01:51:32 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E0B672CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:51:26 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6GFpIBc45023380
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:51:26 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6GForEB031694
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:50:54 +1000
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, acme@kernel.org, mingo@kernel.org,
+ mpe@ellerman.id.au, sukadev@linux.vnet.ibm.com,
+ maddy@linux.vnet.ibm.com, warrier@linux.vnet.ibm.com,
+ srikar@linux.vnet.ibm.com, paulus@samba.org, scottwood@freescale.com,
+ Hemant Kumar <hemant@linux.vnet.ibm.com>
+Subject: [PATCH v5 1/2] perf,kvm/ppc: Add kvm_perf.h for powerpc
+Date: Thu, 16 Jul 2015 21:18:41 +0530
+Message-Id: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,53 +39,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 9 Jul 2015, Julien Grall wrote:
-> The console ring is always based on the page granularity of Xen.
-> 
-> Signed-off-by: Julien Grall <julien.grall@citrix.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Jiri Slaby <jslaby@suse.cz>
-> Cc: David Vrabel <david.vrabel@citrix.com>
-> Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
+To analyze the exit events with perf, we need kvm_perf.h to be added in
+the arch/powerpc directory, where the kvm tracepoints needed to trace
+the KVM exit events are defined.
 
-Reviewed-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+This patch adds "kvm_perf_book3s.h" to indicate that the tracepoints are
+book3s specific. Generic "kvm_perf.h" then can just include
+"kvm_perf_book3s.h".
 
->  drivers/tty/hvc/hvc_xen.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-> index a9d837f..2135944 100644
-> --- a/drivers/tty/hvc/hvc_xen.c
-> +++ b/drivers/tty/hvc/hvc_xen.c
-> @@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
->  	if (r < 0 || v == 0)
->  		goto err;
->  	mfn = v;
-> -	info->intf = xen_remap(mfn << PAGE_SHIFT, PAGE_SIZE);
-> +	info->intf = xen_remap(mfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
->  	if (info->intf == NULL)
->  		goto err;
->  	info->vtermno = HVC_COOKIE;
-> @@ -392,7 +392,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
->  	if (xen_pv_domain())
->  		mfn = virt_to_mfn(info->intf);
->  	else
-> -		mfn = __pa(info->intf) >> PAGE_SHIFT;
-> +		mfn = __pa(info->intf) >> XEN_PAGE_SHIFT;
->  	ret = gnttab_alloc_grant_references(1, &gref_head);
->  	if (ret < 0)
->  		return ret;
-> @@ -476,7 +476,7 @@ static int xencons_resume(struct xenbus_device *dev)
->  	struct xencons_info *info = dev_get_drvdata(&dev->dev);
->  
->  	xencons_disconnect_backend(info);
-> -	memset(info->intf, 0, PAGE_SIZE);
-> +	memset(info->intf, 0, XEN_PAGE_SIZE);
->  	return xencons_connect_backend(dev, info);
->  }
->  
-> -- 
-> 2.1.4
-> 
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+---
+Changes:
+- Not exporting the exit reasons compared to previous patchset (suggested by Paul)
+
+ arch/powerpc/include/uapi/asm/kvm_perf.h        |  6 ++++++
+ arch/powerpc/include/uapi/asm/kvm_perf_book3s.h | 14 ++++++++++++++
+ 2 files changed, 20 insertions(+)
+ create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+ create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+
+diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
+new file mode 100644
+index 0000000..5ed2ff3
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_POWERPC_KVM_PERF_H
++#define _ASM_POWERPC_KVM_PERF_H
++
++#include <asm/kvm_perf_book3s.h>
++
++#endif
+diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+new file mode 100644
+index 0000000..8c8d8c2
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+@@ -0,0 +1,14 @@
++#ifndef _ASM_POWERPC_KVM_PERF_BOOK3S_H
++#define _ASM_POWERPC_KVM_PERF_BOOK3S_H
++
++#include <asm/kvm.h>
++
++#define DECODE_STR_LEN 20
++
++#define VCPU_ID "vcpu_id"
++
++#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
++#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
++#define KVM_EXIT_REASON "trap"
++
++#endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
+-- 
+1.9.3
