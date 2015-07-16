@@ -1,32 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1AB821A06C7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 14:12:30 +1000 (AEST)
-Message-ID: <1437019949.28475.6.camel@ellerman.id.au>
-Subject: Re: [3/3] IRQ: Print "unexpected IRQ" messages consistently across
- architectures
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Linux-Arch
- <linux-arch@vger.kernel.org>, "linux-mips@linux-mips.org"
- <linux-mips@linux-mips.org>, linux-am33-list@redhat.com,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- linux-c6x-dev@linux-c6x.org,  linux-parisc@vger.kernel.org,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- adi-buildroot-devel@lists.sourceforge.net,  "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, linux-m68k@lists.linux-m68k.org,
- linux-alpha@vger.kernel.org, "x86@kernel.org" <x86@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 16 Jul 2015 14:12:29 +1000
-In-Reply-To: <CAErSpo52Kk0c=1UHQzxntJc3ph_CX8vcY+QdULBKv-HGUHBK9Q@mail.gmail.com>
-References: <20150712220211.7166.42035.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150713032303.D49801402B1@ozlabs.org>
- <CAErSpo52Kk0c=1UHQzxntJc3ph_CX8vcY+QdULBKv-HGUHBK9Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 007EB1A06C7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 14:35:21 +1000 (AEST)
+Date: Wed, 15 Jul 2015 21:35:18 -0700 (PDT)
+Message-Id: <20150715.213518.1391748312035384335.davem@davemloft.net>
+To: tlfalcon@linux.vnet.ibm.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ nfont@linux.vnet.ibm.com, brking@linux.vnet.ibm.com
+Subject: Re: [PATCH net-next] ibmveth: add support for TSO6
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1436889111-10509-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1436889111-10509-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-07-13 at 13:35 -0500, Bjorn Helgaas wrote:
-> On Sun, Jul 12, 2015 at 10:23 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > On Sun, 2015-12-07 at 22:02:11 UTC, Bjorn Helgaas wrote:
-> >> Many architectures use a variant of "unexpected IRQ trap at vector %x" to
-> >> log unexpected IRQs.  This is confusing because (a) it prints the Linux IRQ
-> >> number, but "vector" more often refers to a CPU vector number, and (b) it
-> >> prints the IRQ number in hex with no base indication, while Linux IRQ
-> >> numbers are usually printed in decimal.
-> >>
-> >> Print the same text ("unexpected IRQ %d") across all architectures.
-> >>
-> >> No functional change other than the output text.
-> >
-> > There's already a fallback version in asm-generic, so shouldn't you instead
-> > just delete all the versions that are identical to that?
-> >
-> > eg. on powerpc we have:
-> >
-> >>  static inline void ack_bad_irq(unsigned int irq)
-> >>  {
-> >> -     printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
-> >> +     printk(KERN_CRIT "unexpected IRQ %d\n", irq);
-> >>  }
-> >
-> > And the generic version is:
-> >
-> >>  #ifndef ack_bad_irq
-> >>  static inline void ack_bad_irq(unsigned int irq)
-> >>  {
-> >> -     printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
-> >> +     printk(KERN_CRIT "unexpected IRQ %d\n", irq);
-> >>  }
-> >>  #endif
-> >
-> > So we can just delete the powerpc version?
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Date: Tue, 14 Jul 2015 10:51:51 -0500
+
+> This patch adds support for a new method of signalling the firmware
+> that TSO packets are being sent. The new method removes the need to
+> alter the ip and tcp checksums and allows TSO6 support.
 > 
-> Wow, I really didn't do my homework here.  Not only is there a generic
-> version already, but there's also print_irq_desc(), which prints way
-> more information than any of the ack_bad_irq() implementations.
+> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 
-Even better :)
-
-> I'll try again :)
-
-Thanks.
-
-cheers
+Applied.
