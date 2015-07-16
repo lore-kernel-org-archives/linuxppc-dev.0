@@ -1,19 +1,32 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB1051A0163
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 14:05:52 +1000 (AEST)
-In-Reply-To: <1436934126-9273-1-git-send-email-kamalesh@linux.vnet.ibm.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1AB821A06C7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 14:12:30 +1000 (AEST)
+Message-ID: <1437019949.28475.6.camel@ellerman.id.au>
+Subject: Re: [3/3] IRQ: Print "unexpected IRQ" messages consistently across
+ architectures
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: vipin@linux.vnet.ibm.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>,
- Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [RESEND,v3] powerpc/pseries: Limit EPOW reset event warnings
-Message-Id: <20150716040552.BBCEC1402C2@ozlabs.org>
-Date: Thu, 16 Jul 2015 14:05:52 +1000 (AEST)
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Linux-Arch
+ <linux-arch@vger.kernel.org>, "linux-mips@linux-mips.org"
+ <linux-mips@linux-mips.org>, linux-am33-list@redhat.com,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-c6x-dev@linux-c6x.org,  linux-parisc@vger.kernel.org,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ adi-buildroot-devel@lists.sourceforge.net,  "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, linux-m68k@lists.linux-m68k.org,
+ linux-alpha@vger.kernel.org, "x86@kernel.org" <x86@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 16 Jul 2015 14:12:29 +1000
+In-Reply-To: <CAErSpo52Kk0c=1UHQzxntJc3ph_CX8vcY+QdULBKv-HGUHBK9Q@mail.gmail.com>
+References: <20150712220211.7166.42035.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150713032303.D49801402B1@ozlabs.org>
+ <CAErSpo52Kk0c=1UHQzxntJc3ph_CX8vcY+QdULBKv-HGUHBK9Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,118 +36,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-15-07 at 04:22:06 UTC, Kamalesh Babulal wrote:
-> Kernel prints respective warnings about various EPOW events for
-> user information/action after parsing EPOW interrupts.Prompting
-> user to take action depending upon the severity of the event.
+On Mon, 2015-07-13 at 13:35 -0500, Bjorn Helgaas wrote:
+> On Sun, Jul 12, 2015 at 10:23 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > On Sun, 2015-12-07 at 22:02:11 UTC, Bjorn Helgaas wrote:
+> >> Many architectures use a variant of "unexpected IRQ trap at vector %x" to
+> >> log unexpected IRQs.  This is confusing because (a) it prints the Linux IRQ
+> >> number, but "vector" more often refers to a CPU vector number, and (b) it
+> >> prints the IRQ number in hex with no base indication, while Linux IRQ
+> >> numbers are usually printed in decimal.
+> >>
+> >> Print the same text ("unexpected IRQ %d") across all architectures.
+> >>
+> >> No functional change other than the output text.
+> >
+> > There's already a fallback version in asm-generic, so shouldn't you instead
+> > just delete all the versions that are identical to that?
+> >
+> > eg. on powerpc we have:
+> >
+> >>  static inline void ack_bad_irq(unsigned int irq)
+> >>  {
+> >> -     printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
+> >> +     printk(KERN_CRIT "unexpected IRQ %d\n", irq);
+> >>  }
+> >
+> > And the generic version is:
+> >
+> >>  #ifndef ack_bad_irq
+> >>  static inline void ack_bad_irq(unsigned int irq)
+> >>  {
+> >> -     printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
+> >> +     printk(KERN_CRIT "unexpected IRQ %d\n", irq);
+> >>  }
+> >>  #endif
+> >
+> > So we can just delete the powerpc version?
 > 
-> At times EPOW reset event warning, such as below could flood
-> kernel log, over a period of time.
-> 
-> May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:04:24 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:07:18 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:13:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:26 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:36 alp kernel: Non critical power or cooling issue cleared
-> 
-> This patch avoids these multiple EPOW reset warnings by using a boolean
-> flag. This flag is initialized to false and is set to true upon arrival
-> of EPOW event. This same flag is checked and reset during EPOW_RESET
-> scenario to filter out valid EPOW reset events and avoid multiple warning
-> logs.
+> Wow, I really didn't do my homework here.  Not only is there a generic
+> version already, but there's also print_irq_desc(), which prints way
+> more information than any of the ack_bad_irq() implementations.
 
-Why are we even getting these reset events when nothing has happened?
+Even better :)
 
-> Also, merged adjacent pr_err/pr_emerg into single one to reduce
-> the number of lines printed per warning.
-> 
-> Suggested-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-> [Vipin: edited the changelog]
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> ---
-> v3 Changes:
->    - Limit warning printed by EPOW RESET event, by guarding it with bool flag.
->      Instead of rate limiting all the EPOW events.
-> 
-> v2 Changes:
->    - Merged multiple adjacent pr_err/pr_emerg into single line to reduce multi-line
->      warnings, based on Michael's comments.
-> 
->  arch/powerpc/platforms/pseries/ras.c | 25 +++++++++++++++++--------
->  1 file changed, 17 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index 02e4a17..b30396a 100644
-> --- a/arch/powerpc/platforms/pseries/ras.c
-> +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -40,6 +40,9 @@ static int ras_check_exception_token;
->  #define EPOW_SENSOR_TOKEN	9
->  #define EPOW_SENSOR_INDEX	0
->  
-> +/* Flag to limit EPOW RESET warning. */
-> +static bool epow_state;
+> I'll try again :)
 
-This name is terrible, it doesn't give me any hint to what it means.
-
-But really it should be a counter, not a boolean.
-
-We could have multiple EPOW events come in and then later get the reset events
-for them, couldn't we?
-
-
-So what about:
-
-static unsigned epow_event_depth;
-
-And then below:
-
-> @@ -145,21 +148,27 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
->  
-
-	epow_event_depth++;
-
-  	switch (action_code) {
-  	case EPOW_RESET:
-		if (epow_event_depth)
-			epow_event_depth--;
-
-		if (epow_event_depth)
-> +			pr_err("Non critical power or cooling issue cleared");
-
->  		break;
-
-
-And that's all you need.
-
-
->  	case EPOW_WARN_COOLING:
-> -		pr_err("Non critical cooling issue reported by firmware");
-> -		pr_err("Check RTAS error log for details");
-> +		pr_err("Non critical cooling issue reported by firmware, "
-> +		       "Check RTAS error log for details");
-
-This should be:
-
-		pr_err("Non-critical cooling issue reported by firmware, check RTAS error log for details.\n");
-
-But that's too long, so how about:
-
-		pr_err("Non-critical cooling issue reported, check RTAS error log for details.\n");
-
-And if it's non-critical it shouldn't be pr_err(), it should be pr_info().
-
-Similarly for all the other messages.
-
+Thanks.
 
 cheers
