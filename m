@@ -1,25 +1,23 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0130.outbound.protection.outlook.com [157.56.111.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 899001A090D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 05:35:50 +1000 (AEST)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linux-spi@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- kernel@pengutronix.de, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org
-Subject: [PATCH] dt-bindings: powerpc: adapt mpc5121-psc document to reality
-Date: Thu, 16 Jul 2015 21:35:28 +0200
-Message-Id: <1437075328-2574-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <20150716133259.GI4039@sirena.org.uk>
-References: <20150716133259.GI4039@sirena.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C9521A0BC0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 05:36:05 +1000 (AEST)
+Message-ID: <1437075349.2993.105.camel@freescale.com>
+Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
+ support
+From: Scott Wood <scottwood@freescale.com>
+To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 16 Jul 2015 14:35:49 -0500
+In-Reply-To: <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
+References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1436982433.2993.81.camel@freescale.com>
+ <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,81 +27,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The drivers support MPC5125 additionally to MPC5121, and there is an spi
-mode that is also supported. Additionally some minor corrections are
-done.
+On Thu, 2015-07-16 at 04:34 -0500, Jain Priyanka-B32167 wrote:
+> 
+> -----Original Message-----
+> From: Wood Scott-B07421 
+> Sent: Wednesday, July 15, 2015 11:17 PM
+> To: Jain Priyanka-B32167
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board 
+> support
+> 
+> On Wed, 2015-07-15 at 15:00 +0530, Priyanka Jain wrote:
+> > T1040D4RDB/T1042D4RDB are Freescale Reference Design Board which can 
+> > support T1040/T1042 QorIQ Power Architecture™ processor respectively
+> > 
+> > T1040D4RDB/T1042D4RDB board Overview
+> > -------------------------------------
+> > - SERDES Connections, 8 lanes supporting:
+> >         - PCI
+> >         - SGMII
+> >         - SATA 2.0
+> >         - QSGMII(only for T1040D4RDB)
+> >     - DDR Controller
+> >         - Supports rates of up to 1600 MHz data-rate
+> >         - Supports one DDR4 UDIMM
+> >     -IFC/Local Bus
+> >         - NAND flash: 1GB 8-bit NAND flash
+> >         - NOR: 128MB 16-bit NOR Flash
+> >     - Ethernet
+> >         - Two on-board RGMII 10/100/1G ethernet ports.
+> >         - PHY #0 remains powered up during deep-sleep
+> >     - CPLD
+> >     - Clocks
+> >         - System and DDR clock (SYSCLK, “DDRCLK”)
+> >         - SERDES clocks
+> >     - Power Supplies
+> >     - USB
+> >         - Supports two USB 2.0 ports with integrated PHYs
+> >         - Two type A ports with   5V@1.5Aperport.
+> >     - SDHC
+> >         - SDHC/SDXC connector
+> >     - SPI
+> >         - On-board 64MB SPI flash
+> >     - I2C
+> >         - Devices connected: EEPROM, thermal monitor, VID controller
+> >     - Other IO
+> >         - Two Serial ports
+> >         - ProfiBus port
+> > 
+> >     Add support for T1040/T1042D4RDB board:
+> >     -add device tree
+> >     -Add entry in corenet_generic.c
+> > 
+> > Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> > ---
+> >  Changes for v2:
+> >       Incorporated Scott's comments on device tree
+> 
+> You didn't respond to the comments on the CPLD node.
+> [Priyanka]
+> T1042D4RDB,  T1040D4RDB are derivatives of same board , CPLD is same for 
+> both.
+> So, I have moved below node having compatible and reg field together in 
+> t104xd4rdb.dtsi.
+> Is this fine?
+>               cpld@3,0 {
+>                       compatible = "fsl,t1040d4rdb-cpld";
+>                       reg = <3 0 0x300>;
+>               };
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
-Hello,
+If the CPLD image is exactly the same on both, this is fine.
 
-I sent a patch adding mpc5125 support to the mpc512x driver and Mark
-requested the new compatible to be documented. While at it I updated the
-document a bit more, and obviously the spi support for mpc5125 depends
-on my patch that isn't mainline yet.
+> > +                i2c@118100{
+> > +                      mux@77{
+> > +                             compatible = "nxp,pca9546";
+> > +                             reg = <0x77>;
+> > +                             #address-cells = <1>;
+> > +                             #size-cells = <0>;
+> > +                     };
+> > +             };
+> 
+> A mux with no nodes under it (and yet it has #address-cells/#size-cells)?  
+> What is it multiplexing?
+> [Priyanka]: PCA9546 is i2c mux device , to which other i2c devices (up-to 8 
+> ) can be further connected on output channels
+> On T104xD4RDB,  channel 0, 1, 3 line are connected to PEX device, Channel 2 
+> to hdmi interface (initialization is done in u-boot only), other channels 
+> are grounded. So, as such Linux is not using the second level I2C devices 
+> connected on this MUX device. So, I have not shown next level hierarchy.
+> Should I replace 'mux' with some other name? . Please suggest.
 
-Best regards
-Uwe
+The device tree describes the hardware, not just what Linux uses... but what I
+don't understand is why you describe the mux at all if you're not going to 
+describe what goes underneath it.
 
- .../bindings/powerpc/fsl/mpc5121-psc.txt           | 24 ++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpc5121-psc.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpc5121-psc.txt
-index 8832e8798912..647817527c88 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/mpc5121-psc.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/mpc5121-psc.txt
-@@ -6,14 +6,14 @@ PSC in UART mode
- For PSC in UART mode the needed PSC serial devices
- are specified by fsl,mpc5121-psc-uart nodes in the
- fsl,mpc5121-immr SoC node. Additionally the PSC FIFO
--Controller node fsl,mpc5121-psc-fifo is requered there:
-+Controller node fsl,mpc5121-psc-fifo is required there:
- 
--fsl,mpc5121-psc-uart nodes
-+fsl,mpc512x-psc-uart nodes
- --------------------------
- 
- Required properties :
-- - compatible : Should contain "fsl,mpc5121-psc-uart" and "fsl,mpc5121-psc"
-- - cell-index : Index of the PSC in hardware
-+ - compatible : Should contain "fsl,<soc>-psc-uart" and "fsl,<soc>-psc"
-+   Supported <soc>s: mpc5121, mpc5125
-  - reg : Offset and length of the register set for the PSC device
-  - interrupts : <a b> where a is the interrupt number of the
-    PSC FIFO Controller and b is a field that represents an
-@@ -25,12 +25,21 @@ Recommended properties :
-  - fsl,rx-fifo-size : the size of the RX fifo slice (a multiple of 4)
-  - fsl,tx-fifo-size : the size of the TX fifo slice (a multiple of 4)
- 
-+PSC in SPI mode
-+---------------
- 
--fsl,mpc5121-psc-fifo node
-+Similar to the UART mode a PSC can be operated in SPI mode. The compatible used
-+for that is fsl,mpc5121-psc-spi. It requires a fsl,mpc5121-psc-fifo as well.
-+The required and recommended properties are identical to the
-+fsl,mpc5121-psc-uart nodes, just use spi instead of uart in the compatible
-+string.
-+
-+fsl,mpc512x-psc-fifo node
- -------------------------
- 
- Required properties :
-- - compatible : Should be "fsl,mpc5121-psc-fifo"
-+ - compatible : Should be "fsl,<soc>-psc-fifo"
-+   Supported <soc>s: mpc5121, mpc5125
-  - reg : Offset and length of the register set for the PSC
-          FIFO Controller
-  - interrupts : <a b> where a is the interrupt number of the
-@@ -39,6 +48,9 @@ Required properties :
-  - interrupt-parent : the phandle for the interrupt controller that
-    services interrupts for this device.
- 
-+Recommended properties :
-+ - clocks : specifies the clock needed to operate the fifo controller
-+ - clock-names : name(s) for the clock(s) listed in clocks
- 
- Example for a board using PSC0 and PSC1 devices in serial mode:
- 
--- 
-2.1.4
+-Scott
