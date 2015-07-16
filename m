@@ -1,28 +1,28 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D0F91A0163
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 15:14:15 +1000 (AEST)
-Received: from mail-pa0-f54.google.com (mail-pa0-f54.google.com
- [209.85.220.54])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0AAF9140285
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Jul 2015 15:14:13 +1000 (AEST)
-Received: by pacan13 with SMTP id an13so36504429pac.1
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Jul 2015 22:14:11 -0700 (PDT)
-Date: Thu, 16 Jul 2015 10:44:07 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v4 0/6] powernv: cpufreq: Report frequency throttle by OCC
-Message-ID: <20150716051407.GB15404@linux>
-References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id CB8901A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 16:02:09 +1000 (AEST)
+Date: Thu, 16 Jul 2015 16:01:41 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Subject: Re: [RFC v4 17/25] powerpc, fbdev: Use arch_nvram_ops methods instead
+ of nvram_read_byte() and nvram_write_byte()
+In-Reply-To: <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
+Message-ID: <alpine.LNX.2.00.1507161530270.19651@nippy.intranet>
+References: <20150712102527.356151908@telegraphics.com.au>
+ <20150712102531.505897278@telegraphics.com.au>
+ <alpine.LNX.2.00.1507141725480.851@nippy.intranet>
+ <1436874720.3948.252.camel@kernel.crashing.org>
+ <alpine.LNX.2.00.1507151200510.2862@nippy.intranet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13-07-15, 19:39, Shilpasri G Bhat wrote:
-> This patchset intends to add frequency throttle reporting mechanism
-> to powernv-cpufreq driver when OCC throttles the frequency. OCC is an
-> On-Chip-Controller which takes care of the power and thermal safety of
-> the chip. The CPU frequency can be throttled during an OCC reset or
-> when OCC tries to limit the max allowed frequency. The patchset will
-> report such conditions so as to keep the user informed about reason
-> for the drop in performance of workloads when frequency is throttled.
-> 
-> Changes from v3:
-> - Rebased on top of 4.2-rc1
-> - Minor changes in patch 2,3,4,6 this does not change the
->   functionality of the code
-> - 594fcb9ec9e powerpc/powernv: Expose OPAL APIs required by PRD
->   interface , this patch fixes the build error due to which this
->   series was initially dropped
->   ERROR: ".opal_message_notifier_register"
->   drivers/cpufreq/powernv-cpufreq.ko] undefined!
 
-I have already Acked v3 of this and that applies to this one as well..
+On Wed, 15 Jul 2015, I wrote:
+
+> On Tue, 14 Jul 2015, Benjamin Herrenschmidt wrote:
+> 
+> > Maybe we should have a dedicated accessor for "mac_xpram" ...
+> 
+> ... I can see how to implement XPRAM for matroxfb and imsttfb 
+
+I'll have to retract that. The video mode and color mode settings used by 
+the PowerMac framebuffer drivers don't exist in the PRAM portion of NVRAM.
+
+Addresses 0x140F and 0x1410 are found in the partition reserved by Apple 
+for "Name Registry properties", according to Designing PCI Cards and 
+Drivers for Power Macintosh Computers. There is no equivalent on m68k 
+Macs, AFAIK.
+
+This is NVRAM partition 2 on my beige g3, which begins at 0x1400. I'm not 
+sure that this is true on New World PowerMacs, and I suspect that the 
+framebuffer drivers should be calling pmac_get_partition() to determine 
+the offset of the beginning of the Name Registry partition.
+
+The arch_nvram_ops methods don't deal with structures like partitions. 
+They treat the entire 8 KiB as unstructured, because that's how /dev/nvram 
+treats it.
 
 -- 
-viresh
