@@ -1,16 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Priyanka.Jain@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 816D31A19FD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 20:01:01 +1000 (AEST)
-In-Reply-To: <1435123522.3996.29.camel@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [1/3] powerpc/iommu: Remove dma_data union
-Message-Id: <20150716100100.EB1FA1402C2@ozlabs.org>
-Date: Thu, 16 Jul 2015 20:01:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15D331A08D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 20:07:51 +1000 (AEST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
+ support
+Date: Thu, 16 Jul 2015 09:34:04 +0000
+Message-ID: <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
+References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1436982433.2993.81.camel@freescale.com>
+In-Reply-To: <1436982433.2993.81.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,18 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-24-06 at 05:25:22 UTC, Benjamin Herrenschmidt wrote:
-> To support "hybrid" DMA ops in a subsequent patch, we will need both
-> a direct DMA offset and an iommu pointer. Those are currently exclusive
-> (a union), so change them to be separate fields.
-> 
-> While there, also type iommu_table_base properly and make exist only
-> on CONFIG_PPC64 since it's not referenced on 32-bit at all.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Applied to powerpc next, thanks.
-
-https://git.kernel.org/powerpc/c/2db4928bb559f8b43ca7
-
-cheers
+DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBXb29kIFNjb3R0LUIwNzQyMSAN
+ClNlbnQ6IFdlZG5lc2RheSwgSnVseSAxNSwgMjAxNSAxMToxNyBQTQ0KVG86IEphaW4gUHJpeWFu
+a2EtQjMyMTY3DQpDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNClN1YmplY3Q6IFJl
+OiBbUEFUQ0hdW3YyXSBwb3dlcnBjL2ZzbC1ib29rZTogQWRkIFQxMDQwRDRSREIvVDEwNDJENFJE
+QiBib2FyZCBzdXBwb3J0DQoNCk9uIFdlZCwgMjAxNS0wNy0xNSBhdCAxNTowMCArMDUzMCwgUHJp
+eWFua2EgSmFpbiB3cm90ZToNCj4gVDEwNDBENFJEQi9UMTA0MkQ0UkRCIGFyZSBGcmVlc2NhbGUg
+UmVmZXJlbmNlIERlc2lnbiBCb2FyZCB3aGljaCBjYW4gDQo+IHN1cHBvcnQgVDEwNDAvVDEwNDIg
+UW9ySVEgUG93ZXIgQXJjaGl0ZWN0dXJl4oSiIHByb2Nlc3NvciByZXNwZWN0aXZlbHkNCj4gDQo+
+IFQxMDQwRDRSREIvVDEwNDJENFJEQiBib2FyZCBPdmVydmlldw0KPiAtLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+IC0gU0VSREVTIENvbm5lY3Rpb25zLCA4IGxhbmVzIHN1
+cHBvcnRpbmc6DQo+ICAgICAgICAgLSBQQ0kNCj4gICAgICAgICAtIFNHTUlJDQo+ICAgICAgICAg
+LSBTQVRBIDIuMA0KPiAgICAgICAgIC0gUVNHTUlJKG9ubHkgZm9yIFQxMDQwRDRSREIpDQo+ICAg
+ICAtIEREUiBDb250cm9sbGVyDQo+ICAgICAgICAgLSBTdXBwb3J0cyByYXRlcyBvZiB1cCB0byAx
+NjAwIE1IeiBkYXRhLXJhdGUNCj4gICAgICAgICAtIFN1cHBvcnRzIG9uZSBERFI0IFVESU1NDQo+
+ICAgICAtSUZDL0xvY2FsIEJ1cw0KPiAgICAgICAgIC0gTkFORCBmbGFzaDogMUdCIDgtYml0IE5B
+TkQgZmxhc2gNCj4gICAgICAgICAtIE5PUjogMTI4TUIgMTYtYml0IE5PUiBGbGFzaA0KPiAgICAg
+LSBFdGhlcm5ldA0KPiAgICAgICAgIC0gVHdvIG9uLWJvYXJkIFJHTUlJIDEwLzEwMC8xRyBldGhl
+cm5ldCBwb3J0cy4NCj4gICAgICAgICAtIFBIWSAjMCByZW1haW5zIHBvd2VyZWQgdXAgZHVyaW5n
+IGRlZXAtc2xlZXANCj4gICAgIC0gQ1BMRA0KPiAgICAgLSBDbG9ja3MNCj4gICAgICAgICAtIFN5
+c3RlbSBhbmQgRERSIGNsb2NrIChTWVNDTEssIOKAnEREUkNMS+KAnSkNCj4gICAgICAgICAtIFNF
+UkRFUyBjbG9ja3MNCj4gICAgIC0gUG93ZXIgU3VwcGxpZXMNCj4gICAgIC0gVVNCDQo+ICAgICAg
+ICAgLSBTdXBwb3J0cyB0d28gVVNCIDIuMCBwb3J0cyB3aXRoIGludGVncmF0ZWQgUEhZcw0KPiAg
+ICAgICAgIC0gVHdvIHR5cGUgQSBwb3J0cyB3aXRoICA1VkAxLjVBcGVyIHBvcnQuDQo+ICAgICAt
+IFNESEMNCj4gICAgICAgICAtIFNESEMvU0RYQyBjb25uZWN0b3INCj4gICAgIC0gU1BJDQo+ICAg
+ICAgICAgLSBPbi1ib2FyZCA2NE1CIFNQSSBmbGFzaA0KPiAgICAgLSBJMkMNCj4gICAgICAgICAt
+IERldmljZXMgY29ubmVjdGVkOiBFRVBST00sIHRoZXJtYWwgbW9uaXRvciwgVklEIGNvbnRyb2xs
+ZXINCj4gICAgIC0gT3RoZXIgSU8NCj4gICAgICAgICAtIFR3byBTZXJpYWwgcG9ydHMNCj4gICAg
+ICAgICAtIFByb2ZpQnVzIHBvcnQNCj4gDQo+ICAgICBBZGQgc3VwcG9ydCBmb3IgVDEwNDAvVDEw
+NDJENFJEQiBib2FyZDoNCj4gICAgIC1hZGQgZGV2aWNlIHRyZWUNCj4gICAgIC1BZGQgZW50cnkg
+aW4gY29yZW5ldF9nZW5lcmljLmMNCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFByaXlhbmthIEphaW4g
+PFByaXlhbmthLkphaW5AZnJlZXNjYWxlLmNvbT4NCj4gLS0tDQo+ICBDaGFuZ2VzIGZvciB2MjoN
+Cj4gICAgICAgSW5jb3Jwb3JhdGVkIFNjb3R0J3MgY29tbWVudHMgb24gZGV2aWNlIHRyZWUNCg0K
+WW91IGRpZG4ndCByZXNwb25kIHRvIHRoZSBjb21tZW50cyBvbiB0aGUgQ1BMRCBub2RlLg0KW1By
+aXlhbmthXQ0KVDEwNDJENFJEQiwgIFQxMDQwRDRSREIgYXJlIGRlcml2YXRpdmVzIG9mIHNhbWUg
+Ym9hcmQgLCBDUExEIGlzIHNhbWUgZm9yIGJvdGguDQpTbywgSSBoYXZlIG1vdmVkIGJlbG93IG5v
+ZGUgaGF2aW5nIGNvbXBhdGlibGUgYW5kIHJlZyBmaWVsZCB0b2dldGhlciBpbiB0MTA0eGQ0cmRi
+LmR0c2kuDQpJcyB0aGlzIGZpbmU/DQoJCWNwbGRAMywwIHsNCgkJCWNvbXBhdGlibGUgPSAiZnNs
+LHQxMDQwZDRyZGItY3BsZCI7DQoJCQlyZWcgPSA8MyAwIDB4MzAwPjsNCgkJfTsNCg0KDQorICAg
+ICAgICAgICAgICAgIGkyY0AxMTgxMDB7DQo+ICsgICAgICAgICAgICAgICAgICAgICAgbXV4QDc3
+ew0KPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm54cCxwY2E5
+NTQ2IjsNCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4Nzc+Ow0KPiAr
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gKyAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8MD47DQo+ICsgICAgICAg
+ICAgICAgICAgICAgICB9Ow0KPiArICAgICAgICAgICAgIH07DQoNCkEgbXV4IHdpdGggbm8gbm9k
+ZXMgdW5kZXIgaXQgKGFuZCB5ZXQgaXQgaGFzICNhZGRyZXNzLWNlbGxzLyNzaXplLWNlbGxzKT8g
+IA0KV2hhdCBpcyBpdCBtdWx0aXBsZXhpbmc/DQpbUHJpeWFua2FdOiBQQ0E5NTQ2IGlzIGkyYyBt
+dXggZGV2aWNlICwgdG8gd2hpY2ggb3RoZXIgaTJjIGRldmljZXMgKHVwLXRvIDggKSBjYW4gYmUg
+ZnVydGhlciBjb25uZWN0ZWQgb24gb3V0cHV0IGNoYW5uZWxzDQpPbiBUMTA0eEQ0UkRCLCAgY2hh
+bm5lbCAwLCAxLCAzIGxpbmUgYXJlIGNvbm5lY3RlZCB0byBQRVggZGV2aWNlLCBDaGFubmVsIDIg
+dG8gaGRtaSBpbnRlcmZhY2UgKGluaXRpYWxpemF0aW9uIGlzIGRvbmUgaW4gdS1ib290IG9ubHkp
+LCBvdGhlciBjaGFubmVscyBhcmUgZ3JvdW5kZWQuIFNvLCBhcyBzdWNoIExpbnV4IGlzIG5vdCB1
+c2luZyB0aGUgc2Vjb25kIGxldmVsIEkyQyBkZXZpY2VzIGNvbm5lY3RlZCBvbiB0aGlzIE1VWCBk
+ZXZpY2UuIFNvLCBJIGhhdmUgbm90IHNob3duIG5leHQgbGV2ZWwgaGllcmFyY2h5Lg0KU2hvdWxk
+IEkgcmVwbGFjZSAnbXV4JyB3aXRoIHNvbWUgb3RoZXIgbmFtZT8gLiBQbGVhc2Ugc3VnZ2VzdC4N
+Cg0KDQotU2NvdHQNCg0K
