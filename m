@@ -1,34 +1,24 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-yk0-f169.google.com (mail-yk0-f169.google.com
- [209.85.160.169])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0118.outbound.protection.outlook.com [207.46.100.118])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D6CEA1A0163
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 12:22:45 +1000 (AEST)
-Received: by ykax123 with SMTP id x123so53231350yka.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jul 2015 19:22:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B75221A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 12:52:26 +1000 (AEST)
+From: Lu Y.B. <yangbo.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
+Subject: RE: powerpc/corenet: enable eSDHC
+Date: Thu, 16 Jul 2015 02:37:21 +0000
+Message-ID: <BY1PR0301MB1192803896118A14B8A2ABF3F2990@BY1PR0301MB1192.namprd03.prod.outlook.com>
+References: <1430893748-38821-1-git-send-email-yangbo.lu@freescale.com>
+ <20150530000331.GA9143@home.buserror.net>
+ <BY1PR0301MB119286F6B8EBD6EED07C8B15F2BF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
+ <1433795433.2477.62.camel@freescale.com>
+In-Reply-To: <1433795433.2477.62.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.11.1507151345060.18576@nanos>
-References: <cover.1436511577.git.baolin.wang@linaro.org>
- <a1bd8d71caeb4051d0be87aad1baae7ababa4df7.1436511577.git.baolin.wang@linaro.org>
- <alpine.DEB.2.11.1507151226210.18576@nanos>
- <CAMz4kuLxBj+82trNVXs9qkuecrKvgdbXuJ3dfvDOCfyJwrDX9Q@mail.gmail.com>
- <alpine.DEB.2.11.1507151345060.18576@nanos>
-Date: Thu, 16 Jul 2015 10:22:43 +0800
-Message-ID: <CAMz4kuKNVACNhwddXMyCqKGpOf_gsoHk=ZFZFuaY=8e4DCRwGw@mail.gmail.com>
-Subject: Re: [PATCH 6/6] cputime: Introduce
- cputime_to_timespec64()/timespec64_to_cputime()
-From: Baolin Wang <baolin.wang@linaro.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: benh@kernel.crashing.org, Arnd Bergmann <arnd@arndb.de>,
- John Stultz <john.stultz@linaro.org>, peterz@infradead.org, paulus@samba.org,
- mpe@ellerman.id.au, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
- linux390@de.ibm.com, rth@twiddle.net, riel@redhat.com, cl@linux.com,
- tj@kernel.org, =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-arch@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,52 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 15 July 2015 at 19:55, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Wed, 15 Jul 2015, Baolin Wang wrote:
->
->> On 15 July 2015 at 18:31, Thomas Gleixner <tglx@linutronix.de> wrote:
->> > On Wed, 15 Jul 2015, Baolin Wang wrote:
->> >
->> >> The cputime_to_timespec() and timespec_to_cputime() functions are
->> >> not year 2038 safe on 32bit systems due to that the struct timepsec
->> >> will overflow in 2038 year.
->> >
->> > And how is this relevant? cputime is not based on wall clock time at
->> > all. So what has 2038 to do with cputime?
->> >
->> > We want proper explanations WHY we need such a change.
->>
->> When converting the posix-cpu-timers, it call the
->> cputime_to_timespec() function. Thus it need a conversion for this
->> function.
->
-> There is no requirement to convert posix-cpu-timers on their own. We
-> need to adopt the posix cpu timers code because it shares syscalls
-> with the other posix timers, but that still does not explain why we
-> need these functions.
->
-
-In posix-cpu-timers, it also defined some 'k_clock struct' variables,
-and we need to convert the callbacks of the 'k_clock struct' which are
-not year 2038 safe on 32bit systems. Some callbacks which need to
-convert call the cputime_to_timespec() function, thus we also want to
-convert the cputime_to_timespec() function to a year 2038 safe
-function to make all them ready for the year 2038 issue.
-
->> You can see that conversion in patch "posix-cpu-timers: Convert to
->> y2038 safe callbacks" from
->> https://git.linaro.org/people/baolin.wang/upstream_0627.git.
->
-> I do not care about your random git tree. I care about proper
-> changelogs. Your changelogs are just a copied boilerplate full of
-> errors.
->
-> Thanks,
->
->         tglx
-
-
-
--- 
-Baolin.wang
-Best Regards
+SGkgU2NvdHQsDQoNCk5vdyB0aGUgcGF0Y2ggYmVsb3cgaGFzIGJlZW4gbWVyZ2VkIG9uIGdpdDov
+L2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC90b3J2YWxkcy9saW51eC5n
+aXQuDQpUaGlzIGlzc3VlIHNob3VsZCBoYXZlIGJlZW4gcmVzb2x2ZWQuIA0KVGhhbmtzLg0KDQoN
+CmNvbW1pdCA1ZmQyNmM3ZWNiMzIwODI3NDViMGJkMzNjOGUzNWJhZGQxY2I1YTkxDQpBdXRob3I6
+IFVsZiBIYW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPg0KRGF0ZTogICBGcmkgSnVuIDUg
+MTE6NDA6MDggMjAxNSArMDIwMA0KDQogICAgbW1jOiBzZGhjaTogUmVzdG9yZSBiZWhhdmlvciB3
+aGlsZSBjcmVhdGluZyBPQ1IgbWFzaw0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVHVlc2RheSwgSnVuZSAwOSwgMjAx
+NSA0OjMxIEFNDQo+IFRvOiBMdSBZYW5nYm8tQjQ3MDkzDQo+IENjOiBsaW51eHBwYy1kZXZAbGlz
+dHMub3psYWJzLm9yZzsgbGludXgtbW1jQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTog
+cG93ZXJwYy9jb3JlbmV0OiBlbmFibGUgZVNESEMNCj4gDQo+IE9uIE1vbiwgMjAxNS0wNi0wOCBh
+dCAwNToxMiAtMDUwMCwgTHUgWWFuZ2JvLUI0NzA5MyB3cm90ZToNCj4gPiBUaGFua3MgYSBsb3Qs
+IFNjb3R0Lg0KPiA+IEFuZCBub3cgYSBwYXRjaCB3YXMgbWVyZ2VkIG9uDQo+ID4gZ2l0Oi8vZ2l0
+LmxpbmFyby5vcmcvcGVvcGxlL3VsZi5oYW5zc29uL21tYy5naXQgbmV4dCBicmFuY2ggdG8gZml4
+DQo+ID4gdGhpcyBpc3N1ZS4NCj4gPiBJdCBzaG91bGQgYmUgbm8gcHJvYmxlbS4NCj4gDQo+IEFz
+c3VtaW5nIHRoYXQgcGF0Y2ggZml4ZXMgaXQgYW5kIGdldHMgcHVsbGVkIGZvciA0LjIsIHRoaXMg
+Y29uZmlnIHBhdGNoDQo+IGNhbiBnbyBpbiBmb3IgNC4zLg0KPiANCj4gVGhhdCBzYWlkLCBpdCB3
+b3VsZCBiZSBuaWNlIGlmLCBhcGFydCBmcm9tIGZpeGluZyB0aGUgcHJvYmxlbSBpdHNlbGYsIHRo
+ZQ0KPiBNTUMgY29kZSBmYWlsZWQgbW9yZSBncmFjZWZ1bGx5IGluc3RlYWQgb2YgZW5kbGVzc2x5
+IHJlcGVhdGluZyBhbmQNCj4gZmlsbGluZyB1cCB0aGUgbG9nL2NvbnNvbGUuDQo+IA0KPiAtU2Nv
+dHQNCg0K
