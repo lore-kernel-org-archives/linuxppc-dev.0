@@ -1,23 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0114.outbound.protection.outlook.com [157.56.110.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5050E1A0727
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 06:10:33 +1000 (AEST)
-Message-ID: <1437077417.2993.108.camel@freescale.com>
-Subject: Re: [PATCH v5 1/2] perf,kvm/ppc: Add kvm_perf.h for powerpc
-From: Scott Wood <scottwood@freescale.com>
-To: Hemant Kumar <hemant@linux.vnet.ibm.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <acme@kernel.org>, <mingo@kernel.org>, <mpe@ellerman.id.au>,
- <sukadev@linux.vnet.ibm.com>, <maddy@linux.vnet.ibm.com>,
- <warrier@linux.vnet.ibm.com>, <srikar@linux.vnet.ibm.com>, <paulus@samba.org>
-Date: Thu, 16 Jul 2015 15:10:17 -0500
-In-Reply-To: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
-References: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D002D1A0727
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 06:18:00 +1000 (AEST)
+Date: Thu, 16 Jul 2015 22:17:49 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org
+Subject: Re: [PATCH v3 3/8] perf: Add a flags parameter to pmu txn interfaces
+Message-ID: <20150716201749.GL3644@twins.programming.kicks-ass.net>
+References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1436929315-28520-4-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1436929315-28520-4-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-07-16 at 21:18 +0530, Hemant Kumar wrote:
-> To analyze the exit events with perf, we need kvm_perf.h to be added in
-> the arch/powerpc directory, where the kvm tracepoints needed to trace
-> the KVM exit events are defined.
-> 
-> This patch adds "kvm_perf_book3s.h" to indicate that the tracepoints are
-> book3s specific. Generic "kvm_perf.h" then can just include
-> "kvm_perf_book3s.h".
-> 
-> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-> ---
-> Changes:
-> - Not exporting the exit reasons compared to previous patchset (suggested 
-> by Paul)
-> 
->  arch/powerpc/include/uapi/asm/kvm_perf.h        |  6 ++++++
->  arch/powerpc/include/uapi/asm/kvm_perf_book3s.h | 14 ++++++++++++++
->  2 files changed, 20 insertions(+)
->  create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
->  create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
-> 
-> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h 
-> b/arch/powerpc/include/uapi/asm/kvm_perf.h
-> new file mode 100644
-> index 0000000..5ed2ff3
-> --- /dev/null
-> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
-> @@ -0,0 +1,6 @@
-> +#ifndef _ASM_POWERPC_KVM_PERF_H
-> +#define _ASM_POWERPC_KVM_PERF_H
+On Tue, Jul 14, 2015 at 08:01:50PM -0700, Sukadev Bhattiprolu wrote:
+> @@ -1604,6 +1613,12 @@ static void power_pmu_start_txn(struct pmu *pmu)
+>  static void power_pmu_cancel_txn(struct pmu *pmu)
+>  {
+>  	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+> +	int txn_flags;
 > +
-> +#include <asm/kvm_perf_book3s.h>
-> +
-> +#endif
-> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h 
-> b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
-> new file mode 100644
-> index 0000000..8c8d8c2
-> --- /dev/null
-> +++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
-> @@ -0,0 +1,14 @@
-> +#ifndef _ASM_POWERPC_KVM_PERF_BOOK3S_H
-> +#define _ASM_POWERPC_KVM_PERF_BOOK3S_H
-> +
-> +#include <asm/kvm.h>
-> +
-> +#define DECODE_STR_LEN 20
-> +
-> +#define VCPU_ID "vcpu_id"
-> +
-> +#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
-> +#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
-> +#define KVM_EXIT_REASON "trap"
-> +
-> +#endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
+> +	txn_flags = cpuhw->txn_flags;
+> +	cpuhw->txn_flags = 0;
+> +	if (cpuhw->txn_flags & ~PERF_PMU_TXN_ADD)
+> +		return;
 
-Again, why is book3s stuff being presented via uapi as generic 
-<asm/kvm_perf.h> with generic symbol names?
-
--Scott
+That seems, unintentional? ;-)
