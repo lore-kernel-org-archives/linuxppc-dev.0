@@ -1,21 +1,21 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0130.outbound.protection.outlook.com [157.56.111.130])
+ (mail-bn1on0114.outbound.protection.outlook.com [157.56.110.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C9521A0BC0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 05:36:05 +1000 (AEST)
-Message-ID: <1437075349.2993.105.camel@freescale.com>
-Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
- support
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5050E1A0727
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 06:10:33 +1000 (AEST)
+Message-ID: <1437077417.2993.108.camel@freescale.com>
+Subject: Re: [PATCH v5 1/2] perf,kvm/ppc: Add kvm_perf.h for powerpc
 From: Scott Wood <scottwood@freescale.com>
-To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 16 Jul 2015 14:35:49 -0500
-In-Reply-To: <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
- <1436982433.2993.81.camel@freescale.com>
- <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
+To: Hemant Kumar <hemant@linux.vnet.ibm.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <acme@kernel.org>, <mingo@kernel.org>, <mpe@ellerman.id.au>,
+ <sukadev@linux.vnet.ibm.com>, <maddy@linux.vnet.ibm.com>,
+ <warrier@linux.vnet.ibm.com>, <srikar@linux.vnet.ibm.com>, <paulus@samba.org>
+Date: Thu, 16 Jul 2015 15:10:17 -0500
+In-Reply-To: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
+References: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,98 +27,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-07-16 at 04:34 -0500, Jain Priyanka-B32167 wrote:
+On Thu, 2015-07-16 at 21:18 +0530, Hemant Kumar wrote:
+> To analyze the exit events with perf, we need kvm_perf.h to be added in
+> the arch/powerpc directory, where the kvm tracepoints needed to trace
+> the KVM exit events are defined.
 > 
-> -----Original Message-----
-> From: Wood Scott-B07421 
-> Sent: Wednesday, July 15, 2015 11:17 PM
-> To: Jain Priyanka-B32167
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board 
-> support
+> This patch adds "kvm_perf_book3s.h" to indicate that the tracepoints are
+> book3s specific. Generic "kvm_perf.h" then can just include
+> "kvm_perf_book3s.h".
 > 
-> On Wed, 2015-07-15 at 15:00 +0530, Priyanka Jain wrote:
-> > T1040D4RDB/T1042D4RDB are Freescale Reference Design Board which can 
-> > support T1040/T1042 QorIQ Power Architecture™ processor respectively
-> > 
-> > T1040D4RDB/T1042D4RDB board Overview
-> > -------------------------------------
-> > - SERDES Connections, 8 lanes supporting:
-> >         - PCI
-> >         - SGMII
-> >         - SATA 2.0
-> >         - QSGMII(only for T1040D4RDB)
-> >     - DDR Controller
-> >         - Supports rates of up to 1600 MHz data-rate
-> >         - Supports one DDR4 UDIMM
-> >     -IFC/Local Bus
-> >         - NAND flash: 1GB 8-bit NAND flash
-> >         - NOR: 128MB 16-bit NOR Flash
-> >     - Ethernet
-> >         - Two on-board RGMII 10/100/1G ethernet ports.
-> >         - PHY #0 remains powered up during deep-sleep
-> >     - CPLD
-> >     - Clocks
-> >         - System and DDR clock (SYSCLK, “DDRCLK”)
-> >         - SERDES clocks
-> >     - Power Supplies
-> >     - USB
-> >         - Supports two USB 2.0 ports with integrated PHYs
-> >         - Two type A ports with   5V@1.5Aperport.
-> >     - SDHC
-> >         - SDHC/SDXC connector
-> >     - SPI
-> >         - On-board 64MB SPI flash
-> >     - I2C
-> >         - Devices connected: EEPROM, thermal monitor, VID controller
-> >     - Other IO
-> >         - Two Serial ports
-> >         - ProfiBus port
-> > 
-> >     Add support for T1040/T1042D4RDB board:
-> >     -add device tree
-> >     -Add entry in corenet_generic.c
-> > 
-> > Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> > ---
-> >  Changes for v2:
-> >       Incorporated Scott's comments on device tree
+> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> ---
+> Changes:
+> - Not exporting the exit reasons compared to previous patchset (suggested 
+> by Paul)
 > 
-> You didn't respond to the comments on the CPLD node.
-> [Priyanka]
-> T1042D4RDB,  T1040D4RDB are derivatives of same board , CPLD is same for 
-> both.
-> So, I have moved below node having compatible and reg field together in 
-> t104xd4rdb.dtsi.
-> Is this fine?
->               cpld@3,0 {
->                       compatible = "fsl,t1040d4rdb-cpld";
->                       reg = <3 0 0x300>;
->               };
+>  arch/powerpc/include/uapi/asm/kvm_perf.h        |  6 ++++++
+>  arch/powerpc/include/uapi/asm/kvm_perf_book3s.h | 14 ++++++++++++++
+>  2 files changed, 20 insertions(+)
+>  create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+>  create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+> 
+> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h 
+> b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> new file mode 100644
+> index 0000000..5ed2ff3
+> --- /dev/null
+> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> @@ -0,0 +1,6 @@
+> +#ifndef _ASM_POWERPC_KVM_PERF_H
+> +#define _ASM_POWERPC_KVM_PERF_H
+> +
+> +#include <asm/kvm_perf_book3s.h>
+> +
+> +#endif
+> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h 
+> b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+> new file mode 100644
+> index 0000000..8c8d8c2
+> --- /dev/null
+> +++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+> @@ -0,0 +1,14 @@
+> +#ifndef _ASM_POWERPC_KVM_PERF_BOOK3S_H
+> +#define _ASM_POWERPC_KVM_PERF_BOOK3S_H
+> +
+> +#include <asm/kvm.h>
+> +
+> +#define DECODE_STR_LEN 20
+> +
+> +#define VCPU_ID "vcpu_id"
+> +
+> +#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
+> +#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
+> +#define KVM_EXIT_REASON "trap"
+> +
+> +#endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
 
-If the CPLD image is exactly the same on both, this is fine.
-
-> > +                i2c@118100{
-> > +                      mux@77{
-> > +                             compatible = "nxp,pca9546";
-> > +                             reg = <0x77>;
-> > +                             #address-cells = <1>;
-> > +                             #size-cells = <0>;
-> > +                     };
-> > +             };
-> 
-> A mux with no nodes under it (and yet it has #address-cells/#size-cells)?  
-> What is it multiplexing?
-> [Priyanka]: PCA9546 is i2c mux device , to which other i2c devices (up-to 8 
-> ) can be further connected on output channels
-> On T104xD4RDB,  channel 0, 1, 3 line are connected to PEX device, Channel 2 
-> to hdmi interface (initialization is done in u-boot only), other channels 
-> are grounded. So, as such Linux is not using the second level I2C devices 
-> connected on this MUX device. So, I have not shown next level hierarchy.
-> Should I replace 'mux' with some other name? . Please suggest.
-
-The device tree describes the hardware, not just what Linux uses... but what I
-don't understand is why you describe the mux at all if you're not going to 
-describe what goes underneath it.
+Again, why is book3s stuff being presented via uapi as generic 
+<asm/kvm_perf.h> with generic symbol names?
 
 -Scott
