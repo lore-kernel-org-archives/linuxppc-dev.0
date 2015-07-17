@@ -1,19 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0AF891A0784
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 09:14:39 +1000 (AEST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: Scott Wood <scottwood@freescale.com>, Tang Yuantian
- <Yuantian.Tang@freescale.com>
-Subject: [PATCH] powerpc/fsl-booke-64: Allow booting from the secondary thread
-Date: Thu, 16 Jul 2015 18:14:11 -0500
-Message-ID: <1437088451-4010-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB8841A075D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:45 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 17 Jul 2015 10:15:44 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 86A8D2BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:42 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6H0FXrP57671928
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:42 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6H0F9ws006168
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:09 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: benh@kernel.crashing.org, paulus@samba.org, aik@ozlabs.ru,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] powerpc/powernv: Fix alignment for IOV BAR
+Date: Fri, 17 Jul 2015 10:14:42 +1000
+Message-Id: <1437092083-20672-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1437092083-20672-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1437092083-20672-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,71 +38,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to Yuantian, this is needed for forthcoming power management
-patches -- IIRC, for resuming from certain deep sleep states.
+IOV BAR is extended to cover 256 VFs or number of supported VFs,
+the alignment is the IOV BAR size, which is usually huge and bigger
+than M64 segment size (256MB). That means the IOV BAR is expected
+to be assigned to the beginning of PHB's M64 window prior to other
+M64 BARs in PCI devices that are hooked to the PCI bus behind root
+port. Other M64 BARs actually need M64 segment size other than the
+huge IOV BAR size as the required alignment.
 
-This also allows SMP kernels to work as kdump crash kernels.  While
-crash kernels don't really need to be SMP, this prevents things from
-breaking if a user does it anyway (which is not something you want to
-only find out once the main kernel has crashed in the field, especially
-if whether it works or not depends on which cpu crashed).
+The patch returns M64 segment size if IOV BAR size is bigger than
+it when the PF seats behind root port. Otherwise, the IOV BAR size
+is returned as before. It will save lots of consumed M64 space,
+which would be 16GB in some cases as I observed.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
-I'm sending this before the rest of the kexec patches, since Yuantian
-needs it as a prerequisite.  Yuantian, if you explain the issue more I
-can improve the commit message of this patch.
----
- arch/powerpc/platforms/85xx/smp.c | 27 ++++++++++++++++++++-------
- 1 file changed, 20 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++++++++++++++++------
+ 1 file changed, 29 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index b8b8216..c2ded03 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -173,15 +173,22 @@ static inline u32 read_spin_table_addr_l(void *spin_table)
- static void wake_hw_thread(void *info)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index fdafbac..6ec62b9 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2961,16 +2961,39 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+ 						      int resno)
  {
- 	void fsl_secondary_thread_init(void);
--	unsigned long imsr1, inia1;
-+	unsigned long imsr, inia;
- 	int nr = *(const int *)info;
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++	struct pnv_phb *phb = hose->private_data;
+ 	struct pci_dn *pdn = pci_get_pdn(pdev);
+-	resource_size_t align, iov_align;
++	resource_size_t align;
++	resource_size_t m64_segsz = phb->ioda.m64_segsize;
  
--	imsr1 = MSR_KERNEL;
--	inia1 = *(unsigned long *)fsl_secondary_thread_init;
--
--	mttmr(TMRN_IMSR1, imsr1);
--	mttmr(TMRN_INIA1, inia1);
--	mtspr(SPRN_TENS, TEN_THREAD(1));
-+	imsr = MSR_KERNEL;
-+	inia = *(unsigned long *)fsl_secondary_thread_init;
+-	iov_align = resource_size(&pdev->resource[resno]);
+-	if (iov_align)
+-		return iov_align;
++	/*
++	 * When PF is the only one adapter under the PHB, the IOV BAR
++	 * is expected to be assigned prior to any other M64 BARs. To
++	 * have M64 segment size, which is usually smaller than IOV
++	 * BAR size, as the alignment to avoid wasting M64 space to
++	 * satisfy the alignment required by other M64 BARs.
++	 */
++	align = resource_size(&pdev->resource[resno]);
++	if (align) {
++		if (!pci_bus_is_root(pdev->bus) &&
++		    pci_bus_is_root(pdev->bus->self->bus))
++			align = min(align, m64_segsz);
++		else
++			align = max(align, m64_segsz);
 +
-+	if (cpu_thread_in_core(nr) == 0) {
-+		/* For when we boot on a secondary thread with kdump */
-+		mttmr(TMRN_IMSR0, imsr);
-+		mttmr(TMRN_INIA0, inia);
-+		mtspr(SPRN_TENS, TEN_THREAD(0));
-+	} else {
-+		mttmr(TMRN_IMSR1, imsr);
-+		mttmr(TMRN_INIA1, inia);
-+		mtspr(SPRN_TENS, TEN_THREAD(1));
++		return align;
 +	}
  
- 	smp_generic_kick_cpu(nr);
+ 	align = pci_iov_resource_size(pdev, resno);
+-	if (pdn->vfs_expanded)
+-		return pdn->vfs_expanded * align;
++	if (pdn->vfs_expanded) {
++		align = pdn->vfs_expanded * align;
++		if (!pci_bus_is_root(pdev->bus) &&
++		    pci_bus_is_root(pdev->bus->self->bus))
++			align = min(align, m64_segsz);
++		else
++			align = max(align, m64_segsz);
++	}
+ 
+ 	return align;
  }
-@@ -224,6 +231,12 @@ static int smp_85xx_kick_cpu(int nr)
- 
- 		smp_call_function_single(primary, wake_hw_thread, &nr, 0);
- 		return 0;
-+	} else if (cpu_thread_in_core(boot_cpuid) != 0 &&
-+		   cpu_first_thread_sibling(boot_cpuid) == nr) {
-+		if (WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_SMT)))
-+			return -ENOENT;
-+
-+		smp_call_function_single(boot_cpuid, wake_hw_thread, &nr, 0);
- 	}
- #endif
- 
 -- 
-2.1.4
+2.1.0
