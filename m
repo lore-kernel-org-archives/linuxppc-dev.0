@@ -1,38 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zumeng.chen@gmail.com>
+Received: from mail-wg0-x243.google.com (mail-wg0-x243.google.com
+ [IPv6:2a00:1450:400c:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FAEA1A075F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:29:40 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 17 Jul 2015 10:29:38 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id EDEFE2BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:29:35 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6H0TR9j65142950
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:29:35 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6H0T3gD019982
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:29:03 +1000
-Date: Fri, 17 Jul 2015 10:28:39 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
- aik@ozlabs.ru
-Subject: Re: [PATCH 2/2] powerpc/powernv: Double VF BAR size for compound PE
-Message-ID: <20150717002838.GA22191@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1437092083-20672-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1437092083-20672-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0BDE31A075D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 11:27:15 +1000 (AEST)
+Received: by wgwk7 with SMTP id k7so6353557wgw.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jul 2015 18:27:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1437092083-20672-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1437037461.15828.2.camel@ellerman.id.au>
+References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>
+ <1437037461.15828.2.camel@ellerman.id.au>
+Date: Fri, 17 Jul 2015 09:27:10 +0800
+Message-ID: <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>
+Subject: Re: BUG: perf error on syscalls for powerpc64.
+From: Zumeng Chen <zumeng.chen@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ romeo.cane.ext@coriant.com, imunsie@au1.ibm.com, paulus@samba.org,
+ benh@kernel.crashing.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,77 +29,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 17, 2015 at 10:14:43AM +1000, Gavin Shan wrote:
->When VF BAR size is equal to 128MB or bigger than that, we extend
->the corresponding PF's IOV BAR to cover number of total VFs supported
->by the PF. Otherwise, we extend the PF's IOV BAR to cover 256 VFs.
->For the former case, we have to create compound PE, which includes
->4 VFs. Those 4 VFs included in the compound PE can't be passed through
->to different guests, which isn't good.
+On 2015=E5=B9=B407=E6=9C=8816=E6=97=A5 17:04, Michael Ellerman wrote:
+> On Thu, 2015-07-16 at 13:57 +0800, Zumeng Chen wrote:
+>> Hi All,
+>>
+>> 1028ccf5 did a change for sys_call_table from a pointer to an array of
+>> unsigned long, I think it's not proper, here is my reason:
+>>
+>> sys_call_table defined as a label in assembler should be pointer array
+>> rather than an array as described in 1028ccf5. If we defined it as an
+>> array, then arch_syscall_addr will return the address of sys_call_table[=
+],
+>> actually the content of sys_call_table[] is demanded by arch_syscall_add=
+r.
+>> so 'perf list' will ignore all syscalls since find_syscall_meta will
+>> return null
+>> in init_ftrace_syscalls because of the wrong arch_syscall_addr.
+>>
+>> Did I miss something, or Gcc compiler has done something newer ?
+> Hi Zumeng,
 >
->The gate (128MB) was choosen based on the assumption that each PHB
->supports 64GB M64 space and one PF's IOV BAR can be extended to be
->as huge as 1/4 of that, which is 16GB. However, the IOV BAR can be
->extended to half of PHB's M64 window when the PF seats behind the
->root port. In that case, the gate can be enlarged to be 256MB to
->avoid compound PE as we can.
+> It works for me with the code as it is in mainline.
 >
->Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->---
-> arch/powerpc/platforms/powernv/pci-ioda.c | 21 ++++++++++++++++-----
-> 1 file changed, 16 insertions(+), 5 deletions(-)
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 6ec62b9..5b2e88f 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -2721,6 +2721,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
-> 	struct resource *res;
-> 	int i;
-> 	resource_size_t size;
->+	resource_size_t limit;
-> 	struct pci_dn *pdn;
-> 	int mul, total_vfs;
->
->@@ -2730,6 +2731,18 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
-> 	hose = pci_bus_to_host(pdev->bus);
-> 	phb = hose->private_data;
->
->+	/*
->+	 * When the PF seats behind root port, the IOV BAR can
->+	 * consume half of the PHB's M64 window. Otherwise,
->+	 * 1/4 of the PHB's M64 window can be consumed to the
->+	 * maximal degree.
->+	 */
->+	if (!pci_is_root_bus(pdev->bus) &&
->+	    pci_is_root_bus(pdev->bus->self->bus))
->+		limit = 128;
->+	else
->+		limit = 256;
->+
+> I don't quite follow your explanation, so if you're seeing a bug please s=
+end
+> some information about what you're actually seeing. And include the disas=
+sembly
+> of arch_syscall_addr() and your compiler version etc.
 
-I sent it too fast. The limit should be reversed: 256 when PF seats behind the
-root port. Otherwise, it should be 128. I will send follow-up v2 after waiting
-for couple of days in case there are some comments for this revision.
+Hi Michael,
 
-> 	pdn = pci_get_pdn(pdev);
-> 	pdn->vfs_expanded = 0;
->
->@@ -2748,11 +2761,9 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
-> 		}
->
-> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
->-
->-		/* bigger than 64M */
->-		if (size > (1 << 26)) {
->-			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
->-				 i, res);
->+		if (size >= (limit * 0x100000)) {
->+			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than %lldMB, roundup power2\n",
->+				 i, res, limit);
-> 			pdn->m64_per_iov = M64_PER_IOV;
-> 			mul = roundup_pow_of_two(total_vfs);
-> 			break;
+Yeah, it seems it was not a good explanation, I'll explain more this time:
 
-Thanks,
-Gavin
+1. Whatever we exclaim sys_call_table in C level, actually it is a pointer
+     to sys_call_table rather than sys_call_table self in assemble level.
+
+     arch/powerpc/kernel/systbl.S
+     47 .globl sys_call_table   <--- see here
+     48 sys_call_table:
+
+     So if you want to exclaim sys_call_table as array, then I think
+it's very
+     clear what we'll get when we do sys_call_table[i].
+
+2. Disassemble codes difference of arch_syscall_addr with or without
+1028ccf5
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+
+     *) With 1028ccf5
+       ---------------------
+Dump of assembler code for function arch_syscall_addr:
+522    {
+523        return (unsigned long)sys_call_table[nr];
+    0xc000000000df53d4 <+0>:    addis   r10,r2,-13
+    0xc000000000df53d8 <+4>:    addi    r9,r10,3488
+    0xc000000000df53dc <+8>:    rldicr  r3,r3,3,60
+524    }
+    0xc000000000df53e0 <+12>:    ldx     r3,r9,r3
+    0xc000000000df53e4 <+16>:    blr
+
+
+     *) Without 1028ccf5
+     ---------------------------
+Dump of assembler code for function arch_syscall_addr:
+522    {
+523        return (unsigned long)sys_call_table[nr];
+    0xc000000000df53d0 <+0>:    addis   r10,r2,-13
+    0xc000000000df53d4 <+4>:    addi    r9,r10,3488
+    0xc000000000df53d8 <+8>:    rldicr  r3,r3,3,60
+    0xc000000000df53dc <+12>:    ld      r9,0(r9) <------only this is
+different
+524    }
+    0xc000000000df53e0 <+16>:    ldx     r3,r9,r3
+    0xc000000000df53e4 <+20>:    blr
+End of assembler dump.
+
+3. What I have seen in 3.14.x kernel,
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+And so far, no more difference to 4.x kernel from me about this part if
+I'm right.
+
+*) With 1028ccf5
+
+perf list|grep -i syscall got me nothing.
+
+
+*) Without 1028ccf5
+root@localhost:~# perf list|grep -i syscall
+   syscalls:sys_enter_socket                          [Tracepoint event]
+   syscalls:sys_exit_socket                           [Tracepoint event]
+   syscalls:sys_enter_socketpair                      [Tracepoint event]
+   syscalls:sys_exit_socketpair                       [Tracepoint event]
+   syscalls:sys_enter_bind                            [Tracepoint event]
+   syscalls:sys_exit_bind                             [Tracepoint event]
+   syscalls:sys_enter_listen                          [Tracepoint event]
+   syscalls:sys_exit_listen                           [Tracepoint event]
+   ... ...
+
+Cheers,
+Zumeng
+
+>
+> cheers
+>
+>
