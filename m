@@ -1,31 +1,33 @@
 Return-Path: <ananth@in.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 51D3C1A07E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:52:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CFC31A1D02
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:53:15 +1000 (AEST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Fri, 17 Jul 2015 16:22:18 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7ABAC1258061
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 16:25:11 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6HAqDPV31064208
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 16:22:13 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6HAqBTh004567
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 16:22:12 +0530
-Subject: [PATCH V2 1/2] Documentation/features: Add na key to arch-support.txt
+ Fri, 17 Jul 2015 20:53:15 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 080E92BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:53:13 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6HAr5da49741964
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:53:13 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6HAqeKV003817
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:52:40 +1000
+Subject: [PATCH V2 2/2] kprobes: Mark OPTPROBES na for powerpc
 From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 To: masami.hiramatsu.pt@hitachi.com, mpe@ellerman.id.au, mingo@kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 17 Jul 2015 16:21:44 +0530
-Message-ID: <20150717105139.29162.31467.stgit@thinktux.in.ibm.com>
+Date: Fri, 17 Jul 2015 16:22:17 +0530
+Message-ID: <20150717105216.29162.4328.stgit@thinktux.in.ibm.com>
+In-Reply-To: <20150717105139.29162.31467.stgit@thinktux.in.ibm.com>
+References: <20150717105139.29162.31467.stgit@thinktux.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,21 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To be used for features we will not support on a particular architecture.
-The git log that adds this needs to provide the justification 'why?'
+Kprobes uses a breakpoint instruction to trap into execution flow
+and the probed instruction is single-stepped from an alternate location.
+
+On some architectures like x86, under certain conditions, the OPTPROBES
+feature enables replacing the probed instruction with a jump instead,
+resulting in a significant perfomance boost (one single-step exception
+is bypassed for each kprobe).
+
+Powerpc has an in-kernel instruction emulator. Kprobes on powerpc uses
+this emulator already and bypasses the single-step exception, with a
+lot less complexity.
+
+Hence, mark OPTPROBES na for powerpc.
 
 Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 ---
- Documentation/features/arch-support.txt |    1 +
- 1 file changed, 1 insertion(+)
+ .../features/debug/optprobes/arch-support.txt      |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/features/arch-support.txt b/Documentation/features/arch-support.txt
-index d22a109..f2b272e 100644
---- a/Documentation/features/arch-support.txt
-+++ b/Documentation/features/arch-support.txt
-@@ -8,4 +8,5 @@ The meaning of entries in the tables is:
-     | ok |  # feature supported by the architecture
-     |TODO|  # feature not yet supported by the architecture
-     | .. |  # feature cannot be supported by the hardware
-+    | na |  # feature will not be supported by the architecture
- 
+diff --git a/Documentation/features/debug/optprobes/arch-support.txt b/Documentation/features/debug/optprobes/arch-support.txt
+index b8999d8..73662f9 100644
+--- a/Documentation/features/debug/optprobes/arch-support.txt
++++ b/Documentation/features/debug/optprobes/arch-support.txt
+@@ -27,7 +27,7 @@
+     |       nios2: | TODO |
+     |    openrisc: | TODO |
+     |      parisc: | TODO |
+-    |     powerpc: | TODO |
++    |     powerpc: |  na  |
+     |        s390: | TODO |
+     |       score: | TODO |
+     |          sh: | TODO |
