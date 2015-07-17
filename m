@@ -1,24 +1,24 @@
-Return-Path: <Priyanka.Jain@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0121.outbound.protection.outlook.com [65.55.169.121])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <Zumeng.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D7BAD1A2C8C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 16:18:00 +1000 (AEST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
- support
-Date: Fri, 17 Jul 2015 06:17:53 +0000
-Message-ID: <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
- <1436982433.2993.81.camel@freescale.com>
- <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437075349.2993.105.camel@freescale.com>
-In-Reply-To: <1437075349.2993.105.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53CE31A19B2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 17:21:58 +1000 (AEST)
+Message-ID: <55A8939C.3090606@windriver.com>
+Date: Fri, 17 Jul 2015 13:33:16 +0800
+From: Zumeng Chen <zumeng.chen@windriver.com>
 MIME-Version: 1.0
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: Michael Ellerman <mpe@ellerman.id.au>, <linux-kernel@vger.kernel.org>,
+ <paulus@samba.org>, <imunsie@au1.ibm.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <romeo.cane.ext@coriant.com>
+Subject: Re: BUG: perf error on syscalls for powerpc64.
+References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>
+ <1437037461.15828.2.camel@ellerman.id.au>
+ <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>
+ <20150717015104.GA25558@us.ibm.com>
+In-Reply-To: <20150717015104.GA25558@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,81 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBKdWx5IDE3LCAyMDE1IDE6MDYgQU0NCj4gVG86IEphaW4gUHJp
-eWFua2EtQjMyMTY3DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJq
-ZWN0OiBSZTogW1BBVENIXVt2Ml0gcG93ZXJwYy9mc2wtYm9va2U6IEFkZCBUMTA0MEQ0UkRCL1Qx
-MDQyRDRSREINCj4gYm9hcmQgc3VwcG9ydA0KPiANCj4gT24gVGh1LCAyMDE1LTA3LTE2IGF0IDA0
-OjM0IC0wNTAwLCBKYWluIFByaXlhbmthLUIzMjE2NyB3cm90ZToNCj4gPg0KPiA+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiBTZW50
-OiBXZWRuZXNkYXksIEp1bHkgMTUsIDIwMTUgMTE6MTcgUE0NCj4gPiBUbzogSmFpbiBQcml5YW5r
-YS1CMzIxNjcNCj4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiBTdWJq
-ZWN0OiBSZTogW1BBVENIXVt2Ml0gcG93ZXJwYy9mc2wtYm9va2U6IEFkZA0KPiBUMTA0MEQ0UkRC
-L1QxMDQyRDRSREINCj4gPiBib2FyZCBzdXBwb3J0DQo+ID4NCj4gPiBPbiBXZWQsIDIwMTUtMDct
-MTUgYXQgMTU6MDAgKzA1MzAsIFByaXlhbmthIEphaW4gd3JvdGU6DQo+ID4gPiBUMTA0MEQ0UkRC
-L1QxMDQyRDRSREIgYXJlIEZyZWVzY2FsZSBSZWZlcmVuY2UgRGVzaWduIEJvYXJkIHdoaWNoDQo+
-IGNhbg0KPiA+ID4gc3VwcG9ydCBUMTA0MC9UMTA0MiBRb3JJUSBQb3dlciBBcmNoaXRlY3R1cmXi
-hKIgcHJvY2Vzc29yIHJlc3BlY3RpdmVseQ0KPiA+ID4NCj4gPiA+IFQxMDQwRDRSREIvVDEwNDJE
-NFJEQiBib2FyZCBPdmVydmlldw0KPiA+ID4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLQ0KPiA+ID4gLSBTRVJERVMgQ29ubmVjdGlvbnMsIDggbGFuZXMgc3VwcG9ydGluZzoN
-Cj4gPiA+ICAgICAgICAgLSBQQ0kNCj4gPiA+ICAgICAgICAgLSBTR01JSQ0KPiA+ID4gICAgICAg
-ICAtIFNBVEEgMi4wDQo+ID4gPiAgICAgICAgIC0gUVNHTUlJKG9ubHkgZm9yIFQxMDQwRDRSREIp
-DQo+ID4gPiAgICAgLSBERFIgQ29udHJvbGxlcg0KPiA+ID4gICAgICAgICAtIFN1cHBvcnRzIHJh
-dGVzIG9mIHVwIHRvIDE2MDAgTUh6IGRhdGEtcmF0ZQ0KPiA+ID4gICAgICAgICAtIFN1cHBvcnRz
-IG9uZSBERFI0IFVESU1NDQo+ID4gPiAgICAgLUlGQy9Mb2NhbCBCdXMNCj4gPiA+ICAgICAgICAg
-LSBOQU5EIGZsYXNoOiAxR0IgOC1iaXQgTkFORCBmbGFzaA0KPiA+ID4gICAgICAgICAtIE5PUjog
-MTI4TUIgMTYtYml0IE5PUiBGbGFzaA0KPiA+ID4gICAgIC0gRXRoZXJuZXQNCj4gPiA+ICAgICAg
-ICAgLSBUd28gb24tYm9hcmQgUkdNSUkgMTAvMTAwLzFHIGV0aGVybmV0IHBvcnRzLg0KPiA+ID4g
-ICAgICAgICAtIFBIWSAjMCByZW1haW5zIHBvd2VyZWQgdXAgZHVyaW5nIGRlZXAtc2xlZXANCj4g
-PiA+ICAgICAtIENQTEQNCj4gPiA+ICAgICAtIENsb2Nrcw0KPiA+ID4gICAgICAgICAtIFN5c3Rl
-bSBhbmQgRERSIGNsb2NrIChTWVNDTEssIOKAnEREUkNMS+KAnSkNCj4gPiA+ICAgICAgICAgLSBT
-RVJERVMgY2xvY2tzDQo+ID4gPiAgICAgLSBQb3dlciBTdXBwbGllcw0KPiA+ID4gICAgIC0gVVNC
-DQo+ID4gPiAgICAgICAgIC0gU3VwcG9ydHMgdHdvIFVTQiAyLjAgcG9ydHMgd2l0aCBpbnRlZ3Jh
-dGVkIFBIWXMNCj4gPiA+ICAgICAgICAgLSBUd28gdHlwZSBBIHBvcnRzIHdpdGggICA1VkAxLjVB
-cGVycG9ydC4NCj4gPiA+ICAgICAtIFNESEMNCj4gPiA+ICAgICAgICAgLSBTREhDL1NEWEMgY29u
-bmVjdG9yDQo+ID4gPiAgICAgLSBTUEkNCj4gPiA+ICAgICAgICAgLSBPbi1ib2FyZCA2NE1CIFNQ
-SSBmbGFzaA0KPiA+ID4gICAgIC0gSTJDDQo+ID4gPiAgICAgICAgIC0gRGV2aWNlcyBjb25uZWN0
-ZWQ6IEVFUFJPTSwgdGhlcm1hbCBtb25pdG9yLCBWSUQgY29udHJvbGxlcg0KPiA+ID4gICAgIC0g
-T3RoZXIgSU8NCj4gPiA+ICAgICAgICAgLSBUd28gU2VyaWFsIHBvcnRzDQo+ID4gPiAgICAgICAg
-IC0gUHJvZmlCdXMgcG9ydA0KPiA+ID4NCj4gPiA+ICAgICBBZGQgc3VwcG9ydCBmb3IgVDEwNDAv
-VDEwNDJENFJEQiBib2FyZDoNCj4gPiA+ICAgICAtYWRkIGRldmljZSB0cmVlDQo+ID4gPiAgICAg
-LUFkZCBlbnRyeSBpbiBjb3JlbmV0X2dlbmVyaWMuYw0KPiA+ID4NCj4gPiA+IFNpZ25lZC1vZmYt
-Ynk6IFByaXlhbmthIEphaW4gPFByaXlhbmthLkphaW5AZnJlZXNjYWxlLmNvbT4NCj4gPiA+IC0t
-LQ0KPiA+ID4gIENoYW5nZXMgZm9yIHYyOg0KPiA+ID4gICAgICAgSW5jb3Jwb3JhdGVkIFNjb3R0
-J3MgY29tbWVudHMgb24gZGV2aWNlIHRyZWUNCj4gPg0KPiA+IFlvdSBkaWRuJ3QgcmVzcG9uZCB0
-byB0aGUgY29tbWVudHMgb24gdGhlIENQTEQgbm9kZS4NCj4gPiBbUHJpeWFua2FdDQo+ID4gVDEw
-NDJENFJEQiwgIFQxMDQwRDRSREIgYXJlIGRlcml2YXRpdmVzIG9mIHNhbWUgYm9hcmQgLCBDUExE
-IGlzIHNhbWUNCj4gPiBmb3IgYm90aC4NCj4gPiBTbywgSSBoYXZlIG1vdmVkIGJlbG93IG5vZGUg
-aGF2aW5nIGNvbXBhdGlibGUgYW5kIHJlZyBmaWVsZCB0b2dldGhlcg0KPiA+IGluIHQxMDR4ZDRy
-ZGIuZHRzaS4NCj4gPiBJcyB0aGlzIGZpbmU/DQo+ID4gICAgICAgICAgICAgICBjcGxkQDMsMCB7
-DQo+ID4gICAgICAgICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLHQxMDQwZDRyZGIt
-Y3BsZCI7DQo+ID4gICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwzIDAgMHgzMDA+Ow0KPiA+
-ICAgICAgICAgICAgICAgfTsNCj4gDQo+IElmIHRoZSBDUExEIGltYWdlIGlzIGV4YWN0bHkgdGhl
-IHNhbWUgb24gYm90aCwgdGhpcyBpcyBmaW5lLg0KPiANCj4gPiA+ICsgICAgICAgICAgICAgICAg
-aTJjQDExODEwMHsNCj4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgbXV4QDc3ew0KPiA+ID4g
-KyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJueHAscGNhOTU0NiI7
-DQo+ID4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZWcgPSA8MHg3Nz47DQo+ID4g
-PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4g
-PiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICNzaXplLWNlbGxzID0gPDA+Ow0KPiA+
-ID4gKyAgICAgICAgICAgICAgICAgICAgIH07DQo+ID4gPiArICAgICAgICAgICAgIH07DQo+ID4N
-Cj4gPiBBIG11eCB3aXRoIG5vIG5vZGVzIHVuZGVyIGl0IChhbmQgeWV0IGl0IGhhcyAjYWRkcmVz
-cy1jZWxscy8jc2l6ZS1jZWxscyk/DQo+ID4gV2hhdCBpcyBpdCBtdWx0aXBsZXhpbmc/DQo+ID4g
-W1ByaXlhbmthXTogUENBOTU0NiBpcyBpMmMgbXV4IGRldmljZSAsIHRvIHdoaWNoIG90aGVyIGky
-YyBkZXZpY2VzDQo+ID4gKHVwLXRvIDgNCj4gPiApIGNhbiBiZSBmdXJ0aGVyIGNvbm5lY3RlZCBv
-biBvdXRwdXQgY2hhbm5lbHMgT24gVDEwNHhENFJEQiwgIGNoYW5uZWwNCj4gPiAwLCAxLCAzIGxp
-bmUgYXJlIGNvbm5lY3RlZCB0byBQRVggZGV2aWNlLCBDaGFubmVsIDIgdG8gaGRtaSBpbnRlcmZh
-Y2UNCj4gPiAoaW5pdGlhbGl6YXRpb24gaXMgZG9uZSBpbiB1LWJvb3Qgb25seSksIG90aGVyIGNo
-YW5uZWxzIGFyZSBncm91bmRlZC4NCj4gPiBTbywgYXMgc3VjaCBMaW51eCBpcyBub3QgdXNpbmcg
-dGhlIHNlY29uZCBsZXZlbCBJMkMgZGV2aWNlcyBjb25uZWN0ZWQNCj4gPiBvbiB0aGlzIE1VWCBk
-ZXZpY2UuIFNvLCBJIGhhdmUgbm90IHNob3duIG5leHQgbGV2ZWwgaGllcmFyY2h5Lg0KPiA+IFNo
-b3VsZCBJIHJlcGxhY2UgJ211eCcgd2l0aCBzb21lIG90aGVyIG5hbWU/IC4gUGxlYXNlIHN1Z2dl
-c3QuDQo+IA0KPiBUaGUgZGV2aWNlIHRyZWUgZGVzY3JpYmVzIHRoZSBoYXJkd2FyZSwgbm90IGp1
-c3Qgd2hhdCBMaW51eCB1c2VzLi4uIGJ1dCB3aGF0DQo+IEkgZG9uJ3QgdW5kZXJzdGFuZCBpcyB3
-aHkgeW91IGRlc2NyaWJlIHRoZSBtdXggYXQgYWxsIGlmIHlvdSdyZSBub3QgZ29pbmcgdG8NCj4g
-ZGVzY3JpYmUgd2hhdCBnb2VzIHVuZGVybmVhdGggaXQuDQo+IA0KW0phaW4gUHJpeWFua2EtQjMy
-MTY3XSA6IElzIGJlbG93IGxvb2tzIE9LPw0KaTJjQDExODEwMHsNCiArICAgICAgICAgICAgICAg
-ICAgICAgIGkyY0A3N3sNCiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxl
-ID0gIm54cCxwY2E5NTQ2IjsNCiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZWcgPSA8
-MHg3Nz47DQogKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI2FkZHJlc3MtY2VsbHMgPSA8
-MT47DQogKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8MD47DQog
-KyAgICAgICAgICAgICAgICAgICAgIH07DQogKyAgICAgICAgICAgICB9Ow0KPiAtU2NvdHQNCg0K
+On 2015年07月17日 09:51, Sukadev Bhattiprolu wrote:
+> Zumeng Chen [zumeng.chen@gmail.com] wrote:
+> | 3. What I have seen in 3.14.x kernel,
+> | ======================
+> | And so far, no more difference to 4.x kernel from me about this part if
+> | I'm right.
+> |
+> | *) With 1028ccf5
+> |
+> | perf list|grep -i syscall got me nothing.
+> |
+> |
+> | *) Without 1028ccf5
+> | root@localhost:~# perf list|grep -i syscall
+> |    syscalls:sys_enter_socket                          [Tracepoint event]
+> |    syscalls:sys_exit_socket                           [Tracepoint event]
+> |    syscalls:sys_enter_socketpair                      [Tracepoint event]
+> |    syscalls:sys_exit_socketpair                       [Tracepoint event]
+> |    syscalls:sys_enter_bind                            [Tracepoint event]
+> |    syscalls:sys_exit_bind                             [Tracepoint event]
+> |    syscalls:sys_enter_listen                          [Tracepoint event]
+> |    syscalls:sys_exit_listen                           [Tracepoint event]
+> |    ... ...
+>
+> Are you seeing this on big-endian or little-endian system?
+
+Big one.
+
+>
+> IIRC, I saw the opposite behavior on an LE system a few months ago.
+> i.e. without 1028ccf5, 'perf listf|grep syscall' failed.
+
+I wonder if this has anything to do with the bug.
+
+Cheers,
+Zumeng
+
+>
+> Applying 1028ccf5, seemed to fix it.
+>
+> Sukadev
+>
