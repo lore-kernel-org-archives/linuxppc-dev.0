@@ -2,20 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0BC401A0727
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 14:07:24 +1000 (AEST)
-Message-ID: <1437106043.29389.5.camel@ellerman.id.au>
-Subject: Re: BUG: perf error on syscalls for powerpc64.
+ by lists.ozlabs.org (Postfix) with ESMTPS id 484E41A0727
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 14:41:06 +1000 (AEST)
+Message-ID: <1437108065.29389.6.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 01/12] powerpc/kernel: Get pt_regs from r9 before
+ calling do_syscall_trace_enter()
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Zumeng Chen <zumeng.chen@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- romeo.cane.ext@coriant.com, imunsie@au1.ibm.com, paulus@samba.org,
- benh@kernel.crashing.org
-Date: Fri, 17 Jul 2015 14:07:23 +1000
-In-Reply-To: <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>
-References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>
- <1437037461.15828.2.camel@ellerman.id.au>
- <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, wad@chromium.org, keescook@chromium.org,
+ linux-kernel@vger.kernel.org, luto@amacapital.net,
+ strosake@linux.vnet.ibm.com,  bogdan.purcareata@freescale.com
+Date: Fri, 17 Jul 2015 14:41:05 +1000
+In-Reply-To: <1437086432.28088.46.camel@kernel.crashing.org>
+References: <1436945834-26660-1-git-send-email-mpe@ellerman.id.au>
+ <1437086432.28088.46.camel@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,139 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-17 at 09:27 +0800, Zumeng Chen wrote:
-> On 2015年07月16日 17:04, Michael Ellerman wrote:
-> > On Thu, 2015-07-16 at 13:57 +0800, Zumeng Chen wrote:
-> >> Hi All,
-> >>
-> >> 1028ccf5 did a change for sys_call_table from a pointer to an array of
-> >> unsigned long, I think it's not proper, here is my reason:
-> >>
-> >> sys_call_table defined as a label in assembler should be pointer array
-> >> rather than an array as described in 1028ccf5. If we defined it as an
-> >> array, then arch_syscall_addr will return the address of sys_call_table[],
-> >> actually the content of sys_call_table[] is demanded by arch_syscall_addr.
-> >> so 'perf list' will ignore all syscalls since find_syscall_meta will
-> >> return null
-> >> in init_ftrace_syscalls because of the wrong arch_syscall_addr.
-> >>
-> >> Did I miss something, or Gcc compiler has done something newer ?
-> > Hi Zumeng,
-> >
-> > It works for me with the code as it is in mainline.
-> >
-> > I don't quite follow your explanation, so if you're seeing a bug please send
-> > some information about what you're actually seeing. And include the disassembly
-> > of arch_syscall_addr() and your compiler version etc.
+On Fri, 2015-07-17 at 08:40 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2015-07-15 at 17:37 +1000, Michael Ellerman wrote:
+> > To call do_syscall_trace_enter() we need pt_regs in r3, but we don't need
+> > to recalculate it based on r1, it's already in r9.
+> > 
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > 
-> Hi Michael,
+> Is there any performance difference ?
 
-Hi Zumeng,
+No.
 
-> Yeah, it seems it was not a good explanation, I'll explain more this time:
-> 
-> 1. Whatever we exclaim sys_call_table in C level, actually it is a pointer
->      to sys_call_table rather than sys_call_table self in assemble level.
+I'm not going to bother measuring it :)
 
-No it's not a pointer.
+> I find the addi a bit more robust in case the code gets moved around or
+> the "previous" code gets changed to either not use r9 or clobber it,
+> which would have the potential to
+> introduce a subtle bug ...
 
-A pointer is a location in memory that contains the address of another location
-in memory.
+Yeah true.
 
->      arch/powerpc/kernel/systbl.S
->      47 .globl sys_call_table   <--- see here
->      48 sys_call_table:
+There is an "invariant" in that entry code that r9 contains pt_regs, you can
+see for example the DTL code goes to pains to ensure it puts pt_regs back in r9
+after it clobbers it. As does the current syscall_dotrace.
 
-Which gives us a .o that looks like:
+But looking closer I don't see where we actually use that (prior to this
+patch).
 
-  0000000000000000 <sys_call_table>:
-                   0: R_PPC64_ADDR64       sys_restart_syscall
-                   8: R_PPC64_ADDR64       sys_restart_syscall
-                   10: R_PPC64_ADDR64      sys_exit
-                   18: R_PPC64_ADDR64      sys_exit
-
-ie. at the location in memory called sys_call_table we have *the contents of
-the syscall table*.
-
-We do not have *the address* of the syscall table.
-
-You can also see in the System.map:
-
-  c000000000bb0798 R sys_call_table
-  c000000000bb1e58 r cache_type_info
-
-ie. sys_call_table occupies 5824 bytes. If it was a pointer it would only
-occupy 8 bytes.
-
-Compare to SYS_CALL_TABLE, which *is* a pointer.
-
-  c000000001172bf8 d SYS_CALL_TABLE
-  c000000001172c00 d exception_marker
-
-Note, 8 bytes.
-
-
-Finally if you look at a running system using xmon:
-
-  0:mon> d $sys_call_table
-  c0000000008f0798 c0000000000a85a0 c0000000000a85a0  |................|
-  c0000000008f07a8 c000000000099b40 c000000000099b40  |.......@.......@|
-
-  0:mon> la c0000000000a85a0
-  c0000000000a85a0: .sys_restart_syscall+0x0/0x40
-  0:mon> la c000000000099b40
-  c000000000099b40: .SyS_exit+0x0/0x20
-
-  0:mon> d $SYS_CALL_TABLE
-  c000000000ec68f8 c0000000008f0798 7265677368657265  |........regshere|
-                   ^
-  		 this is the address of sys_call_table
-
-
-As another example, see hcall_real_table, which is basically identical, and is
-also declared as an array in C.
-
-
-> 3. What I have seen in 3.14.x kernel,
-> ======================
-> And so far, no more difference to 4.x kernel from me about this part if
-> I'm right.
-> 
-> *) With 1028ccf5
-> 
-> perf list|grep -i syscall got me nothing.
-> 
-> 
-> *) Without 1028ccf5
-> root@localhost:~# perf list|grep -i syscall
->    syscalls:sys_enter_socket                          [Tracepoint event]
->    syscalls:sys_exit_socket                           [Tracepoint event]
->    syscalls:sys_enter_socketpair                      [Tracepoint event]
->    syscalls:sys_exit_socketpair                       [Tracepoint event]
->    syscalls:sys_enter_bind                            [Tracepoint event]
->    syscalls:sys_exit_bind                             [Tracepoint event]
->    syscalls:sys_enter_listen                          [Tracepoint event]
->    syscalls:sys_exit_listen                           [Tracepoint event]
->    ... ...
-
-I don't know why that's happening.
-
-Please just test 4.2-rc2 for now, so that there are not too many variables.
-
-Assuming you have CONFIG_FTRACE_SYSCALLS=y, you can see the tracepoints in
-debugfs with:
-
-  $ ls -la /sys/kernel/debug/tracing/events/syscalls
-  total 0
-  drwxr-xr-x 596 root root 0 Jul 17 13:11 .
-  drwxr-xr-x  45 root root 0 Jul 17 13:11 ..
-  -rw-r--r--   1 root root 0 Jul 17 13:33 enable
-  -rw-r--r--   1 root root 0 Jul 17 13:11 filter
-  drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_accept
-  drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_accept4
-  drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_access
-  drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_add_key
-  ...
-
+So yeah I'll drop this and send a clean up to just get rid of all the r9
+reloading.
 
 cheers
