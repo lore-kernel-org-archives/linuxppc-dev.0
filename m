@@ -1,40 +1,27 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D65F31A0072
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 12:00:44 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Fri, 17 Jul 2015 12:00:44 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 79A362CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 12:00:41 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6H20Yno63635478
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 12:00:42 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6H208Pj028149
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 12:00:09 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Zumeng Chen <zumeng.chen@gmail.com>,
- linux-kernel <linux-kernel@vger.kernel.org>, paulus <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "romeo.cane.ext" <romeo.cane.ext@coriant.com>
-Subject: Re: BUG: perf error on syscalls for powerpc64.
-In-reply-to: <20150717015104.GA25558@us.ibm.com>
-References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>
- <1437037461.15828.2.camel@ellerman.id.au>
- <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>
- <20150717015104.GA25558@us.ibm.com>
-Date: Fri, 17 Jul 2015 11:59:44 +1000
-Message-Id: <1437098328-sup-6685@delenn.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 934891A0727
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 13:35:13 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C49B6140774
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Jul 2015 13:35:11 +1000 (AEST)
+Message-ID: <1437104099.28088.64.camel@kernel.crashing.org>
+Subject: Re: [PATCH V3 2/2] powerpc/kexec: Reset HILE before entering target
+ kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Date: Fri, 17 Jul 2015 13:34:59 +1000
+In-Reply-To: <1437098018.28088.62.camel@kernel.crashing.org>
+References: <1436505599-32109-1-git-send-email-sam.mj@au1.ibm.com>
+ <1436505599-32109-3-git-send-email-sam.mj@au1.ibm.com>
+ <1437098018.28088.62.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,16 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Sukadev Bhattiprolu's message of 2015-07-17 11:51:04 +1000:
-> Are you seeing this on big-endian or little-endian system?
+On Fri, 2015-07-17 at 11:53 +1000, Benjamin Herrenschmidt wrote:
+> On Fri, 2015-07-10 at 15:19 +1000, Samuel Mendoza-Jonas wrote:
+> > +#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_PPC_POWERNV)
+> > +       li      r3,(FW_FEATURE_OPAL >> 16)
+> > +       rldicr  r3,r3,16,63
+> > +       and.    r3,r3,r26
+> > +       cmpwi   r3,0
+> > +       beq     99f
 > 
-> IIRC, I saw the opposite behavior on an LE system a few months ago.
-> i.e. without 1028ccf5, 'perf listf|grep syscall' failed.
+> If FW_FEATRURE_OPAL is 0x80000000 then the li will sign extend.
 > 
-> Applying 1028ccf5, seemed to fix it.
+> The rldicr has a mask of all F's so it will keep all the bits you
+> don't care about.
 
-You could be on to something there - IIRC the ABI was changed for LE to
-remove the dot symbols. Might be worth testing on both.
+../..
 
-Cheers,
--Ian
+Even better, you should be able to just do it all in C in
+pnv_kexec_cpu_down(), after we wait for secondaries to
+be in OPAL. At that point interrupts are already off, so
+it should be all good.
