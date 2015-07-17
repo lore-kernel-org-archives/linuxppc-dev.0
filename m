@@ -1,32 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB8841A075D
+ by lists.ozlabs.org (Postfix) with ESMTPS id F33281A075D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:45 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 17 Jul 2015 10:15:44 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 86A8D2BB0051
+ Fri, 17 Jul 2015 10:15:45 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 834332BB004D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:42 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6H0FXrP57671928
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:42 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6H0F9ws006168
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6H0FZmV41615580
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:43 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6H0F94J008419
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:15:09 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: benh@kernel.crashing.org, paulus@samba.org, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] powerpc/powernv: Fix alignment for IOV BAR
-Date: Fri, 17 Jul 2015 10:14:42 +1000
-Message-Id: <1437092083-20672-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc/powernv: Double VF BAR size for compound PE
+Date: Fri, 17 Jul 2015 10:14:43 +1000
+Message-Id: <1437092083-20672-3-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1437092083-20672-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1437092083-20672-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,73 +38,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IOV BAR is extended to cover 256 VFs or number of supported VFs,
-the alignment is the IOV BAR size, which is usually huge and bigger
-than M64 segment size (256MB). That means the IOV BAR is expected
-to be assigned to the beginning of PHB's M64 window prior to other
-M64 BARs in PCI devices that are hooked to the PCI bus behind root
-port. Other M64 BARs actually need M64 segment size other than the
-huge IOV BAR size as the required alignment.
+When VF BAR size is equal to 128MB or bigger than that, we extend
+the corresponding PF's IOV BAR to cover number of total VFs supported
+by the PF. Otherwise, we extend the PF's IOV BAR to cover 256 VFs.
+For the former case, we have to create compound PE, which includes
+4 VFs. Those 4 VFs included in the compound PE can't be passed through
+to different guests, which isn't good.
 
-The patch returns M64 segment size if IOV BAR size is bigger than
-it when the PF seats behind root port. Otherwise, the IOV BAR size
-is returned as before. It will save lots of consumed M64 space,
-which would be 16GB in some cases as I observed.
+The gate (128MB) was choosen based on the assumption that each PHB
+supports 64GB M64 space and one PF's IOV BAR can be extended to be
+as huge as 1/4 of that, which is 16GB. However, the IOV BAR can be
+extended to half of PHB's M64 window when the PF seats behind the
+root port. In that case, the gate can be enlarged to be 256MB to
+avoid compound PE as we can.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++++++++++++++++------
- 1 file changed, 29 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index fdafbac..6ec62b9 100644
+index 6ec62b9..5b2e88f 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2961,16 +2961,39 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
- static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
- 						      int resno)
- {
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
--	resource_size_t align, iov_align;
-+	resource_size_t align;
-+	resource_size_t m64_segsz = phb->ioda.m64_segsize;
+@@ -2721,6 +2721,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+ 	struct resource *res;
+ 	int i;
+ 	resource_size_t size;
++	resource_size_t limit;
+ 	struct pci_dn *pdn;
+ 	int mul, total_vfs;
  
--	iov_align = resource_size(&pdev->resource[resno]);
--	if (iov_align)
--		return iov_align;
+@@ -2730,6 +2731,18 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+ 	hose = pci_bus_to_host(pdev->bus);
+ 	phb = hose->private_data;
+ 
 +	/*
-+	 * When PF is the only one adapter under the PHB, the IOV BAR
-+	 * is expected to be assigned prior to any other M64 BARs. To
-+	 * have M64 segment size, which is usually smaller than IOV
-+	 * BAR size, as the alignment to avoid wasting M64 space to
-+	 * satisfy the alignment required by other M64 BARs.
++	 * When the PF seats behind root port, the IOV BAR can
++	 * consume half of the PHB's M64 window. Otherwise,
++	 * 1/4 of the PHB's M64 window can be consumed to the
++	 * maximal degree.
 +	 */
-+	align = resource_size(&pdev->resource[resno]);
-+	if (align) {
-+		if (!pci_bus_is_root(pdev->bus) &&
-+		    pci_bus_is_root(pdev->bus->self->bus))
-+			align = min(align, m64_segsz);
-+		else
-+			align = max(align, m64_segsz);
++	if (!pci_is_root_bus(pdev->bus) &&
++	    pci_is_root_bus(pdev->bus->self->bus))
++		limit = 128;
++	else
++		limit = 256;
 +
-+		return align;
-+	}
+ 	pdn = pci_get_pdn(pdev);
+ 	pdn->vfs_expanded = 0;
  
- 	align = pci_iov_resource_size(pdev, resno);
--	if (pdn->vfs_expanded)
--		return pdn->vfs_expanded * align;
-+	if (pdn->vfs_expanded) {
-+		align = pdn->vfs_expanded * align;
-+		if (!pci_bus_is_root(pdev->bus) &&
-+		    pci_bus_is_root(pdev->bus->self->bus))
-+			align = min(align, m64_segsz);
-+		else
-+			align = max(align, m64_segsz);
-+	}
+@@ -2748,11 +2761,9 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+ 		}
  
- 	return align;
- }
+ 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
+-
+-		/* bigger than 64M */
+-		if (size > (1 << 26)) {
+-			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
+-				 i, res);
++		if (size >= (limit * 0x100000)) {
++			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than %lldMB, roundup power2\n",
++				 i, res, limit);
+ 			pdn->m64_per_iov = M64_PER_IOV;
+ 			mul = roundup_pow_of_two(total_vfs);
+ 			break;
 -- 
 2.1.0
