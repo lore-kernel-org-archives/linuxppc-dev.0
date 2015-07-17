@@ -1,25 +1,36 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
+ [IPv6:2a00:1450:400c:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 11E0A1A078B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2015 03:07:19 +1000 (AEST)
-Message-ID: <1437152821.2993.191.camel@freescale.com>
-Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
- support
-From: Scott Wood <scottwood@freescale.com>
-To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 17 Jul 2015 12:07:01 -0500
-In-Reply-To: <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
- <1436982433.2993.81.camel@freescale.com>
- <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437075349.2993.105.camel@freescale.com>
- <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A4F51A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2015 03:50:29 +1000 (AEST)
+Received: by widjy10 with SMTP id jy10so47064845wid.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:50:25 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.11.1507171558010.18576@nanos>
+References: <20150712215559.7166.33068.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150712220154.7166.48327.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <alpine.DEB.2.11.1507171558010.18576@nanos>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Fri, 17 Jul 2015 12:50:05 -0500
+Message-ID: <CAErSpo6HFN1i2cMwrLyFoYGrvaX-QFeVT_bJyRo9wpFLwma49g@mail.gmail.com>
+Subject: Re: [PATCH 1/3] x86, irq: Rename VECTOR_UNDEFINED and
+ VECTOR_RETRIGGERED to IRQ_*
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>,
+ "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ linux-am33-list@redhat.com,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-c6x-dev@linux-c6x.org, linux-parisc@vger.kernel.org,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-m68k@lists.linux-m68k.org,
+ linux-alpha@vger.kernel.org, "x86@kernel.org" <x86@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-17 at 01:17 -0500, Jain Priyanka-B32167 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, July 17, 2015 1:06 AM
-> > To: Jain Priyanka-B32167
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB
-> > board support
-> > 
-> > > > +                i2c@118100{
-> > > > +                      mux@77{
-> > > > +                             compatible = "nxp,pca9546";
-> > > > +                             reg = <0x77>;
-> > > > +                             #address-cells = <1>;
-> > > > +                             #size-cells = <0>;
-> > > > +                     };
-> > > > +             };
-> > > 
-> > > A mux with no nodes under it (and yet it has #address-cells/#size-
-> > > cells)?
-> > > What is it multiplexing?
-> > > [Priyanka]: PCA9546 is i2c mux device , to which other i2c devices
-> > > (up-to 8
-> > > ) can be further connected on output channels On T104xD4RDB,  channel
-> > > 0, 1, 3 line are connected to PEX device, Channel 2 to hdmi interface
-> > > (initialization is done in u-boot only), other channels are grounded.
-> > > So, as such Linux is not using the second level I2C devices connected
-> > > on this MUX device. So, I have not shown next level hierarchy.
-> > > Should I replace 'mux' with some other name? . Please suggest.
-> > 
-> > The device tree describes the hardware, not just what Linux uses... but 
-> > what
-> > I don't understand is why you describe the mux at all if you're not going 
-> > to
-> > describe what goes underneath it.
-> > 
-> [Jain Priyanka-B32167] : Is below looks OK?
-> i2c@118100{
->  +                      i2c@77{
->  +                             compatible = "nxp,pca9546";
->  +                             reg = <0x77>;
->  +                             #address-cells = <1>;
->  +                             #size-cells = <0>;
->  +                     };
->  +             };
+On Fri, Jul 17, 2015 at 9:06 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sun, 12 Jul 2015, Bjorn Helgaas wrote:
+>
+>> The per-cpu vector_irq[] table is indexed by CPU vector numbers, and each
+>> entry contains an IRQ number.
+>>
+>> Rename the special values VECTOR_UNDEFINED and VECTOR_RETRIGGERED to
+>> IRQ_UNDEFINED and IRQ_RETRIGGERED to indicate that they are in the IRQ
+>> number space, not the CPU vector number space.
+>
+> Makes some sense, but OTOH vector_irq actually reflects the vector
+> state not the irq number state. The fact that we store the Linux irq
+> number in vector_irq is just an implementation detail.
+>
+> VECTOR_UNDEFINED is certainly a misnomer; that should be VECTOR_UNUSED
+>
+> VECTOR_RETRIGGERED is pretty accurate. In the case we retrigger an
+> interrupt, we merily use the Linux irq number to figure out which
+> vector to kick. And after we retriggered it, we lose the association
+> to the Linux irq number completely.
+>
+> That said, I'm working on storing the irq descriptor pointer in
+> vector_irq instead of the irq number, which has the advantage that we
+> avoid the lookup of the irq descriptor in the interrupt hotpath.
 
-Where in my above comment did it appear that I was complaining about the node 
-name?
+OK, I'll abandon this.  Thanks for taking a look!
 
--Scott
+Bjorn
