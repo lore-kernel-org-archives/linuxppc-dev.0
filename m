@@ -1,36 +1,19 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-yk0-f180.google.com (mail-yk0-f180.google.com
- [209.85.160.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 347091A0065
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 18:39:35 +1000 (AEST)
-Received: by ykfw194 with SMTP id w194so4054372ykf.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 01:39:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B2F6C1A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 19:16:09 +1000 (AEST)
+Date: Fri, 17 Jul 2015 19:15:58 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Cc: tytso@mit.edu, keescook@chromium.org, hpa@linux.intel.com,
+ mpe@ellerman.id.au, mpm@selenic.com, herbert@gondor.apana.org.au
+Subject: [PATCH] powerpc: Use hardware RNG for arch_get_random_seed_* not
+ arch_get_random_*
+Message-ID: <20150717091558.GA5916@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.11.1507161230400.18576@nanos>
-References: <cover.1436511577.git.baolin.wang@linaro.org>
- <a1bd8d71caeb4051d0be87aad1baae7ababa4df7.1436511577.git.baolin.wang@linaro.org>
- <alpine.DEB.2.11.1507151226210.18576@nanos>
- <CAMz4kuLxBj+82trNVXs9qkuecrKvgdbXuJ3dfvDOCfyJwrDX9Q@mail.gmail.com>
- <alpine.DEB.2.11.1507151345060.18576@nanos>
- <CAMz4kuKNVACNhwddXMyCqKGpOf_gsoHk=ZFZFuaY=8e4DCRwGw@mail.gmail.com>
- <alpine.DEB.2.11.1507161230400.18576@nanos>
-Date: Fri, 17 Jul 2015 16:39:32 +0800
-Message-ID: <CAMz4kuJvgFddRv1DGop-zeYUyR3i1KgU2gLfQ=t2i09PH0m9+A@mail.gmail.com>
-Subject: Re: [PATCH 6/6] cputime: Introduce
- cputime_to_timespec64()/timespec64_to_cputime()
-From: Baolin Wang <baolin.wang@linaro.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: benh@kernel.crashing.org, Arnd Bergmann <arnd@arndb.de>,
- John Stultz <john.stultz@linaro.org>, peterz@infradead.org, paulus@samba.org,
- mpe@ellerman.id.au, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
- linux390@de.ibm.com, rth@twiddle.net, riel@redhat.com, cl@linux.com,
- tj@kernel.org, =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-arch@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,74 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16 July 2015 at 18:43, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Thu, 16 Jul 2015, Baolin Wang wrote:
->> On 15 July 2015 at 19:55, Thomas Gleixner <tglx@linutronix.de> wrote:
->> > On Wed, 15 Jul 2015, Baolin Wang wrote:
->> >
->> >> On 15 July 2015 at 18:31, Thomas Gleixner <tglx@linutronix.de> wrote:
->> >> > On Wed, 15 Jul 2015, Baolin Wang wrote:
->> >> >
->> >> >> The cputime_to_timespec() and timespec_to_cputime() functions are
->> >> >> not year 2038 safe on 32bit systems due to that the struct timepsec
->> >> >> will overflow in 2038 year.
->> >> >
->> >> > And how is this relevant? cputime is not based on wall clock time at
->> >> > all. So what has 2038 to do with cputime?
->> >> >
->> >> > We want proper explanations WHY we need such a change.
->> >>
->> >> When converting the posix-cpu-timers, it call the
->> >> cputime_to_timespec() function. Thus it need a conversion for this
->> >> function.
->> >
->> > There is no requirement to convert posix-cpu-timers on their own. We
->> > need to adopt the posix cpu timers code because it shares syscalls
->> > with the other posix timers, but that still does not explain why we
->> > need these functions.
->> >
->>
->> In posix-cpu-timers, it also defined some 'k_clock struct' variables,
->> and we need to convert the callbacks of the 'k_clock struct' which are
->> not year 2038 safe on 32bit systems. Some callbacks which need to
->> convert call the cputime_to_timespec() function, thus we also want to
->> convert the cputime_to_timespec() function to a year 2038 safe
->> function to make all them ready for the year 2038 issue.
->
-> You are not getting it at all.
->
-> 1) We need to change k_clock callbacks due to 2038 issues
->
-> 2) posix cpu timers implement affected callbacks
->
-> 3) posix cpu timers themself and cputime are NOT affected by 2038
->
-> So we have 2 options to change the code in posix cpu timers:
->
->    A) Do the timespec/timespec64 conversion in the posix cpu timer
->       callbacks and leave the cputime functions untouched.
->
->    B) Implement cputime/timespec64 functions to avoid #A
->
->    If you go for #B, you need to provide a reasonable explanation why
->    it is better than #A. And that explanation has absolutely nothing
->    to do with 2038 safety.
+The hardware RNG on POWER8 and POWER7+ can be relatively slow, since
+it can only supply one 64-bit value per microsecond.  Currently we
+read it in arch_get_random_long(), but that slows down reading from
+/dev/urandom since the code in random.c calls arch_get_random_long()
+for every longword read from /dev/urandom.
 
-Very thanks for your explanation, and I'll think about that.
+Since the hardware RNG supplies high-quality entropy on every read, it
+matches the semantics of arch_get_random_seed_long() better than those
+of arch_get_random_long().  Therefore this commit makes the code use
+the POWER8/7+ hardware RNG only for arch_get_random_seed_{long,int}
+and not for arch_get_random_{long,int}.
 
->
-> Not everything is a 2038 issue, just because the only tool you have is
-> a timespec64.
->
-> Thanks,
->
->         tglx
->
->
->
+This won't affect any other PowerPC-based platforms because none of
+them currently support a hardware RNG.
 
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/archrandom.h | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-
+diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
+index 0cc6eed..a4c3f54 100644
+--- a/arch/powerpc/include/asm/archrandom.h
++++ b/arch/powerpc/include/asm/archrandom.h
+@@ -7,13 +7,22 @@
+ 
+ static inline int arch_get_random_long(unsigned long *v)
+ {
++	return 0;
++}
++
++static inline int arch_get_random_int(unsigned int *v)
++{
++	return 0;
++}
++
++static inline int arch_get_random_seed_long(unsigned long *v)
++{
+ 	if (ppc_md.get_random_long)
+ 		return ppc_md.get_random_long(v);
+ 
+ 	return 0;
+ }
+-
+-static inline int arch_get_random_int(unsigned int *v)
++static inline int arch_get_random_seed_int(unsigned int *v)
+ {
+ 	unsigned long val;
+ 	int rc;
+@@ -27,22 +36,13 @@ static inline int arch_get_random_int(unsigned int *v)
+ 
+ static inline int arch_has_random(void)
+ {
+-	return !!ppc_md.get_random_long;
+-}
+-
+-static inline int arch_get_random_seed_long(unsigned long *v)
+-{
+-	return 0;
+-}
+-static inline int arch_get_random_seed_int(unsigned int *v)
+-{
+ 	return 0;
+ }
++
+ static inline int arch_has_random_seed(void)
+ {
+-	return 0;
++	return !!ppc_md.get_random_long;
+ }
+-
+ #endif /* CONFIG_ARCH_RANDOM */
+ 
+ #ifdef CONFIG_PPC_POWERNV
 -- 
-Baolin.wang
-Best Regards
+2.1.4
