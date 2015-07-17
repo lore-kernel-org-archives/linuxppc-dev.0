@@ -1,24 +1,37 @@
-Return-Path: <christophe.jaillet@wanadoo.fr>
-Received: from smtp.smtpout.orange.fr (smtp10.smtpout.orange.fr
- [80.12.242.132])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 50D481A19AB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 17:20:14 +1000 (AEST)
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH 2/2] powerpc/nvram: Fix function name in some errors messages.
-Date: Fri, 17 Jul 2015 09:20:00 +0200
-Message-Id: <1571506ab2693a3128625c94f4f89dd802bb6dd2.1437117145.git.christophe.jaillet@wanadoo.fr>
-In-Reply-To: <4fd8daff1bb5daad99d909aa75ff5c2702c4c490.1437117145.git.christophe.jaillet@wanadoo.fr>
-References: <4fd8daff1bb5daad99d909aa75ff5c2702c4c490.1437117145.git.christophe.jaillet@wanadoo.fr>
-In-Reply-To: <4fd8daff1bb5daad99d909aa75ff5c2702c4c490.1437117145.git.christophe.jaillet@wanadoo.fr>
-References: <4fd8daff1bb5daad99d909aa75ff5c2702c4c490.1437117145.git.christophe.jaillet@wanadoo.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 327781A075F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 18:43:10 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Fri, 17 Jul 2015 18:43:09 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A3C892BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 18:43:06 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6H8gw7K61014210
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 18:43:06 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6H8gXm5004600
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 18:42:34 +1000
+Message-ID: <55A8BFDF.2020601@linux.vnet.ibm.com>
+Date: Fri, 17 Jul 2015 14:12:07 +0530
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: minyard@acm.org, alistair@popple.id.au, linuxppc-dev@lists.ozlabs.org,
+ jk@ozlabs.org
+Subject: Re: [PATCH] ipmi/powernv: Fix potential invalid pointer dereference
+References: <20150716111628.28037.80799.stgit@localhost.localdomain>
+ <55A7C747.1050509@acm.org>
+In-Reply-To: <55A7C747.1050509@acm.org>
+Content-Type: multipart/alternative;
+ boundary="------------040805040104020505050604"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,62 +41,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-'nvram_create_os_partition' should be 'nvram_create_partition'.
-Use __func__ to have it right, as done elsewhere in this file.
+This is a multi-part message in MIME format.
+--------------040805040104020505050604
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Hi Corey,
+
+On 07/16/2015 08:31 PM, Corey Minyard wrote:
+> Ok, this looks fine.  A couple of question...
+>
+> Do I need to send this upstream right now?  How well has this been tested?
+
+I would want either Jeremy or Alistair to review this patch before you 
+send this
+upstream. There is also firmware piece 
+http://patchwork.ozlabs.org/patch/496645/
+awaiting review.
+
+In the testing front, I manually made the opal_ipmi_recv() function to 
+fail for testing
+the error path and see if the driver recovers from it and subsequent 
+ipmi commands
+work all good.
+
+>
+> Do you want this backported to 4.0 stable?
+
+Yes, I want this to be be backported to 4.0 stable.
+
+Thanks,
+Neelesh.
+
+>
+> -corey
+>
+> On 07/16/2015 06:16 AM, Neelesh Gupta wrote:
+>> If the OPAL call to receive the ipmi message fails, then we free up the
+>> smi message and return. But, the driver still holds the reference to
+>> old smi message in the 'cur_msg' which can potentially be accessed later
+>> and freed again leading to kernel oops. To fix it up,
+>>
+>> The kernel driver should reset the 'cur_msg' and send reply to the user
+>> in addition to freeing the message.
+>>
+>> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+>> ---
+>>   drivers/char/ipmi/ipmi_powernv.c |   13 ++++++++++---
+>>   1 file changed, 10 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
+>> index 9b409c0..637486d 100644
+>> --- a/drivers/char/ipmi/ipmi_powernv.c
+>> +++ b/drivers/char/ipmi/ipmi_powernv.c
+>> @@ -143,9 +143,16 @@ static int ipmi_powernv_recv(struct ipmi_smi_powernv *smi)
+>>   	pr_devel("%s:   -> %d (size %lld)\n", __func__,
+>>   			rc, rc == 0 ? size : 0);
+>>   	if (rc) {
+>> -		spin_unlock_irqrestore(&smi->msg_lock, flags);
+>> -		ipmi_free_smi_msg(msg);
+>> -		return 0;
+>> +		/* If came via the poll, and response was not yet ready */
+>> +		if (rc == OPAL_EMPTY) {
+>> +			spin_unlock_irqrestore(&smi->msg_lock, flags);
+>> +			return 0;
+>> +		} else {
+>> +			smi->cur_msg = NULL;
+>> +			spin_unlock_irqrestore(&smi->msg_lock, flags);
+>> +			send_error_reply(smi, msg, IPMI_ERR_UNSPECIFIED);
+>> +			return 0;
+>> +		}
+>>   	}
+>>   
+>>   	if (size < sizeof(*opal_msg)) {
+>>
+
+
+--------------040805040104020505050604
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <small>Hi Corey,</small><br>
+    <br>
+    <div class="moz-cite-prefix">On 07/16/2015 08:31 PM, Corey Minyard
+      wrote:<br>
+    </div>
+    <blockquote cite="mid:55A7C747.1050509@acm.org" type="cite">
+      <pre wrap="">Ok, this looks fine.  A couple of question...
+
+Do I need to send this upstream right now?  How well has this been tested?</pre>
+    </blockquote>
+    <br>
+    <small>I would want either Jeremy or Alistair to review this patch
+      before you send this<br>
+      upstream. There is also firmware piece
+      <a class="moz-txt-link-freetext" href="http://patchwork.ozlabs.org/patch/496645/">http://patchwork.ozlabs.org/patch/496645/</a><br>
+      awaiting review.<br>
+      <br>
+      In the testing front, I manually made the opal_ipmi_recv()
+      function to fail for testing<br>
+      the error path and see if the driver recovers from it and
+      subsequent ipmi commands<br>
+      work all good.<br>
+    </small><br>
+    <blockquote cite="mid:55A7C747.1050509@acm.org" type="cite">
+      <pre wrap="">
+
+Do you want this backported to 4.0 stable?</pre>
+    </blockquote>
+    <br>
+    <small>Yes, I want this to be be backported to 4.0 stable.<br>
+      <br>
+      Thanks,<br>
+      Neelesh.<br>
+    </small><br>
+    <blockquote cite="mid:55A7C747.1050509@acm.org" type="cite">
+      <pre wrap="">
+
+-corey
+
+On 07/16/2015 06:16 AM, Neelesh Gupta wrote:
+</pre>
+      <blockquote type="cite">
+        <pre wrap="">If the OPAL call to receive the ipmi message fails, then we free up the
+smi message and return. But, the driver still holds the reference to
+old smi message in the 'cur_msg' which can potentially be accessed later
+and freed again leading to kernel oops. To fix it up,
+
+The kernel driver should reset the 'cur_msg' and send reply to the user
+in addition to freeing the message.
+
+Signed-off-by: Neelesh Gupta <a class="moz-txt-link-rfc2396E" href="mailto:neelegup@linux.vnet.ibm.com">&lt;neelegup@linux.vnet.ibm.com&gt;</a>
 ---
- arch/powerpc/kernel/nvram_64.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/char/ipmi/ipmi_powernv.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index 574ff59..4dab163 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -1065,7 +1065,7 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 	/* Create our OS partition */
- 	new_part = kmalloc(sizeof(*new_part), GFP_KERNEL);
- 	if (!new_part) {
--		pr_err("nvram_create_os_partition: kmalloc failed\n");
-+		pr_err("%s: kmalloc failed\n", __func__);
- 		return -ENOMEM;
+diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
+index 9b409c0..637486d 100644
+--- a/drivers/char/ipmi/ipmi_powernv.c
++++ b/drivers/char/ipmi/ipmi_powernv.c
+@@ -143,9 +143,16 @@ static int ipmi_powernv_recv(struct ipmi_smi_powernv *smi)
+ 	pr_devel("%s:   -&gt; %d (size %lld)\n", __func__,
+ 			rc, rc == 0 ? size : 0);
+ 	if (rc) {
+-		spin_unlock_irqrestore(&amp;smi-&gt;msg_lock, flags);
+-		ipmi_free_smi_msg(msg);
+-		return 0;
++		/* If came via the poll, and response was not yet ready */
++		if (rc == OPAL_EMPTY) {
++			spin_unlock_irqrestore(&amp;smi-&gt;msg_lock, flags);
++			return 0;
++		} else {
++			smi-&gt;cur_msg = NULL;
++			spin_unlock_irqrestore(&amp;smi-&gt;msg_lock, flags);
++			send_error_reply(smi, msg, IPMI_ERR_UNSPECIFIED);
++			return 0;
++		}
  	}
  
-@@ -1077,8 +1077,7 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 
- 	rc = nvram_write_header(new_part);
- 	if (rc <= 0) {
--		pr_err("nvram_create_os_partition: nvram_write_header "
--		       "failed (%d)\n", rc);
-+		pr_err("%s: nvram_write_header failed (%d)\n", __func__, rc);
- 		kfree(new_part);
- 		return rc;
- 	}
-@@ -1091,8 +1090,8 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 		free_part->header.checksum = nvram_checksum(&free_part->header);
- 		rc = nvram_write_header(free_part);
- 		if (rc <= 0) {
--			pr_err("nvram_create_os_partition: nvram_write_header "
--			       "failed (%d)\n", rc);
-+			pr_err("%s: nvram_write_header failed (%d)\n",
-+			       __func__, rc);
- 			return rc;
- 		}
- 	} else {
-@@ -1106,11 +1105,12 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 	     tmp_index += NVRAM_BLOCK_LEN) {
- 		rc = ppc_md.nvram_write(nv_init_vals, NVRAM_BLOCK_LEN, &tmp_index);
- 		if (rc <= 0) {
--			pr_err("nvram_create_partition: nvram_write failed (%d)\n", rc);
-+			pr_err("%s: nvram_write failed (%d)\n",
-+			       __func__, rc);
- 			return rc;
- 		}
- 	}
--	
-+
- 	return new_part->index + NVRAM_HEADER_LEN;
- }
- 
--- 
-2.1.4
+ 	if (size &lt; sizeof(*opal_msg)) {
+
+</pre>
+      </blockquote>
+      <pre wrap="">
+</pre>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------040805040104020505050604--
