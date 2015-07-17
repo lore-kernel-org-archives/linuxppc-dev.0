@@ -1,23 +1,40 @@
-Return-Path: <Zumeng.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D6E81A0727
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 15:28:52 +1000 (AEST)
-Message-ID: <55A89280.8090705@windriver.com>
-Date: Fri, 17 Jul 2015 13:28:32 +0800
-From: Zumeng Chen <zumeng.chen@windriver.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BADB51A075D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 15:54:06 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Fri, 17 Jul 2015 15:54:04 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 134F23578055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 15:53:59 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6H5rpLg10485854
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 15:54:00 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6H5rPkd006213
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 15:53:26 +1000
+Message-ID: <55A89835.7020702@linux.vnet.ibm.com>
+Date: Fri, 17 Jul 2015 11:22:53 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, Zumeng Chen <zumeng.chen@gmail.com>
-CC: <linux-kernel@vger.kernel.org>, <paulus@samba.org>, <imunsie@au1.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>, <romeo.cane.ext@coriant.com>
-Subject: Re: BUG: perf error on syscalls for powerpc64.
-References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>
- <1437037461.15828.2.camel@ellerman.id.au>
- <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>
- <1437106043.29389.5.camel@ellerman.id.au>
-In-Reply-To: <1437106043.29389.5.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+CC: stewart@linux.vnet.ibm.com, arnd@arndb.de, j.anaszewski81@gmail.com,
+ cooloney@gmail.com, rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org,
+ linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v5 3/3] leds/powernv: Add driver for PowerNV platform
+References: <1435740638-16259-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1435740638-16259-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <55A4CFA0.6090306@samsung.com> <55A75541.4060008@linux.vnet.ibm.com>
+ <55A76AF6.2090805@samsung.com>
+In-Reply-To: <55A76AF6.2090805@samsung.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,184 +44,262 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015年07月17日 12:07, Michael Ellerman wrote:
-> On Fri, 2015-07-17 at 09:27 +0800, Zumeng Chen wrote:
->> On 2015年07月16日 17:04, Michael Ellerman wrote:
->>> On Thu, 2015-07-16 at 13:57 +0800, Zumeng Chen wrote:
->>>> Hi All,
->>>>
->>>> 1028ccf5 did a change for sys_call_table from a pointer to an array of
->>>> unsigned long, I think it's not proper, here is my reason:
->>>>
->>>> sys_call_table defined as a label in assembler should be pointer array
->>>> rather than an array as described in 1028ccf5. If we defined it as an
->>>> array, then arch_syscall_addr will return the address of sys_call_table[],
->>>> actually the content of sys_call_table[] is demanded by arch_syscall_addr.
->>>> so 'perf list' will ignore all syscalls since find_syscall_meta will
->>>> return null
->>>> in init_ftrace_syscalls because of the wrong arch_syscall_addr.
->>>>
->>>> Did I miss something, or Gcc compiler has done something newer ?
->>> Hi Zumeng,
+On 07/16/2015 01:57 PM, Jacek Anaszewski wrote:
+> Hi Vasan,
+> 
+
+Hello Jacek,
+
+.../...
+
+>>
+>> I have added as
+>> -  compatible : "ibm,opal-v3-led".
+> 
+> Please retain "Should be :".
+> 
+
+Done.
+
+.../...
+
 >>>
->>> It works for me with the code as it is in mainline.
+>>> Please parse the led type once upon initialization and add related
+>>> property to the struct powernv_led_data that will hold the value.
+>>
+>> I thought we can get location code and type using class dev name itself. Hence I
+>> didn't add these two properties to structure..
+> 
+> This way you are doing extra work for parsing the name each time
+> the brightness is set.
+
+Agreed. I have added them to structure now.
+
+> 
+>> Do you want me to add them to structure itself?
+> 
+> Yes, please add them.
+
+Done.
+
+> 
 >>>
->>> I don't quite follow your explanation, so if you're seeing a bug please send
->>> some information about what you're actually seeing. And include the disassembly
->>> of arch_syscall_addr() and your compiler version etc.
->> Hi Michael,
-> Hi Zumeng,
->
->> Yeah, it seems it was not a good explanation, I'll explain more this time:
+>>>> +    loc_code = powernv_get_location_code(led_cdev);
+>>>> +    if (!loc_code)
+>>>> +        return;
+>>>
+>>> The same situation as in case of led type.
+>>>
+>>>> +    /* Prepare for the OPAL call */
+>>>> +    max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
+>>>
+>>> This value could be also calculated only once.
 >>
->> 1. Whatever we exclaim sys_call_table in C level, actually it is a pointer
->>       to sys_call_table rather than sys_call_table self in assemble level.
-> No it's not a pointer.
-
-Then what is the second one in the following:
-
-zchen@pek-yocto-build2:$ cat  System.map |grep sys_call_table
-c000000000009590 T .sys_call_table  <-----this is a real sys_call_table.
-c0000000014e1b48 D sys_call_table  <-----this should be referred by 
-arch_syscall_addr
-
-The c0000000014e1b48[0] = c000000000009590
-
->
-> A pointer is a location in memory that contains the address of another location
-> in memory.
-
-Yeah, this definition is right.
-
->
->>       arch/powerpc/kernel/systbl.S
->>       47 .globl sys_call_table   <--- see here
->>       48 sys_call_table:
-> Which gives us a .o that looks like:
->
->    0000000000000000 <sys_call_table>:
->                     0: R_PPC64_ADDR64       sys_restart_syscall
->                     8: R_PPC64_ADDR64       sys_restart_syscall
->                     10: R_PPC64_ADDR64      sys_exit
->                     18: R_PPC64_ADDR64      sys_exit
->
-> ie. at the location in memory called sys_call_table we have *the contents of
-> the syscall table*.
->
-> We do not have *the address* of the syscall table.
->
-> You can also see in the System.map:
->
->    c000000000bb0798 R sys_call_table
->    c000000000bb1e58 r cache_type_info
-
-Please refer to `cat  System.map` above
-
->
-> ie. sys_call_table occupies 5824 bytes. If it was a pointer it would only
-> occupy 8 bytes.
->
-> Compare to SYS_CALL_TABLE, which *is* a pointer.
->
->    c000000001172bf8 d SYS_CALL_TABLE
->    c000000001172c00 d exception_marker
->
-> Note, 8 bytes.
->
->
-> Finally if you look at a running system using xmon:
->
->    0:mon> d $sys_call_table
->    c0000000008f0798 c0000000000a85a0 c0000000000a85a0  |................|
->    c0000000008f07a8 c000000000099b40 c000000000099b40  |.......@.......@|
-
-This is right sys_call_table. but not what I'm talking about. What I'm 
-talking about
-is that the definition of sys_call_table by that commit will incur the 
-following result:
-
-sys_call_table[0]= 0xc0000000014e1b48[0] = c000000000009590 <----Only 
-this one is right the head address of sys_call_table
-sys_call_table[1]= 0xc0000000014e1b48[1] = c0000000015b0da8
-sys_call_table[2]= 0xc0000000014e1b48[2] = 0
-sys_call_table[3]= 0xc0000000014e1b48[3] = c000000000de0984
-sys_call_table[4]= 0xc0000000014e1b48[4] = c0000000015b0da8
-sys_call_table[5]= 0xc0000000014e1b48[5] = 0
-
-This is definitely not what we want, is that right?
-
-
->
->    0:mon> la c0000000000a85a0
->    c0000000000a85a0: .sys_restart_syscall+0x0/0x40
->    0:mon> la c000000000099b40
->    c000000000099b40: .SyS_exit+0x0/0x20
->
->    0:mon> d $SYS_CALL_TABLE
->    c000000000ec68f8 c0000000008f0798 7265677368657265  |........regshere|
->                     ^
->    		 this is the address of sys_call_table
->
->
-> As another example, see hcall_real_table, which is basically identical, and is
-> also declared as an array in C.
->
->
->> 3. What I have seen in 3.14.x kernel,
->> ======================
->> And so far, no more difference to 4.x kernel from me about this part if
->> I'm right.
+>> Yeah. May be I can move this to powernv_leds_priv structure.
 >>
->> *) With 1028ccf5
+>>>
+>>>> +    led_mask = OPAL_SLOT_LED_STATE_ON << led_type;
+>>>> +    if (value)
+>>>> +        led_value = led_mask;
+>>>> +
+>>>> +    /* OPAL async call */
+>>>> +    token = opal_async_get_token_interruptible();
+>>>> +    if (token < 0) {
+>>>> +        if (token != -ERESTARTSYS)
+>>>> +            dev_err(led_cdev->dev,
+>>>> +                "%s: Couldn't get OPAL async token\n",
+>>>> +                __func__);
+>>>> +        goto out_loc;
+>>>> +    }
+>>>> +
+>>>> +    rc = opal_leds_set_ind(token, loc_code,
+>>>> +                   led_mask, led_value, &max_led_type);
+>>>> +    if (rc != OPAL_ASYNC_COMPLETION) {
+>>>> +        dev_err(led_cdev->dev,
+>>>> +            "%s: OPAL set LED call failed for %s [rc=%d]\n",
+>>>> +            __func__, loc_code, rc);
+>>>> +        goto out_token;
+>>>> +    }
+>>>> +
+>>>> +    rc = opal_async_wait_response(token, &msg);
+>>>> +    if (rc) {
+>>>> +        dev_err(led_cdev->dev,
+>>>> +            "%s: Failed to wait for the async response [rc=%d]\n",
+>>>> +            __func__, rc);
+>>>> +        goto out_token;
+>>>> +    }
+>>>> +
+>>>> +    rc = be64_to_cpu(msg.params[1]);
+>>>> +    if (rc != OPAL_SUCCESS)
+>>>> +        dev_err(led_cdev->dev,
+>>>> +            "%s : OAPL async call returned failed [rc=%d]\n",
+>>>> +            __func__, rc);
+>>>> +
+>>>> +out_token:
+>>>> +    opal_async_release_token(token);
+>>>> +
+>>>> +out_loc:
+>>>> +    kfree(loc_code);
+>>>> +}
+>>>> +
+>>>> +/*
+>>>> + * This function fetches the LED state for a given LED type for
+>>>> + * mentioned LED classdev structure.
+>>>> + */
+>>>> +static enum led_brightness powernv_led_get(struct led_classdev *led_cdev)
+>>>> +{
+>>>> +    char *loc_code;
+>>>> +    int rc, led_type;
+>>>> +    __be64 led_mask, led_value, max_led_type;
+>>>> +
+>>>> +    led_type = powernv_get_led_type(led_cdev);
+>>>> +    if (led_type == -1)
+>>>> +        return LED_OFF;
+>>>> +
+>>>> +    loc_code = powernv_get_location_code(led_cdev);
+>>>> +    if (!loc_code)
+>>>> +        return LED_OFF;
+>>>> +
+>>>> +    /* Fetch all LED status */
+>>>> +    led_mask = cpu_to_be64(0);
+>>>> +    led_value = cpu_to_be64(0);
+>>>> +    max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
+>>>> +
+>>>> +    rc = opal_leds_get_ind(loc_code, &led_mask, &led_value, &max_led_type);
+>>>> +    if (rc != OPAL_SUCCESS && rc != OPAL_PARTIAL) {
+>>>> +        dev_err(led_cdev->dev,
+>>>> +            "%s: OPAL get led call failed [rc=%d]\n",
+>>>> +            __func__, rc);
+>>>> +        goto led_fail;
+>>>> +    }
+>>>> +
+>>>> +    led_mask = be64_to_cpu(led_mask);
+>>>> +    led_value = be64_to_cpu(led_value);
+>>>
+>>> be64_to_cpu result should be assigned to the variable of u64/s64 type.
 >>
->> perf list|grep -i syscall got me nothing.
+>> PowerNV platform is capable of running both big/little endian mode.. But
+>> presently our firmware is big endian. These variable contains big endian values.
+>> Hence I have created as __be64 .. (This is the convention we follow in other
+>> places as well).
+> 
+> It is correct that the argument is of __be64 type, but be64_to_cpu
+> returns u64 type, whereas you assign it to  __be64.
+> 
+
+Got it .. Fixed.
+
+>>>
+>>>> +    /* LED status available */
+>>>> +    if (!((led_mask >> led_type) & OPAL_SLOT_LED_STATE_ON)) {
+>>>> +        dev_err(led_cdev->dev,
+>>>> +            "%s: LED status not available for %s\n",
+>>>> +            __func__, led_cdev->name);
+>>>> +        goto led_fail;
+>>>> +    }
+>>>> +
+>>>> +    /* LED status value */
+>>>> +    if ((led_value >> led_type) & OPAL_SLOT_LED_STATE_ON) {
+>>>> +        kfree(loc_code);
+>>>> +        return LED_FULL;
+>>>> +    }
+>>>> +
+>>>> +led_fail:
+>>>> +    kfree(loc_code);
+>>>> +    return LED_OFF;
+>>>> +}
+>>>> +
+>>>> +/* Execute LED set task for given led classdev */
+>>>> +static void powernv_deferred_led_set(struct work_struct *work)
+>>>> +{
+>>>> +    struct powernv_led_data *powernv_led =
+>>>> +        container_of(work, struct powernv_led_data, work_led);
+>>>> +
+>>>> +    mutex_lock(&powernv_led->lock);
+>>>> +    powernv_led_set(&powernv_led->cdev, powernv_led->value);
+>>>> +    mutex_unlock(&powernv_led->lock);
+>>>> +}
+>>>> +
+>>>> +/*
+>>>> + * LED classdev 'brightness_get' function. This schedules work
+>>>> + * to update LED state.
+>>>> + */
+>>>> +static void powernv_brightness_set(struct led_classdev *led_cdev,
+>>>> +                   enum led_brightness value)
+>>>> +{
+>>>> +    struct powernv_led_data *powernv_led =
+>>>> +        container_of(led_cdev, struct powernv_led_data, cdev);
+>>>> +
+>>>> +    /* Do not modify LED in unload path */
+>>>> +    if (led_disabled)
+>>>> +        return;
+>>>> +
+>>>> +    /* Prepare the request */
+>>>> +    powernv_led->value = value;
+>>>> +
+>>>> +    /* Schedule the new task */
+>>>> +    schedule_work(&powernv_led->work_led);
+>>>> +}
+>>>> +
+>>>> +/* LED classdev 'brightness_get' function */
+>>>> +static enum led_brightness
+>>>> +powernv_brightness_get(struct led_classdev *led_cdev)
+>>>> +{
+>>>> +    return powernv_led_get(led_cdev);
+>>>> +}
+>>>> +
+>>>> +
+>>>> +/*
+>>>> + * This function registers classdev structure for any given type of LED on
+>>>> + * a given child LED device node.
+>>>> + */
+>>>> +static int powernv_led_create(struct device *dev,
+>>>> +                  struct powernv_led_data *powernv_led,
+>>>> +                  const char *led_name, const char *led_type_desc)
+>>>> +{
+>>>> +    int rc;
+>>>> +
+>>>> +    /* Create the name for classdev */
+>>>> +    powernv_led->cdev.name = kasprintf(GFP_KERNEL, "%s:%s",
+>>>> +                       led_name, led_type_desc);
+>>>
+>>> Please use devm_kasprintf.
 >>
+>> Done.
 >>
->> *) Without 1028ccf5
->> root@localhost:~# perf list|grep -i syscall
->>     syscalls:sys_enter_socket                          [Tracepoint event]
->>     syscalls:sys_exit_socket                           [Tracepoint event]
->>     syscalls:sys_enter_socketpair                      [Tracepoint event]
->>     syscalls:sys_exit_socketpair                       [Tracepoint event]
->>     syscalls:sys_enter_bind                            [Tracepoint event]
->>     syscalls:sys_exit_bind                             [Tracepoint event]
->>     syscalls:sys_enter_listen                          [Tracepoint event]
->>     syscalls:sys_exit_listen                           [Tracepoint event]
->>     ... ...
-> I don't know why that's happening.
->
-> Please just test 4.2-rc2 for now, so that there are not too many variables.
+>>>
+>>>> +    if (!powernv_led->cdev.name) {
+>>>> +        dev_err(dev,
+>>>> +            "%s: Memory allocation failed for classdev name\n",
+>>>> +            __func__);
+>>>> +        return -ENOMEM;
+>>>> +    }
+>>>> +
+>>>> +    /* Make sure LED type is supported */
+>>>> +    if (powernv_get_led_type(&powernv_led->cdev) == -1) {
+>>>> +        kfree(powernv_led->cdev.name);
+>>>> +        return -EINVAL;
+>>>> +    }
+>>>> +
+>>>> +    powernv_led->cdev.brightness_set = powernv_brightness_set;
+>>>> +    powernv_led->cdev.brightness_get = powernv_brightness_get;
+>>>> +    powernv_led->cdev.brightness = LED_OFF;
+>>>> +    powernv_led->cdev.max_brightness = LED_FULL;
+>>>> +
+>>>> +    mutex_init(&powernv_led->lock);
+>>>> +    INIT_WORK(&powernv_led->work_led, powernv_deferred_led_set);
+>>>> +
+>>>> +    /* Register the classdev */
+>>>> +    rc = led_classdev_register(dev, &powernv_led->cdev);
+>>>
+>>> devm_led_classdev_register is also available.
+>>
+>> Looks like most of the existing drivers are using led_classdev_register
+>> function..
+>> Which one is preferred here?
+> 
+> It is quite new API, but it is now preferable.
 
-Yeah, maybe right.
+Ok..Let me use new API.
 
->
-> Assuming you have CONFIG_FTRACE_SYSCALLS=y, you can see the tracepoints in
-
-Absolutely
-
-Cheers,
-Zumeng
-
-> debugfs with:
->
->    $ ls -la /sys/kernel/debug/tracing/events/syscalls
->    total 0
->    drwxr-xr-x 596 root root 0 Jul 17 13:11 .
->    drwxr-xr-x  45 root root 0 Jul 17 13:11 ..
->    -rw-r--r--   1 root root 0 Jul 17 13:33 enable
->    -rw-r--r--   1 root root 0 Jul 17 13:11 filter
->    drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_accept
->    drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_accept4
->    drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_access
->    drwxr-xr-x   2 root root 0 Jul 17 13:11 sys_enter_add_key
->    ...
->
->
-> cheers
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+-Vasant
