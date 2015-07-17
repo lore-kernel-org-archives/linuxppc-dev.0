@@ -1,19 +1,36 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43C981A0784
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:11:48 +1000 (AEST)
-Date: Fri, 17 Jul 2015 20:11:43 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Cc: tytso@mit.edu, keescook@chromium.org, hpa@linux.intel.com,
- mpe@ellerman.id.au, mpm@selenic.com, herbert@gondor.apana.org.au
-Subject: [PATCH v2] powerpc: Use hardware RNG for arch_get_random_seed_* not
- arch_get_random_*
-Message-ID: <20150717101143.GD5916@iris.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2EA021A078B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:41:36 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Fri, 17 Jul 2015 16:11:33 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 65D0B3940061
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 16:11:30 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6HAfTH237028006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 16:11:30 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6HAfQNb015342
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 16:11:28 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+To: linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: j.anaszewski@samsung.com, stewart@linux.vnet.ibm.com, arnd@arndb.de,
+ j.anaszewski81@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ khandual@linux.vnet.ibm.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: [PATCH v6 0/3] LED driver for PowerNV platform
+Date: Fri, 17 Jul 2015 16:11:08 +0530
+Message-Id: <1437129671-14078-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,127 +40,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The hardware RNG on POWER8 and POWER7+ can be relatively slow, since
-it can only supply one 64-bit value per microsecond.  Currently we
-read it in arch_get_random_long(), but that slows down reading from
-/dev/urandom since the code in random.c calls arch_get_random_long()
-for every longword read from /dev/urandom.
+The following series implements LED driver for PowerNV platform.
 
-Since the hardware RNG supplies high-quality entropy on every read, it
-matches the semantics of arch_get_random_seed_long() better than those
-of arch_get_random_long().  Therefore this commit makes the code use
-the POWER8/7+ hardware RNG only for arch_get_random_seed_{long,int}
-and not for arch_get_random_{long,int}.
+PowerNV platform has below type of LEDs:
+  - System attention
+      Indicates there is a problem with the system that needs attention.
+  - Identify
+      Helps the user locate/identify a particular FRU or resource in the
+      system.
+  - Fault
+      Indicates there is a problem with the FRU or resource at the
+      location with which the indicator is associated.
 
-This won't affect any other PowerPC-based platforms because none of
-them currently support a hardware RNG.  To make it clear that the
-ppc_md function pointer is used for arch_get_random_seed_*, we rename
-it from get_random_long to get_random_seed.
+On PowerNV (Non Virtualized) platform OPAL firmware provides LED information
+to host via device tree (location code and LED type). During init we check
+for 'ibm,opal/leds' node in device tree to enable LED driver. And we use
+OPAL API's to get/set LEDs.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-v2: Rename the ppc_md hook too.
+Note that on PowerNV platform firmware can activate fault LED, if it can isolate
+the problem. Also one can modify the LEDs using service processor interface. None
+of these involes kernel. Hence we retain LED state in unload path.
 
- arch/powerpc/include/asm/archrandom.h | 28 ++++++++++++++--------------
- arch/powerpc/include/asm/machdep.h    |  2 +-
- arch/powerpc/platforms/powernv/rng.c  |  2 +-
- arch/powerpc/platforms/pseries/rng.c  |  2 +-
- 4 files changed, 17 insertions(+), 17 deletions(-)
+Sample LED device tree output:
+------------------------------
+leds {
+	compatible = "ibm,opal-v3-led";
+	led-mode = "lightpath";
 
-diff --git a/arch/powerpc/include/asm/archrandom.h b/arch/powerpc/include/asm/archrandom.h
-index 0cc6eed..85e88f7 100644
---- a/arch/powerpc/include/asm/archrandom.h
-+++ b/arch/powerpc/include/asm/archrandom.h
-@@ -7,14 +7,23 @@
- 
- static inline int arch_get_random_long(unsigned long *v)
- {
--	if (ppc_md.get_random_long)
--		return ppc_md.get_random_long(v);
--
- 	return 0;
- }
- 
- static inline int arch_get_random_int(unsigned int *v)
- {
-+	return 0;
-+}
-+
-+static inline int arch_get_random_seed_long(unsigned long *v)
-+{
-+	if (ppc_md.get_random_seed)
-+		return ppc_md.get_random_seed(v);
-+
-+	return 0;
-+}
-+static inline int arch_get_random_seed_int(unsigned int *v)
-+{
- 	unsigned long val;
- 	int rc;
- 
-@@ -27,22 +36,13 @@ static inline int arch_get_random_int(unsigned int *v)
- 
- static inline int arch_has_random(void)
- {
--	return !!ppc_md.get_random_long;
--}
--
--static inline int arch_get_random_seed_long(unsigned long *v)
--{
--	return 0;
--}
--static inline int arch_get_random_seed_int(unsigned int *v)
--{
- 	return 0;
- }
-+
- static inline int arch_has_random_seed(void)
- {
--	return 0;
-+	return !!ppc_md.get_random_seed;
- }
--
- #endif /* CONFIG_ARCH_RANDOM */
- 
- #ifdef CONFIG_PPC_POWERNV
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 952579f..cab6753 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -249,7 +249,7 @@ struct machdep_calls {
- #endif
- 
- #ifdef CONFIG_ARCH_RANDOM
--	int (*get_random_long)(unsigned long *v);
-+	int (*get_random_seed)(unsigned long *v);
- #endif
- };
- 
-diff --git a/arch/powerpc/platforms/powernv/rng.c b/arch/powerpc/platforms/powernv/rng.c
-index 6eb808f..5dcbdea 100644
---- a/arch/powerpc/platforms/powernv/rng.c
-+++ b/arch/powerpc/platforms/powernv/rng.c
-@@ -128,7 +128,7 @@ static __init int rng_create(struct device_node *dn)
- 
- 	pr_info_once("Registering arch random hook.\n");
- 
--	ppc_md.get_random_long = powernv_get_random_long;
-+	ppc_md.get_random_seed = powernv_get_random_long;
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/platforms/pseries/rng.c b/arch/powerpc/platforms/pseries/rng.c
-index e096087..31ca557 100644
---- a/arch/powerpc/platforms/pseries/rng.c
-+++ b/arch/powerpc/platforms/pseries/rng.c
-@@ -38,7 +38,7 @@ static __init int rng_init(void)
- 
- 	pr_info("Registering arch random hook.\n");
- 
--	ppc_md.get_random_long = pseries_get_random_long;
-+	ppc_md.get_random_seed = pseries_get_random_long;
- 
- 	return 0;
- }
+	U78C9.001.RST0027-P1-C1 {
+		led-types = "identify", "fault";
+	};
+	...
+	...
+    }
+
+Sample sysfs output:
+--------------------
+.
+├── U78CB.001.WZS008R-A1:fault
+│   ├── brightness
+│   ├── device -> ../../../opal_leds
+│   ├── max_brightness
+│   ├── power
+│   │   ├── async
+│   │   ├── autosuspend_delay_ms
+│   │   ├── control
+│   │   ├── runtime_active_kids
+│   │   ├── runtime_active_time
+│   │   ├── runtime_enabled
+│   │   ├── runtime_status
+│   │   ├── runtime_suspended_time
+│   │   └── runtime_usage
+│   ├── subsystem -> ../../../../../class/leds
+│   ├── trigger
+│   └── uevent
+├── U78CB.001.WZS008R-A1:identify
+│   ├── brightness
+│   ├── device -> ../../../opal_leds
+│   ├── max_brightness
+│   ├── power
+│   │   ├── async
+│   │   ├── autosuspend_delay_ms
+│   │   ├── control
+│   │   ├── runtime_active_kids
+│   │   ├── runtime_active_time
+│   │   ├── runtime_enabled
+│   │   ├── runtime_status
+│   │   ├── runtime_suspended_time
+│   │   └── runtime_usage
+│   ├── subsystem -> ../../../../../class/leds
+│   ├── trigger
+│   └── uevent
+....
+....
+....
+
+patch 1/2: PowerNV architecture specific code. This adds necessary
+           OPAL APIs.
+patch 2/2: Create LED platform device and export OPAL symbols
+patch 3/3: Actual LED driver implemenation for PowerNV platform.
+
+Note that this version of patchset is based on top of v4.2-rc2.
+
+@Jacek,
+  Let me know if you want me to rebase this patchset on top of LED tree.
+
+Previous patchset:
+  v5: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-July/130602.html
+  v4: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-April/128028.html
+  v3: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-April/127702.html
+  v2: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-March/126301.html
+  v1: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-March/125705.html
+
+Changes in v6:
+  - Added loc_code and type to powernv_led_data structure instead of parsing
+    them from led classdev name.
+  - Fixed documentation issues.
+  - Fixed mutex_destry issue
+  - Replaced led_classdev_register with devm_led_classdev_register
+
+Changes in v5:
+  - Rebased on top of Linus tree
+  - Renamed led as leds and updated documentation
+  - As Ben and Arnd suggested, removed phandle from documenation
+  - As Ben suggested removed led-loc device tree property
+  - As Jacek suggested, added back compatible property to documentation
+
+Changes in v4:
+  - Updated macros to reflect platform.
+  - s/u64/__be64/g for big endian data we get from firmware
+  - Addressed review comments from Jacek. Major once are:
+    Removed list in powernv_led_data structure
+    s/kzalloc/devm_kzalloc/
+    Removed compatible property from documentation
+    s/powernv_led_set_queue/powernv_brightness_set/
+  - Removed LED specific brightness_set/get function. Instead this version
+    uses single function to queue all LED set/get requests. Later we use
+    LED name to detect LED type and value.
+  - Removed hardcoded LED type used in previous version. Instead we use
+    led-types property to form LED classdev.
+
+Changes in v3:
+  - Addressed review comments from Jacek. Major once are:
+    Replaced spin lock and mutex and removed redundant structures
+    Replaced pr_* with dev_*
+    Moved OPAL platform sepcific part to separate patch
+    Moved repteated code to common function
+    Added device tree documentation for LEDs
+
+Changes in v2:
+  - Rebased patches on top of mpe's next branch
+     https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
+  - Added System Attention Indicator support
+  - Removed redundant code in leds-powernv.c file
+
+Anshuman Khandual (1):
+  powerpc/powernv: Add OPAL interfaces for accessing and modifying
+    system LED states
+
+Vasant Hegde (2):
+  powerpc/powernv: Create LED platform device
+  leds/powernv: Add driver for PowerNV platform
+
+ .../devicetree/bindings/leds/leds-powernv.txt      |  26 ++
+ arch/powerpc/include/asm/opal-api.h                |  25 +-
+ arch/powerpc/include/asm/opal.h                    |   4 +
+ arch/powerpc/platforms/powernv/opal-wrappers.S     |   2 +
+ arch/powerpc/platforms/powernv/opal.c              |  12 +-
+ drivers/leds/Kconfig                               |  11 +
+ drivers/leds/Makefile                              |   1 +
+ drivers/leds/leds-powernv.c                        | 422 +++++++++++++++++++++
+ 8 files changed, 501 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/leds/leds-powernv.txt
+ create mode 100644 drivers/leds/leds-powernv.c
+
 -- 
-2.1.4
+Vasant
+2.1.0
