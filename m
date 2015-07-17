@@ -1,35 +1,20 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <christophe.jaillet@wanadoo.fr>
+Received: from smtp.smtpout.orange.fr (smtp10.smtpout.orange.fr
+ [80.12.242.132])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CFC31A1D02
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:53:15 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Fri, 17 Jul 2015 20:53:15 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 080E92BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:53:13 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6HAr5da49741964
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:53:13 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6HAqeKV003817
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 20:52:40 +1000
-Subject: [PATCH V2 2/2] kprobes: Mark OPTPROBES na for powerpc
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: masami.hiramatsu.pt@hitachi.com, mpe@ellerman.id.au, mingo@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 17 Jul 2015 16:22:17 +0530
-Message-ID: <20150717105216.29162.4328.stgit@thinktux.in.ibm.com>
-In-Reply-To: <20150717105139.29162.31467.stgit@thinktux.in.ibm.com>
-References: <20150717105139.29162.31467.stgit@thinktux.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A4F61A19AB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 17:20:12 +1000 (AEST)
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH 1/2] powerpc/nvram: Add missing kfree in error path
+Date: Fri, 17 Jul 2015 09:19:59 +0200
+Message-Id: <4fd8daff1bb5daad99d909aa75ff5c2702c4c490.1437117145.git.christophe.jaillet@wanadoo.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,35 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kprobes uses a breakpoint instruction to trap into execution flow
-and the probed instruction is single-stepped from an alternate location.
+If 'nvram_write_header' fails, then 'new_part' should be freed, otherwise,
+there is a memory leak.
 
-On some architectures like x86, under certain conditions, the OPTPROBES
-feature enables replacing the probed instruction with a jump instead,
-resulting in a significant perfomance boost (one single-step exception
-is bypassed for each kprobe).
-
-Powerpc has an in-kernel instruction emulator. Kprobes on powerpc uses
-this emulator already and bypasses the single-step exception, with a
-lot less complexity.
-
-Hence, mark OPTPROBES na for powerpc.
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- .../features/debug/optprobes/arch-support.txt      |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This patch is *untested* because I have no way to trigger the error.
+---
+ arch/powerpc/kernel/nvram_64.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/features/debug/optprobes/arch-support.txt b/Documentation/features/debug/optprobes/arch-support.txt
-index b8999d8..73662f9 100644
---- a/Documentation/features/debug/optprobes/arch-support.txt
-+++ b/Documentation/features/debug/optprobes/arch-support.txt
-@@ -27,7 +27,7 @@
-     |       nios2: | TODO |
-     |    openrisc: | TODO |
-     |      parisc: | TODO |
--    |     powerpc: | TODO |
-+    |     powerpc: |  na  |
-     |        s390: | TODO |
-     |       score: | TODO |
-     |          sh: | TODO |
+diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+index 1e703f8..574ff59 100644
+--- a/arch/powerpc/kernel/nvram_64.c
++++ b/arch/powerpc/kernel/nvram_64.c
+@@ -1079,6 +1079,7 @@ loff_t __init nvram_create_partition(const char *name, int sig,
+ 	if (rc <= 0) {
+ 		pr_err("nvram_create_os_partition: nvram_write_header "
+ 		       "failed (%d)\n", rc);
++		kfree(new_part);
+ 		return rc;
+ 	}
+ 	list_add_tail(&new_part->partition, &free_part->partition);
+-- 
+2.1.4
