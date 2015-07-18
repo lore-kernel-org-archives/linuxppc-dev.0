@@ -3,15 +3,16 @@ Received: from na01-bn1-obe.outbound.protection.outlook.com
  (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 664D51A17F7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2015 06:09:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A367C1A18F0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2015 06:09:34 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-CC: Tiejun Chen <tiejun.chen@intel.com>, <kexec@lists.infradead.org>, "Tiejun
- Chen" <tiejun.chen@windriver.com>, Scott Wood <scottwood@freescale.com>
-Subject: [RFC PATCH 10/17] powerpc/book3e: support CONFIG_RELOCATABLE
-Date: Sat, 18 Jul 2015 15:08:47 -0500
-Message-ID: <1437250134-307-11-git-send-email-scottwood@freescale.com>
+CC: Tiejun Chen <tiejun.chen@intel.com>, <kexec@lists.infradead.org>, "Scott
+ Wood" <scottwood@freescale.com>
+Subject: [RFC PATCH 11/17] powerpc/book3e/kdump: Enable
+ crash_kexec_wait_realmode
+Date: Sat, 18 Jul 2015 15:08:48 -0500
+Message-ID: <1437250134-307-12-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1437250134-307-1-git-send-email-scottwood@freescale.com>
 References: <1437250134-307-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -25,127 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tiejun Chen <tiejun.chen@windriver.com>
+While book3e doesn't have "real mode", we still want to wait for
+all the non-crash cpus to complete their shutdown.
 
-book3e is different with book3s since 3s includes the exception
-vectors code in head_64.S as it relies on absolute addressing
-which is only possible within this compilation unit. So we have
-to get that label address with got.
-
-And when boot a relocated kernel, we should reset ipvr properly again
-after .relocate.
-
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-[scottwood: cleanup and ifdef removal]
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/include/asm/exception-64e.h |  4 ++--
- arch/powerpc/kernel/exceptions-64e.S     |  9 +++++++--
- arch/powerpc/kernel/head_64.S            | 22 +++++++++++++++++++---
- 3 files changed, 28 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/crash.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
-index a8b52b6..344fc43 100644
---- a/arch/powerpc/include/asm/exception-64e.h
-+++ b/arch/powerpc/include/asm/exception-64e.h
-@@ -204,8 +204,8 @@ exc_##label##_book3e:
- #endif
+diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
+index 51dbace..2bb252c 100644
+--- a/arch/powerpc/kernel/crash.c
++++ b/arch/powerpc/kernel/crash.c
+@@ -221,8 +221,8 @@ void crash_kexec_secondary(struct pt_regs *regs)
+ #endif	/* CONFIG_SMP */
  
- #define SET_IVOR(vector_number, vector_offset)	\
--	li	r3,vector_offset@l; 		\
--	ori	r3,r3,interrupt_base_book3e@l;	\
-+	LOAD_REG_ADDR(r3,interrupt_base_book3e);\
-+	ori	r3,r3,vector_offset@l;		\
- 	mtspr	SPRN_IVOR##vector_number,r3;
- 
- #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 9d4a006..488e631 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -1351,7 +1351,10 @@ skpinv:	addi	r6,r6,1				/* Increment */
-  * r4 = MAS0 w/TLBSEL & ESEL for the temp mapping
-  */
- 	/* Now we branch the new virtual address mapped by this entry */
--	LOAD_REG_IMMEDIATE(r6,2f)
-+	bl	1f		/* Find our address */
-+1:	mflr	r6
-+	addi	r6,r6,(2f - 1b)
-+	tovirt(r6,r6)
- 	lis	r7,MSR_KERNEL@h
- 	ori	r7,r7,MSR_KERNEL@l
- 	mtspr	SPRN_SRR0,r6
-@@ -1583,9 +1586,11 @@ _GLOBAL(book3e_secondary_thread_init)
- 	mflr	r28
- 	b	3b
- 
-+	.globl init_core_book3e
- init_core_book3e:
- 	/* Establish the interrupt vector base */
--	LOAD_REG_IMMEDIATE(r3, interrupt_base_book3e)
-+	tovirt(r2,r2)
-+	LOAD_REG_ADDR(r3, interrupt_base_book3e)
- 	mtspr	SPRN_IVPR,r3
- 	sync
- 	blr
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index a1e85ca..1b77956 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -457,12 +457,22 @@ __after_prom_start:
- 	/* process relocations for the final address of the kernel */
- 	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
- 	sldi	r25,r25,32
-+#if defined(CONFIG_PPC_BOOK3E)
-+	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
-+#endif
- 	lwz	r7,__run_at_load-_stext(r26)
-+#if defined(CONFIG_PPC_BOOK3E)
-+	tophys(r26,r26)
-+#endif
- 	cmplwi	cr0,r7,1	/* flagged to stay where we are ? */
- 	bne	1f
- 	add	r25,r25,r26
- 1:	mr	r3,r25
- 	bl	relocate
-+#if defined(CONFIG_PPC_BOOK3E)
-+	/* IVPR needs to be set after relocation. */
-+	bl	init_core_book3e
-+#endif
- #endif
+ /* wait for all the CPUs to hit real mode but timeout if they don't come in */
+-#if defined(CONFIG_SMP) && defined(CONFIG_PPC_STD_MMU_64)
+-static void crash_kexec_wait_realmode(int cpu)
++#if defined(CONFIG_SMP) && defined(CONFIG_PPC64)
++static void __maybe_unused crash_kexec_wait_realmode(int cpu)
+ {
+ 	unsigned int msecs;
+ 	int i;
+@@ -244,7 +244,7 @@ static void crash_kexec_wait_realmode(int cpu)
+ }
+ #else
+ static inline void crash_kexec_wait_realmode(int cpu) {}
+-#endif	/* CONFIG_SMP && CONFIG_PPC_STD_MMU_64 */
++#endif	/* CONFIG_SMP && CONFIG_PPC64 */
  
  /*
-@@ -490,12 +500,21 @@ __after_prom_start:
-  * variable __run_at_load, if it is set the kernel is treated as relocatable
-  * kernel, otherwise it will be moved to PHYSICAL_START
-  */
-+#if defined(CONFIG_PPC_BOOK3E)
-+	tovirt(r26,r26)		/* on booke, we already run at PAGE_OFFSET */
-+#endif
- 	lwz	r7,__run_at_load-_stext(r26)
- 	cmplwi	cr0,r7,1
- 	bne	3f
- 
-+#ifdef CONFIG_PPC_BOOK3E
-+	LOAD_REG_ADDR(r5, __end_interrupts)
-+	LOAD_REG_ADDR(r11, _stext)
-+	sub	r5,r5,r11
-+#else
- 	/* just copy interrupts */
- 	LOAD_REG_IMMEDIATE(r5, __end_interrupts - _stext)
-+#endif
- 	b	5f
- 3:
- #endif
-@@ -514,9 +533,6 @@ __after_prom_start:
- p_end:	.llong	_end - _stext
- 
- 4:	/* Now copy the rest of the kernel up to _end */
--#if defined(CONFIG_PPC_BOOK3E)
--	tovirt(r26,r26)
--#endif
- 	addis	r5,r26,(p_end - _stext)@ha
- 	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
- 5:	bl	copy_and_flush		/* copy the rest */
+  * Register a function to be called on shutdown.  Only use this if you
 -- 
 2.1.4
