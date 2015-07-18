@@ -1,36 +1,27 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
- [IPv6:2a00:1450:400c:c05::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Zumeng.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1A4F51A01E3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2015 03:50:29 +1000 (AEST)
-Received: by widjy10 with SMTP id jy10so47064845wid.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jul 2015 10:50:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8138F1A075D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jul 2015 12:00:42 +1000 (AEST)
+Message-ID: <55A9B333.4030506@windriver.com>
+Date: Sat, 18 Jul 2015 10:00:19 +0800
+From: Zumeng Chen <zumeng.chen@windriver.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.11.1507171558010.18576@nanos>
-References: <20150712215559.7166.33068.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150712220154.7166.48327.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <alpine.DEB.2.11.1507171558010.18576@nanos>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 17 Jul 2015 12:50:05 -0500
-Message-ID: <CAErSpo6HFN1i2cMwrLyFoYGrvaX-QFeVT_bJyRo9wpFLwma49g@mail.gmail.com>
-Subject: Re: [PATCH 1/3] x86, irq: Rename VECTOR_UNDEFINED and
- VECTOR_RETRIGGERED to IRQ_*
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux-Arch <linux-arch@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- linux-am33-list@redhat.com,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- linux-c6x-dev@linux-c6x.org, linux-parisc@vger.kernel.org,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- adi-buildroot-devel@lists.sourceforge.net,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-m68k@lists.linux-m68k.org,
- linux-alpha@vger.kernel.org, "x86@kernel.org" <x86@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, paulus
+ <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Zumeng Chen <zumeng.chen@gmail.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ "romeo.cane.ext" <romeo.cane.ext@coriant.com>
+Subject: Re: BUG: perf error on syscalls for powerpc64.
+References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>
+ <1437037461.15828.2.camel@ellerman.id.au>
+ <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>
+ <20150717015104.GA25558@us.ibm.com>
+ <1437098328-sup-6685@delenn.ozlabs.ibm.com>
+In-Reply-To: <1437098328-sup-6685@delenn.ozlabs.ibm.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,31 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 17, 2015 at 9:06 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Sun, 12 Jul 2015, Bjorn Helgaas wrote:
->
->> The per-cpu vector_irq[] table is indexed by CPU vector numbers, and each
->> entry contains an IRQ number.
+On 2015年07月17日 09:59, Ian Munsie wrote:
+> Excerpts from Sukadev Bhattiprolu's message of 2015-07-17 11:51:04 +1000:
+>> Are you seeing this on big-endian or little-endian system?
 >>
->> Rename the special values VECTOR_UNDEFINED and VECTOR_RETRIGGERED to
->> IRQ_UNDEFINED and IRQ_RETRIGGERED to indicate that they are in the IRQ
->> number space, not the CPU vector number space.
->
-> Makes some sense, but OTOH vector_irq actually reflects the vector
-> state not the irq number state. The fact that we store the Linux irq
-> number in vector_irq is just an implementation detail.
->
-> VECTOR_UNDEFINED is certainly a misnomer; that should be VECTOR_UNUSED
->
-> VECTOR_RETRIGGERED is pretty accurate. In the case we retrigger an
-> interrupt, we merily use the Linux irq number to figure out which
-> vector to kick. And after we retriggered it, we lose the association
-> to the Linux irq number completely.
->
-> That said, I'm working on storing the irq descriptor pointer in
-> vector_irq instead of the irq number, which has the advantage that we
-> avoid the lookup of the irq descriptor in the interrupt hotpath.
+>> IIRC, I saw the opposite behavior on an LE system a few months ago.
+>> i.e. without 1028ccf5, 'perf listf|grep syscall' failed.
+>>
+>> Applying 1028ccf5, seemed to fix it.
+> You could be on to something there - IIRC the ABI was changed for LE to
+> remove the dot symbols. Might be worth testing on both.
 
-OK, I'll abandon this.  Thanks for taking a look!
+Yeah, thanks Ian for your hints. it should be the dot symbols. So I'll
+believe it's good in 4.x, thanks Michael  for your patience as well.
 
-Bjorn
+Cheers,
+Zumeng
+>
+> Cheers,
+> -Ian
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
