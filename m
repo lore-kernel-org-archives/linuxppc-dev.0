@@ -3,17 +3,16 @@ Received: from na01-bn1-obe.outbound.protection.outlook.com
  (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 421631A0CEC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2015 06:09:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 50AD91A0DF4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2015 06:09:26 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Tiejun Chen <tiejun.chen@intel.com>, <kexec@lists.infradead.org>, "Scott
- Wood" <scottwood@freescale.com>, Cristian Stoica
- <cristian.stoica@freescale.com>, Horia Geanta <horia.geanta@freescale.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, <linux-crypto@vger.kernel.org>
-Subject: [RFC PATCH 03/17] crypto: caam: Blacklist CAAM when kexec is enabled
-Date: Sat, 18 Jul 2015 15:08:40 -0500
-Message-ID: <1437250134-307-4-git-send-email-scottwood@freescale.com>
+ Wood" <scottwood@freescale.com>
+Subject: [RFC PATCH 04/17] powerpc/fsl-corenet: Disable coreint if kexec is
+ enabled
+Date: Sat, 18 Jul 2015 15:08:41 -0500
+Message-ID: <1437250134-307-5-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1437250134-307-1-git-send-email-scottwood@freescale.com>
 References: <1437250134-307-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -27,32 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This driver hangs the kernel on boot when loaded via kexec.
+Problems have been observed in coreint (EPR) mode if interrupts are
+left pending (due to the lack of device quiescence with kdump) after
+having tried to deliver to a CPU but unable to deliver due to MSR[EE]
+-- interrupts no longer get reliably delivered in the new kernel.  I
+tried various ways of fixing it up inside the crash kernel itself, and
+none worked (including resetting the entire mpic).  Masking all
+interrupts and issuing EOIs in the crashing kernel did help a lot of
+the time, but the behavior was not consistent.
 
-To make this driver kexec-safe, add a suspend or freeze hook, and when
-probing, don't make any assumptions about the existing hardware state
-(e.g. don't request_irq before quiescing the device).
+Thus, stick to standard IACK mode when kdump is a possibility.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Cristian Stoica <cristian.stoica@freescale.com>
-Cc: Horia Geanta <horia.geanta@freescale.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org
 ---
- drivers/crypto/caam/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Supposedly there are similar problems with certain low power states --
+the SDK disables coreint when CPU hotplug is enabled -- so disabling it
+for kexec as well doesn't seem like a big deal.
+---
+ arch/powerpc/platforms/85xx/corenet_generic.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/crypto/caam/Kconfig b/drivers/crypto/caam/Kconfig
-index e286e28..310e9e0 100644
---- a/drivers/crypto/caam/Kconfig
-+++ b/drivers/crypto/caam/Kconfig
-@@ -1,6 +1,6 @@
- config CRYPTO_DEV_FSL_CAAM
- 	tristate "Freescale CAAM-Multicore driver backend"
--	depends on FSL_SOC
-+	depends on FSL_SOC && !KEXEC
- 	help
- 	  Enables the driver module for Freescale's Cryptographic Accelerator
- 	  and Assurance Module (CAAM), also known as the SEC version 4 (SEC4).
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index bd839dc..cddc9a2 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -212,7 +212,11 @@ define_machine(corenet_generic) {
+ 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+ 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+ #endif
++#ifdef CONFIG_KEXEC
++	.get_irq		= mpic_get_irq,
++#else
+ 	.get_irq		= mpic_get_coreint_irq,
++#endif
+ 	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= udbg_progress,
 -- 
 2.1.4
