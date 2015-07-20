@@ -1,9 +1,9 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from lhrrgout.huawei.com (lhrrgout.huawei.com [194.213.3.17])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A4DBD1A2BF1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:10:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 286241A09AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:13:28 +1000 (AEST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
 CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
@@ -20,10 +20,10 @@ CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Yijing Wang
  <wangyijing@huawei.com>
-Subject: [PATCH part3 v12 10/10] IA64/PCI: Fix build warning found by kbuild
- test
-Date: Mon, 20 Jul 2015 20:01:18 +0800
-Message-ID: <1437393678-4077-11-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH part3 v12 02/10] PCI: Move pci_bus_assign_domain_nr()
+ declaration into drivers/pci/pci.h
+Date: Mon, 20 Jul 2015 20:01:10 +0800
+Message-ID: <1437393678-4077-3-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
 References: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -37,64 +37,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kbuild test robot found we passed a pci_dev * to
-pci_domain_nr(). In old IA64 specific pci_domain_nr()
-It was macro defines:
-
-#define PCI_CONTROLLER(busdev) ((struct pci_controller *) busdev->sysdata)
-#define pci_domain_nr(busdev)    (PCI_CONTROLLER(busdev)->segment)
-
-Both pci_dev * and pci_bus * have opaque sysdata, so IA64 specific
-pci_domain_nr() could get the pci_controller and return the exact
-domain number, but now we use common pci_domain_nr() functions, so we
-should fix this warning.
+pci_bus_assign_domain_nr() is only called in probe.c,
+Move pci_bus_assign_domain_nr() declaration into
+drivers/pci/pci.h.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/ia64/sn/kernel/io_acpi_init.c |    6 +++---
- arch/ia64/sn/kernel/io_init.c      |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/pci/pci.h   |    9 +++++++++
+ include/linux/pci.h |    6 ------
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/ia64/sn/kernel/io_acpi_init.c b/arch/ia64/sn/kernel/io_acpi_init.c
-index 0640739..2fd7414 100644
---- a/arch/ia64/sn/kernel/io_acpi_init.c
-+++ b/arch/ia64/sn/kernel/io_acpi_init.c
-@@ -364,12 +364,12 @@ sn_acpi_get_pcidev_info(struct pci_dev *dev, struct pcidev_info **pcidev_info,
-         status = acpi_evaluate_integer(rootbus_handle, METHOD_NAME__SEG, NULL,
-                                        &segment);
-         if (ACPI_SUCCESS(status)) {
--		if (segment != pci_domain_nr(dev)) {
-+		if (segment != pci_domain_nr(dev->bus)) {
- 			acpi_get_name(rootbus_handle, ACPI_FULL_PATHNAME,
- 				&name_buffer);
- 			printk(KERN_ERR
- 			       "%s: Segment number mismatch, 0x%llx vs 0x%x for: %s\n",
--			       __func__, segment, pci_domain_nr(dev),
-+			       __func__, segment, pci_domain_nr(dev->bus),
- 			       (char *)name_buffer.pointer);
- 			kfree(name_buffer.pointer);
- 			return 1;
-@@ -407,7 +407,7 @@ sn_acpi_get_pcidev_info(struct pci_dev *dev, struct pcidev_info **pcidev_info,
- 	/* Build up the pcidev_info.pdi_slot_host_handle */
- 	host_devfn = get_host_devfn(pcidev_match.handle, rootbus_handle);
- 	(*pcidev_info)->pdi_slot_host_handle =
--			((unsigned long) pci_domain_nr(dev) << 40) |
-+			((unsigned long) pci_domain_nr(dev->bus) << 40) |
- 					/* bus == 0 */
- 					host_devfn;
- 	return 0;
-diff --git a/arch/ia64/sn/kernel/io_init.c b/arch/ia64/sn/kernel/io_init.c
-index d528814..0bdab82 100644
---- a/arch/ia64/sn/kernel/io_init.c
-+++ b/arch/ia64/sn/kernel/io_init.c
-@@ -164,7 +164,7 @@ sn_io_slot_fixup(struct pci_dev *dev)
- 		panic("%s: Unable to alloc memory for sn_irq_info", __func__);
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 4ff0ff1..02192aa 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -335,4 +335,13 @@ static inline int pci_dev_specific_reset(struct pci_dev *dev, int probe)
  
- 	/* Call to retrieve pci device information needed by kernel. */
--	status = sal_get_pcidev_info((u64) pci_domain_nr(dev),
-+	status = sal_get_pcidev_info((u64) pci_domain_nr(dev->bus),
- 		(u64) dev->bus->number,
- 		dev->devfn,
- 		(u64) __pa(pcidev_info),
+ struct pci_host_bridge *pci_find_host_bridge(struct pci_bus *bus);
+ 
++#ifdef CONFIG_PCI_DOMAINS_GENERIC
++void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent);
++#else
++static inline void pci_bus_assign_domain_nr(struct pci_bus *bus,
++					struct device *parent)
++{
++}
++#endif
++
+ #endif /* DRIVERS_PCI_H */
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 50c0c47..f7e4204 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1337,12 +1337,6 @@ static inline int pci_domain_nr(struct pci_bus *bus)
+ {
+ 	return bus->domain_nr;
+ }
+-void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent);
+-#else
+-static inline void pci_bus_assign_domain_nr(struct pci_bus *bus,
+-					struct device *parent)
+-{
+-}
+ #endif
+ 
+ /* some architectures require additional setup to direct VGA traffic */
 -- 
 1.7.1
