@@ -1,22 +1,31 @@
-Return-Path: <luis.henriques@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 961CB1A0491
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 19:06:09 +1000 (AEST)
-Date: Mon, 20 Jul 2015 10:06:00 +0100
-From: Luis Henriques <luis.henriques@canonical.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] macintosh/ans-lcd: fix build failure after
- module_init/exit relocation
-Message-ID: <20150720090600.GA2303@ares>
-References: <1437139231-11812-1-git-send-email-luis.henriques@canonical.com>
- <20150718234517.GC4477@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20150718234517.GC4477@windriver.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE7CB1A02A5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 20:15:13 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 20 Jul 2015 15:45:08 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8DD6A125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 15:48:02 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6KAF2ea52887678
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 15:45:03 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6K8tajl022925
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 14:25:36 +0530
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/powernv: Fix the log message when disabling VF
+Date: Mon, 20 Jul 2015 18:14:58 +0800
+Message-Id: <1437387298-10668-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,71 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 18, 2015 at 07:45:17PM -0400, Paul Gortmaker wrote:
-> [[PATCH] macintosh/ans-lcd: fix build failure after module_init/exit relocation] On 17/07/2015 (Fri 14:20) Luis Henriques wrote:
-> 
-> > After commit 0fd972a7d91d ("module: relocate module_init from init.h to module.h")
-> > ans-lcd module fails to build with:
-> > 
-> > drivers/macintosh/ans-lcd.c:201:1: warning: data definition has no type or storage class [enabled by default]
-> >  module_init(anslcd_init);
-> >  ^
-> > drivers/macintosh/ans-lcd.c:201:1: error: type defaults to 'int' in declaration of 'module_init' [-Werror=implicit-int]
-> > drivers/macintosh/ans-lcd.c:201:1: warning: parameter names (without types) in function declaration [enabled by default]
-> > drivers/macintosh/ans-lcd.c:202:1: warning: data definition has no type or storage class [enabled by default]
-> >  module_exit(anslcd_exit);
-> >  ^
-> > drivers/macintosh/ans-lcd.c:202:1: error: type defaults to 'int' in declaration of 'module_exit' [-Werror=implicit-int]
-> > drivers/macintosh/ans-lcd.c:202:1: warning: parameter names (without types) in function declaration [enabled by default]
-> > drivers/macintosh/ans-lcd.c:155:1: warning: 'anslcd_init' defined but not used [-Wunused-function]
-> >  anslcd_init(void)
-> >  ^
-> > drivers/macintosh/ans-lcd.c:195:1: warning: 'anslcd_exit' defined but not used [-Wunused-function]
-> >  anslcd_exit(void)
-> >  ^
-> > 
-> > This commit fixes it by replacing linux/init.h by linux/module.h.
-> 
-> Guess it was inevitable I miss at least one.   This old beast must not
-> get coverage under any of the ppc defconfigs or allmodconfig, since I
-> did both...  are you using a custom config for an older box?
->
+On powernv platform, IOV BAR would be shifted if necessary. While the log
+message is not correct when disabling VFs.
 
-I was actually just using a Debian config, which has CONFIG_ANSLCD=m
+This patch fixes this by print correct message based on the offset value.
 
-Cheers,
---
-Luís
+Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-> Anyway, the thing is controlled by a tristate, so this is the right fix.
-> 
-> I don't have _any_ other fixes queued for that cleanup series, so I'm fine
-> with this going via the ppc tree, since I'm sure there will be pending
-> commits there.
-> 
-> Acked-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> 
-> Thanks,
-> Paul.
-> --
-> 
-> > 
-> > Fixes: 0fd972a7d91d ("module: relocate module_init from init.h to module.h")
-> > Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
-> > ---
-> >  drivers/macintosh/ans-lcd.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-> > index 1a57e88a38f7..cd35079c8c98 100644
-> > --- a/drivers/macintosh/ans-lcd.c
-> > +++ b/drivers/macintosh/ans-lcd.c
-> > @@ -7,7 +7,7 @@
-> >  #include <linux/kernel.h>
-> >  #include <linux/miscdevice.h>
-> >  #include <linux/fcntl.h>
-> > -#include <linux/init.h>
-> > +#include <linux/module.h>
-> >  #include <linux/delay.h>
-> >  #include <linux/fs.h>
-> >  
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index d1530cb..80b8099 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -946,8 +946,9 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+ 		res2 = *res;
+ 		res->start += size * offset;
+ 
+-		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
+-			 i, &res2, res, num_vfs, offset);
++		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (%sabling %d VFs shifted by %d)\n",
++			 i, &res2, res, (offset > 0) ? "En" : "Dis",
++			 num_vfs, offset);
+ 		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
+ 	}
+ 	return 0;
+-- 
+1.7.9.5
