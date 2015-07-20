@@ -1,37 +1,29 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jacek.anaszewski@gmail.com>
+Received: from mail-wg0-x244.google.com (mail-wg0-x244.google.com
+ [IPv6:2a00:1450:400c:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 406D51A09AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:59:37 +1000 (AEST)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1082114027F
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2015 12:59:37 +1000 (AEST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 20 Jul 2015 12:59:36 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8A13D2BB0051
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2015 12:59:34 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6K2xMC155443678
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2015 12:59:31 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6K2x11g021050
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Jul 2015 12:59:01 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org, mpe@ellerman.id.au
-Subject: [PATCH V2] powerpc/signal: Add helper function to fetch quad word
- aligned pointer
-Date: Mon, 20 Jul 2015 08:28:43 +0530
-Message-Id: <1437361123-18615-1-git-send-email-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7D7A81A05B9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 16:18:09 +1000 (AEST)
+Received: by wgjf7 with SMTP id f7so1067067wgj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2015 23:18:05 -0700 (PDT)
+Message-ID: <55AC9244.5010407@gmail.com>
+Date: Mon, 20 Jul 2015 08:16:36 +0200
+From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+MIME-Version: 1.0
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+CC: Jacek Anaszewski <j.anaszewski@samsung.com>,
+ linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ stewart@linux.vnet.ibm.com, arnd@arndb.de, cooloney@gmail.com,
+ rpurdie@rpsys.net, khandual@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ benh@kernel.crashing.org
+Subject: Re: [PATCH v6 3/3] leds/powernv: Add driver for PowerNV platform
+References: <1437129671-14078-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1437129671-14078-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <55A91E67.6010200@samsung.com> <55A92B44.6020502@linux.vnet.ibm.com>
+ <55AC193B.9060005@gmail.com>
+In-Reply-To: <55AC193B.9060005@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,61 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds one helper function 'sigcontext_vmx_regs' which computes
-quad word aligned pointer for 'vmx_reserve' array element in sigcontext
-structure making the code more readable.
+On 19.07.2015 23:40, Jacek Anaszewski wrote:
+[...]
+>>>> +/* Platform driver probe */
+>>>> +static int powernv_led_probe(struct platform_device *pdev)
+>>>> +{
+>>>> +    int num_leds;
+>>>> +    struct device_node *led_node;
+>>>> +    struct powernv_leds_priv *priv;
+>>>> +
+>>>> +    led_node = of_find_node_by_path("/ibm,opal/leds");
+>>>> +    if (!led_node) {
+>>>> +        dev_err(&pdev->dev,
+>>>> +            "%s: LED parent device node not found\n", __func__);
+>>>> +        return -EINVAL;
+>>>> +    }
+>>>> +
+>>>> +    num_leds = powernv_leds_count(led_node);
+>>>> +    if (num_leds <= 0) {
+>>>> +        dev_err(&pdev->dev,
+>>>> +            "%s: No location code found under LED node\n",
+>>>> +            __func__);
+>>>> +        return -EINVAL;
+>>>> +    }
+>
+> You won't need to count the number of LEDs to register, just allocate
+> memory for each LED during parsing with managed resource allocation
+> API.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
-- Fixed some indentation problems
-- Changed function name from 'vmx_reserve_addr' to 'sigcontext_vmx_regs'
-- Added some documentation before the function
+You can refer to drivers/leds/leds-bcm6328.c in order to gain
+full picture on how this can look like.
+struct powernv_led_data would have to carry the pointer to the
+new common struct.
 
- arch/powerpc/kernel/signal_64.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index c7c24d2..bb9c939 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -74,6 +74,16 @@ static const char fmt64[] = KERN_INFO \
- 	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
- 
- /*
-+ * This computes quad word aligned pointer for 'vmx_reserve' array element
-+ * which is used primarily in assigning to the preceding pointer 'v_regs'
-+ * in sigcontext structure.
-+ */
-+static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
-+{
-+	return (elf_vrreg_t __user *) (((unsigned long)sc->vmx_reserve + 15) & ~0xful);
-+}
-+
-+/*
-  * Set up the sigcontext for the signal frame.
-  */
- 
-@@ -90,7 +100,7 @@ static long setup_sigcontext(struct sigcontext __user *sc, struct pt_regs *regs,
- 	 * v_regs pointer or not
- 	 */
- #ifdef CONFIG_ALTIVEC
--	elf_vrreg_t __user *v_regs = (elf_vrreg_t __user *)(((unsigned long)sc->vmx_reserve + 15) & ~0xful);
-+	elf_vrreg_t __user *v_regs = sigcontext_vmx_regs(sc);
- #endif
- 	unsigned long msr = regs->msr;
- 	long err = 0;
-@@ -181,10 +191,8 @@ static long setup_tm_sigcontexts(struct sigcontext __user *sc,
- 	 * v_regs pointer or not.
- 	 */
- #ifdef CONFIG_ALTIVEC
--	elf_vrreg_t __user *v_regs = (elf_vrreg_t __user *)
--		(((unsigned long)sc->vmx_reserve + 15) & ~0xful);
--	elf_vrreg_t __user *tm_v_regs = (elf_vrreg_t __user *)
--		(((unsigned long)tm_sc->vmx_reserve + 15) & ~0xful);
-+	elf_vrreg_t __user *v_regs = sigcontext_vmx_regs(sc);
-+	elf_vrreg_t __user *tm_v_regs = sigcontext_vmx_regs(tm_sc);
- #endif
- 	unsigned long msr = regs->msr;
- 	long err = 0;
 -- 
-2.1.0
+Best Regards,
+Jacek Anaszewski
