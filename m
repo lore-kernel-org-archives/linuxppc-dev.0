@@ -1,32 +1,22 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 18B6D1A2FB7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:19:05 +1000 (AEST)
-From: Yijing Wang <wangyijing@huawei.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, Russell King
- <linux@arm.linux.org.uk>, <dja@axtens.net>,
- <linux-xtensa@linux-xtensa.org>, <x86@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, <linux-mips@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Rusty Russell <rusty@rustcorp.com.au>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-s390@vger.kernel.org>, Tony Luck <tony.luck@intel.com>,
- <linux-ia64@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, <linux-alpha@vger.kernel.org>,
- <linux-m68k@lists.linux-m68k.org>, <linux-am33-list@redhat.com>,
- Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Yijing Wang
- <wangyijing@huawei.com>
-Subject: [PATCH part3 v12 09/10] PCI: Remove pci_bus_assign_domain_nr()
-Date: Mon, 20 Jul 2015 20:01:17 +0800
-Message-ID: <1437393678-4077-10-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
-References: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1A7CD1A01E3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:46:42 +1000 (AEST)
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "madalin.bucur@freescale.com" <madalin.bucur@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC 02/10] dpaa_eth: add support for DPAA Ethernet
+Date: Mon, 20 Jul 2015 12:46:37 +0000
+Message-ID: <1437396397.10831.31.camel@transmode.se>
+References: <1427905196-27778-1-git-send-email-madalin.bucur@freescale.com>
+ <1437378870.10831.12.camel@transmode.se>
+ <1437379026.10831.14.camel@transmode.se>
+ <BL2PR03MB5456302C77FAEC1AC60669CE6850@BL2PR03MB545.namprd03.prod.outlook.com>
+In-Reply-To: <BL2PR03MB5456302C77FAEC1AC60669CE6850@BL2PR03MB545.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,116 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we save the domain number in pci_host_bridge,
-we could remove pci_bus_assign_domain_nr() and
-clean the domain member in pci_bus.
+On Mon, 2015-07-20 at 12:18 +0000, Madalin-Cristian Bucur wrote:
+> Hi Joakim
+>=20
+> > -----Original Message-----
+> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
+> > Sent: Monday, July 20, 2015 10:57 AM
+> > To: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org; Bucur Madali=
+n-
+> > Cristian-B32716
+> > Cc: linux-kernel@vger.kernel.org
+> > Subject: Re: [PATCH RFC 02/10] dpaa_eth: add support for DPAA Ethernet
+> >=20
+> > On Mon, 2015-07-20 at 09:54 +0200, Joakim Tjernlund wrote:
+> > > On Wed, 2015-04-01 at 19:19 +0300, Madalin Bucur wrote:
+> > > > This introduces the Freescale Data Path Acceleration Architecture
+> > > > (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
+> > > > BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
+> > > > the Freescale DPAA QorIQ platforms.
+> > > >=20
+> > > > Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+> > > > ---
+> > > ....
+> > > > +	snprintf(net_dev->name, IFNAMSIZ, "fm%d-mac%d",
+> > > > +		 dpa_mac_fman_index_get(pdev),
+> > > > +		 dpa_mac_hw_index_get(pdev));
+> > >=20
+> > > Should ethernet drivers dictate interface name in user space nowadays=
+?
+> > > I would prefer if you didn't.
+>=20
+> The preformatted interface name was thought as a helper for quick interfa=
+ce
+> identification. It also ensures constant naming of the interfaces, i.e. i=
+f you
+> add/remove PCI network cards. One can make use of udev rules to override
+> default interface names ("eth%d") in userspace.
 
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
----
- drivers/pci/pci.c   |    5 -----
- drivers/pci/pci.h   |    9 ---------
- drivers/pci/probe.c |   11 +++--------
- include/linux/pci.h |    3 ---
- 4 files changed, 3 insertions(+), 25 deletions(-)
+I am not well versed in ethernet interface naming but I think you are just =
+creating
+another name space here. To me one either have the old eth%d names or let u=
+dev do
+the naming so there is some order w.r.t interface naming.
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 0074420..cac136a 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4536,11 +4536,6 @@ static int pci_assign_domain_nr(struct device *dev)
- 
- 	return domain;
- }
--
--void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent)
--{
--	bus->domain_nr = pci_assign_domain_nr(parent);
--}
- #endif
- #endif
- 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 4a815c9..5c4b0dd 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -335,14 +335,5 @@ static inline int pci_dev_specific_reset(struct pci_dev *dev, int probe)
- 
- struct pci_host_bridge *pci_find_host_bridge(struct pci_bus *bus);
- 
--#ifdef CONFIG_PCI_DOMAINS_GENERIC
--void pci_bus_assign_domain_nr(struct pci_bus *bus, struct device *parent);
--#else
--static inline void pci_bus_assign_domain_nr(struct pci_bus *bus,
--					struct device *parent)
--{
--}
--#endif
--
- void pci_host_assign_domain_nr(struct pci_host_bridge *host, int domain);
- #endif /* DRIVERS_PCI_H */
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index cb525aa..5f2388b 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -481,7 +481,7 @@ void pci_read_bridge_bases(struct pci_bus *child)
- 	}
- }
- 
--static struct pci_bus *pci_alloc_bus(struct pci_bus *parent)
-+static struct pci_bus *pci_alloc_bus(void)
- {
- 	struct pci_bus *b;
- 
-@@ -496,10 +496,6 @@ static struct pci_bus *pci_alloc_bus(struct pci_bus *parent)
- 	INIT_LIST_HEAD(&b->resources);
- 	b->max_bus_speed = PCI_SPEED_UNKNOWN;
- 	b->cur_bus_speed = PCI_SPEED_UNKNOWN;
--#ifdef CONFIG_PCI_DOMAINS_GENERIC
--	if (parent)
--		b->domain_nr = parent->domain_nr;
--#endif
- 	return b;
- }
- 
-@@ -670,7 +666,7 @@ static struct pci_bus *pci_alloc_child_bus(struct pci_bus *parent,
- 	/*
- 	 * Allocate a new bus, and inherit stuff from the parent..
- 	 */
--	child = pci_alloc_bus(parent);
-+	child = pci_alloc_bus();
- 	if (!child)
- 		return NULL;
- 
-@@ -1974,7 +1970,7 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int domain,
- 		return NULL;
- 	}
- 
--	b = pci_alloc_bus(NULL);
-+	b = pci_alloc_bus();
- 	if (!b)
- 		goto unregister_host;
- 
-@@ -1982,7 +1978,6 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int domain,
- 	b->sysdata = sysdata;
- 	b->ops = ops;
- 	b->number = b->busn_res.start = bus;
--	pci_bus_assign_domain_nr(b, parent);
- 
- 	b->bridge = get_device(&bridge->dev);
- 	device_enable_async_suspend(b->bridge);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 6b4789c..8293f61 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -461,9 +461,6 @@ struct pci_bus {
- 	unsigned char	primary;	/* number of primary bridge */
- 	unsigned char	max_bus_speed;	/* enum pci_bus_speed */
- 	unsigned char	cur_bus_speed;	/* enum pci_bus_speed */
--#ifdef CONFIG_PCI_DOMAINS_GENERIC
--	int		domain_nr;
--#endif
- 
- 	char		name[48];
- 
--- 
-1.7.1
+I also find it handy to be able to control which I/F is eth0 etc. just by c=
+hanging
+the order they are listed in the device tree. This makes our application ha=
+ppy :)
+
+>=20
+> Another reason for using this is that the interface name was also used fo=
+r the
+> debugfs file name and when compiling dpaa_eth as a module there was a
+> problem with udev concurrently renaming interfaces from eth0 to something
+> like fmx-macy, making the next probed DPAA interface temporarily get the
+> eth0 name (before being renamed fmx-macw). Subsequently,
+> the debugfs_create_file(net_dev->name,...) call failed because of duplica=
+ted
+> names.
+>=20
+> If this is considered more of a bug than a feature, I can remove it and o=
+nly change
+> the naming of the debugfs entries to avoid the udev issue.
+
+Perhaps netdev list can advise?
+
+ Jocke=
