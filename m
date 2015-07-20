@@ -1,21 +1,25 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <prvs=636808b93=david.vrabel@citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 76ECD1A09AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 23:41:26 +1000 (AEST)
-Date: Mon, 20 Jul 2015 08:41:03 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: masami.hiramatsu.pt@hitachi.com, mpe@ellerman.id.au, mingo@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V3 2/2] kprobes: Mark OPTPROBES na for powerpc
-Message-ID: <20150720134103.GA9691@gate.crashing.org>
-References: <20150720105349.24801.64387.stgit@thinktux.in.ibm.com>
- <20150720105417.24801.66440.stgit@thinktux.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150720105417.24801.66440.stgit@thinktux.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36CFB1A0A23
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 23:52:35 +1000 (AEST)
+Message-ID: <55ACFA96.9060102@citrix.com>
+Date: Mon, 20 Jul 2015 14:41:42 +0100
+From: David Vrabel <david.vrabel@citrix.com>
+MIME-Version: 1.0
+To: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Peter Zijlstra
+ <peterz@infradead.org>
+CC: <linux-arch@vger.kernel.org>, <x86@kernel.org>,
+ <linux-kernel@vger.kernel.org>, <kvm-ppc@vger.kernel.org>, Alexander Graf
+ <agraf@suse.de>, Paul Mackerras <paulus@samba.org>, David Vrabel
+ <david.vrabel@citrix.com>, <xen-devel@lists.xenproject.org>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [Xen-devel] [PATCH v2 1/3] drivers/xen/preempt: use need_resched()
+ instead of should_resched()
+References: <20150715095201.12246.49283.stgit@buzz>
+In-Reply-To: <20150715095201.12246.49283.stgit@buzz>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +29,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 20, 2015 at 04:24:22PM +0530, Ananth N Mavinakayanahalli wrote:
-> There is a potential gain to be had with a direct
-> jump instead of a breakpoint, but the caveats need to be traded off
-> with the complexity it brings in.
-> 
-> For now, mark OPTPROBES na for powerpc.
+On 15/07/15 10:52, Konstantin Khlebnikov wrote:
+> This code is used only when CONFIG_PREEMPT=n and only in non-atomic context:
+> xen_in_preemptible_hcall is set only in privcmd_ioctl_hypercall().
+> Thus preempt_count is zero and should_resched() is equal to need_resched().
 
-If we haven't yet investigated whether this feature is something beneficial
-to the powerpc kernel, it should just stay as TODO, not be marked as n/a.
+Applied to for-linus-4.3, thanks.
 
-
-Segher
+David
