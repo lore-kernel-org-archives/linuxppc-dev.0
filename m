@@ -1,35 +1,30 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from lhrrgout.huawei.com (lhrrgout.huawei.com [194.213.3.17])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 28E941A2C67
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 20:55:23 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Mon, 20 Jul 2015 20:55:22 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4FB843578048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 20:55:19 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6KAtA7S53739644
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 20:55:18 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6KAskkh025549
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 20:54:46 +1000
-Subject: [PATCH V3 2/2] kprobes: Mark OPTPROBES na for powerpc
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: masami.hiramatsu.pt@hitachi.com, mpe@ellerman.id.au, mingo@kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Mon, 20 Jul 2015 16:24:22 +0530
-Message-ID: <20150720105417.24801.66440.stgit@thinktux.in.ibm.com>
-In-Reply-To: <20150720105349.24801.64387.stgit@thinktux.in.ibm.com>
-References: <20150720105349.24801.64387.stgit@thinktux.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 25FD21A094B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:10:24 +1000 (AEST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, Russell King
+ <linux@arm.linux.org.uk>, <dja@axtens.net>,
+ <linux-xtensa@linux-xtensa.org>, <x86@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, <linux-mips@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rusty Russell <rusty@rustcorp.com.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, Tony Luck <tony.luck@intel.com>,
+ <linux-ia64@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, <linux-alpha@vger.kernel.org>,
+ <linux-m68k@lists.linux-m68k.org>, <linux-am33-list@redhat.com>,
+ Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Yijing Wang
+ <wangyijing@huawei.com>
+Subject: [PATCH part3 v12 00/10] Cleanup platform pci_domain_nr()
+Date: Mon, 20 Jul 2015 20:01:08 +0800
+Message-ID: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +34,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kprobes uses a breakpoint instruction to trap into execution flow
-and the probed instruction is single-stepped from an alternate location.
+This series is splitted out from previous patchset
+"Refine PCI scan interfaces and make generic pci host bridge".
+It try to clean up all platform pci_domain_nr(), save domain
+in pci_host_bridge, so we could get domain number from the
+common interface. 
 
-On some architectures like x86, under certain conditions, the OPTPROBES
-feature enables replacing the probed instruction with a jump instead,
-resulting in a significant perfomance boost (both the breakpoint and
-single-step exception is bypassed for each kprobe).
+v11->v12:
+  Introduce wrap function pci_create_root_bus_generic()
+  and pci_create_root_bus_generic() for arm/arm64 which
+  enable CONFIG_PCI_DOMAINS_GENERIC.
+  Rebased this series based 4.2-rc1
 
-Powerpc has an in-kernel instruction emulator. Kprobes on powerpc uses
-this emulator already and bypasses the single-step exception, with a
-lot less complexity. There is a potential gain to be had with a direct
-jump instead of a breakpoint, but the caveats need to be traded off
-with the complexity it brings in.
+Yijing Wang (10):
+  PCI: Save domain in pci_host_bridge
+  PCI: Move pci_bus_assign_domain_nr() declaration into
+    drivers/pci/pci.h
+  PCI: Remove declaration for pci_get_new_domain_nr()
+  PCI: Introduce pci_host_assign_domain_nr() to assign domain
+  powerpc/PCI: Rename pcibios_root_bridge_prepare() to
+    pcibios_root_bus_prepare()
+  PCI: Make pci_host_bridge hold sysdata in drvdata
+  PCI: Create pci host bridge prior to root bus
+  PCI: Introduce common pci_domain_nr() and remove platform specific
+    code
+  PCI: Remove pci_bus_assign_domain_nr()
+  IA64/PCI: Fix build warning found by kbuild test
 
-For now, mark OPTPROBES na for powerpc.
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
- .../features/debug/optprobes/arch-support.txt      |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/Documentation/features/debug/optprobes/arch-support.txt b/Documentation/features/debug/optprobes/arch-support.txt
-index b8999d8..73662f9 100644
---- a/Documentation/features/debug/optprobes/arch-support.txt
-+++ b/Documentation/features/debug/optprobes/arch-support.txt
-@@ -27,7 +27,7 @@
-     |       nios2: | TODO |
-     |    openrisc: | TODO |
-     |      parisc: | TODO |
--    |     powerpc: | TODO |
-+    |     powerpc: |  na  |
-     |        s390: | TODO |
-     |       score: | TODO |
-     |          sh: | TODO |
+ arch/alpha/include/asm/pci.h             |    2 -
+ arch/alpha/kernel/pci.c                  |    4 +-
+ arch/alpha/kernel/sys_nautilus.c         |    2 +-
+ arch/arm/kernel/bios32.c                 |    2 +-
+ arch/arm/mach-dove/pcie.c                |    2 +-
+ arch/arm/mach-iop13xx/pci.c              |    4 +-
+ arch/arm/mach-mv78xx0/pcie.c             |    2 +-
+ arch/arm/mach-orion5x/pci.c              |    4 +-
+ arch/frv/mb93090-mb00/pci-vdk.c          |    3 +-
+ arch/ia64/include/asm/pci.h              |    1 -
+ arch/ia64/pci/pci.c                      |    6 +-
+ arch/ia64/sn/kernel/io_acpi_init.c       |    6 +-
+ arch/ia64/sn/kernel/io_init.c            |    6 +-
+ arch/m68k/coldfire/pci.c                 |    2 +-
+ arch/microblaze/include/asm/pci.h        |    2 -
+ arch/microblaze/pci/pci-common.c         |   15 +----
+ arch/mips/include/asm/pci.h              |    2 -
+ arch/mips/pci/pci.c                      |    4 +-
+ arch/mn10300/unit-asb2305/pci.c          |    3 +-
+ arch/powerpc/include/asm/machdep.h       |    2 +-
+ arch/powerpc/include/asm/pci.h           |    2 -
+ arch/powerpc/kernel/pci-common.c         |   21 ++-----
+ arch/powerpc/platforms/pseries/pci.c     |    2 +-
+ arch/powerpc/platforms/pseries/pseries.h |    2 +-
+ arch/powerpc/platforms/pseries/setup.c   |    2 +-
+ arch/s390/include/asm/pci.h              |    1 -
+ arch/s390/pci/pci.c                      |   10 +---
+ arch/sh/drivers/pci/pci.c                |    4 +-
+ arch/sh/include/asm/pci.h                |    2 -
+ arch/sparc/include/asm/pci_64.h          |    1 -
+ arch/sparc/kernel/leon_pci.c             |    2 +-
+ arch/sparc/kernel/pci.c                  |   21 +------
+ arch/sparc/kernel/pcic.c                 |    2 +-
+ arch/tile/include/asm/pci.h              |    2 -
+ arch/tile/kernel/pci.c                   |    4 +-
+ arch/tile/kernel/pci_gx.c                |    4 +-
+ arch/unicore32/kernel/pci.c              |    2 +-
+ arch/x86/include/asm/pci.h               |    6 --
+ arch/x86/pci/acpi.c                      |    6 +-
+ arch/x86/pci/common.c                    |    2 +-
+ arch/xtensa/kernel/pci.c                 |    2 +-
+ drivers/parisc/dino.c                    |    2 +-
+ drivers/parisc/lba_pci.c                 |    2 +-
+ drivers/pci/host/pci-versatile.c         |    3 +-
+ drivers/pci/host/pci-xgene.c             |    2 +-
+ drivers/pci/host/pcie-designware.c       |    2 +-
+ drivers/pci/host/pcie-iproc.c            |    2 +-
+ drivers/pci/host/pcie-xilinx.c           |    2 +-
+ drivers/pci/hotplug/ibmphp_core.c        |    2 +-
+ drivers/pci/pci.c                        |   31 ++++++++--
+ drivers/pci/pci.h                        |    1 +
+ drivers/pci/probe.c                      |   92 +++++++++++++++++-------------
+ drivers/pci/xen-pcifront.c               |    2 +-
+ include/linux/pci.h                      |   39 ++++++-------
+ 54 files changed, 161 insertions(+), 195 deletions(-)
