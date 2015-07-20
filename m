@@ -1,20 +1,33 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id DDC431A2DFC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:16:20 +1000 (AEST)
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "igal.liberman@freescale.com" <igal.liberman@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "madalin.bucur@freescale.com" <madalin.bucur@freescale.com>
-Subject: Re: [RFC,v3,12/12] fsl/fman: Add FMan MAC driver
-Date: Mon, 20 Jul 2015 12:16:15 +0000
-Message-ID: <1437394575.10831.18.camel@transmode.se>
-References: <1430299742-29428-1-git-send-email-igal.liberman@freescale.com>
-In-Reply-To: <1430299742-29428-1-git-send-email-igal.liberman@freescale.com>
-Content-Type: text/plain; charset="iso-8859-15"
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA9BE1A2F59
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:18:20 +1000 (AEST)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, Russell King
+ <linux@arm.linux.org.uk>, <dja@axtens.net>,
+ <linux-xtensa@linux-xtensa.org>, <x86@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, <linux-mips@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rusty Russell <rusty@rustcorp.com.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-s390@vger.kernel.org>, Tony Luck <tony.luck@intel.com>,
+ <linux-ia64@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, <linux-alpha@vger.kernel.org>,
+ <linux-m68k@lists.linux-m68k.org>, <linux-am33-list@redhat.com>,
+ Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Yijing Wang
+ <wangyijing@huawei.com>
+Subject: [PATCH part3 v12 05/10] powerpc/PCI: Rename
+ pcibios_root_bridge_prepare() to pcibios_root_bus_prepare()
+Date: Mon, 20 Jul 2015 20:01:13 +0800
+Message-ID: <1437393678-4077-6-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
+References: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,85 +37,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-04-29 at 12:29 +0300, Igal.Liberman wrote:
-> From: Igal Liberman <Igal.Liberman@freescale.com>
->=20
-> This patch adds the Ethernet MAC driver support.
->=20
-> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> ---
->  drivers/net/ethernet/freescale/fman/inc/mac.h     |  125 +++++
->  drivers/net/ethernet/freescale/fman/mac/Makefile  |    3 +-
->  drivers/net/ethernet/freescale/fman/mac/mac-api.c |  605 +++++++++++++++=
-++++++
->  drivers/net/ethernet/freescale/fman/mac/mac.c     |  527 +++++++++++++++=
-+++
->  4 files changed, 1259 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/net/ethernet/freescale/fman/inc/mac.h
->  create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac-api.c
->  create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac.c
->=20
-> diff --git a/drivers/net/ethernet/freescale/fman/inc/mac.h b/drivers/net/=
-ethernet/freescale/fman/inc/mac.h
-> new file mode 100644
-> index 0000000..2d27331
-> --- /dev/null
-> +++ b/drivers/net/ethernet/freescale/fman/inc/mac.h
-.....
-> +	/* Get the rest of the PHY information */
-> +	mac_dev->phy_node =3D of_parse_phandle(mac_node, "phy-handle", 0);
-> +	if (!mac_dev->phy_node) {
-> +		int sz;
-> +		const u32 *phy_id =3D of_get_property(mac_node, "fixed-link",
-> +							&sz);
-> +		if (!phy_id || sz < sizeof(*phy_id)) {
-> +			dev_err(dev, "No PHY (or fixed link) found\n");
-> +			_errno =3D -EINVAL;
-> +			goto _return_dev_set_drvdata;
-> +		}
-> +
-> +		sprintf(mac_dev->fixed_bus_id, PHY_ID_FMT, "fixed-0",
-> +			phy_id[0]);
-> +	}
+Pcibios_root_bridge_prepare() in powerpc set root bus
+speed, it's not the preparation for pci host bridge.
+For better separation of host bridge and root bus creation,
+It's need to rename it to another weak function.
 
-The above for fixed PHY does not work for me, changing it to does:
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+---
+ arch/powerpc/include/asm/machdep.h       |    2 +-
+ arch/powerpc/kernel/pci-common.c         |    6 +++---
+ arch/powerpc/platforms/pseries/pci.c     |    2 +-
+ arch/powerpc/platforms/pseries/pseries.h |    2 +-
+ arch/powerpc/platforms/pseries/setup.c   |    2 +-
+ drivers/pci/probe.c                      |    9 +++++++++
+ 6 files changed, 16 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fman/mac/mac.c b/drivers/net/et=
-hernet/freescale/fman/mac/mac.c
-index 4eb8f7c..a8be96a 100644
---- a/drivers/net/ethernet/freescale/fman/mac/mac.c
-+++ b/drivers/net/ethernet/freescale/fman/mac/mac.c
-@@ -42,6 +42,7 @@
- #include <linux/module.h>
- #include <linux/of_address.h>
- #include <linux/of_platform.h>
-+#include <linux/of_mdio.h>
- #include <linux/of_net.h>
- #include <linux/device.h>
- #include <linux/phy.h>
-@@ -399,7 +400,7 @@ static int __cold mac_probe(struct platform_device *_of=
-_dev)
-=20
-        /* Get the rest of the PHY information */
-        mac_dev->phy_node =3D of_parse_phandle(mac_node, "phy-handle", 0);
--       if (!mac_dev->phy_node) {
-+       if (0 && !mac_dev->phy_node) {
-                int sz;
-                const u32 *phy_id =3D of_get_property(mac_node, "fixed-link=
-",
-                                                        &sz);
-@@ -412,6 +413,16 @@ static int __cold mac_probe(struct platform_device *_o=
-f_dev)
-                sprintf(mac_dev->fixed_bus_id, PHY_ID_FMT, "fixed-0",
-                        phy_id[0]);
-        }
-+       if (!mac_dev->phy_node && of_phy_is_fixed_link(mac_node)) {
-+               /*
-+                * In the case of a fixed PHY, the DT node associated
-+                * to the PHY is the Ethernet MAC DT node.
-+                */
-+               _errno =3D of_phy_register_fixed_link(mac_node);
-+               if (_errno)
-+                       return _errno;
-+               mac_dev->phy_node =3D of_node_get(mac_node);
-+       }=
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 952579f..dbd5e8b 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -100,7 +100,7 @@ struct machdep_calls {
+ 	/* Called after allocating resources */
+ 	void		(*pcibios_fixup)(void);
+ 	void		(*pci_irq_fixup)(struct pci_dev *dev);
+-	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
++	int		(*pcibios_root_bus_prepare)(struct pci_host_bridge
+ 				*bridge);
+ 
+ 	/* To setup PHBs when using automatic OF platform driver for PCI */
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index df7f018..3e398c8 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -782,10 +782,10 @@ int pci_proc_domain(struct pci_bus *bus)
+ 	return 1;
+ }
+ 
+-int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
++int pcibios_root_bus_prepare(struct pci_host_bridge *bridge)
+ {
+-	if (ppc_md.pcibios_root_bridge_prepare)
+-		return ppc_md.pcibios_root_bridge_prepare(bridge);
++	if (ppc_md.pcibios_root_bus_prepare)
++		return ppc_md.pcibios_root_bus_prepare(bridge);
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index fe16a50..885f9ff 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -110,7 +110,7 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+ 			 fixup_winbond_82c105);
+ 
+-int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
++int pseries_root_bus_prepare(struct pci_host_bridge *bridge)
+ {
+ 	struct device_node *dn, *pdn;
+ 	struct pci_bus *bus;
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 8411c27..41310dc 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -75,7 +75,7 @@ static inline int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 
+ /* PCI root bridge prepare function override for pseries */
+ struct pci_host_bridge;
+-int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
++int pseries_root_bus_prepare(struct pci_host_bridge *bridge);
+ 
+ extern struct pci_controller_ops pseries_pci_controller_ops;
+ 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index df6a704..2815309 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -537,7 +537,7 @@ static void __init pSeries_setup_arch(void)
+ 		ppc_md.enable_pmcs = power4_enable_pmcs;
+ 	}
+ 
+-	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
++	ppc_md.pcibios_root_bus_prepare = pseries_root_bus_prepare;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
+ 		long rc;
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index b49deb8..0eba126 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1919,6 +1919,11 @@ int __weak pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
+ 	return 0;
+ }
+ 
++int __weak pcibios_root_bus_prepare(struct pci_host_bridge *bridge)
++{
++	return 0;
++}
++
+ void __weak pcibios_add_bus(struct pci_bus *bus)
+ {
+ }
+@@ -1984,6 +1989,10 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int domain,
+ 	b->dev.class = &pcibus_class;
+ 	b->dev.parent = b->bridge;
+ 	dev_set_name(&b->dev, "%04x:%02x", pci_domain_nr(b), bus);
++	error = pcibios_root_bus_prepare(bridge);
++	if (error)
++		goto class_dev_reg_err;
++
+ 	error = device_register(&b->dev);
+ 	if (error)
+ 		goto class_dev_reg_err;
+-- 
+1.7.1
