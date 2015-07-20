@@ -1,41 +1,21 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <tim.gardner@canonical.com>
+Received: from mail-pd0-f181.google.com (mail-pd0-f181.google.com
+ [209.85.192.181])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE8C21A094B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 04:44:30 +1000 (AEST)
-Received: from /spool/local
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 20 Jul 2015 14:44:26 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 38B3CC90041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 14:35:31 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6KIiOBh59179076
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 18:44:24 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6KIiOlM019983
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 14:44:24 -0400
-Date: Mon, 20 Jul 2015 11:43:13 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>
-Subject: Re: [PATCH v5 0/7]powerpc/powernv: Nest Instrumentation support
-Message-ID: <20150720184312.GA11548@us.ibm.com>
-References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6FAA51A0072
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 05:02:04 +1000 (AEST)
+Received: by pdbnt7 with SMTP id nt7so34912153pdb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:02:02 -0700 (PDT)
+From: tim.gardner@canonical.com
+To: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Tim Gardner <tim.gardner@canonical.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 4.2-rc3] macintosh/ans-lcd.c: Missing include causes compile
+ failure
+Date: Mon, 20 Jul 2015 13:01:42 -0600
+Message-Id: <1437418902-23324-1-git-send-email-tim.gardner@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,23 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
-| This patchset enables Nest Instrumentation support on powerpc.
-| POWER8 has per-chip Nest Intrumentation which provides various
-| per-chip metrics like memory, powerbus, Xlink and Alink
-| bandwidth.
-| 
-<snip>
+From: Tim Gardner <tim.gardner@canonical.com>
 
-| Cc: Michael Ellerman <mpe@ellerman.id.au>
-| Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-| Cc: Paul Mackerras <paulus@samba.org>
-| Cc: Anton Blanchard <anton@samba.org>
-| Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-| Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-| Cc: Stephane Eranian <eranian@google.com>
-| Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+drivers/macintosh/ans-lcd.c:201:1: warning: data definition has no type or storage class
+ module_init(anslcd_init);
+ ^
+drivers/macintosh/ans-lcd.c:201:1: error: type defaults to 'int' in declaration of 'module_init' [-Werror=implicit-int]
 
-Thanks for addressing my comments from earlier version.
+gcc version 4.9.3 (Ubuntu 4.9.3-1ubuntu1)
 
-Reviewed-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+---
+
+This is a compile regression from v4.2-rc2
+
+ drivers/macintosh/ans-lcd.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
+index 1a57e88..36a0047 100644
+--- a/drivers/macintosh/ans-lcd.c
++++ b/drivers/macintosh/ans-lcd.c
+@@ -5,6 +5,7 @@
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/miscdevice.h>
+ #include <linux/fcntl.h>
+ #include <linux/init.h>
+-- 
+1.9.1
