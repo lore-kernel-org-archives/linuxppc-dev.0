@@ -1,31 +1,38 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Return-Path: <ananth@in.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE7CB1A02A5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 20:15:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4453B1A094B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 20:39:34 +1000 (AEST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 20 Jul 2015 15:45:08 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8DD6A125805B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 15:48:02 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6KAF2ea52887678
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 15:45:03 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6K8tajl022925
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 14:25:36 +0530
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/powernv: Fix the log message when disabling VF
-Date: Mon, 20 Jul 2015 18:14:58 +0800
-Message-Id: <1437387298-10668-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Mon, 20 Jul 2015 04:39:32 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0F55F3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 04:39:30 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6KAdTEK53739574
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 03:39:29 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6KAdTrC025066
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 04:39:29 -0600
+Date: Mon, 20 Jul 2015 16:08:59 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] kprobes: Mark OPTPROBES n/a for powerpc
+Message-ID: <20150720103859.GH2196@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20150716105639.9151.75671.stgit@thinktux.in.ibm.com>
+ <55AB09BE.5040506@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <55AB09BE.5040506@hitachi.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,31 +42,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powernv platform, IOV BAR would be shifted if necessary. While the log
-message is not correct when disabling VFs.
+On Sun, Jul 19, 2015 at 11:21:50AM +0900, Masami Hiramatsu wrote:
+> On 2015/07/16 19:56, Ananth N Mavinakayanahalli wrote:
+> > Kprobes uses a breakpoint instruction to trap into execution flow
+> > and the probed instruction is single-stepped from an alternate location.
+> > 
+> > On some architectures like x86, under certain conditions, the OPTPROBES
+> > feature enables replacing the probed instruction with a jump instead,
+> > resulting in a significant perfomance boost (one single-step exception
+> > is bypassed for each kprobe).
+> 
+> The OPTPROBE is not only for bypassing the single-step exception, but also
+> the breakpoint exception.
+> Please see commit 0dc016dbd820260b (ARM: kprobes: enable OPTPROBES for ARM 32) too,
+> which shows how it is done on RISC processor.
 
-This patch fixes this by print correct message based on the offset value.
+Yes, will fix and send.
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+> > Powerpc has an in-kernel instruction emulator. Kprobes on powerpc uses
+> > this emulator already and bypasses the single-step exception, with a
+> > lot less complexity.
+> 
+> So, this might miss the point. Since it is impossible to do on some RISC
+> processor, I agree with this change, but it should be committed with
+> correct comments.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index d1530cb..80b8099 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -946,8 +946,9 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
- 		res2 = *res;
- 		res->start += size * offset;
- 
--		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
--			 i, &res2, res, num_vfs, offset);
-+		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (%sabling %d VFs shifted by %d)\n",
-+			 i, &res2, res, (offset > 0) ? "En" : "Dis",
-+			 num_vfs, offset);
- 		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
- 	}
- 	return 0;
--- 
-1.7.9.5
+Sure, thanks!
+
+Ananth
