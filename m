@@ -1,25 +1,21 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 070FD1A09AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 23:33:38 +1000 (AEST)
-From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, Liberman Igal <Igal.Liberman@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [RFC,v3,12/12] fsl/fman: Add FMan MAC driver
-Date: Mon, 20 Jul 2015 13:33:29 +0000
-Message-ID: <BL2PR03MB545971A75540877E4B4FFD3E6850@BL2PR03MB545.namprd03.prod.outlook.com>
-References: <1430299742-29428-1-git-send-email-igal.liberman@freescale.com>
- <1437394575.10831.18.camel@transmode.se>
- <BL2PR03MB5450DB021D160D507432FC5E6850@BL2PR03MB545.namprd03.prod.outlook.com>
- <1437397042.10831.34.camel@transmode.se>
-In-Reply-To: <1437397042.10831.34.camel@transmode.se>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 76ECD1A09AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 23:41:26 +1000 (AEST)
+Date: Mon, 20 Jul 2015 08:41:03 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: masami.hiramatsu.pt@hitachi.com, mpe@ellerman.id.au, mingo@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V3 2/2] kprobes: Mark OPTPROBES na for powerpc
+Message-ID: <20150720134103.GA9691@gate.crashing.org>
+References: <20150720105349.24801.64387.stgit@thinktux.in.ibm.com>
+ <20150720105417.24801.66440.stgit@thinktux.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150720105417.24801.66440.stgit@thinktux.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
-> Sent: Monday, July 20, 2015 3:57 PM
-> To: netdev@vger.kernel.org; Liberman Igal-B31950; Bucur Madalin-Cristian-
-> B32716
-> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: Re: [RFC,v3,12/12] fsl/fman: Add FMan MAC driver
->=20
-> On Mon, 2015-07-20 at 12:28 +0000, Madalin-Cristian Bucur wrote:
-> > Hi Joakim,
-> >
-> > It seems we just need to align to the API introduced by Thomas Petazzon=
-i
-> > in 3be2a49e.
-> >
-> > Madalin
->=20
-> So it seems, any idea when the next spin will be ready?
-> Could you also push it onto
->   http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git/
-> ?
->=20
->  Jocke
+On Mon, Jul 20, 2015 at 04:24:22PM +0530, Ananth N Mavinakayanahalli wrote:
+> There is a potential gain to be had with a direct
+> jump instead of a breakpoint, but the caveats need to be traded off
+> with the complexity it brings in.
+> 
+> For now, mark OPTPROBES na for powerpc.
 
-We're working on addressing all the feedback received to date (you've just =
-added
-a bit more) then we'll re-submit the FMan driver together with the DPAA Eth=
-ernet
-driver. A push in the public git is also going to take place after the patc=
-hes are sent
-for review.
+If we haven't yet investigated whether this feature is something beneficial
+to the powerpc kernel, it should just stay as TODO, not be marked as n/a.
 
-Madalin
+
+Segher
