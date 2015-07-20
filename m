@@ -2,8 +2,8 @@ Return-Path: <wangyijing@huawei.com>
 Received: from lhrrgout.huawei.com (lhrrgout.huawei.com [194.213.3.17])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 25FD21A094B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:10:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4DBD1A2BF1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 22:10:36 +1000 (AEST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
 CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
@@ -20,9 +20,12 @@ CC: <linux-pci@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
  Liviu Dudau <liviu@dudau.co.uk>, Arnd Bergmann <arnd@arndb.de>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Yijing Wang
  <wangyijing@huawei.com>
-Subject: [PATCH part3 v12 00/10] Cleanup platform pci_domain_nr()
-Date: Mon, 20 Jul 2015 20:01:08 +0800
-Message-ID: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH part3 v12 10/10] IA64/PCI: Fix build warning found by kbuild
+ test
+Date: Mon, 20 Jul 2015 20:01:18 +0800
+Message-ID: <1437393678-4077-11-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
+References: <1437393678-4077-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,85 +37,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series is splitted out from previous patchset
-"Refine PCI scan interfaces and make generic pci host bridge".
-It try to clean up all platform pci_domain_nr(), save domain
-in pci_host_bridge, so we could get domain number from the
-common interface. 
+Kbuild test robot found we passed a pci_dev * to
+pci_domain_nr(). In old IA64 specific pci_domain_nr()
+It was macro defines:
 
-v11->v12:
-  Introduce wrap function pci_create_root_bus_generic()
-  and pci_create_root_bus_generic() for arm/arm64 which
-  enable CONFIG_PCI_DOMAINS_GENERIC.
-  Rebased this series based 4.2-rc1
+#define PCI_CONTROLLER(busdev) ((struct pci_controller *) busdev->sysdata)
+#define pci_domain_nr(busdev)    (PCI_CONTROLLER(busdev)->segment)
 
-Yijing Wang (10):
-  PCI: Save domain in pci_host_bridge
-  PCI: Move pci_bus_assign_domain_nr() declaration into
-    drivers/pci/pci.h
-  PCI: Remove declaration for pci_get_new_domain_nr()
-  PCI: Introduce pci_host_assign_domain_nr() to assign domain
-  powerpc/PCI: Rename pcibios_root_bridge_prepare() to
-    pcibios_root_bus_prepare()
-  PCI: Make pci_host_bridge hold sysdata in drvdata
-  PCI: Create pci host bridge prior to root bus
-  PCI: Introduce common pci_domain_nr() and remove platform specific
-    code
-  PCI: Remove pci_bus_assign_domain_nr()
-  IA64/PCI: Fix build warning found by kbuild test
+Both pci_dev * and pci_bus * have opaque sysdata, so IA64 specific
+pci_domain_nr() could get the pci_controller and return the exact
+domain number, but now we use common pci_domain_nr() functions, so we
+should fix this warning.
 
- arch/alpha/include/asm/pci.h             |    2 -
- arch/alpha/kernel/pci.c                  |    4 +-
- arch/alpha/kernel/sys_nautilus.c         |    2 +-
- arch/arm/kernel/bios32.c                 |    2 +-
- arch/arm/mach-dove/pcie.c                |    2 +-
- arch/arm/mach-iop13xx/pci.c              |    4 +-
- arch/arm/mach-mv78xx0/pcie.c             |    2 +-
- arch/arm/mach-orion5x/pci.c              |    4 +-
- arch/frv/mb93090-mb00/pci-vdk.c          |    3 +-
- arch/ia64/include/asm/pci.h              |    1 -
- arch/ia64/pci/pci.c                      |    6 +-
- arch/ia64/sn/kernel/io_acpi_init.c       |    6 +-
- arch/ia64/sn/kernel/io_init.c            |    6 +-
- arch/m68k/coldfire/pci.c                 |    2 +-
- arch/microblaze/include/asm/pci.h        |    2 -
- arch/microblaze/pci/pci-common.c         |   15 +----
- arch/mips/include/asm/pci.h              |    2 -
- arch/mips/pci/pci.c                      |    4 +-
- arch/mn10300/unit-asb2305/pci.c          |    3 +-
- arch/powerpc/include/asm/machdep.h       |    2 +-
- arch/powerpc/include/asm/pci.h           |    2 -
- arch/powerpc/kernel/pci-common.c         |   21 ++-----
- arch/powerpc/platforms/pseries/pci.c     |    2 +-
- arch/powerpc/platforms/pseries/pseries.h |    2 +-
- arch/powerpc/platforms/pseries/setup.c   |    2 +-
- arch/s390/include/asm/pci.h              |    1 -
- arch/s390/pci/pci.c                      |   10 +---
- arch/sh/drivers/pci/pci.c                |    4 +-
- arch/sh/include/asm/pci.h                |    2 -
- arch/sparc/include/asm/pci_64.h          |    1 -
- arch/sparc/kernel/leon_pci.c             |    2 +-
- arch/sparc/kernel/pci.c                  |   21 +------
- arch/sparc/kernel/pcic.c                 |    2 +-
- arch/tile/include/asm/pci.h              |    2 -
- arch/tile/kernel/pci.c                   |    4 +-
- arch/tile/kernel/pci_gx.c                |    4 +-
- arch/unicore32/kernel/pci.c              |    2 +-
- arch/x86/include/asm/pci.h               |    6 --
- arch/x86/pci/acpi.c                      |    6 +-
- arch/x86/pci/common.c                    |    2 +-
- arch/xtensa/kernel/pci.c                 |    2 +-
- drivers/parisc/dino.c                    |    2 +-
- drivers/parisc/lba_pci.c                 |    2 +-
- drivers/pci/host/pci-versatile.c         |    3 +-
- drivers/pci/host/pci-xgene.c             |    2 +-
- drivers/pci/host/pcie-designware.c       |    2 +-
- drivers/pci/host/pcie-iproc.c            |    2 +-
- drivers/pci/host/pcie-xilinx.c           |    2 +-
- drivers/pci/hotplug/ibmphp_core.c        |    2 +-
- drivers/pci/pci.c                        |   31 ++++++++--
- drivers/pci/pci.h                        |    1 +
- drivers/pci/probe.c                      |   92 +++++++++++++++++-------------
- drivers/pci/xen-pcifront.c               |    2 +-
- include/linux/pci.h                      |   39 ++++++-------
- 54 files changed, 161 insertions(+), 195 deletions(-)
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+---
+ arch/ia64/sn/kernel/io_acpi_init.c |    6 +++---
+ arch/ia64/sn/kernel/io_init.c      |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/ia64/sn/kernel/io_acpi_init.c b/arch/ia64/sn/kernel/io_acpi_init.c
+index 0640739..2fd7414 100644
+--- a/arch/ia64/sn/kernel/io_acpi_init.c
++++ b/arch/ia64/sn/kernel/io_acpi_init.c
+@@ -364,12 +364,12 @@ sn_acpi_get_pcidev_info(struct pci_dev *dev, struct pcidev_info **pcidev_info,
+         status = acpi_evaluate_integer(rootbus_handle, METHOD_NAME__SEG, NULL,
+                                        &segment);
+         if (ACPI_SUCCESS(status)) {
+-		if (segment != pci_domain_nr(dev)) {
++		if (segment != pci_domain_nr(dev->bus)) {
+ 			acpi_get_name(rootbus_handle, ACPI_FULL_PATHNAME,
+ 				&name_buffer);
+ 			printk(KERN_ERR
+ 			       "%s: Segment number mismatch, 0x%llx vs 0x%x for: %s\n",
+-			       __func__, segment, pci_domain_nr(dev),
++			       __func__, segment, pci_domain_nr(dev->bus),
+ 			       (char *)name_buffer.pointer);
+ 			kfree(name_buffer.pointer);
+ 			return 1;
+@@ -407,7 +407,7 @@ sn_acpi_get_pcidev_info(struct pci_dev *dev, struct pcidev_info **pcidev_info,
+ 	/* Build up the pcidev_info.pdi_slot_host_handle */
+ 	host_devfn = get_host_devfn(pcidev_match.handle, rootbus_handle);
+ 	(*pcidev_info)->pdi_slot_host_handle =
+-			((unsigned long) pci_domain_nr(dev) << 40) |
++			((unsigned long) pci_domain_nr(dev->bus) << 40) |
+ 					/* bus == 0 */
+ 					host_devfn;
+ 	return 0;
+diff --git a/arch/ia64/sn/kernel/io_init.c b/arch/ia64/sn/kernel/io_init.c
+index d528814..0bdab82 100644
+--- a/arch/ia64/sn/kernel/io_init.c
++++ b/arch/ia64/sn/kernel/io_init.c
+@@ -164,7 +164,7 @@ sn_io_slot_fixup(struct pci_dev *dev)
+ 		panic("%s: Unable to alloc memory for sn_irq_info", __func__);
+ 
+ 	/* Call to retrieve pci device information needed by kernel. */
+-	status = sal_get_pcidev_info((u64) pci_domain_nr(dev),
++	status = sal_get_pcidev_info((u64) pci_domain_nr(dev->bus),
+ 		(u64) dev->bus->number,
+ 		dev->devfn,
+ 		(u64) __pa(pcidev_info),
+-- 
+1.7.1
