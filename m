@@ -1,29 +1,23 @@
-Return-Path: <jacek.anaszewski@gmail.com>
-Received: from mail-wg0-x244.google.com (mail-wg0-x244.google.com
- [IPv6:2a00:1450:400c:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0131.outbound.protection.outlook.com [207.46.100.131])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D7A81A05B9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 16:18:09 +1000 (AEST)
-Received: by wgjf7 with SMTP id f7so1067067wgj.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jul 2015 23:18:05 -0700 (PDT)
-Message-ID: <55AC9244.5010407@gmail.com>
-Date: Mon, 20 Jul 2015 08:16:36 +0200
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 01E9A1A094B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 16:33:55 +1000 (AEST)
+From: Lu Y.B. <yangbo.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2] powerpc/dts: Add and fix 1588 timer node for eTSEC
+Date: Mon, 20 Jul 2015 06:33:48 +0000
+Message-ID: <BY1PR0301MB1192CF8FD2B38A36A2A9BFD5F2850@BY1PR0301MB1192.namprd03.prod.outlook.com>
+References: <1430969347-13869-1-git-send-email-yangbo.lu@freescale.com>
+ <BY1PR0301MB11921FFFBC88E7ABD81D2E27F2990@BY1PR0301MB1192.namprd03.prod.outlook.com>
+ <1437079112.2993.127.camel@freescale.com>
+In-Reply-To: <1437079112.2993.127.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-CC: Jacek Anaszewski <j.anaszewski@samsung.com>,
- linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- stewart@linux.vnet.ibm.com, arnd@arndb.de, cooloney@gmail.com,
- rpurdie@rpsys.net, khandual@linux.vnet.ibm.com, mpe@ellerman.id.au,
- benh@kernel.crashing.org
-Subject: Re: [PATCH v6 3/3] leds/powernv: Add driver for PowerNV platform
-References: <1437129671-14078-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
- <1437129671-14078-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
- <55A91E67.6010200@samsung.com> <55A92B44.6020502@linux.vnet.ibm.com>
- <55AC193B.9060005@gmail.com>
-In-Reply-To: <55AC193B.9060005@gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19.07.2015 23:40, Jacek Anaszewski wrote:
-[...]
->>>> +/* Platform driver probe */
->>>> +static int powernv_led_probe(struct platform_device *pdev)
->>>> +{
->>>> +    int num_leds;
->>>> +    struct device_node *led_node;
->>>> +    struct powernv_leds_priv *priv;
->>>> +
->>>> +    led_node = of_find_node_by_path("/ibm,opal/leds");
->>>> +    if (!led_node) {
->>>> +        dev_err(&pdev->dev,
->>>> +            "%s: LED parent device node not found\n", __func__);
->>>> +        return -EINVAL;
->>>> +    }
->>>> +
->>>> +    num_leds = powernv_leds_count(led_node);
->>>> +    if (num_leds <= 0) {
->>>> +        dev_err(&pdev->dev,
->>>> +            "%s: No location code found under LED node\n",
->>>> +            __func__);
->>>> +        return -EINVAL;
->>>> +    }
->
-> You won't need to count the number of LEDs to register, just allocate
-> memory for each LED during parsing with managed resource allocation
-> API.
-
-You can refer to drivers/leds/leds-bcm6328.c in order to gain
-full picture on how this can look like.
-struct powernv_led_data would have to carry the pointer to the
-new common struct.
-
--- 
-Best Regards,
-Jacek Anaszewski
+PiBPbiBXZWQsIDIwMTUtMDctMTUgYXQgMjE6MzcgLTA1MDAsIEx1IFlhbmdiby1CNDcwOTMgd3Jv
+dGU6DQo+ID4gQW55IGNvbW1lbnRzPw0KPiA+IFRoYW5rcy4NCj4gDQo+IFNvcnJ5LCBJIG11c3Qg
+aGF2ZSBtaXNzZWQgdGhpcyBvbiBteSBsYXN0IHRpbWUgdGhyb3VnaCB0aGUgcGF0Y2ggcXVldWUu
+DQo+IEkgc2VlIHlvdSd2ZSBkZWNpbWFsaXplZCB0aGUgZmlwZXIgYW5kIG1heC1hZGogcHJvcGVy
+dGllcywgd2hpY2ggaXMNCj4gZ29vZC4uLiBidXQgZG9lcyBpdCByZWFsbHkgbWFrZSBzZW5zZSBm
+b3IgdG1yLWFkZD8gIEknbSBub3QgZmFtaWxpYXIgd2l0aA0KPiB3aGF0IHRoaXMgdmFsdWUgcmVw
+cmVzZW50cywgYnV0IHRoZSBudW1iZXJzIGxvb2sgbW9yZSBuYXR1cmFsIGFzIGhleCAoZS5nLg0K
+PiAweGFhYWFhYWFiIHZlcnN1cyAyODYzMzExNTMxKS4NCg0KWWVzLCB0aGUgZmlwZXIgdmFsdWUg
+d291bGQgYmUgd3JpdGVkIGludG8gZmlwZXIgcmVnaXN0ZXJzLiBBbmQgbWF4LWFkaiB2YWx1ZSB3
+b3VsZCBiZSB1c2VkIGluIHB0cCBkcml2ZXIgaW4gZHJpdmVyL3B0cC8uDQpCdXQgeW91IGluc2lz
+dGVkIHRoYXQgdmFsdWVzIHNob3VsZCBiZSBpbiBkZWNpbWFsaXNtIGluIHRoZSB2MSBwYXRjaC4u
+LiA6KQ0KDQpTZWUgdGhlIGhpc3RvcnkgOikNCg0KIyMjIyMjIyMjIyMjIyMjIyMgaGlzdG9yeSAj
+IyMjIyMjIyMjIyMjIyMjIyMNCj4gPiArCXB0cF9jbG9ja0BiMGUwMCB7DQo+ID4gKwkJY29tcGF0
+aWJsZSA9ICJmc2wsZXRzZWMtcHRwIjsNCj4gPiArCQlyZWcgPSA8MHhiMGUwMCAweGIwPjsNCj4g
+PiArCQlpbnRlcnJ1cHRzID0gPDY4IDIgMCAwIDY5IDIgMCAwPjsNCj4gPiArCQlmc2wsdGNsay1w
+ZXJpb2QJPSA8NT47DQo+ID4gKwkJZnNsLHRtci1wcnNjCT0gPDI+Ow0KPiA+ICsJCWZzbCx0bXIt
+YWRkCT0gPDB4Y2NjY2NjY2Q+Ow0KPiA+ICsJCWZzbCx0bXItZmlwZXIxCT0gPDB4M2I5YWM5ZmI+
+Ow0KPiA+ICsJCWZzbCx0bXItZmlwZXIyCT0gPDB4MDAwMTg2OTY+Ow0KPiA+ICsJCWZzbCxtYXgt
+YWRqCT0gPDI0OTk5OTk5OT47DQo+IA0KPiBQbGVhc2UgZG9uJ3QgdXNlIGhleCBmb3IgbnVtYmVy
+cyB0aGF0IG1ha2UgbW9yZSBzZW5zZSBhcyBkZWNpbWFsLg0KPiBbTHUgWWFuZ2JvLUI0NzA5M10g
+VGhlIGhleCB2YWx1ZSBpcyByZWdpc3RlciB2YWx1ZSwgSSB0aGluayBpdCdzIGJldHRlciB0byB1
+c2UgaGV4Lg0KDQpXaGV0aGVyIGl0IGdvZXMgaW50byBhIHJlZ2lzdGVyIGRvZXNuJ3QgbWF0dGVy
+LiAgSGV4IHZhbHVlcyBhcmUgdXNlZnVsIGZvciB2YWx1ZXMgd2hpY2ggYXJlIHN1YmRpdmlkZWQg
+aW50byB2YXJpb3VzIGJpdGZpZWxkcywgb3Igd2hvc2UgaGV4IHJlcHJlc2VudGF0aW9uIGlzIHNp
+bXBsZXIgdGhhbiBkZWNpbWFsLiAgSSdtIG5vdCBmYW1pbGlhciB3aXRoIHRoZSBkZXRhaWxzIG9m
+IHRoaXMgaGFyZHdhcmUsIGJ1dCBJIGRvdWJ0IHRoZSBmb3JtZXIgaXMgdGhlIGNhc2UgZm9yIDB4
+M2I5YWM5ZmIgPT0gOTk5OTk5OTk5NSBvciAweDE4Njk2ID09IDk5OTkwLg0KDQotU2NvdHQNCiMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjDQoNCg0KPiANCj4gPiA+IGRpZmYg
+LS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDIwMjByZGItcGMuZHRzaQ0KPiA+ID4gYi9h
+cmNoL3Bvd2VycGMvYm9vdC9kdHMvcDIwMjByZGItcGMuZHRzaQ0KPiA+ID4gaW5kZXggYzIxZDFj
+Ny4uMzYzMTcyZCAxMDA2NDQNCj4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9wMjAy
+MHJkYi1wYy5kdHNpDQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDIwMjByZGIt
+cGMuZHRzaQ0KPiA+ID4gQEAgLTIxNSwxMiArMjE1LDEyIEBADQo+ID4gPiAgICAgfTsNCj4gPiA+
+DQo+ID4gPiAgICAgIHB0cF9jbG9ja0AyNGUwMHsNCj4gPiA+IC0gICAgICAgICAgIGZzbCx0Y2xr
+LXBlcmlvZCA9IDw1PjsNCj4gPiA+IC0gICAgICAgICAgIGZzbCx0bXItcHJzYyA9IDwyMDA+Ow0K
+PiA+ID4gLSAgICAgICAgICAgZnNsLHRtci1hZGQgPSA8MHhDQ0NDQ0NDRD47DQo+ID4gPiAtICAg
+ICAgICAgICBmc2wsdG1yLWZpcGVyMSA9IDwweDNCOUFDOUZCPjsNCj4gPiA+IC0gICAgICAgICAg
+IGZzbCx0bXItZmlwZXIyID0gPDB4MDAwMTg2OUI+Ow0KPiA+ID4gLSAgICAgICAgICAgZnNsLG1h
+eC1hZGogPSA8MjQ5OTk5OTk5PjsNCj4gPiA+ICsgICAgICAgICAgIGZzbCx0Y2xrLXBlcmlvZCA9
+IDw1PjsNCj4gPiA+ICsgICAgICAgICAgIGZzbCx0bXItcHJzYyAgICA9IDwyPjsNCj4gPiA+ICsg
+ICAgICAgICAgIGZzbCx0bXItYWRkICAgICA9IDwyODYzMzExNTMxPjsNCj4gPiA+ICsgICAgICAg
+ICAgIGZzbCx0bXItZmlwZXIxICA9IDw5OTk5OTk5OTU+Ow0KPiA+ID4gKyAgICAgICAgICAgZnNs
+LHRtci1maXBlcjIgID0gPDk5OTkwPjsNCj4gPiA+ICsgICAgICAgICAgIGZzbCxtYXgtYWRqICAg
+ICA9IDwyOTk5OTk5OTk+Ow0KPiA+ID4gICAgIH07DQo+IA0KPiBBbmQgaGVyZSwgeW91J3JlIGNo
+YW5naW5nIHRoZSB2YWx1ZSBvZiBmc2wsdG1yLWFkZCBhbmQgZnNsLG1heC1hZGouICBXaHk/DQoN
+ClRoZSBvbGQgdmFsdWVzIG1heWJlIG5vdCBjYWxjdWxhdGVkIGJhc2Ugb24gdGhlIGRlZmF1bHQg
+ZVRTRUMgc3lzdGVtIGNsb2NrIHZhbHVlLg0KMTU4OCB0aW1lciBjb3VsZG7igJl0IGJlIGFkanVz
+dGVkIGNvcnJlY3RseSBieSBvbGQgdmFsdWVzLg0KDQo+IA0KPiAtU2NvdHQNCg0K
