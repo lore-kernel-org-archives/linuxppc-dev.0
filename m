@@ -1,41 +1,41 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 537E61A02B5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 02:56:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE8C21A094B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 04:44:30 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Tue, 21 Jul 2015 02:56:34 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CAE312BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 02:56:30 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6KGuL2L65339644
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 02:56:30 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6KGtvTS008169
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 02:55:57 +1000
-Message-ID: <55AD2809.6050007@linux.vnet.ibm.com>
-Date: Mon, 20 Jul 2015 22:25:37 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 20 Jul 2015 14:44:26 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 38B3CC90041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 14:35:31 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6KIiOBh59179076
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 18:44:24 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6KIiOlM019983
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 14:44:24 -0400
+Date: Mon, 20 Jul 2015 11:43:13 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>
+Subject: Re: [PATCH v5 0/7]powerpc/powernv: Nest Instrumentation support
+Message-ID: <20150720184312.GA11548@us.ibm.com>
+References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-CC: Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, stewart@linux.vnet.ibm.com,
- arnd@arndb.de, cooloney@gmail.com, rpurdie@rpsys.net,
- khandual@linux.vnet.ibm.com, mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: Re: [PATCH v6 3/3] leds/powernv: Add driver for PowerNV platform
-References: <1437129671-14078-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
- <1437129671-14078-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
- <55A91E67.6010200@samsung.com> <55A92B44.6020502@linux.vnet.ibm.com>
- <55AC193B.9060005@gmail.com> <55AC9244.5010407@gmail.com>
-In-Reply-To: <55AC9244.5010407@gmail.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,45 +45,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/20/2015 11:46 AM, Jacek Anaszewski wrote:
-> On 19.07.2015 23:40, Jacek Anaszewski wrote:
-> [...]
->>>>> +/* Platform driver probe */
->>>>> +static int powernv_led_probe(struct platform_device *pdev)
->>>>> +{
->>>>> +    int num_leds;
->>>>> +    struct device_node *led_node;
->>>>> +    struct powernv_leds_priv *priv;
->>>>> +
->>>>> +    led_node = of_find_node_by_path("/ibm,opal/leds");
->>>>> +    if (!led_node) {
->>>>> +        dev_err(&pdev->dev,
->>>>> +            "%s: LED parent device node not found\n", __func__);
->>>>> +        return -EINVAL;
->>>>> +    }
->>>>> +
->>>>> +    num_leds = powernv_leds_count(led_node);
->>>>> +    if (num_leds <= 0) {
->>>>> +        dev_err(&pdev->dev,
->>>>> +            "%s: No location code found under LED node\n",
->>>>> +            __func__);
->>>>> +        return -EINVAL;
->>>>> +    }
->>
->> You won't need to count the number of LEDs to register, just allocate
->> memory for each LED during parsing with managed resource allocation
->> API.
+Madhavan Srinivasan [maddy@linux.vnet.ibm.com] wrote:
+| This patchset enables Nest Instrumentation support on powerpc.
+| POWER8 has per-chip Nest Intrumentation which provides various
+| per-chip metrics like memory, powerbus, Xlink and Alink
+| bandwidth.
+| 
+<snip>
 
-Jacek,
+| Cc: Michael Ellerman <mpe@ellerman.id.au>
+| Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+| Cc: Paul Mackerras <paulus@samba.org>
+| Cc: Anton Blanchard <anton@samba.org>
+| Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+| Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+| Cc: Stephane Eranian <eranian@google.com>
+| Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-> 
-> You can refer to drivers/leds/leds-bcm6328.c in order to gain
-> full picture on how this can look like.
-> struct powernv_led_data would have to carry the pointer to the
-> new common struct.
-> 
+Thanks for addressing my comments from earlier version.
 
-Sure.. Will though this code and will fix powernv code..
-
-Thanks
--Vasant
+Reviewed-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
