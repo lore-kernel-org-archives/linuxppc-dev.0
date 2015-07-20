@@ -1,20 +1,36 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 490721A0763
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:42:25 +1000 (AEST)
-Message-ID: <1437360145.6255.37.camel@neuling.org>
-Subject: Re: [PATCH] cxl: Remove use of macro DEFINE_PCI_DEVICE_TABLE
-From: Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2F571A09AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:47:00 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Mon, 20 Jul 2015 12:47:00 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0925F2BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:46:59 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6K2koOP61604090
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:46:58 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6K2kQla000575
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:46:26 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
 To: Vaishali Thakkar <vthakkar1994@gmail.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Date: Mon, 20 Jul 2015 12:42:25 +1000
-In-Reply-To: <20150719172352.GA14386@vaishali-Ideapad-Z570>
+Cc: Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cxl: Remove use of macro DEFINE_PCI_DEVICE_TABLE
+In-reply-to: <20150719172352.GA14386@vaishali-Ideapad-Z570>
 References: <20150719172352.GA14386@vaishali-Ideapad-Z570>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Date: Mon, 20 Jul 2015 12:46:01 +1000
+Message-Id: <1437360352-sup-4396@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,45 +40,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-07-19 at 22:53 +0530, Vaishali Thakkar wrote:
-> Macro DEFINE_PCI_DEVICE_TABLE is deprecated. So, here use
-> struct pci_device_id instead of DEFINE_PCI_DEVICE_TABLE with
-> the goal of getting rid of this macro completely.
->=20
-> The Coccinelle semantic patch that performs this transformation
-> is as follows:
->=20
-> @@
-> identifier a;
-> declarer name DEFINE_PCI_DEVICE_TABLE;
-> initializer i;
-> @@
-> - DEFINE_PCI_DEVICE_TABLE(a)
-> + const struct pci_device_id a[]
-> =3D i;
->=20
-> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
-
-Looks good, thanks!
-
-Acked-by: Michael Neuling <mikey@neuling.org>
-
-
-> ---
->  drivers/misc/cxl/pci.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 32ad097..3ed0621 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -133,7 +133,7 @@ u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 =
-off)
->  	return (val >> ((off & 0x3) * 8)) & 0xff;
->  }
-> =20
-> -static DEFINE_PCI_DEVICE_TABLE(cxl_pci_tbl) =3D {
-> +static const struct pci_device_id cxl_pci_tbl[] =3D {
->  	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x0477), },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x044b), },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, 0x04cf), },
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
