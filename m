@@ -1,20 +1,29 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0134.outbound.protection.outlook.com [207.46.100.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <jacek.anaszewski@gmail.com>
+Received: from mail-wi0-x242.google.com (mail-wi0-x242.google.com
+ [IPv6:2a00:1450:400c:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D1DB1A1BE3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 19:50:38 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
- <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>
-CC: Yangbo Lu <yangbo.lu@freescale.com>
-Subject: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240 incorrect
- HOSTVER value
-Date: Tue, 21 Jul 2015 17:45:37 +0800
-Message-ID: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 131CD1A01C8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 19:57:25 +1000 (AEST)
+Received: by wicmm11 with SMTP id mm11so2236862wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 02:57:21 -0700 (PDT)
+Message-ID: <55AE1723.6040806@gmail.com>
+Date: Tue, 21 Jul 2015 11:55:47 +0200
+From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+CC: stewart@linux.vnet.ibm.com, arnd@arndb.de, cooloney@gmail.com,
+ rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org,
+ Jacek Anaszewski <j.anaszewski@samsung.com>,
+ linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v6 3/3] leds/powernv: Add driver for PowerNV platform
+References: <1437129671-14078-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1437129671-14078-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <55A91E67.6010200@samsung.com> <55A92B44.6020502@linux.vnet.ibm.com>
+ <55AC193B.9060005@gmail.com> <55ADDE92.5040902@linux.vnet.ibm.com>
+ <55ADECD2.4010802@linux.vnet.ibm.com>
+In-Reply-To: <55ADECD2.4010802@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,80 +33,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For T4240-R1.0-R2.0, the HOSTVER register has incorrcet vender
-version value and sdhc spec version value. This will break down
-the ADMA data transfer. So add workaround to get right value
-VVN=0x13, SVN = 0x1.
+Vasant,
 
-Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
----
- drivers/mmc/host/sdhci-esdhc.h    |  5 +++++
- drivers/mmc/host/sdhci-of-esdhc.c | 18 ++++++++++++++++++
- 2 files changed, 23 insertions(+)
+On 21.07.2015 08:55, Vasant Hegde wrote:
+> On 07/21/2015 11:24 AM, Vasant Hegde wrote:
+>> On 07/20/2015 03:10 AM, Jacek Anaszewski wrote:
+>>> Hi Vasant,
+>>>
+>>
+>> Jacek,
+>>
+>>> I've revised your patch and found few more issues.
+>>> Please refer to my comments below.
+>>
+>> Thanks.
+>>
+>> .../...
+>>
+>>>>>
+>>>>> Please don't exceed 75 character line length limit.
+>>>>
+>>>> Ok. I will fix it.. But I thought 80 character is the limit.
+>>>
+>>> checkpatch.pl reports this.
+>>
+>> Ah! I was running checkpatch.pl against source. Let me fix this.
+>> .../...
+>>
+>>>>>> +/*
+>>>>>> + * LED set routines have been implemented as work queue tasks scheduled
+>>>>>> + * on the global work queue. Individual task calls OPAL interface to set
+>>>>>> + * the LED state which might sleep for some time.
+>>>>>> + */
+>>>>>> +struct powernv_led_data {
+>>>>>> +    struct led_classdev    cdev;
+>>>>>> +    char            *loc_code;    /* LED location code */
+>>>>>> +    int            led_type;    /* OPAL_SLOT_LED_TYPE_* */
+>>>>>> +    enum led_brightness    value;        /* Brightness value */
+>>>>>> +    struct mutex        lock;
+>>>
+>>> You're unnecessarily adding mutex for each LED class device.
+>>> The shared resource to protect is here powernv led interface,
+>>> so one mutex will suffice.
+>>
+>>
+>> Ok. Let me move that to common structure.
+>>
+>>>
+>>>
+>>>>>> +    struct work_struct    work_led;    /* LED update workqueue */
+>>>>>> +};
+>>>>>> +
+>>>>>> +struct powernv_leds_priv {
+>>>>>> +    int num_leds;
+>>>>>> +    struct powernv_led_data powernv_leds[];
+>>>>>> +};
+>>>
+>>> powernv_led_data doesn't have to be retained in the array. You access
+>>> the array elements only upon creation of LED class devices. When using
+>>> managed resource allocation you don't need to bother with freeing
+>>> resources, so you don't need to keep reference to the data.
+>>>
+>>> I propose to drop struct powernv_leds_priv and instead introduce
+>>> a structure that would aggregate common driver data like mutex,
+>>> led_disable and max_led_type.
+>>
+>> I still think we need two structures.. One for common driver data like mutex,
+>> led_disable etc and other one for led data itself .. like
+>> 	struct powernv_led_data {
+>> 		struct led_classdev     cdev;
+>> 		char                    *loc_code;     <-- pointer to DT node
+>> 		int                     led_type;       /* OPAL_SLOT_LED_TYPE_* */
+>> 		enum led_brightness     value;          /* Brightness value */
+>> 	};
+>>
+>> 	struct powernv_led_common {
+>> 		bool led_disable;
+>> 		int 	max_led_type;
+>> 		struct mutex            lock;
+>> 	};
+>
+> Jacek,
+>
+> Alternatively I can club both into single structure like below
+>
+>   	struct powernv_led_data {
+>   		struct led_classdev     cdev;
+>   		char                    *loc_code;     <-- pointer to DT node
+>   		int                     led_type;       /* OPAL_SLOT_LED_TYPE_* */
+>   		enum led_brightness     value;          /* Brightness value */
+>
+>   		int 		*max_led_type;
+>   		struct mutex            *lock;
+>   	};
+>
+> 	static  bool 	led_disable;
+>
+>
+> In this case I've to keep led_disable outside the structure as I need to access
+> this variable in powernv_led_remove().
 
-diff --git a/drivers/mmc/host/sdhci-esdhc.h b/drivers/mmc/host/sdhci-esdhc.h
-index 3497cfa..5174233 100644
---- a/drivers/mmc/host/sdhci-esdhc.h
-+++ b/drivers/mmc/host/sdhci-esdhc.h
-@@ -47,4 +47,9 @@
- 
- #define ESDHC_HOST_CONTROL_RES	0x05
- 
-+unsigned int esdhc_errata;
-+
-+/* Incorrect host version in T4240 HOSTVER register */
-+#define ESDHC_ERRATA_T4240_ERROR_HOSTVER		(1<<0)
-+
- #endif /* _DRIVERS_MMC_SDHCI_ESDHC_H */
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 1295a96..c0ad765 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -59,6 +59,11 @@ static u16 esdhc_readw(struct sdhci_host *host, int reg)
- 		ret = in_be32(host->ioaddr + base) & 0xffff;
- 	else
- 		ret = (in_be32(host->ioaddr + base) >> shift) & 0xffff;
-+
-+	if ((reg == SDHCI_HOST_VERSION) &&
-+			(esdhc_errata & ESDHC_ERRATA_T4240_ERROR_HOSTVER))
-+		ret = (VENDOR_V_23 << SDHCI_VENDOR_VER_SHIFT) | SDHCI_SPEC_200;
-+
- 	return ret;
- }
- 
-@@ -352,6 +357,9 @@ static void esdhc_get_property(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
- 	struct sdhci_host *host = platform_get_drvdata(pdev);
-+	struct device_node *cpus;
-+	const u32 *prop;
-+	u8 rev = 0xff;
- 
- 	sdhci_get_of_property(pdev);
- 
-@@ -359,6 +367,11 @@ static void esdhc_get_property(struct platform_device *pdev)
- 	mmc_of_parse(host->mmc);
- 	mmc_of_parse_voltage(np, &host->ocr_mask);
- 
-+	cpus = of_find_node_by_path("/cpus");
-+	prop = of_get_property(cpus, "cpu-rev", NULL);
-+	if (prop)
-+		rev = *(u8 *)prop;
-+
- 	if (of_device_is_compatible(np, "fsl,p5040-esdhc") ||
- 	    of_device_is_compatible(np, "fsl,p5020-esdhc") ||
- 	    of_device_is_compatible(np, "fsl,p4080-esdhc") ||
-@@ -373,6 +386,11 @@ static void esdhc_get_property(struct platform_device *pdev)
- 		 */
- 		host->quirks2 |= SDHCI_QUIRK2_BROKEN_HOST_CONTROL;
- 	}
-+
-+	esdhc_errata = 0;
-+
-+	if (of_device_is_compatible(np, "fsl,t4240-esdhc") && rev <= 0x20)
-+		esdhc_errata |= ESDHC_ERRATA_T4240_ERROR_HOSTVER;
- }
- 
- static int sdhci_esdhc_probe(struct platform_device *pdev)
+OK, this looks good to me.
+
+>
+> One remaining issue with these approach (where we don't have array of
+> powernv_led ) is,
+> powernv_let_set() function can sleep. Current code (v6) calls flush_work before
+> unloading
+> module. That way we are sure work is complete before unloading module.
+> With new approach, I'm not sure how I can make sure work is completed before
+> loading module.
+
+led_classdev_unregister calls cancel_work_sync so brightness_set op
+will not be called after driver detach.
+
+ >  Does new workqueue approach has sleep functionality? Is there
+> way to make sure work is completed before
+> unloading module?
+
+It is approached from the other side - we are making sure that
+work will not be executed after driver detach.
+
 -- 
-2.1.0.27.g96db324
+Best Regards,
+Jacek Anaszewski
