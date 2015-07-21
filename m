@@ -1,17 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0139.outbound.protection.outlook.com [157.56.110.139])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 23B391A0072
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 19:46:07 +1000 (AEST)
-In-Reply-To: <1437461926-8908-2-git-send-email-khandual@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org
-Subject: Re: [RFC,
- 2/8] powerpc/slb: Rename all the 'entry' occurrences to 'slot'
-Message-Id: <20150721094606.DBFC7140E10@ozlabs.org>
-Date: Tue, 21 Jul 2015 19:46:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E24521A0072
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 19:49:58 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
+ <linux-mmc@vger.kernel.org>, <ulf.hansson@linaro.org>
+CC: Yangbo Lu <yangbo.lu@freescale.com>
+Subject: [PATCH 1/3] mmc: sdhci-of-esdhc: convert to use esdhc_get_property()
+Date: Tue, 21 Jul 2015 17:44:54 +0800
+Message-ID: <1437471894-34110-1-git-send-email-yangbo.lu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-21-07 at 06:58:40 UTC, Anshuman Khandual wrote:
-> From: "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>
-> 
-> These are essentially SLB individual slots what we are dealing with
-> in these functions. Usage of both 'entry' and 'slot' synonyms makes
-> it real confusing sometimes. This patch makes it uniform across the
-> file by replacing all those 'entry's with 'slot's.
+Move sdhci_get_of_property and other getting property code from
+sdhci_esdhc_probe into esdhc_get_property.
 
-No I think it would be better the other way around.
+Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
+---
+ drivers/mmc/host/sdhci-of-esdhc.c | 31 +++++++++++++++++--------------
+ 1 file changed, 17 insertions(+), 14 deletions(-)
 
-Currently we use entry in 14 places and slot in 3.
-
-Both can be correct in some places, but not always.
-
-For example:
-
-> -	 * Clear the ESID first so the entry is not valid while we are
-> +	 * Clear the ESID first so the slot is not valid while we are
-
-That doesn't make sense with "slot", a slot is not valid, only an entry in a
-slot is valid.
-
-Looking at the existing uses of slot they will all make sense if you change
-them to entry.
-
-cheers
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index 797be75..1295a96 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -348,19 +348,17 @@ static const struct sdhci_pltfm_data sdhci_esdhc_pdata = {
+ 	.ops = &sdhci_esdhc_ops,
+ };
+ 
+-static int sdhci_esdhc_probe(struct platform_device *pdev)
++static void esdhc_get_property(struct platform_device *pdev)
+ {
+-	struct sdhci_host *host;
+-	struct device_node *np;
+-	int ret;
+-
+-	host = sdhci_pltfm_init(pdev, &sdhci_esdhc_pdata, 0);
+-	if (IS_ERR(host))
+-		return PTR_ERR(host);
++	struct device_node *np = pdev->dev.of_node;
++	struct sdhci_host *host = platform_get_drvdata(pdev);
+ 
+ 	sdhci_get_of_property(pdev);
+ 
+-	np = pdev->dev.of_node;
++	/* call to generic mmc_of_parse to support additional capabilities */
++	mmc_of_parse(host->mmc);
++	mmc_of_parse_voltage(np, &host->ocr_mask);
++
+ 	if (of_device_is_compatible(np, "fsl,p5040-esdhc") ||
+ 	    of_device_is_compatible(np, "fsl,p5020-esdhc") ||
+ 	    of_device_is_compatible(np, "fsl,p4080-esdhc") ||
+@@ -375,13 +373,18 @@ static int sdhci_esdhc_probe(struct platform_device *pdev)
+ 		 */
+ 		host->quirks2 |= SDHCI_QUIRK2_BROKEN_HOST_CONTROL;
+ 	}
++}
+ 
+-	/* call to generic mmc_of_parse to support additional capabilities */
+-	ret = mmc_of_parse(host->mmc);
+-	if (ret)
+-		goto err;
++static int sdhci_esdhc_probe(struct platform_device *pdev)
++{
++	struct sdhci_host *host;
++	int ret;
+ 
+-	mmc_of_parse_voltage(np, &host->ocr_mask);
++	host = sdhci_pltfm_init(pdev, &sdhci_esdhc_pdata, 0);
++	if (IS_ERR(host))
++		return PTR_ERR(host);
++
++	esdhc_get_property(pdev);
+ 
+ 	ret = sdhci_add_host(host);
+ 	if (ret)
+-- 
+2.1.0.27.g96db324
