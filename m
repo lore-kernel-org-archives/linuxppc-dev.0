@@ -1,17 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5467A1A01C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 20:21:30 +1000 (AEST)
-In-Reply-To: <1437461926-8908-6-git-send-email-khandual@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org
-Subject: Re: [RFC,
- 6/8] powerpc/prom: Simplify the logic while fetching SLB size
-Message-Id: <20150721102130.37D3B140DF7@ozlabs.org>
-Date: Tue, 21 Jul 2015 20:21:30 +1000 (AEST)
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9223D1A0DFD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 20:26:44 +1000 (AEST)
+Message-ID: <55AE1E5D.5010904@hitachi.com>
+Date: Tue, 21 Jul 2015 19:26:37 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+MIME-Version: 1.0
+To: ananth@in.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] kprobes: Mark OPTPROBES n/a for powerpc
+References: <20150716105639.9151.75671.stgit@thinktux.in.ibm.com>
+ <55AB09BE.5040506@hitachi.com> <1437447187.30722.2.camel@ellerman.id.au>
+ <20150721043416.GA4082@in.ibm.com>
+In-Reply-To: <20150721043416.GA4082@in.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,51 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-21-07 at 06:58:44 UTC, Anshuman Khandual wrote:
-> From: "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>
+On 2015/07/21 13:34, Ananth N Mavinakayanahalli wrote:
+> On Tue, Jul 21, 2015 at 12:53:07PM +1000, Michael Ellerman wrote:
+>> On Sun, 2015-07-19 at 11:21 +0900, Masami Hiramatsu wrote:
+>>> On 2015/07/16 19:56, Ananth N Mavinakayanahalli wrote:
+>>>> Kprobes uses a breakpoint instruction to trap into execution flow
+>>>> and the probed instruction is single-stepped from an alternate location.
+>>>>
+>>>> On some architectures like x86, under certain conditions, the OPTPROBES
+>>>> feature enables replacing the probed instruction with a jump instead,
+>>>> resulting in a significant perfomance boost (one single-step exception
+>>>> is bypassed for each kprobe).
+>>>
+>>> The OPTPROBE is not only for bypassing the single-step exception, but also
+>>> the breakpoint exception.
+>>> Please see commit 0dc016dbd820260b (ARM: kprobes: enable OPTPROBES for ARM 32) too,
+>>> which shows how it is done on RISC processor.
+>>>
+>>>> Powerpc has an in-kernel instruction emulator. Kprobes on powerpc uses
+>>>> this emulator already and bypasses the single-step exception, with a
+>>>> lot less complexity.
+>>>
+>>> So, this might miss the point. Since it is impossible to do on some RISC
+>>> processor, I agree with this change, but it should be committed with
+>>> correct comments.
+>>
+>> I don't think it's impossible on powerpc.
+>>
+>> So we should leave it as a TODO for now.
 > 
-> This patch just simplifies the existing code logic while fetching
-> the SLB size property from the device tree.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/prom.c | 12 +++++-------
->  1 file changed, 5 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 8b888b1..f6168e2 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -223,14 +223,12 @@ static void __init check_cpu_slb_size(unsigned long node)
->  	const __be32 *slb_size_ptr;
->  
->  	slb_size_ptr = of_get_flat_dt_prop(node, "slb-size", NULL);
-> -	if (slb_size_ptr != NULL) {
-> -		mmu_slb_size = be32_to_cpup(slb_size_ptr);
-> -		return;
-> -	}
-> -	slb_size_ptr = of_get_flat_dt_prop(node, "ibm,slb-size", NULL);
-> -	if (slb_size_ptr != NULL) {
-> -		mmu_slb_size = be32_to_cpup(slb_size_ptr);
-> +	if (!slb_size_ptr) {
-> +		slb_size_ptr = of_get_flat_dt_prop(node, "ibm,slb-size", NULL);
-> +		if (!slb_size_ptr)
-> +			return;
->  	}
-> +	mmu_slb_size = be32_to_cpup(slb_size_ptr);
->  }
+> OK. I put it on my TODO list.
 
-It's still ugly. Why not go the whole way:
+I see, thanks Ananth! :)
 
 
-	p = of_get_flat_dt_prop(node, "slb-size", NULL) ? :
-	    of_get_flat_dt_prop(node, "ibm,slb-size", NULL);
-
-	if (p)
-		mmu_slb_size = be32_to_cpup(p);
-
-
-And while you're at it, rename the function, it doesn't check anything. It
-initialises mmu_slb_size, so call it init_mmu_slb_size()?
-
-cheers
+-- 
+Masami HIRAMATSU
+Linux Technology Research Center, System Productivity Research Dept.
+Center for Technology Innovation - Systems Engineering
+Hitachi, Ltd., Research & Development Group
+E-mail: masami.hiramatsu.pt@hitachi.com
