@@ -1,21 +1,17 @@
-Return-Path: <tim.gardner@canonical.com>
-Received: from mail-pd0-f181.google.com (mail-pd0-f181.google.com
- [209.85.192.181])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6FAA51A0072
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 05:02:04 +1000 (AEST)
-Received: by pdbnt7 with SMTP id nt7so34912153pdb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jul 2015 12:02:02 -0700 (PDT)
-From: tim.gardner@canonical.com
-To: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Tim Gardner <tim.gardner@canonical.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 4.2-rc3] macintosh/ans-lcd.c: Missing include causes compile
- failure
-Date: Mon, 20 Jul 2015 13:01:42 -0600
-Message-Id: <1437418902-23324-1-git-send-email-tim.gardner@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 455C71A05FB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 11:37:54 +1000 (AEST)
+In-Reply-To: <1437361123-18615-1-git-send-email-khandual@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mikey@neuling.org
+Subject: Re: [V2] powerpc/signal: Add helper function to fetch quad word
+ aligned pointer
+Message-Id: <20150721013754.0C58A140DDA@ozlabs.org>
+Date: Tue, 21 Jul 2015 11:37:53 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tim Gardner <tim.gardner@canonical.com>
+On Mon, 2015-20-07 at 02:58:43 UTC, Anshuman Khandual wrote:
+> This patch adds one helper function 'sigcontext_vmx_regs' which computes
+> quad word aligned pointer for 'vmx_reserve' array element in sigcontext
+> structure making the code more readable.
+> 
+> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+> index c7c24d2..bb9c939 100644
+> --- a/arch/powerpc/kernel/signal_64.c
+> +++ b/arch/powerpc/kernel/signal_64.c
+> @@ -74,6 +74,16 @@ static const char fmt64[] = KERN_INFO \
+>  	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
+>  
+>  /*
+> + * This computes quad word aligned pointer for 'vmx_reserve' array element
+> + * which is used primarily in assigning to the preceding pointer 'v_regs'
+> + * in sigcontext structure.
 
-drivers/macintosh/ans-lcd.c:201:1: warning: data definition has no type or storage class
- module_init(anslcd_init);
- ^
-drivers/macintosh/ans-lcd.c:201:1: error: type defaults to 'int' in declaration of 'module_init' [-Werror=implicit-int]
+How about:
 
-gcc version 4.9.3 (Ubuntu 4.9.3-1ubuntu1)
+  * This computes a quad word aligned pointer inside the vmx_reserve array
+  * element. For historical reasons sigcontext might not be quad word aligned,
+  * but the location we write the VMX regs to must be. See the comment in
+  * sigcontext for more detail.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
----
 
-This is a compile regression from v4.2-rc2
+> + */
+> +static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
+> +{
+> +	return (elf_vrreg_t __user *) (((unsigned long)sc->vmx_reserve + 15) & ~0xful);
+> +}
 
- drivers/macintosh/ans-lcd.c | 1 +
- 1 file changed, 1 insertion(+)
+This doesn't build for ppc64e_defconfig:
 
-diff --git a/drivers/macintosh/ans-lcd.c b/drivers/macintosh/ans-lcd.c
-index 1a57e88..36a0047 100644
---- a/drivers/macintosh/ans-lcd.c
-+++ b/drivers/macintosh/ans-lcd.c
-@@ -5,6 +5,7 @@
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/miscdevice.h>
- #include <linux/fcntl.h>
- #include <linux/init.h>
--- 
-1.9.1
+  arch/powerpc/kernel/signal_64.c:82:28: error: 'sigcontext_vmx_regs' defined but not used [-Werror=unused-function]
+   static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
+                            ^
+
+For now I'll just #ifdef it.
+
+Please do a test build of ppc64e_defconfig in future.
+
+cheers
