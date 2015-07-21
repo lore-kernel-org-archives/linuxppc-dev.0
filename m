@@ -1,35 +1,21 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2DD71A0877
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 05:14:48 +1000 (AEST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 21 Jul 2015 13:14:46 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 152C11FF0043
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 13:05:52 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6LJDqgs49545248
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 12:13:52 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6LJEejE017572
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 13:14:41 -0600
-Message-ID: <55AE9A1E.5020002@linux.vnet.ibm.com>
-Date: Tue, 21 Jul 2015 14:14:38 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [3/6] pseries: Update CPU hotplug error recovery
-References: <20150721044649.A4DD8140DF7@ozlabs.org>
-In-Reply-To: <20150721044649.A4DD8140DF7@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id 644181A19E7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 05:59:44 +1000 (AEST)
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric B Munson <emunson@akamai.com>, Shuah Khan <shuahkh@osg.samsung.com>,
+ Michal Hocko <mhocko@suse.cz>, Michael Kerrisk <mtk.manpages@gmail.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Jonathan Corbet <corbet@lwn.net>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: [PATCH V4 0/6] Allow user to request memory to be locked on page fault
+Date: Tue, 21 Jul 2015 15:59:35 -0400
+Message-Id: <1437508781-28655-1-git-send-email-emunson@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,124 +25,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/20/2015 11:46 PM, Michael Ellerman wrote:
-> On Mon, 2015-22-06 at 20:59:20 UTC, Nathan Fontenot wrote:
->> Update the cpu dlpar add/remove paths to do better error recovery when 
->> a failure occurs during the add/remove operation. This includes adding
->> some pr_info and pr_debug statements.
-> 
-> So I'm happy with the idea there, but ..
-> 
->> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> index f58d902..7890b2f 100644
->> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> @@ -18,6 +18,8 @@
->>   *      2 of the License, or (at your option) any later version.
->>   */
->>  
->> +#define pr_fmt(fmt)     "pseries-hotplug-cpu: " fmt
-> 
-> This is good.
-> 
->>  #include <linux/kernel.h>
->>  #include <linux/interrupt.h>
->>  #include <linux/delay.h>
->> @@ -386,22 +388,35 @@ static ssize_t dlpar_cpu_add(struct device_node *parent, u32 drc_index)
->>  	struct device_node *dn;
->>  	int rc;
->>  
->> +	pr_info("Attempting to add CPU, drc index %x\n", drc_index);
->> +
->>  	rc = dlpar_acquire_drc(drc_index);
->>  	if (rc)
->>  		return -EINVAL;
->>  
->>  	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
->> -	if (!dn)
->> +	if (!dn) {
->> +		pr_debug("Failed call to configure-connector\n");
->> +		dlpar_release_drc(drc_index);
->>  		return -EINVAL;
->> +	}
->>  
->>  	rc = dlpar_attach_node(dn);
->>  	if (rc) {
->> +		pr_debug("Failed to attach node (%d)\n", rc);
->>  		dlpar_release_drc(drc_index);
->>  		dlpar_free_cc_nodes(dn);
->>  		return rc;
->>  	}
->>  
->>  	rc = dlpar_online_cpu(dn);
->> +	if (rc) {
->> +		pr_debug("Failed to online cpu (%d)\n", rc);
->> +		dlpar_detach_node(dn);
->> +		dlpar_release_drc(drc_index);
->> +	}
->> +
->> +	pr_info("Successfully added CPU, drc index %x\n", drc_index);
->>  	return rc;
-> 
-> 
-> But this is the opposite of what we want.
-> 
-> By default this will print two info lines for each successful cpu hotplug, but
-> when we get an error nothing will be printed - because pr_debug() is off by
-> default. What's worse, if dlpar_online_cpu() fails, the pr_debug() will produce
-> nothing but we will *still* print "Successfully added CPU".
-> 
-> So the pr_info()s should go entirely and the pr_debugs() should become
-> pr_warns(). The warning messages should become more verbose so they stand on
-> their own, ie. include the drc_index.
-> 
-> When everything goes perfectly there should be no output.
->
+mlock() allows a user to control page out of program memory, but this
+comes at the cost of faulting in the entire mapping when it is
+allocated.  For large mappings where the entire area is not necessary
+this is not ideal.  Instead of forcing all locked pages to be present
+when they are allocated, this set creates a middle ground.  Pages are
+marked to be placed on the unevictable LRU (locked) when they are first
+used, but they are not faulted in by the mlock call.
 
-So... good idea, bad implementation :)
+This series introduces a new mlock() system call that takes a flags
+argument along with the start address and size.  This flags argument
+gives the caller the ability to request memory be locked in the
+traditional way, or to be locked after the page is faulted in.  New
+calls are added for munlock() and munlockall() which give the called a
+way to specify which flags are supposed to be cleared.  A new MCL flag
+is added to mirror the lock on fault behavior from mlock() in
+mlockall().  Finally, a flag for mmap() is added that allows a user to
+specify that the covered are should not be paged out, but only after the
+memory has been used the first time.
 
-I have a feeling I may have messed this up somewhere else in the patch set too
-so I'll take a look at all the pr_* calls.
- 
-> 
->> @@ -465,18 +480,29 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->>  {
->>  	int rc;
->>  
->> +	pr_info("Attemping to remove CPU, drc index %x\n", drc_index);
->> +
->>  	rc = dlpar_offline_cpu(dn);
->> -	if (rc)
->> +	if (rc) {
->> +		pr_debug("Failed top offline cpu (%d)\n", rc);
->                                    ^
-> 				   should be to
-> 
->>  		return -EINVAL;
->> +	}
->>  
->>  	rc = dlpar_release_drc(drc_index);
->> -	if (rc)
->> +	if (rc) {
->> +		pr_debug("Failed to release drc (%d)\n", rc);
->> +		dlpar_online_cpu(dn);
->>  		return rc;
->> +	}
->>  
->>  	rc = dlpar_detach_node(dn);
->> -	if (rc)
->> +	if (rc) {
->> +		pr_debug("Failed to detach cpu node (%d)\n", rc);
->>  		dlpar_acquire_drc(drc_index);
-> 
-> But that can fail?
-> 
->> +		dlpar_online_cpu(dn);
-> 
-> And if it did this would presumably not be safe?
+There are two main use cases that this set covers.  The first is the
+security focussed mlock case.  A buffer is needed that cannot be written
+to swap.  The maximum size is known, but on average the memory used is
+significantly less than this maximum.  With lock on fault, the buffer
+is guaranteed to never be paged out without consuming the maximum size
+every time such a buffer is created.
 
-Ahh, good catch. I'll fix in the next version of patches.
+The second use case is focussed on performance.  Portions of a large
+file are needed and we want to keep the used portions in memory once
+accessed.  This is the case for large graphical models where the path
+through the graph is not known until run time.  The entire graph is
+unlikely to be used in a given invocation, but once a node has been
+used it needs to stay resident for further processing.  Given these
+constraints we have a number of options.  We can potentially waste a
+large amount of memory by mlocking the entire region (this can also
+cause a significant stall at startup as the entire file is read in).
+We can mlock every page as we access them without tracking if the page
+is already resident but this introduces large overhead for each access.
+The third option is mapping the entire region with PROT_NONE and using
+a signal handler for SIGSEGV to mprotect(PROT_READ) and mlock() the
+needed page.  Doing this page at a time adds a significant performance
+penalty.  Batching can be used to mitigate this overhead, but in order
+to safely avoid trying to mprotect pages outside of the mapping, the
+boundaries of each mapping to be used in this way must be tracked and
+available to the signal handler.  This is precisely what the mm system
+in the kernel should already be doing.
 
-Thanks for the review.
+For mlock(MLOCK_ONFAULT) and mmap(MAP_LOCKONFAULT) the user is charged
+against RLIMIT_MEMLOCK as if mlock(MLOCK_LOCKED) or mmap(MAP_LOCKED) was
+used, so when the VMA is created not when the pages are faulted in.  For
+mlockall(MCL_ONFAULT) the user is charged as if MCL_FUTURE was used.
+This decision was made to keep the accounting checks out of the page
+fault path.
 
--Nathan
+To illustrate the benefit of this set I wrote a test program that mmaps
+a 5 GB file filled with random data and then makes 15,000,000 accesses
+to random addresses in that mapping.  The test program was run 20 times
+for each setup.  Results are reported for two program portions, setup
+and execution.  The setup phase is calling mmap and optionally mlock on
+the entire region.  For most experiments this is trivial, but it
+highlights the cost of faulting in the entire region.  Results are
+averages across the 20 runs in milliseconds.
+
+mmap with mlock(MLOCK_LOCKED) on entire range:
+Setup avg:      8228.666
+Processing avg: 8274.257
+
+mmap with mlock(MLOCK_LOCKED) before each access:
+Setup avg:      0.113
+Processing avg: 90993.552
+
+mmap with PROT_NONE and signal handler and batch size of 1 page:
+With the default value in max_map_count, this gets ENOMEM as I attempt
+to change the permissions, after upping the sysctl significantly I get:
+Setup avg:      0.058
+Processing avg: 69488.073
+
+mmap with PROT_NONE and signal handler and batch size of 8 pages:
+Setup avg:      0.068
+Processing avg: 38204.116
+
+mmap with PROT_NONE and signal handler and batch size of 16 pages:
+Setup avg:      0.044
+Processing avg: 29671.180
+
+mmap with mlock(MLOCK_ONFAULT) on entire range:
+Setup avg:      0.189
+Processing avg: 17904.899
+
+The signal handler in the batch cases faulted in memory in two steps to
+avoid having to know the start and end of the faulting mapping.  The
+first step covers the page that caused the fault as we know that it will
+be possible to lock.  The second step speculatively tries to mlock and
+mprotect the batch size - 1 pages that follow.  There may be a clever
+way to avoid this without having the program track each mapping to be
+covered by this handeler in a globally accessible structure, but I could
+not find it.  It should be noted that with a large enough batch size
+this two step fault handler can still cause the program to crash if it
+reaches far beyond the end of the mapping.
+
+These results show that if the developer knows that a majority of the
+mapping will be used, it is better to try and fault it in at once,
+otherwise MAP_LOCKONFAULT is significantly faster.
+
+The performance cost of these patches are minimal on the two benchmarks
+I have tested (stream and kernbench).  The following are the average
+values across 20 runs of stream and 10 runs of kernbench after a warmup
+run whose results were discarded.
+
+Avg throughput in MB/s from stream using 1000000 element arrays
+Test     4.2-rc1      4.2-rc1+lock-on-fault
+Copy:    10,566.5     10,421
+Scale:   10,685       10,503.5
+Add:     12,044.1     11,814.2
+Triad:   12,064.8     11,846.3
+
+Kernbench optimal load
+                 4.2-rc1  4.2-rc1+lock-on-fault
+Elapsed Time     78.453   78.991
+User Time        64.2395  65.2355
+System Time      9.7335   9.7085
+Context Switches 22211.5  22412.1
+Sleeps           14965.3  14956.1
+
+---
+Changes from V3:
+Ensure that pages present when mlock2(MLOCK_ONFAULT) is called are locked
+Ensure that VM_LOCKONFAULT is handled in cases that used to only check VM_LOCKED
+Add tests for new system calls
+Add missing syscall entries, fix NR_syscalls on multiple arch's
+Add missing MAP_LOCKONFAULT for tile
+
+Changes from V2:
+Added new system calls for mlock, munlock, and munlockall with added
+flags arguments for controlling how memory is locked or unlocked.
+
+Eric B Munson (6):
+  mm: mlock: Refactor mlock, munlock, and munlockall code
+  mm: mlock: Add new mlock, munlock, and munlockall system calls
+  mm: gup: Add mm_lock_present()
+  mm: mlock: Introduce VM_LOCKONFAULT and add mlock flags to enable it
+  mm: mmap: Add mmap flag to request VM_LOCKONFAULT
+  selftests: vm: Add tests for lock on fault
+
+ arch/alpha/include/asm/unistd.h             |   2 +-
+ arch/alpha/include/uapi/asm/mman.h          |   5 +
+ arch/alpha/include/uapi/asm/unistd.h        |   3 +
+ arch/alpha/kernel/systbls.S                 |   3 +
+ arch/arm/include/asm/unistd.h               |   2 +-
+ arch/arm/include/uapi/asm/unistd.h          |   3 +
+ arch/arm/kernel/calls.S                     |   3 +
+ arch/arm64/include/asm/unistd32.h           |   6 +
+ arch/avr32/include/uapi/asm/unistd.h        |   3 +
+ arch/avr32/kernel/syscall_table.S           |   3 +
+ arch/blackfin/include/uapi/asm/unistd.h     |   3 +
+ arch/blackfin/mach-common/entry.S           |   3 +
+ arch/cris/arch-v10/kernel/entry.S           |   3 +
+ arch/cris/arch-v32/kernel/entry.S           |   3 +
+ arch/frv/kernel/entry.S                     |   3 +
+ arch/ia64/include/asm/unistd.h              |   2 +-
+ arch/ia64/include/uapi/asm/unistd.h         |   3 +
+ arch/ia64/kernel/entry.S                    |   3 +
+ arch/m32r/kernel/entry.S                    |   3 +
+ arch/m32r/kernel/syscall_table.S            |   3 +
+ arch/m68k/include/asm/unistd.h              |   2 +-
+ arch/m68k/include/uapi/asm/unistd.h         |   3 +
+ arch/m68k/kernel/syscalltable.S             |   3 +
+ arch/microblaze/include/uapi/asm/unistd.h   |   3 +
+ arch/microblaze/kernel/syscall_table.S      |   3 +
+ arch/mips/include/uapi/asm/mman.h           |   8 +
+ arch/mips/include/uapi/asm/unistd.h         |  21 +-
+ arch/mips/kernel/scall32-o32.S              |   3 +
+ arch/mips/kernel/scall64-64.S               |   3 +
+ arch/mips/kernel/scall64-n32.S              |   3 +
+ arch/mips/kernel/scall64-o32.S              |   3 +
+ arch/mn10300/kernel/entry.S                 |   3 +
+ arch/parisc/include/uapi/asm/mman.h         |   5 +
+ arch/parisc/include/uapi/asm/unistd.h       |   5 +-
+ arch/powerpc/include/uapi/asm/mman.h        |   5 +
+ arch/powerpc/include/uapi/asm/unistd.h      |   3 +
+ arch/s390/include/uapi/asm/unistd.h         |   5 +-
+ arch/s390/kernel/compat_wrapper.c           |   3 +
+ arch/s390/kernel/syscalls.S                 |   3 +
+ arch/sh/kernel/syscalls_32.S                |   3 +
+ arch/sparc/include/uapi/asm/mman.h          |   5 +
+ arch/sparc/include/uapi/asm/unistd.h        |   5 +-
+ arch/sparc/kernel/systbls_32.S              |   2 +-
+ arch/sparc/kernel/systbls_64.S              |   4 +-
+ arch/tile/include/uapi/asm/mman.h           |   9 +
+ arch/x86/entry/syscalls/syscall_32.tbl      |   3 +
+ arch/x86/entry/syscalls/syscall_64.tbl      |   3 +
+ arch/xtensa/include/uapi/asm/mman.h         |   8 +
+ arch/xtensa/include/uapi/asm/unistd.h       |  10 +-
+ drivers/gpu/drm/drm_vm.c                    |   8 +-
+ fs/proc/task_mmu.c                          |   3 +-
+ include/linux/mm.h                          |   2 +
+ include/linux/mman.h                        |   3 +-
+ include/linux/syscalls.h                    |   4 +
+ include/uapi/asm-generic/mman.h             |   5 +
+ include/uapi/asm-generic/unistd.h           |   8 +-
+ kernel/events/core.c                        |   2 +
+ kernel/events/uprobes.c                     |   2 +-
+ kernel/fork.c                               |   2 +-
+ kernel/sys_ni.c                             |   3 +
+ mm/debug.c                                  |   1 +
+ mm/gup.c                                    | 175 +++++++-
+ mm/huge_memory.c                            |   3 +-
+ mm/hugetlb.c                                |   4 +-
+ mm/internal.h                               |   5 +-
+ mm/ksm.c                                    |   2 +-
+ mm/madvise.c                                |   4 +-
+ mm/memory.c                                 |   5 +-
+ mm/mlock.c                                  | 159 +++++--
+ mm/mmap.c                                   |  32 +-
+ mm/mremap.c                                 |   6 +-
+ mm/msync.c                                  |   2 +-
+ mm/rmap.c                                   |  12 +-
+ mm/shmem.c                                  |   2 +-
+ mm/swap.c                                   |   3 +-
+ mm/vmscan.c                                 |   2 +-
+ tools/testing/selftests/vm/Makefile         |   3 +
+ tools/testing/selftests/vm/lock-on-fault.c  | 344 +++++++++++++++
+ tools/testing/selftests/vm/mlock2-tests.c   | 621 ++++++++++++++++++++++++++++
+ tools/testing/selftests/vm/on-fault-limit.c |  47 +++
+ tools/testing/selftests/vm/run_vmtests      |  33 ++
+ 81 files changed, 1604 insertions(+), 104 deletions(-)
+ create mode 100644 tools/testing/selftests/vm/lock-on-fault.c
+ create mode 100644 tools/testing/selftests/vm/mlock2-tests.c
+ create mode 100644 tools/testing/selftests/vm/on-fault-limit.c
+
+Cc: Shuah Khan <shuahkh@osg.samsung.com>
+Cc: Michal Hocko <mhocko@suse.cz>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-xtensa@linux-xtensa.org
+Cc: linux-mm@kvack.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-api@vger.kernel.org
+
+-- 
+1.9.1
