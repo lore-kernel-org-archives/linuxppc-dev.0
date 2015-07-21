@@ -1,25 +1,20 @@
-Return-Path: <robinmholt@gmail.com>
-Received: from mail-ie0-x22d.google.com (mail-ie0-x22d.google.com
- [IPv6:2607:f8b0:4001:c03::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chris.j.arges@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B6FA41A19C1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 00:14:42 +1000 (AEST)
-Received: by iecri3 with SMTP id ri3so48284533iec.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 07:14:40 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
-References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
-Date: Tue, 21 Jul 2015 09:14:40 -0500
-Message-ID: <CAPp3RGryq96pEErEw8x=UV_=xsZS4ACD15uAEaOVT5CgcLzzEQ@mail.gmail.com>
-Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
-From: Robin Holt <robinmholt@gmail.com>
-To: Vlastimil Babka <vbabka@suse.cz>
-Cc: linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux.com>,
- Cliff Whickman <cpw@sgi.com>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0309D1A09A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 01:32:47 +1000 (AEST)
+From: Chris J Arges <chris.j.arges@canonical.com>
+To: pshelar@nicira.com
+Cc: linuxppc-dev@lists.ozlabs.org, nacc@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, linux-numa@vger.kernel.org,
+ Chris J Arges <chris.j.arges@canonical.com>,
+ "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+ dev@openvswitch.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] openvswitch: make for_each_node loops work with sparse numa
+ systems
+Date: Tue, 21 Jul 2015 10:32:34 -0500
+Message-Id: <1437492756-22777-1-git-send-email-chris.j.arges@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +24,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 21, 2015 at 8:55 AM, Vlastimil Babka <vbabka@suse.cz> wrote:
-> The function alloc_pages_exact_node() was introduced in 6484eb3e2a81 ("page
-> allocator: do not check NUMA node ID when the caller knows the node is valid")
-> as an optimized variant of alloc_pages_node(), that doesn't allow the node id
-> to be -1. Unfortunately the name of the function can easily suggest that the
-> allocation is restricted to the given node. In truth, the node is only
-> preferred, unless __GFP_THISNODE is among the gfp flags.
->
-...
-> Cc: Robin Holt <robinmholt@gmail.com>
+Some architectures like POWER can have a NUMA node_possible_map that
+contains sparse entries. This causes memory corruption with openvswitch
+since it allocates flow_cache with a multiple of num_possible_nodes() and
+assumes the node variable returned by for_each_node will index into
+flow->stats[node].
 
-Acked-by: Robin Holt <robinmholt@gmail.com>
+For example, if node_possible_map is 0x30003, this patch will map node to
+node_cnt as follows:
+    0,1,16,17 => 0,1,2,3
+
+The crash was noticed after 3af229f2 was applied as it changed the
+node_possible_map to match node_online_map on boot.
+Fixes: 3af229f2071f5b5cb31664be6109561fbe19c861
+
+Signed-off-by: Chris J Arges <chris.j.arges@canonical.com>
+---
+ net/openvswitch/flow.c       | 10 ++++++----
+ net/openvswitch/flow_table.c | 18 +++++++++++-------
+ 2 files changed, 17 insertions(+), 11 deletions(-)
+
+diff --git a/net/openvswitch/flow.c b/net/openvswitch/flow.c
+index bc7b0ab..425d45d 100644
+--- a/net/openvswitch/flow.c
++++ b/net/openvswitch/flow.c
+@@ -134,14 +134,14 @@ void ovs_flow_stats_get(const struct sw_flow *flow,
+ 			struct ovs_flow_stats *ovs_stats,
+ 			unsigned long *used, __be16 *tcp_flags)
+ {
+-	int node;
++	int node, node_cnt = 0;
+ 
+ 	*used = 0;
+ 	*tcp_flags = 0;
+ 	memset(ovs_stats, 0, sizeof(*ovs_stats));
+ 
+ 	for_each_node(node) {
+-		struct flow_stats *stats = rcu_dereference_ovsl(flow->stats[node]);
++		struct flow_stats *stats = rcu_dereference_ovsl(flow->stats[node_cnt]);
+ 
+ 		if (stats) {
+ 			/* Local CPU may write on non-local stats, so we must
+@@ -155,16 +155,17 @@ void ovs_flow_stats_get(const struct sw_flow *flow,
+ 			ovs_stats->n_bytes += stats->byte_count;
+ 			spin_unlock_bh(&stats->lock);
+ 		}
++		node_cnt++;
+ 	}
+ }
+ 
+ /* Called with ovs_mutex. */
+ void ovs_flow_stats_clear(struct sw_flow *flow)
+ {
+-	int node;
++	int node, node_cnt = 0;
+ 
+ 	for_each_node(node) {
+-		struct flow_stats *stats = ovsl_dereference(flow->stats[node]);
++		struct flow_stats *stats = ovsl_dereference(flow->stats[node_cnt]);
+ 
+ 		if (stats) {
+ 			spin_lock_bh(&stats->lock);
+@@ -174,6 +175,7 @@ void ovs_flow_stats_clear(struct sw_flow *flow)
+ 			stats->tcp_flags = 0;
+ 			spin_unlock_bh(&stats->lock);
+ 		}
++		node_cnt++;
+ 	}
+ }
+ 
+diff --git a/net/openvswitch/flow_table.c b/net/openvswitch/flow_table.c
+index 4613df8..5d10c54 100644
+--- a/net/openvswitch/flow_table.c
++++ b/net/openvswitch/flow_table.c
+@@ -77,7 +77,7 @@ struct sw_flow *ovs_flow_alloc(void)
+ {
+ 	struct sw_flow *flow;
+ 	struct flow_stats *stats;
+-	int node;
++	int node, node_cnt = 0;
+ 
+ 	flow = kmem_cache_alloc(flow_cache, GFP_KERNEL);
+ 	if (!flow)
+@@ -99,9 +99,11 @@ struct sw_flow *ovs_flow_alloc(void)
+ 
+ 	RCU_INIT_POINTER(flow->stats[0], stats);
+ 
+-	for_each_node(node)
++	for_each_node(node) {
+ 		if (node != 0)
+-			RCU_INIT_POINTER(flow->stats[node], NULL);
++			RCU_INIT_POINTER(flow->stats[node_cnt], NULL);
++		node_cnt++;
++	}
+ 
+ 	return flow;
+ err:
+@@ -139,15 +141,17 @@ static struct flex_array *alloc_buckets(unsigned int n_buckets)
+ 
+ static void flow_free(struct sw_flow *flow)
+ {
+-	int node;
++	int node, node_cnt = 0;
+ 
+ 	if (ovs_identifier_is_key(&flow->id))
+ 		kfree(flow->id.unmasked_key);
+ 	kfree((struct sw_flow_actions __force *)flow->sf_acts);
+-	for_each_node(node)
+-		if (flow->stats[node])
++	for_each_node(node) {
++		if (flow->stats[node_cnt])
+ 			kmem_cache_free(flow_stats_cache,
+-					(struct flow_stats __force *)flow->stats[node]);
++					(struct flow_stats __force *)flow->stats[node_cnt]);
++		node_cnt++;
++	}
+ 	kmem_cache_free(flow_cache, flow);
+ }
+ 
+-- 
+1.9.1
