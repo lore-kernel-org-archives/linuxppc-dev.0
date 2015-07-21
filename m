@@ -1,17 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 455C71A05FB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 11:37:54 +1000 (AEST)
-In-Reply-To: <1437361123-18615-1-git-send-email-khandual@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org
-Subject: Re: [V2] powerpc/signal: Add helper function to fetch quad word
- aligned pointer
-Message-Id: <20150721013754.0C58A140DDA@ozlabs.org>
-Date: Tue, 21 Jul 2015 11:37:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACFE91A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 12:45:59 +1000 (AEST)
+Date: Tue, 21 Jul 2015 12:45:54 +1000
+From: Anton Blanchard <anton@samba.org>
+To: "Ian Munsie" <imunsie@au1.ibm.com>, Benjamin Herrenschmidt
+ <benh@au1.ibm.com>
+Cc: "sonal.santan" <sonal.santan@xilinx.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>, Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>,
+ Jeremy Kerr <jk@ozlabs.org>, Michael Neuling <michael.neuling@au1.ibm.com>
+Subject: Re: [PATCH] Fix crash due to processing "memory-controller" nodes
+ as "memory"
+Message-ID: <20150721124554.332dd228@kryten>
+In-Reply-To: <1437380450-25555-1-git-send-email-imunsie@au.ibm.com>
+References: <1437380450-25555-1-git-send-email-imunsie@au.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,45 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-20-07 at 02:58:43 UTC, Anshuman Khandual wrote:
-> This patch adds one helper function 'sigcontext_vmx_regs' which computes
-> quad word aligned pointer for 'vmx_reserve' array element in sigcontext
-> structure making the code more readable.
+Hi Ian,
+
+> From: Ian Munsie <imunsie@au1.ibm.com>
 > 
-> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-> index c7c24d2..bb9c939 100644
-> --- a/arch/powerpc/kernel/signal_64.c
-> +++ b/arch/powerpc/kernel/signal_64.c
-> @@ -74,6 +74,16 @@ static const char fmt64[] = KERN_INFO \
->  	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
+> If the system has a PCI device with a memory-controller device node,
+> kexec-lite would spew hundreds of double free warnings and eventually
+> segfault. This would result in a "kexec load failed" message from
+> petitboot.
+> 
+> This was due to kexec_memory_map() searching for "memory" nodes, but
+> actually matching any node that started with "memory", including these
+> "memory-controller" nodes. This patch changes the search to look for
+> nodes starting with "memory@", which should only match memory nodes.
+
+Nice catch! I wonder if we should be checking for device_type
+"memory". Ben?
+
+Anton
+
+> An example of a device tree that can trigger this bug is as follows:
+> 
+> {
+> 	pciex@3fffe40000000 {
+> 		...
+> 		pci@0 {
+> 			#address-cells = <0x3>;
+> 			#size-cells = <0x2>;
+> 			...
+> 			memory-controller@0 {
+> 				reg = <0x10000 0x0 0x0 0x0 0x0>;
+> 				...
+> 			};
+> 		};
+> 	};
+> };
+> 
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> ---
+>  kexec_memory_map.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/kexec_memory_map.c b/kexec_memory_map.c
+> index fc1b7af..7f18de7 100644
+> --- a/kexec_memory_map.c
+> +++ b/kexec_memory_map.c
+> @@ -192,7 +192,7 @@ void kexec_memory_map(void *fdt, int
+> reserve_initrd) 
+>  		name = fdt_get_name(fdt, nodeoffset, NULL);
 >  
->  /*
-> + * This computes quad word aligned pointer for 'vmx_reserve' array element
-> + * which is used primarily in assigning to the preceding pointer 'v_regs'
-> + * in sigcontext structure.
-
-How about:
-
-  * This computes a quad word aligned pointer inside the vmx_reserve array
-  * element. For historical reasons sigcontext might not be quad word aligned,
-  * but the location we write the VMX regs to must be. See the comment in
-  * sigcontext for more detail.
-
-
-> + */
-> +static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
-> +{
-> +	return (elf_vrreg_t __user *) (((unsigned long)sc->vmx_reserve + 15) & ~0xful);
-> +}
-
-This doesn't build for ppc64e_defconfig:
-
-  arch/powerpc/kernel/signal_64.c:82:28: error: 'sigcontext_vmx_regs' defined but not used [-Werror=unused-function]
-   static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
-                            ^
-
-For now I'll just #ifdef it.
-
-Please do a test build of ppc64e_defconfig in future.
-
-cheers
+> -		if (!name || strncmp(name, "memory",
+> strlen("memory")))
+> +		if (!name || strncmp(name, "memory@",
+> strlen("memory@"))) continue;
+>  
+>  		reg = fdt_getprop(fdt, nodeoffset, "reg", &len);
