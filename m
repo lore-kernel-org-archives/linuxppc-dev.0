@@ -1,42 +1,26 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Zumeng.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95F031A1E1A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 08:04:37 +1000 (AEST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 21 Jul 2015 16:04:35 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5819B3E40041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 16:04:32 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6LM4WRH48627938
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 15:04:32 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6LM4VaV019456
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 16:04:32 -0600
-Date: Tue, 21 Jul 2015 15:04:30 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Chris J Arges <chris.j.arges@canonical.com>
-Cc: pshelar@nicira.com, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, linux-numa@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
- dev@openvswitch.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] openvswitch: make for_each_node loops work with sparse
- numa systems
-Message-ID: <20150721220430.GC29402@linux.vnet.ibm.com>
-References: <1437492756-22777-1-git-send-email-chris.j.arges@canonical.com>
- <20150721162418.GM38815@linux.vnet.ibm.com>
- <20150721163058.GA8589@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43A7A1A05E3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 09:00:38 +1000 (AEST)
+Message-ID: <55AECF03.80407@windriver.com>
+Date: Wed, 22 Jul 2015 07:00:19 +0800
+From: czm <zumeng.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150721163058.GA8589@canonical.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+CC: Zumeng Chen <zumeng.chen@gmail.com>, <linux-kernel@vger.kernel.org>,
+ <paulus@samba.org>, <imunsie@au1.ibm.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <romeo.cane.ext@coriant.com>,
+ Anton Blanchard <anton@samba.org>
+Subject: Re: BUG: perf error on syscalls for powerpc64.
+References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>	
+ <1437037461.15828.2.camel@ellerman.id.au>	
+ <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>	
+ <1437106043.29389.5.camel@ellerman.id.au> <55A89280.8090705@windriver.com>
+ <1437460821.30722.11.camel@ellerman.id.au>
+In-Reply-To: <1437460821.30722.11.camel@ellerman.id.au>
+Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,46 +30,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21.07.2015 [11:30:58 -0500], Chris J Arges wrote:
-> On Tue, Jul 21, 2015 at 09:24:18AM -0700, Nishanth Aravamudan wrote:
-> > On 21.07.2015 [10:32:34 -0500], Chris J Arges wrote:
-> > > Some architectures like POWER can have a NUMA node_possible_map that
-> > > contains sparse entries. This causes memory corruption with openvswitch
-> > > since it allocates flow_cache with a multiple of num_possible_nodes() and
-> > 
-> > Couldn't this also be fixed by just allocationg with a multiple of
-> > nr_node_ids (which seems to have been the original intent all along)?
-> > You could then make your stats array be sparse or not.
-> > 
-> 
-> Yea originally this is what I did, but I thought it would be wasting memory.
-> 
-> > > assumes the node variable returned by for_each_node will index into
-> > > flow->stats[node].
-> > > 
-> > > For example, if node_possible_map is 0x30003, this patch will map node to
-> > > node_cnt as follows:
-> > >     0,1,16,17 => 0,1,2,3
-> > > 
-> > > The crash was noticed after 3af229f2 was applied as it changed the
-> > > node_possible_map to match node_online_map on boot.
-> > > Fixes: 3af229f2071f5b5cb31664be6109561fbe19c861
-> > 
-> > My concern with this version of the fix is that you're relying on,
-> > implicitly, the order of for_each_node's iteration corresponding to the
-> > entries in stats 1:1. But what about node hotplug? It seems better to
-> > have the enumeration of the stats array match the topology accurately,
-> > rather, or to maintain some sort of internal map in the OVS code between
-> > the NUMA node and the entry in the stats array?
-> > 
-> > I'm willing to be convinced otherwise, though :)
-> > 
-> > -Nish
-> >
-> 
-> Nish,
-> 
-> The method I described should work for hotplug since it's using possible map
-> which AFAIK is static rather than the online map. 
+在 2015年07月21日 14:40, Michael Ellerman 写道:
+> On Fri, 2015-07-17 at 13:28 +0800, Zumeng Chen wrote:
+>> On 2015年07月17日 12:07, Michael Ellerman wrote:
+>>> On Fri, 2015-07-17 at 09:27 +0800, Zumeng Chen wrote:
+>>>> On 2015年07月16日 17:04, Michael Ellerman wrote:
+>>>>> On Thu, 2015-07-16 at 13:57 +0800, Zumeng Chen wrote:
+>>>>>> Hi All,
+>>>>>>
+>>>>>> 1028ccf5 did a change for sys_call_table from a pointer to an array of
+>>>>>> unsigned long, I think it's not proper, here is my reason:
+>>>>>>
+>>>>>> sys_call_table defined as a label in assembler should be pointer array
+>>>>>> rather than an array as described in 1028ccf5. If we defined it as an
+>>>>>> array, then arch_syscall_addr will return the address of sys_call_table[],
+>>>>>> actually the content of sys_call_table[] is demanded by arch_syscall_addr.
+>>>>>> so 'perf list' will ignore all syscalls since find_syscall_meta will
+>>>>>> return null
+>>>>>> in init_ftrace_syscalls because of the wrong arch_syscall_addr.
+>>>>>>
+>>>>>> Did I miss something, or Gcc compiler has done something newer ?
+>>>>> Hi Zumeng,
+>>>>>
+>>>>> It works for me with the code as it is in mainline.
+>>>>>
+>>>>> I don't quite follow your explanation, so if you're seeing a bug please send
+>>>>> some information about what you're actually seeing. And include the disassembly
+>>>>> of arch_syscall_addr() and your compiler version etc.
+>>>> Hi Michael,
+>>> Hi Zumeng,
+>>>
+>>>> Yeah, it seems it was not a good explanation, I'll explain more this time:
+>>>>
+>>>> 1. Whatever we exclaim sys_call_table in C level, actually it is a pointer
+>>>>        to sys_call_table rather than sys_call_table self in assemble level.
+>>> No it's not a pointer.
+>> Then what is the second one in the following:
+> It's a function descriptor.
+>
+>> zchen@pek-yocto-build2:$ cat  System.map |grep sys_call_table
+>> c000000000009590 T .sys_call_table  <-----this is a real sys_call_table.
+>> c0000000014e1b48 D sys_call_table  <-----this should be referred by
+>> arch_syscall_addr
+>>
+>> The c0000000014e1b48[0] = c000000000009590
+> That is from 3.14 isn't it?
+>
+> In 3.14 we had in systbl.S:
+>
+>      46 _GLOBAL(sys_call_table)
+>      47 #include <asm/systbl.h>
+>
+> And _GLOBAL was:
+>
+>      46 #define _GLOBAL(name) \
+>      47         .type name,@function; \
+>      48         .globl name; \
+>      49 name:
+>
+>
+> Which means sys_call_table was being declared as a function, which is
+> completely wrong.
+>
+> On big endian when you declare a function "foo" you get two symbols, ".foo" at
+> the address you declare the symbol and "foo" which is somewhere else and
+> contains three pointers, the first of which is to ".foo".
+>
+> So at address "foo" you have a pointer to ".foo", which happens to be what
+> you'd expect if "foo" was a pointer to ".foo".
+>
+> Anton fixed this in 3.16:
+>
+>    https://git.kernel.org/torvalds/c/c857c43b34ec
+>
+>
+> But that had the side-effect of breaking the usage of sys_call_table in C.
 
-Oh you're right, I'm sorry!
+Yeah, good to know, thanks Michael again.
+
+Cheers,
+Zumeng
+
+>
+> cheers
+>
+>
