@@ -1,34 +1,38 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 888661A1A2D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 06:44:44 +1000 (AEST)
-Date: Tue, 21 Jul 2015 13:44:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric B Munson <emunson@akamai.com>
-Cc: Michal Hocko <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>, Heiko
- Carstens <heiko.carstens@de.ibm.com>, Geert Uytterhoeven
- <geert@linux-m68k.org>, Catalin Marinas <catalin.marinas@arm.com>, Stephen
- Rothwell <sfr@canb.auug.org.au>, Guenter Roeck <linux@roeck-us.net>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
- linux-ia64@vger.kernel.org, linux-m68k@vger.kernel.org,
- linux-mips@linux-mips.org, linux-am33-list@redhat.com,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH V4 2/6] mm: mlock: Add new mlock, munlock, and
- munlockall system calls
-Message-Id: <20150721134441.d69e4e1099bd43e56835b3c5@linux-foundation.org>
-In-Reply-To: <1437508781-28655-3-git-send-email-emunson@akamai.com>
-References: <1437508781-28655-1-git-send-email-emunson@akamai.com>
- <1437508781-28655-3-git-send-email-emunson@akamai.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 731CB1A1A37
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 07:31:14 +1000 (AEST)
+Received: by pachj5 with SMTP id hj5so126523825pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 14:31:12 -0700 (PDT)
+Date: Tue, 21 Jul 2015 14:31:09 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Vlastimil Babka <vbabka@suse.cz>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, Mel Gorman <mgorman@suse.de>,
+ Greg Thelen <gthelen@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Cliff Whickman <cpw@sgi.com>,
+ Robin Holt <robinmholt@gmail.com>
+Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
+In-Reply-To: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
+Message-ID: <alpine.DEB.2.10.1507211428160.3833@chino.kir.corp.google.com>
+References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,65 +42,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Jul 2015 15:59:37 -0400 Eric B Munson <emunson@akamai.com> wrote:
+On Tue, 21 Jul 2015, Vlastimil Babka wrote:
 
-> With the refactored mlock code, introduce new system calls for mlock,
-> munlock, and munlockall.  The new calls will allow the user to specify
-> what lock states are being added or cleared.  mlock2 and munlock2 are
-> trivial at the moment, but a follow on patch will add a new mlock state
-> making them useful.
+> The function alloc_pages_exact_node() was introduced in 6484eb3e2a81 ("page
+> allocator: do not check NUMA node ID when the caller knows the node is valid")
+> as an optimized variant of alloc_pages_node(), that doesn't allow the node id
+> to be -1. Unfortunately the name of the function can easily suggest that the
+> allocation is restricted to the given node. In truth, the node is only
+> preferred, unless __GFP_THISNODE is among the gfp flags.
 > 
-> munlock2 addresses a limitation of the current implementation.  If a
-> user calls mlockall(MCL_CURRENT | MCL_FUTURE) and then later decides
-> that MCL_FUTURE should be removed, they would have to call munlockall()
-> followed by mlockall(MCL_CURRENT) which could potentially be very
-> expensive.  The new munlockall2 system call allows a user to simply
-> clear the MCL_FUTURE flag.
+> The misleading name has lead to mistakes in the past, see 5265047ac301 ("mm,
+> thp: really limit transparent hugepage allocation to local node") and
+> b360edb43f8e ("mm, mempolicy: migrate_to_node should only migrate to node").
+> 
+> To prevent further mistakes, this patch renames the function to
+> alloc_pages_prefer_node() and documents it together with alloc_pages_node().
+> 
 
-This is hard.  Maybe we shouldn't have wired up anything other than
-x86.  That's what we usually do with new syscalls.
-
-You appear to have missed
-mm-mlock-add-new-mlock-munlock-and-munlockall-system-calls-fix.patch:
-
---- a/arch/arm64/include/asm/unistd.h~mm-mlock-add-new-mlock-munlock-and-munlockall-system-calls-fix
-+++ a/arch/arm64/include/asm/unistd.h
-@@ -44,7 +44,7 @@
- #define __ARM_NR_compat_cacheflush	(__ARM_NR_COMPAT_BASE+2)
- #define __ARM_NR_compat_set_tls		(__ARM_NR_COMPAT_BASE+5)
- 
--#define __NR_compat_syscalls		388
-+#define __NR_compat_syscalls		391
- #endif
- 
- #define __ARCH_WANT_SYS_CLONE
-
-
-And mm-mlock-add-new-mlock-munlock-and-munlockall-system-calls-fix-2.patch:
-
-
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: mm-mlock-add-new-mlock-munlock-and-munlockall-system-calls-fix-2
-
-can we just remove the s390 bits which cause the breakage?
-I will wire up the syscalls as soon as the patch set gets merged.
-
-Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Eric B Munson <emunson@akamai.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- arch/s390/kernel/syscalls.S |    3 ---
- 1 file changed, 3 deletions(-)
-
-diff -puN arch/s390/kernel/syscalls.S~mm-mlock-add-new-mlock-munlock-and-munlockall-system-calls-fix-2 arch/s390/kernel/syscalls.S
---- a/arch/s390/kernel/syscalls.S~mm-mlock-add-new-mlock-munlock-and-munlockall-system-calls-fix-2
-+++ a/arch/s390/kernel/syscalls.S
-@@ -363,6 +363,3 @@ SYSCALL(sys_bpf,compat_sys_bpf)
- SYSCALL(sys_s390_pci_mmio_write,compat_sys_s390_pci_mmio_write)
- SYSCALL(sys_s390_pci_mmio_read,compat_sys_s390_pci_mmio_read)
- SYSCALL(sys_execveat,compat_sys_execveat)
--SYSCALL(sys_mlock2,compat_sys_mlock2)			/* 355 */
--SYSCALL(sys_munlock2,compat_sys_munlock2)
--SYSCALL(sys_munlockall2,compat_sys_munlockall2)
+alloc_pages_exact_node(), as you said, connotates that the allocation will 
+take place on that node or will fail.  So why not go beyond this patch and 
+actually make alloc_pages_exact_node() set __GFP_THISNODE and then call 
+into a new alloc_pages_prefer_node(), which would be the current 
+alloc_pages_exact_node() implementation, and then fix up the callers?
