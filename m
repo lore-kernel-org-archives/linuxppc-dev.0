@@ -1,23 +1,21 @@
-Return-Path: <anton@samba.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ACFE91A0065
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 12:45:59 +1000 (AEST)
-Date: Tue, 21 Jul 2015 12:45:54 +1000
-From: Anton Blanchard <anton@samba.org>
-To: "Ian Munsie" <imunsie@au1.ibm.com>, Benjamin Herrenschmidt
- <benh@au1.ibm.com>
-Cc: "sonal.santan" <sonal.santan@xilinx.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>,
- Jeremy Kerr <jk@ozlabs.org>, Michael Neuling <michael.neuling@au1.ibm.com>
-Subject: Re: [PATCH] Fix crash due to processing "memory-controller" nodes
- as "memory"
-Message-ID: <20150721124554.332dd228@kryten>
-In-Reply-To: <1437380450-25555-1-git-send-email-imunsie@au.ibm.com>
-References: <1437380450-25555-1-git-send-email-imunsie@au.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A9851A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 12:53:07 +1000 (AEST)
+Message-ID: <1437447187.30722.2.camel@ellerman.id.au>
+Subject: Re: [PATCH] kprobes: Mark OPTPROBES n/a for powerpc
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Tue, 21 Jul 2015 12:53:07 +1000
+In-Reply-To: <55AB09BE.5040506@hitachi.com>
+References: <20150716105639.9151.75671.stgit@thinktux.in.ibm.com>
+ <55AB09BE.5040506@hitachi.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ian,
+On Sun, 2015-07-19 at 11:21 +0900, Masami Hiramatsu wrote:
+> On 2015/07/16 19:56, Ananth N Mavinakayanahalli wrote:
+> > Kprobes uses a breakpoint instruction to trap into execution flow
+> > and the probed instruction is single-stepped from an alternate location.
+> > 
+> > On some architectures like x86, under certain conditions, the OPTPROBES
+> > feature enables replacing the probed instruction with a jump instead,
+> > resulting in a significant perfomance boost (one single-step exception
+> > is bypassed for each kprobe).
+> 
+> The OPTPROBE is not only for bypassing the single-step exception, but also
+> the breakpoint exception.
+> Please see commit 0dc016dbd820260b (ARM: kprobes: enable OPTPROBES for ARM 32) too,
+> which shows how it is done on RISC processor.
+> 
+> > Powerpc has an in-kernel instruction emulator. Kprobes on powerpc uses
+> > this emulator already and bypasses the single-step exception, with a
+> > lot less complexity.
+> 
+> So, this might miss the point. Since it is impossible to do on some RISC
+> processor, I agree with this change, but it should be committed with
+> correct comments.
 
-> From: Ian Munsie <imunsie@au1.ibm.com>
-> 
-> If the system has a PCI device with a memory-controller device node,
-> kexec-lite would spew hundreds of double free warnings and eventually
-> segfault. This would result in a "kexec load failed" message from
-> petitboot.
-> 
-> This was due to kexec_memory_map() searching for "memory" nodes, but
-> actually matching any node that started with "memory", including these
-> "memory-controller" nodes. This patch changes the search to look for
-> nodes starting with "memory@", which should only match memory nodes.
+I don't think it's impossible on powerpc.
 
-Nice catch! I wonder if we should be checking for device_type
-"memory". Ben?
+So we should leave it as a TODO for now.
 
-Anton
-
-> An example of a device tree that can trigger this bug is as follows:
-> 
-> {
-> 	pciex@3fffe40000000 {
-> 		...
-> 		pci@0 {
-> 			#address-cells = <0x3>;
-> 			#size-cells = <0x2>;
-> 			...
-> 			memory-controller@0 {
-> 				reg = <0x10000 0x0 0x0 0x0 0x0>;
-> 				...
-> 			};
-> 		};
-> 	};
-> };
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> ---
->  kexec_memory_map.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kexec_memory_map.c b/kexec_memory_map.c
-> index fc1b7af..7f18de7 100644
-> --- a/kexec_memory_map.c
-> +++ b/kexec_memory_map.c
-> @@ -192,7 +192,7 @@ void kexec_memory_map(void *fdt, int
-> reserve_initrd) 
->  		name = fdt_get_name(fdt, nodeoffset, NULL);
->  
-> -		if (!name || strncmp(name, "memory",
-> strlen("memory")))
-> +		if (!name || strncmp(name, "memory@",
-> strlen("memory@"))) continue;
->  
->  		reg = fdt_getprop(fdt, nodeoffset, "reg", &len);
+cheers
