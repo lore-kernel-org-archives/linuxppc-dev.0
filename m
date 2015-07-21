@@ -1,15 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jacek.anaszewski@gmail.com>
+Received: from mail-wi0-x243.google.com (mail-wi0-x243.google.com
+ [IPv6:2a00:1450:400c:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE1B31A0A23
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 19:27:32 +1000 (AEST)
-In-Reply-To: <55887781.2040709@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [4/6] pseries: Add CPU dlpar remove functionality
-Message-Id: <20150721092732.B800B140E0F@ozlabs.org>
-Date: Tue, 21 Jul 2015 19:27:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 98EF21A0A23
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 19:41:57 +1000 (AEST)
+Received: by wijp15 with SMTP id p15so5915511wij.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 02:41:53 -0700 (PDT)
+Message-ID: <55AE1385.1040303@gmail.com>
+Date: Tue, 21 Jul 2015 11:40:21 +0200
+From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+MIME-Version: 1.0
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+CC: Jacek Anaszewski <j.anaszewski@samsung.com>,
+ linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ stewart@linux.vnet.ibm.com, arnd@arndb.de, cooloney@gmail.com,
+ rpurdie@rpsys.net, khandual@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ benh@kernel.crashing.org
+Subject: Re: [PATCH v6 3/3] leds/powernv: Add driver for PowerNV platform
+References: <1437129671-14078-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1437129671-14078-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <55A91E67.6010200@samsung.com> <55A92B44.6020502@linux.vnet.ibm.com>
+ <55AC193B.9060005@gmail.com> <55ADDE92.5040902@linux.vnet.ibm.com>
+In-Reply-To: <55ADDE92.5040902@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,313 +33,497 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-22-06 at 21:00:49 UTC, Nathan Fontenot wrote:
-> Add the ability to dlpar remove CPUs via hotplug rtas events, either by
-> specifying the drc-index of the CPU to remove or providing a count of cpus 
-> to remove.
-> 
-> To accomplish we create a list of possible dr cpus and their drc indexes
+Hi Vasant,
 
-What does "dr" mean? I know but not everyone does. If it's an acronymn it
-should be uppercase and spelt out at its first usage.
+On 21.07.2015 07:54, Vasant Hegde wrote:
+> On 07/20/2015 03:10 AM, Jacek Anaszewski wrote:
+>> Hi Vasant,
+>>
+>
+> Jacek,
+>
+>> I've revised your patch and found few more issues.
+>> Please refer to my comments below.
+>
+> Thanks.
+>
+> .../...
+>
+>>>>
+>>>> Please don't exceed 75 character line length limit.
+>>>
+>>> Ok. I will fix it.. But I thought 80 character is the limit.
+>>
+>> checkpatch.pl reports this.
+>
+> Ah! I was running checkpatch.pl against source. Let me fix this.
+> .../...
+>
+>>>>> +/*
+>>>>> + * LED set routines have been implemented as work queue tasks scheduled
+>>>>> + * on the global work queue. Individual task calls OPAL interface to set
+>>>>> + * the LED state which might sleep for some time.
+>>>>> + */
+>>>>> +struct powernv_led_data {
+>>>>> +    struct led_classdev    cdev;
+>>>>> +    char            *loc_code;    /* LED location code */
+>>>>> +    int            led_type;    /* OPAL_SLOT_LED_TYPE_* */
+>>>>> +    enum led_brightness    value;        /* Brightness value */
+>>>>> +    struct mutex        lock;
+>>
+>> You're unnecessarily adding mutex for each LED class device.
+>> The shared resource to protect is here powernv led interface,
+>> so one mutex will suffice.
+>
+>
+> Ok. Let me move that to common structure.
+>
+>>
+>>
+>>>>> +    struct work_struct    work_led;    /* LED update workqueue */
+>>>>> +};
+>>>>> +
+>>>>> +struct powernv_leds_priv {
+>>>>> +    int num_leds;
+>>>>> +    struct powernv_led_data powernv_leds[];
+>>>>> +};
+>>
+>> powernv_led_data doesn't have to be retained in the array. You access
+>> the array elements only upon creation of LED class devices. When using
+>> managed resource allocation you don't need to bother with freeing
+>> resources, so you don't need to keep reference to the data.
+>>
+>> I propose to drop struct powernv_leds_priv and instead introduce
+>> a structure that would aggregate common driver data like mutex,
+>> led_disable and max_led_type.
+>
+> I still think we need two structures.. One for common driver data like mutex,
+> led_disable etc and other one for led data itself .. like
+> 	struct powernv_led_data {
+> 		struct led_classdev     cdev;
+> 		char                    *loc_code;     <-- pointer to DT node
+> 		int                     led_type;       /* OPAL_SLOT_LED_TYPE_* */
+> 		enum led_brightness     value;          /* Brightness value */
+> 	};
+>
+> 	struct powernv_led_common {
+> 		bool led_disable;
+> 		int 	max_led_type;
+> 		struct mutex            lock;
+> 	};
 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 7890b2f..49b7196 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -506,6 +507,207 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->  	return rc;
->  }
->  
-> +static struct device_node *cpu_drc_index_to_dn(struct device_node *parent,
-> +					       u32 drc_index)
-> +{
-> +	struct device_node *dn;
-> +	u32 my_index;
-> +	int rc;
-> +
-> +	for_each_child_of_node(parent, dn) {
-> +		if (of_node_cmp(dn->type, "cpu") != 0)
-> +			continue;
+This is exactly what I proposed. I didn't mention dropping
+struct powernv_led_data.
 
-parent is always "/cpus", so I wonder if this should just be:
+>>
+>>>>> +
+>>>>> +static __be64 max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
+>>>>
+>>>> The C standard prohibits initialization of global objects with non-constant
+>>>> values. Section 6.7.8 of the C99 standard states:
+>>>>
+>>>> "All the expressions in an initializer for an object that has static storage
+>>>> duration shall be constant expressions or string literals."
+>>>>
+>>>> Compilation succeeds when using powerpc64-linux-gcc because then
+>>>> the following version of macro is used:
+>>>>
+>>>> #define cpu_to_be64(x) (x)
+>>>>
+>>>> and not
+>>>>
+>>>> #define cpu_to_be64(x) swab64(x)
+>>>>
+>>>> Please move max_led_type also to the struct powernv_leds_priv
+>>>> and initialize it dynamically.
+>>>
+>>> Yeah.. I should have added this to structure itself. Will fix.
+>>>
+>>>>
+>>>>> +
+>>>>> +
+>>>>> +static inline int sizeof_powernv_leds_priv(int num_leds)
+>>>>> +{
+>>>>> +    return sizeof(struct powernv_leds_priv) +
+>>>>> +        (sizeof(struct powernv_led_data) * num_leds);
+>>>>> +}
+>>>>> +/* Returns OPAL_SLOT_LED_TYPE_* for given led type string */
+>>>>> +static int powernv_get_led_type(const char *led_type_desc)
+>>>>> +{
+>>>>> +    int i;
+>>>>> +
+>>>>> +    for (i = 0; i < ARRAY_SIZE(led_type_map); i++)
+>>>>> +        if (!strcmp(led_type_map[i].desc, led_type_desc))
+>>>>> +            return led_type_map[i].type;
+>>>>> +
+>>>>> +    return -1;
+>>>>> +}
+>>>>> +
+>>>>> +/*
+>>>>> + * This commits the state change of the requested LED through an OPAL call.
+>>>>> + * This function is called from work queue task context when ever it gets
+>>>>> + * scheduled. This function can sleep at opal_async_wait_response call.
+>>>>> + */
+>>>>> +static void powernv_led_set(struct powernv_led_data *powernv_led)
+>>>>> +{
+>>>>> +    int rc, token;
+>>>>> +    u64 led_mask, led_value = 0;
+>>>>> +    __be64 max_type;
+>>>>> +    struct opal_msg msg;
+>>>>> +    struct device *dev = powernv_led->cdev.dev;
+>>>>> +
+>>>>> +    /* Prepare for the OPAL call */
+>>>>> +    max_type = max_led_type;
+>>>>> +    led_mask = OPAL_SLOT_LED_STATE_ON << powernv_led->led_type;
+>>>>> +    if (powernv_led->value)
+>>>>> +        led_value = led_mask;
+>>>>> +
+>>>>> +    /* OPAL async call */
+>>>>> +    token = opal_async_get_token_interruptible();
+>>>>> +    if (token < 0) {
+>>>>> +        if (token != -ERESTARTSYS)
+>>>>> +            dev_err(dev, "%s: Couldn't get OPAL async token\n",
+>>>>> +                __func__);
+>>>>> +        return;
+>>>>> +    }
+>>>>> +
+>>>>> +    rc = opal_leds_set_ind(token, powernv_led->loc_code,
+>>>>> +                   led_mask, led_value, &max_type);
+>>>>> +    if (rc != OPAL_ASYNC_COMPLETION) {
+>>>>> +        dev_err(dev, "%s: OPAL set LED call failed for %s [rc=%d]\n",
+>>>>> +            __func__, powernv_led->loc_code, rc);
+>>>>> +        goto out_token;
+>>>>> +    }
+>>>>> +
+>>>>> +    rc = opal_async_wait_response(token, &msg);
+>>>>> +    if (rc) {
+>>>>> +        dev_err(dev,
+>>>>> +            "%s: Failed to wait for the async response [rc=%d]\n",
+>>>>> +            __func__, rc);
+>>>>> +        goto out_token;
+>>>>> +    }
+>>>>> +
+>>>>> +    rc = be64_to_cpu(msg.params[1]);
+>>>>> +    if (rc != OPAL_SUCCESS)
+>>>>> +        dev_err(dev, "%s : OAPL async call returned failed [rc=%d]\n",
+>>>>> +            __func__, rc);
+>>>>> +
+>>>>> +out_token:
+>>>>> +    opal_async_release_token(token);
+>>>>> +}
+>>>>> +
+>>>>> +/*
+>>>>> + * This function fetches the LED state for a given LED type for
+>>>>> + * mentioned LED classdev structure.
+>>>>> + */
+>>>>> +static enum led_brightness
+>>>>> +powernv_led_get(struct powernv_led_data *powernv_led)
+>>>>> +{
+>>>>> +    int rc;
+>>>>> +    __be64 mask, value, max_type;
+>>>>> +    u64 led_mask, led_value;
+>>>>> +    struct device *dev = powernv_led->cdev.dev;
+>>>>> +
+>>>>> +    /* Fetch all LED status */
+>>>>> +    mask = cpu_to_be64(0);
+>>>>> +    value = cpu_to_be64(0);
+>>>>> +    max_type = max_led_type;
+>>>>> +
+>>>>> +    rc = opal_leds_get_ind(powernv_led->loc_code,
+>>>>> +                   &mask, &value, &max_type);
+>>>>> +    if (rc != OPAL_SUCCESS && rc != OPAL_PARTIAL) {
+>>>>> +        dev_err(dev, "%s: OPAL get led call failed [rc=%d]\n",
+>>>>> +            __func__, rc);
+>>>>> +        return LED_OFF;
+>>>>> +    }
+>>>>> +
+>>>>> +    led_mask = be64_to_cpu(mask);
+>>>>> +    led_value = be64_to_cpu(value);
+>>>>> +
+>>>>> +    /* LED status available */
+>>>>> +    if (!((led_mask >> powernv_led->led_type) & OPAL_SLOT_LED_STATE_ON)) {
+>>>>> +        dev_err(dev, "%s: LED status not available for %s\n",
+>>>>> +            __func__, powernv_led->cdev.name);
+>>>>> +        return LED_OFF;
+>>>>> +    }
+>>>>> +
+>>>>> +    /* LED status value */
+>>>>> +    if ((led_value >> powernv_led->led_type) & OPAL_SLOT_LED_STATE_ON)
+>>>>> +        return LED_FULL;
+>>>>> +
+>>>>> +    return LED_OFF;
+>>>>> +}
+>>>>> +
+>>>>> +/* Execute LED set task for given led classdev */
+>>>>> +static void powernv_deferred_led_set(struct work_struct *work)
+>>>>> +{
+>>>>> +    struct powernv_led_data *powernv_led =
+>>>>> +        container_of(work, struct powernv_led_data, work_led);
+>>>>> +
+>>>>> +    mutex_lock(&powernv_led->lock);
+>>>>> +    powernv_led_set(powernv_led);
+>>>>> +    mutex_unlock(&powernv_led->lock);
+>>>>> +}
+>>>>> +
+>>>>> +/*
+>>>>> + * LED classdev 'brightness_get' function. This schedules work
+>>>>> + * to update LED state.
+>>>>> + */
+>>>>> +static void powernv_brightness_set(struct led_classdev *led_cdev,
+>>>>> +                   enum led_brightness value)
+>>>>> +{
+>>>>> +    struct powernv_led_data *powernv_led =
+>>>>> +        container_of(led_cdev, struct powernv_led_data, cdev);
+>>>>> +
+>>>>> +    /* Do not modify LED in unload path */
+>>>>> +    if (led_disabled)
+>>>>> +        return;
+>>>>> +
+>>>>> +    /* Prepare the request */
+>>>>> +    powernv_led->value = value;
+>>>>> +
+>>>>> +    /* Schedule the new task */
+>>>>> +    schedule_work(&powernv_led->work_led);
+>>>>> +}
+>>>>> +
+>>>>> +/* LED classdev 'brightness_get' function */
+>>>>> +static enum led_brightness
+>>>>> +powernv_brightness_get(struct led_classdev *led_cdev)
+>>>>> +{
+>>>>> +    struct powernv_led_data *powernv_led =
+>>>>> +        container_of(led_cdev, struct powernv_led_data, cdev);
+>>>>> +
+>>>>> +    return powernv_led_get(powernv_led);
+>>>>> +}
+>>>>> +
+>>>>> +
+>>>>> +/*
+>>>>> + * This function registers classdev structure for any given type of LED on
+>>>>> + * a given child LED device node.
+>>>>> + */
+>>>>> +static int powernv_led_create(struct device *dev,
+>>>>> +                  struct powernv_led_data *powernv_led,
+>>>>> +                  const char *led_name, const char *led_type_desc)
+>>>>> +{
+>>>>> +    int rc;
+>>>>> +
+>>>>> +    /* Make sure LED type is supported */
+>>>>> +    powernv_led->led_type = powernv_get_led_type(led_type_desc);
+>>>>> +    if (powernv_led->led_type == -1) {
+>>>>> +        dev_warn(dev, "%s: No support for led type : %s\n",
+>>>>> +             __func__, led_type_desc);
+>>>>> +        return -EINVAL;
+>>>>> +    }
+>>>>> +
+>>>>> +    /* Location code of the LED */
+>>>>> +    powernv_led->loc_code = kasprintf(GFP_KERNEL, "%s", led_name);
+>>>>
+>>>> DT node name is available all the time, you don't need another variable
+>>>> for it.
+>>>
+>>> Yes.. But then we have to traverse through  DT node get location code in
+>>> powernv_led_get() and powernv_led_set() function. something like
+>>>      for_each_child_of_node(led_node, np) {
+>>>          if (!strstr(np->name, powernv_led->cdev.name) {
+>>>              /* Process get/set LED */
+>>>              break;
+>>>          }
+>>>      }
+>>>
+>>> Hence I thought of adding that to structure itself.
+>>
+>> I meant that you can store the pointer to the DT node name, which
+>> is a location code name and you don't need to allocate new memory
+>> for the string.
+>
+> Oh yeah.. Will do that.
+>
+>>
+>>>
+>>>>
+>>>>> +    if (!powernv_led->loc_code) {
+>>>>> +        dev_err(dev, "%s: Memory allocation failed\n", __func__);
+>>>>> +        return -ENOMEM;
+>>>>> +    }
+>>>>> +
+>>>>> +    /* Create the name for classdev */
+>>>>> +    powernv_led->cdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s:%s",
+>>>>> +                        led_name, led_type_desc);
+>>>>> +    if (!powernv_led->cdev.name) {
+>>>>> +        dev_err(dev,
+>>>>> +            "%s: Memory allocation failed for classdev name\n",
+>>>>> +            __func__);
+>>>>> +        kfree(powernv_led->loc_code);
+>>>>> +        return -ENOMEM;
+>>>>> +    }
+>>>>> +
+>>>>> +    powernv_led->cdev.brightness_set = powernv_brightness_set;
+>>>>> +    powernv_led->cdev.brightness_get = powernv_brightness_get;
+>>>>> +    powernv_led->cdev.brightness = LED_OFF;
+>>>>> +    powernv_led->cdev.max_brightness = LED_FULL;
+>>>>> +
+>>>>> +    mutex_init(&powernv_led->lock);
+>>>>> +    INIT_WORK(&powernv_led->work_led, powernv_deferred_led_set);
+>>>>> +
+>>>>> +    /* Register the classdev */
+>>>>> +    rc = devm_led_classdev_register(dev, &powernv_led->cdev);
+>>>>> +    if (rc) {
+>>>>> +        dev_err(dev, "%s: Classdev registration failed for %s\n",
+>>>>> +            __func__, powernv_led->cdev.name);
+>>>>> +        kfree(powernv_led->loc_code);
+>>>>> +        kfree(powernv_led->cdev.name);
+>>
+>> You don't need to explicitly free the memory allocated with
+>> devm_kasprintf if this will result in probe failure - all allocations
+>> committed with managed resource allocation will be unrolled then.
+>
+> Ok. Fixed.
+>
+>>
+>>>>> +    }
+>>>>> +
+>>>>> +    return rc;
+>>>>> +}
+>>>>> +
+>>>>> +/* Go through LED device tree node and register LED classdev structure */
+>>>>> +static int powernv_led_classdev(struct platform_device *pdev,
+>>>>> +                struct device_node *led_node,
+>>>>> +                struct powernv_leds_priv *priv, int num_leds)
+>>>>> +{
+>>>>> +    const char *cur = NULL;
+>>>>> +    int i, rc = -1;
+>>>>> +    struct property *p;
+>>>>> +    struct device_node *np;
+>>>>> +    struct powernv_led_data *powernv_led;
+>>>>> +    struct device *dev = &pdev->dev;
+>>>>> +
+>>>>> +    for_each_child_of_node(led_node, np) {
+>>>>> +        p = of_find_property(np, "led-types", NULL);
+>>>>> +        if (!p)
+>>>>> +            continue;
+>>>>> +
+>>>>> +        while ((cur = of_prop_next_string(p, cur)) != NULL) {
+>>>>> +            powernv_led = &priv->powernv_leds[priv->num_leds++];
+>>>>> +            if (priv->num_leds > num_leds) {
+>>>>> +                rc = -ENOMEM;
+>>>>> +                goto classdev_fail;
+>>>>> +            }
+>>>>> +            rc = powernv_led_create(dev,
+>>>>> +                        powernv_led, np->name, cur);
+>>>>> +            if (rc)
+>>>>> +                goto classdev_fail;
+>>>>> +        } /* while end */
+>>>>> +    }
+>>>>> +
+>>>>> +    platform_set_drvdata(pdev, priv);
+>>>>> +    return rc;
+>>>>> +
+>>>>> +classdev_fail:
+>>>>> +    for (i = priv->num_leds - 2; i >= 0; i--) {
+>>>>> +        powernv_led = &priv->powernv_leds[i];
+>>>>> +        devm_led_classdev_unregister(dev, &powernv_led->cdev);
+>>
+>> Upon driver detach all LED class devices registered with devm prefixed
+>> API will be unregistered automatically.
+>
+> Ok.
+>
+>>
+>>>>> +        kfree(powernv_led->loc_code);
+>>>>> +        mutex_destroy(&powernv_led->lock);
+>>>>> +    }
+>>>>> +
+>>>>> +    return rc;
+>>>>> +}
+>>>>> +
+>>>>> +/*
+>>>>> + * We want to populate LED device for each LED type. Hence we
+>>>>> + * have to calculate count explicitly.
+>>>>> + */
+>>>>> +static int powernv_leds_count(struct device_node *led_node)
+>>>>> +{
+>>>>> +    const char *cur = NULL;
+>>>>> +    int num_leds = 0;
+>>>>> +    struct property *p;
+>>>>> +    struct device_node *np;
+>>>>> +
+>>>>> +    for_each_child_of_node(led_node, np) {
+>>>>> +        p = of_find_property(np, "led-types", NULL);
+>>>>> +        if (!p)
+>>>>> +            continue;
+>>>>> +
+>>>>> +        while ((cur = of_prop_next_string(p, cur)) != NULL)
+>>>>> +            num_leds++;
+>>>>> +    }
+>>>>> +
+>>>>> +    return num_leds;
+>>>>> +}
+>>>>> +
+>>>>> +/* Platform driver probe */
+>>>>> +static int powernv_led_probe(struct platform_device *pdev)
+>>>>> +{
+>>>>> +    int num_leds;
+>>>>> +    struct device_node *led_node;
+>>>>> +    struct powernv_leds_priv *priv;
+>>>>> +
+>>>>> +    led_node = of_find_node_by_path("/ibm,opal/leds");
+>>>>> +    if (!led_node) {
+>>>>> +        dev_err(&pdev->dev,
+>>>>> +            "%s: LED parent device node not found\n", __func__);
+>>>>> +        return -EINVAL;
+>>>>> +    }
+>>>>> +
+>>>>> +    num_leds = powernv_leds_count(led_node);
+>>>>> +    if (num_leds <= 0) {
+>>>>> +        dev_err(&pdev->dev,
+>>>>> +            "%s: No location code found under LED node\n",
+>>>>> +            __func__);
+>>>>> +        return -EINVAL;
+>>>>> +    }
+>>
+>> You won't need to count the number of LEDs to register, just allocate
+>> memory for each LED during parsing with managed resource allocation
+>> API.
+>
+>
+> Hmmm. Ok.
+>
+>>
+>>>>> +
+>>>>> +    priv = devm_kzalloc(&pdev->dev,
+>>>>> +                sizeof_powernv_leds_priv(num_leds), GFP_KERNEL);
+>>>>> +    if (!priv)
+>>>>> +        return -ENOMEM;
+>>>>> +
+>>>>> +    return powernv_led_classdev(pdev, led_node, priv, num_leds);
+>>>>> +}
+>>>>> +
+>>>>> +/* Platform driver remove */
+>>>>> +static int powernv_led_remove(struct platform_device *pdev)
+>>>>> +{
+>>>>> +    int i;
+>>>>> +    struct powernv_led_data *powernv_led;
+>>>>> +    struct powernv_leds_priv *priv;
+>>>>> +
+>>>>> +    /* Disable LED operation */
+>>>>> +    led_disabled = true;
+>>>>> +
+>>>>> +    priv = platform_get_drvdata(pdev);
+>>>>> +
+>>
+>> Here you will only need mutex_destroy.
+>>
+>> Please also drop work queue, as it is going to be supported
+>> by the LED core, when the patch set [1] will be merged.
+>
+> Is this hosted somewhere? So that I can use that to test my code.
+> I looked into LED tree and couldn't find this patchset.
 
-	for_each_node_by_type(dn, "cpu") {
+It is not merged yet. Please apply LED core patches from
+that patch set to test it. If LED subsystem driver doesn't
+set LED_BRIGHTNESS_FAST flag the core runs brightness_set
+op in a work queue task.
 
-And then you don't need parent in here at all.
-
-Or do we realistically expect to be looking for cpus under a node other than "/cpus" ?
-
-> +		rc = of_property_read_u32(dn, "ibm,my-drc-index", &my_index);
-> +		if (rc)
-> +			continue;
-> +
-> +		if (my_index == drc_index)
-> +			break;
-> +	}
-> +
-> +	return dn;
-> +}
-> +
-> +static int dlpar_cpu_remove_by_index(struct device_node *parent,
-> +				     u32 drc_index)
-> +{
-> +	struct device_node *dn;
-> +	int rc;
-> +
-> +	dn = cpu_drc_index_to_dn(parent, drc_index);
-> +	if (!dn)
-> +		return -ENODEV;
-> +
-> +	rc = dlpar_cpu_remove(dn, drc_index);
-> +	of_node_put(dn);
-> +	return rc;
-> +}
-> +
-> +static int dlpar_cpus_possible(struct device_node *parent)
-> +{
-> +	int dr_cpus_possible;
-> +
-> +	/* The first u32 in the ibm,drc-indexes property is the numnber
-> +	 * of drc entries in the property, which is the possible number
-> +	 * number of dr capable cpus.
-> +	 */
-> +	of_property_read_u32(parent, "ibm,drc-indexes", &dr_cpus_possible);
-> +	return dr_cpus_possible;
-> +}
-> +
-> +struct dr_cpu {
-> +	u32     drc_index;
-> +	bool    present;
-> +	bool    modified;
-> +};
-> +
-> +static struct dr_cpu *get_dlpar_cpus(struct device_node *parent)
-> +{
-> +	struct device_node *dn;
-> +	struct property *prop;
-> +	struct dr_cpu *dr_cpus;
-> +	const __be32 *p;
-> +	u32 drc_index;
-> +	int dr_cpus_possible, index;
-> +	bool first;
-> +
-> +	dr_cpus_possible = dlpar_cpus_possible(parent);
-> +	dr_cpus = kcalloc(dr_cpus_possible, sizeof(*dr_cpus), GFP_KERNEL);
-> +	if (!dr_cpus)
-> +		return NULL;
-> +
-> +	first = true;
-> +	index = 0;
-> +	of_property_for_each_u32(parent, "ibm,drc-indexes", prop, p,
-> +				 drc_index) {
-> +		if (first) {
-
-What about:
-
-		if (index == 0) {
-
-Then you don't need first at all?
-
-> +			/* The first entry is the number of drc indexes in
-> +			 * the property, skip it.
-> +			 */
-> +			first = false;
-> +			continue;
-> +		}
-> +
-> +		dr_cpus[index].drc_index = drc_index;
-> +
-> +		dn = cpu_drc_index_to_dn(parent, drc_index);
-
-The outer loop is iterating over all drc indexes (ie. one per cpu usually?),
-and then cpu_drc_index_to_dn() will iterate over all cpus.
-
-So that's n^2 for n = nr_cpus which is not ideal.
-
-I realise we can't do much better, but what we can do is limit the number of
-iterations of the outer loop. Because usually we will be here because we want
-to offline less than nr_cpus cpus.
-
-ie. if I ask to offline 1 cpu on a 4096 cpu system we will still do up to 16M
-iterations in here, when all we needed to do was one iteration of the outer
-loop.
-
-So I think this routine should take the number of cpus we're trying to remove
-and only iterate until it's found that many.
-
-> +		if (dn) {
-> +			dr_cpus[index].present = true;
-> +			of_node_put(dn);
-> +		}
-
-Why do we put non present ones in the dr_cpus array at all? It just means you
-have to skip them later? (in two separate places)
-
-> +
-> +		index++;
-> +	}
-> +
-> +	return dr_cpus;
-> +}
-> +
-> +static int dlpar_cpu_remove_by_count(struct device_node *parent,
-> +				     u32 cpus_to_remove)
-> +{
-> +	struct dr_cpu *dr_cpus;
-> +	int dr_cpus_removed = 0;
-> +	int dr_cpus_present = 0;
-> +	int dr_cpus_possible;
-> +	int i, rc;
-> +
-> +	pr_info("Attempting to hot-remove %d CPUs\n", cpus_to_remove);
-> +
-> +	dr_cpus = get_dlpar_cpus(parent);
-
-So I think this should be:
-
-> +	dr_cpus = get_dlpar_cpus(parent, cpus_to_remove);
-
-> +	if (!dr_cpus) {
-> +		pr_info("Could not gather dr CPU info\n");
-> +		return -EINVAL;
-> +	}
-
-And get_dlpar_cpus() should return cpus_to_remove worth of present cpus, or it
-should error, meaning the below then won't be needed:
-
-> +	dr_cpus_possible = dlpar_cpus_possible(parent);
-> +
-> +	for (i = 0; i < dr_cpus_possible; i++) {
-> +		if (dr_cpus[i].present)
-> +			dr_cpus_present++;
-> +	}
-> +
-> +	/* Validate the available CPUs to remove.
-> +	 * NOTE: we can't remove the last CPU.
-> +	 */
-> +	if (cpus_to_remove >= dr_cpus_present) {
-> +		pr_err("Insufficient CPUs (%d) to satisfy remove request\n",
-> +		       dr_cpus_present);
-> +		kfree(dr_cpus);
-> +		return -EINVAL;
-> +	}
-> +
-
-Having only present cpus in dr_cpus should also simplify this loop because you
-don't need to skip non-present ones:
-
-> +	for (i = 0; i < dr_cpus_possible; i++) {
-> +		if (dr_cpus_removed == cpus_to_remove)
-> +			break;
-> +
-> +		if (!dr_cpus[i].present)
-> +			continue;
-> +
-> +		rc = dlpar_cpu_remove_by_index(parent, dr_cpus[i].drc_index);
-> +		if (!rc) {
-> +			dr_cpus_removed++;
-> +			dr_cpus[i].modified = true;
-> +		}
-
-else .. ?
-
-Surely you should bail on the first error?
-
-Definitely you should, because you're going to undo everything below anyway:
-
-> +	}
-> +
-> +	if (dr_cpus_removed != cpus_to_remove) {
-> +		pr_info("CPU hot-remove failed, adding any removed CPUs\n");
-> +
-> +		for (i = 0; i < dr_cpus_possible; i++) {
-> +			if (!dr_cpus[i].modified)
-> +				continue;
-
-And if you bail on the first error above you shouldn't need modified, instead
-you just iterate in reverse from i using a new counter, eg. j.
-
-> +
-> +			rc = dlpar_cpu_add(parent, dr_cpus[i].drc_index);
-> +			if (rc)
-> +				pr_info("Failed to re-add CPU (%x)\n",
-> +					dr_cpus[i].drc_index);
-> +		}
-> +
-> +		rc = -EINVAL;
-> +	} else {
-> +		rc = 0;
-> +	}
-> +
-> +	kfree(dr_cpus);
-> +	return rc;
-> +}
-> +
-> +int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
-> +{
-> +	struct device_node *parent;
-> +	u32 count, drc_index;
-> +	int rc;
-> +
-> +	count = hp_elog->_drc_u.drc_count;
-> +	drc_index = hp_elog->_drc_u.drc_index;
-
-Those both need be32_to_cpu().
-
-   arch/powerpc/platforms/pseries/hotplug-cpu.c:750:15: warning: incorrect type in assignment (different base types)
-   arch/powerpc/platforms/pseries/hotplug-cpu.c:750:15:    expected unsigned int [unsigned] [usertype] count
-   arch/powerpc/platforms/pseries/hotplug-cpu.c:750:15:    got restricted __be32 [usertype] drc_count
-   arch/powerpc/platforms/pseries/hotplug-cpu.c:751:19: warning: incorrect type in assignment (different base types)
-   arch/powerpc/platforms/pseries/hotplug-cpu.c:751:19:    expected unsigned int [unsigned] [usertype] drc_index
-   arch/powerpc/platforms/pseries/hotplug-cpu.c:751:19:    got restricted __be32 [usertype] drc_index
-
-
-Though looking closer I don't see where we ever pass or receive a
-pseries_hp_errorlog to or from firmware? So I'm a bit confused why we're
-bothering with the __be32 shenanigans. Hopefully I've just missed a detail
-somewhere.
-
-> +	parent = of_find_node_by_path("/cpus");
-> +	if (!parent)
-> +		return -ENODEV;
-> +
-> +	lock_device_hotplug();
-> +
-> +	switch (hp_elog->action) {
-> +	case PSERIES_HP_ELOG_ACTION_REMOVE:
-> +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-> +			rc = dlpar_cpu_remove_by_count(parent, count);
-> +		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-> +			rc = dlpar_cpu_remove_by_index(parent, drc_index);
-> +		else
-> +			rc = -EINVAL;
-> +		break;
-> +	default:
-> +		pr_err("Invalid action (%d) specified\n", hp_elog->action);
-> +		rc = -EINVAL;
-> +		break;
-> +	}
-> +
-> +	unlock_device_hotplug();
-> +	of_node_put(parent);
-> +	return rc;
-> +}
-> +
->  #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
->  
->  static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
-> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-> index 8411c27..58892f1 100644
-> --- a/arch/powerpc/platforms/pseries/pseries.h
-> +++ b/arch/powerpc/platforms/pseries/pseries.h
-> @@ -66,11 +66,16 @@ extern int dlpar_release_drc(u32 drc_index);
->  
->  #ifdef CONFIG_MEMORY_HOTPLUG
->  int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
-> +int dlpar_cpu(struct pseries_hp_errorlog *hp_elog);
-
-I don't think this should be under CONFIG_MEMORY_HOTPLUG ?
-
-
-cheers
+-- 
+Best Regards,
+Jacek Anaszewski
