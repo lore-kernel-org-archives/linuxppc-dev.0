@@ -1,26 +1,25 @@
-Return-Path: <Zumeng.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43A7A1A05E3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 09:00:38 +1000 (AEST)
-Message-ID: <55AECF03.80407@windriver.com>
-Date: Wed, 22 Jul 2015 07:00:19 +0800
-From: czm <zumeng.chen@windriver.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D49831A1A38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 09:18:55 +1000 (AEST)
+Date: Wed, 22 Jul 2015 09:18:44 +1000
+From: Anton Blanchard <anton@samba.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-CC: Zumeng Chen <zumeng.chen@gmail.com>, <linux-kernel@vger.kernel.org>,
- <paulus@samba.org>, <imunsie@au1.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>, <romeo.cane.ext@coriant.com>,
- Anton Blanchard <anton@samba.org>
-Subject: Re: BUG: perf error on syscalls for powerpc64.
-References: <CA+Y31wfLFe11nh9AVs2JgKrxpMc6qxxDyCfey52HT23S7RJ_zw@mail.gmail.com>	
- <1437037461.15828.2.camel@ellerman.id.au>	
- <CA+Y31wf16voXS6psDUDpNjMFTD8HTMwrdn=sDXC_B1=n7m=1FQ@mail.gmail.com>	
- <1437106043.29389.5.camel@ellerman.id.au> <55A89280.8090705@windriver.com>
- <1437460821.30722.11.camel@ellerman.id.au>
-In-Reply-To: <1437460821.30722.11.camel@ellerman.id.au>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Cc: Ian Munsie <imunsie@au1.ibm.com>, Benjamin Herrenschmidt
+ <benh@au1.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling
+ <michael.neuling@au1.ibm.com>, "sonal.santan" <sonal.santan@xilinx.com>,
+ Jeremy Kerr <jk@ozlabs.org>, Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+Subject: Re: [PATCH] Fix crash due to processing "memory-controller" nodes
+ as "memory"
+Message-ID: <20150722091844.114ea023@kryten>
+In-Reply-To: <1437447984.30722.3.camel@ellerman.id.au>
+References: <1437380450-25555-1-git-send-email-imunsie@au.ibm.com>
+ <20150721124554.332dd228@kryten>
+ <1437447984.30722.3.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,88 +29,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-在 2015年07月21日 14:40, Michael Ellerman 写道:
-> On Fri, 2015-07-17 at 13:28 +0800, Zumeng Chen wrote:
->> On 2015年07月17日 12:07, Michael Ellerman wrote:
->>> On Fri, 2015-07-17 at 09:27 +0800, Zumeng Chen wrote:
->>>> On 2015年07月16日 17:04, Michael Ellerman wrote:
->>>>> On Thu, 2015-07-16 at 13:57 +0800, Zumeng Chen wrote:
->>>>>> Hi All,
->>>>>>
->>>>>> 1028ccf5 did a change for sys_call_table from a pointer to an array of
->>>>>> unsigned long, I think it's not proper, here is my reason:
->>>>>>
->>>>>> sys_call_table defined as a label in assembler should be pointer array
->>>>>> rather than an array as described in 1028ccf5. If we defined it as an
->>>>>> array, then arch_syscall_addr will return the address of sys_call_table[],
->>>>>> actually the content of sys_call_table[] is demanded by arch_syscall_addr.
->>>>>> so 'perf list' will ignore all syscalls since find_syscall_meta will
->>>>>> return null
->>>>>> in init_ftrace_syscalls because of the wrong arch_syscall_addr.
->>>>>>
->>>>>> Did I miss something, or Gcc compiler has done something newer ?
->>>>> Hi Zumeng,
->>>>>
->>>>> It works for me with the code as it is in mainline.
->>>>>
->>>>> I don't quite follow your explanation, so if you're seeing a bug please send
->>>>> some information about what you're actually seeing. And include the disassembly
->>>>> of arch_syscall_addr() and your compiler version etc.
->>>> Hi Michael,
->>> Hi Zumeng,
->>>
->>>> Yeah, it seems it was not a good explanation, I'll explain more this time:
->>>>
->>>> 1. Whatever we exclaim sys_call_table in C level, actually it is a pointer
->>>>        to sys_call_table rather than sys_call_table self in assemble level.
->>> No it's not a pointer.
->> Then what is the second one in the following:
-> It's a function descriptor.
->
->> zchen@pek-yocto-build2:$ cat  System.map |grep sys_call_table
->> c000000000009590 T .sys_call_table  <-----this is a real sys_call_table.
->> c0000000014e1b48 D sys_call_table  <-----this should be referred by
->> arch_syscall_addr
->>
->> The c0000000014e1b48[0] = c000000000009590
-> That is from 3.14 isn't it?
->
-> In 3.14 we had in systbl.S:
->
->      46 _GLOBAL(sys_call_table)
->      47 #include <asm/systbl.h>
->
-> And _GLOBAL was:
->
->      46 #define _GLOBAL(name) \
->      47         .type name,@function; \
->      48         .globl name; \
->      49 name:
->
->
-> Which means sys_call_table was being declared as a function, which is
-> completely wrong.
->
-> On big endian when you declare a function "foo" you get two symbols, ".foo" at
-> the address you declare the symbol and "foo" which is somewhere else and
-> contains three pointers, the first of which is to ".foo".
->
-> So at address "foo" you have a pointer to ".foo", which happens to be what
-> you'd expect if "foo" was a pointer to ".foo".
->
-> Anton fixed this in 3.16:
->
->    https://git.kernel.org/torvalds/c/c857c43b34ec
->
->
-> But that had the side-effect of breaking the usage of sys_call_table in C.
+Hi,
 
-Yeah, good to know, thanks Michael again.
+> > Nice catch! I wonder if we should be checking for device_type
+> > "memory". Ben?
+> 
+> Yes. That's what Linux does.
 
-Cheers,
-Zumeng
+Ian: I made that change, and slightly modified your commit message.
+Look ok?
 
->
-> cheers
->
->
+Anton
+--
+
+[PATCH] Fix crash due to processing "memory-controller" nodes as "memory"
+
+If the system has a PCI device with a memory-controller device node,
+kexec-lite would spew hundreds of double free warnings and eventually
+segfault. This would result in a "kexec load failed" message from
+petitboot.
+
+This was due to kexec_memory_map() searching for "memory" nodes, but
+actually matching any node that started with "memory", including these
+"memory-controller" nodes. This patch changes the search to look for
+nodes with a device_type of "memory", which should only match memory
+nodes.
+
+An example of a device tree that can trigger this bug is as follows:
+
+{
+	pciex@3fffe40000000 {
+		...
+		pci@0 {
+			#address-cells = <0x3>;
+			#size-cells = <0x2>;
+			...
+			memory-controller@0 {
+				reg = <0x10000 0x0 0x0 0x0 0x0>;
+				...
+			};
+		};
+	};
+};
+
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ kexec_memory_map.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/kexec_memory_map.c b/kexec_memory_map.c
+index fc1b7af..6103590 100644
+--- a/kexec_memory_map.c
++++ b/kexec_memory_map.c
+@@ -182,7 +182,7 @@ void kexec_memory_map(void *fdt, int reserve_initrd)
+ 	}
+ 
+ 	while (1) {
+-		const char *name;
++		const char *type;
+ 		int len;
+ 		const fdt64_t *reg;
+ 
+@@ -190,9 +190,9 @@ void kexec_memory_map(void *fdt, int reserve_initrd)
+ 		if (nodeoffset < 0)
+ 			break;
+ 
+-		name = fdt_get_name(fdt, nodeoffset, NULL);
++		type = fdt_getprop(fdt, nodeoffset, "device_type", NULL);
+ 
+-		if (!name || strncmp(name, "memory", strlen("memory")))
++		if (!type || strcmp(type, "memory"))
+ 			continue;
+ 
+ 		reg = fdt_getprop(fdt, nodeoffset, "reg", &len);
+-- 
+2.1.0
