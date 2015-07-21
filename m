@@ -1,40 +1,31 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <balbi@ti.com>
+Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9EF601A0877
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 02:24:27 +1000 (AEST)
-Received: from /spool/local
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 21 Jul 2015 12:24:24 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A8B6EC90048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 12:15:27 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6LGOLoj60882946
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 16:24:21 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6LGOKZ7029700
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 12:24:21 -0400
-Date: Tue, 21 Jul 2015 09:24:18 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Chris J Arges <chris.j.arges@canonical.com>
-Cc: pshelar@nicira.com, linuxppc-dev@lists.ozlabs.org,
- benh@kernel.crashing.org, linux-numa@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
- dev@openvswitch.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] openvswitch: make for_each_node loops work with sparse
- numa systems
-Message-ID: <20150721162418.GM38815@linux.vnet.ibm.com>
-References: <1437492756-22777-1-git-send-email-chris.j.arges@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3254A1A0A23
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 02:53:05 +1000 (AEST)
+Date: Tue, 21 Jul 2015 11:43:32 -0500
+From: Felipe Balbi <balbi@ti.com>
+To: Robert Baldyga <r.baldyga@samsung.com>
+CC: <gregkh@linuxfoundation.org>, <balbi@ti.com>, <Peter.Chen@freescale.com>,
+ <johnyoun@synopsys.com>, <dahlmann.thomas@arcor.de>,
+ <nicolas.ferre@atmel.com>, <cernekee@gmail.com>, <leoli@freescale.com>,
+ <daniel@zonque.org>, <haojian.zhuang@gmail.com>,
+ <robert.jarzmik@free.fr>, <michal.simek@xilinx.com>,
+ <devel@driverdev.osuosl.org>, <linux-kernel@vger.kernel.org>,
+ <linux-usb@vger.kernel.org>, <linux-omap@vger.kernel.org>,
+ <linux-geode@lists.infradead.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <andrzej.p@samsung.com>,
+ <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v3 07/46] usb: dwc3: gadget: add ep capabilities support
+Message-ID: <20150721164331.GG25385@saruman.tx.rr.com>
+Reply-To: <balbi@ti.com>
+References: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
+ <1436941953-1327-8-git-send-email-r.baldyga@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1437492756-22777-1-git-send-email-chris.j.arges@canonical.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="qxfKREH7IwbezJ+T"
+In-Reply-To: <1436941953-1327-8-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,141 +35,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21.07.2015 [10:32:34 -0500], Chris J Arges wrote:
-> Some architectures like POWER can have a NUMA node_possible_map that
-> contains sparse entries. This causes memory corruption with openvswitch
-> since it allocates flow_cache with a multiple of num_possible_nodes() and
+--qxfKREH7IwbezJ+T
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Couldn't this also be fixed by just allocationg with a multiple of
-nr_node_ids (which seems to have been the original intent all along)?
-You could then make your stats array be sparse or not.
+Hi,
 
-> assumes the node variable returned by for_each_node will index into
-> flow->stats[node].
-> 
-> For example, if node_possible_map is 0x30003, this patch will map node to
-> node_cnt as follows:
->     0,1,16,17 => 0,1,2,3
-> 
-> The crash was noticed after 3af229f2 was applied as it changed the
-> node_possible_map to match node_online_map on boot.
-> Fixes: 3af229f2071f5b5cb31664be6109561fbe19c861
-
-My concern with this version of the fix is that you're relying on,
-implicitly, the order of for_each_node's iteration corresponding to the
-entries in stats 1:1. But what about node hotplug? It seems better to
-have the enumeration of the stats array match the topology accurately,
-rather, or to maintain some sort of internal map in the OVS code between
-the NUMA node and the entry in the stats array?
-
-I'm willing to be convinced otherwise, though :)
-
--Nish
-
-> Signed-off-by: Chris J Arges <chris.j.arges@canonical.com>
+On Wed, Jul 15, 2015 at 08:31:54AM +0200, Robert Baldyga wrote:
+> Convert endpoint configuration to new capabilities model.
+>=20
+> Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 > ---
->  net/openvswitch/flow.c       | 10 ++++++----
->  net/openvswitch/flow_table.c | 18 +++++++++++-------
->  2 files changed, 17 insertions(+), 11 deletions(-)
-> 
-> diff --git a/net/openvswitch/flow.c b/net/openvswitch/flow.c
-> index bc7b0ab..425d45d 100644
-> --- a/net/openvswitch/flow.c
-> +++ b/net/openvswitch/flow.c
-> @@ -134,14 +134,14 @@ void ovs_flow_stats_get(const struct sw_flow *flow,
->  			struct ovs_flow_stats *ovs_stats,
->  			unsigned long *used, __be16 *tcp_flags)
->  {
-> -	int node;
-> +	int node, node_cnt = 0;
-> 
->  	*used = 0;
->  	*tcp_flags = 0;
->  	memset(ovs_stats, 0, sizeof(*ovs_stats));
-> 
->  	for_each_node(node) {
-> -		struct flow_stats *stats = rcu_dereference_ovsl(flow->stats[node]);
-> +		struct flow_stats *stats = rcu_dereference_ovsl(flow->stats[node_cnt]);
-> 
->  		if (stats) {
->  			/* Local CPU may write on non-local stats, so we must
-> @@ -155,16 +155,17 @@ void ovs_flow_stats_get(const struct sw_flow *flow,
->  			ovs_stats->n_bytes += stats->byte_count;
->  			spin_unlock_bh(&stats->lock);
+>  drivers/usb/dwc3/gadget.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+>=20
+> diff --git a/drivers/usb/dwc3/gadget.c b/drivers/usb/dwc3/gadget.c
+> index 333a7c0..8d1f768 100644
+> --- a/drivers/usb/dwc3/gadget.c
+> +++ b/drivers/usb/dwc3/gadget.c
+> @@ -1713,6 +1713,19 @@ static int dwc3_gadget_init_hw_endpoints(struct dw=
+c3 *dwc,
+>  				return ret;
 >  		}
-> +		node_cnt++;
->  	}
->  }
-> 
->  /* Called with ovs_mutex. */
->  void ovs_flow_stats_clear(struct sw_flow *flow)
->  {
-> -	int node;
-> +	int node, node_cnt = 0;
-> 
->  	for_each_node(node) {
-> -		struct flow_stats *stats = ovsl_dereference(flow->stats[node]);
-> +		struct flow_stats *stats = ovsl_dereference(flow->stats[node_cnt]);
-> 
->  		if (stats) {
->  			spin_lock_bh(&stats->lock);
-> @@ -174,6 +175,7 @@ void ovs_flow_stats_clear(struct sw_flow *flow)
->  			stats->tcp_flags = 0;
->  			spin_unlock_bh(&stats->lock);
->  		}
-> +		node_cnt++;
->  	}
->  }
-> 
-> diff --git a/net/openvswitch/flow_table.c b/net/openvswitch/flow_table.c
-> index 4613df8..5d10c54 100644
-> --- a/net/openvswitch/flow_table.c
-> +++ b/net/openvswitch/flow_table.c
-> @@ -77,7 +77,7 @@ struct sw_flow *ovs_flow_alloc(void)
->  {
->  	struct sw_flow *flow;
->  	struct flow_stats *stats;
-> -	int node;
-> +	int node, node_cnt = 0;
-> 
->  	flow = kmem_cache_alloc(flow_cache, GFP_KERNEL);
->  	if (!flow)
-> @@ -99,9 +99,11 @@ struct sw_flow *ovs_flow_alloc(void)
-> 
->  	RCU_INIT_POINTER(flow->stats[0], stats);
-> 
-> -	for_each_node(node)
-> +	for_each_node(node) {
->  		if (node != 0)
-> -			RCU_INIT_POINTER(flow->stats[node], NULL);
-> +			RCU_INIT_POINTER(flow->stats[node_cnt], NULL);
-> +		node_cnt++;
-> +	}
-> 
->  	return flow;
->  err:
-> @@ -139,15 +141,17 @@ static struct flex_array *alloc_buckets(unsigned int n_buckets)
-> 
->  static void flow_free(struct sw_flow *flow)
->  {
-> -	int node;
-> +	int node, node_cnt = 0;
-> 
->  	if (ovs_identifier_is_key(&flow->id))
->  		kfree(flow->id.unmasked_key);
->  	kfree((struct sw_flow_actions __force *)flow->sf_acts);
-> -	for_each_node(node)
-> -		if (flow->stats[node])
-> +	for_each_node(node) {
-> +		if (flow->stats[node_cnt])
->  			kmem_cache_free(flow_stats_cache,
-> -					(struct flow_stats __force *)flow->stats[node]);
-> +					(struct flow_stats __force *)flow->stats[node_cnt]);
-> +		node_cnt++;
-> +	}
->  	kmem_cache_free(flow_cache, flow);
->  }
-> 
-> -- 
-> 1.9.1
-> 
+> =20
+> +		if (epnum =3D=3D 0) {
+> +			dep->endpoint.caps.type_control =3D true;
+
+as the name says, this function deals with hw endpoints. This means ep1
+is also control.
+
+--=20
+balbi
+
+--qxfKREH7IwbezJ+T
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVrnazAAoJEIaOsuA1yqREZlsP/iImgKnRRlxvEAeHgOlh9tWz
+kNZU4AE5LzmNQY66UVPZ9Mfycpu25vNZMU20SrwF/0NeCju0JoGbQAyVPoJVLwDV
+GJlzQZkWOgTwxzYTW7Jwy7guVwmu6nBz+cbVFeCihxT63l+4JBhsq7xl3Dee6MSY
+PgCm7TkKpZVmpZSgtJYbJ+dt8kqw/lR8HwF0QzZ2RnGlKgiklGRfJefrwFz7d4eD
+TM+hoLSRei+u6gq9umZ5D5oV+YIZURvGm+2WQ9cWVP1cFTreW6OqS3lDu2Ajd8LN
+uiQzVg03pHLD/G7m+Ab3dT1gfXHQhxIEQ7a+oX5nX3W9PbDTOI4rFBGE92fJ2FxV
+e5rmfidPAxixboXwdEwVcI9VDqXI+Ov0RJjKYrtfPgqX/IZUMdBB8sNUnr5jdhGg
+wSQoAKz3Rv4suXF+HaF9kAbUaDyUETvA8rm8EA6P17DJkRM0Hu5jDDaUe2/0pv1J
+Ciue6q59wHtg89PwWZad0NHzxJda6Q0RPFrJpkv+iwzk71kX+Wc+CGHFfrwiEBy9
+MYNzwuVfhNgeFQmFOqc1xg0JEs6p0+zJ5XBmZAJnJxYt2CyHelkEuOZvHkfwwvja
+xIkMS1yt24pZf84IMn1V2yNS8XAlO+ZtXGPIS7/jZ9q+Sd1CrWO672uCct9Iasg5
+KzlHFQbZwW5x3IPRhvQr
+=k33n
+-----END PGP SIGNATURE-----
+
+--qxfKREH7IwbezJ+T--
