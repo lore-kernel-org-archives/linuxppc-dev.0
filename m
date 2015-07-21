@@ -1,15 +1,41 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B88E61A0877
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 14:46:49 +1000 (AEST)
-In-Reply-To: <55887728.4030709@linux.vnet.ibm.com>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [3/6] pseries: Update CPU hotplug error recovery
-Message-Id: <20150721044649.A4DD8140DF7@ozlabs.org>
-Date: Tue, 21 Jul 2015 14:46:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D2F6C1A019D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 15:05:04 +1000 (AEST)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A0302140DBC
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2015 15:05:04 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 21 Jul 2015 15:05:03 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 04DBF3578048
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2015 15:05:00 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6L54p1437093422
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2015 15:04:59 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6L54QEM008378
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Jul 2015 15:04:26 +1000
+Message-ID: <55ADD2C8.1060003@linux.vnet.ibm.com>
+Date: Tue, 21 Jul 2015 10:34:08 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+CC: mikey@neuling.org
+Subject: Re: [V2] powerpc/signal: Add helper function to fetch quad word
+ aligned pointer
+References: <20150721013754.0C58A140DDA@ozlabs.org>
+In-Reply-To: <20150721013754.0C58A140DDA@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,114 +45,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-22-06 at 20:59:20 UTC, Nathan Fontenot wrote:
-> Update the cpu dlpar add/remove paths to do better error recovery when 
-> a failure occurs during the add/remove operation. This includes adding
-> some pr_info and pr_debug statements.
+On 07/21/2015 07:07 AM, Michael Ellerman wrote:
+> On Mon, 2015-20-07 at 02:58:43 UTC, Anshuman Khandual wrote:
+>> This patch adds one helper function 'sigcontext_vmx_regs' which computes
+>> quad word aligned pointer for 'vmx_reserve' array element in sigcontext
+>> structure making the code more readable.
+>>
+>> diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+>> index c7c24d2..bb9c939 100644
+>> --- a/arch/powerpc/kernel/signal_64.c
+>> +++ b/arch/powerpc/kernel/signal_64.c
+>> @@ -74,6 +74,16 @@ static const char fmt64[] = KERN_INFO \
+>>  	"%s[%d]: bad frame in %s: %016lx nip %016lx lr %016lx\n";
+>>  
+>>  /*
+>> + * This computes quad word aligned pointer for 'vmx_reserve' array element
+>> + * which is used primarily in assigning to the preceding pointer 'v_regs'
+>> + * in sigcontext structure.
+> 
+> How about:
+> 
+>   * This computes a quad word aligned pointer inside the vmx_reserve array
+>   * element. For historical reasons sigcontext might not be quad word aligned,
+>   * but the location we write the VMX regs to must be. See the comment in
+>   * sigcontext for more detail.
 
-So I'm happy with the idea there, but ..
+Yeah, its way better. Thanks !
 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index f58d902..7890b2f 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -18,6 +18,8 @@
->   *      2 of the License, or (at your option) any later version.
->   */
->  
-> +#define pr_fmt(fmt)     "pseries-hotplug-cpu: " fmt
+> 
+> 
+>> + */
+>> +static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
+>> +{
+>> +	return (elf_vrreg_t __user *) (((unsigned long)sc->vmx_reserve + 15) & ~0xful);
+>> +}
+> 
+> This doesn't build for ppc64e_defconfig:
 
-This is good.
+This time, I did build test for some of the configs but not the entire
+comprehensive list. Sorry, missed this one though, will take care next
+time around.
 
->  #include <linux/kernel.h>
->  #include <linux/interrupt.h>
->  #include <linux/delay.h>
-> @@ -386,22 +388,35 @@ static ssize_t dlpar_cpu_add(struct device_node *parent, u32 drc_index)
->  	struct device_node *dn;
->  	int rc;
->  
-> +	pr_info("Attempting to add CPU, drc index %x\n", drc_index);
-> +
->  	rc = dlpar_acquire_drc(drc_index);
->  	if (rc)
->  		return -EINVAL;
->  
->  	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
-> -	if (!dn)
-> +	if (!dn) {
-> +		pr_debug("Failed call to configure-connector\n");
-> +		dlpar_release_drc(drc_index);
->  		return -EINVAL;
-> +	}
->  
->  	rc = dlpar_attach_node(dn);
->  	if (rc) {
-> +		pr_debug("Failed to attach node (%d)\n", rc);
->  		dlpar_release_drc(drc_index);
->  		dlpar_free_cc_nodes(dn);
->  		return rc;
->  	}
->  
->  	rc = dlpar_online_cpu(dn);
-> +	if (rc) {
-> +		pr_debug("Failed to online cpu (%d)\n", rc);
-> +		dlpar_detach_node(dn);
-> +		dlpar_release_drc(drc_index);
-> +	}
-> +
-> +	pr_info("Successfully added CPU, drc index %x\n", drc_index);
->  	return rc;
-
-
-But this is the opposite of what we want.
-
-By default this will print two info lines for each successful cpu hotplug, but
-when we get an error nothing will be printed - because pr_debug() is off by
-default. What's worse, if dlpar_online_cpu() fails, the pr_debug() will produce
-nothing but we will *still* print "Successfully added CPU".
-
-So the pr_info()s should go entirely and the pr_debugs() should become
-pr_warns(). The warning messages should become more verbose so they stand on
-their own, ie. include the drc_index.
-
-When everything goes perfectly there should be no output.
-
-
-> @@ -465,18 +480,29 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->  {
->  	int rc;
->  
-> +	pr_info("Attemping to remove CPU, drc index %x\n", drc_index);
-> +
->  	rc = dlpar_offline_cpu(dn);
-> -	if (rc)
-> +	if (rc) {
-> +		pr_debug("Failed top offline cpu (%d)\n", rc);
-                                   ^
-				   should be to
-
->  		return -EINVAL;
-> +	}
->  
->  	rc = dlpar_release_drc(drc_index);
-> -	if (rc)
-> +	if (rc) {
-> +		pr_debug("Failed to release drc (%d)\n", rc);
-> +		dlpar_online_cpu(dn);
->  		return rc;
-> +	}
->  
->  	rc = dlpar_detach_node(dn);
-> -	if (rc)
-> +	if (rc) {
-> +		pr_debug("Failed to detach cpu node (%d)\n", rc);
->  		dlpar_acquire_drc(drc_index);
-
-But that can fail?
-
-> +		dlpar_online_cpu(dn);
-
-And if it did this would presumably not be safe?
-
-
-cheers
+> 
+>   arch/powerpc/kernel/signal_64.c:82:28: error: 'sigcontext_vmx_regs' defined but not used [-Werror=unused-function]
+>    static elf_vrreg_t __user *sigcontext_vmx_regs(struct sigcontext __user *sc)
+>                             ^
+> 
+> For now I'll just #ifdef it.
+> 
+> Please do a test build of ppc64e_defconfig in future.
