@@ -1,34 +1,29 @@
-Return-Path: <cl@linux.com>
-Received: from resqmta-ch2-08v.sys.comcast.net
- (resqmta-ch2-08v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:40])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B54E1A0A23
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 00:14:06 +1000 (AEST)
-Date: Tue, 21 Jul 2015 09:05:35 -0500 (CDT)
-From: Christoph Lameter <cl@linux.com>
-To: Vlastimil Babka <vbabka@suse.cz>
-cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, Mel Gorman <mgorman@suse.de>,
- David Rientjes <rientjes@google.com>, Greg Thelen <gthelen@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Pekka Enberg <penberg@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Cliff Whickman <cpw@sgi.com>,
- Robin Holt <robinmholt@gmail.com>
-Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
-In-Reply-To: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
-Message-ID: <alpine.DEB.2.11.1507210901150.28813@east.gentwo.org>
-References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419F21A0186
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 01:36:06 +1000 (AEST)
+Message-ID: <55AE66DF.1060600@suse.cz>
+Date: Tue, 21 Jul 2015 17:35:59 +0200
+From: Vlastimil Babka <vbabka@suse.cz>
+MIME-Version: 1.0
+To: Eric B Munson <emunson@akamai.com>, Jonathan Corbet <corbet@lwn.net>
+CC: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.cz>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V3 3/5] mm: mlock: Introduce VM_LOCKONFAULT and add mlock
+ flags to enable it
+References: <1436288623-13007-1-git-send-email-emunson@akamai.com>
+ <1436288623-13007-4-git-send-email-emunson@akamai.com>
+ <20150708132351.61c13db6@lwn.net> <20150708203456.GC4669@akamai.com>
+ <20150708151750.75e65859@lwn.net> <20150709184635.GE4669@akamai.com>
+ <20150710101118.5d04d627@lwn.net> <20150710161948.GF4669@akamai.com>
+In-Reply-To: <20150710161948.GF4669@akamai.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,29 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Jul 2015, Vlastimil Babka wrote:
+On 07/10/2015 06:19 PM, Eric B Munson wrote:
+> On Fri, 10 Jul 2015, Jonathan Corbet wrote:
+>
+>> On Thu, 9 Jul 2015 14:46:35 -0400
+>> Eric B Munson <emunson@akamai.com> wrote:
+>>
+>>>> One other question...if I call mlock2(MLOCK_ONFAULT) on a range that
+>>>> already has resident pages, I believe that those pages will not be locked
+>>>> until they are reclaimed and faulted back in again, right?  I suspect that
+>>>> could be surprising to users.
+>>>
+>>> That is the case.  I am looking into what it would take to find only the
+>>> present pages in a range and lock them, if that is the behavior that is
+>>> preferred I can include it in the updated series.
+>>
+>> For whatever my $0.02 is worth, I think that should be done.  Otherwise
+>> the mlock2() interface is essentially nondeterministic; you'll never
+>> really know if a specific page is locked or not.
+>>
+>> Thanks,
+>>
+>> jon
+>
+> Okay, I likely won't have the new set out today then.  This change is
+> more invasive.  IIUC, I need an equivalent to __get_user_page() skips
+> pages which are not present instead of faulting in and the call chain to
+> get to it.  Unless there is an easier way that I am missing.
 
-> The function alloc_pages_exact_node() was introduced in 6484eb3e2a81 ("page
-> allocator: do not check NUMA node ID when the caller knows the node is valid")
-> as an optimized variant of alloc_pages_node(), that doesn't allow the node id
-> to be -1. Unfortunately the name of the function can easily suggest that the
-> allocation is restricted to the given node. In truth, the node is only
-> preferred, unless __GFP_THISNODE is among the gfp flags.
+IIRC having page PageMlocked and put on unevictable list isn't necessary 
+to prevent it from being reclaimed. It's just to prevent it from being 
+scanned for reclaim in the first place. When attempting to unmap the 
+page, vma flags are still checked, see the code in try_to_unmap_one(). 
+You should probably extend the checks to your new VM_ flag as it is done 
+for VM_LOCKED and then you shouldn't need to walk the pages to mlock 
+them (although it would probably still be better for the accounting 
+accuracy).
 
-Yup. I complained about this when this was introduced. Glad to see this
-fixed. Initially this was alloc_pages_node() which just means that a node
-is specified. The exact behavior of the allocation is determined by flags
-such as GFP_THISNODE. I'd rather have that restored because otherwise we
-get into weird code like the one below. And such an arrangement also
-leaves the way open to add more flags in the future that may change the
-allocation behavior.
-
-
->  	area->nid = nid;
->  	area->order = order;
-> -	area->pages = alloc_pages_exact_node(area->nid,
-> +	area->pages = alloc_pages_prefer_node(area->nid,
->  						GFP_KERNEL|__GFP_THISNODE,
->  						area->order);
-
-This is not preferring a node but requiring alloction on that node.
+> Eric
+>
