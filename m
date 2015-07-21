@@ -1,35 +1,24 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
- [IPv6:2a00:1450:4010:c03::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E9391A0A23
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 23:25:20 +1000 (AEST)
-Received: by laem6 with SMTP id m6so117683362lae.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 06:25:16 -0700 (PDT)
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1AF1A1A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 23:45:07 +1000 (AEST)
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>,
+ "madalin.bucur@freescale.com" <madalin.bucur@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC,v3,12/12] fsl/fman: Add FMan MAC driver
+Date: Tue, 21 Jul 2015 13:44:59 +0000
+Message-ID: <1437486300.10831.42.camel@transmode.se>
+References: <1430299742-29428-1-git-send-email-igal.liberman@freescale.com>
+ <1437394575.10831.18.camel@transmode.se>
+ <BL2PR03MB5450DB021D160D507432FC5E6850@BL2PR03MB545.namprd03.prod.outlook.com>
+ <1437397042.10831.34.camel@transmode.se>
+ <BL2PR03MB545971A75540877E4B4FFD3E6850@BL2PR03MB545.namprd03.prod.outlook.com>
+In-Reply-To: <BL2PR03MB545971A75540877E4B4FFD3E6850@BL2PR03MB545.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFqozGkHRSFYm=P61XnYj4F-kpoYG2CmVDc1tSkT_zQJ5w@mail.gmail.com>
-References: <1434715227-27399-1-git-send-email-stripathi@apm.com>
- <1434715227-27399-3-git-send-email-stripathi@apm.com>
- <CAOHikRBkDinUfcOR3Dg12e2Xy_P5TABOpHSnkSpZhRyhLRWGFA@mail.gmail.com>
- <CAPDyKFqozGkHRSFYm=P61XnYj4F-kpoYG2CmVDc1tSkT_zQJ5w@mail.gmail.com>
-Date: Tue, 21 Jul 2015 18:55:15 +0530
-Message-ID: <CAOHikRCRiLb+bDo0Cm8Wb-1R4t+EfYTjW3NxBaF9T3_qTsSggQ@mail.gmail.com>
-Subject: Re: [PATCH v8 2/2] mmc: host: sdhci: Disable 1.8V signaling for
- arasan 4.9a version of SDHCI controller.
-From: Suman Tripathi <stripathi@apm.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
- Arnd Bergmann <arnd@arndb.de>, Michal Simek <michal.simek@xilinx.com>,
- Kevin Hilman <khilman@deeprootsystems.com>,
- Olof Johansson <olof@lixom.net>, linux-mmc <linux-mmc@vger.kernel.org>,
- "arm@kernel.org" <arm@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Don Dutile <ddutile@redhat.com>,
- Jon Masters <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>,
- patches <patches@apm.com>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,51 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 21, 2015 at 6:43 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 19 June 2015 at 14:28, Suman Tripathi <stripathi@apm.com> wrote:
->> Hi ,
->>
->> On Fri, Jun 19, 2015 at 5:30 PM, Suman Tripathi <stripathi@apm.com> wrote:
->>> This patch disables the 1.8V signaling for arasan 4.9a version
->>> of SDHCI controller with the help SDHCI_QUIRK2_NO_1_8_V quirk.
->>>
->>> Signed-off-by: Suman Tripathi <stripathi@apm.com>
->>> ---
->>> ---
->>>  drivers/mmc/host/sdhci-of-arasan.c | 3 ++-
->>>  1 file changed, 2 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/mmc/host/sdhci-of-arasan.c b/drivers/mmc/host/sdhci-of-arasan.c
->>> index 21c0c08..4c99ea4 100644
->>> --- a/drivers/mmc/host/sdhci-of-arasan.c
->>> +++ b/drivers/mmc/host/sdhci-of-arasan.c
->>> @@ -171,7 +171,8 @@ static int sdhci_arasan_probe(struct platform_device *pdev)
->>>
->>>         if (of_device_is_compatible(pdev->dev.of_node, "arasan,sdhci-4.9a")) {
->>>                 host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
->>> -               host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
->>> +               host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23 |
->>> +                                SDHCI_QUIRK2_NO_1_8_V;
->>>         }
->>
->>
->> I think I am  wrong here. No-1.8v is something related to board
->> regulator circuitry not related to IP version. So it should be dts
->> driven.
->
-> Agree!
->
-> So I guess that will change patch1 and this one can be completely dropped?
+On Mon, 2015-07-20 at 13:33 +0000, Madalin-Cristian Bucur wrote:
+> > -----Original Message-----
+> > From: Joakim Tjernlund [mailto:joakim.tjernlund@transmode.se]
+> > Sent: Monday, July 20, 2015 3:57 PM
+> > To: netdev@vger.kernel.org; Liberman Igal-B31950; Bucur Madalin-Cristia=
+n-
+> > B32716
+> > Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [RFC,v3,12/12] fsl/fman: Add FMan MAC driver
+> >=20
+> > On Mon, 2015-07-20 at 12:28 +0000, Madalin-Cristian Bucur wrote:
+> > > Hi Joakim,
+> > >=20
+> > > It seems we just need to align to the API introduced by Thomas Petazz=
+oni
+> > > in 3be2a49e.
+> > >=20
+> > > Madalin
+> >=20
+> > So it seems, any idea when the next spin will be ready?
+> > Could you also push it onto
+> >   http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git/
+> > ?
+> >=20
+> >  Jocke
+>=20
+> We're working on addressing all the feedback received to date (you've jus=
+t added
+> a bit more) then we'll re-submit the FMan driver together with the DPAA E=
+thernet
+> driver. A push in the public git is also going to take place after the pa=
+tches are sent
+> for review.
 
-yes.
+Hi again
 
->
-> Kind regards
-> Uffe
+Now I got to actually use PHY less(aka. Fixed PHY) too. I had to hack AN of=
+f for all such links
+to get a 1000 SGMII link working:
+--- a/drivers/net/ethernet/freescale/fman/mac/memac.c
++++ b/drivers/net/ethernet/freescale/fman/mac/memac.c
+@@ -80,7 +80,10 @@ static void setup_sgmii_internal_phy(struct memac_t *p_m=
+emac, uint8_t phy_addr)
+                           ENET_SPEED_1000);
+=20
+        /* SGMII mode + AN enable */
+-       tmp_reg16 =3D PHY_SGMII_IF_MODE_AN | PHY_SGMII_IF_MODE_SGMII;
++       //tmp_reg16 =3D PHY_SGMII_IF_MODE_AN | PHY_SGMII_IF_MODE_SGMII;
++       tmp_reg16 =3D PHY_SGMII_IF_MODE_AN | PHY_SGMII_IF_MODE_SGMII | 0x8;
++       if (p_memac->mac_id !=3D 0)
++               tmp_reg16 &=3D ~PHY_SGMII_IF_MODE_AN;
+        memac_mii_write_phy_reg(p_memac, phy_addr, 0x14, tmp_reg16);
+=20
+        /* Device ability according to SGMII specification */
+@@ -104,6 +107,8 @@ static void setup_sgmii_internal_phy(struct memac_t *p_=
+memac, uint8_t phy_addr)
+=20
+        /* Restart AN */
+        tmp_reg16 =3D PHY_SGMII_CR_DEF_VAL | PHY_SGMII_CR_RESET_AN;
++       if (p_memac->mac_id !=3D 0)
++               tmp_reg16 &=3D ~0x1000;
+        memac_mii_write_phy_reg(p_memac, phy_addr, 0x0, tmp_reg16);
+=20
+        /* Restore original enet mode */
 
 
+Could you please fix this too?
 
--- 
-Thanks,
-with regards,
-Suman Tripathi
+ Jocke=
