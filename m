@@ -1,29 +1,25 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6608D1A1A3C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 14:09:38 +1000 (AEST)
-Received: by pabkd10 with SMTP id kd10so59285316pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 21:09:35 -0700 (PDT)
-Message-ID: <1437538064.30906.20.camel@axtens.net>
-Subject: Re: [PATCH v5 4/7] powerpc/powernv: detect supported nest pmus and
- its events
-From: Daniel Axtens <dja@axtens.net>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Stephane
- Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>, Anton
- Blanchard <anton@samba.org>,  Sukadev Bhattiprolu
- <sukadev@linux.vnet.ibm.com>, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>
-Date: Wed, 22 Jul 2015 14:07:44 +1000
-In-Reply-To: <1437045206-7491-5-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1437045206-7491-5-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-/Bdobyz4nnAGlzVbuzDU"
-Mime-Version: 1.0
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id F1FB11A1A2C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 14:22:46 +1000 (AEST)
+Date: Wed, 22 Jul 2015 14:22:21 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Michael Schmitz <schmitzmic@gmail.com>
+cc: Andreas Schwab <schwab@linux-m68k.org>, linux-kernel@vger.kernel.org,
+ linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RFC v4 03/25] m68k/atari: Move Atari-specific code out of
+ drivers/char/nvram.c
+In-Reply-To: <55AF1364.3080701@gmail.com>
+Message-ID: <alpine.LNX.2.00.1507221421100.4187@nippy.intranet>
+References: <20150712102527.356151908@telegraphics.com.au>
+ <20150712102528.107134628@telegraphics.com.au> <87d1zwc4dj.fsf@igel.home>
+ <alpine.LNX.2.00.1507141804300.1622@nippy.intranet>
+ <55AF1364.3080701@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,151 +30,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-/Bdobyz4nnAGlzVbuzDU
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Wed, 22 Jul 2015, Michael Schmitz wrote:
 
-=20
->  static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
-> +static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
-> +
-> +static int nest_event_info(struct property *pp, char *name,
-> +			struct nest_ima_events *p8_events, int string, u32 val)
-'int string' is a bit confusing. 'bool is_string' might be clearer, but
-I think it would be even better still to have different functions for
-string and non-string cases, especially because you only need val in the
-non-string case.
+> Hi Finn,
+> 
+> I'm afraid I cannot test anything on Atari hardware at present - my 
+> Falcon ate it's IDE disk partition table with all the fun that entails. 
 
-That will also allow you to give the functions clearer names. I think
-the function is populating the event with info from the dt property (in
-the string case) or the val argument (non-string case) - maybe the names
-could reflect that somehow?
-> +{
-> +	char *buf;
-> +
+That doesn't sound good.
 
+> Haven't even begun to try and recover that yet.
+> 
+> If you send a patch I could build a kernel and send that to Christian 
+> for testing (if he's got his Falcon up and running - might be a tad warm 
+> in the attic for that, in fact).
 
-> +
-> +static int nest_pmu_create(struct device_node *dev, int pmu_index)
-> +{
-> +	struct nest_ima_events **p8_events_arr, *p8_events;
-> +	struct nest_pmu *pmu_ptr;
-> +	struct property *pp;
-> +	char *buf, *start;
-> +	const __be32 *lval;
-> +	u32 val;
-> +	int idx =3D 0, ret;
-> +
-> +	if (!dev)
-> +		return -EINVAL;
-> +
-> +	/* memory for nest pmus */
-> +	pmu_ptr =3D kzalloc(sizeof(struct nest_pmu), GFP_KERNEL);
-> +	if (!pmu_ptr)
-> +		return -ENOMEM;
-> +
-> +	/* Needed for hotplug/migration */
-> +	per_nest_pmu_arr[pmu_index] =3D pmu_ptr;
-> +
-> +	/* memory for nest pmu events */
-> +	p8_events_arr =3D kzalloc((sizeof(struct nest_ima_events) * 64),
-> +								GFP_KERNEL);
-> +	if (!p8_events_arr)
-> +		return -ENOMEM;
-> +	p8_events =3D (struct nest_ima_events *)p8_events_arr;
+Anyone with a suitable Atari, i.e. ATARIHW_PRESENT(TT_CLK), who can boot 
+both TOS and Linux could resolve the question. (Perhaps with an emulator?)
 
-I'm still quite uncomfortable with this.
- - Why * 64? Should it be * P8_NEST_MAX_EVENTS_SUPPORTED? Or is it a
-different constant?
- - p8_events =3D p8_events_arr[0] would be clearer
+Any old kernel binary would do, since atari_scsi should print either 
+"HOSTID=n" or "this_id n" at startup.
 
-> +
-> +	/*
-> +	 * Loop through each property
-> +	 */
-> +	for_each_property_of_node(dev, pp) {
-> +		start =3D pp->name;
-> +
-> +		if (!strcmp(pp->name, "name")) {
-> +			if (!pp->value ||
-> +			   (strnlen(pp->value, pp->length) =3D=3D pp->length) ||
-> +			   (pp->length > P8_NEST_MAX_PMU_NAME_LEN))
-> +				return -EINVAL;
-> +
-> +			buf =3D kzalloc(P8_NEST_MAX_PMU_NAME_LEN, GFP_KERNEL);
-> +			if (!buf)
-> +				return -ENOMEM;
-> +
-> +			/* Save the name to register it later */
-> +			sprintf(buf, "Nest_%s", (char *)pp->value);
-> +			pmu_ptr->pmu.name =3D (char *)buf;
-> +			continue;
-> +		}
-> +
-> +		/* Skip these, we dont need it */
-"don't" instead of "dont".
-> +		if (!strcmp(pp->name, "phandle") ||
-> +		    !strcmp(pp->name, "device_type") ||
-> +		    !strcmp(pp->name, "linux,phandle"))
-> +			continue;
-> +
-> +		if (strncmp(pp->name, "unit.", 5) =3D=3D 0) {
-> +			/* Skip first few chars in the name */
-The whole comment is pretty uninformative, as is the similar comment
-below. If you need a comment at all, maybe something along the lines of
-"Strip the prefix because <reason we don't need/want the prefix>"?
-> +			start +=3D 5;
-> +			ret =3D nest_event_info(pp, start, p8_events++, 1, 0);
-> +		} else if (strncmp(pp->name, "scale.", 6) =3D=3D 0) {
-> +			/* Skip first few chars in the name */
-> +			start +=3D 6;
-> +			ret =3D nest_event_info(pp, start, p8_events++, 1, 0);
-> +		} else {
-> +			lval =3D of_get_property(dev, pp->name, NULL);
-> +			val =3D (uint32_t)be32_to_cpup(lval);
-> +
-> +			ret =3D nest_event_info(pp, start, p8_events++, 0, val);
-> +		}
-> +
-> +		if (ret)
-> +			return ret;
-> +
-> +		/* book keeping */
-> +		idx++;
-You don't seem to use idx in this function, apart from incrementing it
-here...?
-> +	}
-> +
-> +	return 0;
-> +}
+If n doesn't agree with what TOS says about the host's SCSI ID, then I 
+think a trivial patch is safe enough. Especially if cat /proc/driver/nvram 
+produces a "SCSI host ID : m" that does agree with TOS.
 
-
---=20
 Regards,
-Daniel
+Finn
 
---=-/Bdobyz4nnAGlzVbuzDU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCgAGBQJVrxcQAAoJEPC3R3P2I92FsCEP/Rf+YM34gZBAVGZga9mqgR7z
-KqeutpiFUua+LgU0u75Le1I63LrtAkt4bbk/v58nicyH9ph4IgUFGcJZTQOXy5ue
-iwf+RwxajEtGXcE+iH8nPGQGY6g9C/W/4DTzgHjS+8o5iumrx5MePEJnEUrWnvK8
-Kc+Lo9VPU6vILfGTh4WRtGdg0x54vWAH3ospu6EQXpyb9NrQzubNsbF3miaBaAnG
-aItr9OTlNPOj747WUho+veWYNFKJC8BUPlTpLaY19HwF5m660BU3AMfSObzCezZj
-RjXIHfO3rQUv2gZz1nGM/8/+i/HDRpLpUlDgVCeeKysRR4wlS2ZK2LxhV8LegibS
-QjQ6PvyxX5NOENbF6tDxqJPshCqEZhDQeQ1vMPPYD9MjMWwPeHG7bOgcrSNibNuc
-XG63XSYQ17r+K+pQtjabaJAODLswaX6SKYF48M75rfp+oorOjFrstqf1SjMxUPnQ
-3QyOUbEk5bNrRWtUp8TbmYyPg3mc/KS7LrdZ//65ic7kEsk/RFwrCEdnlzec1ejY
-CmewDJJg40vfr2g4aFvhH1akDAml9ffSvGdzdNUCsM3yy1+ZCVM3+AvHD2w6zcsK
-Kg8mSag3Y980ZDguWqSHRvMgkIETF6vBvnObEUrwJCC29ABvc/qb3SyFTPbHNZO4
-GYURqdKKzSbdWDfx/tgP
-=ABZ9
------END PGP SIGNATURE-----
-
---=-/Bdobyz4nnAGlzVbuzDU--
+> 
+> Cheers,
+> 
+>     Michael
+> 
+> 
+> Am 14.07.15 um 20:17 schrieb Finn Thain:
+> > On Mon, 13 Jul 2015, Andreas Schwab wrote:
+> >
+> > > Finn Thain <fthain@telegraphics.com.au> writes:
+> > >
+> > > > BTW, I didn't change the SCSI ID location in NVRAM. This code says 16
+> > > > whereas atari_scsi says 14. Which one is correct?
+> > > I think atari_scsi is wrong.  The best source I could find
+> > > (http://www.gratifiant.com/nvram-falcon-t561185) places it after the
+> > > video mode byte, thus at byte 16.
+> > Thanks for that. BTW, I googled a phrase from that page and found this one
+> >    http://toshyp.atari.org/en/004009.html
+> > which may be closer to the source.
+> >
+> > I'll send a patch if someone can offer to test such a change to atari_scsi
+> > (or merely confirm that the SCSI ID setting in TOS does not match this_id
+> > given in dmesg).
+> >
+> 
