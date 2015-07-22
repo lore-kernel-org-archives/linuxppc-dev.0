@@ -1,41 +1,29 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
+ [IPv6:2607:f8b0:400e:c02::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B7AF41A1A35
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 11:52:04 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 21 Jul 2015 21:52:01 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id F0026C9003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 21:43:04 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6M1pwjH45219860
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 01:51:58 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6M1pwt9009088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 21:51:58 -0400
-Date: Tue, 21 Jul 2015 18:50:45 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 7/8] perf: Define PMU_TXN_READ interface
-Message-ID: <20150722015045.GA24420@us.ibm.com>
-References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1436929315-28520-8-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150716222015.GO3644@twins.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150716222015.GO3644@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F6631A1A34
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 13:51:36 +1000 (AEST)
+Received: by pdrg1 with SMTP id g1so131248051pdr.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 20:51:33 -0700 (PDT)
+Message-ID: <1437536981.30906.9.camel@axtens.net>
+Subject: Re: [PATCH v5 3/7] powerpc/powernv: Nest PMU detection and device
+ tree parser
+From: Daniel Axtens <dja@axtens.net>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Stephane
+ Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>, Anton
+ Blanchard <anton@samba.org>,  Sukadev Bhattiprolu
+ <sukadev@linux.vnet.ibm.com>, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>
+Date: Wed, 22 Jul 2015 13:49:41 +1000
+In-Reply-To: <1437045206-7491-4-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1437045206-7491-4-git-send-email-maddy@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-kX+xYsq+0FG/YOIK7Wfj"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,104 +33,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra [peterz@infradead.org] wrote:
-| On Tue, Jul 14, 2015 at 08:01:54PM -0700, Sukadev Bhattiprolu wrote:
-| > +/*
-| > + * Use the transaction interface to read the group of events in @leader.
-| > + * PMUs like the 24x7 counters in Power, can use this to queue the events
-| > + * in the ->read() operation and perform the actual read in ->commit_txn.
-| > + *
-| > + * Other PMUs can ignore the ->start_txn and ->commit_txn and read each
-| > + * PMU directly in the ->read() operation.
-| > + */
-| > +static int perf_event_read_group(struct perf_event *leader)
-| > +{
-| > +	int ret;
-| > +	struct perf_event *sub;
-| > +	struct pmu *pmu;
-| > +
-| > +	pmu = leader->pmu;
-| > +
-| > +	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
-| > +
-| > +	perf_event_read(leader);
-| 
-| There should be a lockdep assert with that list iteration.
-| 
-| > +	list_for_each_entry(sub, &leader->sibling_list, group_entry)
-| > +		perf_event_read(sub);
-| > +
-| > +	ret = pmu->commit_txn(pmu);
 
-Peter,
+--=-kX+xYsq+0FG/YOIK7Wfj
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-I have a situation :-)
+Hi,
 
-We are trying to use the following interface:
+> +static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
+> +
+> +static int nest_ima_dt_parser(void)
+> +{
+> +	const __be32 *gcid;
+> +	const __be64 *chip_ima_reg;
+> +	const __be64 *chip_ima_size;
+> +	struct device_node *dev;
+> +	struct perchip_nest_info *p8ni;
+> +	int idx;
+> +
+> +	/*
+> +	 * "nest-ima" folder contains two things,
+> +	 * a) per-chip reserved memory region for Nest PMU Counter data
+> +	 * b) Support Nest PMU units and their event files
+> +	 */
+> +	for_each_node_with_property(dev, "ibm,ima-chip") {
+> +		gcid =3D of_get_property(dev, "ibm,chip-id", NULL);
+> +		chip_ima_reg =3D of_get_property(dev, "reg", NULL);
+> +		chip_ima_size =3D of_get_property(dev, "size", NULL);
+> +
+> +		if ((!gcid) || (!chip_ima_reg) || (!chip_ima_size)) {
+> +			pr_err("Nest_PMU: device %s missing property\n",
+> +							dev->full_name);
+> +			return -ENODEV;
+> +		}
+> +
+> +		/* chip id to save reserve memory region */
+> +		idx =3D (uint32_t)be32_to_cpup(gcid);
+So be32_to_cpup returns a __u32. You're casting to a uint32_t and then
+assigning to an int.
+ - Do you need the intermediate cast?
+ - Should idx be an unsigned type?
+> +
+> +		/*
+> +		 * Using a local variable to make it compact and
+> +		 * easier to read
+> +		 */
+We probably don't need this comment. But a better variable name would be
+helpful!=20
+> +		p8ni =3D &p8_nest_perchip_info[idx];
+> +		p8ni->pbase =3D be64_to_cpup(chip_ima_reg);
+> +		p8ni->size =3D be64_to_cpup(chip_ima_size);
+> +		p8ni->vbase =3D (uint64_t) phys_to_virt(p8ni->pbase);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int __init nest_pmu_init(void)
+> +{
+> +	int ret =3D -ENODEV;
+> +
+> +	/*
+> +	 * Lets do this only if we are hypervisor
+> +	 */
+> +	if (!cur_cpu_spec->oprofile_cpu_type ||
+> +	    !(strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8") =3D=3D 0)=
+ ||
+> +	    !cpu_has_feature(CPU_FTR_HVMODE))
+> +		return ret;
+> +
+I'm still really uncomfortable with doing this via oprofile_cpu_type.
+If the kernel is compiled without oprofile support, will that get
+populated?
 
-	start_txn(pmu, PERF_PMU_TXN_READ);
+I'm also curious about why we need checking for power8 at all. We
+already know we're not going to run on hardware without a nest PMU
+because of the device tree check below.=20
 
-	perf_event_read(leader);
-	list_for_each(sibling, &leader->sibling_list, group_entry)
-		perf_event_read(sibling)
+What happens if there's a future generation of chip that supports nest
+PMUs?
 
-	pmu->commit_txn(pmu);
+If it's really important to check versions in this function, maybe you
+could put a version property in the ibm,ima-chip node?
+> +	/*
+> +	 * Nest PMU information is grouped under "nest-ima" node
+> +	 * of the top-level device-tree directory. Detect Nest PMU
+> +	 * by the "ibm,ima-chip" property.
+> +	 */
+> +	if (!of_find_node_with_property(NULL, "ibm,ima-chip"))
+> +		return ret;
+> +
+> +	/*
+> +	 * Parse device-tree for Nest PMU information
+> +	 */
+> +	ret =3D nest_ima_dt_parser();
+> +	if (ret)
+> +		return ret;
+> +
+> +	return 0;
+> +}
+> +device_initcall(nest_pmu_init);
 
-with the idea that the PMU driver would save the type of transaction in
-->start_txn() and use in ->read() and ->commit_txn().
+--=20
+Regards,
+Daniel
 
-But since ->start_txn() and the ->read() operations could happen on different
-CPUs (perf_event_read() uses the event->oncpu to schedule a call), the PMU
-driver cannot use a per-cpu variable to save the state in ->start_txn().
+--=-kX+xYsq+0FG/YOIK7Wfj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-I tried using a pmu-wide global, but that would also need us to hold a mutex
-to serialize access to that global. The problem is ->start_txn() can be
-called from an interrupt context for the TXN_ADD transactions (I got the
-following backtrace during testing)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
 
-	mutex_lock_nested+0x504/0x520 (unreliable)
-	h_24x7_event_start_txn+0x3c/0xd0
-	group_sched_in+0x70/0x230
-	ctx_sched_in.isra.63+0x150/0x230
-	__perf_install_in_context+0x1c8/0x1e0
-	remote_function+0x7c/0xa0
-	flush_smp_call_function_queue+0xb0/0x1d0
-	smp_ipi_demux+0x88/0xf0
-	icp_hv_ipi_action+0x54/0xc0
-	handle_irq_event_percpu+0x98/0x2b0
-	handle_percpu_irq+0x7c/0xc0
-	generic_handle_irq+0x4c/0x80
-	__do_irq+0x7c/0x190
-	call_do_irq+0x14/0x24
-	do_IRQ+0x8c/0x100
-	hardware_interrupt_common+0x168/0x180
-	--- interrupt: 501 at .plpar_hcall_norets+0x14/0x20
+iQIcBAABCgAGBQJVrxLVAAoJEPC3R3P2I92F97YP/jNCHgTGxWUhd4s5GcuuS0ZU
+aEdirldcCxyGsV08gdJK3+Nt2mcOEoDWG3zwnkUjhXR9q7CoFbK2Sl/2PY5ZBWGq
+31cwH4u85YP9sgkSzDxMD62wZhm2SlGBUO3PR6NTFS+Mk5zoi6jcZb9Bysp2hlR2
+ndmXSWQ4JPbvQdHaP6Kvppp0MqR9nmbfoo4BxhsnrjWyuYh+RO943Yf1fD0GZYYp
+zBLIsRs81fHe5sF18fX+915wZ89Zhikmc+v2V1fArX3g/vvDq96GJTwldYm5fDZW
+zzMZ7p6RbBHjS57h4HN/9Wi0cXsq9rbMjgy7RImm2GeAQIkuZKhBCsq5oBUdGxE+
+NbEKnxCGbpEeQ/+Mn6c66N70ptK8vHBePdPOaIgG1D+it737/7CRpBU+pyJmP6g8
+l9x5RurBKNUBu+qO3RzNzxJtDJ7xcEdmu7OxaAiSB9Zo403cMT4l3sAlOrKDZzaC
+XQ2Ssq2bY9swMLpuvWr/Glzek6Kbuyx3w1lqnqa/lfZm9vAmkxXwce+TiwqLtIv1
+W5DSWRdeoDk6ew9XRAMmfyu2M/NcSmwPHj2nAcqGvn1SH5UCriNpy3Pim+PBPJQT
+VAug1TBw8Cv9C4hOun2OJWk2DX16ok6hXFeBCkW+c+1QDGmHHw3B6bImBCLHFn0t
+U6rBfDQ5diwEouQt7tMS
+=zB/+
+-----END PGP SIGNATURE-----
 
-Basically stuck trying to save the txn type in ->start_txn() and retrieve in
-->read().
-
-Couple of options I can think of are:
-
-	- having ->start_txn() return a handle that should then be passed in
-	  with ->read() (yuck) and ->commit_txn().
-
-	- serialize the READ transaction for the PMU in perf_event_read_group()
-	  with a new pmu->txn_mutex:
-
-		mutex_lock(&pmu->txn_mutex);
-
-		pmu->start_txn()
-		list_for_each_entry(sub, &leader->sibling_list, group_entry)
-			perf_event_read(sub);
-
-		ret = pmu->commit_txn(pmu);
-
-		mutex_unlock(&pmu->txn_mutex);
-
-	  such serialization would be ok with 24x7 counters (they are system
-	  wide counters anyway) We could maybe skip the mutex for PMUs that
-	  don't implement TXN_READ interface.
-
-or is there better way?
-
-Sukadev
+--=-kX+xYsq+0FG/YOIK7Wfj--
