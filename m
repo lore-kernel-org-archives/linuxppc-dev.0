@@ -1,36 +1,26 @@
-Return-Path: <sam.mj@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E3B141A2A8D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 15:55:01 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B24AD1402C7
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2015 15:55:01 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sam.mj@au1.ibm.com>;
- Wed, 22 Jul 2015 15:55:01 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7C3843578054
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2015 15:54:58 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6M5snYx983542
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2015 15:54:57 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6M5sPF8020101
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2015 15:54:25 +1000
-From: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>, benh@kernel.crashing.org
-Subject: [RFC PATCH] powerpc/kexec: Wait 1s for secondaries to enter OPAL
-Date: Wed, 22 Jul 2015 15:54:29 +1000
-Message-Id: <1437544469-20028-1-git-send-email-sam.mj@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7BE8C1A2ABA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 15:55:16 +1000 (AEST)
+Date: Wed, 22 Jul 2015 07:55:03 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org
+Subject: Re: [PATCH v3 7/8] perf: Define PMU_TXN_READ interface
+Message-ID: <20150722055503.GO25159@twins.programming.kicks-ass.net>
+References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1436929315-28520-8-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150716222015.GO3644@twins.programming.kicks-ass.net>
+ <20150722015045.GA24420@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150722015045.GA24420@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,59 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Always include a timeout when waiting for secondary cpus to enter OPAL
-in the kexec path, rather than only when crashing.
+On Tue, Jul 21, 2015 at 06:50:45PM -0700, Sukadev Bhattiprolu wrote:
+> We are trying to use the following interface:
+> 
+> 	start_txn(pmu, PERF_PMU_TXN_READ);
+> 
+> 	perf_event_read(leader);
+> 	list_for_each(sibling, &leader->sibling_list, group_entry)
+> 		perf_event_read(sibling)
+> 
+> 	pmu->commit_txn(pmu);
+> 
+> with the idea that the PMU driver would save the type of transaction in
+> ->start_txn() and use in ->read() and ->commit_txn().
+> 
+> But since ->start_txn() and the ->read() operations could happen on different
+> CPUs (perf_event_read() uses the event->oncpu to schedule a call), the PMU
+> driver cannot use a per-cpu variable to save the state in ->start_txn().
 
-Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
----
- arch/powerpc/platforms/powernv/setup.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+> or is there better way?
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 59076db..f916601 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -195,7 +195,7 @@ static void pnv_kexec_wait_secondaries_down(void)
- 
- 	for_each_online_cpu(i) {
- 		uint8_t status;
--		int64_t rc;
-+		int64_t rc, timeout = 1000;
- 
- 		if (i == my_cpu)
- 			continue;
-@@ -212,6 +212,18 @@ static void pnv_kexec_wait_secondaries_down(void)
- 				       i, paca[i].hw_cpu_id);
- 				notified = i;
- 			}
-+
-+			/*
-+			 * On crash secondaries might be unreachable or hung,
-+			 * so timeout if we've waited too long
-+			 * */
-+			mdelay(1);
-+			if (timeout-- == 0) {
-+				printk(KERN_ERR "kexec: timed out waiting for "
-+				       "cpu %d (physical %d) to enter OPAL\n",
-+				       i, paca[i].hw_cpu_id);
-+				break;
-+			}
- 		}
- 	}
- }
-@@ -233,13 +245,6 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- 
- 		/* Return the CPU to OPAL */
- 		opal_return_cpu();
--	} else if (crash_shutdown) {
--		/*
--		 * On crash, we don't wait for secondaries to go
--		 * down as they might be unreachable or hung, so
--		 * instead we just wait a bit and move on.
--		 */
--		mdelay(1);
- 	} else {
- 		/* Primary waits for the secondaries to have reached OPAL */
- 		pnv_kexec_wait_secondaries_down();
--- 
-2.4.6
+
+I've not woken up yet, and not actually fully read the email, but can
+you stuff the entire above chunk inside the IPI?
+
+I think you could then actually optimize __perf_event_read() as well,
+because all these events should be on the same context, so no point in
+calling update_*time*() for every event or so.
