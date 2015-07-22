@@ -1,19 +1,22 @@
 Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0131.outbound.protection.outlook.com [157.56.111.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D0211A0186
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 02:17:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDA0B1A1D44
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 02:18:12 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <netdev@vger.kernel.org>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <scottwood@freescale.com>, <igal.liberman@freescale.com>,
  <ppc@mindchasers.com>, <joe@perches.com>, <pebolle@tiscali.nl>,
  <joakim.tjernlund@transmode.se>, Madalin Bucur <madalin.bucur@freescale.com>
-Subject: [PATCH 00/10] dpaa_eth: Add the Freescale DPAA Ethernet driver
-Date: Wed, 22 Jul 2015 19:15:56 +0300
-Message-ID: <1437581756-17371-1-git-send-email-madalin.bucur@freescale.com>
+Subject: [PATCH 03/10] dpaa_eth: add configurable bpool thresholds
+Date: Wed, 22 Jul 2015 19:16:39 +0300
+Message-ID: <1437581806-17420-3-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1437581806-17420-2-git-send-email-madalin.bucur@freescale.com>
+References: <1437581806-17420-1-git-send-email-madalin.bucur@freescale.com>
+ <1437581806-17420-2-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -26,77 +29,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series adds the Ethernet driver for the Freescale
-QorIQ Data Path Acceleration Architecture (DPAA).
+Allow the user to tweak the refill threshold and the total number
+of buffers in the buffer pool. The provided values are for one CPU.
 
-This version includes changes following the feedback received
-on previous RFC versions from Eric Dumazet, Bob Cochran, Joe Perches,
-Paul Bolle, Joakim Tjernlund, Scott Wood - thank you for your support.	
+Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+---
+ drivers/net/ethernet/freescale/dpaa/Kconfig       | 18 ++++++++++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c    |  2 +-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h    |  3 ---
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c |  6 +++---
+ 4 files changed, 22 insertions(+), 7 deletions(-)
 
-Together with the driver a managed version of alloc_percpu
-is provided that simplifies the release of percpu memory.
-
-The Freescale DPAA architecture consists in a series of hardware
-blocks that support the Ethernet connectivity. The Ethernet driver
-depends upon the following drivers that are currently in the Linux
-kernel or in review:
- - Peripheral Access Memory Unit (PAMU)
-    drivers/iommu/fsl_*
- - Frame Manager (FMan)
-    drivers/net/ethernet/freescale/fman
- - Queue Manager (QMan), Buffer Manager (BMan)
-    drivers/soc/fsl/qbman
-
-The latest FMan driver patches were submitted by Igal Liberman:
-
-https://patchwork.ozlabs.org/project/netdev/list/?submitter=64715&state=*&q=[v3,
-
-The latest Q/BMan drivers were submitted by Roy Pledge:
-
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=66331&state=*&q=11
-
-Madalin Bucur (10):
-  devres: add devm_alloc_percpu()
-  dpaa_eth: add support for DPAA Ethernet
-  dpaa_eth: add configurable bpool thresholds
-  dpaa_eth: add support for S/G frames
-  dpaa_eth: add driver's Tx queue selection mechanism
-  dpaa_eth: add ethtool functionality
-  dpaa_eth: add sysfs exports
-  dpaa_eth: add debugfs counters
-  dpaa_eth: add debugfs entries
-  dpaa_eth: add trace points
-
- Documentation/driver-model/devres.txt              |    4 +
- drivers/base/devres.c                              |   64 +
- drivers/net/ethernet/freescale/Kconfig             |    2 +
- drivers/net/ethernet/freescale/Makefile            |    1 +
- drivers/net/ethernet/freescale/dpaa/Kconfig        |   81 ++
- drivers/net/ethernet/freescale/dpaa/Makefile       |   17 +
- drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.c |  273 ++++
- drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.h |   43 +
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  873 +++++++++++++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  496 +++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.c  | 1367 ++++++++++++++++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.h  |  130 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c  |  704 ++++++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  167 +++
- .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   |  141 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |  230 ++++
- include/linux/device.h                             |   19 +
- 17 files changed, 4612 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/dpaa/Kconfig
- create mode 100644 drivers/net/ethernet/freescale/dpaa/Makefile
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-
+diff --git a/drivers/net/ethernet/freescale/dpaa/Kconfig b/drivers/net/ethernet/freescale/dpaa/Kconfig
+index 1f3a203..9e6a39f 100644
+--- a/drivers/net/ethernet/freescale/dpaa/Kconfig
++++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
+@@ -11,6 +11,24 @@ menuconfig FSL_DPAA_ETH
+ 
+ if FSL_DPAA_ETH
+ 
++config FSL_DPAA_ETH_MAX_BUF_COUNT
++	int "Maximum number of buffers in private bpool"
++	range 64 2048
++	default "128"
++	---help---
++	  The maximum number of buffers to be by default allocated in the DPAA-Ethernet private port's
++	  buffer pool. One needn't normally modify this, as it has probably been tuned for performance
++	  already. This cannot be lower than DPAA_ETH_REFILL_THRESHOLD.
++
++config FSL_DPAA_ETH_REFILL_THRESHOLD
++	int "Private bpool refill threshold"
++	range 32 FSL_DPAA_ETH_MAX_BUF_COUNT
++	default "80"
++	---help---
++	  The DPAA-Ethernet driver will start replenishing buffer pools whose count
++	  falls below this threshold. This must be related to DPAA_ETH_MAX_BUF_COUNT. One needn't normally
++	  modify this value unless one has very specific performance reasons.
++
+ config FSL_DPAA_CS_THRESHOLD_1G
+ 	hex "Egress congestion threshold on 1G ports"
+ 	range 0x1000 0x10000000
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+index 500d0e3..fc2071e 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -475,7 +475,7 @@ dpa_priv_bp_probe(struct device *dev)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	dpa_bp->percpu_count = devm_alloc_percpu(dev, *dpa_bp->percpu_count);
+-	dpa_bp->target_count = FSL_DPAA_ETH_MAX_BUF_COUNT;
++	dpa_bp->target_count = CONFIG_FSL_DPAA_ETH_MAX_BUF_COUNT;
+ 
+ 	dpa_bp->seed_cb = dpa_bp_priv_seed;
+ 	dpa_bp->free_buf_cb = _dpa_bp_free_pf;
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+index 08c1b01..fc6c5dc 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+@@ -126,9 +126,6 @@ struct dpa_buffer_layout_s {
+ 
+ #define DPAA_ETH_RX_QUEUES	128
+ 
+-#define FSL_DPAA_ETH_MAX_BUF_COUNT	128
+-#define FSL_DPAA_ETH_REFILL_THRESHOLD	80
+-
+ /* More detailed FQ types - used for fine-grained WQ assignments */
+ enum dpa_fq_type {
+ 	FQ_TYPE_RX_DEFAULT = 1, /* Rx Default FQs */
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
+index b865d2a..d781219 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
+@@ -151,7 +151,7 @@ int dpaa_eth_refill_bpools(struct dpa_bp *dpa_bp, int *countptr)
+ 	int count = *countptr;
+ 	int new_bufs;
+ 
+-	if (unlikely(count < FSL_DPAA_ETH_REFILL_THRESHOLD)) {
++	if (unlikely(count < CONFIG_FSL_DPAA_ETH_REFILL_THRESHOLD)) {
+ 		do {
+ 			new_bufs = _dpa_bp_add_8_bufs(dpa_bp);
+ 			if (unlikely(!new_bufs)) {
+@@ -162,10 +162,10 @@ int dpaa_eth_refill_bpools(struct dpa_bp *dpa_bp, int *countptr)
+ 				break;
+ 			}
+ 			count += new_bufs;
+-		} while (count < FSL_DPAA_ETH_MAX_BUF_COUNT);
++		} while (count < CONFIG_FSL_DPAA_ETH_MAX_BUF_COUNT);
+ 
+ 		*countptr = count;
+-		if (unlikely(count < FSL_DPAA_ETH_MAX_BUF_COUNT))
++		if (unlikely(count < CONFIG_FSL_DPAA_ETH_MAX_BUF_COUNT))
+ 			return -ENOMEM;
+ 	}
+ 
 -- 
 1.7.11.7
