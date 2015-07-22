@@ -1,15 +1,15 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
- [IPv6:2607:f8b0:400e:c02::236])
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F6631A1A34
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 13:51:36 +1000 (AEST)
-Received: by pdrg1 with SMTP id g1so131248051pdr.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 20:51:33 -0700 (PDT)
-Message-ID: <1437536981.30906.9.camel@axtens.net>
-Subject: Re: [PATCH v5 3/7] powerpc/powernv: Nest PMU detection and device
- tree parser
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6608D1A1A3C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 14:09:38 +1000 (AEST)
+Received: by pabkd10 with SMTP id kd10so59285316pab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 21:09:35 -0700 (PDT)
+Message-ID: <1437538064.30906.20.camel@axtens.net>
+Subject: Re: [PATCH v5 4/7] powerpc/powernv: detect supported nest pmus and
+ its events
 From: Daniel Axtens <dja@axtens.net>
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Stephane
@@ -17,12 +17,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Stephane
  Blanchard <anton@samba.org>,  Sukadev Bhattiprolu
  <sukadev@linux.vnet.ibm.com>, Anshuman Khandual
  <khandual@linux.vnet.ibm.com>
-Date: Wed, 22 Jul 2015 13:49:41 +1000
-In-Reply-To: <1437045206-7491-4-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Wed, 22 Jul 2015 14:07:44 +1000
+In-Reply-To: <1437045206-7491-5-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1437045206-7491-4-git-send-email-maddy@linux.vnet.ibm.com>
+ <1437045206-7491-5-git-send-email-maddy@linux.vnet.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-kX+xYsq+0FG/YOIK7Wfj"
+ protocol="application/pgp-signature"; boundary="=-/Bdobyz4nnAGlzVbuzDU"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,111 +34,130 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-kX+xYsq+0FG/YOIK7Wfj
+--=-/Bdobyz4nnAGlzVbuzDU
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-> +static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
+=20
+>  static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
+> +static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
 > +
-> +static int nest_ima_dt_parser(void)
+> +static int nest_event_info(struct property *pp, char *name,
+> +			struct nest_ima_events *p8_events, int string, u32 val)
+'int string' is a bit confusing. 'bool is_string' might be clearer, but
+I think it would be even better still to have different functions for
+string and non-string cases, especially because you only need val in the
+non-string case.
+
+That will also allow you to give the functions clearer names. I think
+the function is populating the event with info from the dt property (in
+the string case) or the val argument (non-string case) - maybe the names
+could reflect that somehow?
 > +{
-> +	const __be32 *gcid;
-> +	const __be64 *chip_ima_reg;
-> +	const __be64 *chip_ima_size;
-> +	struct device_node *dev;
-> +	struct perchip_nest_info *p8ni;
-> +	int idx;
+> +	char *buf;
+> +
+
+
+> +
+> +static int nest_pmu_create(struct device_node *dev, int pmu_index)
+> +{
+> +	struct nest_ima_events **p8_events_arr, *p8_events;
+> +	struct nest_pmu *pmu_ptr;
+> +	struct property *pp;
+> +	char *buf, *start;
+> +	const __be32 *lval;
+> +	u32 val;
+> +	int idx =3D 0, ret;
+> +
+> +	if (!dev)
+> +		return -EINVAL;
+> +
+> +	/* memory for nest pmus */
+> +	pmu_ptr =3D kzalloc(sizeof(struct nest_pmu), GFP_KERNEL);
+> +	if (!pmu_ptr)
+> +		return -ENOMEM;
+> +
+> +	/* Needed for hotplug/migration */
+> +	per_nest_pmu_arr[pmu_index] =3D pmu_ptr;
+> +
+> +	/* memory for nest pmu events */
+> +	p8_events_arr =3D kzalloc((sizeof(struct nest_ima_events) * 64),
+> +								GFP_KERNEL);
+> +	if (!p8_events_arr)
+> +		return -ENOMEM;
+> +	p8_events =3D (struct nest_ima_events *)p8_events_arr;
+
+I'm still quite uncomfortable with this.
+ - Why * 64? Should it be * P8_NEST_MAX_EVENTS_SUPPORTED? Or is it a
+different constant?
+ - p8_events =3D p8_events_arr[0] would be clearer
+
 > +
 > +	/*
-> +	 * "nest-ima" folder contains two things,
-> +	 * a) per-chip reserved memory region for Nest PMU Counter data
-> +	 * b) Support Nest PMU units and their event files
+> +	 * Loop through each property
 > +	 */
-> +	for_each_node_with_property(dev, "ibm,ima-chip") {
-> +		gcid =3D of_get_property(dev, "ibm,chip-id", NULL);
-> +		chip_ima_reg =3D of_get_property(dev, "reg", NULL);
-> +		chip_ima_size =3D of_get_property(dev, "size", NULL);
+> +	for_each_property_of_node(dev, pp) {
+> +		start =3D pp->name;
 > +
-> +		if ((!gcid) || (!chip_ima_reg) || (!chip_ima_size)) {
-> +			pr_err("Nest_PMU: device %s missing property\n",
-> +							dev->full_name);
-> +			return -ENODEV;
+> +		if (!strcmp(pp->name, "name")) {
+> +			if (!pp->value ||
+> +			   (strnlen(pp->value, pp->length) =3D=3D pp->length) ||
+> +			   (pp->length > P8_NEST_MAX_PMU_NAME_LEN))
+> +				return -EINVAL;
+> +
+> +			buf =3D kzalloc(P8_NEST_MAX_PMU_NAME_LEN, GFP_KERNEL);
+> +			if (!buf)
+> +				return -ENOMEM;
+> +
+> +			/* Save the name to register it later */
+> +			sprintf(buf, "Nest_%s", (char *)pp->value);
+> +			pmu_ptr->pmu.name =3D (char *)buf;
+> +			continue;
 > +		}
 > +
-> +		/* chip id to save reserve memory region */
-> +		idx =3D (uint32_t)be32_to_cpup(gcid);
-So be32_to_cpup returns a __u32. You're casting to a uint32_t and then
-assigning to an int.
- - Do you need the intermediate cast?
- - Should idx be an unsigned type?
+> +		/* Skip these, we dont need it */
+"don't" instead of "dont".
+> +		if (!strcmp(pp->name, "phandle") ||
+> +		    !strcmp(pp->name, "device_type") ||
+> +		    !strcmp(pp->name, "linux,phandle"))
+> +			continue;
 > +
-> +		/*
-> +		 * Using a local variable to make it compact and
-> +		 * easier to read
-> +		 */
-We probably don't need this comment. But a better variable name would be
-helpful!=20
-> +		p8ni =3D &p8_nest_perchip_info[idx];
-> +		p8ni->pbase =3D be64_to_cpup(chip_ima_reg);
-> +		p8ni->size =3D be64_to_cpup(chip_ima_size);
-> +		p8ni->vbase =3D (uint64_t) phys_to_virt(p8ni->pbase);
+> +		if (strncmp(pp->name, "unit.", 5) =3D=3D 0) {
+> +			/* Skip first few chars in the name */
+The whole comment is pretty uninformative, as is the similar comment
+below. If you need a comment at all, maybe something along the lines of
+"Strip the prefix because <reason we don't need/want the prefix>"?
+> +			start +=3D 5;
+> +			ret =3D nest_event_info(pp, start, p8_events++, 1, 0);
+> +		} else if (strncmp(pp->name, "scale.", 6) =3D=3D 0) {
+> +			/* Skip first few chars in the name */
+> +			start +=3D 6;
+> +			ret =3D nest_event_info(pp, start, p8_events++, 1, 0);
+> +		} else {
+> +			lval =3D of_get_property(dev, pp->name, NULL);
+> +			val =3D (uint32_t)be32_to_cpup(lval);
+> +
+> +			ret =3D nest_event_info(pp, start, p8_events++, 0, val);
+> +		}
+> +
+> +		if (ret)
+> +			return ret;
+> +
+> +		/* book keeping */
+> +		idx++;
+You don't seem to use idx in this function, apart from incrementing it
+here...?
 > +	}
 > +
 > +	return 0;
 > +}
-> +
-> +static int __init nest_pmu_init(void)
-> +{
-> +	int ret =3D -ENODEV;
-> +
-> +	/*
-> +	 * Lets do this only if we are hypervisor
-> +	 */
-> +	if (!cur_cpu_spec->oprofile_cpu_type ||
-> +	    !(strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8") =3D=3D 0)=
- ||
-> +	    !cpu_has_feature(CPU_FTR_HVMODE))
-> +		return ret;
-> +
-I'm still really uncomfortable with doing this via oprofile_cpu_type.
-If the kernel is compiled without oprofile support, will that get
-populated?
 
-I'm also curious about why we need checking for power8 at all. We
-already know we're not going to run on hardware without a nest PMU
-because of the device tree check below.=20
-
-What happens if there's a future generation of chip that supports nest
-PMUs?
-
-If it's really important to check versions in this function, maybe you
-could put a version property in the ibm,ima-chip node?
-> +	/*
-> +	 * Nest PMU information is grouped under "nest-ima" node
-> +	 * of the top-level device-tree directory. Detect Nest PMU
-> +	 * by the "ibm,ima-chip" property.
-> +	 */
-> +	if (!of_find_node_with_property(NULL, "ibm,ima-chip"))
-> +		return ret;
-> +
-> +	/*
-> +	 * Parse device-tree for Nest PMU information
-> +	 */
-> +	ret =3D nest_ima_dt_parser();
-> +	if (ret)
-> +		return ret;
-> +
-> +	return 0;
-> +}
-> +device_initcall(nest_pmu_init);
 
 --=20
 Regards,
 Daniel
 
---=-kX+xYsq+0FG/YOIK7Wfj
+--=-/Bdobyz4nnAGlzVbuzDU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -147,19 +166,19 @@ Content-Transfer-Encoding: 7bit
 Version: GnuPG v2
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAABCgAGBQJVrxLVAAoJEPC3R3P2I92F97YP/jNCHgTGxWUhd4s5GcuuS0ZU
-aEdirldcCxyGsV08gdJK3+Nt2mcOEoDWG3zwnkUjhXR9q7CoFbK2Sl/2PY5ZBWGq
-31cwH4u85YP9sgkSzDxMD62wZhm2SlGBUO3PR6NTFS+Mk5zoi6jcZb9Bysp2hlR2
-ndmXSWQ4JPbvQdHaP6Kvppp0MqR9nmbfoo4BxhsnrjWyuYh+RO943Yf1fD0GZYYp
-zBLIsRs81fHe5sF18fX+915wZ89Zhikmc+v2V1fArX3g/vvDq96GJTwldYm5fDZW
-zzMZ7p6RbBHjS57h4HN/9Wi0cXsq9rbMjgy7RImm2GeAQIkuZKhBCsq5oBUdGxE+
-NbEKnxCGbpEeQ/+Mn6c66N70ptK8vHBePdPOaIgG1D+it737/7CRpBU+pyJmP6g8
-l9x5RurBKNUBu+qO3RzNzxJtDJ7xcEdmu7OxaAiSB9Zo403cMT4l3sAlOrKDZzaC
-XQ2Ssq2bY9swMLpuvWr/Glzek6Kbuyx3w1lqnqa/lfZm9vAmkxXwce+TiwqLtIv1
-W5DSWRdeoDk6ew9XRAMmfyu2M/NcSmwPHj2nAcqGvn1SH5UCriNpy3Pim+PBPJQT
-VAug1TBw8Cv9C4hOun2OJWk2DX16ok6hXFeBCkW+c+1QDGmHHw3B6bImBCLHFn0t
-U6rBfDQ5diwEouQt7tMS
-=zB/+
+iQIcBAABCgAGBQJVrxcQAAoJEPC3R3P2I92FsCEP/Rf+YM34gZBAVGZga9mqgR7z
+KqeutpiFUua+LgU0u75Le1I63LrtAkt4bbk/v58nicyH9ph4IgUFGcJZTQOXy5ue
+iwf+RwxajEtGXcE+iH8nPGQGY6g9C/W/4DTzgHjS+8o5iumrx5MePEJnEUrWnvK8
+Kc+Lo9VPU6vILfGTh4WRtGdg0x54vWAH3ospu6EQXpyb9NrQzubNsbF3miaBaAnG
+aItr9OTlNPOj747WUho+veWYNFKJC8BUPlTpLaY19HwF5m660BU3AMfSObzCezZj
+RjXIHfO3rQUv2gZz1nGM/8/+i/HDRpLpUlDgVCeeKysRR4wlS2ZK2LxhV8LegibS
+QjQ6PvyxX5NOENbF6tDxqJPshCqEZhDQeQ1vMPPYD9MjMWwPeHG7bOgcrSNibNuc
+XG63XSYQ17r+K+pQtjabaJAODLswaX6SKYF48M75rfp+oorOjFrstqf1SjMxUPnQ
+3QyOUbEk5bNrRWtUp8TbmYyPg3mc/KS7LrdZ//65ic7kEsk/RFwrCEdnlzec1ejY
+CmewDJJg40vfr2g4aFvhH1akDAml9ffSvGdzdNUCsM3yy1+ZCVM3+AvHD2w6zcsK
+Kg8mSag3Y980ZDguWqSHRvMgkIETF6vBvnObEUrwJCC29ABvc/qb3SyFTPbHNZO4
+GYURqdKKzSbdWDfx/tgP
+=ABZ9
 -----END PGP SIGNATURE-----
 
---=-kX+xYsq+0FG/YOIK7Wfj--
+--=-/Bdobyz4nnAGlzVbuzDU--
