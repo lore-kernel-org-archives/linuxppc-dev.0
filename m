@@ -1,27 +1,23 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D43A1A045E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 15:15:08 +1000 (AEST)
-Date: Wed, 22 Jul 2015 15:15:02 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@au1.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling
- <michael.neuling@au1.ibm.com>, "sonal.santan" <sonal.santan@xilinx.com>,
- Jeremy Kerr <jk@ozlabs.org>, Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-Subject: Re: [PATCH] Fix crash due to processing "memory-controller" nodes
- as "memory"
-Message-ID: <20150722151502.15d557c4@kryten>
-In-Reply-To: <1437525346-sup-7472@delenn.ozlabs.ibm.com>
-References: <1437380450-25555-1-git-send-email-imunsie@au.ibm.com>
- <20150721124554.332dd228@kryten>
- <1437447984.30722.3.camel@ellerman.id.au>
- <20150722091844.114ea023@kryten>
- <1437525346-sup-7472@delenn.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id E92541A1A2C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 15:26:52 +1000 (AEST)
+Date: Tue, 21 Jul 2015 22:26:48 -0700 (PDT)
+Message-Id: <20150721.222648.171655319967229139.davem@davemloft.net>
+To: chris.j.arges@canonical.com
+Cc: nacc@linux.vnet.ibm.com, pshelar@nicira.com,
+ linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ linux-numa@vger.kernel.org, netdev@vger.kernel.org, dev@openvswitch.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] openvswitch: allocate nr_node_ids flow_stats
+ instead of num_possible_nodes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1437500193-10255-1-git-send-email-chris.j.arges@canonical.com>
+References: <20150721162418.GM38815@linux.vnet.ibm.com>
+ <1437500193-10255-1-git-send-email-chris.j.arges@canonical.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,18 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ian,
+From: Chris J Arges <chris.j.arges@canonical.com>
+Date: Tue, 21 Jul 2015 12:36:33 -0500
 
-> > > > Nice catch! I wonder if we should be checking for device_type
-> > > > "memory". Ben?
-> > > 
-> > > Yes. That's what Linux does.
-> > 
-> > Ian: I made that change, and slightly modified your commit message.
-> > Look ok?
+> Some architectures like POWER can have a NUMA node_possible_map that
+> contains sparse entries. This causes memory corruption with openvswitch
+> since it allocates flow_cache with a multiple of num_possible_nodes() and
+> assumes the node variable returned by for_each_node will index into
+> flow->stats[node].
 > 
-> Looks good to me :)
+> Use nr_node_ids to allocate a maximal sparse array instead of
+> num_possible_nodes().
+> 
+> The crash was noticed after 3af229f2 was applied as it changed the
+> node_possible_map to match node_online_map on boot.
+> Fixes: 3af229f2071f5b5cb31664be6109561fbe19c861
+> 
+> Signed-off-by: Chris J Arges <chris.j.arges@canonical.com>
 
-Excellent, I just pushed the fix.
-
-Anton
+Applied, thanks.
