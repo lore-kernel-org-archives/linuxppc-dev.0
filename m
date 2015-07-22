@@ -1,43 +1,35 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <schmitzmic@gmail.com>
+Received: from mail-ig0-x230.google.com (mail-ig0-x230.google.com
+ [IPv6:2607:f8b0:4001:c05::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 16ECE1A023A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 09:20:34 +1000 (AEST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 22 Jul 2015 17:20:32 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BAF9419D8041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 17:11:28 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t6MNHsGh30408824
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 16:17:54 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6MNKTpX030239
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 17:20:29 -0600
-Date: Wed, 22 Jul 2015 16:19:16 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 7/8] perf: Define PMU_TXN_READ interface
-Message-ID: <20150722231916.GA1863@us.ibm.com>
-References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1436929315-28520-8-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150716222015.GO3644@twins.programming.kicks-ass.net>
- <20150722015045.GA24420@us.ibm.com>
- <20150722055503.GO25159@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A1AAF1A023A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 09:46:46 +1000 (AEST)
+Received: by igbpg9 with SMTP id pg9so145215967igb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 16:46:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150722055503.GO25159@twins.programming.kicks-ass.net>
+In-Reply-To: <20150722143227.GB4738@guido.earth.sol>
+References: <20150712102527.356151908@telegraphics.com.au>
+ <20150712102528.107134628@telegraphics.com.au>
+ <87d1zwc4dj.fsf@igel.home>
+ <alpine.LNX.2.00.1507141804300.1622@nippy.intranet>
+ <55AF1364.3080701@gmail.com>
+ <alpine.LNX.2.00.1507221421100.4187@nippy.intranet>
+ <20150722143227.GB4738@guido.earth.sol>
+Date: Thu, 23 Jul 2015 11:46:44 +1200
+Message-ID: <CAOmrzkLS0BS8gj1tmkJr3_oXdUp--yOM3esZRodLHs=cAbKupw@mail.gmail.com>
+Subject: Re: [RFC v4 03/25] m68k/atari: Move Atari-specific code out of
+ drivers/char/nvram.c
+From: Michael Schmitz <schmitzmic@gmail.com>
+To: Finn Thain <fthain@telegraphics.com.au>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ Andreas Schwab <schwab@linux-m68k.org>,
+ Linux Kernel Development <linux-kernel@vger.kernel.org>,
+ "Linux/m68k" <linux-m68k@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,192 +39,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra [peterz@infradead.org] wrote:
-| I've not woken up yet, and not actually fully read the email, but can
-| you stuff the entire above chunk inside the IPI?
-| 
-| I think you could then actually optimize __perf_event_read() as well,
-| because all these events should be on the same context, so no point in
-| calling update_*time*() for every event or so.
-| 
+Hi Christian,
 
-Do you mean something like this (will move the rename to a separate
-patch before posting):
---
+if I understand Finn right, he needs the SCSI host ID reported for the
+Falcon SCSI chip, as found in this kernel log line:
 
->From e8eddb5d3877ebdb3b71213a00aaa980f4010dd0 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Tue, 7 Jul 2015 21:45:23 -0400
-Subject: [PATCH 1/1] perf: Define PMU_TXN_READ interface
+scsi host0: Atari native SCSI, io_port 0x0, n_io_port 0, base 0x0, irq
+15, can_queue 8, cmd_per_lun 1, sg_tablesize 0, this_id 7, flags { },
+options { REAL_DMA SUPPORT_TAGS }
 
-Define a new PERF_PMU_TXN_READ interface to read a group of counters
-at once. Note that we use this interface with all PMUs.
+(see this_id; output from one of my ARAnyM instances, kernel 3.19rc6).
+Also, the SCSI host ID reported by cat /proc/drivers/nvram (also 7, in
+my case)
 
-PMUs that implement this interface use the ->read() operation to _queue_
-the counters to be read and use ->commit_txn() to actually read all the
-queued counters at once.
+TOS reports the SCSI host ID during boot (when scannig for bootable
+disks) IIRC. There may be some control panel to view the NVRAM
+settings as well (stuff like default video mode was accessible from
+the CT60 control panel so the SCSI host ID might be there as well).
 
-PMUs that don't implement PERF_PMU_TXN_READ ignore ->start_txn() and
-->commit_txn() and continue to read counters one at a time.
+Cheers,
 
-Thanks to input from Peter Zijlstra.
+  Michael
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
 
-Changelog[v5]
-	[Peter Zijlstra] Ensure the entire transaction happens on the same CPU.
 
-Changelog[v4]
-	[Peter Zijlstra] Add lockdep_assert_held() in perf_event_read_group()
----
- include/linux/perf_event.h |    1 +
- kernel/events/core.c       |   72 +++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 62 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-index 44bf05f..da307ad 100644
---- a/include/linux/perf_event.h
-+++ b/include/linux/perf_event.h
-@@ -169,6 +169,7 @@ struct perf_event;
- #define PERF_EVENT_TXN 0x1
- 
- #define PERF_PMU_TXN_ADD  0x1		/* txn to add/schedule event on PMU */
-+#define PERF_PMU_TXN_READ 0x2		/* txn to read event group from PMU */
- 
- /**
-  * pmu::capabilities flags
-diff --git a/kernel/events/core.c b/kernel/events/core.c
-index a6bd09d..7177dd8 100644
---- a/kernel/events/core.c
-+++ b/kernel/events/core.c
-@@ -3174,12 +3174,8 @@ void perf_event_exec(void)
- 	rcu_read_unlock();
- }
- 
--/*
-- * Cross CPU call to read the hardware event
-- */
--static void __perf_event_read(void *info)
-+static void __perf_event_read(struct perf_event *event, int update_ctx)
- {
--	struct perf_event *event = info;
- 	struct perf_event_context *ctx = event->ctx;
- 	struct perf_cpu_context *cpuctx = __get_cpu_context(ctx);
- 
-@@ -3194,7 +3190,7 @@ static void __perf_event_read(void *info)
- 		return;
- 
- 	raw_spin_lock(&ctx->lock);
--	if (ctx->is_active) {
-+	if (ctx->is_active && update_ctx) {
- 		update_context_time(ctx);
- 		update_cgrp_time_from_event(event);
- 	}
-@@ -3204,6 +3200,16 @@ static void __perf_event_read(void *info)
- 	raw_spin_unlock(&ctx->lock);
- }
- 
-+/*
-+ * Cross CPU call to read the hardware event
-+ */
-+static void __perf_event_read_ipi(void *info)
-+{
-+	struct perf_event *event = info;
-+
-+	__perf_event_read(event, 1);
-+}
-+
- static inline u64 perf_event_count(struct perf_event *event)
- {
- 	if (event->pmu->count)
-@@ -3220,7 +3226,7 @@ static void perf_event_read(struct perf_event *event)
- 	 */
- 	if (event->state == PERF_EVENT_STATE_ACTIVE) {
- 		smp_call_function_single(event->oncpu,
--					 __perf_event_read, event, 1);
-+					 __perf_event_read_ipi, event, 1);
- 	} else if (event->state == PERF_EVENT_STATE_INACTIVE) {
- 		struct perf_event_context *ctx = event->ctx;
- 		unsigned long flags;
-@@ -3765,6 +3771,36 @@ static void orphans_remove_work(struct work_struct *work)
- 	put_ctx(ctx);
- }
- 
-+/*
-+ * Use the transaction interface to read the group of events in @leader.
-+ * PMUs like the 24x7 counters in Power, can use this to queue the events
-+ * in the ->read() operation and perform the actual read in ->commit_txn.
-+ *
-+ * Other PMUs can ignore the ->start_txn and ->commit_txn and read each
-+ * PMU directly in the ->read() operation.
-+ */
-+static int perf_event_read_group(struct perf_event *leader)
-+{
-+	int ret;
-+	struct perf_event *sub;
-+	struct pmu *pmu;
-+	struct perf_event_context *ctx = leader->ctx;
-+
-+	lockdep_assert_held(&ctx->mutex);
-+
-+	pmu = leader->pmu;
-+
-+	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
-+
-+	__perf_event_read(leader, 1);
-+	list_for_each_entry(sub, &leader->sibling_list, group_entry)
-+		__perf_event_read(sub, 0);
-+
-+	ret = pmu->commit_txn(pmu);
-+
-+	return ret;
-+}
-+
- u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
- {
- 	u64 total = 0;
-@@ -3794,7 +3830,17 @@ static int perf_read_group(struct perf_event *event,
- 
- 	lockdep_assert_held(&ctx->mutex);
- 
--	count = perf_event_read_value(leader, &enabled, &running);
-+	mutex_lock(&leader->child_mutex);
-+
-+	ret = perf_event_read_group(leader);
-+	if (ret) {
-+		mutex_unlock(&leader->child_mutex);
-+		return ret;
-+	}
-+
-+	count = perf_event_aggregate(leader, &enabled, &running);
-+
-+	mutex_unlock(&leader->child_mutex);
- 
- 	values[n++] = 1 + leader->nr_siblings;
- 	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
-@@ -3815,15 +3861,19 @@ static int perf_read_group(struct perf_event *event,
- 	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
- 		n = 0;
- 
--		values[n++] = perf_event_read_value(sub, &enabled, &running);
-+		mutex_lock(&sub->child_mutex);
-+
-+		values[n++] = perf_event_aggregate(sub, &enabled, &running);
-+
-+		mutex_unlock(&sub->child_mutex);
-+
- 		if (read_format & PERF_FORMAT_ID)
- 			values[n++] = primary_event_id(sub);
- 
- 		size = n * sizeof(u64);
- 
--		if (copy_to_user(buf + ret, values, size)) {
-+		if (copy_to_user(buf + ret, values, size))
- 			return -EFAULT;
--		}
- 
- 		ret += size;
- 	}
--- 
-1.7.9.5
+On Thu, Jul 23, 2015 at 2:32 AM, Christian T. Steigies <cts@debian.org> wrote:
+> On Wed, Jul 22, 2015 at 02:22:21PM +1000, Finn Thain wrote:
+>>
+>> On Wed, 22 Jul 2015, Michael Schmitz wrote:
+>>
+>> > Hi Finn,
+>> >
+>> > I'm afraid I cannot test anything on Atari hardware at present - my
+>> > Falcon ate it's IDE disk partition table with all the fun that entails.
+>>
+>> That doesn't sound good.
+>>
+>> > Haven't even begun to try and recover that yet.
+>> >
+>> > If you send a patch I could build a kernel and send that to Christian
+>> > for testing (if he's got his Falcon up and running - might be a tad warm
+>> > in the attic for that, in fact).
+>>
+>> Anyone with a suitable Atari, i.e. ATARIHW_PRESENT(TT_CLK), who can boot
+>> both TOS and Linux could resolve the question. (Perhaps with an emulator?)
+>
+> The Falcon is not powered on currently but it should still work. What should
+> I test?
+>
+>> Any old kernel binary would do, since atari_scsi should print either
+>> "HOSTID=n" or "this_id n" at startup.
+>>
+>> If n doesn't agree with what TOS says about the host's SCSI ID, then I
+>> think a trivial patch is safe enough. Especially if cat /proc/driver/nvram
+>> produces a "SCSI host ID : m" that does agree with TOS.
+>
+> Christian
