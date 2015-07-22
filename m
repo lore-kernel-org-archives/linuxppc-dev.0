@@ -1,26 +1,17 @@
-Return-Path: <Priyanka.Jain@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0140.outbound.protection.outlook.com [65.55.169.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB47F1A1A3D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:49:19 +1000 (AEST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
- support
-Date: Wed, 22 Jul 2015 10:49:10 +0000
-Message-ID: <BY1PR0301MB0853E43544A9D9F36D2B31B9EC830@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
- <1436982433.2993.81.camel@freescale.com>
- <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437075349.2993.105.camel@freescale.com>
- <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437152821.2993.191.camel@freescale.com>
-In-Reply-To: <1437152821.2993.191.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C74591A1A3B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 21:25:27 +1000 (AEST)
+In-Reply-To: <1437130018-3430-1-git-send-email-thuth@redhat.com>
+To: Thomas Huth <thuth@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ nfont@linux.vnet.ibm.com
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: paulus@samba.org, anton@samba.org, kvm-ppc@vger.kernel.org
+Subject: Re: powerpc/rtas: Introduce rtas_get_sensor_fast() for IRQ handlers
+Message-Id: <20150722112527.B36E01402C8@ozlabs.org>
+Date: Wed, 22 Jul 2015 21:25:27 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,53 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBKdWx5IDE3LCAyMDE1IDEwOjM3IFBNDQo+IFRvOiBKYWluIFBy
-aXlhbmthLUIzMjE2Nw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3Vi
-amVjdDogUmU6IFtQQVRDSF1bdjJdIHBvd2VycGMvZnNsLWJvb2tlOiBBZGQgVDEwNDBENFJEQi9U
-MTA0MkQ0UkRCDQo+IGJvYXJkIHN1cHBvcnQNCj4gDQo+IE9uIEZyaSwgMjAxNS0wNy0xNyBhdCAw
-MToxNyAtMDUwMCwgSmFpbiBQcml5YW5rYS1CMzIxNjcgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+
-ID4gU2VudDogRnJpZGF5LCBKdWx5IDE3LCAyMDE1IDE6MDYgQU0NCj4gPiA+IFRvOiBKYWluIFBy
-aXlhbmthLUIzMjE2Nw0KPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+
-ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXVt2Ml0gcG93ZXJwYy9mc2wtYm9va2U6IEFkZA0KPiA+
-ID4gVDEwNDBENFJEQi9UMTA0MkQ0UkRCIGJvYXJkIHN1cHBvcnQNCj4gPiA+DQo+ID4gPiA+ID4g
-KyAgICAgICAgICAgICAgICBpMmNAMTE4MTAwew0KPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAg
-ICAgICAgbXV4QDc3ew0KPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNv
-bXBhdGlibGUgPSAibnhwLHBjYTk1NDYiOw0KPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIHJlZyA9IDwweDc3PjsNCj4gPiA+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiA+ID4gPiArICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAjc2l6ZS1jZWxscyA9IDwwPjsNCj4gPiA+ID4gPiArICAgICAgICAgICAg
-ICAgICAgICAgfTsNCj4gPiA+ID4gPiArICAgICAgICAgICAgIH07DQo+ID4gPiA+DQo+ID4gPiA+
-IEEgbXV4IHdpdGggbm8gbm9kZXMgdW5kZXIgaXQgKGFuZCB5ZXQgaXQgaGFzICNhZGRyZXNzLWNl
-bGxzLyNzaXplLQ0KPiA+ID4gPiBjZWxscyk/DQo+ID4gPiA+IFdoYXQgaXMgaXQgbXVsdGlwbGV4
-aW5nPw0KPiA+ID4gPiBbUHJpeWFua2FdOiBQQ0E5NTQ2IGlzIGkyYyBtdXggZGV2aWNlICwgdG8g
-d2hpY2ggb3RoZXIgaTJjIGRldmljZXMNCj4gPiA+ID4gKHVwLXRvIDgNCj4gPiA+ID4gKSBjYW4g
-YmUgZnVydGhlciBjb25uZWN0ZWQgb24gb3V0cHV0IGNoYW5uZWxzIE9uIFQxMDR4RDRSREIsDQo+
-ID4gPiA+IGNoYW5uZWwgMCwgMSwgMyBsaW5lIGFyZSBjb25uZWN0ZWQgdG8gUEVYIGRldmljZSwg
-Q2hhbm5lbCAyIHRvDQo+ID4gPiA+IGhkbWkgaW50ZXJmYWNlIChpbml0aWFsaXphdGlvbiBpcyBk
-b25lIGluIHUtYm9vdCBvbmx5KSwgb3RoZXIgY2hhbm5lbHMgYXJlDQo+IGdyb3VuZGVkLg0KPiA+
-ID4gPiBTbywgYXMgc3VjaCBMaW51eCBpcyBub3QgdXNpbmcgdGhlIHNlY29uZCBsZXZlbCBJMkMg
-ZGV2aWNlcw0KPiA+ID4gPiBjb25uZWN0ZWQgb24gdGhpcyBNVVggZGV2aWNlLiBTbywgSSBoYXZl
-IG5vdCBzaG93biBuZXh0IGxldmVsDQo+IGhpZXJhcmNoeS4NCj4gPiA+ID4gU2hvdWxkIEkgcmVw
-bGFjZSAnbXV4JyB3aXRoIHNvbWUgb3RoZXIgbmFtZT8gLiBQbGVhc2Ugc3VnZ2VzdC4NCj4gPiA+
-DQo+ID4gPiBUaGUgZGV2aWNlIHRyZWUgZGVzY3JpYmVzIHRoZSBoYXJkd2FyZSwgbm90IGp1c3Qg
-d2hhdCBMaW51eCB1c2VzLi4uDQo+ID4gPiBidXQgd2hhdCBJIGRvbid0IHVuZGVyc3RhbmQgaXMg
-d2h5IHlvdSBkZXNjcmliZSB0aGUgbXV4IGF0IGFsbCBpZg0KPiA+ID4geW91J3JlIG5vdCBnb2lu
-ZyB0byBkZXNjcmliZSB3aGF0IGdvZXMgdW5kZXJuZWF0aCBpdC4NCj4gPiA+DQo+ID4gW0phaW4g
-UHJpeWFua2EtQjMyMTY3XSA6IElzIGJlbG93IGxvb2tzIE9LPw0KPiA+IGkyY0AxMTgxMDB7DQo+
-ID4gICsgICAgICAgICAgICAgICAgICAgICAgaTJjQDc3ew0KPiA+ICArICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm54cCxwY2E5NTQ2IjsNCj4gPiAgKyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4Nzc+Ow0KPiA+ICArICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiAgKyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8MD47DQo+ID4gICsgICAgICAgICAgICAgICAg
-ICAgICB9Ow0KPiA+ICArICAgICAgICAgICAgIH07DQo+IA0KPiBXaGVyZSBpbiBteSBhYm92ZSBj
-b21tZW50IGRpZCBpdCBhcHBlYXIgdGhhdCBJIHdhcyBjb21wbGFpbmluZyBhYm91dCB0aGUNCj4g
-bm9kZSBuYW1lPw0KPiANCltKYWluIFByaXlhbmthLUIzMjE2N10NCkZyb20gd2hhdCBJIHVuZGVy
-c3RhbmQ6DQpQQ0E5NTQ2IGlzIGEgbXV4IGRldmljZSBhbmQgaXQgd291bGQgYmUgZ29vZCBpZiB3
-ZSB3ZXJlIGFibGUgdG8gcHJlc2VudCB0aGUgSTJDIGRldmljZXMgb24gb3V0cHV0IGxpbmVzIGFz
-IHN1Ym5vZGVzIGxpa2UgaW4gY2FzZSBvZiBCNHFkcyBib2FyZCBhbmQgdGhlbiAnbXV4JyBuYW1l
-IHdvdWxkIGhhdmUgbWFrZSBtb3JlIHNlbnNlLg0KQnV0IGluIGNhc2Ugb2YgVDEwNDBENFJEQiBi
-b2FyZCwgb3V0cHV0IGkyYyBsaW5lcyBhcmUgZ29pbmcgdG8gUEVYIHNsb3RzLCBQQ0kgY29ubmVj
-dG9yLiBJIGFtIG5vdCBhd2FyZSBvZiBob3cgdG8gcmVwcmVzZW50cyB0aGVtIGFzIHN1Yi1ub2Rl
-cyBpbiBkdHMuDQo+IC1TY290dA0KDQo=
+On Fri, 2015-17-07 at 10:46:58 UTC, Thomas Huth wrote:
+> The EPOW interrupt handler uses rtas_get_sensor(), which in turn
+> uses rtas_busy_delay() to wait for RTAS becoming ready in case it
+> is necessary. But rtas_busy_delay() is annotated with might_sleep()
+> and thus may not be used by interrupts handlers like the EPOW handler!
+> This leads to the following BUG when CONFIG_DEBUG_ATOMIC_SLEEP is
+> enabled:
+
+When did we break this?
+
+cheers
