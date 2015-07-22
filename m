@@ -1,15 +1,22 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 09BAC1A1DF6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 02:56:53 +1000 (AEST)
-From: Thomas Huth <thuth@redhat.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc/rtas: Replace magic values with defines
-Date: Wed, 22 Jul 2015 18:56:47 +0200
-Message-Id: <1437584207-20677-1-git-send-email-thuth@redhat.com>
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0018.hostedemail.com
+ [216.40.44.18])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3AECA1A0072
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 03:37:51 +1000 (AEST)
+Message-ID: <1437586665.20787.24.camel@perches.com>
+Subject: Re: [PATCH 02/10] dpaa_eth: add support for DPAA Ethernet
+From: Joe Perches <joe@perches.com>
+To: madalin.bucur@freescale.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, scottwood@freescale.com,
+ igal.liberman@freescale.com, ppc@mindchasers.com, pebolle@tiscali.nl,
+ joakim.tjernlund@transmode.se
+Date: Wed, 22 Jul 2015 10:37:45 -0700
+In-Reply-To: <1437581806-17420-2-git-send-email-madalin.bucur@freescale.com>
+References: <1437581806-17420-1-git-send-email-madalin.bucur@freescale.com>
+ <1437581806-17420-2-git-send-email-madalin.bucur@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,39 +26,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-rtas.h already has some nice #defines for RTAS return status
-codes - let's use them instead of hard-coded "magic" values!
+On Wed, 2015-07-22 at 19:16 +0300, Madalin Bucur wrote:
+> This introduces the Freescale Data Path Acceleration Architecture
+> (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
+> BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
+> the Freescale DPAA QorIQ platforms.
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- arch/powerpc/kernel/rtas.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+trivia:
 
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 7a488c1..10fb402 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -478,8 +478,9 @@ unsigned int rtas_busy_delay_time(int status)
- 
- 	if (status == RTAS_BUSY) {
- 		ms = 1;
--	} else if (status >= 9900 && status <= 9905) {
--		order = status - 9900;
-+	} else if (status >= RTAS_EXTENDED_DELAY_MIN &&
-+		   status <= RTAS_EXTENDED_DELAY_MAX) {
-+		order = status - RTAS_EXTENDED_DELAY_MIN;
- 		for (ms = 1; order > 0; order--)
- 			ms *= 10;
- 	}
-@@ -641,7 +642,8 @@ int rtas_set_indicator_fast(int indicator, int index, int new_value)
- 
- 	rc = rtas_call(token, 3, 1, NULL, indicator, index, new_value);
- 
--	WARN_ON(rc == -2 || (rc >= 9900 && rc <= 9905));
-+	WARN_ON(rc == RTAS_BUSY || (rc >= RTAS_EXTENDED_DELAY_MIN &&
-+				    rc <= RTAS_EXTENDED_DELAY_MAX));
- 
- 	if (rc < 0)
- 		return rtas_error_rc(rc);
--- 
-1.8.3.1
+> +static void __hot _dpa_tx_conf(struct net_device	*net_dev,
+> +			       const struct dpa_priv_s	*priv,
+> +			       struct dpa_percpu_priv_s	*percpu_priv,
+> +			       const struct qm_fd	*fd,
+> +			       u32			fqid)
+> +{
+[]
+> +static struct dpa_bp * __cold
+> +dpa_priv_bp_probe(struct device *dev)
+
+Do the __hot and __cold markings really matter?
+Some of them may be questionable.
+
+> +static int __init dpa_load(void)
+> +{
+[]
+> +	err = platform_driver_register(&dpa_driver);
+> +	if (unlikely(err < 0)) {
+> +		pr_err(KBUILD_MODNAME
+> +			": %s:%hu:%s(): platform_driver_register() = %d\n",
+> +			KBUILD_BASENAME ".c", __LINE__, __func__, err);
+> +	}
+> +
+> +	pr_debug(KBUILD_MODNAME ": %s:%s() ->\n",
+> +		 KBUILD_BASENAME ".c", __func__);
+
+Perhaps these should use pr_fmt
+
+> +static void __exit dpa_unload(void)
+> +{
+> +	pr_debug(KBUILD_MODNAME ": -> %s:%s()\n",
+> +		 KBUILD_BASENAME ".c", __func__);
+
+dynamic debug has __func__ available and perhaps
+the function tracer might be used instead.
+
+> diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+[]
+> +#define __hot
+
+curious.
+
+Maybe it'd be good to add a real __hot to compiler.h
+
+> +struct dpa_buffer_layout_s {
+> +	u16	priv_data_size;
+> +	bool		parse_results;
+> +	bool		time_stamp;
+> +	bool		hash_results;
+> +	u16	data_align;
+> +};
+
+> +struct dpa_fq {
+> +	struct qman_fq		 fq_base;
+> +	struct list_head	 list;
+> +	struct net_device	*net_dev;
+
+some inconsistent indentation here and there
+
+> +struct dpa_bp {
+> +	struct bman_pool		*pool;
+> +	u8				bpid;
+> +	struct device			*dev;
+> +	union {
+> +		/* The buffer pools used for the private ports are initialized
+> +		 * with target_count buffers for each CPU; at runtime the
+> +		 * number of buffers per CPU is constantly brought back to this
+> +		 * level
+> +		 */
+> +		int target_count;
+> +		/* The configured value for the number of buffers in the pool,
+> +		 * used for shared port buffer pools
+> +		 */
+> +		int config_count;
+> +	};
+
+Anonymous unions are relatively rare
+
+> +	struct {
+> +		/**
+
+Maybe the /** style should be avoided
+
+> +		 * All egress queues to a given net device belong to one
+> +		 * (and the same) congestion group.
+> +		 */
+> +		struct qman_cgr cgr;
+> +	} cgr_data;
+
+[]
+
+> +int dpa_stop(struct net_device *net_dev)
+> +{
+[]
+> +	err = mac_dev->stop(mac_dev);
+> +	if (unlikely(err < 0))
+> +		netif_err(priv, ifdown, net_dev, "mac_dev->stop() = %d\n",
+> +			  err);
+
+Some of the likely/unlikely uses may not
+be useful/necessary.
+> +
+> +	for_each_port_device(i, mac_dev->port_dev) {
+> +		error = fm_port_disable(
+> +				fm_port_drv_handle(mac_dev->port_dev[i]));
+> +		err = error ? error : err;
+
+		if (error)
+			err = error;
+
+is more obvious to me.
