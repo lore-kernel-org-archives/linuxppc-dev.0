@@ -1,19 +1,19 @@
 Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E90821A1D2E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 01:27:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E89DF1A1D40
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 01:27:18 +1000 (AEST)
 From: <igal.liberman@freescale.com>
 To: <netdev@vger.kernel.org>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <scottwood@freescale.com>, <madalin.bucur@freescale.com>,
  <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>, <ppc@mindchasers.com>,
  Igal Liberman <Igal.Liberman@freescale.com>
-Subject: [v3, 5/9] fsl/fman: Add Frame Manager support
-Date: Wed, 22 Jul 2015 14:22:18 +0300
-Message-ID: <1437564138-16592-1-git-send-email-igal.liberman@freescale.com>
+Subject: [v3, 6/9] fsl/fman: Add FMan MAC support
+Date: Wed, 22 Jul 2015 14:22:29 +0300
+Message-ID: <1437564149-16626-1-git-send-email-igal.liberman@freescale.com>
 Reply-To: <igal.liberman@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -28,60 +28,1996 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Igal Liberman <Igal.Liberman@freescale.com>
 
-Add Frame Manger Driver support.
-This patch adds The FMan configuration, initialization and
+Add Frame Manger MAC Driver support.
+This patch adds The FMan MAC configuration, initialization and
 runtime control routines.
+This patch contains support for these types of MACs:
+	tGEC, dTSEC and mEMAC
 
 Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 ---
- drivers/net/ethernet/freescale/fman/Kconfig        |    1 -
- drivers/net/ethernet/freescale/fman/Makefile       |    2 +-
- drivers/net/ethernet/freescale/fman/fm.c           | 1076 ++++++++++++++++++++
- drivers/net/ethernet/freescale/fman/fm.h           |  276 +++++
- drivers/net/ethernet/freescale/fman/fm_common.h    |  114 +++
- drivers/net/ethernet/freescale/fman/fm_drv.c       |  572 +++++++++++
- drivers/net/ethernet/freescale/fman/fm_drv.h       |  109 ++
- drivers/net/ethernet/freescale/fman/inc/enet_ext.h |  199 ++++
- drivers/net/ethernet/freescale/fman/inc/fm_ext.h   |  446 ++++++++
- .../net/ethernet/freescale/fman/inc/fsl_fman_drv.h |   99 ++
- 10 files changed, 2892 insertions(+), 2 deletions(-)
- create mode 100644 drivers/net/ethernet/freescale/fman/fm.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_common.h
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.c
- create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/enet_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_ext.h
- create mode 100644 drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h
+ drivers/net/ethernet/freescale/fman/fm.c           |   41 +
+ drivers/net/ethernet/freescale/fman/fm.h           |    3 +
+ drivers/net/ethernet/freescale/fman/fm_common.h    |   29 +
+ .../ethernet/freescale/fman/inc/crc_mac_addr_ext.h |  314 ++++++
+ drivers/net/ethernet/freescale/fman/mac/Makefile   |    4 +-
+ drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c | 1012 ++++++++++++++++++++
+ drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h |  207 ++++
+ drivers/net/ethernet/freescale/fman/mac/fm_mac.h   |  259 +++++
+ drivers/net/ethernet/freescale/fman/mac/fm_memac.c |  673 +++++++++++++
+ drivers/net/ethernet/freescale/fman/mac/fm_memac.h |  115 +++
+ drivers/net/ethernet/freescale/fman/mac/fm_tgec.c  |  552 +++++++++++
+ drivers/net/ethernet/freescale/fman/mac/fm_tgec.h  |  124 +++
+ 12 files changed, 3332 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_mac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.h
 
-diff --git a/drivers/net/ethernet/freescale/fman/Kconfig b/drivers/net/ethernet/freescale/fman/Kconfig
-index 825a0d5..66b7296 100644
---- a/drivers/net/ethernet/freescale/fman/Kconfig
-+++ b/drivers/net/ethernet/freescale/fman/Kconfig
-@@ -6,4 +6,3 @@ config FSL_FMAN
- 	help
- 		Freescale Data-Path Acceleration Architecture Frame Manager
- 		(FMan) support
--
-diff --git a/drivers/net/ethernet/freescale/fman/Makefile b/drivers/net/ethernet/freescale/fman/Makefile
-index 55c91bd..f61d3a6 100644
---- a/drivers/net/ethernet/freescale/fman/Makefile
-+++ b/drivers/net/ethernet/freescale/fman/Makefile
-@@ -4,7 +4,7 @@ subdir-ccflags-y += -I$(srctree)/drivers/net/ethernet/freescale/fman/flib \
- 
- obj-y		+= fsl_fman.o
- 
--fsl_fman-objs	:= fman.o fm_muram.o
-+fsl_fman-objs	:= fman.o fm_muram.o fm.o fm_drv.o
- 
- obj-y	+= port/
- obj-y	+= mac/
 diff --git a/drivers/net/ethernet/freescale/fman/fm.c b/drivers/net/ethernet/freescale/fman/fm.c
-new file mode 100644
-index 0000000..7e5fa53
---- /dev/null
+index 7e5fa53..450ee6b 100644
+--- a/drivers/net/ethernet/freescale/fman/fm.c
 +++ b/drivers/net/ethernet/freescale/fman/fm.c
-@@ -0,0 +1,1076 @@
+@@ -587,6 +587,47 @@ u8 fm_get_id(struct fm_t *fm)
+ 	return fm->fm_state->fm_id;
+ }
+ 
++int fm_reset_mac(struct fm_t *fm, u8 mac_id)
++{
++	int err;
++	struct fman_fpm_regs __iomem *fpm_rg = fm->fpm_regs;
++
++	if (fm->fm_state->rev_info.major_rev >= 6) {
++		pr_warn("FMan MAC reset!\n");
++		return -EINVAL;
++	}
++	if (!fm->base_addr) {
++		pr_warn("'base_address' is required!\n");
++		return -EINVAL;
++	}
++	err = fman_reset_mac(fpm_rg, mac_id);
++
++	if (err == -EINVAL) {
++		pr_warn("Illegal MAC Id\n");
++		return -EINVAL;
++	} else if (err == EINVAL) {
++		return -EINVAL;
++	}
++	return 0;
++}
++
++int fm_set_mac_max_frame(struct fm_t *fm, enum fm_mac_type type,
++			 u8 mac_id, u16 mtu)
++{
++	/* if port is already initialized, check that MaxFrameLength is smaller
++	 * or equal to the port's max
++	 */
++	if ((!fm->fm_state->port_mfl[mac_id]) ||
++	    (fm->fm_state->port_mfl[mac_id] &&
++	    (mtu <= fm->fm_state->port_mfl[mac_id]))) {
++		fm->fm_state->mac_mfl[mac_id] = mtu;
++	} else {
++		pr_warn("MAC max_frame_length is larger than Port max_frame_length\n");
++		return -EINVAL;
++	}
++	return 0;
++}
++
+ u16 fm_get_clock_freq(struct fm_t *fm)
+ {
+ 	return fm->fm_state->fm_clk_freq;
+diff --git a/drivers/net/ethernet/freescale/fman/fm.h b/drivers/net/ethernet/freescale/fman/fm.h
+index d7eca90..c205357 100644
+--- a/drivers/net/ethernet/freescale/fman/fm.h
++++ b/drivers/net/ethernet/freescale/fman/fm.h
+@@ -164,6 +164,7 @@ struct fm_iram_regs_t {
+ 
+ struct fm_state_struct_t {
+ 	u8 fm_id;
++	enum fm_port_type ports_types[FM_MAX_NUM_OF_HW_PORT_IDS];
+ 	u16 fm_clk_freq;
+ 	struct fm_revision_info_t rev_info;
+ 	bool enabled_time_stamp;
+@@ -183,6 +184,8 @@ struct fm_state_struct_t {
+ 	u32 extra_fifo_pool_size;
+ 	u8 extra_tasks_pool_size;
+ 	u8 extra_open_dmas_pool_size;
++	u16 port_mfl[FM_MAX_NUM_OF_MACS];
++	u16 mac_mfl[FM_MAX_NUM_OF_MACS];
+ };
+ 
+ struct fm_intg_t {
+diff --git a/drivers/net/ethernet/freescale/fman/fm_common.h b/drivers/net/ethernet/freescale/fman/fm_common.h
+index 1cde270..abe89a7 100644
+--- a/drivers/net/ethernet/freescale/fman/fm_common.h
++++ b/drivers/net/ethernet/freescale/fman/fm_common.h
+@@ -86,6 +86,26 @@ enum fm_inter_module_event {
+ 
+ #define FM_LIODN_OFFSET_MASK    0x3FF
+ 
++/* Port Id defines */
++#define BASE_RX_PORTID			0x08
++#define BASE_TX_PORTID			0x28
++
++static inline u8 hw_port_id_to_sw_port_id(u8 major, u8 hw_port_id)
++{
++	u8 sw_port_id = 0;
++
++	if (hw_port_id >= BASE_TX_PORTID) {
++		sw_port_id = hw_port_id - BASE_TX_PORTID;
++	} else if (hw_port_id >= BASE_RX_PORTID) {
++		sw_port_id = hw_port_id - BASE_RX_PORTID;
++	} else {
++		sw_port_id = DUMMY_PORT_ID;
++		BUG_ON(false);
++	}
++
++	return sw_port_id;
++}
++
+ #define BMI_MAX_FIFO_SIZE                   (FM_MURAM_SIZE)
+ #define BMI_FIFO_UNITS                      0x100
+ 
+@@ -94,6 +114,12 @@ struct fm_intr_src_t {
+ 	void *src_handle;
+ };
+ 
++/* enum for defining MAC types */
++enum fm_mac_type {
++	FM_MAC_10G = 0,	    /* 10G MAC */
++	FM_MAC_1G	    /* 1G MAC */
++};
++
+ void fm_register_intr(struct fm_t *fm, enum fm_event_modules mod, u8 mod_id,
+ 		      enum fm_intr_type intr_type,
+ 		      void (*f_isr)(void *h_src_arg), void *h_src_arg);
+@@ -111,4 +137,7 @@ u8 fm_get_id(struct fm_t *fm);
+ 
+ u32 fm_get_bmi_max_fifo_size(struct fm_t *fm);
+ 
++int fm_set_mac_max_frame(struct fm_t *fm, enum fm_mac_type type, u8 mac_id,
++			 u16 mtu);
++
+ #endif /* __FM_COMMON_H */
+diff --git a/drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h b/drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h
+new file mode 100644
+index 0000000..190f739
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h
+@@ -0,0 +1,314 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/* Define a macro that calculate the crc value of an Ethernet MAC address
++ * (48 bitd address)
++ */
++
++#ifndef __crc_mac_addr_ext_h
++#define __crc_mac_addr_ext_h
++
++#include <linux/bitrev.h>
++
++static u32 crc_table[256] = {
++	0x00000000,
++	0x77073096,
++	0xee0e612c,
++	0x990951ba,
++	0x076dc419,
++	0x706af48f,
++	0xe963a535,
++	0x9e6495a3,
++	0x0edb8832,
++	0x79dcb8a4,
++	0xe0d5e91e,
++	0x97d2d988,
++	0x09b64c2b,
++	0x7eb17cbd,
++	0xe7b82d07,
++	0x90bf1d91,
++	0x1db71064,
++	0x6ab020f2,
++	0xf3b97148,
++	0x84be41de,
++	0x1adad47d,
++	0x6ddde4eb,
++	0xf4d4b551,
++	0x83d385c7,
++	0x136c9856,
++	0x646ba8c0,
++	0xfd62f97a,
++	0x8a65c9ec,
++	0x14015c4f,
++	0x63066cd9,
++	0xfa0f3d63,
++	0x8d080df5,
++	0x3b6e20c8,
++	0x4c69105e,
++	0xd56041e4,
++	0xa2677172,
++	0x3c03e4d1,
++	0x4b04d447,
++	0xd20d85fd,
++	0xa50ab56b,
++	0x35b5a8fa,
++	0x42b2986c,
++	0xdbbbc9d6,
++	0xacbcf940,
++	0x32d86ce3,
++	0x45df5c75,
++	0xdcd60dcf,
++	0xabd13d59,
++	0x26d930ac,
++	0x51de003a,
++	0xc8d75180,
++	0xbfd06116,
++	0x21b4f4b5,
++	0x56b3c423,
++	0xcfba9599,
++	0xb8bda50f,
++	0x2802b89e,
++	0x5f058808,
++	0xc60cd9b2,
++	0xb10be924,
++	0x2f6f7c87,
++	0x58684c11,
++	0xc1611dab,
++	0xb6662d3d,
++	0x76dc4190,
++	0x01db7106,
++	0x98d220bc,
++	0xefd5102a,
++	0x71b18589,
++	0x06b6b51f,
++	0x9fbfe4a5,
++	0xe8b8d433,
++	0x7807c9a2,
++	0x0f00f934,
++	0x9609a88e,
++	0xe10e9818,
++	0x7f6a0dbb,
++	0x086d3d2d,
++	0x91646c97,
++	0xe6635c01,
++	0x6b6b51f4,
++	0x1c6c6162,
++	0x856530d8,
++	0xf262004e,
++	0x6c0695ed,
++	0x1b01a57b,
++	0x8208f4c1,
++	0xf50fc457,
++	0x65b0d9c6,
++	0x12b7e950,
++	0x8bbeb8ea,
++	0xfcb9887c,
++	0x62dd1ddf,
++	0x15da2d49,
++	0x8cd37cf3,
++	0xfbd44c65,
++	0x4db26158,
++	0x3ab551ce,
++	0xa3bc0074,
++	0xd4bb30e2,
++	0x4adfa541,
++	0x3dd895d7,
++	0xa4d1c46d,
++	0xd3d6f4fb,
++	0x4369e96a,
++	0x346ed9fc,
++	0xad678846,
++	0xda60b8d0,
++	0x44042d73,
++	0x33031de5,
++	0xaa0a4c5f,
++	0xdd0d7cc9,
++	0x5005713c,
++	0x270241aa,
++	0xbe0b1010,
++	0xc90c2086,
++	0x5768b525,
++	0x206f85b3,
++	0xb966d409,
++	0xce61e49f,
++	0x5edef90e,
++	0x29d9c998,
++	0xb0d09822,
++	0xc7d7a8b4,
++	0x59b33d17,
++	0x2eb40d81,
++	0xb7bd5c3b,
++	0xc0ba6cad,
++	0xedb88320,
++	0x9abfb3b6,
++	0x03b6e20c,
++	0x74b1d29a,
++	0xead54739,
++	0x9dd277af,
++	0x04db2615,
++	0x73dc1683,
++	0xe3630b12,
++	0x94643b84,
++	0x0d6d6a3e,
++	0x7a6a5aa8,
++	0xe40ecf0b,
++	0x9309ff9d,
++	0x0a00ae27,
++	0x7d079eb1,
++	0xf00f9344,
++	0x8708a3d2,
++	0x1e01f268,
++	0x6906c2fe,
++	0xf762575d,
++	0x806567cb,
++	0x196c3671,
++	0x6e6b06e7,
++	0xfed41b76,
++	0x89d32be0,
++	0x10da7a5a,
++	0x67dd4acc,
++	0xf9b9df6f,
++	0x8ebeeff9,
++	0x17b7be43,
++	0x60b08ed5,
++	0xd6d6a3e8,
++	0xa1d1937e,
++	0x38d8c2c4,
++	0x4fdff252,
++	0xd1bb67f1,
++	0xa6bc5767,
++	0x3fb506dd,
++	0x48b2364b,
++	0xd80d2bda,
++	0xaf0a1b4c,
++	0x36034af6,
++	0x41047a60,
++	0xdf60efc3,
++	0xa867df55,
++	0x316e8eef,
++	0x4669be79,
++	0xcb61b38c,
++	0xbc66831a,
++	0x256fd2a0,
++	0x5268e236,
++	0xcc0c7795,
++	0xbb0b4703,
++	0x220216b9,
++	0x5505262f,
++	0xc5ba3bbe,
++	0xb2bd0b28,
++	0x2bb45a92,
++	0x5cb36a04,
++	0xc2d7ffa7,
++	0xb5d0cf31,
++	0x2cd99e8b,
++	0x5bdeae1d,
++	0x9b64c2b0,
++	0xec63f226,
++	0x756aa39c,
++	0x026d930a,
++	0x9c0906a9,
++	0xeb0e363f,
++	0x72076785,
++	0x05005713,
++	0x95bf4a82,
++	0xe2b87a14,
++	0x7bb12bae,
++	0x0cb61b38,
++	0x92d28e9b,
++	0xe5d5be0d,
++	0x7cdcefb7,
++	0x0bdbdf21,
++	0x86d3d2d4,
++	0xf1d4e242,
++	0x68ddb3f8,
++	0x1fda836e,
++	0x81be16cd,
++	0xf6b9265b,
++	0x6fb077e1,
++	0x18b74777,
++	0x88085ae6,
++	0xff0f6a70,
++	0x66063bca,
++	0x11010b5c,
++	0x8f659eff,
++	0xf862ae69,
++	0x616bffd3,
++	0x166ccf45,
++	0xa00ae278,
++	0xd70dd2ee,
++	0x4e048354,
++	0x3903b3c2,
++	0xa7672661,
++	0xd06016f7,
++	0x4969474d,
++	0x3e6e77db,
++	0xaed16a4a,
++	0xd9d65adc,
++	0x40df0b66,
++	0x37d83bf0,
++	0xa9bcae53,
++	0xdebb9ec5,
++	0x47b2cf7f,
++	0x30b5ffe9,
++	0xbdbdf21c,
++	0xcabac28a,
++	0x53b39330,
++	0x24b4a3a6,
++	0xbad03605,
++	0xcdd70693,
++	0x54de5729,
++	0x23d967bf,
++	0xb3667a2e,
++	0xc4614ab8,
++	0x5d681b02,
++	0x2a6f2b94,
++	0xb40bbe37,
++	0xc30c8ea1,
++	0x5a05df1b,
++	0x2d02ef8d
++};
++
++/* CRC calculation */
++#define GET_MAC_ADDR_CRC(addr, crc)				\
++{								\
++	u32 i;						\
++	u8  data;						\
++	crc = 0xffffffff;					\
++	for (i = 0; i < 6; i++) {				\
++		data = (u8)(addr >> ((5 - i) * 8));	\
++		crc = crc ^ data;				\
++		crc = crc_table[crc & 0xff] ^ (crc >> 8);	\
++	}							\
++}								\
++
++#endif /* __crc_mac_addr_ext_h */
+diff --git a/drivers/net/ethernet/freescale/fman/mac/Makefile b/drivers/net/ethernet/freescale/fman/mac/Makefile
+index ce03e25..26e35e1 100644
+--- a/drivers/net/ethernet/freescale/fman/mac/Makefile
++++ b/drivers/net/ethernet/freescale/fman/mac/Makefile
+@@ -1,5 +1,7 @@
+ obj-y	+= fsl_fman_mac.o
+ 
+ fsl_fman_mac-objs		:= fman_dtsec.o fman_dtsec_mii_acc.o	\
++				   fm_dtsec.o				\
+ 				   fman_memac.o fman_memac_mii_acc.o	\
+-				   fman_tgec.o
++				   fm_memac.o				\
++				   fman_tgec.o fm_tgec.o
+diff --git a/drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c b/drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c
+new file mode 100644
+index 0000000..941a264
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c
+@@ -0,0 +1,1012 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include "crc_mac_addr_ext.h"
++
++#include "fm_common.h"
++#include "fm_dtsec.h"
++#include "fsl_fman_dtsec.h"
++#include "fsl_fman_dtsec_mii_acc.h"
++
++#include <linux/string.h>
++#include <linux/slab.h>
++#include <linux/bitrev.h>
++
++static int check_init_parameters(struct dtsec_t *dtsec)
++{
++	if (ENET_SPEED_FROM_MODE(dtsec->enet_mode) >= ENET_SPEED_10000) {
++		pr_err("1G MAC driver supports 1G or lower speeds\n");
++		return -EINVAL;
++	}
++	if (dtsec->addr == 0) {
++		pr_err("Ethernet MAC Must have a valid MAC Address\n");
++		return -EINVAL;
++	}
++	if ((ENET_SPEED_FROM_MODE(dtsec->enet_mode) >= ENET_SPEED_1000) &&
++	    dtsec->dtsec_drv_param->halfdup_on) {
++		pr_err("Ethernet MAC 1G can't work in half duplex\n");
++		return -EINVAL;
++	}
++
++	/* FM_RX_PREAM_4_ERRATA_DTSEC_A001 Errata workaround */
++	if (dtsec->dtsec_drv_param->rx_preamble) {
++		pr_err("preamble_rx_en\n");
++		return -EINVAL;
++	}
++
++	if (((dtsec->dtsec_drv_param)->tx_preamble ||
++	     (dtsec->dtsec_drv_param)->rx_preamble) &&
++	    ((dtsec->dtsec_drv_param)->preamble_len != 0x7)) {
++		pr_err("Preamble length should be 0x7 bytes\n");
++		return -EINVAL;
++	}
++	if ((dtsec->dtsec_drv_param)->halfdup_on &&
++	    (dtsec->dtsec_drv_param->tx_time_stamp_en ||
++	     dtsec->dtsec_drv_param->rx_time_stamp_en)) {
++		pr_err("1588 timeStamp disabled in half duplex mode\n");
++		return -EINVAL;
++	}
++	if ((dtsec->dtsec_drv_param)->rx_flow &&
++	    (dtsec->dtsec_drv_param)->rx_ctrl_acc) {
++		pr_err("Receive control frame can not be accepted\n");
++		return -EINVAL;
++	}
++	if ((dtsec->dtsec_drv_param)->rx_prepend >
++	    MAX_PACKET_ALIGNMENT) {
++		pr_err("packetAlignmentPadding can't be > than %d\n",
++		       MAX_PACKET_ALIGNMENT);
++		return -EINVAL;
++	}
++	if (((dtsec->dtsec_drv_param)->non_back_to_back_ipg1 >
++	     MAX_INTER_PACKET_GAP) ||
++	    ((dtsec->dtsec_drv_param)->non_back_to_back_ipg2 >
++	     MAX_INTER_PACKET_GAP) ||
++	     ((dtsec->dtsec_drv_param)->back_to_back_ipg >
++	      MAX_INTER_PACKET_GAP)) {
++		pr_err("Inter packet gap can't be greater than %d\n",
++		       MAX_INTER_PACKET_GAP);
++		return -EINVAL;
++	}
++	if ((dtsec->dtsec_drv_param)->halfdup_alt_backoff_val >
++	    MAX_INTER_PALTERNATE_BEB) {
++		pr_err("alternateBackoffVal can't be greater than %d\n",
++		       MAX_INTER_PALTERNATE_BEB);
++		return -EINVAL;
++	}
++	if ((dtsec->dtsec_drv_param)->halfdup_retransmit >
++	    MAX_RETRANSMISSION) {
++		pr_err("maxRetransmission can't be greater than %d\n",
++		       MAX_RETRANSMISSION);
++		return -EINVAL;
++	}
++	if ((dtsec->dtsec_drv_param)->halfdup_coll_window >
++	    MAX_COLLISION_WINDOW) {
++		pr_err("collisionWindow can't be greater than %d\n",
++		       MAX_COLLISION_WINDOW);
++		return -EINVAL;
++	/* If Auto negotiation process is disabled, need to set up the PHY
++	 * using the MII Management Interface
++	 */
++	}
++	if (dtsec->dtsec_drv_param->tbipa > MAX_PHYS) {
++		pr_err("PHY address (should be 0-%d)\n", MAX_PHYS);
++		return -ERANGE;
++	}
++	if (!dtsec->exception_cb) {
++		pr_err("uninitialized exception_cb\n");
++		return -EINVAL;
++	}
++	if (!dtsec->event_cb) {
++		pr_err("uninitialized event_cb\n");
++		return -EINVAL;
++	}
++
++	/* FM_LEN_CHECK_ERRATA_FMAN_SW002 Errata workaround */
++	if (dtsec->dtsec_drv_param->rx_len_check) {
++		pr_warn("Length Check!\n");
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int get_exception_flag(enum fm_mac_exceptions exception)
++{
++	u32 bit_mask;
++
++	switch (exception) {
++	case FM_MAC_EX_1G_BAB_RX:
++		bit_mask = DTSEC_IMASK_BREN;
++		break;
++	case FM_MAC_EX_1G_RX_CTL:
++		bit_mask = DTSEC_IMASK_RXCEN;
++		break;
++	case FM_MAC_EX_1G_GRATEFUL_TX_STP_COMPLET:
++		bit_mask = DTSEC_IMASK_GTSCEN;
++		break;
++	case FM_MAC_EX_1G_BAB_TX:
++		bit_mask = DTSEC_IMASK_BTEN;
++		break;
++	case FM_MAC_EX_1G_TX_CTL:
++		bit_mask = DTSEC_IMASK_TXCEN;
++		break;
++	case FM_MAC_EX_1G_TX_ERR:
++		bit_mask = DTSEC_IMASK_TXEEN;
++		break;
++	case FM_MAC_EX_1G_LATE_COL:
++		bit_mask = DTSEC_IMASK_LCEN;
++		break;
++	case FM_MAC_EX_1G_COL_RET_LMT:
++		bit_mask = DTSEC_IMASK_CRLEN;
++		break;
++	case FM_MAC_EX_1G_TX_FIFO_UNDRN:
++		bit_mask = DTSEC_IMASK_XFUNEN;
++		break;
++	case FM_MAC_EX_1G_MAG_PCKT:
++		bit_mask = DTSEC_IMASK_MAGEN;
++		break;
++	case FM_MAC_EX_1G_MII_MNG_RD_COMPLET:
++		bit_mask = DTSEC_IMASK_MMRDEN;
++		break;
++	case FM_MAC_EX_1G_MII_MNG_WR_COMPLET:
++		bit_mask = DTSEC_IMASK_MMWREN;
++		break;
++	case FM_MAC_EX_1G_GRATEFUL_RX_STP_COMPLET:
++		bit_mask = DTSEC_IMASK_GRSCEN;
++		break;
++	case FM_MAC_EX_1G_DATA_ERR:
++		bit_mask = DTSEC_IMASK_TDPEEN;
++		break;
++	case FM_MAC_EX_1G_RX_MIB_CNT_OVFL:
++		bit_mask = DTSEC_IMASK_MSROEN;
++		break;
++	default:
++		bit_mask = 0;
++		break;
++	}
++
++	return bit_mask;
++}
++
++static bool is_init_done(struct dtsec_cfg *dtsec_drv_params)
++{
++	/* Checks if dTSEC driver parameters were initialized */
++	if (!dtsec_drv_params)
++		return true;
++
++	return false;
++}
++
++static u32 get_mac_addr_hash_code(u64 eth_addr)
++{
++	u32 crc;
++
++	/* CRC calculation */
++	GET_MAC_ADDR_CRC(eth_addr, crc);
++
++	crc = bitrev32(crc);
++
++	return crc;
++}
++
++static u16 dtsec_get_max_frame_length(struct dtsec_t *dtsec)
++{
++	if (is_init_done(dtsec->dtsec_drv_param))
++		return 0;
++
++	return fman_dtsec_get_max_frame_len(dtsec->regs);
++}
++
++static void dtsec_isr(void *handle)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)handle;
++	u32 event;
++	struct dtsec_regs __iomem *dtsec_regs = dtsec->regs;
++
++	/* do not handle MDIO events */
++	event = fman_dtsec_get_event(dtsec_regs,
++				     (u32)(~(DTSEC_IMASK_MMRDEN |
++					     DTSEC_IMASK_MMWREN)));
++
++	event &= fman_dtsec_get_interrupt_mask(dtsec_regs);
++
++	fman_dtsec_ack_event(dtsec_regs, event);
++
++	if (event & DTSEC_IMASK_BREN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_BAB_RX);
++	if (event & DTSEC_IMASK_RXCEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_RX_CTL);
++	if (event & DTSEC_IMASK_GTSCEN)
++		dtsec->exception_cb(dtsec->dev_id,
++				    FM_MAC_EX_1G_GRATEFUL_TX_STP_COMPLET);
++	if (event & DTSEC_IMASK_BTEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_BAB_TX);
++	if (event & DTSEC_IMASK_TXCEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_TX_CTL);
++	if (event & DTSEC_IMASK_TXEEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_TX_ERR);
++	if (event & DTSEC_IMASK_LCEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_LATE_COL);
++	if (event & DTSEC_IMASK_CRLEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_COL_RET_LMT);
++	if (event & DTSEC_IMASK_XFUNEN) {
++		/* FM_TX_LOCKUP_ERRATA_DTSEC6 Errata workaround */
++		if (dtsec->fm_rev_info.major_rev == 2) {
++			u32 tpkt1, tmp_reg1, tpkt2, tmp_reg2, i;
++			/* a. Write 0x00E0_0C00 to DTSEC_ID
++			 *	This is a read only register
++			 * b. Read and save the value of TPKT
++			 */
++			tpkt1 = in_be32(&dtsec_regs->tpkt);
++
++			/* c. Read the register at dTSEC address offset 0x32C */
++			tmp_reg1 = in_be32(&dtsec_regs->reserved02c0[27]);
++
++			/* d. Compare bits [9:15] to bits [25:31] of the
++			 * register at address offset 0x32C.
++			 */
++			if ((tmp_reg1 & 0x007F0000) !=
++				(tmp_reg1 & 0x0000007F)) {
++				/* If they are not equal, save the value of
++				 * this register and wait for at least
++				 * MAXFRM*16 ns
++				 */
++				usleep_range((u32)(min
++					(dtsec_get_max_frame_length(dtsec) *
++					16 / 1000, 1)), (u32)
++					(min(dtsec_get_max_frame_length
++					(dtsec) * 16 / 1000, 1) + 1));
++			}
++
++			/* e. Read and save TPKT again and read the register
++			 * at dTSEC address offset 0x32C again
++			 */
++			tpkt2 = in_be32(&dtsec_regs->tpkt);
++			tmp_reg2 = in_be32(&dtsec_regs->reserved02c0[27]);
++
++			/* f. Compare the value of TPKT saved in step b to
++			 * value read in step e. Also compare bits [9:15] of
++			 * the register at offset 0x32C saved in step d to the
++			 * value of bits [9:15] saved in step e. If the two
++			 * registers values are unchanged, then the transmit
++			 * portion of the dTSEC controller is locked up and
++			 * the user should proceed to the recover sequence.
++			 */
++			if ((tpkt1 == tpkt2) && ((tmp_reg1 & 0x007F0000) ==
++				(tmp_reg2 & 0x007F0000))) {
++				/* recover sequence */
++
++				/* a.Write a 1 to RCTRL[GRS] */
++
++				out_be32(&dtsec_regs->rctrl,
++					 in_be32(&dtsec_regs->rctrl) |
++					 RCTRL_GRS);
++
++				/* b.Wait until IEVENT[GRSC]=1, or at least
++				 * 100 us has elapsed.
++				 */
++				for (i = 0; i < 100; i++) {
++					if (in_be32(&dtsec_regs->ievent) &
++					    DTSEC_IMASK_GRSCEN)
++						break;
++					udelay(1);
++				}
++				if (in_be32(&dtsec_regs->ievent) &
++				    DTSEC_IMASK_GRSCEN)
++					out_be32(&dtsec_regs->ievent,
++						 DTSEC_IMASK_GRSCEN);
++				else
++					pr_debug("Rx lockup due to Tx lockup\n");
++
++				/* c.Write a 1 to bit n of FM_RSTC
++				 * (offset 0x0CC of FPM)
++				 */
++				fm_reset_mac(dtsec->fm, dtsec->mac_id);
++
++				/* d.Wait 4 Tx clocks (32 ns) */
++				udelay(1);
++
++				/* e.Write a 0 to bit n of FM_RSTC. */
++				/* cleared by FMAN
++				 */
++			}
++		}
++
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_TX_FIFO_UNDRN);
++	}
++	if (event & DTSEC_IMASK_MAGEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_MAG_PCKT);
++	if (event & DTSEC_IMASK_GRSCEN)
++		dtsec->exception_cb(dtsec->dev_id,
++				    FM_MAC_EX_1G_GRATEFUL_RX_STP_COMPLET);
++	if (event & DTSEC_IMASK_TDPEEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_EX_1G_DATA_ERR);
++	if (event & DTSEC_IMASK_RDPEEN)
++		dtsec->exception_cb(dtsec->dev_id, FM_MAC_1G_RX_DATA_ERR);
++
++	/* masked interrupts */
++	WARN_ON(event & DTSEC_IMASK_ABRTEN);
++	WARN_ON(event & DTSEC_IMASK_IFERREN);
++}
++
++static void dtsec_1588_isr(void *handle)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)handle;
++	u32 event;
++	struct dtsec_regs __iomem *dtsec_regs = dtsec->regs;
++
++	if (dtsec->ptp_tsu_enabled) {
++		event = fman_dtsec_check_and_clear_tmr_event(dtsec_regs);
++
++		if (event) {
++			WARN_ON(event & TMR_PEVENT_TSRE);
++			dtsec->exception_cb(dtsec->dev_id,
++					     FM_MAC_EX_1G_1588_TS_RX_ERR);
++		}
++	}
++}
++
++static void free_init_resources(struct dtsec_t *dtsec)
++{
++	fm_unregister_intr(dtsec->fm, FM_MOD_MAC, dtsec->mac_id,
++			   FM_INTR_TYPE_ERR);
++	fm_unregister_intr(dtsec->fm, FM_MOD_MAC, dtsec->mac_id,
++			   FM_INTR_TYPE_NORMAL);
++
++	/* release the driver's group hash table */
++	free_hash_table(dtsec->multicast_addr_hash);
++	dtsec->multicast_addr_hash = NULL;
++
++	/* release the driver's individual hash table */
++	free_hash_table(dtsec->unicast_addr_hash);
++	dtsec->unicast_addr_hash = NULL;
++}
++
++static int graceful_stop(struct dtsec_t *dtsec, enum comm_mode mode)
++{
++	struct dtsec_regs __iomem *regs;
++
++	regs = dtsec->regs;
++
++	/* Assert the graceful transmit stop bit */
++	if (mode & COMM_MODE_RX) {
++		fman_dtsec_stop_rx(regs);
++
++		if (dtsec->fm_rev_info.major_rev == 2)
++			usleep_range(100, 200);
++		else
++			udelay(10);
++	}
++
++	if (mode & COMM_MODE_TX) {
++		if (dtsec->fm_rev_info.major_rev == 2)
++			pr_debug("GTS not supported due to DTSEC_A004 errata.\n");
++		else
++			pr_debug("GTS not supported due to DTSEC_A0014 errata.\n");
++	}
++	return 0;
++}
++
++static int graceful_restart(struct dtsec_t *dtsec, enum comm_mode mode)
++{
++	struct dtsec_regs __iomem *regs;
++
++	regs = dtsec->regs;
++	/* clear the graceful receive stop bit */
++	if (mode & COMM_MODE_TX)
++		fman_dtsec_start_tx(regs);
++
++	if (mode & COMM_MODE_RX)
++		fman_dtsec_start_rx(regs);
++
++	return 0;
++}
++
++static int dtsec_mii_write_phy_reg(struct dtsec_t *dtsec, u8 phy_addr,
++				   u8 reg, u16 data)
++{
++	u16 dtsec_freq;
++
++	dtsec_freq = (u16)(dtsec->clk_freq >> 1);
++
++	return fman_dtsec_mii_write_reg(dtsec->mii_regs, phy_addr, reg,
++					data, dtsec_freq);
++}
++
++static int dtsec_mii_read_phy_reg(struct dtsec_t *dtsec, u8 phy_addr,
++				  u8 reg, u16 *data)
++{
++	u16 dtsec_freq;
++	int err;
++
++	dtsec_freq = (u16)(dtsec->clk_freq >> 1);
++
++	err = fman_dtsec_mii_read_reg(dtsec->mii_regs, phy_addr, reg,
++				      data, dtsec_freq);
++
++	if (*data == 0xffff) {
++		pr_warn("Read wrong data(0xffff):phy_addr 0x%x,reg 0x%x",
++			phy_addr, reg);
++		return -ENXIO;
++	}
++	if (err)
++		return err;
++
++	return err;
++}
++
++int dtsec_cfg_max_frame_len(struct fm_mac_dev *fm_mac_dev, u16 new_val)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	dtsec->dtsec_drv_param->maximum_frame = new_val;
++
++	return 0;
++}
++
++int dtsec_cfg_pad_and_crc(struct fm_mac_dev *fm_mac_dev, bool new_val)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	dtsec->dtsec_drv_param->tx_pad_crc = new_val;
++
++	return 0;
++}
++
++int dtsec_enable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	fman_dtsec_enable(dtsec->regs,
++			  (bool)!!(mode & COMM_MODE_RX),
++			  (bool)!!(mode & COMM_MODE_TX));
++
++	graceful_restart(dtsec, mode);
++
++	return 0;
++}
++
++int dtsec_disable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	graceful_stop(dtsec, mode);
++
++	fman_dtsec_disable(dtsec->regs,
++			   (bool)!!(mode & COMM_MODE_RX),
++			   (bool)!!(mode & COMM_MODE_TX));
++
++	return 0;
++}
++
++int dtsec_set_tx_pause_frames(struct fm_mac_dev *fm_mac_dev,
++			      u8 __maybe_unused priority,
++			      u16 pause_time, u16 __maybe_unused thresh_time)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	/* FM_BAD_TX_TS_IN_B_2_B_ERRATA_DTSEC_A003 Errata workaround */
++	if (dtsec->fm_rev_info.major_rev == 2)
++		if (0 < pause_time && pause_time <= 320) {
++			pr_warn("pause-time: %d illegal.Should be > 320\n",
++				pause_time);
++			return -EINVAL;
++		}
++
++	fman_dtsec_set_tx_pause_frames(dtsec->regs, pause_time);
++	return 0;
++}
++
++int dtsec_accept_rx_pause_frames(struct fm_mac_dev *fm_mac_dev, bool en)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	fman_dtsec_handle_rx_pause(dtsec->regs, en);
++
++	return 0;
++}
++
++int dtsec_modify_mac_address(struct fm_mac_dev *fm_mac_dev,
++			     enet_addr_t *enet_addr)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	/* Initialize MAC Station Address registers (1 & 2)
++	 * Station address have to be swapped (big endian to little endian
++	 */
++	dtsec->addr = ENET_ADDR_TO_UINT64(*enet_addr);
++	fman_dtsec_set_mac_address(dtsec->regs, (u8 *)(*enet_addr));
++
++	return 0;
++}
++
++int dtsec_add_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *eth_addr)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++	struct eth_hash_entry_t *hash_entry;
++	u64 addr;
++	s32 bucket;
++	u32 crc;
++	bool mcast, ghtx;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	addr = ENET_ADDR_TO_UINT64(*eth_addr);
++
++	ghtx = (bool)((fman_dtsec_get_rctrl(dtsec->regs) &
++			RCTRL_GHTX) ? true : false);
++	mcast = (bool)((addr & MAC_GROUP_ADDRESS) ? true : false);
++
++	/* Cannot handle unicast mac addr when GHTX is on */
++	if (ghtx && !mcast) {
++		pr_err("Could not compute hash bucket\n");
++		return -EINVAL;
++	}
++	crc = get_mac_addr_hash_code(addr);
++
++	/* considering the 9 highest order bits in crc H[8:0]:
++	 *if ghtx = 0 H[8:6] (highest order 3 bits) identify the hash register
++	 *and H[5:1] (next 5 bits) identify the hash bit
++	 *if ghts = 1 H[8:5] (highest order 4 bits) identify the hash register
++	 *and H[4:0] (next 5 bits) identify the hash bit.
++	 *
++	 *In bucket index output the low 5 bits identify the hash register
++	 *bit, while the higher 4 bits identify the hash register
++	 */
++
++	if (ghtx) {
++		bucket = (s32)((crc >> 23) & 0x1ff);
++	} else {
++		bucket = (s32)((crc >> 24) & 0xff);
++		/* if !ghtx and mcast the bit must be set in gaddr instead of
++		 *igaddr.
++		 */
++		if (mcast)
++			bucket += 0x100;
++	}
++
++	fman_dtsec_set_bucket(dtsec->regs, bucket, true);
++
++	/* Create element to be added to the driver hash table */
++	hash_entry = kmalloc(sizeof(*hash_entry), GFP_KERNEL);
++	if (!hash_entry)
++		return -ENOMEM;
++	hash_entry->addr = addr;
++	INIT_LIST_HEAD(&hash_entry->node);
++
++	if (addr & MAC_GROUP_ADDRESS)
++		/* Group Address */
++		list_add_tail(&hash_entry->node,
++			      &dtsec->multicast_addr_hash->lsts[bucket]);
++	else
++		list_add_tail(&hash_entry->node,
++			      &dtsec->unicast_addr_hash->lsts[bucket]);
++
++	return 0;
++}
++
++int dtsec_del_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *eth_addr)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++	struct list_head *pos;
++	struct eth_hash_entry_t *hash_entry = NULL;
++	u64 addr;
++	s32 bucket;
++	u32 crc;
++	bool mcast, ghtx;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	addr = ENET_ADDR_TO_UINT64(*eth_addr);
++
++	ghtx = (bool)((fman_dtsec_get_rctrl(dtsec->regs) &
++			RCTRL_GHTX) ? true : false);
++	mcast = (bool)((addr & MAC_GROUP_ADDRESS) ? true : false);
++
++	/* Cannot handle unicast mac addr when GHTX is on */
++	if (ghtx && !mcast) {
++		pr_err("Could not compute hash bucket\n");
++		return -EINVAL;
++	}
++	crc = get_mac_addr_hash_code(addr);
++
++	if (ghtx) {
++		bucket = (s32)((crc >> 23) & 0x1ff);
++	} else {
++		bucket = (s32)((crc >> 24) & 0xff);
++		/* if !ghtx and mcast the bit must be set
++		 * in gaddr instead of igaddr.
++		 */
++		if (mcast)
++			bucket += 0x100;
++	}
++
++	if (addr & MAC_GROUP_ADDRESS) {
++		/* Group Address */
++		list_for_each(pos,
++			      &dtsec->multicast_addr_hash->lsts[bucket]) {
++			hash_entry = ETH_HASH_ENTRY_OBJ(pos);
++			if (hash_entry->addr == addr) {
++				list_del_init(&hash_entry->node);
++				kfree(hash_entry);
++				break;
++			}
++		}
++		if (list_empty(&dtsec->multicast_addr_hash->lsts[bucket]))
++			fman_dtsec_set_bucket(dtsec->regs, bucket, false);
++	} else {
++		/* Individual Address */
++		list_for_each(pos,
++			      &dtsec->unicast_addr_hash->lsts[bucket]) {
++			hash_entry = ETH_HASH_ENTRY_OBJ(pos);
++			if (hash_entry->addr == addr) {
++				list_del_init(&hash_entry->node);
++				kfree(hash_entry);
++				break;
++			}
++		}
++		if (list_empty(&dtsec->unicast_addr_hash->lsts[bucket]))
++			fman_dtsec_set_bucket(dtsec->regs, bucket, false);
++	}
++
++	/* address does not exist */
++	WARN_ON(!hash_entry);
++
++	return 0;
++}
++
++int dtsec_set_promiscuous(struct fm_mac_dev *fm_mac_dev, bool new_val)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	fman_dtsec_set_uc_promisc(dtsec->regs, new_val);
++	fman_dtsec_set_mc_promisc(dtsec->regs, new_val);
++
++	return 0;
++}
++
++int dtsec_adjust_link(struct fm_mac_dev *fm_mac_dev, enum ethernet_speed speed)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++	int err;
++	enum enet_interface enet_interface;
++	enum enet_speed enet_speed;
++	int full_duplex = true;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	dtsec->enet_mode =
++	    MAKE_ENET_MODE(ENET_INTERFACE_FROM_MODE(dtsec->enet_mode), speed);
++	enet_interface =
++	    (enum enet_interface)ENET_INTERFACE_FROM_MODE(dtsec->enet_mode);
++	enet_speed = (enum enet_speed)ENET_SPEED_FROM_MODE(dtsec->enet_mode);
++
++	err = fman_dtsec_adjust_link(dtsec->regs, enet_interface,
++				     enet_speed, full_duplex);
++
++	if (err == -EINVAL) {
++		pr_err("Ethernet doesn't support Half Duplex mode\n");
++		return -EINVAL;
++	}
++
++	return err;
++}
++
++int dtsec_restart_autoneg(struct fm_mac_dev *fm_mac_dev)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++	u16 tmp_reg16;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	dtsec_mii_read_phy_reg(dtsec, dtsec->tbi_phy_addr, 0, &tmp_reg16);
++
++	tmp_reg16 &= ~(PHY_CR_SPEED0 | PHY_CR_SPEED1);
++	tmp_reg16 |=
++	    (PHY_CR_ANE | PHY_CR_RESET_AN | PHY_CR_FULLDUPLEX | PHY_CR_SPEED1);
++
++	dtsec_mii_write_phy_reg(dtsec, dtsec->tbi_phy_addr, 0, tmp_reg16);
++
++	return 0;
++}
++
++int dtsec_get_version(struct fm_mac_dev *fm_mac_dev, u32 *mac_version)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	*mac_version = fman_dtsec_get_revision(dtsec->regs);
++
++	return 0;
++}
++
++int dtsec_set_exception(struct fm_mac_dev *fm_mac_dev,
++			enum fm_mac_exceptions exception,
++			bool enable)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++	u32 bit_mask = 0;
++
++	if (!is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	if (exception != FM_MAC_EX_1G_1588_TS_RX_ERR) {
++		bit_mask = get_exception_flag(exception);
++		if (bit_mask) {
++			if (enable)
++				dtsec->exceptions |= bit_mask;
++			else
++				dtsec->exceptions &= ~bit_mask;
++		} else {
++			pr_err("Undefined exception\n");
++			return -EINVAL;
++		}
++		if (enable)
++			fman_dtsec_enable_interrupt(dtsec->regs, bit_mask);
++		else
++			fman_dtsec_disable_interrupt(dtsec->regs, bit_mask);
++	} else {
++		if (!dtsec->ptp_tsu_enabled) {
++			pr_err("Exception valid for 1588 only\n");
++			return -EINVAL;
++		}
++		switch (exception) {
++		case FM_MAC_EX_1G_1588_TS_RX_ERR:
++			if (enable) {
++				dtsec->en_tsu_err_exeption = true;
++				fman_dtsec_enable_tmr_interrupt(dtsec->regs);
++			} else {
++				dtsec->en_tsu_err_exeption = false;
++				fman_dtsec_disable_tmr_interrupt(dtsec->regs);
++			}
++			break;
++		default:
++			pr_err("Undefined exception\n");
++			return -EINVAL;
++		}
++	}
++
++	return 0;
++}
++
++int dtsec_init(struct fm_mac_dev *fm_mac_dev)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++	struct dtsec_cfg *dtsec_drv_param;
++	int err;
++	u16 max_frm_ln;
++	enum enet_interface enet_interface;
++	enum enet_speed enet_speed;
++	enet_addr_t eth_addr;
++
++	if (is_init_done(dtsec->dtsec_drv_param))
++		return -EINVAL;
++
++	if (DEFAULT_RESET_ON_INIT &&
++	    (fm_reset_mac(dtsec->fm, dtsec->mac_id) != 0)) {
++		pr_err("Can't reset MAC!\n");
++		return -EINVAL;
++	}
++
++	err = check_init_parameters(dtsec);
++	if (err)
++		return err;
++
++	dtsec_drv_param = dtsec->dtsec_drv_param;
++
++	enet_interface =
++	    (enum enet_interface)ENET_INTERFACE_FROM_MODE(dtsec->enet_mode);
++	enet_speed = (enum enet_speed)ENET_SPEED_FROM_MODE(dtsec->enet_mode);
++	MAKE_ENET_ADDR_FROM_UINT64(dtsec->addr, eth_addr);
++
++	err = fman_dtsec_init(dtsec->regs, dtsec_drv_param, enet_interface,
++			      enet_speed, (u8 *)eth_addr,
++			      dtsec->fm_rev_info.major_rev,
++			      dtsec->fm_rev_info.minor_rev,
++			      dtsec->exceptions);
++	if (err) {
++		free_init_resources(dtsec);
++		pr_err("DTSEC version doesn't support this i/f mode\n");
++		return err;
++	}
++
++	if (ENET_INTERFACE_FROM_MODE(dtsec->enet_mode) == ENET_IF_SGMII) {
++		u16 tmp_reg16;
++
++		/* Configure the TBI PHY Control Register */
++		tmp_reg16 = PHY_TBICON_CLK_SEL | PHY_TBICON_SRESET;
++		dtsec_mii_write_phy_reg(dtsec, (u8)dtsec_drv_param->tbipa,
++					17, tmp_reg16);
++
++		tmp_reg16 = PHY_TBICON_CLK_SEL;
++		dtsec_mii_write_phy_reg(dtsec, (u8)dtsec_drv_param->tbipa,
++					17, tmp_reg16);
++
++		tmp_reg16 =
++		    (PHY_CR_PHY_RESET | PHY_CR_ANE | PHY_CR_FULLDUPLEX |
++		     PHY_CR_SPEED1);
++		dtsec_mii_write_phy_reg(dtsec, (u8)dtsec_drv_param->tbipa,
++					0, tmp_reg16);
++
++		if (dtsec->enet_mode & ENET_IF_SGMII_BASEX)
++			tmp_reg16 = PHY_TBIANA_1000X;
++		else
++			tmp_reg16 = PHY_TBIANA_SGMII;
++		dtsec_mii_write_phy_reg(dtsec, (u8)dtsec_drv_param->tbipa,
++					4, tmp_reg16);
++
++		tmp_reg16 =
++		    (PHY_CR_ANE | PHY_CR_RESET_AN | PHY_CR_FULLDUPLEX |
++		     PHY_CR_SPEED1);
++
++		dtsec_mii_write_phy_reg(dtsec, (u8)dtsec_drv_param->tbipa,
++					0, tmp_reg16);
++	}
++
++	/* Max Frame Length */
++	max_frm_ln = fman_dtsec_get_max_frame_len(dtsec->regs);
++	err = fm_set_mac_max_frame(dtsec->fm, FM_MAC_1G, dtsec->mac_id,
++				   max_frm_ln);
++	if (err) {
++		pr_err("Setting max frame length failed\n");
++		free_init_resources(dtsec);
++		return -EINVAL;
++	}
++
++	dtsec->multicast_addr_hash =
++	alloc_hash_table(EXTENDED_HASH_TABLE_SIZE);
++	if (!dtsec->multicast_addr_hash) {
++		free_init_resources(dtsec);
++		pr_err("MC hash table is failed\n");
++		return -ENOMEM;
++	}
++
++	dtsec->unicast_addr_hash = alloc_hash_table(DTSEC_HASH_TABLE_SIZE);
++	if (!dtsec->unicast_addr_hash) {
++		free_init_resources(dtsec);
++		pr_err("UC hash table is failed\n");
++		return -ENOMEM;
++	}
++
++	/* register err intr handler for dtsec to FPM (err) */
++	fm_register_intr(dtsec->fm, FM_MOD_MAC, dtsec->mac_id,
++			 FM_INTR_TYPE_ERR, dtsec_isr, dtsec);
++	/* register 1588 intr handler for TMR to FPM (normal) */
++	fm_register_intr(dtsec->fm, FM_MOD_MAC, dtsec->mac_id,
++			 FM_INTR_TYPE_NORMAL, dtsec_1588_isr, dtsec);
++
++	kfree(dtsec_drv_param);
++	dtsec->dtsec_drv_param = NULL;
++
++	return 0;
++}
++
++int dtsec_free(struct fm_mac_dev *fm_mac_dev)
++{
++	struct dtsec_t *dtsec = (struct dtsec_t *)fm_mac_dev;
++
++	free_init_resources(dtsec);
++
++	kfree(dtsec->dtsec_drv_param);
++	dtsec->dtsec_drv_param = NULL;
++	kfree(dtsec);
++
++	return 0;
++}
++
++void *dtsec_config(struct fm_mac_params_t *fm_mac_param)
++{
++	struct dtsec_t *dtsec;
++	struct dtsec_cfg *dtsec_drv_param;
++	void __iomem *base_addr;
++
++	base_addr = fm_mac_param->base_addr;
++
++	/* allocate memory for the UCC GETH data structure. */
++	dtsec = kzalloc(sizeof(*dtsec), GFP_KERNEL);
++	if (!dtsec)
++		return NULL;
++
++	/* allocate memory for the d_tsec driver parameters data structure. */
++	dtsec_drv_param = kzalloc(sizeof(*dtsec_drv_param), GFP_KERNEL);
++	if (!dtsec_drv_param)
++		goto err_dtsec;
++
++	/* Plant parameter structure pointer */
++	dtsec->dtsec_drv_param = dtsec_drv_param;
++
++	fman_dtsec_defconfig(dtsec_drv_param);
++
++	dtsec->regs = (struct dtsec_regs __iomem *)(base_addr);
++	dtsec->mii_regs = (struct dtsec_mii_reg __iomem *)
++		(base_addr + DTSEC_TO_MII_OFFSET);
++	dtsec->addr = ENET_ADDR_TO_UINT64(fm_mac_param->addr);
++	dtsec->enet_mode = fm_mac_param->enet_mode;
++	dtsec->mac_id = fm_mac_param->mac_id;
++	dtsec->exceptions = DTSEC_DEFAULT_EXCEPTIONS;
++	dtsec->exception_cb = fm_mac_param->exception_cb;
++	dtsec->event_cb = fm_mac_param->event_cb;
++	dtsec->dev_id = fm_mac_param->dev_id;
++	dtsec->ptp_tsu_enabled = dtsec->dtsec_drv_param->ptp_tsu_en;
++	dtsec->en_tsu_err_exeption = dtsec->dtsec_drv_param->ptp_exception_en;
++	dtsec->tbi_phy_addr = dtsec->dtsec_drv_param->tbi_phy_addr;
++
++	dtsec->fm = fm_mac_param->fm;
++	dtsec->clk_freq = fm_get_clock_freq(dtsec->fm);
++	if (dtsec->clk_freq  == 0) {
++		pr_err("Can't get clock for MAC!\n");
++		goto err_dtsec;
++	}
++
++	/* Save FMan revision */
++	fm_get_revision(dtsec->fm, &dtsec->fm_rev_info);
++
++	return dtsec;
++
++err_dtsec:
++	kfree(dtsec);
++	return NULL;
++}
+diff --git a/drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h b/drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h
+new file mode 100644
+index 0000000..1ed7295
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h
+@@ -0,0 +1,207 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#ifndef __DTSEC_H
++#define __DTSEC_H
++
++#include "enet_ext.h"
++
++#include "fm_mac.h"
++
++#define DTSEC_DEFAULT_EXCEPTIONS		 \
++	((u32)((DTSEC_IMASK_BREN)		|\
++			(DTSEC_IMASK_RXCEN)	|\
++			(DTSEC_IMASK_BTEN)	|\
++			(DTSEC_IMASK_TXCEN)	|\
++			(DTSEC_IMASK_TXEEN)	|\
++			(DTSEC_IMASK_ABRTEN)	|\
++			(DTSEC_IMASK_LCEN)	|\
++			(DTSEC_IMASK_CRLEN)	|\
++			(DTSEC_IMASK_XFUNEN)	|\
++			(DTSEC_IMASK_IFERREN)	|\
++			(DTSEC_IMASK_MAGEN)	|\
++			(DTSEC_IMASK_TDPEEN)	|\
++			(DTSEC_IMASK_RDPEEN)))
++
++#define MAX_PACKET_ALIGNMENT        31
++#define MAX_INTER_PACKET_GAP        0x7f
++#define MAX_INTER_PALTERNATE_BEB    0x0f
++#define MAX_RETRANSMISSION          0x0f
++#define MAX_COLLISION_WINDOW        0x03ff
++
++/* number of pattern match registers (entries) */
++#define DTSEC_NUM_OF_PADDRS             15
++
++/* Group address bit indication */
++#define GROUP_ADDRESS                   0x0000010000000000LL
++
++/* Hash table size (32 bits*8 regs) */
++#define DTSEC_HASH_TABLE_SIZE                 256
++/* Extended Hash table size (32 bits*16 regs) */
++#define EXTENDED_HASH_TABLE_SIZE        512
++
++/* number of pattern match registers (entries) */
++#define DTSEC_TO_MII_OFFSET             0x1000
++/* maximum number of phys */
++#define MAX_PHYS                    32
++
++#define     VAL32BIT    0x100000000LL
++#define     VAL22BIT    0x00400000
++#define     VAL16BIT    0x00010000
++#define     VAL12BIT    0x00001000
++
++/* CAR1/2 bits */
++#define CAR1_TR64   0x80000000
++#define CAR1_TR127  0x40000000
++#define CAR1_TR255  0x20000000
++#define CAR1_TR511  0x10000000
++#define CAR1_TRK1   0x08000000
++#define CAR1_TRMAX  0x04000000
++#define CAR1_TRMGV  0x02000000
++
++#define CAR1_RBYT   0x00010000
++#define CAR1_RPKT   0x00008000
++#define CAR1_RMCA   0x00002000
++#define CAR1_RBCA   0x00001000
++#define CAR1_RXPF   0x00000400
++#define CAR1_RALN   0x00000100
++#define CAR1_RFLR   0x00000080
++#define CAR1_RCDE   0x00000040
++#define CAR1_RCSE   0x00000020
++#define CAR1_RUND   0x00000010
++#define CAR1_ROVR   0x00000008
++#define CAR1_RFRG   0x00000004
++#define CAR1_RJBR   0x00000002
++#define CAR1_RDRP   0x00000001
++
++#define CAR2_TFCS   0x00040000
++#define CAR2_TBYT   0x00002000
++#define CAR2_TPKT   0x00001000
++#define CAR2_TMCA   0x00000800
++#define CAR2_TBCA   0x00000400
++#define CAR2_TXPF   0x00000200
++#define CAR2_TDRP   0x00000001
++
++struct internal_statistics_t {
++	u64 tr64;
++	u64 tr127;
++	u64 tr255;
++	u64 tr511;
++	u64 tr1k;
++	u64 trmax;
++	u64 trmgv;
++	u64 rfrg;
++	u64 rjbr;
++	u64 rdrp;
++	u64 raln;
++	u64 rund;
++	u64 rovr;
++	u64 rxpf;
++	u64 txpf;
++	u64 rbyt;
++	u64 rpkt;
++	u64 rmca;
++	u64 rbca;
++	u64 rflr;
++	u64 rcde;
++	u64 rcse;
++	u64 tbyt;
++	u64 tpkt;
++	u64 tmca;
++	u64 tbca;
++	u64 tdrp;
++	u64 tfcs;
++};
++
++struct dtsec_t {
++	/* pointer to dTSEC memory mapped registers */
++	struct dtsec_regs __iomem *regs;
++	/* pointer to dTSEC MII memory mapped registers */
++	struct dtsec_mii_reg __iomem *mii_regs;
++	/* MAC address of device */
++	u64 addr;
++	/* Ethernet physical interface */
++	enum e_enet_mode enet_mode;
++	void *dev_id; /* device cookie used by the exception cbs */
++	fm_mac_exception_cb *exception_cb;
++	fm_mac_exception_cb *event_cb;
++	/* Whether a particular individual address recognition
++	 * register is being used
++	 */
++	bool ind_addr_reg_used[DTSEC_NUM_OF_PADDRS];
++	/* MAC address for particular individual
++	 * address recognition register
++	 */
++	u64 paddr[DTSEC_NUM_OF_PADDRS];
++	/* Number of individual addresses in registers for this station */
++	u8 num_of_ind_addr_in_regs;
++	struct internal_statistics_t internal_statistics;
++	/* pointer to driver's global address hash table */
++	struct eth_hash_t *multicast_addr_hash;
++	/* pointer to driver's individual address hash table */
++	struct eth_hash_t *unicast_addr_hash;
++	u8 mac_id;
++	u8 tbi_phy_addr;
++	u32 exceptions;
++	bool ptp_tsu_enabled;
++	bool en_tsu_err_exeption;
++	struct dtsec_cfg *dtsec_drv_param;
++	u16 clk_freq;
++	void *fm;
++	struct fm_revision_info_t fm_rev_info;
++};
++
++void *dtsec_config(struct fm_mac_params_t *fm_mac_param);
++int dtsec_set_promiscuous(struct fm_mac_dev *fm_mac_dev, bool new_val);
++int dtsec_modify_mac_address(struct fm_mac_dev *fm_mac_dev,
++			     enet_addr_t *enet_addr);
++int dtsec_adjust_link(struct fm_mac_dev *fm_mac_dev,
++		      enum ethernet_speed speed);
++int dtsec_restart_autoneg(struct fm_mac_dev *fm_mac_dev);
++int dtsec_cfg_max_frame_len(struct fm_mac_dev *fm_mac_dev, u16 new_val);
++int dtsec_cfg_pad_and_crc(struct fm_mac_dev *fm_mac_dev, bool new_val);
++int dtsec_enable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode);
++int dtsec_disable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode);
++int dtsec_init(struct fm_mac_dev *fm_mac_dev);
++int dtsec_free(struct fm_mac_dev *fm_mac_dev);
++int dtsec_accept_rx_pause_frames(struct fm_mac_dev *fm_mac_dev, bool en);
++int dtsec_set_tx_pause_frames(struct fm_mac_dev *fm_mac_dev, u8 priority,
++			      u16 pause_time, u16 thresh_time);
++int dtsec_set_exception(struct fm_mac_dev *fm_mac_dev,
++			enum fm_mac_exceptions exception, bool enable);
++int dtsec_add_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *eth_addr);
++int dtsec_del_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *eth_addr);
++int dtsec_get_version(struct fm_mac_dev *fm_mac_dev, u32 *mac_version);
++
++#endif /* __DTSEC_H */
+diff --git a/drivers/net/ethernet/freescale/fman/mac/fm_mac.h b/drivers/net/ethernet/freescale/fman/mac/fm_mac.h
+new file mode 100644
+index 0000000..6004e2d
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/mac/fm_mac.h
+@@ -0,0 +1,259 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/* FM MAC ... */
++#ifndef __FM_MAC_H
++#define __FM_MAC_H
++
++#include "enet_ext.h"
++#include "fm_common.h"
++
++#include <linux/slab.h>
++
++struct fm_mac_dev;
++
++/* defaults */
++#define DEFAULT_RESET_ON_INIT                 false
++
++/* PFC defines */
++#define FSL_FM_PAUSE_TIME_ENABLE	0xf000
++#define FSL_FM_PAUSE_TIME_DISABLE	0
++#define FSL_FM_PAUSE_THRESH_DEFAULT	0
++
++#define FM_MAC_NO_PFC   0xff
++
++/* HASH defines */
++#define ETH_HASH_ENTRY_OBJ(ptr)	\
++	hlist_entry_safe(ptr, struct eth_hash_entry_t, node)
++
++/* Enumeration (bit flags) of communication modes (Transmit,
++ * receive or both).
++ */
++enum comm_mode {
++	COMM_MODE_NONE = 0,	/* No transmit/receive communication */
++	COMM_MODE_RX = 1,	/* Only receive communication */
++	COMM_MODE_TX = 2,	/* Only transmit communication */
++	COMM_MODE_RX_AND_TX = 3	/* Both transmit and receive communication */
++};
++
++/* FM MAC Exceptions */
++enum fm_mac_exceptions {
++	FM_MAC_EX_10G_MDIO_SCAN_EVENT = 0
++	/* 10GEC MDIO scan event interrupt */
++	, FM_MAC_EX_10G_MDIO_CMD_CMPL
++	/* 10GEC MDIO command completion interrupt */
++	, FM_MAC_EX_10G_REM_FAULT
++	/* 10GEC, mEMAC Remote fault interrupt */
++	, FM_MAC_EX_10G_LOC_FAULT
++	/* 10GEC, mEMAC Local fault interrupt */
++	, FM_MAC_EX_10G_TX_ECC_ER
++	/* 10GEC, mEMAC Transmit frame ECC error interrupt */
++	, FM_MAC_EX_10G_TX_FIFO_UNFL
++	/* 10GEC, mEMAC Transmit FIFO underflow interrupt */
++	, FM_MAC_EX_10G_TX_FIFO_OVFL
++	/* 10GEC, mEMAC Transmit FIFO overflow interrupt */
++	, FM_MAC_EX_10G_TX_ER
++	/* 10GEC Transmit frame error interrupt */
++	, FM_MAC_EX_10G_RX_FIFO_OVFL
++	/* 10GEC, mEMAC Receive FIFO overflow interrupt */
++	, FM_MAC_EX_10G_RX_ECC_ER
++	/* 10GEC, mEMAC Receive frame ECC error interrupt */
++	, FM_MAC_EX_10G_RX_JAB_FRM
++	/* 10GEC Receive jabber frame interrupt */
++	, FM_MAC_EX_10G_RX_OVRSZ_FRM
++	/* 10GEC Receive oversized frame interrupt */
++	, FM_MAC_EX_10G_RX_RUNT_FRM
++	/* 10GEC Receive runt frame interrupt */
++	, FM_MAC_EX_10G_RX_FRAG_FRM
++	/* 10GEC Receive fragment frame interrupt */
++	, FM_MAC_EX_10G_RX_LEN_ER
++	/* 10GEC Receive payload length error interrupt */
++	, FM_MAC_EX_10G_RX_CRC_ER
++	/* 10GEC Receive CRC error interrupt */
++	, FM_MAC_EX_10G_RX_ALIGN_ER
++	/* 10GEC Receive alignment error interrupt */
++	, FM_MAC_EX_1G_BAB_RX
++	/* dTSEC Babbling receive error */
++	, FM_MAC_EX_1G_RX_CTL
++	/* dTSEC Receive control (pause frame) interrupt */
++	, FM_MAC_EX_1G_GRATEFUL_TX_STP_COMPLET
++	/* dTSEC Graceful transmit stop complete */
++	, FM_MAC_EX_1G_BAB_TX
++	/* dTSEC Babbling transmit error */
++	, FM_MAC_EX_1G_TX_CTL
++	/* dTSEC Transmit control (pause frame) interrupt */
++	, FM_MAC_EX_1G_TX_ERR
++	/* dTSEC Transmit error */
++	, FM_MAC_EX_1G_LATE_COL
++	/* dTSEC Late collision */
++	, FM_MAC_EX_1G_COL_RET_LMT
++	/* dTSEC Collision retry limit */
++	, FM_MAC_EX_1G_TX_FIFO_UNDRN
++	/* dTSEC Transmit FIFO underrun */
++	, FM_MAC_EX_1G_MAG_PCKT
++	/* dTSEC Magic Packet detection */
++	, FM_MAC_EX_1G_MII_MNG_RD_COMPLET
++	/* dTSEC MII management read completion */
++	, FM_MAC_EX_1G_MII_MNG_WR_COMPLET
++	/* dTSEC MII management write completion */
++	, FM_MAC_EX_1G_GRATEFUL_RX_STP_COMPLET
++	/* dTSEC Graceful receive stop complete */
++	, FM_MAC_EX_1G_DATA_ERR
++	/* dTSEC Internal data error on transmit */
++	, FM_MAC_1G_RX_DATA_ERR
++	/* dTSEC Internal data error on receive */
++	, FM_MAC_EX_1G_1588_TS_RX_ERR
++	/* dTSEC Time-Stamp Receive Error */
++	, FM_MAC_EX_1G_RX_MIB_CNT_OVFL
++	/* dTSEC MIB counter overflow */
++	, FM_MAC_EX_TS_FIFO_ECC_ERR
++	/* mEMAC Time-stamp FIFO ECC error interrupt;
++	 * not supported on T4240/B4860 rev1 chips
++	 */
++	, FM_MAC_EX_MAGIC_PACKET_INDICATION = FM_MAC_EX_1G_MAG_PCKT
++	/* mEMAC Magic Packet Indication Interrupt */
++};
++
++struct eth_hash_entry_t {
++	u64 addr;		/* Ethernet Address  */
++	struct list_head node;
++};
++
++typedef void (fm_mac_exception_cb)(void *dev_id,
++				    enum fm_mac_exceptions exceptions);
++
++/* FM MAC config input */
++struct fm_mac_params_t {
++	/* Base of memory mapped FM MAC registers */
++	void __iomem *base_addr;
++	/* MAC address of device; First octet is sent first */
++	enet_addr_t addr;
++	/* MAC ID; numbering of dTSEC and 1G-mEMAC:
++	 * 0 - FM_MAX_NUM_OF_1G_MACS;
++	 * numbering of 10G-MAC (TGEC) and 10G-mEMAC:
++	 * 0 - FM_MAX_NUM_OF_10G_MACS
++	 */
++	u8 mac_id;
++	/* Ethernet operation mode (MAC-PHY interface and speed);
++	 * Note that the speed should indicate the maximum rate that
++	 * this MAC should support rather than the actual speed;
++	 * i.e. user should use the FM_MAC_AdjustLink() routine to
++	 * provide accurate speed;
++	 * In case of mEMAC RGMII mode, the MAC is configured to RGMII
++	 * automatic mode, where actual speed/duplex mode information
++	 * is provided by PHY automatically in-band; FM_MAC_AdjustLink()
++	 * function should be used to switch to manual RGMII speed/duplex mode
++	 * configuration if RGMII PHY doesn't support in-band status signaling;
++	 * In addition, in mEMAC, in case where user is using the higher MACs
++	 * (i.e. the MACs that should support 10G), user should pass here
++	 * speed=10000 even if the interface is not allowing that (e.g. SGMII).
++	 */
++	enum e_enet_mode enet_mode;
++	/* A handle to the FM object this port related to */
++	void *fm;
++	/* MDIO exceptions interrupt source - not valid for all
++	 * MACs; MUST be set to 'NO_IRQ' for MACs that don't have
++	 * mdio-irq, or for polling
++	 */
++	void *dev_id; /* device cookie used by the exception cbs */
++	fm_mac_exception_cb *event_cb;	    /* MDIO Events Callback Routine */
++	fm_mac_exception_cb *exception_cb;  /* Exception Callback Routine */
++};
++
++struct eth_hash_t {
++	u16 size;
++	struct list_head *lsts;
++};
++
++static inline struct eth_hash_entry_t
++*dequeue_addr_from_hash_entry(struct list_head *addr_lst)
++{
++	struct eth_hash_entry_t *hash_entry = NULL;
++
++	if (!list_empty(addr_lst)) {
++		hash_entry = ETH_HASH_ENTRY_OBJ(addr_lst->next);
++		list_del_init(&hash_entry->node);
++	}
++	return hash_entry;
++}
++
++static inline void free_hash_table(struct eth_hash_t *hash)
++{
++	struct eth_hash_entry_t *hash_entry;
++	int i = 0;
++
++	if (hash) {
++		if (hash->lsts) {
++			for (i = 0; i < hash->size; i++) {
++				hash_entry =
++				dequeue_addr_from_hash_entry(&hash->lsts[i]);
++				while (hash_entry) {
++					kfree(hash_entry);
++					hash_entry =
++					dequeue_addr_from_hash_entry(&hash->
++								     lsts[i]);
++				}
++			}
++
++			kfree(hash->lsts);
++		}
++
++		kfree(hash);
++	}
++}
++
++static inline struct eth_hash_t *alloc_hash_table(u16 size)
++{
++	u32 i;
++	struct eth_hash_t *hash;
++
++	/* Allocate address hash table */
++	hash = kmalloc_array(size, sizeof(struct eth_hash_t *), GFP_KERNEL);
++	if (!hash)
++		return NULL;
++
++	hash->size = size;
++
++	hash->lsts = kmalloc_array(hash->size, sizeof(struct list_head),
++				   GFP_KERNEL);
++	if (!hash->lsts) {
++		kfree(hash);
++		return NULL;
++	}
++
++	for (i = 0; i < hash->size; i++)
++		INIT_LIST_HEAD(&hash->lsts[i]);
++
++	return hash;
++}
++
++#endif /* __FM_MAC_H */
+diff --git a/drivers/net/ethernet/freescale/fman/mac/fm_memac.c b/drivers/net/ethernet/freescale/fman/mac/fm_memac.c
+new file mode 100644
+index 0000000..54782c3
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/mac/fm_memac.c
+@@ -0,0 +1,673 @@
 +/*
 + * Copyright 2008-2015 Freescale Semiconductor Inc.
 + *
@@ -117,492 +2053,176 @@ index 0000000..7e5fa53
 +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
 +#include "fm_common.h"
-+#include "fm.h"
-+#include "fm_muram_ext.h"
-+#include <asm/mpc85xx.h>
-+#include "fsl_fman.h"
++#include "fm_memac.h"
 +
 +#include <linux/string.h>
 +#include <linux/slab.h>
 +
-+static struct fm_intg_t *fill_intg_params(u8 major, u8 minor)
++static u32 get_mac_addr_hash_code(u64 eth_addr)
 +{
-+	struct fm_intg_t *intg;
++	u64 mask1, mask2;
++	u32 xor_val = 0;
++	u8 i, j;
 +
-+	intg = kzalloc(sizeof(*intg), GFP_KERNEL);
-+	if (!intg)
-+		return NULL;
++	for (i = 0; i < 6; i++) {
++		mask1 = eth_addr & (u64)0x01;
++		eth_addr >>= 1;
 +
-+	/* P1023 - Major 4
-+	 * P4080 - Major 2
-+	 * P2041/P3041/P5020/P5040 - Major 3
-+	 * Tx/Bx - Major 6
++		for (j = 0; j < 7; j++) {
++			mask2 = eth_addr & (u64)0x01;
++			mask1 ^= mask2;
++			eth_addr >>= 1;
++		}
++
++		xor_val |= (mask1 << (5 - i));
++	}
++
++	return xor_val;
++}
++
++static int memac_mii_write_phy_reg(struct memac_t *memac, u8 phy_addr,
++				   u8 reg, u16 data)
++{
++	return fman_memac_mii_write_phy_reg(memac->mii_regs,
++					    phy_addr, reg, data,
++					    (enum enet_speed)
++					    ENET_SPEED_FROM_MODE(memac->
++								 enet_mode));
++}
++
++static void setup_sgmii_internal_phy(struct memac_t *memac, u8 phy_addr)
++{
++	u16 tmp_reg16;
++	enum e_enet_mode enet_mode;
++
++	/* In case the higher MACs are used (i.e. the MACs that should
++	 * support 10G), speed=10000 is provided for SGMII ports.
++	 * Temporary modify enet mode to 1G one, so MII functions can
++	 * work correctly.
 +	 */
++	enet_mode = memac->enet_mode;
++	memac->enet_mode =
++	    MAKE_ENET_MODE(ENET_INTERFACE_FROM_MODE(memac->enet_mode),
++			   ENET_SPEED_1000);
 +
-+	switch (major) {
-+	case FM_IP_BLOCK_P2_P3_P5:
-+		intg->fm_muram_size		= 160 * 1024;
-+		intg->fm_iram_size		= 64 * 1024;
-+		intg->fm_num_of_ctrl		= 2;
++	/* SGMII mode + AN enable */
++	tmp_reg16 = PHY_SGMII_IF_MODE_AN | PHY_SGMII_IF_MODE_SGMII;
++	memac_mii_write_phy_reg(memac, phy_addr, 0x14, tmp_reg16);
 +
-+		intg->dma_thresh_max_commq	= 31;
-+		intg->dma_thresh_max_buf	= 127;
++	/* Device ability according to SGMII specification */
++	tmp_reg16 = PHY_SGMII_DEV_ABILITY_SGMII;
++	memac_mii_write_phy_reg(memac, phy_addr, 0x4, tmp_reg16);
 +
-+		intg->qmi_max_num_of_tnums	= 64;
-+		intg->qmi_def_tnums_thresh	= 48;
++	/* Adjust link timer for SGMII  -
++	 * According to Cisco SGMII specification the timer should be 1.6 ms.
++	 * The link_timer register is configured in units of the clock.
++	 * - When running as 1G SGMII, Serdes clock is 125 MHz, so
++	 * unit = 1 / (125*10^6 Hz) = 8 ns.
++	 * 1.6 ms in units of 8 ns = 1.6ms / 8ns = 2*10^5 = 0x30d40
++	 * - When running as 2.5G SGMII, Serdes clock is 312.5 MHz, so
++	 * unit = 1 / (312.5*10^6 Hz) = 3.2 ns.
++	 * 1.6 ms in units of 3.2 ns = 1.6ms / 3.2ns = 5*10^5 = 0x7a120.
++	 * Since link_timer value of 1G SGMII will be too short for 2.5 SGMII,
++	 * we always set up here a value of 2.5 SGMII.
++	 */
++	memac_mii_write_phy_reg(memac, phy_addr, 0x13, 0x0007);
++	memac_mii_write_phy_reg(memac, phy_addr, 0x12, 0xa120);
 +
-+		intg->bmi_max_num_of_tasks	= 128;
-+		intg->bmi_max_num_of_dmas	= 32;
-+		intg->port_max_weight		= 16;
++	/* Restart AN */
++	tmp_reg16 = PHY_SGMII_CR_DEF_VAL | PHY_SGMII_CR_RESET_AN;
++	memac_mii_write_phy_reg(memac, phy_addr, 0x0, tmp_reg16);
 +
-+		intg->fm_port_num_of_cg		= 256;
-+
-+		intg->num_of_rx_ports		= 6;
-+		break;
-+
-+	case FM_IP_BLOCK_P4:
-+
-+		intg->fm_muram_size		= 160 * 1024;
-+		intg->fm_iram_size		= 64 * 1024;
-+		intg->fm_num_of_ctrl		= 2;
-+
-+		intg->dma_thresh_max_commq	= 31;
-+		intg->dma_thresh_max_buf	= 127;
-+
-+		intg->qmi_max_num_of_tnums	= 64;
-+		intg->qmi_def_tnums_thresh	= 48;
-+
-+		intg->bmi_max_num_of_tasks	= 128;
-+		intg->bmi_max_num_of_dmas	= 32;
-+		intg->port_max_weight		= 16;
-+
-+		intg->fm_port_num_of_cg		= 256;
-+
-+		intg->num_of_rx_ports		= 5;
-+		break;
-+
-+	case FM_IP_BLOCK_B_T:
-+		intg->dma_thresh_max_commq	= 83;
-+		intg->dma_thresh_max_buf	= 127;
-+
-+		intg->qmi_max_num_of_tnums	= 64;
-+		intg->qmi_def_tnums_thresh	= 32;
-+
-+		intg->port_max_weight		= 16;
-+		intg->fm_port_num_of_cg		= 256;
-+
-+		/* FManV3L */
-+		if (minor == 1 || minor == 4) {
-+			intg->fm_muram_size		= 192 * 1024;
-+			intg->fm_num_of_ctrl		= 2;
-+
-+			intg->bmi_max_num_of_tasks	= 64;
-+			intg->bmi_max_num_of_dmas	= 32;
-+
-+			intg->num_of_rx_ports		= 5;
-+
-+			if (minor == 1)
-+				intg->fm_iram_size	= 32 * 1024;
-+			else
-+				intg->fm_iram_size	= 64 * 1024;
-+		}
-+		/* FManV3H */
-+		else if (minor == 0 || minor == 2 || minor == 3) {
-+			intg->fm_muram_size		= 384 * 1024;
-+			intg->fm_iram_size		= 64 * 1024;
-+			intg->fm_num_of_ctrl		= 4;
-+
-+			intg->bmi_max_num_of_tasks	= 128;
-+			intg->bmi_max_num_of_dmas	= 84;
-+
-+			intg->num_of_rx_ports		= 8;
-+		} else {
-+			pr_err("Unsupported FManv3 version\n");
-+			goto not_supported;
-+		}
-+
-+		break;
-+	default:
-+		pr_err("Unsupported FMan version\n");
-+		goto not_supported;
-+	}
-+
-+	intg->bmi_max_fifo_size = intg->fm_muram_size;
-+
-+	return intg;
-+
-+not_supported:
-+	kfree(intg);
-+	return NULL;
++	/* Restore original enet mode */
++	memac->enet_mode = enet_mode;
 +}
 +
-+static bool is_init_done(struct fman_cfg *fm_drv_params)
++static void setup_sgmii_internal_phy_base_x(struct memac_t *memac,
++					    u8 phy_addr)
 +{
-+	/* Checks if FMan driver parameters were initialized */
-+	if (!fm_drv_params)
-+		return true;
++	u16 tmp_reg16;
++	enum e_enet_mode enet_mode;
 +
-+	return false;
++	/* In case the higher MACs are used (i.e. the MACs that
++	 * should support 10G), speed=10000 is provided for SGMII ports.
++	 * Temporary modify enet mode to 1G one, so MII functions can
++	 * work correctly.
++	 */
++	enet_mode = memac->enet_mode;
++	memac->enet_mode =
++	    MAKE_ENET_MODE(ENET_INTERFACE_FROM_MODE(memac->enet_mode),
++			   ENET_SPEED_1000);
++
++	/* 1000BaseX mode */
++	tmp_reg16 = PHY_SGMII_IF_MODE_1000X;
++	memac_mii_write_phy_reg(memac, phy_addr, 0x14, tmp_reg16);
++
++	/* AN Device capability  */
++	tmp_reg16 = PHY_SGMII_DEV_ABILITY_1000X;
++	memac_mii_write_phy_reg(memac, phy_addr, 0x4, tmp_reg16);
++
++	/* Adjust link timer for SGMII  -
++	 * For Serdes 1000BaseX auto-negotiation the timer should be 10 ms.
++	 * The link_timer register is configured in units of the clock.
++	 * - When running as 1G SGMII, Serdes clock is 125 MHz, so
++	 * unit = 1 / (125*10^6 Hz) = 8 ns.
++	 * 10 ms in units of 8 ns = 10ms / 8ns = 1250000 = 0x1312d0
++	 * - When running as 2.5G SGMII, Serdes clock is 312.5 MHz, so
++	 * unit = 1 / (312.5*10^6 Hz) = 3.2 ns.
++	 * 10 ms in units of 3.2 ns = 10ms / 3.2ns = 3125000 = 0x2faf08.
++	 * Since link_timer value of 1G SGMII will be too short for 2.5 SGMII,
++	 * we always set up here a value of 2.5 SGMII.
++	 */
++	memac_mii_write_phy_reg(memac, phy_addr, 0x13, 0x002f);
++	memac_mii_write_phy_reg(memac, phy_addr, 0x12, 0xaf08);
++
++	/* Restart AN */
++	tmp_reg16 = PHY_SGMII_CR_DEF_VAL | PHY_SGMII_CR_RESET_AN;
++	memac_mii_write_phy_reg(memac, phy_addr, 0x0, tmp_reg16);
++
++	/* Restore original enet mode */
++	memac->enet_mode = enet_mode;
 +}
 +
-+static void free_init_resources(struct fm_t *fm)
++static int check_init_parameters(struct memac_t *memac)
 +{
-+	if (fm->cam_offset)
-+		fm_muram_free_mem(fm->muram, fm->cam_offset, fm->cam_size);
-+	if (fm->fifo_offset)
-+		fm_muram_free_mem(fm->muram, fm->fifo_offset, fm->fifo_size);
-+}
-+
-+static int check_fm_parameters(struct fm_t *fm)
-+{
-+	if (fm->fm_state->rev_info.major_rev < 6) {
-+		if (!fm->fm_drv_param->dma_axi_dbg_num_of_beats ||
-+		    (fm->fm_drv_param->dma_axi_dbg_num_of_beats >
-+			DMA_MODE_MAX_AXI_DBG_NUM_OF_BEATS)) {
-+			pr_err("axi_dbg_num_of_beats has to be in the range 1 - %d\n",
-+			       DMA_MODE_MAX_AXI_DBG_NUM_OF_BEATS);
-+			return -EINVAL;
-+		}
-+	}
-+	if (fm->fm_drv_param->dma_cam_num_of_entries % DMA_CAM_UNITS) {
-+		pr_err("dma_cam_num_of_entries has to be divisble by %d\n",
-+		       DMA_CAM_UNITS);
++	if (memac->addr == 0) {
++		pr_err("Ethernet MAC must have a valid MAC address\n");
 +		return -EINVAL;
 +	}
-+	if (fm->fm_drv_param->dma_comm_qtsh_asrt_emer >
-+	    fm->intg->dma_thresh_max_commq) {
-+		pr_err("dma_comm_qtsh_asrt_emer can not be larger than %d\n",
-+		       fm->intg->dma_thresh_max_commq);
++	if (!memac->exception_cb) {
++		pr_err("Uninitialized exception handler\n");
 +		return -EINVAL;
 +	}
-+	if (fm->fm_drv_param->dma_comm_qtsh_clr_emer >
-+	    fm->intg->dma_thresh_max_commq) {
-+		pr_err("dma_comm_qtsh_clr_emer can not be larger than %d\n",
-+		       fm->intg->dma_thresh_max_commq);
-+		return -EINVAL;
-+	}
-+	if (fm->fm_drv_param->dma_comm_qtsh_clr_emer >=
-+	    fm->fm_drv_param->dma_comm_qtsh_asrt_emer) {
-+		pr_err("dma_comm_qtsh_clr_emer must be smaller than dma_comm_qtsh_asrt_emer\n");
-+		return -EINVAL;
-+	}
-+	if (fm->fm_state->rev_info.major_rev < 6) {
-+		if (fm->fm_drv_param->dma_read_buf_tsh_asrt_emer >
-+		    fm->intg->dma_thresh_max_buf) {
-+			pr_err("dma_read_buf_tsh_asrt_emer can not be larger than %d\n",
-+			       fm->intg->dma_thresh_max_buf);
-+			return -EINVAL;
-+		}
-+		if (fm->fm_drv_param->dma_read_buf_tsh_clr_emer >
-+		      fm->intg->dma_thresh_max_buf) {
-+			pr_err("dma_read_buf_tsh_clr_emer can not be larger than %d\n",
-+			       fm->intg->dma_thresh_max_buf);
-+			return -EINVAL;
-+		}
-+		if (fm->fm_drv_param->dma_read_buf_tsh_clr_emer >=
-+		      fm->fm_drv_param->dma_read_buf_tsh_asrt_emer) {
-+			pr_err("dma_read_buf_tsh_clr_emer must be < dma_read_buf_tsh_asrt_emer\n");
-+			return -EINVAL;
-+		}
-+		if (fm->fm_drv_param->dma_write_buf_tsh_asrt_emer >
-+		      fm->intg->dma_thresh_max_buf) {
-+			pr_err("dma_write_buf_tsh_asrt_emer can not be larger than %d\n",
-+			       fm->intg->dma_thresh_max_buf);
-+			return -EINVAL;
-+		}
-+		if (fm->fm_drv_param->dma_write_buf_tsh_clr_emer >
-+		      fm->intg->dma_thresh_max_buf) {
-+			pr_err("dma_write_buf_tsh_clr_emer can not be larger than %d\n",
-+			       fm->intg->dma_thresh_max_buf);
-+			return -EINVAL;
-+		}
-+		if (fm->fm_drv_param->dma_write_buf_tsh_clr_emer >=
-+		      fm->fm_drv_param->dma_write_buf_tsh_asrt_emer) {
-+			pr_err("dma_write_buf_tsh_clr_emer has to be less than dma_write_buf_tsh_asrt_emer\n");
-+			return -EINVAL;
-+		}
-+	} else {
-+		if ((fm->fm_drv_param->dma_dbg_cnt_mode ==
-+		    E_FMAN_DMA_DBG_CNT_INT_READ_EM) ||
-+		    (fm->fm_drv_param->dma_dbg_cnt_mode ==
-+		    E_FMAN_DMA_DBG_CNT_INT_WRITE_EM) ||
-+		    (fm->fm_drv_param->dma_dbg_cnt_mode ==
-+		    E_FMAN_DMA_DBG_CNT_RAW_WAR_PROT)) {
-+			pr_err("dma_dbg_cnt_mode value not supported by this SoC.\n");
-+			return -EINVAL;
-+		}
-+		if ((fm->fm_drv_param->dma_emergency_bus_select ==
-+		       FM_DMA_MURAM_READ_EMERGENCY) ||
-+		      (fm->fm_drv_param->dma_emergency_bus_select ==
-+		       FM_DMA_MURAM_WRITE_EMERGENCY)) {
-+			pr_err("emergency_bus_select value not supported by this SoC.\n");
-+			return -EINVAL;
-+		}
-+		if (fm->fm_drv_param->dma_stop_on_bus_error) {
-+			pr_err("dma_stop_on_bus_error not supported by this SoC.\n");
-+			return -EINVAL;
-+		}
-+		/* FM_AID_MODE_NO_TNUM_SW005 Errata workaround */
-+		if (fm->fm_state->rev_info.major_rev >= 6 &&
-+		    fm->fm_drv_param->dma_aid_mode !=
-+		    E_FMAN_DMA_AID_OUT_PORT_ID) {
-+			pr_err("dma_aid_mode not supported by this SoC.\n");
-+			return -EINVAL;
-+		}
-+		if (fm->fm_drv_param->dma_axi_dbg_num_of_beats) {
-+			pr_err("dma_axi_dbg_num_of_beats not supported by this SoC.\n");
-+			return -EINVAL;
-+		}
-+	}
-+
-+	if (!fm->fm_state->fm_clk_freq) {
-+		pr_err("fm_clk_freq must be set.\n");
-+		return -EINVAL;
-+	}
-+	if ((fm->fm_drv_param->dma_watchdog *
-+	    fm->fm_state->fm_clk_freq) > DMA_MAX_WATCHDOG) {
-+		pr_err("dma_watchdog depends on FM clock. dma_watchdog(in microseconds)*clk (in Mhz), may not exceed 0x08%x\n",
-+		       DMA_MAX_WATCHDOG);
-+		return -EINVAL;
-+	}
-+	if (fm->fm_state->total_fifo_size % BMI_FIFO_UNITS) {
-+		pr_err("total_fifo_size number has to be divisible by %d\n",
-+		       BMI_FIFO_UNITS);
-+	}
-+	if (!fm->fm_state->total_fifo_size ||
-+	    (fm->fm_state->total_fifo_size > fm->intg->bmi_max_fifo_size)) {
-+		pr_err("total_fifo_size (curr - %d) has to be in the range 256 - %d\n",
-+		       fm->fm_state->total_fifo_size,
-+		       fm->intg->bmi_max_fifo_size);
-+		return -EINVAL;
-+	}
-+	if (!fm->fm_state->total_num_of_tasks ||
-+	    (fm->fm_state->total_num_of_tasks >
-+	    fm->intg->bmi_max_num_of_tasks)) {
-+		pr_err("total_num_of_tasks number has to be in the range 1 - %d\n",
-+		       fm->intg->bmi_max_num_of_tasks);
++	if (!memac->event_cb) {
++		pr_warn("Uninitialize event handler\n");
 +		return -EINVAL;
 +	}
 +
-+	if ((fm->fm_state->rev_info.major_rev < 6) &&
-+	    (!fm->fm_state->max_num_of_open_dmas ||
-+	     (fm->fm_state->max_num_of_open_dmas >
-+	     fm->intg->bmi_max_num_of_dmas))) {
-+		pr_err("max_num_of_open_dmas number has to be in the range 1 - %d\n",
-+		       fm->intg->bmi_max_num_of_dmas);
++	/* FM_LEN_CHECK_ERRATA_FMAN_SW002 Errata workaround */
++	if (!memac->memac_drv_param->no_length_check_enable) {
++		pr_err("Length Check!\n");
 +		return -EINVAL;
 +	}
-+
-+	if (fm->fm_drv_param->disp_limit_tsh > FPM_MAX_DISP_LIMIT) {
-+		pr_err("disp_limit_tsh can't be greater than %d\n",
-+		       FPM_MAX_DISP_LIMIT);
-+		return -EINVAL;
-+	}
-+	if (!fm->exception_cb) {
-+		pr_err("Exceptions callback not provided\n");
-+		return -EINVAL;
-+	}
-+	if (!fm->bus_error_cb) {
-+		pr_err("Error exceptions callback not provided\n");
-+		return -EINVAL;
-+	}
-+	if ((fm->fm_state->rev_info.major_rev == 2) &&
-+	    (fm->fm_drv_param->dma_watchdog)) {
-+		pr_err("watchdog not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	/* FM_ECC_HALT_NO_SYNC_ERRATA_10GMAC_A008 Errata workaround */
-+	if ((fm->fm_state->rev_info.major_rev < 6) &&
-+	    (fm->fm_drv_param->halt_on_unrecov_ecc_err)) {
-+		pr_err("Halt on ecc error not supported\n");
-+		return -EINVAL;
-+	}
-+
-+	if (fm->fm_state->rev_info.major_rev < 6)
-+		if (fm->fm_drv_param->tnum_aging_period) {
-+			pr_err("Tnum aging not supported\n");
-+			return -EINVAL;
-+		}
 +
 +	return 0;
 +}
 +
-+static void bmi_err_event(struct fm_t *fm)
-+{
-+	u32 event;
-+	struct fman_bmi_regs __iomem *bmi_rg = fm->bmi_regs;
-+
-+	event = fman_get_bmi_err_event(bmi_rg);
-+
-+	if (event & BMI_ERR_INTR_EN_STORAGE_PROFILE_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_BMI_STORAGE_PROFILE_ECC);
-+	if (event & BMI_ERR_INTR_EN_LIST_RAM_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_BMI_LIST_RAM_ECC);
-+	if (event & BMI_ERR_INTR_EN_STATISTICS_RAM_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_BMI_STATISTICS_RAM_ECC);
-+	if (event & BMI_ERR_INTR_EN_DISPATCH_RAM_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_BMI_DISPATCH_RAM_ECC);
-+}
-+
-+static void qmi_err_event(struct fm_t *fm)
-+{
-+	u32 event;
-+	struct fman_qmi_regs __iomem *qmi_rg = fm->qmi_regs;
-+
-+	event = fman_get_qmi_err_event(qmi_rg);
-+
-+	if (event & QMI_ERR_INTR_EN_DOUBLE_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_QMI_DOUBLE_ECC);
-+	if (event & QMI_ERR_INTR_EN_DEQ_FROM_DEF)
-+		fm->exception_cb(fm->dev_id, FM_EX_QMI_DEQ_FROM_UNKNOWN_PORTID);
-+}
-+
-+static void dma_err_event(struct fm_t *fm)
-+{
-+	u32 status;
-+	struct fman_dma_regs __iomem *dma_rg = fm->dma_regs;
-+
-+	status = fman_get_dma_err_event(dma_rg);
-+
-+	if (status & DMA_STATUS_FM_SPDAT_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_DMA_SINGLE_PORT_ECC);
-+	if (status & DMA_STATUS_READ_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_DMA_READ_ECC);
-+	if (status & DMA_STATUS_SYSTEM_WRITE_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_DMA_SYSTEM_WRITE_ECC);
-+	if (status & DMA_STATUS_FM_WRITE_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_DMA_FM_WRITE_ECC);
-+}
-+
-+static void fpm_err_event(struct fm_t *fm)
-+{
-+	u32 event;
-+	struct fman_fpm_regs __iomem *fpm_rg = fm->fpm_regs;
-+
-+	event = fman_get_fpm_err_event(fpm_rg);
-+
-+	if ((event & FPM_EV_MASK_DOUBLE_ECC) &&
-+	    (event & FPM_EV_MASK_DOUBLE_ECC_EN))
-+		fm->exception_cb(fm->dev_id, FM_EX_FPM_DOUBLE_ECC);
-+	if ((event & FPM_EV_MASK_STALL) && (event & FPM_EV_MASK_STALL_EN))
-+		fm->exception_cb(fm->dev_id, FM_EX_FPM_STALL_ON_TASKS);
-+	if ((event & FPM_EV_MASK_SINGLE_ECC) &&
-+	    (event & FPM_EV_MASK_SINGLE_ECC_EN))
-+		fm->exception_cb(fm->dev_id, FM_EX_FPM_SINGLE_ECC);
-+}
-+
-+static void muram_err_intr(struct fm_t *fm)
-+{
-+	u32 event;
-+	struct fman_fpm_regs __iomem *fpm_rg = fm->fpm_regs;
-+
-+	event = fman_get_muram_err_event(fpm_rg);
-+
-+	if (event & FPM_RAM_MURAM_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_MURAM_ECC);
-+}
-+
-+static void qmi_event(struct fm_t *fm)
-+{
-+	u32 event;
-+	struct fman_qmi_regs __iomem *qmi_rg = fm->qmi_regs;
-+
-+	event = fman_get_qmi_event(qmi_rg);
-+
-+	if (event & QMI_INTR_EN_SINGLE_ECC)
-+		fm->exception_cb(fm->dev_id, FM_EX_QMI_SINGLE_ECC);
-+}
-+
-+static void enable_time_stamp(struct fm_t *fm)
-+{
-+	struct fman_fpm_regs __iomem *fpm_rg = fm->fpm_regs;
-+
-+	WARN_ON(!fm->fm_state->count1_micro_bit);
-+
-+	fman_enable_time_stamp(fpm_rg,
-+			       fm->fm_state->count1_micro_bit,
-+			       fm->fm_state->fm_clk_freq);
-+
-+	fm->fm_state->enabled_time_stamp = true;
-+}
-+
-+static int clear_iram(struct fm_t *fm)
-+{
-+	struct fm_iram_regs_t __iomem *iram;
-+	int i;
-+
-+	iram = (struct fm_iram_regs_t __iomem *)(fm->base_addr + FM_MM_IMEM);
-+
-+	/* Enable the auto-increment */
-+	out_be32(&iram->iadd, IRAM_IADD_AIE);
-+	while (in_be32(&iram->iadd) != IRAM_IADD_AIE)
-+		;
-+
-+	for (i = 0; i < (fm->intg->fm_iram_size / 4); i++)
-+		out_be32(&iram->idata, 0xffffffff);
-+
-+	out_be32(&iram->iadd, fm->intg->fm_iram_size - 4);
-+	/* Memory barrier */
-+	mb();
-+	while (in_be32(&iram->idata) != 0xffffffff)
-+		;
-+
-+	return 0;
-+}
-+
-+static u32 fm_get_exception_flag(enum fm_exceptions exception)
++static int get_exception_flag(enum fm_mac_exceptions exception)
 +{
 +	u32 bit_mask;
 +
 +	switch (exception) {
-+	case FM_EX_DMA_BUS_ERROR:
-+		bit_mask = FM_EX_DMA_BUS_ERROR;
++	case FM_MAC_EX_10G_TX_ECC_ER:
++		bit_mask = MEMAC_IMASK_TECC_ER;
 +		break;
-+	case FM_EX_DMA_SINGLE_PORT_ECC:
-+		bit_mask = FM_EX_DMA_SINGLE_PORT_ECC;
++	case FM_MAC_EX_10G_RX_ECC_ER:
++		bit_mask = MEMAC_IMASK_RECC_ER;
 +		break;
-+	case FM_EX_DMA_READ_ECC:
-+		bit_mask = FM_EX_DMA_READ_ECC;
++	case FM_MAC_EX_TS_FIFO_ECC_ERR:
++		bit_mask = MEMAC_IMASK_TSECC_ER;
 +		break;
-+	case FM_EX_DMA_SYSTEM_WRITE_ECC:
-+		bit_mask = FM_EX_DMA_SYSTEM_WRITE_ECC;
-+		break;
-+	case FM_EX_DMA_FM_WRITE_ECC:
-+		bit_mask = FM_EX_DMA_FM_WRITE_ECC;
-+		break;
-+	case FM_EX_FPM_STALL_ON_TASKS:
-+		bit_mask = FM_EX_FPM_STALL_ON_TASKS;
-+		break;
-+	case FM_EX_FPM_SINGLE_ECC:
-+		bit_mask = FM_EX_FPM_SINGLE_ECC;
-+		break;
-+	case FM_EX_FPM_DOUBLE_ECC:
-+		bit_mask = FM_EX_FPM_DOUBLE_ECC;
-+		break;
-+	case FM_EX_QMI_SINGLE_ECC:
-+		bit_mask = FM_EX_QMI_SINGLE_ECC;
-+		break;
-+	case FM_EX_QMI_DOUBLE_ECC:
-+		bit_mask = FM_EX_QMI_DOUBLE_ECC;
-+		break;
-+	case FM_EX_QMI_DEQ_FROM_UNKNOWN_PORTID:
-+		bit_mask = FM_EX_QMI_DEQ_FROM_UNKNOWN_PORTID;
-+		break;
-+	case FM_EX_BMI_LIST_RAM_ECC:
-+		bit_mask = FM_EX_BMI_LIST_RAM_ECC;
-+		break;
-+	case FM_EX_BMI_STORAGE_PROFILE_ECC:
-+		bit_mask = FM_EX_BMI_STORAGE_PROFILE_ECC;
-+		break;
-+	case FM_EX_BMI_STATISTICS_RAM_ECC:
-+		bit_mask = FM_EX_BMI_STATISTICS_RAM_ECC;
-+		break;
-+	case FM_EX_BMI_DISPATCH_RAM_ECC:
-+		bit_mask = FM_EX_BMI_DISPATCH_RAM_ECC;
-+		break;
-+	case FM_EX_MURAM_ECC:
-+		bit_mask = FM_EX_MURAM_ECC;
++	case FM_MAC_EX_MAGIC_PACKET_INDICATION:
++		bit_mask = MEMAC_IMASK_MGI;
 +		break;
 +	default:
 +		bit_mask = 0;
@@ -612,2310 +2232,1150 @@ index 0000000..7e5fa53
 +	return bit_mask;
 +}
 +
-+static int fm_get_module_event(enum fm_event_modules module, u8 mod_id,
-+			       enum fm_intr_type intr_type)
++static void memac_err_exception(void *handle)
 +{
-+	int event;
++	struct memac_t *memac = (struct memac_t *)handle;
++	u32 event, imask;
 +
-+	switch (module) {
-+	case FM_MOD_MAC:
-+			event = (intr_type == FM_INTR_TYPE_ERR) ?
-+			(FM_EV_ERR_MAC0 + mod_id) :
-+			(FM_EV_MAC0 + mod_id);
-+		break;
-+	case FM_MOD_FMAN_CTRL:
-+		if (intr_type == FM_INTR_TYPE_ERR)
-+			event = FM_EV_DUMMY_LAST;
-+		else
-+			event = (FM_EV_FMAN_CTRL_0 + mod_id);
-+		break;
-+	case FM_MOD_DUMMY_LAST:
-+		event = FM_EV_DUMMY_LAST;
-+		break;
-+	default:
-+		event = FM_EV_DUMMY_LAST;
-+		break;
-+	}
++	event = fman_memac_get_event(memac->regs, 0xffffffff);
++	imask = fman_memac_get_interrupt_mask(memac->regs);
 +
-+	return event;
-+}
-+
-+void fm_register_intr(struct fm_t *fm, enum fm_event_modules module,
-+		      u8 mod_id, enum fm_intr_type intr_type,
-+		      void (*isr_cb)(void *src_arg), void *src_arg)
-+{
-+	int event = 0;
-+
-+	event = fm_get_module_event(module, mod_id, intr_type);
-+	WARN_ON(!(event < FM_EV_DUMMY_LAST));
-+
-+	/* register in local FM structure */
-+	fm->intr_mng[event].isr_cb = isr_cb;
-+	fm->intr_mng[event].src_handle = src_arg;
-+}
-+
-+void fm_unregister_intr(struct fm_t *fm, enum fm_event_modules module,
-+			u8 mod_id, enum fm_intr_type intr_type)
-+{
-+	int event = 0;
-+
-+	event = fm_get_module_event(module, mod_id, intr_type);
-+	WARN_ON(!(event < FM_EV_DUMMY_LAST));
-+
-+	fm->intr_mng[event].isr_cb = NULL;
-+	fm->intr_mng[event].src_handle = NULL;
-+}
-+
-+u8 fm_get_id(struct fm_t *fm)
-+{
-+	return fm->fm_state->fm_id;
-+}
-+
-+u16 fm_get_clock_freq(struct fm_t *fm)
-+{
-+	return fm->fm_state->fm_clk_freq;
-+}
-+
-+u32 fm_get_bmi_max_fifo_size(struct fm_t *fm)
-+{
-+	return fm->intg->bmi_max_fifo_size;
-+}
-+
-+static int init_fm_dma(struct fm_t *fm)
-+{
-+	int err;
-+
-+	err = fman_dma_init(fm->dma_regs, fm->fm_drv_param);
-+	if (err != 0)
-+		return err;
-+
-+	/* Allocate MURAM for CAM */
-+	fm->cam_size = (u32)(fm->fm_drv_param->dma_cam_num_of_entries *
-+			     DMA_CAM_SIZEOF_ENTRY);
-+	fm->cam_offset = fm_muram_alloc(fm->muram, fm->cam_size);
-+	if (IS_ERR_VALUE(fm->cam_offset)) {
-+		pr_err("MURAM alloc for DMA CAM failed\n");
-+		return -ENOMEM;
-+	}
-+
-+	if (fm->fm_state->rev_info.major_rev == 2) {
-+		u32 __iomem *cam_base_addr;
-+
-+		fm_muram_free_mem(fm->muram, fm->cam_offset, fm->cam_size);
-+
-+		fm->cam_size =
-+			fm->fm_drv_param->dma_cam_num_of_entries * 72 + 128;
-+		fm->cam_offset = fm_muram_alloc(fm->muram, fm->cam_size);
-+		if (IS_ERR_VALUE(fm->cam_offset)) {
-+			pr_err("MURAM alloc for DMA CAM failed\n");
-+			return -ENOMEM;
-+		}
-+
-+		if (fm->fm_drv_param->dma_cam_num_of_entries % 8 ||
-+		    fm->fm_drv_param->dma_cam_num_of_entries > 32) {
-+			pr_err("wrong dma_cam_num_of_entries\n");
-+			return -EINVAL;
-+		}
-+
-+		cam_base_addr = (u32 __iomem *)
-+				fm_muram_offset_to_vbase(fm->muram,
-+							 fm->cam_offset);
-+		out_be32(cam_base_addr,
-+			 ~((1 <<
-+			 (32 - fm->fm_drv_param->dma_cam_num_of_entries)) - 1));
-+	}
-+
-+	fm->fm_drv_param->cam_base_addr = fm->cam_offset;
-+
-+	return 0;
-+}
-+
-+void *fm_config(struct fm_params_t *fm_param)
-+{
-+	struct fm_t *fm;
-+	void __iomem *base_addr;
-+
-+	base_addr = fm_param->base_addr;
-+
-+	/* Allocate FM structure */
-+	fm = kzalloc(sizeof(*fm), GFP_KERNEL);
-+	if (!fm)
-+		return NULL;
-+
-+	fm->fm_state = kzalloc(sizeof(*fm->fm_state), GFP_KERNEL);
-+	if (!fm->fm_state)
-+		goto err_fm_state;
-+
-+	/* Initialize FM parameters which will be kept by the driver */
-+	fm->fm_state->fm_id = fm_param->fm_id;
-+
-+	/* Allocate the FM driver's parameters structure */
-+	fm->fm_drv_param = kzalloc(sizeof(*fm->fm_drv_param), GFP_KERNEL);
-+	if (!fm->fm_drv_param)
-+		goto err_fm_drv;
-+
-+	/* Initialize FM parameters which will be kept by the driver */
-+	fm->fm_state->fm_id = fm_param->fm_id;
-+	fm->muram = fm_param->muram;
-+	fm->dev_id = fm_param->dev_id;
-+	fm->fm_state->fm_clk_freq = fm_param->fm_clk_freq;
-+	fm->exception_cb = fm_param->exception_cb;
-+	fm->bus_error_cb = fm_param->bus_error_cb;
-+	fm->fpm_regs = (struct fman_fpm_regs __iomem *)(base_addr + FM_MM_FPM);
-+	fm->bmi_regs = (struct fman_bmi_regs __iomem *)(base_addr + FM_MM_BMI);
-+	fm->qmi_regs = (struct fman_qmi_regs __iomem *)(base_addr + FM_MM_QMI);
-+	fm->dma_regs = (struct fman_dma_regs __iomem *)(base_addr + FM_MM_DMA);
-+	fm->base_addr = base_addr;
-+
-+	spin_lock_init(&fm->spinlock);
-+	fman_defconfig(fm->fm_drv_param);
-+
-+	fm->fm_drv_param->qmi_deq_option_support = true;
-+
-+	fm->fm_state->rams_ecc_enable = false;
-+	fm->fm_state->extra_fifo_pool_size = 0;
-+	fm->fm_state->exceptions = DFLT_EXCEPTIONS;
-+	fm->reset_on_init = DFLT_RESET_ON_INIT;
-+
-+	/* read revision */
-+	/* Chip dependent, will be configured in Init */
-+	fman_get_revision(fm->fpm_regs, &fm->fm_state->rev_info.major_rev,
-+			  &fm->fm_state->rev_info.minor_rev);
-+
-+	fm->intg = fill_intg_params(fm->fm_state->rev_info.major_rev,
-+				      fm->fm_state->rev_info.minor_rev);
-+	if (!fm->intg)
-+		goto err_fm_intg;
-+
-+	/* FM_AID_MODE_NO_TNUM_SW005 Errata workaround */
-+	if (fm->fm_state->rev_info.major_rev >= 6)
-+		fm->fm_drv_param->dma_aid_mode = FM_DMA_AID_OUT_PORT_ID;
-+
-+	fm->fm_drv_param->qmi_def_tnums_thresh =
-+		fm->intg->qmi_def_tnums_thresh;
-+
-+	fm->fm_state->total_fifo_size = 0;
-+	fm->fm_state->total_num_of_tasks =
-+	DFLT_TOTAL_NUM_OF_TASKS(fm->fm_state->rev_info.major_rev,
-+				fm->fm_state->rev_info.minor_rev,
-+				fm->intg->bmi_max_num_of_tasks);
-+
-+	if (fm->fm_state->rev_info.major_rev < 6) {
-+		fm->fm_state->max_num_of_open_dmas =
-+		fm->intg->bmi_max_num_of_dmas;
-+		fm->fm_drv_param->dma_comm_qtsh_clr_emer =
-+		(u8)DFLT_DMA_COMM_Q_LOW(fm->fm_state->rev_info.major_rev,
-+					fm->intg->dma_thresh_max_commq);
-+
-+		fm->fm_drv_param->dma_comm_qtsh_asrt_emer =
-+		(u8)DFLT_DMA_COMM_Q_HIGH(fm->fm_state->rev_info.major_rev,
-+					 fm->intg->dma_thresh_max_commq);
-+
-+		fm->fm_drv_param->dma_cam_num_of_entries =
-+		DFLT_DMA_CAM_NUM_OF_ENTRIES(fm->fm_state->rev_info.major_rev);
-+
-+		fm->fm_drv_param->dma_read_buf_tsh_clr_emer =
-+		DFLT_DMA_READ_INT_BUF_LOW(fm->intg->dma_thresh_max_buf);
-+
-+		fm->fm_drv_param->dma_read_buf_tsh_asrt_emer =
-+		DFLT_DMA_READ_INT_BUF_HIGH(fm->intg->dma_thresh_max_buf);
-+
-+		fm->fm_drv_param->dma_write_buf_tsh_clr_emer =
-+		DFLT_DMA_WRITE_INT_BUF_LOW(fm->intg->dma_thresh_max_buf);
-+
-+		fm->fm_drv_param->dma_write_buf_tsh_asrt_emer =
-+		DFLT_DMA_WRITE_INT_BUF_HIGH(fm->intg->dma_thresh_max_buf);
-+
-+		fm->fm_drv_param->dma_axi_dbg_num_of_beats =
-+		DFLT_AXI_DBG_NUM_OF_BEATS;
-+	}
-+
-+	fm->fm_drv_param->tnum_aging_period = 0;
-+	fm->tnum_aging_period = fm->fm_drv_param->tnum_aging_period;
-+
-+	return fm;
-+
-+err_fm_intg:
-+	kfree(fm->fm_drv_param);
-+err_fm_drv:
-+	kfree(fm->fm_state);
-+err_fm_state:
-+	kfree(fm);
-+	return NULL;
-+}
-+
-+int fm_init(struct fm_t *fm)
-+{
-+	struct fman_cfg *fm_drv_param = NULL;
-+	int err = 0;
-+	struct fm_revision_info_t rev_info;
-+	struct fman_rg fman_rg;
-+
-+	if (is_init_done(fm->fm_drv_param))
-+		return -EINVAL;
-+
-+	fman_rg.bmi_rg = fm->bmi_regs;
-+	fman_rg.qmi_rg = fm->qmi_regs;
-+	fman_rg.fpm_rg = fm->fpm_regs;
-+	fman_rg.dma_rg = fm->dma_regs;
-+
-+	fm->fm_state->count1_micro_bit = FM_TIMESTAMP_1_USEC_BIT;
-+	fm->fm_drv_param->num_of_fman_ctrl_evnt_regs =
-+		FM_NUM_OF_FMAN_CTRL_EVENT_REGS;
-+
-+	/* if user didn't configured total_fifo_size -
-+	 * (total_fifo_size=0) we configure default
-+	 * according to chip. otherwise, we use user's configuration.
++	/* Imask include both error and notification/event bits.
++	 * Leaving only error bits enabled by imask.
++	 * The imask error bits are shifted by 16 bits offset from
++	 * their corresponding location in the ievent - hence the >> 16
 +	 */
-+	if (fm->fm_state->total_fifo_size == 0) {
-+		fm->fm_state->total_fifo_size =
-+		fm_dflt_total_fifo_size(fm->fm_state->rev_info.major_rev,
-+					fm->fm_state->rev_info.minor_rev);
-+		if (fm->fm_state->total_fifo_size == 0)
-+			return -EINVAL;
-+	}
++	event &= ((imask & MEMAC_ALL_ERRS_IMASK) >> 16);
 +
-+	err = check_fm_parameters(fm);
-+	if (err)
-+		return err;
++	fman_memac_ack_event(memac->regs, event);
 +
-+	fm_drv_param = fm->fm_drv_param;
-+
-+	fm_get_revision(fm, &rev_info);
-+
-+	/* clear revision-dependent non existing exception */
-+	if (rev_info.major_rev < 6)
-+		fm->fm_state->exceptions &= ~FM_EX_BMI_DISPATCH_RAM_ECC;
-+
-+	if (rev_info.major_rev >= 6)
-+		fm->fm_state->exceptions &= ~FM_EX_QMI_SINGLE_ECC;
-+
-+	/* clear CPG */
-+	memset_io((void __iomem *)(fm->base_addr + FM_MM_CGP), 0,
-+		  fm->intg->fm_port_num_of_cg);
-+
-+	/* Reset the FM if required. */
-+	if (fm->reset_on_init) {
-+		if (rev_info.major_rev >= 6) {
-+			/* Errata A007273 */
-+			pr_debug("FManV3 reset is not supported!\n");
-+		} else {
-+			out_be32(&fm->fpm_regs->fm_rstc, FPM_RSTC_FM_RESET);
-+			/* Memory barrier */
-+			mb();
-+			usleep_range(100, 300);
-+		}
-+
-+		if (fman_is_qmi_halt_not_busy_state(fm->qmi_regs)) {
-+			fman_resume(fm->fpm_regs);
-+			usleep_range(100, 300);
-+		}
-+	}
-+
-+	if (clear_iram(fm) != 0)
-+		return -EINVAL;
-+
-+	fm_drv_param->exceptions = fm->fm_state->exceptions;
-+
-+	/* Init DMA Registers */
-+
-+	err = init_fm_dma(fm);
-+	if (err != 0) {
-+		free_init_resources(fm);
-+		return err;
-+	}
-+
-+	/* Init FPM Registers */
-+
-+	err = fman_fpm_init(fm->fpm_regs, fm->fm_drv_param);
-+	if (err != 0) {
-+		free_init_resources(fm);
-+		return err;
-+	}
-+
-+	/* define common resources */
-+	/* allocate MURAM for FIFO according to total size */
-+	fm->fifo_offset = fm_muram_alloc(fm->muram,
-+					 fm->fm_state->total_fifo_size);
-+	if (IS_ERR_VALUE(fm->cam_offset)) {
-+		free_init_resources(fm);
-+		pr_err("MURAM alloc for BMI FIFO failed\n");
-+		return -ENOMEM;
-+	}
-+
-+	fm_drv_param->fifo_base_addr = fm->fifo_offset;
-+	fm_drv_param->total_fifo_size = fm->fm_state->total_fifo_size;
-+	fm_drv_param->total_num_of_tasks = fm->fm_state->total_num_of_tasks;
-+	fm_drv_param->clk_freq = fm->fm_state->fm_clk_freq;
-+
-+	/* Init BMI Registers */
-+	err = fman_bmi_init(fm->bmi_regs, fm->fm_drv_param);
-+	if (err != 0) {
-+		free_init_resources(fm);
-+		return err;
-+	}
-+
-+	/* Init QMI Registers */
-+	err = fman_qmi_init(fm->qmi_regs, fm->fm_drv_param);
-+	if (err != 0) {
-+		free_init_resources(fm);
-+		return err;
-+	}
-+
-+	err = fman_enable(&fman_rg, fm_drv_param);
-+	if (err != 0)
-+		return err;
-+
-+	enable_time_stamp(fm);
-+
-+	kfree(fm->fm_drv_param);
-+	fm->fm_drv_param = NULL;
-+
-+	return 0;
++	if (event & MEMAC_IEVNT_TS_ECC_ER)
++		memac->exception_cb(memac->dev_id, FM_MAC_EX_TS_FIFO_ECC_ERR);
++	if (event & MEMAC_IEVNT_TX_ECC_ER)
++		memac->exception_cb(memac->dev_id, FM_MAC_EX_10G_TX_ECC_ER);
++	if (event & MEMAC_IEVNT_RX_ECC_ER)
++		memac->exception_cb(memac->dev_id, FM_MAC_EX_10G_RX_ECC_ER);
 +}
 +
-+int fm_cfg_reset_on_init(struct fm_t *fm, bool enable)
++static void memac_exception(void *handle)
 +{
-+	if (is_init_done(fm->fm_drv_param))
-+		return -EINVAL;
++	struct memac_t *memac = (struct memac_t *)handle;
++	u32 event, imask;
 +
-+	fm->reset_on_init = enable;
++	event = fman_memac_get_event(memac->regs, 0xffffffff);
++	imask = fman_memac_get_interrupt_mask(memac->regs);
 +
-+	return 0;
-+}
-+
-+int fm_cfg_total_fifo_size(struct fm_t *fm, u32 total_fifo_size)
-+{
-+	if (is_init_done(fm->fm_drv_param))
-+		return -EINVAL;
-+
-+	fm->fm_state->total_fifo_size = total_fifo_size;
-+
-+	return 0;
-+}
-+
-+void fm_event_isr(struct fm_t *fm)
-+{
-+	u32 pending;
-+	struct fman_fpm_regs __iomem *fpm_rg;
-+
-+	if (!is_init_done(fm->fm_drv_param))
-+		return;
-+
-+	fpm_rg = fm->fpm_regs;
-+
-+	/* normal interrupts */
-+	pending = fman_get_normal_pending(fpm_rg);
-+	if (!pending)
-+		return;
-+
-+	if (pending & INTR_EN_QMI)
-+		qmi_event(fm);
-+
-+	/* MAC interrupts */
-+	if (pending & INTR_EN_MAC0)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 0);
-+	if (pending & INTR_EN_MAC1)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 1);
-+	if (pending & INTR_EN_MAC2)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 2);
-+	if (pending & INTR_EN_MAC3)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 3);
-+	if (pending & INTR_EN_MAC4)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 4);
-+	if (pending & INTR_EN_MAC5)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 5);
-+	if (pending & INTR_EN_MAC6)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 6);
-+	if (pending & INTR_EN_MAC7)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 7);
-+	if (pending & INTR_EN_MAC8)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 8);
-+	if (pending & INTR_EN_MAC9)
-+		fm_call_mac_isr(fm, FM_EV_MAC0 + 9);
-+}
-+
-+int fm_error_isr(struct fm_t *fm)
-+{
-+	u32 pending;
-+	struct fman_fpm_regs __iomem *fpm_rg;
-+
-+	if (!is_init_done(fm->fm_drv_param))
-+		return -EINVAL;
-+
-+	fpm_rg = fm->fpm_regs;
-+
-+	/* error interrupts */
-+	pending = fman_get_fpm_error_interrupts(fpm_rg);
-+	if (!pending)
-+		return -EINVAL;
-+
-+	if (pending & ERR_INTR_EN_BMI)
-+		bmi_err_event(fm);
-+	if (pending & ERR_INTR_EN_QMI)
-+		qmi_err_event(fm);
-+	if (pending & ERR_INTR_EN_FPM)
-+		fpm_err_event(fm);
-+	if (pending & ERR_INTR_EN_DMA)
-+		dma_err_event(fm);
-+	if (pending & ERR_INTR_EN_MURAM)
-+		muram_err_intr(fm);
-+
-+	/* MAC error interrupts */
-+	if (pending & ERR_INTR_EN_MAC0)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 0);
-+	if (pending & ERR_INTR_EN_MAC1)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 1);
-+	if (pending & ERR_INTR_EN_MAC2)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 2);
-+	if (pending & ERR_INTR_EN_MAC3)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 3);
-+	if (pending & ERR_INTR_EN_MAC4)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 4);
-+	if (pending & ERR_INTR_EN_MAC5)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 5);
-+	if (pending & ERR_INTR_EN_MAC6)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 6);
-+	if (pending & ERR_INTR_EN_MAC7)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 7);
-+	if (pending & ERR_INTR_EN_MAC8)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 8);
-+	if (pending & ERR_INTR_EN_MAC9)
-+		fm_call_mac_isr(fm, FM_EV_ERR_MAC0 + 9);
-+
-+	return 0;
-+}
-+
-+int fm_disable_rams_ecc(struct fm_t *fm)
-+{
-+	bool explicit_disable = false;
-+	struct fman_fpm_regs __iomem *fpm_rg;
-+	int ret;
-+
-+	if (!is_init_done(fm->fm_drv_param))
-+		return ret;
-+
-+	fpm_rg = fm->fpm_regs;
-+
-+	if (!fm->fm_state->internal_call)
-+		explicit_disable = true;
-+	fm->fm_state->internal_call = false;
-+
-+	/* if rams are already disabled, or if rams were explicitly enabled and
-+	 *  are currently called indirectly (not explicitly), ignore this call.
++	/* Imask include both error and notification/event bits.
++	 * Leaving only error bits enabled by imask.
++	 * The imask error bits are shifted by 16 bits offset from
++	 * their corresponding location in the ievent - hence the >> 16
 +	 */
-+	if (!fm->fm_state->rams_ecc_enable ||
-+	    (fm->fm_state->explicit_enable && !explicit_disable))
-+		return 0;
-+	if (fm->fm_state->explicit_enable)
-+		/* This is the case were both explicit are true.
-+		 * Turn off this flag for cases were following
-+		 * ramsEnable routines are called
-+		 */
-+		fm->fm_state->explicit_enable = false;
++	event &= ((imask & MEMAC_ALL_ERRS_IMASK) >> 16);
 +
-+	fman_enable_rams_ecc(fpm_rg);
-+	fm->fm_state->rams_ecc_enable = false;
++	fman_memac_ack_event(memac->regs, event);
++
++	if (event & MEMAC_IEVNT_MGI)
++		memac->exception_cb(memac->dev_id,
++				    FM_MAC_EX_MAGIC_PACKET_INDICATION);
++}
++
++static void free_init_resources(struct memac_t *memac)
++{
++	fm_unregister_intr(memac->fm, FM_MOD_MAC, memac->mac_id,
++			   FM_INTR_TYPE_ERR);
++
++	/* release the driver's group hash table */
++	free_hash_table(memac->multicast_addr_hash);
++	memac->multicast_addr_hash = NULL;
++
++	/* release the driver's individual hash table */
++	free_hash_table(memac->unicast_addr_hash);
++	memac->unicast_addr_hash = NULL;
++}
++
++static bool is_init_done(struct memac_cfg *memac_drv_params)
++{
++	/* Checks if mEMAC driver parameters were initialized */
++	if (!memac_drv_params)
++		return true;
++
++	return false;
++}
++
++int memac_enable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	fman_memac_enable(memac->regs,
++			  (mode & COMM_MODE_RX), (mode & COMM_MODE_TX));
 +
 +	return 0;
 +}
 +
-+int fm_set_exception(struct fm_t *fm, enum fm_exceptions exception,
-+		     bool enable)
++int memac_disable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode)
 +{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	fman_memac_disable(memac->regs,
++			   (mode & COMM_MODE_RX), (mode & COMM_MODE_TX));
++
++	return 0;
++}
++
++int memac_set_promiscuous(struct fm_mac_dev *fm_mac_dev, bool new_val)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	fman_memac_set_promiscuous(memac->regs, new_val);
++
++	return 0;
++}
++
++int memac_adjust_link(struct fm_mac_dev *fm_mac_dev, enum ethernet_speed speed)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++	int full_duplex = true;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	fman_memac_adjust_link(memac->regs,
++			       (enum enet_interface)
++			       ENET_INTERFACE_FROM_MODE(memac->enet_mode),
++			       (enum enet_speed)speed, full_duplex);
++	return 0;
++}
++
++int memac_cfg_max_frame_len(struct fm_mac_dev *fm_mac_dev, u16 new_val)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	memac->memac_drv_param->max_frame_length = new_val;
++
++	return 0;
++}
++
++int memac_cfg_reset_on_init(struct fm_mac_dev *fm_mac_dev, bool enable)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	memac->memac_drv_param->reset_on_init = enable;
++
++	return 0;
++}
++
++int memac_set_tx_pause_frames(struct fm_mac_dev *fm_mac_dev,
++			      u8 __maybe_unused priority,
++			      u16 pause_time,
++			      u16 __maybe_unused thresh_time)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	fman_memac_set_tx_pause_frames(memac->regs, FM_MAC_NO_PFC,
++				       pause_time, 0);
++
++	return 0;
++}
++
++int memac_accept_rx_pause_frames(struct fm_mac_dev *fm_mac_dev, bool en)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	fman_memac_set_rx_ignore_pause_frames(memac->regs, !en);
++
++	return 0;
++}
++
++int memac_modify_mac_address(struct fm_mac_dev *fm_mac_dev,
++			     enet_addr_t *p_enet_addr)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	fman_memac_add_addr_in_paddr(memac->regs, (u8 *)(*p_enet_addr), 0);
++
++	return 0;
++}
++
++int memac_add_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *eth_addr)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++	struct eth_hash_entry_t *hash_entry;
++	u32 hash;
++	u64 addr;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	addr = ENET_ADDR_TO_UINT64(*eth_addr);
++
++	if (!(addr & GROUP_ADDRESS)) {
++		/* Unicast addresses not supported in hash */
++		pr_err("Unicast Address\n");
++		return -EINVAL;
++	}
++	hash = get_mac_addr_hash_code(addr) & HASH_CTRL_ADDR_MASK;
++
++	/* Create element to be added to the driver hash table */
++	hash_entry = kmalloc(sizeof(*hash_entry), GFP_KERNEL);
++	if (!hash_entry)
++		return -ENOMEM;
++	hash_entry->addr = addr;
++	INIT_LIST_HEAD(&hash_entry->node);
++
++	list_add_tail(&hash_entry->node,
++		      &memac->multicast_addr_hash->lsts[hash]);
++	fman_memac_set_hash_table(memac->regs,
++				  (hash | HASH_CTRL_MCAST_EN));
++
++	return 0;
++}
++
++int memac_del_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *eth_addr)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++	struct eth_hash_entry_t *hash_entry = NULL;
++	struct list_head *p_pos;
++	u32 hash;
++	u64 addr;
++
++	if (!is_init_done(memac->memac_drv_param))
++		return -EINVAL;
++
++	addr = ENET_ADDR_TO_UINT64(*eth_addr);
++
++	hash = get_mac_addr_hash_code(addr) & HASH_CTRL_ADDR_MASK;
++
++	list_for_each(p_pos, &memac->multicast_addr_hash->lsts[hash]) {
++		hash_entry = ETH_HASH_ENTRY_OBJ(p_pos);
++		if (hash_entry->addr == addr) {
++			list_del_init(&hash_entry->node);
++			kfree(hash_entry);
++			break;
++		}
++	}
++	if (list_empty(&memac->multicast_addr_hash->lsts[hash]))
++		fman_memac_set_hash_table(memac->regs,
++					  (hash & ~HASH_CTRL_MCAST_EN));
++
++	return 0;
++}
++
++int memac_set_exception(struct fm_mac_dev *fm_mac_dev,
++			enum fm_mac_exceptions exception,
++			bool enable)
++{
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
 +	u32 bit_mask = 0;
-+	struct fman_rg fman_rg;
 +
-+	if (!is_init_done(fm->fm_drv_param))
++	if (!is_init_done(memac->memac_drv_param))
 +		return -EINVAL;
 +
-+	fman_rg.bmi_rg = fm->bmi_regs;
-+	fman_rg.qmi_rg = fm->qmi_regs;
-+	fman_rg.fpm_rg = fm->fpm_regs;
-+	fman_rg.dma_rg = fm->dma_regs;
-+
-+	bit_mask = fm_get_exception_flag(exception);
++	bit_mask = get_exception_flag(exception);
 +	if (bit_mask) {
 +		if (enable)
-+			fm->fm_state->exceptions |= bit_mask;
++			memac->exceptions |= bit_mask;
 +		else
-+			fm->fm_state->exceptions &= ~bit_mask;
-+
-+		return fman_set_exception(&fman_rg,
-+					  (enum fman_exceptions)exception,
-+					  enable);
++			memac->exceptions &= ~bit_mask;
 +	} else {
 +		pr_err("Undefined exception\n");
 +		return -EINVAL;
 +	}
++	fman_memac_set_exception(memac->regs, bit_mask, enable);
 +
 +	return 0;
 +}
 +
-+void fm_get_revision(struct fm_t *fm,
-+		     struct fm_revision_info_t *fm_rev)
++int memac_init(struct fm_mac_dev *fm_mac_dev)
 +{
-+	fm_rev->major_rev = fm->fm_state->rev_info.major_rev;
-+	fm_rev->minor_rev = fm->fm_state->rev_info.minor_rev;
-+}
-diff --git a/drivers/net/ethernet/freescale/fman/fm.h b/drivers/net/ethernet/freescale/fman/fm.h
-new file mode 100644
-index 0000000..d7eca90
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/fm.h
-@@ -0,0 +1,276 @@
-+/*
-+ * Copyright 2008-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
++	struct memac_cfg *memac_drv_param;
++	enum enet_interface enet_interface;
++	enum enet_speed enet_speed;
++	u8 i, phy_addr;
++	enet_addr_t eth_addr;
++	enum fm_mac_type port_type;
++	bool slow_10g_if = false;
++	int err;
++	u32 reg32 = 0;
 +
-+#ifndef __FM_H
-+#define __FM_H
++	if (is_init_done(memac->memac_drv_param))
++		return -EINVAL;
 +
-+#include "fm_ext.h"
++	err = check_init_parameters(memac);
++	if (err)
++		return err;
 +
-+#include "fsl_fman.h"
++	memac_drv_param = memac->memac_drv_param;
 +
-+#include <linux/io.h>
++	if (memac->fm_rev_info.major_rev == 6 &&
++	    memac->fm_rev_info.minor_rev == 4)
++		slow_10g_if = true;
 +
-+/* Hardware defines */
-+#define FM_MAX_NUM_OF_HW_PORT_IDS           64
-+#define FM_MAX_NUM_OF_MACS	10
++	port_type =
++	    ((ENET_SPEED_FROM_MODE(memac->enet_mode) < ENET_SPEED_10000) ?
++	    FM_MAC_1G : FM_MAC_10G);
 +
-+#define FM_NUM_OF_FMAN_CTRL_EVENT_REGS		4
++	/* First, reset the MAC if desired. */
++	if (memac_drv_param->reset_on_init) {
++		err = fman_memac_reset(memac->regs);
++		if (err) {
++			pr_err("fman_memac_reset() failed\n");
++			return err;
++		}
++	}
 +
-+/* defaults */
-+#define DFLT_EXCEPTIONS	\
-+	((FM_EX_DMA_BUS_ERROR)            | \
-+	(FM_EX_DMA_READ_ECC)              | \
-+	(FM_EX_DMA_SYSTEM_WRITE_ECC)      | \
-+	(FM_EX_DMA_FM_WRITE_ECC)          | \
-+	(FM_EX_FPM_STALL_ON_TASKS)        | \
-+	(FM_EX_FPM_SINGLE_ECC)            | \
-+	(FM_EX_FPM_DOUBLE_ECC)            | \
-+	(FM_EX_QMI_DEQ_FROM_UNKNOWN_PORTID) | \
-+	(FM_EX_BMI_LIST_RAM_ECC)          | \
-+	(FM_EX_BMI_STORAGE_PROFILE_ECC)   | \
-+	(FM_EX_BMI_STATISTICS_RAM_ECC)    | \
-+	(FM_EX_MURAM_ECC)                 | \
-+	(FM_EX_BMI_DISPATCH_RAM_ECC)      | \
-+	(FM_EX_QMI_DOUBLE_ECC)            | \
-+	(FM_EX_QMI_SINGLE_ECC))
++	/* MAC Address */
++	MAKE_ENET_ADDR_FROM_UINT64(memac->addr, eth_addr);
++	fman_memac_add_addr_in_paddr(memac->regs, (u8 *)eth_addr, 0);
 +
-+#define DFLT_AXI_DBG_NUM_OF_BEATS            1
-+#define DFLT_RESET_ON_INIT                 false
++	enet_interface =
++	    (enum enet_interface)ENET_INTERFACE_FROM_MODE(memac->enet_mode);
++	enet_speed = (enum enet_speed)ENET_SPEED_FROM_MODE(memac->enet_mode);
 +
-+#define DFLT_DMA_READ_INT_BUF_LOW(dma_thresh_max_buf)	\
-+	((dma_thresh_max_buf + 1) / 2)
-+#define DFLT_DMA_READ_INT_BUF_HIGH(dma_thresh_max_buf)	\
-+	((dma_thresh_max_buf + 1) * 3 / 4)
-+#define DFLT_DMA_WRITE_INT_BUF_LOW(dma_thresh_max_buf)	\
-+	((dma_thresh_max_buf + 1) / 2)
-+#define DFLT_DMA_WRITE_INT_BUF_HIGH(dma_thresh_max_buf)\
-+	((dma_thresh_max_buf + 1) * 3 / 4)
++	fman_memac_init(memac->regs,
++			memac->memac_drv_param,
++			enet_interface,
++			enet_speed,
++			slow_10g_if,
++			memac->exceptions);
 +
-+#define DMA_COMM_Q_LOW_FMAN_V3		0x2A
-+#define DMA_COMM_Q_LOW_FMAN_V2(dma_thresh_max_commq)		\
-+	((dma_thresh_max_commq + 1) / 2)
-+#define DFLT_DMA_COMM_Q_LOW(major, dma_thresh_max_commq)	\
-+	((major == 6) ? DMA_COMM_Q_LOW_FMAN_V3 :		\
-+	DMA_COMM_Q_LOW_FMAN_V2(dma_thresh_max_commq))
-+
-+#define DMA_COMM_Q_HIGH_FMAN_V3	0x3f
-+#define DMA_COMM_Q_HIGH_FMAN_V2(dma_thresh_max_commq)		\
-+	((dma_thresh_max_commq + 1) * 3 / 4)
-+#define DFLT_DMA_COMM_Q_HIGH(major, dma_thresh_max_commq)	\
-+	((major == 6) ? DMA_COMM_Q_HIGH_FMAN_V3 :		\
-+	DMA_COMM_Q_HIGH_FMAN_V2(dma_thresh_max_commq))
-+
-+#define TOTAL_NUM_OF_TASKS_FMAN_V3L	59
-+#define TOTAL_NUM_OF_TASKS_FMAN_V3H	124
-+#define DFLT_TOTAL_NUM_OF_TASKS(major, minor, bmi_max_num_of_tasks)	\
-+	((major == 6) ? ((minor == 1 || minor == 4) ?			\
-+	TOTAL_NUM_OF_TASKS_FMAN_V3L : TOTAL_NUM_OF_TASKS_FMAN_V3H) :	\
-+	bmi_max_num_of_tasks)
-+
-+#define DMA_CAM_NUM_OF_ENTRIES_FMAN_V3		64
-+#define DMA_CAM_NUM_OF_ENTRIES_FMAN_V2		32
-+#define DFLT_DMA_CAM_NUM_OF_ENTRIES(major)			\
-+	(major == 6 ? DMA_CAM_NUM_OF_ENTRIES_FMAN_V3 :		\
-+	DMA_CAM_NUM_OF_ENTRIES_FMAN_V2)
-+
-+#define FM_TIMESTAMP_1_USEC_BIT             8
-+
-+/* Defines used for enabling/disabling FM interrupts */
-+#define ERR_INTR_EN_DMA         0x00010000
-+#define ERR_INTR_EN_FPM         0x80000000
-+#define ERR_INTR_EN_BMI         0x00800000
-+#define ERR_INTR_EN_QMI         0x00400000
-+#define ERR_INTR_EN_MURAM       0x00040000
-+#define ERR_INTR_EN_MAC0        0x00004000
-+#define ERR_INTR_EN_MAC1        0x00002000
-+#define ERR_INTR_EN_MAC2        0x00001000
-+#define ERR_INTR_EN_MAC3        0x00000800
-+#define ERR_INTR_EN_MAC4        0x00000400
-+#define ERR_INTR_EN_MAC5        0x00000200
-+#define ERR_INTR_EN_MAC6        0x00000100
-+#define ERR_INTR_EN_MAC7        0x00000080
-+#define ERR_INTR_EN_MAC8        0x00008000
-+#define ERR_INTR_EN_MAC9        0x00000040
-+
-+#define INTR_EN_QMI             0x40000000
-+#define INTR_EN_MAC0            0x00080000
-+#define INTR_EN_MAC1            0x00040000
-+#define INTR_EN_MAC2            0x00020000
-+#define INTR_EN_MAC3            0x00010000
-+#define INTR_EN_MAC4            0x00000040
-+#define INTR_EN_MAC5            0x00000020
-+#define INTR_EN_MAC6            0x00000008
-+#define INTR_EN_MAC7            0x00000002
-+#define INTR_EN_MAC8            0x00200000
-+#define INTR_EN_MAC9            0x00100000
-+#define INTR_EN_REV0            0x00008000
-+#define INTR_EN_REV1            0x00004000
-+#define INTR_EN_REV2            0x00002000
-+#define INTR_EN_REV3            0x00001000
-+#define INTR_EN_TMR             0x01000000
-+
-+/* Modules registers offsets */
-+#define FM_MM_MURAM             0x00000000
-+#define FM_MM_BMI               0x00080000
-+#define FM_MM_QMI               0x00080400
-+#define FM_MM_PRS               0x000c7000
-+#define FM_MM_DMA               0x000C2000
-+#define FM_MM_FPM               0x000C3000
-+#define FM_MM_IMEM              0x000C4000
-+#define FM_MM_CGP               0x000DB000
-+#define FM_MM_TRB(i)            (0x000D0200 + 0x400 * (i))
-+#define FM_MM_SP                0x000dc000
-+
-+/* Memory Mapped Registers */
-+
-+struct fm_iram_regs_t {
-+	u32 iadd;	/* FM IRAM instruction address register */
-+	u32 idata;/* FM IRAM instruction data register */
-+	u32 itcfg;/* FM IRAM timing config register */
-+	u32 iready;/* FM IRAM ready register */
-+};
-+
-+/* General defines */
-+#define FM_FW_DEBUG_INSTRUCTION             0x6ffff805UL
-+
-+struct fm_state_struct_t {
-+	u8 fm_id;
-+	u16 fm_clk_freq;
-+	struct fm_revision_info_t rev_info;
-+	bool enabled_time_stamp;
-+	u8 count1_micro_bit;
-+	u8 total_num_of_tasks;
-+	u32 total_fifo_size;
-+	u8 max_num_of_open_dmas;
-+	u8 accumulated_num_of_tasks;
-+	u32 accumulated_fifo_size;
-+	u8 accumulated_num_of_open_dmas;
-+	u8 accumulated_num_of_deq_tnums;
-+	bool low_end_restriction;
-+	u32 exceptions;
-+	bool rams_ecc_enable;
-+	bool explicit_enable;
-+	bool internal_call;
-+	u32 extra_fifo_pool_size;
-+	u8 extra_tasks_pool_size;
-+	u8 extra_open_dmas_pool_size;
-+};
-+
-+struct fm_intg_t {
-+	/* Ram defines */
-+	u32 fm_muram_size;
-+	u32 fm_iram_size;
-+	u32 fm_num_of_ctrl;
-+
-+	/* DMA defines */
-+	u32 dma_thresh_max_commq;
-+	u32 dma_thresh_max_buf;
-+
-+	/* QMI defines */
-+	u32 qmi_max_num_of_tnums;
-+	u32 qmi_def_tnums_thresh;
-+
-+	/* BMI defines */
-+	u32 bmi_max_num_of_tasks;
-+	u32 bmi_max_num_of_dmas;
-+	u32 bmi_max_fifo_size;
-+	u32 port_max_weight;
-+
-+	u32 fm_port_num_of_cg;
-+	u32 num_of_rx_ports;
-+};
-+
-+struct fm_t {
-+	void __iomem *base_addr;
-+	char fm_module_name[MODULE_NAME_SIZE];
-+	struct fm_intr_src_t intr_mng[FM_EV_DUMMY_LAST];
-+
-+	struct fman_fpm_regs __iomem *fpm_regs;
-+	struct fman_bmi_regs __iomem *bmi_regs;
-+	struct fman_qmi_regs __iomem *qmi_regs;
-+	struct fman_dma_regs __iomem *dma_regs;
-+	fm_exceptions_cb *exception_cb;
-+	fm_bus_error_cb *bus_error_cb;
-+	void *dev_id;
-+	/* Spinlock for FMan use */
-+	spinlock_t spinlock;
-+	struct fm_state_struct_t *fm_state;
-+	u16 tnum_aging_period;
-+
-+	struct fman_cfg *fm_drv_param;
-+	struct muram_info *muram;
-+	/* cam section in muram */
-+	int cam_offset;
-+	size_t cam_size;
-+	/* Fifo in MURAM */
-+	int fifo_offset;
-+	size_t fifo_size;
-+	bool reset_on_init;
-+
-+	struct fm_intg_t *intg;
-+};
-+
-+static inline int fm_dflt_total_fifo_size(u8 major, u8 minor)
-+{
-+	/* The total FIFO size values are calculation for each FMan version,
-+	 * taking into account the available resources.
++	/* FM_RX_FIFO_CORRUPT_ERRATA_10GMAC_A006320 errata workaround
++	 * Exists only in FMan 6.0 and 6.3.
 +	 */
-+	switch (major) {
-+	case 2:
-+		/* P4080 */
-+		return 100 * 1024;
-+	case 3:
-+		/* P2, P3, P5 */
-+		return 122 * 1024;
-+	case 4:
-+		/* P1023 */
-+		return 46 * 1024;
-+	case 6:
-+		/* FMan V3L (T1024, T1040) */
-+		if (minor == 1 || minor == 4)
-+			return 156 * 1024;
-+		/* FMan V3H (B4, T4, T2080) */
++	if ((memac->fm_rev_info.major_rev == 6) &&
++	    ((memac->fm_rev_info.minor_rev == 0) ||
++	    (memac->fm_rev_info.minor_rev == 3))) {
++		/* MAC strips CRC from received frames - this workaround
++		 * should decrease the likelihood of bug appearance
++		 */
++		reg32 = in_be32(&memac->regs->command_config);
++		reg32 &= ~CMD_CFG_CRC_FWD;
++		out_be32(&memac->regs->command_config, reg32);
++	}
++
++	if (ENET_INTERFACE_FROM_MODE(memac->enet_mode) == ENET_IF_SGMII) {
++		/* Configure internal SGMII PHY */
++		if (memac->enet_mode & ENET_IF_SGMII_BASEX)
++			setup_sgmii_internal_phy_base_x(memac, PHY_MDIO_ADDR);
 +		else
-+			return 295 * 1024;
-+	default:
-+		pr_err("Default total fifo size calculation failed\n");
-+		return 0;
-+	}
-+}
-+
-+static inline void fm_call_mac_isr(struct fm_t *fm, u8 id)
-+{
-+	if (fm->intr_mng[id].isr_cb)
-+		fm->intr_mng[id].isr_cb(fm->intr_mng[id].src_handle);
-+}
-+
-+#endif /* __FM_H */
-diff --git a/drivers/net/ethernet/freescale/fman/fm_common.h b/drivers/net/ethernet/freescale/fman/fm_common.h
-new file mode 100644
-index 0000000..1cde270
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/fm_common.h
-@@ -0,0 +1,114 @@
-+/*
-+ * Copyright 2008-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+#ifndef __FM_COMMON_H
-+#define __FM_COMMON_H
-+
-+#include "fm_ext.h"
-+
-+/* Enum for inter-module interrupts registration */
-+enum fm_event_modules {
-+	FM_MOD_MAC = 0,		/* MAC event */
-+	FM_MOD_FMAN_CTRL,	/* FMAN Controller */
-+	FM_MOD_DUMMY_LAST
-+};
-+
-+/* Enum for interrupts types */
-+enum fm_intr_type {
-+	FM_INTR_TYPE_ERR,
-+	FM_INTR_TYPE_NORMAL
-+};
-+
-+/* Enum for inter-module interrupts registration */
-+enum fm_inter_module_event {
-+	FM_EV_ERR_MAC0 = 0,	/* MAC 0 error event */
-+	FM_EV_ERR_MAC1,		/* MAC 1 error event */
-+	FM_EV_ERR_MAC2,		/* MAC 2 error event */
-+	FM_EV_ERR_MAC3,		/* MAC 3 error event */
-+	FM_EV_ERR_MAC4,		/* MAC 4 error event */
-+	FM_EV_ERR_MAC5,		/* MAC 5 error event */
-+	FM_EV_ERR_MAC6,		/* MAC 6 error event */
-+	FM_EV_ERR_MAC7,		/* MAC 7 error event */
-+	FM_EV_ERR_MAC8,		/* MAC 8 error event */
-+	FM_EV_ERR_MAC9,		/* MAC 9 error event */
-+	FM_EV_MAC0,		/* MAC 0 event (Magic packet detection) */
-+	FM_EV_MAC1,		/* MAC 1 event (Magic packet detection) */
-+	FM_EV_MAC2,		/* MAC 2 (Magic packet detection) */
-+	FM_EV_MAC3,		/* MAC 3 (Magic packet detection) */
-+	FM_EV_MAC4,		/* MAC 4 (Magic packet detection) */
-+	FM_EV_MAC5,		/* MAC 5 (Magic packet detection) */
-+	FM_EV_MAC6,		/* MAC 6 (Magic packet detection) */
-+	FM_EV_MAC7,		/* MAC 7 (Magic packet detection) */
-+	FM_EV_MAC8,		/* MAC 8 event (Magic packet detection) */
-+	FM_EV_MAC9,		/* MAC 9 event (Magic packet detection) */
-+	FM_EV_FMAN_CTRL_0,	/* Fman controller event 0 */
-+	FM_EV_FMAN_CTRL_1,	/* Fman controller event 1 */
-+	FM_EV_FMAN_CTRL_2,	/* Fman controller event 2 */
-+	FM_EV_FMAN_CTRL_3,	/* Fman controller event 3 */
-+	FM_EV_DUMMY_LAST
-+};
-+
-+/* FM IP BLOCK versions */
-+#define FM_IP_BLOCK_P2_P3_P5		3
-+#define FM_IP_BLOCK_P4			2
-+#define FM_IP_BLOCK_B_T			6
-+
-+#define MODULE_NAME_SIZE        30
-+#define DUMMY_PORT_ID           0
-+
-+#define FM_LIODN_OFFSET_MASK    0x3FF
-+
-+#define BMI_MAX_FIFO_SIZE                   (FM_MURAM_SIZE)
-+#define BMI_FIFO_UNITS                      0x100
-+
-+struct fm_intr_src_t {
-+	void (*isr_cb)(void *src_arg);
-+	void *src_handle;
-+};
-+
-+void fm_register_intr(struct fm_t *fm, enum fm_event_modules mod, u8 mod_id,
-+		      enum fm_intr_type intr_type,
-+		      void (*f_isr)(void *h_src_arg), void *h_src_arg);
-+
-+void fm_unregister_intr(struct fm_t *fm, enum fm_event_modules mod, u8 mod_id,
-+			enum fm_intr_type intr_type);
-+
-+struct muram_info *fm_get_muram_pointer(struct fm_t *fm);
-+
-+int fm_reset_mac(struct fm_t *fm, u8 mac_id);
-+
-+u16 fm_get_clock_freq(struct fm_t *fm);
-+
-+u8 fm_get_id(struct fm_t *fm);
-+
-+u32 fm_get_bmi_max_fifo_size(struct fm_t *fm);
-+
-+#endif /* __FM_COMMON_H */
-diff --git a/drivers/net/ethernet/freescale/fman/fm_drv.c b/drivers/net/ethernet/freescale/fman/fm_drv.c
-new file mode 100644
-index 0000000..f2bee7b
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/fm_drv.c
-@@ -0,0 +1,572 @@
-+/*
-+ * Copyright 2008-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
-+#include <linux/slab.h>
-+#include <linux/clk-provider.h>
-+#include <linux/errno.h>
-+#include <sysdev/fsl_soc.h>
-+
-+#include "fm_ext.h"
-+#include "fm_drv.h"
-+#include "fm_muram_ext.h"
-+
-+/* Bootargs defines */
-+/* Extra headroom for RX buffers - Default, min and max */
-+#define FSL_FM_RX_EXTRA_HEADROOM	64
-+#define FSL_FM_RX_EXTRA_HEADROOM_MIN	16
-+#define FSL_FM_RX_EXTRA_HEADROOM_MAX	384
-+
-+/* Maximum frame length */
-+#define FSL_FM_MAX_FRAME_SIZE			1522
-+#define FSL_FM_MAX_POSSIBLE_FRAME_SIZE		9600
-+#define FSL_FM_MIN_POSSIBLE_FRAME_SIZE		64
-+
-+/* Extra headroom for Rx buffers.
-+ * FMan is instructed to allocate, on the Rx path, this amount of
-+ * space at the beginning of a data buffer, beside the DPA private
-+ * data area and the IC fields.
-+ * Does not impact Tx buffer layout.
-+ * Configurable from bootargs. 64 by default, it's needed on
-+ * particular forwarding scenarios that add extra headers to the
-+ * forwarded frame.
-+ */
-+int fsl_fm_rx_extra_headroom = FSL_FM_RX_EXTRA_HEADROOM;
-+module_param(fsl_fm_rx_extra_headroom, int, 0);
-+MODULE_PARM_DESC(fsl_fm_rx_extra_headroom, "Extra headroom for Rx buffers");
-+
-+/* Max frame size, across all interfaces.
-+ * Configurable from bootargs, to avoid allocating oversized (socket)
-+ * buffers when not using jumbo frames.
-+ * Must be large enough to accommodate the network MTU, but small enough
-+ * to avoid wasting skb memory.
-+ *
-+ * Could be overridden once, at boot-time, via the
-+ * fm_set_max_frm() callback.
-+ */
-+int fsl_fm_max_frm = FSL_FM_MAX_FRAME_SIZE;
-+module_param(fsl_fm_max_frm, int, 0);
-+MODULE_PARM_DESC(fsl_fm_max_frm, "Maximum frame size, across all interfaces");
-+
-+u16 fm_get_max_frm(void)
-+{
-+	static bool fm_check_mfl;
-+
-+	if (!fm_check_mfl) {
-+		if (fsl_fm_max_frm > FSL_FM_MAX_POSSIBLE_FRAME_SIZE ||
-+		    fsl_fm_max_frm < FSL_FM_MIN_POSSIBLE_FRAME_SIZE) {
-+			pr_warn("Invalid fsl_fm_max_frm value (%d) in bootargs, valid range is %d-%d. Falling back to the default (%d)\n",
-+				fsl_fm_max_frm,
-+				FSL_FM_MIN_POSSIBLE_FRAME_SIZE,
-+				FSL_FM_MAX_POSSIBLE_FRAME_SIZE,
-+				FSL_FM_MAX_FRAME_SIZE);
-+			fsl_fm_max_frm = FSL_FM_MAX_FRAME_SIZE;
++			setup_sgmii_internal_phy(memac, PHY_MDIO_ADDR);
++	} else if (ENET_INTERFACE_FROM_MODE(memac->enet_mode) ==
++		   ENET_IF_QSGMII) {
++		/* Configure 4 internal SGMII PHYs */
++		for (i = 0; i < 4; i++) {
++			/* QSGMII PHY address occupies 3 upper bits of 5-bit
++			 * phy_address; the lower 2 bits are used to extend
++			 * register address space and access each one of 4
++			 * ports inside QSGMII.
++			 */
++			phy_addr = (u8)((PHY_MDIO_ADDR << 2) | i);
++			if (memac->enet_mode & ENET_IF_SGMII_BASEX)
++				setup_sgmii_internal_phy_base_x(memac,
++								phy_addr);
++			else
++				setup_sgmii_internal_phy(memac, phy_addr);
 +		}
-+		fm_check_mfl = true;
 +	}
 +
-+	return fsl_fm_max_frm;
-+}
-+EXPORT_SYMBOL(fm_get_max_frm);
-+
-+int fm_get_rx_extra_headroom(void)
-+{
-+	static bool fm_check_rx_extra_headroom;
-+
-+	if (!fm_check_rx_extra_headroom) {
-+		if (fsl_fm_rx_extra_headroom > FSL_FM_RX_EXTRA_HEADROOM_MAX ||
-+		    fsl_fm_rx_extra_headroom < FSL_FM_RX_EXTRA_HEADROOM_MIN) {
-+			pr_warn("Invalid fsl_fm_rx_extra_headroom value (%d) in bootargs, valid range is %d-%d. Falling back to the default (%d)\n",
-+				fsl_fm_rx_extra_headroom,
-+				FSL_FM_RX_EXTRA_HEADROOM_MIN,
-+				FSL_FM_RX_EXTRA_HEADROOM_MAX,
-+				FSL_FM_RX_EXTRA_HEADROOM);
-+			fsl_fm_rx_extra_headroom = FSL_FM_RX_EXTRA_HEADROOM;
-+		}
-+
-+		fsl_fm_rx_extra_headroom = true;
-+		fsl_fm_rx_extra_headroom = ALIGN(fsl_fm_rx_extra_headroom, 16);
++	/* Max Frame Length */
++	err = fm_set_mac_max_frame(memac->fm, port_type, memac->mac_id,
++				   memac_drv_param->max_frame_length);
++	if (err) {
++		pr_err("settings Mac max frame length is FAILED\n");
++		return err;
 +	}
 +
-+	return fsl_fm_rx_extra_headroom;
-+}
-+EXPORT_SYMBOL(fm_get_rx_extra_headroom);
-+
-+static irqreturn_t fm_irq(int irq, void *fm_dev)
-+{
-+	struct fm_drv_t *fm_drv = (struct fm_drv_t *)fm_dev;
-+
-+	fm_event_isr(fm_drv->fm_dev);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t fm_err_irq(int irq, void *fm_dev)
-+{
-+	struct fm_drv_t *fm_drv = (struct fm_drv_t *)fm_dev;
-+
-+	if (fm_error_isr(fm_drv->fm_dev) == 0)
-+		return IRQ_HANDLED;
-+
-+	return IRQ_NONE;
-+}
-+
-+static int fill_qman_channels_info(struct fm_drv_t *fm_drv)
-+{
-+	fm_drv->qman_channels = kcalloc(fm_drv->num_of_qman_channels,
-+					sizeof(u32), GFP_KERNEL);
-+	if (!fm_drv->qman_channels)
++	memac->multicast_addr_hash = alloc_hash_table(HASH_TABLE_SIZE);
++	if (!memac->multicast_addr_hash) {
++		free_init_resources(memac);
++		pr_err("allocation hash table is FAILED\n");
 +		return -ENOMEM;
-+
-+	if (fm_drv->fm_rev_info.major_rev >= 6) {
-+		fm_drv->qman_channels[0] = 0x30;
-+		fm_drv->qman_channels[1] = 0x31;
-+		fm_drv->qman_channels[2] = 0x28;
-+		fm_drv->qman_channels[3] = 0x29;
-+		fm_drv->qman_channels[4] = 0x2a;
-+		fm_drv->qman_channels[5] = 0x2b;
-+		fm_drv->qman_channels[6] = 0x2c;
-+		fm_drv->qman_channels[7] = 0x2d;
-+		fm_drv->qman_channels[8] = 0x2;
-+		fm_drv->qman_channels[9] = 0x3;
-+		fm_drv->qman_channels[10] = 0x4;
-+		fm_drv->qman_channels[11] = 0x5;
-+		fm_drv->qman_channels[12] = 0x6;
-+		fm_drv->qman_channels[13] = 0x7;
-+	} else {
-+		fm_drv->qman_channels[0] = 0x30;
-+		fm_drv->qman_channels[1] = 0x28;
-+		fm_drv->qman_channels[2] = 0x29;
-+		fm_drv->qman_channels[3] = 0x2a;
-+		fm_drv->qman_channels[4] = 0x2b;
-+		fm_drv->qman_channels[5] = 0x2c;
-+		fm_drv->qman_channels[6] = 0x1;
-+		fm_drv->qman_channels[7] = 0x2;
-+		fm_drv->qman_channels[8] = 0x3;
-+		fm_drv->qman_channels[9] = 0x4;
-+		fm_drv->qman_channels[10] = 0x5;
-+		fm_drv->qman_channels[11] = 0x6;
 +	}
++
++	memac->unicast_addr_hash = alloc_hash_table(HASH_TABLE_SIZE);
++	if (!memac->unicast_addr_hash) {
++		free_init_resources(memac);
++		pr_err("allocation hash table is FAILED\n");
++		return -ENOMEM;
++	}
++
++	fm_register_intr(memac->fm, FM_MOD_MAC, memac->mac_id,
++			 FM_INTR_TYPE_ERR, memac_err_exception, memac);
++
++	fm_register_intr(memac->fm, FM_MOD_MAC, memac->mac_id,
++			 FM_INTR_TYPE_NORMAL, memac_exception, memac);
++
++	kfree(memac_drv_param);
++	memac->memac_drv_param = NULL;
 +
 +	return 0;
 +}
 +
-+static const struct of_device_id fm_muram_match[] = {
-+	{
-+	 .compatible = "fsl,fman-muram"},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, fm_muram_match);
-+
-+static struct fm_drv_t *read_fm_dev_tree_node(struct platform_device *of_dev)
++int memac_free(struct fm_mac_dev *fm_mac_dev)
 +{
-+	struct fm_drv_t *fm_drv;
-+	struct device_node *fm_node, *muram_node;
-+	struct resource *res;
-+	const u32 *u32_prop;
-+	const char *clk_name;
-+	int lenp, err;
-+	struct clk *clk;
-+	u32 clk_rate;
++	struct memac_t *memac = (struct memac_t *)fm_mac_dev;
 +
-+	fm_node = of_node_get(of_dev->dev.of_node);
++	free_init_resources(memac);
 +
-+	u32_prop = (const u32 *)of_get_property(fm_node, "cell-index", &lenp);
-+	if (!u32_prop) {
-+		pr_err("of_get_property(%s, cell-index) failed\n",
-+		       fm_node->full_name);
-+		goto _return_null;
-+	}
-+	if (WARN_ON(lenp != sizeof(u32)))
++	kfree(memac->memac_drv_param);
++	kfree(memac);
++
++	return 0;
++}
++
++void *memac_config(struct fm_mac_params_t *fm_mac_param)
++{
++	struct memac_t *memac;
++	struct memac_cfg *memac_drv_param;
++	void __iomem *base_addr;
++
++	base_addr = fm_mac_param->base_addr;
++	/* allocate memory for the m_emac data structure */
++	memac = kzalloc(sizeof(*memac), GFP_KERNEL);
++	if (!memac)
 +		return NULL;
 +
-+	fm_drv = kzalloc(sizeof(*fm_drv), GFP_KERNEL);
-+	if (!fm_drv)
-+		goto _return_null;
-+
-+	fm_drv->dev = &of_dev->dev;
-+	fm_drv->id = (u8)*u32_prop;
-+
-+	/* Get the FM interrupt */
-+	res = platform_get_resource(of_dev, IORESOURCE_IRQ, 0);
-+	if (!res) {
-+		pr_err("Can't get FMan IRQ resource\n");
-+		goto _return_null;
-+	}
-+	fm_drv->irq = res->start;
-+
-+	/* Get the FM error interrupt */
-+	res = platform_get_resource(of_dev, IORESOURCE_IRQ, 1);
-+	if (!res) {
-+		pr_err("Can't get FMan Error IRQ resource\n");
-+		goto _return_null;
-+	}
-+	fm_drv->err_irq = res->start;
-+
-+	/* Get the FM address */
-+	res = platform_get_resource(of_dev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		pr_err("Can't get FMan memory resouce\n");
-+		goto _return_null;
++	/* allocate memory for the m_emac driver parameters data structure */
++	memac_drv_param = kzalloc(sizeof(*memac_drv_param), GFP_KERNEL);
++	if (!memac_drv_param) {
++		memac_free((struct fm_mac_dev *)memac);
++		return NULL;
 +	}
 +
-+	fm_drv->fm_base_addr = 0;
-+	fm_drv->fm_phys_base_addr = res->start;
-+	fm_drv->fm_mem_size = res->end + 1 - res->start;
++	/* Plant parameter structure pointer */
++	memac->memac_drv_param = memac_drv_param;
 +
-+	err = of_property_read_string(fm_node, "clock-names", &clk_name);
-+	if (err) {
-+		pr_err("of_property_read_string(%s, clock-names) failed\n",
-+		       fm_node->full_name);
-+		goto _return_null;
++	fman_memac_defconfig(memac_drv_param);
++
++	memac->addr = ENET_ADDR_TO_UINT64(fm_mac_param->addr);
++
++	memac->regs = (struct memac_regs __iomem *)(base_addr);
++	memac->mii_regs = (struct memac_mii_access_mem_map __iomem *)
++		(base_addr + MEMAC_TO_MII_OFFSET);
++	memac->enet_mode = fm_mac_param->enet_mode;
++	memac->mac_id = fm_mac_param->mac_id;
++	memac->exceptions = MEMAC_DEFAULT_EXCEPTIONS;
++	memac->exception_cb = fm_mac_param->exception_cb;
++	memac->event_cb = fm_mac_param->event_cb;
++	memac->dev_id = fm_mac_param->dev_id;
++	memac->fm = fm_mac_param->fm;
++
++	/* Save FMan revision */
++	fm_get_revision(memac->fm, &memac->fm_rev_info);
++
++	return memac;
++}
+diff --git a/drivers/net/ethernet/freescale/fman/mac/fm_memac.h b/drivers/net/ethernet/freescale/fman/mac/fm_memac.h
+new file mode 100644
+index 0000000..1913250
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/mac/fm_memac.h
+@@ -0,0 +1,115 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#ifndef __MEMAC_H
++#define __MEMAC_H
++
++#include "fsl_fman_memac_mii_acc.h"
++#include "fm_mac.h"
++#include "fsl_fman_memac.h"
++
++#define MEMAC_DEFAULT_EXCEPTIONS					\
++	((u32)(MEMAC_IMASK_TSECC_ER | MEMAC_IMASK_TECC_ER |	\
++		MEMAC_IMASK_RECC_ER | MEMAC_IMASK_MGI))
++
++struct memac_t {
++	/* Pointer to MAC memory mapped registers */
++	struct memac_regs __iomem *regs;
++	/* Pointer to MII memory mapped registers */
++	struct memac_mii_access_mem_map __iomem *mii_regs;
++	/* MAC address of device */
++	u64 addr;
++	/* Ethernet physical interface  */
++	enum e_enet_mode enet_mode;
++	void *dev_id; /* device cookie used by the exception cbs */
++	fm_mac_exception_cb *exception_cb;
++	fm_mac_exception_cb *event_cb;
++	/* Whether a particular individual address
++	 * recognition register is being used
++	 */
++	bool ind_addr_reg_used[MEMAC_NUM_OF_PADDRS];
++	/* MAC address for particular individual address
++	 * recognition register
++	 */
++	u64 paddr[MEMAC_NUM_OF_PADDRS];
++	/* Number of individual addresses in registers for this station. */
++	u8 num_of_ind_addr_in_regs;
++	/* Pointer to driver's global address hash table  */
++	struct eth_hash_t *multicast_addr_hash;
++	/* Pointer to driver's individual address hash table  */
++	struct eth_hash_t *unicast_addr_hash;
++	bool debug_mode;
++	u8 mac_id;
++	u32 exceptions;
++	struct memac_cfg *memac_drv_param;
++	void *fm;
++	struct fm_revision_info_t fm_rev_info;
++};
++
++/* Internal PHY access */
++#define PHY_MDIO_ADDR               0
++
++/* Internal PHY Registers - SGMII */
++#define PHY_SGMII_CR_RESET_AN           0x0200
++#define PHY_SGMII_CR_DEF_VAL            0x1140
++#define PHY_SGMII_DEV_ABILITY_SGMII     0x4001
++#define PHY_SGMII_DEV_ABILITY_1000X     0x01A0
++#define PHY_SGMII_IF_MODE_AN            0x0002
++#define PHY_SGMII_IF_MODE_SGMII         0x0001
++#define PHY_SGMII_IF_MODE_1000X         0x0000
++
++/* Offset from the MEM map to the MDIO mem map */
++#define MEMAC_TO_MII_OFFSET         0x030
++
++void *memac_config(struct fm_mac_params_t *p_fm_mac_param);
++int memac_set_promiscuous(struct fm_mac_dev *fm_mac_dev, bool new_val);
++int memac_modify_mac_address(struct fm_mac_dev *fm_mac_dev,
++			     enet_addr_t *p_enet_addr);
++int memac_adjust_link(struct fm_mac_dev *fm_mac_dev,
++		      enum ethernet_speed speed);
++int memac_cfg_max_frame_len(struct fm_mac_dev *fm_mac_dev, u16 new_val);
++int memac_cfg_reset_on_init(struct fm_mac_dev *fm_mac_dev, bool enable);
++int memac_enable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode);
++int memac_disable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode);
++int memac_init(struct fm_mac_dev *fm_mac_dev);
++int memac_free(struct fm_mac_dev *fm_mac_dev);
++int memac_accept_rx_pause_frames(struct fm_mac_dev *fm_mac_dev, bool en);
++int memac_set_tx_pause_frames(struct fm_mac_dev *fm_mac_dev, u8 priority,
++			      u16 pause_time, u16 thresh_time);
++int memac_set_exception(struct fm_mac_dev *fm_mac_dev,
++			enum fm_mac_exceptions exception, bool enable);
++int memac_add_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *p_eth_addr);
++int memac_del_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			       enet_addr_t *p_eth_addr);
++
++#endif /* __MEMAC_H */
+diff --git a/drivers/net/ethernet/freescale/fman/mac/fm_tgec.c b/drivers/net/ethernet/freescale/fman/mac/fm_tgec.c
+new file mode 100644
+index 0000000..3ba0608
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/mac/fm_tgec.c
+@@ -0,0 +1,552 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include "crc_mac_addr_ext.h"
++
++#include "fm_common.h"
++#include "fsl_fman_tgec.h"
++#include "fm_tgec.h"
++
++#include <linux/string.h>
++#include <linux/slab.h>
++#include <linux/bitrev.h>
++
++static int check_init_parameters(struct tgec_t *tgec)
++{
++	if (ENET_SPEED_FROM_MODE(tgec->enet_mode) < ENET_SPEED_10000) {
++		pr_err("10G MAC driver only support 10G speed\n");
++		return -EINVAL;
++	}
++	if (tgec->addr == 0) {
++		pr_err("Ethernet 10G MAC Must have valid MAC Address\n");
++		return -EINVAL;
++	}
++	if (!tgec->exception_cb) {
++		pr_err("uninitialized exception_cb\n");
++		return -EINVAL;
++	}
++	if (!tgec->event_cb) {
++		pr_err("uninitialized event_cb\n");
++		return -EINVAL;
 +	}
 +
-+	clk = clk_get(fm_drv->dev, clk_name);
-+	if (IS_ERR(clk)) {
-+		pr_err("Failed to get FM%d clock structure\n", fm_drv->id);
-+		goto _return_null;
++	/* FM_LEN_CHECK_ERRATA_FMAN_SW002 Errata workaround */
++	if (!tgec->tgec_drv_param->no_length_check_enable) {
++		pr_warn("Length Check!\n");
++		return -EINVAL;
 +	}
 +
-+	clk_rate = clk_get_rate(clk);
-+	if (!clk_rate) {
-+		pr_err("Failed to determine FM%d clock rate\n", fm_drv->id);
-+		goto _return_null;
-+	}
-+	/* Rounding to MHz */
-+	clk_rate = (clk_rate + 500000) / 1000000;
-+	fm_drv->params.fm_clk_freq = (u16)clk_rate;
-+
-+	u32_prop = (const u32 *)of_get_property(fm_node,
-+						"fsl,qman-channel-range",
-+						&lenp);
-+	if (!u32_prop) {
-+		pr_err("of_get_property(%s, fsl,qman-channel-range) failed\n",
-+		       fm_node->full_name);
-+		goto _return_null;
-+	}
-+	if (WARN_ON(lenp != sizeof(u32) * 2))
-+		goto _return_null;
-+	fm_drv->qman_channel_base = u32_prop[0];
-+	fm_drv->num_of_qman_channels = u32_prop[1];
-+
-+	/* Get the MURAM base address and size */
-+	muram_node = of_find_matching_node(fm_node, fm_muram_match);
-+	if (!muram_node) {
-+		pr_err("could not find MURAM node\n");
-+		goto _return_null;
-+	}
-+
-+	err = of_address_to_resource(muram_node, 0, res);
-+	if (err) {
-+		of_node_put(muram_node);
-+		pr_err("of_address_to_resource() = %d\n", err);
-+		goto _return_null;
-+	}
-+
-+	fm_drv->fm_muram_phys_base_addr = res->start;
-+	fm_drv->fm_muram_mem_size = res->end + 1 - res->start;
-+
-+	{
-+		/* In B4 rev 2.0 (and above) the MURAM size is 512KB.
-+		 * Check the SVR and update MURAM size if required.
-+		 */
-+		u32 svr;
-+
-+		svr = mfspr(SPRN_SVR);
-+
-+		if ((SVR_SOC_VER(svr) == SVR_B4860) && (SVR_MAJ(svr) >= 2))
-+			fm_drv->fm_muram_mem_size = 0x80000;
-+	}
-+
-+	of_node_put(muram_node);
-+	of_node_put(fm_node);
-+
-+	fm_drv->active = true;
-+
-+	goto _return;
-+
-+_return_null:
-+	of_node_put(fm_node);
-+	return NULL;
-+_return:
-+	return fm_drv;
++	return 0;
 +}
 +
-+static void fm_drv_exceptions_cb(void *dev_id,
-+				 enum fm_exceptions __maybe_unused exception)
++static int get_exception_flag(enum fm_mac_exceptions exception)
 +{
-+	struct fm_drv_t *fm_drv = (struct fm_drv_t *)dev_id;
++	u32 bit_mask;
 +
-+	WARN_ON(!fm_drv);
++	switch (exception) {
++	case FM_MAC_EX_10G_MDIO_SCAN_EVENT:
++		bit_mask = TGEC_IMASK_MDIO_SCAN_EVENT;
++		break;
++	case FM_MAC_EX_10G_MDIO_CMD_CMPL:
++		bit_mask = TGEC_IMASK_MDIO_CMD_CMPL;
++		break;
++	case FM_MAC_EX_10G_REM_FAULT:
++		bit_mask = TGEC_IMASK_REM_FAULT;
++		break;
++	case FM_MAC_EX_10G_LOC_FAULT:
++		bit_mask = TGEC_IMASK_LOC_FAULT;
++		break;
++	case FM_MAC_EX_10G_TX_ECC_ER:
++		bit_mask = TGEC_IMASK_TX_ECC_ER;
++		break;
++	case FM_MAC_EX_10G_TX_FIFO_UNFL:
++		bit_mask = TGEC_IMASK_TX_FIFO_UNFL;
++		break;
++	case FM_MAC_EX_10G_TX_FIFO_OVFL:
++		bit_mask = TGEC_IMASK_TX_FIFO_OVFL;
++		break;
++	case FM_MAC_EX_10G_TX_ER:
++		bit_mask = TGEC_IMASK_TX_ER;
++		break;
++	case FM_MAC_EX_10G_RX_FIFO_OVFL:
++		bit_mask = TGEC_IMASK_RX_FIFO_OVFL;
++		break;
++	case FM_MAC_EX_10G_RX_ECC_ER:
++		bit_mask = TGEC_IMASK_RX_ECC_ER;
++		break;
++	case FM_MAC_EX_10G_RX_JAB_FRM:
++		bit_mask = TGEC_IMASK_RX_JAB_FRM;
++		break;
++	case FM_MAC_EX_10G_RX_OVRSZ_FRM:
++		bit_mask = TGEC_IMASK_RX_OVRSZ_FRM;
++		break;
++	case FM_MAC_EX_10G_RX_RUNT_FRM:
++		bit_mask = TGEC_IMASK_RX_RUNT_FRM;
++		break;
++	case FM_MAC_EX_10G_RX_FRAG_FRM:
++		bit_mask = TGEC_IMASK_RX_FRAG_FRM;
++		break;
++	case FM_MAC_EX_10G_RX_LEN_ER:
++		bit_mask = TGEC_IMASK_RX_LEN_ER;
++		break;
++	case FM_MAC_EX_10G_RX_CRC_ER:
++		bit_mask = TGEC_IMASK_RX_CRC_ER;
++		break;
++	case FM_MAC_EX_10G_RX_ALIGN_ER:
++		bit_mask = TGEC_IMASK_RX_ALIGN_ER;
++		break;
++	default:
++		bit_mask = 0;
++		break;
++	}
 +
-+	pr_debug("got fm exception %d\n", exception);
++	return bit_mask;
 +}
 +
-+static void fm_drv_bus_error_cb(void *dev_id,
-+				enum fm_port_type __maybe_unused port_type,
-+				u8 __maybe_unused port_id,
-+				u64 __maybe_unused addr,
-+				u8 __maybe_unused tnum,
-+				u16 __maybe_unused liodn)
++static u32 get_mac_addr_hash_code(u64 eth_addr)
 +{
-+	struct fm_drv_t *fm_drv = (struct fm_drv_t *)dev_id;
++	u32 crc;
 +
-+	WARN_ON(!fm_drv);
++	/* CRC calculation */
++	GET_MAC_ADDR_CRC(eth_addr, crc);
 +
-+	pr_debug("got fm bus error: port_id[%d]\n", port_id);
++	crc = bitrev32(crc);
++
++	return crc;
 +}
 +
-+u32 get_qman_channel_id(struct fm_drv_t *fm_drv, u32 port_id)
++static void tgec_err_exception(void *handle)
 +{
-+	u32 qman_channel = 0;
-+	int i;
++	struct tgec_t *tgec = (struct tgec_t *)handle;
++	u32 event;
++	struct tgec_regs __iomem *regs = tgec->regs;
 +
-+	for (i = 0; i < fm_drv->num_of_qman_channels; i++) {
-+		if (fm_drv->qman_channels[i] == port_id)
++	/* do not handle MDIO events */
++	event = fman_tgec_get_event(regs,
++				    ~(TGEC_IMASK_MDIO_SCAN_EVENT |
++				    TGEC_IMASK_MDIO_CMD_CMPL));
++	event &= fman_tgec_get_interrupt_mask(regs);
++
++	fman_tgec_ack_event(regs, event);
++
++	if (event & TGEC_IMASK_REM_FAULT)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_REM_FAULT);
++	if (event & TGEC_IMASK_LOC_FAULT)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_LOC_FAULT);
++	if (event & TGEC_IMASK_TX_ECC_ER)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_TX_ECC_ER);
++	if (event & TGEC_IMASK_TX_FIFO_UNFL)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_TX_FIFO_UNFL);
++	if (event & TGEC_IMASK_TX_FIFO_OVFL)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_TX_FIFO_OVFL);
++	if (event & TGEC_IMASK_TX_ER)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_TX_ER);
++	if (event & TGEC_IMASK_RX_FIFO_OVFL)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_FIFO_OVFL);
++	if (event & TGEC_IMASK_RX_ECC_ER)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_ECC_ER);
++	if (event & TGEC_IMASK_RX_JAB_FRM)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_JAB_FRM);
++	if (event & TGEC_IMASK_RX_OVRSZ_FRM)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_OVRSZ_FRM);
++	if (event & TGEC_IMASK_RX_RUNT_FRM)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_RUNT_FRM);
++	if (event & TGEC_IMASK_RX_FRAG_FRM)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_FRAG_FRM);
++	if (event & TGEC_IMASK_RX_LEN_ER)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_LEN_ER);
++	if (event & TGEC_IMASK_RX_CRC_ER)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_CRC_ER);
++	if (event & TGEC_IMASK_RX_ALIGN_ER)
++		tgec->exception_cb(tgec->dev_id, FM_MAC_EX_10G_RX_ALIGN_ER);
++}
++
++static void free_init_resources(struct tgec_t *tgec)
++{
++	fm_unregister_intr(tgec->fm, FM_MOD_MAC, tgec->mac_id,
++			   FM_INTR_TYPE_ERR);
++
++	/* release the driver's group hash table */
++	free_hash_table(tgec->multicast_addr_hash);
++	tgec->multicast_addr_hash = NULL;
++
++	/* release the driver's individual hash table */
++	free_hash_table(tgec->unicast_addr_hash);
++	tgec->unicast_addr_hash = NULL;
++}
++
++static bool is_init_done(struct tgec_cfg *tgec_drv_parameters)
++{
++	/* Checks if tGEC driver parameters were initialized */
++	if (!tgec_drv_parameters)
++		return true;
++
++	return false;
++}
++
++int tgec_enable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	fman_tgec_enable(tgec->regs,
++			 (mode & COMM_MODE_RX), (mode & COMM_MODE_TX));
++
++	return 0;
++}
++
++int tgec_disable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	fman_tgec_disable(tgec->regs,
++			  (mode & COMM_MODE_RX), (mode & COMM_MODE_TX));
++
++	return 0;
++}
++
++int tgec_set_promiscuous(struct fm_mac_dev *fm_mac_dev, bool new_val)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	fman_tgec_set_promiscuous(tgec->regs, new_val);
++
++	return 0;
++}
++
++int tgec_cfg_max_frame_len(struct fm_mac_dev *fm_mac_dev, u16 new_val)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	tgec->tgec_drv_param->max_frame_length = new_val;
++
++	return 0;
++}
++
++int tgec_set_tx_pause_frames(struct fm_mac_dev *fm_mac_dev,
++			     u8 __maybe_unused priority,
++			     u16 pause_time,
++			     u16 __maybe_unused thresh_time)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	fman_tgec_set_tx_pause_frames(tgec->regs, pause_time);
++
++	return 0;
++}
++
++int tgec_accept_rx_pause_frames(struct fm_mac_dev *fm_mac_dev, bool en)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	fman_tgec_set_rx_ignore_pause_frames(tgec->regs, !en);
++
++	return 0;
++}
++
++int tgec_modify_mac_address(struct fm_mac_dev *fm_mac_dev,
++			    enet_addr_t *p_enet_addr)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	tgec->addr = ENET_ADDR_TO_UINT64(*p_enet_addr);
++	fman_tgec_set_mac_address(tgec->regs, (u8 *)(*p_enet_addr));
++
++	return 0;
++}
++
++int tgec_add_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			      enet_addr_t *eth_addr)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++	struct eth_hash_entry_t *hash_entry;
++	u32 crc;
++	u32 hash;
++	u64 addr;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	addr = ENET_ADDR_TO_UINT64(*eth_addr);
++
++	if (!(addr & GROUP_ADDRESS)) {
++		/* Unicast addresses not supported in hash */
++		pr_err("Unicast Address\n");
++		return -EINVAL;
++	}
++	/* CRC calculation */
++	crc = get_mac_addr_hash_code(addr);
++
++	/* Take 9 MSB bits */
++	hash = (crc >> TGEC_HASH_MCAST_SHIFT) & TGEC_HASH_ADR_MSK;
++
++	/* Create element to be added to the driver hash table */
++	hash_entry = kmalloc(sizeof(*hash_entry), GFP_KERNEL);
++	if (!hash_entry)
++		return -ENOMEM;
++	hash_entry->addr = addr;
++	INIT_LIST_HEAD(&hash_entry->node);
++
++	list_add_tail(&hash_entry->node,
++		      &tgec->multicast_addr_hash->lsts[hash]);
++	fman_tgec_set_hash_table(tgec->regs, (hash | TGEC_HASH_MCAST_EN));
++
++	return 0;
++}
++
++int tgec_del_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			      enet_addr_t *eth_addr)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++	struct eth_hash_entry_t *hash_entry = NULL;
++	struct list_head *p_pos;
++	u32 crc;
++	u32 hash;
++	u64 addr;
++
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
++
++	addr = ((*(u64 *)eth_addr) >> 16);
++
++	/* CRC calculation */
++	crc = get_mac_addr_hash_code(addr);
++	/* Take 9 MSB bits */
++	hash = (crc >> TGEC_HASH_MCAST_SHIFT) & TGEC_HASH_ADR_MSK;
++
++	list_for_each(p_pos, &tgec->multicast_addr_hash->lsts[hash]) {
++		hash_entry = ETH_HASH_ENTRY_OBJ(p_pos);
++		if (hash_entry->addr == addr) {
++			list_del_init(&hash_entry->node);
++			kfree(hash_entry);
 +			break;
-+	}
-+
-+	if (i == fm_drv->num_of_qman_channels)
-+		return 0;
-+
-+	qman_channel = fm_drv->qman_channel_base + i;
-+
-+	return qman_channel;
-+}
-+
-+static int configure_fm_dev(struct fm_drv_t *fm_drv)
-+{
-+	int err;
-+
-+	if (!fm_drv->active) {
-+		pr_err("FMan not configured\n");
-+		return -EINVAL;
-+	}
-+
-+	err = devm_request_irq(fm_drv->dev, fm_drv->irq, fm_irq,
-+			       IRQF_NO_SUSPEND, "fman", fm_drv);
-+	if (err < 0) {
-+		pr_err("Error: allocating irq %d (error = %d)\n",
-+		       fm_drv->irq, err);
-+		return -EINVAL;
-+	}
-+
-+	if (fm_drv->err_irq != 0) {
-+		err = devm_request_irq(fm_drv->dev, fm_drv->err_irq,
-+				       fm_err_irq,
-+				       IRQF_SHARED | IRQF_NO_SUSPEND,
-+				       "fman-err", fm_drv);
-+		if (err < 0) {
-+			pr_err("Error: allocating irq %d (error = %d)\n",
-+			       fm_drv->err_irq, err);
-+			return -EINVAL;
 +		}
 +	}
-+
-+	fm_drv->res = devm_request_mem_region(fm_drv->dev,
-+					      fm_drv->fm_phys_base_addr,
-+					      fm_drv->fm_mem_size, "fman");
-+	if (!fm_drv->res) {
-+		pr_err("request_mem_region() failed\n");
-+		return -EINVAL;
-+	}
-+
-+	fm_drv->fm_base_addr = devm_ioremap(fm_drv->dev,
-+					    fm_drv->fm_phys_base_addr,
-+					    fm_drv->fm_mem_size);
-+	if (fm_drv->fm_base_addr == 0) {
-+		pr_err("devm_ioremap() failed\n");
-+		return -EINVAL;
-+	}
-+
-+	fm_drv->params.base_addr = fm_drv->fm_base_addr;
-+	fm_drv->params.fm_id = fm_drv->id;
-+	fm_drv->params.exception_cb = fm_drv_exceptions_cb;
-+	fm_drv->params.bus_error_cb = fm_drv_bus_error_cb;
-+	fm_drv->params.dev_id = fm_drv;
++	if (list_empty(&tgec->multicast_addr_hash->lsts[hash]))
++		fman_tgec_set_hash_table(tgec->regs,
++					 (hash & ~TGEC_HASH_MCAST_EN));
 +
 +	return 0;
 +}
 +
-+static int init_fm_dev(struct fm_drv_t *fm_drv)
++int tgec_get_version(struct fm_mac_dev *fm_mac_dev, u32 *mac_version)
 +{
-+	if (!fm_drv->active) {
-+		pr_err("FMan not configured\n");
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++
++	if (!is_init_done(tgec->tgec_drv_param))
 +		return -EINVAL;
-+	}
 +
-+	fm_drv->muram = fm_muram_init(fm_drv->fm_muram_phys_base_addr,
-+				      fm_drv->fm_muram_mem_size);
-+	if (!fm_drv->muram) {
-+		pr_err("FMan MURAM initalization failed\n");
-+		return -EINVAL;
-+	}
-+
-+	fm_drv->params.muram = fm_drv->muram;
-+
-+	fm_drv->fm_dev = fm_config(&fm_drv->params);
-+	if (!fm_drv->fm_dev) {
-+		pr_err("FMan config failed\n");
-+		return -EINVAL;
-+	}
-+
-+	fm_get_revision(fm_drv->fm_dev, &fm_drv->fm_rev_info);
-+
-+	if (fm_cfg_reset_on_init(fm_drv->fm_dev, true) != 0) {
-+		pr_err("fm_cfg_reset_on_init() failed\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Config total fifo size for FManV3H */
-+	if ((fm_drv->fm_rev_info.major_rev >= 6) &&
-+	    (fm_drv->fm_rev_info.minor_rev != 1 &&
-+	     fm_drv->fm_rev_info.minor_rev != 4))
-+			fm_cfg_total_fifo_size(fm_drv->fm_dev, 295 * 1024);
-+
-+	if (fm_init(fm_drv->fm_dev) != 0) {
-+		pr_err("fm_init() failed\n");
-+		return -EINVAL;
-+	}
-+
-+	if (fm_drv->err_irq == 0) {
-+		fm_set_exception(fm_drv->fm_dev, FM_EX_DMA_BUS_ERROR, false);
-+		fm_set_exception(fm_drv->fm_dev, FM_EX_DMA_READ_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_DMA_SYSTEM_WRITE_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev, FM_EX_DMA_FM_WRITE_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_DMA_SINGLE_PORT_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_FPM_STALL_ON_TASKS, false);
-+		fm_set_exception(fm_drv->fm_dev, FM_EX_FPM_SINGLE_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev, FM_EX_FPM_DOUBLE_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev, FM_EX_QMI_SINGLE_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_QMI_DOUBLE_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_QMI_DEQ_FROM_UNKNOWN_PORTID, false);
-+		fm_set_exception(fm_drv->fm_dev, FM_EX_BMI_LIST_RAM_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_BMI_STORAGE_PROFILE_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_BMI_STATISTICS_RAM_ECC, false);
-+		fm_set_exception(fm_drv->fm_dev,
-+				 FM_EX_BMI_DISPATCH_RAM_ECC, false);
-+	}
-+
-+	if (fill_qman_channels_info(fm_drv) < 0) {
-+		pr_err("can't fill qman channel info\n");
-+		return -EINVAL;
-+	}
++	*mac_version = fman_tgec_get_revision(tgec->regs);
 +
 +	return 0;
 +}
 +
-+static int fm_probe(struct platform_device *of_dev)
++int tgec_set_exception(struct fm_mac_dev *fm_mac_dev,
++		       enum fm_mac_exceptions exception,
++		       bool enable)
 +{
-+	struct fm_drv_t *fm_drv;
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++	u32 bit_mask = 0;
 +
-+	fm_drv = read_fm_dev_tree_node(of_dev);
-+	if (!fm_drv)
-+		return -EIO;
-+	if (configure_fm_dev(fm_drv) != 0)
-+		return -EIO;
-+	if (init_fm_dev(fm_drv) != 0)
-+		return -EIO;
++	if (!is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
 +
-+	dev_set_drvdata(fm_drv->dev, fm_drv);
-+
-+	pr_debug("FM%d probed\n", fm_drv->id);
++	bit_mask = get_exception_flag(exception);
++	if (bit_mask) {
++		if (enable)
++			tgec->exceptions |= bit_mask;
++		else
++			tgec->exceptions &= ~bit_mask;
++	} else {
++		pr_err("Undefined exception\n");
++		return -EINVAL;
++	}
++	if (enable)
++		fman_tgec_enable_interrupt(tgec->regs, bit_mask);
++	else
++		fman_tgec_disable_interrupt(tgec->regs, bit_mask);
 +
 +	return 0;
 +}
 +
-+struct fm *fm_bind(struct device *fm_dev)
++int tgec_init(struct fm_mac_dev *fm_mac_dev)
 +{
-+	return (struct fm *)(dev_get_drvdata(get_device(fm_dev)));
-+}
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
++	struct tgec_cfg *tgec_drv_param;
++	enet_addr_t eth_addr;
++	int err;
 +
-+void fm_unbind(struct fm *fm)
-+{
-+	struct fm_drv_t *fm_drv = (struct fm_drv_t *)fm;
++	if (is_init_done(tgec->tgec_drv_param))
++		return -EINVAL;
 +
-+	put_device(fm_drv->dev);
-+}
-+
-+struct resource *fm_get_mem_region(struct fm *fm)
-+{
-+	struct fm_drv_t *fm_drv = (struct fm_drv_t *)fm;
-+
-+	return fm_drv->res;
-+}
-+
-+void *fm_get_handle(struct fm *fm)
-+{
-+	struct fm_drv_t *fm_drv = (struct fm_drv_t *)fm;
-+
-+	return (void *)fm_drv->fm_dev;
-+}
-+
-+static const struct of_device_id fm_match[] = {
-+	{
-+	 .compatible = "fsl,fman"},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(of, fm_match);
-+
-+static struct platform_driver fm_driver = {
-+	.driver = {
-+		   .name = "fsl-fman",
-+		   .of_match_table = fm_match,
-+		   },
-+	.probe = fm_probe,
-+};
-+
-+builtin_platform_driver(fm_driver);
-+
-+static int __init __cold fm_load(void)
-+{
-+	if (platform_driver_register(&fm_driver)) {
-+		pr_crit("platform_driver_register() failed\n");
-+		return -ENODEV;
++	if (DEFAULT_RESET_ON_INIT &&
++	    (fm_reset_mac(tgec->fm, tgec->mac_id) != 0)) {
++		pr_err("Can't reset MAC!\n");
++		return -EINVAL;
 +	}
 +
-+	pr_info("Freescale FMan module\n");
++	fm_get_revision(tgec->fm, &tgec->fm_rev_info);
++	err = check_init_parameters(tgec);
++	if (err)
++		return err;
++
++	tgec_drv_param = tgec->tgec_drv_param;
++
++	MAKE_ENET_ADDR_FROM_UINT64(tgec->addr, eth_addr);
++	fman_tgec_set_mac_address(tgec->regs, (u8 *)eth_addr);
++
++	/* interrupts */
++	/* FM_10G_REM_N_LCL_FLT_EX_10GMAC_ERRATA_SW005 Errata workaround */
++	if (tgec->fm_rev_info.major_rev <= 2)
++		tgec->exceptions &= ~(TGEC_IMASK_REM_FAULT |
++				      TGEC_IMASK_LOC_FAULT);
++
++	err = fman_tgec_init(tgec->regs, tgec_drv_param, tgec->exceptions);
++	if (err) {
++		free_init_resources(tgec);
++		pr_err("TGEC version doesn't support this i/f mode\n");
++		return err;
++	}
++
++	/* Max Frame Length */
++	err = fm_set_mac_max_frame(tgec->fm, FM_MAC_10G, tgec->mac_id,
++				   tgec_drv_param->max_frame_length);
++	if (err) {
++		pr_err("Setting max frame length FAILED\n");
++		free_init_resources(tgec);
++		return -EINVAL;
++	}
++
++	/* FM_TX_FIFO_CORRUPTION_ERRATA_10GMAC_A007 Errata workaround */
++	if (tgec->fm_rev_info.major_rev == 2)
++		fman_tgec_set_erratum_tx_fifo_corruption_10gmac_a007(tgec->
++								     regs);
++
++	tgec->multicast_addr_hash = alloc_hash_table(TGEC_HASH_TABLE_SIZE);
++	if (!tgec->multicast_addr_hash) {
++		free_init_resources(tgec);
++		pr_err("allocation hash table is FAILED\n");
++		return -ENOMEM;
++	}
++
++	tgec->unicast_addr_hash = alloc_hash_table(TGEC_HASH_TABLE_SIZE);
++	if (!tgec->unicast_addr_hash) {
++		free_init_resources(tgec);
++		pr_err("allocation hash table is FAILED\n");
++		return -ENOMEM;
++	}
++
++	fm_register_intr(tgec->fm, FM_MOD_MAC, tgec->mac_id,
++			 FM_INTR_TYPE_ERR, tgec_err_exception, tgec);
++
++	kfree(tgec_drv_param);
++	tgec->tgec_drv_param = NULL;
++
 +	return 0;
 +}
 +
-+device_initcall(fm_load);
-diff --git a/drivers/net/ethernet/freescale/fman/fm_drv.h b/drivers/net/ethernet/freescale/fman/fm_drv.h
-new file mode 100644
-index 0000000..73d9eff
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/fm_drv.h
-@@ -0,0 +1,109 @@
-+/*
-+ * Copyright 2008-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
++int tgec_free(struct fm_mac_dev *fm_mac_dev)
++{
++	struct tgec_t *tgec = (struct tgec_t *)fm_mac_dev;
 +
-+#ifndef __FM_DRV_H__
-+#define __FM_DRV_H__
++	free_init_resources(tgec);
 +
-+#include <asm/mpc85xx.h>
++	if (tgec->tgec_drv_param)
++		tgec->tgec_drv_param = NULL;
 +
-+#include "fsl_fman_drv.h"
++	kfree(tgec->tgec_drv_param);
++	kfree(tgec);
 +
-+#ifndef CONFIG_FSL_FM_MAX_FRAME_SIZE
-+#define CONFIG_FSL_FM_MAX_FRAME_SIZE 0
-+#endif
++	return 0;
++}
 +
-+#ifndef CONFIG_FSL_FM_RX_EXTRA_HEADROOM
-+#define CONFIG_FSL_FM_RX_EXTRA_HEADROOM       16
-+#endif
-+
-+/* SoC info */
-+#define SOC_VERSION(svr)        (((svr) & 0xFFF7FF00) >> 8)
-+#define SOC_MAJOR_REV(svr)      (((svr) & 0x000000F0) >> 4)
-+#define SOC_MINOR_REV(svr)      ((svr) & 0x0000000F)
-+
-+/* Port defines */
-+#define NUM_OF_FM_PORTS			63
-+#define FIRST_RX_PORT			0x08
-+#define FIRST_TX_PORT			0x28
-+#define LAST_RX_PORT			0x11
-+#define LAST_TX_PORT			0x31
-+
-+#define TX_10G_PORT_BASE		0x30
-+#define RX_10G_PORT_BASE		0x10
-+
-+struct fm_port_t;
-+
-+struct fm_port_drv_t {
-+	u8 id;
-+	char name[20];
-+	bool active;
-+	phys_addr_t phys_base_addr;
-+	void __iomem *base_addr;	/* Port's *virtual* address */
-+	resource_size_t mem_size;
-+	struct fm_buffer_prefix_content_t buff_prefix_content;
-+	struct fm_port_t *fm_port;
-+	struct fm_drv_t *fm;
-+	u16 tx_ch;
-+	struct device *dev;
-+	struct fm_revision_info_t fm_rev_info;
-+};
-+
-+struct fm_drv_t {
-+	u8 id;
-+	char name[10];
-+	bool active;
-+	phys_addr_t fm_phys_base_addr;
-+	void __iomem *fm_base_addr;
-+	resource_size_t fm_mem_size;
-+	phys_addr_t fm_muram_phys_base_addr;
-+	resource_size_t fm_muram_mem_size;
-+	int irq;
-+	int err_irq;
-+	struct fm_params_t params;
-+	void *fm_dev;
-+	struct muram_info *muram;
-+
-+	struct fm_port_drv_t ports[NUM_OF_FM_PORTS];
-+
-+	struct device *dev;
-+	struct resource *res;
-+
-+	struct fm_revision_info_t fm_rev_info;
-+	u32 qman_channel_base;
-+	u32 num_of_qman_channels;
-+	u32 *qman_channels;
-+
-+};
-+
-+u32 get_qman_channel_id(struct fm_drv_t *fm_drv, u32 port_id);
-+
-+#endif /* __FM_DRV_H__ */
-diff --git a/drivers/net/ethernet/freescale/fman/inc/enet_ext.h b/drivers/net/ethernet/freescale/fman/inc/enet_ext.h
-new file mode 100644
-index 0000000..e7d5c05
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/inc/enet_ext.h
-@@ -0,0 +1,199 @@
-+/*
-+ * Copyright 2008-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/* Ethernet generic definitions and enums. */
-+
-+#ifndef __ENET_EXT_H
-+#define __ENET_EXT_H
-+
-+#include "fsl_enet.h"
-+
-+/* Number of octets (8-bit bytes) in an ethernet address */
-+#define ENET_NUM_OCTETS_PER_ADDRESS 6
-+/* Group address mask for ethernet addresses */
-+#define ENET_GROUP_ADDR	    0x01
-+
-+/* Ethernet Address */
-+typedef u8 enet_addr_t[ENET_NUM_OCTETS_PER_ADDRESS];
-+
-+/* Ethernet MAC-PHY Interface */
-+enum ethernet_interface {
-+	ENET_IF_MII = E_ENET_IF_MII,	 /* MII interface */
-+	ENET_IF_RMII = E_ENET_IF_RMII, /* RMII interface */
-+	ENET_IF_SMII = E_ENET_IF_SMII, /* SMII interface */
-+	ENET_IF_GMII = E_ENET_IF_GMII, /* GMII interface */
-+	ENET_IF_RGMII = E_ENET_IF_RGMII,
-+					 /* RGMII interface */
-+	ENET_IF_TBI = E_ENET_IF_TBI,	 /* TBI interface */
-+	ENET_IF_RTBI = E_ENET_IF_RTBI, /* RTBI interface */
-+	ENET_IF_SGMII = E_ENET_IF_SGMII,
-+					 /* SGMII interface */
-+	ENET_IF_XGMII = E_ENET_IF_XGMII,
-+					 /* XGMII interface */
-+	ENET_IF_QSGMII = E_ENET_IF_QSGMII,
-+					 /* QSGMII interface */
-+	ENET_IF_XFI = E_ENET_IF_XFI	 /* XFI interface */
-+};
-+
-+/* SGMII/QSGII interface with 1000BaseX auto-negotiation between MAC and phy
-+ * or backplane; Note: 1000BaseX auto-negotiation relates only to interface
-+ * between MAC and phy/backplane, SGMII phy can still synchronize with far-end
-+ * phy at 10Mbps, 100Mbps or 1000Mbps
-+ */
-+#define ENET_IF_SGMII_BASEX       0x80000000
-+
-+/* Ethernet Speed (nominal data rate) */
-+enum ethernet_speed {
-+	ENET_SPEED_10 = E_ENET_SPEED_10,	 /* 10 Mbps */
-+	ENET_SPEED_100 = E_ENET_SPEED_100,	 /* 100 Mbps */
-+	ENET_SPEED_1000 = E_ENET_SPEED_1000,	 /* 1000 Mbps = 1 Gbps */
-+	ENET_SPEED_10000 = E_ENET_SPEED_10000	 /* 10000 Mbps = 10 Gbps */
-+};
-+
-+/* Ethernet mode (combination of MAC-PHY interface and speed) */
-+enum e_enet_mode {
-+	ENET_MODE_INVALID = 0,	/* Invalid Ethernet mode */
-+	/*    10 Mbps MII   */
-+	ENET_MODE_MII_10 = (ENET_IF_MII | ENET_SPEED_10),
-+	/*   100 Mbps MII   */
-+	ENET_MODE_MII_100 = (ENET_IF_MII | ENET_SPEED_100),
-+	/*    10 Mbps RMII  */
-+	ENET_MODE_RMII_10 = (ENET_IF_RMII | ENET_SPEED_10),
-+	/*   100 Mbps RMII  */
-+	ENET_MODE_RMII_100 = (ENET_IF_RMII | ENET_SPEED_100),
-+	/*    10 Mbps SMII  */
-+	ENET_MODE_SMII_10 = (ENET_IF_SMII | ENET_SPEED_10),
-+	/*   100 Mbps SMII  */
-+	ENET_MODE_SMII_100 = (ENET_IF_SMII | ENET_SPEED_100),
-+	/*  1000 Mbps GMII  */
-+	ENET_MODE_GMII_1000 = (ENET_IF_GMII | ENET_SPEED_1000),
-+	/*    10 Mbps RGMII */
-+	ENET_MODE_RGMII_10 = (ENET_IF_RGMII | ENET_SPEED_10),
-+	/*   100 Mbps RGMII */
-+	ENET_MODE_RGMII_100 = (ENET_IF_RGMII | ENET_SPEED_100),
-+	/*  1000 Mbps RGMII */
-+	ENET_MODE_RGMII_1000 = (ENET_IF_RGMII | ENET_SPEED_1000),
-+	/*  1000 Mbps TBI   */
-+	ENET_MODE_TBI_1000 = (ENET_IF_TBI | ENET_SPEED_1000),
-+	/*  1000 Mbps RTBI  */
-+	ENET_MODE_RTBI_1000 = (ENET_IF_RTBI | ENET_SPEED_1000),
-+	/* 10 Mbps SGMII with auto-negotiation between MAC and
-+	 * SGMII phy according to Cisco SGMII specification
-+	 */
-+	ENET_MODE_SGMII_10 = (ENET_IF_SGMII | ENET_SPEED_10),
-+	/* 100 Mbps SGMII with auto-negotiation between MAC and
-+	 * SGMII phy according to Cisco SGMII specification
-+	 */
-+	ENET_MODE_SGMII_100 = (ENET_IF_SGMII | ENET_SPEED_100),
-+	/* 1000 Mbps SGMII with auto-negotiation between MAC and
-+	 * SGMII phy according to Cisco SGMII specification
-+	 */
-+	ENET_MODE_SGMII_1000 = (ENET_IF_SGMII | ENET_SPEED_1000),
-+	/* 10 Mbps SGMII with 1000BaseX auto-negotiation between
-+	 * MAC and SGMII phy or backplane
-+	 */
-+	ENET_MODE_SGMII_BASEX_10 =
-+	    (ENET_IF_SGMII_BASEX | ENET_IF_SGMII | ENET_SPEED_10),
-+	/* 100 Mbps SGMII with 1000BaseX auto-negotiation between
-+	 * MAC and SGMII phy or backplane
-+	 */
-+	ENET_MODE_SGMII_BASEX_100 =
-+	    (ENET_IF_SGMII_BASEX | ENET_IF_SGMII | ENET_SPEED_100),
-+	/* 1000 Mbps SGMII with 1000BaseX auto-negotiation between
-+	 * MAC and SGMII phy or backplane
-+	 */
-+	ENET_MODE_SGMII_BASEX_1000 =
-+	    (ENET_IF_SGMII_BASEX | ENET_IF_SGMII | ENET_SPEED_1000),
-+	/* 1000 Mbps QSGMII with auto-negotiation between MAC and
-+	 * QSGMII phy according to Cisco QSGMII specification
-+	 */
-+	ENET_MODE_QSGMII_1000 = (ENET_IF_QSGMII | ENET_SPEED_1000),
-+	/* 1000 Mbps QSGMII with 1000BaseX auto-negotiation between
-+	 * MAC and QSGMII phy or backplane
-+	 */
-+	ENET_MODE_QSGMII_BASEX_1000 =
-+	    (ENET_IF_SGMII_BASEX | ENET_IF_QSGMII | ENET_SPEED_1000),
-+	/* 10000 Mbps XGMII */
-+	ENET_MODE_XGMII_10000 = (ENET_IF_XGMII | ENET_SPEED_10000),
-+	/* 10000 Mbps XFI */
-+	ENET_MODE_XFI_10000 = (ENET_IF_XFI | ENET_SPEED_10000)
-+};
-+
-+#define IS_ENET_MODE_VALID(mode)			\
-+	(((mode) == ENET_MODE_MII_10) ||		\
-+	((mode) == ENET_MODE_MII_100) ||		\
-+	((mode) == ENET_MODE_RMII_10) ||		\
-+	((mode) == ENET_MODE_RMII_100) ||		\
-+	((mode) == ENET_MODE_SMII_10) ||		\
-+	((mode) == ENET_MODE_SMII_100) ||		\
-+	((mode) == ENET_MODE_GMII_1000) ||		\
-+	((mode) == ENET_MODE_RGMII_10) ||		\
-+	((mode) == ENET_MODE_RGMII_100) ||		\
-+	((mode) == ENET_MODE_RGMII_1000) ||		\
-+	((mode) == ENET_MODE_TBI_1000) ||		\
-+	((mode) == ENET_MODE_RTBI_1000) ||		\
-+	((mode) == ENET_MODE_SGMII_10) ||		\
-+	((mode) == ENET_MODE_SGMII_100) ||		\
-+	((mode) == ENET_MODE_SGMII_1000) ||		\
-+	((mode) == ENET_MODE_SGMII_BASEX_10) ||	\
-+	((mode) == ENET_MODE_SGMII_BASEX_100) ||	\
-+	((mode) == ENET_MODE_SGMII_BASEX_1000) ||	\
-+	((mode) == ENET_MODE_XGMII_10000) ||		\
-+	((mode) == ENET_MODE_QSGMII_1000) ||		\
-+	((mode) == ENET_MODE_QSGMII_BASEX_1000) ||	\
-+	((mode) == ENET_MODE_XFI_10000))
-+
-+#define MAKE_ENET_MODE(_interface, _speed) \
-+		      (enum e_enet_mode)((_interface) | (_speed))
-+
-+#define ENET_INTERFACE_FROM_MODE(mode) \
-+				(enum ethernet_interface)((mode) & 0x0FFF0000)
-+#define ENET_SPEED_FROM_MODE(mode) \
-+			    (enum ethernet_speed)((mode) & 0x0000FFFF)
-+
-+#define ENET_ADDR_TO_UINT64(_enet_addr)		\
-+	(u64)(((u64)(_enet_addr)[0] << 40) |		\
-+	      ((u64)(_enet_addr)[1] << 32) |		\
-+	      ((u64)(_enet_addr)[2] << 24) |		\
-+	      ((u64)(_enet_addr)[3] << 16) |		\
-+	      ((u64)(_enet_addr)[4] << 8) |		\
-+	      ((u64)(_enet_addr)[5]))
-+
-+#define MAKE_ENET_ADDR_FROM_UINT64(_addr64, _enet_addr) \
-+	do { \
-+		int i; \
-+		for (i = 0; i < ENET_NUM_OCTETS_PER_ADDRESS; i++) \
-+			(_enet_addr)[i] = \
-+			(u8)((_addr64) >> ((5 - i) * 8)); \
-+	} while (0)
-+
-+#endif /* __ENET_EXT_H */
-diff --git a/drivers/net/ethernet/freescale/fman/inc/fm_ext.h b/drivers/net/ethernet/freescale/fman/inc/fm_ext.h
-new file mode 100644
-index 0000000..607f331
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/inc/fm_ext.h
-@@ -0,0 +1,446 @@
-+/*
-+ * Copyright 2008-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/* FM Application Programming Interface. */
-+#ifndef __FM_EXT
-+#define __FM_EXT
-+
-+#include "fsl_fman_sp.h"
-+
-+/* Enum for defining port types */
-+enum fm_port_type {
-+	FM_PORT_TYPE_TX = 0,	/* TX Port */
-+	FM_PORT_TYPE_RX,	/* RX Port */
-+	FM_PORT_TYPE_DUMMY
-+};
-+
-+/* Enum for defining port speed */
-+enum fm_port_speed {
-+	FM_PORT_SPEED_1G = 0,		/* 1G port */
-+	FM_PORT_SPEED_10G,		/* 10G port */
-+	FM_PORT_SPEED_DUMMY
-+};
-+
-+/* BMan defines */
-+#define BM_MAX_NUM_OF_POOLS		64 /* Buffers pools */
-+#define FM_PORT_MAX_NUM_OF_EXT_POOLS	8  /* External BM pools per Rx port */
-+
-+/* General FM defines */
-+#define FM_MAX_NUM_OF_PARTITIONS    64	 /* Maximum number of partitions */
-+
-+/* FM Frame descriptor macros  */
-+/* Frame queue Context Override */
-+#define FM_FD_CMD_FCO                   0x80000000
-+#define FM_FD_CMD_RPD                   0x40000000  /* Read Prepended Data */
-+#define FM_FD_CMD_DTC                   0x10000000  /* Do L4 Checksum */
-+
-+/* Not for Rx-Port! Unsupported Format */
-+#define FM_FD_ERR_UNSUPPORTED_FORMAT    0x04000000
-+/* Not for Rx-Port! Length Error */
-+#define FM_FD_ERR_LENGTH                0x02000000
-+#define FM_FD_ERR_DMA                   0x01000000  /* DMA Data error */
-+
-+/* IPR frame (not error) */
-+#define FM_FD_IPR                       0x00000001
-+/* IPR non-consistent-sp */
-+#define FM_FD_ERR_IPR_NCSP              (0x00100000 | FM_FD_IPR)
-+/* IPR error */
-+#define FM_FD_ERR_IPR                   (0x00200000 | FM_FD_IPR)
-+/* IPR timeout */
-+#define FM_FD_ERR_IPR_TO                (0x00300000 | FM_FD_IPR)
-+
-+/* Rx FIFO overflow, FCS error, code error, running disparity error
-+ * (SGMII and TBI modes), FIFO parity error. PHY Sequence error,
-+ * PHY error control character detected.
-+ */
-+#define FM_FD_ERR_PHYSICAL              0x00080000
-+/* Frame too long OR Frame size exceeds max_length_frame  */
-+#define FM_FD_ERR_SIZE                  0x00040000
-+/* classification discard */
-+#define FM_FD_ERR_CLS_DISCARD           0x00020000
-+/* Extract Out of Frame */
-+#define FM_FD_ERR_EXTRACTION            0x00008000
-+/* No Scheme Selected */
-+#define FM_FD_ERR_NO_SCHEME             0x00004000
-+/* Keysize Overflow */
-+#define FM_FD_ERR_KEYSIZE_OVERFLOW      0x00002000
-+/* Frame color is red */
-+#define FM_FD_ERR_COLOR_RED             0x00000800
-+/* Frame color is yellow */
-+#define FM_FD_ERR_COLOR_YELLOW          0x00000400
-+/* Parser Time out Exceed */
-+#define FM_FD_ERR_PRS_TIMEOUT           0x00000080
-+/* Invalid Soft Parser instruction */
-+#define FM_FD_ERR_PRS_ILL_INSTRUCT      0x00000040
-+/* Header error was identified during parsing */
-+#define FM_FD_ERR_PRS_HDR_ERR           0x00000020
-+/* Frame parsed beyind 256 first bytes */
-+#define FM_FD_ERR_BLOCK_LIMIT_EXCEEDED  0x00000008
-+
-+/* non Frame-Manager error */
-+#define FM_FD_RX_STATUS_ERR_NON_FM      0x00400000
-+
-+/* Parse results memory layout */
-+struct fm_prs_result_t {
-+	u8 lpid;		/* Logical port id */
-+	u8 shimr;		/* Shim header result  */
-+	u16 l2r;		/* Layer 2 result */
-+	u16 l3r;		/* Layer 3 result */
-+	u8 l4r;		/* Layer 4 result */
-+	u8 cplan;		/* Classification plan id */
-+	u16 nxthdr;		/* Next Header  */
-+	u16 cksum;		/* Running-sum */
-+	/* Flags&fragment-offset field of the last IP-header */
-+	u16 flags_frag_off;
-+	/* Routing type field of a IPV6 routing extension header */
-+	u8 route_type;
-+	/* Routing Extension Header Present; last bit is IP valid */
-+	u8 rhp_ip_valid;
-+	u8 shim_off[2];		/* Shim offset */
-+	u8 ip_pid_off;		/* IP PID (last IP-proto) offset */
-+	u8 eth_off;		/* ETH offset */
-+	u8 llc_snap_off;	/* LLC_SNAP offset */
-+	u8 vlan_off[2];		/* VLAN offset */
-+	u8 etype_off;		/* ETYPE offset */
-+	u8 pppoe_off;		/* PPP offset */
-+	u8 mpls_off[2];		/* MPLS offset */
-+	u8 ip_off[2];		/* IP offset */
-+	u8 gre_off;		/* GRE offset */
-+	u8 l4_off;		/* Layer 4 offset */
-+	u8 nxthdr_off;		/** Parser end point */
-+} __attribute__((__packed__));
-+
-+/* FM Exceptions */
-+enum fm_exceptions {
-+	FM_EX_DMA_BUS_ERROR = 0,	/* DMA bus error. */
-+	/* Read Buffer ECC error (Valid for FM rev < 6) */
-+	FM_EX_DMA_READ_ECC,
-+	/* Write Buffer ECC error on system side (Valid for FM rev < 6) */
-+	FM_EX_DMA_SYSTEM_WRITE_ECC,
-+	/* Write Buffer ECC error on FM side (Valid for FM rev < 6) */
-+	FM_EX_DMA_FM_WRITE_ECC,
-+	/* Single Port ECC error on FM side (Valid for FM rev > 6) */
-+	FM_EX_DMA_SINGLE_PORT_ECC,
-+	FM_EX_FPM_STALL_ON_TASKS,	/* Stall of tasks on FPM */
-+	FM_EX_FPM_SINGLE_ECC,		/* Single ECC on FPM. */
-+	/* Double ECC error on FPM ram access */
-+	FM_EX_FPM_DOUBLE_ECC,
-+	FM_EX_QMI_SINGLE_ECC,		/* Single ECC on QMI. */
-+	FM_EX_QMI_DOUBLE_ECC,		/* Double bit ECC occurred on QMI */
-+	FM_EX_QMI_DEQ_FROM_UNKNOWN_PORTID,
-+					/* Dequeue from unknown port id */
-+	FM_EX_BMI_LIST_RAM_ECC,	/* Linked List RAM ECC error */
-+	FM_EX_BMI_STORAGE_PROFILE_ECC,/* Storage Profile ECC Error */
-+	/* Statistics Count RAM ECC Error Enable */
-+	FM_EX_BMI_STATISTICS_RAM_ECC,
-+	FM_EX_BMI_DISPATCH_RAM_ECC,	/* Dispatch RAM ECC Error Enable */
-+	FM_EX_MURAM_ECC		/* Double bit ECC occurred on MURAM */
-+};
-+
-+/** fm_exceptions_cb
-+ * dev_id	- Pointer to the device
-+ * exception	- The exception.
-+ *
-+ * Exceptions user callback routine, will be called upon an exception
-+ * passing the exception identification.
-+ */
-+typedef void (fm_exceptions_cb)(void *dev_id,
-+				 enum fm_exceptions exception);
-+
-+/** fm_bus_error_cb
-+ * dev_id	- Pointer to the device
-+ * port_type	- Port type (enum fm_port_type)
-+ * port_id	- Port id
-+ * addr		- Address that caused the error
-+ * tnum		- Owner of error
-+ * liodn	- Logical IO device number
-+ *
-+ * Bus error user callback routine, will be called upon bus error,
-+ * passing parameters describing the errors and the owner.
-+ */
-+typedef void (fm_bus_error_cb)(void *dev_id, enum fm_port_type port_type,
-+				u8 port_id, u64 addr, u8 tnum, u16 liodn);
-+
-+/* A structure for defining buffer prefix area content. */
-+struct fm_buffer_prefix_content_t {
-+	/* Number of bytes to be left at the beginning of the external
-+	 * buffer; Note that the private-area will start from the base
-+	 * of the buffer address.
-+	 */
-+	u16 priv_data_size;
-+	/* true to pass the parse result to/from the FM;
-+	 * User may use FM_PORT_GetBufferPrsResult() in
-+	 * order to get the parser-result from a buffer.
-+	 */
-+	bool pass_prs_result;
-+	/* true to pass the timeStamp to/from the FM User */
-+	bool pass_time_stamp;
-+	/* true to pass the KG hash result to/from the FM User may
-+	 * use FM_PORT_GetBufferHashResult() in order to get the
-+	 * parser-result from a buffer.
-+	 */
-+	bool pass_hash_result;
-+	/* Add all other Internal-Context information: AD,
-+	 * hash-result, key, etc.
-+	 */
-+	u16 data_align;
-+};
-+
-+/* A structure of information about each of the external
-+ * buffer pools used by a port or storage-profile.
-+ */
-+struct fm_ext_pool_params_t {
-+	u8 id;		    /* External buffer pool id */
-+	u16 size;		    /* External buffer pool buffer size */
-+};
-+
-+/* A structure for informing the driver about the external
-+ * buffer pools allocated in the BM and used by a port or a
-+ * storage-profile.
-+ */
-+struct fm_ext_pools_t {
-+	u8 num_of_pools_used; /* Number of pools use by this port */
-+	struct fm_ext_pool_params_t ext_buf_pool[FM_PORT_MAX_NUM_OF_EXT_POOLS];
-+					/* Parameters for each port */
-+};
-+
-+/* A structure for defining backup BM Pools. */
-+struct fm_backup_bm_pools_t {
-+	/* Number of BM backup pools -  must be smaller
-+	 * than the total number of pools defined for the specified port.
-+	 */
-+	u8 num_of_backup_pools;
-+	/* num_of_backup_pools pool id's, specifying which pools should
-+	 * be used only as backup. Pool id's specified here must be a
-+	 * subset of the pools used by the specified port.
-+	 */
-+	u8 pool_ids[FM_PORT_MAX_NUM_OF_EXT_POOLS];
-+};
-+
-+/* A structure for defining BM pool depletion criteria */
-+struct fm_buf_pool_depletion_t {
-+	/* select mode in which pause frames will be sent after a
-+	 * number of pools (all together!) are depleted
-+	 */
-+	bool pools_grp_mode_enable;
-+	/* the number of depleted pools that will invoke pause
-+	 * frames transmission.
-+	 */
-+	u8 num_of_pools;
-+	/* For each pool, true if it should be considered for
-+	 * depletion (Note - this pool must be used by this port!).
-+	 */
-+	bool pools_to_consider[BM_MAX_NUM_OF_POOLS];
-+	/* select mode in which pause frames will be sent
-+	 * after a single-pool is depleted;
-+	 */
-+	bool single_pool_mode_enable;
-+	/* For each pool, true if it should be considered
-+	 * for depletion (Note - this pool must be used by this port!)
-+	 */
-+	bool pools_to_consider_for_single_mode[BM_MAX_NUM_OF_POOLS];
-+};
-+
-+/* A Structure for defining FM initialization parameters */
-+struct fm_params_t {
-+	u8 fm_id;
-+	/* Index of the FM */
++void *tgec_config(struct fm_mac_params_t *fm_mac_param)
++{
++	struct tgec_t *tgec;
++	struct tgec_cfg *tgec_drv_param;
 +	void __iomem *base_addr;
-+	/* A pointer to base of memory mapped FM registers (virtual);
-+	 * NOTE that this should include ALL common registers of the FM
-+	 * including the PCD registers area.
-+	 */
-+	struct muram_info *muram;
-+	/* A pointer to an initialized MURAM object, to be used by the FM. */
-+	u16 fm_clk_freq;
-+	/* In Mhz; */
-+	fm_exceptions_cb *exception_cb;
-+	/* An application callback routine to handle exceptions; */
-+	fm_bus_error_cb *bus_error_cb;
-+	/* An application callback routine to handle exceptions; */
-+	void *dev_id;
-+	/* Device cookie used by the exception cbs */
-+};
 +
-+struct fm_t; /* FMan data */
++	base_addr = fm_mac_param->base_addr;
++	/* allocate memory for the UCC GETH data structure. */
++	tgec = kzalloc(sizeof(*tgec), GFP_KERNEL);
++	if (!tgec)
++		return NULL;
 +
-+/**
-+ * fm_config
-+ * @fm_params		A pointer to a data structure of mandatory FM
-+ *			parameters
-+ *
-+ * Creates the FM module and returns its handle (descriptor).
-+ * This descriptor must be passed as first parameter to all other
-+ * FM function calls.
-+ * No actual initialization or configuration of FM hardware is
-+ * done by this routine. All FM parameters get default values that
-+ * may be changed by calling one or more of the advance config
-+ * routines.
-+ *
-+ * Return: A handle to the FM object, or NULL for Failure.
-+ */
-+void *fm_config(struct fm_params_t *fm_params);
++	/* allocate memory for the 10G MAC driver parameters data structure. */
++	tgec_drv_param = kzalloc(sizeof(*tgec_drv_param), GFP_KERNEL);
++	if (!tgec_drv_param) {
++		tgec_free((struct fm_mac_dev *)tgec);
++		return NULL;
++	}
 +
-+/**
-+ * fm_init
-+ * @fm		Pointer to the FMan module
-+ *
-+ * Initializes the FM module by defining the software structure
-+ * and configuring the hardware registers.
-+ *
-+ * Return 0 on success; Error code otherwise.
-+ */
-+int fm_init(struct fm_t *fm);
++	/* Plant parameter structure pointer */
++	tgec->tgec_drv_param = tgec_drv_param;
 +
-+/**
-+ * fm_free
-+ * @fm		Pointer to the FMan module
-+ *
-+ * Frees all resources that were assigned to FM module.
-+ * Calling this routine invalidates the descriptor.
-+ *
-+ * Return: 0 on success; Error code otherwise.
-+ */
-+int fm_free(struct fm_t *fm);
++	fman_tgec_defconfig(tgec_drv_param);
 +
-+/* Enum for choosing the field that will be output on AID */
-+enum fm_dma_aid_mode {
-+	FM_DMA_AID_OUT_PORT_ID = 0,	    /* 4 LSB of PORT_ID */
-+	FM_DMA_AID_OUT_TNUM		    /* 4 LSB of TNUM */
-+};
++	tgec->regs = (struct tgec_regs __iomem *)(base_addr);
++	tgec->addr = ENET_ADDR_TO_UINT64(fm_mac_param->addr);
++	tgec->enet_mode = fm_mac_param->enet_mode;
++	tgec->mac_id = fm_mac_param->mac_id;
++	tgec->exceptions = TGEC_DEFAULT_EXCEPTIONS;
++	tgec->exception_cb = fm_mac_param->exception_cb;
++	tgec->event_cb = fm_mac_param->event_cb;
++	tgec->dev_id = fm_mac_param->dev_id;
++	tgec->fm = fm_mac_param->fm;
 +
-+/* Enum for selecting DMA Emergency options */
-+/* Enable emergency for MURAM1 */
-+#define  FM_DMA_MURAM_READ_EMERGENCY        0x00800000
-+/* Enable emergency for MURAM2 */
-+#define  FM_DMA_MURAM_WRITE_EMERGENCY       0x00400000
-+/* Enable emergency for external bus */
-+#define  FM_DMA_EXT_BUS_EMERGENCY           0x00100000
++	/* Save FMan revision */
++	fm_get_revision(tgec->fm, &tgec->fm_rev_info);
 +
-+/**
-+ * fm_cfg_reset_on_init
-+ * @fm	Pointer to the FMan module
-+ * @enable	When true, FM will be reset before any
-+ *
-+ * Define whether to reset the FM before initialization.
-+ * Change the default configuration [DEFAULT_RESET_ON_INIT].
-+ *
-+ * Allowed only following fm_config() and before fm_init().
-+ *
-+ * Return: 0 on success; Error code otherwise.
-+ */
-+int fm_cfg_reset_on_init(struct fm_t *fm, bool enable);
-+
-+/**
-+ * fm_cfg_total_fifo_size
-+ * @fm		Pointer to the FMan module
-+ * @total_fifo_size	The selected new value.
-+ *
-+ * Define Total FIFO size for the whole FM.
-+ * Calling this routine changes the total Fifo size in the internal driver
-+ * data base from its default configuration [DEFAULT_total_fifo_size]
-+ *
-+ * Allowed only following fm_config() and before fm_init().
-+ *
-+ * Return: 0 on success; Error code otherwise.
-+ */
-+int fm_cfg_total_fifo_size(struct fm_t *fm, u32 total_fifo_size);
-+
-+/* A Structure for returning FM revision information */
-+struct fm_revision_info_t {
-+	u8 major_rev;		    /* Major revision */
-+	u8 minor_rev;		    /* Minor revision */
-+};
-+
-+/**
-+ * fm_set_exception
-+ * fm		Pointer to the FMan module
-+ * exception	The exception to be selected.
-+ * enable	True to enable interrupt, false to mask it.
-+ *
-+ * Calling this routine enables/disables the specified exception.
-+ *
-+ * Allowed only following fm_init().
-+ *
-+ * Return: 0 on success; Error code otherwise.
-+ */
-+int fm_set_exception(struct fm_t *fm, enum fm_exceptions exception,
-+		     bool enable);
-+
-+/**
-+ * fm_disable_rams_ecc
-+ * @fm		Pointer to the FMan module
-+ * Disables ECC mechanism for all the different FM RAM's; E.g. IRAM,
-+ * MURAM, etc. Note:
-+ *	In opposed to fm_enable_rams_ecc, this routine must be called
-+ *	explicitly to disable all Rams ECC.
-+ *
-+ * Allowed only following fm_config() and before fm_init().
-+ *
-+ * Return: 0 on success; Error code otherwise.
-+ */
-+int fm_disable_rams_ecc(struct fm_t *fm);
-+
-+/**
-+ * fm_get_revision
-+ * @fm			- Pointer to the FMan module
-+ * fm_rev		- A structure of revision information parameters.
-+ * Returns the FM revision
-+ *
-+ * Allowed only following fm_init().
-+ *
-+ * Return: 0 on success; Error code otherwise.
-+ */
-+void fm_get_revision(struct fm_t *fm, struct fm_revision_info_t *fm_rev);
-+
-+/**
-+ * fm_error_isr
-+ * @fm		Pointer to the FMan module
-+ * FM interrupt-service-routine for errors.
-+ *
-+ * Allowed only following fm_init().
-+ *
-+ * Return: 0 on success; EMPTY if no errors found in register, other
-+ *	   error code otherwise.
-+ */
-+int fm_error_isr(struct fm_t *fm);
-+
-+/**
-+ * fm_event_isr
-+ * @fm	Pointer to the FMan module
-+ *
-+ * FM interrupt-service-routine for normal events.
-+ * Allowed only following fm_init().
-+ */
-+void fm_event_isr(struct fm_t *fm);
-+
-+#endif /* __FM_EXT */
-diff --git a/drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h b/drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h
++	return tgec;
++}
+diff --git a/drivers/net/ethernet/freescale/fman/mac/fm_tgec.h b/drivers/net/ethernet/freescale/fman/mac/fm_tgec.h
 new file mode 100644
-index 0000000..c96cfd1
+index 0000000..764a465
 --- /dev/null
-+++ b/drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h
-@@ -0,0 +1,99 @@
++++ b/drivers/net/ethernet/freescale/fman/mac/fm_tgec.h
+@@ -0,0 +1,124 @@
 +/*
 + * Copyright 2008-2015 Freescale Semiconductor Inc.
 + *
@@ -2948,72 +3408,97 @@ index 0000000..c96cfd1
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#ifndef __FSL_FMAN_DRV_H
-+#define __FSL_FMAN_DRV_H
++#ifndef __TGEC_H
++#define __TGEC_H
 +
-+#include <linux/types.h>
-+#include <linux/device.h>	/* struct device */
-+#include "fm_ext.h"
++#include "enet_ext.h"
 +
-+/* FM device opaque structure used for type checking */
-+struct fm;
++#include "fm_mac.h"
 +
-+/**
-+ * fm_bind
-+ * @fm_dev:	the OF handle of the FM device.
-+ *
-+ * Bind to a specific FM device.
-+ *
-+ * Allowed only after the port was created.
-+ *
-+ * Return: A handle of the FM device.
-+ */
-+struct fm *fm_bind(struct device *fm_dev);
++#define TGEC_DEFAULT_EXCEPTIONS			 \
++	((u32)((TGEC_IMASK_MDIO_SCAN_EVENT)	|\
++		(TGEC_IMASK_REM_FAULT)			|\
++		(TGEC_IMASK_LOC_FAULT)			|\
++		(TGEC_IMASK_TX_ECC_ER)			|\
++		(TGEC_IMASK_TX_FIFO_UNFL)		|\
++		(TGEC_IMASK_TX_FIFO_OVFL)		|\
++		(TGEC_IMASK_TX_ER)			|\
++		(TGEC_IMASK_RX_FIFO_OVFL)		|\
++		(TGEC_IMASK_RX_ECC_ER)			|\
++		(TGEC_IMASK_RX_JAB_FRM)			|\
++		(TGEC_IMASK_RX_OVRSZ_FRM)		|\
++		(TGEC_IMASK_RX_RUNT_FRM)		|\
++		(TGEC_IMASK_RX_FRAG_FRM)		|\
++		(TGEC_IMASK_RX_CRC_ER)			|\
++		(TGEC_IMASK_RX_ALIGN_ER)))
 +
-+/**
-+ * fm_unbind
-+ * @fm:		A handle of the FM device.
-+ *
-+ * Un-bind from a specific FM device.
-+ *
-+ * Allowed only after the port was created.
-+ */
-+void fm_unbind(struct fm *fm);
++#define MAX_PACKET_ALIGNMENT        31
++#define MAX_INTER_PACKET_GAP        0x7f
++#define MAX_INTER_PALTERNATE_BEB    0x0f
++#define MAX_RETRANSMISSION          0x0f
++#define MAX_COLLISION_WINDOW        0x03ff
 +
-+/**
-+ * fm_get_handle
-+ * @fm:		A handle of the FM device
-+ *
-+ * Get pointer to internal FM strcuture
-+ *
-+ * Return: A pointer to internal FM structure
-+ */
-+void *fm_get_handle(struct fm *fm);
++/* number of pattern match registers (entries) */
++#define TGEC_NUM_OF_PADDRS          1
 +
-+/**
-+ * fm_get_mem_region
-+ * @fm:		A handle of the FM device
-+ *
-+ * Get FM memory region
-+ *
-+ * Return: A structure with FM memory region information
-+ */
++/* Group address bit indication */
++#define GROUP_ADDRESS               0x0000010000000000LL
 +
-+struct resource *fm_get_mem_region(struct fm *fm);
-+/**
-+ * fm_get_max_frm
-+ *
-+ * Return: Max frame length configured in the FM driver
-+ */
-+u16 fm_get_max_frm(void);
++/* Hash table size (= 32 bits*8 regs) */
++#define TGEC_HASH_TABLE_SIZE             512
 +
-+/**
-+ * fm_get_rx_extra_headroom
-+ *
-+ * Return: Extra headroom size configured in the FM driver
-+ */
-+int fm_get_rx_extra_headroom(void);
++struct tgec_t {
++	/* pointer to 10G memory mapped registers. */
++	struct tgec_regs __iomem *regs;
++	/* MAC address of device; */
++	u64 addr;
++	/* Ethernet physical interface  */
++	enum e_enet_mode enet_mode;
++	void *dev_id; /* device cookie used by the exception cbs */
++	fm_mac_exception_cb *exception_cb;
++	fm_mac_exception_cb *event_cb;
++	/* Whether a particular individual address recognition
++	 * register is being used
++	 */
++	bool ind_addr_reg_used[TGEC_NUM_OF_PADDRS];
++	/* MAC address for particular individual address
++	 * recognition register
++	 */
++	u64 paddr[TGEC_NUM_OF_PADDRS];
++	/* Number of individual addresses in registers for this station. */
++	u8 num_of_ind_addr_in_regs;
++	/* pointer to driver's global address hash table  */
++	struct eth_hash_t *multicast_addr_hash;
++	/* pointer to driver's individual address hash table  */
++	struct eth_hash_t *unicast_addr_hash;
++	bool debug_mode;
++	u8 mac_id;
++	u32 exceptions;
++	struct tgec_cfg *tgec_drv_param;
++	void *fm;
++	struct fm_revision_info_t fm_rev_info;
++};
 +
-+#endif /* __FSL_FMAN_DRV_H */
++void *tgec_config(struct fm_mac_params_t *p_fm_mac_params);
++int tgec_set_promiscuous(struct fm_mac_dev *fm_mac_dev, bool new_val);
++int tgec_modify_mac_address(struct fm_mac_dev *fm_mac_dev,
++			    enet_addr_t *p_enet_addr);
++int tgec_cfg_max_frame_len(struct fm_mac_dev *fm_mac_dev, u16 new_val);
++int tgec_enable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode);
++int tgec_disable(struct fm_mac_dev *fm_mac_dev, enum comm_mode mode);
++int tgec_init(struct fm_mac_dev *fm_mac_dev);
++int tgec_free(struct fm_mac_dev *fm_mac_dev);
++int tgec_accept_rx_pause_frames(struct fm_mac_dev *fm_mac_dev, bool en);
++int tgec_set_tx_pause_frames(struct fm_mac_dev *fm_mac_dev, u8 priority,
++			     u16 pause_time, u16 thresh_time);
++int tgec_set_exception(struct fm_mac_dev *fm_mac_dev,
++		       enum fm_mac_exceptions exception, bool enable);
++int tgec_add_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			      enet_addr_t *p_eth_addr);
++int tgec_del_hash_mac_address(struct fm_mac_dev *fm_mac_dev,
++			      enet_addr_t *p_eth_addr);
++int tgec_get_version(struct fm_mac_dev *fm_mac_dev, u32 *mac_version);
++
++#endif /* __TGEC_H */
 -- 
 1.7.9.5
