@@ -1,48 +1,35 @@
-Return-Path: <dave.long@linaro.org>
-Received: from mail-qk0-f175.google.com (mail-qk0-f175.google.com
- [209.85.220.175])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 131ED1A1A3B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 23:31:06 +1000 (AEST)
-Received: by qkbm65 with SMTP id m65so98752243qkb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 06:31:04 -0700 (PDT)
-Message-ID: <55AF9B13.4010406@linaro.org>
-Date: Wed, 22 Jul 2015 09:30:59 -0400
-From: David Long <dave.long@linaro.org>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: Rob Herring <robherring2@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Andy Lutomirski <luto@amacapital.net>, Anton Blanchard <anton@samba.org>,
- Behan Webster <behanw@converseincode.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Eric Paris <eparis@redhat.com>,
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
+ by lists.ozlabs.org (Postfix) with ESMTP id D07AE1A1A29
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 00:05:05 +1000 (AEST)
+Date: Wed, 22 Jul 2015 10:05:02 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Vlastimil Babka <vbabka@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.cz>,
  Heiko Carstens <heiko.carstens@de.ibm.com>,
- Ingo Molnar <mingo@redhat.com>,
- Jan Willeke <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Nikolay Borisov <Nikolay.Borisov@arm.com>,
- Oleg Nesterov <oleg@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>,
- Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
- Russell King <linux@arm.linux.org.uk>,
- Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linux-hexagon@vger.kernel.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-s390@vger.kernel.org, SH-Linux <linux-sh@vger.kernel.org>,
- linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
- to common include file
-References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>		
- <1434386579-6045-2-git-send-email-dave.long@linaro.org>		
- <CAL_JsqK3L9Hv9bhAtwAAXVYjLJBTOG9=4ddOo-SFqnD-_KieCQ@mail.gmail.com>		
- <5581BCD0.2040405@linaro.org> <1435634945.24866.2.camel@ellerman.id.au>	
- <55AF2037.2000803@linaro.org> <1437541889.16792.11.camel@ellerman.id.au>
-In-Reply-To: <1437541889.16792.11.camel@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Guenter Roeck <linux@roeck-us.net>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-cris-kernel@axis.com, linux-ia64@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linux-mips@linux-mips.org,
+ linux-am33-list@redhat.com, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH V4 2/6] mm: mlock: Add new mlock, munlock, and munlockall
+ system calls
+Message-ID: <20150722140502.GB2859@akamai.com>
+References: <1437508781-28655-1-git-send-email-emunson@akamai.com>
+ <1437508781-28655-3-git-send-email-emunson@akamai.com>
+ <55AF5F5A.3000707@suse.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="NDin8bjvE/0mNLFQ"
+In-Reply-To: <55AF5F5A.3000707@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,92 +39,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/15 01:11, Michael Ellerman wrote:
-> On Wed, 2015-07-22 at 00:46 -0400, David Long wrote:
->> On 06/29/15 23:29, Michael Ellerman wrote:
->>> On Wed, 2015-06-17 at 14:30 -0400, David Long wrote:
->>>> On 06/16/15 09:17, Rob Herring wrote:
->>>>> On Mon, Jun 15, 2015 at 11:42 AM, David Long <dave.long@linaro.org> wrote:
->>>>>>
->>>>>>     #define REG_OFFSET_NAME(r) \
->>>>>>            {.name = #r, .offset = offsetof(struct pt_regs, ARM_##r)}
->>>>>>     #define REG_OFFSET_END {.name = NULL, .offset = 0}
->>>>>
->>>>> Can't you also move these? ARM is complicated with the "ARM_"
->>>>> prefixing, but the others appear to be the same. Maybe you can remove
->>>>> the prefix or redefine the macro for ARM.
->>>>
->>>> That would mandate that all the architecture-specific pt_regs structures
->>>> would have to use a top-level named field for each named register.
->>>
->>> Why does it mandate that?
->>>
->>> See eg. powerpc where we use REG_OFFSET_NAME for the top-level named fields and
->>> then a different macro for the array elements:
->>>
->>>     #define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
->>>     #define GPR_OFFSET_NAME(num)	\
->>>     	{.name = STR(gpr##num), .offset = offsetof(struct pt_regs, gpr[num])}
->>>
->>>     static const struct pt_regs_offset regoffset_table[] = {
->>>     	GPR_OFFSET_NAME(0),
->>>     	GPR_OFFSET_NAME(1),
->>>     	GPR_OFFSET_NAME(2),
->>>     	GPR_OFFSET_NAME(3),
->>>     	...
->>>     	REG_OFFSET_NAME(nip),
->>>     	REG_OFFSET_NAME(msr),
->>>
->>>
->>> So I don't see why REG_OFFSET_NAME couldn't be common.
->>>
->>
->> Sorry for the delay in responding to this.
->>
->> OK, so you're saying architectures that don't want this constraint can
->> make their own macro.  Seems to make this whole exercise slightly less
->> useful, but whatever.
->
-> Well yeah.
->
-> In fact of the 4 arches that use REG_OFFSET_NAME, 2 already have another macro
-> for specially named registers (powerpc & sh).
->
->> I see three ways to go here:
->>
->> 1) Leave it as is.
->> 2) Force all architectures to use a common definition.
->> 3) Provide a common definition that all architectures (except "arm")
->> currently using this functionality will use.
->>
->> I have a v2 patch to implement #3, ready to post.  Do we think this is
->> the way to go?
->
-> Yeah I think it is. How are you making it conditional? Just #ifndef REG_OFFSET_NAME?
->
 
-I'm just defining a new macro for arm.  The macro is only invoked in one 
-arm file.  Then the REG_OFFSET_NAME macro goes unused for this architecture.
+--NDin8bjvE/0mNLFQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> I don't like #2 because I really don't want to rename all
->> uses of the current register fields for arm since this is
->> architecture-specific code to begin with and since it affects code in 39
->> arm source files.
->
-> I guess you're talking about renaming all the ARM_x regs to x. That would
-> likely cause problems because they're implemented as #defines,
-> eg. #define r0 uregs[0] would probably confuse your assembler.
->
+On Wed, 22 Jul 2015, Vlastimil Babka wrote:
 
-Yeah, and I had not looked further to the implications of doing that but 
-I see you've found where it is a genuine problem.
+> On 07/21/2015 09:59 PM, Eric B Munson wrote:
+> >With the refactored mlock code, introduce new system calls for mlock,
+> >munlock, and munlockall.  The new calls will allow the user to specify
+> >what lock states are being added or cleared.  mlock2 and munlock2 are
+> >trivial at the moment, but a follow on patch will add a new mlock state
+> >making them useful.
+> >
+> >munlock2 addresses a limitation of the current implementation.  If a
+>=20
+>   ^ munlockall2?
 
-> The clean thing to do would be to have the in-kernel struct pt_regs have actual
-> named members, but that would still be an intrusive change.
->
-> cheers
->
->
+Fixed, thanks.
 
-Thanks,
--dl
+
+--NDin8bjvE/0mNLFQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVr6MOAAoJELbVsDOpoOa9s9sP/A7izRQp4uVnMpOwD0MxlFeD
+XcaKq8V5n3o7/BMR992hOIWBEl5/HUrJR3sRtfi42uPUYK930Ofy+mckUN6D4iiH
+EyIKyjBq6DIBcChWmlXqNBh86cb1gvkx1gTNjjOSXVIFkrjvstCRomfHd7FtDmBq
+u37dhRe0VJLAVWRRn+GvV5IEJzv20RnEgdfSw8kf+M4nO9g/59z8qe+IC3g2xLD2
+q8D1rEwwnDOeYZVSkP+dt7EVkoR/hHbDdgijEocWwpKTNih4NcH0xgfcfYFbT3j+
+MNNt3EeYAjmgZNZOL/YRbxWbnol84EdQUAZ9lfkjL/n5Pd4A4/yKduK1692DAtzD
+RDPGJ5xP9g8JHM6+xvMk66ZEMFfZpnGioXfrV+2emLq8q4P+N2zJ6PREPk7r00tO
+cbFFd/RNnVLBcCjj/1aIHG2txHVB9GVkUzj7MbHID019oC2IcQU+vFfUJcs5gexr
+ntuWehXpnANwZY+kUKZWPevnUNqWsll4ITtbG7/6L20NbBADB8EXRnIyj4MzdLMN
+x/aAITZB0qq1ad9H1pH4eXp7tnzX2b3T3HZN8+PWWhhPNBFenRFiOC4VnNT6J4aS
+pZ/DMiXv5h6h17dEX3UQK4aMUurZw7Ptaj/N16MOsxTWM0jIm4De79+TfARt58Zs
+xqZ6XgkcJBiIIcnJXw4D
+=NAcA
+-----END PGP SIGNATURE-----
+
+--NDin8bjvE/0mNLFQ--
