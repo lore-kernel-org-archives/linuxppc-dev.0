@@ -1,38 +1,22 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0135.outbound.protection.outlook.com [65.55.169.135])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17CCC1A1A41
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 00:53:23 +1000 (AEST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Wed, 22 Jul 2015 20:23:21 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6114D394005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:23:16 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6MEqsqK5832836
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:22:54 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6MEqq47023211
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:22:54 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-To: linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- j.anaszewski@samsung.com
-Cc: stewart@linux.vnet.ibm.com, arnd@arndb.de, j.anaszewski81@gmail.com,
- cooloney@gmail.com, rpurdie@rpsys.net, khandual@linux.vnet.ibm.com,
- mpe@ellerman.id.au, benh@kernel.crashing.org,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: [PATCH v7 1/3] powerpc/powernv: Add OPAL interfaces for accessing and
- modifying system LED states
-Date: Wed, 22 Jul 2015 20:22:45 +0530
-Message-Id: <1437576767-28496-2-git-send-email-hegdevasant@linux.vnet.ibm.com>
-In-Reply-To: <1437576767-28496-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
-References: <1437576767-28496-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 606AC1A1A2D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 01:26:04 +1000 (AEST)
+From: <igal.liberman@freescale.com>
+To: <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <scottwood@freescale.com>, <madalin.bucur@freescale.com>,
+ <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>, <ppc@mindchasers.com>,
+ Igal Liberman <igal.liberman@freescale.com>
+Subject: [v3, 0/9] Freescale DPAA FMan
+Date: Wed, 22 Jul 2015 14:21:03 +0300
+Message-ID: <1437564063-16422-1-git-send-email-igal.liberman@freescale.com>
+Reply-To: <igal.liberman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,95 +26,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+From: Igal Liberman <igal.liberman@freescale.com>
 
-This patch registers the following two new OPAL interfaces calls
-for the platform LED subsystem. With the help of these new OPAL calls,
-the kernel will be able to get or set the state of various individual
-LEDs on the system at any given location code which is passed through
-the LED specific device tree nodes.
+The Freescale Data Path Acceleration Architecture (DPAA) is a set of
+hardware components on specific QorIQ multicore processors.
+This architecture provides the infrastructure to support simplified
+sharing of networking interfaces and accelerators by multiple
+CPU cores and the accelerators.
 
-	(1) OPAL_LEDS_GET_INDICATOR     opal_leds_get_ind
-	(2) OPAL_LEDS_SET_INDICATOR     opal_leds_set_ind
+One of the DPAA accelerators is the Frame Manager (FMan) which
+contains a series of hardware blocks: ports, Ethernet MACs,
+a multi user RAM (MURAM) and Storage Profile (SP).
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/opal-api.h            | 25 ++++++++++++++++++++++++-
- arch/powerpc/include/asm/opal.h                |  4 ++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |  2 ++
- 3 files changed, 30 insertions(+), 1 deletion(-)
+This patch set introduce the FMan drivers. Each driver configures and
+initializes the corresponding FMan hardware module (described above).
+The MAC driver offers support for three different types of
+MACs (eTSEC, TGEC, MEMAC).
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index e9e4c52..8f8c45f 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -154,7 +154,9 @@
- #define OPAL_FLASH_WRITE			111
- #define OPAL_FLASH_ERASE			112
- #define OPAL_PRD_MSG				113
--#define OPAL_LAST				113
-+#define OPAL_LEDS_GET_INDICATOR			114
-+#define OPAL_LEDS_SET_INDICATOR			115
-+#define OPAL_LAST				115
- 
- /* Device tree flags */
- 
-@@ -756,6 +758,27 @@ struct opal_i2c_request {
- 	__be64 buffer_ra;		/* Buffer real address */
- };
- 
-+/* LED Mode */
-+#define POWERNV_LED_MODE_LIGHT_PATH	"lightpath"
-+#define POWERNV_LED_MODE_GUIDING_LIGHT	"guidinglight"
-+
-+/* LED type */
-+#define POWERNV_LED_TYPE_IDENTIFY	"identify"
-+#define POWERNV_LED_TYPE_FAULT		"fault"
-+#define POWERNV_LED_TYPE_ATTENTION	"attention"
-+
-+enum OpalSlotLedType {
-+	OPAL_SLOT_LED_TYPE_ID = 0,	/* IDENTIFY LED */
-+	OPAL_SLOT_LED_TYPE_FAULT = 1,	/* FAULT LED */
-+	OPAL_SLOT_LED_TYPE_ATTN = 2,	/* System Attention LED */
-+	OPAL_SLOT_LED_TYPE_MAX = 3
-+};
-+
-+enum OpalSlotLedState {
-+	OPAL_SLOT_LED_STATE_OFF = 0,	/* LED is OFF */
-+	OPAL_SLOT_LED_STATE_ON = 1	/* LED is ON */
-+};
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __OPAL_API_H */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 958e941..3233e6d 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -195,6 +195,10 @@ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
- int64_t opal_i2c_request(uint64_t async_token, uint32_t bus_id,
- 			 struct opal_i2c_request *oreq);
- int64_t opal_prd_msg(struct opal_prd_msg *msg);
-+int64_t opal_leds_get_ind(char *loc_code, __be64 *led_mask,
-+			  __be64 *led_value, __be64 *max_led_type);
-+int64_t opal_leds_set_ind(uint64_t token, char *loc_code, const u64 led_mask,
-+			  const u64 led_value, __be64 *max_led_type);
- 
- int64_t opal_flash_read(uint64_t id, uint64_t offset, uint64_t buf,
- 		uint64_t size, uint64_t token);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index d6a7b82..34c2734 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -297,3 +297,5 @@ OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
- OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
- OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
- OPAL_CALL(opal_prd_msg,				OPAL_PRD_MSG);
-+OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
-+OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
+The driver structure and a hint on file naming:
+----------------------------------
+|   FMan driver/MAC driver       |	fm_drv*, mac* files
+----------------------------------
+| FMan | Port | MAC | MURAM | SP |	fm_* files
+----------------------------------
+|		FLib		  |	fman_*.c, fsl_fman_.*h files
+----------------------------------
+
+The first 3 patches present the FMan Foundation Libraries (FLIBs).
+The FLIBs provide basic internal API for the FMan hardware
+configuration and control.
+Header files are located in fman/flib directory.
+Source files are located in each module directory.
+
+The upper layer of the FMan driver makes use of the basic API
+which is provided by the Flibs.
+
+The remaining patches present the required FMan hardware module drivers.
+
+v2 --> v3:
+	- Addressed feedback from Scott:
+		- Remove typedefs
+		- Remove unnecessary memory barriers
+		- Remove unnecessary casting
+		- Remove KConfig options
+		- Remove early_params
+		- Remove Hungarian notation
+		- Remove __packed__  attribute and padding from structures
+		- Remove unlikely attribute (where it's not needed)
+		- Use proper error codes and remove unnecessary prints
+		- Use proper values for sleep routines
+		- Replace complex Macros with functions
+		- Improve device tree processing code
+		- Use symbolic defines
+		- Add time-out in busy-wait loops
+		- Removed exit code (loadable module support will be added later)
+	- Fixed "fixed-link" issue raised by Joakim Tjernlund
+
+v1 --> v2:
+	- Addressed feedback from Paul Bolle:
+		- General feedback of FMan Driver layer
+		- Remove Errata defines
+		- Aligned comments to Kernel Doc
+		- Remove Loadable Module support (not yet supported)
+		- Removed not needed KConfig dependencies 
+	- Addressed feedback from Scott Wood
+		- Use Kernel ioread/iowrite services
+		- Squash FLIB source and header patches together
+
+
+This submission is based on the prior Freescale DPAA FMan V3,RFC submission. Several issues addresses in this submission:
+	- Reduced MAC layering and complexity
+	- Reduced code base
+	- T1024/T2080 10G best effort support
+
+Igal Liberman (9):
+  fsl/fman: Add the FMan FLIB
+  fsl/fman: Add the FMan port FLIB
+  fsl/fman: Add the FMan MAC FLIB
+  fsl/fman: Add FMan MURAM support
+  fsl/fman: Add Frame Manager support
+  fsl/fman: Add FMan MAC support
+  fsl/fman: Add FMan SP support
+  fsl/fman: Add FMan Port Support
+  fsl/fman: Add FMan MAC driver
+
+ drivers/net/ethernet/freescale/Kconfig             |    1 +
+ drivers/net/ethernet/freescale/Makefile            |    2 +
+ drivers/net/ethernet/freescale/fman/Kconfig        |    8 +
+ drivers/net/ethernet/freescale/fman/Makefile       |   12 +
+ .../net/ethernet/freescale/fman/flib/fsl_enet.h    |  135 ++
+ .../net/ethernet/freescale/fman/flib/fsl_fman.h    |  590 +++++++++
+ .../ethernet/freescale/fman/flib/fsl_fman_dtsec.h  |  809 ++++++++++++
+ .../freescale/fman/flib/fsl_fman_dtsec_mii_acc.h   |   89 ++
+ .../ethernet/freescale/fman/flib/fsl_fman_memac.h  |  428 ++++++
+ .../freescale/fman/flib/fsl_fman_memac_mii_acc.h   |   72 ++
+ .../ethernet/freescale/fman/flib/fsl_fman_port.h   |  409 ++++++
+ .../net/ethernet/freescale/fman/flib/fsl_fman_sp.h |   53 +
+ .../ethernet/freescale/fman/flib/fsl_fman_tgec.h   |  393 ++++++
+ drivers/net/ethernet/freescale/fman/fm.c           | 1366 ++++++++++++++++++++
+ drivers/net/ethernet/freescale/fman/fm.h           |  279 ++++
+ drivers/net/ethernet/freescale/fman/fm_common.h    |  178 +++
+ drivers/net/ethernet/freescale/fman/fm_drv.c       |  642 +++++++++
+ drivers/net/ethernet/freescale/fman/fm_drv.h       |  111 ++
+ drivers/net/ethernet/freescale/fman/fm_muram.c     |  115 ++
+ drivers/net/ethernet/freescale/fman/fm_port_drv.c  |  386 ++++++
+ drivers/net/ethernet/freescale/fman/fm_sp_common.h |  105 ++
+ drivers/net/ethernet/freescale/fman/fman.c         |  911 +++++++++++++
+ .../ethernet/freescale/fman/inc/crc_mac_addr_ext.h |  314 +++++
+ drivers/net/ethernet/freescale/fman/inc/enet_ext.h |  199 +++
+ drivers/net/ethernet/freescale/fman/inc/fm_ext.h   |  446 +++++++
+ .../net/ethernet/freescale/fman/inc/fm_muram_ext.h |  102 ++
+ .../net/ethernet/freescale/fman/inc/fm_port_ext.h  |  340 +++++
+ .../net/ethernet/freescale/fman/inc/fsl_fman_drv.h |  203 +++
+ drivers/net/ethernet/freescale/fman/inc/mac.h      |  134 ++
+ drivers/net/ethernet/freescale/fman/mac/Makefile   |    8 +
+ drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c | 1012 +++++++++++++++
+ drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h |  207 +++
+ drivers/net/ethernet/freescale/fman/mac/fm_mac.h   |  259 ++++
+ drivers/net/ethernet/freescale/fman/mac/fm_memac.c |  673 ++++++++++
+ drivers/net/ethernet/freescale/fman/mac/fm_memac.h |  115 ++
+ drivers/net/ethernet/freescale/fman/mac/fm_tgec.c  |  552 ++++++++
+ drivers/net/ethernet/freescale/fman/mac/fm_tgec.h  |  124 ++
+ .../net/ethernet/freescale/fman/mac/fman_dtsec.c   |  503 +++++++
+ .../freescale/fman/mac/fman_dtsec_mii_acc.c        |  153 +++
+ .../net/ethernet/freescale/fman/mac/fman_memac.c   |  374 ++++++
+ .../freescale/fman/mac/fman_memac_mii_acc.c        |  151 +++
+ .../net/ethernet/freescale/fman/mac/fman_tgec.c    |  207 +++
+ drivers/net/ethernet/freescale/fman/mac/mac-api.c  |  698 ++++++++++
+ drivers/net/ethernet/freescale/fman/mac/mac.c      |  482 +++++++
+ drivers/net/ethernet/freescale/fman/port/Makefile  |    3 +
+ drivers/net/ethernet/freescale/fman/port/fm_port.c | 1081 ++++++++++++++++
+ drivers/net/ethernet/freescale/fman/port/fm_port.h |  502 +++++++
+ .../net/ethernet/freescale/fman/port/fman_port.c   |  510 ++++++++
+ drivers/net/ethernet/freescale/fman/sp/Makefile    |    3 +
+ drivers/net/ethernet/freescale/fman/sp/fm_sp.c     |  371 ++++++
+ 50 files changed, 16820 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/fman/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/fman/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_enet.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec_mii_acc.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac_mii_acc.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_tgec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_common.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_muram.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_port_drv.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_sp_common.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/enet_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_muram_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_port_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/mac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_dtsec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_mac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_memac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_tgec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec_mii_acc.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac_mii_acc.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_tgec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac-api.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/fman_port.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/sp/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/sp/fm_sp.c
+
 -- 
-2.1.0
+1.7.9.5
