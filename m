@@ -1,18 +1,25 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 11FA91A1A35
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 11:14:56 +1000 (AEST)
-Message-ID: <1437527695.16792.3.camel@ellerman.id.au>
-Subject: Re: [3/6] pseries: Update CPU hotplug error recovery
+Message-ID: <1437528180.16792.4.camel@ellerman.id.au>
+Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Wed, 22 Jul 2015 11:14:55 +1000
-In-Reply-To: <55AE9A1E.5020002@linux.vnet.ibm.com>
-References: <20150721044649.A4DD8140DF7@ozlabs.org>
- <55AE9A1E.5020002@linux.vnet.ibm.com>
+To: Vlastimil Babka <vbabka@suse.cz>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, Andrew Morton
+ <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org,  Mel Gorman <mgorman@suse.de>, David Rientjes
+ <rientjes@google.com>, Greg Thelen <gthelen@google.com>,  "Aneesh Kumar
+ K.V" <aneesh.kumar@linux.vnet.ibm.com>, Christoph Lameter <cl@linux.com>,
+ Pekka Enberg <penberg@kernel.org>,  Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, Tony Luck
+ <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann
+ <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul
+ Mackerras <paulus@samba.org>, Gleb Natapov <gleb@kernel.org>, Paolo Bonzini
+ <pbonzini@redhat.com>,  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
+ <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Cliff Whickman
+ <cpw@sgi.com>, Robin Holt <robinmholt@gmail.com>
+Date: Wed, 22 Jul 2015 11:23:00 +1000
+In-Reply-To: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
+References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,24 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-21 at 14:14 -0500, Nathan Fontenot wrote:
-> On 07/20/2015 11:46 PM, Michael Ellerman wrote:
-> > So the pr_info()s should go entirely and the pr_debugs() should become
-> > pr_warns(). The warning messages should become more verbose so they stand on
-> > their own, ie. include the drc_index.
-> > 
-> > When everything goes perfectly there should be no output.
-> >
+On Tue, 2015-07-21 at 15:55 +0200, Vlastimil Babka wrote:
+> The function alloc_pages_exact_node() was introduced in 6484eb3e2a81 ("page
+> allocator: do not check NUMA node ID when the caller knows the node is valid")
+> as an optimized variant of alloc_pages_node(), that doesn't allow the node id
+> to be -1. Unfortunately the name of the function can easily suggest that the
+> allocation is restricted to the given node. In truth, the node is only
+> preferred, unless __GFP_THISNODE is among the gfp flags.
 > 
-> So... good idea, bad implementation :)
+> The misleading name has lead to mistakes in the past, see 5265047ac301 ("mm,
+> thp: really limit transparent hugepage allocation to local node") and
+> b360edb43f8e ("mm, mempolicy: migrate_to_node should only migrate to node").
+> 
+> To prevent further mistakes, this patch renames the function to
+> alloc_pages_prefer_node() and documents it together with alloc_pages_node().
+> 
+> Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+ 
+>  I'm CC'ing also maintainers of the callsites so they can verify that the
+>  callsites that don't pass __GFP_THISNODE are really not intended to restrict
+>  allocation to the given node. I went through them myself and each looked like
+>  it's better off if it can successfully allocate on a fallback node rather
+>  than fail. DavidR checked them also I think, but it's better if maintainers
+>  can verify that. I'm not completely sure about all the usages in sl*b due to
+>  multiple layers through which gfp flags are being passed.
 
-Well also a matter of perspective. For you these info messages are helpful
-because you're working on the cpu hotplug code. But for other folks they're
-just log spam.
 
-> I have a feeling I may have messed this up somewhere else in the patch set too
-> so I'll take a look at all the pr_* calls.
+> diff --git a/arch/powerpc/platforms/cell/ras.c b/arch/powerpc/platforms/cell/ras.c
+> index e865d74..646a310 100644
+> --- a/arch/powerpc/platforms/cell/ras.c
+> +++ b/arch/powerpc/platforms/cell/ras.c
+> @@ -123,7 +123,7 @@ static int __init cbe_ptcal_enable_on_node(int nid, int order)
+>  
+>  	area->nid = nid;
+>  	area->order = order;
+> -	area->pages = alloc_pages_exact_node(area->nid,
+> +	area->pages = alloc_pages_prefer_node(area->nid,
+>  						GFP_KERNEL|__GFP_THISNODE,
+>  						area->order);
 
-OK thanks.
+Yeah that looks right to me.
+
+This code enables some firmware memory calibration so I think it really does
+want to get memory on the specified node, or else fail.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
