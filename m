@@ -1,31 +1,20 @@
-Return-Path: <vbabka@suse.cz>
-Message-ID: <55AF7F64.1040602@suse.cz>
-Date: Wed, 22 Jul 2015 13:32:52 +0200
-From: Vlastimil Babka <vbabka@suse.cz>
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A0FE1A1A45
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 21:40:07 +1000 (AEST)
+Message-ID: <55AF8111.4080905@redhat.com>
+Date: Wed, 22 Jul 2015 13:40:01 +0200
+From: Thomas Huth <thuth@redhat.com>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- cbe-oss-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Mel Gorman <mgorman@suse.de>, Greg Thelen <gthelen@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Cliff Whickman <cpw@sgi.com>, Robin Holt <robinmholt@gmail.com>
-Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
-References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
- <alpine.DEB.2.10.1507211428160.3833@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.10.1507211428160.3833@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=windows-1252
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ nfont@linux.vnet.ibm.com
+CC: paulus@samba.org, anton@samba.org, kvm-ppc@vger.kernel.org
+Subject: Re: powerpc/rtas: Introduce rtas_get_sensor_fast() for IRQ handlers
+References: <20150722112527.B36E01402C8@ozlabs.org>
+In-Reply-To: <20150722112527.B36E01402C8@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,62 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/21/2015 11:31 PM, David Rientjes wrote:
-> On Tue, 21 Jul 2015, Vlastimil Babka wrote:
+On 22/07/15 13:25, Michael Ellerman wrote:
+> On Fri, 2015-17-07 at 10:46:58 UTC, Thomas Huth wrote:
+>> The EPOW interrupt handler uses rtas_get_sensor(), which in turn
+>> uses rtas_busy_delay() to wait for RTAS becoming ready in case it
+>> is necessary. But rtas_busy_delay() is annotated with might_sleep()
+>> and thus may not be used by interrupts handlers like the EPOW handler!
+>> This leads to the following BUG when CONFIG_DEBUG_ATOMIC_SLEEP is
+>> enabled:
 > 
->> The function alloc_pages_exact_node() was introduced in 6484eb3e2a81 ("page
->> allocator: do not check NUMA node ID when the caller knows the node is valid")
->> as an optimized variant of alloc_pages_node(), that doesn't allow the node id
->> to be -1. Unfortunately the name of the function can easily suggest that the
->> allocation is restricted to the given node. In truth, the node is only
->> preferred, unless __GFP_THISNODE is among the gfp flags.
->>
->> The misleading name has lead to mistakes in the past, see 5265047ac301 ("mm,
->> thp: really limit transparent hugepage allocation to local node") and
->> b360edb43f8e ("mm, mempolicy: migrate_to_node should only migrate to node").
->>
->> To prevent further mistakes, this patch renames the function to
->> alloc_pages_prefer_node() and documents it together with alloc_pages_node().
->>
-> 
-> alloc_pages_exact_node(), as you said, connotates that the allocation will
-> take place on that node or will fail.  So why not go beyond this patch and
-> actually make alloc_pages_exact_node() set __GFP_THISNODE and then call
-> into a new alloc_pages_prefer_node(), which would be the current
-> alloc_pages_exact_node() implementation, and then fix up the callers?
+> When did we break this?
 
-OK, but then we have alloc_pages_node(), alloc_pages_prefer_node() and
-alloc_pages_exact_node(). Isn't that a bit too much? The first two
-differ only in tiny bit:
+ Hi Michael,
 
-static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
-                                                unsigned int order)
-{
-        /* Unknown node is current node */
-        if (nid < 0)
-                nid = numa_node_id();
+the bug has been introduced by commit 587f83e8dd50d22bc0c62e32ec49fd31
+("powerpc/pseries: Use rtas_get_sensor in RAS code") which switched the
+EPOW handler to use rtas_get_sensor() instead of using rtas_call directly.
 
-        return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
-}
+Also have a look at this thread here:
+http://www.spinics.net/lists/kvm-ppc/msg10768.html
 
-static inline struct page *alloc_pages_prefer_node(int nid, gfp_t gfp_mask,
-                                                unsigned int order)
-{
-        VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
-
-        return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
-}
-
-So _prefer_node is just a tiny optimization over the other one. It
-should be maybe called __alloc_pages_node() then? This would perhaps
-discourage users outside of mm/arch code (where it may matter). The
-savings of a skipped branch is likely dubious anyway... It would be also
-nice if alloc_pages_node() could use __alloc_pages_node() internally, but
-I'm not sure if all callers are safe wrt the
-VM_BUG_ON(!node_online(nid)) part.
-
-So when the alloc_pages_prefer_node is diminished as __alloc_pages_node
-or outright removed, then maybe alloc_pages_exact_node() which adds
-__GFP_THISNODE on its own, might be a useful wrapper. But I agree with
-Christoph it's a duplication of the gfp_flags functionality and I don't
-think there would be many users left anyway.
+ Thomas
