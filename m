@@ -1,26 +1,29 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paubert@iram.es>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BE8C1A2ABA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 15:55:16 +1000 (AEST)
-Date: Wed, 22 Jul 2015 07:55:03 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 7/8] perf: Define PMU_TXN_READ interface
-Message-ID: <20150722055503.GO25159@twins.programming.kicks-ass.net>
-References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1436929315-28520-8-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150716222015.GO3644@twins.programming.kicks-ass.net>
- <20150722015045.GA24420@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6B721A1A3B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 16:39:21 +1000 (AEST)
+Received: from navarro.puc.rediris.es (navarro.puc.rediris.es
+ [IPv6:2001:720:418:ca01::131])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E92F514029D
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Jul 2015 16:39:20 +1000 (AEST)
+Date: Wed, 22 Jul 2015 07:57:40 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, mikey@neuling.org
+Subject: Re: [RFC 5/8] powerpc/slb: Add documentation to runtime patching of
+ SLB encoding
+Message-ID: <20150722055740.GA20532@visitor2.iram.es>
+References: <1437461926-8908-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1437461926-8908-5-git-send-email-khandual@linux.vnet.ibm.com>
+ <1437544263.16792.12.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150722015045.GA24420@us.ibm.com>
+In-Reply-To: <1437544263.16792.12.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +33,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 21, 2015 at 06:50:45PM -0700, Sukadev Bhattiprolu wrote:
-> We are trying to use the following interface:
+On Wed, Jul 22, 2015 at 03:51:03PM +1000, Michael Ellerman wrote:
+> On Tue, 2015-07-21 at 12:28 +0530, Anshuman Khandual wrote:
+> > From: "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>
+> > 
+> > This patch adds some documentation to 'patch_slb_encoding' function
+> > explaining about how it clears the existing immediate value in the
+> > given instruction and inserts a new one there.
+> > 
+> > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> > index dcba4c2..8083a9e 100644
+> > --- a/arch/powerpc/mm/slb.c
+> > +++ b/arch/powerpc/mm/slb.c
+> > @@ -278,7 +278,13 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+> >  static inline void patch_slb_encoding(unsigned int *insn_addr,
+> >  				      unsigned int immed)
+> >  {
+> > -	int insn = (*insn_addr & 0xffff0000) | immed;
+> > +	/*
+> > +	 * Currently this patches only "li" and "cmpldi"
+> > +	 * instructions with an immediate value. Here it
+> > +	 * just clears the existing immediate value from
+> > +	 * the instruction and inserts a new one there.
+> > +	 */
+> > +	unsigned int insn = (*insn_addr & 0xffff0000) | immed;
+> >  	patch_instruction(insn_addr, insn);
+> >  }
 > 
-> 	start_txn(pmu, PERF_PMU_TXN_READ);
 > 
-> 	perf_event_read(leader);
-> 	list_for_each(sibling, &leader->sibling_list, group_entry)
-> 		perf_event_read(sibling)
+> How about:
 > 
-> 	pmu->commit_txn(pmu);
-> 
-> with the idea that the PMU driver would save the type of transaction in
-> ->start_txn() and use in ->read() and ->commit_txn().
-> 
-> But since ->start_txn() and the ->read() operations could happen on different
-> CPUs (perf_event_read() uses the event->oncpu to schedule a call), the PMU
-> driver cannot use a per-cpu variable to save the state in ->start_txn().
+> 	/*
+> 	 * This function patches either an li or a cmpldi instruction with
+> 	 * a new immediate value. This relies on the fact that both li
+> 	 * (which is actually ori) and cmpldi both take a 16-bit immediate
 
-> or is there better way?
+Hmm, li is actually encoded as addi with r0 as source register...
 
+> 	 * value, and it is situated in the same location in the instruction,
+> 	 * ie. bits 0-15.
 
-I've not woken up yet, and not actually fully read the email, but can
-you stuff the entire above chunk inside the IPI?
+In PPC documentation, it's rather bits 16-31 (big endian bit order).
+Or say lower half which is endian agnostic.
 
-I think you could then actually optimize __perf_event_read() as well,
-because all these events should be on the same context, so no point in
-calling update_*time*() for every event or so.
+    Cheers,
+    Gabriel
