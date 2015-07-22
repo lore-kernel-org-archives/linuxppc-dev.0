@@ -1,24 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BDB5C1A1A29
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 19:01:24 +1000 (AEST)
-Message-ID: <1437555683.27712.4.camel@ellerman.id.au>
-Subject: Re: [RFC 5/8] powerpc/slb: Add documentation to runtime patching of
- SLB encoding
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org,  mikey@neuling.org
-Date: Wed, 22 Jul 2015 19:01:23 +1000
-In-Reply-To: <20150722055740.GA20532@visitor2.iram.es>
-References: <1437461926-8908-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1437461926-8908-5-git-send-email-khandual@linux.vnet.ibm.com>
- <1437544263.16792.12.camel@ellerman.id.au>
- <20150722055740.GA20532@visitor2.iram.es>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2DCAF1A1A3B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 19:16:22 +1000 (AEST)
+Message-ID: <55AF5F5A.3000707@suse.cz>
+Date: Wed, 22 Jul 2015 11:16:10 +0200
+From: Vlastimil Babka <vbabka@suse.cz>
+MIME-Version: 1.0
+To: Eric B Munson <emunson@akamai.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+CC: Michal Hocko <mhocko@suse.cz>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Guenter Roeck <linux@roeck-us.net>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
+ linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-mips@linux-mips.org, linux-am33-list@redhat.com,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH V4 2/6] mm: mlock: Add new mlock, munlock, and munlockall
+ system calls
+References: <1437508781-28655-1-git-send-email-emunson@akamai.com>
+ <1437508781-28655-3-git-send-email-emunson@akamai.com>
+In-Reply-To: <1437508781-28655-3-git-send-email-emunson@akamai.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +39,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-07-22 at 07:57 +0200, Gabriel Paubert wrote:
-> On Wed, Jul 22, 2015 at 03:51:03PM +1000, Michael Ellerman wrote:
-> > On Tue, 2015-07-21 at 12:28 +0530, Anshuman Khandual wrote:
-> > > From: "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>
-> > > 
-> > > This patch adds some documentation to 'patch_slb_encoding' function
-> > > explaining about how it clears the existing immediate value in the
-> > > given instruction and inserts a new one there.
-> > > 
-> > > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> > > index dcba4c2..8083a9e 100644
-> > > --- a/arch/powerpc/mm/slb.c
-> > > +++ b/arch/powerpc/mm/slb.c
-> > > @@ -278,7 +278,13 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
-> > >  static inline void patch_slb_encoding(unsigned int *insn_addr,
-> > >  				      unsigned int immed)
-> > >  {
-> > > -	int insn = (*insn_addr & 0xffff0000) | immed;
-> > > +	/*
-> > > +	 * Currently this patches only "li" and "cmpldi"
-> > > +	 * instructions with an immediate value. Here it
-> > > +	 * just clears the existing immediate value from
-> > > +	 * the instruction and inserts a new one there.
-> > > +	 */
-> > > +	unsigned int insn = (*insn_addr & 0xffff0000) | immed;
-> > >  	patch_instruction(insn_addr, insn);
-> > >  }
-> > 
-> > 
-> > How about:
-> > 
-> > 	/*
-> > 	 * This function patches either an li or a cmpldi instruction with
-> > 	 * a new immediate value. This relies on the fact that both li
-> > 	 * (which is actually ori) and cmpldi both take a 16-bit immediate
-> 
-> Hmm, li is actually encoded as addi with r0 as source register...
+On 07/21/2015 09:59 PM, Eric B Munson wrote:
+> With the refactored mlock code, introduce new system calls for mlock,
+> munlock, and munlockall.  The new calls will allow the user to specify
+> what lock states are being added or cleared.  mlock2 and munlock2 are
+> trivial at the moment, but a follow on patch will add a new mlock state
+> making them useful.
+>
+> munlock2 addresses a limitation of the current implementation.  If a
 
-Correct.
+   ^ munlockall2?
 
-> > 	 * value, and it is situated in the same location in the instruction,
-> > 	 * ie. bits 0-15.
-> 
-> In PPC documentation, it's rather bits 16-31 (big endian bit order).
-> Or say lower half which is endian agnostic.
-
-Yeah, but who reads the PPC documentation ;)
-
-In the kernel we almost always use the sane bit numbering, so I'd use that, but
-maybe "low 16-bits" will avoid confusion.
-
-cheers
+> user calls mlockall(MCL_CURRENT | MCL_FUTURE) and then later decides
+> that MCL_FUTURE should be removed, they would have to call munlockall()
+> followed by mlockall(MCL_CURRENT) which could potentially be very
+> expensive.  The new munlockall2 system call allows a user to simply
+> clear the MCL_FUTURE flag.
+>
