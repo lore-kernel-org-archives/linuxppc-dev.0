@@ -1,29 +1,47 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x22f.google.com (mail-pd0-x22f.google.com
- [IPv6:2607:f8b0:400e:c02::22f])
+Return-Path: <dave.long@linaro.org>
+Received: from mail-qg0-f42.google.com (mail-qg0-f42.google.com
+ [209.85.192.42])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C6BA1A045E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 14:46:48 +1000 (AEST)
-Received: by pdjr16 with SMTP id r16so134432119pdj.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 21:46:46 -0700 (PDT)
-Message-ID: <1437540294.30906.30.camel@axtens.net>
-Subject: Re: [PATCH v5 5/7] powerpc/powernv: add event attribute and group
- to nest pmu
-From: Daniel Axtens <dja@axtens.net>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Stephane
- Eranian <eranian@google.com>, Paul Mackerras <paulus@samba.org>, Anton
- Blanchard <anton@samba.org>,  Sukadev Bhattiprolu
- <sukadev@linux.vnet.ibm.com>, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>
-Date: Wed, 22 Jul 2015 14:44:54 +1000
-In-Reply-To: <1437045206-7491-6-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1437045206-7491-6-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-8WvJsVQhIMhMJI5QxNct"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADE591A1A4B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 14:47:05 +1000 (AEST)
+Received: by qgy5 with SMTP id 5so97917052qgy.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jul 2015 21:47:03 -0700 (PDT)
+Message-ID: <55AF2037.2000803@linaro.org>
+Date: Wed, 22 Jul 2015 00:46:47 -0400
+From: David Long <dave.long@linaro.org>
+MIME-Version: 1.0
+To: Michael Ellerman <michael@ellerman.id.au>
+CC: Rob Herring <robherring2@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andy Lutomirski <luto@amacapital.net>, Anton Blanchard <anton@samba.org>,
+ Behan Webster <behanw@converseincode.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Eric Paris <eparis@redhat.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>,
+ Jan Willeke <willeke@de.ibm.com>, Kees Cook <keescook@chromium.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Nikolay Borisov <Nikolay.Borisov@arm.com>,
+ Oleg Nesterov <oleg@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Richard Kuo <rkuo@codeaurora.org>,
+ Robert Richter <rric@kernel.org>, Roland McGrath <roland@hack.frob.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linux-hexagon@vger.kernel.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-s390@vger.kernel.org, SH-Linux <linux-sh@vger.kernel.org>,
+ linux390@de.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH 1/2] Move the pt_regs_offset struct definition from arch
+ to common include file
+References: <1434386579-6045-1-git-send-email-dave.long@linaro.org>	
+ <1434386579-6045-2-git-send-email-dave.long@linaro.org>	
+ <CAL_JsqK3L9Hv9bhAtwAAXVYjLJBTOG9=4ddOo-SFqnD-_KieCQ@mail.gmail.com>	
+ <5581BCD0.2040405@linaro.org> <1435634945.24866.2.camel@ellerman.id.au>
+In-Reply-To: <1435634945.24866.2.camel@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,138 +51,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/29/15 23:29, Michael Ellerman wrote:
+> On Wed, 2015-06-17 at 14:30 -0400, David Long wrote:
+>> On 06/16/15 09:17, Rob Herring wrote:
+>>> On Mon, Jun 15, 2015 at 11:42 AM, David Long <dave.long@linaro.org> wrote:
+>>>>
+>>>>    #define REG_OFFSET_NAME(r) \
+>>>>           {.name = #r, .offset = offsetof(struct pt_regs, ARM_##r)}
+>>>>    #define REG_OFFSET_END {.name = NULL, .offset = 0}
+>>>
+>>> Can't you also move these? ARM is complicated with the "ARM_"
+>>> prefixing, but the others appear to be the same. Maybe you can remove
+>>> the prefix or redefine the macro for ARM.
+>>
+>> That would mandate that all the architecture-specific pt_regs structures
+>> would have to use a top-level named field for each named register.
+>
+> Why does it mandate that?
+>
+> See eg. powerpc where we use REG_OFFSET_NAME for the top-level named fields and
+> then a different macro for the array elements:
+>
+>    #define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
+>    #define GPR_OFFSET_NAME(num)	\
+>    	{.name = STR(gpr##num), .offset = offsetof(struct pt_regs, gpr[num])}
+>
+>    static const struct pt_regs_offset regoffset_table[] = {
+>    	GPR_OFFSET_NAME(0),
+>    	GPR_OFFSET_NAME(1),
+>    	GPR_OFFSET_NAME(2),
+>    	GPR_OFFSET_NAME(3),
+>    	...
+>    	REG_OFFSET_NAME(nip),
+>    	REG_OFFSET_NAME(msr),
+>
+>
+> So I don't see why REG_OFFSET_NAME couldn't be common.
+>
 
---=-8WvJsVQhIMhMJI5QxNct
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Sorry for the delay in responding to this.
 
-On Thu, 2015-07-16 at 16:43 +0530, Madhavan Srinivasan wrote:
-> Add code to create event/format attributes and attribute groups for
-> each nest pmu.
->=20
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: Stephane Eranian <eranian@google.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/nest-pmu.c | 65 ++++++++++++++++++++++++++++++++++++++=
-++++++
->  1 file changed, 65 insertions(+)
->=20
-> diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-> index c4c08e4dee55..f3418bdec1cd 100644
-> --- a/arch/powerpc/perf/nest-pmu.c
-> +++ b/arch/powerpc/perf/nest-pmu.c
-> @@ -13,6 +13,17 @@
->  static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
->  static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
-> =20
-> +PMU_FORMAT_ATTR(event, "config:0-20");
-> +static struct attribute *p8_nest_format_attrs[] =3D {
-> +	&format_attr_event.attr,
-> +	NULL,
-> +};
-> +
-> +static struct attribute_group p8_nest_format_group =3D {
-> +	.name =3D "format",
-> +	.attrs =3D p8_nest_format_attrs,
-> +};
-> +
->  static int nest_event_info(struct property *pp, char *name,
->  			struct nest_ima_events *p8_events, int string, u32 val)
->  {
-> @@ -46,6 +57,56 @@ static int nest_event_info(struct property *pp, char *=
-name,
->  	return 0;
->  }
-> =20
-> +/*
-> + * Populate event name and string in attribute
-> + */
-> +static struct attribute *dev_str_attr(const char *name, const char *str)
-> +{
-> +	struct perf_pmu_events_attr *attr;
-> +
-> +	attr =3D kzalloc(sizeof(*attr), GFP_KERNEL);
-> +
-> +	sysfs_attr_init(&attr->attr.attr);
-> +
-> +	attr->event_str =3D str;
-> +	attr->attr.attr.name =3D name;
-> +	attr->attr.attr.mode =3D 0444;
-> +	attr->attr.show =3D perf_event_sysfs_show;
-> +
-> +	return &attr->attr.attr;
-So I asked you about this before, and you pointed me to
-perf_event_sysfs_show. Looking at that in kernel/events/core.c, it looks
-like that uses container_of to pull out the perf_pmu_events_attr. So I
-guess that is at least mostly correct.
+OK, so you're saying architectures that don't want this constraint can 
+make their own macro.  Seems to make this whole exercise slightly less 
+useful, but whatever.
 
-I'm hoping something else uses container_of to pull out attr->attr, so
-that they can actually grab the attr->attr.show function pointer, so
-that perf_event_sysfs_show actually gets called. Where would that be?
+I see three ways to go here:
 
-> +}
-> +
-> +static int update_events_in_group(
-> +	struct nest_ima_events *p8_events, int idx, struct nest_pmu *pmu)
-> +{
-> +	struct attribute_group *attr_group;
-> +	struct attribute **attrs;
-> +	int i;
-> +
-> +	/*
-> +	 * Allocate memory for both event attribute group and for
-> +	 * event attributes array.
-> +	 */
-> +	attr_group =3D kzalloc(((sizeof(struct attribute *) * (idx + 1)) +
-> +				sizeof(*attr_group)), GFP_KERNEL);
-> +	if (!attr_group)
-> +		return -ENOMEM;
-> +
-> +	/*
-> +	 * Assign memory for event attribute array
-> +	 */
-> +	attrs =3D (struct attribute **)(attr_group + 1);
-> +	attr_group->name =3D "events";
-> +	attr_group->attrs =3D attrs;
-I am super uncomfortable with this block, especially the assignment to
-attrs. I *think* you're trying to allocate an attribute group and a set
-of attributes, but you've combined the allocation into one big
-contiguous chunk, and then you're trying to tease them apart. Is that
-necessary? Could it be two allocs, one for the attribute_group and one
-for the attribute?
+1) Leave it as is.
+2) Force all architectures to use a common definition.
+3) Provide a common definition that all architectures (except "arm") 
+currently using this functionality will use.
 
---=20
-Regards,
-Daniel
+I have a v2 patch to implement #3, ready to post.  Do we think this is 
+the way to go? I don't like #2 because I really don't want to rename all 
+uses of the current register fields for arm since this is 
+architecture-specific code to begin with and since it affects code in 39 
+arm source files.
 
---=-8WvJsVQhIMhMJI5QxNct
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+> cheers
+>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
 
-iQIcBAABCgAGBQJVrx/GAAoJEPC3R3P2I92FRJQQAJm23zIpG0JK5klaAp09KH9m
-qeRsAzTtwuogpVUFbmG+LxQD/GGFgkoJLYamJ1HKLisbFuCo6EkcS0KKZLTMC2uc
-wi+HdwU3WQocnQ/bMKrF32daKtQ9R2WVq67Daza01BGQuvkzJLTmoLNIDB4wS6Fy
-dgMvMe/ngq+CsvRu2McVDNVy32jDMHvSR/06AhfL4TtxwgOg5+crLXlokSGOT7wY
-szTGTC5XQox1wm/ZJxyA6Z//imAM+vYONMABK/ou+yNhdEbtyXoebmYvHdqyRW7o
-fCFlPRRMGwbp7dYbfbMtv3rcBtbI//bAcUPeb5Z0yldpqwZCJdvyUhUz2kqPIwAp
-BnVXWNH0un4MEH2EdQ7JTxfRWjUSyPaU3lOyxB+Q91XVqAuGN1CKi6BTWi481eNV
-kuTjjA0mIyxoTn0Ln+8qJgg5fs53L97x3BPOT71CBna5fhq1noHLwFVznbiNCak2
-x6nSJCYSu1DKGj47PL5iM/UtVJPgBTNbI2xeekIArvDmCpamS4WI2dmbaGspXksl
-JAqOi/pBZHF8fSVbwqecOuDQwPiDptAIZGL/rht+zTVNMsnHKvcI5RIs9o3AQOcY
-Zz5ExjMZUq2oXIua3ed8Zq5/+TGcW0HPm8pZ/DA/+pkjFg5p7NeX7LzTexDdsoai
-2lbTPWoWRZuH6yysh4j7
-=R2yZ
------END PGP SIGNATURE-----
-
---=-8WvJsVQhIMhMJI5QxNct--
+Thanks,
+-dl
