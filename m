@@ -1,23 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id E92541A1A2C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 15:26:52 +1000 (AEST)
-Date: Tue, 21 Jul 2015 22:26:48 -0700 (PDT)
-Message-Id: <20150721.222648.171655319967229139.davem@davemloft.net>
-To: chris.j.arges@canonical.com
-Cc: nacc@linux.vnet.ibm.com, pshelar@nicira.com,
- linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
- linux-numa@vger.kernel.org, netdev@vger.kernel.org, dev@openvswitch.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] openvswitch: allocate nr_node_ids flow_stats
- instead of num_possible_nodes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1437500193-10255-1-git-send-email-chris.j.arges@canonical.com>
-References: <20150721162418.GM38815@linux.vnet.ibm.com>
- <1437500193-10255-1-git-send-email-chris.j.arges@canonical.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 072DC1A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 15:51:04 +1000 (AEST)
+Message-ID: <1437544263.16792.12.camel@ellerman.id.au>
+Subject: Re: [RFC 5/8] powerpc/slb: Add documentation to runtime patching of
+ SLB encoding
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org
+Date: Wed, 22 Jul 2015 15:51:03 +1000
+In-Reply-To: <1437461926-8908-5-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1437461926-8908-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1437461926-8908-5-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Chris J Arges <chris.j.arges@canonical.com>
-Date: Tue, 21 Jul 2015 12:36:33 -0500
+On Tue, 2015-07-21 at 12:28 +0530, Anshuman Khandual wrote:
+> From: "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>
+> 
+> This patch adds some documentation to 'patch_slb_encoding' function
+> explaining about how it clears the existing immediate value in the
+> given instruction and inserts a new one there.
+> 
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index dcba4c2..8083a9e 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -278,7 +278,13 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+>  static inline void patch_slb_encoding(unsigned int *insn_addr,
+>  				      unsigned int immed)
+>  {
+> -	int insn = (*insn_addr & 0xffff0000) | immed;
+> +	/*
+> +	 * Currently this patches only "li" and "cmpldi"
+> +	 * instructions with an immediate value. Here it
+> +	 * just clears the existing immediate value from
+> +	 * the instruction and inserts a new one there.
+> +	 */
+> +	unsigned int insn = (*insn_addr & 0xffff0000) | immed;
+>  	patch_instruction(insn_addr, insn);
+>  }
 
-> Some architectures like POWER can have a NUMA node_possible_map that
-> contains sparse entries. This causes memory corruption with openvswitch
-> since it allocates flow_cache with a multiple of num_possible_nodes() and
-> assumes the node variable returned by for_each_node will index into
-> flow->stats[node].
-> 
-> Use nr_node_ids to allocate a maximal sparse array instead of
-> num_possible_nodes().
-> 
-> The crash was noticed after 3af229f2 was applied as it changed the
-> node_possible_map to match node_online_map on boot.
-> Fixes: 3af229f2071f5b5cb31664be6109561fbe19c861
-> 
-> Signed-off-by: Chris J Arges <chris.j.arges@canonical.com>
 
-Applied, thanks.
+How about:
+
+	/*
+	 * This function patches either an li or a cmpldi instruction with
+	 * a new immediate value. This relies on the fact that both li
+	 * (which is actually ori) and cmpldi both take a 16-bit immediate
+	 * value, and it is situated in the same location in the instruction,
+	 * ie. bits 0-15.
+	 * To patch the value we read the existing instruction, clear the
+	 * immediate value, and or in our new value, then write the instruction
+	 * back.
+	 */
+
+cheers
