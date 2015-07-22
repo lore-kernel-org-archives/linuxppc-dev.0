@@ -1,20 +1,23 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <segher@gate.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A0FE1A1A45
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 21:40:07 +1000 (AEST)
-Message-ID: <55AF8111.4080905@redhat.com>
-Date: Wed, 22 Jul 2015 13:40:01 +0200
-From: Thomas Huth <thuth@redhat.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- nfont@linux.vnet.ibm.com
-CC: paulus@samba.org, anton@samba.org, kvm-ppc@vger.kernel.org
-Subject: Re: powerpc/rtas: Introduce rtas_get_sensor_fast() for IRQ handlers
-References: <20150722112527.B36E01402C8@ozlabs.org>
-In-Reply-To: <20150722112527.B36E01402C8@ozlabs.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 753111A1A2D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 22:17:29 +1000 (AEST)
+Date: Wed, 22 Jul 2015 07:17:15 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ mikey@neuling.org
+Subject: Re: [RFC 5/8] powerpc/slb: Add documentation to runtime patching of
+ SLB encoding
+Message-ID: <20150722121715.GC11682@gate.crashing.org>
+References: <1437461926-8908-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1437461926-8908-5-git-send-email-khandual@linux.vnet.ibm.com>
+ <1437544263.16792.12.camel@ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1437544263.16792.12.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/07/15 13:25, Michael Ellerman wrote:
-> On Fri, 2015-17-07 at 10:46:58 UTC, Thomas Huth wrote:
->> The EPOW interrupt handler uses rtas_get_sensor(), which in turn
->> uses rtas_busy_delay() to wait for RTAS becoming ready in case it
->> is necessary. But rtas_busy_delay() is annotated with might_sleep()
->> and thus may not be used by interrupts handlers like the EPOW handler!
->> This leads to the following BUG when CONFIG_DEBUG_ATOMIC_SLEEP is
->> enabled:
+On Wed, Jul 22, 2015 at 03:51:03PM +1000, Michael Ellerman wrote:
+> How about:
 > 
-> When did we break this?
+> 	/*
+> 	 * This function patches either an li or a cmpldi instruction with
+> 	 * a new immediate value. This relies on the fact that both li
+> 	 * (which is actually ori) and cmpldi both take a 16-bit immediate
+> 	 * value, and it is situated in the same location in the instruction,
+> 	 * ie. bits 0-15.
+> 	 * To patch the value we read the existing instruction, clear the
+> 	 * immediate value, and or in our new value, then write the instruction
+> 	 * back.
+> 	 */
 
- Hi Michael,
+As Gabriel says, li is addi.  It takes a 16-bit sign-extended immediate,
+while cmpldi takes a 16-bit zero-extended immediate.  This function
+doesn't deal with that difference, it probably should (I didn't check if
+the callers take care; there should be an assertion somewhere).
 
-the bug has been introduced by commit 587f83e8dd50d22bc0c62e32ec49fd31
-("powerpc/pseries: Use rtas_get_sensor in RAS code") which switched the
-EPOW handler to use rtas_get_sensor() instead of using rtas_call directly.
 
-Also have a look at this thread here:
-http://www.spinics.net/lists/kvm-ppc/msg10768.html
-
- Thomas
+Segher
