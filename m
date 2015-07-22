@@ -1,31 +1,21 @@
-Return-Path: <cts@steigies.net>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
- [151.189.21.41])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 001721A1BFF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 00:33:44 +1000 (AEST)
-Date: Wed, 22 Jul 2015 16:32:27 +0200
-From: "Christian T. Steigies" <cts@debian.org>
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: Michael Schmitz <schmitzmic@gmail.com>,
- Andreas Schwab <schwab@linux-m68k.org>,
- linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [RFC v4 03/25] m68k/atari: Move Atari-specific code out of
- drivers/char/nvram.c
-Message-ID: <20150722143227.GB4738@guido.earth.sol>
-References: <20150712102527.356151908@telegraphics.com.au>
- <20150712102528.107134628@telegraphics.com.au>
- <87d1zwc4dj.fsf@igel.home>
- <alpine.LNX.2.00.1507141804300.1622@nippy.intranet>
- <55AF1364.3080701@gmail.com>
- <alpine.LNX.2.00.1507221421100.4187@nippy.intranet>
+Return-Path: <alexandre.belloni@free-electrons.com>
+Received: from mail.free-electrons.com (down.free-electrons.com
+ [37.187.137.238])
+ by lists.ozlabs.org (Postfix) with ESMTP id 05E471A1D40
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 03:18:58 +1000 (AEST)
+Date: Wed, 22 Jul 2015 19:11:19 +0200
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
+Subject: Re: [PATCH] rtc/rtc-opal: Enable alarms only when opal supports tpo
+Message-ID: <20150722171119.GJ2853@piout.net>
+References: <1436860708-17058-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LNX.2.00.1507221421100.4187@nippy.intranet>
+In-Reply-To: <1436860708-17058-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 22, 2015 at 02:22:21PM +1000, Finn Thain wrote:
+On 14/07/2015 at 13:28:28 +0530, Vaibhav Jain wrote :
+> rtc-opal driver provides support for rtc alarms via
+> timed-power-on(tpo). However some Power platforms like BML use a fake
+> rtc clock and don't support tpo. Such platforms are indicated by the
+> missing 'has-tpo' property in the device tree.
 > 
-> On Wed, 22 Jul 2015, Michael Schmitz wrote:
+> Current implementation however enables callback for
+> rtc_class_ops.read/set alarm irrespective of the tpo support from the
+> platform. This results in a failed opal call when kernel tries to read
+> an existing alarms via opal_get_tpo_time during rtc device registration.
 > 
-> > Hi Finn,
-> > 
-> > I'm afraid I cannot test anything on Atari hardware at present - my 
-> > Falcon ate it's IDE disk partition table with all the fun that entails. 
+> This patch fixes this issue by setting opal_rtc_ops.read/set_alarm
+> callback pointers only when tpo is supported.
 > 
-> That doesn't sound good.
+> Acked-by: Michael Neuling <mikey@neuling.org>
+> Acked-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> ---
+>  drivers/rtc/rtc-opal.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 > 
-> > Haven't even begun to try and recover that yet.
-> > 
-> > If you send a patch I could build a kernel and send that to Christian 
-> > for testing (if he's got his Falcon up and running - might be a tad warm 
-> > in the attic for that, in fact).
-> 
-> Anyone with a suitable Atari, i.e. ATARIHW_PRESENT(TT_CLK), who can boot 
-> both TOS and Linux could resolve the question. (Perhaps with an emulator?)
+Applied, thanks.
 
-The Falcon is not powered on currently but it should still work. What should
-I test?
-
-> Any old kernel binary would do, since atari_scsi should print either 
-> "HOSTID=n" or "this_id n" at startup.
-> 
-> If n doesn't agree with what TOS says about the host's SCSI ID, then I 
-> think a trivial patch is safe enough. Especially if cat /proc/driver/nvram 
-> produces a "SCSI host ID : m" that does agree with TOS.
-
-Christian
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
