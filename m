@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 575071A1A2C
+ by lists.ozlabs.org (Postfix) with ESMTPS id E42131A1A2C
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 19:44:30 +1000 (AEST)
-In-Reply-To: <1431414322-28995-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1437361123-18615-1-git-send-email-khandual@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/eeh: Fix wrong printed PE number
-Message-Id: <20150722094430.452301402D0@ozlabs.org>
+Cc: mikey@neuling.org
+Subject: Re: [V2] powerpc/signal: Add helper function to fetch quad word
+ aligned pointer
+Message-Id: <20150722094430.C7B571402D2@ozlabs.org>
 Date: Wed, 22 Jul 2015 19:44:30 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,17 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-12-05 at 07:05:22 UTC, Gavin Shan wrote:
-> On LE kernel, the non-existing PE number in BE format derived from
-> skiboot firmware isn't converted to LE format properly as following
-> kernel log indicates:
+On Mon, 2015-20-07 at 02:58:43 UTC, Anshuman Khandual wrote:
+> This patch adds one helper function 'sigcontext_vmx_regs' which computes
+> quad word aligned pointer for 'vmx_reserve' array element in sigcontext
+> structure making the code more readable.
 > 
->    EEH: Clear non-existing PHB#4-PE#200000000000000
-> 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0f36db77643b6fb57331
+https://git.kernel.org/powerpc/c/2476c09f391eddb546a7
 
 cheers
