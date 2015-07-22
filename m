@@ -1,27 +1,19 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <B48286@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0145.outbound.protection.outlook.com [157.56.110.145])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F27F1A1A2C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:03:37 +1000 (AEST)
-Message-ID: <55AF6A73.1080500@suse.cz>
-Date: Wed, 22 Jul 2015 12:03:31 +0200
-From: Vlastimil Babka <vbabka@suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2FC0E1A1A3B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:13:29 +1000 (AEST)
+From: Zhiqiang Hou <B48286@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <mpe@ellerman.id.au>
+CC: <b21284@freescale.com>, Hou Zhiqiang <B48286@freescale.com>
+Subject: [PATCH] powerpc/fsl-pci: fix pcie range issue for some P1/P2 boards
+Date: Wed, 22 Jul 2015 18:08:24 +0800
+Message-ID: <1437559704-13332-1-git-send-email-B48286@freescale.com>
 MIME-Version: 1.0
-To: Eric B Munson <emunson@akamai.com>,
- Andrew Morton <akpm@linux-foundation.org>
-CC: Michal Hocko <mhocko@suse.cz>, Jonathan Corbet <corbet@lwn.net>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, dri-devel@lists.freedesktop.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [PATCH V4 4/6] mm: mlock: Introduce VM_LOCKONFAULT and add mlock
- flags to enable it
-References: <1437508781-28655-1-git-send-email-emunson@akamai.com>
- <1437508781-28655-5-git-send-email-emunson@akamai.com>
-In-Reply-To: <1437508781-28655-5-git-send-email-emunson@akamai.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,68 +23,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/21/2015 09:59 PM, Eric B Munson wrote:
-> The cost of faulting in all memory to be locked can be very high when
-> working with large mappings.  If only portions of the mapping will be
-> used this can incur a high penalty for locking.
->
-> For the example of a large file, this is the usage pattern for a large
-> statical language model (probably applies to other statical or graphical
-> models as well).  For the security example, any application transacting
-> in data that cannot be swapped out (credit card data, medical records,
-> etc).
->
-> This patch introduces the ability to request that pages are not
-> pre-faulted, but are placed on the unevictable LRU when they are finally
-> faulted in.  This can be done area at a time via the
-> mlock2(MLOCK_ONFAULT) or the mlockall(MCL_ONFAULT) system calls.  These
-> calls can be undone via munlock2(MLOCK_ONFAULT) or
-> munlockall2(MCL_ONFAULT).
->
-> Applying the VM_LOCKONFAULT flag to a mapping with pages that are
-> already present required the addition of a function in gup.c to pin all
-> pages which are present in an address range.  It borrows heavily from
-> __mm_populate().
->
-> To keep accounting checks out of the page fault path, users are billed
-> for the entire mapping lock as if MLOCK_LOCKED was used.
+From: Hou Zhiqiang <B48286@freescale.com>
 
-Hi,
+Impact board list:
+P1020MBG-PC. P1022DS, P2020RDB
+All above boards have its PCIE memory range less than 0xbfff_ffff,
+but in dts its boundary value was 0xe0000000. Both of them was maped
+to the same boundary 0xe0000000 which was Overlapped and crossed. Cpu
+will access the illicit memery addr and detect error then lead to
+cpu stall.
+So update dts for these boards.
 
-I think you should include a complete description of which transitions 
-for vma states and mlock2/munlock2 flags applied on them are valid and 
-what they do. It will also help with the manpages.
-You explained some to Jon in the last thread, but I think there should 
-be a canonical description in changelog (if not also Documentation, if 
-mlock is covered there).
+error log:
+PCI host bridge /pcie@ffe09000 (primary) ranges:
+ MEM 0x00000000a0000000..0x00000000bfffffff -> 0x00000000e0000000
+  IO 0x00000000ffc10000..0x00000000ffc1ffff -> 0x0000000000000000
+  /pcie@ffe09000: PCICSRBAR @ 0xdff00000
+  Found FSL PCI host bridge at 0x00000000ffe0a000. Firmware bus number: 0->0
+  PCI host bridge /pcie@ffe0a000  ranges:
+  MEM 0x0000000080000000..0x000000009fffffff -> 0x00000000e0000000
+  IO 0x00000000ffc00000..0x00000000ffc0ffff -> 0x0000000000000000
+  /pcie@ffe0a000: PCICSRBAR @ 0xdff00000
+.........
+ata2: SATA link down (SStatus 0 SControl 300)
+INFO: rcu_sched self-detected stall on CPU { 1} INFO: rcu_sched detected
+stalls on CPUs/tasks: { 1} (detected by 0, t=5252 jiffies, g=4294967053,
+c=4294967052, q=76)
+Task dump for CPU 1:
+swapper/0 R running 0 1 0 0x00000804
+Call Trace:
+[ee049c30] [c00091c8] timer_interrupt+0x180/0x1a0 (unreliable)
+[ee049c60] [c000e7ec] ret_from_except+0x0/0x18
 
-For example the scenario Jon asked, what happens after a 
-mlock2(MLOCK_ONFAULT) followed by mlock2(MLOCK_LOCKED), and that the 
-answer is "nothing". Your promised code comment for apply_vma_flags() 
-doesn't suffice IMHO (and I'm not sure it's there, anyway?).
+Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
+---
+ arch/powerpc/boot/dts/p1020mbg-pc_32b.dts | 14 +++++++-------
+ arch/powerpc/boot/dts/p1022ds_32b.dts     | 18 +++++++++---------
+ arch/powerpc/boot/dts/p2020rdb-pc_32b.dts | 12 ++++++------
+ 3 files changed, 22 insertions(+), 22 deletions(-)
 
-But the more I think about the scenario and your new VM_LOCKONFAULT vma 
-flag, it seems awkward to me. Why should munlocking at all care if the 
-vma was mlocked with MLOCK_LOCKED or MLOCK_ONFAULT? In either case the 
-result is that all pages currently populated are munlocked. So the flags 
-for munlock2 should be unnecessary.
-
-I also think VM_LOCKONFAULT is unnecessary. VM_LOCKED should be enough - 
-see how you had to handle the new flag in all places that had to handle 
-the old flag? I think the information whether mlock was supposed to 
-fault the whole vma is obsolete at the moment mlock returns. VM_LOCKED 
-should be enough for both modes, and the flag to mlock2 could just 
-control whether the pre-faulting is done.
-
-So what should be IMHO enough:
-- munlock can stay without flags
-- mlock2 has only one new flag MLOCK_ONFAULT. If specified, pre-faulting 
-is not done, just set VM_LOCKED and mlock pages already present.
-- same with mmap(MAP_LOCKONFAULT) (need to define what happens when both 
-MAP_LOCKED and MAP_LOCKONFAULT are specified).
-
-Now mlockall(MCL_FUTURE) muddles the situation in that it stores the 
-information for future VMA's in current->mm->def_flags, and this 
-def_flags would need to distinguish VM_LOCKED with population and 
-without. But that could be still solvable without introducing a new vma 
-flag everywhere.
+diff --git a/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
+index ab8f076..4dfbd30 100644
+--- a/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
++++ b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
+@@ -55,12 +55,12 @@
+ 	};
+ 
+ 	pci0: pcie@ffe09000 {
+-		reg = <0x0 0xffe09000 0x0 0x1000>;
+-		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
++		ranges = <0x2000000 0x0 0xa0000000 0x0 0xa0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
++		reg = <0x0 0xffe09000 0x0 0x1000>;
+ 		pcie@0 {
+-			ranges = <0x2000000 0x0 0xe0000000
+-				  0x2000000 0x0 0xe0000000
++			ranges = <0x2000000 0x0 0xa0000000
++				  0x2000000 0x0 0xa0000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+@@ -71,11 +71,11 @@
+ 
+ 	pci1: pcie@ffe0a000 {
+ 		reg = <0x0 0xffe0a000 0x0 0x1000>;
+-		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
++		ranges = <0x2000000 0x0 0x80000000 0x0 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
+ 		pcie@0 {
+-			ranges = <0x2000000 0x0 0xe0000000
+-				  0x2000000 0x0 0xe0000000
++			ranges = <0x2000000 0x0 0x80000000
++				  0x2000000 0x0 0x80000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+diff --git a/arch/powerpc/boot/dts/p1022ds_32b.dts b/arch/powerpc/boot/dts/p1022ds_32b.dts
+index d96cae0..803e0db 100644
+--- a/arch/powerpc/boot/dts/p1022ds_32b.dts
++++ b/arch/powerpc/boot/dts/p1022ds_32b.dts
+@@ -54,12 +54,12 @@
+ 	};
+ 
+ 	pci0: pcie@ffe09000 {
+-		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
++		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
+ 		reg = <0x0 0xffe09000 0 0x1000>;
+ 		pcie@0 {
+-			ranges = <0x2000000 0x0 0xe0000000
+-				  0x2000000 0x0 0xe0000000
++			ranges = <0x2000000 0x0 0xa0000000
++				  0x2000000 0x0 0xa0000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+@@ -69,12 +69,12 @@
+ 	};
+ 
+ 	pci1: pcie@ffe0a000 {
+-		ranges = <0x2000000 0x0 0xe0000000 0 0xc0000000 0x0 0x20000000
++		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
+ 		reg = <0 0xffe0a000 0 0x1000>;
+ 		pcie@0 {
+-			ranges = <0x2000000 0x0 0xe0000000
+-				  0x2000000 0x0 0xe0000000
++			ranges = <0x2000000 0x0 0xc0000000
++				  0x2000000 0x0 0xc0000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+@@ -84,12 +84,12 @@
+ 	};
+ 
+ 	pci2: pcie@ffe0b000 {
+-		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
++		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
+ 		reg = <0 0xffe0b000 0 0x1000>;
+ 		pcie@0 {
+-			ranges = <0x2000000 0x0 0xe0000000
+-				  0x2000000 0x0 0xe0000000
++			ranges = <0x2000000 0x0 0x80000000
++				  0x2000000 0x0 0x80000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+index 57573bd..1676d81 100644
+--- a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
++++ b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
+@@ -63,11 +63,11 @@
+ 
+ 	pci1: pcie@ffe09000 {
+ 		reg = <0 0xffe09000 0 0x1000>;
+-		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
++		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
+ 		pcie@0 {
+-			ranges = <0x2000000 0x0 0xe0000000
+-				  0x2000000 0x0 0xe0000000
++			ranges = <0x2000000 0x0 0xa0000000
++				  0x2000000 0x0 0xa0000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+@@ -78,11 +78,11 @@
+ 
+ 	pci0: pcie@ffe0a000 {
+ 		reg = <0 0xffe0a000 0 0x1000>;
+-		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
++		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
+ 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
+ 		pcie@0 {
+-			ranges = <0x2000000 0x0 0xe0000000
+-				  0x2000000 0x0 0xe0000000
++			ranges = <0x2000000 0x0 0x80000000
++				  0x2000000 0x0 0x80000000
+ 				  0x0 0x20000000
+ 
+ 				  0x1000000 0x0 0x0
+-- 
+2.1.0.27.g96db324
