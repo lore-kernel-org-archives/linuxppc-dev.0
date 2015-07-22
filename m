@@ -1,19 +1,26 @@
-Return-Path: <B48286@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0145.outbound.protection.outlook.com [157.56.110.145])
+Return-Path: <Priyanka.Jain@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0140.outbound.protection.outlook.com [65.55.169.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2FC0E1A1A3B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:13:29 +1000 (AEST)
-From: Zhiqiang Hou <B48286@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <mpe@ellerman.id.au>
-CC: <b21284@freescale.com>, Hou Zhiqiang <B48286@freescale.com>
-Subject: [PATCH] powerpc/fsl-pci: fix pcie range issue for some P1/P2 boards
-Date: Wed, 22 Jul 2015 18:08:24 +0800
-Message-ID: <1437559704-13332-1-git-send-email-B48286@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB47F1A1A3D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jul 2015 20:49:19 +1000 (AEST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
+ support
+Date: Wed, 22 Jul 2015 10:49:10 +0000
+Message-ID: <BY1PR0301MB0853E43544A9D9F36D2B31B9EC830@BY1PR0301MB0853.namprd03.prod.outlook.com>
+References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1436982433.2993.81.camel@freescale.com>
+ <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437075349.2993.105.camel@freescale.com>
+ <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437152821.2993.191.camel@freescale.com>
+In-Reply-To: <1437152821.2993.191.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,166 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hou Zhiqiang <B48286@freescale.com>
-
-Impact board list:
-P1020MBG-PC. P1022DS, P2020RDB
-All above boards have its PCIE memory range less than 0xbfff_ffff,
-but in dts its boundary value was 0xe0000000. Both of them was maped
-to the same boundary 0xe0000000 which was Overlapped and crossed. Cpu
-will access the illicit memery addr and detect error then lead to
-cpu stall.
-So update dts for these boards.
-
-error log:
-PCI host bridge /pcie@ffe09000 (primary) ranges:
- MEM 0x00000000a0000000..0x00000000bfffffff -> 0x00000000e0000000
-  IO 0x00000000ffc10000..0x00000000ffc1ffff -> 0x0000000000000000
-  /pcie@ffe09000: PCICSRBAR @ 0xdff00000
-  Found FSL PCI host bridge at 0x00000000ffe0a000. Firmware bus number: 0->0
-  PCI host bridge /pcie@ffe0a000  ranges:
-  MEM 0x0000000080000000..0x000000009fffffff -> 0x00000000e0000000
-  IO 0x00000000ffc00000..0x00000000ffc0ffff -> 0x0000000000000000
-  /pcie@ffe0a000: PCICSRBAR @ 0xdff00000
-.........
-ata2: SATA link down (SStatus 0 SControl 300)
-INFO: rcu_sched self-detected stall on CPU { 1} INFO: rcu_sched detected
-stalls on CPUs/tasks: { 1} (detected by 0, t=5252 jiffies, g=4294967053,
-c=4294967052, q=76)
-Task dump for CPU 1:
-swapper/0 R running 0 1 0 0x00000804
-Call Trace:
-[ee049c30] [c00091c8] timer_interrupt+0x180/0x1a0 (unreliable)
-[ee049c60] [c000e7ec] ret_from_except+0x0/0x18
-
-Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
----
- arch/powerpc/boot/dts/p1020mbg-pc_32b.dts | 14 +++++++-------
- arch/powerpc/boot/dts/p1022ds_32b.dts     | 18 +++++++++---------
- arch/powerpc/boot/dts/p2020rdb-pc_32b.dts | 12 ++++++------
- 3 files changed, 22 insertions(+), 22 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
-index ab8f076..4dfbd30 100644
---- a/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
-+++ b/arch/powerpc/boot/dts/p1020mbg-pc_32b.dts
-@@ -55,12 +55,12 @@
- 	};
- 
- 	pci0: pcie@ffe09000 {
--		reg = <0x0 0xffe09000 0x0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0x0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
-+		reg = <0x0 0xffe09000 0x0 0x1000>;
- 		pcie@0 {
--			ranges = <0x2000000 0x0 0xe0000000
--				  0x2000000 0x0 0xe0000000
-+			ranges = <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
- 				  0x0 0x20000000
- 
- 				  0x1000000 0x0 0x0
-@@ -71,11 +71,11 @@
- 
- 	pci1: pcie@ffe0a000 {
- 		reg = <0x0 0xffe0a000 0x0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0x0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
- 		pcie@0 {
--			ranges = <0x2000000 0x0 0xe0000000
--				  0x2000000 0x0 0xe0000000
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
- 				  0x0 0x20000000
- 
- 				  0x1000000 0x0 0x0
-diff --git a/arch/powerpc/boot/dts/p1022ds_32b.dts b/arch/powerpc/boot/dts/p1022ds_32b.dts
-index d96cae0..803e0db 100644
---- a/arch/powerpc/boot/dts/p1022ds_32b.dts
-+++ b/arch/powerpc/boot/dts/p1022ds_32b.dts
-@@ -54,12 +54,12 @@
- 	};
- 
- 	pci0: pcie@ffe09000 {
--		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
- 		reg = <0x0 0xffe09000 0 0x1000>;
- 		pcie@0 {
--			ranges = <0x2000000 0x0 0xe0000000
--				  0x2000000 0x0 0xe0000000
-+			ranges = <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
- 				  0x0 0x20000000
- 
- 				  0x1000000 0x0 0x0
-@@ -69,12 +69,12 @@
- 	};
- 
- 	pci1: pcie@ffe0a000 {
--		ranges = <0x2000000 0x0 0xe0000000 0 0xc0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xc0000000 0 0xc0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc20000 0x0 0x10000>;
- 		reg = <0 0xffe0a000 0 0x1000>;
- 		pcie@0 {
--			ranges = <0x2000000 0x0 0xe0000000
--				  0x2000000 0x0 0xe0000000
-+			ranges = <0x2000000 0x0 0xc0000000
-+				  0x2000000 0x0 0xc0000000
- 				  0x0 0x20000000
- 
- 				  0x1000000 0x0 0x0
-@@ -84,12 +84,12 @@
- 	};
- 
- 	pci2: pcie@ffe0b000 {
--		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
- 		reg = <0 0xffe0b000 0 0x1000>;
- 		pcie@0 {
--			ranges = <0x2000000 0x0 0xe0000000
--				  0x2000000 0x0 0xe0000000
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
- 				  0x0 0x20000000
- 
- 				  0x1000000 0x0 0x0
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-index 57573bd..1676d81 100644
---- a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-@@ -63,11 +63,11 @@
- 
- 	pci1: pcie@ffe09000 {
- 		reg = <0 0xffe09000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0 0xa0000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
- 		pcie@0 {
--			ranges = <0x2000000 0x0 0xe0000000
--				  0x2000000 0x0 0xe0000000
-+			ranges = <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
- 				  0x0 0x20000000
- 
- 				  0x1000000 0x0 0x0
-@@ -78,11 +78,11 @@
- 
- 	pci0: pcie@ffe0a000 {
- 		reg = <0 0xffe0a000 0 0x1000>;
--		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
-+		ranges = <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
- 		pcie@0 {
--			ranges = <0x2000000 0x0 0xe0000000
--				  0x2000000 0x0 0xe0000000
-+			ranges = <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
- 				  0x0 0x20000000
- 
- 				  0x1000000 0x0 0x0
--- 
-2.1.0.27.g96db324
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBKdWx5IDE3LCAyMDE1IDEwOjM3IFBNDQo+IFRvOiBKYWluIFBy
+aXlhbmthLUIzMjE2Nw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3Vi
+amVjdDogUmU6IFtQQVRDSF1bdjJdIHBvd2VycGMvZnNsLWJvb2tlOiBBZGQgVDEwNDBENFJEQi9U
+MTA0MkQ0UkRCDQo+IGJvYXJkIHN1cHBvcnQNCj4gDQo+IE9uIEZyaSwgMjAxNS0wNy0xNyBhdCAw
+MToxNyAtMDUwMCwgSmFpbiBQcml5YW5rYS1CMzIxNjcgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0t
+T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+
+ID4gU2VudDogRnJpZGF5LCBKdWx5IDE3LCAyMDE1IDE6MDYgQU0NCj4gPiA+IFRvOiBKYWluIFBy
+aXlhbmthLUIzMjE2Nw0KPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+
+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXVt2Ml0gcG93ZXJwYy9mc2wtYm9va2U6IEFkZA0KPiA+
+ID4gVDEwNDBENFJEQi9UMTA0MkQ0UkRCIGJvYXJkIHN1cHBvcnQNCj4gPiA+DQo+ID4gPiA+ID4g
+KyAgICAgICAgICAgICAgICBpMmNAMTE4MTAwew0KPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAg
+ICAgICAgbXV4QDc3ew0KPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNv
+bXBhdGlibGUgPSAibnhwLHBjYTk1NDYiOw0KPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIHJlZyA9IDwweDc3PjsNCj4gPiA+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiA+ID4gPiArICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAjc2l6ZS1jZWxscyA9IDwwPjsNCj4gPiA+ID4gPiArICAgICAgICAgICAg
+ICAgICAgICAgfTsNCj4gPiA+ID4gPiArICAgICAgICAgICAgIH07DQo+ID4gPiA+DQo+ID4gPiA+
+IEEgbXV4IHdpdGggbm8gbm9kZXMgdW5kZXIgaXQgKGFuZCB5ZXQgaXQgaGFzICNhZGRyZXNzLWNl
+bGxzLyNzaXplLQ0KPiA+ID4gPiBjZWxscyk/DQo+ID4gPiA+IFdoYXQgaXMgaXQgbXVsdGlwbGV4
+aW5nPw0KPiA+ID4gPiBbUHJpeWFua2FdOiBQQ0E5NTQ2IGlzIGkyYyBtdXggZGV2aWNlICwgdG8g
+d2hpY2ggb3RoZXIgaTJjIGRldmljZXMNCj4gPiA+ID4gKHVwLXRvIDgNCj4gPiA+ID4gKSBjYW4g
+YmUgZnVydGhlciBjb25uZWN0ZWQgb24gb3V0cHV0IGNoYW5uZWxzIE9uIFQxMDR4RDRSREIsDQo+
+ID4gPiA+IGNoYW5uZWwgMCwgMSwgMyBsaW5lIGFyZSBjb25uZWN0ZWQgdG8gUEVYIGRldmljZSwg
+Q2hhbm5lbCAyIHRvDQo+ID4gPiA+IGhkbWkgaW50ZXJmYWNlIChpbml0aWFsaXphdGlvbiBpcyBk
+b25lIGluIHUtYm9vdCBvbmx5KSwgb3RoZXIgY2hhbm5lbHMgYXJlDQo+IGdyb3VuZGVkLg0KPiA+
+ID4gPiBTbywgYXMgc3VjaCBMaW51eCBpcyBub3QgdXNpbmcgdGhlIHNlY29uZCBsZXZlbCBJMkMg
+ZGV2aWNlcw0KPiA+ID4gPiBjb25uZWN0ZWQgb24gdGhpcyBNVVggZGV2aWNlLiBTbywgSSBoYXZl
+IG5vdCBzaG93biBuZXh0IGxldmVsDQo+IGhpZXJhcmNoeS4NCj4gPiA+ID4gU2hvdWxkIEkgcmVw
+bGFjZSAnbXV4JyB3aXRoIHNvbWUgb3RoZXIgbmFtZT8gLiBQbGVhc2Ugc3VnZ2VzdC4NCj4gPiA+
+DQo+ID4gPiBUaGUgZGV2aWNlIHRyZWUgZGVzY3JpYmVzIHRoZSBoYXJkd2FyZSwgbm90IGp1c3Qg
+d2hhdCBMaW51eCB1c2VzLi4uDQo+ID4gPiBidXQgd2hhdCBJIGRvbid0IHVuZGVyc3RhbmQgaXMg
+d2h5IHlvdSBkZXNjcmliZSB0aGUgbXV4IGF0IGFsbCBpZg0KPiA+ID4geW91J3JlIG5vdCBnb2lu
+ZyB0byBkZXNjcmliZSB3aGF0IGdvZXMgdW5kZXJuZWF0aCBpdC4NCj4gPiA+DQo+ID4gW0phaW4g
+UHJpeWFua2EtQjMyMTY3XSA6IElzIGJlbG93IGxvb2tzIE9LPw0KPiA+IGkyY0AxMTgxMDB7DQo+
+ID4gICsgICAgICAgICAgICAgICAgICAgICAgaTJjQDc3ew0KPiA+ICArICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm54cCxwY2E5NTQ2IjsNCj4gPiAgKyAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4Nzc+Ow0KPiA+ICArICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiAgKyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8MD47DQo+ID4gICsgICAgICAgICAgICAgICAg
+ICAgICB9Ow0KPiA+ICArICAgICAgICAgICAgIH07DQo+IA0KPiBXaGVyZSBpbiBteSBhYm92ZSBj
+b21tZW50IGRpZCBpdCBhcHBlYXIgdGhhdCBJIHdhcyBjb21wbGFpbmluZyBhYm91dCB0aGUNCj4g
+bm9kZSBuYW1lPw0KPiANCltKYWluIFByaXlhbmthLUIzMjE2N10NCkZyb20gd2hhdCBJIHVuZGVy
+c3RhbmQ6DQpQQ0E5NTQ2IGlzIGEgbXV4IGRldmljZSBhbmQgaXQgd291bGQgYmUgZ29vZCBpZiB3
+ZSB3ZXJlIGFibGUgdG8gcHJlc2VudCB0aGUgSTJDIGRldmljZXMgb24gb3V0cHV0IGxpbmVzIGFz
+IHN1Ym5vZGVzIGxpa2UgaW4gY2FzZSBvZiBCNHFkcyBib2FyZCBhbmQgdGhlbiAnbXV4JyBuYW1l
+IHdvdWxkIGhhdmUgbWFrZSBtb3JlIHNlbnNlLg0KQnV0IGluIGNhc2Ugb2YgVDEwNDBENFJEQiBi
+b2FyZCwgb3V0cHV0IGkyYyBsaW5lcyBhcmUgZ29pbmcgdG8gUEVYIHNsb3RzLCBQQ0kgY29ubmVj
+dG9yLiBJIGFtIG5vdCBhd2FyZSBvZiBob3cgdG8gcmVwcmVzZW50cyB0aGVtIGFzIHN1Yi1ub2Rl
+cyBpbiBkdHMuDQo+IC1TY290dA0KDQo=
