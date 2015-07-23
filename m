@@ -1,27 +1,27 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 34CDA1A02CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 15:55:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0DE441A0045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 16:04:11 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 23 Jul 2015 15:55:55 +1000
+ Thu, 23 Jul 2015 16:04:10 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3B8022CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 15:55:51 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 183322BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 16:04:07 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6N5thm41245516
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 15:55:51 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6N5tIwJ026586
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 15:55:18 +1000
-Message-ID: <55B081B2.4050001@linux.vnet.ibm.com>
-Date: Thu, 23 Jul 2015 11:24:58 +0530
+ t6N63wkA52953174
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 16:04:07 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6N63Yoa000918
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 16:03:34 +1000
+Message-ID: <55B083A2.4030404@linux.vnet.ibm.com>
+Date: Thu, 23 Jul 2015 11:33:14 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Daniel Axtens <dja@axtens.net>
@@ -30,12 +30,12 @@ CC: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 3/7] powerpc/powernv: Nest PMU detection and device
- tree parser
+Subject: Re: [PATCH v5 4/7] powerpc/powernv: detect supported nest pmus and
+ its events
 References: <1437045206-7491-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1437045206-7491-4-git-send-email-maddy@linux.vnet.ibm.com>
- <1437536981.30906.9.camel@axtens.net>
-In-Reply-To: <1437536981.30906.9.camel@axtens.net>
+ <1437045206-7491-5-git-send-email-maddy@linux.vnet.ibm.com>
+ <1437538064.30906.20.camel@axtens.net>
+In-Reply-To: <1437538064.30906.20.camel@axtens.net>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -48,115 +48,134 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Wednesday 22 July 2015 09:19 AM, Daniel Axtens wrote:
-> Hi,
->
->> +static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
+On Wednesday 22 July 2015 09:37 AM, Daniel Axtens wrote:
+>  
+>>  static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
+>> +static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
 >> +
->> +static int nest_ima_dt_parser(void)
+>> +static int nest_event_info(struct property *pp, char *name,
+>> +			struct nest_ima_events *p8_events, int string, u32 val)
+> 'int string' is a bit confusing. 'bool is_string' might be clearer, but
+> I think it would be even better still to have different functions for
+> string and non-string cases, especially because you only need val in the
+> non-string case.
+
+I would perfer to be a single function, since most of the code is same
+just of the sting or val part. yes. We can make is as is_string and will
+add
+comment explaining what is done here? 
+
+> That will also allow you to give the functions clearer names. I think
+> the function is populating the event with info from the dt property (in
+> the string case) or the val argument (non-string case) - maybe the names
+> could reflect that somehow?
 >> +{
->> +	const __be32 *gcid;
->> +	const __be64 *chip_ima_reg;
->> +	const __be64 *chip_ima_size;
->> +	struct device_node *dev;
->> +	struct perchip_nest_info *p8ni;
->> +	int idx;
+>> +	char *buf;
+>> +
+>
+>> +
+>> +static int nest_pmu_create(struct device_node *dev, int pmu_index)
+>> +{
+>> +	struct nest_ima_events **p8_events_arr, *p8_events;
+>> +	struct nest_pmu *pmu_ptr;
+>> +	struct property *pp;
+>> +	char *buf, *start;
+>> +	const __be32 *lval;
+>> +	u32 val;
+>> +	int idx = 0, ret;
+>> +
+>> +	if (!dev)
+>> +		return -EINVAL;
+>> +
+>> +	/* memory for nest pmus */
+>> +	pmu_ptr = kzalloc(sizeof(struct nest_pmu), GFP_KERNEL);
+>> +	if (!pmu_ptr)
+>> +		return -ENOMEM;
+>> +
+>> +	/* Needed for hotplug/migration */
+>> +	per_nest_pmu_arr[pmu_index] = pmu_ptr;
+>> +
+>> +	/* memory for nest pmu events */
+>> +	p8_events_arr = kzalloc((sizeof(struct nest_ima_events) * 64),
+>> +								GFP_KERNEL);
+>> +	if (!p8_events_arr)
+>> +		return -ENOMEM;
+>> +	p8_events = (struct nest_ima_events *)p8_events_arr;
+> I'm still quite uncomfortable with this.
+>  - Why * 64? Should it be * P8_NEST_MAX_EVENTS_SUPPORTED? Or is it a
+> different constant?
+
+Yes it should be P8_NEST_MAX_EVENTS_SUPPORTED, and it should be
+define as 64. Missed it to replace the macro. Nice catch.
+
+>  - p8_events = p8_events_arr[0] would be clearer
+>
 >> +
 >> +	/*
->> +	 * "nest-ima" folder contains two things,
->> +	 * a) per-chip reserved memory region for Nest PMU Counter data
->> +	 * b) Support Nest PMU units and their event files
+>> +	 * Loop through each property
 >> +	 */
->> +	for_each_node_with_property(dev, "ibm,ima-chip") {
->> +		gcid = of_get_property(dev, "ibm,chip-id", NULL);
->> +		chip_ima_reg = of_get_property(dev, "reg", NULL);
->> +		chip_ima_size = of_get_property(dev, "size", NULL);
+>> +	for_each_property_of_node(dev, pp) {
+>> +		start = pp->name;
 >> +
->> +		if ((!gcid) || (!chip_ima_reg) || (!chip_ima_size)) {
->> +			pr_err("Nest_PMU: device %s missing property\n",
->> +							dev->full_name);
->> +			return -ENODEV;
+>> +		if (!strcmp(pp->name, "name")) {
+>> +			if (!pp->value ||
+>> +			   (strnlen(pp->value, pp->length) == pp->length) ||
+>> +			   (pp->length > P8_NEST_MAX_PMU_NAME_LEN))
+>> +				return -EINVAL;
+>> +
+>> +			buf = kzalloc(P8_NEST_MAX_PMU_NAME_LEN, GFP_KERNEL);
+>> +			if (!buf)
+>> +				return -ENOMEM;
+>> +
+>> +			/* Save the name to register it later */
+>> +			sprintf(buf, "Nest_%s", (char *)pp->value);
+>> +			pmu_ptr->pmu.name = (char *)buf;
+>> +			continue;
 >> +		}
 >> +
->> +		/* chip id to save reserve memory region */
->> +		idx = (uint32_t)be32_to_cpup(gcid);
-> So be32_to_cpup returns a __u32. You're casting to a uint32_t and then
-> assigning to an int.
->  - Do you need the intermediate cast?
->  - Should idx be an unsigned type?
+>> +		/* Skip these, we dont need it */
+> "don't" instead of "dont".
 
-my bad, sorry abt type case of uint to int.
-And your are right, idx can be __u32 (__u32 and uint32_t are same i
-guess). 
+Will change it.
 
+>> +		if (!strcmp(pp->name, "phandle") ||
+>> +		    !strcmp(pp->name, "device_type") ||
+>> +		    !strcmp(pp->name, "linux,phandle"))
+>> +			continue;
 >> +
->> +		/*
->> +		 * Using a local variable to make it compact and
->> +		 * easier to read
->> +		 */
-> We probably don't need this comment. But a better variable name would be
-> helpful! 
+>> +		if (strncmp(pp->name, "unit.", 5) == 0) {
+>> +			/* Skip first few chars in the name */
+> The whole comment is pretty uninformative, as is the similar comment
+> below. If you need a comment at all, maybe something along the lines of
+> "Strip the prefix because <reason we don't need/want the prefix>"?
 
-I dont want a long name since i end up with 80 char limit warning.
-but let me see.
+Yes will change it. Thanks
 
->> +		p8ni = &p8_nest_perchip_info[idx];
->> +		p8ni->pbase = be64_to_cpup(chip_ima_reg);
->> +		p8ni->size = be64_to_cpup(chip_ima_size);
->> +		p8ni->vbase = (uint64_t) phys_to_virt(p8ni->pbase);
+>> +			start += 5;
+>> +			ret = nest_event_info(pp, start, p8_events++, 1, 0);
+>> +		} else if (strncmp(pp->name, "scale.", 6) == 0) {
+>> +			/* Skip first few chars in the name */
+>> +			start += 6;
+>> +			ret = nest_event_info(pp, start, p8_events++, 1, 0);
+>> +		} else {
+>> +			lval = of_get_property(dev, pp->name, NULL);
+>> +			val = (uint32_t)be32_to_cpup(lval);
+>> +
+>> +			ret = nest_event_info(pp, start, p8_events++, 0, val);
+>> +		}
+>> +
+>> +		if (ret)
+>> +			return ret;
+>> +
+>> +		/* book keeping */
+>> +		idx++;
+> You don't seem to use idx in this function, apart from incrementing it
+> here...?
+
+Used in next patch.
+
 >> +	}
 >> +
 >> +	return 0;
 >> +}
->> +
->> +static int __init nest_pmu_init(void)
->> +{
->> +	int ret = -ENODEV;
->> +
->> +	/*
->> +	 * Lets do this only if we are hypervisor
->> +	 */
->> +	if (!cur_cpu_spec->oprofile_cpu_type ||
->> +	    !(strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8") == 0) ||
->> +	    !cpu_has_feature(CPU_FTR_HVMODE))
->> +		return ret;
->> +
-> I'm still really uncomfortable with doing this via oprofile_cpu_type.
-> If the kernel is compiled without oprofile support, will that get
-> populated?
-
-I checked the per thread pmu register code and it all does the name.
-But that should not stop nest pmu to enable. So probability,
-I can carry only the HV mode check and drop the oprofile check.
-
 >
-> I'm also curious about why we need checking for power8 at all. We
-> already know we're not going to run on hardware without a nest PMU
-> because of the device tree check below. 
-> What happens if there's a future generation of chip that supports nest
-> PMUs?
->
-> If it's really important to check versions in this function, maybe you
-> could put a version property in the ibm,ima-chip node?
-
-True. I should not checkout power8 now, since we enable based on device tree
-entries for Nest pmu.
-
->> +	/*
->> +	 * Nest PMU information is grouped under "nest-ima" node
->> +	 * of the top-level device-tree directory. Detect Nest PMU
->> +	 * by the "ibm,ima-chip" property.
->> +	 */
->> +	if (!of_find_node_with_property(NULL, "ibm,ima-chip"))
->> +		return ret;
->> +
->> +	/*
->> +	 * Parse device-tree for Nest PMU information
->> +	 */
->> +	ret = nest_ima_dt_parser();
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->> +}
->> +device_initcall(nest_pmu_init);
