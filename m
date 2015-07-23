@@ -1,24 +1,25 @@
 Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0138.outbound.protection.outlook.com [207.46.100.138])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0134.outbound.protection.outlook.com [65.55.169.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF3D51A0186
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 22:45:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF0201A0073
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 22:48:17 +1000 (AEST)
 From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Liberman Igal <Igal.Liberman@freescale.com>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+To: Stephen Hemminger <stephen@networkplumber.org>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
  <scottwood@freescale.com>, Madalin-Cristian Bucur
  <madalin.bucur@freescale.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
  "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>,
  "ppc@mindchasers.com" <ppc@mindchasers.com>
-Subject: RE: [v3, 5/9] fsl/fman: Add Frame Manager support
-Date: Thu, 23 Jul 2015 12:45:50 +0000
-Message-ID: <DM2PR03MB383CBFE012027E474F683E3E6820@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1437564138-16592-1-git-send-email-igal.liberman@freescale.com>
-In-Reply-To: <1437564138-16592-1-git-send-email-igal.liberman@freescale.com>
+Subject: RE: [v3, 2/9] fsl/fman: Add the FMan port FLIB
+Date: Thu, 23 Jul 2015 12:48:10 +0000
+Message-ID: <DM2PR03MB383B0007660E892B81B5ADAE6820@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1437564108-16490-1-git-send-email-igal.liberman@freescale.com>
+ <20150722095553.4cd028d1@urahara>
+In-Reply-To: <20150722095553.4cd028d1@urahara>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,34 +32,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+
 Regards,
 Igal Liberman.
 
-> +static struct platform_driver fm_driver =3D {
-> +	.driver =3D {
-> +		   .name =3D "fsl-fman",
-> +		   .of_match_table =3D fm_match,
-> +		   },
-> +	.probe =3D fm_probe,
-> +};
-> +
-> +builtin_platform_driver(fm_driver);
-> +
-> +static int __init __cold fm_load(void)
-> +{
-> +	if (platform_driver_register(&fm_driver)) {
-> +		pr_crit("platform_driver_register() failed\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	pr_info("Freescale FMan module\n");
-> +	return 0;
-> +}
-> +
-> +device_initcall(fm_load);
+> -----Original Message-----
+> From: Stephen Hemminger [mailto:stephen@networkplumber.org]
+> Sent: Wednesday, July 22, 2015 7:56 PM
+> To: Liberman Igal-B31950
+> Cc: netdev@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; Wood Scott-B07421; Bucur Madalin-Cristian-B32716;
+> pebolle@tiscali.nl; joakim.tjernlund@transmode.se; ppc@mindchasers.com
+> Subject: Re: [v3, 2/9] fsl/fman: Add the FMan port FLIB
+>=20
+> On Wed, 22 Jul 2015 14:21:48 +0300
+> <igal.liberman@freescale.com> wrote:
+>=20
+> > diff --git a/drivers/net/ethernet/freescale/fman/Kconfig
+> b/drivers/net/ethernet/freescale/fman/Kconfig
+> > index 8aeae29..af42c3a 100644
+> > --- a/drivers/net/ethernet/freescale/fman/Kconfig
+> > +++ b/drivers/net/ethernet/freescale/fman/Kconfig
+> > @@ -5,3 +5,4 @@ config FSL_FMAN
+> >  	help
+> >  		Freescale Data-Path Acceleration Architecture Frame
+> Manager
+> >  		(FMan) support
+> > +
+>=20
+> Bogus blank line introduced at end of file?
+> Why was this not in patch 1?
 
-Please notice, when using builtin_platform_driver, device_initcall(fm_load)=
-; becomes redundant.=20
-Same issue in 2 other places.
-I have patches which fix that which were left out of this submission, I'll =
-add them to v4.
+It was added during the patch splitting.
+I'll fix that in the next submission, thank you for noticing.
+
+Igal.
