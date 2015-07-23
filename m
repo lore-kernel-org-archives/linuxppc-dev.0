@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2A5C1A02D1
+ by lists.ozlabs.org (Postfix) with ESMTPS id D57611A036E
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 20:21:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>, keescook@chromium.org, luto@amacapital.net,
  wad@chromium.org, strosake@linux.vnet.ibm.com,
  bogdan.purcareata@freescale.com
-Subject: [PATCH 04/11] powerpc: Don't negate error in
- syscall_set_return_value()
-Date: Thu, 23 Jul 2015 20:21:04 +1000
-Message-Id: <1437646871-3195-4-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 05/11] powerpc: Rework syscall_get_arguments() so there is
+ only one loop
+Date: Thu, 23 Jul 2015 20:21:05 +1000
+Message-Id: <1437646871-3195-5-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
 References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,43 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the only caller of syscall_set_return_value() is seccomp
-filter, which is not enabled on powerpc.
-
-This means we have not noticed that our implementation of
-syscall_set_return_value() negates error, even though the value passed
-in is already negative.
-
-So remove the negation in syscall_set_return_value(), and expect the
-caller to do it like all other implementations do.
-
-Also add a comment about the ccr handling.
+Currently syscall_get_arguments() has two loops, one for compat and one
+for regular tasks. In prepartion for the next patch, which changes which
+registers we use, switch it to only have one loop, so we only have one
+place to update.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/syscall.h | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/syscall.h | 19 ++++++++-----------
+ 1 file changed, 8 insertions(+), 11 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index c6239dabcfb1..cabe90133e69 100644
+index cabe90133e69..403e2303fe18 100644
 --- a/arch/powerpc/include/asm/syscall.h
 +++ b/arch/powerpc/include/asm/syscall.h
-@@ -44,9 +44,15 @@ static inline void syscall_set_return_value(struct task_struct *task,
- 					    struct pt_regs *regs,
- 					    int error, long val)
+@@ -64,19 +64,16 @@ static inline void syscall_get_arguments(struct task_struct *task,
+ 					 unsigned int i, unsigned int n,
+ 					 unsigned long *args)
  {
-+	/*
-+	 * In the general case it's not obvious that we must deal with CCR
-+	 * here, as the syscall exit path will also do that for us. However
-+	 * there are some places, eg. the signal code, which check ccr to
-+	 * decide if the value in r3 is actually an error.
-+	 */
- 	if (error) {
- 		regs->ccr |= 0x10000000L;
--		regs->gpr[3] = -error;
-+		regs->gpr[3] = error;
- 	} else {
- 		regs->ccr &= ~0x10000000L;
- 		regs->gpr[3] = val;
++	unsigned long mask = -1UL;
++
+ 	BUG_ON(i + n > 6);
+-#ifdef CONFIG_PPC64
+-	if (test_tsk_thread_flag(task, TIF_32BIT)) {
+-		/*
+-		 * Zero-extend 32-bit argument values.  The high bits are
+-		 * garbage ignored by the actual syscall dispatch.
+-		 */
+-		while (n-- > 0)
+-			args[n] = (u32) regs->gpr[3 + i + n];
+-		return;
+-	}
++
++#ifdef CONFIG_COMPAT
++	if (test_tsk_thread_flag(task, TIF_32BIT))
++		mask = 0xffffffff;
+ #endif
+-	memcpy(args, &regs->gpr[3 + i], n * sizeof(args[0]));
++	while (n--)
++		args[n] = regs->gpr[3 + i + n] & mask;
+ }
+ 
+ static inline void syscall_set_arguments(struct task_struct *task,
 -- 
 2.1.0
