@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 606951A0615
+ by lists.ozlabs.org (Postfix) with ESMTPS id C1EC21A0779
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 20:21:27 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>, keescook@chromium.org, luto@amacapital.net,
  wad@chromium.org, strosake@linux.vnet.ibm.com,
  bogdan.purcareata@freescale.com
-Subject: [PATCH 10/11] selftests/seccomp: Make seccomp tests work on big endian
-Date: Thu, 23 Jul 2015 20:21:10 +1000
-Message-Id: <1437646871-3195-10-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 11/11] selftests/seccomp: Add powerpc support
+Date: Thu, 23 Jul 2015 20:21:11 +1000
+Message-Id: <1437646871-3195-11-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
 References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,35 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The seccomp_bpf test uses BPF_LD|BPF_W|BPF_ABS to load 32-bit values
-from seccomp_data->args. On big endian machines this will load the high
-word of the argument, which is not what the test wants.
+Wire up the syscall number and regs so the tests work on powerpc.
 
-Borrow a hack from samples/seccomp/bpf-helper.h which changes the offset
-on big endian to account for this.
-
+Acked-by: Kees Cook <keescook@chromium.org>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/seccomp/seccomp_bpf.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ tools/testing/selftests/seccomp/seccomp_bpf.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-index c5abe7fd7590..2303a8dff9a2 100644
+index 2303a8dff9a2..a004b4cce99e 100644
 --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
 +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-@@ -82,7 +82,13 @@ struct seccomp_data {
- };
+@@ -14,6 +14,7 @@
+ #include <linux/filter.h>
+ #include <sys/prctl.h>
+ #include <sys/ptrace.h>
++#include <sys/types.h>
+ #include <sys/user.h>
+ #include <linux/prctl.h>
+ #include <linux/ptrace.h>
+@@ -1205,6 +1206,10 @@ TEST_F(TRACE_poke, getpid_runs_normally)
+ # define ARCH_REGS	struct user_pt_regs
+ # define SYSCALL_NUM	regs[8]
+ # define SYSCALL_RET	regs[0]
++#elif defined(__powerpc__)
++# define ARCH_REGS	struct pt_regs
++# define SYSCALL_NUM	gpr[0]
++# define SYSCALL_RET	gpr[3]
+ #else
+ # error "Do not know how to find your architecture's registers and syscalls"
  #endif
+@@ -1238,7 +1243,7 @@ void change_syscall(struct __test_metadata *_metadata,
+ 	ret = ptrace(PTRACE_GETREGSET, tracee, NT_PRSTATUS, &iov);
+ 	EXPECT_EQ(0, ret);
  
-+#if __BYTE_ORDER == __LITTLE_ENDIAN
- #define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]))
-+#elif __BYTE_ORDER == __BIG_ENDIAN
-+#define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]) + sizeof(__u32))
-+#else
-+#error "wut? Unknown __BYTE_ORDER?!"
-+#endif
- 
- #define SIBLING_EXIT_UNKILLED	0xbadbeef
- #define SIBLING_EXIT_FAILURE	0xbadface
+-#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__)
++#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__) || defined(__powerpc__)
+ 	{
+ 		regs.SYSCALL_NUM = syscall;
+ 	}
+@@ -1402,6 +1407,8 @@ TEST_F(TRACE_syscall, syscall_dropped)
+ #  define __NR_seccomp 383
+ # elif defined(__aarch64__)
+ #  define __NR_seccomp 277
++# elif defined(__powerpc__)
++#  define __NR_seccomp 358
+ # else
+ #  warning "seccomp syscall number unknown for this architecture"
+ #  define __NR_seccomp 0xffff
 -- 
 2.1.0
