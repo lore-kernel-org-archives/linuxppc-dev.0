@@ -1,27 +1,37 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0134.outbound.protection.outlook.com [65.55.169.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <cl@linux.com>
+Received: from resqmta-ch2-10v.sys.comcast.net
+ (resqmta-ch2-10v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:42])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF0201A0073
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 22:48:17 +1000 (AEST)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Stephen Hemminger <stephen@networkplumber.org>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
- <scottwood@freescale.com>, Madalin-Cristian Bucur
- <madalin.bucur@freescale.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
- "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>,
- "ppc@mindchasers.com" <ppc@mindchasers.com>
-Subject: RE: [v3, 2/9] fsl/fman: Add the FMan port FLIB
-Date: Thu, 23 Jul 2015 12:48:10 +0000
-Message-ID: <DM2PR03MB383B0007660E892B81B5ADAE6820@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1437564108-16490-1-git-send-email-igal.liberman@freescale.com>
- <20150722095553.4cd028d1@urahara>
-In-Reply-To: <20150722095553.4cd028d1@urahara>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D1A61A02D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2015 00:20:25 +1000 (AEST)
+Date: Thu, 23 Jul 2015 09:11:53 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: David Rientjes <rientjes@google.com>
+cc: Vlastimil Babka <vbabka@suse.cz>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ cbe-oss-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Mel Gorman <mgorman@suse.de>, Greg Thelen <gthelen@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Pekka Enberg <penberg@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Cliff Whickman <cpw@sgi.com>,
+ Robin Holt <robinmholt@gmail.com>
+Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
+In-Reply-To: <alpine.DEB.2.10.1507221445130.21468@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.11.1507230855510.12258@east.gentwo.org>
+References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
+ <alpine.DEB.2.10.1507211428160.3833@chino.kir.corp.google.com>
+ <55AF7F64.1040602@suse.cz>
+ <alpine.DEB.2.10.1507221445130.21468@chino.kir.corp.google.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,39 +41,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 22 Jul 2015, David Rientjes wrote:
 
+> Eek, yeah, that does look bad.  I'm not even sure the
+>
+> 	if (nid < 0)
+> 		nid = numa_node_id();
+>
+> is correct; I think this should be comparing to NUMA_NO_NODE rather than
+> all negative numbers, otherwise we silently ignore overflow and nobody
+> ever knows.
 
-Regards,
-Igal Liberman.
+Comparing to NUMA_NO_NODE would be better. Also use numa_mem_id() instead
+to support memoryless nodes better?
 
-> -----Original Message-----
-> From: Stephen Hemminger [mailto:stephen@networkplumber.org]
-> Sent: Wednesday, July 22, 2015 7:56 PM
-> To: Liberman Igal-B31950
-> Cc: netdev@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; Wood Scott-B07421; Bucur Madalin-Cristian-B32716;
-> pebolle@tiscali.nl; joakim.tjernlund@transmode.se; ppc@mindchasers.com
-> Subject: Re: [v3, 2/9] fsl/fman: Add the FMan port FLIB
->=20
-> On Wed, 22 Jul 2015 14:21:48 +0300
-> <igal.liberman@freescale.com> wrote:
->=20
-> > diff --git a/drivers/net/ethernet/freescale/fman/Kconfig
-> b/drivers/net/ethernet/freescale/fman/Kconfig
-> > index 8aeae29..af42c3a 100644
-> > --- a/drivers/net/ethernet/freescale/fman/Kconfig
-> > +++ b/drivers/net/ethernet/freescale/fman/Kconfig
-> > @@ -5,3 +5,4 @@ config FSL_FMAN
-> >  	help
-> >  		Freescale Data-Path Acceleration Architecture Frame
-> Manager
-> >  		(FMan) support
-> > +
->=20
-> Bogus blank line introduced at end of file?
-> Why was this not in patch 1?
+> The only possible downside would be existing users of
+> alloc_pages_node() that are calling it with an offline node.  Since it's a
+> VM_BUG_ON() that would catch that, I think it should be changed to a
+> VM_WARN_ON() and eventually fixed up because it's nonsensical.
+> VM_BUG_ON() here should be avoided.
 
-It was added during the patch splitting.
-I'll fix that in the next submission, thank you for noticing.
-
-Igal.
+The offline node thing could be addresses by using numa_mem_id()?
