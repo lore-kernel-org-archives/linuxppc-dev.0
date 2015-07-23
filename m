@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 519E41A02CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 20:21:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2A5C1A02D1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 20:21:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: <linux-kernel@vger.kernel.org>, keescook@chromium.org, luto@amacapital.net,
  wad@chromium.org, strosake@linux.vnet.ibm.com,
  bogdan.purcareata@freescale.com
-Subject: [PATCH 03/11] powerpc: Drop unused syscall_get_error()
-Date: Thu, 23 Jul 2015 20:21:03 +1000
-Message-Id: <1437646871-3195-3-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 04/11] powerpc: Don't negate error in
+ syscall_set_return_value()
+Date: Thu, 23 Jul 2015 20:21:04 +1000
+Message-Id: <1437646871-3195-4-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
 References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,37 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-syscall_get_error() is unused, and never has been.
+Currently the only caller of syscall_set_return_value() is seccomp
+filter, which is not enabled on powerpc.
 
-It's also probably wrong, as it negates r3 before returning it, but that
-depends on what the caller is expecting.
+This means we have not noticed that our implementation of
+syscall_set_return_value() negates error, even though the value passed
+in is already negative.
 
-It also doesn't deal with compat, and doesn't deal with TIF_NOERROR.
+So remove the negation in syscall_set_return_value(), and expect the
+caller to do it like all other implementations do.
 
-Although we could fix those, until it has a caller and it's clear what
-semantics the caller wants it's just untested code. So drop it.
+Also add a comment about the ccr handling.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/syscall.h | 6 ------
- 1 file changed, 6 deletions(-)
+ arch/powerpc/include/asm/syscall.h | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index ff21b7a2f0cc..c6239dabcfb1 100644
+index c6239dabcfb1..cabe90133e69 100644
 --- a/arch/powerpc/include/asm/syscall.h
 +++ b/arch/powerpc/include/asm/syscall.h
-@@ -34,12 +34,6 @@ static inline void syscall_rollback(struct task_struct *task,
- 	regs->gpr[3] = regs->orig_gpr3;
- }
- 
--static inline long syscall_get_error(struct task_struct *task,
--				     struct pt_regs *regs)
--{
--	return (regs->ccr & 0x10000000) ? -regs->gpr[3] : 0;
--}
--
- static inline long syscall_get_return_value(struct task_struct *task,
- 					    struct pt_regs *regs)
+@@ -44,9 +44,15 @@ static inline void syscall_set_return_value(struct task_struct *task,
+ 					    struct pt_regs *regs,
+ 					    int error, long val)
  {
++	/*
++	 * In the general case it's not obvious that we must deal with CCR
++	 * here, as the syscall exit path will also do that for us. However
++	 * there are some places, eg. the signal code, which check ccr to
++	 * decide if the value in r3 is actually an error.
++	 */
+ 	if (error) {
+ 		regs->ccr |= 0x10000000L;
+-		regs->gpr[3] = -error;
++		regs->gpr[3] = error;
+ 	} else {
+ 		regs->ccr &= ~0x10000000L;
+ 		regs->gpr[3] = val;
 -- 
 2.1.0
