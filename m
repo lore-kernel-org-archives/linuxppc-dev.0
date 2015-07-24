@@ -1,34 +1,24 @@
-Return-Path: <vbabka@suse.cz>
-Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
-To: David Rientjes <rientjes@google.com>, Christoph Lameter <cl@linux.com>
-References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
- <alpine.DEB.2.10.1507211428160.3833@chino.kir.corp.google.com>
- <55AF7F64.1040602@suse.cz>
- <alpine.DEB.2.10.1507221445130.21468@chino.kir.corp.google.com>
- <alpine.DEB.2.11.1507230855510.12258@east.gentwo.org>
- <alpine.DEB.2.10.1507231322510.31024@chino.kir.corp.google.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, Mel Gorman <mgorman@suse.de>,
- Greg Thelen <gthelen@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Pekka Enberg <penberg@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, Tony Luck
- <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Cliff Whickman <cpw@sgi.com>,
- Robin Holt <robinmholt@gmail.com>
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <55B25122.5030407@suse.cz>
-Date: Fri, 24 Jul 2015 16:52:18 +0200
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0107.outbound.protection.outlook.com [207.46.100.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A20131A0743
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 01:07:55 +1000 (AEST)
+Message-ID: <1437750459.2993.224.camel@freescale.com>
+Subject: Re: [PATCH v2] powerpc/dts: Add and fix 1588 timer node for eTSEC
+From: Scott Wood <scottwood@freescale.com>
+To: Lu Yangbo-B47093 <yangbo.lu@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 24 Jul 2015 10:07:39 -0500
+In-Reply-To: <BY1PR0301MB1192CF8FD2B38A36A2A9BFD5F2850@BY1PR0301MB1192.namprd03.prod.outlook.com>
+References: <1430969347-13869-1-git-send-email-yangbo.lu@freescale.com>
+ <BY1PR0301MB11921FFFBC88E7ABD81D2E27F2990@BY1PR0301MB1192.namprd03.prod.outlook.com>
+ <1437079112.2993.127.camel@freescale.com>
+ <BY1PR0301MB1192CF8FD2B38A36A2A9BFD5F2850@BY1PR0301MB1192.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.10.1507231322510.31024@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2015 10:27 PM, David Rientjes wrote:
-> On Thu, 23 Jul 2015, Christoph Lameter wrote:
->
->>> The only possible downside would be existing users of
->>> alloc_pages_node() that are calling it with an offline node.  Since it's a
->>> VM_BUG_ON() that would catch that, I think it should be changed to a
->>> VM_WARN_ON() and eventually fixed up because it's nonsensical.
->>> VM_BUG_ON() here should be avoided.
->>
->> The offline node thing could be addresses by using numa_mem_id()?
->>
->
-> I was concerned about any callers that were passing an offline node, not
-> NUMA_NO_NODE, today.  One of the alloc-node functions has a VM_BUG_ON()
-> for it, the other silently calls node_zonelist() on it.
->
-> I suppose the final alloc_pages_node() implementation could be
->
->          if (nid == NUMA_NO_NODE || VM_WARN_ON(!node_online(nid)))
->                  nid = numa_mem_id();
->
->          VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
->          return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
->
-> though.
+On Mon, 2015-07-20 at 01:33 -0500, Lu Yangbo-B47093 wrote:
+> > On Wed, 2015-07-15 at 21:37 -0500, Lu Yangbo-B47093 wrote:
+> > > Any comments?
+> > > Thanks.
+> > 
+> > Sorry, I must have missed this on my last time through the patch queue.
+> > I see you've decimalized the fiper and max-adj properties, which is
+> > good... but does it really make sense for tmr-add?  I'm not familiar with
+> > what this value represents, but the numbers look more natural as hex (e.g.
+> > 0xaaaaaaab versus 2863311531).
+> 
+> Yes, the fiper value would be writed into fiper registers. And max-adj 
+> value would be used in ptp driver in driver/ptp/.
+> But you insisted that values should be in decimalism in the v1 patch... :)
+> 
+> See the history :)
 
-I've posted v2 based on David's and Christoph's suggestions (thanks) but 
-to avoid spamming everyone until we agree on the final interface, it's 
-marked as RFC and excludes the arch people from CC:
+I didn't insist on decimals for *everything*, just where it makes sense, and 
+that "it goes in a register" doesn't *automatically* mean that it doesn't 
+make sense.
 
-http://marc.info/?l=linux-kernel&m=143774920902608&w=2
+################# history ##################
+> > > +  ptp_clock@b0e00{
+> > > +         compatible = "fsl,etsec-ptp";
+> > > +         reg = <0xb0e00 0xb0>;
+> > > +         interrupts = <68 2 0 0 69 2 0 0>;
+> > > +         fsl,tclk-period = <5>;
+> > > +         fsl,tmr-prsc    = <2>;
+> > > +         fsl,tmr-add     = <0xcccccccd>;
+> > > +         fsl,tmr-fiper1  = <0x3b9ac9fb>;
+> > > +         fsl,tmr-fiper2  = <0x00018696>;
+> > > +         fsl,max-adj     = <249999999>;
+> > 
+> > Please don't use hex for numbers that make more sense as decimal.
+> > [Lu Yangbo-B47093] The hex value is register value, I think it's better 
+> > to use hex.
+> 
+> Whether it goes into a register doesn't matter.  Hex values are useful for 
+> values which are subdivided into various bitfields, or whose hex 
+> representation is simpler than decimal.  I'm not familiar with the details 
+> of this hardware, but I doubt the former is the case for 0x3b9ac9fb == 
+> 9999999995 or 0x18696 == 99990.
+> 
+> -Scott
+> ######################################
+> 
+> 
+> > 
+> > > > diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+> > > > b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+> > > > index c21d1c7..363172d 100644
+> > > > --- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+> > > > +++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+> > > > @@ -215,12 +215,12 @@
+> > > >     };
+> > > > 
+> > > >      ptp_clock@24e00{
+> > > > -           fsl,tclk-period = <5>;
+> > > > -           fsl,tmr-prsc = <200>;
+> > > > -           fsl,tmr-add = <0xCCCCCCCD>;
+> > > > -           fsl,tmr-fiper1 = <0x3B9AC9FB>;
+> > > > -           fsl,tmr-fiper2 = <0x0001869B>;
+> > > > -           fsl,max-adj = <249999999>;
+> > > > +           fsl,tclk-period = <5>;
+> > > > +           fsl,tmr-prsc    = <2>;
+> > > > +           fsl,tmr-add     = <2863311531>;
+> > > > +           fsl,tmr-fiper1  = <999999995>;
+> > > > +           fsl,tmr-fiper2  = <99990>;
+> > > > +           fsl,max-adj     = <299999999>;
+> > > >     };
+> > 
+> > And here, you're changing the value of fsl,tmr-add and fsl,max-adj.  Why?
+> 
+> The old values maybe not calculated base on the default eTSEC system clock 
+> value.
+> 1588 timer couldn’t be adjusted correctly by old values.
+
+Explain in the changelog what was wrong with the old values (don't just say 
+"Fix 1588 timer node in file").
+
+-Scott
