@@ -1,45 +1,35 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <schmitzmic@gmail.com>
+Received: from mail-ig0-x22d.google.com (mail-ig0-x22d.google.com
+ [IPv6:2607:f8b0:4001:c05::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 456801A035C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2015 11:19:03 +1000 (AEST)
-Received: from /spool/local
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 23 Jul 2015 21:19:00 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B107138C803B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 21:18:57 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6O1IvU862783618
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2015 01:18:57 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6O1IuFS003688
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 21:18:57 -0400
-Date: Thu, 23 Jul 2015 18:17:43 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: Re: [PATCH v3 7/8] perf: Define PMU_TXN_READ interface
-Message-ID: <20150724011743.GA5847@us.ibm.com>
-References: <1436929315-28520-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1436929315-28520-8-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150716222015.GO3644@twins.programming.kicks-ass.net>
- <20150722015045.GA24420@us.ibm.com>
- <20150722055503.GO25159@twins.programming.kicks-ass.net>
- <20150722231916.GA1863@us.ibm.com>
- <20150723080435.GE25159@twins.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 373361A0186
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jul 2015 12:56:29 +1000 (AEST)
+Received: by igbpg9 with SMTP id pg9so25733857igb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jul 2015 19:56:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150723080435.GE25159@twins.programming.kicks-ass.net>
+In-Reply-To: <20150723092114.GA10989@guido.earth.sol>
+References: <20150712102527.356151908@telegraphics.com.au>
+ <20150712102528.107134628@telegraphics.com.au>
+ <87d1zwc4dj.fsf@igel.home>
+ <alpine.LNX.2.00.1507141804300.1622@nippy.intranet>
+ <55AF1364.3080701@gmail.com>
+ <alpine.LNX.2.00.1507221421100.4187@nippy.intranet>
+ <20150723092114.GA10989@guido.earth.sol>
+Date: Fri, 24 Jul 2015 14:56:26 +1200
+Message-ID: <CAOmrzkL1rOV=9zu=sfpt4-oveR2j-_KVGYvCvCGWzj83oOihnw@mail.gmail.com>
+Subject: Re: [RFC v4 03/25] m68k/atari: Move Atari-specific code out of
+ drivers/char/nvram.c
+From: Michael Schmitz <schmitzmic@gmail.com>
+To: Finn Thain <fthain@telegraphics.com.au>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ Andreas Schwab <schwab@linux-m68k.org>,
+ Linux Kernel Development <linux-kernel@vger.kernel.org>,
+ "Linux/m68k" <linux-m68k@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,23 +39,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra [peterz@infradead.org] wrote:
-| On Wed, Jul 22, 2015 at 04:19:16PM -0700, Sukadev Bhattiprolu wrote:
-| > Peter Zijlstra [peterz@infradead.org] wrote:
-| > | I've not woken up yet, and not actually fully read the email, but can
-| > | you stuff the entire above chunk inside the IPI?
-| > | 
-| > | I think you could then actually optimize __perf_event_read() as well,
-| > | because all these events should be on the same context, so no point in
-| > | calling update_*time*() for every event or so.
-| > | 
-| > 
-| > Do you mean something like this (will move the rename to a separate
-| > patch before posting):
-| 
-| More like so.. please double check, I've not even had tea yet.
+Hi Christian,
 
-Yeah, I realized I had ignored the 'event->cpu' spec.
-Will try this out. Thanks,
+here's what Finn asked me to run as tests:
 
-Sukadev
+# dmesg | grep this_id > nvram.out
+# cat /proc/driver/nvram >> nvram.out
+# hexdump -C /dev/nvram >> nvram.out
+# cp /dev/nvram /tmp/nvram
+# cp /tmp/nvram /dev/nvram
+# md5sum /dev/nvram /tmp/nvram >> nvram.out
+
+What you sent so far looks OK. I've tested the change of SCSI ID
+(using EmuTOS) along with a trivial patch to atari_scsi.c (replace
+offset 14 by 16) and the driver now uses the stored ID properly. I'll
+sent kernels to test Finn's NVRAM patch for regression ASAP.
+
+Thanks for your offer of help!
+
+Cheers,
+
+  Michael
+
+
+On Thu, Jul 23, 2015 at 9:21 PM, Christian T. Steigies <cts@debian.org> wrote:
+> On Wed, Jul 22, 2015 at 02:22:21PM +1000, Finn Thain wrote:
+>>
+>> Anyone with a suitable Atari, i.e. ATARIHW_PRESENT(TT_CLK), who can boot
+>> both TOS and Linux could resolve the question. (Perhaps with an emulator?)
+>>
+>> Any old kernel binary would do, since atari_scsi should print either
+>> "HOSTID=n" or "this_id n" at startup.
+>>
+>> If n doesn't agree with what TOS says about the host's SCSI ID, then I
+>> think a trivial patch is safe enough. Especially if cat /proc/driver/nvram
+>> produces a "SCSI host ID : m" that does agree with TOS.
+>
+> root@garkin:~>cat /proc/hardware
+> Model:          Atari Falcon
+> System Memory:  522752K
+>         510 MB at 0x01000000 (alternate RAM)
+> Detected hardware:
+>         Falcon Shifter
+>         Programmable Sound Generator
+>         PCM 8 Bit Sound
+>         CODEC Sound
+>         SCSI Controller NCR5380 (Falcon style)
+>         IDE Interface
+>         8/16 Mhz Switch for FDC
+>         Multi Function Peripheral MFP 68901
+>         Serial Communications Controller SCC 8530
+>         Paddle Interface
+>         DMA Controller for SCC
+>         Clock Chip MC146818A
+>         Blitter
+>         DSP56001 processor
+>
+> root@garkin:~>dmesg |grep SCSI
+> [    0.000000] Atari hardware found: VIDEL STDMA-SCSI ST_MFP YM2149 PCM CODEC DSP56K SCC_DMA SCC ANALOG_JOY BLITTER IDE TT_CLK FDC_SPEED
+> [    0.410000] SCSI subsystem initialized
+> [    0.850000] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 251)
+> [    4.230000] Atari SCSI: resetting the SCSI bus... done
+> [    6.750000] scsi host0: Atari native SCSI, io_port 0x0, n_io_port 0, base 0x0, irq 15, can_queue 8, cmd_per_lun 1, sg_tablesize 0, this_id 7, flags { }, options { REAL_DMA SUPPORT_TAGS }
+>
+> root@garkin:~>cat /proc/driver/nvram
+> Checksum status  : not valid
+> Boot preference  : 0xff (undefined)
+> SCSI arbitration : on
+> SCSI host ID     : 7
+> OS language      : 255 (undefined)
+> Keyboard language: 255 (undefined)
+> Date format      : 7 (undefined), 24h clock
+> Boot delay       : 255s
+> Video mode       : 4 colors, 40 columns, TV NTSC monitor
+>                    no overscan, compat. mode off
+>
+>
+> Let me know if you need more info.
+>
+> Christian
