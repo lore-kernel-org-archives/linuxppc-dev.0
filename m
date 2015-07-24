@@ -1,40 +1,34 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
- by lists.ozlabs.org (Postfix) with ESMTP id ABF041A098F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 00:39:39 +1000 (AEST)
-Date: Fri, 24 Jul 2015 10:39:36 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- Stephen Rothwell <sfr@canb.auug.org.au>, linux-am33-list@redhat.com,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Vlastimil Babka <vbabka@suse.cz>,
- Guenter Roeck <linux@roeck-us.net>, linux-xtensa@linux-xtensa.org,
- linux-s390@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net,
- linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com,
- linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V4 2/6] mm: mlock: Add new mlock, munlock, and munlockall
- system calls
-Message-ID: <20150724143936.GE9203@akamai.com>
-References: <1437508781-28655-1-git-send-email-emunson@akamai.com>
- <1437508781-28655-3-git-send-email-emunson@akamai.com>
- <20150721134441.d69e4e1099bd43e56835b3c5@linux-foundation.org>
- <1437528316.16792.7.camel@ellerman.id.au>
- <20150722141501.GA3203@akamai.com>
- <20150723065830.GA5919@linux-mips.org>
+Return-Path: <vbabka@suse.cz>
+Subject: Re: [PATCH] mm: rename and document alloc_pages_exact_node
+To: David Rientjes <rientjes@google.com>, Christoph Lameter <cl@linux.com>
+References: <1437486951-19898-1-git-send-email-vbabka@suse.cz>
+ <alpine.DEB.2.10.1507211428160.3833@chino.kir.corp.google.com>
+ <55AF7F64.1040602@suse.cz>
+ <alpine.DEB.2.10.1507221445130.21468@chino.kir.corp.google.com>
+ <alpine.DEB.2.11.1507230855510.12258@east.gentwo.org>
+ <alpine.DEB.2.10.1507231322510.31024@chino.kir.corp.google.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, Mel Gorman <mgorman@suse.de>,
+ Greg Thelen <gthelen@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Pekka Enberg <penberg@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, Tony Luck
+ <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Cliff Whickman <cpw@sgi.com>,
+ Robin Holt <robinmholt@gmail.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Message-ID: <55B25122.5030407@suse.cz>
+Date: Fri, 24 Jul 2015 16:52:18 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="+JUInw4efm7IfTNU"
-In-Reply-To: <20150723065830.GA5919@linux-mips.org>
+In-Reply-To: <alpine.DEB.2.10.1507231322510.31024@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,58 +38,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/23/2015 10:27 PM, David Rientjes wrote:
+> On Thu, 23 Jul 2015, Christoph Lameter wrote:
+>
+>>> The only possible downside would be existing users of
+>>> alloc_pages_node() that are calling it with an offline node.  Since it's a
+>>> VM_BUG_ON() that would catch that, I think it should be changed to a
+>>> VM_WARN_ON() and eventually fixed up because it's nonsensical.
+>>> VM_BUG_ON() here should be avoided.
+>>
+>> The offline node thing could be addresses by using numa_mem_id()?
+>>
+>
+> I was concerned about any callers that were passing an offline node, not
+> NUMA_NO_NODE, today.  One of the alloc-node functions has a VM_BUG_ON()
+> for it, the other silently calls node_zonelist() on it.
+>
+> I suppose the final alloc_pages_node() implementation could be
+>
+>          if (nid == NUMA_NO_NODE || VM_WARN_ON(!node_online(nid)))
+>                  nid = numa_mem_id();
+>
+>          VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
+>          return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
+>
+> though.
 
---+JUInw4efm7IfTNU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I've posted v2 based on David's and Christoph's suggestions (thanks) but 
+to avoid spamming everyone until we agree on the final interface, it's 
+marked as RFC and excludes the arch people from CC:
 
-On Thu, 23 Jul 2015, Ralf Baechle wrote:
-
-> On Wed, Jul 22, 2015 at 10:15:01AM -0400, Eric B Munson wrote:
->=20
-> > >=20
-> > > You haven't wired it up properly on powerpc, but I haven't mentioned =
-it because
-> > > I'd rather we did it.
-> > >=20
-> > > cheers
-> >=20
-> > It looks like I will be spinning a V5, so I will drop all but the x86
-> > system calls additions in that version.
->=20
-> The MIPS bits are looking good however, so
->=20
-> Acked-by: Ralf Baechle <ralf@linux-mips.org>
->=20
-> With my ack, will you keep them or maybe carry them as a separate patch?
-
-I will keep the MIPS additions as a separate patch in the series, though
-I have dropped two of the new syscalls after some discussion.  So I will
-not include your ack on the new patch.
-
-Eric
-
---+JUInw4efm7IfTNU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVsk4oAAoJELbVsDOpoOa9Eo0QAJ6eViChMf3Imw2HLUBOL+qS
-B7hozSCTuKLHaqx8QBhkjX6yqn0FIa5+TUWk76Py3JA00geQAiSWGmmZidLmdkmL
-QqZgrvi6B/hsDx4qhNk3wsTpeOtRL6JfpM0CI42Y5JO9nXvp/mpEJyHIRbrvlOtG
-GdRPYjyf1gXqwFaOJel7/GvPhRxMh0vkIr78XqNZOQovWL9cfvaUGaZmLGcLJq78
-PPYyuZ53AmNg83C8wDpgPfdgQ/L4ob+mZJIcP8purUXHpu7Xu7KbePkdoPqZ1EDT
-zRias9nrfrQQTCYaga4MM6wMa2S+iDNPq6Ae+sI6eoDyMxhjuUEi4xxHZ9HGwSIm
-Ii5cbD5//xbOHceAPuQ0lhvWH06ip6OVEXx68ACl7p46Ebi7B2jOeSyKH3UNpomS
-37NdAdUk3PlC3r3CwoPS2XXYjthQr8rVLVqoZP1wC4KxHanglXzFv+AwyLwRCQJ3
-6WevOpUmjVstR67EZBXmHMC4yVGxwF9TdC15G4coZEBw8wcLV6rC2TuK1KZw5JHR
-1yIJtZIBQmNoFkGwNWggIFsDiOasKmgUjjHY/yPPrn0MTkCy69zrnkqzoKZQEIoE
-MXYJiYfYFy7Ek7/K7u/lCjJI0X1bXk3QTmNrX5BuVzQPtV8jdzcBzl4SQhFGc7IH
-4GNpeBolyRBy2p7wt0lO
-=/Udu
------END PGP SIGNATURE-----
-
---+JUInw4efm7IfTNU--
+http://marc.info/?l=linux-kernel&m=143774920902608&w=2
