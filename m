@@ -1,28 +1,40 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E19001A09A3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 01:46:02 +1000 (AEST)
-From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-To: Joe Perches <joe@perches.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
- <scottwood@freescale.com>, Liberman Igal <Igal.Liberman@freescale.com>,
- "ppc@mindchasers.com" <ppc@mindchasers.com>, "pebolle@tiscali.nl"
- <pebolle@tiscali.nl>, "joakim.tjernlund@transmode.se"
- <joakim.tjernlund@transmode.se>
-Subject: RE: [PATCH 02/10] dpaa_eth: add support for DPAA Ethernet
-Date: Fri, 24 Jul 2015 15:45:56 +0000
-Message-ID: <BL2PR03MB545D22D02CEEDA05878E833E6810@BL2PR03MB545.namprd03.prod.outlook.com>
-References: <1437581806-17420-1-git-send-email-madalin.bucur@freescale.com>
- <1437581806-17420-2-git-send-email-madalin.bucur@freescale.com>
- <1437586665.20787.24.camel@perches.com>
-In-Reply-To: <1437586665.20787.24.camel@perches.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id B5FEA1A1C0A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 01:46:50 +1000 (AEST)
+Message-ID: <55B25DDE.8090107@roeck-us.net>
+Date: Fri, 24 Jul 2015 08:46:38 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
+To: Eric B Munson <emunson@akamai.com>,
+ Ralf Baechle <ralf@linux-mips.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linux-mips@linux-mips.org, linux-m68k@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Michal Hocko <mhocko@suse.cz>,
+ linux-mm@kvack.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-am33-list@redhat.com, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ linux-xtensa@linux-xtensa.org, linux-s390@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com,
+ linux-parisc@vger.kernel.org, linux-api@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V4 2/6] mm: mlock: Add new mlock, munlock, and munlockall
+ system calls
+References: <1437508781-28655-1-git-send-email-emunson@akamai.com>
+ <1437508781-28655-3-git-send-email-emunson@akamai.com>
+ <20150721134441.d69e4e1099bd43e56835b3c5@linux-foundation.org>
+ <1437528316.16792.7.camel@ellerman.id.au> <20150722141501.GA3203@akamai.com>
+ <20150723065830.GA5919@linux-mips.org> <20150724143936.GE9203@akamai.com>
+In-Reply-To: <20150724143936.GE9203@akamai.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,152 +44,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Joe Perches [mailto:joe@perches.com]
-> On Wed, 2015-07-22 at 19:16 +0300, Madalin Bucur wrote:
-> > This introduces the Freescale Data Path Acceleration Architecture
-> > (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
-> > BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
-> > the Freescale DPAA QorIQ platforms.
->=20
-> trivia:
->=20
-> > +static void __hot _dpa_tx_conf(struct net_device	*net_dev,
-> > +			       const struct dpa_priv_s	*priv,
-> > +			       struct dpa_percpu_priv_s	*percpu_priv,
-> > +			       const struct qm_fd	*fd,
-> > +			       u32			fqid)
-> > +{
-> []
-> > +static struct dpa_bp * __cold
-> > +dpa_priv_bp_probe(struct device *dev)
->=20
-> Do the __hot and __cold markings really matter?
-> Some of them may be questionable.
+On 07/24/2015 07:39 AM, Eric B Munson wrote:
+> On Thu, 23 Jul 2015, Ralf Baechle wrote:
+>
+>> On Wed, Jul 22, 2015 at 10:15:01AM -0400, Eric B Munson wrote:
+>>
+>>>>
+>>>> You haven't wired it up properly on powerpc, but I haven't mentioned it because
+>>>> I'd rather we did it.
+>>>>
+>>>> cheers
+>>>
+>>> It looks like I will be spinning a V5, so I will drop all but the x86
+>>> system calls additions in that version.
+>>
+>> The MIPS bits are looking good however, so
+>>
+>> Acked-by: Ralf Baechle <ralf@linux-mips.org>
+>>
+>> With my ack, will you keep them or maybe carry them as a separate patch?
+>
+> I will keep the MIPS additions as a separate patch in the series, though
+> I have dropped two of the new syscalls after some discussion.  So I will
+> not include your ack on the new patch.
+>
+> Eric
+>
 
-Some may be, yes. I need to go through all of them.
+Hi Eric,
 
-> > +static int __init dpa_load(void)
-> > +{
-> []
-> > +	err =3D platform_driver_register(&dpa_driver);
-> > +	if (unlikely(err < 0)) {
-> > +		pr_err(KBUILD_MODNAME
-> > +			": %s:%hu:%s(): platform_driver_register() =3D %d\n",
-> > +			KBUILD_BASENAME ".c", __LINE__, __func__, err);
-> > +	}
-> > +
-> > +	pr_debug(KBUILD_MODNAME ": %s:%s() ->\n",
-> > +		 KBUILD_BASENAME ".c", __func__);
->=20
-> Perhaps these should use pr_fmt
+next-20150724 still has some failures due to this patch set. Are those
+being looked at (I know parisc builds fail, but there may be others) ?
 
-Agree.
-
-> > +static void __exit dpa_unload(void)
-> > +{
-> > +	pr_debug(KBUILD_MODNAME ": -> %s:%s()\n",
-> > +		 KBUILD_BASENAME ".c", __func__);
->=20
-> dynamic debug has __func__ available and perhaps
-> the function tracer might be used instead.
->=20
-> > diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-> b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-> []
-> > +#define __hot
->=20
-> curious.
->=20
-> Maybe it'd be good to add a real __hot to compiler.h
-
-They're mostly there to make readers aware the code is critical, any
-changes could mess performance.
-
-> > +struct dpa_buffer_layout_s {
-> > +	u16	priv_data_size;
-> > +	bool		parse_results;
-> > +	bool		time_stamp;
-> > +	bool		hash_results;
-> > +	u16	data_align;
-> > +};
->=20
-> > +struct dpa_fq {
-> > +	struct qman_fq		 fq_base;
-> > +	struct list_head	 list;
-> > +	struct net_device	*net_dev;
->=20
-> some inconsistent indentation here and there
-
-Yes, I've tried to align the style but given the many editors along the tim=
-e the code existed=20
-there still are areas out of sync.
-
-> > +struct dpa_bp {
-> > +	struct bman_pool		*pool;
-> > +	u8				bpid;
-> > +	struct device			*dev;
-> > +	union {
-> > +		/* The buffer pools used for the private ports are initialized
-> > +		 * with target_count buffers for each CPU; at runtime the
-> > +		 * number of buffers per CPU is constantly brought back to
-> this
-> > +		 * level
-> > +		 */
-> > +		int target_count;
-> > +		/* The configured value for the number of buffers in the
-> pool,
-> > +		 * used for shared port buffer pools
-> > +		 */
-> > +		int config_count;
-> > +	};
->=20
-> Anonymous unions are relatively rare
-
-We liked the direct access to members...
-In this particular case the use is a bit excessive, we can do without it.
-
-> > +	struct {
-> > +		/**
->=20
-> Maybe the /** style should be avoided
-
-Will fix.
-
-> > +		 * All egress queues to a given net device belong to one
-> > +		 * (and the same) congestion group.
-> > +		 */
-> > +		struct qman_cgr cgr;
-> > +	} cgr_data;
->=20
-> []
->=20
-> > +int dpa_stop(struct net_device *net_dev)
-> > +{
-> []
-> > +	err =3D mac_dev->stop(mac_dev);
-> > +	if (unlikely(err < 0))
-> > +		netif_err(priv, ifdown, net_dev, "mac_dev->stop() =3D %d\n",
-> > +			  err);
->=20
-> Some of the likely/unlikely uses may not
-> be useful/necessary.
-
-In this particular case it's gratuitous, I'll go through all of them.
-
-> > +
-> > +	for_each_port_device(i, mac_dev->port_dev) {
-> > +		error =3D fm_port_disable(
-> > +				fm_port_drv_handle(mac_dev-
-> >port_dev[i]));
-> > +		err =3D error ? error : err;
->=20
-> 		if (error)
-> 			err =3D error;
->=20
-> is more obvious to me.
-
-Yes, it's more readable.
-
-Thank you,
-Madalin
+Thanks,
+Guenter
