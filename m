@@ -1,26 +1,27 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <madalin.bucur@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
+ (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CDBC1A098F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 01:28:20 +1000 (AEST)
-Message-ID: <1437751681.2993.235.camel@freescale.com>
-Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
- support
-From: Scott Wood <scottwood@freescale.com>
-To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 24 Jul 2015 10:28:01 -0500
-In-Reply-To: <BY1PR0301MB0853E43544A9D9F36D2B31B9EC830@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
- <1436982433.2993.81.camel@freescale.com>
- <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437075349.2993.105.camel@freescale.com>
- <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437152821.2993.191.camel@freescale.com>
- <BY1PR0301MB0853E43544A9D9F36D2B31B9EC830@BY1PR0301MB0853.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E19001A09A3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 01:46:02 +1000 (AEST)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Joe Perches <joe@perches.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
+ <scottwood@freescale.com>, Liberman Igal <Igal.Liberman@freescale.com>,
+ "ppc@mindchasers.com" <ppc@mindchasers.com>, "pebolle@tiscali.nl"
+ <pebolle@tiscali.nl>, "joakim.tjernlund@transmode.se"
+ <joakim.tjernlund@transmode.se>
+Subject: RE: [PATCH 02/10] dpaa_eth: add support for DPAA Ethernet
+Date: Fri, 24 Jul 2015 15:45:56 +0000
+Message-ID: <BL2PR03MB545D22D02CEEDA05878E833E6810@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1437581806-17420-1-git-send-email-madalin.bucur@freescale.com>
+ <1437581806-17420-2-git-send-email-madalin.bucur@freescale.com>
+ <1437586665.20787.24.camel@perches.com>
+In-Reply-To: <1437586665.20787.24.camel@perches.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,85 +32,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-07-22 at 05:49 -0500, Jain Priyanka-B32167 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, July 17, 2015 10:37 PM
-> > To: Jain Priyanka-B32167
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB
-> > board support
-> > 
-> > On Fri, 2015-07-17 at 01:17 -0500, Jain Priyanka-B32167 wrote:
-> > > 
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Friday, July 17, 2015 1:06 AM
-> > > > To: Jain Priyanka-B32167
-> > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add
-> > > > T1040D4RDB/T1042D4RDB board support
-> > > > 
-> > > > > > +                i2c@118100{
-> > > > > > +                      mux@77{
-> > > > > > +                             compatible = "nxp,pca9546";
-> > > > > > +                             reg = <0x77>;
-> > > > > > +                             #address-cells = <1>;
-> > > > > > +                             #size-cells = <0>;
-> > > > > > +                     };
-> > > > > > +             };
-> > > > > 
-> > > > > A mux with no nodes under it (and yet it has #address-cells/#size-
-> > > > > cells)?
-> > > > > What is it multiplexing?
-> > > > > [Priyanka]: PCA9546 is i2c mux device , to which other i2c devices
-> > > > > (up-to 8
-> > > > > ) can be further connected on output channels On T104xD4RDB,
-> > > > > channel 0, 1, 3 line are connected to PEX device, Channel 2 to
-> > > > > hdmi interface (initialization is done in u-boot only), other 
-> > > > > channels are
-> > grounded.
-> > > > > So, as such Linux is not using the second level I2C devices
-> > > > > connected on this MUX device. So, I have not shown next level
-> > hierarchy.
-> > > > > Should I replace 'mux' with some other name? . Please suggest.
-> > > > 
-> > > > The device tree describes the hardware, not just what Linux uses...
-> > > > but what I don't understand is why you describe the mux at all if
-> > > > you're not going to describe what goes underneath it.
-> > > > 
-> > > [Jain Priyanka-B32167] : Is below looks OK?
-> > > i2c@118100{
-> > >  +                      i2c@77{
-> > >  +                             compatible = "nxp,pca9546";
-> > >  +                             reg = <0x77>;
-> > >  +                             #address-cells = <1>;
-> > >  +                             #size-cells = <0>;
-> > >  +                     };
-> > >  +             };
-> > 
-> > Where in my above comment did it appear that I was complaining about the
-> > node name?
-> > 
-> [Jain Priyanka-B32167]
-> From what I understand:
-> PCA9546 is a mux device and it would be good if we were able to present the 
-> I2C devices on output lines as subnodes like in case of B4qds board and 
-> then 'mux' name would have make more sense.
+> -----Original Message-----
+> From: Joe Perches [mailto:joe@perches.com]
+> On Wed, 2015-07-22 at 19:16 +0300, Madalin Bucur wrote:
+> > This introduces the Freescale Data Path Acceleration Architecture
+> > (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
+> > BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
+> > the Freescale DPAA QorIQ platforms.
+>=20
+> trivia:
+>=20
+> > +static void __hot _dpa_tx_conf(struct net_device	*net_dev,
+> > +			       const struct dpa_priv_s	*priv,
+> > +			       struct dpa_percpu_priv_s	*percpu_priv,
+> > +			       const struct qm_fd	*fd,
+> > +			       u32			fqid)
+> > +{
+> []
+> > +static struct dpa_bp * __cold
+> > +dpa_priv_bp_probe(struct device *dev)
+>=20
+> Do the __hot and __cold markings really matter?
+> Some of them may be questionable.
 
-The name "mux" makes more sense regardless.
+Some may be, yes. I need to go through all of them.
 
-> But in case of T1040D4RDB board, output i2c lines are going to PEX slots, 
-> PCI connector. I am not aware of how to represents them as sub-nodes in dts.
+> > +static int __init dpa_load(void)
+> > +{
+> []
+> > +	err =3D platform_driver_register(&dpa_driver);
+> > +	if (unlikely(err < 0)) {
+> > +		pr_err(KBUILD_MODNAME
+> > +			": %s:%hu:%s(): platform_driver_register() =3D %d\n",
+> > +			KBUILD_BASENAME ".c", __LINE__, __func__, err);
+> > +	}
+> > +
+> > +	pr_debug(KBUILD_MODNAME ": %s:%s() ->\n",
+> > +		 KBUILD_BASENAME ".c", __func__);
+>=20
+> Perhaps these should use pr_fmt
 
-OK, so you're saying the i2c devices are pluggable (and I'm assuming by "PEX 
-slots" you just mean that the physical slot is repurposed, not that the PCI 
-express protocol is involved)?  Making a non-runtime-enumerable bus be 
-pluggable seems like a bad idea, but if that's really what has been done, 
-there needs to be a device tree that represents the entire system, not just 
-the motherboard.  This could be done either via a dts file that /include/s 
-the motherboard dts, or via firmware dtb edits.  The dts for the motherboard 
-should include the mux node with a comment explaining what the situation is.
+Agree.
 
--Scott
+> > +static void __exit dpa_unload(void)
+> > +{
+> > +	pr_debug(KBUILD_MODNAME ": -> %s:%s()\n",
+> > +		 KBUILD_BASENAME ".c", __func__);
+>=20
+> dynamic debug has __func__ available and perhaps
+> the function tracer might be used instead.
+>=20
+> > diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> []
+> > +#define __hot
+>=20
+> curious.
+>=20
+> Maybe it'd be good to add a real __hot to compiler.h
+
+They're mostly there to make readers aware the code is critical, any
+changes could mess performance.
+
+> > +struct dpa_buffer_layout_s {
+> > +	u16	priv_data_size;
+> > +	bool		parse_results;
+> > +	bool		time_stamp;
+> > +	bool		hash_results;
+> > +	u16	data_align;
+> > +};
+>=20
+> > +struct dpa_fq {
+> > +	struct qman_fq		 fq_base;
+> > +	struct list_head	 list;
+> > +	struct net_device	*net_dev;
+>=20
+> some inconsistent indentation here and there
+
+Yes, I've tried to align the style but given the many editors along the tim=
+e the code existed=20
+there still are areas out of sync.
+
+> > +struct dpa_bp {
+> > +	struct bman_pool		*pool;
+> > +	u8				bpid;
+> > +	struct device			*dev;
+> > +	union {
+> > +		/* The buffer pools used for the private ports are initialized
+> > +		 * with target_count buffers for each CPU; at runtime the
+> > +		 * number of buffers per CPU is constantly brought back to
+> this
+> > +		 * level
+> > +		 */
+> > +		int target_count;
+> > +		/* The configured value for the number of buffers in the
+> pool,
+> > +		 * used for shared port buffer pools
+> > +		 */
+> > +		int config_count;
+> > +	};
+>=20
+> Anonymous unions are relatively rare
+
+We liked the direct access to members...
+In this particular case the use is a bit excessive, we can do without it.
+
+> > +	struct {
+> > +		/**
+>=20
+> Maybe the /** style should be avoided
+
+Will fix.
+
+> > +		 * All egress queues to a given net device belong to one
+> > +		 * (and the same) congestion group.
+> > +		 */
+> > +		struct qman_cgr cgr;
+> > +	} cgr_data;
+>=20
+> []
+>=20
+> > +int dpa_stop(struct net_device *net_dev)
+> > +{
+> []
+> > +	err =3D mac_dev->stop(mac_dev);
+> > +	if (unlikely(err < 0))
+> > +		netif_err(priv, ifdown, net_dev, "mac_dev->stop() =3D %d\n",
+> > +			  err);
+>=20
+> Some of the likely/unlikely uses may not
+> be useful/necessary.
+
+In this particular case it's gratuitous, I'll go through all of them.
+
+> > +
+> > +	for_each_port_device(i, mac_dev->port_dev) {
+> > +		error =3D fm_port_disable(
+> > +				fm_port_drv_handle(mac_dev-
+> >port_dev[i]));
+> > +		err =3D error ? error : err;
+>=20
+> 		if (error)
+> 			err =3D error;
+>=20
+> is more obvious to me.
+
+Yes, it's more readable.
+
+Thank you,
+Madalin
