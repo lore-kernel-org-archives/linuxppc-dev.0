@@ -1,21 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0132.outbound.protection.outlook.com [157.56.110.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <cts@steigies.net>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+ [151.189.21.53])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CEBB61A0BD7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 02:29:45 +1000 (AEST)
-Message-ID: <1437755369.2993.243.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/p1010rdb:update dts for pcie interrupt-map
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang <qiang.zhao@freescale.com>
-CC: <robh+dt@kernel.org>, <devicetree@vger.kernel.org>, Zhao Qiang
- <B45475@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 24 Jul 2015 11:29:29 -0500
-In-Reply-To: <1437377539-15911-1-git-send-email-qiang.zhao@freescale.com>
-References: <1437377539-15911-1-git-send-email-qiang.zhao@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 232301A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 05:09:09 +1000 (AEST)
+Date: Fri, 24 Jul 2015 21:07:49 +0200
+From: "Christian T. Steigies" <cts@debian.org>
+To: Michael Schmitz <schmitzmic@gmail.com>
+Cc: Finn Thain <fthain@telegraphics.com.au>,
+ Andreas Schwab <schwab@linux-m68k.org>,
+ Linux Kernel Development <linux-kernel@vger.kernel.org>,
+ Linux/m68k <linux-m68k@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RFC v4 03/25] m68k/atari: Move Atari-specific code out of
+ drivers/char/nvram.c
+Message-ID: <20150724190749.GA7529@guido.earth.sol>
+References: <20150712102527.356151908@telegraphics.com.au>
+ <20150712102528.107134628@telegraphics.com.au>
+ <87d1zwc4dj.fsf@igel.home>
+ <alpine.LNX.2.00.1507141804300.1622@nippy.intranet>
+ <55AF1364.3080701@gmail.com>
+ <alpine.LNX.2.00.1507221421100.4187@nippy.intranet>
+ <20150723092114.GA10989@guido.earth.sol>
+ <CAOmrzkL1rOV=9zu=sfpt4-oveR2j-_KVGYvCvCGWzj83oOihnw@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <CAOmrzkL1rOV=9zu=sfpt4-oveR2j-_KVGYvCvCGWzj83oOihnw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-07-20 at 15:32 +0800, Zhao Qiang wrote:
-> From: Zhao Qiang <B45475@freescale.com>
+Moin,
+On Fri, Jul 24, 2015 at 02:56:26PM +1200, Michael Schmitz wrote:
 > 
-> p1010rdb-pb use the irq[4:5] for inta and intb to pcie,
-> it is active-high, so set it.
+> here's what Finn asked me to run as tests:
+> 
+> # dmesg | grep this_id > nvram.out
+> # cat /proc/driver/nvram >> nvram.out
+> # hexdump -C /dev/nvram >> nvram.out
+> # cp /dev/nvram /tmp/nvram
+> # cp /tmp/nvram /dev/nvram
+> # md5sum /dev/nvram /tmp/nvram >> nvram.out
 
-What about revisions of p1010rdb other than pb?
+It seems I could successfully reset the nvram under TOS with bootconf.
+Here is nvram.out, using the new kernel you sent me:
 
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> Change-Id: I29db41b4a8b5a67c18151099884edda6de4d9d1a
-> Reviewed-on: http://git.am.freescale.net:8181/9915
-> Tested-by: Review Code-CDREVIEW <CDREVIEW@freescale.com>
-> Reviewed-by: Xiaobo Xie <X.Xie@freescale.com>
-> Reviewed-by: Jose Rivera <German.Rivera@freescale.com>
+root@garkin:~>uname -a
+Linux garkin 4.2.0-rc2-atari-269994-gc1e9d12 #327 Fri Jul 24 19:34:44 NZST 2015 m68k GNU/Linux
 
-Get rid of the gerrit crud.
+PS it seems LVM is working with this kernel as well!
 
--Scott
+Christian
+
+
+[    7.000000] scsi host0: Atari native SCSI, io_port 0x0, n_io_port 0, base 0x0, irq 15, can_queue 8, cmd_per_lun 1, sg_tablesize 0, this_id 7, flags { }, options { REAL_DMA SUPPORT_TAGS } 
+Checksum status  : valid
+Boot preference  : unspecified
+SCSI arbitration : on
+SCSI host ID     : 7
+OS language      : English (US)
+Keyboard language: English (UK)
+Date format      : YYÿDDÿMM, 24h clock
+Boot delay       : 10s
+Video mode       : ?? colors, 80 columns, VGA PAL monitor
+                   overscan, compat. mode off, line doubling
+00000000  00 00 ff ff ff ff 00 03  13 ff 0a ff ff ff 01 7f  |................|
+00000010  87 ff 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000020  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+00000030  e1 1e                                             |..|
+00000032
+3b5801864975cf23bcacb52f648e74cc  /dev/nvram
+3b5801864975cf23bcacb52f648e74cc  /tmp/nvram
