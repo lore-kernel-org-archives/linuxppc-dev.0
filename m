@@ -1,15 +1,18 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 02A8D1A01D2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 17:56:52 +1000 (AEST)
-Message-Id: <20150725074605.143283098@telegraphics.com.au>
-Date: Sat, 25 Jul 2015 17:46:22 +1000
+ by lists.ozlabs.org (Postfix) with ESMTP id 65D961A0709
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 17:56:53 +1000 (AEST)
+Message-Id: <20150725074603.673303850@telegraphics.com.au>
+Date: Sat, 25 Jul 2015 17:46:16 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [RFC v5 23/26] m68k/mac: Adopt naming and calling conventions for
- PRAM routines
+ <linuxppc-dev@lists.ozlabs.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Subject: [RFC v5 17/26] powerpc,
+ fbdev: Use NV_CMODE and NV_VMODE only when CONFIG_PPC32 and
+ CONFIG_PPC_PMAC and CONFIG_NVRAM
 References: <20150725074559.543547894@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,248 +23,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adopt the existing *_read_byte and *_write_byte naming convention.
-Rename via_pram_readbyte and via_pram_writebyte to avoid confusion.
-Adjust calling conventions of mac_pram_* functions to match the
-arch_nvram_ops struct methods.
+This patch addresses inconsistencies in Mac framebuffer drivers and their
+use of Kconfig symbols relating to NVRAM, so PPC64 can use CONFIG_NVRAM.
+
+Macintosh framebuffer drivers use default settings for color mode and
+video mode that are found in NVRAM. On PCI Macs, MacOS stores display
+settings in the Name Registry (NR) partition in NVRAM*. On NuBus Macs,
+there is no NR partition and MacOS stores display mode settings in PRAM**.
+
+Early model Macs are the ones most likely to benefit from these settings,
+since they are more likely to have one display: a fixed-frequency monitor
+connected to the built-in framebuffer device. Moreover, a single NV_CMODE
+value and a single NV_VMODE value provide for only one display.
+
+The NV_CMODE and NV_VMODE constants are apparently offsets into the NR
+partition for Old World machines and not New World, which also suggests
+that these defaults are not useful on later models.
+
+All this argues for limiting NVRAM support in PowerMac fbdev drivers to
+PPC32 and indeed this is already the case, since CONFIG_NVRAM cannot be
+enabled on PPC64 at present.
+
+For matroxfb, make the CONFIG_PPC32 condition explicit. That way the
+driver won't crash on PPC64 when CONFIG_NVRAM becomes available there.
+
+In imsttfb, add the missing CONFIG_NVRAM test to prevent a build failure,
+since PPC64 does not implement nvram_read_byte(). Also add a missing
+machine_is(powermac) check. Change the inconsistent CONFIG_PPC dependency
+and the matching #ifdef tests to CONFIG_PPC_PMAC. Drop unused #includes.
+
+In valkyriefb, for clarity and consistency with the other PowerMac fbdev
+drivers, test for CONFIG_PPC_PMAC instead of !CONFIG_MAC. Remove a
+bogus comment regarding PRAM.
+
+* See GetPreferredConfiguration and SavePreferredConfiguration in
+"Designing PCI Cards and Drivers for Power Macintosh Computers".
+
+** See SetDefaultMode and GetDefaultMode in "Designing Cards and Drivers
+for the Macintosh Family".
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
+ drivers/video/fbdev/Kconfig                |    2 +-
+ drivers/video/fbdev/imsttfb.c              |   13 +++++--------
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ drivers/video/fbdev/valkyriefb.c           |   14 ++++++--------
+ 4 files changed, 13 insertions(+), 18 deletions(-)
 
-Changes since v1:
-- Don't introduce the arch_nvram_ops struct in this patch, even if it 
-would form a logical progression. Since the struct would get replaced
-later on, some might see it as churn.
-
-Changes since v2:
-- Rename via_pram_send() and via_pram_recv() as
-via_rtc_send() and via_rtc_recv() resp.
-
----
- arch/m68k/mac/misc.c |   91 +++++++++++++++++++++++++--------------------------
- 1 file changed, 46 insertions(+), 45 deletions(-)
-
-Index: linux/arch/m68k/mac/misc.c
+Index: linux/drivers/video/fbdev/Kconfig
 ===================================================================
---- linux.orig/arch/m68k/mac/misc.c	2015-07-25 17:42:33.000000000 +1000
-+++ linux/arch/m68k/mac/misc.c	2015-07-25 17:45:53.000000000 +1000
-@@ -61,7 +61,7 @@ static void cuda_write_time(long data)
- 		cuda_poll();
- }
+--- linux.orig/drivers/video/fbdev/Kconfig	2015-07-25 17:42:34.000000000 +1000
++++ linux/drivers/video/fbdev/Kconfig	2015-07-25 17:45:44.000000000 +1000
+@@ -544,7 +544,7 @@ config FB_IMSTT
+ 	bool "IMS Twin Turbo display support"
+ 	depends on (FB = y) && PCI
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_MACMODES if PPC
++	select FB_MACMODES if PPC_PMAC
+ 	help
+ 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
+ 	  many Macintosh and compatible computers.
+Index: linux/drivers/video/fbdev/imsttfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-07-25 17:42:34.000000000 +1000
++++ linux/drivers/video/fbdev/imsttfb.c	2015-07-25 17:45:44.000000000 +1000
+@@ -30,10 +30,8 @@
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
  
--static __u8 cuda_read_pram(int offset)
-+static unsigned char cuda_pram_read_byte(int offset)
- {
- 	struct adb_request req;
- 	if (cuda_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
-@@ -72,7 +72,7 @@ static __u8 cuda_read_pram(int offset)
- 	return req.reply[3];
- }
- 
--static void cuda_write_pram(int offset, __u8 data)
-+static void cuda_pram_write_byte(unsigned char data, int offset)
- {
- 	struct adb_request req;
- 	if (cuda_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
-@@ -84,8 +84,8 @@ static void cuda_write_pram(int offset,
- #else
- #define cuda_read_time() 0
- #define cuda_write_time(n)
--#define cuda_read_pram NULL
--#define cuda_write_pram NULL
-+#define cuda_pram_read_byte NULL
-+#define cuda_pram_write_byte NULL
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ #include <linux/nvram.h>
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+ #include "macmodes.h"
  #endif
  
- #ifdef CONFIG_ADB_PMU68K
-@@ -116,7 +116,7 @@ static void pmu_write_time(long data)
- 		pmu_poll();
- }
+@@ -328,14 +326,13 @@ enum {
+ 	TVP = 1
+ };
  
--static __u8 pmu_read_pram(int offset)
-+static unsigned char pmu_pram_read_byte(int offset)
- {
- 	struct adb_request req;
- 	if (pmu_request(&req, NULL, 3, PMU_READ_NVRAM,
-@@ -127,7 +127,7 @@ static __u8 pmu_read_pram(int offset)
- 	return req.reply[3];
- }
+-#define USE_NV_MODES		1
+ #define INIT_BPP		8
+ #define INIT_XRES		640
+ #define INIT_YRES		480
  
--static void pmu_write_pram(int offset, __u8 data)
-+static void pmu_pram_write_byte(unsigned char data, int offset)
- {
- 	struct adb_request req;
- 	if (pmu_request(&req, NULL, 4, PMU_WRITE_NVRAM,
-@@ -139,8 +139,8 @@ static void pmu_write_pram(int offset, _
- #else
- #define pmu_read_time() 0
- #define pmu_write_time(n)
--#define pmu_read_pram NULL
--#define pmu_write_pram NULL
-+#define pmu_pram_read_byte NULL
-+#define pmu_pram_write_byte NULL
+ static int inverse = 0;
+ static char fontname[40] __initdata = { 0 };
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ static signed char init_vmode = -1, init_cmode = -1;
  #endif
  
- #if 0 /* def CONFIG_ADB_MACIISI */
-@@ -169,7 +169,7 @@ static void maciisi_write_time(long data
- 			(data >> 8) & 0xFF, data & 0xFF);
- }
+@@ -1391,8 +1388,8 @@ static void init_imstt(struct fb_info *i
+ 		}
+ 	}
  
--static __u8 maciisi_read_pram(int offset)
-+static unsigned char maciisi_pram_read_byte(int offset)
- {
- 	struct adb_request req;
- 	if (maciisi_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
-@@ -178,7 +178,7 @@ static __u8 maciisi_read_pram(int offset
- 	return req.reply[3];
- }
+-#if USE_NV_MODES && defined(CONFIG_PPC32)
+-	{
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
++	if (machine_is(powermac)) {
+ 		int vmode = init_vmode, cmode = init_cmode;
  
--static void maciisi_write_pram(int offset, __u8 data)
-+static void maciisi_pram_write_byte(unsigned char data, int offset)
- {
- 	struct adb_request req;
- 	maciisi_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
-@@ -187,8 +187,8 @@ static void maciisi_write_pram(int offse
- #else
- #define maciisi_read_time() 0
- #define maciisi_write_time(n)
--#define maciisi_read_pram NULL
--#define maciisi_write_pram NULL
-+#define maciisi_pram_read_byte NULL
-+#define maciisi_pram_write_byte NULL
+ 		if (vmode == -1) {
+@@ -1566,7 +1563,7 @@ imsttfb_setup(char *options)
+ 			inverse = 1;
+ 			fb_invert_cmaps();
+ 		}
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ 		else if (!strncmp(this_opt, "vmode:", 6)) {
+ 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
+ 			if (vmode > 0 && vmode <= VMODE_MAX)
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:45:38.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:45:44.000000000 +1000
+@@ -1876,7 +1876,7 @@ static int initMatrox2(struct matrox_fb_
+ 		struct fb_var_screeninfo var;
+ 		if (default_vmode <= 0 || default_vmode > VMODE_MAX)
+ 			default_vmode = VMODE_640_480_60;
+-#ifdef CONFIG_NVRAM
++#if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
+ 		if (default_cmode == CMODE_NVRAM)
+ 			default_cmode = nvram_read_byte(NV_CMODE);
+ #endif
+Index: linux/drivers/video/fbdev/valkyriefb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/valkyriefb.c	2015-07-25 17:42:34.000000000 +1000
++++ linux/drivers/video/fbdev/valkyriefb.c	2015-07-25 17:45:44.000000000 +1000
+@@ -65,14 +65,12 @@
+ #include "macmodes.h"
+ #include "valkyriefb.h"
+ 
+-#ifdef CONFIG_MAC
+-/* We don't yet have functions to read the PRAM... perhaps we can
+-   adapt them from the PPC code? */
+-static int default_vmode = VMODE_CHOOSE;
+-static int default_cmode = CMODE_8;
+-#else
++#ifdef CONFIG_PPC_PMAC
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
++#else
++static int default_vmode = VMODE_CHOOSE;
++static int default_cmode = CMODE_8;
  #endif
  
- /*
-@@ -198,7 +198,7 @@ static void maciisi_write_pram(int offse
-  * the RTC should be enabled.
-  */
+ struct fb_par_valkyrie {
+@@ -285,7 +283,7 @@ static void __init valkyrie_choose_mode(
+ 	printk(KERN_INFO "Monitor sense value = 0x%x\n", p->sense);
  
--static __u8 via_pram_readbyte(void)
-+static __u8 via_rtc_recv(void)
- {
- 	int	i,reg;
- 	__u8	data;
-@@ -225,7 +225,7 @@ static __u8 via_pram_readbyte(void)
- 	return data;
- }
- 
--static void via_pram_writebyte(__u8 data)
-+static void via_rtc_send(__u8 data)
- {
- 	int	i,reg,bit;
- 
-@@ -262,17 +262,17 @@ static void via_pram_command(int command
- 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
- 
- 	if (command & 0xFF00) {		/* extended (two-byte) command */
--		via_pram_writebyte((command & 0xFF00) >> 8);
--		via_pram_writebyte(command & 0xFF);
-+		via_rtc_send((command & 0xFF00) >> 8);
-+		via_rtc_send(command & 0xFF);
- 		is_read = command & 0x8000;
- 	} else {			/* one-byte command */
--		via_pram_writebyte(command);
-+		via_rtc_send(command);
- 		is_read = command & 0x80;
- 	}
- 	if (is_read) {
--		*data = via_pram_readbyte();
-+		*data = via_rtc_recv();
- 	} else {
--		via_pram_writebyte(*data);
-+		via_rtc_send(*data);
- 	}
- 
- 	/* All done, disable the RTC */
-@@ -282,12 +282,12 @@ static void via_pram_command(int command
- 	local_irq_restore(flags);
- }
- 
--static __u8 via_read_pram(int offset)
-+static unsigned char via_pram_read_byte(int offset)
- {
- 	return 0;
- }
- 
--static void via_write_pram(int offset, __u8 data)
-+static void via_pram_write_byte(unsigned char data, int offset)
- {
- }
- 
-@@ -453,50 +453,51 @@ void pmu_shutdown(void)
-  *-------------------------------------------------------------------
-  */
- 
--void mac_pram_read(int offset, __u8 *buffer, int len)
-+unsigned char mac_pram_read_byte(int addr)
- {
--	__u8 (*func)(int);
--	int i;
-+	unsigned char (*func)(int);
- 
- 	switch(macintosh_config->adb_type) {
- 	case MAC_ADB_IISI:
--		func = maciisi_read_pram; break;
-+		func = maciisi_pram_read_byte;
-+		break;
- 	case MAC_ADB_PB1:
- 	case MAC_ADB_PB2:
--		func = pmu_read_pram; break;
-+		func = pmu_pram_read_byte;
-+		break;
- 	case MAC_ADB_CUDA:
--		func = cuda_read_pram; break;
-+		func = cuda_pram_read_byte;
-+		break;
- 	default:
--		func = via_read_pram;
--	}
--	if (!func)
--		return;
--	for (i = 0 ; i < len ; i++) {
--		buffer[i] = (*func)(offset++);
-+		func = via_pram_read_byte;
- 	}
-+
-+	if (func)
-+		return (*func)(addr);
-+	return 0xff;
- }
- 
--void mac_pram_write(int offset, __u8 *buffer, int len)
-+void mac_pram_write_byte(unsigned char val, int addr)
- {
--	void (*func)(int, __u8);
--	int i;
-+	void (*func)(unsigned char, int);
- 
- 	switch(macintosh_config->adb_type) {
- 	case MAC_ADB_IISI:
--		func = maciisi_write_pram; break;
-+		func = maciisi_pram_write_byte;
-+		break;
- 	case MAC_ADB_PB1:
- 	case MAC_ADB_PB2:
--		func = pmu_write_pram; break;
-+		func = pmu_pram_write_byte;
-+		break;
- 	case MAC_ADB_CUDA:
--		func = cuda_write_pram; break;
-+		func = cuda_pram_write_byte;
-+		break;
- 	default:
--		func = via_write_pram;
--	}
--	if (!func)
--		return;
--	for (i = 0 ; i < len ; i++) {
--		(*func)(offset++, buffer[i]);
-+		func = via_pram_write_byte;
- 	}
-+
-+	if (func)
-+		(*func)(val, addr);
- }
- 
- void mac_poweroff(void)
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+-#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_vmode == VMODE_NVRAM) {
+ 		default_vmode = nvram_read_byte(NV_VMODE);
+ 		if (default_vmode <= 0
+@@ -298,7 +296,7 @@ static void __init valkyrie_choose_mode(
+ 		default_vmode = mac_map_monitor_sense(p->sense);
+ 	if (!valkyrie_reg_init[default_vmode - 1])
+ 		default_vmode = VMODE_640_480_67;
+-#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_cmode == CMODE_NVRAM)
+ 		default_cmode = nvram_read_byte(NV_CMODE);
+ #endif
