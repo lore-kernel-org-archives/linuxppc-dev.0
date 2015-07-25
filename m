@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BEF841A1D39
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 11:01:20 +1000 (AEST)
-Message-ID: <1437786063.7562.76.camel@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] powerpc/iommu: Support "hybrid" iommu/direct DMA
- ops for coherent_mask < dma_mask
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Brian King <brking@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Sat, 25 Jul 2015 11:01:03 +1000
-In-Reply-To: <55B2983E.5020300@linux.vnet.ibm.com>
-References: <1435123531.3996.31.camel@kernel.crashing.org>
- <55B2983E.5020300@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3CD1B1A035C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 12:24:50 +1000 (AEST)
+Message-ID: <1437791076.2993.265.camel@freescale.com>
+Subject: Re: [PATCH 2/3] powerpc/85xx: add 'cpu-rev' property for cpus node
+From: Scott Wood <scottwood@freescale.com>
+To: Yangbo Lu <yangbo.lu@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-mmc@vger.kernel.org>,
+ <ulf.hansson@linaro.org>
+Date: Fri, 24 Jul 2015 21:24:36 -0500
+In-Reply-To: <1437471923-34172-1-git-send-email-yangbo.lu@freescale.com>
+References: <1437471923-34172-1-git-send-email-yangbo.lu@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-24 at 14:55 -0500, Brian King wrote:
-> Ben,
-> 
-> It looks like this patch has bit rot. I have a system now where I can test the
-> latest version. Any chance you can rediff and resend and I can test?
+On Tue, 2015-07-21 at 17:45 +0800, Yangbo Lu wrote:
+> Add 'cpu-rev' property for cpus node to support getting cpu revision
+> from dts, since it's not good to get cpu revision using powerpc specific
+> function(like SVR_REV()) in common drivers.
 
-Hrm, Michael didn't upstream it ? Ok, I'll have a look on monday.
+No.  Don't modify the device tree within Linux without a really good reason 
+(e.g. platform code to fix up a broken device tree).
 
-(ping me if I don't).
+Why not just read SVR from guts, which works on both PPC and ARM?
 
-Cheers,
-Ben.
+-Scott
