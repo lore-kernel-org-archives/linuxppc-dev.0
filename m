@@ -1,17 +1,16 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id E20BB1A035C
+ by lists.ozlabs.org (Postfix) with ESMTP id D74431A02D1
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 17:56:51 +1000 (AEST)
-Message-Id: <20150725074602.203323275@telegraphics.com.au>
-Date: Sat, 25 Jul 2015 17:46:10 +1000
+Message-Id: <20150725074601.483330111@telegraphics.com.au>
+Date: Sat, 25 Jul 2015 17:46:07 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Arnd Bergmann <arnd@arndb.de>,
+ <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v5 11/26] m68k/atari: Implement arch_nvram_ops methods and
- enable CONFIG_HAVE_ARCH_NVRAM_OPS
+Subject: [RFC v5 08/26] char/nvram: Allow the set_checksum and initialize
+ ioctls to be omitted
 References: <20150725074559.543547894@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,37 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Atari RTC NVRAM has a checksum so implement the remaining arch_nvram_ops
-methods for the set_checksum and initialize ioctls. Enable
-CONFIG_HAVE_ARCH_NVRAM_OPS.
+The drivers/char/nvram module has previously only supported RTC "CMOS"
+NVRAM, for which it provides appropriate checksum ioctls. Make these
+ioctls optional so the module can be re-used with other kinds of NVRAM.
+
+The ops struct methods that implement the ioctls now return error
+codes so that a multi-platform kernel binary can do the right thing when
+running on hardware without suitable NVRAM.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
 
-This re-enables the nvram module for Atari.
-
-Changes since v3:
-- Use bool (and select) instead of def_bool in the definition of the
-HAVE_ARCH_NVRAM_OPS Kconfig symbol, as requested by Geert.
+Changed since v1:
+- Don't bother acquiring the mutex for unimplemented ioctls.
 
 ---
- arch/m68k/Kconfig         |    3 +++
- arch/m68k/Kconfig.machine |    1 +
- arch/m68k/atari/nvram.c   |   24 ++++++++++++++++++++++++
- drivers/char/Kconfig      |    2 +-
- 4 files changed, 29 insertions(+), 1 deletion(-)
+ drivers/char/nvram.c  |   71 ++++++++++++++++++++++++++++----------------------
+ include/linux/nvram.h |    2 +
+ 2 files changed, 43 insertions(+), 30 deletions(-)
 
-Index: linux/arch/m68k/atari/nvram.c
+Index: linux/drivers/char/nvram.c
 ===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-07-25 17:45:28.000000000 +1000
-+++ linux/arch/m68k/atari/nvram.c	2015-07-25 17:45:36.000000000 +1000
-@@ -73,6 +73,26 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
+--- linux.orig/drivers/char/nvram.c	2015-07-25 17:45:31.000000000 +1000
++++ linux/drivers/char/nvram.c	2015-07-25 17:45:33.000000000 +1000
+@@ -153,16 +153,25 @@ static void __nvram_set_checksum(void)
+ 	__nvram_write_byte(sum & 0xff, PC_CKS_LOC + 1);
  }
  
+-#if 0
+-void nvram_set_checksum(void)
 +static long nvram_set_checksum(void)
-+{
+ {
+-	unsigned long flags;
 +	spin_lock_irq(&rtc_lock);
 +	__nvram_set_checksum();
 +	spin_unlock_irq(&rtc_lock);
@@ -61,73 +62,116 @@ Index: linux/arch/m68k/atari/nvram.c
 +
 +static long nvram_initialize(void)
 +{
-+	loff_t i;
-+
++	ssize_t i;
+ 
+-	spin_lock_irqsave(&rtc_lock, flags);
 +	spin_lock_irq(&rtc_lock);
 +	for (i = 0; i < NVRAM_BYTES; ++i)
 +		__nvram_write_byte(0, i);
-+	__nvram_set_checksum();
+ 	__nvram_set_checksum();
+-	spin_unlock_irqrestore(&rtc_lock, flags);
 +	spin_unlock_irq(&rtc_lock);
 +	return 0;
-+}
-+
- static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
- {
- 	char *p = buf;
-@@ -119,6 +139,8 @@ static ssize_t nvram_write(char *buf, si
+ }
+-#endif  /*  0  */
  
  static ssize_t nvram_get_size(void)
  {
-+	if (!MACH_IS_ATARI)
-+		return -ENODEV;
- 	return NVRAM_BYTES;
- }
- 
-@@ -126,6 +148,8 @@ const struct nvram_ops arch_nvram_ops =
- 	.read           = nvram_read,
- 	.write          = nvram_write,
+@@ -173,6 +182,8 @@ const struct nvram_ops arch_nvram_ops =
+ 	.read_byte      = nvram_read_byte,
+ 	.write_byte     = nvram_write_byte,
  	.get_size       = nvram_get_size,
 +	.set_checksum   = nvram_set_checksum,
 +	.initialize     = nvram_initialize,
  };
  EXPORT_SYMBOL(arch_nvram_ops);
  
-Index: linux/drivers/char/Kconfig
-===================================================================
---- linux.orig/drivers/char/Kconfig	2015-07-25 17:45:24.000000000 +1000
-+++ linux/drivers/char/Kconfig	2015-07-25 17:45:36.000000000 +1000
-@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
+@@ -272,51 +283,51 @@ checksum_err:
+ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+                              unsigned long arg)
+ {
+-	int i;
++	long ret = -ENOTTY;
  
- config NVRAM
- 	tristate "/dev/nvram support"
--	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
-+	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM || HAVE_ARCH_NVRAM_OPS
- 	---help---
- 	  If you say Y here and create a character special file /dev/nvram
- 	  with major number 10 and minor number 144 using mknod ("man mknod"),
-Index: linux/arch/m68k/Kconfig
-===================================================================
---- linux.orig/arch/m68k/Kconfig	2015-07-25 17:42:34.000000000 +1000
-+++ linux/arch/m68k/Kconfig	2015-07-25 17:45:36.000000000 +1000
-@@ -71,6 +71,9 @@ config PGTABLE_LEVELS
- 	default 2 if SUN3 || COLDFIRE
- 	default 3
+ 	switch (cmd) {
+-
+ 	case NVRAM_INIT:
+ 		/* initialize NVRAM contents and checksum */
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EACCES;
  
-+config HAVE_ARCH_NVRAM_OPS
-+	bool
+-		mutex_lock(&nvram_mutex);
+-		spin_lock_irq(&rtc_lock);
+-
+-		for (i = 0; i < NVRAM_BYTES; ++i)
+-			__nvram_write_byte(0, i);
+-		__nvram_set_checksum();
+-
+-		spin_unlock_irq(&rtc_lock);
+-		mutex_unlock(&nvram_mutex);
+-		return 0;
+-
++		if (arch_nvram_ops.initialize != NULL) {
++			mutex_lock(&nvram_mutex);
++			ret = arch_nvram_ops.initialize();
++			mutex_unlock(&nvram_mutex);
++		}
++		break;
+ 	case NVRAM_SETCKS:
+ 		/* just set checksum, contents unchanged (maybe useful after
+ 		 * checksum garbaged somehow...) */
+ 		if (!capable(CAP_SYS_ADMIN))
+ 			return -EACCES;
+ 
+-		mutex_lock(&nvram_mutex);
+-		spin_lock_irq(&rtc_lock);
+-		__nvram_set_checksum();
+-		spin_unlock_irq(&rtc_lock);
+-		mutex_unlock(&nvram_mutex);
+-		return 0;
+-
+-	default:
+-		return -ENOTTY;
++		if (arch_nvram_ops.set_checksum != NULL) {
++			mutex_lock(&nvram_mutex);
++			ret = arch_nvram_ops.set_checksum();
++			mutex_unlock(&nvram_mutex);
++		}
++		break;
+ 	}
++	return ret;
+ }
+ 
+ static int nvram_misc_open(struct inode *inode, struct file *file)
+ {
+ 	spin_lock(&nvram_state_lock);
+ 
++	/* Prevent multiple readers/writers if desired. */
+ 	if ((nvram_open_cnt && (file->f_flags & O_EXCL)) ||
+-	    (nvram_open_mode & NVRAM_EXCL) ||
+-	    ((file->f_mode & FMODE_WRITE) && (nvram_open_mode & NVRAM_WRITE))) {
++	    (nvram_open_mode & NVRAM_EXCL)) {
++		spin_unlock(&nvram_state_lock);
++		return -EBUSY;
++	}
 +
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-Index: linux/arch/m68k/Kconfig.machine
++	/* Prevent multiple writers if the set_checksum ioctl is implemented. */
++	if ((arch_nvram_ops.set_checksum != NULL) &&
++	    (file->f_mode & FMODE_WRITE) &&
++	    (nvram_open_mode & NVRAM_WRITE)) {
+ 		spin_unlock(&nvram_state_lock);
+ 		return -EBUSY;
+ 	}
+Index: linux/include/linux/nvram.h
 ===================================================================
---- linux.orig/arch/m68k/Kconfig.machine	2015-07-25 17:42:34.000000000 +1000
-+++ linux/arch/m68k/Kconfig.machine	2015-07-25 17:45:36.000000000 +1000
-@@ -15,6 +15,7 @@ config ATARI
- 	bool "Atari support"
- 	depends on MMU
- 	select MMU_MOTOROLA if MMU
-+	select HAVE_ARCH_NVRAM_OPS
- 	help
- 	  This option enables support for the 68000-based Atari series of
- 	  computers (including the TT, Falcon and Medusa). If you plan to use
+--- linux.orig/include/linux/nvram.h	2015-07-25 17:45:31.000000000 +1000
++++ linux/include/linux/nvram.h	2015-07-25 17:45:33.000000000 +1000
+@@ -17,6 +17,8 @@ struct nvram_ops {
+ 	unsigned char   (*read_byte)(int);
+ 	void            (*write_byte)(unsigned char, int);
+ 	ssize_t         (*get_size)(void);
++	long            (*set_checksum)(void);
++	long            (*initialize)(void);
+ };
+ 
+ extern const struct nvram_ops arch_nvram_ops;
