@@ -1,15 +1,22 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 65C141A0616
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 17:56:52 +1000 (AEST)
-Message-Id: <20150725074605.873322791@telegraphics.com.au>
-Date: Sat, 25 Jul 2015 17:46:25 +1000
+ by lists.ozlabs.org (Postfix) with ESMTP id 72FB21A0743
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 17:56:53 +1000 (AEST)
+Message-Id: <20150725074603.913344361@telegraphics.com.au>
+Date: Sat, 25 Jul 2015 17:46:17 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [RFC v5 26/26] m68k: Dispatch nvram_ops calls to Atari or Mac
- functions
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Subject: [RFC v5 18/26] powerpc,
+ fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and
+ nvram_write_byte()
 References: <20150725074559.543547894@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,363 +27,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A multi-platform kernel binary needs to decide at run-time how to dispatch
-the arch_nvram_ops calls. Add platform-independent arch_nvram_ops, for use
-when multiple platform-specific NVRAM ops implementations are needed.
+Make use of arch_nvram_ops in device drivers so that the nvram_* function
+exports can be removed.
 
-Enable CONFIG_HAVE_ARCH_NVRAM_OPS for Macs.
+Since they are no longer global symbols, rename the PPC32 nvram_* functions
+appropriately.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Tested-by: Christian T. Steigies <cts@debian.org>
 
 ---
 
-Changed since v1:
-- Removed Mac and Atari ops struct definitions and the associated #ifdefs.
-- Moved extern declarations for fewer lines of code and better readability.
-- The IS_ENABLED(CONFIG_NVRAM) tests were moved to this patch, because it is
-now in this patch that CONFIG_HAVE_ARCH_NVRAM_OPS is enabled for Macs.
-
-Changes since v3:
-- Use bool (and select) instead of def_bool in the definition of the
-HAVE_ARCH_NVRAM_OPS Kconfig symbol, as requested by Geert.
-- Moved extern declarations back to the header files (like in v1)
-as requested by Geert.
+Changed since v4:
+- Split off the CONFIG_PPC32, CONFIG_PPC_PMAC and CONFIG_NVRAM tests into
+a separate patch.
 
 ---
- arch/m68k/Kconfig.machine         |    1 
- arch/m68k/atari/nvram.c           |   21 +------
- arch/m68k/include/asm/atarihw.h   |    6 ++
- arch/m68k/include/asm/macintosh.h |    4 +
- arch/m68k/kernel/setup_mm.c       |  100 +++++++++++++++++++++++++++++++++++++-
- arch/m68k/mac/misc.c              |   18 ++++++
- 6 files changed, 133 insertions(+), 17 deletions(-)
+ arch/powerpc/kernel/setup_32.c             |    8 ++++----
+ drivers/char/generic_nvram.c               |    4 ++--
+ drivers/video/fbdev/controlfb.c            |    4 ++--
+ drivers/video/fbdev/imsttfb.c              |    4 ++--
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ drivers/video/fbdev/platinumfb.c           |    4 ++--
+ drivers/video/fbdev/valkyriefb.c           |    4 ++--
+ 7 files changed, 15 insertions(+), 15 deletions(-)
 
-Index: linux/arch/m68k/mac/misc.c
+Index: linux/arch/powerpc/kernel/setup_32.c
 ===================================================================
---- linux.orig/arch/m68k/mac/misc.c	2015-07-25 17:45:55.000000000 +1000
-+++ linux/arch/m68k/mac/misc.c	2015-07-25 17:45:56.000000000 +1000
-@@ -61,6 +61,7 @@ static void cuda_write_time(long data)
- 		cuda_poll();
- }
+--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-25 17:45:42.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-07-25 17:45:45.000000000 +1000
+@@ -170,20 +170,18 @@ __setup("l3cr=", ppc_setup_l3cr);
  
-+#if IS_ENABLED(CONFIG_NVRAM)
- static unsigned char cuda_pram_read_byte(int offset)
+ #ifdef CONFIG_GENERIC_NVRAM
+ 
+-unsigned char nvram_read_byte(int addr)
++static unsigned char ppc_nvram_read_byte(int addr)
  {
- 	struct adb_request req;
-@@ -81,6 +82,8 @@ static void cuda_pram_write_byte(unsigne
- 	while (!req.complete)
- 		cuda_poll();
+ 	if (ppc_md.nvram_read_val)
+ 		return ppc_md.nvram_read_val(addr);
+ 	return 0xff;
  }
-+#endif /* CONFIG_NVRAM */
-+
- #else
- #define cuda_read_time() 0
- #define cuda_write_time(n)
-@@ -116,6 +119,7 @@ static void pmu_write_time(long data)
- 		pmu_poll();
- }
+-EXPORT_SYMBOL(nvram_read_byte);
  
-+#if IS_ENABLED(CONFIG_NVRAM)
- static unsigned char pmu_pram_read_byte(int offset)
+-void nvram_write_byte(unsigned char val, int addr)
++static void ppc_nvram_write_byte(unsigned char val, int addr)
  {
- 	struct adb_request req;
-@@ -139,6 +143,8 @@ static void pmu_pram_write_byte(unsigned
- 	while (!req.complete)
- 		pmu_poll();
+ 	if (ppc_md.nvram_write_val)
+ 		ppc_md.nvram_write_val(addr, val);
  }
-+#endif /* CONFIG_NVRAM */
-+
- #else
- #define pmu_read_time() 0
- #define pmu_write_time(n)
-@@ -172,6 +178,7 @@ static void maciisi_write_time(long data
- 			(data >> 8) & 0xFF, data & 0xFF);
- }
+-EXPORT_SYMBOL(nvram_write_byte);
  
-+#if IS_ENABLED(CONFIG_NVRAM)
- static unsigned char maciisi_pram_read_byte(int offset)
+ static ssize_t ppc_nvram_get_size(void)
  {
- 	struct adb_request req;
-@@ -187,6 +194,8 @@ static void maciisi_pram_write_byte(unsi
- 	maciisi_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
- 			(offset >> 8) & 0xFF, offset & 0xFF, data);
- }
-+#endif /* CONFIG_NVRAM */
-+
- #else
- #define maciisi_read_time() 0
- #define maciisi_write_time(n)
-@@ -314,6 +323,7 @@ static void via_rtc_command(int command,
- 	local_irq_restore(flags);
+@@ -200,6 +198,8 @@ static long ppc_nvram_sync(void)
  }
  
-+#if IS_ENABLED(CONFIG_NVRAM)
- static unsigned char via_pram_read_byte(int offset)
- {
- 	unsigned char temp;
-@@ -336,6 +346,7 @@ static void via_pram_write_byte(unsigned
- 	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
- 	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
- }
-+#endif /* CONFIG_NVRAM */
+ const struct nvram_ops arch_nvram_ops = {
++	.read_byte      = ppc_nvram_read_byte,
++	.write_byte     = ppc_nvram_write_byte,
+ 	.get_size       = ppc_nvram_get_size,
+ 	.sync           = ppc_nvram_sync,
+ };
+Index: linux/drivers/char/generic_nvram.c
+===================================================================
+--- linux.orig/drivers/char/generic_nvram.c	2015-07-25 17:45:42.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-07-25 17:45:45.000000000 +1000
+@@ -63,7 +63,7 @@ static ssize_t read_nvram(struct file *f
+ 	if (*ppos >= nvram_len)
+ 		return 0;
+ 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
+-		if (__put_user(nvram_read_byte(i), p))
++		if (__put_user(arch_nvram_ops.read_byte(i), p))
+ 			return -EFAULT;
+ 	*ppos = i;
+ 	return p - buf;
+@@ -83,7 +83,7 @@ static ssize_t write_nvram(struct file *
+ 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
+ 		if (__get_user(c, p))
+ 			return -EFAULT;
+-		nvram_write_byte(c, i);
++		arch_nvram_ops.write_byte(c, i);
+ 	}
+ 	*ppos = i;
+ 	return p - buf;
+Index: linux/drivers/video/fbdev/controlfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/controlfb.c	2015-07-25 17:42:34.000000000 +1000
++++ linux/drivers/video/fbdev/controlfb.c	2015-07-25 17:45:45.000000000 +1000
+@@ -415,7 +415,7 @@ static int __init init_control(struct fb
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode == CMODE_NVRAM) {
+-		cmode = nvram_read_byte(NV_CMODE);
++		cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ 		if(cmode < CMODE_8 || cmode > CMODE_32)
+ 			cmode = CMODE_8;
+ 	} else
+@@ -423,7 +423,7 @@ static int __init init_control(struct fb
+ 		cmode=default_cmode;
+ #ifdef CONFIG_NVRAM
+ 	if (default_vmode == VMODE_NVRAM) {
+-		vmode = nvram_read_byte(NV_VMODE);
++		vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (vmode < 1 || vmode > VMODE_MAX ||
+ 		    control_mac_modes[vmode - 1].m[full] < cmode) {
+ 			sense = read_control_sense(p);
+Index: linux/drivers/video/fbdev/imsttfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-07-25 17:45:44.000000000 +1000
++++ linux/drivers/video/fbdev/imsttfb.c	2015-07-25 17:45:45.000000000 +1000
+@@ -1393,12 +1393,12 @@ static void init_imstt(struct fb_info *i
+ 		int vmode = init_vmode, cmode = init_cmode;
  
- /*
-  * Return the current time in seconds since January 1, 1904.
-@@ -503,6 +514,7 @@ void pmu_shutdown(void)
-  *-------------------------------------------------------------------
-  */
+ 		if (vmode == -1) {
+-			vmode = nvram_read_byte(NV_VMODE);
++			vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 			if (vmode <= 0 || vmode > VMODE_MAX)
+ 				vmode = VMODE_640_480_67;
+ 		}
+ 		if (cmode == -1) {
+-			cmode = nvram_read_byte(NV_CMODE);
++			cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ 			if (cmode < CMODE_8 || cmode > CMODE_32)
+ 				cmode = CMODE_8;
+ 		}
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:45:44.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-07-25 17:45:45.000000000 +1000
+@@ -1878,7 +1878,7 @@ static int initMatrox2(struct matrox_fb_
+ 			default_vmode = VMODE_640_480_60;
+ #if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
+ 		if (default_cmode == CMODE_NVRAM)
+-			default_cmode = nvram_read_byte(NV_CMODE);
++			default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 			default_cmode = CMODE_8;
+Index: linux/drivers/video/fbdev/platinumfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/platinumfb.c	2015-07-25 17:42:34.000000000 +1000
++++ linux/drivers/video/fbdev/platinumfb.c	2015-07-25 17:45:45.000000000 +1000
+@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
+ 	printk(KERN_INFO "platinumfb: Monitor sense value = 0x%x, ", sense);
+ 	if (default_vmode == VMODE_NVRAM) {
+ #ifdef CONFIG_NVRAM
+-		default_vmode = nvram_read_byte(NV_VMODE);
++		default_vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <= 0 || default_vmode > VMODE_MAX ||
+ 		    !platinum_reg_init[default_vmode-1])
+ #endif
+@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
+ 		default_vmode = VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode == CMODE_NVRAM)
+-		default_cmode = nvram_read_byte(NV_CMODE);
++		default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 		default_cmode = CMODE_8;
+Index: linux/drivers/video/fbdev/valkyriefb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/valkyriefb.c	2015-07-25 17:45:44.000000000 +1000
++++ linux/drivers/video/fbdev/valkyriefb.c	2015-07-25 17:45:45.000000000 +1000
+@@ -285,7 +285,7 @@ static void __init valkyrie_choose_mode(
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_vmode == VMODE_NVRAM) {
+-		default_vmode = nvram_read_byte(NV_VMODE);
++		default_vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <= 0
+ 		 || default_vmode > VMODE_MAX
+ 		 || !valkyrie_reg_init[default_vmode - 1])
+@@ -298,7 +298,7 @@ static void __init valkyrie_choose_mode(
+ 		default_vmode = VMODE_640_480_67;
+ #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_cmode == CMODE_NVRAM)
+-		default_cmode = nvram_read_byte(NV_CMODE);
++		default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
  
-+#if IS_ENABLED(CONFIG_NVRAM)
- unsigned char mac_pram_read_byte(int addr)
- {
- 	unsigned char (*func)(int);
-@@ -550,6 +562,12 @@ void mac_pram_write_byte(unsigned char v
- 		(*func)(val, addr);
- }
- 
-+ssize_t mac_pram_get_size(void)
-+{
-+	return 256;
-+}
-+#endif /* CONFIG_NVRAM */
-+
- void mac_poweroff(void)
- {
  	/*
-Index: linux/arch/m68k/atari/nvram.c
-===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-07-25 17:45:47.000000000 +1000
-+++ linux/arch/m68k/atari/nvram.c	2015-07-25 17:45:56.000000000 +1000
-@@ -73,7 +73,7 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
- }
- 
--static long nvram_set_checksum(void)
-+long atari_nvram_set_checksum(void)
- {
- 	spin_lock_irq(&rtc_lock);
- 	__nvram_set_checksum();
-@@ -81,7 +81,7 @@ static long nvram_set_checksum(void)
- 	return 0;
- }
- 
--static long nvram_initialize(void)
-+long atari_nvram_initialize(void)
- {
- 	loff_t i;
- 
-@@ -93,7 +93,7 @@ static long nvram_initialize(void)
- 	return 0;
- }
- 
--static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
-+ssize_t atari_nvram_read(char *buf, size_t count, loff_t *ppos)
- {
- 	char *p = buf;
- 	loff_t i;
-@@ -114,7 +114,7 @@ static ssize_t nvram_read(char *buf, siz
- 	return p - buf;
- }
- 
--static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
-+ssize_t atari_nvram_write(char *buf, size_t count, loff_t *ppos)
- {
- 	char *p = buf;
- 	loff_t i;
-@@ -137,22 +137,11 @@ static ssize_t nvram_write(char *buf, si
- 	return p - buf;
- }
- 
--static ssize_t nvram_get_size(void)
-+ssize_t atari_nvram_get_size(void)
- {
--	if (!MACH_IS_ATARI)
--		return -ENODEV;
- 	return NVRAM_BYTES;
- }
- 
--const struct nvram_ops arch_nvram_ops = {
--	.read           = nvram_read,
--	.write          = nvram_write,
--	.get_size       = nvram_get_size,
--	.set_checksum   = nvram_set_checksum,
--	.initialize     = nvram_initialize,
--};
--EXPORT_SYMBOL(arch_nvram_ops);
--
- #ifdef CONFIG_PROC_FS
- static struct {
- 	unsigned char val;
-Index: linux/arch/m68k/kernel/setup_mm.c
-===================================================================
---- linux.orig/arch/m68k/kernel/setup_mm.c	2015-07-25 17:42:33.000000000 +1000
-+++ linux/arch/m68k/kernel/setup_mm.c	2015-07-25 17:45:56.000000000 +1000
-@@ -23,6 +23,7 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/module.h>
-+#include <linux/nvram.h>
- #include <linux/initrd.h>
- 
- #include <asm/bootinfo.h>
-@@ -36,13 +37,14 @@
- #ifdef CONFIG_AMIGA
- #include <asm/amigahw.h>
- #endif
--#ifdef CONFIG_ATARI
- #include <asm/atarihw.h>
-+#ifdef CONFIG_ATARI
- #include <asm/atari_stram.h>
- #endif
- #ifdef CONFIG_SUN3X
- #include <asm/dvma.h>
- #endif
-+#include <asm/macintosh.h>
- #include <asm/natfeat.h>
- 
- #if !FPSTATESIZE || !NR_IRQS
-@@ -568,3 +570,99 @@ static int __init adb_probe_sync_enable
- 
- __setup("adb_sync", adb_probe_sync_enable);
- #endif /* CONFIG_ADB */
-+
-+#if IS_ENABLED(CONFIG_NVRAM)
-+#ifdef CONFIG_MAC
-+static unsigned char m68k_nvram_read_byte(int addr)
-+{
-+	if (MACH_IS_MAC)
-+		return mac_pram_read_byte(addr);
-+	return 0xff;
-+}
-+
-+static void m68k_nvram_write_byte(unsigned char val, int addr)
-+{
-+	if (MACH_IS_MAC)
-+		mac_pram_write_byte(val, addr);
-+}
-+#endif /* CONFIG_MAC */
-+
-+#ifdef CONFIG_ATARI
-+static ssize_t m68k_nvram_read(char *buf, size_t count, loff_t *ppos)
-+{
-+	if (MACH_IS_ATARI)
-+		return atari_nvram_read(buf, count, ppos);
-+	else if (MACH_IS_MAC) {
-+		ssize_t size = mac_pram_get_size();
-+		char *p = buf;
-+		loff_t i;
-+
-+		for (i = *ppos; count > 0 && i < size; --count, ++i, ++p)
-+			*p = mac_pram_read_byte(i);
-+
-+		*ppos = i;
-+		return p - buf;
-+	}
-+	return -EINVAL;
-+}
-+
-+static ssize_t m68k_nvram_write(char *buf, size_t count, loff_t *ppos)
-+{
-+	if (MACH_IS_ATARI)
-+		return atari_nvram_write(buf, count, ppos);
-+	else if (MACH_IS_MAC) {
-+		ssize_t size = mac_pram_get_size();
-+		char *p = buf;
-+		loff_t i;
-+
-+		for (i = *ppos; count > 0 && i < size; --count, ++i, ++p)
-+			mac_pram_write_byte(*p, i);
-+
-+		*ppos = i;
-+		return p - buf;
-+	}
-+	return -EINVAL;
-+}
-+
-+static long m68k_nvram_set_checksum(void)
-+{
-+	if (MACH_IS_ATARI)
-+		return atari_nvram_set_checksum();
-+	return -EINVAL;
-+}
-+
-+static long m68k_nvram_initialize(void)
-+{
-+	if (MACH_IS_ATARI)
-+		return atari_nvram_initialize();
-+	return -EINVAL;
-+}
-+#endif /* CONFIG_ATARI */
-+
-+static ssize_t m68k_nvram_get_size(void)
-+{
-+	if (MACH_IS_ATARI)
-+		return atari_nvram_get_size();
-+	else if (MACH_IS_MAC)
-+		return mac_pram_get_size();
-+	return -ENODEV;
-+}
-+
-+/* Atari device drivers call .read (to get checksum validation) whereas
-+ * Mac and PowerMac device drivers just use .read_byte.
-+ */
-+const struct nvram_ops arch_nvram_ops = {
-+#ifdef CONFIG_MAC
-+	.read_byte      = m68k_nvram_read_byte,
-+	.write_byte     = m68k_nvram_write_byte,
-+#endif
-+#ifdef CONFIG_ATARI
-+	.read           = m68k_nvram_read,
-+	.write          = m68k_nvram_write,
-+	.set_checksum   = m68k_nvram_set_checksum,
-+	.initialize     = m68k_nvram_initialize,
-+#endif
-+	.get_size       = m68k_nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+#endif /* CONFIG_NVRAM */
-Index: linux/arch/m68k/Kconfig.machine
-===================================================================
---- linux.orig/arch/m68k/Kconfig.machine	2015-07-25 17:45:36.000000000 +1000
-+++ linux/arch/m68k/Kconfig.machine	2015-07-25 17:45:56.000000000 +1000
-@@ -26,6 +26,7 @@ config MAC
- 	bool "Macintosh support"
- 	depends on MMU
- 	select MMU_MOTOROLA if MMU
-+	select HAVE_ARCH_NVRAM_OPS
- 	help
- 	  This option enables support for the Apple Macintosh series of
- 	  computers (yes, there is experimental support now, at least for part
-Index: linux/arch/m68k/include/asm/atarihw.h
-===================================================================
---- linux.orig/arch/m68k/include/asm/atarihw.h	2015-07-25 17:42:33.000000000 +1000
-+++ linux/arch/m68k/include/asm/atarihw.h	2015-07-25 17:45:56.000000000 +1000
-@@ -32,6 +32,12 @@ extern int atari_dont_touch_floppy_selec
- 
- extern int atari_SCC_reset_done;
- 
-+extern ssize_t atari_nvram_read(char *, size_t, loff_t *);
-+extern ssize_t atari_nvram_write(char *, size_t, loff_t *);
-+extern ssize_t atari_nvram_get_size(void);
-+extern long atari_nvram_set_checksum(void);
-+extern long atari_nvram_initialize(void);
-+
- /* convenience macros for testing machine type */
- #define MACH_IS_ST	((atari_mch_cookie >> 16) == ATARI_MCH_ST)
- #define MACH_IS_STE	((atari_mch_cookie >> 16) == ATARI_MCH_STE && \
-Index: linux/arch/m68k/include/asm/macintosh.h
-===================================================================
---- linux.orig/arch/m68k/include/asm/macintosh.h	2015-07-25 17:42:33.000000000 +1000
-+++ linux/arch/m68k/include/asm/macintosh.h	2015-07-25 17:45:56.000000000 +1000
-@@ -18,6 +18,10 @@ extern void mac_init_IRQ(void);
- extern void mac_irq_enable(struct irq_data *data);
- extern void mac_irq_disable(struct irq_data *data);
- 
-+extern unsigned char mac_pram_read_byte(int);
-+extern void mac_pram_write_byte(unsigned char, int);
-+extern ssize_t mac_pram_get_size(void);
-+
- /*
-  *	Macintosh Table
-  */
