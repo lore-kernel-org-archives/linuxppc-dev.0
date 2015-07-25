@@ -1,21 +1,20 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
+ (mail-by2on0110.outbound.protection.outlook.com [207.46.100.110])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D7961A035C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 12:27:38 +1000 (AEST)
-Message-ID: <1437791242.2993.268.camel@freescale.com>
-Subject: Re: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240
- incorrect HOSTVER value
+ by lists.ozlabs.org (Postfix) with ESMTPS id 356741A035C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 12:48:36 +1000 (AEST)
+Message-ID: <1437792504.2993.280.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl-pci: fix pcie range issue for some P1/P2
+ boards
 From: Scott Wood <scottwood@freescale.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-CC: Yangbo Lu <yangbo.lu@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, linux-mmc <linux-mmc@vger.kernel.org>
-Date: Fri, 24 Jul 2015 21:27:22 -0500
-In-Reply-To: <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
-References: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
- <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
+To: Zhiqiang Hou <B48286@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <mpe@ellerman.id.au>, <b21284@freescale.com>
+Date: Fri, 24 Jul 2015 21:48:24 -0500
+In-Reply-To: <1437559704-13332-1-git-send-email-B48286@freescale.com>
+References: <1437559704-13332-1-git-send-email-B48286@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,32 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-21 at 15:02 +0200, Ulf Hansson wrote:
-> On 21 July 2015 at 11:45, Yangbo Lu <yangbo.lu@freescale.com> wrote:
-> > For T4240-R1.0-R2.0, the HOSTVER register has incorrcet vender
-> > version value and sdhc spec version value. This will break down
-> > the ADMA data transfer. So add workaround to get right value
-> > VVN=0x13, SVN = 0x1.
-> 
-> So T4240-R1.0-R2.0 is the version of the controller, right?
-> 
-> If I understand correct you are checking what CPU/SoC you are running
-> on, to figure out which controller version you are using, as that
-> can't be fetched (trusted) from the registers of the esdhc controller
-> itself!?
-> 
-> Instead, you could deal with this directly in the DTS files. I assume
-> you have some DTS file for each SoC/board variant, right?
+On Wed, 2015-07-22 at 18:08 +0800, Zhiqiang Hou wrote:
 
-No, we do not have a separate DTS file for each revision of an SoC -- and if 
-we did, we'd constantly have people using the wrong one.
+> From: Hou Zhiqiang <B48286@freescale.com>
 
-> In principle, in your DTS file specific for the board/SoC that holds
-> the T4240-R1.0-R2.0 version of the controller, should add a specific
-> esdhc DT property to indicate this errata.
+You CCed this to 
+b21284@freescale.com.  Who is that?  It would be nice to use "friendly" 
+e-mail addresses, but at least include the name along with the e-mail address.
 
-No, because (in addition to the above issue about chip revisions) the device 
-tree is stable ABI and errata are often discovered after device trees are 
-deployed.
+I suggest CCing the people who added these device trees.
+
+> Impact board list:
+> P1020MBG-PC. P1022DS, P2020RDB
+> All above boards have its PCIE memory range less than 0xbfff_ffff,
+
+If you mean that the physical address of the memory region is <= 0xbfff_ffff, 
+I don't see the relevance.
+
+> but in dts its boundary value was 0xe0000000. Both of them was maped
+> to the same boundary 0xe0000000 which was Overlapped and crossed.
+
+By "boundary" do you mean the PCIe bus address?  Why is it a problem for 
+these independent PCIe root complexes to have the same PCIe bus addresses?
+
+>  Cpu will access the illicit memery addr and detect error then lead to
+> cpu stall.  So update dts for these boards.
+
+What is illicit about it?
+
+Why isn't the problem seen in the 36-bit device trees, which do the same 
+thing?
 
 -Scott
