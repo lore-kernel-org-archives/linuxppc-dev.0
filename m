@@ -1,32 +1,17 @@
-Return-Path: <r.baldyga@hackerion.com>
-Received: from sender163-mail.zoho.com (sender163-mail.zoho.com
- [74.201.84.163])
- (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A66B1A1BEE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 19:50:38 +1000 (AEST)
-Message-ID: <55B35825.7010607@hackerion.com>
-Date: Sat, 25 Jul 2015 11:34:29 +0200
-From: Robert Baldyga <r.baldyga@hackerion.com>
-MIME-Version: 1.0
-To: Krzysztof Opasiak <k.opasiak@samsung.com>,
- Robert Baldyga <r.baldyga@samsung.com>,
- gregkh@linuxfoundation.org, balbi@ti.com
-CC: Peter.Chen@freescale.com, johnyoun@synopsys.com,
- dahlmann.thomas@arcor.de, nicolas.ferre@atmel.com, cernekee@gmail.com,
- leoli@freescale.com, daniel@zonque.org, haojian.zhuang@gmail.com,
- robert.jarzmik@free.fr, michal.simek@xilinx.com,
- devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-geode@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
- m.szyprowski@samsung.com
-Subject: Re: [PATCH v3 26/46] usb: gadget: pch_ud: add ep capabilities support
-References: <1436941953-1327-1-git-send-email-r.baldyga@samsung.com>
- <1436941953-1327-27-git-send-email-r.baldyga@samsung.com>
- <55AD0EDD.70201@samsung.com>
-In-Reply-To: <55AD0EDD.70201@samsung.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BB831A0133
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 02:57:50 +1000 (AEST)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mikey@neuling.org, cyril.bur@au1.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/3] powerpc: No need to disable kernel FP/VMX/VSX MSR bits on
+ context switch
+Date: Sun, 26 Jul 2015 02:57:43 +1000
+Message-Id: <1437843465-1577-1-git-send-email-anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,61 +21,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+There seems little point in disabling the FP/VMX/VSX MSR bits on
+context switch since we don't do it after calling
+enable_kernel_altivec() in other places. Writing the MSR is slow
+so lets not do it unnecessarily.
 
-On 07/20/2015 05:08 PM, Krzysztof Opasiak wrote:
->
->
-> On 07/15/2015 08:32 AM, Robert Baldyga wrote:
->> Convert endpoint configuration to new capabilities model.
->>
->> Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
->> ---
->>   drivers/usb/gadget/udc/pch_udc.c | 14 ++++++++++++--
->>   1 file changed, 12 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/usb/gadget/udc/pch_udc.c
->> b/drivers/usb/gadget/udc/pch_udc.c
->> index 613547f..cc8fb3c 100644
->> --- a/drivers/usb/gadget/udc/pch_udc.c
->> +++ b/drivers/usb/gadget/udc/pch_udc.c
->> @@ -2895,11 +2895,21 @@ static void pch_udc_pcd_reinit(struct
->> pch_udc_dev *dev)
->>           ep->in = ~i & 1;
->>           ep->ep.name = ep_string[i];
->>           ep->ep.ops = &pch_udc_ep_ops;
->> -        if (ep->in)
->> +        if (ep->in) {
->>               ep->offset_addr = ep->num * UDC_EP_REG_SHIFT;
->> -        else
->> +            ep->ep.caps.dir_in = true;
->> +        } else {
->>               ep->offset_addr = (UDC_EPINT_OUT_SHIFT + ep->num) *
->>                         UDC_EP_REG_SHIFT;
->> +            ep->ep.caps.dir_out = true;
->> +        }
->> +        if (i == UDC_EP0IN_IDX || i == UDC_EP0OUT_IDX) {
->> +            ep->ep.caps.type_control = true;
->
-> In all previous patches you set both dir_in and dir_out to true for ep0
-> but in this patch you don't do this. Is there some reason for this or
-> it's just a mistake?
->
+A context switch microbenchmark using yield():
 
-Most of UDC drivers we have single instance of ep0 for both directions, 
-but this one has two separate unidirectional ep0in and ep0out.
+http://ozlabs.org/~anton/junkcode/context_switch2.c
 
->> +        } else {
->> +            ep->ep.caps.type_iso = true;
->> +            ep->ep.caps.type_bulk = true;
->> +            ep->ep.caps.type_int = true;
->> +        }
->>           /* need to set ep->ep.maxpacket and set Default
->> Configuration?*/
->>           usb_ep_set_maxpacket_limit(&ep->ep, UDC_BULK_MAX_PKT_SIZE);
->>           list_add_tail(&ep->ep.ep_list, &dev->gadget.ep_list);
->>
->
+./context_switch2 --type=yield --fp 0 0
 
-Thanks,
-Robert Baldyga
+shows an improvement of almost 3% on POWER8.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/kernel/entry_64.S | 15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
+
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 579e0f9..daf00f5 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -441,26 +441,13 @@ _GLOBAL(_switch)
+ 	SAVE_8GPRS(14, r1)
+ 	SAVE_10GPRS(22, r1)
+ 	mflr	r20		/* Return to switch caller */
+-	mfmsr	r22
+-	li	r0, MSR_FP
+-#ifdef CONFIG_VSX
+-BEGIN_FTR_SECTION
+-	oris	r0,r0,MSR_VSX@h	/* Disable VSX */
+-END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+-#endif /* CONFIG_VSX */
+ #ifdef CONFIG_ALTIVEC
+ BEGIN_FTR_SECTION
+-	oris	r0,r0,MSR_VEC@h	/* Disable altivec */
+ 	mfspr	r24,SPRN_VRSAVE	/* save vrsave register value */
+ 	std	r24,THREAD_VRSAVE(r3)
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif /* CONFIG_ALTIVEC */
+-	and.	r0,r0,r22
+-	beq+	1f
+-	andc	r22,r22,r0
+-	MTMSRD(r22)
+-	isync
+-1:	std	r20,_NIP(r1)
++	std	r20,_NIP(r1)
+ 	mfcr	r23
+ 	std	r23,_CCR(r1)
+ 	std	r1,KSP(r3)	/* Set old stack pointer */
+-- 
+2.1.4
