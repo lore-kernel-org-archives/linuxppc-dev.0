@@ -1,18 +1,15 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 9D9991A019D
+ by lists.ozlabs.org (Postfix) with ESMTP id 02A8D1A01D2
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 17:56:52 +1000 (AEST)
-Message-Id: <20150725074603.423317312@telegraphics.com.au>
-Date: Sat, 25 Jul 2015 17:46:15 +1000
+Message-Id: <20150725074605.143283098@telegraphics.com.au>
+Date: Sat, 25 Jul 2015 17:46:22 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v5 16/26] powerpc: Implement nvram sync ioctl
+ <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [RFC v5 23/26] m68k/mac: Adopt naming and calling conventions for
+ PRAM routines
 References: <20150725074559.543547894@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,179 +20,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the powerpc-specific sync() method to struct nvram_ops and implement
-the corresponding ioctl in the nvram module. This allows the nvram module
-to replace the generic_nvram module.
+Adopt the existing *_read_byte and *_write_byte naming convention.
+Rename via_pram_readbyte and via_pram_writebyte to avoid confusion.
+Adjust calling conventions of mac_pram_* functions to match the
+arch_nvram_ops struct methods.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
 
-On PPC32, the IOC_NVRAM_SYNC ioctl call always returns 0, even for those
-platforms that don't implement ppc_md.nvram_sync. This patch retains
-that quirk. It might be better to return failure (which is what PPC64 does).
+Changes since v1:
+- Don't introduce the arch_nvram_ops struct in this patch, even if it 
+would form a logical progression. Since the struct would get replaced
+later on, some might see it as churn.
 
-Changed since v1:
-- Don't bother acquiring the mutex for unimplemented ioctls.
+Changes since v2:
+- Rename via_pram_send() and via_pram_recv() as
+via_rtc_send() and via_rtc_recv() resp.
 
 ---
- arch/powerpc/include/asm/nvram.h |    3 ---
- arch/powerpc/kernel/setup_32.c   |    6 +++---
- drivers/char/generic_nvram.c     |    2 +-
- drivers/char/nvram.c             |   39 +++++++++++++++++++++++++++++++++++++++
- include/linux/nvram.h            |    4 ++++
- 5 files changed, 47 insertions(+), 7 deletions(-)
+ arch/m68k/mac/misc.c |   91 +++++++++++++++++++++++++--------------------------
+ 1 file changed, 46 insertions(+), 45 deletions(-)
 
-Index: linux/drivers/char/nvram.c
+Index: linux/arch/m68k/mac/misc.c
 ===================================================================
---- linux.orig/drivers/char/nvram.c	2015-07-25 17:45:37.000000000 +1000
-+++ linux/drivers/char/nvram.c	2015-07-25 17:45:42.000000000 +1000
-@@ -48,6 +48,11 @@
- #include <linux/mutex.h>
- 
- 
-+#ifdef CONFIG_PPC
-+#include <asm/nvram.h>
-+#include <asm/machdep.h>
-+#endif
-+
- static DEFINE_MUTEX(nvram_mutex);
- static DEFINE_SPINLOCK(nvram_state_lock);
- static int nvram_open_cnt;	/* #times opened */
-@@ -338,6 +343,37 @@ static long nvram_misc_ioctl(struct file
- 	long ret = -ENOTTY;
- 
- 	switch (cmd) {
-+#ifdef CONFIG_PPC
-+#ifdef CONFIG_PPC_PMAC
-+	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
-+		pr_warn("nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
-+		/* fall through */
-+	case IOC_NVRAM_GET_OFFSET: {
-+		int part, offset;
-+
-+		if (!machine_is(powermac))
-+			return -EINVAL;
-+		if (copy_from_user(&part,
-+		                   (void __user *)arg, sizeof(part)) != 0)
-+			return -EFAULT;
-+		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
-+			return -EINVAL;
-+		offset = pmac_get_partition(part);
-+		if (copy_to_user((void __user *)arg,
-+		                 &offset, sizeof(offset)) != 0)
-+			return -EFAULT;
-+		ret = 0;
-+		break;
-+	}
-+#endif
-+	case IOC_NVRAM_SYNC:
-+		if (arch_nvram_ops.sync != NULL) {
-+			mutex_lock(&nvram_mutex);
-+			ret = arch_nvram_ops.sync();
-+			mutex_unlock(&nvram_mutex);
-+		}
-+		break;
-+#else /* !CONFIG_PPC */
- 	case NVRAM_INIT:
- 		/* initialize NVRAM contents and checksum */
- 		if (!capable(CAP_SYS_ADMIN))
-@@ -361,6 +397,7 @@ static long nvram_misc_ioctl(struct file
- 			mutex_unlock(&nvram_mutex);
- 		}
- 		break;
-+#endif /* CONFIG_PPC */
- 	}
- 	return ret;
+--- linux.orig/arch/m68k/mac/misc.c	2015-07-25 17:42:33.000000000 +1000
++++ linux/arch/m68k/mac/misc.c	2015-07-25 17:45:53.000000000 +1000
+@@ -61,7 +61,7 @@ static void cuda_write_time(long data)
+ 		cuda_poll();
  }
-@@ -376,6 +413,7 @@ static int nvram_misc_open(struct inode
- 		return -EBUSY;
- 	}
  
-+#ifndef CONFIG_PPC
- 	/* Prevent multiple writers if the set_checksum ioctl is implemented. */
- 	if ((arch_nvram_ops.set_checksum != NULL) &&
- 	    (file->f_mode & FMODE_WRITE) &&
-@@ -383,6 +421,7 @@ static int nvram_misc_open(struct inode
- 		spin_unlock(&nvram_state_lock);
- 		return -EBUSY;
- 	}
-+#endif
- 
- 	if (file->f_flags & O_EXCL)
- 		nvram_open_mode |= NVRAM_EXCL;
-Index: linux/include/linux/nvram.h
-===================================================================
---- linux.orig/include/linux/nvram.h	2015-07-25 17:45:33.000000000 +1000
-+++ linux/include/linux/nvram.h	2015-07-25 17:45:42.000000000 +1000
-@@ -17,8 +17,12 @@ struct nvram_ops {
- 	unsigned char   (*read_byte)(int);
- 	void            (*write_byte)(unsigned char, int);
- 	ssize_t         (*get_size)(void);
-+#ifdef CONFIG_PPC
-+	long            (*sync)(void);
-+#else
- 	long            (*set_checksum)(void);
- 	long            (*initialize)(void);
-+#endif
- };
- 
- extern const struct nvram_ops arch_nvram_ops;
-Index: linux/arch/powerpc/include/asm/nvram.h
-===================================================================
---- linux.orig/arch/powerpc/include/asm/nvram.h	2015-07-25 17:45:41.000000000 +1000
-+++ linux/arch/powerpc/include/asm/nvram.h	2015-07-25 17:45:42.000000000 +1000
-@@ -78,9 +78,6 @@ extern int	pmac_get_partition(int partit
- extern u8	pmac_xpram_read(int xpaddr);
- extern void	pmac_xpram_write(int xpaddr, u8 data);
- 
--/* Synchronize NVRAM */
--extern void	nvram_sync(void);
--
- /* Initialize NVRAM OS partition */
- extern int __init nvram_init_os_partition(struct nvram_os_partition *part);
- 
-Index: linux/arch/powerpc/kernel/setup_32.c
-===================================================================
---- linux.orig/arch/powerpc/kernel/setup_32.c	2015-07-25 17:45:41.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-07-25 17:45:42.000000000 +1000
-@@ -170,7 +170,6 @@ __setup("l3cr=", ppc_setup_l3cr);
- 
- #ifdef CONFIG_GENERIC_NVRAM
- 
--/* Generic nvram hooks used by drivers/char/gen_nvram.c */
- unsigned char nvram_read_byte(int addr)
+-static __u8 cuda_read_pram(int offset)
++static unsigned char cuda_pram_read_byte(int offset)
  {
- 	if (ppc_md.nvram_read_val)
-@@ -193,15 +192,16 @@ static ssize_t ppc_nvram_get_size(void)
- 	return -ENODEV;
+ 	struct adb_request req;
+ 	if (cuda_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
+@@ -72,7 +72,7 @@ static __u8 cuda_read_pram(int offset)
+ 	return req.reply[3];
  }
  
--void nvram_sync(void)
-+static long ppc_nvram_sync(void)
+-static void cuda_write_pram(int offset, __u8 data)
++static void cuda_pram_write_byte(unsigned char data, int offset)
  {
- 	if (ppc_md.nvram_sync)
- 		ppc_md.nvram_sync();
-+	return 0;
+ 	struct adb_request req;
+ 	if (cuda_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
+@@ -84,8 +84,8 @@ static void cuda_write_pram(int offset,
+ #else
+ #define cuda_read_time() 0
+ #define cuda_write_time(n)
+-#define cuda_read_pram NULL
+-#define cuda_write_pram NULL
++#define cuda_pram_read_byte NULL
++#define cuda_pram_write_byte NULL
+ #endif
+ 
+ #ifdef CONFIG_ADB_PMU68K
+@@ -116,7 +116,7 @@ static void pmu_write_time(long data)
+ 		pmu_poll();
  }
--EXPORT_SYMBOL(nvram_sync);
  
- const struct nvram_ops arch_nvram_ops = {
- 	.get_size       = ppc_nvram_get_size,
-+	.sync           = ppc_nvram_sync,
- };
- EXPORT_SYMBOL(arch_nvram_ops);
+-static __u8 pmu_read_pram(int offset)
++static unsigned char pmu_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
+ 	if (pmu_request(&req, NULL, 3, PMU_READ_NVRAM,
+@@ -127,7 +127,7 @@ static __u8 pmu_read_pram(int offset)
+ 	return req.reply[3];
+ }
  
-Index: linux/drivers/char/generic_nvram.c
-===================================================================
---- linux.orig/drivers/char/generic_nvram.c	2015-07-25 17:45:41.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-07-25 17:45:42.000000000 +1000
-@@ -111,7 +111,7 @@ static int nvram_ioctl(struct file *file
+-static void pmu_write_pram(int offset, __u8 data)
++static void pmu_pram_write_byte(unsigned char data, int offset)
+ {
+ 	struct adb_request req;
+ 	if (pmu_request(&req, NULL, 4, PMU_WRITE_NVRAM,
+@@ -139,8 +139,8 @@ static void pmu_write_pram(int offset, _
+ #else
+ #define pmu_read_time() 0
+ #define pmu_write_time(n)
+-#define pmu_read_pram NULL
+-#define pmu_write_pram NULL
++#define pmu_pram_read_byte NULL
++#define pmu_pram_write_byte NULL
+ #endif
+ 
+ #if 0 /* def CONFIG_ADB_MACIISI */
+@@ -169,7 +169,7 @@ static void maciisi_write_time(long data
+ 			(data >> 8) & 0xFF, data & 0xFF);
+ }
+ 
+-static __u8 maciisi_read_pram(int offset)
++static unsigned char maciisi_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
+ 	if (maciisi_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
+@@ -178,7 +178,7 @@ static __u8 maciisi_read_pram(int offset
+ 	return req.reply[3];
+ }
+ 
+-static void maciisi_write_pram(int offset, __u8 data)
++static void maciisi_pram_write_byte(unsigned char data, int offset)
+ {
+ 	struct adb_request req;
+ 	maciisi_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
+@@ -187,8 +187,8 @@ static void maciisi_write_pram(int offse
+ #else
+ #define maciisi_read_time() 0
+ #define maciisi_write_time(n)
+-#define maciisi_read_pram NULL
+-#define maciisi_write_pram NULL
++#define maciisi_pram_read_byte NULL
++#define maciisi_pram_write_byte NULL
+ #endif
+ 
+ /*
+@@ -198,7 +198,7 @@ static void maciisi_write_pram(int offse
+  * the RTC should be enabled.
+  */
+ 
+-static __u8 via_pram_readbyte(void)
++static __u8 via_rtc_recv(void)
+ {
+ 	int	i,reg;
+ 	__u8	data;
+@@ -225,7 +225,7 @@ static __u8 via_pram_readbyte(void)
+ 	return data;
+ }
+ 
+-static void via_pram_writebyte(__u8 data)
++static void via_rtc_send(__u8 data)
+ {
+ 	int	i,reg,bit;
+ 
+@@ -262,17 +262,17 @@ static void via_pram_command(int command
+ 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
+ 
+ 	if (command & 0xFF00) {		/* extended (two-byte) command */
+-		via_pram_writebyte((command & 0xFF00) >> 8);
+-		via_pram_writebyte(command & 0xFF);
++		via_rtc_send((command & 0xFF00) >> 8);
++		via_rtc_send(command & 0xFF);
+ 		is_read = command & 0x8000;
+ 	} else {			/* one-byte command */
+-		via_pram_writebyte(command);
++		via_rtc_send(command);
+ 		is_read = command & 0x80;
  	}
- #endif /* CONFIG_PPC_PMAC */
- 	case IOC_NVRAM_SYNC:
--		nvram_sync();
-+		arch_nvram_ops.sync();
- 		break;
+ 	if (is_read) {
+-		*data = via_pram_readbyte();
++		*data = via_rtc_recv();
+ 	} else {
+-		via_pram_writebyte(*data);
++		via_rtc_send(*data);
+ 	}
+ 
+ 	/* All done, disable the RTC */
+@@ -282,12 +282,12 @@ static void via_pram_command(int command
+ 	local_irq_restore(flags);
+ }
+ 
+-static __u8 via_read_pram(int offset)
++static unsigned char via_pram_read_byte(int offset)
+ {
+ 	return 0;
+ }
+ 
+-static void via_write_pram(int offset, __u8 data)
++static void via_pram_write_byte(unsigned char data, int offset)
+ {
+ }
+ 
+@@ -453,50 +453,51 @@ void pmu_shutdown(void)
+  *-------------------------------------------------------------------
+  */
+ 
+-void mac_pram_read(int offset, __u8 *buffer, int len)
++unsigned char mac_pram_read_byte(int addr)
+ {
+-	__u8 (*func)(int);
+-	int i;
++	unsigned char (*func)(int);
+ 
+ 	switch(macintosh_config->adb_type) {
+ 	case MAC_ADB_IISI:
+-		func = maciisi_read_pram; break;
++		func = maciisi_pram_read_byte;
++		break;
+ 	case MAC_ADB_PB1:
+ 	case MAC_ADB_PB2:
+-		func = pmu_read_pram; break;
++		func = pmu_pram_read_byte;
++		break;
+ 	case MAC_ADB_CUDA:
+-		func = cuda_read_pram; break;
++		func = cuda_pram_read_byte;
++		break;
  	default:
- 		return -EINVAL;
+-		func = via_read_pram;
+-	}
+-	if (!func)
+-		return;
+-	for (i = 0 ; i < len ; i++) {
+-		buffer[i] = (*func)(offset++);
++		func = via_pram_read_byte;
+ 	}
++
++	if (func)
++		return (*func)(addr);
++	return 0xff;
+ }
+ 
+-void mac_pram_write(int offset, __u8 *buffer, int len)
++void mac_pram_write_byte(unsigned char val, int addr)
+ {
+-	void (*func)(int, __u8);
+-	int i;
++	void (*func)(unsigned char, int);
+ 
+ 	switch(macintosh_config->adb_type) {
+ 	case MAC_ADB_IISI:
+-		func = maciisi_write_pram; break;
++		func = maciisi_pram_write_byte;
++		break;
+ 	case MAC_ADB_PB1:
+ 	case MAC_ADB_PB2:
+-		func = pmu_write_pram; break;
++		func = pmu_pram_write_byte;
++		break;
+ 	case MAC_ADB_CUDA:
+-		func = cuda_write_pram; break;
++		func = cuda_pram_write_byte;
++		break;
+ 	default:
+-		func = via_write_pram;
+-	}
+-	if (!func)
+-		return;
+-	for (i = 0 ; i < len ; i++) {
+-		(*func)(offset++, buffer[i]);
++		func = via_pram_write_byte;
+ 	}
++
++	if (func)
++		(*func)(val, addr);
+ }
+ 
+ void mac_poweroff(void)
