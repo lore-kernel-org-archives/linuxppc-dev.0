@@ -1,19 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3CD1B1A035C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 12:24:50 +1000 (AEST)
-Message-ID: <1437791076.2993.265.camel@freescale.com>
-Subject: Re: [PATCH 2/3] powerpc/85xx: add 'cpu-rev' property for cpus node
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D7961A035C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 12:27:38 +1000 (AEST)
+Message-ID: <1437791242.2993.268.camel@freescale.com>
+Subject: Re: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240
+ incorrect HOSTVER value
 From: Scott Wood <scottwood@freescale.com>
-To: Yangbo Lu <yangbo.lu@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-mmc@vger.kernel.org>,
- <ulf.hansson@linaro.org>
-Date: Fri, 24 Jul 2015 21:24:36 -0500
-In-Reply-To: <1437471923-34172-1-git-send-email-yangbo.lu@freescale.com>
-References: <1437471923-34172-1-git-send-email-yangbo.lu@freescale.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+CC: Yangbo Lu <yangbo.lu@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, linux-mmc <linux-mmc@vger.kernel.org>
+Date: Fri, 24 Jul 2015 21:27:22 -0500
+In-Reply-To: <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
+References: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
+ <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,14 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-21 at 17:45 +0800, Yangbo Lu wrote:
-> Add 'cpu-rev' property for cpus node to support getting cpu revision
-> from dts, since it's not good to get cpu revision using powerpc specific
-> function(like SVR_REV()) in common drivers.
+On Tue, 2015-07-21 at 15:02 +0200, Ulf Hansson wrote:
+> On 21 July 2015 at 11:45, Yangbo Lu <yangbo.lu@freescale.com> wrote:
+> > For T4240-R1.0-R2.0, the HOSTVER register has incorrcet vender
+> > version value and sdhc spec version value. This will break down
+> > the ADMA data transfer. So add workaround to get right value
+> > VVN=0x13, SVN = 0x1.
+> 
+> So T4240-R1.0-R2.0 is the version of the controller, right?
+> 
+> If I understand correct you are checking what CPU/SoC you are running
+> on, to figure out which controller version you are using, as that
+> can't be fetched (trusted) from the registers of the esdhc controller
+> itself!?
+> 
+> Instead, you could deal with this directly in the DTS files. I assume
+> you have some DTS file for each SoC/board variant, right?
 
-No.  Don't modify the device tree within Linux without a really good reason 
-(e.g. platform code to fix up a broken device tree).
+No, we do not have a separate DTS file for each revision of an SoC -- and if 
+we did, we'd constantly have people using the wrong one.
 
-Why not just read SVR from guts, which works on both PPC and ARM?
+> In principle, in your DTS file specific for the board/SoC that holds
+> the T4240-R1.0-R2.0 version of the controller, should add a specific
+> esdhc DT property to indicate this errata.
+
+No, because (in addition to the above issue about chip revisions) the device 
+tree is stable ABI and errata are often discovered after device trees are 
+deployed.
 
 -Scott
