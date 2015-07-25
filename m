@@ -1,18 +1,14 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 165ED1A01D2
+ by lists.ozlabs.org (Postfix) with ESMTP id 1519B1A019D
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jul 2015 17:56:50 +1000 (AEST)
-Message-Id: <20150725074600.523330379@telegraphics.com.au>
-Date: Sat, 25 Jul 2015 17:46:03 +1000
+Message-Id: <20150725074559.543547894@telegraphics.com.au>
+Date: Sat, 25 Jul 2015 17:45:59 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
- Michael Schmitz <schmitzmic@gmail.com>,
- "James E.J. Bottomley" <JBottomley@odin.com>, linux-scsi@vger.kernel.org
-Subject: [RFC v5 04/26] m68k/atari: Replace nvram_{read,
- write}_byte with arch_nvram_ops
-References: <20150725074559.543547894@telegraphics.com.au>
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC v5 00/26] Re-use nvram module
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,190 +18,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By implementing an arch_nvram_ops struct, any platform can re-use the
-drivers/char/nvram module without needing any arch-specific code
-in that module. Atari does so here.
 
-Atari has one user of nvram_check_checksum() whereas the other platforms
-(i.e. x86 and ARM platforms) have none at all. Replace this
-validate-checksum-and-read-byte sequence with the equivalent
-rtc_nvram_ops.read() call and remove the now unused functions.
+The generic NVRAM module, drivers/char/generic_nvram, implements a
+/dev/nvram misc device. It is used only by 32-bit PowerPC platforms and
+isn't generic enough to be more widely used.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Tested-by: Christian T. Steigies <cts@debian.org>
+The RTC NVRAM module, drivers/char/nvram, also implements a /dev/nvram
+misc device. It is used by x86, ARM and m68k.
+
+The former module cannot be used on x86, ARM or m68k because it
+cannot co-exist with the latter module, partly due to the Kconfig logic.
+
+It is possible to modify the modules so that one kernel binary could
+have either, neither or both. However, automatically loading the
+appropriate module is then impossible; if both provide the
+char-major-10-144 alias then the wrong module will end up being loaded.
+Hence a multi-platform kernel binary needs a single generic nvram module
+with alias char-major-10-144.
+
+Therefore, drivers/char/nvram.c should be made more generic and the
+arch-specific code therein should be moved to a more appropriate
+place under arch/. Also, drivers/char/generic_nvram.c should be removed
+to reduce code duplication.
+
+In this patch series, Atari-specific code is moved from the nvram module
+to arch/m68k/atari. More arch-specific code in the nvram module could
+be moved, probably to arch/x86, but it is difficult to determine just
+what code is relevant to ARM platforms and what code is x86-only.
+
+In addressing code duplication, v1 of this patch series removes three
+inconsistent /dev/nvram misc device implementations. One of these,
+drivers/macintosh/nvram.c is entirely unused already. The other two,
+drivers/char/generic_nvram.c and the misc device implementation in
+arch/powerpc/kernel/nvram_64.c, are replaced by drivers/char/nvram.c.
+
+A benefit of this work is better consistency -- between PPC32 and PPC64
+as well as between PPC_PMAC and MAC. This new uniformity does have
+implications for userspace, that is, some error codes for some ioctl calls
+become consistent on all PowerPC platforms.
+
+The drivers/char/nvram module becomes sufficiently generic to be useful
+to other platforms and architectures, besides those with "CMOS" RTC. At the
+end of this patch series the module is adopted by the m68k Mac port, which
+already has PRAM access functions but lacks the /dev/nvram misc device.
+
+This patch series has been compile-tested for arm, m68k, powerpc and x86.
+The nvram and thinkpad_acpi modules were regression tested on a ThinkPad
+T43. The /dev/nvram functionality was also regression tested on a G3
+PowerMac. The nvram module was also tested on a PowerBook 520, Quadra 650
+and Atari Falcon. AFAIK, no testing has been done on PPC64 as yet.
+
+Changes since v1:
+- Minor changes to patches 7, 15 and 20 as described in commit logs.
+- Revised patches 21 and 24 to address comments from Geert.
+
+Changes since v2:
+- Dropped patch 1, "macintosh/nvram: Remove as unused", because it has
+since been merged.
+- Inserted a new patch, "m68k/mac: Use macros for RTC accesses not
+magic numbers".
+- Revised patches 21 and 23 to address comments from Geert.
+
+Changes since v3:
+- Split the patch, "m68k/atari: Move Atari-specific code out of
+drivers/char/nvram.c", as suggested by Geert.
+- Revised patches 11 and 25 to address comments from Geert.
+- Minor change to patch 21 as described in commit log.
+
+Changes since v4:
+- Split the patch, "powerpc, fbdev: Use arch_nvram_ops methods instead
+of nvram_read_byte() and nvram_write_byte()", so as to separately address
+inconsistent use of Kconfig symbols in PowerMac fbdev drivers.
+- Fix possible git bisect build failure with CONFIG_PPC_PMAC=n.
 
 ---
-
-The advantage of the new ops struct over the old global nvram_* functions
-is that the misc device module can be shared by different platforms
-without requiring every platform to implement every nvram_* function.
-E.g. only RTC "CMOS" NVRAMs have a checksum for the entire NVRAM
-and only PowerPC platforms have a "sync" ioctl.
-
----
- arch/m68k/atari/nvram.c   |   89 ++++++++++++++++++++++++++++------------------
- drivers/scsi/atari_scsi.c |    8 ++--
- include/linux/nvram.h     |    9 ++++
- 3 files changed, 70 insertions(+), 36 deletions(-)
-
-Index: linux/arch/m68k/atari/nvram.c
-===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-07-25 17:45:26.000000000 +1000
-+++ linux/arch/m68k/atari/nvram.c	2015-07-25 17:45:28.000000000 +1000
-@@ -38,33 +38,12 @@ unsigned char __nvram_read_byte(int i)
- 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
- }
- 
--unsigned char nvram_read_byte(int i)
--{
--	unsigned long flags;
--	unsigned char c;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	c = __nvram_read_byte(i);
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return c;
--}
--EXPORT_SYMBOL(nvram_read_byte);
--
- /* This races nicely with trying to read with checksum checking */
- void __nvram_write_byte(unsigned char c, int i)
- {
- 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
- }
- 
--void nvram_write_byte(unsigned char c, int i)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	__nvram_write_byte(c, i);
--	spin_unlock_irqrestore(&rtc_lock, flags);
--}
--
- /* On Ataris, the checksum is over all bytes except the checksum bytes
-  * themselves; these are at the very end.
-  */
-@@ -83,18 +62,6 @@ int __nvram_check_checksum(void)
- 	       (__nvram_read_byte(ATARI_CKS_LOC + 1) == (sum & 0xff));
- }
- 
--int nvram_check_checksum(void)
--{
--	unsigned long flags;
--	int rv;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	rv = __nvram_check_checksum();
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return rv;
--}
--EXPORT_SYMBOL(nvram_check_checksum);
--
- static void __nvram_set_checksum(void)
- {
- 	int i;
-@@ -106,6 +73,62 @@ static void __nvram_set_checksum(void)
- 	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
- }
- 
-+static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		*p = __nvram_read_byte(i);
-+
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		__nvram_write_byte(*p, i);
-+
-+	__nvram_set_checksum();
-+
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_get_size(void)
-+{
-+	return NVRAM_BYTES;
-+}
-+
-+const struct nvram_ops arch_nvram_ops = {
-+	.read           = nvram_read,
-+	.write          = nvram_write,
-+	.get_size       = nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+
- #ifdef CONFIG_PROC_FS
- static struct {
- 	unsigned char val;
-Index: linux/drivers/scsi/atari_scsi.c
-===================================================================
---- linux.orig/drivers/scsi/atari_scsi.c	2015-07-25 17:45:24.000000000 +1000
-+++ linux/drivers/scsi/atari_scsi.c	2015-07-25 17:45:28.000000000 +1000
-@@ -880,13 +880,15 @@ static int __init atari_scsi_probe(struc
- #ifdef CONFIG_NVRAM
- 	else
- 		/* Test if a host id is set in the NVRam */
--		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
--			unsigned char b = nvram_read_byte(14);
-+		if (ATARIHW_PRESENT(TT_CLK)) {
-+			unsigned char b;
-+			loff_t offset = 14;
-+			ssize_t count = arch_nvram_ops.read(&b, 1, &offset);
- 
- 			/* Arbitration enabled? (for TOS)
- 			 * If yes, use configured host ID
- 			 */
--			if (b & 0x80)
-+			if ((count == 1) && (b & 0x80))
- 				atari_scsi_template.this_id = b & 7;
- 		}
- #endif
-Index: linux/include/linux/nvram.h
-===================================================================
---- linux.orig/include/linux/nvram.h	2015-07-25 17:42:34.000000000 +1000
-+++ linux/include/linux/nvram.h	2015-07-25 17:45:28.000000000 +1000
-@@ -10,4 +10,13 @@ extern void __nvram_write_byte(unsigned
- extern void nvram_write_byte(unsigned char c, int i);
- extern int __nvram_check_checksum(void);
- extern int nvram_check_checksum(void);
-+
-+struct nvram_ops {
-+	ssize_t         (*read)(char *, size_t, loff_t *);
-+	ssize_t         (*write)(char *, size_t, loff_t *);
-+	ssize_t         (*get_size)(void);
-+};
-+
-+extern const struct nvram_ops arch_nvram_ops;
-+
- #endif  /* _LINUX_NVRAM_H */
+ arch/m68k/Kconfig                          |    3 
+ arch/m68k/Kconfig.machine                  |    2 
+ arch/m68k/atari/Makefile                   |    2 
+ arch/m68k/atari/nvram.c                    |  291 +++++++++++
+ arch/m68k/include/asm/atarihw.h            |    6 
+ arch/m68k/include/asm/macintosh.h          |    4 
+ arch/m68k/kernel/setup_mm.c                |  100 +++
+ arch/m68k/mac/misc.c                       |  207 +++++---
+ arch/powerpc/Kconfig                       |    5 
+ arch/powerpc/include/asm/nvram.h           |    9 
+ arch/powerpc/kernel/nvram_64.c             |  203 +------
+ arch/powerpc/kernel/setup_32.c             |   27 -
+ arch/powerpc/platforms/chrp/Makefile       |    2 
+ arch/powerpc/platforms/chrp/nvram.c        |   14 
+ arch/powerpc/platforms/chrp/setup.c        |    2 
+ arch/powerpc/platforms/powermac/Makefile   |    5 
+ arch/powerpc/platforms/powermac/nvram.c    |    9 
+ arch/powerpc/platforms/powermac/setup.c    |    3 
+ arch/powerpc/platforms/pseries/nvram.c     |    2 
+ drivers/char/Kconfig                       |   13 
+ drivers/char/Makefile                      |    6 
+ drivers/char/generic_nvram.c               |  174 ------
+ drivers/char/nvram.c                       |  742 ++++++++++++-----------------
+ drivers/platform/x86/thinkpad_acpi.c       |   20 
+ drivers/scsi/Kconfig                       |    6 
+ drivers/scsi/atari_scsi.c                  |   16 
+ drivers/video/fbdev/Kconfig                |    2 
+ drivers/video/fbdev/controlfb.c            |    4 
+ drivers/video/fbdev/imsttfb.c              |   17 
+ drivers/video/fbdev/matrox/matroxfb_base.c |    6 
+ drivers/video/fbdev/platinumfb.c           |    4 
+ drivers/video/fbdev/valkyriefb.c           |   18 
+ include/linux/nvram.h                      |   23 
+ include/uapi/linux/pmu.h                   |    2 
+ 34 files changed, 998 insertions(+), 951 deletions(-)
