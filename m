@@ -1,28 +1,42 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
- by lists.ozlabs.org (Postfix) with ESMTP id D0B501A0037
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 00:54:11 +1000 (AEST)
-Date: Mon, 27 Jul 2015 10:54:09 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Vlastimil Babka <vbabka@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
- Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150727145409.GB21664@akamai.com>
-References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
- <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
- <55B63D37.20303@suse.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
-In-Reply-To: <55B63D37.20303@suse.cz>
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 546841A0037
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 01:05:40 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 27 Jul 2015 20:35:37 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8D21212580AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:27:46 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6QIsil856754416
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:44 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6QHVOWI011740
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:01:25 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>,
+ Preeti U Murthy <preetium@andrew.cmu.edu>,
+ Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH v6 7/7]powerpc/powernv: nest pmu cpumask and cpu hotplug
+ support
+Date: Mon, 27 Jul 2015 00:24:24 +0530
+Message-Id: <1437936864-4402-8-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,160 +46,233 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Adds cpumask attribute to be used by each nest pmu since nest
+units are per-chip. Only one cpu (first online cpu) from each chip
+is designated to read counters.
 
---QTprm0S8XgL7H0Dt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On cpu hotplug, dying cpu is checked to see whether it is one of the
+designated cpus, if yes, next online cpu from the same chip is
+designated as new cpu to read counters.
 
-On Mon, 27 Jul 2015, Vlastimil Babka wrote:
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Stephane Eranian <eranian@google.com>
+Cc: Preeti U Murthy <preetium@andrew.cmu.edu>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/nest-pmu.c | 173 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 173 insertions(+)
 
-> On 07/27/2015 03:35 PM, Eric B Munson wrote:
-> >On Mon, 27 Jul 2015, Vlastimil Babka wrote:
-> >
-> >>On 07/24/2015 11:28 PM, Eric B Munson wrote:
-> >>
-> >>...
-> >>
-> >>>Changes from V4:
-> >>>Drop all architectures for new sys call entries except x86[_64] and MI=
-PS
-> >>>Drop munlock2 and munlockall2
-> >>>Make VM_LOCKONFAULT a modifier to VM_LOCKED only to simplify book keep=
-ing
-> >>>Adjust tests to match
-> >>
-> >>Hi, thanks for considering my suggestions. Well, I do hope there
-> >>were correct as API's are hard and I'm no API expert. But since
-> >>API's are also impossible to change after merging, I'm sorry but
-> >>I'll keep pestering for one last thing. Thanks again for persisting,
-> >>I do believe it's for the good thing!
-> >>
-> >>The thing is that I still don't like that one has to call
-> >>mlock2(MLOCK_LOCKED) to get the equivalent of the old mlock(). Why
-> >>is that flag needed? We have two modes of locking now, and v5 no
-> >>longer treats them separately in vma flags. But having two flags
-> >>gives us four possible combinations, so two of them would serve
-> >>nothing but to confuse the programmer IMHO. What will mlock2()
-> >>without flags do? What will mlock2(MLOCK_LOCKED | MLOCK_ONFAULT) do?
-> >>(Note I haven't studied the code yet, as having agreed on the API
-> >>should come first. But I did suggest documenting these things more
-> >>thoroughly too...)
-> >>OK I checked now and both cases above seem to return EINVAL.
-> >>
-> >>So about the only point I see in MLOCK_LOCKED flag is parity with
-> >>MAP_LOCKED for mmap(). But as Kirill said (and me before as well)
-> >>MAP_LOCKED is broken anyway so we shouldn't twist the rest just of
-> >>the API to keep the poor thing happier in its misery.
-> >>
-> >>Also note that AFAICS you don't have MCL_LOCKED for mlockall() so
-> >>there's no full parity anyway. But please don't fix that by adding
-> >>MCL_LOCKED :)
-> >>
-> >>Thanks!
-> >
-> >
-> >I have an MLOCK_LOCKED flag because I prefer an interface to be
-> >explicit.
->=20
-> I think it's already explicit enough that the user calls mlock2(),
-> no? He obviously wants the range mlocked. An optional flag says that
-> there should be no pre-fault.
->=20
-> >The caller of mlock2() will be required to fill in the flags
-> >argument regardless.
->=20
-> I guess users not caring about MLOCK_ONFAULT will continue using
-> plain mlock() without flags anyway.
->=20
-> I can drop the MLOCK_LOCKED flag with 0 being the
-> >value for LOCKED, but I thought it easier to make clear what was going
-> >on at any call to mlock2().  If user space defines a MLOCK_LOCKED that
-> >happens to be 0, I suppose that would be okay.
->=20
-> Yeah that would remove the weird 4-states-of-which-2-are-invalid
-> problem I mentioned, but at the cost of glibc wrapper behaving
-> differently than the kernel syscall itself. For little gain.
->=20
-> >We do actually have an MCL_LOCKED, we just call it MCL_CURRENT.  Would
-> >you prefer that I match the name in mlock2() (add MLOCK_CURRENT
-> >instead)?
->=20
-> Hm it's similar but not exactly the same, because MCL_FUTURE is not
-> the same as MLOCK_ONFAULT :) So MLOCK_CURRENT would be even more
-> confusing. Especially if mlockall(MCL_CURRENT | MCL_FUTURE) is OK,
-> but mlock2(MLOCK_LOCKED | MLOCK_ONFAULT) is invalid.
-
-MLOCK_ONFAULT isn't meant to be the same as MCL_FUTURE, rather it is
-meant to be the same as MCL_ONFAULT.  MCL_FUTURE only controls if the
-locking policy will be applied to any new mappings made by this process,
-not the locking policy itself.  The better comparison is MCL_CURRENT to
-MLOCK_LOCK and MCL_ONFAULT to MLOCK_ONFAULT.  MCL_CURRENT and
-MLOCK_LOCK do the same thing, only one requires a specific range of
-addresses while the other works process wide.  This is why I suggested
-changing MLOCK_LOCK to MLOCK_CURRENT.  It is an error to call
-mlock2(MLOCK_LOCK | MLOCK_ONFAULT) just like it is an error to call
-mlockall(MCL_CURRENT | MCL_ONFAULT).  The combinations do no make sense.
-
-This was all decided when VM_LOCKONFAULT was a separate state from
-VM_LOCKED.  Now that VM_LOCKONFAULT is a modifier to VM_LOCKED and
-cannot be specified independentally, it might make more sense to mirror
-that relationship to userspace.  Which would lead to soemthing like the
-following:
-
-To lock and populate a region:
-mlock2(start, len, 0);
-
-To lock on fault a region:
-mlock2(start, len, MLOCK_ONFAULT);
-
-If LOCKONFAULT is seen as a modifier to mlock, then having the flags
-argument as 0 mean do mlock classic makes more sense to me.
-
-To mlock current on fault only:
-mlockall(MCL_CURRENT | MCL_ONFAULT);
-
-To mlock future on fault only:
-mlockall(MCL_FUTURE | MCL_ONFAULT);
-
-To lock everything on fault:
-mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
-
-I think I have talked myself into rewriting the set again :/
-
->=20
-> >Finally, on the question of MAP_LOCKONFAULT, do you just dislike
-> >MAP_LOCKED and do not want to see it extended, or is this a NAK on the
-> >set if that patch is included.  I ask because I have to spin a V6 to get
-> >the MLOCK flag declarations right, but I would prefer not to do a V7+.
-> >If this is a NAK with, I can drop that patch and rework the tests to
-> >cover without the mmap flag.  Otherwise I want to keep it, I have an
-> >internal user that would like to see it added.
->=20
-> I don't want to NAK that patch if you think it's useful.
->=20
->=20
-
---QTprm0S8XgL7H0Dt
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVtkYRAAoJELbVsDOpoOa98IYQAKmPZK/MjJP+kHmBsuNCxrvl
-kaCRQunDUgO+iqKfdRseLlrsYwTyc3+/UwVRFhIflA1TuBJYjHmrM5t4XNpTE91e
-jcgVoLji4yxHXqR4yfucnzrfkkDtiHLynwXxXgWRM6C9SF2fZ6lCMQ4GcHhFMNDL
-b6gC0sRrImT49BhJ62CaXv+m0D7df7p+CqvC6DdFL7jR9thkEqlkJKr/7NbRvuDv
-Euw8v452frV46AQWa0tGxzO5eoJjOnMpyBrkxsO7RQToWPu3XybIvvEJtRjC/kHc
-yMC3unbXB363U5MGKs6TY8JhumY93i/6BmmyqgqizNPxg/ZBhZ8vYArhAzd46Yva
-m5s+mhGTa8Mq863NWmIJOYIyWncnvtYGJ/FloG/SS8E1Y6hcxgMwS+JzaoBInV3I
-LsxOl1GdTd4TPxYB5zAbu25BnRMz4GJQJ5c2rvIuVFDRH7w3O1eFBtlm6h4OO/2a
-TMNIL5IsupxC7Y8fUXbVLoZbOgp71EO0zwui/G/Kv8uXL+chl3ITUY/cj9pNvENt
-IaQoDulNdDaW+XTFr5ojb965y1Z5GrY/esdCuhOPPmFhD6O36Q4xrT+vCblkYt4W
-3Q5vSJsnmao3bANXdow9jbKf/wdEd9d9ioMhZ8IBEt9DJ5MFSHKiB9rcpAOhG4Df
-oJyjb7xP2EqU205W7AOD
-=CjzZ
------END PGP SIGNATURE-----
-
---QTprm0S8XgL7H0Dt--
+diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+index f653a7ab6ed7..ec173b7c36e5 100644
+--- a/arch/powerpc/perf/nest-pmu.c
++++ b/arch/powerpc/perf/nest-pmu.c
+@@ -12,6 +12,7 @@
+ 
+ static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
+ static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
++static cpumask_t nest_pmu_cpu_mask;
+ 
+ PMU_FORMAT_ATTR(event, "config:0-20");
+ static struct attribute *p8_nest_format_attrs[] = {
+@@ -24,6 +25,173 @@ static struct attribute_group p8_nest_format_group = {
+ 	.attrs = p8_nest_format_attrs,
+ };
+ 
++static ssize_t nest_pmu_cpumask_get_attr(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	return cpumap_print_to_pagebuf(true, buf, &nest_pmu_cpu_mask);
++}
++
++static DEVICE_ATTR(cpumask, S_IRUGO, nest_pmu_cpumask_get_attr, NULL);
++
++static struct attribute *nest_pmu_cpumask_attrs[] = {
++	&dev_attr_cpumask.attr,
++	NULL,
++};
++
++static struct attribute_group nest_pmu_cpumask_attr_group = {
++	.attrs = nest_pmu_cpumask_attrs,
++};
++
++static void nest_init(int *loc)
++{
++	int rc;
++
++	rc = opal_nest_ima_control(
++				P8_NEST_MODE_PRODUCTION, P8_NEST_ENGINE_START);
++	if (rc)
++		loc[smp_processor_id()] = 1;
++}
++
++static void nest_change_cpu_context(int old_cpu, int new_cpu)
++{
++	int i;
++
++	for (i = 0;
++		(per_nest_pmu_arr[i] != NULL) && (i < P8_NEST_MAX_PMUS); i++)
++		perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
++						old_cpu, new_cpu);
++}
++
++static void nest_exit_cpu(int cpu)
++{
++	int nid, target = -1;
++	struct cpumask *l_cpumask;
++
++	/*
++	 * Check in the designated list for this cpu. Dont bother
++	 * if not one of them.
++	 */
++	if (!cpumask_test_and_clear_cpu(cpu, &nest_pmu_cpu_mask))
++		return;
++
++	/*
++	 * Now that this cpu is one of the designated,
++	 * find a next cpu a) which is online and b) in same chip.
++	 */
++	nid = cpu_to_node(cpu);
++	l_cpumask = cpumask_of_node(nid);
++	target = cpumask_next(cpu, l_cpumask);
++
++	/*
++	 * Update the cpumask with the target cpu and
++	 * migrate the context if needed
++	 */
++	if (target >= 0 && target <= nr_cpu_ids) {
++		cpumask_set_cpu(target, &nest_pmu_cpu_mask);
++		nest_change_cpu_context(cpu, target);
++	}
++}
++
++static void nest_init_cpu(int cpu)
++{
++	int nid, fcpu, ncpu;
++	struct cpumask *l_cpumask, tmp_mask;
++
++	nid = cpu_to_node(cpu);
++	l_cpumask = cpumask_of_node(nid);
++
++	/*
++	 * if empty cpumask, just add incoming cpu and move on.
++	 */
++	if (!cpumask_and(&tmp_mask, l_cpumask, &nest_pmu_cpu_mask)) {
++		cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
++		return;
++	}
++
++	/*
++	 * Alway have the first online cpu of a chip as designated one.
++	 */
++	fcpu = cpumask_first(l_cpumask);
++	ncpu = cpumask_next(cpu, l_cpumask);
++	if (cpu == fcpu) {
++		if (cpumask_test_and_clear_cpu(ncpu, &nest_pmu_cpu_mask)) {
++			cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
++			nest_change_cpu_context(ncpu, cpu);
++		}
++	}
++}
++
++static int nest_pmu_cpu_notifier(struct notifier_block *self,
++				unsigned long action, void *hcpu)
++{
++	long cpu = (long)hcpu;
++
++	switch (action & ~CPU_TASKS_FROZEN) {
++	case CPU_ONLINE:
++		nest_init_cpu(cpu);
++		break;
++	case CPU_DOWN_PREPARE:
++	       nest_exit_cpu(cpu);
++	       break;
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block nest_pmu_cpu_nb = {
++	.notifier_call  = nest_pmu_cpu_notifier,
++	.priority       = CPU_PRI_PERF + 1,
++};
++
++static int nest_pmu_cpumask_init(void)
++{
++	const struct cpumask *l_cpumask;
++	int cpu, nid;
++	int *cpus_opal_rc;
++
++	cpu_notifier_register_begin();
++
++	/*
++	 * Nest PMUs are per-chip counters. So designate a cpu
++	 * from each chip for counter collection.
++	 */
++	for_each_online_node(nid) {
++		l_cpumask = cpumask_of_node(nid);
++
++		/* designate first online cpu in this node */
++		cpu = cpumask_first(l_cpumask);
++		cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
++	}
++
++	/*
++	 * Memory for OPAL call return value.
++	 */
++	cpus_opal_rc = kzalloc((sizeof(int) * nr_cpu_ids), GFP_KERNEL);
++	if (!cpus_opal_rc)
++		goto fail;
++
++	/* Initialize Nest PMUs in each node using designated cpus */
++	on_each_cpu_mask(&nest_pmu_cpu_mask, (smp_call_func_t)nest_init,
++						(void *)cpus_opal_rc, 1);
++
++	/* Check return value array for any OPAL call failure */
++	for_each_cpu(cpu, &nest_pmu_cpu_mask) {
++		if (cpus_opal_rc[cpu])
++			goto fail;
++	}
++
++	__register_cpu_notifier(&nest_pmu_cpu_nb);
++
++	cpu_notifier_register_done();
++	return 0;
++
++fail:
++	cpu_notifier_register_done();
++	return -ENODEV;
++}
++
+ static int p8_nest_event_init(struct perf_event *event)
+ {
+ 	int chip_id;
+@@ -255,6 +423,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 			sprintf(buf, "Nest_%s", (char *)pp->value);
+ 			pmu_ptr->pmu.name = (char *)buf;
+ 			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
++			pmu_ptr->attr_groups[2] = &nest_pmu_cpumask_attr_group;
+ 			continue;
+ 		}
+ 
+@@ -359,6 +528,10 @@ static int __init nest_pmu_init(void)
+ 	if (!of_find_node_with_property(NULL, "ibm,ima-chip"))
+ 		return ret;
+ 
++	/* Add cpumask and register for hotplug notification */
++	if (nest_pmu_cpumask_init())
++		return ret;
++
+ 	/*
+ 	 * Parse device-tree for Nest PMU information
+ 	 */
+-- 
+1.9.1
