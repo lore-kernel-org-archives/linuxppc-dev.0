@@ -1,29 +1,39 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E55491A0065
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 01:40:31 +1000 (AEST)
-Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
- fault
-To: Eric B Munson <emunson@akamai.com>
-References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
- <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
- <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
- Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <55B650E8.9030102@suse.cz>
-Date: Mon, 27 Jul 2015 17:40:24 +0200
-MIME-Version: 1.0
-In-Reply-To: <20150727145409.GB21664@akamai.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2D1671A0066
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 01:41:00 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 27 Jul 2015 21:10:56 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 6F76A12580A7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:27:44 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6QIsgMV48300058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:42 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6QHVNKf011707
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:01:23 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>
+Subject: [PATCH v6 6/7]powerpc/powernv: generic nest pmu event functions
+Date: Mon, 27 Jul 2015 00:24:23 +0530
+Message-Id: <1437936864-4402-7-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,73 +43,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/27/2015 04:54 PM, Eric B Munson wrote:
-> On Mon, 27 Jul 2015, Vlastimil Babka wrote:
->>
->>> We do actually have an MCL_LOCKED, we just call it MCL_CURRENT.  Would
->>> you prefer that I match the name in mlock2() (add MLOCK_CURRENT
->>> instead)?
->>
->> Hm it's similar but not exactly the same, because MCL_FUTURE is not
->> the same as MLOCK_ONFAULT :) So MLOCK_CURRENT would be even more
->> confusing. Especially if mlockall(MCL_CURRENT | MCL_FUTURE) is OK,
->> but mlock2(MLOCK_LOCKED | MLOCK_ONFAULT) is invalid.
->
-> MLOCK_ONFAULT isn't meant to be the same as MCL_FUTURE, rather it is
-> meant to be the same as MCL_ONFAULT.  MCL_FUTURE only controls if the
-> locking policy will be applied to any new mappings made by this process,
-> not the locking policy itself.  The better comparison is MCL_CURRENT to
-> MLOCK_LOCK and MCL_ONFAULT to MLOCK_ONFAULT.  MCL_CURRENT and
-> MLOCK_LOCK do the same thing, only one requires a specific range of
-> addresses while the other works process wide.  This is why I suggested
-> changing MLOCK_LOCK to MLOCK_CURRENT.  It is an error to call
-> mlock2(MLOCK_LOCK | MLOCK_ONFAULT) just like it is an error to call
-> mlockall(MCL_CURRENT | MCL_ONFAULT).  The combinations do no make sense.
+Add set of generic nest pmu related event functions to be used by
+each nest pmu. Add code to register nest pmus.
 
-How is it an error to call mlockall(MCL_CURRENT | MCL_ONFAULT)? How else 
-would you apply mlock2(MCL_ONFAULT) to all current mappings? Later below 
-you use the same example and I don't think it's different by removing 
-MLOCK_LOCKED flag.
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Stephane Eranian <eranian@google.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/nest-pmu.c | 101 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 101 insertions(+)
 
-> This was all decided when VM_LOCKONFAULT was a separate state from
-> VM_LOCKED.  Now that VM_LOCKONFAULT is a modifier to VM_LOCKED and
-> cannot be specified independentally, it might make more sense to mirror
-> that relationship to userspace.  Which would lead to soemthing like the
-> following:
->
-> To lock and populate a region:
-> mlock2(start, len, 0);
->
-> To lock on fault a region:
-> mlock2(start, len, MLOCK_ONFAULT);
->
-> If LOCKONFAULT is seen as a modifier to mlock, then having the flags
-> argument as 0 mean do mlock classic makes more sense to me.
-
-Yup that's what I was trying to suggest.
-
-> To mlock current on fault only:
-> mlockall(MCL_CURRENT | MCL_ONFAULT);
->
-> To mlock future on fault only:
-> mlockall(MCL_FUTURE | MCL_ONFAULT);
->
-> To lock everything on fault:
-> mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
->
-> I think I have talked myself into rewriting the set again :/
-
-Sorry :) You could also wait a bit for more input than just from me...
-
->>
->>> Finally, on the question of MAP_LOCKONFAULT, do you just dislike
->>> MAP_LOCKED and do not want to see it extended, or is this a NAK on the
->>> set if that patch is included.  I ask because I have to spin a V6 to get
->>> the MLOCK flag declarations right, but I would prefer not to do a V7+.
->>> If this is a NAK with, I can drop that patch and rework the tests to
->>> cover without the mmap flag.  Otherwise I want to keep it, I have an
->>> internal user that would like to see it added.
->>
->> I don't want to NAK that patch if you think it's useful.
->>
->>
+diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+index 4a74ffb97741..f653a7ab6ed7 100644
+--- a/arch/powerpc/perf/nest-pmu.c
++++ b/arch/powerpc/perf/nest-pmu.c
+@@ -24,6 +24,97 @@ static struct attribute_group p8_nest_format_group = {
+ 	.attrs = p8_nest_format_attrs,
+ };
+ 
++static int p8_nest_event_init(struct perf_event *event)
++{
++	int chip_id;
++
++	if (event->attr.type != event->pmu->type)
++		return -ENOENT;
++
++	/* Sampling not supported yet */
++	if (event->hw.sample_period)
++		return -EINVAL;
++
++	/* unsupported modes and filters */
++	if (event->attr.exclude_user   ||
++	   event->attr.exclude_kernel ||
++	   event->attr.exclude_hv     ||
++	   event->attr.exclude_idle   ||
++	   event->attr.exclude_host   ||
++	   event->attr.exclude_guest)
++		return -EINVAL;
++
++	if (event->cpu < 0)
++		return -EINVAL;
++
++	chip_id = topology_physical_package_id(event->cpu);
++	event->hw.event_base = event->attr.config +
++					p8_nest_perchip_info[chip_id].vbase;
++
++	return 0;
++}
++
++static void p8_nest_read_counter(struct perf_event *event)
++{
++	u64 *addr, data;
++
++	addr = (u64 *)event->hw.event_base;
++	data = __be64_to_cpu(*addr);
++	local64_set(&event->hw.prev_count, data);
++}
++
++static void p8_nest_perf_event_update(struct perf_event *event)
++{
++	u64 counter_prev, counter_new, final_count, *addr;
++
++	addr = (u64 *)event->hw.event_base;
++	counter_prev = local64_read(&event->hw.prev_count);
++	counter_new = __be64_to_cpu(*addr);
++	final_count = counter_new - counter_prev;
++
++	local64_set(&event->hw.prev_count, counter_new);
++	local64_add(final_count, &event->count);
++}
++
++static void p8_nest_event_start(struct perf_event *event, int flags)
++{
++	p8_nest_read_counter(event);
++}
++
++static void p8_nest_event_stop(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_UPDATE)
++		p8_nest_perf_event_update(event);
++}
++
++static int p8_nest_event_add(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_START)
++		p8_nest_event_start(event, flags);
++
++	return 0;
++}
++
++/*
++ * Populate pmu ops in the structure
++ */
++static int update_pmu_ops(struct nest_pmu *pmu)
++{
++	if (!pmu)
++		return -EINVAL;
++
++	pmu->pmu.task_ctx_nr = perf_invalid_context;
++	pmu->pmu.event_init = p8_nest_event_init;
++	pmu->pmu.add = p8_nest_event_add;
++	pmu->pmu.del = p8_nest_event_stop;
++	pmu->pmu.start = p8_nest_event_start;
++	pmu->pmu.stop = p8_nest_event_stop;
++	pmu->pmu.read = p8_nest_perf_event_update;
++	pmu->pmu.attr_groups = pmu->attr_groups;
++
++	return 0;
++}
++
+ static int nest_event_info(char *name, struct nest_ima_events *p8_events)
+ {
+ 	char *buf;
+@@ -197,6 +288,16 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 
+ 	update_events_in_group(p8_events, idx, pmu_ptr);
+ 
++	update_pmu_ops(pmu_ptr);
++	/* Register the pmu */
++	ret = perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
++	if (ret) {
++		pr_err("Nest PMU %s Register failed\n", pmu_ptr->pmu.name);
++		return ret;
++	}
++
++	pr_info("%s performance monitor hardware support registered\n",
++			pmu_ptr->pmu.name);
+ 	return 0;
+ }
+ 
+-- 
+1.9.1
