@@ -1,25 +1,25 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 546841A0037
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 01:05:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 70F2D1A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 01:15:40 +1000 (AEST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 27 Jul 2015 20:35:37 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8D21212580AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:27:46 +0530 (IST)
+ Mon, 27 Jul 2015 20:45:35 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2147AE009C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:28:44 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6QIsil856754416
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:44 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6QIscUx48300048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:38 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6QHVOWI011740
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:01:25 +0530
+ t6QHVJYR011680
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:01:19 +0530
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
@@ -28,13 +28,11 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>,
- Preeti U Murthy <preetium@andrew.cmu.edu>,
- Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH v6 7/7]powerpc/powernv: nest pmu cpumask and cpu hotplug
- support
-Date: Mon, 27 Jul 2015 00:24:24 +0530
-Message-Id: <1437936864-4402-8-git-send-email-maddy@linux.vnet.ibm.com>
+ Stephane Eranian <eranian@google.com>
+Subject: [PATCH v6 5/7]powerpc/powernv: add event attribute and group to nest
+ pmu
+Date: Mon, 27 Jul 2015 00:24:22 +0530
+Message-Id: <1437936864-4402-6-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,13 +44,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adds cpumask attribute to be used by each nest pmu since nest
-units are per-chip. Only one cpu (first online cpu) from each chip
-is designated to read counters.
-
-On cpu hotplug, dying cpu is checked to see whether it is one of the
-designated cpus, if yes, next online cpu from the same chip is
-designated as new cpu to read counters.
+Add code to create event/format attributes and attribute groups for
+each nest pmu.
 
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -61,218 +54,103 @@ Cc: Anton Blanchard <anton@samba.org>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Stephane Eranian <eranian@google.com>
-Cc: Preeti U Murthy <preetium@andrew.cmu.edu>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/nest-pmu.c | 173 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 173 insertions(+)
+ arch/powerpc/perf/nest-pmu.c | 61 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
 
 diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-index f653a7ab6ed7..ec173b7c36e5 100644
+index 292fc2b91ed0..4a74ffb97741 100644
 --- a/arch/powerpc/perf/nest-pmu.c
 +++ b/arch/powerpc/perf/nest-pmu.c
-@@ -12,6 +12,7 @@
- 
+@@ -13,6 +13,17 @@
  static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
  static struct nest_pmu *per_nest_pmu_arr[P8_NEST_MAX_PMUS];
-+static cpumask_t nest_pmu_cpu_mask;
  
- PMU_FORMAT_ATTR(event, "config:0-20");
- static struct attribute *p8_nest_format_attrs[] = {
-@@ -24,6 +25,173 @@ static struct attribute_group p8_nest_format_group = {
- 	.attrs = p8_nest_format_attrs,
- };
- 
-+static ssize_t nest_pmu_cpumask_get_attr(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	return cpumap_print_to_pagebuf(true, buf, &nest_pmu_cpu_mask);
-+}
-+
-+static DEVICE_ATTR(cpumask, S_IRUGO, nest_pmu_cpumask_get_attr, NULL);
-+
-+static struct attribute *nest_pmu_cpumask_attrs[] = {
-+	&dev_attr_cpumask.attr,
++PMU_FORMAT_ATTR(event, "config:0-20");
++static struct attribute *p8_nest_format_attrs[] = {
++	&format_attr_event.attr,
 +	NULL,
 +};
 +
-+static struct attribute_group nest_pmu_cpumask_attr_group = {
-+	.attrs = nest_pmu_cpumask_attrs,
++static struct attribute_group p8_nest_format_group = {
++	.name = "format",
++	.attrs = p8_nest_format_attrs,
 +};
 +
-+static void nest_init(int *loc)
+ static int nest_event_info(char *name, struct nest_ima_events *p8_events)
+ {
+ 	char *buf;
+@@ -60,6 +71,53 @@ static int nest_event_info_val(char *name, u32 val,
+ 	return 0;
+ }
+ 
++/*
++ * Populate event name and string in attribute
++ */
++static struct attribute *dev_str_attr(const char *name, const char *str)
 +{
-+	int rc;
++	struct perf_pmu_events_attr *attr;
 +
-+	rc = opal_nest_ima_control(
-+				P8_NEST_MODE_PRODUCTION, P8_NEST_ENGINE_START);
-+	if (rc)
-+		loc[smp_processor_id()] = 1;
++	attr = kzalloc(sizeof(*attr), GFP_KERNEL);
++
++	sysfs_attr_init(&attr->attr.attr);
++
++	attr->event_str = str;
++	attr->attr.attr.name = name;
++	attr->attr.attr.mode = 0444;
++	attr->attr.show = perf_event_sysfs_show;
++
++	return &attr->attr.attr;
 +}
 +
-+static void nest_change_cpu_context(int old_cpu, int new_cpu)
++static int update_events_in_group(
++	struct nest_ima_events *p8_events, int idx, struct nest_pmu *pmu)
 +{
++	struct attribute_group *attr_group;
++	struct attribute **attrs;
 +	int i;
 +
-+	for (i = 0;
-+		(per_nest_pmu_arr[i] != NULL) && (i < P8_NEST_MAX_PMUS); i++)
-+		perf_pmu_migrate_context(&per_nest_pmu_arr[i]->pmu,
-+						old_cpu, new_cpu);
-+}
++	/* Allocate memory for attribute group */
++	attr_group = kzalloc(sizeof(*attr_group), GFP_KERNEL);
++	if (!attr_group)
++		return -ENOMEM;
 +
-+static void nest_exit_cpu(int cpu)
-+{
-+	int nid, target = -1;
-+	struct cpumask *l_cpumask;
++	/* Allocate memory for attributes */
++	attrs = kzalloc((sizeof(struct attribute *) * (idx + 1)), GFP_KERNEL);
++	if (!attrs)
++		return -ENOMEM;
 +
-+	/*
-+	 * Check in the designated list for this cpu. Dont bother
-+	 * if not one of them.
-+	 */
-+	if (!cpumask_test_and_clear_cpu(cpu, &nest_pmu_cpu_mask))
-+		return;
++	attr_group->name = "events";
++	attr_group->attrs = attrs;
 +
-+	/*
-+	 * Now that this cpu is one of the designated,
-+	 * find a next cpu a) which is online and b) in same chip.
-+	 */
-+	nid = cpu_to_node(cpu);
-+	l_cpumask = cpumask_of_node(nid);
-+	target = cpumask_next(cpu, l_cpumask);
++	for (i = 0; i < idx; i++, p8_events++)
++		attrs[i] = dev_str_attr((char *)p8_events->ev_name,
++					(char *)p8_events->ev_value);
 +
-+	/*
-+	 * Update the cpumask with the target cpu and
-+	 * migrate the context if needed
-+	 */
-+	if (target >= 0 && target <= nr_cpu_ids) {
-+		cpumask_set_cpu(target, &nest_pmu_cpu_mask);
-+		nest_change_cpu_context(cpu, target);
-+	}
-+}
-+
-+static void nest_init_cpu(int cpu)
-+{
-+	int nid, fcpu, ncpu;
-+	struct cpumask *l_cpumask, tmp_mask;
-+
-+	nid = cpu_to_node(cpu);
-+	l_cpumask = cpumask_of_node(nid);
-+
-+	/*
-+	 * if empty cpumask, just add incoming cpu and move on.
-+	 */
-+	if (!cpumask_and(&tmp_mask, l_cpumask, &nest_pmu_cpu_mask)) {
-+		cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
-+		return;
-+	}
-+
-+	/*
-+	 * Alway have the first online cpu of a chip as designated one.
-+	 */
-+	fcpu = cpumask_first(l_cpumask);
-+	ncpu = cpumask_next(cpu, l_cpumask);
-+	if (cpu == fcpu) {
-+		if (cpumask_test_and_clear_cpu(ncpu, &nest_pmu_cpu_mask)) {
-+			cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
-+			nest_change_cpu_context(ncpu, cpu);
-+		}
-+	}
-+}
-+
-+static int nest_pmu_cpu_notifier(struct notifier_block *self,
-+				unsigned long action, void *hcpu)
-+{
-+	long cpu = (long)hcpu;
-+
-+	switch (action & ~CPU_TASKS_FROZEN) {
-+	case CPU_ONLINE:
-+		nest_init_cpu(cpu);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+	       nest_exit_cpu(cpu);
-+	       break;
-+	default:
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block nest_pmu_cpu_nb = {
-+	.notifier_call  = nest_pmu_cpu_notifier,
-+	.priority       = CPU_PRI_PERF + 1,
-+};
-+
-+static int nest_pmu_cpumask_init(void)
-+{
-+	const struct cpumask *l_cpumask;
-+	int cpu, nid;
-+	int *cpus_opal_rc;
-+
-+	cpu_notifier_register_begin();
-+
-+	/*
-+	 * Nest PMUs are per-chip counters. So designate a cpu
-+	 * from each chip for counter collection.
-+	 */
-+	for_each_online_node(nid) {
-+		l_cpumask = cpumask_of_node(nid);
-+
-+		/* designate first online cpu in this node */
-+		cpu = cpumask_first(l_cpumask);
-+		cpumask_set_cpu(cpu, &nest_pmu_cpu_mask);
-+	}
-+
-+	/*
-+	 * Memory for OPAL call return value.
-+	 */
-+	cpus_opal_rc = kzalloc((sizeof(int) * nr_cpu_ids), GFP_KERNEL);
-+	if (!cpus_opal_rc)
-+		goto fail;
-+
-+	/* Initialize Nest PMUs in each node using designated cpus */
-+	on_each_cpu_mask(&nest_pmu_cpu_mask, (smp_call_func_t)nest_init,
-+						(void *)cpus_opal_rc, 1);
-+
-+	/* Check return value array for any OPAL call failure */
-+	for_each_cpu(cpu, &nest_pmu_cpu_mask) {
-+		if (cpus_opal_rc[cpu])
-+			goto fail;
-+	}
-+
-+	__register_cpu_notifier(&nest_pmu_cpu_nb);
-+
-+	cpu_notifier_register_done();
++	pmu->attr_groups[0] = attr_group;
 +	return 0;
-+
-+fail:
-+	cpu_notifier_register_done();
-+	return -ENODEV;
 +}
 +
- static int p8_nest_event_init(struct perf_event *event)
+ static int nest_pmu_create(struct device_node *dev, int pmu_index)
  {
- 	int chip_id;
-@@ -255,6 +423,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 	struct nest_ima_events *p8_events;
+@@ -105,6 +163,7 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 			/* Save the name to register it later */
  			sprintf(buf, "Nest_%s", (char *)pp->value);
  			pmu_ptr->pmu.name = (char *)buf;
- 			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
-+			pmu_ptr->attr_groups[2] = &nest_pmu_cpumask_attr_group;
++			pmu_ptr->attr_groups[1] = &p8_nest_format_group;
  			continue;
  		}
  
-@@ -359,6 +528,10 @@ static int __init nest_pmu_init(void)
- 	if (!of_find_node_with_property(NULL, "ibm,ima-chip"))
- 		return ret;
+@@ -136,6 +195,8 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 		idx++;
+ 	}
  
-+	/* Add cpumask and register for hotplug notification */
-+	if (nest_pmu_cpumask_init())
-+		return ret;
++	update_events_in_group(p8_events, idx, pmu_ptr);
 +
- 	/*
- 	 * Parse device-tree for Nest PMU information
- 	 */
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
