@@ -2,24 +2,25 @@ Return-Path: <keescook@google.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 092241A0FF5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:48:29 +1000 (AEST)
-Received: from mail-ig0-x22d.google.com (mail-ig0-x22d.google.com
- [IPv6:2607:f8b0:4001:c05::22d])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3CF561A1BCA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:49:54 +1000 (AEST)
+Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
+ [IPv6:2607:f8b0:4001:c05::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6F23414018C
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:48:28 +1000 (AEST)
-Received: by iggf3 with SMTP id f3so89621922igg.1
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:48:26 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id A45921402B9
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:49:53 +1000 (AEST)
+Received: by igr7 with SMTP id 7so85042213igr.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:49:52 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <1437646871-3195-3-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1437646871-3195-4-git-send-email-mpe@ellerman.id.au>
 References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
- <1437646871-3195-3-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 27 Jul 2015 11:48:25 -0700
-Message-ID: <CAGXu5jLshbSoyc-tieJPRE8i78BaJ_ZQZrrZAtuzQ1rwR=qyfA@mail.gmail.com>
-Subject: Re: [PATCH 03/11] powerpc: Drop unused syscall_get_error()
+ <1437646871-3195-4-git-send-email-mpe@ellerman.id.au>
+Date: Mon, 27 Jul 2015 11:49:51 -0700
+Message-ID: <CAGXu5j+FA0KvJPr46QeJYzPpKYdNhzqnpa4kn5D_Mk2Hm=FTrA@mail.gmail.com>
+Subject: Re: [PATCH 04/11] powerpc: Don't negate error in
+ syscall_set_return_value()
 From: Kees Cook <keescook@chromium.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -37,15 +38,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Jul 23, 2015 at 3:21 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> syscall_get_error() is unused, and never has been.
+> Currently the only caller of syscall_set_return_value() is seccomp
+> filter, which is not enabled on powerpc.
 >
-> It's also probably wrong, as it negates r3 before returning it, but that
-> depends on what the caller is expecting.
+> This means we have not noticed that our implementation of
+> syscall_set_return_value() negates error, even though the value passed
+> in is already negative.
 >
-> It also doesn't deal with compat, and doesn't deal with TIF_NOERROR.
+> So remove the negation in syscall_set_return_value(), and expect the
+> caller to do it like all other implementations do.
 >
-> Although we could fix those, until it has a caller and it's clear what
-> semantics the caller wants it's just untested code. So drop it.
+> Also add a comment about the ccr handling.
 >
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
@@ -54,26 +57,30 @@ Reviewed-by: Kees Cook <keescook@chromium.org>
 -Kees
 
 > ---
->  arch/powerpc/include/asm/syscall.h | 6 ------
->  1 file changed, 6 deletions(-)
+>  arch/powerpc/include/asm/syscall.h | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
 >
 > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> index ff21b7a2f0cc..c6239dabcfb1 100644
+> index c6239dabcfb1..cabe90133e69 100644
 > --- a/arch/powerpc/include/asm/syscall.h
 > +++ b/arch/powerpc/include/asm/syscall.h
-> @@ -34,12 +34,6 @@ static inline void syscall_rollback(struct task_struct *task,
->         regs->gpr[3] = regs->orig_gpr3;
->  }
->
-> -static inline long syscall_get_error(struct task_struct *task,
-> -                                    struct pt_regs *regs)
-> -{
-> -       return (regs->ccr & 0x10000000) ? -regs->gpr[3] : 0;
-> -}
-> -
->  static inline long syscall_get_return_value(struct task_struct *task,
->                                             struct pt_regs *regs)
+> @@ -44,9 +44,15 @@ static inline void syscall_set_return_value(struct task_struct *task,
+>                                             struct pt_regs *regs,
+>                                             int error, long val)
 >  {
+> +       /*
+> +        * In the general case it's not obvious that we must deal with CCR
+> +        * here, as the syscall exit path will also do that for us. However
+> +        * there are some places, eg. the signal code, which check ccr to
+> +        * decide if the value in r3 is actually an error.
+> +        */
+>         if (error) {
+>                 regs->ccr |= 0x10000000L;
+> -               regs->gpr[3] = -error;
+> +               regs->gpr[3] = error;
+>         } else {
+>                 regs->ccr &= ~0x10000000L;
+>                 regs->gpr[3] = val;
 > --
 > 2.1.0
 >
