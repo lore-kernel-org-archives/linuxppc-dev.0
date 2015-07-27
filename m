@@ -1,21 +1,29 @@
-Return-Path: <qiang.zhao@freescale.com>
+Return-Path: <madalin.bucur@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0113.outbound.protection.outlook.com [157.56.110.113])
+ (mail-bn1bn0108.outbound.protection.outlook.com [157.56.110.108])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5AC211A4472
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 20:03:04 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: <lauraa@codeaurora.org>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <akpm@linux-foundation.org>, <olof@lixom.net>, <catalin.marinas@arm.com>,
- <scottwood@freescale.com>, <X.xie@freescale.com>, Zhao Qiang
- <qiang.zhao@freescale.com>
-Subject: [RFC v2] genalloc:add an gen_pool_first_fit_align algo to genalloc
-Date: Mon, 27 Jul 2015 17:57:54 +0800
-Message-ID: <1437991074-35377-1-git-send-email-qiang.zhao@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D09101A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 22:54:15 +1000 (AEST)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: David Miller <davem@davemloft.net>
+CC: "joe@perches.com" <joe@perches.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Scott Wood <scottwood@freescale.com>,
+ Liberman Igal <Igal.Liberman@freescale.com>, "ppc@mindchasers.com"
+ <ppc@mindchasers.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
+ "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>
+Subject: RE: [PATCH 03/10] dpaa_eth: add configurable bpool thresholds
+Date: Mon, 27 Jul 2015 12:54:09 +0000
+Message-ID: <BL2PR03MB5454AAD79FE8530995B1B08E68E0@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1437581806-17420-3-git-send-email-madalin.bucur@freescale.com>
+ <1437587228.20787.26.camel@perches.com>
+ <BL2PR03MB545AA0E6D98232FF43B6CE9E6810@BL2PR03MB545.namprd03.prod.outlook.com>
+ <20150726.163520.846046458508685868.davem@davemloft.net>
+In-Reply-To: <20150726.163520.846046458508685868.davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,93 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bytes alignment is required to manage some special ram,
-so add gen_pool_first_fit_align to genalloc.
-User should define data structure
-struct data {
-	int align;
-	struct gen_pool *pool;
-}
-align is the number of  bytes alignment,
-pool points to gen_pool which include data.
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Monday, July 27, 2015 2:35 AM
+> To: Bucur Madalin-Cristian-B32716
+> Cc: joe@perches.com; netdev@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-B07421;
+> Liberman Igal-B31950; ppc@mindchasers.com; pebolle@tiscali.nl;
+> joakim.tjernlund@transmode.se
+> Subject: Re: [PATCH 03/10] dpaa_eth: add configurable bpool thresholds
+>=20
+> From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+> Date: Fri, 24 Jul 2015 15:49:39 +0000
+>=20
+> >> -----Original Message-----
+> >> From: Joe Perches [mailto:joe@perches.com]
+> >> On Wed, 2015-07-22 at 19:16 +0300, Madalin Bucur wrote:
+> >> > Allow the user to tweak the refill threshold and the total number
+> >> > of buffers in the buffer pool. The provided values are for one CPU.
+> >>
+> >> Any value in making these module parameters instead?
+> >
+> > I expect one would (hardly ever) change these to improve some corner
+> > cases then use them with the new values. It may help in the tuning proc=
+ess
+> > but afterwards the bloat to the bootcmd would probably be  a nuisance.
+>=20
+> I think these should be controlled by the existing ethtool infrastructure=
+.
+>=20
+> Neither the Kconfig mechanism nor module parameters are appropriate, at
+> all.
 
-Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
----
-*v2:
-changes:
-title has been modified, original patch link: 
-http://patchwork.ozlabs.org/patch/493297/
+The existing ethtool options are for ring based drivers (ethtool -g / -G).
+I would not use those as we are not using rings (they do not map well anywa=
+y).
 
-original patch add a func gen_pool_alloc_align, 
-then pass alignment to it as an parameter.
-after discussing with lauraa and scott, they recommend 
-to pass alignment as part of data based on 
-commit message for ca279cf1065fb689abea1dc7d8c11787729bb185 which adds "data":
+We could introduce special options for our non-ring devices but for these
+parameters in particular I'd just resort to defines in the code as it's
+improbable one would want to change them.
 
-"As I can't predict all the possible requirements/needs for all allocation    
-uses cases, I add a "free" field 'void *data' to pass any needed     
-information to the allocation function.  For example 'data' could be used     
-to handle a structure where you store the alignment, the expected memory     
-bank, the requester device, or any information that could influence the     
-allocation algorithm."
-
-
-
-
- include/linux/genalloc.h |  4 ++++
- lib/genalloc.c           | 25 +++++++++++++++++++++++++
- 2 files changed, 29 insertions(+)
-
-diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
-index 1ccaab4..b85d0f8 100644
---- a/include/linux/genalloc.h
-+++ b/include/linux/genalloc.h
-@@ -110,6 +110,10 @@ extern void gen_pool_set_algo(struct gen_pool *pool, genpool_algo_t algo,
- extern unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
- 		unsigned long start, unsigned int nr, void *data);
- 
-+extern unsigned long gen_pool_first_fit_align(unsigned long *map,
-+		unsigned long size, unsigned long start, unsigned int nr,
-+		void *data);
-+
- extern unsigned long gen_pool_first_fit_order_align(unsigned long *map,
- 		unsigned long size, unsigned long start, unsigned int nr,
- 		void *data);
-diff --git a/lib/genalloc.c b/lib/genalloc.c
-index d214866..e6608cd 100644
---- a/lib/genalloc.c
-+++ b/lib/genalloc.c
-@@ -509,6 +509,31 @@ unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
- EXPORT_SYMBOL(gen_pool_first_fit);
- 
- /**
-+ * gen_pool_first_fit_align - find the first available region
-+ * of memory matching the size requirement (no alignment constraint)
-+ * @map: The address to base the search on
-+ * @size: The bitmap size in bits
-+ * @start: The bitnumber to start searching at
-+ * @nr: The number of zeroed bits we're looking for
-+ * @data: additional data - unused
-+ */
-+unsigned long gen_pool_first_fit_align(unsigned long *map, unsigned long size,
-+		unsigned long start, unsigned int nr, void *data)
-+{
-+	unsigned long align_mask;
-+	int order;
-+
-+	if (data && data->pool) {
-+		order = data->pool->min_alloc_order;
-+		align_mask = ((data->align + (1UL << order) - 1) >> order) - 1;
-+	} else {
-+		pr_err("no data or data->pool\n");
-+	}
-+	return bitmap_find_next_zero_area(map, size, start, nr, align_mask);
-+}
-+EXPORT_SYMBOL(gen_pool_first_fit_algin);
-+
-+/**
-  * gen_pool_first_fit_order_align - find the first available region
-  * of memory matching the size requirement. The region will be aligned
-  * to the order of the size specified.
--- 
-2.1.0.27.g96db324
+Madalin
