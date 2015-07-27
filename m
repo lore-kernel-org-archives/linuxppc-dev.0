@@ -1,35 +1,35 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B258C1A08A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 15:42:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E04C1A0AD3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 15:42:07 +1000 (AEST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sun, 26 Jul 2015 23:42:03 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9083719D8045
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:32:59 -0600 (MDT)
+ Sun, 26 Jul 2015 23:42:05 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id ABA163E4003B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:42:02 -0600 (MDT)
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6R5g1rs54984924
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 22:42:01 -0700
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6R5fBkE56230040
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 22:41:11 -0700
 Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
  by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6R5g0YQ026753
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:42:00 -0600
+ t6R5g1ZO026835
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:42:02 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
  Michael Ellerman <mpe@ellerman.id.au>
 Cc: <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [PATCH 08/10] perf: Add return value to __perf_event_read()
-Date: Sun, 26 Jul 2015 22:40:36 -0700
-Message-Id: <1437975638-789-9-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 09/10] Define PERF_PMU_TXN_READ interface
+Date: Sun, 26 Jul 2015 22:40:37 -0700
+Message-Id: <1437975638-789-10-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1437975638-789-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1437975638-789-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,79 +41,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a return value to __perf_event_read(). The return value will be
-needed later in perf_read_group() implements ability to read several
-counters in a PERF_PMU_TXN_READ transaction.
+Define a new PERF_PMU_TXN_READ interface to read a group of counters
+at once.
+
+        pmu->start_txn()                // Initialize before first event
+
+        for each event in group
+                pmu->read(event);       // Queue each event to be read
+
+        pmu->commit_txn()               // Read/update all queued counters
+
+Note that we use this interface with all PMUs.  PMUs that implement this
+interface use the ->read() operation to _queue_ the counters to be read
+and use ->commit_txn() to actually read all the queued counters at once.
+
+PMUs that don't implement PERF_PMU_TXN_READ ignore ->start_txn() and
+->commit_txn() and continue to read counters one at a time.
+
+Thanks to input from Peter Zijlstra.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- kernel/events/core.c |   22 +++++++++++++++++++---
- 1 file changed, 19 insertions(+), 3 deletions(-)
+Changelog[v4]
+        [Peter Zijlstra] Add lockdep_assert_held() in perf_event_read_group().
+        Make sure the entire transaction happens on the same CPU.
 
+---
+ include/linux/perf_event.h |    1 +
+ kernel/events/core.c       |   38 +++++++++++++++++++++++++++++++-------
+ 2 files changed, 32 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index 44bf05f..da307ad 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -169,6 +169,7 @@ struct perf_event;
+ #define PERF_EVENT_TXN 0x1
+ 
+ #define PERF_PMU_TXN_ADD  0x1		/* txn to add/schedule event on PMU */
++#define PERF_PMU_TXN_READ 0x2		/* txn to read event group from PMU */
+ 
+ /**
+  * pmu::capabilities flags
 diff --git a/kernel/events/core.c b/kernel/events/core.c
-index f38fe0b..951d835 100644
+index 951d835..b5aa92c 100644
 --- a/kernel/events/core.c
 +++ b/kernel/events/core.c
-@@ -3174,12 +3174,18 @@ void perf_event_exec(void)
- 	rcu_read_unlock();
- }
+@@ -3176,6 +3176,7 @@ void perf_event_exec(void)
  
-+struct perf_read_data {
-+	struct perf_event *event;
-+	int ret;
-+};
-+
- /*
-  * Cross CPU call to read the hardware event
-  */
- static void __perf_event_read(void *info)
+ struct perf_read_data {
+ 	struct perf_event *event;
++	bool group;
+ 	int ret;
+ };
+ 
+@@ -3186,8 +3187,10 @@ static void __perf_event_read(void *info)
  {
--	struct perf_event *event = info;
-+	struct perf_read_data *data = info;
-+	struct perf_event *event = data->event;
+ 	struct perf_read_data *data = info;
+ 	struct perf_event *event = data->event;
++	struct perf_event *sub;
  	struct perf_event_context *ctx = event->ctx;
  	struct perf_cpu_context *cpuctx = __get_cpu_context(ctx);
++	struct pmu *pmu = event->pmu;
  
-@@ -3201,6 +3207,8 @@ static void __perf_event_read(void *info)
+ 	/*
+ 	 * If this is a task context, we need to check whether it is
+@@ -3205,10 +3208,25 @@ static void __perf_event_read(void *info)
+ 		update_cgrp_time_from_event(event);
+ 	}
  	update_event_times(event);
- 	if (event->state == PERF_EVENT_STATE_ACTIVE)
- 		event->pmu->read(event);
+-	if (event->state == PERF_EVENT_STATE_ACTIVE)
+-		event->pmu->read(event);
++	if (event->state != PERF_EVENT_STATE_ACTIVE)
++		goto unlock;
 +
-+	data->ret = 0;
++	if (!data->group) {
++		pmu->read(event);
++		goto unlock;
++	}
++
++	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
+ 
+-	data->ret = 0;
++	pmu->read(event);
++	list_for_each_entry(sub, &event->sibling_list, group_entry) {
++		if (sub->state == PERF_EVENT_STATE_ACTIVE)
++			pmu->read(sub);
++	}
++
++	data->ret = pmu->commit_txn(pmu);
++
++unlock:
  	raw_spin_unlock(&ctx->lock);
  }
  
-@@ -3214,13 +3222,21 @@ static inline u64 perf_event_count(struct perf_event *event)
- 
- static int perf_event_read(struct perf_event *event, bool group)
- {
-+	int ret = 0;
-+
- 	/*
- 	 * If event is enabled and currently active on a CPU, update the
- 	 * value in the event structure:
- 	 */
+@@ -3231,6 +3249,7 @@ static int perf_event_read(struct perf_event *event, bool group)
  	if (event->state == PERF_EVENT_STATE_ACTIVE) {
-+		struct perf_read_data data = {
-+			.event = event,
-+			.ret = 0,
-+		};
-+
- 		smp_call_function_single(event->oncpu,
--					 __perf_event_read, event, 1);
-+					 __perf_event_read, &data, 1);
-+		ret = data.ret;
- 	} else if (event->state == PERF_EVENT_STATE_INACTIVE) {
- 		struct perf_event_context *ctx = event->ctx;
- 		unsigned long flags;
-@@ -3244,7 +3260,7 @@ static int perf_event_read(struct perf_event *event, bool group)
- 		raw_spin_unlock_irqrestore(&ctx->lock, flags);
- 	}
+ 		struct perf_read_data data = {
+ 			.event = event,
++			.group = group,
+ 			.ret = 0,
+ 		};
  
--	return 0;
-+	return ret;
- }
+@@ -3743,7 +3762,13 @@ static u64 perf_event_aggregate(struct perf_event *event, u64 *enabled,
+ 	lockdep_assert_held(&event->child_mutex);
  
- /*
+ 	list_for_each_entry(child, &event->child_list, child_list) {
++#if 0
++		/*
++		 * TODO: Do we need this read() for group events on PMUs that
++		 * 	 don't implement PERF_PMU_TXN_READ transactions?
++		 */
+ 		(void)perf_event_read(child, false);
++#endif
+ 		total += perf_event_count(child);
+ 		*enabled += child->total_time_enabled;
+ 		*running += child->total_time_running;
+@@ -3821,7 +3846,7 @@ static int perf_read_group(struct perf_event *event,
+ 
+ 	mutex_lock(&leader->child_mutex);
+ 
+-	ret = perf_event_read(leader);
++	ret = perf_event_read(leader, true);
+ 	if (ret) {
+ 		mutex_unlock(&leader->child_mutex);
+ 		return ret;
+@@ -3850,12 +3875,11 @@ static int perf_read_group(struct perf_event *event,
+ 	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
+ 		n = 0;
+ 
+-		mutex_lock(&leader->child_mutex);
++		mutex_lock(&sub->child_mutex);
+ 
+-		(void)perf_event_read(sub, false);
+ 		values[n++] = perf_event_aggregate(sub, &enabled, &running);
+ 
+-		mutex_unlock(&leader->child_mutex);
++		mutex_unlock(&sub->child_mutex);
+ 
+ 		if (read_format & PERF_FORMAT_ID)
+ 			values[n++] = primary_event_id(sub);
 -- 
 1.7.9.5
