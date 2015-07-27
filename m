@@ -1,37 +1,30 @@
 Return-Path: <kirill@shutemov.name>
-Received: from mail-wi0-f171.google.com (mail-wi0-f171.google.com
- [209.85.212.171])
+Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
+ [209.85.212.179])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B9A4B1A1A66
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 16:43:07 +1000 (AEST)
-Received: by wicmv11 with SMTP id mv11so125728873wic.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:43:03 -0700 (PDT)
-Date: Mon, 27 Jul 2015 09:43:00 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2E691A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 17:15:24 +1000 (AEST)
+Received: by wicmv11 with SMTP id mv11so126633682wic.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:15:21 -0700 (PDT)
+Date: Mon, 27 Jul 2015 10:15:18 +0300
 From: "Kirill A. Shutemov" <kirill@shutemov.name>
 To: Eric B Munson <emunson@akamai.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
  Michal Hocko <mhocko@suse.cz>, Vlastimil Babka <vbabka@suse.cz>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Guenter Roeck <linux@roeck-us.net>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
+ Jonathan Corbet <corbet@lwn.net>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH V5 2/7] mm: mlock: Add new mlock system call
-Message-ID: <20150727064300.GB11657@node.dhcp.inet.fi>
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH V5 4/7] mm: mlock: Add mlock flags to enable
+ VM_LOCKONFAULT usage
+Message-ID: <20150727071518.GD11657@node.dhcp.inet.fi>
 References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
- <1437773325-8623-3-git-send-email-emunson@akamai.com>
+ <1437773325-8623-5-git-send-email-emunson@akamai.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1437773325-8623-3-git-send-email-emunson@akamai.com>
+In-Reply-To: <1437773325-8623-5-git-send-email-emunson@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,56 +34,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 24, 2015 at 05:28:40PM -0400, Eric B Munson wrote:
-> With the refactored mlock code, introduce a new system call for mlock.
-> The new call will allow the user to specify what lock states are being
-> added.  mlock2 is trivial at the moment, but a follow on patch will add
-> a new mlock state making it useful.
+On Fri, Jul 24, 2015 at 05:28:42PM -0400, Eric B Munson wrote:
+> The previous patch introduced a flag that specified pages in a VMA
+> should be placed on the unevictable LRU, but they should not be made
+> present when the area is created.  This patch adds the ability to set
+> this state via the new mlock system calls.
+> 
+> We add MLOCK_ONFAULT for mlock2 and MCL_ONFAULT for mlockall.
+> MLOCK_ONFAULT will set the VM_LOCKONFAULT flag as well as the VM_LOCKED
+> flag for the target region.  MCL_CURRENT and MCL_ONFAULT are used to
+> lock current mappings.  With MCL_CURRENT all pages are made present and
+> with MCL_ONFAULT they are locked when faulted in.  When specified with
+> MCL_FUTURE all new mappings will be marked with VM_LOCKONFAULT.
+> 
+> Currently, mlockall() clears all VMA lock flags and then sets the
+> requested flags.  For instance, if a process has MCL_FUTURE and
+> MCL_CURRENT set, but they want to clear MCL_FUTURE this would be
+> accomplished by calling mlockall(MCL_CURRENT).  This still holds with
+> the introduction of MCL_ONFAULT.  Each call to mlockall() resets all
+> VMA flags to the values specified in the current call.  The new mlock2
+> system call behaves in the same way.  If a region is locked with
+> MLOCK_ONFAULT and a user wants to force it to be populated now, a second
+> call to mlock2(MLOCK_LOCKED) will accomplish this.
+> 
+> munlock() will unconditionally clear both vma flags.  munlockall()
+> unconditionally clears for VMA flags on all VMAs and in the
+> mm->def_flags field.
 > 
 > Signed-off-by: Eric B Munson <emunson@akamai.com>
 > Cc: Michal Hocko <mhocko@suse.cz>
 > Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: "Kirill A. Shutemov" <kirill@shutemov.name>
 > Cc: linux-alpha@vger.kernel.org
 > Cc: linux-kernel@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: adi-buildroot-devel@lists.sourceforge.net
-> Cc: linux-cris-kernel@axis.com
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-am33-list@redhat.com
+> Cc: linux-mips@linux-mips.org
 > Cc: linux-parisc@vger.kernel.org
 > Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
 > Cc: sparclinux@vger.kernel.org
 > Cc: linux-xtensa@linux-xtensa.org
-> Cc: linux-api@vger.kernel.org
 > Cc: linux-arch@vger.kernel.org
+> Cc: linux-api@vger.kernel.org
 > Cc: linux-mm@kvack.org
 > ---
 > Changes from V4:
-> * Drop all architectures except x86[_64] from this patch, MIPS is added
->   later in the series.  All others will be left to their maintainers.
+> * Split addition of VMA flag
 > 
 > Changes from V3:
-> * Do a (hopefully) complete job of adding the new system calls
->  arch/alpha/include/uapi/asm/mman.h     | 2 ++
->  arch/mips/include/uapi/asm/mman.h      | 5 +++++
->  arch/parisc/include/uapi/asm/mman.h    | 2 ++
->  arch/powerpc/include/uapi/asm/mman.h   | 2 ++
->  arch/sparc/include/uapi/asm/mman.h     | 2 ++
->  arch/tile/include/uapi/asm/mman.h      | 5 +++++
->  arch/x86/entry/syscalls/syscall_32.tbl | 1 +
->  arch/x86/entry/syscalls/syscall_64.tbl | 1 +
->  arch/xtensa/include/uapi/asm/mman.h    | 5 +++++
+> * Do extensive search for VM_LOCKED and ensure that VM_LOCKONFAULT is also handled
+>  where appropriate
+>  arch/alpha/include/uapi/asm/mman.h   |  2 ++
+>  arch/mips/include/uapi/asm/mman.h    |  2 ++
+>  arch/parisc/include/uapi/asm/mman.h  |  2 ++
+>  arch/powerpc/include/uapi/asm/mman.h |  2 ++
+>  arch/sparc/include/uapi/asm/mman.h   |  2 ++
+>  arch/tile/include/uapi/asm/mman.h    |  3 +++
+>  arch/xtensa/include/uapi/asm/mman.h  |  2 ++
 
-Define MLOCK_LOCKED in include/uapi/asm-generic/mman-common.h.
-This way you can drop changes in powerpc, sparc and tile.
+Again, you can save few lines by moving some code into mman-common.h.
 
 Otherwise looks good.
 
