@@ -1,31 +1,28 @@
-Return-Path: <r.baldyga@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <jacek.anaszewski@gmail.com>
+Received: from mail-wi0-x230.google.com (mail-wi0-x230.google.com
+ [IPv6:2a00:1450:400c:c05::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1A301A1E28
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:23:03 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NS5027EV3ECNSE0@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:23:00 +0900 (KST)
-From: Robert Baldyga <r.baldyga@samsung.com>
-To: balbi@ti.com
-Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
- johnyoun@synopsys.com, dahlmann.thomas@arcor.de, nicolas.ferre@atmel.com,
- cernekee@gmail.com, leoli@freescale.com, daniel@zonque.org,
- haojian.zhuang@gmail.com, robert.jarzmik@free.fr, michal.simek@xilinx.com,
- devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-geode@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
- m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
- Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v4 46/46] usb: musb: gadget: add musb_match_ep() function
-Date: Mon, 27 Jul 2015 11:16:56 +0200
-Message-id: <1437988616-6962-47-git-send-email-r.baldyga@samsung.com>
-In-reply-to: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
-References: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C1FA1A3C93
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:52:05 +1000 (AEST)
+Received: by wibud3 with SMTP id ud3so132441941wib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 02:52:01 -0700 (PDT)
+Message-ID: <55B5FEDD.2000506@gmail.com>
+Date: Mon, 27 Jul 2015 11:50:21 +0200
+From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
+MIME-Version: 1.0
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ j.anaszewski@samsung.com, mpe@ellerman.id.au
+CC: rpurdie@rpsys.net, cooloney@gmail.com, khandual@linux.vnet.ibm.com,
+ j.anaszewski81@gmail.com, arnd@arndb.de, stewart@linux.vnet.ibm.com,
+ benh@kernel.crashing.org
+Subject: Re: [PATCH v8 3/3] leds/powernv: Add driver for PowerNV platform
+References: <1437801670-23705-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1437801670-23705-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <55B5540B.1000301@gmail.com> <55B5A853.3080909@linux.vnet.ibm.com>
+In-Reply-To: <55B5A853.3080909@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,102 +32,525 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add 'match_ep' callback to utilize chip-specific knowledge in endpoint matching
-process. Function does the same that was done by chip-specific code inside
-of epautoconf. Now this code can be removed from there to separate generic code
-from platform specific logic.
+Hi Vasant,
 
-Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
----
- drivers/usb/gadget/epautoconf.c | 23 -----------------------
- drivers/usb/musb/musb_gadget.c  | 34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+), 23 deletions(-)
+On 27.07.2015 05:41, Vasant Hegde wrote:
+> On 07/27/2015 03:11 AM, Jacek Anaszewski wrote:
+>> Hi Vasant,
+>>
+>
+> Hi Jacek,
+>
+>> Two trivial details left. Please find them below.
+>
+> Thanks for the review/Ack. I'll fix below issues and resend patchset.
+>
+> I will ask Benh/Michael to take this patchset. But this patchset is depending
+> on your core changes. Can you confirm that you are pushing that patchset in next
+> merge window?
 
-diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index da45371..254ece7 100644
---- a/drivers/usb/gadget/epautoconf.c
-+++ b/drivers/usb/gadget/epautoconf.c
-@@ -83,29 +83,6 @@ struct usb_ep *usb_ep_autoconfig_ss(
- 			goto found_ep;
- 	}
- 
--	/* First, apply chip-specific "best usage" knowledge.
--	 * This might make a good usb_gadget_ops hook ...
--	 */
--#ifdef CONFIG_BLACKFIN
--	if (gadget_is_musbhdrc(gadget)) {
--		if ((USB_ENDPOINT_XFER_BULK == type) ||
--		    (USB_ENDPOINT_XFER_ISOC == type)) {
--			if (USB_DIR_IN & desc->bEndpointAddress)
--				ep = gadget_find_ep_by_name(gadget, "ep5in");
--			else
--				ep = gadget_find_ep_by_name(gadget, "ep6out");
--		} else if (USB_ENDPOINT_XFER_INT == type) {
--			if (USB_DIR_IN & desc->bEndpointAddress)
--				ep = gadget_find_ep_by_name(gadget, "ep1in");
--			else
--				ep = gadget_find_ep_by_name(gadget, "ep2out");
--		} else
--			ep = NULL;
--		if (ep && usb_gadget_ep_match_desc(gadget, ep, desc, ep_comp))
--			goto found_ep;
--	}
--#endif
--
- 	/* Second, look at endpoints until an unclaimed one looks usable */
- 	list_for_each_entry (ep, &gadget->ep_list, ep_list) {
- 		if (usb_gadget_ep_match_desc(gadget, ep, desc, ep_comp))
-diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
-index 043248a..3a64cf2 100644
---- a/drivers/usb/musb/musb_gadget.c
-+++ b/drivers/usb/musb/musb_gadget.c
-@@ -1684,6 +1684,39 @@ static int musb_gadget_pullup(struct usb_gadget *gadget, int is_on)
- 	return 0;
- }
- 
-+#ifdef CONFIG_BLACKFIN
-+static struct usb_ep *musb_match_ep(struct usb_gadget *g,
-+		struct usb_endpoint_descriptor *desc,
-+		struct usb_ss_ep_comp_descriptor *ep_comp)
-+{
-+	struct usb_ep *ep = NULL;
-+	u8 type = usb_endpoint_type(desc);
-+
-+	switch(type) {
-+	case USB_ENDPOINT_XFER_ISOC:
-+	case USB_ENDPOINT_XFER_BULK:
-+		if (usb_endpoint_dir_in(desc))
-+			ep = gadget_find_ep_by_name(g, "ep5in");
-+		else
-+			ep = gadget_find_ep_by_name(g, "ep6out");
-+		break;
-+	case USB_ENDPOINT_XFER_INT:
-+		if (usb_endpoint_dir_in(desc))
-+			ep = gadget_find_ep_by_name(g, "ep1in");
-+		else
-+			ep = gadget_find_ep_by_name(g, "ep2out");
-+	default:
-+	}
-+
-+	if (ep && usb_gadget_ep_match_desc(g, ep, desc, ep_comp))
-+		return ep;
-+
-+	return NULL;
-+}
-+#else
-+#define musb_match_ep NULL
-+#endif
-+
- static int musb_gadget_start(struct usb_gadget *g,
- 		struct usb_gadget_driver *driver);
- static int musb_gadget_stop(struct usb_gadget *g);
-@@ -1697,6 +1730,7 @@ static const struct usb_gadget_ops musb_gadget_operations = {
- 	.pullup			= musb_gadget_pullup,
- 	.udc_start		= musb_gadget_start,
- 	.udc_stop		= musb_gadget_stop,
-+	.match_ep		= musb_match_ep,
- };
- 
- /* ----------------------------------------------------------------------- */
+Without my core changes your driver won't work with led triggers, but
+AFAIR this use case is not relevant for your LEDs? Eventually, we could
+produce a patch set adding support for LED triggers if it will be clear
+that LED core changes will not be merged in the upcoming merge window.
+
+> -Vasant
+>
+>
+>>
+>> Since for two next weeks I will be unable even to compile-test
+>> this patch set I propose to merge it via powerpc tree.
+>>
+>> Having both mentioned issues addressed, for this patch:
+>>
+>> Acked-by: Jacek Anaszewski <j.anaszewski@samsung.com>
+>>
+>> On 25.07.2015 07:21, Vasant Hegde wrote:
+>>> This patch implements LED driver for PowerNV platform using the existing
+>>> generic LED class framework.
+>>>
+>>> PowerNV platform has below type of LEDs:
+>>>     - System attention
+>>>         Indicates there is a problem with the system that needs attention.
+>>>     - Identify
+>>>         Helps the user locate/identify a particular FRU or resource in the
+>>>         system.
+>>>     - Fault
+>>>         Indicates there is a problem with the FRU or resource at the
+>>>         location with which the indicator is associated.
+>>>
+>>> We register classdev structures for all individual LEDs detected on the
+>>> system through LED specific device tree nodes. Device tree nodes specify
+>>> what all kind of LEDs present on the same location code. It registers
+>>> LED classdev structure for each of them.
+>>>
+>>> All the system LEDs can be found in the same regular path /sys/class/leds/.
+>>> We don't use LED colors. We use LED node and led-types property to form
+>>> LED classdev. Our LEDs have names in this format.
+>>>
+>>>           <location_code>:<attention|identify|fault>
+>>>
+>>> Any positive brightness value would turn on the LED and a zero value would
+>>> turn off the LED. The driver will return LED_FULL (255) for any turned on
+>>> LED and LED_OFF (0) for any turned off LED.
+>>>
+>>> As per the LED class framework, the 'brightness_set' function should not
+>>> sleep. Hence these functions have been implemented through global work
+>>> queue tasks which might sleep on OPAL async call completion.
+>>
+>> This is no longer true.
+>>
+>>> The platform level implementation of LED get and set state has been
+>>> achieved through OPAL calls. These calls are made available for the
+>>> driver by exporting from architecture specific codes.
+>>>
+>>> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+>>> Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+>>> ---
+>>>    .../devicetree/bindings/leds/leds-powernv.txt      |  26 ++
+>>>    drivers/leds/Kconfig                               |  11 +
+>>>    drivers/leds/Makefile                              |   1 +
+>>>    drivers/leds/leds-powernv.c                        | 350 +++++++++++++++++++++
+>>>    4 files changed, 388 insertions(+)
+>>>    create mode 100644 Documentation/devicetree/bindings/leds/leds-powernv.txt
+>>>    create mode 100644 drivers/leds/leds-powernv.c
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/leds/leds-powernv.txt
+>>> b/Documentation/devicetree/bindings/leds/leds-powernv.txt
+>>> new file mode 100644
+>>> index 0000000..6665569
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/leds/leds-powernv.txt
+>>> @@ -0,0 +1,26 @@
+>>> +Device Tree binding for LEDs on IBM Power Systems
+>>> +-------------------------------------------------
+>>> +
+>>> +Required properties:
+>>> +- compatible : Should be "ibm,opal-v3-led".
+>>> +- led-mode   : Should be "lightpath" or "guidinglight".
+>>> +
+>>> +Each location code of FRU/Enclosure must be expressed in the
+>>> +form of a sub-node.
+>>> +
+>>> +Required properties for the sub nodes:
+>>> +- led-types : Supported LED types (attention/identify/fault) provided
+>>> +              in the form of string array.
+>>> +
+>>> +Example:
+>>> +
+>>> +leds {
+>>> +    compatible = "ibm,opal-v3-led";
+>>> +    led-mode = "lightpath";
+>>> +
+>>> +    U78C9.001.RST0027-P1-C1 {
+>>> +        led-types = "identify", "fault";
+>>> +    };
+>>> +    ...
+>>> +    ...
+>>> +};
+>>> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+>>> index 9ad35f7..f218cc3a 100644
+>>> --- a/drivers/leds/Kconfig
+>>> +++ b/drivers/leds/Kconfig
+>>> @@ -560,6 +560,17 @@ config LEDS_BLINKM
+>>>          This option enables support for the BlinkM RGB LED connected
+>>>          through I2C. Say Y to enable support for the BlinkM LED.
+>>>
+>>> +config LEDS_POWERNV
+>>> +    tristate "LED support for PowerNV Platform"
+>>> +    depends on LEDS_CLASS
+>>> +    depends on PPC_POWERNV
+>>> +    depends on OF
+>>> +    help
+>>> +      This option enables support for the system LEDs present on
+>>> +      PowerNV platforms. Say 'y' to enable this support in kernel.
+>>> +      To compile this driver as a module, choose 'm' here: the module
+>>> +      will be called leds-powernv.
+>>> +
+>>>    config LEDS_SYSCON
+>>>        bool "LED support for LEDs on system controllers"
+>>>        depends on LEDS_CLASS=y
+>>> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+>>> index 8d6a24a..6a943d1 100644
+>>> --- a/drivers/leds/Makefile
+>>> +++ b/drivers/leds/Makefile
+>>> @@ -65,6 +65,7 @@ obj-$(CONFIG_LEDS_VERSATILE)        += leds-versatile.o
+>>>    obj-$(CONFIG_LEDS_MENF21BMC)        += leds-menf21bmc.o
+>>>    obj-$(CONFIG_LEDS_PM8941_WLED)        += leds-pm8941-wled.o
+>>>    obj-$(CONFIG_LEDS_KTD2692)        += leds-ktd2692.o
+>>> +obj-$(CONFIG_LEDS_POWERNV)        += leds-powernv.o
+>>>
+>>>    # LED SPI Drivers
+>>>    obj-$(CONFIG_LEDS_DAC124S085)        += leds-dac124s085.o
+>>> diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
+>>> new file mode 100644
+>>> index 0000000..9799de5
+>>> --- /dev/null
+>>> +++ b/drivers/leds/leds-powernv.c
+>>> @@ -0,0 +1,350 @@
+>>> +/*
+>>> + * PowerNV LED Driver
+>>> + *
+>>> + * Copyright IBM Corp. 2015
+>>> + *
+>>> + * Author: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+>>> + * Author: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>> + *
+>>> + * This program is free software; you can redistribute it and/or
+>>> + * modify it under the terms of the GNU General Public License
+>>> + * as published by the Free Software Foundation; either version
+>>> + * 2 of the License, or (at your option) any later version.
+>>> + */
+>>> +
+>>> +#include <linux/leds.h>
+>>> +#include <linux/module.h>
+>>> +#include <linux/of.h>
+>>> +#include <linux/platform_device.h>
+>>> +#include <linux/slab.h>
+>>> +#include <linux/types.h>
+>>> +
+>>> +#include <asm/opal.h>
+>>> +
+>>> +/* Map LED type to description. */
+>>> +struct led_type_map {
+>>> +    const int    type;
+>>> +    const char    *desc;
+>>> +};
+>>> +static const struct led_type_map led_type_map[] = {
+>>> +    {OPAL_SLOT_LED_TYPE_ID,        POWERNV_LED_TYPE_IDENTIFY},
+>>> +    {OPAL_SLOT_LED_TYPE_FAULT,    POWERNV_LED_TYPE_FAULT},
+>>> +    {OPAL_SLOT_LED_TYPE_ATTN,    POWERNV_LED_TYPE_ATTENTION},
+>>> +    {-1,                NULL},
+>>> +};
+>>> +
+>>> +struct powernv_led_common {
+>>> +    /*
+>>> +     * By default unload path resets all the LEDs. But on PowerNV
+>>> +     * platform we want to retain LED state across reboot as these
+>>> +     * are controlled by firmware. Also service processor can modify
+>>> +     * the LEDs independent of OS. Hence avoid resetting LEDs in
+>>> +     * unload path.
+>>> +     */
+>>> +    bool        led_disabled;
+>>> +
+>>> +    /* Max supported LED type */
+>>> +    __be64        max_led_type;
+>>> +
+>>> +    /* glabal lock */
+>>> +    struct mutex    lock;
+>>> +};
+>>> +
+>>> +/* PowerNV LED data */
+>>> +struct powernv_led_data {
+>>> +    struct led_classdev    cdev;
+>>> +    char            *loc_code;    /* LED location code */
+>>> +    int            led_type;    /* OPAL_SLOT_LED_TYPE_* */
+>>> +
+>>> +    struct powernv_led_common *common;
+>>> +};
+>>> +
+>>> +
+>>> +/* Returns OPAL_SLOT_LED_TYPE_* for given led type string */
+>>> +static int powernv_get_led_type(const char *led_type_desc)
+>>> +{
+>>> +    int i;
+>>> +
+>>> +    for (i = 0; i < ARRAY_SIZE(led_type_map); i++)
+>>> +        if (!strcmp(led_type_map[i].desc, led_type_desc))
+>>> +            return led_type_map[i].type;
+>>> +
+>>> +    return -1;
+>>> +}
+>>> +
+>>> +/*
+>>> + * This commits the state change of the requested LED through an OPAL call.
+>>> + * This function is called from work queue task context when ever it gets
+>>> + * scheduled. This function can sleep at opal_async_wait_response call.
+>>> + */
+>>> +static void powernv_led_set(struct powernv_led_data *powernv_led,
+>>> +                enum led_brightness value)
+>>> +{
+>>> +    int rc, token;
+>>> +    u64 led_mask, led_value = 0;
+>>> +    __be64 max_type;
+>>> +    struct opal_msg msg;
+>>> +    struct device *dev = powernv_led->cdev.dev;
+>>> +    struct powernv_led_common *powernv_led_common = powernv_led->common;
+>>> +
+>>> +    /* Prepare for the OPAL call */
+>>> +    max_type = powernv_led_common->max_led_type;
+>>> +    led_mask = OPAL_SLOT_LED_STATE_ON << powernv_led->led_type;
+>>> +    if (value)
+>>> +        led_value = led_mask;
+>>> +
+>>> +    /* OPAL async call */
+>>> +    token = opal_async_get_token_interruptible();
+>>> +    if (token < 0) {
+>>> +        if (token != -ERESTARTSYS)
+>>> +            dev_err(dev, "%s: Couldn't get OPAL async token\n",
+>>> +                __func__);
+>>> +        return;
+>>> +    }
+>>> +
+>>> +    rc = opal_leds_set_ind(token, powernv_led->loc_code,
+>>> +                   led_mask, led_value, &max_type);
+>>> +    if (rc != OPAL_ASYNC_COMPLETION) {
+>>> +        dev_err(dev, "%s: OPAL set LED call failed for %s [rc=%d]\n",
+>>> +            __func__, powernv_led->loc_code, rc);
+>>> +        goto out_token;
+>>> +    }
+>>> +
+>>> +    rc = opal_async_wait_response(token, &msg);
+>>> +    if (rc) {
+>>> +        dev_err(dev,
+>>> +            "%s: Failed to wait for the async response [rc=%d]\n",
+>>> +            __func__, rc);
+>>> +        goto out_token;
+>>> +    }
+>>> +
+>>> +    rc = be64_to_cpu(msg.params[1]);
+>>> +    if (rc != OPAL_SUCCESS)
+>>> +        dev_err(dev, "%s : OAPL async call returned failed [rc=%d]\n",
+>>> +            __func__, rc);
+>>> +
+>>> +out_token:
+>>> +    opal_async_release_token(token);
+>>> +}
+>>> +
+>>> +/*
+>>> + * This function fetches the LED state for a given LED type for
+>>> + * mentioned LED classdev structure.
+>>> + */
+>>> +static enum led_brightness
+>>> +powernv_led_get(struct powernv_led_data *powernv_led)
+>>
+>> This fits on a single line.
+>>
+>>> +{
+>>> +    int rc;
+>>> +    __be64 mask, value, max_type;
+>>> +    u64 led_mask, led_value;
+>>> +    struct device *dev = powernv_led->cdev.dev;
+>>> +    struct powernv_led_common *powernv_led_common = powernv_led->common;
+>>> +
+>>> +    /* Fetch all LED status */
+>>> +    mask = cpu_to_be64(0);
+>>> +    value = cpu_to_be64(0);
+>>> +    max_type = powernv_led_common->max_led_type;
+>>> +
+>>> +    rc = opal_leds_get_ind(powernv_led->loc_code,
+>>> +                   &mask, &value, &max_type);
+>>> +    if (rc != OPAL_SUCCESS && rc != OPAL_PARTIAL) {
+>>> +        dev_err(dev, "%s: OPAL get led call failed [rc=%d]\n",
+>>> +            __func__, rc);
+>>> +        return LED_OFF;
+>>> +    }
+>>> +
+>>> +    led_mask = be64_to_cpu(mask);
+>>> +    led_value = be64_to_cpu(value);
+>>> +
+>>> +    /* LED status available */
+>>> +    if (!((led_mask >> powernv_led->led_type) & OPAL_SLOT_LED_STATE_ON)) {
+>>> +        dev_err(dev, "%s: LED status not available for %s\n",
+>>> +            __func__, powernv_led->cdev.name);
+>>> +        return LED_OFF;
+>>> +    }
+>>> +
+>>> +    /* LED status value */
+>>> +    if ((led_value >> powernv_led->led_type) & OPAL_SLOT_LED_STATE_ON)
+>>> +        return LED_FULL;
+>>> +
+>>> +    return LED_OFF;
+>>> +}
+>>> +
+>>> +/*
+>>> + * LED classdev 'brightness_get' function. This schedules work
+>>> + * to update LED state.
+>>> + */
+>>> +static void powernv_brightness_set(struct led_classdev *led_cdev,
+>>> +                   enum led_brightness value)
+>>> +{
+>>> +    struct powernv_led_data *powernv_led =
+>>> +        container_of(led_cdev, struct powernv_led_data, cdev);
+>>> +    struct powernv_led_common *powernv_led_common = powernv_led->common;
+>>> +
+>>> +    /* Do not modify LED in unload path */
+>>> +    if (powernv_led_common->led_disabled)
+>>> +        return;
+>>> +
+>>> +    mutex_lock(&powernv_led_common->lock);
+>>> +    powernv_led_set(powernv_led, value);
+>>> +    mutex_unlock(&powernv_led_common->lock);
+>>> +}
+>>> +
+>>> +/* LED classdev 'brightness_get' function */
+>>> +static enum led_brightness
+>>> +powernv_brightness_get(struct led_classdev *led_cdev)
+>>> +{
+>>> +    struct powernv_led_data *powernv_led =
+>>> +        container_of(led_cdev, struct powernv_led_data, cdev);
+>>> +
+>>> +    return powernv_led_get(powernv_led);
+>>> +}
+>>> +
+>>
+>> Unnecessary empty line.
+>>
+>>> +
+>>> +/*
+>>> + * This function registers classdev structure for any given type of LED on
+>>> + * a given child LED device node.
+>>> + */
+>>> +static int powernv_led_create(struct device *dev,
+>>> +                  struct powernv_led_data *powernv_led,
+>>> +                  const char *led_type_desc)
+>>> +{
+>>> +    int rc;
+>>> +
+>>> +    /* Make sure LED type is supported */
+>>> +    powernv_led->led_type = powernv_get_led_type(led_type_desc);
+>>> +    if (powernv_led->led_type == -1) {
+>>> +        dev_warn(dev, "%s: No support for led type : %s\n",
+>>> +             __func__, led_type_desc);
+>>> +        return -EINVAL;
+>>> +    }
+>>> +
+>>> +    /* Create the name for classdev */
+>>> +    powernv_led->cdev.name = devm_kasprintf(dev, GFP_KERNEL, "%s:%s",
+>>> +                        powernv_led->loc_code,
+>>> +                        led_type_desc);
+>>> +    if (!powernv_led->cdev.name) {
+>>> +        dev_err(dev,
+>>> +            "%s: Memory allocation failed for classdev name\n",
+>>> +            __func__);
+>>> +        return -ENOMEM;
+>>> +    }
+>>> +
+>>> +    powernv_led->cdev.brightness_set = powernv_brightness_set;
+>>> +    powernv_led->cdev.brightness_get = powernv_brightness_get;
+>>> +    powernv_led->cdev.brightness = LED_OFF;
+>>> +    powernv_led->cdev.max_brightness = LED_FULL;
+>>> +
+>>> +    /* Register the classdev */
+>>> +    rc = devm_led_classdev_register(dev, &powernv_led->cdev);
+>>> +    if (rc) {
+>>> +        dev_err(dev, "%s: Classdev registration failed for %s\n",
+>>> +            __func__, powernv_led->cdev.name);
+>>> +    }
+>>> +
+>>> +    return rc;
+>>> +}
+>>> +
+>>> +/* Go through LED device tree node and register LED classdev structure */
+>>> +static int powernv_led_classdev(struct platform_device *pdev,
+>>> +                struct device_node *led_node,
+>>> +                struct powernv_led_common *powernv_led_common)
+>>> +{
+>>> +    const char *cur = NULL;
+>>> +    int rc = -1;
+>>> +    struct property *p;
+>>> +    struct device_node *np;
+>>> +    struct powernv_led_data *powernv_led;
+>>> +    struct device *dev = &pdev->dev;
+>>> +
+>>> +    for_each_child_of_node(led_node, np) {
+>>> +        p = of_find_property(np, "led-types", NULL);
+>>> +        if (!p)
+>>> +            continue;
+>>> +
+>>> +        while ((cur = of_prop_next_string(p, cur)) != NULL) {
+>>> +            powernv_led = devm_kzalloc(dev, sizeof(*powernv_led),
+>>> +                           GFP_KERNEL);
+>>> +            if (!powernv_led)
+>>> +                return -ENOMEM;
+>>> +
+>>> +            powernv_led->common = powernv_led_common;
+>>> +            powernv_led->loc_code = (char *)np->name;
+>>> +
+>>> +            rc = powernv_led_create(dev, powernv_led, cur);
+>>> +            if (rc)
+>>> +                return rc;
+>>> +        } /* while end */
+>>> +    }
+>>> +
+>>> +    return rc;
+>>> +}
+>>> +
+>>> +/* Platform driver probe */
+>>> +static int powernv_led_probe(struct platform_device *pdev)
+>>> +{
+>>> +    struct device_node *led_node;
+>>> +    struct powernv_led_common *powernv_led_common;
+>>> +    struct device *dev = &pdev->dev;
+>>> +
+>>> +    led_node = of_find_node_by_path("/ibm,opal/leds");
+>>> +    if (!led_node) {
+>>> +        dev_err(dev, "%s: LED parent device node not found\n",
+>>> +            __func__);
+>>> +        return -EINVAL;
+>>> +    }
+>>> +
+>>> +    powernv_led_common = devm_kzalloc(dev, sizeof(*powernv_led_common),
+>>> +                      GFP_KERNEL);
+>>> +    if (!powernv_led_common)
+>>> +        return -ENOMEM;
+>>> +
+>>> +    mutex_init(&powernv_led_common->lock);
+>>> +    powernv_led_common->max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
+>>> +    powernv_led_common->led_disabled = false;
+>>> +
+>>> +    platform_set_drvdata(pdev, powernv_led_common);
+>>> +
+>>> +    return powernv_led_classdev(pdev, led_node, powernv_led_common);
+>>> +}
+>>> +
+>>> +/* Platform driver remove */
+>>> +static int powernv_led_remove(struct platform_device *pdev)
+>>> +{
+>>> +    struct powernv_led_common *powernv_led_common;
+>>> +
+>>> +    /* Disable LED operation */
+>>> +    powernv_led_common = platform_get_drvdata(pdev);
+>>> +    powernv_led_common->led_disabled = true;
+>>> +
+>>> +    /* Destroy lock */
+>>> +    mutex_destroy(&powernv_led_common->lock);
+>>> +
+>>> +    dev_info(&pdev->dev, "PowerNV led module unregistered\n");
+>>> +    return 0;
+>>> +}
+>>> +
+>>> +/* Platform driver property match */
+>>> +static const struct of_device_id powernv_led_match[] = {
+>>> +    {
+>>> +        .compatible    = "ibm,opal-v3-led",
+>>> +    },
+>>> +    {},
+>>> +};
+>>> +MODULE_DEVICE_TABLE(of, powernv_led_match);
+>>> +
+>>> +static struct platform_driver powernv_led_driver = {
+>>> +    .probe    = powernv_led_probe,
+>>> +    .remove = powernv_led_remove,
+>>> +    .driver = {
+>>> +        .name = "powernv-led-driver",
+>>> +        .owner = THIS_MODULE,
+>>> +        .of_match_table = powernv_led_match,
+>>> +    },
+>>> +};
+>>> +
+>>> +module_platform_driver(powernv_led_driver);
+>>> +
+>>> +MODULE_LICENSE("GPL v2");
+>>> +MODULE_DESCRIPTION("PowerNV LED driver");
+>>> +MODULE_AUTHOR("Vasant Hegde <hegdevasant@linux.vnet.ibm.com>");
+>>>
+>>
+>
+>
+
 -- 
-1.9.1
+Best Regards,
+Jacek Anaszewski
