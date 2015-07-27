@@ -1,25 +1,26 @@
 Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D447B1A0743
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:56:25 +1000 (AEST)
-Received: from mail-ig0-x233.google.com (mail-ig0-x233.google.com
- [IPv6:2607:f8b0:4001:c05::233])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 295ED1A1D43
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:57:03 +1000 (AEST)
+Received: from mail-ig0-x22d.google.com (mail-ig0-x22d.google.com
+ [IPv6:2607:f8b0:4001:c05::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4E5ED1402BA
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:56:25 +1000 (AEST)
-Received: by igbij6 with SMTP id ij6so84865832igb.1
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:56:23 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 93B9B1402BA
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:57:02 +1000 (AEST)
+Received: by igbij6 with SMTP id ij6so84889738igb.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:57:01 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <1437646871-3195-9-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1437646871-3195-10-git-send-email-mpe@ellerman.id.au>
 References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
- <1437646871-3195-9-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 27 Jul 2015 11:56:22 -0700
-Message-ID: <CAGXu5jKBy13TkgvmuU0BJvUguLWQd04+=3J5OwQxSvtEOo63Aw@mail.gmail.com>
-Subject: Re: [PATCH 09/11] powerpc/kernel: Enable seccomp filter
+ <1437646871-3195-10-git-send-email-mpe@ellerman.id.au>
+Date: Mon, 27 Jul 2015 11:57:00 -0700
+Message-ID: <CAGXu5jJMOGXS4wpAwxWFEH7zgLgMaW9=gxEBncV46CgqBXEMBg@mail.gmail.com>
+Subject: Re: [PATCH 10/11] selftests/seccomp: Make seccomp tests work on big
+ endian
 From: Kees Cook <keescook@chromium.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -37,88 +38,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Jul 23, 2015 at 3:21 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> This commit enables seccomp filter on powerpc, now that we have all the
-> necessary pieces in place.
+> The seccomp_bpf test uses BPF_LD|BPF_W|BPF_ABS to load 32-bit values
+> from seccomp_data->args. On big endian machines this will load the high
+> word of the argument, which is not what the test wants.
 >
-> To support seccomp's desire to modify the syscall return value under
-> some circumstances, we use a different ABI to the ptrace ABI. That is we
-> use r3 as the syscall return value, and orig_gpr3 is the first syscall
-> parameter.
->
-> This means the seccomp code, or a ptracer via SECCOMP_RET_TRACE, will
-> see -ENOSYS preloaded in r3. This is identical to the behaviour on x86,
-> and allows seccomp or the ptracer to either leave the -ENOSYS or change
-> it to something else, as well as rejecting or not the syscall by
-> modifying r0.
->
-> If seccomp does not reject the syscall, we restore the register state to
-> match what ptrace and audit expect, ie. r3 is the first syscall
-> parameter again. We do this restore using orig_gpr3, which may have been
-> modified by seccomp, which allows seccomp to modify the first syscall
-> paramater and allow the syscall to proceed.
+> Borrow a hack from samples/seccomp/bpf-helper.h which changes the offset
+> on big endian to account for this.
 >
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+Acked-by: Kees Cook <keescook@chromium.org>
+
+Thanks for fixing the error message! :)
 
 -Kees
 
 > ---
->  arch/powerpc/Kconfig         |  1 +
->  arch/powerpc/kernel/ptrace.c | 28 +++++++++++++++++++++++++++-
->  2 files changed, 28 insertions(+), 1 deletion(-)
+>  tools/testing/selftests/seccomp/seccomp_bpf.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 >
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 5ef27113b898..b6cb6a87b7a2 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -155,6 +155,7 @@ config PPC
->         select HAVE_PERF_EVENTS_NMI if PPC64
->         select EDAC_SUPPORT
->         select EDAC_ATOMIC_SCRUB
-> +       select HAVE_ARCH_SECCOMP_FILTER
+> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> index c5abe7fd7590..2303a8dff9a2 100644
+> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
+> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
+> @@ -82,7 +82,13 @@ struct seccomp_data {
+>  };
+>  #endif
 >
->  config GENERIC_CSUM
->         def_bool CPU_LITTLE_ENDIAN
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 7484221bb3f8..de79eb5218c6 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -1787,7 +1787,33 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+> +#if __BYTE_ORDER == __LITTLE_ENDIAN
+>  #define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]))
+> +#elif __BYTE_ORDER == __BIG_ENDIAN
+> +#define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]) + sizeof(__u32))
+> +#else
+> +#error "wut? Unknown __BYTE_ORDER?!"
+> +#endif
 >
->         user_exit();
->
-> -       secure_computing_strict(regs->gpr[0]);
-> +       if (test_thread_flag(TIF_SECCOMP)) {
-> +               /*
-> +                * The ABI we present to seccomp tracers is that r3 contains
-> +                * the syscall return value and orig_gpr3 contains the first
-> +                * syscall parameter. This is different to the ptrace ABI where
-> +                * both r3 and orig_gpr3 contain the first syscall parameter.
-> +                */
-> +               regs->gpr[3] = -ENOSYS;
-> +
-> +               /*
-> +                * We use the __ version here because we have already checked
-> +                * TIF_SECCOMP. If this fails, there is nothing left to do, we
-> +                * have already loaded -ENOSYS into r3, or seccomp has put
-> +                * something else in r3 (via SECCOMP_RET_ERRNO/TRACE).
-> +                */
-> +               if (__secure_computing())
-> +                       return -1;
-> +
-> +               /*
-> +                * The syscall was allowed by seccomp, restore the register
-> +                * state to what ptrace and audit expect.
-> +                * Note that we use orig_gpr3, which means a seccomp tracer can
-> +                * modify the first syscall parameter (in orig_gpr3) and also
-> +                * allow the syscall to proceed.
-> +                */
-> +               regs->gpr[3] = regs->orig_gpr3;
-> +       }
->
->         if (test_thread_flag(TIF_SYSCALL_TRACE)) {
->                 /*
+>  #define SIBLING_EXIT_UNKILLED  0xbadbeef
+>  #define SIBLING_EXIT_FAILURE   0xbadface
 > --
 > 2.1.0
 >
