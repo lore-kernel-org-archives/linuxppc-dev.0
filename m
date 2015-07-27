@@ -1,39 +1,22 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <vz@mleia.com>
+Received: from mail.mleia.com (li271-223.members.linode.com [178.79.152.223])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 801271A09A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 02:10:51 +1000 (AEST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 27 Jul 2015 21:40:48 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8D456394009B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:32 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6QIsWv957802986
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:32 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6QHVDvW011577
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:01:13 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>
-Subject: [PATCH v6 1/7]powerpc/powernv: Data structure and macros definition
-Date: Mon, 27 Jul 2015 00:24:18 +0530
-Message-Id: <1437936864-4402-2-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 58D9B1A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 02:49:17 +1000 (AEST)
+Message-ID: <55B66103.2020403@mleia.com>
+Date: Mon, 27 Jul 2015 19:49:07 +0300
+From: Vladimir Zapolskiy <vz@mleia.com>
+MIME-Version: 1.0
+To: Zhao Qiang <qiang.zhao@freescale.com>
+CC: lauraa@codeaurora.org, catalin.marinas@arm.com,
+ linux-kernel@vger.kernel.org, scottwood@freescale.com, olof@lixom.net,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ X.xie@freescale.com
+Subject: Re: [RFC v2] genalloc:add an gen_pool_first_fit_align algo to genalloc
+References: <1437991074-35377-1-git-send-email-qiang.zhao@freescale.com>
+In-Reply-To: <1437991074-35377-1-git-send-email-qiang.zhao@freescale.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,81 +26,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create new header file "nest-pmu.h" to add the data structures
-and macros needed for the nest pmu support.
+Hello Zhao,
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: Stephane Eranian <eranian@google.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/nest-pmu.h | 54 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
- create mode 100644 arch/powerpc/perf/nest-pmu.h
+On 27.07.2015 12:57, Zhao Qiang wrote:
+> Bytes alignment is required to manage some special ram,
+> so add gen_pool_first_fit_align to genalloc.
+> User should define data structure
+> struct data {
+> 	int align;
+> 	struct gen_pool *pool;
+> }
+> align is the number of  bytes alignment,
+> pool points to gen_pool which include data.
+> 
+> Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> ---
+> *v2:
+> changes:
+> title has been modified, original patch link: 
+> http://patchwork.ozlabs.org/patch/493297/
+> 
+> original patch add a func gen_pool_alloc_align, 
+> then pass alignment to it as an parameter.
+> after discussing with lauraa and scott, they recommend 
+> to pass alignment as part of data based on 
+> commit message for ca279cf1065fb689abea1dc7d8c11787729bb185 which adds "data":
+> 
+> "As I can't predict all the possible requirements/needs for all allocation    
+> uses cases, I add a "free" field 'void *data' to pass any needed     
+> information to the allocation function.  For example 'data' could be used     
+> to handle a structure where you store the alignment, the expected memory     
+> bank, the requester device, or any information that could influence the     
+> allocation algorithm."
+> 
+> 
+> 
+> 
+>  include/linux/genalloc.h |  4 ++++
+>  lib/genalloc.c           | 25 +++++++++++++++++++++++++
+>  2 files changed, 29 insertions(+)
+> 
+> diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
+> index 1ccaab4..b85d0f8 100644
+> --- a/include/linux/genalloc.h
+> +++ b/include/linux/genalloc.h
+> @@ -110,6 +110,10 @@ extern void gen_pool_set_algo(struct gen_pool *pool, genpool_algo_t algo,
+>  extern unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+>  		unsigned long start, unsigned int nr, void *data);
+>  
+> +extern unsigned long gen_pool_first_fit_align(unsigned long *map,
+> +		unsigned long size, unsigned long start, unsigned int nr,
+> +		void *data);
+> +
+>  extern unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+>  		unsigned long size, unsigned long start, unsigned int nr,
+>  		void *data);
+> diff --git a/lib/genalloc.c b/lib/genalloc.c
+> index d214866..e6608cd 100644
+> --- a/lib/genalloc.c
+> +++ b/lib/genalloc.c
+> @@ -509,6 +509,31 @@ unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+>  EXPORT_SYMBOL(gen_pool_first_fit);
+>  
+>  /**
+> + * gen_pool_first_fit_align - find the first available region
+> + * of memory matching the size requirement (no alignment constraint)
 
-diff --git a/arch/powerpc/perf/nest-pmu.h b/arch/powerpc/perf/nest-pmu.h
-new file mode 100644
-index 000000000000..73aff2de3350
---- /dev/null
-+++ b/arch/powerpc/perf/nest-pmu.h
-@@ -0,0 +1,54 @@
-+/*
-+ * Nest Performance Monitor counter support for POWER8 processors.
-+ *
-+ * Copyright (C) 2015 Madhavan Srinivasan, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include <linux/perf_event.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
-+#include <asm/opal.h>
-+
-+#define P8_NEST_MAX_CHIPS		32
-+#define P8_NEST_MAX_PMUS		32
-+#define P8_NEST_MAX_PMU_NAME_LEN	256
-+#define P8_NEST_MAX_EVENTS_SUPPORTED	64
-+#define P8_NEST_ENGINE_START		1
-+#define P8_NEST_ENGINE_STOP		0
-+#define P8_NEST_MODE_PRODUCTION		1
-+
-+/*
-+ * Structure to hold per chip specific memory address
-+ * information for nest pmus. Nest Counter data are exported
-+ * in per-chip reserved memory region by the PORE Engine.
-+ */
-+struct perchip_nest_info {
-+	u32 chip_id;
-+	u64 pbase;
-+	u64 vbase;
-+	u32 size;
-+};
-+
-+/*
-+ * Place holder for nest pmu events and values.
-+ */
-+struct nest_ima_events {
-+	char *ev_name;
-+	char *ev_value;
-+};
-+
-+/*
-+ * Device tree parser code detects nest pmu support and
-+ * registers new nest pmus. This structure will
-+ * hold the pmu functions and attrs for each nest pmu and
-+ * will be referenced at the time of pmu registration.
-+ */
-+struct nest_pmu {
-+	struct pmu pmu;
-+	const struct attribute_group *attr_groups[4];
-+};
--- 
-1.9.1
+no alignment constraint?
+
+> + * @map: The address to base the search on
+> + * @size: The bitmap size in bits
+> + * @start: The bitnumber to start searching at
+> + * @nr: The number of zeroed bits we're looking for
+> + * @data: additional data - unused
+
+unused?
+
+> + */
+> +unsigned long gen_pool_first_fit_align(unsigned long *map, unsigned long size,
+> +		unsigned long start, unsigned int nr, void *data)
+> +{
+> +	unsigned long align_mask;
+> +	int order;
+> +
+> +	if (data && data->pool) {
+
+"data" type is (void *), missing cast?
+
+> +		order = data->pool->min_alloc_order;
+> +		align_mask = ((data->align + (1UL << order) - 1) >> order) - 1;
+> +	} else {
+> +		pr_err("no data or data->pool\n");
+> +	}
+> +	return bitmap_find_next_zero_area(map, size, start, nr, align_mask);
+
+You may end up in a situation, when align_mask is undefined, I believe
+bitmap_find_next_zero_area() should not be called on error path.
+
+> +}
+> +EXPORT_SYMBOL(gen_pool_first_fit_algin);
+> +
+> +/**
+>   * gen_pool_first_fit_order_align - find the first available region
+>   * of memory matching the size requirement. The region will be aligned
+>   * to the order of the size specified.
+> 
+
+--
+With best wishes,
+Vladimir
