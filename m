@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F2031A1BDF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:18:25 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 036391A1C06
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:18:41 +1000 (AEST)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NS500F3736NIHC0@mailout4.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:18:23 +0900 (KST)
+ with ESMTP id <0NS502EZ036UYWB0@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:18:30 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v4 09/46] usb: gadget: at91_udc: add ep capabilities support
-Date: Mon, 27 Jul 2015 11:16:19 +0200
-Message-id: <1437988616-6962-10-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v4 10/46] usb: gadget: bcm63xx_udc: add ep capabilities support
+Date: Mon, 27 Jul 2015 11:16:20 +0200
+Message-id: <1437988616-6962-11-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 References: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,29 +39,25 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/at91_udc.c | 33 ++++++++++++++++++++++++---------
- 1 file changed, 24 insertions(+), 9 deletions(-)
+ drivers/usb/gadget/udc/bcm63xx_udc.c | 25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/at91_udc.c b/drivers/usb/gadget/udc/at91_udc.c
-index fc42264..a04b073 100644
---- a/drivers/usb/gadget/udc/at91_udc.c
-+++ b/drivers/usb/gadget/udc/at91_udc.c
-@@ -59,15 +59,29 @@
- #define	DRIVER_VERSION	"3 May 2006"
+diff --git a/drivers/usb/gadget/udc/bcm63xx_udc.c b/drivers/usb/gadget/udc/bcm63xx_udc.c
+index 9db968b..c5e0894 100644
+--- a/drivers/usb/gadget/udc/bcm63xx_udc.c
++++ b/drivers/usb/gadget/udc/bcm63xx_udc.c
+@@ -44,9 +44,25 @@
+ #define DRV_MODULE_NAME		"bcm63xx_udc"
  
- static const char driver_name [] = "at91_udc";
--static const char * const ep_names[] = {
--	"ep0",
--	"ep1",
--	"ep2",
--	"ep3-int",
--	"ep4",
--	"ep5",
+ static const char bcm63xx_ep0name[] = "ep0";
+-static const char *const bcm63xx_ep_name[] = {
+-	bcm63xx_ep0name,
+-	"ep1in-bulk", "ep2out-bulk", "ep3in-int", "ep4out-int",
 +
 +static const struct {
 +	const char *name;
 +	const struct usb_ep_caps caps;
-+} ep_info[] = {
++} bcm63xx_ep_info[] = {
 +#define EP_INFO(_name, _type, _dir) \
 +	{ \
 +		.name = _name, \
@@ -69,30 +65,25 @@ index fc42264..a04b073 100644
 +				USB_EP_CAPS_DIR_ ## _dir), \
 +	}
 +
-+	EP_INFO("ep0",		CONTROL, ALL),
-+	EP_INFO("ep1",		ALL,	ALL),
-+	EP_INFO("ep2",		ALL,	ALL),
-+	EP_INFO("ep3-int",	INT,	ALL),
-+	EP_INFO("ep4",		ALL,	ALL),
-+	EP_INFO("ep5",		ALL,	ALL),
++	EP_INFO(bcm63xx_ep0name, CONTROL, ALL),
++	EP_INFO("ep1in-bulk",	BULK,	IN),
++	EP_INFO("ep2out-bulk",	BULK,	OUT),
++	EP_INFO("ep3in-int",	INT,	IN),
++	EP_INFO("ep4out-int",	INT,	OUT),
 +
 +#undef EP_INFO
  };
--#define ep0name		ep_names[0]
-+
-+#define ep0name		ep_info[0].name
  
- #define VBUS_POLL_TIMEOUT	msecs_to_jiffies(1000)
+ static bool use_fullspeed;
+@@ -943,7 +959,8 @@ static int bcm63xx_init_udc_hw(struct bcm63xx_udc *udc)
+ 	for (i = 0; i < BCM63XX_NUM_EP; i++) {
+ 		struct bcm63xx_ep *bep = &udc->bep[i];
  
-@@ -1830,7 +1844,8 @@ static int at91udc_probe(struct platform_device *pdev)
- 
- 	for (i = 0; i < NUM_ENDPOINTS; i++) {
- 		ep = &udc->ep[i];
--		ep->ep.name = ep_names[i];
-+		ep->ep.name = ep_info[i].name;
-+		ep->ep.caps = ep_info[i].caps;
- 		ep->ep.ops = &at91_ep_ops;
- 		ep->udc = udc;
- 		ep->int_mask = BIT(i);
+-		bep->ep.name = bcm63xx_ep_name[i];
++		bep->ep.name = bcm63xx_ep_info[i].name;
++		bep->ep.caps = bcm63xx_ep_info[i].caps;
+ 		bep->ep_num = i;
+ 		bep->ep.ops = &bcm63xx_udc_ep_ops;
+ 		list_add_tail(&bep->ep.ep_list, &udc->gadget.ep_list);
 -- 
 1.9.1
