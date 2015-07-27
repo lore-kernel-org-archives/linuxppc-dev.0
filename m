@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C58961A0FBD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:18:42 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id F08091A1BD7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:18:47 +1000 (AEST)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NS502EZ2370YWB0@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:18:38 +0900 (KST)
+ with ESMTP id <0NS5010HE3771610@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:18:45 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v4 11/46] usb: gadget: bdc: add ep capabilities support
-Date: Mon, 27 Jul 2015 11:16:21 +0200
-Message-id: <1437988616-6962-12-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v4 12/46] usb: gadget: dummy-hcd: add ep capabilities support
+Date: Mon, 27 Jul 2015 11:16:22 +0200
+Message-id: <1437988616-6962-13-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 References: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,41 +39,104 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/bdc/bdc_ep.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/usb/gadget/udc/dummy_hcd.c | 65 +++++++++++++++++++++++++++++---------
+ 1 file changed, 50 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/bdc/bdc_ep.c b/drivers/usb/gadget/udc/bdc/bdc_ep.c
-index b04980c..f9a8f57 100644
---- a/drivers/usb/gadget/udc/bdc/bdc_ep.c
-+++ b/drivers/usb/gadget/udc/bdc/bdc_ep.c
-@@ -1952,12 +1952,18 @@ static int init_ep(struct bdc *bdc, u32 epnum, u32 dir)
- 	ep->bdc = bdc;
- 	ep->dir = dir;
+diff --git a/drivers/usb/gadget/udc/dummy_hcd.c b/drivers/usb/gadget/udc/dummy_hcd.c
+index 181112c..69fd29a 100644
+--- a/drivers/usb/gadget/udc/dummy_hcd.c
++++ b/drivers/usb/gadget/udc/dummy_hcd.c
+@@ -127,23 +127,57 @@ static inline struct dummy_request *usb_request_to_dummy_request
  
-+	if (dir)
-+		ep->usb_ep.caps.dir_in = true;
-+	else
-+		ep->usb_ep.caps.dir_out = true;
+ static const char ep0name[] = "ep0";
+ 
+-static const char *const ep_name[] = {
+-	ep0name,				/* everyone has ep0 */
++static const struct {
++	const char *name;
++	const struct usb_ep_caps caps;
++} ep_info[] = {
++#define EP_INFO(_name, _type, _dir) \
++	{ \
++		.name = _name, \
++		.caps = USB_EP_CAPS(USB_EP_CAPS_TYPE_ ## _type, \
++				USB_EP_CAPS_DIR_ ## _dir), \
++	}
+ 
++	/* everyone has ep0 */
++	EP_INFO(ep0name,	CONTROL, ALL),
+ 	/* act like a pxa250: fifteen fixed function endpoints */
+-	"ep1in-bulk", "ep2out-bulk", "ep3in-iso", "ep4out-iso", "ep5in-int",
+-	"ep6in-bulk", "ep7out-bulk", "ep8in-iso", "ep9out-iso", "ep10in-int",
+-	"ep11in-bulk", "ep12out-bulk", "ep13in-iso", "ep14out-iso",
+-		"ep15in-int",
+-
++	EP_INFO("ep1in-bulk",	BULK,	IN),
++	EP_INFO("ep2out-bulk",	BULK,	OUT),
++	EP_INFO("ep3in-iso",	ISO,	IN),
++	EP_INFO("ep4out-iso",	ISO,	OUT),
++	EP_INFO("ep5in-int",	INT,	IN),
++	EP_INFO("ep6in-bulk",	BULK,	IN),
++	EP_INFO("ep7out-bulk",	BULK,	OUT),
++	EP_INFO("ep8in-iso",	ISO,	IN),
++	EP_INFO("ep9out-iso",	ISO,	OUT),
++	EP_INFO("ep10in-int",	INT,	IN),
++	EP_INFO("ep11in-bulk",	BULK,	IN),
++	EP_INFO("ep12out-bulk",	BULK,	OUT),
++	EP_INFO("ep13in-iso",	ISO,	IN),
++	EP_INFO("ep14out-iso",	ISO,	OUT),
++	EP_INFO("ep15in-int",	INT,	IN),
+ 	/* or like sa1100: two fixed function endpoints */
+-	"ep1out-bulk", "ep2in-bulk",
+-
++	EP_INFO("ep1out-bulk",	BULK,	OUT),
++	EP_INFO("ep2in-bulk",	BULK,	IN),
+ 	/* and now some generic EPs so we have enough in multi config */
+-	"ep3out", "ep4in", "ep5out", "ep6out", "ep7in", "ep8out", "ep9in",
+-	"ep10out", "ep11out", "ep12in", "ep13out", "ep14in", "ep15out",
++	EP_INFO("ep3out",	ALL,	OUT),
++	EP_INFO("ep4in",	ALL,	IN),
++	EP_INFO("ep5out",	ALL,	OUT),
++	EP_INFO("ep6out",	ALL,	OUT),
++	EP_INFO("ep7in",	ALL,	IN),
++	EP_INFO("ep8out",	ALL,	OUT),
++	EP_INFO("ep9in",	ALL,	IN),
++	EP_INFO("ep10out",	ALL,	OUT),
++	EP_INFO("ep11out",	ALL,	OUT),
++	EP_INFO("ep12in",	ALL,	IN),
++	EP_INFO("ep13out",	ALL,	OUT),
++	EP_INFO("ep14in",	ALL,	IN),
++	EP_INFO("ep15out",	ALL,	OUT),
 +
- 	/* ep->ep_num is the index inside bdc_ep */
- 	if (epnum == 1) {
- 		ep->ep_num = 1;
- 		bdc->bdc_ep_array[ep->ep_num] = ep;
- 		snprintf(ep->name, sizeof(ep->name), "ep%d", epnum - 1);
- 		usb_ep_set_maxpacket_limit(&ep->usb_ep, EP0_MAX_PKT_SIZE);
-+		ep->usb_ep.caps.type_control = true;
- 		ep->comp_desc = NULL;
- 		bdc->gadget.ep0 = &ep->usb_ep;
- 	} else {
-@@ -1971,6 +1977,9 @@ static int init_ep(struct bdc *bdc, u32 epnum, u32 dir)
- 			 dir & 1 ? "in" : "out");
++#undef EP_INFO
+ };
+-#define DUMMY_ENDPOINTS	ARRAY_SIZE(ep_name)
++
++#define DUMMY_ENDPOINTS	ARRAY_SIZE(ep_info)
  
- 		usb_ep_set_maxpacket_limit(&ep->usb_ep, 1024);
-+		ep->usb_ep.caps.type_iso = true;
-+		ep->usb_ep.caps.type_bulk = true;
-+		ep->usb_ep.caps.type_int = true;
- 		ep->usb_ep.max_streams = 0;
- 		list_add_tail(&ep->usb_ep.ep_list, &bdc->gadget.ep_list);
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -938,9 +972,10 @@ static void init_dummy_udc_hw(struct dummy *dum)
+ 	for (i = 0; i < DUMMY_ENDPOINTS; i++) {
+ 		struct dummy_ep	*ep = &dum->ep[i];
+ 
+-		if (!ep_name[i])
++		if (!ep_info[i].name)
+ 			break;
+-		ep->ep.name = ep_name[i];
++		ep->ep.name = ep_info[i].name;
++		ep->ep.caps = ep_info[i].caps;
+ 		ep->ep.ops = &dummy_ep_ops;
+ 		list_add_tail(&ep->ep.ep_list, &dum->gadget.ep_list);
+ 		ep->halted = ep->wedged = ep->already_seen =
+@@ -1684,7 +1719,7 @@ static void dummy_timer(unsigned long _dum_hcd)
+ 	}
+ 
+ 	for (i = 0; i < DUMMY_ENDPOINTS; i++) {
+-		if (!ep_name[i])
++		if (!ep_info[i].name)
+ 			break;
+ 		dum->ep[i].already_seen = 0;
  	}
 -- 
 1.9.1
