@@ -1,40 +1,28 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D2741A0065
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 23:20:12 +1000 (AEST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 27 Jul 2015 18:46:32 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 93BF3125809A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:27:36 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6QIsXDo54657168
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:34 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6QHVEKC011605
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:01:15 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Stewart Smith <stewart@linux.vnet.ibm.com>, Jeremy Kerr <jk@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>
-Subject: [PATCH v6 2/7]powerpc/powernv: Add OPAL support for Nest PMU
-Date: Mon, 27 Jul 2015 00:24:19 +0530
-Message-Id: <1437936864-4402-3-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id 5DAB41A1BFB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 23:35:58 +1000 (AEST)
+Date: Mon, 27 Jul 2015 09:35:55 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Vlastimil Babka <vbabka@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150727133555.GA17133@akamai.com>
+References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
+ <55B5F4FF.9070604@suse.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="y0ulUmNC+osPPQO6"
+In-Reply-To: <55B5F4FF.9070604@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,61 +32,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nest Counters can be configured via PORE Engine and OPAL
-provides an interface to start/stop it.
 
-OPAL side patches are posted in the skiboot mailing.
+--y0ulUmNC+osPPQO6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: Jeremy Kerr <jk@ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: Stephane Eranian <eranian@google.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h            | 3 ++-
- arch/powerpc/include/asm/opal.h                | 1 +
- arch/powerpc/platforms/powernv/opal-wrappers.S | 1 +
- 3 files changed, 4 insertions(+), 1 deletion(-)
+On Mon, 27 Jul 2015, Vlastimil Babka wrote:
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index e9e4c52f3685..4cd8128c6ebc 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -154,7 +154,8 @@
- #define OPAL_FLASH_WRITE			111
- #define OPAL_FLASH_ERASE			112
- #define OPAL_PRD_MSG				113
--#define OPAL_LAST				113
-+#define OPAL_NEST_IMA_CONTROL			116
-+#define OPAL_LAST				116
- 
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 958e941c0cda..7c813ed52ab4 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -202,6 +202,7 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
- 		uint64_t size, uint64_t token);
- int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
- 		uint64_t token);
-+int64_t opal_nest_ima_control(uint64_t mode, uint64_t value);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index d6a7b8252e4d..c475c04468fb 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -297,3 +297,4 @@ OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
- OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
- OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
- OPAL_CALL(opal_prd_msg,				OPAL_PRD_MSG);
-+OPAL_CALL(opal_nest_ima_control,		OPAL_NEST_IMA_CONTROL);
--- 
-1.9.1
+> On 07/24/2015 11:28 PM, Eric B Munson wrote:
+>=20
+> ...
+>=20
+> >Changes from V4:
+> >Drop all architectures for new sys call entries except x86[_64] and MIPS
+> >Drop munlock2 and munlockall2
+> >Make VM_LOCKONFAULT a modifier to VM_LOCKED only to simplify book keeping
+> >Adjust tests to match
+>=20
+> Hi, thanks for considering my suggestions. Well, I do hope there
+> were correct as API's are hard and I'm no API expert. But since
+> API's are also impossible to change after merging, I'm sorry but
+> I'll keep pestering for one last thing. Thanks again for persisting,
+> I do believe it's for the good thing!
+>=20
+> The thing is that I still don't like that one has to call
+> mlock2(MLOCK_LOCKED) to get the equivalent of the old mlock(). Why
+> is that flag needed? We have two modes of locking now, and v5 no
+> longer treats them separately in vma flags. But having two flags
+> gives us four possible combinations, so two of them would serve
+> nothing but to confuse the programmer IMHO. What will mlock2()
+> without flags do? What will mlock2(MLOCK_LOCKED | MLOCK_ONFAULT) do?
+> (Note I haven't studied the code yet, as having agreed on the API
+> should come first. But I did suggest documenting these things more
+> thoroughly too...)
+> OK I checked now and both cases above seem to return EINVAL.
+>=20
+> So about the only point I see in MLOCK_LOCKED flag is parity with
+> MAP_LOCKED for mmap(). But as Kirill said (and me before as well)
+> MAP_LOCKED is broken anyway so we shouldn't twist the rest just of
+> the API to keep the poor thing happier in its misery.
+>=20
+> Also note that AFAICS you don't have MCL_LOCKED for mlockall() so
+> there's no full parity anyway. But please don't fix that by adding
+> MCL_LOCKED :)
+>=20
+> Thanks!
+
+
+I have an MLOCK_LOCKED flag because I prefer an interface to be
+explicit.  The caller of mlock2() will be required to fill in the flags
+argument regardless.  I can drop the MLOCK_LOCKED flag with 0 being the
+value for LOCKED, but I thought it easier to make clear what was going
+on at any call to mlock2().  If user space defines a MLOCK_LOCKED that
+happens to be 0, I suppose that would be okay.
+
+We do actually have an MCL_LOCKED, we just call it MCL_CURRENT.  Would
+you prefer that I match the name in mlock2() (add MLOCK_CURRENT
+instead)?
+
+Finally, on the question of MAP_LOCKONFAULT, do you just dislike
+MAP_LOCKED and do not want to see it extended, or is this a NAK on the
+set if that patch is included.  I ask because I have to spin a V6 to get
+the MLOCK flag declarations right, but I would prefer not to do a V7+.
+If this is a NAK with, I can drop that patch and rework the tests to
+cover without the mmap flag.  Otherwise I want to keep it, I have an
+internal user that would like to see it added.
+
+
+--y0ulUmNC+osPPQO6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVtjO7AAoJELbVsDOpoOa9TNAQAIfRrQ4rp3LViJe+X+UdnFJ7
+BFJUSHiM7IjUdM+WZyf7s+giHKSybtEIuoX5961wGuUvd777r+83I41Lc0XLR94g
+kquJMYCL+WkIIqyor2Me6FNMnQwUs8EegFgRcJXcy0j+1zaxgkBRUzeYP30ecd39
+ZYdjGfwn2Cyc4vsb/ze/rQ9R24DgQBT8xI4+3XzGwq5ViteaAFuUgY3bZ3gkxgI1
+jFMAiyOCUGp0LBPMMTMOQ52o2xsWHAfADfCy9v3xalA7Rl8s8lX0DfirCoTnRj8f
+27SMJ/kU/RBSCTemsqp4osDnO6cYATAQUk/00w5B8zwUG//syjb8a139izyS8UhU
+arBzKRJR6eZARqtW8IauNTJ6IW8uyp8QNrni7At9hc+rcFgG3+hGt7+H8bugENb8
+VSuydDJoris+H4ysj175AK6Xh2gN2cYxiAxzbeIwnwyn+9uL7A0UpFavyaYjUx2K
+/M1bFELVo/LzAg0tZBNi+nyboZSmAzMoF2RkTPmEK0+5taWqCmYPke0ST4zKAxsA
+z2CpFTxmoKHo8ksPHzQUlTF2KcRl2FlIe2uxUwQ0WAXVqcOJUUo8/OK+knvDPJ7A
+S8jXh2XMpEHh0EQTFvUYrQ+ZxT/nkzITFv33zBGhxryq0ve/AYRbSC87H8RBLHrd
+dqVY5/pEceCOYg9+DxnG
+=1hv9
+-----END PGP SIGNATURE-----
+
+--y0ulUmNC+osPPQO6--
