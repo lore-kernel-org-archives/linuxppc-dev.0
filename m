@@ -2,13 +2,13 @@ Return-Path: <r.baldyga@samsung.com>
 Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 077D71A1BF7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:22:17 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 246191A1E02
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:22:25 +1000 (AEST)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
  by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NS500P5B3D4GB40@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:22:16 +0900 (KST)
+ with ESMTP id <0NS500NYY3DBI040@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:22:23 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,10 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v4 40/46] usb: gadget: epautoconf: rework ep_matches() function
-Date: Mon, 27 Jul 2015 11:16:50 +0200
-Message-id: <1437988616-6962-41-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v4 41/46] usb: gadget: add 'ep_match' callback to
+ usb_gadget_ops
+Date: Mon, 27 Jul 2015 11:16:51 +0200
+Message-id: <1437988616-6962-42-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 References: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,135 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rework ep_matches() function to make it shorter and more readable.
+Add callback that is called by epautoconf to allow UDC driver match the
+best endpoint for specific descriptor. It's intended to supply mechanism
+which allows to get rid of chip-specific endpoint matching code from
+epautoconf.
+
+If gadget has set 'ep_match' callback we prefer to call it first, and
+if it fails to find matching endpoint, then we try to use default matching
+algorithm.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/epautoconf.c | 87 +++++++++++++++++------------------------
- 1 file changed, 35 insertions(+), 52 deletions(-)
+ drivers/usb/gadget/epautoconf.c | 6 ++++++
+ include/linux/usb/gadget.h      | 3 +++
+ 2 files changed, 9 insertions(+)
 
 diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index 7bb28f1..4fa6f5d 100644
+index 4fa6f5d..1b1fee0 100644
 --- a/drivers/usb/gadget/epautoconf.c
 +++ b/drivers/usb/gadget/epautoconf.c
-@@ -30,16 +30,29 @@ ep_matches (
- 	struct usb_ss_ep_comp_descriptor *ep_comp
- )
- {
--	u8		type;
--	u16		max;
--
--	int		num_req_streams = 0;
-+	u8              type;
-+	u16             max;
-+	int             num_req_streams = 0;
+@@ -165,6 +165,12 @@ struct usb_ep *usb_ep_autoconfig_ss(
  
- 	/* endpoint already claimed? */
- 	if (ep->claimed)
- 		return 0;
+ 	type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
  
- 	type = usb_endpoint_type(desc);
-+	max = 0x7ff & usb_endpoint_maxp(desc);
++	if (gadget->ops->match_ep) {
++		ep = gadget->ops->match_ep(gadget, desc, ep_comp);
++		if (ep)
++			goto found_ep;
++	}
 +
-+	if (usb_endpoint_dir_in(desc) && !ep->caps.dir_in)
-+		return 0;
-+	else if (!ep->caps.dir_out)
-+		return 0;
-+
-+	if (max > ep->maxpacket_limit)
-+		return 0;
-+
-+	/* "high bandwidth" works only at high speed */
-+	if (!gadget_is_dualspeed(gadget) && usb_endpoint_maxp(desc) & (3<<11))
-+		return 0;
-+
- 	switch (type) {
- 	case USB_ENDPOINT_XFER_CONTROL:
- 		/* only support ep0 for portable CONTROL traffic */
-@@ -47,66 +60,36 @@ ep_matches (
- 	case USB_ENDPOINT_XFER_ISOC:
- 		if (!ep->caps.type_iso)
- 			return 0;
-+		/* ISO:  limit 1023 bytes full speed,
-+		 * 1024 high/super speed
-+		 */
-+		if (!gadget_is_dualspeed(gadget) && max > 1023)
-+			return 0;
- 		break;
- 	case USB_ENDPOINT_XFER_BULK:
- 		if (!ep->caps.type_bulk)
- 			return 0;
-+		if (ep_comp && gadget_is_superspeed(gadget)) {
-+			/* Get the number of required streams from the
-+			 * EP companion descriptor and see if the EP
-+			 * matches it
-+			 */
-+			num_req_streams = ep_comp->bmAttributes & 0x1f;
-+			if (num_req_streams > ep->max_streams)
-+				return 0;
-+		}
- 		break;
- 	case USB_ENDPOINT_XFER_INT:
--		/* bulk endpoints handle interrupt transfers,
-+		/* Bulk endpoints handle interrupt transfers,
- 		 * except the toggle-quirky iso-synch kind
- 		 */
- 		if (!ep->caps.type_int && !ep->caps.type_bulk)
- 			return 0;
--		break;
--	}
--
--	if (usb_endpoint_dir_in(desc)) {
--		if (!ep->caps.dir_in)
--			return 0;
--	} else {
--		if (!ep->caps.dir_out)
--			return 0;
--	}
--
--	/*
--	 * Get the number of required streams from the EP companion
--	 * descriptor and see if the EP matches it
--	 */
--	if (usb_endpoint_xfer_bulk(desc)) {
--		if (ep_comp && gadget->max_speed >= USB_SPEED_SUPER) {
--			num_req_streams = ep_comp->bmAttributes & 0x1f;
--			if (num_req_streams > ep->max_streams)
--				return 0;
--		}
--
--	}
--
--	/* endpoint maxpacket size is an input parameter, except for bulk
--	 * where it's an output parameter representing the full speed limit.
--	 * the usb spec fixes high speed bulk maxpacket at 512 bytes.
--	 */
--	max = 0x7ff & usb_endpoint_maxp(desc);
--	switch (type) {
--	case USB_ENDPOINT_XFER_INT:
--		/* INT:  limit 64 bytes full speed, 1024 high/super speed */
-+		/* INT:  limit 64 bytes full speed,
-+		 * 1024 high/super speed
-+		 */
- 		if (!gadget_is_dualspeed(gadget) && max > 64)
- 			return 0;
--		/* FALLTHROUGH */
--
--	case USB_ENDPOINT_XFER_ISOC:
--		/* ISO:  limit 1023 bytes full speed, 1024 high/super speed */
--		if (ep->maxpacket_limit < max)
--			return 0;
--		if (!gadget_is_dualspeed(gadget) && max > 1023)
--			return 0;
--
--		/* BOTH:  "high bandwidth" works only at high speed */
--		if ((desc->wMaxPacketSize & cpu_to_le16(3<<11))) {
--			if (!gadget_is_dualspeed(gadget))
--				return 0;
--			/* configure your hardware with enough buffering!! */
--		}
- 		break;
- 	}
+ 	/* First, apply chip-specific "best usage" knowledge.
+ 	 * This might make a good usb_gadget_ops hook ...
+ 	 */
+diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
+index c71b1de..6de3688 100644
+--- a/include/linux/usb/gadget.h
++++ b/include/linux/usb/gadget.h
+@@ -534,6 +534,9 @@ struct usb_gadget_ops {
+ 	int	(*udc_start)(struct usb_gadget *,
+ 			struct usb_gadget_driver *);
+ 	int	(*udc_stop)(struct usb_gadget *);
++	struct usb_ep *(*match_ep)(struct usb_gadget *,
++			struct usb_endpoint_descriptor *,
++			struct usb_ss_ep_comp_descriptor *);
+ };
  
+ /**
 -- 
 1.9.1
