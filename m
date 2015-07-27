@@ -1,27 +1,27 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qk0-f180.google.com (mail-qk0-f180.google.com
- [209.85.220.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3FB2F1A09A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 17:58:53 +1000 (AEST)
-Received: by qkbm65 with SMTP id m65so36644123qkb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:58:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACD5A1A098F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:08:26 +1000 (AEST)
+Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
+ fault
+To: Eric B Munson <emunson@akamai.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
+Cc: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+From: Vlastimil Babka <vbabka@suse.cz>
+Message-ID: <55B5F4FF.9070604@suse.cz>
+Date: Mon, 27 Jul 2015 11:08:15 +0200
 MIME-Version: 1.0
-In-Reply-To: <1437791242.2993.268.camel@freescale.com>
-References: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
- <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
- <1437791242.2993.268.camel@freescale.com>
-Date: Mon, 27 Jul 2015 09:58:49 +0200
-Message-ID: <CAPDyKFp8ZStYVaFm8tjPL190dqV6vCE+oT706M=6wVCckWesLw@mail.gmail.com>
-Subject: Re: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240
- incorrect HOSTVER value
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Yangbo Lu <yangbo.lu@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-mmc <linux-mmc@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1437773325-8623-1-git-send-email-emunson@akamai.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25 July 2015 at 04:27, Scott Wood <scottwood@freescale.com> wrote:
-> On Tue, 2015-07-21 at 15:02 +0200, Ulf Hansson wrote:
->> On 21 July 2015 at 11:45, Yangbo Lu <yangbo.lu@freescale.com> wrote:
->> > For T4240-R1.0-R2.0, the HOSTVER register has incorrcet vender
->> > version value and sdhc spec version value. This will break down
->> > the ADMA data transfer. So add workaround to get right value
->> > VVN=0x13, SVN = 0x1.
->>
->> So T4240-R1.0-R2.0 is the version of the controller, right?
->>
->> If I understand correct you are checking what CPU/SoC you are running
->> on, to figure out which controller version you are using, as that
->> can't be fetched (trusted) from the registers of the esdhc controller
->> itself!?
->>
->> Instead, you could deal with this directly in the DTS files. I assume
->> you have some DTS file for each SoC/board variant, right?
->
-> No, we do not have a separate DTS file for each revision of an SoC -- and if
-> we did, we'd constantly have people using the wrong one.
->
->> In principle, in your DTS file specific for the board/SoC that holds
->> the T4240-R1.0-R2.0 version of the controller, should add a specific
->> esdhc DT property to indicate this errata.
->
-> No, because (in addition to the above issue about chip revisions) the device
-> tree is stable ABI and errata are often discovered after device trees are
-> deployed.
+On 07/24/2015 11:28 PM, Eric B Munson wrote:
 
-Fair enough. Then what is your suggestion for the solution here?
+...
 
-As I understand it, you can't update the already deployed DTB. Shall
-we make Linux patch the DTB during boot instead, depending on the chip
-revision?
+> Changes from V4:
+> Drop all architectures for new sys call entries except x86[_64] and MIPS
+> Drop munlock2 and munlockall2
+> Make VM_LOCKONFAULT a modifier to VM_LOCKED only to simplify book keeping
+> Adjust tests to match
 
-Kind regards
-Uffe
+Hi, thanks for considering my suggestions. Well, I do hope there were 
+correct as API's are hard and I'm no API expert. But since API's are 
+also impossible to change after merging, I'm sorry but I'll keep 
+pestering for one last thing. Thanks again for persisting, I do believe 
+it's for the good thing!
+
+The thing is that I still don't like that one has to call 
+mlock2(MLOCK_LOCKED) to get the equivalent of the old mlock(). Why is 
+that flag needed? We have two modes of locking now, and v5 no longer 
+treats them separately in vma flags. But having two flags gives us four 
+possible combinations, so two of them would serve nothing but to confuse 
+the programmer IMHO. What will mlock2() without flags do? What will 
+mlock2(MLOCK_LOCKED | MLOCK_ONFAULT) do? (Note I haven't studied the 
+code yet, as having agreed on the API should come first. But I did 
+suggest documenting these things more thoroughly too...)
+OK I checked now and both cases above seem to return EINVAL.
+
+So about the only point I see in MLOCK_LOCKED flag is parity with 
+MAP_LOCKED for mmap(). But as Kirill said (and me before as well) 
+MAP_LOCKED is broken anyway so we shouldn't twist the rest just of the 
+API to keep the poor thing happier in its misery.
+
+Also note that AFAICS you don't have MCL_LOCKED for mlockall() so 
+there's no full parity anyway. But please don't fix that by adding 
+MCL_LOCKED :)
+
+Thanks!
