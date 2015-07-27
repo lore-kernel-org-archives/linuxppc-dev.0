@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 50E051A1CB5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:18:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8ADB11A1CF3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 19:19:02 +1000 (AEST)
 Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout3.samsung.com
+ by mailout4.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NS5010HE3771610@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:18:53 +0900 (KST)
+ with ESMTP id <0NS500F5437OIHC0@mailout4.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 27 Jul 2015 18:19:00 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v4 13/46] usb: gadget: fotg210-udc: add ep capabilities support
-Date: Mon, 27 Jul 2015 11:16:23 +0200
-Message-id: <1437988616-6962-14-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v4 14/46] usb: gadget: fsl_qe_udc: add ep capabilities support
+Date: Mon, 27 Jul 2015 11:16:24 +0200
+Message-id: <1437988616-6962-15-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 References: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,30 +39,30 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/fotg210-udc.c | 11 +++++++++++
+ drivers/usb/gadget/udc/fsl_qe_udc.c | 11 +++++++++++
  1 file changed, 11 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/fotg210-udc.c b/drivers/usb/gadget/udc/fotg210-udc.c
-index 1137e33..bf6bbee 100644
---- a/drivers/usb/gadget/udc/fotg210-udc.c
-+++ b/drivers/usb/gadget/udc/fotg210-udc.c
-@@ -1153,6 +1153,17 @@ static int fotg210_udc_probe(struct platform_device *pdev)
- 		ep->ep.name = fotg210_ep_name[i];
- 		ep->ep.ops = &fotg210_ep_ops;
- 		usb_ep_set_maxpacket_limit(&ep->ep, (unsigned short) ~0);
+diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
+index e0822f1..5fb6f8b 100644
+--- a/drivers/usb/gadget/udc/fsl_qe_udc.c
++++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
+@@ -2417,6 +2417,17 @@ static int qe_ep_config(struct qe_udc *udc, unsigned char pipe_num)
+ 	strcpy(ep->name, ep_name[pipe_num]);
+ 	ep->ep.name = ep_name[pipe_num];
+ 
++	if (pipe_num == 0) {
++		ep->ep.caps.type_control = true;
++	} else {
++		ep->ep.caps.type_iso = true;
++		ep->ep.caps.type_bulk = true;
++		ep->ep.caps.type_int = true;
++	}
 +
-+		if (i == 0) {
-+			ep->ep.caps.type_control = true;
-+		} else {
-+			ep->ep.caps.type_iso = true;
-+			ep->ep.caps.type_bulk = true;
-+			ep->ep.caps.type_int = true;
-+		}
++	ep->ep.caps.dir_in = true;
++	ep->ep.caps.dir_out = true;
 +
-+		ep->ep.caps.dir_in = true;
-+		ep->ep.caps.dir_out = true;
- 	}
- 	usb_ep_set_maxpacket_limit(&fotg210->ep[0]->ep, 0x40);
- 	fotg210->gadget.ep0 = &fotg210->ep[0]->ep;
+ 	ep->ep.ops = &qe_ep_ops;
+ 	ep->stopped = 1;
+ 	usb_ep_set_maxpacket_limit(&ep->ep, (unsigned short) ~0);
 -- 
 1.9.1
