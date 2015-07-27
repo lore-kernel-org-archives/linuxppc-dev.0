@@ -1,25 +1,25 @@
 Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 994AD1A1D8D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:53:35 +1000 (AEST)
-Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
- [IPv6:2607:f8b0:4001:c05::22c])
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5E381A1DA6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:54:26 +1000 (AEST)
+Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
+ [IPv6:2607:f8b0:4001:c05::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0E67C1402C0
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:53:35 +1000 (AEST)
-Received: by igk11 with SMTP id 11so74977703igk.1
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:53:33 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5EDF51402B9
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:54:26 +1000 (AEST)
+Received: by igbpg9 with SMTP id pg9so90135000igb.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:54:25 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <1437646871-3195-7-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1437646871-3195-8-git-send-email-mpe@ellerman.id.au>
 References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
- <1437646871-3195-7-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 27 Jul 2015 11:53:33 -0700
-Message-ID: <CAGXu5jKmMno=vHZC3ydxXKH-nfFBL=oEviHh+73UKmEx2oa3bQ@mail.gmail.com>
-Subject: Re: [PATCH 07/11] powerpc: Change syscall_get_nr() to return int
+ <1437646871-3195-8-git-send-email-mpe@ellerman.id.au>
+Date: Mon, 27 Jul 2015 11:54:24 -0700
+Message-ID: <CAGXu5jJemqAOS1QS=tGFqaxTDN48f45C-O-Ca-AF83N0pFU9Vg@mail.gmail.com>
+Subject: Re: [PATCH 08/11] powerpc/kernel: Add SIG_SYS support for compat tasks
 From: Kees Cook <keescook@chromium.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -37,24 +37,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Jul 23, 2015 at 3:21 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> The documentation for syscall_get_nr() in asm-generic says:
+> SIG_SYS was added in commit a0727e8ce513 "signal, x86: add SIGSYS info
+> and make it synchronous."
 >
->  Note this returns int even on 64-bit machines. Only 32 bits of
->  system call number can be meaningful. If the actual arch value
->  is 64 bits, this truncates to 32 bits so 0xffffffff means -1.
+> Because we use the asm-generic struct siginfo, we got support for
+> SIG_SYS for free as part of that commit.
 >
-> However our implementation was never updated to reflect this.
+> However there was no compat handling added for powerpc. That means we've
+> been advertising the existence of signfo._sifields._sigsys to compat
+> tasks, but not actually filling in the fields correctly.
 >
-> Generally it's not important, but there is once case where it matters.
+> Luckily it looks like no one has noticed, presumably because the only
+> user of SIGSYS in the kernel is seccomp filter, which we don't support
+> yet.
 >
-> For seccomp filter with SECCOMP_RET_TRACE, the tracer will set
-> regs->gpr[0] to -1 to reject the syscall. When the task is a compat
-> task, this means we end up with 0xffffffff in r0 because ptrace will
-> zero extend the 32-bit value.
->
-> If syscall_get_nr() returns an unsigned long, then a 64-bit kernel will
-> see a positive value in r0 and will incorrectly allow the syscall
-> through seccomp.
+> So before we enable seccomp filter, add compat handling for SIGSYS.
 >
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
@@ -63,32 +60,44 @@ Reviewed-by: Kees Cook <keescook@chromium.org>
 -Kees
 
 > ---
->  arch/powerpc/include/asm/syscall.h | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
+>  arch/powerpc/include/asm/compat.h | 7 +++++++
+>  arch/powerpc/kernel/signal_32.c   | 5 +++++
+>  2 files changed, 12 insertions(+)
 >
-> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> index 8d79a87c0511..ab9f3f0a8637 100644
-> --- a/arch/powerpc/include/asm/syscall.h
-> +++ b/arch/powerpc/include/asm/syscall.h
-> @@ -22,10 +22,15 @@
->  extern const unsigned long sys_call_table[];
->  #endif /* CONFIG_FTRACE_SYSCALLS */
+> diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
+> index b142b8e0ed9e..4f2df589ec1d 100644
+> --- a/arch/powerpc/include/asm/compat.h
+> +++ b/arch/powerpc/include/asm/compat.h
+> @@ -174,6 +174,13 @@ typedef struct compat_siginfo {
+>                         int _band;      /* POLL_IN, POLL_OUT, POLL_MSG */
+>                         int _fd;
+>                 } _sigpoll;
+> +
+> +               /* SIGSYS */
+> +               struct {
+> +                       unsigned int _call_addr; /* calling insn */
+> +                       int _syscall;            /* triggering system call number */
+> +                       unsigned int _arch;      /* AUDIT_ARCH_* of syscall */
+> +               } _sigsys;
+>         } _sifields;
+>  } compat_siginfo_t;
 >
-> -static inline long syscall_get_nr(struct task_struct *task,
-> -                                 struct pt_regs *regs)
-> +static inline int syscall_get_nr(struct task_struct *task, struct pt_regs *regs)
->  {
-> -       return TRAP(regs) == 0xc00 ? regs->gpr[0] : -1L;
-> +       /*
-> +        * Note that we are returning an int here. That means 0xffffffff, ie.
-> +        * 32-bit negative 1, will be interpreted as -1 on a 64-bit kernel.
-> +        * This is important for seccomp so that compat tasks can set r0 = -1
-> +        * to reject the syscall.
-> +        */
-> +       return TRAP(regs) == 0xc00 ? regs->gpr[0] : -1;
->  }
->
->  static inline void syscall_rollback(struct task_struct *task,
+> diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+> index d3a831ac0f92..77f97284124e 100644
+> --- a/arch/powerpc/kernel/signal_32.c
+> +++ b/arch/powerpc/kernel/signal_32.c
+> @@ -949,6 +949,11 @@ int copy_siginfo_to_user32(struct compat_siginfo __user *d, const siginfo_t *s)
+>                 err |= __put_user(s->si_overrun, &d->si_overrun);
+>                 err |= __put_user(s->si_int, &d->si_int);
+>                 break;
+> +       case __SI_SYS >> 16:
+> +               err |= __put_user(ptr_to_compat(s->si_call_addr), &d->si_call_addr);
+> +               err |= __put_user(s->si_syscall, &d->si_syscall);
+> +               err |= __put_user(s->si_arch, &d->si_arch);
+> +               break;
+>         case __SI_RT >> 16: /* This is not generated by the kernel as of now.  */
+>         case __SI_MESGQ >> 16:
+>                 err |= __put_user(s->si_int, &d->si_int);
 > --
 > 2.1.0
 >
