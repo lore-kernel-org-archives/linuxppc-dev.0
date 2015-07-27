@@ -1,32 +1,25 @@
-Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0111.outbound.protection.outlook.com [65.55.169.111])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CDA891A1E3C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 05:00:26 +1000 (AEST)
-Received: from mail-ig0-x22e.google.com (mail-ig0-x22e.google.com
- [IPv6:2607:f8b0:4001:c05::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 464501402BA
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 05:00:26 +1000 (AEST)
-Received: by igbij6 with SMTP id ij6so85016636igb.1
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 12:00:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 488401A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 06:39:19 +1000 (AEST)
+Message-ID: <1438012638.2993.289.camel@freescale.com>
+Subject: Re: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240
+ incorrect HOSTVER value
+From: Scott Wood <scottwood@freescale.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+CC: Yangbo Lu <yangbo.lu@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, linux-mmc <linux-mmc@vger.kernel.org>
+Date: Mon, 27 Jul 2015 10:57:18 -0500
+In-Reply-To: <CAPDyKFp8ZStYVaFm8tjPL190dqV6vCE+oT706M=6wVCckWesLw@mail.gmail.com>
+References: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
+ <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
+ <1437791242.2993.268.camel@freescale.com>
+ <CAPDyKFp8ZStYVaFm8tjPL190dqV6vCE+oT706M=6wVCckWesLw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1437646871-3195-11-git-send-email-mpe@ellerman.id.au>
-References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
- <1437646871-3195-11-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 27 Jul 2015 11:59:35 -0700
-Message-ID: <CAGXu5jLQUU5Xov+MQs7YfMEobCyjYLjOcpOZw7JG0wqvVci1yA@mail.gmail.com>
-Subject: Re: [PATCH 11/11] selftests/seccomp: Add powerpc support
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Andy Lutomirski <luto@amacapital.net>, Will Drewry <wad@chromium.org>,
- strosake@linux.vnet.ibm.com, bogdan.purcareata@freescale.com
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,72 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 23, 2015 at 3:21 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Wire up the syscall number and regs so the tests work on powerpc.
+On Mon, 2015-07-27 at 09:58 +0200, Ulf Hansson wrote:
+> On 25 July 2015 at 04:27, Scott Wood <scottwood@freescale.com> wrote:
+> > On Tue, 2015-07-21 at 15:02 +0200, Ulf Hansson wrote:
+> > > On 21 July 2015 at 11:45, Yangbo Lu <yangbo.lu@freescale.com> wrote:
+> > > > For T4240-R1.0-R2.0, the HOSTVER register has incorrcet vender
+> > > > version value and sdhc spec version value. This will break down
+> > > > the ADMA data transfer. So add workaround to get right value
+> > > > VVN=0x13, SVN = 0x1.
+> > > 
+> > > So T4240-R1.0-R2.0 is the version of the controller, right?
+> > > 
+> > > If I understand correct you are checking what CPU/SoC you are running
+> > > on, to figure out which controller version you are using, as that
+> > > can't be fetched (trusted) from the registers of the esdhc controller
+> > > itself!?
+> > > 
+> > > Instead, you could deal with this directly in the DTS files. I assume
+> > > you have some DTS file for each SoC/board variant, right?
+> > 
+> > No, we do not have a separate DTS file for each revision of an SoC -- and 
+> > if
+> > we did, we'd constantly have people using the wrong one.
+> > 
+> > > In principle, in your DTS file specific for the board/SoC that holds
+> > > the T4240-R1.0-R2.0 version of the controller, should add a specific
+> > > esdhc DT property to indicate this errata.
+> > 
+> > No, because (in addition to the above issue about chip revisions) the 
+> > device
+> > tree is stable ABI and errata are often discovered after device trees are
+> > deployed.
+> 
+> Fair enough. Then what is your suggestion for the solution here?
 
-This patch begs the question: this passes everything? (I was reminded
-about syscall_restart while reading the patches. If everything passes,
-it looks like powerpc exposes syscall_restart? Seems like ARM remains
-the odd-arch-out on this. :P)
+As I said in my comment on patch 2/3, read SVR from the device-config/guts 
+MMIO block, which works on both PPC and ARM.
 
-Thanks!
-
--Kees
-
->
-> Acked-by: Kees Cook <keescook@chromium.org>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  tools/testing/selftests/seccomp/seccomp_bpf.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> index 2303a8dff9a2..a004b4cce99e 100644
-> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
-> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> @@ -14,6 +14,7 @@
->  #include <linux/filter.h>
->  #include <sys/prctl.h>
->  #include <sys/ptrace.h>
-> +#include <sys/types.h>
->  #include <sys/user.h>
->  #include <linux/prctl.h>
->  #include <linux/ptrace.h>
-> @@ -1205,6 +1206,10 @@ TEST_F(TRACE_poke, getpid_runs_normally)
->  # define ARCH_REGS     struct user_pt_regs
->  # define SYSCALL_NUM   regs[8]
->  # define SYSCALL_RET   regs[0]
-> +#elif defined(__powerpc__)
-> +# define ARCH_REGS     struct pt_regs
-> +# define SYSCALL_NUM   gpr[0]
-> +# define SYSCALL_RET   gpr[3]
->  #else
->  # error "Do not know how to find your architecture's registers and syscalls"
->  #endif
-> @@ -1238,7 +1243,7 @@ void change_syscall(struct __test_metadata *_metadata,
->         ret = ptrace(PTRACE_GETREGSET, tracee, NT_PRSTATUS, &iov);
->         EXPECT_EQ(0, ret);
->
-> -#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__)
-> +#if defined(__x86_64__) || defined(__i386__) || defined(__aarch64__) || defined(__powerpc__)
->         {
->                 regs.SYSCALL_NUM = syscall;
->         }
-> @@ -1402,6 +1407,8 @@ TEST_F(TRACE_syscall, syscall_dropped)
->  #  define __NR_seccomp 383
->  # elif defined(__aarch64__)
->  #  define __NR_seccomp 277
-> +# elif defined(__powerpc__)
-> +#  define __NR_seccomp 358
->  # else
->  #  warning "seccomp syscall number unknown for this architecture"
->  #  define __NR_seccomp 0xffff
-> --
-> 2.1.0
->
-
-
-
--- 
-Kees Cook
-Chrome OS Security
+-Scott
