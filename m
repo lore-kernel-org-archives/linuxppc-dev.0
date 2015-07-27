@@ -2,25 +2,24 @@ Return-Path: <keescook@google.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0394E1A1C0D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:50:36 +1000 (AEST)
-Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
- [IPv6:2607:f8b0:4001:c05::22b])
+ by lists.ozlabs.org (Postfix) with ESMTPS id D84A21A1BC9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:52:46 +1000 (AEST)
+Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
+ [IPv6:2607:f8b0:4001:c05::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 776DE1402B7
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:50:35 +1000 (AEST)
-Received: by igk11 with SMTP id 11so74862376igk.1
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:50:33 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 2686D1402C0
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:52:46 +1000 (AEST)
+Received: by iggf3 with SMTP id f3so89783029igg.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:52:44 -0700 (PDT)
 MIME-Version: 1.0
 Sender: keescook@google.com
-In-Reply-To: <1437646871-3195-5-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1437646871-3195-6-git-send-email-mpe@ellerman.id.au>
 References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
- <1437646871-3195-5-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 27 Jul 2015 11:50:33 -0700
-Message-ID: <CAGXu5j+z+RPTgSYudnHTxObDs=fT5YE7mJB8=ZKC27GDQApmVg@mail.gmail.com>
-Subject: Re: [PATCH 05/11] powerpc: Rework syscall_get_arguments() so there is
- only one loop
+ <1437646871-3195-6-git-send-email-mpe@ellerman.id.au>
+Date: Mon, 27 Jul 2015 11:52:44 -0700
+Message-ID: <CAGXu5j+1gf5hXf-Cv2g6zUvb3tUiqNi=bYJARp9T-6LojN-ySQ@mail.gmail.com>
+Subject: Re: [PATCH 06/11] powerpc: Use orig_gpr3 in syscall_get_arguments()
 From: Kees Cook <keescook@chromium.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
@@ -38,10 +37,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, Jul 23, 2015 at 3:21 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Currently syscall_get_arguments() has two loops, one for compat and one
-> for regular tasks. In prepartion for the next patch, which changes which
-> registers we use, switch it to only have one loop, so we only have one
-> place to update.
+> Currently syscall_get_arguments() is used by syscall tracepoints, and
+> collect_syscall() which is used in some debugging as well as
+> /proc/pid/syscall.
+>
+> The current implementation just copies regs->gpr[3 .. 5] out, which is
+> fine for all the current use cases.
+>
+> When we enable seccomp filter, that will also start using
+> syscall_get_arguments(). However for seccomp filter we want to use r3
+> as the return value of the syscall, and orig_gpr3 as the first
+> parameter. This will allow seccomp to modify the return value in r3.
+>
+> To support this we need to modify syscall_get_arguments() to return
+> orig_gpr3 instead of r3. This is safe for all uses because orig_gpr3
+> always contains the r3 value that was passed to the syscall. We store it
+> in the syscall entry path and never modify it.
+>
+> Update syscall_set_arguments() while we're here, even though it's never
+> used.
 >
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
@@ -50,41 +64,50 @@ Reviewed-by: Kees Cook <keescook@chromium.org>
 -Kees
 
 > ---
->  arch/powerpc/include/asm/syscall.h | 19 ++++++++-----------
->  1 file changed, 8 insertions(+), 11 deletions(-)
+>  arch/powerpc/include/asm/syscall.h | 16 +++++++++++++---
+>  1 file changed, 13 insertions(+), 3 deletions(-)
 >
 > diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-> index cabe90133e69..403e2303fe18 100644
+> index 403e2303fe18..8d79a87c0511 100644
 > --- a/arch/powerpc/include/asm/syscall.h
 > +++ b/arch/powerpc/include/asm/syscall.h
-> @@ -64,19 +64,16 @@ static inline void syscall_get_arguments(struct task_struct *task,
+> @@ -64,7 +64,7 @@ static inline void syscall_get_arguments(struct task_struct *task,
 >                                          unsigned int i, unsigned int n,
 >                                          unsigned long *args)
 >  {
-> +       unsigned long mask = -1UL;
-> +
+> -       unsigned long mask = -1UL;
+> +       unsigned long val, mask = -1UL;
+>
 >         BUG_ON(i + n > 6);
-> -#ifdef CONFIG_PPC64
-> -       if (test_tsk_thread_flag(task, TIF_32BIT)) {
-> -               /*
-> -                * Zero-extend 32-bit argument values.  The high bits are
-> -                * garbage ignored by the actual syscall dispatch.
-> -                */
-> -               while (n-- > 0)
-> -                       args[n] = (u32) regs->gpr[3 + i + n];
-> -               return;
-> -       }
-> +
-> +#ifdef CONFIG_COMPAT
-> +       if (test_tsk_thread_flag(task, TIF_32BIT))
-> +               mask = 0xffffffff;
+>
+> @@ -72,8 +72,14 @@ static inline void syscall_get_arguments(struct task_struct *task,
+>         if (test_tsk_thread_flag(task, TIF_32BIT))
+>                 mask = 0xffffffff;
 >  #endif
-> -       memcpy(args, &regs->gpr[3 + i], n * sizeof(args[0]));
-> +       while (n--)
-> +               args[n] = regs->gpr[3 + i + n] & mask;
+> -       while (n--)
+> -               args[n] = regs->gpr[3 + i + n] & mask;
+> +       while (n--) {
+> +               if (n == 0 && i == 0)
+> +                       val = regs->orig_gpr3;
+> +               else
+> +                       val = regs->gpr[3 + i + n];
+> +
+> +               args[n] = val & mask;
+> +       }
 >  }
 >
 >  static inline void syscall_set_arguments(struct task_struct *task,
+> @@ -83,6 +89,10 @@ static inline void syscall_set_arguments(struct task_struct *task,
+>  {
+>         BUG_ON(i + n > 6);
+>         memcpy(&regs->gpr[3 + i], args, n * sizeof(args[0]));
+> +
+> +       /* Also copy the first argument into orig_gpr3 */
+> +       if (i == 0 && n > 0)
+> +               regs->orig_gpr3 = args[0];
+>  }
+>
+>  static inline int syscall_get_arch(void)
 > --
 > 2.1.0
 >
