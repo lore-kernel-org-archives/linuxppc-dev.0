@@ -1,40 +1,29 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 940A51A0C1A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 01:31:15 +1000 (AEST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 27 Jul 2015 21:01:12 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id B9F55125809E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:27:37 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6QIsZZK50594026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 00:24:35 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6QHVGDL011631
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jul 2015 23:01:16 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>
-Subject: [PATCH v6 3/7]powerpc/powernv: Nest PMU detection and device tree
- parser
-Date: Mon, 27 Jul 2015 00:24:20 +0530
-Message-Id: <1437936864-4402-4-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1437936864-4402-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E55491A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 01:40:31 +1000 (AEST)
+Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
+ fault
+To: Eric B Munson <emunson@akamai.com>
+References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
+ <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
+ <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+From: Vlastimil Babka <vbabka@suse.cz>
+Message-ID: <55B650E8.9030102@suse.cz>
+Date: Mon, 27 Jul 2015 17:40:24 +0200
+MIME-Version: 1.0
+In-Reply-To: <20150727145409.GB21664@akamai.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,144 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create a file "nest-pmu.c" to contain nest pmu related functions. Code
-to detect nest pmu support and parser to collect per-chip reserved memory
-region information from device tree (DT).
+On 07/27/2015 04:54 PM, Eric B Munson wrote:
+> On Mon, 27 Jul 2015, Vlastimil Babka wrote:
+>>
+>>> We do actually have an MCL_LOCKED, we just call it MCL_CURRENT.  Would
+>>> you prefer that I match the name in mlock2() (add MLOCK_CURRENT
+>>> instead)?
+>>
+>> Hm it's similar but not exactly the same, because MCL_FUTURE is not
+>> the same as MLOCK_ONFAULT :) So MLOCK_CURRENT would be even more
+>> confusing. Especially if mlockall(MCL_CURRENT | MCL_FUTURE) is OK,
+>> but mlock2(MLOCK_LOCKED | MLOCK_ONFAULT) is invalid.
+>
+> MLOCK_ONFAULT isn't meant to be the same as MCL_FUTURE, rather it is
+> meant to be the same as MCL_ONFAULT.  MCL_FUTURE only controls if the
+> locking policy will be applied to any new mappings made by this process,
+> not the locking policy itself.  The better comparison is MCL_CURRENT to
+> MLOCK_LOCK and MCL_ONFAULT to MLOCK_ONFAULT.  MCL_CURRENT and
+> MLOCK_LOCK do the same thing, only one requires a specific range of
+> addresses while the other works process wide.  This is why I suggested
+> changing MLOCK_LOCK to MLOCK_CURRENT.  It is an error to call
+> mlock2(MLOCK_LOCK | MLOCK_ONFAULT) just like it is an error to call
+> mlockall(MCL_CURRENT | MCL_ONFAULT).  The combinations do no make sense.
 
-Detection mechanism is to look for specific property "ibm,ima-chip" in DT.
-For Nest pmu, device tree will have two set of information.
-1) Per-chip reserved memory region for nest pmu counter collection area.
-2) Supported Nest PMUs and events
+How is it an error to call mlockall(MCL_CURRENT | MCL_ONFAULT)? How else 
+would you apply mlock2(MCL_ONFAULT) to all current mappings? Later below 
+you use the same example and I don't think it's different by removing 
+MLOCK_LOCKED flag.
 
-Device tree layout for the Nest PMU as follows.
+> This was all decided when VM_LOCKONFAULT was a separate state from
+> VM_LOCKED.  Now that VM_LOCKONFAULT is a modifier to VM_LOCKED and
+> cannot be specified independentally, it might make more sense to mirror
+> that relationship to userspace.  Which would lead to soemthing like the
+> following:
+>
+> To lock and populate a region:
+> mlock2(start, len, 0);
+>
+> To lock on fault a region:
+> mlock2(start, len, MLOCK_ONFAULT);
+>
+> If LOCKONFAULT is seen as a modifier to mlock, then having the flags
+> argument as 0 mean do mlock classic makes more sense to me.
 
-  /                     -- DT root folder
-  |
-  -nest-ima             -- Nest PMU folder
-   |
+Yup that's what I was trying to suggest.
 
-   -ima-chip@<chip-id>  -- Per-chip folder for reserved region information
-    |
-    -ibm,chip-id        -- Chip id
-    -ibm,ima-chip
-    -reg                -- HOMER PORE Nest Counter collection Address (RA)
-    -size               -- size to map in kernel space
+> To mlock current on fault only:
+> mlockall(MCL_CURRENT | MCL_ONFAULT);
+>
+> To mlock future on fault only:
+> mlockall(MCL_FUTURE | MCL_ONFAULT);
+>
+> To lock everything on fault:
+> mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
+>
+> I think I have talked myself into rewriting the set again :/
 
-   -Alink_BW            -- Nest PMU folder
-    |
-    -Alink0             -- Nest PMU Alink Event file
-    -scale.Alink0.scale -- Event scale file
-    -unit.Alink0.unit   -- Event unit file
-    -device_type        -- "nest-ima-unit" marker
-  ....
+Sorry :) You could also wait a bit for more input than just from me...
 
-Subsequent patch will parse the next part of the DT to find various
-Nest PMUs and their events.
-
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: Stephane Eranian <eranian@google.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/Makefile   |  2 +-
- arch/powerpc/perf/nest-pmu.c | 72 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/perf/nest-pmu.c
-
-diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index f9c083a5652a..6da656b50e3c 100644
---- a/arch/powerpc/perf/Makefile
-+++ b/arch/powerpc/perf/Makefile
-@@ -5,7 +5,7 @@ obj-$(CONFIG_PERF_EVENTS)	+= callchain.o
- obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
- obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
- 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
--				   power8-pmu.o
-+				   power8-pmu.o nest-pmu.o
- obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
- 
- obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
-diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-new file mode 100644
-index 000000000000..48738f9f6426
---- /dev/null
-+++ b/arch/powerpc/perf/nest-pmu.c
-@@ -0,0 +1,72 @@
-+/*
-+ * Nest Performance Monitor counter support for POWER8 processors.
-+ *
-+ * Copyright (C) 2015 Madhavan Srinivasan, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "nest-pmu.h"
-+
-+static struct perchip_nest_info p8_nest_perchip_info[P8_NEST_MAX_CHIPS];
-+
-+static int nest_ima_dt_parser(void)
-+{
-+	struct device_node *dev;
-+	struct perchip_nest_info *p8ni;
-+	u32 idx;
-+
-+	/*
-+	 * "nest-ima" folder contains two things,
-+	 * a) per-chip reserved memory region for Nest PMU Counter data
-+	 * b) Support Nest PMU units and their event files
-+	 */
-+	for_each_node_with_property(dev, "ibm,ima-chip") {
-+		if (of_property_read_u32(dev, "ibm,chip-id", &idx)) {
-+			pr_err("Nest_PMU: device %s missing property\n",
-+							dev->full_name);
-+			return -ENODEV;
-+		}
-+		p8ni = &p8_nest_perchip_info[idx];
-+
-+		if (of_property_read_u64(dev, "reg", &p8ni->pbase)) {
-+			pr_err("Nest_PMU: device %s missing property\n",
-+							dev->full_name);
-+			return -ENODEV;
-+		}
-+		p8ni->vbase = (u64)phys_to_virt(p8ni->pbase);
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init nest_pmu_init(void)
-+{
-+	int ret = -ENODEV;
-+
-+	/*
-+	 * Lets do this only if we are hypervisor
-+	 */
-+	if (!cpu_has_feature(CPU_FTR_HVMODE))
-+		return ret;
-+
-+	/*
-+	 * Nest PMU information is grouped under "nest-ima" node
-+	 * of the top-level device-tree directory. Detect Nest PMU
-+	 * by the "ibm,ima-chip" property.
-+	 */
-+	if (!of_find_node_with_property(NULL, "ibm,ima-chip"))
-+		return ret;
-+
-+	/*
-+	 * Parse device-tree for Nest PMU information
-+	 */
-+	ret = nest_ima_dt_parser();
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+device_initcall(nest_pmu_init);
--- 
-1.9.1
+>>
+>>> Finally, on the question of MAP_LOCKONFAULT, do you just dislike
+>>> MAP_LOCKED and do not want to see it extended, or is this a NAK on the
+>>> set if that patch is included.  I ask because I have to spin a V6 to get
+>>> the MLOCK flag declarations right, but I would prefer not to do a V7+.
+>>> If this is a NAK with, I can drop that patch and rework the tests to
+>>> cover without the mmap flag.  Otherwise I want to keep it, I have an
+>>> internal user that would like to see it added.
+>>
+>> I don't want to NAK that patch if you think it's useful.
+>>
+>>
