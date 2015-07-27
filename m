@@ -1,33 +1,29 @@
-Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0147.outbound.protection.outlook.com [157.56.110.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 295ED1A1D43
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:57:03 +1000 (AEST)
-Received: from mail-ig0-x22d.google.com (mail-ig0-x22d.google.com
- [IPv6:2607:f8b0:4001:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 93B9B1402BA
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 04:57:02 +1000 (AEST)
-Received: by igbij6 with SMTP id ij6so84889738igb.1
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Jul 2015 11:57:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 089351A1BCE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:59:40 +1000 (AEST)
+Message-ID: <1438023565.2993.299.camel@freescale.com>
+Subject: Re: [PATCH 02/10] dpaa_eth: add support for DPAA Ethernet
+From: Scott Wood <scottwood@freescale.com>
+To: Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>
+CC: Joe Perches <joe@perches.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Liberman Igal-B31950
+ <Igal.Liberman@freescale.com>, "ppc@mindchasers.com" <ppc@mindchasers.com>,
+ "pebolle@tiscali.nl" <pebolle@tiscali.nl>, "joakim.tjernlund@transmode.se"
+ <joakim.tjernlund@transmode.se>
+Date: Mon, 27 Jul 2015 13:59:25 -0500
+In-Reply-To: <BL2PR03MB545D22D02CEEDA05878E833E6810@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1437581806-17420-1-git-send-email-madalin.bucur@freescale.com>
+ <1437581806-17420-2-git-send-email-madalin.bucur@freescale.com>
+ <1437586665.20787.24.camel@perches.com>
+ <BL2PR03MB545D22D02CEEDA05878E833E6810@BL2PR03MB545.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1437646871-3195-10-git-send-email-mpe@ellerman.id.au>
-References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
- <1437646871-3195-10-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 27 Jul 2015 11:57:00 -0700
-Message-ID: <CAGXu5jJMOGXS4wpAwxWFEH7zgLgMaW9=gxEBncV46CgqBXEMBg@mail.gmail.com>
-Subject: Re: [PATCH 10/11] selftests/seccomp: Make seccomp tests work on big
- endian
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Andy Lutomirski <luto@amacapital.net>, Will Drewry <wad@chromium.org>,
- strosake@linux.vnet.ibm.com, bogdan.purcareata@freescale.com
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,50 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 23, 2015 at 3:21 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> The seccomp_bpf test uses BPF_LD|BPF_W|BPF_ABS to load 32-bit values
-> from seccomp_data->args. On big endian machines this will load the high
-> word of the argument, which is not what the test wants.
->
-> Borrow a hack from samples/seccomp/bpf-helper.h which changes the offset
-> on big endian to account for this.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Fri, 2015-07-24 at 10:45 -0500, Bucur Madalin-Cristian-B32716 wrote:
+> > -----Original Message-----
+> > From: Joe Perches [mailto:joe@perches.com]
+> > On Wed, 2015-07-22 at 19:16 +0300, Madalin Bucur wrote:
+> > > +static int __init dpa_load(void)
+> > > +{
+> > []
+> > > + err = platform_driver_register(&dpa_driver);
+> > > + if (unlikely(err < 0)) {
+> > > +         pr_err(KBUILD_MODNAME
+> > > +                 ": %s:%hu:%s(): platform_driver_register() = %d\n",
+> > > +                 KBUILD_BASENAME ".c", __LINE__, __func__, err);
+> > > + }
+> > > +
+> > > + pr_debug(KBUILD_MODNAME ": %s:%s() ->\n",
+> > > +          KBUILD_BASENAME ".c", __func__);
+> > 
+> > Perhaps these should use pr_fmt
+> 
+> Agree.
 
-Acked-by: Kees Cook <keescook@chromium.org>
+How about dropping all that complexity, and just using pr_debug("%s\n", 
+__func__), or dev_dbg where possible?
 
-Thanks for fixing the error message! :)
+> 
+> > > +static void __exit dpa_unload(void)
+> > > +{
+> > > + pr_debug(KBUILD_MODNAME ": -> %s:%s()\n",
+> > > +          KBUILD_BASENAME ".c", __func__);
+> > 
+> > dynamic debug has __func__ available and perhaps
+> > the function tracer might be used instead.
+> > 
+> > > diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> > b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+> > []
+> > > +#define __hot
+> > 
+> > curious.
+> > 
+> > Maybe it'd be good to add a real __hot to compiler.h
+> 
+> They're mostly there to make readers aware the code is critical, any
+> changes could mess performance.
 
--Kees
+Mostly or entirely?  Why not just use a comment, which could also point out 
+specific things that were done for performance?
 
-> ---
->  tools/testing/selftests/seccomp/seccomp_bpf.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/tools/testing/selftests/seccomp/seccomp_bpf.c b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> index c5abe7fd7590..2303a8dff9a2 100644
-> --- a/tools/testing/selftests/seccomp/seccomp_bpf.c
-> +++ b/tools/testing/selftests/seccomp/seccomp_bpf.c
-> @@ -82,7 +82,13 @@ struct seccomp_data {
->  };
->  #endif
->
-> +#if __BYTE_ORDER == __LITTLE_ENDIAN
->  #define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]))
-> +#elif __BYTE_ORDER == __BIG_ENDIAN
-> +#define syscall_arg(_n) (offsetof(struct seccomp_data, args[_n]) + sizeof(__u32))
-> +#else
-> +#error "wut? Unknown __BYTE_ORDER?!"
-> +#endif
->
->  #define SIBLING_EXIT_UNKILLED  0xbadbeef
->  #define SIBLING_EXIT_FAILURE   0xbadface
-> --
-> 2.1.0
->
-
-
-
--- 
-Kees Cook
-Chrome OS Security
+-Scott
