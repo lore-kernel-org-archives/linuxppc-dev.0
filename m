@@ -1,36 +1,33 @@
-Return-Path: <hpa@zytor.com>
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mstsxfx@gmail.com>
+Received: from mail-wi0-f170.google.com (mail-wi0-f170.google.com
+ [209.85.212.170])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D08B1A023A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 07:09:36 +1000 (AEST)
-Message-ID: <55B7EECD.8050605@zytor.com>
-Date: Tue, 28 Jul 2015 14:06:21 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C80781A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 21:17:30 +1000 (AEST)
+Received: by wibxm9 with SMTP id xm9so152158932wib.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:17:28 -0700 (PDT)
+Date: Tue, 28 Jul 2015 13:17:25 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Eric B Munson <emunson@akamai.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Shuah Khan <shuahkh@osg.samsung.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150728111725.GG24972@dhcp22.suse.cz>
+References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
+ <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
+ <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
 MIME-Version: 1.0
-To: Julien Grall <julien.grall@citrix.com>, xen-devel@lists.xenproject.org
-CC: ian.campbell@citrix.com, stefano.stabellini@eu.citrix.com,
- linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- David Vrabel <david.vrabel@citrix.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Ingo Molnar <mingo@redhat.com>,
- "James E.J. Bottomley" <JBottomley@odin.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Jiri Slaby <jslaby@suse.com>, Juergen Gross <jgross@suse.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
- netdev@vger.kernel.org, =?UTF-8?B?Um9nZXIgUGF1IE1vbm7DqQ==?=
- <roger.pau@citrix.com>, Russell King <linux@arm.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, Wei Liu <wei.liu2@citrix.com>,
- x86@kernel.org
-Subject: Re: [PATCH 0/8] Use correctly the Xen memory terminologies in Linux
-References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150727145409.GB21664@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,35 +37,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/28/2015 08:02 AM, Julien Grall wrote:
-> Hi all,
-> 
-> This patch series aims to use the memory terminologies described in
-> include/linux/mm.h [1] for Linux xen code.
-> 
-> Linux is using mistakenly MFN when GFN is meant, I suspect this is because the
-> first support of Xen was for PV. This has brought some misimplementation
-> of memory helpers on ARM and make the developper confused about the expected
-> behavior.
-> 
-> For instance, with pfn_to_mfn, we expect to get a MFN based on the name.
-> Although, if we look at the implementation on x86, it's returning a GFN.
-> Most of the callers are also using it this way.
-> 
-> The first 2 patches of this series is ARM related in order to remove
-> PV specific helpers which should not be used and fixing the implementation of
-> pfn_to_mfn.
-> 
-> The rest of the series is here rename most of the usage in the common code
-> of MFN to GFN. I also took the opportunity to replace most of the call to
-> pfn_to_gfn in the common code by page_to_gfn avoid construction such
-> as pfn_to_gfn(page_to_pfn(...).
-> 
-> Note the one xen-blkfront will be dropped by 64K series [2], I can include it
-> if necessary.
-> 
+[I am sorry but I didn't get to this sooner.]
 
-Can we actually get some documentation for Xen before starting to change
-names around?
+On Mon 27-07-15 10:54:09, Eric B Munson wrote:
+> Now that VM_LOCKONFAULT is a modifier to VM_LOCKED and
+> cannot be specified independentally, it might make more sense to mirror
+> that relationship to userspace.  Which would lead to soemthing like the
+> following:
 
-	-hpa
+A modifier makes more sense.
+ 
+> To lock and populate a region:
+> mlock2(start, len, 0);
+> 
+> To lock on fault a region:
+> mlock2(start, len, MLOCK_ONFAULT);
+> 
+> If LOCKONFAULT is seen as a modifier to mlock, then having the flags
+> argument as 0 mean do mlock classic makes more sense to me.
+> 
+> To mlock current on fault only:
+> mlockall(MCL_CURRENT | MCL_ONFAULT);
+> 
+> To mlock future on fault only:
+> mlockall(MCL_FUTURE | MCL_ONFAULT);
+> 
+> To lock everything on fault:
+> mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
+
+Makes sense to me. The only remaining and still tricky part would be
+the munlock{all}(flags) behavior. What should munlock(MLOCK_ONFAULT)
+do? Keep locked and poppulate the range or simply ignore the flag an
+just unlock?
+
+I can see some sense to allow munlockall(MCL_FUTURE[|MLOCK_ONFAULT]),
+munlockall(MCL_CURRENT) resp. munlockall(MCL_CURRENT|MCL_FUTURE) but
+other combinations sound weird to me.
+
+Anyway munlock with flags opens new doors of trickiness.
+-- 
+Michal Hocko
+SUSE Labs
