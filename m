@@ -1,30 +1,29 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jacek.anaszewski@gmail.com>
+Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
+ [IPv6:2a00:1450:400c:c05::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D8BEE1A0688
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 21:23:41 +1000 (AEST)
-Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
- fault
-To: Michal Hocko <mhocko@kernel.org>, Eric B Munson <emunson@akamai.com>
-References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
- <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
- <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
- <20150728111725.GG24972@dhcp22.suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Shuah Khan <shuahkh@osg.samsung.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <55B76631.6040802@suse.cz>
-Date: Tue, 28 Jul 2015 13:23:29 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 798891A06A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 21:25:17 +1000 (AEST)
+Received: by wicmv11 with SMTP id mv11so175145380wic.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:25:14 -0700 (PDT)
+Message-ID: <55B76634.6050505@gmail.com>
+Date: Tue, 28 Jul 2015 13:23:32 +0200
+From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20150728111725.GG24972@dhcp22.suse.cz>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+CC: linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ j.anaszewski@samsung.com, mpe@ellerman.id.au, rpurdie@rpsys.net,
+ cooloney@gmail.com, khandual@linux.vnet.ibm.com,
+ j.anaszewski81@gmail.com, arnd@arndb.de, stewart@linux.vnet.ibm.com
+Subject: Re: [PATCH v8 3/3] leds/powernv: Add driver for PowerNV platform
+References: <1437801670-23705-1-git-send-email-hegdevasant@linux.vnet.ibm.com>	
+ <1437801670-23705-4-git-send-email-hegdevasant@linux.vnet.ibm.com>	
+ <55B5540B.1000301@gmail.com> <55B5A853.3080909@linux.vnet.ibm.com>	
+ <55B72369.5040102@gmail.com> <1438078495.7562.135.camel@kernel.crashing.org>
+In-Reply-To: <1438078495.7562.135.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,51 +33,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/28/2015 01:17 PM, Michal Hocko wrote:
-> [I am sorry but I didn't get to this sooner.]
->
-> On Mon 27-07-15 10:54:09, Eric B Munson wrote:
->> Now that VM_LOCKONFAULT is a modifier to VM_LOCKED and
->> cannot be specified independentally, it might make more sense to mirror
->> that relationship to userspace.  Which would lead to soemthing like the
->> following:
->
-> A modifier makes more sense.
->
->> To lock and populate a region:
->> mlock2(start, len, 0);
->>
->> To lock on fault a region:
->> mlock2(start, len, MLOCK_ONFAULT);
->>
->> If LOCKONFAULT is seen as a modifier to mlock, then having the flags
->> argument as 0 mean do mlock classic makes more sense to me.
->>
->> To mlock current on fault only:
->> mlockall(MCL_CURRENT | MCL_ONFAULT);
->>
->> To mlock future on fault only:
->> mlockall(MCL_FUTURE | MCL_ONFAULT);
->>
->> To lock everything on fault:
->> mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
->
-> Makes sense to me. The only remaining and still tricky part would be
-> the munlock{all}(flags) behavior. What should munlock(MLOCK_ONFAULT)
-> do? Keep locked and poppulate the range or simply ignore the flag an
-> just unlock?
 
-munlock(all) already lost both MLOCK_LOCKED and MLOCK_ONFAULT flags in 
-this revision, so I suppose in the next revision it will also not accept 
-MLOCK_ONFAULT, and will just munlock whatever was mlocked in either mode.
 
-> I can see some sense to allow munlockall(MCL_FUTURE[|MLOCK_ONFAULT]),
-> munlockall(MCL_CURRENT) resp. munlockall(MCL_CURRENT|MCL_FUTURE) but
-> other combinations sound weird to me.
+On 28.07.2015 12:14, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-07-28 at 08:38 +0200, Jacek Anaszewski wrote:
+>>>>> +    /* Register the classdev */
+>>>>> +    rc = devm_led_classdev_register(dev, &powernv_led->cdev);
+>>>>> +    if (rc) {
+>>>>> +        dev_err(dev, "%s: Classdev registration failed for %s\n",
+>>>>> +            __func__, powernv_led->cdev.name);
+>>>>> +    }
+>>
+>> Braces are not needed here,
+>
+> Putting my old maintainer hat on for a minute ... this is serious nit
+> picking :-)
+>
+> Arguably, the function being multi-line, the braces do make the code
+> more readable. This is a matter of taste which in such as case
+> which isn't a blatant violation of an important rule should be left to
+> the choice of the code implementor/maintainer.
 
-The effect of munlockall(MCL_FUTURE|MLOCK_ONFAULT), which you probably 
-intended for converting the onfault to full prepopulation for future 
-mappings, can be achieved by calling mlockall(MCL_FUTURE) (without 
-MLOCK_ONFAULT).
+I will not insist as checkpatch.pl also doesn't complain
+about that.
 
-> Anyway munlock with flags opens new doors of trickiness.
+Vasant, please ignore my remark then.
+
+-- 
+Best Regards,
+Jacek Anaszewski
