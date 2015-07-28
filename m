@@ -1,31 +1,17 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
- by lists.ozlabs.org (Postfix) with ESMTP id C2CFF1A0066
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 04:06:44 +1000 (AEST)
-Date: Tue, 28 Jul 2015 14:06:42 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Vlastimil Babka <vbabka@suse.cz>
-Cc: Michal Hocko <mhocko@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Shuah Khan <shuahkh@osg.samsung.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150728180642.GE2407@akamai.com>
-References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
- <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
- <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
- <20150728111725.GG24972@dhcp22.suse.cz>
- <20150728134942.GB2407@akamai.com> <55B79B7F.9010604@suse.cz>
+Return-Path: <thuth@redhat.com>
+Message-ID: <55B7ED81.3080103@redhat.com>
+Date: Tue, 28 Jul 2015 23:00:49 +0200
+From: Thomas Huth <thuth@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="gDGSpKKIBgtShtf+"
-In-Reply-To: <55B79B7F.9010604@suse.cz>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: slof@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@ozlabs.ru,
+ linuxppc-dev@lists.ozlabs.org, gkurz@linux.vnet.ibm.com
+Subject: Re: [SLOF PATCH 1/2] fbuffer: Improve invert-region helper
+References: <1438078795-14360-1-git-send-email-thuth@redhat.com>
+ <1438078795-14360-2-git-send-email-thuth@redhat.com>
+ <20150728170416.GB28839@gate.crashing.org>
+In-Reply-To: <20150728170416.GB28839@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,107 +22,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---gDGSpKKIBgtShtf+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ Hi Segher,
 
-On Tue, 28 Jul 2015, Vlastimil Babka wrote:
+On 28/07/15 19:04, Segher Boessenkool wrote:
+> On Tue, Jul 28, 2015 at 12:19:54PM +0200, Thomas Huth wrote:
+>>  : invert-region ( addr len -- )
+>> -   0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP drop
+>> -;
+>> -
+>> -: invert-region-x ( addr len -- )
+>> -   /x / 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP drop
+>> +   2dup or 7 and CASE
+>> +      0 OF 3 rshift 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP ENDOF
+>> +      2 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
+>> +      4 OF 2 rshift 0 ?DO dup dup rl@ -1 xor swap rl! la1+ LOOP ENDOF
+>> +      6 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
+>> +      dup OF 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP ENDOF
+>> +   ENDCASE
+>> +   drop
+>>  ;
+> 
+> Can you access device memory as 64 bits for all supported devices?
 
-> On 07/28/2015 03:49 PM, Eric B Munson wrote:
-> >On Tue, 28 Jul 2015, Michal Hocko wrote:
-> >
->=20
-> [...]
->=20
-> >The only
-> >remaining question I have is should we have 2 new mlockall flags so that
-> >the caller can explicitly set VM_LOCKONFAULT in the mm->def_flags vs
-> >locking all current VMAs on fault.  I ask because if the user wants to
-> >lock all current VMAs the old way, but all future VMAs on fault they
-> >have to call mlockall() twice:
-> >
-> >	mlockall(MCL_CURRENT);
-> >	mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
-> >
-> >This has the side effect of converting all the current VMAs to
-> >VM_LOCKONFAULT, but because they were all made present and locked in the
-> >first call, this should not matter in most cases.
->=20
-> Shouldn't the user be able to do this?
->=20
-> mlockall(MCL_CURRENT)
-> mlockall(MCL_FUTURE | MCL_ONFAULT);
->=20
-> Note that the second call shouldn't change (i.e. munlock) existing
-> vma's just because MCL_CURRENT is not present. The current
-> implementation doesn't do that thanks to the following in
-> do_mlockall():
->=20
->         if (flags =3D=3D MCL_FUTURE)
->                 goto out;
->=20
-> before current vma's are processed and MCL_CURRENT is checked. This
-> is probably so that do_mlockall() can also handle the munlockall()
-> syscall.
-> So we should be careful not to break this, but otherwise there are
-> no limitations by not having two MCL_ONFAULT flags. Having to do
-> invoke syscalls instead of one is not an issue as this shouldn't be
-> frequent syscall.
+Yes, should be fine since 64 bit access was already used in the original
+code, see fb8-invert-screen in 
+https://github.com/aik/SLOF/commit/99c534ecc7a8566bd9ca6346915d9ac1bfacae1e
 
-Good catch, my current implementation did break this and is now fixed.
+> You can get a bigger speedup by writing some of the core blitting
+> functions in C, btw.
 
->=20
-> >The catch is that,
-> >like mmap(MAP_LOCKED), mlockall() does not communicate if mm_populate()
-> >fails.  This has been true of mlockall() from the beginning so I don't
-> >know if it needs more than an entry in the man page to clarify (which I
-> >will add when I add documentation for MCL_ONFAULT).
->=20
-> Good point.
->=20
-> >In a much less
-> >likely corner case, it is not possible in the current setup to request
-> >all current VMAs be VM_LOCKONFAULT and all future be VM_LOCKED.
->=20
-> So again this should work:
->=20
-> mlockall(MCL_CURRENT | MCL_ONFAULT)
-> mlockall(MCL_FUTURE);
->=20
-> But the order matters here, as current implementation of
-> do_mlockall() will clear VM_LOCKED from def_flags if MCL_FUTURE is
-> not passed. So *it's different* from how it handles MCL_CURRENT (as
-> explained above). And not documented in manpage. Oh crap, this API
-> is a closet full of skeletons. Maybe it was an unnoticed regression
-> and we can restore some sanity?
+Well, the above code is for js2x only ... so this is likely not worth
+the effort anymore. The code for qemu-spapr calls into a hypercall
+already, so this is already accelerated.
 
-I will add a note about the ordering problem to the manpage as well.
-Unfortunately, the basic idea of clearing VM_LOCKED from mm->def_flags
-if MCL_FUTURE is not specified but not doing the same for MCL_CURRENT
-predates the move to git, so I am not sure if it was ever different.
+> A small simplification:
+> 
+>    2dup or 7 and CASE
+>       0 OF 3 rshift 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP ENDOF
+>       4 OF 2 rshift 0 ?DO dup dup rl@ -1 xor swap rl! la1+ LOOP ENDOF
+>       3 and
+>       2 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
+>       dup OF 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP ENDOF
+>    ENDCASE
 
+Ok, nice idea, makes sense! I'll include it in v2 (after waiting a little
+bit to see if there's other feedback)
+ 
+> If this code is often called unaligned, it makes more sense to special-
+> case the begin and end probably.
 
---gDGSpKKIBgtShtf+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+It's only used for drawing the cursor, so it always should be aligned.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVt8SyAAoJELbVsDOpoOa9ZesP/1N/oMkXQdcSEZVI2hPN/lg2
-9mWtmYEND1iC1vy7m8SDPnbAhVEDe7QS1LnkybW7h+ZPDdEcYndvaWGlwVZfAcFF
-ibAYaG7hkQ5mOwpRrAqIf0Fmgya0W1tJjIxg59FyHxsFZBGe+NiCZ7CmZGpTp8sY
-5QcFKUSFRGoIfAp2A4akeitUr3Eq62QEDOGrGq7TJboHJeNklRqRwDjYgMSe6NHq
-lR7KOBP/iPu3W2yWpOcfqxQiv4V0d7C4cZTi4NcQeaOy4tkolspMZaUuA4n0u+ZI
-1uyUaVo24RhGucRALQ5oM5l6pQLL+cGeWGmJtrB9lwydD0H5aVxYqVKAXylYDhBN
-VeVocCkLkpQZX8NnMpWcqMDpq0gSuM0YbtMHpaU04suBNBCHb4nnc9uql5GHm5TX
-WyrTKCj9tG5vmM94RKhreI4SpN2v1K0BwmRWDV0hgSl1/WIizxSOgnrs5VBEzrXo
-78HoY24TPsDTs6bhsfuQ6uaKmy1Q8fQpkGCenVaveOW4igVJvvZEVKKvZwDu0VzD
-HrAKkRfYO427d8Xk46ZJzav0RcwR7LWeBfm68QkswXhMWEMVcxXf3hAJxl+rWsCa
-WJenAR2HADZCQrfLWp5bLYcdWww8LHoWRiT8M2jBjn/BNTblo0yLd3o+kdFxJ2V9
-f6X8bsOxQAhqSGzrGcnK
-=OZR5
------END PGP SIGNATURE-----
-
---gDGSpKKIBgtShtf+--
+ Thomas
