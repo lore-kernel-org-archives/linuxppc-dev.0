@@ -1,19 +1,24 @@
-Return-Path: <liulijun@ict.ac.cn>
-Received: from cstnet.cn (smtp15.cstnet.cn [159.226.251.15])
- by lists.ozlabs.org (Postfix) with ESMTP id 3D56A1A0729
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 11:29:13 +1000 (AEST)
-Date: Tue, 28 Jul 2015 09:29:18 +0800
-From: liulijun <liulijun@ict.ac.cn>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Reply-To: liulijun <liulijun@ict.ac.cn>
-Subject: Re: Re: using srio in linux2.6.34.6  causes kernel panic
-References: <2015072714264025850711@ict.ac.cn>,
- <1438034171.2993.313.camel@freescale.com>
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 653BE1A0729
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 11:58:30 +1000 (AEST)
+Received: by pacan13 with SMTP id an13so62141599pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 18:58:28 -0700 (PDT)
+Message-ID: <1438048591.26043.11.camel@axtens.net>
+Subject: Re: eeh-powernv.c: Unbalanced IRQ warning
+From: Daniel Axtens <dja@axtens.net>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 28 Jul 2015 11:56:31 +1000
+In-Reply-To: <20150728012832.GA26199@gwshan>
+References: <1437982623.6262.56.camel@axtens.net>
+ <2661799.peC5JiyMCl@mexican> <20150728012832.GA26199@gwshan>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-iHrTjr4Is7TEle5Cg9rM"
 Mime-Version: 1.0
-Message-ID: <201507280929180349982@ict.ac.cn>
-Content-Type: multipart/related;
- boundary="----=_001_NextPart338606227524_=----"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,148 +28,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------=_001_NextPart338606227524_=----
-Content-Type: multipart/alternative;
-	boundary="----=_002_NextPart305485315520_=----"
-
-
-------=_002_NextPart305485315520_=----
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: base64
-
-T2thee+8jFRoYW5rcyBmb3IgeW91ciBoZWxwLg0KDQoNCg0KDQpsaXVsaWp1bg0KDQpGcm9tOiBT
-Y290dCBXb29kDQpEYXRlOiAyMDE1LTA3LTI4IDA1OjU2DQpUbzogbGl1bGlqdW4NCkNDOiBsaW51
-eHBwYy1kZXYNClN1YmplY3Q6IFJlOiB1c2luZyBzcmlvIGluIGxpbnV4Mi42LjM0LjYgY2F1c2Vz
-IGtlcm5lbCBwYW5pYw0KT24gTW9uLCAyMDE1LTA3LTI3IGF0IDE0OjI2ICswODAwLCBsaXVsaWp1
-biB3cm90ZToNCj4gSSd2ZSBiZWVuIHN0cnVnZ2xpbmcgd2l0aCBhIGtlcm5lbCBwYW5pYyBkdXJp
-bmcgZW51bWVyYXRpb24gb2YgYSBSYXBpZCBJTyANCj4gc3lzdGVtLg0KPiBJIGFtIHVzaW5nIHRo
-ZSBBTTQxNDAgd2l0aCBGcmVlc2NhbGUgUDQwODAgcHJvY2Vzc29yLiAgVGhlIExpbnV4IA0KPiBr
-ZXJuZWwndmVyc2lvbiBpcyAyLjYuMzQuNi4NCg0KVGhhdCBpcyBhIHZlcnkgb2xkIGtlcm5lbC4g
-IElmIHlvdSdyZSB1c2luZyB0aGF0IG9sZCBrZXJuZWwgYmVjYXVzZSBpdCdzIGEgDQp0cmVlIHlv
-dSBnb3QgZnJvbSBzb21lIHZlbmRvciwgcGxlYXNlIGNvbnRhY3QgdGhlbSBmb3IgYXNzaXN0YW5j
-ZS4gIA0KT3RoZXJ3aXNlLCBwbGVhc2UgdHJ5IGFnYWluIHdpdGggdGhlIGxhdGVzdCBrZXJuZWwu
-DQoNCi1TY290dA==
-
-------=_002_NextPart305485315520_=----
-Content-Type: text/html;
-	charset="utf-8"
+--=-iHrTjr4Is7TEle5Cg9rM
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-=EF=BB=BF<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META content=3D"text/html; charset=3Dutf-8" http-equiv=3DContent-Type>
-<STYLE>
-BLOCKQUOTE {
-	MARGIN-BOTTOM: 0px; MARGIN-LEFT: 2em; MARGIN-TOP: 0px
-}
-OL {
-	MARGIN-BOTTOM: 0px; MARGIN-TOP: 0px
-}
-UL {
-	MARGIN-BOTTOM: 0px; MARGIN-TOP: 0px
-}
-P {
-	MARGIN-BOTTOM: 0px; MARGIN-TOP: 0px
-}
-BODY {
-	FONT-SIZE: 10.5pt; FONT-FAMILY: Microsoft YaHei UI; COLOR: #000080; LINE-=
-HEIGHT: 1.5
-}
-</STYLE>
+Hi Alistair and Gavin,
 
-<META name=3DGENERATOR content=3D"MSHTML 11.00.9600.17924"></HEAD>
-<BODY style=3D"MARGIN: 10px">
-<DIV>Okay=EF=BC=8CThanks for your help.<IMG=20
-src=3D"cid:_Foxmail.0@5B21D792-4D17-4170-9995-E1E7E165F5FA"></DIV>
-<DIV>&nbsp;</DIV>
-<HR style=3D"HEIGHT: 1px; WIDTH: 210px" align=3Dleft color=3D#b5c4df SIZE=
-=3D1>
+The patch from Alistair fixes my issue. Thanks heaps!
 
-<DIV><SPAN>liulijun</SPAN></DIV>
-<DIV>&nbsp;</DIV>
-<DIV=20
-style=3D"BORDER-TOP: #b5c4df 1pt solid; BORDER-RIGHT: medium none; BORDER-=
-BOTTOM: medium none; PADDING-BOTTOM: 0cm; PADDING-TOP: 3pt; PADDING-LEFT: =
-0cm; BORDER-LEFT: medium none; PADDING-RIGHT: 0cm">
-<DIV=20
-style=3D"FONT-SIZE: 12px; BACKGROUND: #efefef; COLOR: #000000; PADDING-BOT=
-TOM: 8px; PADDING-TOP: 8px; PADDING-LEFT: 8px; PADDING-RIGHT: 8px">
-<DIV><B>From:</B>&nbsp;<A href=3D"mailto:scottwood@freescale.com">Scott=20
-Wood</A></DIV>
-<DIV><B>Date:</B>&nbsp;2015-07-28&nbsp;05:56</DIV>
-<DIV><B>To:</B>&nbsp;<A href=3D"mailto:liulijun@ict.ac.cn">liulijun</A></D=
-IV>
-<DIV><B>CC:</B>&nbsp;<A=20
-href=3D"mailto:linuxppc-dev@lists.ozlabs.org">linuxppc-dev</A></DIV>
-<DIV><B>Subject:</B>&nbsp;Re: using srio in linux2.6.34.6 causes kernel=20
-panic</DIV></DIV></DIV>
-<DIV>
-<DIV>On&nbsp;Mon,&nbsp;2015-07-27&nbsp;at&nbsp;14:26&nbsp;+0800,&nbsp;liul=
-ijun&nbsp;wrote:</DIV>
-<DIV>&gt;&nbsp;I've&nbsp;been&nbsp;struggling&nbsp;with&nbsp;a&nbsp;kernel=
-&nbsp;panic&nbsp;during&nbsp;enumeration&nbsp;of&nbsp;a&nbsp;Rapid&nbsp;IO=
-&nbsp;</DIV>
-<DIV>&gt;&nbsp;system.</DIV>
-<DIV>&gt;&nbsp;I&nbsp;am&nbsp;using&nbsp;the&nbsp;AM4140&nbsp;with&nbsp;Fr=
-eescale&nbsp;P4080&nbsp;processor.&nbsp;&nbsp;The&nbsp;Linux&nbsp;</DIV>
-<DIV>&gt;&nbsp;kernel'version&nbsp;is&nbsp;2.6.34.6.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>That&nbsp;is&nbsp;a&nbsp;very&nbsp;old&nbsp;kernel.&nbsp;&nbsp;If&nbs=
-p;you're&nbsp;using&nbsp;that&nbsp;old&nbsp;kernel&nbsp;because&nbsp;it's&=
-nbsp;a&nbsp;</DIV>
-<DIV>tree&nbsp;you&nbsp;got&nbsp;from&nbsp;some&nbsp;vendor,&nbsp;please&n=
-bsp;contact&nbsp;them&nbsp;for&nbsp;assistance.&nbsp;&nbsp;</DIV>
-<DIV>Otherwise,&nbsp;please&nbsp;try&nbsp;again&nbsp;with&nbsp;the&nbsp;la=
-test&nbsp;kernel.</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>-Scott</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV>
-<DIV>&nbsp;</DIV></DIV></BODY></HTML>
+Alistair, are you right to post that formally?
 
-------=_002_NextPart305485315520_=------
+Regards,
+Daniel
 
-------=_001_NextPart338606227524_=----
-Content-Type: image/gif;
-	name="12.gif"
-Content-Transfer-Encoding: base64
-Content-ID: <_Foxmail.0@5B21D792-4D17-4170-9995-E1E7E165F5FA>
+On Tue, 2015-07-28 at 11:28 +1000, Gavin Shan wrote:
+> On Tue, Jul 28, 2015 at 11:14:51AM +1000, Alistair Popple wrote:
+> >Hi Daniel,
+> >
+> >I see the problem - pnv_eeh_next_error() re-enables the interrupt but it=
+ gets=20
+> >called from a loop if there are more outstanding events to process. The =
+most=20
+> >obvious solution would be to do this check before enabling interrupts:
+> >
+> >        if (ret =3D=3D EEH_NEXT_ERR_NONE && eeh_enabled())
+> >
+> >instead of:
+> >
+> >        if (eeh_enabled())
+> >
+> >This should work fine so long as pnv_eeh_next_error() is called continuo=
+usly=20
+> >until is returns either EEH_NEXT_ERR_NONE or another value which signals=
+ that=20
+> >pnv_eeh_next_error() should never be called again. As far as I can tell =
+this=20
+> >looks to be true (perhaps Gavin can confirm?)
+> >
+>=20
+> Yeah, I confirmed. The way that Alistair fixes the issue is simple and mo=
+re
+> precise. Please try his fix and ignore the one I sent couple of minutes
+> before.
+>=20
+> Thanks,
+> Gavin
+>=20
+> >Would you mind trying the below patch and seeing if it fixes the problem=
+?=20
+> >Thanks!
+> >
+> >-- >8 --
+> >>From 6eeed1d6dd25e8cf6bfe3423dc50ff855d1cbc42 Mon Sep 17 00:00:00 2001
+> >From: Alistair Popple <alistair@popple.id.au>
+> >
+> >---
+> > arch/powerpc/platforms/powernv/eeh-powernv.c | 2 +-
+> > 1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> >diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc=
+/platforms/powernv/eeh-powernv.c
+> >index ca825ec..ff41c03 100644
+> >--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+> >+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+> >@@ -1478,7 +1478,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+> > 	}
+> >
+> > 	/* Unmask the event */
+> >-	if (eeh_enabled())
+> >+	if (ret =3D=3D EEH_NEXT_ERR_NONE && eeh_enabled())
+> > 		enable_irq(eeh_event_irq);
+> >
+> > 	return ret;
+> >--=20
+> >1.8.3.2
+> >
+> >
+>=20
 
-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
-1UHwEKaQgR9nqgKJY2BAADs=
+--=20
+Regards,
+Daniel
 
-------=_001_NextPart338606227524_=------
+--=-iHrTjr4Is7TEle5Cg9rM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAABCgAGBQJVtuFPAAoJEPC3R3P2I92FwDsP/0ukOjXqkDrs6zNT2fziqRun
+BSxY3hVogN17F6Qt7zAbAeWvhBZ1017he415JwklRsyEbXP7dZKb3poyeZuTwUCO
+V6ArKdT3qlHg7PXS3hmCn9IUPlOX7C8/JjMAOZbCj/lz8HsApjtlwFkFUnPayK7/
+H4bfki5bh5pUuDfcir1YPSyItWzy26c7wVEKk6GgDC49ha/x6UV2TdtX3GX5kC6e
+VeqHDTwq9cVyc7c1OlEfpCJLzceCQdBq/UTl1BLE3GoAiTmfj4O67EKHaG0+6ND1
+G0NBL4Xo4sYfCguVl/FSb3+7HaEvfARGFSNVXVT/z0h30iUZDbTNh6as/LwnV7fS
+kK5InPKX+pfs5Kxkpk4OIk701/Dd1JFGpS1wYb1HmEUQ2E2wVMEIoZjilRYG0Rwh
+dwRGemk5qn4tJ/dI15wqCmKCIvTubfWhpdWTw7DfaO+wR58RRE4yklsqap7HtP1b
+S3x1zbv1W68WaY/nz7x15ul25in6YGQSc5YnvKQjxntAfRZiPz1lKR4s57pypakN
+Pq3y/enP/QhKYAfKWzs+vU0MpL/Yl2T5a9ActJOmaHT65T5AcPOcXtFtogkqEf5W
+V78DBkbVW6m5/r6d8oZECkz6zHO7hvEMg2Sz4wVRliw17qhDMRKQ362n8EXrlI1I
+7WUZUpIKsN0N3TSJJ9+J
+=oGzE
+-----END PGP SIGNATURE-----
+
+--=-iHrTjr4Is7TEle5Cg9rM--
