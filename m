@@ -1,24 +1,41 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 653BE1A0729
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 11:58:30 +1000 (AEST)
-Received: by pacan13 with SMTP id an13so62141599pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jul 2015 18:58:28 -0700 (PDT)
-Message-ID: <1438048591.26043.11.camel@axtens.net>
-Subject: Re: eeh-powernv.c: Unbalanced IRQ warning
-From: Daniel Axtens <dja@axtens.net>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 28 Jul 2015 11:56:31 +1000
-In-Reply-To: <20150728012832.GA26199@gwshan>
-References: <1437982623.6262.56.camel@axtens.net>
- <2661799.peC5JiyMCl@mexican> <20150728012832.GA26199@gwshan>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-iHrTjr4Is7TEle5Cg9rM"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8A121A0729
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 13:08:31 +1000 (AEST)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id CD38A140D30
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 13:08:30 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 28 Jul 2015 08:38:28 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 67193E0058
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 08:42:31 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6S38NXm35258440
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 08:38:23 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6S1l18u031562
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 07:17:02 +0530
+Message-ID: <55B6F225.4070902@linux.vnet.ibm.com>
+Date: Tue, 28 Jul 2015 08:38:21 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+CC: mikey@neuling.org, sukadev@linux.vnet.ibm.com, dja@axtens.net
+Subject: Re: [1/5] powerpc/perf: Drop the branch sample when 'from' cannot
+ be fetched
+References: <20150727041915.63106140326@ozlabs.org>
+In-Reply-To: <20150727041915.63106140326@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,111 +45,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/27/2015 09:49 AM, Michael Ellerman wrote:
+> On Tue, 2015-30-06 at 08:20:27 UTC, Anshuman Khandual wrote:
+>> BHRB (Branch History Rolling Buffer) is a rolling buffer. Hence we
+>> might end up in a situation where we have read one target address
+>> but when we try to read the next entry indicating the from address
+>> of the target address, the buffer just overflows. In this case, the
+>> captured from address will be zero which indicates the end of the
+>> buffer.
+> 
+> Right. But with SMT8 the size of the buffer is very small, so we will actually
+> hit this case somewhat often. When we originally wrote this we decided it was
+> better to get some information, ie. the from address, than no information at
+> all.
 
---=-iHrTjr4Is7TEle5Cg9rM
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+You are right. But practically as of now we are not using this kind of
+(from, 0) branch entries any where as a special case. More over for
+certain kind of workloads which has a small code and a few branches,
+the chances of getting this kind of branch (from, 0) increases a lot
+making them probably one of the highest percentage entries in the final
+perf report. Now with this change of code, the workload session might
+have overall less number of branch entries, but in my opinion represents
+more accurate branch profile of the given workload in percentage wise.
 
-Hi Alistair and Gavin,
+> 
+>> 	This patch drops the entire branch record which would have
+>> otherwise confused the user space tools.
+> 
+> Does it confuse the tools? Can you show me before/after output from perf?
 
-The patch from Alistair fixes my issue. Thanks heaps!
+The word 'confuse' might be little misleading. But the point as
+explained above that the relative branch percentage profile of
+certain workloads might be distorted and that I believe is true.
+Also branch entries like "from ----> 0" in the perf report might
+be confusing to users who dont expect to see this kind of entries
+in the final perf report and will never get into "perf report -D"
+to figure out what really happened.
 
-Alistair, are you right to post that formally?
-
-Regards,
-Daniel
-
-On Tue, 2015-07-28 at 11:28 +1000, Gavin Shan wrote:
-> On Tue, Jul 28, 2015 at 11:14:51AM +1000, Alistair Popple wrote:
-> >Hi Daniel,
-> >
-> >I see the problem - pnv_eeh_next_error() re-enables the interrupt but it=
- gets=20
-> >called from a loop if there are more outstanding events to process. The =
-most=20
-> >obvious solution would be to do this check before enabling interrupts:
-> >
-> >        if (ret =3D=3D EEH_NEXT_ERR_NONE && eeh_enabled())
-> >
-> >instead of:
-> >
-> >        if (eeh_enabled())
-> >
-> >This should work fine so long as pnv_eeh_next_error() is called continuo=
-usly=20
-> >until is returns either EEH_NEXT_ERR_NONE or another value which signals=
- that=20
-> >pnv_eeh_next_error() should never be called again. As far as I can tell =
-this=20
-> >looks to be true (perhaps Gavin can confirm?)
-> >
->=20
-> Yeah, I confirmed. The way that Alistair fixes the issue is simple and mo=
-re
-> precise. Please try his fix and ignore the one I sent couple of minutes
-> before.
->=20
-> Thanks,
-> Gavin
->=20
-> >Would you mind trying the below patch and seeing if it fixes the problem=
-?=20
-> >Thanks!
-> >
-> >-- >8 --
-> >>From 6eeed1d6dd25e8cf6bfe3423dc50ff855d1cbc42 Mon Sep 17 00:00:00 2001
-> >From: Alistair Popple <alistair@popple.id.au>
-> >
-> >---
-> > arch/powerpc/platforms/powernv/eeh-powernv.c | 2 +-
-> > 1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> >diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc=
-/platforms/powernv/eeh-powernv.c
-> >index ca825ec..ff41c03 100644
-> >--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> >+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> >@@ -1478,7 +1478,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
-> > 	}
-> >
-> > 	/* Unmask the event */
-> >-	if (eeh_enabled())
-> >+	if (ret =3D=3D EEH_NEXT_ERR_NONE && eeh_enabled())
-> > 		enable_irq(eeh_event_irq);
-> >
-> > 	return ret;
-> >--=20
-> >1.8.3.2
-> >
-> >
->=20
-
---=20
-Regards,
-Daniel
-
---=-iHrTjr4Is7TEle5Cg9rM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCgAGBQJVtuFPAAoJEPC3R3P2I92FwDsP/0ukOjXqkDrs6zNT2fziqRun
-BSxY3hVogN17F6Qt7zAbAeWvhBZ1017he415JwklRsyEbXP7dZKb3poyeZuTwUCO
-V6ArKdT3qlHg7PXS3hmCn9IUPlOX7C8/JjMAOZbCj/lz8HsApjtlwFkFUnPayK7/
-H4bfki5bh5pUuDfcir1YPSyItWzy26c7wVEKk6GgDC49ha/x6UV2TdtX3GX5kC6e
-VeqHDTwq9cVyc7c1OlEfpCJLzceCQdBq/UTl1BLE3GoAiTmfj4O67EKHaG0+6ND1
-G0NBL4Xo4sYfCguVl/FSb3+7HaEvfARGFSNVXVT/z0h30iUZDbTNh6as/LwnV7fS
-kK5InPKX+pfs5Kxkpk4OIk701/Dd1JFGpS1wYb1HmEUQ2E2wVMEIoZjilRYG0Rwh
-dwRGemk5qn4tJ/dI15wqCmKCIvTubfWhpdWTw7DfaO+wR58RRE4yklsqap7HtP1b
-S3x1zbv1W68WaY/nz7x15ul25in6YGQSc5YnvKQjxntAfRZiPz1lKR4s57pypakN
-Pq3y/enP/QhKYAfKWzs+vU0MpL/Yl2T5a9ActJOmaHT65T5AcPOcXtFtogkqEf5W
-V78DBkbVW6m5/r6d8oZECkz6zHO7hvEMg2Sz4wVRliw17qhDMRKQ362n8EXrlI1I
-7WUZUpIKsN0N3TSJJ9+J
-=oGzE
------END PGP SIGNATURE-----
-
---=-iHrTjr4Is7TEle5Cg9rM--
+> 
+> I'm not opposed to changing this but we need to be 100% sure it's the best
+> option.
