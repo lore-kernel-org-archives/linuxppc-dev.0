@@ -1,29 +1,24 @@
-Return-Path: <jacek.anaszewski@gmail.com>
-Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
- [IPv6:2a00:1450:400c:c05::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 798891A06A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 21:25:17 +1000 (AEST)
-Received: by wicmv11 with SMTP id mv11so175145380wic.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 04:25:14 -0700 (PDT)
-Message-ID: <55B76634.6050505@gmail.com>
-Date: Tue, 28 Jul 2015 13:23:32 +0200
-From: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-CC: linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- j.anaszewski@samsung.com, mpe@ellerman.id.au, rpurdie@rpsys.net,
- cooloney@gmail.com, khandual@linux.vnet.ibm.com,
- j.anaszewski81@gmail.com, arnd@arndb.de, stewart@linux.vnet.ibm.com
-Subject: Re: [PATCH v8 3/3] leds/powernv: Add driver for PowerNV platform
-References: <1437801670-23705-1-git-send-email-hegdevasant@linux.vnet.ibm.com>	
- <1437801670-23705-4-git-send-email-hegdevasant@linux.vnet.ibm.com>	
- <55B5540B.1000301@gmail.com> <55B5A853.3080909@linux.vnet.ibm.com>	
- <55B72369.5040102@gmail.com> <1438078495.7562.135.camel@kernel.crashing.org>
-In-Reply-To: <1438078495.7562.135.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id E37FC1A0709
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 22:18:48 +1000 (AEST)
+Message-ID: <1438085921.2773.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 11/11] selftests/seccomp: Add powerpc support
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, LKML
+ <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@amacapital.net>, Will
+ Drewry <wad@chromium.org>, strosake@linux.vnet.ibm.com,
+ bogdan.purcareata@freescale.com
+Date: Tue, 28 Jul 2015 22:18:41 +1000
+In-Reply-To: <CAGXu5jLQUU5Xov+MQs7YfMEobCyjYLjOcpOZw7JG0wqvVci1yA@mail.gmail.com>
+References: <1437646871-3195-1-git-send-email-mpe@ellerman.id.au>
+ <1437646871-3195-11-git-send-email-mpe@ellerman.id.au>
+ <CAGXu5jLQUU5Xov+MQs7YfMEobCyjYLjOcpOZw7JG0wqvVci1yA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2015-07-27 at 11:59 -0700, Kees Cook wrote:
+> On Thu, Jul 23, 2015 at 3:21 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > Wire up the syscall number and regs so the tests work on powerpc.
+> 
+> This patch begs the question: this passes everything? 
 
+Doh, yes that would have been worth mentioning! :)
 
-On 28.07.2015 12:14, Benjamin Herrenschmidt wrote:
-> On Tue, 2015-07-28 at 08:38 +0200, Jacek Anaszewski wrote:
->>>>> +    /* Register the classdev */
->>>>> +    rc = devm_led_classdev_register(dev, &powernv_led->cdev);
->>>>> +    if (rc) {
->>>>> +        dev_err(dev, "%s: Classdev registration failed for %s\n",
->>>>> +            __func__, powernv_led->cdev.name);
->>>>> +    }
->>
->> Braces are not needed here,
->
-> Putting my old maintainer hat on for a minute ... this is serious nit
-> picking :-)
->
-> Arguably, the function being multi-line, the braces do make the code
-> more readable. This is a matter of taste which in such as case
-> which isn't a blatant violation of an important rule should be left to
-> the choice of the code implementor/maintainer.
+I'll update it before I commit it.
 
-I will not insist as checkpatch.pl also doesn't complain
-about that.
+Yes everything passes, thanks very much for the tests BTW.
 
-Vasant, please ignore my remark then.
+And for the record I've tested on: ppc64, ppc64 (compat), ppc64le,
+ppc, ppc64e and ppc64e (compat).
 
--- 
-Best Regards,
-Jacek Anaszewski
+> (I was reminded about syscall_restart while reading the patches. If
+> everything passes, it looks like powerpc exposes syscall_restart? Seems like
+> ARM remains the odd-arch-out on this. :P)
+
+Yeah I noticed that and though "oh jeez not syscall_restart", but it seems to
+pass, so I guess we behave in a standard fasion for once. I'll have a closer
+look just to be sure before I merge.
+
+cheers
