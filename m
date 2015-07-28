@@ -1,38 +1,36 @@
-Return-Path: <chris.brand@broadcom.com>
-Received: from mail-gw2-out.broadcom.com (mail-gw2-out.broadcom.com
- [216.31.210.63])
- by lists.ozlabs.org (Postfix) with ESMTP id 5684E1A0075
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 05:50:22 +1000 (AEST)
-From: "Chris (Christopher) Brand" <chris.brand@broadcom.com>
-To: Julien Grall <julien.grall@citrix.com>, "xen-devel@lists.xenproject.org"
- <xen-devel@lists.xenproject.org>
-CC: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "H. Peter
- Anvin" <hpa@zytor.com>, Jiri Slaby <jslaby@suse.com>, Thomas Gleixner
- <tglx@linutronix.de>, "stefano.stabellini@eu.citrix.com"
- <stefano.stabellini@eu.citrix.com>, Russell King <linux@arm.linux.org.uk>,
- "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "x86@kernel.org"
- <x86@kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Jean-Christophe
- Plagniol-Villard <plagnioj@jcrosoft.com>, "ian.campbell@citrix.com"
- <ian.campbell@citrix.com>, "James E.J. Bottomley" <JBottomley@odin.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, "Ingo Molnar"
- <mingo@redhat.com>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Juergen Gross <jgross@suse.com>, Wei
- Liu <wei.liu2@citrix.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, David Vrabel <david.vrabel@citrix.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- =?utf-8?B?Um9nZXIgUGF1IE1vbm7DqQ==?= <roger.pau@citrix.com>
-Subject: RE: [Xen-devel] [PATCH 4/8] xen: Use the correctly the Xen memory
- terminologies
-Date: Tue, 28 Jul 2015 19:39:57 +0000
-Message-ID: <4EE5B48738DDED408878C97C8E050A8B1D7DDBB5@SJEXCHMB05.corp.ad.broadcom.com>
-References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
- <1438095769-2560-5-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1438095769-2560-5-git-send-email-julien.grall@citrix.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <prvs=644318916=Andrew.Cooper3@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4AC5E1A0612
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 07:24:59 +1000 (AEST)
+Message-ID: <55B7F035.6010201@citrix.com>
+Date: Tue, 28 Jul 2015 22:12:21 +0100
+From: Andrew Cooper <andrew.cooper3@citrix.com>
 MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>, Julien Grall <julien.grall@citrix.com>,
+ <xen-devel@lists.xenproject.org>
+CC: <linux-fbdev@vger.kernel.org>, <x86@kernel.org>, <netdev@vger.kernel.org>,
+ Jiri Slaby <jslaby@suse.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Russell
+ King" <linux@arm.linux.org.uk>, <linux-scsi@vger.kernel.org>, Tomi Valkeinen
+ <tomi.valkeinen@ti.com>, <stefano.stabellini@eu.citrix.com>, Ingo Molnar
+ <mingo@redhat.com>, <linux-input@vger.kernel.org>, "Jean-Christophe
+ Plagniol-Villard" <plagnioj@jcrosoft.com>, <ian.campbell@citrix.com>, "James
+ E.J. Bottomley" <JBottomley@odin.com>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, <linux-arm-kernel@lists.infradead.org>,
+ "Juergen Gross" <jgross@suse.com>, Wei Liu <wei.liu2@citrix.com>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, <linux-kernel@vger.kernel.org>, David Vrabel
+ <david.vrabel@citrix.com>, <linux-api@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, =?windows-1252?Q?Roger_Pau_Monn=E9?=
+ <roger.pau@citrix.com>
+Subject: Re: [Xen-devel] [PATCH 0/8] Use correctly the Xen memory terminologies
+ in Linux
+References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
+ <55B7EECD.8050605@zytor.com>
+In-Reply-To: <55B7EECD.8050605@zytor.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,14 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBCYXNlZCBvbiBpbmNsdWRlL3hlbi9tbS5oIFsxXSwgTGludXggaXMgbWlzdGFrZW5seSB1c2lu
-ZyBNRk4gd2hlbiBHRk4gaXMgbWVhbnQsDQo+IEkgc3VzcGVjdCB0aGlzIGlzIGJlY2F1c2UgdGhl
-IGZpcnN0IHN1cHBvcnQgZm9yIFhlbiB3YXMgZm9yIFBWLiBUaGlzIGJyb3VnaCBzb21lDQpUeXBv
-IDogImJyb3VnaHQiDQpQZXJoYXBzICJyZXN1bHRlZCBpbiIgd291bGQgYmUgYmV0dGVyID8NCg0K
-PiBtaXNpbXBsZW1lbnRhdGlvbiBvZiBoZWxwZXJzIG9uIEFSTSBhbmQgbWFrZSB0aGUgZGV2ZWxv
-cHBlciBjb25mdXNlZCB0aGUgZXhwZWN0ZWQgYmVoYXZpb3IuDQpUeXBvOiAiZGV2ZWxvcGVyIi4N
-CkknZCBhbHNvIHN1Z2dlc3QgIi4uLmFuZCBjb25mdXNlZCBkZXZlbG9wZXJzIGFib3V0IHRoZS4u
-LiIuDQoNClsuLi5dDQoNCj4gRm9yIGNsYXJpdHkgYW5kIGF2b2lkIG5ldyBjb25mdXNpb24sIHJl
-cGxhY2UgYW55IHJlZmVyZW5jZSBvZiBtZm4gaW50byBnbmYgaW4gYW55IGhlbHBlcnMgdXNlZCBi
-eSBQViBkcml2ZXJzLg0KVHlwbyA6ICJnZm4iDQpJJ2Qgc3VnZ2VzdCAiLi4ucmVwbGFjZSBhbnkg
-cmVmZXJlbmNlIHRvIG1mbiB3aXRoIGdmbi4uLiINCg0KWy4uLl0NCg0KQ2hyaXMNCg0K
+On 28/07/15 22:06, H. Peter Anvin wrote:
+> On 07/28/2015 08:02 AM, Julien Grall wrote:
+>> Hi all,
+>>
+>> This patch series aims to use the memory terminologies described in
+>> include/linux/mm.h [1] for Linux xen code.
+>>
+>> Linux is using mistakenly MFN when GFN is meant, I suspect this is because the
+>> first support of Xen was for PV. This has brought some misimplementation
+>> of memory helpers on ARM and make the developper confused about the expected
+>> behavior.
+>>
+>> For instance, with pfn_to_mfn, we expect to get a MFN based on the name.
+>> Although, if we look at the implementation on x86, it's returning a GFN.
+>> Most of the callers are also using it this way.
+>>
+>> The first 2 patches of this series is ARM related in order to remove
+>> PV specific helpers which should not be used and fixing the implementation of
+>> pfn_to_mfn.
+>>
+>> The rest of the series is here rename most of the usage in the common code
+>> of MFN to GFN. I also took the opportunity to replace most of the call to
+>> pfn_to_gfn in the common code by page_to_gfn avoid construction such
+>> as pfn_to_gfn(page_to_pfn(...).
+>>
+>> Note the one xen-blkfront will be dropped by 64K series [2], I can include it
+>> if necessary.
+>>
+> Can we actually get some documentation for Xen before starting to change
+> names around?
+
+http://xenbits.xen.org/gitweb/?p=xen.git;a=commitdiff;h=e758ed14f390342513405dd766e874934573e6cb
+
+~Andrew
