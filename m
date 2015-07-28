@@ -1,19 +1,41 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [150.101.137.141])
- by lists.ozlabs.org (Postfix) with ESMTP id 46AC11A1DDB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 15:39:35 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: eeh-powernv.c: Unbalanced IRQ warning
-Date: Tue, 28 Jul 2015 15:39:30 +1000
-Message-ID: <1443175.d713kqLmp2@mexican>
-In-Reply-To: <1438048591.26043.11.camel@axtens.net>
-References: <1437982623.6262.56.camel@axtens.net>
- <20150728012832.GA26199@gwshan> <1438048591.26043.11.camel@axtens.net>
+Return-Path: <sam.mj@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 928131A1D3B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 16:13:53 +1000 (AEST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6AC3A14031D
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 16:13:53 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sam.mj@au1.ibm.com>;
+ Tue, 28 Jul 2015 16:13:51 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 28C9F2CE8054
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 16:13:50 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6S6Dc5s28246092
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 16:13:46 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6S6DHAo007542
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 16:13:17 +1000
+Reply-To: sam.mj@au1.ibm.com
+Subject: Re: [RFC PATCH] powerpc/kexec: Wait 1s for secondaries to enter OPAL
+References: <1437544469-20028-1-git-send-email-sam.mj@au1.ibm.com>
+ <m3r3nukut9.fsf@oc8180480414.ibm.com>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+From: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+Message-ID: <55B71D89.7000308@au1.ibm.com>
+Date: Tue, 28 Jul 2015 16:13:29 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <m3r3nukut9.fsf@oc8180480414.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +45,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Jul 2015 11:56:31 Daniel Axtens wrote:
-> Hi Alistair and Gavin,
+On 27/07/15 15:56, Stewart Smith wrote:
+> Samuel Mendoza-Jonas <sam.mj@au1.ibm.com> writes:
+>> Always include a timeout when waiting for secondary cpus to enter OPAL
+>> in the kexec path, rather than only when crashing.
 > 
-> The patch from Alistair fixes my issue. Thanks heaps!
+> This *sounds* reasonable... but I wonder what actual worse case could
+> be and why we'd get stuck too long waiting for things?
 > 
-> Alistair, are you right to post that formally?
+> What was the original bug/problem that inspired this patch?
+> 
+> and is 1s enough?
 
-Yep. I'll post it tomorrow morning.
+"It sounds reasonable" was more or less the inspiration :)
+While I was going over some of the code relating to the previous kexec
+fix with Ben he pointed this out and suggested there wasn't
+much of a reason to differentiate between a crashing/non-crashing
+cpu as far as the timeout goes - if we're not 'crashing' we still
+don't want to spin forever.
 
-> Regards,
-> Daniel
+I'll let Ben comment on whether 1s per cpu is enough.
+
 > 
-> On Tue, 2015-07-28 at 11:28 +1000, Gavin Shan wrote:
-> > On Tue, Jul 28, 2015 at 11:14:51AM +1000, Alistair Popple wrote:
-> > >Hi Daniel,
-> > >
-> > >I see the problem - pnv_eeh_next_error() re-enables the interrupt but it gets 
-> > >called from a loop if there are more outstanding events to process. The most 
-> > >obvious solution would be to do this check before enabling interrupts:
-> > >
-> > >        if (ret == EEH_NEXT_ERR_NONE && eeh_enabled())
-> > >
-> > >instead of:
-> > >
-> > >        if (eeh_enabled())
-> > >
-> > >This should work fine so long as pnv_eeh_next_error() is called continuously 
-> > >until is returns either EEH_NEXT_ERR_NONE or another value which signals that 
-> > >pnv_eeh_next_error() should never be called again. As far as I can tell this 
-> > >looks to be true (perhaps Gavin can confirm?)
-> > >
-> > 
-> > Yeah, I confirmed. The way that Alistair fixes the issue is simple and more
-> > precise. Please try his fix and ignore the one I sent couple of minutes
-> > before.
-> > 
-> > Thanks,
-> > Gavin
-> > 
-> > >Would you mind trying the below patch and seeing if it fixes the problem? 
-> > >Thanks!
-> > >
-> > >-- >8 --
-> > >>From 6eeed1d6dd25e8cf6bfe3423dc50ff855d1cbc42 Mon Sep 17 00:00:00 2001
-> > >From: Alistair Popple <alistair@popple.id.au>
-> > >
-> > >---
-> > > arch/powerpc/platforms/powernv/eeh-powernv.c | 2 +-
-> > > 1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > >diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> > >index ca825ec..ff41c03 100644
-> > >--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> > >+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> > >@@ -1478,7 +1478,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
-> > > 	}
-> > >
-> > > 	/* Unmask the event */
-> > >-	if (eeh_enabled())
-> > >+	if (ret == EEH_NEXT_ERR_NONE && eeh_enabled())
-> > > 		enable_irq(eeh_event_irq);
-> > >
-> > > 	return ret;
-> > 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
-> 
+
+
+-- 
+-----------
+LTC Ozlabs
+IBM
