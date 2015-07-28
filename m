@@ -1,30 +1,16 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 02AA11A0729
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 01:11:01 +1000 (AEST)
-Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
- fault
-To: Eric B Munson <emunson@akamai.com>, Michal Hocko <mhocko@kernel.org>
-References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
- <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
- <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
- <20150728111725.GG24972@dhcp22.suse.cz> <20150728134942.GB2407@akamai.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Shuah Khan <shuahkh@osg.samsung.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <55B79B7F.9010604@suse.cz>
-Date: Tue, 28 Jul 2015 17:10:55 +0200
-MIME-Version: 1.0
-In-Reply-To: <20150728134942.GB2407@akamai.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Return-Path: <segher@gate.crashing.org>
+Date: Tue, 28 Jul 2015 12:04:16 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Thomas Huth <thuth@redhat.com>
+Cc: slof@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@ozlabs.ru,
+ linuxppc-dev@lists.ozlabs.org, gkurz@linux.vnet.ibm.com
+Subject: Re: [SLOF PATCH 1/2] fbuffer: Improve invert-region helper
+Message-ID: <20150728170416.GB28839@gate.crashing.org>
+References: <1438078795-14360-1-git-send-email-thuth@redhat.com>
+ <1438078795-14360-2-git-send-email-thuth@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1438078795-14360-2-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,65 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/28/2015 03:49 PM, Eric B Munson wrote:
-> On Tue, 28 Jul 2015, Michal Hocko wrote:
->
+On Tue, Jul 28, 2015 at 12:19:54PM +0200, Thomas Huth wrote:
+>  : invert-region ( addr len -- )
+> -   0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP drop
+> -;
+> -
+> -: invert-region-x ( addr len -- )
+> -   /x / 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP drop
+> +   2dup or 7 and CASE
+> +      0 OF 3 rshift 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP ENDOF
+> +      2 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
+> +      4 OF 2 rshift 0 ?DO dup dup rl@ -1 xor swap rl! la1+ LOOP ENDOF
+> +      6 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
+> +      dup OF 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP ENDOF
+> +   ENDCASE
+> +   drop
+>  ;
 
-[...]
+Can you access device memory as 64 bits for all supported devices?
 
-> The only
-> remaining question I have is should we have 2 new mlockall flags so that
-> the caller can explicitly set VM_LOCKONFAULT in the mm->def_flags vs
-> locking all current VMAs on fault.  I ask because if the user wants to
-> lock all current VMAs the old way, but all future VMAs on fault they
-> have to call mlockall() twice:
->
-> 	mlockall(MCL_CURRENT);
-> 	mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
->
-> This has the side effect of converting all the current VMAs to
-> VM_LOCKONFAULT, but because they were all made present and locked in the
-> first call, this should not matter in most cases.
+You can get a bigger speedup by writing some of the core blitting
+functions in C, btw.
 
-Shouldn't the user be able to do this?
+A small simplification:
 
-mlockall(MCL_CURRENT)
-mlockall(MCL_FUTURE | MCL_ONFAULT);
+   2dup or 7 and CASE
+      0 OF 3 rshift 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP ENDOF
+      4 OF 2 rshift 0 ?DO dup dup rl@ -1 xor swap rl! la1+ LOOP ENDOF
+      3 and
+      2 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
+      dup OF 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP ENDOF
+   ENDCASE
 
-Note that the second call shouldn't change (i.e. munlock) existing vma's 
-just because MCL_CURRENT is not present. The current implementation 
-doesn't do that thanks to the following in do_mlockall():
 
-         if (flags == MCL_FUTURE)
-                 goto out;
+If this code is often called unaligned, it makes more sense to special-
+case the begin and end probably.
 
-before current vma's are processed and MCL_CURRENT is checked. This is 
-probably so that do_mlockall() can also handle the munlockall() syscall.
-So we should be careful not to break this, but otherwise there are no 
-limitations by not having two MCL_ONFAULT flags. Having to do invoke 
-syscalls instead of one is not an issue as this shouldn't be frequent 
-syscall.
 
-> The catch is that,
-> like mmap(MAP_LOCKED), mlockall() does not communicate if mm_populate()
-> fails.  This has been true of mlockall() from the beginning so I don't
-> know if it needs more than an entry in the man page to clarify (which I
-> will add when I add documentation for MCL_ONFAULT).
-
-Good point.
-
-> In a much less
-> likely corner case, it is not possible in the current setup to request
-> all current VMAs be VM_LOCKONFAULT and all future be VM_LOCKED.
-
-So again this should work:
-
-mlockall(MCL_CURRENT | MCL_ONFAULT)
-mlockall(MCL_FUTURE);
-
-But the order matters here, as current implementation of do_mlockall() 
-will clear VM_LOCKED from def_flags if MCL_FUTURE is not passed. So 
-*it's different* from how it handles MCL_CURRENT (as explained above). 
-And not documented in manpage. Oh crap, this API is a closet full of 
-skeletons. Maybe it was an unnoticed regression and we can restore some 
-sanity?
+Segher
