@@ -1,26 +1,10 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 489171A036E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jul 2015 20:15:22 +1000 (AEST)
-Message-ID: <1438078495.7562.135.camel@kernel.crashing.org>
-Subject: Re: [PATCH v8 3/3] leds/powernv: Add driver for PowerNV platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linux-leds@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, j.anaszewski@samsung.com,
- mpe@ellerman.id.au, rpurdie@rpsys.net, cooloney@gmail.com,
- khandual@linux.vnet.ibm.com, j.anaszewski81@gmail.com, arnd@arndb.de,
- stewart@linux.vnet.ibm.com
-Date: Tue, 28 Jul 2015 20:14:55 +1000
-In-Reply-To: <55B72369.5040102@gmail.com>
-References: <1437801670-23705-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
- <1437801670-23705-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
- <55B5540B.1000301@gmail.com> <55B5A853.3080909@linux.vnet.ibm.com>
- <55B72369.5040102@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <thuth@redhat.com>
+From: Thomas Huth <thuth@redhat.com>
+To: slof@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@ozlabs.ru
+Cc: gkurz@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: [SLOF PATCH 0/2] fbuffer: Improve the speed of the cursor drawing
+Date: Tue, 28 Jul 2015 12:19:53 +0200
+Message-Id: <1438078795-14360-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +14,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-07-28 at 08:38 +0200, Jacek Anaszewski wrote:
-> >>> +    /* Register the classdev */
-> >>> +    rc = devm_led_classdev_register(dev, &powernv_led->cdev);
-> >>> +    if (rc) {
-> >>> +        dev_err(dev, "%s: Classdev registration failed for %s\n",
-> >>> +            __func__, powernv_led->cdev.name);
-> >>> +    }
-> 
-> Braces are not needed here,
+Greg Kurz recently already did a great work by introducing the
+invert-region helpers to speed up the drawing of the cursor.
+This made the grub2 command prompt and editor mode usable.
+However, the editor mode of grub2 is still sluggish - because
+grub2 always redraws the whole line (with cursor enabled!) when
+you enter a character, and since cursor and character drawing
+is still not super-fast in SLOF, this sums up to a noticable delay.
 
-Putting my old maintainer hat on for a minute ... this is serious nit
-picking :-)
+So I tried to speed up the drawing a little bit and came up
+with the following patches. I've used a little "benchmark"
+in Forth to see how the patches improve the drawing:
 
-Arguably, the function being multi-line, the braces do make the code
-more readable. This is a matter of taste which in such as case
-which isn't a blatant violation of an important rule should be left to
-the choice of the code implementor/maintainer.
+ 1 buffer: etest-buf
+ : etest
+   erase-screen
+   41 etest-buf c!
+   1b emit 5b emit [char] H emit
+   cursor-on
+   milliseconds
+    20 0 do 3a 0 do etest-buf 1 terminal-write drop loop cr loop
+   milliseconds
+   swap -
+   ." Duration: " .d ." ms" cr
+ ;
 
-Cheers,
-Ben.
+Without my patches, the etest function takes 1.8 s to draw.
+With the first patch applied, the function take ca. 1.2 s.
+With both patches applied, the function only takes ca. 0.8 s !
+
+The first patch changes invert-region to use a bigger
+access width if possible. And the second patch simply
+decreases the size of the cursor from a full-character
+size rectangle to an underscore-like cursor instead...
+not sure whether this is acceptable, but at least I
+think it looks as good as the original cursor.
+
+Apart from my patches, I think grub2 should also disable
+the cursor when redrawing a whole line in the editor.
+However, I do not have much clue about the grub2 sources
+yet ... is anybody familiar with this and could give some
+pointers?
+
+Thomas Huth (2):
+  fbuffer: Improve invert-region helper
+  fbuffer: Use a smaller cursor
+
+ board-js2x/slof/helper.fs | 13 ++++++++-----
+ board-qemu/slof/helper.fs | 14 ++++++++++----
+ slof/fs/fbuffer.fs        |  5 +++--
+ 3 files changed, 21 insertions(+), 11 deletions(-)
+
+-- 
+1.8.3.1
