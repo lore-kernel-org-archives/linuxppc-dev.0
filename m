@@ -1,16 +1,35 @@
-Return-Path: <thuth@redhat.com>
-Message-ID: <55B7ED81.3080103@redhat.com>
-Date: Tue, 28 Jul 2015 23:00:49 +0200
-From: Thomas Huth <thuth@redhat.com>
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D08B1A023A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 07:09:36 +1000 (AEST)
+Message-ID: <55B7EECD.8050605@zytor.com>
+Date: Tue, 28 Jul 2015 14:06:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: slof@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@ozlabs.ru,
- linuxppc-dev@lists.ozlabs.org, gkurz@linux.vnet.ibm.com
-Subject: Re: [SLOF PATCH 1/2] fbuffer: Improve invert-region helper
-References: <1438078795-14360-1-git-send-email-thuth@redhat.com>
- <1438078795-14360-2-git-send-email-thuth@redhat.com>
- <20150728170416.GB28839@gate.crashing.org>
-In-Reply-To: <20150728170416.GB28839@gate.crashing.org>
+To: Julien Grall <julien.grall@citrix.com>, xen-devel@lists.xenproject.org
+CC: ian.campbell@citrix.com, stefano.stabellini@eu.citrix.com,
+ linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ David Vrabel <david.vrabel@citrix.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ "James E.J. Bottomley" <JBottomley@odin.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Jiri Slaby <jslaby@suse.com>, Juergen Gross <jgross@suse.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ linux-api@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
+ netdev@vger.kernel.org, =?UTF-8?B?Um9nZXIgUGF1IE1vbm7DqQ==?=
+ <roger.pau@citrix.com>, Russell King <linux@arm.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, Wei Liu <wei.liu2@citrix.com>,
+ x86@kernel.org
+Subject: Re: [PATCH 0/8] Use correctly the Xen memory terminologies in Linux
+References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,56 +40,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
- Hi Segher,
-
-On 28/07/15 19:04, Segher Boessenkool wrote:
-> On Tue, Jul 28, 2015 at 12:19:54PM +0200, Thomas Huth wrote:
->>  : invert-region ( addr len -- )
->> -   0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP drop
->> -;
->> -
->> -: invert-region-x ( addr len -- )
->> -   /x / 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP drop
->> +   2dup or 7 and CASE
->> +      0 OF 3 rshift 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP ENDOF
->> +      2 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
->> +      4 OF 2 rshift 0 ?DO dup dup rl@ -1 xor swap rl! la1+ LOOP ENDOF
->> +      6 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
->> +      dup OF 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP ENDOF
->> +   ENDCASE
->> +   drop
->>  ;
+On 07/28/2015 08:02 AM, Julien Grall wrote:
+> Hi all,
 > 
-> Can you access device memory as 64 bits for all supported devices?
-
-Yes, should be fine since 64 bit access was already used in the original
-code, see fb8-invert-screen in 
-https://github.com/aik/SLOF/commit/99c534ecc7a8566bd9ca6346915d9ac1bfacae1e
-
-> You can get a bigger speedup by writing some of the core blitting
-> functions in C, btw.
-
-Well, the above code is for js2x only ... so this is likely not worth
-the effort anymore. The code for qemu-spapr calls into a hypercall
-already, so this is already accelerated.
-
-> A small simplification:
+> This patch series aims to use the memory terminologies described in
+> include/linux/mm.h [1] for Linux xen code.
 > 
->    2dup or 7 and CASE
->       0 OF 3 rshift 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP ENDOF
->       4 OF 2 rshift 0 ?DO dup dup rl@ -1 xor swap rl! la1+ LOOP ENDOF
->       3 and
->       2 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
->       dup OF 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP ENDOF
->    ENDCASE
+> Linux is using mistakenly MFN when GFN is meant, I suspect this is because the
+> first support of Xen was for PV. This has brought some misimplementation
+> of memory helpers on ARM and make the developper confused about the expected
+> behavior.
+> 
+> For instance, with pfn_to_mfn, we expect to get a MFN based on the name.
+> Although, if we look at the implementation on x86, it's returning a GFN.
+> Most of the callers are also using it this way.
+> 
+> The first 2 patches of this series is ARM related in order to remove
+> PV specific helpers which should not be used and fixing the implementation of
+> pfn_to_mfn.
+> 
+> The rest of the series is here rename most of the usage in the common code
+> of MFN to GFN. I also took the opportunity to replace most of the call to
+> pfn_to_gfn in the common code by page_to_gfn avoid construction such
+> as pfn_to_gfn(page_to_pfn(...).
+> 
+> Note the one xen-blkfront will be dropped by 64K series [2], I can include it
+> if necessary.
+> 
 
-Ok, nice idea, makes sense! I'll include it in v2 (after waiting a little
-bit to see if there's other feedback)
- 
-> If this code is often called unaligned, it makes more sense to special-
-> case the begin and end probably.
+Can we actually get some documentation for Xen before starting to change
+names around?
 
-It's only used for drawing the cursor, so it always should be aligned.
-
- Thomas
+	-hpa
