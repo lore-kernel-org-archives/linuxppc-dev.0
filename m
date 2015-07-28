@@ -2,9 +2,11 @@ Return-Path: <thuth@redhat.com>
 From: Thomas Huth <thuth@redhat.com>
 To: slof@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@ozlabs.ru
 Cc: gkurz@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: [SLOF PATCH 0/2] fbuffer: Improve the speed of the cursor drawing
-Date: Tue, 28 Jul 2015 12:19:53 +0200
-Message-Id: <1438078795-14360-1-git-send-email-thuth@redhat.com>
+Subject: [SLOF PATCH 1/2] fbuffer: Improve invert-region helper
+Date: Tue, 28 Jul 2015 12:19:54 +0200
+Message-Id: <1438078795-14360-2-git-send-email-thuth@redhat.com>
+In-Reply-To: <1438078795-14360-1-git-send-email-thuth@redhat.com>
+References: <1438078795-14360-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,56 +16,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg Kurz recently already did a great work by introducing the
-invert-region helpers to speed up the drawing of the cursor.
-This made the grub2 command prompt and editor mode usable.
-However, the editor mode of grub2 is still sluggish - because
-grub2 always redraws the whole line (with cursor enabled!) when
-you enter a character, and since cursor and character drawing
-is still not super-fast in SLOF, this sums up to a noticable delay.
+The introduction of invert-region already speeded up the cursor
+drawing very much. But there is still space for improvement:
+So far invert-region is accessing the memory only byte by byte,
+but with some additional logic that checks the alignment of the
+address and the length of the area, we can also make this function
+to access the memory with half-word, word or long-word accesses.
+With this additional logic, invert-region-x is also no longer
+necessary and thus can be removed.
 
-So I tried to speed up the drawing a little bit and came up
-with the following patches. I've used a little "benchmark"
-in Forth to see how the patches improve the drawing:
-
- 1 buffer: etest-buf
- : etest
-   erase-screen
-   41 etest-buf c!
-   1b emit 5b emit [char] H emit
-   cursor-on
-   milliseconds
-    20 0 do 3a 0 do etest-buf 1 terminal-write drop loop cr loop
-   milliseconds
-   swap -
-   ." Duration: " .d ." ms" cr
- ;
-
-Without my patches, the etest function takes 1.8 s to draw.
-With the first patch applied, the function take ca. 1.2 s.
-With both patches applied, the function only takes ca. 0.8 s !
-
-The first patch changes invert-region to use a bigger
-access width if possible. And the second patch simply
-decreases the size of the cursor from a full-character
-size rectangle to an underscore-like cursor instead...
-not sure whether this is acceptable, but at least I
-think it looks as good as the original cursor.
-
-Apart from my patches, I think grub2 should also disable
-the cursor when redrawing a whole line in the editor.
-However, I do not have much clue about the grub2 sources
-yet ... is anybody familiar with this and could give some
-pointers?
-
-Thomas Huth (2):
-  fbuffer: Improve invert-region helper
-  fbuffer: Use a smaller cursor
-
+Signed-off-by: Thomas Huth <thuth@redhat.com>
+---
  board-js2x/slof/helper.fs | 13 ++++++++-----
  board-qemu/slof/helper.fs | 14 ++++++++++----
- slof/fs/fbuffer.fs        |  5 +++--
- 3 files changed, 21 insertions(+), 11 deletions(-)
+ slof/fs/fbuffer.fs        |  2 +-
+ 3 files changed, 19 insertions(+), 10 deletions(-)
 
+diff --git a/board-js2x/slof/helper.fs b/board-js2x/slof/helper.fs
+index 6030330..5941315 100644
+--- a/board-js2x/slof/helper.fs
++++ b/board-js2x/slof/helper.fs
+@@ -28,9 +28,12 @@
+ ;
+ 
+ : invert-region ( addr len -- )
+-   0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP drop
+-;
+-
+-: invert-region-x ( addr len -- )
+-   /x / 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP drop
++   2dup or 7 and CASE
++      0 OF 3 rshift 0 ?DO dup dup rx@ -1 xor swap rx! xa1+ LOOP ENDOF
++      2 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
++      4 OF 2 rshift 0 ?DO dup dup rl@ -1 xor swap rl! la1+ LOOP ENDOF
++      6 OF 1 rshift 0 ?DO dup dup rw@ -1 xor swap rw! wa1+ LOOP ENDOF
++      dup OF 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP ENDOF
++   ENDCASE
++   drop
+ ;
+diff --git a/board-qemu/slof/helper.fs b/board-qemu/slof/helper.fs
+index c807bc6..6613782 100644
+--- a/board-qemu/slof/helper.fs
++++ b/board-qemu/slof/helper.fs
+@@ -33,10 +33,16 @@
+   swap -
+ ;
+ 
+-: invert-region ( addr len -- )
+-   over swap 0 swap 1 hv-logical-memop drop
++: invert-region-cs ( addr len cellsize -- )
++   >r over swap r@ rshift r> swap 1 hv-logical-memop drop
+ ;
+ 
+-: invert-region-x ( addr len -- )
+-   over swap /x / 3 swap 1 hv-logical-memop drop
++: invert-region ( addr len -- )
++   2dup or 7 and CASE
++      0 OF 3 invert-region-cs ENDOF
++      2 OF 1 invert-region-cs ENDOF
++      4 OF 2 invert-region-cs ENDOF
++      6 OF 1 invert-region-cs ENDOF
++      dup OF 0 invert-region-cs ENDOF
++   ENDCASE
+ ;
+diff --git a/slof/fs/fbuffer.fs b/slof/fs/fbuffer.fs
+index fcdd2fa..0128c07 100644
+--- a/slof/fs/fbuffer.fs
++++ b/slof/fs/fbuffer.fs
+@@ -170,7 +170,7 @@ CREATE bitmap-buffer 400 4 * allot
+ ;
+ 
+ : fb8-invert-screen ( -- )
+-	frame-buffer-adr screen-height screen-width * screen-depth * invert-region-x
++	frame-buffer-adr screen-height screen-width * screen-depth * invert-region
+ ;
+ 
+ : fb8-blink-screen ( -- ) fb8-invert-screen fb8-invert-screen ;
 -- 
 1.8.3.1
