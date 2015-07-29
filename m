@@ -1,31 +1,19 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0131.outbound.protection.outlook.com [65.55.169.131])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A5511A096D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 14:42:37 +1000 (AEST)
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B3083140E31
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 14:42:36 +1000 (AEST)
-Received: by pacan13 with SMTP id an13so82520725pac.1
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 21:42:33 -0700 (PDT)
-Message-ID: <1438144834.28422.46.camel@axtens.net>
-Subject: Re: [PATCH] cxl: Don't ignore add_process_element result when
- attaching context
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, mikey@neuling.org,
- imunsie@au.ibm.com
-Date: Wed, 29 Jul 2015 14:40:34 +1000
-In-Reply-To: <1438143932.17434.1.camel@ellerman.id.au>
-References: <1438142842-31603-1-git-send-email-dja@axtens.net>
- <1438143932.17434.1.camel@ellerman.id.au>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-6nszhhwxlM4uNArg98Tf"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A6B41A0DA8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 15:25:00 +1000 (AEST)
+From: Scott Wood <scottwood@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>, Claudiu Manoil
+ <claudiu.manoil@freescale.com>
+CC: Scott Wood <scottwood@freescale.com>
+Subject: [PATCH] gianfar: Fix warnings when built on 64-bit
+Date: Wed, 29 Jul 2015 00:24:37 -0500
+Message-ID: <1438147477-393-1-git-send-email-scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,57 +23,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+As part of defconfig consolidation using fragments, we'd like to be
+able to have the same drivers enabled on 32-bit and 64-bit.  Gianfar
+happens to only exist on 32-bit systems, and when building the
+resulting 64-bit kernel warnings were produced.
 
---=-6nszhhwxlM4uNArg98Tf
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+A couple of the warnings are trivial, but the rfbptr code has deeper
+issues.  It uses the virtual address as the DMA address, which again,
+happens to work in the environments where this driver is currently
+used, but is not the right thing to do.
 
-On Wed, 2015-07-29 at 14:25 +1000, Michael Ellerman wrote:
-> On Wed, 2015-07-29 at 14:07 +1000, Daniel Axtens wrote:
-> > Previously, when attaching a context in dedicated mode, we ignored
->=20
-> Previously? You mean currently? Now is before this patch is applied.
-I do mean currently. Apologies for the temporal confusion :)
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Alternatively, if there's a desire to not mess with this code (I don't
+know how to trigger this code path to test it), this driver should be
+given dependencies that ensure that it only builds on 32-bit.
+---
+ drivers/net/ethernet/freescale/gianfar.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
 
->=20
-> > the result of add_process_element, which could potentially fail.
-> >=20
-> > If add_process_element returns and error, pass it back to the caller.
->                                    ^
->=20
-> I can fix.
->=20
-Many thanks: it's good to know that my spelling mistakes will only be
-immortalised in the list archives rather than in the kernel's git
-history. :p
-
-
---=20
-Regards,
-Daniel
-
---=-6nszhhwxlM4uNArg98Tf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCgAGBQJVuFlDAAoJEPC3R3P2I92FwxMP/0IPGYeW+kEcy9XRMtYU2EFU
-UDnao62DD/Dmj9qu5inKlTwztO/ZwLMVvO6xcfsXm1556ym8Ulhy+4O7YiqqKCUA
-pJoMOZ6QrFpf0F9zvL/HSbu7TOq5eREWI+Tg70mbctssmhS5+Yl9aypH02vFFj1V
-MWgCCLqE8CizubvwIsagO4nvPtkNzOwNz3Y7QecBFyhHDhJFvu9xNq66y1hcTNt2
-Bg/jCvmBSQpJXtRL0Ym0FOhfC/vCY3EZ1GDc70aDbUWIsj7poL0W6OFM7WW3W7C9
-nzDjw23VCzyNqT0kOJM+ly31uFl98WuvHgpK/FQqdzxC16A6RBfdS45ooHJ7erRC
-x1c6St+bi2W/fI6PJSyP9Zt0dpDitwMLzocekzvtUaHMRdUaY+Nb/ZG1e3Ek4mJe
-m7Al91hOCqIzml0CQD0/1lDR8Jtg3L84Xj+jZXpKDqkqTlFU9bMjx6vqM0CsnyAn
-KbG7M0t3TyapOXxv7bDS37c2a+ePfmxWONN1CSMlTR7BwekjsDLN+7uhjb/HhHUc
-AxhkFxFagQLDOBulVmAHfeOvvo+B05DAHrqo0FQWBxbWLFu4WRauPhMhgd3lZxLL
-x6uJG+8hGBCWX9lM12hv0dqXdHxjS/LHGJKg74QCdBUk0QFRbue5ExQ8fSOpSmBb
-fhpjzzXZXV1bXVc2C8gb
-=dp1X
------END PGP SIGNATURE-----
-
---=-6nszhhwxlM4uNArg98Tf--
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index ff87502..7c682ac 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -565,6 +565,7 @@ static void gfar_ints_enable(struct gfar_private *priv)
+ 	}
+ }
+ 
++#ifdef CONFIG_PM
+ static void lock_tx_qs(struct gfar_private *priv)
+ {
+ 	int i;
+@@ -580,6 +581,7 @@ static void unlock_tx_qs(struct gfar_private *priv)
+ 	for (i = 0; i < priv->num_tx_queues; i++)
+ 		spin_unlock(&priv->tx_queue[i]->txlock);
+ }
++#endif
+ 
+ static int gfar_alloc_tx_queues(struct gfar_private *priv)
+ {
+@@ -2655,7 +2657,8 @@ static void gfar_clean_tx_ring(struct gfar_priv_tx_q *tx_queue)
+ 
+ 		if (unlikely(skb_shinfo(skb)->tx_flags & SKBTX_IN_PROGRESS)) {
+ 			struct skb_shared_hwtstamps shhwtstamps;
+-			u64 *ns = (u64*) (((u32)skb->data + 0x10) & ~0x7);
++			u64 *ns = (u64 *)(((uintptr_t)skb->data + 0x10) &
++					  ~0x7UL);
+ 
+ 			memset(&shhwtstamps, 0, sizeof(shhwtstamps));
+ 			shhwtstamps.hwtstamp = ns_to_ktime(*ns);
+@@ -2964,8 +2967,13 @@ int gfar_clean_rx_ring(struct gfar_priv_rx_q *rx_queue, int rx_work_limit)
+ 		gfar_init_rxbdp(rx_queue, bdp, bufaddr);
+ 
+ 		/* Update Last Free RxBD pointer for LFC */
+-		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en))
+-			gfar_write(rx_queue->rfbptr, (u32)bdp);
++		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en)) {
++			u32 bdp_dma;
++
++			bdp_dma = lower_32_bits(rx_queue->rx_bd_dma_base);
++			bdp_dma += (uintptr_t)bdp - (uintptr_t)base;
++			gfar_write(rx_queue->rfbptr, bdp_dma);
++		}
+ 
+ 		/* Update to the next pointer */
+ 		bdp = next_bd(bdp, base, rx_queue->rx_ring_size);
+@@ -3551,6 +3559,8 @@ static noinline void gfar_update_link_state(struct gfar_private *priv)
+ 		/* Turn last free buffer recording on */
+ 		if ((tempval1 & MACCFG1_TX_FLOW) && !tx_flow_oldval) {
+ 			for (i = 0; i < priv->num_rx_queues; i++) {
++				u32 bdp_dma;
++
+ 				rx_queue = priv->rx_queue[i];
+ 				bdp = rx_queue->cur_rx;
+ 				/* skip to previous bd */
+@@ -3558,8 +3568,12 @@ static noinline void gfar_update_link_state(struct gfar_private *priv)
+ 					      rx_queue->rx_bd_base,
+ 					      rx_queue->rx_ring_size);
+ 
++				bdp_dma = lower_32_bits(rx_queue->rx_bd_dma_base);
++				bdp_dma += (uintptr_t)bdp -
++					   (uintptr_t)rx_queue->rx_bd_base;
++
+ 				if (rx_queue->rfbptr)
+-					gfar_write(rx_queue->rfbptr, (u32)bdp);
++					gfar_write(rx_queue->rfbptr, bdp_dma);
+ 			}
+ 
+ 			priv->tx_actual_en = 1;
+-- 
+2.1.4
