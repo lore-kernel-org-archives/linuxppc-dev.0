@@ -1,25 +1,19 @@
 Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0115.outbound.protection.outlook.com [157.56.111.115])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0107.outbound.protection.outlook.com [65.55.169.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C54CE1A1966
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 17:37:14 +1000 (AEST)
-From: Lu Y.B. <yangbo.lu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2] powerpc/dts: Add and fix 1588 timer node for eTSEC
-Date: Wed, 29 Jul 2015 07:21:09 +0000
-Message-ID: <BY1PR0301MB11928002348541D852205503F28C0@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1430969347-13869-1-git-send-email-yangbo.lu@freescale.com>
- <BY1PR0301MB11921FFFBC88E7ABD81D2E27F2990@BY1PR0301MB1192.namprd03.prod.outlook.com>
- <1437079112.2993.127.camel@freescale.com>
- <BY1PR0301MB1192CF8FD2B38A36A2A9BFD5F2850@BY1PR0301MB1192.namprd03.prod.outlook.com>
- <1437750459.2993.224.camel@freescale.com>
-In-Reply-To: <1437750459.2993.224.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D715E1A1A2D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 17:51:42 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <scottwood@freescale.com>
+CC: Yangbo Lu <yangbo.lu@freescale.com>
+Subject: [PATCH v3] powerpc/dts: Add and fix 1588 timer node for eTSEC
+Date: Wed, 29 Jul 2015 15:12:38 +0800
+Message-ID: <1438153958-1400-1-git-send-email-yangbo.lu@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,71 +23,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2NvdHQsDQoNCkkgc3VibWl0dGVkIGEgdjMgcGF0Y2ggZm9yIHRoaXMuDQpTb3JyeSBmb3Ig
-bXkgbWlzdW5kZXJzdGFuZGluZyBhbmQgdGhhbmsgYSBsb3QuDQoNCg0KDQpCZXN0IHJlZ2FyZHMs
-DQpZYW5nYm8gTHUNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29k
-IFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBGcmlkYXksIEp1bHkgMjQsIDIwMTUgMTE6MDggUE0NCj4g
-VG86IEx1IFlhbmdiby1CNDcwOTMNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
-OyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJd
-IHBvd2VycGMvZHRzOiBBZGQgYW5kIGZpeCAxNTg4IHRpbWVyIG5vZGUgZm9yDQo+IGVUU0VDDQo+
-IA0KPiBPbiBNb24sIDIwMTUtMDctMjAgYXQgMDE6MzMgLTA1MDAsIEx1IFlhbmdiby1CNDcwOTMg
-d3JvdGU6DQo+ID4gPiBPbiBXZWQsIDIwMTUtMDctMTUgYXQgMjE6MzcgLTA1MDAsIEx1IFlhbmdi
-by1CNDcwOTMgd3JvdGU6DQo+ID4gPiA+IEFueSBjb21tZW50cz8NCj4gPiA+ID4gVGhhbmtzLg0K
-PiA+ID4NCj4gPiA+IFNvcnJ5LCBJIG11c3QgaGF2ZSBtaXNzZWQgdGhpcyBvbiBteSBsYXN0IHRp
-bWUgdGhyb3VnaCB0aGUgcGF0Y2gNCj4gcXVldWUuDQo+ID4gPiBJIHNlZSB5b3UndmUgZGVjaW1h
-bGl6ZWQgdGhlIGZpcGVyIGFuZCBtYXgtYWRqIHByb3BlcnRpZXMsIHdoaWNoIGlzDQo+ID4gPiBn
-b29kLi4uIGJ1dCBkb2VzIGl0IHJlYWxseSBtYWtlIHNlbnNlIGZvciB0bXItYWRkPyAgSSdtIG5v
-dCBmYW1pbGlhcg0KPiA+ID4gd2l0aCB3aGF0IHRoaXMgdmFsdWUgcmVwcmVzZW50cywgYnV0IHRo
-ZSBudW1iZXJzIGxvb2sgbW9yZSBuYXR1cmFsIGFzDQo+IGhleCAoZS5nLg0KPiA+ID4gMHhhYWFh
-YWFhYiB2ZXJzdXMgMjg2MzMxMTUzMSkuDQo+ID4NCj4gPiBZZXMsIHRoZSBmaXBlciB2YWx1ZSB3
-b3VsZCBiZSB3cml0ZWQgaW50byBmaXBlciByZWdpc3RlcnMuIEFuZCBtYXgtYWRqDQo+ID4gdmFs
-dWUgd291bGQgYmUgdXNlZCBpbiBwdHAgZHJpdmVyIGluIGRyaXZlci9wdHAvLg0KPiA+IEJ1dCB5
-b3UgaW5zaXN0ZWQgdGhhdCB2YWx1ZXMgc2hvdWxkIGJlIGluIGRlY2ltYWxpc20gaW4gdGhlIHYx
-DQo+ID4gcGF0Y2guLi4gOikNCj4gPg0KPiA+IFNlZSB0aGUgaGlzdG9yeSA6KQ0KPiANCj4gSSBk
-aWRuJ3QgaW5zaXN0IG9uIGRlY2ltYWxzIGZvciAqZXZlcnl0aGluZyosIGp1c3Qgd2hlcmUgaXQg
-bWFrZXMgc2Vuc2UsDQo+IGFuZCB0aGF0ICJpdCBnb2VzIGluIGEgcmVnaXN0ZXIiIGRvZXNuJ3Qg
-KmF1dG9tYXRpY2FsbHkqIG1lYW4gdGhhdCBpdA0KPiBkb2Vzbid0IG1ha2Ugc2Vuc2UuDQo+IA0K
-PiAjIyMjIyMjIyMjIyMjIyMjIyBoaXN0b3J5ICMjIyMjIyMjIyMjIyMjIyMjIw0KPiA+ID4gPiAr
-ICBwdHBfY2xvY2tAYjBlMDB7DQo+ID4gPiA+ICsgICAgICAgICBjb21wYXRpYmxlID0gImZzbCxl
-dHNlYy1wdHAiOw0KPiA+ID4gPiArICAgICAgICAgcmVnID0gPDB4YjBlMDAgMHhiMD47DQo+ID4g
-PiA+ICsgICAgICAgICBpbnRlcnJ1cHRzID0gPDY4IDIgMCAwIDY5IDIgMCAwPjsNCj4gPiA+ID4g
-KyAgICAgICAgIGZzbCx0Y2xrLXBlcmlvZCA9IDw1PjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0
-bXItcHJzYyAgICA9IDwyPjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0bXItYWRkICAgICA9IDww
-eGNjY2NjY2NkPjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0bXItZmlwZXIxICA9IDwweDNiOWFj
-OWZiPjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0bXItZmlwZXIyICA9IDwweDAwMDE4Njk2PjsN
-Cj4gPiA+ID4gKyAgICAgICAgIGZzbCxtYXgtYWRqICAgICA9IDwyNDk5OTk5OTk+Ow0KPiA+ID4N
-Cj4gPiA+IFBsZWFzZSBkb24ndCB1c2UgaGV4IGZvciBudW1iZXJzIHRoYXQgbWFrZSBtb3JlIHNl
-bnNlIGFzIGRlY2ltYWwuDQo+ID4gPiBbTHUgWWFuZ2JvLUI0NzA5M10gVGhlIGhleCB2YWx1ZSBp
-cyByZWdpc3RlciB2YWx1ZSwgSSB0aGluayBpdCdzDQo+ID4gPiBiZXR0ZXIgdG8gdXNlIGhleC4N
-Cj4gPg0KPiA+IFdoZXRoZXIgaXQgZ29lcyBpbnRvIGEgcmVnaXN0ZXIgZG9lc24ndCBtYXR0ZXIu
-ICBIZXggdmFsdWVzIGFyZSB1c2VmdWwNCj4gPiBmb3IgdmFsdWVzIHdoaWNoIGFyZSBzdWJkaXZp
-ZGVkIGludG8gdmFyaW91cyBiaXRmaWVsZHMsIG9yIHdob3NlIGhleA0KPiA+IHJlcHJlc2VudGF0
-aW9uIGlzIHNpbXBsZXIgdGhhbiBkZWNpbWFsLiAgSSdtIG5vdCBmYW1pbGlhciB3aXRoIHRoZQ0K
-PiA+IGRldGFpbHMgb2YgdGhpcyBoYXJkd2FyZSwgYnV0IEkgZG91YnQgdGhlIGZvcm1lciBpcyB0
-aGUgY2FzZSBmb3INCj4gPiAweDNiOWFjOWZiID09DQo+ID4gOTk5OTk5OTk5NSBvciAweDE4Njk2
-ID09IDk5OTkwLg0KPiA+DQo+ID4gLVNjb3R0DQo+ID4gIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMNCj4gPg0KPiA+DQo+ID4gPg0KPiA+ID4gPiA+IGRpZmYgLS1naXQgYS9h
-cmNoL3Bvd2VycGMvYm9vdC9kdHMvcDIwMjByZGItcGMuZHRzaQ0KPiA+ID4gPiA+IGIvYXJjaC9w
-b3dlcnBjL2Jvb3QvZHRzL3AyMDIwcmRiLXBjLmR0c2kNCj4gPiA+ID4gPiBpbmRleCBjMjFkMWM3
-Li4zNjMxNzJkIDEwMDY0NA0KPiA+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9w
-MjAyMHJkYi1wYy5kdHNpDQo+ID4gPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3Ay
-MDIwcmRiLXBjLmR0c2kNCj4gPiA+ID4gPiBAQCAtMjE1LDEyICsyMTUsMTIgQEANCj4gPiA+ID4g
-PiAgICAgfTsNCj4gPiA+ID4gPg0KPiA+ID4gPiA+ICAgICAgcHRwX2Nsb2NrQDI0ZTAwew0KPiA+
-ID4gPiA+IC0gICAgICAgICAgIGZzbCx0Y2xrLXBlcmlvZCA9IDw1PjsNCj4gPiA+ID4gPiAtICAg
-ICAgICAgICBmc2wsdG1yLXByc2MgPSA8MjAwPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2ws
-dG1yLWFkZCA9IDwweENDQ0NDQ0NEPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2wsdG1yLWZp
-cGVyMSA9IDwweDNCOUFDOUZCPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2wsdG1yLWZpcGVy
-MiA9IDwweDAwMDE4NjlCPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2wsbWF4LWFkaiA9IDwy
-NDk5OTk5OTk+Ow0KPiA+ID4gPiA+ICsgICAgICAgICAgIGZzbCx0Y2xrLXBlcmlvZCA9IDw1PjsN
-Cj4gPiA+ID4gPiArICAgICAgICAgICBmc2wsdG1yLXByc2MgICAgPSA8Mj47DQo+ID4gPiA+ID4g
-KyAgICAgICAgICAgZnNsLHRtci1hZGQgICAgID0gPDI4NjMzMTE1MzE+Ow0KPiA+ID4gPiA+ICsg
-ICAgICAgICAgIGZzbCx0bXItZmlwZXIxICA9IDw5OTk5OTk5OTU+Ow0KPiA+ID4gPiA+ICsgICAg
-ICAgICAgIGZzbCx0bXItZmlwZXIyICA9IDw5OTk5MD47DQo+ID4gPiA+ID4gKyAgICAgICAgICAg
-ZnNsLG1heC1hZGogICAgID0gPDI5OTk5OTk5OT47DQo+ID4gPiA+ID4gICAgIH07DQo+ID4gPg0K
-PiA+ID4gQW5kIGhlcmUsIHlvdSdyZSBjaGFuZ2luZyB0aGUgdmFsdWUgb2YgZnNsLHRtci1hZGQg
-YW5kIGZzbCxtYXgtYWRqLg0KPiBXaHk/DQo+ID4NCj4gPiBUaGUgb2xkIHZhbHVlcyBtYXliZSBu
-b3QgY2FsY3VsYXRlZCBiYXNlIG9uIHRoZSBkZWZhdWx0IGVUU0VDIHN5c3RlbQ0KPiA+IGNsb2Nr
-IHZhbHVlLg0KPiA+IDE1ODggdGltZXIgY291bGRu4oCZdCBiZSBhZGp1c3RlZCBjb3JyZWN0bHkg
-Ynkgb2xkIHZhbHVlcy4NCj4gDQo+IEV4cGxhaW4gaW4gdGhlIGNoYW5nZWxvZyB3aGF0IHdhcyB3
-cm9uZyB3aXRoIHRoZSBvbGQgdmFsdWVzIChkb24ndCBqdXN0DQo+IHNheSAiRml4IDE1ODggdGlt
-ZXIgbm9kZSBpbiBmaWxlIikuDQo+IA0KPiAtU2NvdHQNCg0K
+Add 1588 timer node in files:
+arch/powerpc/boot/dts/bsc9131rdb.dtsi
+arch/powerpc/boot/dts/bsc9132qds.dtsi
+arch/powerpc/boot/dts/p1010rdb.dtsi
+arch/powerpc/boot/dts/p1020rdb-pd.dts
+arch/powerpc/boot/dts/p1021rdb-pc.dtsi
+arch/powerpc/boot/dts/p1022ds.dtsi
+arch/powerpc/boot/dts/p1025twr.dtsi
+For P2020RDB-PC, registers' values should be calculated
+based on default 1588 reference clock(300MHz) not 250MHz,
+and fix this in file:
+arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+
+Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
+---
+Changes for v3:
+	- Changed 'tmr-add' to hex value
+	- Modified commit message
+Changes for v2:
+	- Changed hex value to decimal value in dts
+	- Modified commit message
+	- Modified 1588 node in p2020rdb-pc.dtsi
+---
+ arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++
+ arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
+ arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
+ arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++
+ arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
+ arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
+ arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
+ arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 12 ++++++------
+ 8 files changed, 90 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+index 45efcba..f4d96d2 100644
+--- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
++++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+@@ -80,6 +80,18 @@
+ 		status = "disabled";
+ 	};
+ 
++	ptp_clock@b0e00 {
++		compatible = "fsl,etsec-ptp";
++		reg = <0xb0e00 0xb0>;
++		interrupts = <68 2 0 0 69 2 0 0>;
++		fsl,tclk-period	= <5>;
++		fsl,tmr-prsc	= <2>;
++		fsl,tmr-add	= <0xcccccccd>;
++		fsl,tmr-fiper1	= <999999995>;
++		fsl,tmr-fiper2	= <99990>;
++		fsl,max-adj	= <249999999>;
++	};
++
+ 	enet0: ethernet@b0000 {
+ 		phy-handle = <&phy0>;
+ 		phy-connection-type = "rgmii-id";
+diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi b/arch/powerpc/boot/dts/bsc9132qds.dtsi
+index af8e888..7a13bf2 100644
+--- a/arch/powerpc/boot/dts/bsc9132qds.dtsi
++++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
+@@ -87,6 +87,18 @@
+ 		};
+ 	};
+ 
++	ptp_clock@b0e00 {
++		compatible = "fsl,etsec-ptp";
++		reg = <0xb0e00 0xb0>;
++		interrupts = <68 2 0 0 69 2 0 0>;
++		fsl,tclk-period	= <5>;
++		fsl,tmr-prsc	= <2>;
++		fsl,tmr-add	= <0xcccccccd>;
++		fsl,tmr-fiper1	= <999999995>;
++		fsl,tmr-fiper2	= <99990>;
++		fsl,max-adj	= <249999999>;
++	};
++
+ 	enet0: ethernet@b0000 {
+ 		phy-handle = <&phy0>;
+ 		tbi-handle = <&tbi0>;
+diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
+index ea534ef..0f0ced6 100644
+--- a/arch/powerpc/boot/dts/p1010rdb.dtsi
++++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
+@@ -186,6 +186,18 @@
+ 		};
+ 	};
+ 
++	ptp_clock@b0e00 {
++		compatible = "fsl,etsec-ptp";
++		reg = <0xb0e00 0xb0>;
++		interrupts = <68 2 0 0 69 2 0 0>;
++		fsl,tclk-period	= <10>;
++		fsl,tmr-prsc	= <2>;
++		fsl,tmr-add	= <0x80000016>;
++		fsl,tmr-fiper1	= <999999990>;
++		fsl,tmr-fiper2	= <99990>;
++		fsl,max-adj	= <199999999>;
++	};
++
+ 	enet0: ethernet@b0000 {
+ 		phy-handle = <&phy0>;
+ 		phy-connection-type = "rgmii-id";
+diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts b/arch/powerpc/boot/dts/p1020rdb-pd.dts
+index 987017e..c7c6416 100644
+--- a/arch/powerpc/boot/dts/p1020rdb-pd.dts
++++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
+@@ -225,6 +225,18 @@
+ 			};
+ 		};
+ 
++		ptp_clock@b0e00 {
++			compatible = "fsl,etsec-ptp";
++			reg = <0xb0e00 0xb0>;
++			interrupts = <68 2 0 0 69 2 0 0>;
++			fsl,tclk-period	= <10>;
++			fsl,tmr-prsc	= <2>;
++			fsl,tmr-add	= <0x80000016>;
++			fsl,tmr-fiper1	= <999999990>;
++			fsl,tmr-fiper2	= <99990>;
++			fsl,max-adj	= <199999999>;
++		};
++
+ 		enet0: ethernet@b0000 {
+ 			fixed-link = <1 1 1000 0 0>;
+ 			phy-connection-type = "rgmii-id";
+diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
+index d6274c5..e8a0f95 100644
+--- a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
++++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
+@@ -224,6 +224,18 @@
+ 		};
+ 	};
+ 
++	ptp_clock@b0e00 {
++		compatible = "fsl,etsec-ptp";
++		reg = <0xb0e00 0xb0>;
++		interrupts = <68 2 0 0 69 2 0 0>;
++		fsl,tclk-period	= <10>;
++		fsl,tmr-prsc	= <2>;
++		fsl,tmr-add	= <0x80000016>;
++		fsl,tmr-fiper1	= <999999990>;
++		fsl,tmr-fiper2	= <99990>;
++		fsl,max-adj	= <199999999>;
++	};
++
+ 	enet0: ethernet@b0000 {
+ 		fixed-link = <1 1 1000 0 0>;
+ 		phy-connection-type = "rgmii-id";
+diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi b/arch/powerpc/boot/dts/p1022ds.dtsi
+index 957e0dc..149da0f 100644
+--- a/arch/powerpc/boot/dts/p1022ds.dtsi
++++ b/arch/powerpc/boot/dts/p1022ds.dtsi
+@@ -215,6 +215,18 @@
+ 		};
+ 	};
+ 
++	ptp_clock@b0e00 {
++		compatible = "fsl,etsec-ptp";
++		reg = <0xb0e00 0xb0>;
++		interrupts = <68 2 0 0 69 2 0 0>;
++		fsl,tclk-period	= <5>;
++		fsl,tmr-prsc	= <2>;
++		fsl,tmr-add	= <0xc01ebd3d>;
++		fsl,tmr-fiper1	= <999999995>;
++		fsl,tmr-fiper2	= <99990>;
++		fsl,max-adj	= <266499999>;
++	};
++
+ 	ethernet@b0000 {
+ 		phy-handle = <&phy0>;
+ 		phy-connection-type = "rgmii-id";
+diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi b/arch/powerpc/boot/dts/p1025twr.dtsi
+index 8453501..08816fb 100644
+--- a/arch/powerpc/boot/dts/p1025twr.dtsi
++++ b/arch/powerpc/boot/dts/p1025twr.dtsi
+@@ -138,6 +138,18 @@
+ 		};
+ 	};
+ 
++	ptp_clock@b0e00 {
++		compatible = "fsl,etsec-ptp";
++		reg = <0xb0e00 0xb0>;
++		interrupts = <68 2 0 0 69 2 0 0>;
++		fsl,tclk-period	= <10>;
++		fsl,tmr-prsc	= <2>;
++		fsl,tmr-add	= <0xc0000021>;
++		fsl,tmr-fiper1	= <999999990>;
++		fsl,tmr-fiper2	= <99990>;
++		fsl,max-adj	= <133333332>;
++	};
++
+ 	enet0: ethernet@b0000 {
+ 		phy-handle = <&phy0>;
+ 		phy-connection-type = "rgmii-id";
+diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+index c21d1c7..ad2e242 100644
+--- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
++++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+@@ -215,12 +215,12 @@
+ 	};
+ 
+ 	ptp_clock@24e00 {
+-		fsl,tclk-period = <5>;
+-		fsl,tmr-prsc = <200>;
+-		fsl,tmr-add = <0xCCCCCCCD>;
+-		fsl,tmr-fiper1 = <0x3B9AC9FB>;
+-		fsl,tmr-fiper2 = <0x0001869B>;
+-		fsl,max-adj = <249999999>;
++		fsl,tclk-period	= <5>;
++		fsl,tmr-prsc	= <2>;
++		fsl,tmr-add	= <0xaaaaaaab>;
++		fsl,tmr-fiper1	= <999999995>;
++		fsl,tmr-fiper2	= <99990>;
++		fsl,max-adj	= <299999999>;
+ 	};
+ 
+ 	enet0: ethernet@24000 {
+-- 
+2.1.0.27.g96db324
