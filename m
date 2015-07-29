@@ -1,21 +1,29 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2330E1A0DA8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 07:10:10 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- Claudiu Manoil <claudiu.manoil@freescale.com>
-Subject: Re: [PATCH] gianfar: Fix warnings when built on 64-bit
-Date: Wed, 29 Jul 2015 23:04:46 +0200
-Message-ID: <2331012.mZ9bDLS4JC@wuerfel>
-In-Reply-To: <1438185761.2993.333.camel@freescale.com>
-References: <1438147477-393-1-git-send-email-scottwood@freescale.com>
- <4498062.4y369pLSmO@wuerfel> <1438185761.2993.333.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B159A1A0DB0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 08:14:52 +1000 (AEST)
+Message-ID: <1438208074.2993.343.camel@freescale.com>
+Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
+ support
+From: Scott Wood <scottwood@freescale.com>
+To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 29 Jul 2015 17:14:34 -0500
+In-Reply-To: <BY1PR0301MB08531E965109B9F1EDB7A292EC8C0@BY1PR0301MB0853.namprd03.prod.outlook.com>
+References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1436982433.2993.81.camel@freescale.com>
+ <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437075349.2993.105.camel@freescale.com>
+ <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437152821.2993.191.camel@freescale.com>
+ <BY1PR0301MB0853E43544A9D9F36D2B31B9EC830@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437751681.2993.235.camel@freescale.com>
+ <BY1PR0301MB08531E965109B9F1EDB7A292EC8C0@BY1PR0301MB0853.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 29 July 2015 11:02:41 Scott Wood wrote:
-> On Wed, 2015-07-29 at 10:02 +0200, Arnd Bergmann wrote:
-> > On Wednesday 29 July 2015 00:24:37 Scott Wood wrote:
-> > > +#ifdef CONFIG_PM
-> > >  static void lock_tx_qs(struct gfar_private *priv)
-> > >  {
-> > >     int i;
-> > > @@ -580,6 +581,7 @@ static void unlock_tx_qs(struct gfar_private *priv)
-> > >     for (i = 0; i < priv->num_tx_queues; i++)
-> > >             spin_unlock(&priv->tx_queue[i]->txlock);
-> > >  }
-> > > +#endif
-> > >  
-> > 
-> > This seems unrelated and should probably be a separate fix.
+On Wed, 2015-07-29 at 04:07 -0500, Jain Priyanka-B32167 wrote:
 > 
-> It's related in that it fixes a warning -- the 64-bit build didn't have 
-> CONFIG_PM -- though I should have been clearer about that in the changelog.
-
-Yes, that's what I meant: you can easily have a 32-bit build without
-CONFIG_PM of course, and that would have the same problem.
-
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, July 24, 2015 8:58 PM
+> > To: Jain Priyanka-B32167
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB
+> > board support
 > > 
-> > You are fixing two problems here: the warning about a size cast, and
-> > the fact that the driver is using the wrong pointer. I'd suggest
-> > explaining it in the changelog.
+> > OK, so you're saying the i2c devices are pluggable (and I'm assuming by 
+> > "PEX
+> > slots" you just mean that the physical slot is repurposed, not that the 
+> > PCI
+> > express protocol is involved)?  Making a non-runtime-enumerable bus be
+> > pluggable seems like a bad idea, but if that's really what has been done,
+> > there needs to be a device tree that represents the entire system, not 
+> > just
+> > the motherboard.  This could be done either via a dts file that 
+> > /include/s the
+> > motherboard dts, or via firmware dtb edits.  The dts for the motherboard
+> > should include the mux node with a comment explaining what the situation
+> > is.
 > > 
-> > Note that we normally rely on void pointer arithmetic in the kernel, so
-> > I'd write it without the uintptr_t casts as 
-> > 
-> >       bdp_dma = lower_32_bits(rx_queue->rx_bd_dma_base + (base - bdp));
-> 
-> But those aren't void pointers, and rx_bd_dma_base isn't a pointer, so you'd 
-> get the wrong answer doing that.
+> [Jain Priyanka-B32167] Is the below comment looks OK?
+> "Output I2C data, clock lines (SDO/SC0,SD1/SC1 , SD2/SC2, SD3/SC3) are 
+> going mini PCI connector slot1, mini PCI connector slot2, HDMI connector, 
+> PEX slot respectively
+>  The sub-nodes will depend upon the device that will be connected on these 
+> slots"
 
-Ah, right.
+How about:
 
-	Arnd
+"Child nodes depend on which i2c devices are connected via the mini PCI 
+
+connector slot1, the mini PCI connector slot2, the HDMI connector, and the 
+
+PEX slot.  Systems with such devices attached should provide a wrapper .dts 
+file that includes this one, and adds those nodes."
+
+-Scott
