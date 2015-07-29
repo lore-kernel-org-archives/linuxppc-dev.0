@@ -1,21 +1,27 @@
-Return-Path: <claudiu.manoil@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0124.outbound.protection.outlook.com [207.46.100.124])
+Return-Path: <Priyanka.Jain@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0117.outbound.protection.outlook.com [65.55.169.117])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B2D741A096D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 18:56:30 +1000 (AEST)
-From: Manoil Claudiu <claudiu.manoil@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] gianfar: Fix warnings when built on 64-bit
-Date: Wed, 29 Jul 2015 08:41:29 +0000
-Message-ID: <BY2PR0301MB072721F7AD52766A864FC79E9C8C0@BY2PR0301MB0727.namprd03.prod.outlook.com>
-References: <1438147477-393-1-git-send-email-scottwood@freescale.com>
- <4498062.4y369pLSmO@wuerfel>
-In-Reply-To: <4498062.4y369pLSmO@wuerfel>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 52EED1A0DA4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 19:08:03 +1000 (AEST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
+ support
+Date: Wed, 29 Jul 2015 09:07:56 +0000
+Message-ID: <BY1PR0301MB08531E965109B9F1EDB7A292EC8C0@BY1PR0301MB0853.namprd03.prod.outlook.com>
+References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1436982433.2993.81.camel@freescale.com>
+ <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437075349.2993.105.camel@freescale.com>
+ <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437152821.2993.191.camel@freescale.com>
+ <BY1PR0301MB0853E43544A9D9F36D2B31B9EC830@BY1PR0301MB0853.namprd03.prod.outlook.com>
+ <1437751681.2993.235.camel@freescale.com>
+In-Reply-To: <1437751681.2993.235.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,70 +32,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Arnd Bergmann [mailto:arnd@arndb.de]
-> Sent: Wednesday, July 29, 2015 11:02 AM
-> To: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org; Manoil Claudiu=
--
-> B08782; Wood Scott-B07421
-> Subject: Re: [PATCH] gianfar: Fix warnings when built on 64-bit
->=20
-> On Wednesday 29 July 2015 00:24:37 Scott Wood wrote:
->=20
-> > Alternatively, if there's a desire to not mess with this code (I don't
-> > know how to trigger this code path to test it), this driver should be
-> > given dependencies that ensure that it only builds on 32-bit.
->=20
-> These are obvious fixes, they should definitely go in.
-
-This patch conflicts with the rx s/g patch series:
-https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/?id=
-=3D9061cb023567abf081569d6851b0815dd18437e6
-
-So if applied as it is on top of net.git it will give a headache when net-n=
-ext.git
-will be merged into net.git (or vice versa).
-
-Since there are no 64-bit systems with gianfar/ eTSEC, I think that this pa=
-tch
-should target net-next.git (reworked to be applicable on net-next.git) to a=
-void
-the conflict.   I could do this rework and resend it on top of net-next.git
-
->=20
-> >  drivers/net/ethernet/freescale/gianfar.c | 22 ++++++++++++++++++----
-> >  1 file changed, 18 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/net/ethernet/freescale/gianfar.c
-> b/drivers/net/ethernet/freescale/gianfar.c
-> > index ff87502..7c682ac 100644
-> > --- a/drivers/net/ethernet/freescale/gianfar.c
-> > +++ b/drivers/net/ethernet/freescale/gianfar.c
-> > @@ -565,6 +565,7 @@ static void gfar_ints_enable(struct gfar_private
-> *priv)
-> >  	}
-> >  }
-> >
-> > +#ifdef CONFIG_PM
-> >  static void lock_tx_qs(struct gfar_private *priv)
-> >  {
-> >  	int i;
-> > @@ -580,6 +581,7 @@ static void unlock_tx_qs(struct gfar_private *priv)
-> >  	for (i =3D 0; i < priv->num_tx_queues; i++)
-> >  		spin_unlock(&priv->tx_queue[i]->txlock);
-> >  }
-> > +#endif
-> >
->=20
-> This seems unrelated and should probably be a separate fix.
->=20
-
-I'm working at a patch set to revive/ cleanup the power management code,
-and lock_tx_qs() is planned to be removed (it can be shown that it's not ne=
-eded).
-So this change can be remove from this patch.
-
-Thanks,
-Claudiu
-
-[...]
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBKdWx5IDI0LCAyMDE1IDg6NTggUE0NCj4gVG86IEphaW4gUHJp
+eWFua2EtQjMyMTY3DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJq
+ZWN0OiBSZTogW1BBVENIXVt2Ml0gcG93ZXJwYy9mc2wtYm9va2U6IEFkZCBUMTA0MEQ0UkRCL1Qx
+MDQyRDRSREINCj4gYm9hcmQgc3VwcG9ydA0KPiANCj4gT24gV2VkLCAyMDE1LTA3LTIyIGF0IDA1
+OjQ5IC0wNTAwLCBKYWluIFByaXlhbmthLUIzMjE2NyB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1P
+cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4g
+PiBTZW50OiBGcmlkYXksIEp1bHkgMTcsIDIwMTUgMTA6MzcgUE0NCj4gPiA+IFRvOiBKYWluIFBy
+aXlhbmthLUIzMjE2Nw0KPiA+ID4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+
+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXVt2Ml0gcG93ZXJwYy9mc2wtYm9va2U6IEFkZA0KPiA+
+ID4gVDEwNDBENFJEQi9UMTA0MkQ0UkRCIGJvYXJkIHN1cHBvcnQNCj4gPiA+DQo+ID4gPiBPbiBG
+cmksIDIwMTUtMDctMTcgYXQgMDE6MTcgLTA1MDAsIEphaW4gUHJpeWFua2EtQjMyMTY3IHdyb3Rl
+Og0KPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+
+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50OiBGcmlkYXksIEp1bHkg
+MTcsIDIwMTUgMTowNiBBTQ0KPiA+ID4gPiA+IFRvOiBKYWluIFByaXlhbmthLUIzMjE2Nw0KPiA+
+ID4gPiA+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0hdW3YyXSBwb3dlcnBjL2ZzbC1ib29rZTogQWRkDQo+ID4gPiA+ID4gVDEw
+NDBENFJEQi9UMTA0MkQ0UkRCIGJvYXJkIHN1cHBvcnQNCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4g
+PiArICAgICAgICAgICAgICAgIGkyY0AxMTgxMDB7DQo+ID4gPiA+ID4gPiA+ICsgICAgICAgICAg
+ICAgICAgICAgICAgbXV4QDc3ew0KPiA+ID4gPiA+ID4gPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICBjb21wYXRpYmxlID0gIm54cCxwY2E5NTQ2IjsNCj4gPiA+ID4gPiA+ID4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4Nzc+Ow0KPiA+ID4gPiA+ID4gPiArICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiA+ID4g
+PiA+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8MD47DQo+
+ID4gPiA+ID4gPiA+ICsgICAgICAgICAgICAgICAgICAgICB9Ow0KPiA+ID4gPiA+ID4gPiArICAg
+ICAgICAgICAgIH07DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gQSBtdXggd2l0aCBubyBub2Rl
+cyB1bmRlciBpdCAoYW5kIHlldCBpdCBoYXMNCj4gPiA+ID4gPiA+ICNhZGRyZXNzLWNlbGxzLyNz
+aXplLSBjZWxscyk/DQo+ID4gPiA+ID4gPiBXaGF0IGlzIGl0IG11bHRpcGxleGluZz8NCj4gPiA+
+ID4gPiA+IFtQcml5YW5rYV06IFBDQTk1NDYgaXMgaTJjIG11eCBkZXZpY2UgLCB0byB3aGljaCBv
+dGhlciBpMmMNCj4gPiA+ID4gPiA+IGRldmljZXMgKHVwLXRvIDgNCj4gPiA+ID4gPiA+ICkgY2Fu
+IGJlIGZ1cnRoZXIgY29ubmVjdGVkIG9uIG91dHB1dCBjaGFubmVscyBPbiBUMTA0eEQ0UkRCLA0K
+PiA+ID4gPiA+ID4gY2hhbm5lbCAwLCAxLCAzIGxpbmUgYXJlIGNvbm5lY3RlZCB0byBQRVggZGV2
+aWNlLCBDaGFubmVsIDIgdG8NCj4gPiA+ID4gPiA+IGhkbWkgaW50ZXJmYWNlIChpbml0aWFsaXph
+dGlvbiBpcyBkb25lIGluIHUtYm9vdCBvbmx5KSwgb3RoZXINCj4gPiA+ID4gPiA+IGNoYW5uZWxz
+IGFyZQ0KPiA+ID4gZ3JvdW5kZWQuDQo+ID4gPiA+ID4gPiBTbywgYXMgc3VjaCBMaW51eCBpcyBu
+b3QgdXNpbmcgdGhlIHNlY29uZCBsZXZlbCBJMkMgZGV2aWNlcw0KPiA+ID4gPiA+ID4gY29ubmVj
+dGVkIG9uIHRoaXMgTVVYIGRldmljZS4gU28sIEkgaGF2ZSBub3Qgc2hvd24gbmV4dCBsZXZlbA0K
+PiA+ID4gaGllcmFyY2h5Lg0KPiA+ID4gPiA+ID4gU2hvdWxkIEkgcmVwbGFjZSAnbXV4JyB3aXRo
+IHNvbWUgb3RoZXIgbmFtZT8gLiBQbGVhc2Ugc3VnZ2VzdC4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+
+IFRoZSBkZXZpY2UgdHJlZSBkZXNjcmliZXMgdGhlIGhhcmR3YXJlLCBub3QganVzdCB3aGF0IExp
+bnV4IHVzZXMuLi4NCj4gPiA+ID4gPiBidXQgd2hhdCBJIGRvbid0IHVuZGVyc3RhbmQgaXMgd2h5
+IHlvdSBkZXNjcmliZSB0aGUgbXV4IGF0IGFsbA0KPiA+ID4gPiA+IGlmIHlvdSdyZSBub3QgZ29p
+bmcgdG8gZGVzY3JpYmUgd2hhdCBnb2VzIHVuZGVybmVhdGggaXQuDQo+ID4gPiA+ID4NCj4gPiA+
+ID4gW0phaW4gUHJpeWFua2EtQjMyMTY3XSA6IElzIGJlbG93IGxvb2tzIE9LPw0KPiA+ID4gPiBp
+MmNAMTE4MTAwew0KPiA+ID4gPiAgKyAgICAgICAgICAgICAgICAgICAgICBpMmNANzd7DQo+ID4g
+PiA+ICArICAgICAgICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm54cCxwY2E5
+NTQ2IjsNCj4gPiA+ID4gICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDc3
+PjsNCj4gPiA+ID4gICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICNhZGRyZXNzLWNlbGxz
+ID0gPDE+Ow0KPiA+ID4gPiAgKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI3NpemUtY2Vs
+bHMgPSA8MD47DQo+ID4gPiA+ICArICAgICAgICAgICAgICAgICAgICAgfTsNCj4gPiA+ID4gICsg
+ICAgICAgICAgICAgfTsNCj4gPiA+DQo+ID4gPiBXaGVyZSBpbiBteSBhYm92ZSBjb21tZW50IGRp
+ZCBpdCBhcHBlYXIgdGhhdCBJIHdhcyBjb21wbGFpbmluZyBhYm91dA0KPiA+ID4gdGhlIG5vZGUg
+bmFtZT8NCj4gPiA+DQo+ID4gW0phaW4gUHJpeWFua2EtQjMyMTY3XQ0KPiA+IEZyb20gd2hhdCBJ
+IHVuZGVyc3RhbmQ6DQo+ID4gUENBOTU0NiBpcyBhIG11eCBkZXZpY2UgYW5kIGl0IHdvdWxkIGJl
+IGdvb2QgaWYgd2Ugd2VyZSBhYmxlIHRvDQo+ID4gcHJlc2VudCB0aGUgSTJDIGRldmljZXMgb24g
+b3V0cHV0IGxpbmVzIGFzIHN1Ym5vZGVzIGxpa2UgaW4gY2FzZSBvZg0KPiA+IEI0cWRzIGJvYXJk
+IGFuZCB0aGVuICdtdXgnIG5hbWUgd291bGQgaGF2ZSBtYWtlIG1vcmUgc2Vuc2UuDQo+IA0KPiBU
+aGUgbmFtZSAibXV4IiBtYWtlcyBtb3JlIHNlbnNlIHJlZ2FyZGxlc3MuDQo+IA0KPiA+IEJ1dCBp
+biBjYXNlIG9mIFQxMDQwRDRSREIgYm9hcmQsIG91dHB1dCBpMmMgbGluZXMgYXJlIGdvaW5nIHRv
+IFBFWA0KPiA+IHNsb3RzLCBQQ0kgY29ubmVjdG9yLiBJIGFtIG5vdCBhd2FyZSBvZiBob3cgdG8g
+cmVwcmVzZW50cyB0aGVtIGFzIHN1Yi0NCj4gbm9kZXMgaW4gZHRzLg0KPiANCj4gT0ssIHNvIHlv
+dSdyZSBzYXlpbmcgdGhlIGkyYyBkZXZpY2VzIGFyZSBwbHVnZ2FibGUgKGFuZCBJJ20gYXNzdW1p
+bmcgYnkgIlBFWA0KPiBzbG90cyIgeW91IGp1c3QgbWVhbiB0aGF0IHRoZSBwaHlzaWNhbCBzbG90
+IGlzIHJlcHVycG9zZWQsIG5vdCB0aGF0IHRoZSBQQ0kNCj4gZXhwcmVzcyBwcm90b2NvbCBpcyBp
+bnZvbHZlZCk/ICBNYWtpbmcgYSBub24tcnVudGltZS1lbnVtZXJhYmxlIGJ1cyBiZQ0KPiBwbHVn
+Z2FibGUgc2VlbXMgbGlrZSBhIGJhZCBpZGVhLCBidXQgaWYgdGhhdCdzIHJlYWxseSB3aGF0IGhh
+cyBiZWVuIGRvbmUsDQo+IHRoZXJlIG5lZWRzIHRvIGJlIGEgZGV2aWNlIHRyZWUgdGhhdCByZXBy
+ZXNlbnRzIHRoZSBlbnRpcmUgc3lzdGVtLCBub3QganVzdA0KPiB0aGUgbW90aGVyYm9hcmQuICBU
+aGlzIGNvdWxkIGJlIGRvbmUgZWl0aGVyIHZpYSBhIGR0cyBmaWxlIHRoYXQgL2luY2x1ZGUvcyB0
+aGUNCj4gbW90aGVyYm9hcmQgZHRzLCBvciB2aWEgZmlybXdhcmUgZHRiIGVkaXRzLiAgVGhlIGR0
+cyBmb3IgdGhlIG1vdGhlcmJvYXJkDQo+IHNob3VsZCBpbmNsdWRlIHRoZSBtdXggbm9kZSB3aXRo
+IGEgY29tbWVudCBleHBsYWluaW5nIHdoYXQgdGhlIHNpdHVhdGlvbg0KPiBpcy4NCj4gDQpbSmFp
+biBQcml5YW5rYS1CMzIxNjddIElzIHRoZSBiZWxvdyBjb21tZW50IGxvb2tzIE9LPw0KIk91dHB1
+dCBJMkMgZGF0YSwgY2xvY2sgbGluZXMgKFNETy9TQzAsU0QxL1NDMSAsIFNEMi9TQzIsIFNEMy9T
+QzMpIGFyZSBnb2luZyBtaW5pIFBDSSBjb25uZWN0b3Igc2xvdDEsIG1pbmkgUENJIGNvbm5lY3Rv
+ciBzbG90MiwgSERNSSBjb25uZWN0b3IsIFBFWCBzbG90IHJlc3BlY3RpdmVseQ0KIFRoZSBzdWIt
+bm9kZXMgd2lsbCBkZXBlbmQgdXBvbiB0aGUgZGV2aWNlIHRoYXQgd2lsbCBiZSBjb25uZWN0ZWQg
+b24gdGhlc2Ugc2xvdHMiDQoNCj4gLVNjb3R0DQoNCg==
