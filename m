@@ -1,37 +1,31 @@
-Return-Path: <boris.ostrovsky@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <balbi@ti.com>
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D42D1A117E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 00:55:38 +1000 (AEST)
-Message-ID: <55B8E866.60308@oracle.com>
-Date: Wed, 29 Jul 2015 10:51:18 -0400
-From: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BE851A0DA4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 01:30:22 +1000 (AEST)
+Date: Wed, 29 Jul 2015 10:20:29 -0500
+From: Felipe Balbi <balbi@ti.com>
+To: Robert Baldyga <r.baldyga@samsung.com>
+CC: <balbi@ti.com>, <gregkh@linuxfoundation.org>, <Peter.Chen@freescale.com>,
+ <johnyoun@synopsys.com>, <dahlmann.thomas@arcor.de>,
+ <nicolas.ferre@atmel.com>, <cernekee@gmail.com>, <leoli@freescale.com>,
+ <daniel@zonque.org>, <haojian.zhuang@gmail.com>,
+ <robert.jarzmik@free.fr>, <michal.simek@xilinx.com>,
+ <devel@driverdev.osuosl.org>, <linux-kernel@vger.kernel.org>,
+ <linux-usb@vger.kernel.org>, <linux-omap@vger.kernel.org>,
+ <linux-geode@lists.infradead.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <andrzej.p@samsung.com>,
+ <m.szyprowski@samsung.com>, <stern@rowland.harvard.edu>, <petr.cvek@tul.cz>
+Subject: Re: [PATCH v4 04/46] staging: emxx_udc: add ep capabilities support
+Message-ID: <20150729152029.GB32418@saruman.tx.rr.com>
+Reply-To: <balbi@ti.com>
+References: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
+ <1437988616-6962-5-git-send-email-r.baldyga@samsung.com>
 MIME-Version: 1.0
-To: Julien Grall <julien.grall@citrix.com>, xen-devel@lists.xenproject.org
-CC: linux-fbdev@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Jiri Slaby <jslaby@suse.com>, stefano.stabellini@eu.citrix.com,
- Russell King <linux@arm.linux.org.uk>, linux-scsi@vger.kernel.org,
- x86@kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- linux-input@vger.kernel.org,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- ian.campbell@citrix.com, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- "James E.J. Bottomley" <JBottomley@odin.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org, Juergen Gross <jgross@suse.com>,
- Wei Liu <wei.liu2@citrix.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- linux-kernel@vger.kernel.org, David Vrabel <david.vrabel@citrix.com>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- =?windows-1252?Q?Roger_Pau_Monn=E9?= <roger.pau@citrix.com>
-Subject: Re: [PATCH 4/8] xen: Use the correctly the Xen memory terminologies
-References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
- <1438095769-2560-5-git-send-email-julien.grall@citrix.com>
- <55B7D40B.5080903@oracle.com> <55B8B846.2060103@citrix.com>
- <55B8DFD7.6070107@oracle.com> <55B8E1C7.6070608@citrix.com>
-In-Reply-To: <55B8E1C7.6070608@citrix.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="eAbsdosE1cNLO4uF"
+In-Reply-To: <1437988616-6962-5-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +35,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2015 10:23 AM, Julien Grall wrote:
-> On 29/07/15 15:14, Boris Ostrovsky wrote:
->>> static inline unsigned long pfn_to_gfn(unsigned long pfn)
->>> {
->>>      if (xen_feature(XENFEAT_autotranslated_physmap))
->>>          return pfn;
->>>      else
->>>          return pfn_to_mfn(pfn);
->>> }
->>
->> But you'd still say 'op.arg1.mfn = pfn_to_gfn(pfn);' in xen_do_pin()
->> i.e. assign GFN to MFN, right? That's what I was referring to.
-> Well no. I would use op.arg1.mfn = pfn_to_mfn(pfn) given that the code,
-> if I'm right, is only executed for PV.
->
-> mfn = pfn_to_gfn(...) was valid too because on PV is always an MFN. The
-> suggestion of pfn_to_mfn was just for more readability,
+--eAbsdosE1cNLO4uF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Right, and my comments were also not about correctness.
+On Mon, Jul 27, 2015 at 11:16:14AM +0200, Robert Baldyga wrote:
+> Convert endpoint configuration to new capabilities model.
+>=20
+> Fixed typo in "epc-nulk" to "epc-bulk".
+>=20
+> Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
+> ---
+>  drivers/staging/emxx_udc/emxx_udc.c | 60 ++++++++++++++++++-------------=
+------
+>  1 file changed, 29 insertions(+), 31 deletions(-)
+>=20
+> diff --git a/drivers/staging/emxx_udc/emxx_udc.c b/drivers/staging/emxx_u=
+dc/emxx_udc.c
+> index 3b7aa36..0d64bee 100644
+> --- a/drivers/staging/emxx_udc/emxx_udc.c
+> +++ b/drivers/staging/emxx_udc/emxx_udc.c
+> @@ -3153,36 +3153,33 @@ static const struct usb_gadget_ops nbu2ss_gadget_=
+ops =3D {
+>  	.ioctl			=3D nbu2ss_gad_ioctl,
+>  };
+> =20
+> -static const char g_ep0_name[] =3D "ep0";
+> -static const char g_ep1_name[] =3D "ep1-bulk";
+> -static const char g_ep2_name[] =3D "ep2-bulk";
+> -static const char g_ep3_name[] =3D "ep3in-int";
+> -static const char g_ep4_name[] =3D "ep4-iso";
+> -static const char g_ep5_name[] =3D "ep5-iso";
+> -static const char g_ep6_name[] =3D "ep6-bulk";
+> -static const char g_ep7_name[] =3D "ep7-bulk";
+> -static const char g_ep8_name[] =3D "ep8in-int";
+> -static const char g_ep9_name[] =3D "ep9-iso";
+> -static const char g_epa_name[] =3D "epa-iso";
+> -static const char g_epb_name[] =3D "epb-bulk";
+> -static const char g_epc_name[] =3D "epc-nulk";
+> -static const char g_epd_name[] =3D "epdin-int";
+> -
+> -static const char *gp_ep_name[NUM_ENDPOINTS] =3D {
+> -	g_ep0_name,
+> -	g_ep1_name,
+> -	g_ep2_name,
+> -	g_ep3_name,
+> -	g_ep4_name,
+> -	g_ep5_name,
+> -	g_ep6_name,
+> -	g_ep7_name,
+> -	g_ep8_name,
+> -	g_ep9_name,
+> -	g_epa_name,
+> -	g_epb_name,
+> -	g_epc_name,
+> -	g_epd_name,
+> +static const struct {
+> +	const char *name;
+> +	const struct usb_ep_caps caps;
+> +} ep_info[NUM_ENDPOINTS] =3D {
+> +#define EP_INFO(_name, _type, _dir) \
+> +	{ \
+> +		.name =3D _name, \
+> +		.caps =3D USB_EP_CAPS(USB_EP_CAPS_TYPE_ ## _type, \
+> +				USB_EP_CAPS_DIR_ ## _dir), \
+> +	}
+> +
+> +	EP_INFO("ep0",		CONTROL, ALL),
+> +	EP_INFO("ep1-bulk",	BULK,	ALL),
+> +	EP_INFO("ep2-bulk",	BULK,	ALL),
+> +	EP_INFO("ep3in-int",	INT,	IN),
+> +	EP_INFO("ep4-iso",	INT,	ALL),
+> +	EP_INFO("ep5-iso",	ISO,	ALL),
+> +	EP_INFO("ep6-bulk",	ISO,	ALL),
+> +	EP_INFO("ep7-bulk",	BULK,	ALL),
+> +	EP_INFO("ep8in-int",	INT,	IN),
+> +	EP_INFO("ep9-iso",	ISO,	ALL),
+> +	EP_INFO("epa-iso",	ISO,	ALL),
+> +	EP_INFO("epb-bulk",	BULK,	ALL),
+> +	EP_INFO("epc-bulk",	BULK,	ALL),
+> +	EP_INFO("epdin-int",	INT,	IN),
 
+IMO, this is pointless obfuscation. It just makes it a pain to grep
+source around. Why don't you have UDC drivers initialize the 1-bit flags
+directly ?
 
->
->> (In general, I am not sure a guest should ever use 'mfn' as it is purely
->> a hypervisor construct. Including p2m, which I think should really be
->> p2g as this is what we use to figure out what to stick into page tables)
-> I think avoid to use mfn in the hypervisor interface is out-of-scope for
-> this series. If we ever want to modify the Xen API in Linux, we should
-> do in sync with Xen to avoid inconsistency on naming.
->
-> Anyway, the oddity of mfn = pfn_to_gfn(...) is mostly contained in the
-> x86 specific code. I don't mind to either add pfn_to_mfn and use it or
-> add a comment /* PV-specific so mfn == gfn */ for every use of mfn =
-> pfn_to_gfn(...).
+--=20
+balbi
 
-I think the former is better (even thought it adds a test)
+--eAbsdosE1cNLO4uF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
--boris
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVuO89AAoJEIaOsuA1yqREpT4P/R+sN60ILX8zbe0pnFmypIqQ
+ukpSQkN7DyrEJjSUFrsJ7h5YPRfmEDOg/cdZpqM05Z6+YjZ9n8Gex2JFbWDHPYb0
+JYUYbI4nFpVDaGZxclnxkvr7wwtCyE1Lxma9l83klQJduzeS05tTKpitkc3cSPUn
+7OwConNlw7lyRne9SjbGd/QfjEkTTaOLO1elQjvPDpqEfP46kmlXjvwlWn4ahqhG
+UoiIy9ywxRNDv4KcwadS4h//8P1m2hUcmr22lsrfS9PAO+K7cpruiZU/S3ey0LgM
+rlDMol6WN5ScuR415f9exa0RcSTEZjsi/QU8MLCLDC/1X4FFA+Z3tb/baLqLl7b5
+XQ9ymYx+6w/xvdvk4JW+FzvSKzoP3Hs3WzfZOW+pUh+NN6/48UW224Hr9GhvdnI4
+X+EFCW8W+yHody4ZxcCW4nHk50GoCq7THXg3YMuIxaGjFgKhAUNzuzfAs/HiuacM
+abn/oCoW5+PjaDkp4FsdE4HUNIfKQAmpepCAE+/U2Z1A1wNnjbu9GW9HpYiTsjwJ
+rBsb984z3lvRSWR/70Z9iB4Ps+NWuL+7EZfC72/Lqo64gxcnf5T1y9njC4obJdRf
+4hpkKJpYrjWoahhctxJgtlUQi3qxkm7KIednSJDC62skRx4Ime9FATmoWkFnNFVX
+9QnsJqP8SukwBw/eiWIH
+=ejBE
+-----END PGP SIGNATURE-----
+
+--eAbsdosE1cNLO4uF--
