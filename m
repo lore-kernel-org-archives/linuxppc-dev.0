@@ -1,41 +1,22 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <claudiu.manoil@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0124.outbound.protection.outlook.com [207.46.100.124])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64C361A1C0C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 18:13:56 +1000 (AEST)
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8F9F51402B0
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 18:13:55 +1000 (AEST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 29 Jul 2015 13:43:50 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8FBF83940062
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 13:43:44 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6T8Dfcn50987114
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 13:43:42 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6T8DeJK022368
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 13:43:41 +0530
-Message-ID: <55B88B34.1030808@linux.vnet.ibm.com>
-Date: Wed, 29 Jul 2015 13:43:40 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B2D741A096D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 18:56:30 +1000 (AEST)
+From: Manoil Claudiu <claudiu.manoil@freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] gianfar: Fix warnings when built on 64-bit
+Date: Wed, 29 Jul 2015 08:41:29 +0000
+Message-ID: <BY2PR0301MB072721F7AD52766A864FC79E9C8C0@BY2PR0301MB0727.namprd03.prod.outlook.com>
+References: <1438147477-393-1-git-send-email-scottwood@freescale.com>
+ <4498062.4y369pLSmO@wuerfel>
+In-Reply-To: <4498062.4y369pLSmO@wuerfel>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-CC: mikey@neuling.org, sukadev@linux.vnet.ibm.com, dja@axtens.net
-Subject: Re: [4/5] powerpc/perf: Change name & type of 'pred' in
- power_pmu_bhrb_read
-References: <20150729032555.CE6CB140E41@ozlabs.org>
-In-Reply-To: <20150729032555.CE6CB140E41@ozlabs.org>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,50 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2015 08:55 AM, Michael Ellerman wrote:
-> On Tue, 2015-30-06 at 08:20:30 UTC, Anshuman Khandual wrote:
->> > Branch record attributes 'mispred' and 'predicted' are single bit
->> > fields as defined in the perf ABI. Hence the data type of the field
->> > 'pred' used during BHRB processing should be changed from integer
->> > to bool. This patch also changes the name of the variable from 'pred'
->> > to 'mispred' making the logical inversion process more meaningful
->> > and readable.
-> This whole function is a mess.
-> 
-> There's no good reason why we're doing the assignment to pred/mispred in two
-> places to begin with, so if that was eliminated we wouldn't need a local for
-> mispred to begin with.
+> -----Original Message-----
+> From: Arnd Bergmann [mailto:arnd@arndb.de]
+> Sent: Wednesday, July 29, 2015 11:02 AM
+> To: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org; Manoil Claudiu=
+-
+> B08782; Wood Scott-B07421
+> Subject: Re: [PATCH] gianfar: Fix warnings when built on 64-bit
+>=20
+> On Wednesday 29 July 2015 00:24:37 Scott Wood wrote:
+>=20
+> > Alternatively, if there's a desire to not mess with this code (I don't
+> > know how to trigger this code path to test it), this driver should be
+> > given dependencies that ensure that it only builds on 32-bit.
+>=20
+> These are obvious fixes, they should definitely go in.
 
-Not sure whether I got this right. We are assigning mispred once with
-the value (val & BHRB_PREDICTION) and then assigning mispred and it's
-inversion to two different fields of the branch entry as required.
+This patch conflicts with the rx s/g patch series:
+https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/?id=
+=3D9061cb023567abf081569d6851b0815dd18437e6
 
-> 
-> Then there's the type juggling, all of which probably works but is fishy and
-> horrible.
+So if applied as it is on top of net.git it will give a headache when net-n=
+ext.git
+will be merged into net.git (or vice versa).
 
-With this patch and one more (2nd patch of the BHRB SW filter series)
-patch, we are trying to make it better.
+Since there are no 64-bit systems with gianfar/ eTSEC, I think that this pa=
+tch
+should target net-next.git (reworked to be applicable on net-next.git) to a=
+void
+the conflict.   I could do this rework and resend it on top of net-next.git
 
-> 
-> You take a u64, bitwise and it with a mask, assign that to a boolean, then take
+>=20
+> >  drivers/net/ethernet/freescale/gianfar.c | 22 ++++++++++++++++++----
+> >  1 file changed, 18 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/net/ethernet/freescale/gianfar.c
+> b/drivers/net/ethernet/freescale/gianfar.c
+> > index ff87502..7c682ac 100644
+> > --- a/drivers/net/ethernet/freescale/gianfar.c
+> > +++ b/drivers/net/ethernet/freescale/gianfar.c
+> > @@ -565,6 +565,7 @@ static void gfar_ints_enable(struct gfar_private
+> *priv)
+> >  	}
+> >  }
+> >
+> > +#ifdef CONFIG_PM
+> >  static void lock_tx_qs(struct gfar_private *priv)
+> >  {
+> >  	int i;
+> > @@ -580,6 +581,7 @@ static void unlock_tx_qs(struct gfar_private *priv)
+> >  	for (i =3D 0; i < priv->num_tx_queues; i++)
+> >  		spin_unlock(&priv->tx_queue[i]->txlock);
+> >  }
+> > +#endif
+> >
+>=20
+> This seems unrelated and should probably be a separate fix.
+>=20
 
-So that any residual positive value after the "AND" operation will
-become logical TRUE for the boolean. We dont use any shifting here
-as BHRB_PREDICTION checks for the right most (least significant) bit
-in the sequence.
+I'm working at a patch set to revive/ cleanup the power management code,
+and lock_tx_qs() is planned to be removed (it can be shown that it's not ne=
+eded).
+So this change can be remove from this patch.
 
-> the boolean, *bitwise* negate that and assign the result to a single bit
-> bitfield.
+Thanks,
+Claudiu
 
-This is getting fixed with a subsequent patch (2nd patch of the BHRB
-SW filter series) in a new function called insert_branch.
-
-+static inline void insert_branch(struct cpu_hw_events *cpuhw,
-+                       int index, u64 from, u64 to, bool mispred)
-+{
-+       cpuhw->bhrb_entries[index].from = from;
-+       cpuhw->bhrb_entries[index].to = to;
-+       cpuhw->bhrb_entries[index].mispred = mispred;
-+       cpuhw->bhrb_entries[index].predicted = !mispred;
-+}
+[...]
