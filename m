@@ -1,31 +1,30 @@
-Return-Path: <balbi@ti.com>
-Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BE851A0DA4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 01:30:22 +1000 (AEST)
-Date: Wed, 29 Jul 2015 10:20:29 -0500
-From: Felipe Balbi <balbi@ti.com>
-To: Robert Baldyga <r.baldyga@samsung.com>
-CC: <balbi@ti.com>, <gregkh@linuxfoundation.org>, <Peter.Chen@freescale.com>,
- <johnyoun@synopsys.com>, <dahlmann.thomas@arcor.de>,
- <nicolas.ferre@atmel.com>, <cernekee@gmail.com>, <leoli@freescale.com>,
- <daniel@zonque.org>, <haojian.zhuang@gmail.com>,
- <robert.jarzmik@free.fr>, <michal.simek@xilinx.com>,
- <devel@driverdev.osuosl.org>, <linux-kernel@vger.kernel.org>,
- <linux-usb@vger.kernel.org>, <linux-omap@vger.kernel.org>,
- <linux-geode@lists.infradead.org>, <linux-arm-kernel@lists.infradead.org>,
- <linuxppc-dev@lists.ozlabs.org>, <andrzej.p@samsung.com>,
- <m.szyprowski@samsung.com>, <stern@rowland.harvard.edu>, <petr.cvek@tul.cz>
-Subject: Re: [PATCH v4 04/46] staging: emxx_udc: add ep capabilities support
-Message-ID: <20150729152029.GB32418@saruman.tx.rr.com>
-Reply-To: <balbi@ti.com>
-References: <1437988616-6962-1-git-send-email-r.baldyga@samsung.com>
- <1437988616-6962-5-git-send-email-r.baldyga@samsung.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="eAbsdosE1cNLO4uF"
-In-Reply-To: <1437988616-6962-5-git-send-email-r.baldyga@samsung.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay06.akamai.com (prod-mail-xrelay06.akamai.com
+ [96.6.114.98])
+ by lists.ozlabs.org (Postfix) with ESMTP id E383C1A11A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 01:43:05 +1000 (AEST)
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric B Munson <emunson@akamai.com>, Michal Hocko <mhocko@suse.cz>,
+ Vlastimil Babka <vbabka@suse.cz>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Guenter Roeck <linux@roeck-us.net>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
+ linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-am33-list@redhat.com, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH V6 2/6] mm: mlock: Add new mlock system call
+Date: Wed, 29 Jul 2015 11:42:51 -0400
+Message-Id: <1438184575-10537-3-git-send-email-emunson@akamai.com>
+In-Reply-To: <1438184575-10537-1-git-send-email-emunson@akamai.com>
+References: <1438184575-10537-1-git-send-email-emunson@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,115 +34,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---eAbsdosE1cNLO4uF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+With the refactored mlock code, introduce a new system call for mlock.
+The new call will allow the user to specify what lock states are being
+added.  mlock2 is trivial at the moment, but a follow on patch will add
+a new mlock state making it useful.
 
-On Mon, Jul 27, 2015 at 11:16:14AM +0200, Robert Baldyga wrote:
-> Convert endpoint configuration to new capabilities model.
->=20
-> Fixed typo in "epc-nulk" to "epc-bulk".
->=20
-> Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
-> ---
->  drivers/staging/emxx_udc/emxx_udc.c | 60 ++++++++++++++++++-------------=
-------
->  1 file changed, 29 insertions(+), 31 deletions(-)
->=20
-> diff --git a/drivers/staging/emxx_udc/emxx_udc.c b/drivers/staging/emxx_u=
-dc/emxx_udc.c
-> index 3b7aa36..0d64bee 100644
-> --- a/drivers/staging/emxx_udc/emxx_udc.c
-> +++ b/drivers/staging/emxx_udc/emxx_udc.c
-> @@ -3153,36 +3153,33 @@ static const struct usb_gadget_ops nbu2ss_gadget_=
-ops =3D {
->  	.ioctl			=3D nbu2ss_gad_ioctl,
->  };
-> =20
-> -static const char g_ep0_name[] =3D "ep0";
-> -static const char g_ep1_name[] =3D "ep1-bulk";
-> -static const char g_ep2_name[] =3D "ep2-bulk";
-> -static const char g_ep3_name[] =3D "ep3in-int";
-> -static const char g_ep4_name[] =3D "ep4-iso";
-> -static const char g_ep5_name[] =3D "ep5-iso";
-> -static const char g_ep6_name[] =3D "ep6-bulk";
-> -static const char g_ep7_name[] =3D "ep7-bulk";
-> -static const char g_ep8_name[] =3D "ep8in-int";
-> -static const char g_ep9_name[] =3D "ep9-iso";
-> -static const char g_epa_name[] =3D "epa-iso";
-> -static const char g_epb_name[] =3D "epb-bulk";
-> -static const char g_epc_name[] =3D "epc-nulk";
-> -static const char g_epd_name[] =3D "epdin-int";
-> -
-> -static const char *gp_ep_name[NUM_ENDPOINTS] =3D {
-> -	g_ep0_name,
-> -	g_ep1_name,
-> -	g_ep2_name,
-> -	g_ep3_name,
-> -	g_ep4_name,
-> -	g_ep5_name,
-> -	g_ep6_name,
-> -	g_ep7_name,
-> -	g_ep8_name,
-> -	g_ep9_name,
-> -	g_epa_name,
-> -	g_epb_name,
-> -	g_epc_name,
-> -	g_epd_name,
-> +static const struct {
-> +	const char *name;
-> +	const struct usb_ep_caps caps;
-> +} ep_info[NUM_ENDPOINTS] =3D {
-> +#define EP_INFO(_name, _type, _dir) \
-> +	{ \
-> +		.name =3D _name, \
-> +		.caps =3D USB_EP_CAPS(USB_EP_CAPS_TYPE_ ## _type, \
-> +				USB_EP_CAPS_DIR_ ## _dir), \
-> +	}
-> +
-> +	EP_INFO("ep0",		CONTROL, ALL),
-> +	EP_INFO("ep1-bulk",	BULK,	ALL),
-> +	EP_INFO("ep2-bulk",	BULK,	ALL),
-> +	EP_INFO("ep3in-int",	INT,	IN),
-> +	EP_INFO("ep4-iso",	INT,	ALL),
-> +	EP_INFO("ep5-iso",	ISO,	ALL),
-> +	EP_INFO("ep6-bulk",	ISO,	ALL),
-> +	EP_INFO("ep7-bulk",	BULK,	ALL),
-> +	EP_INFO("ep8in-int",	INT,	IN),
-> +	EP_INFO("ep9-iso",	ISO,	ALL),
-> +	EP_INFO("epa-iso",	ISO,	ALL),
-> +	EP_INFO("epb-bulk",	BULK,	ALL),
-> +	EP_INFO("epc-bulk",	BULK,	ALL),
-> +	EP_INFO("epdin-int",	INT,	IN),
+Signed-off-by: Eric B Munson <emunson@akamai.com>
+Cc: Michal Hocko <mhocko@suse.cz>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: adi-buildroot-devel@lists.sourceforge.net
+Cc: linux-cris-kernel@axis.com
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-m68k@lists.linux-m68k.org
+Cc: linux-am33-list@redhat.com
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-xtensa@linux-xtensa.org
+Cc: linux-api@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-mm@kvack.org
+---
+ arch/x86/entry/syscalls/syscall_32.tbl | 1 +
+ arch/x86/entry/syscalls/syscall_64.tbl | 1 +
+ include/linux/syscalls.h               | 2 ++
+ include/uapi/asm-generic/unistd.h      | 4 +++-
+ kernel/sys_ni.c                        | 1 +
+ mm/mlock.c                             | 9 +++++++++
+ 6 files changed, 17 insertions(+), 1 deletion(-)
 
-IMO, this is pointless obfuscation. It just makes it a pain to grep
-source around. Why don't you have UDC drivers initialize the 1-bit flags
-directly ?
-
---=20
-balbi
-
---eAbsdosE1cNLO4uF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVuO89AAoJEIaOsuA1yqREpT4P/R+sN60ILX8zbe0pnFmypIqQ
-ukpSQkN7DyrEJjSUFrsJ7h5YPRfmEDOg/cdZpqM05Z6+YjZ9n8Gex2JFbWDHPYb0
-JYUYbI4nFpVDaGZxclnxkvr7wwtCyE1Lxma9l83klQJduzeS05tTKpitkc3cSPUn
-7OwConNlw7lyRne9SjbGd/QfjEkTTaOLO1elQjvPDpqEfP46kmlXjvwlWn4ahqhG
-UoiIy9ywxRNDv4KcwadS4h//8P1m2hUcmr22lsrfS9PAO+K7cpruiZU/S3ey0LgM
-rlDMol6WN5ScuR415f9exa0RcSTEZjsi/QU8MLCLDC/1X4FFA+Z3tb/baLqLl7b5
-XQ9ymYx+6w/xvdvk4JW+FzvSKzoP3Hs3WzfZOW+pUh+NN6/48UW224Hr9GhvdnI4
-X+EFCW8W+yHody4ZxcCW4nHk50GoCq7THXg3YMuIxaGjFgKhAUNzuzfAs/HiuacM
-abn/oCoW5+PjaDkp4FsdE4HUNIfKQAmpepCAE+/U2Z1A1wNnjbu9GW9HpYiTsjwJ
-rBsb984z3lvRSWR/70Z9iB4Ps+NWuL+7EZfC72/Lqo64gxcnf5T1y9njC4obJdRf
-4hpkKJpYrjWoahhctxJgtlUQi3qxkm7KIednSJDC62skRx4Ime9FATmoWkFnNFVX
-9QnsJqP8SukwBw/eiWIH
-=ejBE
------END PGP SIGNATURE-----
-
---eAbsdosE1cNLO4uF--
+diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
+index ef8187f..839d5df 100644
+--- a/arch/x86/entry/syscalls/syscall_32.tbl
++++ b/arch/x86/entry/syscalls/syscall_32.tbl
+@@ -365,3 +365,4 @@
+ 356	i386	memfd_create		sys_memfd_create
+ 357	i386	bpf			sys_bpf
+ 358	i386	execveat		sys_execveat			stub32_execveat
++359	i386	mlock2			sys_mlock2
+diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
+index 9ef32d5..ad36769 100644
+--- a/arch/x86/entry/syscalls/syscall_64.tbl
++++ b/arch/x86/entry/syscalls/syscall_64.tbl
+@@ -329,6 +329,7 @@
+ 320	common	kexec_file_load		sys_kexec_file_load
+ 321	common	bpf			sys_bpf
+ 322	64	execveat		stub_execveat
++323	common	mlock2			sys_mlock2
+ 
+ #
+ # x32-specific system call numbers start at 512 to avoid cache impact
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index b45c45b..56a3d59 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -884,4 +884,6 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
+ 			const char __user *const __user *argv,
+ 			const char __user *const __user *envp, int flags);
+ 
++asmlinkage long sys_mlock2(unsigned long start, size_t len, int flags);
++
+ #endif
+diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
+index e016bd9..14a6013 100644
+--- a/include/uapi/asm-generic/unistd.h
++++ b/include/uapi/asm-generic/unistd.h
+@@ -709,9 +709,11 @@ __SYSCALL(__NR_memfd_create, sys_memfd_create)
+ __SYSCALL(__NR_bpf, sys_bpf)
+ #define __NR_execveat 281
+ __SC_COMP(__NR_execveat, sys_execveat, compat_sys_execveat)
++#define __NR_mlock2 282
++__SYSCALL(__NR_mlock2, sys_mlock2)
+ 
+ #undef __NR_syscalls
+-#define __NR_syscalls 282
++#define __NR_syscalls 283
+ 
+ /*
+  * All syscalls below here should go away really,
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index 7995ef5..4818b71 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -193,6 +193,7 @@ cond_syscall(sys_mlock);
+ cond_syscall(sys_munlock);
+ cond_syscall(sys_mlockall);
+ cond_syscall(sys_munlockall);
++cond_syscall(sys_mlock2);
+ cond_syscall(sys_mincore);
+ cond_syscall(sys_madvise);
+ cond_syscall(sys_mremap);
+diff --git a/mm/mlock.c b/mm/mlock.c
+index 1585cca..807f986 100644
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -642,6 +642,15 @@ SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
+ 	return do_mlock(start, len, VM_LOCKED);
+ }
+ 
++SYSCALL_DEFINE3(mlock2, unsigned long, start, size_t, len, int, flags)
++{
++	vm_flags_t vm_flags = VM_LOCKED;
++	if (flags)
++		return -EINVAL;
++
++	return do_mlock(start, len, vm_flags);
++}
++
+ SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)
+ {
+ 	int ret;
+-- 
+1.9.1
