@@ -1,37 +1,36 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B4781A0DB0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 17:10:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 56F731A0DB0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 17:10:31 +1000 (AEST)
 Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B72A4140DC0
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 17:10:28 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 7D0A6140DC0
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 17:10:30 +1000 (AEST)
 Received: from /spool/local
  by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 29 Jul 2015 12:40:24 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 61B2D125806E
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 12:43:19 +0530 (IST)
+ Wed, 29 Jul 2015 12:40:28 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5555F394007B
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 12:40:11 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6T7AAR761341894
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 12:40:11 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6T7A9rY46137404
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 12:40:10 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6T7A6kv001251
+ t6T7A6iR001240
  for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 12:40:07 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, mikey@neuling.org
-Subject: [PATCH 7/8] powerpc/xmon: Drop the 'valid' variable completely in
- 'dump_segments'
-Date: Wed, 29 Jul 2015 12:40:04 +0530
-Message-Id: <1438153805-31828-7-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH 6/8] powerpc/prom: Simplify the logic while fetching SLB size
+Date: Wed, 29 Jul 2015 12:40:03 +0530
+Message-Id: <1438153805-31828-6-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1438153805-31828-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1438153805-31828-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,41 +42,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Value of the 'valid' variable is zero when 'esid' is zero and it does
-not matter when 'esid' is non-zero. The variable 'valid' can be dropped
-from the function 'dump_segments' by checking for validity of 'esid'
-inside the nested code block. This patch does that change.
+This patch just simplifies the existing code logic while fetching
+the SLB size property from the device tree. This also changes the
+function name from check_cpu_slb_size to init_mmu_slb_size as
+it just initializes the mmu_slb_size value.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/xmon/xmon.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/prom.c | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index e599259..bc1b066a 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2731,7 +2731,7 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
- void dump_segments(void)
- {
- 	int i;
--	unsigned long esid,vsid,valid;
-+	unsigned long esid,vsid;
- 	unsigned long llp;
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 8b888b1..4bb43c0 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -218,22 +218,18 @@ static void __init check_cpu_pa_features(unsigned long node)
+ }
  
- 	printf("SLB contents of cpu 0x%x\n", smp_processor_id());
-@@ -2739,10 +2739,9 @@ void dump_segments(void)
- 	for (i = 0; i < mmu_slb_size; i++) {
- 		asm volatile("slbmfee  %0,%1" : "=r" (esid) : "r" (i));
- 		asm volatile("slbmfev  %0,%1" : "=r" (vsid) : "r" (i));
--		valid = (esid & SLB_ESID_V);
--		if (valid | esid | vsid) {
-+		if (esid || vsid) {
- 			printf("%02d %016lx %016lx", i, esid, vsid);
--			if (valid) {
-+			if (esid & SLB_ESID_V) {
- 				llp = vsid & SLB_VSID_LLP;
- 				if (vsid & SLB_VSID_B_1T) {
- 					printf("  1T  ESID=%9lx  VSID=%13lx LLP:%3lx \n",
+ #ifdef CONFIG_PPC_STD_MMU_64
+-static void __init check_cpu_slb_size(unsigned long node)
++static void __init init_mmu_slb_size(unsigned long node)
+ {
+ 	const __be32 *slb_size_ptr;
+ 
+-	slb_size_ptr = of_get_flat_dt_prop(node, "slb-size", NULL);
+-	if (slb_size_ptr != NULL) {
+-		mmu_slb_size = be32_to_cpup(slb_size_ptr);
+-		return;
+-	}
+-	slb_size_ptr = of_get_flat_dt_prop(node, "ibm,slb-size", NULL);
+-	if (slb_size_ptr != NULL) {
++	slb_size_ptr = of_get_flat_dt_prop(node, "slb-size", NULL) ? :
++			of_get_flat_dt_prop(node, "ibm,slb-size", NULL);
++
++	if (slb_size_ptr)
+ 		mmu_slb_size = be32_to_cpup(slb_size_ptr);
+-	}
+ }
+ #else
+-#define check_cpu_slb_size(node) do { } while(0)
++#define init_mmu_slb_size(node) do { } while(0)
+ #endif
+ 
+ static struct feature_property {
+@@ -380,7 +376,7 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 
+ 	check_cpu_feature_properties(node);
+ 	check_cpu_pa_features(node);
+-	check_cpu_slb_size(node);
++	init_mmu_slb_size(node);
+ 
+ #ifdef CONFIG_PPC64
+ 	if (nthreads > 1)
 -- 
 2.1.0
