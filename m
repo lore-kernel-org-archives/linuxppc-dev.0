@@ -1,27 +1,23 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0119.outbound.protection.outlook.com [207.46.100.119])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B159A1A0DB0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 08:14:52 +1000 (AEST)
-Message-ID: <1438208074.2993.343.camel@freescale.com>
-Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board
- support
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E1341A0EA8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 08:22:31 +1000 (AEST)
+Message-ID: <1438208530.2993.350.camel@freescale.com>
+Subject: Re: [PATCH v5 1/2] perf,kvm/ppc: Add kvm_perf.h for powerpc
 From: Scott Wood <scottwood@freescale.com>
-To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 29 Jul 2015 17:14:34 -0500
-In-Reply-To: <BY1PR0301MB08531E965109B9F1EDB7A292EC8C0@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1436952655-14910-1-git-send-email-Priyanka.Jain@freescale.com>
- <1436982433.2993.81.camel@freescale.com>
- <BY1PR0301MB0853E5011D37FE78E3A9B78FEC990@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437075349.2993.105.camel@freescale.com>
- <BY1PR0301MB08536BC13A64047CB7062442EC980@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437152821.2993.191.camel@freescale.com>
- <BY1PR0301MB0853E43544A9D9F36D2B31B9EC830@BY1PR0301MB0853.namprd03.prod.outlook.com>
- <1437751681.2993.235.camel@freescale.com>
- <BY1PR0301MB08531E965109B9F1EDB7A292EC8C0@BY1PR0301MB0853.namprd03.prod.outlook.com>
+To: Hemant Kumar <hemant@linux.vnet.ibm.com>
+CC: <maddy@linux.vnet.ibm.com>, <srikar@linux.vnet.ibm.com>,
+ <linux-kernel@vger.kernel.org>, <acme@kernel.org>, <paulus@samba.org>,
+ <warrier@linux.vnet.ibm.com>, <sukadev@linux.vnet.ibm.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <mingo@kernel.org>
+Date: Wed, 29 Jul 2015 17:22:10 -0500
+In-Reply-To: <55B8ACD9.8090404@linux.vnet.ibm.com>
+References: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <1437077417.2993.108.camel@freescale.com>
+ <55B8ACD9.8090404@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,44 +29,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-07-29 at 04:07 -0500, Jain Priyanka-B32167 wrote:
+On Wed, 2015-07-29 at 16:07 +0530, Hemant Kumar wrote:
+> Hi Scott,
 > 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, July 24, 2015 8:58 PM
-> > To: Jain Priyanka-B32167
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH][v2] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB
-> > board support
+> On 07/17/2015 01:40 AM, Scott Wood wrote:
+> > On Thu, 2015-07-16 at 21:18 +0530, Hemant Kumar wrote:
+> > > To analyze the exit events with perf, we need kvm_perf.h to be added in
+> > > the arch/powerpc directory, where the kvm tracepoints needed to trace
+> > > the KVM exit events are defined.
+> > > 
+> > > This patch adds "kvm_perf_book3s.h" to indicate that the tracepoints are
+> > > book3s specific. Generic "kvm_perf.h" then can just include
+> > > "kvm_perf_book3s.h".
+> > > 
+> > > Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> > > ---
+> > > Changes:
+> > > - Not exporting the exit reasons compared to previous patchset 
+> > > (suggested
+> > > by Paul)
+> > > 
+> > >   arch/powerpc/include/uapi/asm/kvm_perf.h        |  6 ++++++
+> > >   arch/powerpc/include/uapi/asm/kvm_perf_book3s.h | 14 ++++++++++++++
+> > >   2 files changed, 20 insertions(+)
+> > >   create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+> > >   create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+> > > 
+> > > diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h
+> > > b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> > > new file mode 100644
+> > > index 0000000..5ed2ff3
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> > > @@ -0,0 +1,6 @@
+> > > +#ifndef _ASM_POWERPC_KVM_PERF_H
+> > > +#define _ASM_POWERPC_KVM_PERF_H
+> > > +
+> > > +#include <asm/kvm_perf_book3s.h>
+> > > +
+> > > +#endif
+> > > diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+> > > b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+> > > new file mode 100644
+> > > index 0000000..8c8d8c2
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+> > > @@ -0,0 +1,14 @@
+> > > +#ifndef _ASM_POWERPC_KVM_PERF_BOOK3S_H
+> > > +#define _ASM_POWERPC_KVM_PERF_BOOK3S_H
+> > > +
+> > > +#include <asm/kvm.h>
+> > > +
+> > > +#define DECODE_STR_LEN 20
+> > > +
+> > > +#define VCPU_ID "vcpu_id"
+> > > +
+> > > +#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
+> > > +#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
+> > > +#define KVM_EXIT_REASON "trap"
+> > > +
+> > > +#endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
+> > Again, why is book3s stuff being presented via uapi as generic
+> > <asm/kvm_perf.h> with generic symbol names?
 > > 
-> > OK, so you're saying the i2c devices are pluggable (and I'm assuming by 
-> > "PEX
-> > slots" you just mean that the physical slot is repurposed, not that the 
-> > PCI
-> > express protocol is involved)?  Making a non-runtime-enumerable bus be
-> > pluggable seems like a bad idea, but if that's really what has been done,
-> > there needs to be a device tree that represents the entire system, not 
-> > just
-> > the motherboard.  This could be done either via a dts file that 
-> > /include/s the
-> > motherboard dts, or via firmware dtb edits.  The dts for the motherboard
-> > should include the mux node with a comment explaining what the situation
-> > is.
-> > 
-> [Jain Priyanka-B32167] Is the below comment looks OK?
-> "Output I2C data, clock lines (SDO/SC0,SD1/SC1 , SD2/SC2, SD3/SC3) are 
-> going mini PCI connector slot1, mini PCI connector slot2, HDMI connector, 
-> PEX slot respectively
->  The sub-nodes will depend upon the device that will be connected on these 
-> slots"
+> > -Scott
+> 
+> Ok.
+> 
+> We can change the KVM_ENTRY_TRACE macro to something like
+> KVM_BOOK3S_ENTRY_TRACE and likewise for KVM_EXIT_TRACE
+> and KVM_EXIT_REASON
 
-How about:
+What about DECODE_STR_LEN and VCPU_ID?
 
-"Child nodes depend on which i2c devices are connected via the mini PCI 
+Where is this API documented?
 
-connector slot1, the mini PCI connector slot2, the HDMI connector, and the 
+>  and then, to resolve the issue of generic
+> macro names in the userspace side, we can handle it using __weak
+> modifier.
 
-PEX slot.  Systems with such devices attached should provide a wrapper .dts 
-file that includes this one, and adds those nodes."
+Does userspace get built differently for book3s versus book3e?  For now it'd 
+
+be fine for userspace to check for book3s and not use the feature if it's 
+
+book3e.  If and when book3e gains this feature, then userspace can be changed.
+
+> What would you suggest?
+
+Another option would be to explain this interface so that we can figure out 
+if book3e would even want different values for these, and if not, move it to 
+asm/kvm.h.
 
 -Scott
