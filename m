@@ -1,17 +1,25 @@
-Return-Path: <segher@gate.crashing.org>
-Date: Tue, 28 Jul 2015 22:42:21 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Thomas Huth <thuth@redhat.com>, slof@lists.ozlabs.org,
- nikunj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [SLOF] [SLOF PATCH 2/2] fbuffer: Use a smaller cursor
-Message-ID: <20150729034221.GE28839@gate.crashing.org>
-References: <1438078795-14360-1-git-send-email-thuth@redhat.com>
- <1438078795-14360-3-git-send-email-thuth@redhat.com>
- <55B8430C.8060008@ozlabs.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55B8430C.8060008@ozlabs.ru>
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 895E51A02C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 14:09:33 +1000 (AEST)
+Received: from mail-pd0-x231.google.com (mail-pd0-x231.google.com
+ [IPv6:2607:f8b0:400e:c02::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 357D8140D2E
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 14:09:31 +1000 (AEST)
+Received: by pdbnt7 with SMTP id nt7so81758145pdb.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Jul 2015 21:09:30 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
+ imunsie@au.ibm.com, Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] cxl: Don't ignore add_process_element result when attaching
+ context
+Date: Wed, 29 Jul 2015 14:07:22 +1000
+Message-Id: <1438142842-31603-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,25 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 29, 2015 at 01:05:48PM +1000, Alexey Kardashevskiy wrote:
-> >  : fb8-toggle-cursor ( -- )
-> >  	line# fb8-line2addr column# fb8-columns2bytes +
-> >-	char-height 0 ?DO
-> >+	char-height 3 - screen-width screen-depth * * +
-> >+	3 0 ?DO
-> 
-> Why not just:
-> 
-> -	char-height 0 ?DO
-> +	1 0 ?DO
-> 
-> ? What is this magic with screen-width about?
+Previously, when attaching a context in dedicated mode, we ignored
+the result of add_process_element, which could potentially fail.
 
-Thomas' patch draws the cursor as the bottom three lines of a
-character cell; your suggestion would draw it as the top one line.
-But indeed it could be
+If add_process_element returns and error, pass it back to the caller.
 
-  char-height dup 3 - ?DO ...
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 
+---
 
-Segher
+I'm not sure if this is worth sending to stable: it doesn't fix
+any actual bug, it just lets us know earlier if we've failed.
+
+However, if mpe, Mikey or Ian feel like it should go to stable I
+have no objection to that either.
+---
+ drivers/misc/cxl/native.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index debd97147b58..22c06d91faa8 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -551,9 +551,7 @@ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
+ 	if ((result = cxl_afu_check_and_enable(ctx->afu)))
+ 		return result;
+ 
+-	add_process_element(ctx);
+-
+-	return 0;
++	return add_process_element(ctx);
+ }
+ 
+ static int deactivate_afu_directed(struct cxl_afu *afu)
+-- 
+2.1.4
