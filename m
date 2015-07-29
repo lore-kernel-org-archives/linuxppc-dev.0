@@ -1,43 +1,25 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0115.outbound.protection.outlook.com [157.56.111.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 133481A1A2D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 17:24:52 +1000 (AEST)
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1E9FE1402B3
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 17:24:50 +1000 (AEST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 29 Jul 2015 01:24:49 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A90BC1FF0045
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 01:15:55 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6T7NrvE40829010
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 00:23:53 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6T7Ojhe028099
- for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 01:24:45 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, sam.mj@au1.ibm.com
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC PATCH] powerpc/kexec: Wait 1s for secondaries to enter OPAL
-In-Reply-To: <1438077498.7562.130.camel@kernel.crashing.org>
-References: <1437544469-20028-1-git-send-email-sam.mj@au1.ibm.com>
- <m3r3nukut9.fsf@oc8180480414.ibm.com> <55B71D89.7000308@au1.ibm.com>
- <1438077498.7562.130.camel@kernel.crashing.org>
-Date: Wed, 29 Jul 2015 17:24:33 +1000
-Message-ID: <m3io93ifym.fsf@oc8180480414.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C54CE1A1966
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 17:37:14 +1000 (AEST)
+From: Lu Y.B. <yangbo.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2] powerpc/dts: Add and fix 1588 timer node for eTSEC
+Date: Wed, 29 Jul 2015 07:21:09 +0000
+Message-ID: <BY1PR0301MB11928002348541D852205503F28C0@BY1PR0301MB1192.namprd03.prod.outlook.com>
+References: <1430969347-13869-1-git-send-email-yangbo.lu@freescale.com>
+ <BY1PR0301MB11921FFFBC88E7ABD81D2E27F2990@BY1PR0301MB1192.namprd03.prod.outlook.com>
+ <1437079112.2993.127.camel@freescale.com>
+ <BY1PR0301MB1192CF8FD2B38A36A2A9BFD5F2850@BY1PR0301MB1192.namprd03.prod.outlook.com>
+ <1437750459.2993.224.camel@freescale.com>
+In-Reply-To: <1437750459.2993.224.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,20 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> On Tue, 2015-07-28 at 16:13 +1000, Samuel Mendoza-Jonas wrote:
->
->> "It sounds reasonable" was more or less the inspiration :)
->> While I was going over some of the code relating to the previous kexec
->> fix with Ben he pointed this out and suggested there wasn't
->> much of a reason to differentiate between a crashing/non-crashing
->> cpu as far as the timeout goes - if we're not 'crashing' we still
->> don't want to spin forever.
->> 
->> I'll let Ben comment on whether 1s per cpu is enough.
->
-> Well, if the scheduler doesn't give us the CPU at the point of kexec
-> within a second, I think we are in pretty bad shape already, don't you
-> think ?
-
-Quite likely, I think my dislike of magic timeouts just kicked in :)
+SGkgU2NvdHQsDQoNCkkgc3VibWl0dGVkIGEgdjMgcGF0Y2ggZm9yIHRoaXMuDQpTb3JyeSBmb3Ig
+bXkgbWlzdW5kZXJzdGFuZGluZyBhbmQgdGhhbmsgYSBsb3QuDQoNCg0KDQpCZXN0IHJlZ2FyZHMs
+DQpZYW5nYm8gTHUNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29k
+IFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBGcmlkYXksIEp1bHkgMjQsIDIwMTUgMTE6MDggUE0NCj4g
+VG86IEx1IFlhbmdiby1CNDcwOTMNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+OyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJd
+IHBvd2VycGMvZHRzOiBBZGQgYW5kIGZpeCAxNTg4IHRpbWVyIG5vZGUgZm9yDQo+IGVUU0VDDQo+
+IA0KPiBPbiBNb24sIDIwMTUtMDctMjAgYXQgMDE6MzMgLTA1MDAsIEx1IFlhbmdiby1CNDcwOTMg
+d3JvdGU6DQo+ID4gPiBPbiBXZWQsIDIwMTUtMDctMTUgYXQgMjE6MzcgLTA1MDAsIEx1IFlhbmdi
+by1CNDcwOTMgd3JvdGU6DQo+ID4gPiA+IEFueSBjb21tZW50cz8NCj4gPiA+ID4gVGhhbmtzLg0K
+PiA+ID4NCj4gPiA+IFNvcnJ5LCBJIG11c3QgaGF2ZSBtaXNzZWQgdGhpcyBvbiBteSBsYXN0IHRp
+bWUgdGhyb3VnaCB0aGUgcGF0Y2gNCj4gcXVldWUuDQo+ID4gPiBJIHNlZSB5b3UndmUgZGVjaW1h
+bGl6ZWQgdGhlIGZpcGVyIGFuZCBtYXgtYWRqIHByb3BlcnRpZXMsIHdoaWNoIGlzDQo+ID4gPiBn
+b29kLi4uIGJ1dCBkb2VzIGl0IHJlYWxseSBtYWtlIHNlbnNlIGZvciB0bXItYWRkPyAgSSdtIG5v
+dCBmYW1pbGlhcg0KPiA+ID4gd2l0aCB3aGF0IHRoaXMgdmFsdWUgcmVwcmVzZW50cywgYnV0IHRo
+ZSBudW1iZXJzIGxvb2sgbW9yZSBuYXR1cmFsIGFzDQo+IGhleCAoZS5nLg0KPiA+ID4gMHhhYWFh
+YWFhYiB2ZXJzdXMgMjg2MzMxMTUzMSkuDQo+ID4NCj4gPiBZZXMsIHRoZSBmaXBlciB2YWx1ZSB3
+b3VsZCBiZSB3cml0ZWQgaW50byBmaXBlciByZWdpc3RlcnMuIEFuZCBtYXgtYWRqDQo+ID4gdmFs
+dWUgd291bGQgYmUgdXNlZCBpbiBwdHAgZHJpdmVyIGluIGRyaXZlci9wdHAvLg0KPiA+IEJ1dCB5
+b3UgaW5zaXN0ZWQgdGhhdCB2YWx1ZXMgc2hvdWxkIGJlIGluIGRlY2ltYWxpc20gaW4gdGhlIHYx
+DQo+ID4gcGF0Y2guLi4gOikNCj4gPg0KPiA+IFNlZSB0aGUgaGlzdG9yeSA6KQ0KPiANCj4gSSBk
+aWRuJ3QgaW5zaXN0IG9uIGRlY2ltYWxzIGZvciAqZXZlcnl0aGluZyosIGp1c3Qgd2hlcmUgaXQg
+bWFrZXMgc2Vuc2UsDQo+IGFuZCB0aGF0ICJpdCBnb2VzIGluIGEgcmVnaXN0ZXIiIGRvZXNuJ3Qg
+KmF1dG9tYXRpY2FsbHkqIG1lYW4gdGhhdCBpdA0KPiBkb2Vzbid0IG1ha2Ugc2Vuc2UuDQo+IA0K
+PiAjIyMjIyMjIyMjIyMjIyMjIyBoaXN0b3J5ICMjIyMjIyMjIyMjIyMjIyMjIw0KPiA+ID4gPiAr
+ICBwdHBfY2xvY2tAYjBlMDB7DQo+ID4gPiA+ICsgICAgICAgICBjb21wYXRpYmxlID0gImZzbCxl
+dHNlYy1wdHAiOw0KPiA+ID4gPiArICAgICAgICAgcmVnID0gPDB4YjBlMDAgMHhiMD47DQo+ID4g
+PiA+ICsgICAgICAgICBpbnRlcnJ1cHRzID0gPDY4IDIgMCAwIDY5IDIgMCAwPjsNCj4gPiA+ID4g
+KyAgICAgICAgIGZzbCx0Y2xrLXBlcmlvZCA9IDw1PjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0
+bXItcHJzYyAgICA9IDwyPjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0bXItYWRkICAgICA9IDww
+eGNjY2NjY2NkPjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0bXItZmlwZXIxICA9IDwweDNiOWFj
+OWZiPjsNCj4gPiA+ID4gKyAgICAgICAgIGZzbCx0bXItZmlwZXIyICA9IDwweDAwMDE4Njk2PjsN
+Cj4gPiA+ID4gKyAgICAgICAgIGZzbCxtYXgtYWRqICAgICA9IDwyNDk5OTk5OTk+Ow0KPiA+ID4N
+Cj4gPiA+IFBsZWFzZSBkb24ndCB1c2UgaGV4IGZvciBudW1iZXJzIHRoYXQgbWFrZSBtb3JlIHNl
+bnNlIGFzIGRlY2ltYWwuDQo+ID4gPiBbTHUgWWFuZ2JvLUI0NzA5M10gVGhlIGhleCB2YWx1ZSBp
+cyByZWdpc3RlciB2YWx1ZSwgSSB0aGluayBpdCdzDQo+ID4gPiBiZXR0ZXIgdG8gdXNlIGhleC4N
+Cj4gPg0KPiA+IFdoZXRoZXIgaXQgZ29lcyBpbnRvIGEgcmVnaXN0ZXIgZG9lc24ndCBtYXR0ZXIu
+ICBIZXggdmFsdWVzIGFyZSB1c2VmdWwNCj4gPiBmb3IgdmFsdWVzIHdoaWNoIGFyZSBzdWJkaXZp
+ZGVkIGludG8gdmFyaW91cyBiaXRmaWVsZHMsIG9yIHdob3NlIGhleA0KPiA+IHJlcHJlc2VudGF0
+aW9uIGlzIHNpbXBsZXIgdGhhbiBkZWNpbWFsLiAgSSdtIG5vdCBmYW1pbGlhciB3aXRoIHRoZQ0K
+PiA+IGRldGFpbHMgb2YgdGhpcyBoYXJkd2FyZSwgYnV0IEkgZG91YnQgdGhlIGZvcm1lciBpcyB0
+aGUgY2FzZSBmb3INCj4gPiAweDNiOWFjOWZiID09DQo+ID4gOTk5OTk5OTk5NSBvciAweDE4Njk2
+ID09IDk5OTkwLg0KPiA+DQo+ID4gLVNjb3R0DQo+ID4gIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMNCj4gPg0KPiA+DQo+ID4gPg0KPiA+ID4gPiA+IGRpZmYgLS1naXQgYS9h
+cmNoL3Bvd2VycGMvYm9vdC9kdHMvcDIwMjByZGItcGMuZHRzaQ0KPiA+ID4gPiA+IGIvYXJjaC9w
+b3dlcnBjL2Jvb3QvZHRzL3AyMDIwcmRiLXBjLmR0c2kNCj4gPiA+ID4gPiBpbmRleCBjMjFkMWM3
+Li4zNjMxNzJkIDEwMDY0NA0KPiA+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9w
+MjAyMHJkYi1wYy5kdHNpDQo+ID4gPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3Ay
+MDIwcmRiLXBjLmR0c2kNCj4gPiA+ID4gPiBAQCAtMjE1LDEyICsyMTUsMTIgQEANCj4gPiA+ID4g
+PiAgICAgfTsNCj4gPiA+ID4gPg0KPiA+ID4gPiA+ICAgICAgcHRwX2Nsb2NrQDI0ZTAwew0KPiA+
+ID4gPiA+IC0gICAgICAgICAgIGZzbCx0Y2xrLXBlcmlvZCA9IDw1PjsNCj4gPiA+ID4gPiAtICAg
+ICAgICAgICBmc2wsdG1yLXByc2MgPSA8MjAwPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2ws
+dG1yLWFkZCA9IDwweENDQ0NDQ0NEPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2wsdG1yLWZp
+cGVyMSA9IDwweDNCOUFDOUZCPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2wsdG1yLWZpcGVy
+MiA9IDwweDAwMDE4NjlCPjsNCj4gPiA+ID4gPiAtICAgICAgICAgICBmc2wsbWF4LWFkaiA9IDwy
+NDk5OTk5OTk+Ow0KPiA+ID4gPiA+ICsgICAgICAgICAgIGZzbCx0Y2xrLXBlcmlvZCA9IDw1PjsN
+Cj4gPiA+ID4gPiArICAgICAgICAgICBmc2wsdG1yLXByc2MgICAgPSA8Mj47DQo+ID4gPiA+ID4g
+KyAgICAgICAgICAgZnNsLHRtci1hZGQgICAgID0gPDI4NjMzMTE1MzE+Ow0KPiA+ID4gPiA+ICsg
+ICAgICAgICAgIGZzbCx0bXItZmlwZXIxICA9IDw5OTk5OTk5OTU+Ow0KPiA+ID4gPiA+ICsgICAg
+ICAgICAgIGZzbCx0bXItZmlwZXIyICA9IDw5OTk5MD47DQo+ID4gPiA+ID4gKyAgICAgICAgICAg
+ZnNsLG1heC1hZGogICAgID0gPDI5OTk5OTk5OT47DQo+ID4gPiA+ID4gICAgIH07DQo+ID4gPg0K
+PiA+ID4gQW5kIGhlcmUsIHlvdSdyZSBjaGFuZ2luZyB0aGUgdmFsdWUgb2YgZnNsLHRtci1hZGQg
+YW5kIGZzbCxtYXgtYWRqLg0KPiBXaHk/DQo+ID4NCj4gPiBUaGUgb2xkIHZhbHVlcyBtYXliZSBu
+b3QgY2FsY3VsYXRlZCBiYXNlIG9uIHRoZSBkZWZhdWx0IGVUU0VDIHN5c3RlbQ0KPiA+IGNsb2Nr
+IHZhbHVlLg0KPiA+IDE1ODggdGltZXIgY291bGRu4oCZdCBiZSBhZGp1c3RlZCBjb3JyZWN0bHkg
+Ynkgb2xkIHZhbHVlcy4NCj4gDQo+IEV4cGxhaW4gaW4gdGhlIGNoYW5nZWxvZyB3aGF0IHdhcyB3
+cm9uZyB3aXRoIHRoZSBvbGQgdmFsdWVzIChkb24ndCBqdXN0DQo+IHNheSAiRml4IDE1ODggdGlt
+ZXIgbm9kZSBpbiBmaWxlIikuDQo+IA0KPiAtU2NvdHQNCg0K
