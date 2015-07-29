@@ -1,39 +1,35 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mstsxfx@gmail.com>
+Received: from mail-wi0-f175.google.com (mail-wi0-f175.google.com
+ [209.85.212.175])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 382891A1A3B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 20:37:43 +1000 (AEST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Wed, 29 Jul 2015 16:07:41 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id C56433940076
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 16:07:36 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6TAbGvJ28770480
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 16:07:16 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6TAbEPr002457
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 16:07:15 +0530
-Message-ID: <55B8ACD9.8090404@linux.vnet.ibm.com>
-Date: Wed, 29 Jul 2015 16:07:13 +0530
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86FD41A1A45
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 20:45:38 +1000 (AEST)
+Received: by wibud3 with SMTP id ud3so215039599wib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 03:45:35 -0700 (PDT)
+Date: Wed, 29 Jul 2015 12:45:32 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Eric B Munson <emunson@akamai.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Shuah Khan <shuahkh@osg.samsung.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+ Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150729104532.GE15801@dhcp22.suse.cz>
+References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
+ <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
+ <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
+ <20150728111725.GG24972@dhcp22.suse.cz>
+ <20150728134942.GB2407@akamai.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-CC: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, acme@kernel.org, paulus@samba.org,
- warrier@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
-Subject: Re: [PATCH v5 1/2] perf,kvm/ppc: Add kvm_perf.h for powerpc
-References: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
- <1437077417.2993.108.camel@freescale.com>
-In-Reply-To: <1437077417.2993.108.camel@freescale.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150728134942.GB2407@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,84 +39,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+On Tue 28-07-15 09:49:42, Eric B Munson wrote:
+> On Tue, 28 Jul 2015, Michal Hocko wrote:
+> 
+> > [I am sorry but I didn't get to this sooner.]
+> > 
+> > On Mon 27-07-15 10:54:09, Eric B Munson wrote:
+> > > Now that VM_LOCKONFAULT is a modifier to VM_LOCKED and
+> > > cannot be specified independentally, it might make more sense to mirror
+> > > that relationship to userspace.  Which would lead to soemthing like the
+> > > following:
+> > 
+> > A modifier makes more sense.
+> >  
+> > > To lock and populate a region:
+> > > mlock2(start, len, 0);
+> > > 
+> > > To lock on fault a region:
+> > > mlock2(start, len, MLOCK_ONFAULT);
+> > > 
+> > > If LOCKONFAULT is seen as a modifier to mlock, then having the flags
+> > > argument as 0 mean do mlock classic makes more sense to me.
+> > > 
+> > > To mlock current on fault only:
+> > > mlockall(MCL_CURRENT | MCL_ONFAULT);
+> > > 
+> > > To mlock future on fault only:
+> > > mlockall(MCL_FUTURE | MCL_ONFAULT);
+> > > 
+> > > To lock everything on fault:
+> > > mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
+> > 
+> > Makes sense to me. The only remaining and still tricky part would be
+> > the munlock{all}(flags) behavior. What should munlock(MLOCK_ONFAULT)
+> > do? Keep locked and poppulate the range or simply ignore the flag an
+> > just unlock?
+> > 
+> > I can see some sense to allow munlockall(MCL_FUTURE[|MLOCK_ONFAULT]),
+> > munlockall(MCL_CURRENT) resp. munlockall(MCL_CURRENT|MCL_FUTURE) but
+> > other combinations sound weird to me.
+> > 
+> > Anyway munlock with flags opens new doors of trickiness.
+> 
+> In the current revision there are no new munlock[all] system calls
+> introduced.  munlockall() unconditionally cleared both MCL_CURRENT and
+> MCL_FUTURE before the set and now unconditionally clears all three.
+> munlock() does the same for VM_LOCK and VM_LOCKONFAULT. 
 
-On 07/17/2015 01:40 AM, Scott Wood wrote:
-> On Thu, 2015-07-16 at 21:18 +0530, Hemant Kumar wrote:
->> To analyze the exit events with perf, we need kvm_perf.h to be added in
->> the arch/powerpc directory, where the kvm tracepoints needed to trace
->> the KVM exit events are defined.
->>
->> This patch adds "kvm_perf_book3s.h" to indicate that the tracepoints are
->> book3s specific. Generic "kvm_perf.h" then can just include
->> "kvm_perf_book3s.h".
->>
->> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
->> ---
->> Changes:
->> - Not exporting the exit reasons compared to previous patchset (suggested
->> by Paul)
->>
->>   arch/powerpc/include/uapi/asm/kvm_perf.h        |  6 ++++++
->>   arch/powerpc/include/uapi/asm/kvm_perf_book3s.h | 14 ++++++++++++++
->>   2 files changed, 20 insertions(+)
->>   create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
->>   create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
->>
->> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h
->> b/arch/powerpc/include/uapi/asm/kvm_perf.h
->> new file mode 100644
->> index 0000000..5ed2ff3
->> --- /dev/null
->> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
->> @@ -0,0 +1,6 @@
->> +#ifndef _ASM_POWERPC_KVM_PERF_H
->> +#define _ASM_POWERPC_KVM_PERF_H
->> +
->> +#include <asm/kvm_perf_book3s.h>
->> +
->> +#endif
->> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
->> b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
->> new file mode 100644
->> index 0000000..8c8d8c2
->> --- /dev/null
->> +++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
->> @@ -0,0 +1,14 @@
->> +#ifndef _ASM_POWERPC_KVM_PERF_BOOK3S_H
->> +#define _ASM_POWERPC_KVM_PERF_BOOK3S_H
->> +
->> +#include <asm/kvm.h>
->> +
->> +#define DECODE_STR_LEN 20
->> +
->> +#define VCPU_ID "vcpu_id"
->> +
->> +#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
->> +#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
->> +#define KVM_EXIT_REASON "trap"
->> +
->> +#endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
-> Again, why is book3s stuff being presented via uapi as generic
-> <asm/kvm_perf.h> with generic symbol names?
->
-> -Scott
+OK if new munlock{all}(flags) is not introduced then this is much saner
+IMO.
 
-Ok.
+> If the user
+> wants to adjust mlockall flags today, they need to call mlockall a
+> second time with the new flags, this remains true for mlockall after
+> this set and the same behavior is mirrored in mlock2. 
 
-We can change the KVM_ENTRY_TRACE macro to something like
-KVM_BOOK3S_ENTRY_TRACE and likewise for KVM_EXIT_TRACE
-and KVM_EXIT_REASON and then, to resolve the issue of generic
-macro names in the userspace side, we can handle it using __weak
-modifier.
+OK, this makes sense to me.
 
-What would you suggest?
+> The only
+> remaining question I have is should we have 2 new mlockall flags so that
+> the caller can explicitly set VM_LOCKONFAULT in the mm->def_flags vs
+> locking all current VMAs on fault.  I ask because if the user wants to
+> lock all current VMAs the old way, but all future VMAs on fault they
+> have to call mlockall() twice:
+> 
+> 	mlockall(MCL_CURRENT);
+> 	mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT);
+> 
+> This has the side effect of converting all the current VMAs to
+> VM_LOCKONFAULT, but because they were all made present and locked in the
+> first call, this should not matter in most cases. 
 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+I think this is OK (worth documenting though) considering that ONFAULT
+is just modifier for the current mlock* operation. The memory is locked
+the same way for both - aka once the memory is present you do not know
+whether it was done during mlock call or later during the fault.
+
+> The catch is that,
+> like mmap(MAP_LOCKED), mlockall() does not communicate if mm_populate()
+> fails.  This has been true of mlockall() from the beginning so I don't
+> know if it needs more than an entry in the man page to clarify (which I
+> will add when I add documentation for MCL_ONFAULT).
+
+Yes this is true but unlike mmap it seems fixable I guess. We do not have
+to unmap and we can downgrade mmap_sem to read and the fault so nobody
+can race with a concurent mlock.
+
+> In a much less
+> likely corner case, it is not possible in the current setup to request
+> all current VMAs be VM_LOCKONFAULT and all future be VM_LOCKED.
+
+Vlastimil has already pointed that out. MCL_FUTURE doesn't clear
+MCL_CURRENT. I was quite surprised in the beginning but it makes a
+perfect sense. mlockall call shouldn't lead into munlocking, that would
+be just weird. Clearing MCL_FUTURE on MCL_CURRENT makes sense on the
+other hand because the request is explicit about _current_ memory and it
+doesn't lead to any munlocking.
 
 -- 
-Thanks,
-Hemant Kumar
+Michal Hocko
+SUSE Labs
