@@ -1,31 +1,33 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=645f71718=julien.grall@citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E1071A1A45
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 20:50:06 +1000 (AEST)
-Subject: Re: [PATCH V5 0/7] Allow user to request memory to be locked on page
- fault
-To: Michal Hocko <mhocko@kernel.org>, Eric B Munson <emunson@akamai.com>
-References: <1437773325-8623-1-git-send-email-emunson@akamai.com>
- <55B5F4FF.9070604@suse.cz> <20150727133555.GA17133@akamai.com>
- <55B63D37.20303@suse.cz> <20150727145409.GB21664@akamai.com>
- <20150728111725.GG24972@dhcp22.suse.cz> <20150728134942.GB2407@akamai.com>
- <20150729104532.GE15801@dhcp22.suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Shuah Khan <shuahkh@osg.samsung.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
- Ralf Baechle <ralf@linux-mips.org>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <55B8AFD5.3030902@suse.cz>
-Date: Wed, 29 Jul 2015 12:49:57 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26A711A1A4C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 21:03:52 +1000 (AEST)
+Message-ID: <55B8B2DA.8090900@citrix.com>
+Date: Wed, 29 Jul 2015 12:02:50 +0100
+From: Julien Grall <julien.grall@citrix.com>
 MIME-Version: 1.0
-In-Reply-To: <20150729104532.GE15801@dhcp22.suse.cz>
-Content-Type: text/plain; charset=windows-1252
+To: <xen-devel@lists.xenproject.org>
+CC: <ian.campbell@citrix.com>, <stefano.stabellini@eu.citrix.com>,
+ <linux-kernel@vger.kernel.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ David Vrabel <david.vrabel@citrix.com>, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, "James
+ E.J. Bottomley" <JBottomley@odin.com>, Jean-Christophe Plagniol-Villard
+ <plagnioj@jcrosoft.com>, Jiri Slaby <jslaby@suse.com>, Juergen Gross
+ <jgross@suse.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ <linux-api@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+ <linux-fbdev@vger.kernel.org>, <linux-input@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-scsi@vger.kernel.org>,
+ <netdev@vger.kernel.org>, =?UTF-8?B?Um9nZXIgUGF1IE1vbm7DqQ==?=
+ <roger.pau@citrix.com>, Russell King <linux@arm.linux.org.uk>, "Thomas
+ Gleixner" <tglx@linutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "Wei
+ Liu" <wei.liu2@citrix.com>, <x86@kernel.org>
+Subject: Re: [PATCH 0/8] Use correctly the Xen memory terminologies in Linux
+References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +37,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2015 12:45 PM, Michal Hocko wrote:
->> In a much less
->> likely corner case, it is not possible in the current setup to request
->> all current VMAs be VM_LOCKONFAULT and all future be VM_LOCKED.
+On 28/07/15 16:02, Julien Grall wrote:
+> Hi all,
 > 
-> Vlastimil has already pointed that out. MCL_FUTURE doesn't clear
-> MCL_CURRENT. I was quite surprised in the beginning but it makes a
-> perfect sense. mlockall call shouldn't lead into munlocking, that would
-> be just weird. Clearing MCL_FUTURE on MCL_CURRENT makes sense on the
-> other hand because the request is explicit about _current_ memory and it
-> doesn't lead to any munlocking.
+> This patch series aims to use the memory terminologies described in
+> include/linux/mm.h [1] for Linux xen code.
 
-Yeah after more thinking it does make some sense despite the perceived
-inconsistency, but it's definitely worth documenting properly. It also already
-covers the usecase for munlockall2(MCL_FUTURE) which IIRC you had in the earlier
-revisions...
+I mistakenly wrote the wrong include here. It should be include/xen/mm.h
+from the Xen tree:
+
+http://xenbits.xen.org/gitweb/?p=xen.git;a=commitdiff;h=e758ed14f390342513405dd766e874934573e6cb
+
+Regards,
+
+-- 
+Julien Grall
