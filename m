@@ -1,20 +1,41 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B0991A1BD7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 18:02:20 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] gianfar: Fix warnings when built on 64-bit
-Date: Wed, 29 Jul 2015 10:02:07 +0200
-Message-ID: <4498062.4y369pLSmO@wuerfel>
-In-Reply-To: <1438147477-393-1-git-send-email-scottwood@freescale.com>
-References: <1438147477-393-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64C361A1C0C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 18:13:56 +1000 (AEST)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8F9F51402B0
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 18:13:55 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 29 Jul 2015 13:43:50 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 8FBF83940062
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 13:43:44 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6T8Dfcn50987114
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 13:43:42 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6T8DeJK022368
+ for <linuxppc-dev@ozlabs.org>; Wed, 29 Jul 2015 13:43:41 +0530
+Message-ID: <55B88B34.1030808@linux.vnet.ibm.com>
+Date: Wed, 29 Jul 2015 13:43:40 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+CC: mikey@neuling.org, sukadev@linux.vnet.ibm.com, dja@axtens.net
+Subject: Re: [4/5] powerpc/perf: Change name & type of 'pred' in
+ power_pmu_bhrb_read
+References: <20150729032555.CE6CB140E41@ozlabs.org>
+In-Reply-To: <20150729032555.CE6CB140E41@ozlabs.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,62 +45,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 29 July 2015 00:24:37 Scott Wood wrote:
-
-> Alternatively, if there's a desire to not mess with this code (I don't
-> know how to trigger this code path to test it), this driver should be
-> given dependencies that ensure that it only builds on 32-bit.
-
-These are obvious fixes, they should definitely go in.
-
->  drivers/net/ethernet/freescale/gianfar.c | 22 ++++++++++++++++++----
->  1 file changed, 18 insertions(+), 4 deletions(-)
+On 07/29/2015 08:55 AM, Michael Ellerman wrote:
+> On Tue, 2015-30-06 at 08:20:30 UTC, Anshuman Khandual wrote:
+>> > Branch record attributes 'mispred' and 'predicted' are single bit
+>> > fields as defined in the perf ABI. Hence the data type of the field
+>> > 'pred' used during BHRB processing should be changed from integer
+>> > to bool. This patch also changes the name of the variable from 'pred'
+>> > to 'mispred' making the logical inversion process more meaningful
+>> > and readable.
+> This whole function is a mess.
 > 
-> diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-> index ff87502..7c682ac 100644
-> --- a/drivers/net/ethernet/freescale/gianfar.c
-> +++ b/drivers/net/ethernet/freescale/gianfar.c
-> @@ -565,6 +565,7 @@ static void gfar_ints_enable(struct gfar_private *priv)
->  	}
->  }
->  
-> +#ifdef CONFIG_PM
->  static void lock_tx_qs(struct gfar_private *priv)
->  {
->  	int i;
-> @@ -580,6 +581,7 @@ static void unlock_tx_qs(struct gfar_private *priv)
->  	for (i = 0; i < priv->num_tx_queues; i++)
->  		spin_unlock(&priv->tx_queue[i]->txlock);
->  }
-> +#endif
->  
+> There's no good reason why we're doing the assignment to pred/mispred in two
+> places to begin with, so if that was eliminated we wouldn't need a local for
+> mispred to begin with.
 
-This seems unrelated and should probably be a separate fix.
+Not sure whether I got this right. We are assigning mispred once with
+the value (val & BHRB_PREDICTION) and then assigning mispred and it's
+inversion to two different fields of the branch entry as required.
 
-> @@ -2964,8 +2967,13 @@ int gfar_clean_rx_ring(struct gfar_priv_rx_q *rx_queue, int rx_work_limit)
->  		gfar_init_rxbdp(rx_queue, bdp, bufaddr);
->  
->  		/* Update Last Free RxBD pointer for LFC */
-> -		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en))
-> -			gfar_write(rx_queue->rfbptr, (u32)bdp);
-> +		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en)) {
-> +			u32 bdp_dma;
-> +
-> +			bdp_dma = lower_32_bits(rx_queue->rx_bd_dma_base);
-> +			bdp_dma += (uintptr_t)bdp - (uintptr_t)base;
-> +			gfar_write(rx_queue->rfbptr, bdp_dma);
-> +		}
->  
->  		/* Update to the next pointer */
->  		bdp = next_bd(bdp, base, rx_queue->rx_ring_size);
+> 
+> Then there's the type juggling, all of which probably works but is fishy and
+> horrible.
 
-You are fixing two problems here: the warning about a size cast, and
-the fact that the driver is using the wrong pointer. I'd suggest
-explaining it in the changelog.
+With this patch and one more (2nd patch of the BHRB SW filter series)
+patch, we are trying to make it better.
 
-Note that we normally rely on void pointer arithmetic in the kernel, so
-I'd write it without the uintptr_t casts as 
+> 
+> You take a u64, bitwise and it with a mask, assign that to a boolean, then take
 
-	bdp_dma = lower_32_bits(rx_queue->rx_bd_dma_base + (base - bdp));
+So that any residual positive value after the "AND" operation will
+become logical TRUE for the boolean. We dont use any shifting here
+as BHRB_PREDICTION checks for the right most (least significant) bit
+in the sequence.
 
-	Arnd
+> the boolean, *bitwise* negate that and assign the result to a single bit
+> bitfield.
+
+This is getting fixed with a subsequent patch (2nd patch of the BHRB
+SW filter series) in a new function called insert_branch.
+
++static inline void insert_branch(struct cpu_hw_events *cpuhw,
++                       int index, u64 from, u64 to, bool mispred)
++{
++       cpuhw->bhrb_entries[index].from = from;
++       cpuhw->bhrb_entries[index].to = to;
++       cpuhw->bhrb_entries[index].mispred = mispred;
++       cpuhw->bhrb_entries[index].predicted = !mispred;
++}
