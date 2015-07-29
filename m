@@ -1,19 +1,20 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0107.outbound.protection.outlook.com [65.55.169.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D715E1A1A2D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 17:51:42 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <scottwood@freescale.com>
-CC: Yangbo Lu <yangbo.lu@freescale.com>
-Subject: [PATCH v3] powerpc/dts: Add and fix 1588 timer node for eTSEC
-Date: Wed, 29 Jul 2015 15:12:38 +0800
-Message-ID: <1438153958-1400-1-git-send-email-yangbo.lu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B0991A1BD7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 18:02:20 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] gianfar: Fix warnings when built on 64-bit
+Date: Wed, 29 Jul 2015 10:02:07 +0200
+Message-ID: <4498062.4y369pLSmO@wuerfel>
+In-Reply-To: <1438147477-393-1-git-send-email-scottwood@freescale.com>
+References: <1438147477-393-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,222 +24,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add 1588 timer node in files:
-arch/powerpc/boot/dts/bsc9131rdb.dtsi
-arch/powerpc/boot/dts/bsc9132qds.dtsi
-arch/powerpc/boot/dts/p1010rdb.dtsi
-arch/powerpc/boot/dts/p1020rdb-pd.dts
-arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-arch/powerpc/boot/dts/p1022ds.dtsi
-arch/powerpc/boot/dts/p1025twr.dtsi
-For P2020RDB-PC, registers' values should be calculated
-based on default 1588 reference clock(300MHz) not 250MHz,
-and fix this in file:
-arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+On Wednesday 29 July 2015 00:24:37 Scott Wood wrote:
 
-Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
----
-Changes for v3:
-	- Changed 'tmr-add' to hex value
-	- Modified commit message
-Changes for v2:
-	- Changed hex value to decimal value in dts
-	- Modified commit message
-	- Modified 1588 node in p2020rdb-pc.dtsi
----
- arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++
- arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
- arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
- arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++
- arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
- arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
- arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
- arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 12 ++++++------
- 8 files changed, 90 insertions(+), 6 deletions(-)
+> Alternatively, if there's a desire to not mess with this code (I don't
+> know how to trigger this code path to test it), this driver should be
+> given dependencies that ensure that it only builds on 32-bit.
 
-diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-index 45efcba..f4d96d2 100644
---- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-+++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-@@ -80,6 +80,18 @@
- 		status = "disabled";
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <0xcccccccd>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <249999999>;
-+	};
-+
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-index af8e888..7a13bf2 100644
---- a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-+++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-@@ -87,6 +87,18 @@
- 		};
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <0xcccccccd>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <249999999>;
-+	};
-+
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		tbi-handle = <&tbi0>;
-diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
-index ea534ef..0f0ced6 100644
---- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-+++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-@@ -186,6 +186,18 @@
- 		};
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <10>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <0x80000016>;
-+		fsl,tmr-fiper1	= <999999990>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <199999999>;
-+	};
-+
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-index 987017e..c7c6416 100644
---- a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-+++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-@@ -225,6 +225,18 @@
- 			};
- 		};
- 
-+		ptp_clock@b0e00 {
-+			compatible = "fsl,etsec-ptp";
-+			reg = <0xb0e00 0xb0>;
-+			interrupts = <68 2 0 0 69 2 0 0>;
-+			fsl,tclk-period	= <10>;
-+			fsl,tmr-prsc	= <2>;
-+			fsl,tmr-add	= <0x80000016>;
-+			fsl,tmr-fiper1	= <999999990>;
-+			fsl,tmr-fiper2	= <99990>;
-+			fsl,max-adj	= <199999999>;
-+		};
-+
- 		enet0: ethernet@b0000 {
- 			fixed-link = <1 1 1000 0 0>;
- 			phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-index d6274c5..e8a0f95 100644
---- a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-+++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-@@ -224,6 +224,18 @@
- 		};
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <10>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <0x80000016>;
-+		fsl,tmr-fiper1	= <999999990>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <199999999>;
-+	};
-+
- 	enet0: ethernet@b0000 {
- 		fixed-link = <1 1 1000 0 0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi b/arch/powerpc/boot/dts/p1022ds.dtsi
-index 957e0dc..149da0f 100644
---- a/arch/powerpc/boot/dts/p1022ds.dtsi
-+++ b/arch/powerpc/boot/dts/p1022ds.dtsi
-@@ -215,6 +215,18 @@
- 		};
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <0xc01ebd3d>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <266499999>;
-+	};
-+
- 	ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi b/arch/powerpc/boot/dts/p1025twr.dtsi
-index 8453501..08816fb 100644
---- a/arch/powerpc/boot/dts/p1025twr.dtsi
-+++ b/arch/powerpc/boot/dts/p1025twr.dtsi
-@@ -138,6 +138,18 @@
- 		};
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <10>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <0xc0000021>;
-+		fsl,tmr-fiper1	= <999999990>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <133333332>;
-+	};
-+
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-index c21d1c7..ad2e242 100644
---- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-@@ -215,12 +215,12 @@
- 	};
- 
- 	ptp_clock@24e00 {
--		fsl,tclk-period = <5>;
--		fsl,tmr-prsc = <200>;
--		fsl,tmr-add = <0xCCCCCCCD>;
--		fsl,tmr-fiper1 = <0x3B9AC9FB>;
--		fsl,tmr-fiper2 = <0x0001869B>;
--		fsl,max-adj = <249999999>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <0xaaaaaaab>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <299999999>;
- 	};
- 
- 	enet0: ethernet@24000 {
--- 
-2.1.0.27.g96db324
+These are obvious fixes, they should definitely go in.
+
+>  drivers/net/ethernet/freescale/gianfar.c | 22 ++++++++++++++++++----
+>  1 file changed, 18 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+> index ff87502..7c682ac 100644
+> --- a/drivers/net/ethernet/freescale/gianfar.c
+> +++ b/drivers/net/ethernet/freescale/gianfar.c
+> @@ -565,6 +565,7 @@ static void gfar_ints_enable(struct gfar_private *priv)
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_PM
+>  static void lock_tx_qs(struct gfar_private *priv)
+>  {
+>  	int i;
+> @@ -580,6 +581,7 @@ static void unlock_tx_qs(struct gfar_private *priv)
+>  	for (i = 0; i < priv->num_tx_queues; i++)
+>  		spin_unlock(&priv->tx_queue[i]->txlock);
+>  }
+> +#endif
+>  
+
+This seems unrelated and should probably be a separate fix.
+
+> @@ -2964,8 +2967,13 @@ int gfar_clean_rx_ring(struct gfar_priv_rx_q *rx_queue, int rx_work_limit)
+>  		gfar_init_rxbdp(rx_queue, bdp, bufaddr);
+>  
+>  		/* Update Last Free RxBD pointer for LFC */
+> -		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en))
+> -			gfar_write(rx_queue->rfbptr, (u32)bdp);
+> +		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en)) {
+> +			u32 bdp_dma;
+> +
+> +			bdp_dma = lower_32_bits(rx_queue->rx_bd_dma_base);
+> +			bdp_dma += (uintptr_t)bdp - (uintptr_t)base;
+> +			gfar_write(rx_queue->rfbptr, bdp_dma);
+> +		}
+>  
+>  		/* Update to the next pointer */
+>  		bdp = next_bd(bdp, base, rx_queue->rx_ring_size);
+
+You are fixing two problems here: the warning about a size cast, and
+the fact that the driver is using the wrong pointer. I'd suggest
+explaining it in the changelog.
+
+Note that we normally rely on void pointer arithmetic in the kernel, so
+I'd write it without the uintptr_t casts as 
+
+	bdp_dma = lower_32_bits(rx_queue->rx_bd_dma_base + (base - bdp));
+
+	Arnd
