@@ -1,22 +1,35 @@
-Return-Path: <claudiu.manoil@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0107.outbound.protection.outlook.com [157.56.110.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <prvs=645f71718=julien.grall@citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93FE91A1A53
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 21:19:25 +1000 (AEST)
-From: Manoil Claudiu <claudiu.manoil@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "netdev@vger.kernel.org"
- <netdev@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] gianfar: Fix warnings when built on 64-bit
-Date: Wed, 29 Jul 2015 11:03:29 +0000
-Message-ID: <CY1PR0301MB0732B8101733EF131F29D3F89C8C0@CY1PR0301MB0732.namprd03.prod.outlook.com>
-References: <1438147477-393-1-git-send-email-scottwood@freescale.com>
- <4498062.4y369pLSmO@wuerfel>
-In-Reply-To: <4498062.4y369pLSmO@wuerfel>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 787211A1A53
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jul 2015 21:26:53 +1000 (AEST)
+Message-ID: <55B8B846.2060103@citrix.com>
+Date: Wed, 29 Jul 2015 12:25:58 +0100
+From: Julien Grall <julien.grall@citrix.com>
 MIME-Version: 1.0
+To: Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ <xen-devel@lists.xenproject.org>
+CC: <linux-fbdev@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, "Jiri
+ Slaby" <jslaby@suse.com>, <stefano.stabellini@eu.citrix.com>, Russell King
+ <linux@arm.linux.org.uk>, <linux-scsi@vger.kernel.org>, <x86@kernel.org>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, <linux-input@vger.kernel.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ <ian.campbell@citrix.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ "James E.J. Bottomley" <JBottomley@odin.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ <linux-arm-kernel@lists.infradead.org>, Juergen Gross <jgross@suse.com>,
+ "Wei Liu" <wei.liu2@citrix.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ <linux-kernel@vger.kernel.org>, David Vrabel <david.vrabel@citrix.com>,
+ <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ =?windows-1252?Q?Roger_Pau_Monn=E9?= <roger.pau@citrix.com>
+Subject: Re: [PATCH 4/8] xen: Use the correctly the Xen memory terminologies
+References: <1438095769-2560-1-git-send-email-julien.grall@citrix.com>
+ <1438095769-2560-5-git-send-email-julien.grall@citrix.com>
+ <55B7D40B.5080903@oracle.com>
+In-Reply-To: <55B7D40B.5080903@oracle.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +39,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Arnd Bergmann [mailto:arnd@arndb.de]
-> Sent: Wednesday, July 29, 2015 11:02 AM
-> To: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org; Manoil Claudiu=
--
-> B08782; Wood Scott-B07421
-> Subject: Re: [PATCH] gianfar: Fix warnings when built on 64-bit
->=20
-> On Wednesday 29 July 2015 00:24:37 Scott Wood wrote:
->=20
-> > Alternatively, if there's a desire to not mess with this code (I don't
-> > know how to trigger this code path to test it), this driver should be
-> > given dependencies that ensure that it only builds on 32-bit.
->=20
-[...]
+Hi Boris,
 
-> > @@ -2964,8 +2967,13 @@ int gfar_clean_rx_ring(struct gfar_priv_rx_q
-> *rx_queue, int rx_work_limit)
-> >  		gfar_init_rxbdp(rx_queue, bdp, bufaddr);
-> >
-> >  		/* Update Last Free RxBD pointer for LFC */
-> > -		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en))
-> > -			gfar_write(rx_queue->rfbptr, (u32)bdp);
-> > +		if (unlikely(rx_queue->rfbptr && priv->tx_actual_en)) {
-> > +			u32 bdp_dma;
-> > +
-> > +			bdp_dma =3D lower_32_bits(rx_queue-
-> >rx_bd_dma_base);
-> > +			bdp_dma +=3D (uintptr_t)bdp - (uintptr_t)base;
-> > +			gfar_write(rx_queue->rfbptr, bdp_dma);
-> > +		}
-> >
-> >  		/* Update to the next pointer */
-> >  		bdp =3D next_bd(bdp, base, rx_queue->rx_ring_size);
->=20
-> You are fixing two problems here: the warning about a size cast, and
-> the fact that the driver is using the wrong pointer. I'd suggest
-> explaining it in the changelog.
->=20
+On 28/07/15 20:12, Boris Ostrovsky wrote:
+> On 07/28/2015 11:02 AM, Julien Grall wrote:
+>> Based on include/xen/mm.h [1], Linux is mistakenly using MFN when GFN
+>> is meant, I suspect this is because the first support for Xen was for
+>> PV. This brough some misimplementation of helpers on ARM and make the
+>> developper confused the expected behavior.
+>>
+>> For instance, with pfn_to_mfn, we expect to get an MFN based on the name.
+>> Although, if we look at the implementation on x86, it's returning a GFN.
+>>
+>> For clarity and avoid new confusion, replace any reference of mfn into
+>> gnf in any helpers used by PV drivers.
+> 
+> 
+> 
+> 
+>> @@ -730,7 +730,7 @@ static void xen_do_pin(unsigned level, unsigned
+>> long pfn)
+>>       struct mmuext_op op;
+>>
+>>       op.cmd = level;
+>> -    op.arg1.mfn = pfn_to_mfn(pfn);
+>> +    op.arg1.mfn = pfn_to_gfn(pfn);
+> 
+> 
+> This looks slightly odd. It is correct but given that purpose of this
+> series is to make things more clear perhaps we can add another union
+> member (gfn) to mmuext_op.arg1?
+> 
+> (Of course, the hypervisor will continue referring to mfn which could
+> still be confusing)
 
-What would be the wrong pointer here? "base"?
-"base" is " rx_queue->rx_bd_base".
+This operation is only used for PV guests, right?
 
-> Note that we normally rely on void pointer arithmetic in the kernel, so
-> I'd write it without the uintptr_t casts as
->=20
-> 	bdp_dma =3D lower_32_bits(rx_queue->rx_bd_dma_base + (base -
-> bdp));
+IHMO re-introducing pfn_to_mfn for PV-guests only (i.e with a BUG_ON to
+ensure no usage for auto-translated guest) would be the best solution.
+It would avoid to have different name than the hypersivor one in the
+hypercall interface. It will also make clear that virt_to_machine & co
+is only PV specific.
 
-I think you mean: (bdp-base)
+I though doing this but I preferred to defer it to x86 expert as my
+knowledge for x86 Xen is very limited. I don't know where it's more
+suitable to use MFN or GFN. I guess this file (mmu.c) is mostly PV specific?
 
-Claudiu
+Would something like below fine for you?
+
+static inline unsigned long pfn_to_mfn(unsigned long pfn)
+{
+	unsigned long mfn;
+
+	BUG_ON(xen_feature(XENFEAT_auto_translated_physmap));
+
+	mfn = __pfn_to_mfn(pfn);
+	if (mfn != INVALID_P2M_ENTRY)
+		mfn &= ~(FOREIGN_FRAME_BIT | IDENTITY_FRAME_BIT);
+
+	return mfn;
+}
+
+static inline unsigned long pfn_to_gfn(unsigned long pfn)
+{
+	if (xen_feature(XENFEAT_autotranslated_physmap))
+		return pfn;
+	else
+		return pfn_to_mfn(pfn);
+}
+
+Similar splitting would be done for gfn_to_pfn and mfn_to_pfn.
+
+Regards,
+
+-- 
+Julien Grall
