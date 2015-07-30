@@ -1,29 +1,29 @@
-Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0134.outbound.protection.outlook.com [207.46.100.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B67D1A2AD7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 02:39:03 +1000 (AEST)
-Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
- [IPv6:2607:f8b0:4001:c06::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D3E73140281
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 02:39:02 +1000 (AEST)
-Received: by ioii16 with SMTP id i16so59349289ioi.0
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 09:39:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B75B01A0591
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 03:07:08 +1000 (AEST)
+Message-ID: <1438276013.2993.357.camel@freescale.com>
+Subject: Re: [RFC v2] genalloc:add an gen_pool_first_fit_align algo to genalloc
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "lauraa@codeaurora.org" <lauraa@codeaurora.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "olof@lixom.net"
+ <olof@lixom.net>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "Xie
+ Xiaobo-R63061" <X.Xie@freescale.com>
+Date: Thu, 30 Jul 2015 12:06:53 -0500
+In-Reply-To: <SN1PR0301MB1550595DB65EF4319109C95A9B8B0@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1437991074-35377-1-git-send-email-qiang.zhao@freescale.com>
+ <1438032043.2993.311.camel@freescale.com>
+ <SN1PR0301MB155080E4B7B2313969E30DAC9B8D0@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1438186761.2993.337.camel@freescale.com>
+ <SN1PR0301MB1550595DB65EF4319109C95A9B8B0@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <1438235808-6438-1-git-send-email-mpe@ellerman.id.au>
-References: <1437646871-3195-9-git-send-email-mpe@ellerman.id.au>
- <1438235808-6438-1-git-send-email-mpe@ellerman.id.au>
-Date: Thu, 30 Jul 2015 09:39:00 -0700
-Message-ID: <CAGXu5jLkWM4kYJursWv8xspD50bOaLbt4O9=XyT1s3b-tUOeQw@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/kernel: Enable seccomp filter
-From: Kees Cook <keescook@chromium.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +33,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 29, 2015 at 10:56 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> This commit enables seccomp filter on powerpc, now that we have all the
-> necessary pieces in place.
->
-> To support seccomp's desire to modify the syscall return value under
-> some circumstances, we use a different ABI to the ptrace ABI. That is we
-> use r3 as the syscall return value, and orig_gpr3 is the first syscall
-> parameter.
->
-> This means the seccomp code, or a ptracer via SECCOMP_RET_TRACE, will
-> see -ENOSYS preloaded in r3. This is identical to the behaviour on x86,
-> and allows seccomp or the ptracer to either leave the -ENOSYS or change
-> it to something else, as well as rejecting or not the syscall by
-> modifying r0.
->
-> If seccomp does not reject the syscall, we restore the register state to
-> match what ptrace and audit expect, ie. r3 is the first syscall
-> parameter again. We do this restore using orig_gpr3, which may have been
-> modified by seccomp, which allows seccomp to modify the first syscall
-> paramater and allow the syscall to proceed.
->
-> We need to #ifdef the the additional handling of r3 for seccomp, so move
-> it all out of line.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Kees Cook <keescook@chromium.org>
-> ---
->  arch/powerpc/Kconfig         |  1 +
->  arch/powerpc/kernel/ptrace.c | 41 ++++++++++++++++++++++++++++++++++++++++-
->  2 files changed, 41 insertions(+), 1 deletion(-)
->
->
-> v2: The previous version didn't compile for CONFIG_SECCOMP=n. To fix it up I
->     moved the logic out of line and #ifdef'ed that. It gets inlined by the compiler
->     so the end result is the same.
->
->     Kees I kept your Reviewed-by on the basis that the interesting logic is the
->     same, hope that's OK by you.
+On Wed, 2015-07-29 at 20:27 -0500, Zhao Qiang-B45475 wrote:
+> On Thu, 2015-07-30 at 5:21, Scott Wood wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, July 30, 2015 12:19 AM
+> > To: Zhao Qiang-B45475
+> > Cc: lauraa@codeaurora.org; linux-kernel@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org; akpm@linux-foundation.org; olof@lixom.net;
+> > catalin.marinas@arm.com; Xie Xiaobo-R63061
+> > Subject: Re: [RFC v2] genalloc:add an gen_pool_first_fit_align algo to
+> > genalloc
+> > 
+> > On Tue, 2015-07-28 at 00:32 -0500, Zhao Qiang-B45475 wrote:
+> > > On Tue, 2015-07-28 at 5:21, Scott Wood wrote:
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Tuesday, July 28, 2015 5:21 AM
+> > > > To: Zhao Qiang-B45475
+> > > > Cc: lauraa@codeaurora.org; linux-kernel@vger.kernel.org; linuxppc-
+> > > > dev@lists.ozlabs.org; akpm@linux-foundation.org; olof@lixom.net;
+> > > > catalin.marinas@arm.com; Xie Xiaobo-R63061
+> > > > Subject: Re: [RFC v2] genalloc:add an gen_pool_first_fit_align algo
+> > > > to genalloc
+> > > > 
+> > > > On Mon, 2015-07-27 at 17:57 +0800, Zhao Qiang wrote:
+> > > > 
+> > > > Where's the part that adds the ability to pass in data to each
+> > > > allocation call, as per the previous discussion?
+> > > 
+> > > You means to use gen_pool_alloc_data()?
+> > 
+> > Yes.
+> > 
+> > > Previously you said that the format of data is algorithm-specific, So
+> > > I think it is better to handle data in algorithm function.
+> > 
+> > It is a channel for communication from the API caller to the algorithm.
+> > 
+> > > If you still prefer gen_pool_alloc_data(), I will modify it.
+> > > But there still are details I want to confirm with you.
+> > > 1. If use gen_pool_alloc_data(), should I pass data as a parameter?
+> > 
+> > Yes.
+> > 
+> > > 2. Should I count align_mask in gen_pool_alloc_data(), meanwhile, add
+> > >    a align_mask to data as a member?
+> > 
+> > gen_pool_alloc_data() should just pass data to the algorithm.  The
+> > algorithm should calculate align_mask based on align.  I don't think
+> > exposing align_mask to API users would be very friendly.
+> 
+> If calculate align_mask in algorithm, I need to get pool->min_alloc_order 
+> in algorithm,
+> Like:
+>                order = data->pool->min_alloc_order;
+>                align_mask = ((data->align + (1UL << order) - 1) >> order) - 
+> 1; 
+> so I add pool to structure data as a member. Is there any other better 
+> idea? 
 
-Totally fine. Thanks!
+Pass pool as a parameter to the algorithm.
 
--Kees
-
--- 
-Kees Cook
-Chrome OS Security
+-Scott
