@@ -1,13 +1,13 @@
 Return-Path: <dmitry.torokhov@gmail.com>
-Received: from mail-pd0-x241.google.com (mail-pd0-x241.google.com
- [IPv6:2607:f8b0:400e:c02::241])
+Received: from mail-pd0-x242.google.com (mail-pd0-x242.google.com
+ [IPv6:2607:f8b0:400e:c02::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ACCE31A1BE3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 02:35:25 +1000 (AEST)
-Received: by pdav4 with SMTP id v4so2372431pda.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 09:35:23 -0700 (PDT)
-Date: Thu, 30 Jul 2015 09:35:17 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B2A01A1D22
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 02:37:15 +1000 (AEST)
+Received: by pdbmj9 with SMTP id mj9so2368204pdb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 09:37:13 -0700 (PDT)
+Date: Thu, 30 Jul 2015 09:37:08 -0700
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 To: Javier Martinez Canillas <javier@osg.samsung.com>
 Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
@@ -34,11 +34,12 @@ Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
  Tony Lindgren <tony@atomide.com>, MyungJoo Ham <myungjoo.ham@samsung.com>,
  linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH 00/27] Export I2C and OF module aliases in missing drivers
-Message-ID: <20150730163517.GA13165@dtor-ws>
+Message-ID: <20150730163708.GB13165@dtor-ws>
 References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+ <20150730163517.GA13165@dtor-ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+In-Reply-To: <20150730163517.GA13165@dtor-ws>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,32 +49,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Javier,
+On Thu, Jul 30, 2015 at 09:35:17AM -0700, Dmitry Torokhov wrote:
+> Hi Javier,
+> 
+> On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
+> > Hello,
+> > 
+> > Short version:
+> > 
+> > This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
+> > to export that information so modules have the correct aliases built-in
+> > and autoloading works correctly.
+> > 
+> > Longer version:
+> > 
+> > Currently it's mandatory for I2C drivers to have an I2C device ID table
+> > regardless if the device was registered using platform data or OF. This
+> > is because the I2C core needs an I2C device ID table for two reasons:
+> > 
+> > 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
+> >    is passed to the I2C driver probe() function.
+> > 
+> > 2) Export the module aliases from the I2C device ID table so userspace
+> >    can auto-load the correct module. This is because i2c_device_uevent
+> >    always reports a MODALIAS of the form i2c:<client->name>.
+> 
+> Why are we not fixing this? We emit specially carved uevent for
+> ACPI-based devices, why not the same for OF? Platform bus does this...
 
-On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
-> Hello,
-> 
-> Short version:
-> 
-> This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
-> to export that information so modules have the correct aliases built-in
-> and autoloading works correctly.
-> 
-> Longer version:
-> 
-> Currently it's mandatory for I2C drivers to have an I2C device ID table
-> regardless if the device was registered using platform data or OF. This
-> is because the I2C core needs an I2C device ID table for two reasons:
-> 
-> 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
->    is passed to the I2C driver probe() function.
-> 
-> 2) Export the module aliases from the I2C device ID table so userspace
->    can auto-load the correct module. This is because i2c_device_uevent
->    always reports a MODALIAS of the form i2c:<client->name>.
-
-Why are we not fixing this? We emit specially carved uevent for
-ACPI-based devices, why not the same for OF? Platform bus does this...
+Ah, now I see the 27/27 patch. I think it is exactly what we need. And
+probably for SPI bus as well.
 
 Thanks.
 
