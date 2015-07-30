@@ -1,17 +1,20 @@
 Return-Path: <javier@osg.samsung.com>
 Received: from lists.s-osg.org (lists.s-osg.org [54.187.51.154])
- by lists.ozlabs.org (Postfix) with ESMTP id A93691A076F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 02:20:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 310621A0591
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 03:13:56 +1000 (AEST)
+Subject: Re: [PATCH 00/27] Export I2C and OF module aliases in missing drivers
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+ <20150730163517.GA13165@dtor-ws> <20150730163708.GB13165@dtor-ws>
 From: Javier Martinez Canillas <javier@osg.samsung.com>
-To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>,
- alsa-devel@alsa-project.org, Mark Brown <broonie@kernel.org>,
- linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org,
- linux-i2c@vger.kernel.org, linux-leds@vger.kernel.org,
- Sebastian Reichel <sre@kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, lm-sensors@lm-sensors.org,
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+ Mark Brown <broonie@kernel.org>, linux-iio@vger.kernel.org,
+ linux-fbdev@vger.kernel.org, linux-i2c@vger.kernel.org,
+ linux-leds@vger.kernel.org,
  Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- linux-input@vger.kernel.org,
+ Chanwoo Choi <cw00.choi@samsung.com>, Tomi Valkeinen
+ <tomi.valkeinen@ti.com>, lm-sensors@lm-sensors.org,
+ Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jean Delvare <jdelvare@suse.com>, Jonathan Cameron <jic23@kernel.org>,
  linux-media@vger.kernel.org, rtc-linux@googlegroups.com,
@@ -24,15 +27,13 @@ Cc: Javier Martinez Canillas <javier@osg.samsung.com>,
  Lee Jones <lee.jones@linaro.org>, Bryan Wu <cooloney@gmail.com>,
  linux-omap@vger.kernel.org, Sakari Ailus <sakari.ailus@iki.fi>,
  linux-usb@vger.kernel.org, linux-spi@vger.kernel.org,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
  Tony Lindgren <tony@atomide.com>, MyungJoo Ham <myungjoo.ham@samsung.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 27/27] i2c: (RFC,
- don't apply) report OF style modalias when probing using DT
-Date: Thu, 30 Jul 2015 18:18:52 +0200
-Message-Id: <1438273132-20926-28-git-send-email-javier@osg.samsung.com>
-In-Reply-To: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
-References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+Message-ID: <55BA5B48.1050005@osg.samsung.com>
+Date: Thu, 30 Jul 2015 19:13:44 +0200
+MIME-Version: 1.0
+In-Reply-To: <20150730163708.GB13165@dtor-ws>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,59 +43,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An I2C driver that supports both OF and legacy platforms, will have
-both a OF and I2C ID table. This means that when built as a module,
-the aliases will be filled from both tables but currently always an
-alias of the form i2c:<deviceId> is reported, e.g:
+Hello Dmitry,
 
-$ cat /sys/class/i2c-adapter/i2c-8/8-004b/modalias
-i2c:maxtouch
+Thanks a lot for your feedback.
 
-So if a device is probed by matching its compatible string, udev can
-get a MODALIAS uevent env var that doesn't match with one of the valid
-aliases so the module won't be auto-loaded.
+On 07/30/2015 06:37 PM, Dmitry Torokhov wrote:
+> On Thu, Jul 30, 2015 at 09:35:17AM -0700, Dmitry Torokhov wrote:
+>> Hi Javier,
+>>
+>> On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
+>>> Hello,
+>>>
+>>> Short version:
+>>>
+>>> This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
+>>> to export that information so modules have the correct aliases built-in
+>>> and autoloading works correctly.
+>>>
+>>> Longer version:
+>>>
+>>> Currently it's mandatory for I2C drivers to have an I2C device ID table
+>>> regardless if the device was registered using platform data or OF. This
+>>> is because the I2C core needs an I2C device ID table for two reasons:
+>>>
+>>> 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
+>>>    is passed to the I2C driver probe() function.
+>>>
+>>> 2) Export the module aliases from the I2C device ID table so userspace
+>>>    can auto-load the correct module. This is because i2c_device_uevent
+>>>    always reports a MODALIAS of the form i2c:<client->name>.
+>>
+>> Why are we not fixing this? We emit specially carved uevent for
+>> ACPI-based devices, why not the same for OF? Platform bus does this...
+> 
+> Ah, now I see the 27/27 patch. I think it is exactly what we need. And
 
-This patch changes the I2C core to report a OF related MODALIAS uevent
-(of:N*T*C) env var instead so the module can be auto-loaded and also
-report the correct alias using sysfs:
+Yes, patch 27/27 is needed but the problem is as I explained before that
+there are drivers relying on the current behavior. The item c) in the list
+of issues that I mentioned. So those drivers need to be fixed before that
+patch is merged...
 
-$ cat /sys/class/i2c-adapter/i2c-8/8-004b/modalias
-of:NtrackpadT<NULL>Catmel,maxtouch
+> probably for SPI bus as well.
+>
 
-Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Yes, I didn't mention SPI because the cover letter became too long
+already but it does indeed have the same issue and I discussed this
+with  Mark already some time ago [0].
 
+Once I2C uevent report is fixed, I plan to do the same for SPI.
 
+> Thanks.
+> 
 
----
+[0]: https://lkml.org/lkml/2014/9/11/458
 
- drivers/i2c/i2c-core.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 92dddfeb3f39..c0668c2ed9da 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -489,6 +489,10 @@ static int i2c_device_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	struct i2c_client	*client = to_i2c_client(dev);
- 	int rc;
- 
-+	rc = of_device_uevent_modalias(dev, env);
-+	if (rc != -ENODEV)
-+		return rc;
-+
- 	rc = acpi_device_uevent_modalias(dev, env);
- 	if (rc != -ENODEV)
- 		return rc;
-@@ -726,6 +730,10 @@ show_modalias(struct device *dev, struct device_attribute *attr, char *buf)
- 	struct i2c_client *client = to_i2c_client(dev);
- 	int len;
- 
-+	len = of_device_get_modalias(dev, buf, PAGE_SIZE - 1);
-+	if (len != -ENODEV)
-+		return len;
-+
- 	len = acpi_device_modalias(dev, buf, PAGE_SIZE -1);
- 	if (len != -ENODEV)
- 		return len;
+Best regards,
 -- 
-2.4.3
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
