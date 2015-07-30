@@ -1,45 +1,29 @@
-Return-Path: <dmitry.torokhov@gmail.com>
-Received: from mail-pd0-x242.google.com (mail-pd0-x242.google.com
- [IPv6:2607:f8b0:400e:c02::242])
+Return-Path: <keescook@google.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8B67D1A2AD7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 02:39:03 +1000 (AEST)
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B2A01A1D22
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 02:37:15 +1000 (AEST)
-Received: by pdbmj9 with SMTP id mj9so2368204pdb.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 09:37:13 -0700 (PDT)
-Date: Thu, 30 Jul 2015 09:37:08 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
- Mark Brown <broonie@kernel.org>, linux-iio@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-i2c@vger.kernel.org,
- linux-leds@vger.kernel.org,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>,
- Chanwoo Choi <cw00.choi@samsung.com>,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, lm-sensors@lm-sensors.org,
- Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jean Delvare <jdelvare@suse.com>,
- Jonathan Cameron <jic23@kernel.org>, linux-media@vger.kernel.org,
- rtc-linux@googlegroups.com, linux-pm@vger.kernel.org,
- Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
- Guenter Roeck <linux@roeck-us.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Wolfram Sang <wsa@the-dreams.de>, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Sjoerd Simons <sjoerd.simons@collabora.co.uk>,
- Lee Jones <lee.jones@linaro.org>, Bryan Wu <cooloney@gmail.com>,
- linux-omap@vger.kernel.org, Sakari Ailus <sakari.ailus@iki.fi>,
- linux-usb@vger.kernel.org, linux-spi@vger.kernel.org,
- Tony Lindgren <tony@atomide.com>, MyungJoo Ham <myungjoo.ham@samsung.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/27] Export I2C and OF module aliases in missing drivers
-Message-ID: <20150730163708.GB13165@dtor-ws>
-References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
- <20150730163517.GA13165@dtor-ws>
+ by ozlabs.org (Postfix) with ESMTPS id D3E73140281
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 02:39:02 +1000 (AEST)
+Received: by ioii16 with SMTP id i16so59349289ioi.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 09:39:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150730163517.GA13165@dtor-ws>
+Sender: keescook@google.com
+In-Reply-To: <1438235808-6438-1-git-send-email-mpe@ellerman.id.au>
+References: <1437646871-3195-9-git-send-email-mpe@ellerman.id.au>
+ <1438235808-6438-1-git-send-email-mpe@ellerman.id.au>
+Date: Thu, 30 Jul 2015 09:39:00 -0700
+Message-ID: <CAGXu5jLkWM4kYJursWv8xspD50bOaLbt4O9=XyT1s3b-tUOeQw@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/kernel: Enable seccomp filter
+From: Kees Cook <keescook@chromium.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,38 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 30, 2015 at 09:35:17AM -0700, Dmitry Torokhov wrote:
-> Hi Javier,
-> 
-> On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
-> > Hello,
-> > 
-> > Short version:
-> > 
-> > This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
-> > to export that information so modules have the correct aliases built-in
-> > and autoloading works correctly.
-> > 
-> > Longer version:
-> > 
-> > Currently it's mandatory for I2C drivers to have an I2C device ID table
-> > regardless if the device was registered using platform data or OF. This
-> > is because the I2C core needs an I2C device ID table for two reasons:
-> > 
-> > 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
-> >    is passed to the I2C driver probe() function.
-> > 
-> > 2) Export the module aliases from the I2C device ID table so userspace
-> >    can auto-load the correct module. This is because i2c_device_uevent
-> >    always reports a MODALIAS of the form i2c:<client->name>.
-> 
-> Why are we not fixing this? We emit specially carved uevent for
-> ACPI-based devices, why not the same for OF? Platform bus does this...
+On Wed, Jul 29, 2015 at 10:56 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> This commit enables seccomp filter on powerpc, now that we have all the
+> necessary pieces in place.
+>
+> To support seccomp's desire to modify the syscall return value under
+> some circumstances, we use a different ABI to the ptrace ABI. That is we
+> use r3 as the syscall return value, and orig_gpr3 is the first syscall
+> parameter.
+>
+> This means the seccomp code, or a ptracer via SECCOMP_RET_TRACE, will
+> see -ENOSYS preloaded in r3. This is identical to the behaviour on x86,
+> and allows seccomp or the ptracer to either leave the -ENOSYS or change
+> it to something else, as well as rejecting or not the syscall by
+> modifying r0.
+>
+> If seccomp does not reject the syscall, we restore the register state to
+> match what ptrace and audit expect, ie. r3 is the first syscall
+> parameter again. We do this restore using orig_gpr3, which may have been
+> modified by seccomp, which allows seccomp to modify the first syscall
+> paramater and allow the syscall to proceed.
+>
+> We need to #ifdef the the additional handling of r3 for seccomp, so move
+> it all out of line.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Kees Cook <keescook@chromium.org>
+> ---
+>  arch/powerpc/Kconfig         |  1 +
+>  arch/powerpc/kernel/ptrace.c | 41 ++++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 41 insertions(+), 1 deletion(-)
+>
+>
+> v2: The previous version didn't compile for CONFIG_SECCOMP=n. To fix it up I
+>     moved the logic out of line and #ifdef'ed that. It gets inlined by the compiler
+>     so the end result is the same.
+>
+>     Kees I kept your Reviewed-by on the basis that the interesting logic is the
+>     same, hope that's OK by you.
 
-Ah, now I see the 27/27 patch. I think it is exactly what we need. And
-probably for SPI bus as well.
+Totally fine. Thanks!
 
-Thanks.
+-Kees
 
 -- 
-Dmitry
+Kees Cook
+Chrome OS Security
