@@ -1,18 +1,19 @@
 Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0147.outbound.protection.outlook.com [65.55.169.147])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0133.outbound.protection.outlook.com [157.56.111.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F5411A1C08
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 18:37:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71F9E1A11A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 18:51:16 +1000 (AEST)
 From: Igal.Liberman <igal.liberman@freescale.com>
 To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
 CC: <scottwood@freescale.com>, <madalin.bucur@freescale.com>,
- <linux-kernel@vger.kernel.org>, Igal Liberman <Igal.Liberman@freescale.com>
-Subject: [PATCH v2 2/2] powerpc/mpc85xx: Add FSL QorIQ DPAA FMan support to
- the SoC device tree(s)
-Date: Thu, 30 Jul 2015 07:33:14 +0300
-Message-ID: <1438230794-10983-1-git-send-email-igal.liberman@freescale.com>
+ <Shaohui.Xie@freescale.com>, <linux-kernel@vger.kernel.org>, Igal Liberman
+ <Igal.Liberman@freescale.com>
+Subject: [PATCH v4] powerpc/mpc85xx: Add MDIO bus muxing support to the board
+ device tree(s)
+Date: Thu, 30 Jul 2015 07:47:10 +0300
+Message-ID: <1438231630-11056-1-git-send-email-igal.liberman@freescale.com>
 Reply-To: <igal.liberman@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -27,6 +28,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Igal Liberman <Igal.Liberman@freescale.com>
 
+Describe the PHY topology for all configurations supported by each board
+
 Based on prior work by Andy Fleming <afleming@freescale.com>
 
 Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
@@ -34,1097 +37,2782 @@ Signed-off-by: Shruti Kanetkar <Shruti@freescale.com>
 Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 ---
 
-v1 ---> v2:
+Depends on the following patch set:
+	https://patchwork.ozlabs.org/patch/502018/
+	https://patchwork.ozlabs.org/patch/502019/
+
+v3 ---> v4:
 	- Added T1024 support
 
- arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi  |    9 ++-
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |   20 ++++-
- arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi  |   12 ++-
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |   31 +++++++-
- arch/powerpc/boot/dts/fsl/p1023si-post.dtsi |  115 ++++++++++++++++++++++++++-
- arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi  |    5 +-
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |   29 ++++++-
- arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi  |   10 ++-
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |   29 ++++++-
- arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi  |   10 ++-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |   48 ++++++++++-
- arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi  |   15 +++-
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |   29 ++++++-
- arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi  |   10 ++-
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi |   56 ++++++++++++-
- arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi  |   17 +++-
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi |   19 +++++
- arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi  |    6 ++
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi |   31 ++++++++
- arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi  |    9 ++-
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi |   43 ++++++++++
- arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi  |   11 +++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi |   88 +++++++++++++++++++-
- arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi  |   22 ++++-
- 24 files changed, 654 insertions(+), 20 deletions(-)
+v2 ---> v3:
+	- Fixed incorrect E-Mail address (signed-off-by)
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-index 9cfeaef..5d54ec7 100644
---- a/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi
+v1 ---> v2
+	- Remove 'Change-Id'
+
+ arch/powerpc/boot/dts/b4860qds.dts    |   60 ++++-
+ arch/powerpc/boot/dts/b4qds.dtsi      |   51 ++++-
+ arch/powerpc/boot/dts/p1023rdb.dts    |   24 +-
+ arch/powerpc/boot/dts/p2041rdb.dts    |   92 +++++++-
+ arch/powerpc/boot/dts/p3041ds.dts     |  112 ++++++++-
+ arch/powerpc/boot/dts/p4080ds.dts     |  184 ++++++++++++++-
+ arch/powerpc/boot/dts/p5020ds.dts     |  112 ++++++++-
+ arch/powerpc/boot/dts/p5040ds.dts     |  234 ++++++++++++++++++-
+ arch/powerpc/boot/dts/t1023rdb.dts    |   41 ++++
+ arch/powerpc/boot/dts/t1024rdb.dts    |   45 ++++
+ arch/powerpc/boot/dts/t1040rdb.dts    |   32 ++-
+ arch/powerpc/boot/dts/t1042rdb.dts    |   30 ++-
+ arch/powerpc/boot/dts/t1042rdb_pi.dts |   18 +-
+ arch/powerpc/boot/dts/t104xqds.dtsi   |  178 ++++++++++++++-
+ arch/powerpc/boot/dts/t104xrdb.dtsi   |   33 ++-
+ arch/powerpc/boot/dts/t2080qds.dts    |  158 ++++++++++++-
+ arch/powerpc/boot/dts/t2080rdb.dts    |   67 +++++-
+ arch/powerpc/boot/dts/t2081qds.dts    |  221 +++++++++++++++++-
+ arch/powerpc/boot/dts/t4240qds.dts    |  400 ++++++++++++++++++++++++++++++++-
+ arch/powerpc/boot/dts/t4240rdb.dts    |  149 +++++++++++-
+ 20 files changed, 2221 insertions(+), 20 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/b4860qds.dts b/arch/powerpc/boot/dts/b4860qds.dts
+index 6bb3707..98b1ef4 100644
+--- a/arch/powerpc/boot/dts/b4860qds.dts
++++ b/arch/powerpc/boot/dts/b4860qds.dts
 @@ -1,7 +1,7 @@
  /*
-  * B4420 Silicon/SoC Device Tree Source (pre include)
-  *
-- * Copyright 2012 Freescale Semiconductor, Inc.
-+ * Copyright 2012 - 2015 Freescale Semiconductor, Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -54,8 +54,13 @@
- 		dma0 = &dma0;
- 		dma1 = &dma1;
- 		sdhc = &sdhc;
--	};
- 
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+	};
- 
- 	cpus {
- 		#address-cells = <1>;
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-index 26585d6..3065833 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * B4860 Silicon/SoC Device Tree Source (post include)
-  *
-- * Copyright 2012 - 2014 Freescale Semiconductor Inc.
-+ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -271,6 +271,24 @@
- 		compatible = "fsl,b4860-rcpm", "fsl,qoriq-rcpm-2.0";
- 	};
- 
-+/include/ "qoriq-fman3-0-1g-4.dtsi"
-+/include/ "qoriq-fman3-0-1g-5.dtsi"
-+/include/ "qoriq-fman3-0-10g-0.dtsi"
-+/include/ "qoriq-fman3-0-10g-1.dtsi"
-+	fman@400000 {
-+		enet4: ethernet@e8000 {
-+		};
-+
-+		enet5: ethernet@ea000 {
-+		};
-+
-+		enet6: ethernet@f0000 {
-+		};
-+
-+		enet7: ethernet@f2000 {
-+		};
-+	};
-+
- 	L2: l2-cache-controller@c20000 {
- 		compatible = "fsl,b4860-l2-cache-controller";
- 	};
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-index bc914f2..a738f7c 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * B4860 Silicon/SoC Device Tree Source (pre include)
+  * B4860DS Device Tree Source
   *
 - * Copyright 2012 Freescale Semiconductor Inc.
 + * Copyright 2012 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -54,6 +54,16 @@
- 		dma0 = &dma0;
- 		dma1 = &dma1;
- 		sdhc = &sdhc;
+@@ -39,12 +39,69 @@
+ 	model = "fsl,B4860QDS";
+ 	compatible = "fsl,B4860QDS";
+ 
++	aliases {
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xaui_slot1 = &phy_xaui_slot1;
++		phy_xaui_slot2 = &phy_xaui_slot2;
++	};
 +
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
-+		ethernet6 = &enet6;
-+		ethernet7 = &enet7;
+ 	ifc: localbus@ffe124000 {
+ 		board-control@3,0 {
+ 			compatible = "fsl,b4860qds-fpga", "fsl,fpga-qixis";
+ 		};
  	};
  
++	soc@ffe000000 {
++		fman@400000 {
++			ethernet@e8000 {
++				phy-handle = <&phy_sgmii_1e>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@ea000 {
++				phy-handle = <&phy_sgmii_1f>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xaui_slot1>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&phy_xaui_slot2>;
++				phy-connection-type = "xgmii";
++			};
++
++			mdio@fc000 {
++				phy_sgmii_1e: ethernet-phy@1e {
++					reg = <0x1e>;
++					status = "disabled";
++				};
++
++				phy_sgmii_1f: ethernet-phy@1f {
++					reg = <0x1f>;
++					status = "disabled";
++				};
++			};
++
++			mdio@fd000 {
++				phy_xaui_slot1: xaui-phy@slot1 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x7>;
++					status = "disabled";
++				};
++
++				phy_xaui_slot2: xaui-phy@slot2 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x6>;
++					status = "disabled";
++				};
++			};
++		};
++	};
++
+ 	rio: rapidio@ffe0c0000 {
+ 		reg = <0xf 0xfe0c0000 0 0x11000>;
  
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index 164fdfc..d51e2bb 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
+@@ -55,7 +112,6 @@
+ 			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
+ 		};
+ 	};
+-
+ };
+ 
+ /include/ "fsl/b4860si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
+index 559d006..af49456 100644
+--- a/arch/powerpc/boot/dts/b4qds.dtsi
++++ b/arch/powerpc/boot/dts/b4qds.dtsi
 @@ -1,7 +1,7 @@
  /*
-  * B4420 Silicon/SoC Device Tree Source (post include)
+  * B4420DS Device Tree Source
   *
 - * Copyright 2012 - 2014 Freescale Semiconductor, Inc.
 + * Copyright 2012 - 2015 Freescale Semiconductor, Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -465,6 +465,35 @@
- 		interrupts = <16 2 1 29>;
- 	};
+@@ -39,6 +39,13 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
  
-+/include/ "qoriq-fman3-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-1.dtsi"
-+/include/ "qoriq-fman3-0-1g-2.dtsi"
-+/include/ "qoriq-fman3-0-1g-3.dtsi"
-+	fman@400000 {
-+		interrupts = <96 2 0 0>, <16 2 1 30>;
-+
-+		enet0: ethernet@e0000 {
-+		};
-+
-+		enet1: ethernet@e2000 {
-+		};
-+
-+		enet2: ethernet@e4000 {
-+		};
-+
-+		enet3: ethernet@e6000 {
-+		};
-+
-+		mdio@fc000 {
-+			interrupts = <100 1 0 0>;
-+		};
-+
-+		mdio@fd000 {
-+			interrupts = <101 1 0 0>;
-+		};
++	aliases {
++		phy_sgmii_10 = &phy_sgmii_10;
++		phy_sgmii_11 = &phy_sgmii_11;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
 +	};
 +
- 	L2: l2-cache-controller@c20000 {
- 		compatible = "fsl,b4-l2-cache-controller";
- 		reg = <0xc20000 0x1000>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-index aae0626..f3347b2 100644
---- a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
+ 	ifc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x2000>;
+ 		ranges = <0 0 0xf 0xe8000000 0x08000000
+@@ -210,6 +217,47 @@
+ 			phy_type = "ulpi";
+ 		};
+ 
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_10>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_11>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_1c>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy_sgmii_1d>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@fc000 {
++				phy_sgmii_10: ethernet-phy@10 {
++					reg = <0x10>;
++				};
++
++				phy_sgmii_11: ethernet-phy@11 {
++					reg = <0x11>;
++				};
++
++				phy_sgmii_1c: ethernet-phy@1c {
++					reg = <0x1c>;
++					status = "disabled";
++				};
++
++				phy_sgmii_1d: ethernet-phy@1d {
++					reg = <0x1d>;
++					status = "disabled";
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe200000 {
+@@ -226,7 +274,6 @@
+ 				  0 0x00010000>;
+ 		};
+ 	};
+-
+ };
+ 
+ /include/ "fsl/b4si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/p1023rdb.dts b/arch/powerpc/boot/dts/p1023rdb.dts
+index 05a00a4..d4b111e7 100644
+--- a/arch/powerpc/boot/dts/p1023rdb.dts
++++ b/arch/powerpc/boot/dts/p1023rdb.dts
 @@ -1,7 +1,7 @@
  /*
-  * P1023/P1017 Silicon/SoC Device Tree Source (post include)
+  * P1023 RDB Device Tree Source
+  *
+- * Copyright 2013 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+  *
+  * Author: Chunhe Lan <Chunhe.Lan@freescale.com>
+  *
+@@ -93,6 +93,28 @@
+ 			dr_mode = "host";
+ 			phy_type = "ulpi";
+ 		};
++
++		fman@100000 {
++			ethernet@e0000 {
++				phy-handle = <&phy0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy1>;
++				phy-connection-type = "rgmii";
++			};
++
++			mdio@e1120 {
++				phy0: ethernet-phy@1 {
++					reg = <0x01>;
++				};
++
++				phy1: ethernet-phy@2 {
++					reg = <0x02>;
++				};
++			};
++		};
+ 	};
+ 
+ 	lbc: localbus@ff605000 {
+diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
+index d2bb0765..33e194c 100644
+--- a/arch/powerpc/boot/dts/p2041rdb.dts
++++ b/arch/powerpc/boot/dts/p2041rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P2041RDB Device Tree Source
   *
 - * Copyright 2011 - 2014 Freescale Semiconductor Inc.
 + * Copyright 2011 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -307,4 +307,117 @@
- 		reg = <0xe0000 0x1000>;
- 		fsl,has-rstcr;
- 	};
+@@ -41,6 +41,19 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_2 = &phy_sgmii_2;
++		phy_sgmii_3 = &phy_sgmii_3;
++		phy_sgmii_4 = &phy_sgmii_4;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xgmii_2 = &phy_xgmii_2;
++	};
 +
-+	fman@100000 {
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -137,6 +150,83 @@
+ 		usb1: usb@211000 {
+ 			dr_mode = "host";
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_2>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@e1120 {
++				phy_rgmii_0: ethernet-phy@0 {
++					reg = <0x0>;
++				};
++
++				phy_rgmii_1: ethernet-phy@1 {
++					reg = <0x1>;
++				};
++
++				phy_sgmii_2: ethernet-phy@2 {
++					reg = <0x2>;
++				};
++
++				phy_sgmii_3: ethernet-phy@3 {
++					reg = <0x3>;
++				};
++
++				phy_sgmii_4: ethernet-phy@4 {
++					reg = <0x4>;
++				};
++
++				phy_sgmii_1c: ethernet-phy@1c {
++					reg = <0x1c>;
++				};
++
++				phy_sgmii_1d: ethernet-phy@1d {
++					reg = <0x1d>;
++				};
++
++				phy_sgmii_1e: ethernet-phy@1e {
++					reg = <0x1e>;
++				};
++
++				phy_sgmii_1f: ethernet-phy@1f {
++					reg = <0x1f>;
++				};
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_3>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_4>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_2>;
++				phy-connection-type = "xgmii";
++			};
++
++			mdio@f1000 {
++				phy_xgmii_2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++		};
+ 	};
+ 
+ 	rio: rapidio@ffe0c0000 {
+diff --git a/arch/powerpc/boot/dts/p3041ds.dts b/arch/powerpc/boot/dts/p3041ds.dts
+index eca6c69..80af50e 100644
+--- a/arch/powerpc/boot/dts/p3041ds.dts
++++ b/arch/powerpc/boot/dts/p3041ds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P3041DS Device Tree Source
+  *
+- * Copyright 2010 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2010 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,20 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases{
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xgmii_1 = &phy_xgmii_1;
++		phy_xgmii_2 = &phy_xgmii_2;
++		emi1_rgmii = &hydra_mdio_rgmii;
++		emi1_sgmii = &hydra_mdio_sgmii;
++		emi2_xgmii = &hydra_mdio_xgmii;
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -150,6 +164,52 @@
+ 				reg = <0x4c>;
+ 			};
+ 		};
++
++		fman@400000{
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_1c>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_1d>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_1e>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy_sgmii_1f>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_1>;
++				phy-connection-type = "xgmii";
++			};
++
++			hydra_mdio_xgmii: mdio@f1000 {
++				status = "disabled";
++
++				phy_xgmii_1: ethernet-phy@4 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x4>;
++				};
++
++				phy_xgmii_2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++		};
+ 	};
+ 
+ 	rio: rapidio@ffe0c0000 {
+@@ -215,8 +275,58 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,p3041ds-fpga", "fsl,fpga-ngpixis";
+ 			reg = <3 0 0x30>;
++			ranges = <0 3 0 0x30>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <9 1>;
++				mux-mask = <0x78>;
++
++				hydra_mdio_rgmii: rgmii-mdio@8 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <8>;
++					status = "disabled";
++
++					phy_rgmii_0: ethernet-phy@0 {
++						reg = <0x0>;
++					};
++
++					phy_rgmii_1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
++
++				hydra_mdio_sgmii: sgmii-mdio@28 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x28>;
++					status = "disabled";
++
++					phy_sgmii_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index 4f80c9d..f115909 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P4080DS Device Tree Source
+  *
+- * Copyright 2009 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2009 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,20 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		phy_rgmii = &phyrgmii;
++		phy5_slot3 = &phy5slot3;
++		phy6_slot3 = &phy6slot3;
++		phy7_slot3 = &phy7slot3;
++		phy8_slot3 = &phy8slot3;
++		emi1_slot3 = &p4080mdio2;
++		emi1_slot4 = &p4080mdio1;
++		emi1_slot5 = &p4080mdio3;
++		emi1_rgmii = &p4080mdio0;
++		emi2_slot4 = &p4080xmdio1;
++		emi2_slot5 = &p4080xmdio3;
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -137,6 +151,60 @@
+ 			dr_mode = "host";
+ 			phy_type = "ulpi";
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy1>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy2>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy3>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy10>;
++				phy-connection-type = "xgmii";
++			};
++		};
++
++		fman@500000 {
++			ethernet@e0000 {
++				phy-handle = <&phy5>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy6>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy7>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy8>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy11>;
++				phy-connection-type = "xgmii";
++			};
++		};
+ 	};
+ 
+ 	rio: rapidio@ffe0c0000 {
+@@ -213,6 +281,120 @@
+ 		};
+ 	};
+ 
++	mdio-mux-emi1 {
 +		#address-cells = <1>;
-+		#size-cells = <1>;
-+		cell-index = <0>;
-+		ranges = <0 0x100000 0x100000>;
-+		compatible = "fsl,fman";
-+		reg = <0x100000 0x100000>;
-+		interrupts = <24 2 0 0>, <16 2 1 30>;
-+		clock-frequency = <0>;
-+		fsl,qman-channel-range = <0x40 0x7>;
++		#size-cells = <0>;
++		compatible = "mdio-mux-gpio", "mdio-mux";
++		mdio-parent-bus = <&mdio0>;
++		gpios = <&gpio0 1 0>, <&gpio0 0 0>;
 +
-+		muram@0 {
-+			compatible = "fsl,fman-muram";
-+			reg = <0x0 0x10000>;
-+		};
-+
-+		fman0_oh_0x2: port@82000 {
-+			cell-index = <0x2>;
-+			compatible = "fsl,fman-v2-port-oh";
-+			reg = <0x82000 0x1000>;
-+		};
-+
-+		fman0_oh_0x3: port@83000 {
-+			cell-index = <0x3>;
-+			compatible = "fsl,fman-v2-port-oh";
-+			reg = <0x83000 0x1000>;
-+		};
-+
-+		fman0_oh_0x4: port@84000 {
-+			cell-index = <0x4>;
-+			compatible = "fsl,fman-v2-port-oh";
-+			reg = <0x84000 0x1000>;
-+		};
-+
-+		fman0_oh_0x5: port@85000 {
-+			cell-index = <0x5>;
-+			compatible = "fsl,fman-v2-port-oh";
-+			reg = <0x85000 0x1000>;
-+		};
-+
-+		fman0_rx_0x08: port@88000 {
-+			cell-index = <0x8>;
-+			compatible = "fsl,fman-v2-port-rx";
-+			reg = <0x88000 0x1000>;
-+		};
-+
-+		fman0_rx_0x09: port@89000 {
-+			cell-index = <0x9>;
-+			compatible = "fsl,fman-v2-port-rx";
-+			reg = <0x89000 0x1000>;
-+		};
-+
-+		fman0_tx_0x28: port@a8000 {
-+			cell-index = <0x28>;
-+			compatible = "fsl,fman-v2-port-tx";
-+			reg = <0xa8000 0x1000>;
-+		};
-+
-+		fman0_tx_0x29: port@a9000 {
-+			cell-index = <0x29>;
-+			compatible = "fsl,fman-v2-port-tx";
-+			reg = <0xa9000 0x1000>;
-+		};
-+
-+		enet0: ethernet@e0000 {
-+			cell-index = <0>;
-+			compatible = "fsl,fman-dtsec";
-+			reg = <0xe0000 0x1000>;
-+			fsl,fman-ports = <&fman0_rx_0x08 &fman0_tx_0x28>;
-+			tbi-handle = <&tbi0>;
-+			ptp-timer = <&ptp_timer0>;
-+		};
-+
-+		mdio@e1120 {
++		p4080mdio0: mdio@0 {
 +			#address-cells = <1>;
 +			#size-cells = <0>;
-+			compatible = "fsl,fman-mdio";
-+			reg = <0xe1120 0xee0>;
-+			interrupts = <26 1 0 0>;
++			reg = <0>;
 +
-+			tbi0: tbi-phy@8 {
-+				reg = <0x8>;
-+				device_type = "tbi-phy";
++			phyrgmii: ethernet-phy@0 {
++				reg = <0x0>;
 +			};
 +		};
 +
-+		enet1: ethernet@e2000 {
-+			cell-index = <1>;
-+			compatible = "fsl,fman-dtsec";
-+			reg = <0xe2000 0x1000>;
-+			fsl,fman-ports = <&fman0_rx_0x09 &fman0_tx_0x29>;
-+			tbi-handle = <&tbi1>;
-+			ptp-timer = <&ptp_timer0>;
-+		};
-+
-+		mdio@e3120 {
++		p4080mdio1: mdio@1 {
 +			#address-cells = <1>;
 +			#size-cells = <0>;
-+			compatible = "fsl,fman-mdio";
-+			reg = <0xe3120 0xee0>;
++			reg = <1>;
 +
-+			tbi1: tbi-phy@8 {
-+				reg = <0x8>;
-+				device_type = "tbi-phy";
++			phy5: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy6: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy7: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy8: ethernet-phy@1f {
++				reg = <0x1f>;
 +			};
 +		};
 +
-+		ptp_timer0: ptp-timer@fe000 {
-+			compatible = "fsl,fman-ptp-timer";
-+			reg = <0xfe000 0x1000>;
++		p4080mdio2: mdio@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "disabled";
++
++			phy5slot3: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy6slot3: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy7slot3: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy8slot3: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		p4080mdio3: mdio@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++
++			phy0: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy1: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy2: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy3: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++	};
++
++	mdio-mux-emi2 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "mdio-mux-gpio", "mdio-mux";
++		mdio-parent-bus = <&xmdio0>;
++		gpios = <&gpio0 3 0>, <&gpio0 2 0>;
++
++		p4080xmdio1: mdio@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			phy11: ethernet-phy@0 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x0>;
++			};
++		};
++
++		p4080xmdio3: mdio@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++
++			phy10: ethernet-phy@4 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x4>;
++			};
 +		};
 +	};
  };
-diff --git a/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
-index 132a152..811a73e 100644
---- a/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
+ 
+ /include/ "fsl/p4080si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/p5020ds.dts b/arch/powerpc/boot/dts/p5020ds.dts
+index d0309a8..d052721 100644
+--- a/arch/powerpc/boot/dts/p5020ds.dts
++++ b/arch/powerpc/boot/dts/p5020ds.dts
 @@ -1,7 +1,7 @@
  /*
-  * P1023/P1017 Silicon/SoC Device Tree Source (pre include)
+  * P5020DS Device Tree Source
   *
-- * Copyright 2011 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
+- * Copyright 2010 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2010 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -58,6 +58,9 @@
- 		rtic_b = &rtic_b;
- 		rtic_c = &rtic_c;
- 		rtic_d = &rtic_d;
-+
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
- 	};
+@@ -41,6 +41,20 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
  
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-index 9c16a16..872e448 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P2041/P2040 Silicon/SoC Device Tree Source (post include)
-  *
-- * Copyright 2011 - 2014 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -412,4 +412,31 @@ crypto: crypto@300000 {
- 
- /include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
-+
-+/include/ "qoriq-fman-0.dtsi"
-+/include/ "qoriq-fman-0-1g-0.dtsi"
-+/include/ "qoriq-fman-0-1g-1.dtsi"
-+/include/ "qoriq-fman-0-1g-2.dtsi"
-+/include/ "qoriq-fman-0-1g-3.dtsi"
-+/include/ "qoriq-fman-0-1g-4.dtsi"
-+/include/ "qoriq-fman-0-10g-0.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
-+
-+		enet1: ethernet@e2000 {
-+		};
-+
-+		enet2: ethernet@e4000 {
-+		};
-+
-+		enet3: ethernet@e6000 {
-+		};
-+
-+		enet4: ethernet@e8000 {
-+		};
-+
-+		enet5: ethernet@f0000 {
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-index 0babd84..6318962 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P2041 Silicon/SoC Device Tree Source (pre include)
-  *
-- * Copyright 2011 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -72,6 +72,14 @@
- 		rtic_c = &rtic_c;
- 		rtic_d = &rtic_d;
- 		sec_mon = &sec_mon;
-+
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
- 	};
- 
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-index eeefc09..81bc75a 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P3041 Silicon/SoC Device Tree Source (post include)
-  *
-- * Copyright 2011 - 2014 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -439,4 +439,31 @@ crypto: crypto@300000 {
- 
- /include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
-+
-+/include/ "qoriq-fman-0.dtsi"
-+/include/ "qoriq-fman-0-1g-0.dtsi"
-+/include/ "qoriq-fman-0-1g-1.dtsi"
-+/include/ "qoriq-fman-0-1g-2.dtsi"
-+/include/ "qoriq-fman-0-1g-3.dtsi"
-+/include/ "qoriq-fman-0-1g-4.dtsi"
-+/include/ "qoriq-fman-0-10g-0.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
-+
-+		enet1: ethernet@e2000 {
-+		};
-+
-+		enet2: ethernet@e4000 {
-+		};
-+
-+		enet3: ethernet@e6000 {
-+		};
-+
-+		enet4: ethernet@e8000 {
-+		};
-+
-+		enet5: ethernet@f0000 {
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-index 2b331b2..db92f11 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P3041 Silicon/SoC Device Tree Source (pre include)
-  *
-- * Copyright 2011 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -73,6 +73,14 @@
- 		rtic_c = &rtic_c;
- 		rtic_d = &rtic_d;
- 		sec_mon = &sec_mon;
-+
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
- 	};
- 
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-index b4403dd..4da49b6 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P4080/P4040 Silicon/SoC Device Tree Source (post include)
-  *
-- * Copyright 2011 - 2014 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -443,4 +443,50 @@ crypto: crypto@300000 {
- 
- /include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
-+
-+/include/ "qoriq-fman-0.dtsi"
-+/include/ "qoriq-fman-0-1g-0.dtsi"
-+/include/ "qoriq-fman-0-1g-1.dtsi"
-+/include/ "qoriq-fman-0-1g-2.dtsi"
-+/include/ "qoriq-fman-0-1g-3.dtsi"
-+/include/ "qoriq-fman-0-10g-0.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
-+
-+		enet1: ethernet@e2000 {
-+		};
-+
-+		enet2: ethernet@e4000 {
-+		};
-+
-+		enet3: ethernet@e6000 {
-+		};
-+
-+		enet4: ethernet@f0000 {
-+		};
++	aliases {
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xgmii_1 = &phy_xgmii_1;
++		phy_xgmii_2 = &phy_xgmii_2;
++		emi1_rgmii = &hydra_mdio_rgmii;
++		emi1_sgmii = &hydra_mdio_sgmii;
++		emi2_xgmii = &hydra_mdio_xgmii;
 +	};
 +
-+/include/ "qoriq-fman-1.dtsi"
-+/include/ "qoriq-fman-1-1g-0.dtsi"
-+/include/ "qoriq-fman-1-1g-1.dtsi"
-+/include/ "qoriq-fman-1-1g-2.dtsi"
-+/include/ "qoriq-fman-1-1g-3.dtsi"
-+/include/ "qoriq-fman-1-10g-0.dtsi"
-+	fman@500000 {
-+		enet5: ethernet@e0000 {
-+		};
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -150,6 +164,52 @@
+ 				reg = <0x4c>;
+ 			};
+ 		};
 +
-+		enet6: ethernet@e2000 {
-+		};
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_1c>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet7: ethernet@e4000 {
-+		};
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_1d>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet8: ethernet@e6000 {
-+		};
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_1e>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet9: ethernet@f0000 {
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-index a3ea73c..0a7c65a 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P4080/P4040 Silicon/SoC Device Tree Source (pre include)
-  *
-- * Copyright 2011 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -72,6 +72,19 @@
- 		rtic_c = &rtic_c;
- 		rtic_d = &rtic_d;
- 		sec_mon = &sec_mon;
++			ethernet@e6000 {
++				phy-handle = <&phy_sgmii_1f>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		fman0 = &fman0;
-+		fman1 = &fman1;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
-+		ethernet6 = &enet6;
-+		ethernet7 = &enet7;
-+		ethernet8 = &enet8;
-+		ethernet9 = &enet9;
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_1>;
++				phy-connection-type = "xgmii";
++			};
++
++			hydra_mdio_xgmii: mdio@f1000 {
++				status = "disabled";
++
++				phy_xgmii_1: ethernet-phy@4 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x4>;
++				};
++
++				phy_xgmii_2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++		};
  	};
  
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-index b77923a..cd008cd 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P5020/5010 Silicon/SoC Device Tree Source (post include)
-  *
-- * Copyright 2011 - 2014 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -448,4 +448,31 @@
- 	raideng@320000 {
- 		fsl,iommu-parent = <&pamu1>;
- 	};
+ 	rio: rapidio@ffe0c0000 {
+@@ -215,8 +275,58 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,p5020ds-fpga", "fsl,fpga-ngpixis";
+ 			reg = <3 0 0x30>;
++			ranges = <0 3 0 0x30>;
 +
-+/include/ "qoriq-fman-0.dtsi"
-+/include/ "qoriq-fman-0-1g-0.dtsi"
-+/include/ "qoriq-fman-0-1g-1.dtsi"
-+/include/ "qoriq-fman-0-1g-2.dtsi"
-+/include/ "qoriq-fman-0-1g-3.dtsi"
-+/include/ "qoriq-fman-0-1g-4.dtsi"
-+/include/ "qoriq-fman-0-10g-0.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <9 1>;
++				mux-mask = <0x78>;
 +
-+		enet1: ethernet@e2000 {
-+		};
++				hydra_mdio_rgmii: rgmii-mdio@8 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <8>;
++					status = "disabled";
 +
-+		enet2: ethernet@e4000 {
-+		};
++					phy_rgmii_0: ethernet-phy@0 {
++						reg = <0x0>;
++					};
 +
-+		enet3: ethernet@e6000 {
-+		};
++					phy_rgmii_1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
 +
-+		enet4: ethernet@e8000 {
-+		};
++				hydra_mdio_sgmii: sgmii-mdio@28 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x28>;
++					status = "disabled";
 +
-+		enet5: ethernet@f0000 {
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-index f3b2188..2d74ea8 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
-@@ -1,7 +1,7 @@
- /*
-  * P5020/P5010 Silicon/SoC Device Tree Source (pre include)
-  *
-- * Copyright 2011 Freescale Semiconductor Inc.
-+ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-@@ -79,6 +79,14 @@
- 		raideng_jr1 = &raideng_jr1;
- 		raideng_jr2 = &raideng_jr2;
- 		raideng_jr3 = &raideng_jr3;
++					phy_sgmii_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
 +
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
++					phy_sgmii_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
  	};
  
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-index 8ba35ca..df694ec 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+diff --git a/arch/powerpc/boot/dts/p5040ds.dts b/arch/powerpc/boot/dts/p5040ds.dts
+index 0516823..db31483 100644
+--- a/arch/powerpc/boot/dts/p5040ds.dts
++++ b/arch/powerpc/boot/dts/p5040ds.dts
 @@ -1,7 +1,7 @@
  /*
-  * P5040 Silicon/SoC Device Tree Source (post include)
+  * P5040DS Device Tree Source
   *
 - * Copyright 2012 - 2014 Freescale Semiconductor Inc.
 + * Copyright 2012 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -404,4 +404,58 @@
+@@ -41,6 +41,32 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
  
- /include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
-+
-+/include/ "qoriq-fman-0.dtsi"
-+/include/ "qoriq-fman-0-1g-0.dtsi"
-+/include/ "qoriq-fman-0-1g-1.dtsi"
-+/include/ "qoriq-fman-0-1g-2.dtsi"
-+/include/ "qoriq-fman-0-1g-3.dtsi"
-+/include/ "qoriq-fman-0-1g-4.dtsi"
-+/include/ "qoriq-fman-0-10g-0.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
-+
-+		enet1: ethernet@e2000 {
-+		};
-+
-+		enet2: ethernet@e4000 {
-+		};
-+
-+		enet3: ethernet@e6000 {
-+		};
-+
-+		enet4: ethernet@e8000 {
-+		};
-+
-+		enet5: ethernet@f0000 {
-+		};
++	aliases{
++		phy_sgmii_slot2_1c = &phy_sgmii_slot2_1c;
++		phy_sgmii_slot2_1d = &phy_sgmii_slot2_1d;
++		phy_sgmii_slot2_1e = &phy_sgmii_slot2_1e;
++		phy_sgmii_slot2_1f = &phy_sgmii_slot2_1f;
++		phy_sgmii_slot3_1c = &phy_sgmii_slot3_1c;
++		phy_sgmii_slot3_1d = &phy_sgmii_slot3_1d;
++		phy_sgmii_slot3_1e = &phy_sgmii_slot3_1e;
++		phy_sgmii_slot3_1f = &phy_sgmii_slot3_1f;
++		phy_sgmii_slot5_1c = &phy_sgmii_slot5_1c;
++		phy_sgmii_slot5_1d = &phy_sgmii_slot5_1d;
++		phy_sgmii_slot5_1e = &phy_sgmii_slot5_1e;
++		phy_sgmii_slot5_1f = &phy_sgmii_slot5_1f;
++		phy_sgmii_slot6_1c = &phy_sgmii_slot6_1c;
++		phy_sgmii_slot6_1d = &phy_sgmii_slot6_1d;
++		phy_sgmii_slot6_1e = &phy_sgmii_slot6_1e;
++		phy_sgmii_slot6_1f = &phy_sgmii_slot6_1f;
++		hydra_rg = &hydra_rg;
++		hydra_sg_slot2 = &hydra_sg_slot2;
++		hydra_sg_slot3 = &hydra_sg_slot3;
++		hydra_sg_slot5 = &hydra_sg_slot5;
++		hydra_sg_slot6 = &hydra_sg_slot6;
++		hydra_xg_slot1 = &hydra_xg_slot1;
++		hydra_xg_slot2 = &hydra_xg_slot2;
 +	};
 +
-+/include/ "qoriq-fman-1.dtsi"
-+/include/ "qoriq-fman-1-1g-0.dtsi"
-+/include/ "qoriq-fman-1-1g-1.dtsi"
-+/include/ "qoriq-fman-1-1g-2.dtsi"
-+/include/ "qoriq-fman-1-1g-3.dtsi"
-+/include/ "qoriq-fman-1-1g-4.dtsi"
-+/include/ "qoriq-fman-1-10g-0.dtsi"
-+	fman@500000 {
-+		enet6: ethernet@e0000 {
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -147,6 +173,62 @@
+ 				reg = <0x4c>;
+ 			};
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_slot_2>;
++				phy-connection-type = "xgmii";
++			};
 +		};
 +
-+		enet7: ethernet@e2000 {
-+		};
++		fman@500000 {
++			ethernet@e0000 {
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet8: ethernet@e4000 {
-+		};
++			ethernet@e2000 {
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet9: ethernet@e6000 {
-+		};
++			ethernet@e4000 {
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet10: ethernet@e8000 {
-+		};
++			ethernet@e6000 {
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet11: ethernet@f0000 {
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_slot_1>;
++				phy-connection-type = "xgmii";
++			};
 +		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
-index a32e256..95f5c27 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
+ 	};
+ 
+ 	lbc: localbus@ffe124000 {
+@@ -200,8 +282,158 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,p5040ds-fpga", "fsl,fpga-ngpixis";
+ 			reg = <3 0 0x40>;
++			ranges = <0 3 0 0x40>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <9 1>;
++				mux-mask = <0x78>;
++
++				hydra_rg:rgmii-mdio@8 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <8>;
++					status = "disabled";
++
++					phy_rgmii_0: ethernet-phy@0 {
++						reg = <0x0>;
++					};
++
++					phy_rgmii_1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
++
++				hydra_sg_slot2: sgmii-mdio@28 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x28>;
++					status = "disabled";
++
++					phy_sgmii_slot2_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot2_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot2_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot2_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				hydra_sg_slot3: sgmii-mdio@68 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x68>;
++					status = "disabled";
++
++					phy_sgmii_slot3_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot3_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot3_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot3_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				hydra_sg_slot5: sgmii-mdio@38 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x38>;
++					status = "disabled";
++
++					phy_sgmii_slot5_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot5_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot5_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot5_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++				hydra_sg_slot6: sgmii-mdio@48 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x48>;
++					status = "disabled";
++
++					phy_sgmii_slot6_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot6_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot6_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot6_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
++
++			mdio-mux-emi2 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&xmdio0>;
++				reg = <9 1>;
++				mux-mask = <0x06>;
++
++				hydra_xg_slot1: hydra-xg-slot1@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0>;
++					status = "disabled";
++
++					phy_xgmii_slot_1: ethernet-phy@0 {
++						compatible = "ethernet-phy-ieee802.3-c45";
++						reg = <4>;
++					};
++				};
++
++				hydra_xg_slot2: hydra-xg-slot2@2 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <2>;
++
++					phy_xgmii_slot_2: ethernet-phy@4 {
++						compatible = "ethernet-phy-ieee802.3-c45";
++						reg = <0>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/t1023rdb.dts b/arch/powerpc/boot/dts/t1023rdb.dts
+index 06b090a..bed9cb3 100644
+--- a/arch/powerpc/boot/dts/t1023rdb.dts
++++ b/arch/powerpc/boot/dts/t1023rdb.dts
+@@ -100,6 +100,47 @@
+ 
+ 		i2c@118100 {
+ 		};
++
++		fman@400000 {
++			fm1mac1: ethernet@e0000 {
++				phy-handle = <&sgmii_rtk_phy2>;
++				phy-connection-type = "sgmii";
++				sleep = <&rcpm 0x80000000>;
++			};
++
++			fm1mac2: ethernet@e2000 {
++				sleep = <&rcpm 0x40000000>;
++			};
++
++			fm1mac3: ethernet@e4000 {
++				phy-handle = <&sgmii_aqr_phy3>;
++				phy-connection-type = "sgmii-2500";
++				sleep = <&rcpm 0x20000000>;
++			};
++
++			fm1mac4: ethernet@e6000 {
++				phy-handle = <&rgmii_rtk_phy1>;
++				phy-connection-type = "rgmii";
++				sleep = <&rcpm 0x10000000>;
++			};
++
++
++			mdio0: mdio@fc000 {
++				rgmii_rtk_phy1: ethernet-phy@1 {
++					reg = <0x1>;
++				};
++				sgmii_rtk_phy2: ethernet-phy@3 {
++					reg = <0x3>;
++				};
++			};
++
++			xmdio0: mdio@fd000 {
++				sgmii_aqr_phy3: ethernet-phy@2 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x2>;
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t1024rdb.dts b/arch/powerpc/boot/dts/t1024rdb.dts
+index 733e723..05e20a5 100644
+--- a/arch/powerpc/boot/dts/t1024rdb.dts
++++ b/arch/powerpc/boot/dts/t1024rdb.dts
+@@ -134,6 +134,51 @@
+ 				#size-cells = <0>;
+ 			};
+ 		};
++
++		fman@400000 {
++			fm1mac1: ethernet@e0000 {
++				phy-handle = <&xg_aqr105_phy3>;
++				phy-connection-type = "xgmii";
++				sleep = <&rcpm 0x80000000>;
++			};
++
++			fm1mac2: ethernet@e2000 {
++				sleep = <&rcpm 0x40000000>;
++			};
++
++			fm1mac3: ethernet@e4000 {
++				phy-handle = <&rgmii_phy2>;
++				phy-connection-type = "rgmii";
++				sleep = <&rcpm 0x20000000>;
++			};
++
++			fm1mac4: ethernet@e6000 {
++				phy-handle = <&rgmii_phy1>;
++				phy-connection-type = "rgmii";
++				sleep = <&rcpm 0x10000000>;
++			};
++
++
++			mdio0: mdio@fc000 {
++				rgmii_phy1: ethernet-phy@2 {
++					reg = <0x2>;
++				};
++				rgmii_phy2: ethernet-phy@6 {
++					reg = <0x6>;
++				};
++			};
++
++			xmdio0: mdio@fd000 {
++				xg_aqr105_phy3: ethernet-phy@1 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x1>;
++				};
++				sg_2500_aqr105_phy4: ethernet-phy@2 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x2>;
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t1040rdb.dts b/arch/powerpc/boot/dts/t1040rdb.dts
+index 79a0bed..9de684a 100644
+--- a/arch/powerpc/boot/dts/t1040rdb.dts
++++ b/arch/powerpc/boot/dts/t1040rdb.dts
 @@ -1,7 +1,7 @@
  /*
-  * P5040 Silicon/SoC Device Tree Source (pre include)
+  * T1040RDB Device Tree Source
   *
-- * Copyright 2012 Freescale Semiconductor Inc.
-+ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -72,6 +72,21 @@
- 		rtic_c = &rtic_c;
- 		rtic_d = &rtic_d;
- 		sec_mon = &sec_mon;
+@@ -38,6 +38,36 @@
+ / {
+ 	model = "fsl,T1040RDB";
+ 	compatible = "fsl,T1040RDB";
 +
-+		fman0 = &fman0;
-+		fman1 = &fman1;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
-+		ethernet6 = &enet6;
-+		ethernet7 = &enet7;
-+		ethernet8 = &enet8;
-+		ethernet9 = &enet9;
-+		ethernet10 = &enet10;
-+		ethernet11 = &enet11;
- 	};
- 
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-index 61aea79..858974a 100644
---- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-@@ -311,4 +311,23 @@
- 	};
- 
- /include/ "qoriq-sec5.0-0.dtsi"
++	aliases {
++		phy_sgmii_2 = &phy_sgmii_2;
++	};
 +
-+/include/ "qoriq-fman3l-0.dtsi"
-+/include/ "qoriq-fman3-0-10g-0-best-effort.dtsi"
-+/include/ "qoriq-fman3-0-1g-1.dtsi"
-+/include/ "qoriq-fman3-0-1g-2.dtsi"
-+/include/ "qoriq-fman3-0-1g-3.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
++	soc@ffe000000 {
++		fman@400000 {
++			ethernet@e0000 {
++				fixed-link = <0 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet1: ethernet@e2000 {
-+		};
++			ethernet@e2000 {
++				fixed-link = <1 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet2: ethernet@e4000 {
-+		};
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_2>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet3: ethernet@e6000 {
++			mdio@fc000 {
++				phy_sgmii_2: ethernet-phy@03 {
++					reg = <0x03>;
++				};
++			};
 +		};
 +	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
-index cc52fa4..34f92cf 100644
---- a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
-@@ -59,6 +59,12 @@
- 		sdhc = &sdhc;
- 
- 		crypto = &crypto;
 +
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
- 	};
- 
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index 6ebf311..b578af4 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -508,4 +508,35 @@
- /include/ "qoriq-sec5.0-0.dtsi"
- /include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
-+
-+/include/ "qoriq-fman3l-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-1.dtsi"
-+/include/ "qoriq-fman3-0-1g-2.dtsi"
-+/include/ "qoriq-fman3-0-1g-3.dtsi"
-+/include/ "qoriq-fman3-0-1g-4.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
-+
-+		enet1: ethernet@e2000 {
-+		};
-+
-+		enet2: ethernet@e4000 {
-+		};
-+
-+		enet3: ethernet@e6000 {
-+		};
-+
-+		enet4: ethernet@e8000 {
-+		};
-+
-+		mdio@fc000 {
-+			interrupts = <100 1 0 0>;
-+		};
-+
-+		mdio@fd000 {
-+			status = "disabled";
-+		};
-+	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
-index 74538ae..28a407a 100644
---- a/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+ 	ifc: localbus@ffe124000 {
+ 		cpld@3,0 {
+ 			compatible = "fsl,t1040rdb-cpld";
+diff --git a/arch/powerpc/boot/dts/t1042rdb.dts b/arch/powerpc/boot/dts/t1042rdb.dts
+index 738c237..25ea7aa 100644
+--- a/arch/powerpc/boot/dts/t1042rdb.dts
++++ b/arch/powerpc/boot/dts/t1042rdb.dts
 @@ -1,7 +1,7 @@
  /*
-  * T1040/T1042 Silicon/SoC Device Tree Source (pre include)
+  * T1042RDB Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -38,6 +38,34 @@
+ / {
+ 	model = "fsl,T1042RDB";
+ 	compatible = "fsl,T1042RDB";
++
++	aliases {
++		phy_sgmii_2 = &phy_sgmii_2;
++	};
++
++	soc@ffe000000 {
++		fman@400000 {
++			ethernet@e0000 {
++			       status = "disabled";
++			};
++
++			ethernet@e2000 {
++			       status = "disabled";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_2>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@fc000 {
++				phy_sgmii_2: ethernet-phy@03 {
++					reg = <0x03>;
++				};
++			};
++		};
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		cpld@3,0 {
+ 			compatible = "fsl,t1042rdb-cpld";
+diff --git a/arch/powerpc/boot/dts/t1042rdb_pi.dts b/arch/powerpc/boot/dts/t1042rdb_pi.dts
+index 634f751..6ebb818 100644
+--- a/arch/powerpc/boot/dts/t1042rdb_pi.dts
++++ b/arch/powerpc/boot/dts/t1042rdb_pi.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T1042RDB_PI Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -38,11 +38,13 @@
+ / {
+ 	model = "fsl,T1042RDB_PI";
+ 	compatible = "fsl,T1042RDB_PI";
++
+ 	ifc: localbus@ffe124000 {
+ 		cpld@3,0 {
+ 			compatible = "fsl,t1042rdb_pi-cpld";
+ 		};
+ 	};
++
+ 	soc: soc@ffe000000 {
+ 		i2c@118000 {
+ 			rtc@68 {
+@@ -51,6 +53,20 @@
+ 				interrupts = <0x2 0x1 0 0>;
+ 			};
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				status = "disabled";
++			};
++
++			ethernet@e2000 {
++				status = "disabled";
++			};
++
++			ethernet@e4000 {
++				status = "disabled";
++			};
++		};
+ 	};
+ };
+ 
+diff --git a/arch/powerpc/boot/dts/t104xqds.dtsi b/arch/powerpc/boot/dts/t104xqds.dtsi
+index 1498d1e..a02715b 100644
+--- a/arch/powerpc/boot/dts/t104xqds.dtsi
++++ b/arch/powerpc/boot/dts/t104xqds.dtsi
+@@ -1,7 +1,7 @@
+ /*
+  * T104xQDS Device Tree Source
+  *
+- * Copyright 2013 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -38,6 +38,33 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		emi1_rgmii0 = &t1040mdio0;
++		emi1_rgmii1 = &t1040mdio1;
++		emi1_slot3 = &t1040mdio3;
++		emi1_slot5 = &t1040mdio5;
++		emi1_slot6 = &t1040mdio6;
++		emi1_slot7 = &t1040mdio7;
++		rgmii_phy1 = &rgmii_phy1;
++		rgmii_phy2 = &rgmii_phy2;
++		phy_s3_01 = &phy_s3_01;
++		phy_s3_02 = &phy_s3_02;
++		phy_s3_03 = &phy_s3_03;
++		phy_s3_04 = &phy_s3_04;
++		phy_s5_01 = &phy_s5_01;
++		phy_s5_02 = &phy_s5_02;
++		phy_s5_03 = &phy_s5_03;
++		phy_s5_04 = &phy_s5_04;
++		phy_s6_01 = &phy_s6_01;
++		phy_s6_02 = &phy_s6_02;
++		phy_s6_03 = &phy_s6_03;
++		phy_s6_04 = &phy_s6_04;
++		phy_s7_01 = &phy_s7_01;
++		phy_s7_02 = &phy_s7_02;
++		phy_s7_03 = &phy_s7_03;
++		phy_s7_04 = &phy_s7_04;
++	};
++
+ 	reserved-memory {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+@@ -85,6 +112,128 @@
+ 			#size-cells = <1>;
+ 			compatible = "fsl,fpga-qixis";
+ 			reg = <3 0 0x300>;
++			ranges = <0 3 0 0x300>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <0x54 1>;
++				mux-mask = <0xe0>;
++
++				t1040mdio0: mdio@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x00>;
++					status = "disabled";
++
++					rgmii_phy1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
++
++				t1040mdio1: mdio@20 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x20>;
++					status = "disabled";
++
++					rgmii_phy2: ethernet-phy@2 {
++						reg = <0x2>;
++					};
++				};
++
++				t1040mdio3: mdio@60 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x60>;
++					status = "disabled";
++
++					phy_s3_01: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_s3_02: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_s3_03: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_s3_04: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t1040mdio5: mdio@a0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0xa0>;
++
++					phy_s5_01: ethernet-phy@1c {
++						reg = <0x14>;
++					};
++
++					phy_s5_02: ethernet-phy@1d {
++						reg = <0x15>;
++					};
++
++					phy_s5_03: ethernet-phy@1e {
++						reg = <0x16>;
++					};
++
++					phy_s5_04: ethernet-phy@1f {
++						reg = <0x17>;
++					};
++				};
++
++				t1040mdio6: mdio@c0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0xc0>;
++
++					phy_s6_01: ethernet-phy@1c {
++						reg = <0x18>;
++					};
++
++					phy_s6_02: ethernet-phy@1d {
++						reg = <0x19>;
++					};
++
++					phy_s6_03: ethernet-phy@1e {
++						reg = <0x1a>;
++					};
++
++					phy_s6_04: ethernet-phy@1f {
++						reg = <0x1b>;
++					};
++				};
++
++				t1040mdio7: mdio@e0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0xe0>;
++					status = "disabled";
++
++					phy_s7_01: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_s7_02: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_s7_03: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_s7_04: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+@@ -129,6 +278,33 @@
+ 				interrupts = <0x1 0x1 0 0>;
+ 			};
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				fixed-link = <0 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				fixed-link = <1 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_s7_03>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&rgmii_phy1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&rgmii_phy2>;
++				phy-connection-type = "rgmii";
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi b/arch/powerpc/boot/dts/t104xrdb.dtsi
+index 830ea48..521a50b 100644
+--- a/arch/powerpc/boot/dts/t104xrdb.dtsi
++++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
+@@ -1,7 +1,7 @@
+ /*
+  * T1040RDB/T1042RDB Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -33,6 +33,12 @@
+  */
+ 
+ / {
++	aliases {
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_2 = &phy_sgmii_2;
++	};
++
+ 	reserved-memory {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+@@ -125,6 +131,31 @@
+ 			};
+ 		};
+ 
++		fman@400000 {
++			ethernet@e6000 {
++				phy-handle = <&phy_rgmii_0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			mdio0: mdio@fc000 {
++				phy_sgmii_2: ethernet-phy@03 {
++					reg = <0x03>;
++				};
++
++				phy_rgmii_0: ethernet-phy@01 {
++					reg = <0x01>;
++				};
++
++				phy_rgmii_1: ethernet-phy@02 {
++					reg = <0x02>;
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t2080qds.dts b/arch/powerpc/boot/dts/t2080qds.dts
+index aa1d6d8..de8aacd 100644
+--- a/arch/powerpc/boot/dts/t2080qds.dts
++++ b/arch/powerpc/boot/dts/t2080qds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T2080QDS Device Tree Source
   *
 - * Copyright 2013 Freescale Semiconductor Inc.
-+ * Copyright 2013-2014 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -58,6 +58,13 @@
- 		sdhc = &sdhc;
+@@ -42,6 +42,12 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
  
- 		crypto = &crypto;
++	aliases {
++		emi1_slot1 = &t2080mdio2;
++		emi1_slot2 = &t2080mdio3;
++		emi1_slot3 = &t2080mdio4;
++	};
 +
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
+ 	rio: rapidio@ffe0c0000 {
+ 		reg = <0xf 0xfe0c0000 0 0x11000>;
+ 
+@@ -54,4 +60,154 @@
  	};
+ };
  
- 	cpus {
-diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-index 8bcdb35..cbb8a72 100644
---- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-@@ -626,6 +626,49 @@
- /include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
- 
-+/include/ "qoriq-fman3-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-1.dtsi"
-+/include/ "qoriq-fman3-0-1g-2.dtsi"
-+/include/ "qoriq-fman3-0-1g-3.dtsi"
-+/include/ "qoriq-fman3-0-1g-4.dtsi"
-+/include/ "qoriq-fman3-0-1g-5.dtsi"
-+/include/ "qoriq-fman3-0-10g-0.dtsi"
-+/include/ "qoriq-fman3-0-10g-1.dtsi"
++&soc {
 +	fman@400000 {
-+		enet0: ethernet@e0000 {
++		ethernet@e0000 {
++			phy-handle = <&phy_sgmii_s3_1e>;
++			phy-connection-type = "xgmii";
 +		};
 +
-+		enet1: ethernet@e2000 {
++		ethernet@e2000 {
++			phy-handle = <&phy_sgmii_s3_1f>;
++			phy-connection-type = "xgmii";
 +		};
 +
-+		enet2: ethernet@e4000 {
++		ethernet@e4000 {
++			phy-handle = <&rgmii_phy1>;
++			phy-connection-type = "rgmii";
 +		};
 +
-+		enet3: ethernet@e6000 {
++		ethernet@e6000 {
++			phy-handle = <&rgmii_phy2>;
++			phy-connection-type = "rgmii";
 +		};
 +
-+		enet4: ethernet@e8000 {
++		ethernet@e8000 {
++			phy-handle = <&phy_sgmii_s2_1e>;
++			phy-connection-type = "sgmii";
 +		};
 +
-+		enet5: ethernet@ea000 {
++		ethernet@ea000 {
++			phy-handle = <&phy_sgmii_s2_1d>;
++			phy-connection-type = "sgmii";
 +		};
 +
-+		enet6: ethernet@f0000 {
++		ethernet@f0000 {
++			phy-handle = <&phy_xaui_slot3>;
++			phy-connection-type = "xgmii";
 +		};
 +
-+		enet7: ethernet@f2000 {
-+		};
-+
-+		mdio@fc000 {
-+			interrupts = <100 1 0 0>;
++		ethernet@f2000 {
++			phy-handle = <&phy_sgmii_s3_1f>;
++			phy-connection-type = "xgmii";
 +		};
 +
 +		mdio@fd000 {
-+			interrupts = <101 1 0 0>;
++			phy_xaui_slot3: ethernet-phy@3 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x3>;
++			};
 +		};
 +	};
++};
 +
- 	L2_1: l2-cache-controller@c20000 {
- 		/* Cluster 0 L2 cache */
- 		compatible = "fsl,t2080-l2-cache-controller";
-diff --git a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-index 1b4139f..3f745de 100644
---- a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-@@ -51,6 +51,17 @@
- 		serial3 = &serial3;
- 
- 		crypto = &crypto;
++&boardctrl {
++	mdio-mux-emi1 {
++		compatible = "mdio-mux-mmioreg", "mdio-mux";
++		mdio-parent-bus = <&mdio0>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x54 1>;
++		mux-mask = <0xe0>;
 +
-+		fman0 = &fman0;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
-+		ethernet6 = &enet6;
-+		ethernet7 = &enet7;
++		t2080mdio0: mdio@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
 +
- 		pci0 = &pci0;
- 		pci1 = &pci1;
- 		pci2 = &pci2;
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index a4b4a23..3455017 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
++			rgmii_phy1: ethernet-phy@1 {
++				reg = <0x1>;
++			};
++		};
++
++		t2080mdio1: mdio@20 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x20>;
++
++			rgmii_phy2: ethernet-phy@2 {
++				reg = <0x2>;
++			};
++		};
++
++		t2080mdio2: mdio@40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40>;
++			status = "disabled";
++
++			phy_sgmii_s1_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s1_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s1_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s1_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2080mdio3: mdio@c0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xc0>;
++
++			phy_sgmii_s2_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s2_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s2_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s2_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2080mdio4: mdio@60 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x60>;
++			status = "disabled";
++
++			phy_sgmii_s3_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s3_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s3_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s3_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++	};
++};
++
+ /include/ "fsl/t2080si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t2080rdb.dts b/arch/powerpc/boot/dts/t2080rdb.dts
+index e889104..8785ad7 100644
+--- a/arch/powerpc/boot/dts/t2080rdb.dts
++++ b/arch/powerpc/boot/dts/t2080rdb.dts
 @@ -1,7 +1,7 @@
  /*
-  * T4240 Silicon/SoC Device Tree Source (post include)
+  * T2080PCIe-RDB Board Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -54,4 +54,69 @@
+ 	};
+ };
+ 
++&soc {
++	fman@400000 {
++		ethernet@e0000 {
++			phy-handle = <&xg_aq1202_phy3>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@e2000 {
++			phy-handle = <&xg_aq1202_phy4>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@e4000 {
++			phy-handle = <&rgmii_phy1>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e6000 {
++			phy-handle = <&rgmii_phy2>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@f0000 {
++			phy-handle = <&xg_cs4315_phy1>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@f2000 {
++			phy-handle = <&xg_cs4315_phy2>;
++			phy-connection-type = "xgmii";
++		};
++
++		mdio@fc000 {
++			rgmii_phy1: ethernet-phy@1 {
++				reg = <0x1>;
++			};
++			rgmii_phy2: ethernet-phy@2 {
++				reg = <0x2>;
++			};
++		};
++
++		mdio@fd000 {
++			xg_cs4315_phy1: ethernet-phy@c {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0xc>;
++			};
++
++			xg_cs4315_phy2: ethernet-phy@d {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0xd>;
++			};
++
++			xg_aq1202_phy3: ethernet-phy@0 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x0>;
++			};
++
++			xg_aq1202_phy4: ethernet-phy@1 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x1>;
++			};
++		};
++	};
++};
++
+ /include/ "fsl/t2080si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t2081qds.dts b/arch/powerpc/boot/dts/t2081qds.dts
+index 8ec80a7..d24ba7b 100644
+--- a/arch/powerpc/boot/dts/t2081qds.dts
++++ b/arch/powerpc/boot/dts/t2081qds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T2081QDS Device Tree Source
+  *
+- * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,225 @@
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
++
++	aliases {
++		emi1_slot1 = &t2081mdio2;
++		emi1_slot2 = &t2081mdio3;
++		emi1_slot3 = &t2081mdio4;
++		emi1_slot5 = &t2081mdio5;
++		emi1_slot6 = &t2081mdio6;
++		emi1_slot7 = &t2081mdio7;
++	};
++};
++
++&soc {
++	fman@400000 {
++		ethernet@e0000 {
++			phy-handle = <&phy_sgmii_s7_1c>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@e2000 {
++			phy-handle = <&phy_sgmii_s7_1d>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@e4000 {
++			phy-handle = <&rgmii_phy1>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e6000 {
++			phy-handle = <&rgmii_phy2>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e8000 {
++			phy-handle = <&phy_sgmii_s3_1c>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@ea000 {
++			phy-handle = <&phy_sgmii_s7_1f>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@f0000 {
++			phy-handle = <&phy_sgmii_s2_1c>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@f2000 {
++			phy-handle = <&phy_sgmii_s7_1e>;
++			phy-connection-type = "xgmii";
++		};
++	};
++};
++
++&boardctrl {
++	mdio-mux-emi1 {
++		compatible = "mdio-mux-mmioreg", "mdio-mux";
++		mdio-parent-bus = <&mdio0>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x54 1>;
++		mux-mask = <0xe0>;
++
++		t2081mdio0: mdio@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			rgmii_phy1: ethernet-phy@1 {
++				reg = <0x1>;
++			};
++		};
++
++		t2081mdio1: mdio@20 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x20>;
++
++			rgmii_phy2: ethernet-phy@2 {
++				reg = <0x2>;
++			};
++		};
++
++		t2081mdio2: mdio@40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40>;
++
++			phy_sgmii_s1_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s1_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s1_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s1_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio3: mdio@60 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x60>;
++
++			phy_sgmii_s2_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s2_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s2_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s2_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio4: mdio@80 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x80>;
++			status = "disabled";
++
++			phy_sgmii_s3_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s3_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s3_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s3_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio5: mdio@a0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xa0>;
++			status = "disabled";
++
++			phy_sgmii_s5_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s5_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s5_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s5_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio6: mdio@c0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xc0>;
++			status = "disabled";
++
++			phy_sgmii_s6_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s6_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s6_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s6_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio7: mdio@e0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xe0>;
++
++			phy_sgmii_s7_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s7_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s7_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s7_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++	};
+ };
+ 
+ /include/ "fsl/t2081si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
+index 93722da..38e765c 100644
+--- a/arch/powerpc/boot/dts/t4240qds.dts
++++ b/arch/powerpc/boot/dts/t4240qds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T4240QDS Device Tree Source
   *
 - * Copyright 2012 - 2014 Freescale Semiconductor Inc.
 + * Copyright 2012 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -1057,6 +1057,92 @@
- /include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
+@@ -41,6 +41,44 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
  
-+/include/ "qoriq-fman3-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-0.dtsi"
-+/include/ "qoriq-fman3-0-1g-1.dtsi"
-+/include/ "qoriq-fman3-0-1g-2.dtsi"
-+/include/ "qoriq-fman3-0-1g-3.dtsi"
-+/include/ "qoriq-fman3-0-1g-4.dtsi"
-+/include/ "qoriq-fman3-0-1g-5.dtsi"
-+/include/ "qoriq-fman3-0-10g-0.dtsi"
-+/include/ "qoriq-fman3-0-10g-1.dtsi"
-+	fman@400000 {
-+		enet0: ethernet@e0000 {
-+		};
-+
-+		enet1: ethernet@e2000 {
-+		};
-+
-+		enet2: ethernet@e4000 {
-+		};
-+
-+		enet3: ethernet@e6000 {
-+		};
-+
-+		enet4: ethernet@e8000 {
-+		};
-+
-+		enet5: ethernet@ea000 {
-+		};
-+
-+		enet6: ethernet@f0000 {
-+		};
-+
-+		enet7: ethernet@f2000 {
-+		};
-+
-+		mdio@fc000 {
-+			status = "disabled";
-+		};
-+
-+		mdio@fd000 {
-+			status = "disabled";
-+		};
++	aliases{
++		phy_rgmii1 = &phyrgmii1;
++		phy_rgmii2 = &phyrgmii2;
++		phy_sgmii3 = &phy3;
++		phy_sgmii4 = &phy4;
++		phy_sgmii11 = &phy11;
++		phy_sgmii12 = &phy12;
++		sgmii_phy11 = &sgmiiphy11;
++		sgmii_phy12 = &sgmiiphy12;
++		sgmii_phy13 = &sgmiiphy13;
++		sgmii_phy14 = &sgmiiphy14;
++		sgmii_phy21 = &sgmiiphy21;
++		sgmii_phy22 = &sgmiiphy22;
++		sgmii_phy23 = &sgmiiphy23;
++		sgmii_phy24 = &sgmiiphy24;
++		sgmii_phy31 = &sgmiiphy31;
++		sgmii_phy32 = &sgmiiphy32;
++		sgmii_phy33 = &sgmiiphy33;
++		sgmii_phy34 = &sgmiiphy34;
++		sgmii_phy41 = &sgmiiphy41;
++		sgmii_phy42 = &sgmiiphy42;
++		sgmii_phy43 = &sgmiiphy43;
++		sgmii_phy44 = &sgmiiphy44;
++		phy_xfi1 = &xfiphy1;
++		phy_xfi2 = &xfiphy2;
++		phy_xfi3 = &xfiphy3;
++		phy_xfi4 = &xfiphy4;
++		xfi_pcs_mdio1 = &xfimdio0;
++		xfi_pcs_mdio2 = &xfimdio1;
++		xfi_pcs_mdio3 = &xfimdio2;
++		xfi_pcs_mdio4 = &xfimdio3;
++		emi1_rgmii = &t4240mdio0;
++		emi1_slot1 = &t4240mdio1;
++		emi1_slot2 = &t4240mdio2;
++		emi1_slot3 = &t4240mdio3;
++		emi1_slot4 = &t4240mdio4;
 +	};
 +
-+/include/ "qoriq-fman3-1.dtsi"
-+/include/ "qoriq-fman3-1-1g-0.dtsi"
-+/include/ "qoriq-fman3-1-1g-1.dtsi"
-+/include/ "qoriq-fman3-1-1g-2.dtsi"
-+/include/ "qoriq-fman3-1-1g-3.dtsi"
-+/include/ "qoriq-fman3-1-1g-4.dtsi"
-+/include/ "qoriq-fman3-1-1g-5.dtsi"
-+/include/ "qoriq-fman3-1-10g-0.dtsi"
-+/include/ "qoriq-fman3-1-10g-1.dtsi"
-+	fman@500000 {
-+		enet8: ethernet@e0000 {
+ 	ifc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x2000>;
+ 		ranges = <0 0 0xf 0xe8000000 0x08000000
+@@ -91,8 +129,190 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,t4240qds-fpga", "fsl,fpga-qixis";
+ 			reg = <3 0 0x300>;
++			ranges = <0 3 0 0x300>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio1>;
++				reg = <0x54 1>;
++				mux-mask = <0xe0>;
++
++				t4240mdio0: mdio@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0>;
++
++					phyrgmii1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++
++					phyrgmii2: ethernet-phy@2 {
++						reg = <0x2>;
++					};
++				};
++
++				t4240mdio1: mdio@20 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x20>;
++					status = "disabled";
++
++					phy1: ethernet-phy@0 {
++						reg = <0x0>;
++					};
++
++					phy2: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++
++					phy3: ethernet-phy@2 {
++						reg = <0x2>;
++					};
++
++					phy4: ethernet-phy@3 {
++						reg = <0x3>;
++					};
++
++					sgmiiphy11: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy12: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy13: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy14: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t4240mdio2: mdio@40 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x40>;
++					status = "disabled";
++
++					phy5: ethernet-phy@4 {
++						reg = <0x4>;
++					};
++
++					phy6: ethernet-phy@5 {
++						reg = <0x5>;
++					};
++
++					phy7: ethernet-phy@6 {
++						reg = <0x6>;
++					};
++
++					phy8: ethernet-phy@7 {
++						reg = <0x7>;
++					};
++
++					sgmiiphy21: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy22: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy23: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy24: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t4240mdio3: mdio@60 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x60>;
++					status = "disabled";
++
++					phy9: ethernet-phy@8 {
++						reg = <0x8>;
++					};
++
++					phy10: ethernet-phy@9 {
++						reg = <0x9>;
++					};
++
++					phy11: ethernet-phy@a {
++						reg = <0xa>;
++					};
++
++					phy12: ethernet-phy@b {
++						reg = <0xb>;
++					};
++
++					sgmiiphy31: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy32: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy33: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy34: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t4240mdio4: mdio@80 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x80>;
++					status = "disabled";
++
++					phy13: ethernet-phy@c {
++						reg = <0xc>;
++					};
++
++					phy14: ethernet-phy@d {
++						reg = <0xd>;
++					};
++
++					phy15: ethernet-phy@e {
++						reg = <0xe>;
++					};
++
++					phy16: ethernet-phy@f {
++						reg = <0xf>;
++					};
++
++					sgmiiphy41: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy42: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy43: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy44: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+@@ -234,6 +454,184 @@
+ 		sdhc@114000 {
+ 			voltage-ranges = <1800 1800 3300 3300>;
+ 		};
++
++		fman@400000 {
++			port@83000 {
++				status = "disabled";
++			};
++
++			port@84000 {
++				status = "disabled";
++			};
++
++			port@85000 {
++				status = "disabled";
++			};
++
++			port@86000 {
++				status = "disabled";
++			};
++
++			port@87000 {
++				status = "disabled";
++			};
++
++			ethernet@e0000 {
++				phy-handle = <&phy5>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy6>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy7>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy8>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phyrgmii2>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@ea000 {
++				phy-handle = <&phy2>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xauiphy1>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xauiphy2>;
++				phy-connection-type = "xgmii";
++			};
++
++			xfimdio0: mdio@f1000 {
++				status = "disabled";
++
++				xfiphy1: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++
++			xfimdio1: mdio@f3000 {
++				status = "disabled";
++
++				xfiphy2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
 +		};
 +
-+		enet9: ethernet@e2000 {
-+		};
++		fman@500000 {
++			port@84000 {
++				status = "disabled";
++			};
 +
-+		enet10: ethernet@e4000 {
-+		};
++			port@85000 {
++				status = "disabled";
++			};
 +
-+		enet11: ethernet@e6000 {
-+		};
++			port@86000 {
++				status = "disabled";
++			};
 +
-+		enet12: ethernet@e8000 {
-+		};
++			port@87000 {
++				status = "disabled";
++			};
 +
-+		enet13: ethernet@ea000 {
-+		};
++			ethernet@e0000 {
++				phy-handle = <&phy13>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet14: ethernet@f0000 {
-+		};
++			ethernet@e2000 {
++				phy-handle = <&phy14>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		enet15: ethernet@f2000 {
-+		};
++			ethernet@e4000 {
++				phy-handle = <&phy15>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		mdio@fc000 {
-+			interrupts = <100 1 0 0>;
-+		};
++			ethernet@e6000 {
++				phy-handle = <&phy16>;
++				phy-connection-type = "sgmii";
++			};
 +
-+		mdio@fd000 {
-+			interrupts = <101 1 0 0>;
-+		};
-+	};
++			ethernet@e8000 {
++				phy-handle = <&phyrgmii1>;
++				phy-connection-type = "rgmii";
++			};
 +
- 	L2_1: l2-cache-controller@c20000 {
- 		compatible = "fsl,t4240-l2-cache-controller";
- 		reg = <0xc20000 0x40000>;
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-index ae6752d..b817aef 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi
++			ethernet@ea000 {
++				phy-handle = <&phy10>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xauiphy3>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xauiphy4>;
++				phy-connection-type = "xgmii";
++			};
++
++			xfimdio2: mdio@f1000 {
++				status = "disabled";
++
++				xfiphy3: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++
++			xfimdio3: mdio@f3000 {
++				status = "disabled";
++
++				xfiphy4: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++
++			mdio@fd000 {
++				xauiphy1: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++
++				xauiphy2: ethernet-phy@1 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x1>;
++				};
++
++				xauiphy3: ethernet-phy@2 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x2>;
++				};
++
++				xauiphy4: ethernet-phy@3 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x3>;
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t4240rdb.dts b/arch/powerpc/boot/dts/t4240rdb.dts
+index 993eb4b..66ddb35 100644
+--- a/arch/powerpc/boot/dts/t4240rdb.dts
++++ b/arch/powerpc/boot/dts/t4240rdb.dts
 @@ -1,7 +1,7 @@
  /*
-  * T4240 Silicon/SoC Device Tree Source (pre include)
+  * T4240RDB Device Tree Source
   *
-- * Copyright 2012 Freescale Semiconductor Inc.
-+ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
   *
   * Redistribution and use in source and binary forms, with or without
   * modification, are permitted provided that the following conditions are met:
-@@ -51,6 +51,7 @@
- 		serial2 = &serial2;
- 		serial3 = &serial3;
- 		crypto = &crypto;
+@@ -41,6 +41,17 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		sgmii_phy21 = &sgmiiphy21;
++		sgmii_phy22 = &sgmiiphy22;
++		sgmii_phy23 = &sgmiiphy23;
++		sgmii_phy24 = &sgmiiphy24;
++		sgmii_phy41 = &sgmiiphy41;
++		sgmii_phy42 = &sgmiiphy42;
++		sgmii_phy43 = &sgmiiphy43;
++		sgmii_phy44 = &sgmiiphy44;
++	};
 +
- 		pci0 = &pci0;
- 		pci1 = &pci1;
- 		pci2 = &pci2;
-@@ -59,6 +60,25 @@
- 		dma1 = &dma1;
- 		dma2 = &dma2;
- 		sdhc = &sdhc;
+ 	ifc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x2000>;
+ 		ranges = <0 0 0xf 0xe8000000 0x08000000
+@@ -136,6 +147,142 @@
+ 		sdhc@114000 {
+ 			voltage-ranges = <1800 1800 3300 3300>;
+ 		};
 +
-+		fman0 = &fman0;
-+		fman1 = &fman1;
-+		ethernet0 = &enet0;
-+		ethernet1 = &enet1;
-+		ethernet2 = &enet2;
-+		ethernet3 = &enet3;
-+		ethernet4 = &enet4;
-+		ethernet5 = &enet5;
-+		ethernet6 = &enet6;
-+		ethernet7 = &enet7;
-+		ethernet8 = &enet8;
-+		ethernet9 = &enet9;
-+		ethernet10 = &enet10;
-+		ethernet11 = &enet11;
-+		ethernet12 = &enet12;
-+		ethernet13 = &enet13;
-+		ethernet14 = &enet14;
-+		ethernet15 = &enet15;
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&sgmiiphy21>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&sgmiiphy22>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&sgmiiphy23>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&sgmiiphy24>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				status = "disabled";
++			};
++
++			ethernet@ea000 {
++				status = "disabled";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xfiphy1>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xfiphy2>;
++				phy-connection-type = "xgmii";
++			};
++		};
++
++		fman@500000 {
++			ethernet@e0000 {
++				phy-handle = <&sgmiiphy41>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&sgmiiphy42>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&sgmiiphy43>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&sgmiiphy44>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				status = "disabled";
++			};
++
++			ethernet@ea000 {
++				status = "disabled";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xfiphy3>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xfiphy4>;
++				phy-connection-type = "xgmii";
++			};
++
++			mdio@fc000 {
++				sgmiiphy21: ethernet-phy@0 {
++					reg = <0x0>;
++				};
++
++				sgmiiphy22: ethernet-phy@1 {
++					reg = <0x1>;
++				};
++
++				sgmiiphy23: ethernet-phy@2 {
++					reg = <0x2>;
++				};
++
++				sgmiiphy24: ethernet-phy@3 {
++					reg = <0x3>;
++				};
++
++				sgmiiphy41: ethernet-phy@4 {
++					reg = <0x4>;
++				};
++
++				sgmiiphy42: ethernet-phy@5 {
++					reg = <0x5>;
++				};
++
++				sgmiiphy43: ethernet-phy@6 {
++					reg = <0x6>;
++				};
++
++				sgmiiphy44: ethernet-phy@7 {
++					reg = <0x7>;
++				};
++			};
++
++			mdio@fd000 {
++				xfiphy1: ethernet-phy@10 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x10>;
++				};
++
++				xfiphy2: ethernet-phy@11 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x11>;
++				};
++
++				xfiphy3: ethernet-phy@13 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x13>;
++				};
++
++				xfiphy4: ethernet-phy@12 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x12>;
++				};
++			};
++		};
  	};
  
- 	cpus {
+ 	pci0: pcie@ffe240000 {
 -- 
 1.7.9.5
