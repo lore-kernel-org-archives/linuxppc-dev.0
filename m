@@ -1,28 +1,22 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0114.outbound.protection.outlook.com [65.55.169.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B3831A1D03
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 01:32:40 +1000 (AEST)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Mike Turquette
- <mturquette@linaro.org>, Yuantian Tang <Yuantian.Tang@freescale.com>
-CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Madalin-Cristian Bucur
- <madalin.bucur@freescale.com>, "linux-clk@vger.kernel.org"
- <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>
-Subject: RE: [RFC PATCH 8/8] powerpc/fsl: Use new clockgen binding
-Date: Thu, 30 Jul 2015 15:32:32 +0000
-Message-ID: <DM2PR03MB50986F3471DF3DD74494002E68B0@DM2PR03MB509.namprd03.prod.outlook.com>
-References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
- <1434682158-7243-9-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1434682158-7243-9-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <vbabka@suse.cz>
+From: Vlastimil Babka <vbabka@suse.cz>
+To: linux-mm@kvack.org,
+	Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mgorman@suse.de>,
+ David Rientjes <rientjes@google.com>, Greg Thelen <gthelen@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Johannes Weiner <hannes@cmpxchg.org>, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, Vlastimil Babka <vbabka@suse.cz>
+Subject: [PATCH v3 2/3] mm: unify checks in alloc_pages_node() and
+ __alloc_pages_node()
+Date: Thu, 30 Jul 2015 18:34:30 +0200
+Message-Id: <1438274071-22551-2-git-send-email-vbabka@suse.cz>
+In-Reply-To: <1438274071-22551-1-git-send-email-vbabka@suse.cz>
+References: <1438274071-22551-1-git-send-email-vbabka@suse.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,33 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Perform the same debug checks in alloc_pages_node() as are done in
+__alloc_pages_node(), by making the former function a wrapper of the latter
+one.
 
-Regards,
-Igal Liberman.
+In addition to better diagnostics in DEBUG_VM builds for situations which
+have been already fatal (e.g. out-of-bounds node id), there are two visible
+changes for potential existing buggy callers of alloc_pages_node():
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, June 19, 2015 5:49 AM
-> To: Mike Turquette; Tang Yuantian-B29983
-> Cc: Rafael J. Wysocki; Liberman Igal-B31950; Bucur Madalin-Cristian-B3271=
-6;
-> linux-clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org;
-> devicetree@vger.kernel.org; Wood Scott-B07421
-> Subject: [RFC PATCH 8/8] powerpc/fsl: Use new clockgen binding
->=20
-> The driver retains compatibility with old device trees, but we don't want=
- the
-> old nodes lying around to be copied, or used as a reference (some of the
-> mux options are incorrect), or even just being clutter.
->=20
-> We will also need the #clock-cells in the clockgen node in order to add f=
-man
-> nodes.
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
+- calling alloc_pages_node() with any negative nid (e.g. due to arithmetic
+  overflow) was treated as passing NUMA_NO_NODE and fallback to local node was
+  applied. This will now be fatal.
+- calling alloc_pages_node() with an offline node will now be checked for
+  DEBUG_VM builds. Since it's not fatal if the node has been previously online,
+  and this patch may expose some existing buggy callers, change the VM_BUG_ON
+  in __alloc_pages_node() to VM_WARN_ON.
 
-Tested on: several e500mc, e5500 and e6500 platforms.
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+Acked-by: David Rientjes <rientjes@google.com>
+---
+v3: I think this is enough for what patch 4/4 in v2 tried to provide on top,
+    so there's no patch 4/4 anymore. The DEBUG_VM-only fixup didn't seem
+    justified to me.
 
-Tested-by: Igal Liberman <Igal.Liberman@freescale.com>
+ include/linux/gfp.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index d2c142b..4a12cae2 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -310,23 +310,23 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
+ static inline struct page *
+ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
+ {
+-	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
++	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES);
++	VM_WARN_ON(!node_online(nid));
+ 
+ 	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
+ }
+ 
+ /*
+  * Allocate pages, preferring the node given as nid. When nid == NUMA_NO_NODE,
+- * prefer the current CPU's node.
++ * prefer the current CPU's node. Otherwise node must be valid and online.
+  */
+ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+ 						unsigned int order)
+ {
+-	/* Unknown node is current node */
+-	if (nid < 0)
++	if (nid == NUMA_NO_NODE)
+ 		nid = numa_node_id();
+ 
+-	return __alloc_pages(gfp_mask, order, node_zonelist(nid, gfp_mask));
++	return __alloc_pages_node(nid, gfp_mask, order);
+ }
+ 
+ #ifdef CONFIG_NUMA
+-- 
+2.4.6
