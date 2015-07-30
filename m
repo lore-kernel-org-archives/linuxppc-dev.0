@@ -1,44 +1,17 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB92C1A0414
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 15:44:55 +1000 (AEST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 738EB1409BB
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 15:44:54 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 30 Jul 2015 15:44:53 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7DE3C3578055
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 15:44:50 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t6U5ifJB17498148
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 15:44:50 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t6U5iHCA022271
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 15:44:17 +1000
-Date: Thu, 30 Jul 2015 13:43:59 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
- benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: use one M64 BAR in Single PE mode for
- one VF BAR
-Message-ID: <20150730054359.GA21161@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1438154528-19608-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150730011501.GA23215@gwshan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150730011501.GA23215@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D30D1A0C0E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 16:08:11 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: keescook@chromium.org
+Subject: [PATCH v2] powerpc/kernel: Enable seccomp filter
+Date: Thu, 30 Jul 2015 15:56:48 +1000
+Message-Id: <1438235808-6438-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1437646871-3195-9-git-send-email-mpe@ellerman.id.au>
+References: <1437646871-3195-9-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,342 +21,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 30, 2015 at 11:15:01AM +1000, Gavin Shan wrote:
->On Wed, Jul 29, 2015 at 03:22:07PM +0800, Wei Yang wrote:
->>In current implementation, when VF BAR is bigger than 64MB, it uses 4 M64
->>BAR in Single PE mode to cover the number of VFs required to be enabled.
->>By doing so, several VFs would be in one VF Group and leads to interference
->>between VFs in the same group.
->>
->>This patch changes the design by using one M64 BAR in Single PE mode for
->>one VF BAR. This gives absolute isolation for VFs.
->>
->>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>---
->> arch/powerpc/include/asm/pci-bridge.h     |    5 +-
->> arch/powerpc/platforms/powernv/pci-ioda.c |  104 +++++------------------------
->> 2 files changed, 18 insertions(+), 91 deletions(-)
->>
->
->questions regarding this:
->
->(1) When M64 BAR is running in single-PE-mode for VFs, the alignment for one
->    particular IOV BAR still have to be (IOV_BAR_size * max_vf_number), or
->    M64 segment size of last BAR (0x10000000) is fine? If the later one is fine,
->    more M64 space would be saved. On the other hand, if the IOV BAR size
->    (for all VFs) is less than 256MB, will the allocated resource conflict
->    with the M64 segments in last BAR?
+This commit enables seccomp filter on powerpc, now that we have all the
+necessary pieces in place.
 
-Not need to be IOV BAR size aligned, be individual VF BAR size aligned is fine.
+To support seccomp's desire to modify the syscall return value under
+some circumstances, we use a different ABI to the ptrace ABI. That is we
+use r3 as the syscall return value, and orig_gpr3 is the first syscall
+parameter.
 
-IOV BAR size = VF BAR size * expended_num_vfs
+This means the seccomp code, or a ptracer via SECCOMP_RET_TRACE, will
+see -ENOSYS preloaded in r3. This is identical to the behaviour on x86,
+and allows seccomp or the ptracer to either leave the -ENOSYS or change
+it to something else, as well as rejecting or not the syscall by
+modifying r0.
 
->(2) When M64 BAR is in single-PE-mode, the PE numbers allocated for VFs need
->    continuous or not.
+If seccomp does not reject the syscall, we restore the register state to
+match what ptrace and audit expect, ie. r3 is the first syscall
+parameter again. We do this restore using orig_gpr3, which may have been
+modified by seccomp, which allows seccomp to modify the first syscall
+paramater and allow the syscall to proceed.
 
-No, not need.
+We need to #ifdef the the additional handling of r3 for seccomp, so move
+it all out of line.
 
->(3) Each PF could have 6 IOV BARs and there're 15 available M64 BAR. It means
->    only two VFs can be enabled in the extreme case. Would it be a problem?
->
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Reviewed-by: Kees Cook <keescook@chromium.org>
+---
+ arch/powerpc/Kconfig         |  1 +
+ arch/powerpc/kernel/ptrace.c | 41 ++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 41 insertions(+), 1 deletion(-)
 
-Yes, you are right.
 
-Based on Alexey's mail, full isolation is more important than more VFs.
+v2: The previous version didn't compile for CONFIG_SECCOMP=n. To fix it up I
+    moved the logic out of line and #ifdef'ed that. It gets inlined by the compiler
+    so the end result is the same.
 
->>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>index 712add5..1997e5d 100644
->>--- a/arch/powerpc/include/asm/pci-bridge.h
->>+++ b/arch/powerpc/include/asm/pci-bridge.h
->>@@ -214,10 +214,9 @@ struct pci_dn {
->> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->> 	u16     num_vfs;		/* number of VFs enabled*/
->> 	int     offset;			/* PE# for the first VF PE */
->>-#define M64_PER_IOV 4
->>-	int     m64_per_iov;
->>+#define MAX_M64_WINDOW  16
->> #define IODA_INVALID_M64        (-1)
->>-	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
->>+	int     m64_wins[PCI_SRIOV_NUM_BARS][MAX_M64_WINDOW];
->> #endif /* CONFIG_PCI_IOV */
->> #endif
->
->The "m64_wins" would be renamed to "m64_map". Also, it would have dynamic size:
->
->- When the IOV BAR is extended to 256 segments, its size is sizeof(int) * PCI_SRIOV_NUM_BARS;
->- When the IOV BAR is extended to max_vf_num, its size is sizeof(int) * max_vf_num;
->
->> 	struct list_head child_list;
->>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>index 5738d31..b3e7909 100644
->>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>@@ -1168,7 +1168,7 @@ static int pnv_pci_vf_release_m64(struct pci_dev *pdev)
->> 	pdn = pci_get_pdn(pdev);
->>
->> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
->>-		for (j = 0; j < M64_PER_IOV; j++) {
->>+		for (j = 0; j < MAX_M64_WINDOW; j++) {
->> 			if (pdn->m64_wins[i][j] == IODA_INVALID_M64)
->> 				continue;
->> 			opal_pci_phb_mmio_enable(phb->opal_id,
->>@@ -1193,8 +1193,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->> 	int                    total_vfs;
->> 	resource_size_t        size, start;
->> 	int                    pe_num;
->>-	int                    vf_groups;
->>-	int                    vf_per_group;
->>+	int                    m64s;
->
->"m64s" could have better name. For example, "vfs_per_m64_bar"...
->
+    Kees I kept your Reviewed-by on the basis that the interesting logic is the
+    same, hope that's OK by you.
 
-m64s is used to represent number of M64 BARs necessary to enable num_vfs.
-vfs_per_m64_bar may be misleading.
-
-How about "m64_bars" ?
-
->>
->> 	bus = pdev->bus;
->> 	hose = pci_bus_to_host(bus);
->>@@ -1204,17 +1203,13 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->>
->> 	/* Initialize the m64_wins to IODA_INVALID_M64 */
->> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
->>-		for (j = 0; j < M64_PER_IOV; j++)
->>+		for (j = 0; j < MAX_M64_WINDOW; j++)
->> 			pdn->m64_wins[i][j] = IODA_INVALID_M64;
->>
->>-	if (pdn->m64_per_iov == M64_PER_IOV) {
->>-		vf_groups = (num_vfs <= M64_PER_IOV) ? num_vfs: M64_PER_IOV;
->>-		vf_per_group = (num_vfs <= M64_PER_IOV)? 1:
->>-			roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
->>-	} else {
->>-		vf_groups = 1;
->>-		vf_per_group = 1;
->>-	}
->>+	if (pdn->vfs_expanded != phb->ioda.total_pe)
->>+		m64s = num_vfs;
->>+	else
->>+		m64s = 1;
->
->The condition (pdn->vfs_expanded != phb->ioda.total_pe) isn't precise enough as
->explained below.
->
->>
->> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
->>@@ -1224,7 +1219,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->> 		if (!pnv_pci_is_mem_pref_64(res->flags))
->> 			continue;
->>
->>-		for (j = 0; j < vf_groups; j++) {
->>+		for (j = 0; j < m64s; j++) {
->> 			do {
->> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
->> 						phb->ioda.m64_bar_idx + 1, 0);
->>@@ -1235,10 +1230,9 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->>
->> 			pdn->m64_wins[i][j] = win;
->>
->>-			if (pdn->m64_per_iov == M64_PER_IOV) {
->>+			if (pdn->vfs_expanded != phb->ioda.total_pe) {
->> 				size = pci_iov_resource_size(pdev,
->> 							PCI_IOV_RESOURCES + i);
->>-				size = size * vf_per_group;
->> 				start = res->start + size * j;
->> 			} else {
->> 				size = resource_size(res);
->>@@ -1246,7 +1240,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->> 			}
->>
->> 			/* Map the M64 here */
->>-			if (pdn->m64_per_iov == M64_PER_IOV) {
->>+			if (pdn->vfs_expanded != phb->ioda.total_pe) {
->> 				pe_num = pdn->offset + j;
->> 				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
->> 						pe_num, OPAL_M64_WINDOW_TYPE,
->>@@ -1267,7 +1261,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->> 				goto m64_failed;
->> 			}
->>
->>-			if (pdn->m64_per_iov == M64_PER_IOV)
->>+			if (pdn->vfs_expanded != phb->ioda.total_pe)
->> 				rc = opal_pci_phb_mmio_enable(phb->opal_id,
->> 				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 2);
->> 			else
->>@@ -1311,15 +1305,13 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
->> 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
->> }
->>
->>-static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
->>+static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
->> {
->> 	struct pci_bus        *bus;
->> 	struct pci_controller *hose;
->> 	struct pnv_phb        *phb;
->> 	struct pnv_ioda_pe    *pe, *pe_n;
->> 	struct pci_dn         *pdn;
->>-	u16                    vf_index;
->>-	int64_t                rc;
->>
->> 	bus = pdev->bus;
->> 	hose = pci_bus_to_host(bus);
->>@@ -1329,35 +1321,6 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
->> 	if (!pdev->is_physfn)
->> 		return;
->>
->>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
->>-		int   vf_group;
->>-		int   vf_per_group;
->>-		int   vf_index1;
->>-
->>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
->>-
->>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++)
->>-			for (vf_index = vf_group * vf_per_group;
->>-				vf_index < (vf_group + 1) * vf_per_group &&
->>-				vf_index < num_vfs;
->>-				vf_index++)
->>-				for (vf_index1 = vf_group * vf_per_group;
->>-					vf_index1 < (vf_group + 1) * vf_per_group &&
->>-					vf_index1 < num_vfs;
->>-					vf_index1++){
->>-
->>-					rc = opal_pci_set_peltv(phb->opal_id,
->>-						pdn->offset + vf_index,
->>-						pdn->offset + vf_index1,
->>-						OPAL_REMOVE_PE_FROM_DOMAIN);
->>-
->>-					if (rc)
->>-					    dev_warn(&pdev->dev, "%s: Failed to unlink same group PE#%d(%lld)\n",
->>-						__func__,
->>-						pdn->offset + vf_index1, rc);
->>-				}
->>-	}
->>-
->> 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
->> 		if (pe->parent_dev != pdev)
->> 			continue;
->>@@ -1392,10 +1355,10 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
->> 	num_vfs = pdn->num_vfs;
->>
->> 	/* Release VF PEs */
->>-	pnv_ioda_release_vf_PE(pdev, num_vfs);
->>+	pnv_ioda_release_vf_PE(pdev);
->>
->> 	if (phb->type == PNV_PHB_IODA2) {
->>-		if (pdn->m64_per_iov == 1)
->>+		if (pdn->vfs_expanded == phb->ioda.total_pe)
->> 			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
->>
->> 		/* Release M64 windows */
->>@@ -1418,7 +1381,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
->> 	int                    pe_num;
->> 	u16                    vf_index;
->> 	struct pci_dn         *pdn;
->>-	int64_t                rc;
->>
->> 	bus = pdev->bus;
->> 	hose = pci_bus_to_host(bus);
->>@@ -1463,37 +1425,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
->>
->> 		pnv_pci_ioda2_setup_dma_pe(phb, pe);
->> 	}
->>-
->>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
->>-		int   vf_group;
->>-		int   vf_per_group;
->>-		int   vf_index1;
->>-
->>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
->>-
->>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++) {
->>-			for (vf_index = vf_group * vf_per_group;
->>-			     vf_index < (vf_group + 1) * vf_per_group &&
->>-			     vf_index < num_vfs;
->>-			     vf_index++) {
->>-				for (vf_index1 = vf_group * vf_per_group;
->>-				     vf_index1 < (vf_group + 1) * vf_per_group &&
->>-				     vf_index1 < num_vfs;
->>-				     vf_index1++) {
->>-
->>-					rc = opal_pci_set_peltv(phb->opal_id,
->>-						pdn->offset + vf_index,
->>-						pdn->offset + vf_index1,
->>-						OPAL_ADD_PE_TO_DOMAIN);
->>-
->>-					if (rc)
->>-					    dev_warn(&pdev->dev, "%s: Failed to link same group PE#%d(%lld)\n",
->>-						__func__,
->>-						pdn->offset + vf_index1, rc);
->>-				}
->>-			}
->>-		}
->>-	}
->> }
->>
->> int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->>@@ -1537,7 +1468,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->> 		 * the IOV BAR according to the PE# allocated to the VFs.
->> 		 * Otherwise, the PE# for the VF will conflict with others.
->> 		 */
->>-		if (pdn->m64_per_iov == 1) {
->>+		if (pdn->vfs_expanded == phb->ioda.total_pe) {
->
->This condition isn't precise enough. When PF occasionally supports 256 VFs
->and the summed size of all IOV BARs (explained below) exceeds 64MB, we're
->expecting to use singole-pe-mode M64 BARs, not shared-mode.
->
-
-Yes, you are right. The vfs_expanded is not reliable.
-
->> 			ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
->> 			if (ret)
->> 				goto m64_failed;
->>@@ -1570,8 +1501,7 @@ int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->> 	/* Allocate PCI data */
->> 	add_dev_pci_data(pdev);
->>
->>-	pnv_pci_sriov_enable(pdev, num_vfs);
->>-	return 0;
->>+	return pnv_pci_sriov_enable(pdev, num_vfs);
->> }
->> #endif /* CONFIG_PCI_IOV */
->>
->>@@ -2766,7 +2696,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->> 	pdn->vfs_expanded = 0;
->>
->> 	total_vfs = pci_sriov_get_totalvfs(pdev);
->>-	pdn->m64_per_iov = 1;
->> 	mul = phb->ioda.total_pe;
->>
->> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->>@@ -2785,7 +2714,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->> 		if (size > (1 << 26)) {
->
->Actually, the condition isn't precise enough. In theory, every PF can have 6 IOV BARs.
->If all of their size are 64MB, we will have 256 extended VFs. The total MMIO size needed
->is: 96GB = (6 * 64MB * 256), which exceeds 64GB. The original idea would be to have
->the scheme other than extending to 256 VFs when the sum of all IOV BARs is bigger
->than 64MB, not single M64 BAR. It's different issue and you can fix it up in another
->patch if you want.
->
-
-I didn't get your point here.
-
-You mean it is necessary to check the sum of IOV BAR instead of a single one?
-
->> 			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
->> 				 i, res);
->>-			pdn->m64_per_iov = M64_PER_IOV;
->> 			mul = roundup_pow_of_two(total_vfs);
->> 			break;
->> 		}
->>-- 
->>1.7.9.5
->>
-
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index fe2f2c595fd9..4139644030fb 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -159,6 +159,7 @@ config PPC
+ 	select EDAC_SUPPORT
+ 	select EDAC_ATOMIC_SCRUB
+ 	select ARCH_HAS_DMA_SET_COHERENT_MASK
++	select HAVE_ARCH_SECCOMP_FILTER
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 7484221bb3f8..737c0d0b53ac 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1762,6 +1762,44 @@ long arch_ptrace(struct task_struct *child, long request,
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_SECCOMP
++static int do_seccomp(struct pt_regs *regs)
++{
++	if (!test_thread_flag(TIF_SECCOMP))
++		return 0;
++
++	/*
++	 * The ABI we present to seccomp tracers is that r3 contains
++	 * the syscall return value and orig_gpr3 contains the first
++	 * syscall parameter. This is different to the ptrace ABI where
++	 * both r3 and orig_gpr3 contain the first syscall parameter.
++	 */
++	regs->gpr[3] = -ENOSYS;
++
++	/*
++	 * We use the __ version here because we have already checked
++	 * TIF_SECCOMP. If this fails, there is nothing left to do, we
++	 * have already loaded -ENOSYS into r3, or seccomp has put
++	 * something else in r3 (via SECCOMP_RET_ERRNO/TRACE).
++	 */
++	if (__secure_computing())
++		return -1;
++
++	/*
++	 * The syscall was allowed by seccomp, restore the register
++	 * state to what ptrace and audit expect.
++	 * Note that we use orig_gpr3, which means a seccomp tracer can
++	 * modify the first syscall parameter (in orig_gpr3) and also
++	 * allow the syscall to proceed.
++	 */
++	regs->gpr[3] = regs->orig_gpr3;
++
++	return 0;
++}
++#else
++static inline int do_seccomp(struct pt_regs *regs) { return 0; }
++#endif /* CONFIG_SECCOMP */
++
+ /**
+  * do_syscall_trace_enter() - Do syscall tracing on kernel entry.
+  * @regs: the pt_regs of the task to trace (current)
+@@ -1787,7 +1825,8 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 
+ 	user_exit();
+ 
+-	secure_computing_strict(regs->gpr[0]);
++	if (do_seccomp(regs))
++		return -1;
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE)) {
+ 		/*
 -- 
-Richard Yang
-Help you, Help me
+2.1.4
