@@ -1,22 +1,28 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D14031A1D7A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 00:36:09 +1000 (AEST)
-Message-ID: <55BA364E.1000803@maciej.szmigiero.name>
-Date: Thu, 30 Jul 2015 16:35:58 +0200
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Return-Path: <festevam@gmail.com>
+Received: from mail-la0-x22f.google.com (mail-la0-x22f.google.com
+ [IPv6:2a00:1450:4010:c03::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FF601A0FFF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 01:20:06 +1000 (AEST)
+Received: by laah7 with SMTP id h7so27140359laa.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jul 2015 08:20:01 -0700 (PDT)
 MIME-Version: 1.0
-To: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
-CC: Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>,
+In-Reply-To: <55BA35A6.5050609@maciej.szmigiero.name>
+References: <55BA35A6.5050609@maciej.szmigiero.name>
+Date: Thu, 30 Jul 2015 12:20:00 -0300
+Message-ID: <CAOMZO5DJhCXr0oxY7q4TKs0AVS4nW6tDq4EHSGQHOZwf95YWWw@mail.gmail.com>
+Subject: Re: [PATCH 1/6] ASoC: fsl_ssi: enable IPG clock during AC'97 reg
+ access
+From: Fabio Estevam <festevam@gmail.com>
+To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@tabi.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
  Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Fabio Estevam <festevam@gmail.com>
-Subject: [PATCH 6/6] ASoC: fsl_ssi: adjust set DAI format in AC'97 mode
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,35 +33,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adjust set DAI format function in fsl_ssi driver so it
-doesn't fail and clears RXDIR in AC'97 mode.
+Hi Maciej,
 
-Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
----
- sound/soc/fsl/fsl_ssi.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+On Thu, Jul 30, 2015 at 11:33 AM, Maciej S. Szmigiero
+<mail@maciej.szmigiero.name> wrote:
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 8e5ff5e..37aabe3 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -900,14 +900,16 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
- 		break;
- 	default:
--		return -EINVAL;
-+		if (!fsl_ssi_is_ac97(ssi_private))
-+			return -EINVAL;
- 	}
- 
- 	stcr |= strcr;
- 	srcr |= strcr;
- 
--	if (ssi_private->cpu_dai_drv.symmetric_rates) {
--		/* Need to clear RXDIR when using SYNC mode */
-+	if (ssi_private->cpu_dai_drv.symmetric_rates
-+		|| fsl_ssi_is_ac97(ssi_private)) {
-+		/* Need to clear RXDIR when using SYNC or AC97 mode */
- 		srcr &= ~CCSR_SSI_SRCR_RXDIR;
- 		scr |= CCSR_SSI_SCR_SYN;
- 	}
+>  static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
+> @@ -1151,6 +1160,14 @@ static unsigned short fsl_ssi_ac97_read(struct snd_ac97 *ac97,
+>         unsigned short val = -1;
+>         u32 reg_val;
+>         unsigned int lreg;
+> +       int ret;
+> +
+> +       ret = clk_prepare_enable(fsl_ac97_data->clk);
+> +       if (ret) {
+> +               pr_err("ac97 read clk_prepare_enable failed: %d\n",
+> +                       ret);
+> +               return -1;
+
+return ret, please.
