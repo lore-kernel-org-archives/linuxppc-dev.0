@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 712AB1A1CFE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:03:09 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 95FF81A1A57
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:03:16 +1000 (AEST)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC02O81V0QB190@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:03:07 +0900 (KST)
+ with ESMTP id <0NSC032IDV19HC60@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:03:14 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,10 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 15/46] usb: gadget: fsl_udc_core: add ep capabilities
- support
-Date: Fri, 31 Jul 2015 16:00:27 +0200
-Message-id: <1438351258-31578-16-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 16/46] usb: gadget: fusb300_udc: add ep capabilities support
+Date: Fri, 31 Jul 2015 16:00:28 +0200
+Message-id: <1438351258-31578-17-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,32 +39,30 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/fsl_udc_core.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/usb/gadget/udc/fusb300_udc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/fsl_udc_core.c b/drivers/usb/gadget/udc/fsl_udc_core.c
-index c60022b..aab5221 100644
---- a/drivers/usb/gadget/udc/fsl_udc_core.c
-+++ b/drivers/usb/gadget/udc/fsl_udc_core.c
-@@ -2313,6 +2313,19 @@ static int struct_ep_setup(struct fsl_udc *udc, unsigned char index,
- 	ep->ep.ops = &fsl_ep_ops;
- 	ep->stopped = 0;
- 
-+	if (index == 0) {
-+		ep->ep.caps.type_control = true;
-+	} else {
-+		ep->ep.caps.type_iso = true;
-+		ep->ep.caps.type_bulk = true;
-+		ep->ep.caps.type_int = true;
-+	}
+diff --git a/drivers/usb/gadget/udc/fusb300_udc.c b/drivers/usb/gadget/udc/fusb300_udc.c
+index 3970f45..948845c 100644
+--- a/drivers/usb/gadget/udc/fusb300_udc.c
++++ b/drivers/usb/gadget/udc/fusb300_udc.c
+@@ -1450,6 +1450,17 @@ static int fusb300_probe(struct platform_device *pdev)
+ 		ep->ep.name = fusb300_ep_name[i];
+ 		ep->ep.ops = &fusb300_ep_ops;
+ 		usb_ep_set_maxpacket_limit(&ep->ep, HS_BULK_MAX_PACKET_SIZE);
 +
-+	if (index & 1)
++		if (i == 0) {
++			ep->ep.caps.type_control = true;
++		} else {
++			ep->ep.caps.type_iso = true;
++			ep->ep.caps.type_bulk = true;
++			ep->ep.caps.type_int = true;
++		}
++
 +		ep->ep.caps.dir_in = true;
-+	else
 +		ep->ep.caps.dir_out = true;
-+
- 	/* for ep0: maxP defined in desc
- 	 * for other eps, maxP is set by epautoconfig() called by gadget layer
- 	 */
+ 	}
+ 	usb_ep_set_maxpacket_limit(&fusb300->ep[0]->ep, HS_CTL_MAX_PACKET_SIZE);
+ 	fusb300->ep[0]->epnum = 0;
 -- 
 1.9.1
