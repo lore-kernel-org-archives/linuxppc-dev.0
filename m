@@ -1,26 +1,41 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 07EED1A05A6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 16:37:25 +1000 (AEST)
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CA20614031E
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 16:37:22 +1000 (AEST)
-Received: by pabkd10 with SMTP id kd10so35843950pab.2
- for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 23:37:21 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
- imunsie@au.ibm.com, Daniel Axtens <dja@axtens.net>
-Subject: [PATCH] cxl: Fix ambiguous else warnings
-Date: Fri, 31 Jul 2015 16:35:08 +1000
-Message-Id: <1438324508-30341-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 51C491A03F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 18:55:41 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Fri, 31 Jul 2015 14:25:38 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 299DB3940060
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 14:25:35 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6V8tRlv51249286
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 14:25:28 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6V8tQNr006034
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 14:25:27 +0530
+Message-ID: <55BB37FE.3040002@linux.vnet.ibm.com>
+Date: Fri, 31 Jul 2015 14:25:26 +0530
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Scott Wood <scottwood@freescale.com>
+CC: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, acme@kernel.org, paulus@samba.org,
+ warrier@linux.vnet.ibm.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Subject: Re: [PATCH v5 1/2] perf,kvm/ppc: Add kvm_perf.h for powerpc
+References: <1437061722-15438-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <1437077417.2993.108.camel@freescale.com>
+ <55B8ACD9.8090404@linux.vnet.ibm.com>
+ <1438208530.2993.350.camel@freescale.com>
+In-Reply-To: <1438208530.2993.350.camel@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +45,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Every time I build cxl I see the following warnings:
 
-/scratch/dja/linux-capi/drivers/misc/cxl/pci.c: In function ‘sanitise_afu_regs’:
-/scratch/dja/linux-capi/drivers/misc/cxl/pci.c:712:6: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wparentheses]
-   if (reg & CXL_PSL_DSISR_TRANS)
-      ^
-/scratch/dja/linux-capi/drivers/misc/cxl/irq.c: In function ‘fail_psl_irq’:
-/scratch/dja/linux-capi/drivers/misc/cxl/irq.c:184:5: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wparentheses]
-  if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
-     ^
+On 07/30/2015 03:52 AM, Scott Wood wrote:
+> On Wed, 2015-07-29 at 16:07 +0530, Hemant Kumar wrote:
+>> Hi Scott,
+>>
+>> On 07/17/2015 01:40 AM, Scott Wood wrote:
+>>> On Thu, 2015-07-16 at 21:18 +0530, Hemant Kumar wrote:
+>>>> To analyze the exit events with perf, we need kvm_perf.h to be added in
+>>>> the arch/powerpc directory, where the kvm tracepoints needed to trace
+>>>> the KVM exit events are defined.
+>>>>
+>>>> This patch adds "kvm_perf_book3s.h" to indicate that the tracepoints are
+>>>> book3s specific. Generic "kvm_perf.h" then can just include
+>>>> "kvm_perf_book3s.h".
+>>>>
+>>>> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+>>>> ---
+>>>> Changes:
+>>>> - Not exporting the exit reasons compared to previous patchset
+>>>> (suggested
+>>>> by Paul)
+>>>>
+>>>>    arch/powerpc/include/uapi/asm/kvm_perf.h        |  6 ++++++
+>>>>    arch/powerpc/include/uapi/asm/kvm_perf_book3s.h | 14 ++++++++++++++
+>>>>    2 files changed, 20 insertions(+)
+>>>>    create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+>>>>    create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+>>>>
+>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h
+>>>> b/arch/powerpc/include/uapi/asm/kvm_perf.h
+>>>> new file mode 100644
+>>>> index 0000000..5ed2ff3
+>>>> --- /dev/null
+>>>> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+>>>> @@ -0,0 +1,6 @@
+>>>> +#ifndef _ASM_POWERPC_KVM_PERF_H
+>>>> +#define _ASM_POWERPC_KVM_PERF_H
+>>>> +
+>>>> +#include <asm/kvm_perf_book3s.h>
+>>>> +
+>>>> +#endif
+>>>> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+>>>> b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+>>>> new file mode 100644
+>>>> index 0000000..8c8d8c2
+>>>> --- /dev/null
+>>>> +++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
+>>>> @@ -0,0 +1,14 @@
+>>>> +#ifndef _ASM_POWERPC_KVM_PERF_BOOK3S_H
+>>>> +#define _ASM_POWERPC_KVM_PERF_BOOK3S_H
+>>>> +
+>>>> +#include <asm/kvm.h>
+>>>> +
+>>>> +#define DECODE_STR_LEN 20
+>>>> +
+>>>> +#define VCPU_ID "vcpu_id"
+>>>> +
+>>>> +#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
+>>>> +#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
+>>>> +#define KVM_EXIT_REASON "trap"
+>>>> +
+>>>> +#endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
+>>> Again, why is book3s stuff being presented via uapi as generic
+>>> <asm/kvm_perf.h> with generic symbol names?
+>>>
+>>> -Scott
+>> Ok.
+>>
+>> We can change the KVM_ENTRY_TRACE macro to something like
+>> KVM_BOOK3S_ENTRY_TRACE and likewise for KVM_EXIT_TRACE
+>> and KVM_EXIT_REASON
+> What about DECODE_STR_LEN and VCPU_ID?
 
-They're annoying. Fix them by inserting the braces.
+DECODE_STR_LEN can be common, we can give a big enough size to it, if
+we need to.
+And, VCPU_ID depends on the field in the tracepoint payload data which is
+specific to that tracepoint. This field is used to maintain the per vcpu 
+record
+and this field gives us the vcpu id. So, yeah, I guess, since, I can't 
+find any
+such field as "vcpu_id" in the kvm_exit tracepoint for book3e, we have to
+make this specific to book3s.
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- drivers/misc/cxl/irq.c | 5 +++--
- drivers/misc/cxl/pci.c | 5 +++--
- 2 files changed, 6 insertions(+), 4 deletions(-)
+>
+> Where is this API documented?
+>
+>>   and then, to resolve the issue of generic
+>> macro names in the userspace side, we can handle it using __weak
+>> modifier.
+> Does userspace get built differently for book3s versus book3e?  For now it'd
+>
+> be fine for userspace to check for book3s and not use the feature if it's
+>
+> book3e.  If and when book3e gains this feature, then userspace can be changed.
 
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index 121ec48f3ab4..c11e583a15a9 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -181,10 +181,11 @@ static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
- 
- static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
- {
--	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
-+	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS) {
- 		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
--	else
-+	} else {
- 		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
-+	}
- 
- 	return IRQ_HANDLED;
- }
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 6d2e538331b6..29c7e4eb309a 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -709,10 +709,11 @@ static int sanitise_afu_regs(struct cxl_afu *afu)
- 	reg = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
- 	if (reg) {
- 		dev_warn(&afu->dev, "AFU had pending DSISR: %#.16llx\n", reg);
--		if (reg & CXL_PSL_DSISR_TRANS)
-+		if (reg & CXL_PSL_DSISR_TRANS) {
- 			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
--		else
-+		} else {
- 			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
-+		}
- 	}
- 	reg = cxl_p1n_read(afu, CXL_PSL_SERR_An);
- 	if (reg) {
+Well, I couldn't find any way to build user space differently for book3s and
+book3e.
+
+How about keeping this as it is after modifying the tracepoint macro names
+to book3s specific in the uapi? And as and when booke decides to implement
+this feature, a runtime check for event availability can be added then, 
+IMHO.
+
+What do you think?
+
+>> What would you suggest?
+> Another option would be to explain this interface so that we can figure out
+> if book3e would even want different values for these, and if not, move it to
+> asm/kvm.h.
+
+Here is my understanding of the interface. We need to add handlers for
+"is_begin_event", "is_end_event" and "decode_key" for any event type
+(for which we want to collect the stats).
+The first two handlers check when the respective events started/ended
+and hence, the time difference stats, event start/end time etc. is 
+calculated
+in these functions. To check if the event has started or ended, they make
+use of the macros KVM_ENTRY_TRACE and KVM_EXIT_TRACE. These
+macros are exported from the kernel as uapi. Atleast, that's how x86 and
+s390 do it.
+"decode_key" hanlder is used to find out the reason for
+that event (in case of book3s, its "trap" field of kvm_hv:kvm_guest_exit
+payload) in semantic terms. It maps an info of interest found in that
+particular tracepoint's data to a name(string) through a
+table kvm_trace_symbol_exit. All the events are then classified into groups
+based on this info.
+
+So, for an exit event in case of book3s, kvm_hv:kvm_guest_exit has a "trap"
+field which tells us the reason for a thread to exit the guest context by
+encoding the trap code. We can map this trap code to the strings through
+kvm_trace_symbol_exit table and then classify all the exits into groups 
+based
+on this trap code.
+
 -- 
-2.1.4
+Thanks,
+Hemant Kumar
