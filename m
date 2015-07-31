@@ -2,13 +2,13 @@ Return-Path: <r.baldyga@samsung.com>
 Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 517C71A1DB6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:04:44 +1000 (AEST)
-Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65EBA1A1DC7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:04:51 +1000 (AEST)
+Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
  by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC030U0V3UBW60@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:04:42 +0900 (KST)
+ with ESMTP id <0NSC00B1DV415O40@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:04:49 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,10 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 28/46] usb: gadget: pxa27x_udc: add ep capabilities support
-Date: Fri, 31 Jul 2015 16:00:40 +0200
-Message-id: <1438351258-31578-29-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 29/46] usb: gadget: r8a66597-udc: add ep capabilities
+ support
+Date: Fri, 31 Jul 2015 16:00:41 +0200
+Message-id: <1438351258-31578-30-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,63 +40,29 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/pxa27x_udc.h | 40 +++++++++++++++++++++++--------------
- 1 file changed, 25 insertions(+), 15 deletions(-)
+ drivers/usb/gadget/udc/r8a66597-udc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/pxa27x_udc.h b/drivers/usb/gadget/udc/pxa27x_udc.h
-index 11e1423..cea2cb7 100644
---- a/drivers/usb/gadget/udc/pxa27x_udc.h
-+++ b/drivers/usb/gadget/udc/pxa27x_udc.h
-@@ -234,25 +234,35 @@
- /*
-  * Endpoint definition helpers
-  */
--#define USB_EP_DEF(addr, bname, dir, type, maxpkt) \
--{ .usb_ep = { .name = bname, .ops = &pxa_ep_ops, .maxpacket = maxpkt, }, \
-+#define USB_EP_DEF(addr, bname, dir, type, maxpkt, ctype, cdir) \
-+{ .usb_ep = {	.name = bname, .ops = &pxa_ep_ops, .maxpacket = maxpkt, \
-+		.caps = USB_EP_CAPS(ctype, cdir), }, \
-   .desc = {	.bEndpointAddress = addr | (dir ? USB_DIR_IN : 0), \
--		.bmAttributes = type, \
-+		.bmAttributes = USB_ENDPOINT_XFER_ ## type, \
- 		.wMaxPacketSize = maxpkt, }, \
-   .dev = &memory \
- }
--#define USB_EP_BULK(addr, bname, dir) \
--  USB_EP_DEF(addr, bname, dir, USB_ENDPOINT_XFER_BULK, BULK_FIFO_SIZE)
--#define USB_EP_ISO(addr, bname, dir) \
--  USB_EP_DEF(addr, bname, dir, USB_ENDPOINT_XFER_ISOC, ISO_FIFO_SIZE)
--#define USB_EP_INT(addr, bname, dir) \
--  USB_EP_DEF(addr, bname, dir, USB_ENDPOINT_XFER_INT, INT_FIFO_SIZE)
--#define USB_EP_IN_BULK(n)	USB_EP_BULK(n, "ep" #n "in-bulk", 1)
--#define USB_EP_OUT_BULK(n)	USB_EP_BULK(n, "ep" #n "out-bulk", 0)
--#define USB_EP_IN_ISO(n)	USB_EP_ISO(n,  "ep" #n "in-iso", 1)
--#define USB_EP_OUT_ISO(n)	USB_EP_ISO(n,  "ep" #n "out-iso", 0)
--#define USB_EP_IN_INT(n)	USB_EP_INT(n,  "ep" #n "in-int", 1)
--#define USB_EP_CTRL		USB_EP_DEF(0,  "ep0", 0, 0, EP0_FIFO_SIZE)
-+#define USB_EP_BULK(addr, bname, dir, cdir) \
-+	USB_EP_DEF(addr, bname, dir, BULK, BULK_FIFO_SIZE, \
-+		USB_EP_CAPS_TYPE_BULK, cdir)
-+#define USB_EP_ISO(addr, bname, dir, cdir) \
-+	USB_EP_DEF(addr, bname, dir, ISOC, ISO_FIFO_SIZE, \
-+		USB_EP_CAPS_TYPE_ISO, cdir)
-+#define USB_EP_INT(addr, bname, dir, cdir) \
-+	USB_EP_DEF(addr, bname, dir, INT, INT_FIFO_SIZE, \
-+		USB_EP_CAPS_TYPE_INT, cdir)
-+#define USB_EP_IN_BULK(n)	USB_EP_BULK(n, "ep" #n "in-bulk", 1, \
-+					USB_EP_CAPS_DIR_IN)
-+#define USB_EP_OUT_BULK(n)	USB_EP_BULK(n, "ep" #n "out-bulk", 0, \
-+					USB_EP_CAPS_DIR_OUT)
-+#define USB_EP_IN_ISO(n)	USB_EP_ISO(n,  "ep" #n "in-iso", 1, \
-+					USB_EP_CAPS_DIR_IN)
-+#define USB_EP_OUT_ISO(n)	USB_EP_ISO(n,  "ep" #n "out-iso", 0, \
-+					USB_EP_CAPS_DIR_OUT)
-+#define USB_EP_IN_INT(n)	USB_EP_INT(n,  "ep" #n "in-int", 1, \
-+					USB_EP_CAPS_DIR_IN)
-+#define USB_EP_CTRL	USB_EP_DEF(0,  "ep0", 0, CONTROL, EP0_FIFO_SIZE, \
-+				USB_EP_CAPS_TYPE_CONTROL, USB_EP_CAPS_DIR_ALL)
- 
- #define PXA_EP_DEF(_idx, _addr, dir, _type, maxpkt, _config, iface, altset) \
- { \
+diff --git a/drivers/usb/gadget/udc/r8a66597-udc.c b/drivers/usb/gadget/udc/r8a66597-udc.c
+index 0293f71..baa0609 100644
+--- a/drivers/usb/gadget/udc/r8a66597-udc.c
++++ b/drivers/usb/gadget/udc/r8a66597-udc.c
+@@ -1935,6 +1935,16 @@ static int r8a66597_probe(struct platform_device *pdev)
+ 		ep->ep.name = r8a66597_ep_name[i];
+ 		ep->ep.ops = &r8a66597_ep_ops;
+ 		usb_ep_set_maxpacket_limit(&ep->ep, 512);
++
++		if (i == 0) {
++			ep->ep.caps.type_control = true;
++		} else {
++			ep->ep.caps.type_iso = true;
++			ep->ep.caps.type_bulk = true;
++			ep->ep.caps.type_int = true;
++		}
++		ep->ep.caps.dir_in = true;
++		ep->ep.caps.dir_out = true;
+ 	}
+ 	usb_ep_set_maxpacket_limit(&r8a66597->ep[0].ep, 64);
+ 	r8a66597->ep[0].pipenum = 0;
 -- 
 1.9.1
