@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 02C0D1A1D1D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:02:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 942A31A1BDA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:02:40 +1000 (AEST)
 Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout3.samsung.com
+ by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC02TNKUZL6SA0@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:02:30 +0900 (KST)
+ with ESMTP id <0NSC00JQHV0DU520@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:02:37 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 10/46] usb: gadget: bcm63xx_udc: add ep capabilities support
-Date: Fri, 31 Jul 2015 16:00:22 +0200
-Message-id: <1438351258-31578-11-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 11/46] usb: gadget: bdc: add ep capabilities support
+Date: Fri, 31 Jul 2015 16:00:23 +0200
+Message-id: <1438351258-31578-12-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,55 +39,41 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/bcm63xx_udc.c | 29 +++++++++++++++++++++++++----
- 1 file changed, 25 insertions(+), 4 deletions(-)
+ drivers/usb/gadget/udc/bdc/bdc_ep.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/bcm63xx_udc.c b/drivers/usb/gadget/udc/bcm63xx_udc.c
-index 9db968b..8cbb003 100644
---- a/drivers/usb/gadget/udc/bcm63xx_udc.c
-+++ b/drivers/usb/gadget/udc/bcm63xx_udc.c
-@@ -44,9 +44,29 @@
- #define DRV_MODULE_NAME		"bcm63xx_udc"
+diff --git a/drivers/usb/gadget/udc/bdc/bdc_ep.c b/drivers/usb/gadget/udc/bdc/bdc_ep.c
+index b04980c..f9a8f57 100644
+--- a/drivers/usb/gadget/udc/bdc/bdc_ep.c
++++ b/drivers/usb/gadget/udc/bdc/bdc_ep.c
+@@ -1952,12 +1952,18 @@ static int init_ep(struct bdc *bdc, u32 epnum, u32 dir)
+ 	ep->bdc = bdc;
+ 	ep->dir = dir;
  
- static const char bcm63xx_ep0name[] = "ep0";
--static const char *const bcm63xx_ep_name[] = {
--	bcm63xx_ep0name,
--	"ep1in-bulk", "ep2out-bulk", "ep3in-int", "ep4out-int",
++	if (dir)
++		ep->usb_ep.caps.dir_in = true;
++	else
++		ep->usb_ep.caps.dir_out = true;
 +
-+static const struct {
-+	const char *name;
-+	const struct usb_ep_caps caps;
-+} bcm63xx_ep_info[] = {
-+#define EP_INFO(_name, _caps) \
-+	{ \
-+		.name = _name, \
-+		.caps = _caps, \
-+	}
-+
-+	EP_INFO(bcm63xx_ep0name,
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_CONTROL, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep1in-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_IN)),
-+	EP_INFO("ep2out-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_OUT)),
-+	EP_INFO("ep3in-int",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_INT, USB_EP_CAPS_DIR_IN)),
-+	EP_INFO("ep4out-int",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_INT, USB_EP_CAPS_DIR_OUT)),
-+
-+#undef EP_INFO
- };
+ 	/* ep->ep_num is the index inside bdc_ep */
+ 	if (epnum == 1) {
+ 		ep->ep_num = 1;
+ 		bdc->bdc_ep_array[ep->ep_num] = ep;
+ 		snprintf(ep->name, sizeof(ep->name), "ep%d", epnum - 1);
+ 		usb_ep_set_maxpacket_limit(&ep->usb_ep, EP0_MAX_PKT_SIZE);
++		ep->usb_ep.caps.type_control = true;
+ 		ep->comp_desc = NULL;
+ 		bdc->gadget.ep0 = &ep->usb_ep;
+ 	} else {
+@@ -1971,6 +1977,9 @@ static int init_ep(struct bdc *bdc, u32 epnum, u32 dir)
+ 			 dir & 1 ? "in" : "out");
  
- static bool use_fullspeed;
-@@ -943,7 +963,8 @@ static int bcm63xx_init_udc_hw(struct bcm63xx_udc *udc)
- 	for (i = 0; i < BCM63XX_NUM_EP; i++) {
- 		struct bcm63xx_ep *bep = &udc->bep[i];
- 
--		bep->ep.name = bcm63xx_ep_name[i];
-+		bep->ep.name = bcm63xx_ep_info[i].name;
-+		bep->ep.caps = bcm63xx_ep_info[i].caps;
- 		bep->ep_num = i;
- 		bep->ep.ops = &bcm63xx_udc_ep_ops;
- 		list_add_tail(&bep->ep.ep_list, &udc->gadget.ep_list);
+ 		usb_ep_set_maxpacket_limit(&ep->usb_ep, 1024);
++		ep->usb_ep.caps.type_iso = true;
++		ep->usb_ep.caps.type_bulk = true;
++		ep->usb_ep.caps.type_int = true;
+ 		ep->usb_ep.max_streams = 0;
+ 		list_add_tail(&ep->usb_ep.ep_list, &bdc->gadget.ep_list);
+ 	}
 -- 
 1.9.1
