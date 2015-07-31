@@ -1,21 +1,45 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0132.outbound.protection.outlook.com [157.56.110.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B0AC1A1D2E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 10:37:29 +1000 (AEST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: Schmitt Richard-B43082 <richard.schmitt@freescale.com>, Pan Lijun-B44306
- <Lijun.Pan@freescale.com>, Scott Wood <scottwood@freescale.com>
-Subject: [PATCH 2/2] powerpc/85xx: Use kconfig fragments
-Date: Thu, 30 Jul 2015 19:36:34 -0500
-Message-ID: <1438302994-19080-3-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1438302994-19080-1-git-send-email-scottwood@freescale.com>
-References: <1438302994-19080-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7EECC1A18E0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 12:02:00 +1000 (AEST)
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D2FD0140295
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 12:01:59 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 31 Jul 2015 07:31:57 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id AF2D2E005E
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 07:36:02 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t6V21qaq48889980
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 07:31:52 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t6V21oA4010521
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 07:31:50 +0530
+Date: Fri, 31 Jul 2015 10:01:49 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv: use one M64 BAR in Single PE mode for
+ one VF BAR
+Message-ID: <20150731020148.GA6151@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1438154528-19608-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150730011501.GA23215@gwshan> <20150730054359.GA21161@richard>
+ <20150731001326.GA3699@gwshan>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150731001326.GA3699@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,1554 +49,419 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unify mpc85xx and corenet configs using fragments, to ease maintenance
-and avoid the sort of drift that the previous patch fixed.
+On Fri, Jul 31, 2015 at 10:13:26AM +1000, Gavin Shan wrote:
+>On Thu, Jul 30, 2015 at 01:43:59PM +0800, Wei Yang wrote:
+>>On Thu, Jul 30, 2015 at 11:15:01AM +1000, Gavin Shan wrote:
+>>>On Wed, Jul 29, 2015 at 03:22:07PM +0800, Wei Yang wrote:
+>>>>In current implementation, when VF BAR is bigger than 64MB, it uses 4 M64
+>>>>BAR in Single PE mode to cover the number of VFs required to be enabled.
+>>>>By doing so, several VFs would be in one VF Group and leads to interference
+>>>>between VFs in the same group.
+>>>>
+>>>>This patch changes the design by using one M64 BAR in Single PE mode for
+>>>>one VF BAR. This gives absolute isolation for VFs.
+>>>>
+>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>---
+>>>> arch/powerpc/include/asm/pci-bridge.h     |    5 +-
+>>>> arch/powerpc/platforms/powernv/pci-ioda.c |  104 +++++------------------------
+>>>> 2 files changed, 18 insertions(+), 91 deletions(-)
+>>>>
+>>>
+>>>questions regarding this:
+>>>
+>>>(1) When M64 BAR is running in single-PE-mode for VFs, the alignment for one
+>>>    particular IOV BAR still have to be (IOV_BAR_size * max_vf_number), or
+>>>    M64 segment size of last BAR (0x10000000) is fine? If the later one is fine,
+>>>    more M64 space would be saved. On the other hand, if the IOV BAR size
+>>>    (for all VFs) is less than 256MB, will the allocated resource conflict
+>>>    with the M64 segments in last BAR?
+>>
+>>Not need to be IOV BAR size aligned, be individual VF BAR size aligned is fine.
+>>
+>>IOV BAR size = VF BAR size * expended_num_vfs
+>>
+>
+>The (15th) last PHB's M64 BAR is divided into 256 segments and the size for
+>each of them is 256MB. Lets have an example: PF has one M64 BAR (128MB) and it
+>supports 8 VFs. The VF BAR size is 128MB and the IOV BAR size is (128MB * 8).
+>If we take the VF BAR size (128MB) as the alignment, the MMIO might be assigned
+>to have following layout. PF and VF will be put into different PE#. So I think
+>the correct alignment would be max{VF_bar_size, M64_segment_size}, or I missed
+>something?
+>
+>   +---------------+----------------------------+
+>   |  PF's M64 BAR |     VF BARs                |
+>   +---------------+----------------------------+
+>   0               128MB                     (128MB *9)
+>
 
-Hardware and software options are separated, with the hope that other
-embedded platforms could share the software options, and to make it
-easier to maintain custom/alternate configs that focus on either
-hardware or software options.
+Ok, got your point. So the layout should be
 
-Due to the previous patch, this patch should not affect the results of
-any of the affected defconfigs -- only how those results are achieved.
-The resulting config is more or less the union of the options that any
-of the configs previously selected.  No attempt was made in this (or
-the previous) patch to edit out questionable options, but this patch
-will make it easier to do so in future patches.
+   +----------------------------+---------------+
+   |     VF BARs                |  PF's M64 BAR |
+   +----------------------------+---------------+
+   0MB                         (128MB * 8)
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/Makefile                        |  20 ++
- arch/powerpc/configs/85xx-32bit.config       |   5 +
- arch/powerpc/configs/85xx-64bit.config       |   4 +
- arch/powerpc/configs/85xx-hw.config          | 140 +++++++++++++
- arch/powerpc/configs/85xx-smp.config         |   2 +
- arch/powerpc/configs/altivec.config          |   1 +
- arch/powerpc/configs/corenet32_smp_defconfig | 264 ------------------------
- arch/powerpc/configs/corenet64_smp_defconfig | 259 ------------------------
- arch/powerpc/configs/corenet_basic_defconfig |   1 +
- arch/powerpc/configs/fsl-emb-nonhw.config    | 126 ++++++++++++
- arch/powerpc/configs/mpc85xx_basic_defconfig |  23 +++
- arch/powerpc/configs/mpc85xx_defconfig       | 288 --------------------------
- arch/powerpc/configs/mpc85xx_smp_defconfig   | 289 ---------------------------
- 13 files changed, 322 insertions(+), 1100 deletions(-)
- create mode 100644 arch/powerpc/configs/85xx-32bit.config
- create mode 100644 arch/powerpc/configs/85xx-64bit.config
- create mode 100644 arch/powerpc/configs/85xx-hw.config
- create mode 100644 arch/powerpc/configs/85xx-smp.config
- create mode 100644 arch/powerpc/configs/altivec.config
- delete mode 100644 arch/powerpc/configs/corenet32_smp_defconfig
- delete mode 100644 arch/powerpc/configs/corenet64_smp_defconfig
- create mode 100644 arch/powerpc/configs/corenet_basic_defconfig
- create mode 100644 arch/powerpc/configs/fsl-emb-nonhw.config
- create mode 100644 arch/powerpc/configs/mpc85xx_basic_defconfig
- delete mode 100644 arch/powerpc/configs/mpc85xx_defconfig
- delete mode 100644 arch/powerpc/configs/mpc85xx_smp_defconfig
+>>>(2) When M64 BAR is in single-PE-mode, the PE numbers allocated for VFs need
+>>>    continuous or not.
+>>
+>>No, not need.
+>>
+>
+>Ok. If you like, you can improve it to have discrete PE numbers when the PHB's
+>M64 BARs for VFs runs in single-mode in separate patch.
+>
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 05f464e..4ca54fd 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -288,6 +288,26 @@ PHONY += pseries_le_defconfig
- pseries_le_defconfig:
- 	$(call merge_into_defconfig,pseries_defconfig,le)
- 
-+PHONY += mpc85xx_defconfig
-+mpc85xx_defconfig:
-+	$(call merge_into_defconfig,mpc85xx_basic_defconfig,\
-+		85xx-32bit 85xx-hw fsl-emb-nonhw)
-+
-+PHONY += mpc85xx_smp_defconfig
-+mpc85xx_smp_defconfig:
-+	$(call merge_into_defconfig,mpc85xx_basic_defconfig,\
-+		85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw)
-+
-+PHONY += corenet32_smp_defconfig
-+corenet32_smp_defconfig:
-+	$(call merge_into_defconfig,corenet_basic_defconfig,\
-+		85xx-32bit 85xx-smp 85xx-hw fsl-emb-nonhw)
-+
-+PHONY += corenet64_smp_defconfig
-+corenet64_smp_defconfig:
-+	$(call merge_into_defconfig,corenet_basic_defconfig,\
-+		85xx-64bit 85xx-smp altivec 85xx-hw fsl-emb-nonhw)
-+
- define archhelp
-   @echo '* zImage          - Build default images selected by kernel config'
-   @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-diff --git a/arch/powerpc/configs/85xx-32bit.config b/arch/powerpc/configs/85xx-32bit.config
-new file mode 100644
-index 0000000..6b8894d
---- /dev/null
-+++ b/arch/powerpc/configs/85xx-32bit.config
-@@ -0,0 +1,5 @@
-+CONFIG_HIGHMEM=y
-+CONFIG_KEXEC=y
-+CONFIG_PPC_85xx=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PHYS_64BIT=y
-diff --git a/arch/powerpc/configs/85xx-64bit.config b/arch/powerpc/configs/85xx-64bit.config
-new file mode 100644
-index 0000000..4aba812
---- /dev/null
-+++ b/arch/powerpc/configs/85xx-64bit.config
-@@ -0,0 +1,4 @@
-+CONFIG_MATH_EMULATION=y
-+CONFIG_MATH_EMULATION_HW_UNIMPLEMENTED=y
-+CONFIG_PPC64=y
-+CONFIG_PPC_BOOK3E_64=y
-diff --git a/arch/powerpc/configs/85xx-hw.config b/arch/powerpc/configs/85xx-hw.config
-new file mode 100644
-index 0000000..fa84e88
---- /dev/null
-+++ b/arch/powerpc/configs/85xx-hw.config
-@@ -0,0 +1,140 @@
-+CONFIG_AT803X_PHY=y
-+CONFIG_ATA=y
-+CONFIG_BLK_DEV_SD=y
-+CONFIG_BLK_DEV_SR_VENDOR=y
-+CONFIG_BLK_DEV_SR=y
-+CONFIG_BROADCOM_PHY=y
-+CONFIG_C293_PCIE=y
-+CONFIG_CHR_DEV_SG=y
-+CONFIG_CHR_DEV_ST=y
-+CONFIG_CICADA_PHY=y
-+CONFIG_CLK_QORIQ=y
-+CONFIG_CRYPTO_DEV_FSL_CAAM=y
-+CONFIG_CRYPTO_DEV_TALITOS=y
-+CONFIG_DAVICOM_PHY=y
-+CONFIG_DMADEVICES=y
-+CONFIG_E1000E=y
-+CONFIG_E1000=y
-+CONFIG_EDAC_MM_EDAC=y
-+CONFIG_EDAC_MPC85XX=y
-+CONFIG_EDAC=y
-+CONFIG_EEPROM_AT24=y
-+CONFIG_EEPROM_LEGACY=y
-+CONFIG_FB_FSL_DIU=y
-+CONFIG_FS_ENET=y
-+CONFIG_FSL_CORENET_CF=y
-+CONFIG_FSL_DMA=y
-+CONFIG_FSL_HV_MANAGER=y
-+CONFIG_FSL_PQ_MDIO=y
-+CONFIG_FSL_RIO=y
-+CONFIG_FSL_XGMAC_MDIO=y
-+CONFIG_GIANFAR=y
-+CONFIG_GPIO_MPC8XXX=y
-+CONFIG_HID_A4TECH=y
-+CONFIG_HID_APPLE=y
-+CONFIG_HID_BELKIN=y
-+CONFIG_HID_CHERRY=y
-+CONFIG_HID_CHICONY=y
-+CONFIG_HID_CYPRESS=y
-+CONFIG_HID_EZKEY=y
-+CONFIG_HID_GYRATION=y
-+CONFIG_HID_LOGITECH=y
-+CONFIG_HID_MICROSOFT=y
-+CONFIG_HID_MONTEREY=y
-+CONFIG_HID_PANTHERLORD=y
-+CONFIG_HID_PETALYNX=y
-+CONFIG_HID_SAMSUNG=y
-+CONFIG_HID_SUNPLUS=y
-+CONFIG_I2C_CHARDEV=y
-+CONFIG_I2C_CPM=m
-+CONFIG_I2C_MPC=y
-+CONFIG_I2C_MUX_PCA954x=y
-+CONFIG_I2C_MUX=y
-+CONFIG_I2C=y
-+CONFIG_IGB=y
-+CONFIG_INPUT_FF_MEMLESS=m
-+# CONFIG_INPUT_KEYBOARD is not set
-+# CONFIG_INPUT_MOUSEDEV is not set
-+# CONFIG_INPUT_MOUSE is not set
-+CONFIG_MARVELL_PHY=y
-+CONFIG_MDIO_BUS_MUX_GPIO=y
-+CONFIG_MDIO_BUS_MUX_MMIOREG=y
-+CONFIG_MMC_SDHCI_OF_ESDHC=y
-+CONFIG_MMC_SDHCI_PLTFM=y
-+CONFIG_MMC_SDHCI=y
-+CONFIG_MMC=y
-+CONFIG_MTD_BLOCK=y
-+CONFIG_MTD_CFI_AMDSTD=y
-+CONFIG_MTD_CFI_INTELEXT=y
-+CONFIG_MTD_CFI=y
-+CONFIG_MTD_CMDLINE_PARTS=y
-+CONFIG_MTD_M25P80=y
-+CONFIG_MTD_NAND_FSL_ELBC=y
-+CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_NAND=y
-+CONFIG_MTD_PHYSMAP_OF=y
-+CONFIG_MTD_PHYSMAP=y
-+CONFIG_MTD_PLATRAM=y
-+CONFIG_MTD_SPI_NOR=y
-+CONFIG_NETDEVICES=y
-+CONFIG_NVRAM=y
-+CONFIG_PATA_ALI=y
-+CONFIG_PATA_SIL680=y
-+CONFIG_PATA_VIA=y
-+# CONFIG_PCIEASPM is not set
-+CONFIG_PCIEPORTBUS=y
-+CONFIG_PCI_MSI=y
-+CONFIG_PCI=y
-+CONFIG_PPC_EPAPR_HV_BYTECHAN=y
-+# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
-+CONFIG_QE_GPIO=y
-+CONFIG_QUICC_ENGINE=y
-+CONFIG_RAPIDIO=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_CMOS=y
-+CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_DS1374=y
-+CONFIG_RTC_DRV_DS3232=y
-+CONFIG_SATA_AHCI=y
-+CONFIG_SATA_FSL=y
-+CONFIG_SATA_SIL24=y
-+CONFIG_SATA_SIL=y
-+CONFIG_SCSI_LOGGING=y
-+CONFIG_SCSI_SYM53C8XX_2=y
-+CONFIG_SENSORS_INA2XX=y
-+CONFIG_SENSORS_LM90=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_SERIAL_8250_DETECT_IRQ=y
-+CONFIG_SERIAL_8250_MANY_PORTS=y
-+CONFIG_SERIAL_8250_NR_UARTS=6
-+CONFIG_SERIAL_8250_RSA=y
-+CONFIG_SERIAL_8250_RUNTIME_UARTS=6
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_QE=m
-+CONFIG_SERIO_LIBPS2=y
-+# CONFIG_SND_DRIVERS is not set
-+CONFIG_SND_INTEL8X0=y
-+CONFIG_SND_POWERPC_SOC=y
-+# CONFIG_SND_PPC is not set
-+CONFIG_SND_SOC=y
-+# CONFIG_SND_SUPPORT_OLD_API is not set
-+# CONFIG_SND_USB is not set
-+CONFIG_SND=y
-+CONFIG_SOUND=y
-+CONFIG_SPI_FSL_ESPI=y
-+CONFIG_SPI_FSL_SPI=y
-+CONFIG_SPI_GPIO=y
-+CONFIG_SPI=y
-+CONFIG_UCC_GETH=y
-+CONFIG_USB_EHCI_FSL=y
-+CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_HID=m
-+CONFIG_USB_MON=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
-+CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
-+CONFIG_USB_OHCI_HCD=y
-+CONFIG_USB_STORAGE=y
-+CONFIG_USB=y
-+# CONFIG_VGA_CONSOLE is not set
-+CONFIG_VIRT_DRIVERS=y
-+CONFIG_VITESSE_PHY=y
-diff --git a/arch/powerpc/configs/85xx-smp.config b/arch/powerpc/configs/85xx-smp.config
-new file mode 100644
-index 0000000..3b4d1e5
---- /dev/null
-+++ b/arch/powerpc/configs/85xx-smp.config
-@@ -0,0 +1,2 @@
-+CONFIG_NR_CPUS=24
-+CONFIG_SMP=y
-diff --git a/arch/powerpc/configs/altivec.config b/arch/powerpc/configs/altivec.config
-new file mode 100644
-index 0000000..58a697c
---- /dev/null
-+++ b/arch/powerpc/configs/altivec.config
-@@ -0,0 +1 @@
-+CONFIG_ALTIVEC=y
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-deleted file mode 100644
-index c05f8b7..0000000
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ /dev/null
-@@ -1,264 +0,0 @@
--CONFIG_PPC_85xx=y
--CONFIG_SMP=y
--CONFIG_NR_CPUS=24
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_FHANDLE=y
--CONFIG_AUDIT=y
--CONFIG_IRQ_DOMAIN_DEBUG=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
--CONFIG_BSD_PROCESS_ACCT=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_CGROUPS=y
--CONFIG_CPUSETS=y
--CONFIG_CGROUP_CPUACCT=y
--CONFIG_CGROUP_SCHED=y
--CONFIG_BLK_DEV_INITRD=y
--CONFIG_EXPERT=y
--CONFIG_KALLSYMS_ALL=y
--CONFIG_PERF_EVENTS=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--# CONFIG_BLK_DEV_BSG is not set
--CONFIG_PARTITION_ADVANCED=y
--CONFIG_MAC_PARTITION=y
--CONFIG_C293_PCIE=y
--CONFIG_CORENET_GENERIC=y
--CONFIG_QUICC_ENGINE=y
--CONFIG_QE_GPIO=y
--CONFIG_HIGHMEM=y
--# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
--CONFIG_BINFMT_MISC=m
--CONFIG_KEXEC=y
--CONFIG_FORCE_MAX_ZONEORDER=13
--CONFIG_PCI=y
--CONFIG_PCIEPORTBUS=y
--# CONFIG_PCIEASPM is not set
--CONFIG_PCI_MSI=y
--CONFIG_RAPIDIO=y
--CONFIG_FSL_RIO=y
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_XFRM_USER=y
--CONFIG_XFRM_SUB_POLICY=y
--CONFIG_XFRM_STATISTICS=y
--CONFIG_NET_KEY=y
--CONFIG_NET_KEY_MIGRATE=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_ADVANCED_ROUTER=y
--CONFIG_IP_MULTIPLE_TABLES=y
--CONFIG_IP_ROUTE_MULTIPATH=y
--CONFIG_IP_ROUTE_VERBOSE=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_IP_PNP_RARP=y
--CONFIG_NET_IPIP=y
--CONFIG_IP_MROUTE=y
--CONFIG_IP_PIMSM_V1=y
--CONFIG_IP_PIMSM_V2=y
--CONFIG_INET_AH=y
--CONFIG_INET_ESP=y
--CONFIG_INET_IPCOMP=y
--# CONFIG_INET_XFRM_MODE_BEET is not set
--# CONFIG_INET_LRO is not set
--CONFIG_IPV6=y
--CONFIG_IP_SCTP=m
--CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
--CONFIG_DEVTMPFS=y
--CONFIG_DEVTMPFS_MOUNT=y
--CONFIG_MTD=y
--CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_BLOCK=y
--CONFIG_FTL=y
--CONFIG_MTD_CFI=y
--CONFIG_MTD_CFI_INTELEXT=y
--CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_PHYSMAP=y
--CONFIG_MTD_PHYSMAP_OF=y
--CONFIG_MTD_PLATRAM=y
--CONFIG_MTD_M25P80=y
--CONFIG_MTD_NAND=y
--CONFIG_MTD_NAND_FSL_ELBC=y
--CONFIG_MTD_NAND_FSL_IFC=y
--CONFIG_MTD_SPI_NOR=y
--CONFIG_MTD_UBI=y
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_NBD=y
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=131072
--CONFIG_EEPROM_AT24=y
--CONFIG_EEPROM_LEGACY=y
--CONFIG_BLK_DEV_SD=y
--CONFIG_CHR_DEV_ST=y
--CONFIG_BLK_DEV_SR=y
--CONFIG_BLK_DEV_SR_VENDOR=y
--CONFIG_CHR_DEV_SG=y
--CONFIG_SCSI_LOGGING=y
--CONFIG_SCSI_SYM53C8XX_2=y
--CONFIG_ATA=y
--CONFIG_SATA_AHCI=y
--CONFIG_SATA_FSL=y
--CONFIG_SATA_SIL24=y
--CONFIG_SATA_SIL=y
--CONFIG_PATA_ALI=y
--CONFIG_PATA_SIL680=y
--CONFIG_PATA_VIA=y
--CONFIG_NETDEVICES=y
--CONFIG_DUMMY=y
--CONFIG_FSL_XGMAC_MDIO=y
--CONFIG_UCC_GETH=y
--CONFIG_GIANFAR=y
--CONFIG_E1000=y
--CONFIG_E1000E=y
--CONFIG_IGB=y
--CONFIG_AT803X_PHY=y
--CONFIG_MARVELL_PHY=y
--CONFIG_DAVICOM_PHY=y
--CONFIG_CICADA_PHY=y
--CONFIG_VITESSE_PHY=y
--CONFIG_BROADCOM_PHY=y
--CONFIG_FIXED_PHY=y
--CONFIG_MDIO_BUS_MUX_GPIO=y
--CONFIG_MDIO_BUS_MUX_MMIOREG=y
--CONFIG_INPUT_FF_MEMLESS=m
--# CONFIG_INPUT_MOUSEDEV is not set
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--CONFIG_SERIO_LIBPS2=y
--# CONFIG_LEGACY_PTYS is not set
--CONFIG_PPC_EPAPR_HV_BYTECHAN=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=6
--CONFIG_SERIAL_8250_RUNTIME_UARTS=6
--CONFIG_SERIAL_8250_MANY_PORTS=y
--CONFIG_SERIAL_8250_DETECT_IRQ=y
--CONFIG_SERIAL_8250_RSA=y
--CONFIG_SERIAL_QE=m
--CONFIG_NVRAM=y
--CONFIG_I2C_CHARDEV=y
--CONFIG_I2C_MUX=y
--CONFIG_I2C_MUX_PCA954x=y
--CONFIG_I2C_MPC=y
--CONFIG_SPI=y
--CONFIG_SPI_GPIO=y
--CONFIG_SPI_FSL_SPI=y
--CONFIG_SPI_FSL_ESPI=y
--CONFIG_SENSORS_LM90=y
--CONFIG_SENSORS_INA2XX=y
--CONFIG_FB=y
--CONFIG_FB_FSL_DIU=y
--# CONFIG_VGA_CONSOLE is not set
--CONFIG_FRAMEBUFFER_CONSOLE=y
--CONFIG_SOUND=y
--CONFIG_SND=y
--# CONFIG_SND_SUPPORT_OLD_API is not set
--# CONFIG_SND_DRIVERS is not set
--CONFIG_SND_INTEL8X0=y
--# CONFIG_SND_PPC is not set
--# CONFIG_SND_USB is not set
--CONFIG_SND_SOC=y
--CONFIG_SND_POWERPC_SOC=y
--CONFIG_HID_A4TECH=y
--CONFIG_HID_APPLE=y
--CONFIG_HID_BELKIN=y
--CONFIG_HID_CHERRY=y
--CONFIG_HID_CHICONY=y
--CONFIG_HID_CYPRESS=y
--CONFIG_HID_EZKEY=y
--CONFIG_HID_GYRATION=y
--CONFIG_HID_LOGITECH=y
--CONFIG_HID_MICROSOFT=y
--CONFIG_HID_MONTEREY=y
--CONFIG_HID_PANTHERLORD=y
--CONFIG_HID_PETALYNX=y
--CONFIG_HID_SAMSUNG=y
--CONFIG_HID_SUNPLUS=y
--CONFIG_USB_HID=m
--CONFIG_USB=y
--CONFIG_USB_MON=y
--CONFIG_USB_EHCI_HCD=y
--CONFIG_USB_EHCI_FSL=y
--CONFIG_USB_OHCI_HCD=y
--CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
--CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
--CONFIG_USB_STORAGE=y
--CONFIG_MMC=y
--CONFIG_MMC_SDHCI=y
--CONFIG_MMC_SDHCI_PLTFM=y
--CONFIG_MMC_SDHCI_OF_ESDHC=y
--CONFIG_EDAC=y
--CONFIG_EDAC_MM_EDAC=y
--CONFIG_EDAC_MPC85XX=y
--CONFIG_RTC_CLASS=y
--CONFIG_RTC_DRV_DS1307=y
--CONFIG_RTC_DRV_DS1374=y
--CONFIG_RTC_DRV_DS3232=y
--CONFIG_RTC_DRV_CMOS=y
--CONFIG_DMADEVICES=y
--CONFIG_FSL_DMA=y
--CONFIG_UIO=y
--CONFIG_VIRT_DRIVERS=y
--CONFIG_FSL_HV_MANAGER=y
--CONFIG_CLK_QORIQ=y
--CONFIG_FSL_CORENET_CF=y
--CONFIG_EXT2_FS=y
--CONFIG_EXT3_FS=y
--# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--CONFIG_ISO9660_FS=m
--CONFIG_JOLIET=y
--CONFIG_ZISOFS=y
--CONFIG_UDF_FS=m
--CONFIG_MSDOS_FS=m
--CONFIG_VFAT_FS=y
--CONFIG_NTFS_FS=y
--CONFIG_PROC_KCORE=y
--CONFIG_TMPFS=y
--CONFIG_HUGETLBFS=y
--CONFIG_ADFS_FS=m
--CONFIG_AFFS_FS=m
--CONFIG_HFS_FS=m
--CONFIG_HFSPLUS_FS=m
--CONFIG_BEFS_FS=m
--CONFIG_BFS_FS=m
--CONFIG_EFS_FS=m
--CONFIG_JFFS2_FS=y
--CONFIG_JFFS2_FS_DEBUG=1
--CONFIG_UBIFS_FS=y
--CONFIG_CRAMFS=y
--CONFIG_VXFS_FS=m
--CONFIG_HPFS_FS=m
--CONFIG_QNX4FS_FS=m
--CONFIG_SYSV_FS=m
--CONFIG_UFS_FS=m
--CONFIG_NFS_FS=y
--CONFIG_NFS_V4=y
--CONFIG_ROOT_NFS=y
--CONFIG_NFSD=y
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_CODEPAGE_850=y
--CONFIG_NLS_ISO8859_1=y
--CONFIG_CRC_T10DIF=y
--CONFIG_FONTS=y
--CONFIG_FONT_8x8=y
--CONFIG_FONT_8x16=y
--CONFIG_DEBUG_INFO=y
--CONFIG_MAGIC_SYSRQ=y
--CONFIG_DEBUG_SHIRQ=y
--CONFIG_DETECT_HUNG_TASK=y
--CONFIG_RCU_TRACE=y
--CONFIG_CRYPTO_NULL=y
--CONFIG_CRYPTO_PCBC=m
--CONFIG_CRYPTO_MD4=y
--CONFIG_CRYPTO_SHA256=y
--CONFIG_CRYPTO_SHA512=y
--CONFIG_CRYPTO_DEV_FSL_CAAM=y
--CONFIG_CRYPTO_DEV_TALITOS=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-deleted file mode 100644
-index b35ee9c..0000000
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ /dev/null
-@@ -1,259 +0,0 @@
--CONFIG_PPC64=y
--CONFIG_PPC_BOOK3E_64=y
--CONFIG_ALTIVEC=y
--CONFIG_SMP=y
--CONFIG_NR_CPUS=24
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_FHANDLE=y
--CONFIG_AUDIT=y
--CONFIG_IRQ_DOMAIN_DEBUG=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
--CONFIG_BSD_PROCESS_ACCT=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_CGROUPS=y
--CONFIG_CPUSETS=y
--CONFIG_CGROUP_CPUACCT=y
--CONFIG_CGROUP_SCHED=y
--CONFIG_BLK_DEV_INITRD=y
--CONFIG_EXPERT=y
--CONFIG_KALLSYMS_ALL=y
--CONFIG_PERF_EVENTS=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--# CONFIG_BLK_DEV_BSG is not set
--CONFIG_PARTITION_ADVANCED=y
--CONFIG_MAC_PARTITION=y
--CONFIG_CORENET_GENERIC=y
--# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
--# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
--CONFIG_BINFMT_MISC=m
--CONFIG_MATH_EMULATION=y
--CONFIG_MATH_EMULATION_HW_UNIMPLEMENTED=y
--CONFIG_PCIEPORTBUS=y
--# CONFIG_PCIEASPM is not set
--CONFIG_PCI_MSI=y
--CONFIG_RAPIDIO=y
--CONFIG_FSL_RIO=y
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_XFRM_USER=y
--CONFIG_XFRM_SUB_POLICY=y
--CONFIG_XFRM_STATISTICS=y
--CONFIG_NET_KEY=y
--CONFIG_NET_KEY_MIGRATE=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_ADVANCED_ROUTER=y
--CONFIG_IP_MULTIPLE_TABLES=y
--CONFIG_IP_ROUTE_MULTIPATH=y
--CONFIG_IP_ROUTE_VERBOSE=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_IP_PNP_RARP=y
--CONFIG_NET_IPIP=y
--CONFIG_IP_MROUTE=y
--CONFIG_IP_PIMSM_V1=y
--CONFIG_IP_PIMSM_V2=y
--CONFIG_INET_AH=y
--CONFIG_INET_ESP=y
--CONFIG_INET_IPCOMP=y
--# CONFIG_INET_XFRM_MODE_BEET is not set
--# CONFIG_INET_LRO is not set
--CONFIG_IPV6=y
--CONFIG_IP_SCTP=m
--CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
--CONFIG_DEVTMPFS=y
--CONFIG_DEVTMPFS_MOUNT=y
--CONFIG_MTD=y
--CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_BLOCK=y
--CONFIG_FTL=y
--CONFIG_MTD_CFI=y
--CONFIG_MTD_CFI_INTELEXT=y
--CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_PHYSMAP=y
--CONFIG_MTD_PHYSMAP_OF=y
--CONFIG_MTD_PLATRAM=y
--CONFIG_MTD_M25P80=y
--CONFIG_MTD_NAND=y
--CONFIG_MTD_NAND_FSL_ELBC=y
--CONFIG_MTD_NAND_FSL_IFC=y
--CONFIG_MTD_SPI_NOR=y
--CONFIG_MTD_UBI=y
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_NBD=y
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=131072
--CONFIG_EEPROM_AT24=y
--CONFIG_EEPROM_LEGACY=y
--CONFIG_BLK_DEV_SD=y
--CONFIG_CHR_DEV_ST=y
--CONFIG_BLK_DEV_SR=y
--CONFIG_BLK_DEV_SR_VENDOR=y
--CONFIG_CHR_DEV_SG=y
--CONFIG_SCSI_LOGGING=y
--CONFIG_SCSI_SYM53C8XX_2=y
--CONFIG_ATA=y
--CONFIG_SATA_AHCI=y
--CONFIG_SATA_FSL=y
--CONFIG_SATA_SIL24=y
--CONFIG_SATA_SIL=y
--CONFIG_PATA_ALI=y
--CONFIG_PATA_SIL680=y
--CONFIG_PATA_VIA=y
--CONFIG_NETDEVICES=y
--CONFIG_DUMMY=y
--CONFIG_FSL_XGMAC_MDIO=y
--CONFIG_GIANFAR=y
--CONFIG_E1000=y
--CONFIG_E1000E=y
--CONFIG_IGB=y
--CONFIG_AT803X_PHY=y
--CONFIG_MARVELL_PHY=y
--CONFIG_DAVICOM_PHY=y
--CONFIG_CICADA_PHY=y
--CONFIG_VITESSE_PHY=y
--CONFIG_BROADCOM_PHY=y
--CONFIG_FIXED_PHY=y
--CONFIG_MDIO_BUS_MUX_GPIO=y
--CONFIG_MDIO_BUS_MUX_MMIOREG=y
--CONFIG_INPUT_FF_MEMLESS=m
--# CONFIG_INPUT_MOUSEDEV is not set
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--CONFIG_SERIO_LIBPS2=y
--# CONFIG_LEGACY_PTYS is not set
--CONFIG_PPC_EPAPR_HV_BYTECHAN=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=6
--CONFIG_SERIAL_8250_RUNTIME_UARTS=6
--CONFIG_SERIAL_8250_MANY_PORTS=y
--CONFIG_SERIAL_8250_DETECT_IRQ=y
--CONFIG_SERIAL_8250_RSA=y
--CONFIG_I2C_CHARDEV=y
--CONFIG_I2C_MUX=y
--CONFIG_I2C_MUX_PCA954x=y
--CONFIG_I2C_MPC=y
--CONFIG_SPI=y
--CONFIG_SPI_GPIO=y
--CONFIG_SPI_FSL_SPI=y
--CONFIG_SPI_FSL_ESPI=y
--CONFIG_SENSORS_LM90=y
--CONFIG_SENSORS_INA2XX=y
--CONFIG_FB=y
--CONFIG_FB_FSL_DIU=y
--# CONFIG_VGA_CONSOLE is not set
--CONFIG_FRAMEBUFFER_CONSOLE=y
--CONFIG_SOUND=y
--CONFIG_SND=y
--# CONFIG_SND_SUPPORT_OLD_API is not set
--# CONFIG_SND_DRIVERS is not set
--CONFIG_SND_INTEL8X0=y
--# CONFIG_SND_PPC is not set
--# CONFIG_SND_USB is not set
--CONFIG_SND_SOC=y
--CONFIG_SND_POWERPC_SOC=y
--CONFIG_HID_A4TECH=y
--CONFIG_HID_APPLE=y
--CONFIG_HID_BELKIN=y
--CONFIG_HID_CHERRY=y
--CONFIG_HID_CHICONY=y
--CONFIG_HID_CYPRESS=y
--CONFIG_HID_EZKEY=y
--CONFIG_HID_GYRATION=y
--CONFIG_HID_LOGITECH=y
--CONFIG_HID_MICROSOFT=y
--CONFIG_HID_MONTEREY=y
--CONFIG_HID_PANTHERLORD=y
--CONFIG_HID_PETALYNX=y
--CONFIG_HID_SAMSUNG=y
--CONFIG_HID_SUNPLUS=y
--CONFIG_USB_HID=m
--CONFIG_USB=y
--CONFIG_USB_MON=y
--CONFIG_USB_EHCI_HCD=y
--CONFIG_USB_EHCI_FSL=y
--CONFIG_USB_OHCI_HCD=y
--CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
--CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
--CONFIG_USB_STORAGE=y
--CONFIG_MMC=y
--CONFIG_MMC_SDHCI=y
--CONFIG_MMC_SDHCI_PLTFM=y
--CONFIG_MMC_SDHCI_OF_ESDHC=y
--CONFIG_EDAC=y
--CONFIG_EDAC_MM_EDAC=y
--CONFIG_EDAC_MPC85XX=y
--CONFIG_RTC_CLASS=y
--CONFIG_RTC_DRV_DS1307=y
--CONFIG_RTC_DRV_DS1374=y
--CONFIG_RTC_DRV_DS3232=y
--CONFIG_RTC_DRV_CMOS=y
--CONFIG_DMADEVICES=y
--CONFIG_FSL_DMA=y
--CONFIG_UIO=y
--CONFIG_VIRT_DRIVERS=y
--CONFIG_FSL_HV_MANAGER=y
--CONFIG_CLK_QORIQ=y
--CONFIG_FSL_CORENET_CF=y
--CONFIG_EXT2_FS=y
--CONFIG_EXT3_FS=y
--CONFIG_EXT4_FS=y
--CONFIG_ISO9660_FS=m
--CONFIG_JOLIET=y
--CONFIG_ZISOFS=y
--CONFIG_UDF_FS=m
--CONFIG_MSDOS_FS=m
--CONFIG_VFAT_FS=y
--CONFIG_NTFS_FS=y
--CONFIG_TMPFS=y
--CONFIG_HUGETLBFS=y
--CONFIG_ADFS_FS=m
--CONFIG_AFFS_FS=m
--CONFIG_HFS_FS=m
--CONFIG_HFSPLUS_FS=m
--CONFIG_BEFS_FS=m
--CONFIG_BFS_FS=m
--CONFIG_EFS_FS=m
--CONFIG_JFFS2_FS=y
--CONFIG_JFFS2_FS_DEBUG=1
--CONFIG_UBIFS_FS=y
--CONFIG_CRAMFS=y
--CONFIG_VXFS_FS=m
--CONFIG_HPFS_FS=m
--CONFIG_QNX4FS_FS=m
--CONFIG_SYSV_FS=m
--CONFIG_UFS_FS=m
--CONFIG_NFS_FS=y
--CONFIG_NFS_V4=y
--CONFIG_ROOT_NFS=y
--CONFIG_NFSD=y
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_CODEPAGE_850=y
--CONFIG_NLS_ISO8859_1=y
--CONFIG_CRC_T10DIF=y
--CONFIG_FONTS=y
--CONFIG_FONT_8x8=y
--CONFIG_FONT_8x16=y
--CONFIG_DEBUG_INFO=y
--CONFIG_FRAME_WARN=1024
--CONFIG_MAGIC_SYSRQ=y
--CONFIG_DEBUG_SHIRQ=y
--CONFIG_DETECT_HUNG_TASK=y
--CONFIG_RCU_TRACE=y
--CONFIG_CRYPTO_NULL=y
--CONFIG_CRYPTO_PCBC=m
--CONFIG_CRYPTO_MD4=y
--CONFIG_CRYPTO_SHA256=y
--CONFIG_CRYPTO_SHA512=y
--CONFIG_CRYPTO_DEV_FSL_CAAM=y
--CONFIG_CRYPTO_DEV_TALITOS=y
-diff --git a/arch/powerpc/configs/corenet_basic_defconfig b/arch/powerpc/configs/corenet_basic_defconfig
-new file mode 100644
-index 0000000..b568d46
---- /dev/null
-+++ b/arch/powerpc/configs/corenet_basic_defconfig
-@@ -0,0 +1 @@
-+CONFIG_CORENET_GENERIC=y
-diff --git a/arch/powerpc/configs/fsl-emb-nonhw.config b/arch/powerpc/configs/fsl-emb-nonhw.config
-new file mode 100644
-index 0000000..41e4d35
---- /dev/null
-+++ b/arch/powerpc/configs/fsl-emb-nonhw.config
-@@ -0,0 +1,126 @@
-+CONFIG_ADFS_FS=m
-+CONFIG_AFFS_FS=m
-+CONFIG_AUDIT=y
-+CONFIG_BEFS_FS=m
-+CONFIG_BFS_FS=m
-+CONFIG_BINFMT_MISC=m
-+# CONFIG_BLK_DEV_BSG is not set
-+CONFIG_BLK_DEV_INITRD=y
-+CONFIG_BLK_DEV_LOOP=y
-+CONFIG_BLK_DEV_NBD=y
-+CONFIG_BLK_DEV_RAM_SIZE=131072
-+CONFIG_BLK_DEV_RAM=y
-+CONFIG_BSD_PROCESS_ACCT=y
-+CONFIG_CGROUP_CPUACCT=y
-+CONFIG_CGROUP_SCHED=y
-+CONFIG_CGROUPS=y
-+# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
-+CONFIG_CRC_T10DIF=y
-+CONFIG_CPUSETS=y
-+CONFIG_CRAMFS=y
-+CONFIG_CRYPTO_MD4=y
-+CONFIG_CRYPTO_NULL=y
-+CONFIG_CRYPTO_PCBC=m
-+CONFIG_CRYPTO_SHA256=y
-+CONFIG_CRYPTO_SHA512=y
-+CONFIG_DEBUG_FS=y
-+CONFIG_DEBUG_INFO=y
-+CONFIG_DEBUG_SHIRQ=y
-+CONFIG_DETECT_HUNG_TASK=y
-+CONFIG_DEVTMPFS_MOUNT=y
-+CONFIG_DEVTMPFS=y
-+CONFIG_DUMMY=y
-+CONFIG_EFS_FS=m
-+CONFIG_EXPERT=y
-+CONFIG_EXT2_FS=y
-+# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
-+CONFIG_EXT3_FS=y
-+CONFIG_FB=y
-+CONFIG_FHANDLE=y
-+CONFIG_FIXED_PHY=y
-+CONFIG_FONT_8x16=y
-+CONFIG_FONT_8x8=y
-+CONFIG_FONTS=y
-+CONFIG_FORCE_MAX_ZONEORDER=13
-+CONFIG_FRAMEBUFFER_CONSOLE=y
-+CONFIG_FRAME_WARN=1024
-+CONFIG_FTL=y
-+CONFIG_HFS_FS=m
-+CONFIG_HFSPLUS_FS=m
-+CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_HPFS_FS=m
-+CONFIG_HUGETLBFS=y
-+CONFIG_IKCONFIG_PROC=y
-+CONFIG_IKCONFIG=y
-+CONFIG_INET_AH=y
-+CONFIG_INET_ESP=y
-+CONFIG_INET_IPCOMP=y
-+# CONFIG_INET_LRO is not set
-+# CONFIG_INET_XFRM_MODE_BEET is not set
-+CONFIG_INET=y
-+CONFIG_IP_ADVANCED_ROUTER=y
-+CONFIG_IP_MROUTE=y
-+CONFIG_IP_MULTICAST=y
-+CONFIG_IP_MULTIPLE_TABLES=y
-+CONFIG_IP_PIMSM_V1=y
-+CONFIG_IP_PIMSM_V2=y
-+CONFIG_IP_PNP_BOOTP=y
-+CONFIG_IP_PNP_DHCP=y
-+CONFIG_IP_PNP_RARP=y
-+CONFIG_IP_PNP=y
-+CONFIG_IP_ROUTE_MULTIPATH=y
-+CONFIG_IP_ROUTE_VERBOSE=y
-+CONFIG_IP_SCTP=m
-+CONFIG_IPV6=y
-+CONFIG_IRQ_DOMAIN_DEBUG=y
-+CONFIG_ISO9660_FS=m
-+CONFIG_JFFS2_FS_DEBUG=1
-+CONFIG_JFFS2_FS=y
-+CONFIG_JOLIET=y
-+CONFIG_KALLSYMS_ALL=y
-+# CONFIG_LEGACY_PTYS is not set
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_MAC_PARTITION=y
-+CONFIG_MAGIC_SYSRQ=y
-+CONFIG_MODULE_FORCE_UNLOAD=y
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODVERSIONS=y
-+CONFIG_MSDOS_FS=m
-+CONFIG_MTD_UBI=y
-+CONFIG_MTD=y
-+CONFIG_NET_IPIP=y
-+CONFIG_NET_KEY_MIGRATE=y
-+CONFIG_NET_KEY=y
-+CONFIG_NET=y
-+CONFIG_NFSD=y
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V4=y
-+CONFIG_NLS_CODEPAGE_437=y
-+CONFIG_NLS_CODEPAGE_850=y
-+CONFIG_NLS_ISO8859_1=y
-+CONFIG_NLS_UTF8=m
-+CONFIG_NO_HZ=y
-+CONFIG_NTFS_FS=y
-+CONFIG_PACKET=y
-+CONFIG_PARTITION_ADVANCED=y
-+CONFIG_PERF_EVENTS=y
-+CONFIG_POSIX_MQUEUE=y
-+CONFIG_QNX4FS_FS=m
-+CONFIG_RCU_TRACE=y
-+CONFIG_ROOT_NFS=y
-+CONFIG_SYSV_FS=m
-+CONFIG_SYSVIPC=y
-+CONFIG_TMPFS=y
-+CONFIG_UBIFS_FS=y
-+CONFIG_UDF_FS=m
-+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-+CONFIG_UFS_FS=m
-+CONFIG_UIO=y
-+CONFIG_UNIX=y
-+CONFIG_VFAT_FS=y
-+CONFIG_VXFS_FS=m
-+CONFIG_XFRM_STATISTICS=y
-+CONFIG_XFRM_SUB_POLICY=y
-+CONFIG_XFRM_USER=y
-+CONFIG_ZISOFS=y
-diff --git a/arch/powerpc/configs/mpc85xx_basic_defconfig b/arch/powerpc/configs/mpc85xx_basic_defconfig
-new file mode 100644
-index 0000000..850bd19
---- /dev/null
-+++ b/arch/powerpc/configs/mpc85xx_basic_defconfig
-@@ -0,0 +1,23 @@
-+CONFIG_MATH_EMULATION=y
-+CONFIG_MPC8536_DS=y
-+CONFIG_MPC8540_ADS=y
-+CONFIG_MPC8560_ADS=y
-+CONFIG_MPC85xx_CDS=y
-+CONFIG_MPC85xx_DS=y
-+CONFIG_MPC85xx_MDS=y
-+CONFIG_MPC85xx_RDB=y
-+CONFIG_KSI8560=y
-+CONFIG_MVME2500=y
-+CONFIG_P1010_RDB=y
-+CONFIG_P1022_DS=y
-+CONFIG_P1022_RDK=y
-+CONFIG_P1023_RDB=y
-+CONFIG_SBC8548=y
-+CONFIG_SOCRATES=y
-+CONFIG_STX_GP3=y
-+CONFIG_TQM8540=y
-+CONFIG_TQM8541=y
-+CONFIG_TQM8548=y
-+CONFIG_TQM8555=y
-+CONFIG_TQM8560=y
-+CONFIG_XES_MPC85xx=y
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-deleted file mode 100644
-index f551fb4..0000000
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ /dev/null
-@@ -1,288 +0,0 @@
--CONFIG_PPC_85xx=y
--CONFIG_PHYS_64BIT=y
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_FHANDLE=y
--CONFIG_AUDIT=y
--CONFIG_IRQ_DOMAIN_DEBUG=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
--CONFIG_BSD_PROCESS_ACCT=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_CGROUPS=y
--CONFIG_CPUSETS=y
--CONFIG_CGROUP_CPUACCT=y
--CONFIG_CGROUP_SCHED=y
--CONFIG_BLK_DEV_INITRD=y
--CONFIG_EXPERT=y
--CONFIG_KALLSYMS_ALL=y
--CONFIG_PERF_EVENTS=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--# CONFIG_BLK_DEV_BSG is not set
--CONFIG_PARTITION_ADVANCED=y
--CONFIG_MAC_PARTITION=y
--CONFIG_C293_PCIE=y
--CONFIG_MPC8540_ADS=y
--CONFIG_MPC8560_ADS=y
--CONFIG_MPC85xx_CDS=y
--CONFIG_MPC85xx_MDS=y
--CONFIG_MPC8536_DS=y
--CONFIG_MPC85xx_DS=y
--CONFIG_MPC85xx_RDB=y
--CONFIG_P1010_RDB=y
--CONFIG_P1022_DS=y
--CONFIG_P1022_RDK=y
--CONFIG_P1023_RDB=y
--CONFIG_SOCRATES=y
--CONFIG_KSI8560=y
--CONFIG_XES_MPC85xx=y
--CONFIG_STX_GP3=y
--CONFIG_TQM8540=y
--CONFIG_TQM8541=y
--CONFIG_TQM8548=y
--CONFIG_TQM8555=y
--CONFIG_TQM8560=y
--CONFIG_SBC8548=y
--CONFIG_MVME2500=y
--CONFIG_QUICC_ENGINE=y
--CONFIG_QE_GPIO=y
--CONFIG_HIGHMEM=y
--# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
--CONFIG_BINFMT_MISC=m
--CONFIG_MATH_EMULATION=y
--CONFIG_KEXEC=y
--CONFIG_FORCE_MAX_ZONEORDER=13
--CONFIG_PCI=y
--CONFIG_PCIEPORTBUS=y
--# CONFIG_PCIEASPM is not set
--CONFIG_PCI_MSI=y
--CONFIG_RAPIDIO=y
--CONFIG_FSL_RIO=y
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_XFRM_USER=y
--CONFIG_XFRM_SUB_POLICY=y
--CONFIG_XFRM_STATISTICS=y
--CONFIG_NET_KEY=y
--CONFIG_NET_KEY_MIGRATE=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_ADVANCED_ROUTER=y
--CONFIG_IP_MULTIPLE_TABLES=y
--CONFIG_IP_ROUTE_MULTIPATH=y
--CONFIG_IP_ROUTE_VERBOSE=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_IP_PNP_RARP=y
--CONFIG_NET_IPIP=y
--CONFIG_IP_MROUTE=y
--CONFIG_IP_PIMSM_V1=y
--CONFIG_IP_PIMSM_V2=y
--CONFIG_INET_AH=y
--CONFIG_INET_ESP=y
--CONFIG_INET_IPCOMP=y
--# CONFIG_INET_XFRM_MODE_BEET is not set
--# CONFIG_INET_LRO is not set
--CONFIG_IPV6=y
--CONFIG_IP_SCTP=m
--CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
--CONFIG_DEVTMPFS=y
--CONFIG_DEVTMPFS_MOUNT=y
--CONFIG_MTD=y
--CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_BLOCK=y
--CONFIG_FTL=y
--CONFIG_MTD_CFI=y
--CONFIG_MTD_CFI_INTELEXT=y
--CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_PHYSMAP=y
--CONFIG_MTD_PHYSMAP_OF=y
--CONFIG_MTD_PLATRAM=y
--CONFIG_MTD_M25P80=y
--CONFIG_MTD_NAND=y
--CONFIG_MTD_NAND_FSL_ELBC=y
--CONFIG_MTD_NAND_FSL_IFC=y
--CONFIG_MTD_SPI_NOR=y
--CONFIG_MTD_UBI=y
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_NBD=y
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=131072
--CONFIG_EEPROM_AT24=y
--CONFIG_EEPROM_LEGACY=y
--CONFIG_BLK_DEV_SD=y
--CONFIG_CHR_DEV_ST=y
--CONFIG_BLK_DEV_SR=y
--CONFIG_BLK_DEV_SR_VENDOR=y
--CONFIG_CHR_DEV_SG=y
--CONFIG_SCSI_LOGGING=y
--CONFIG_SCSI_SYM53C8XX_2=y
--CONFIG_ATA=y
--CONFIG_SATA_AHCI=y
--CONFIG_SATA_FSL=y
--CONFIG_SATA_SIL24=y
--CONFIG_SATA_SIL=y
--CONFIG_PATA_ALI=y
--CONFIG_PATA_SIL680=y
--CONFIG_PATA_VIA=y
--CONFIG_NETDEVICES=y
--CONFIG_DUMMY=y
--CONFIG_FS_ENET=y
--CONFIG_FSL_XGMAC_MDIO=y
--CONFIG_UCC_GETH=y
--CONFIG_GIANFAR=y
--CONFIG_E1000=y
--CONFIG_E1000E=y
--CONFIG_IGB=y
--CONFIG_AT803X_PHY=y
--CONFIG_MARVELL_PHY=y
--CONFIG_DAVICOM_PHY=y
--CONFIG_CICADA_PHY=y
--CONFIG_VITESSE_PHY=y
--CONFIG_BROADCOM_PHY=y
--CONFIG_FIXED_PHY=y
--CONFIG_MDIO_BUS_MUX_GPIO=y
--CONFIG_MDIO_BUS_MUX_MMIOREG=y
--CONFIG_INPUT_FF_MEMLESS=m
--# CONFIG_INPUT_MOUSEDEV is not set
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--CONFIG_SERIO_LIBPS2=y
--# CONFIG_LEGACY_PTYS is not set
--CONFIG_PPC_EPAPR_HV_BYTECHAN=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=6
--CONFIG_SERIAL_8250_RUNTIME_UARTS=6
--CONFIG_SERIAL_8250_MANY_PORTS=y
--CONFIG_SERIAL_8250_DETECT_IRQ=y
--CONFIG_SERIAL_8250_RSA=y
--CONFIG_SERIAL_QE=m
--CONFIG_NVRAM=y
--CONFIG_I2C_CHARDEV=y
--CONFIG_I2C_MUX=y
--CONFIG_I2C_MUX_PCA954x=y
--CONFIG_I2C_CPM=m
--CONFIG_I2C_MPC=y
--CONFIG_SPI=y
--CONFIG_SPI_GPIO=y
--CONFIG_SPI_FSL_SPI=y
--CONFIG_SPI_FSL_ESPI=y
--CONFIG_GPIO_MPC8XXX=y
--CONFIG_SENSORS_LM90=y
--CONFIG_SENSORS_INA2XX=y
--CONFIG_FB=y
--CONFIG_FB_FSL_DIU=y
--# CONFIG_VGA_CONSOLE is not set
--CONFIG_FRAMEBUFFER_CONSOLE=y
--CONFIG_SOUND=y
--CONFIG_SND=y
--# CONFIG_SND_SUPPORT_OLD_API is not set
--# CONFIG_SND_DRIVERS is not set
--CONFIG_SND_INTEL8X0=y
--# CONFIG_SND_PPC is not set
--# CONFIG_SND_USB is not set
--CONFIG_SND_SOC=y
--CONFIG_SND_POWERPC_SOC=y
--CONFIG_HID_A4TECH=y
--CONFIG_HID_APPLE=y
--CONFIG_HID_BELKIN=y
--CONFIG_HID_CHERRY=y
--CONFIG_HID_CHICONY=y
--CONFIG_HID_CYPRESS=y
--CONFIG_HID_EZKEY=y
--CONFIG_HID_GYRATION=y
--CONFIG_HID_LOGITECH=y
--CONFIG_HID_MICROSOFT=y
--CONFIG_HID_MONTEREY=y
--CONFIG_HID_PANTHERLORD=y
--CONFIG_HID_PETALYNX=y
--CONFIG_HID_SAMSUNG=y
--CONFIG_HID_SUNPLUS=y
--CONFIG_USB_HID=m
--CONFIG_USB=y
--CONFIG_USB_MON=y
--CONFIG_USB_EHCI_HCD=y
--CONFIG_USB_EHCI_FSL=y
--CONFIG_USB_OHCI_HCD=y
--CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
--CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
--CONFIG_USB_STORAGE=y
--CONFIG_MMC=y
--CONFIG_MMC_SDHCI=y
--CONFIG_MMC_SDHCI_PLTFM=y
--CONFIG_MMC_SDHCI_OF_ESDHC=y
--CONFIG_EDAC=y
--CONFIG_EDAC_MM_EDAC=y
--CONFIG_EDAC_MPC85XX=y
--CONFIG_RTC_CLASS=y
--CONFIG_RTC_DRV_DS1307=y
--CONFIG_RTC_DRV_DS1374=y
--CONFIG_RTC_DRV_DS3232=y
--CONFIG_RTC_DRV_CMOS=y
--CONFIG_DMADEVICES=y
--CONFIG_FSL_DMA=y
--CONFIG_UIO=y
--CONFIG_VIRT_DRIVERS=y
--CONFIG_FSL_HV_MANAGER=y
--CONFIG_FSL_CORENET_CF=y
--CONFIG_EXT2_FS=y
--CONFIG_EXT3_FS=y
--# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--CONFIG_ISO9660_FS=m
--CONFIG_JOLIET=y
--CONFIG_ZISOFS=y
--CONFIG_UDF_FS=m
--CONFIG_MSDOS_FS=m
--CONFIG_VFAT_FS=y
--CONFIG_NTFS_FS=y
--CONFIG_PROC_KCORE=y
--CONFIG_TMPFS=y
--CONFIG_HUGETLBFS=y
--CONFIG_ADFS_FS=m
--CONFIG_AFFS_FS=m
--CONFIG_HFS_FS=m
--CONFIG_HFSPLUS_FS=m
--CONFIG_BEFS_FS=m
--CONFIG_BFS_FS=m
--CONFIG_EFS_FS=m
--CONFIG_JFFS2_FS=y
--CONFIG_JFFS2_FS_DEBUG=1
--CONFIG_UBIFS_FS=y
--CONFIG_CRAMFS=y
--CONFIG_VXFS_FS=m
--CONFIG_HPFS_FS=m
--CONFIG_QNX4FS_FS=m
--CONFIG_SYSV_FS=m
--CONFIG_UFS_FS=m
--CONFIG_NFS_FS=y
--CONFIG_NFS_V4=y
--CONFIG_ROOT_NFS=y
--CONFIG_NFSD=y
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_CODEPAGE_850=y
--CONFIG_NLS_ISO8859_1=y
--CONFIG_CRC_T10DIF=y
--CONFIG_FONTS=y
--CONFIG_FONT_8x8=y
--CONFIG_FONT_8x16=y
--CONFIG_DEBUG_INFO=y
--CONFIG_DEBUG_FS=y
--CONFIG_MAGIC_SYSRQ=y
--CONFIG_DEBUG_SHIRQ=y
--CONFIG_DETECT_HUNG_TASK=y
--CONFIG_RCU_TRACE=y
--CONFIG_CRYPTO_NULL=y
--CONFIG_CRYPTO_PCBC=m
--CONFIG_CRYPTO_MD4=y
--CONFIG_CRYPTO_SHA256=y
--CONFIG_CRYPTO_SHA512=y
--CONFIG_CRYPTO_DEV_FSL_CAAM=y
--CONFIG_CRYPTO_DEV_TALITOS=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-deleted file mode 100644
-index 237b3e4..0000000
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ /dev/null
-@@ -1,289 +0,0 @@
--CONFIG_PPC_85xx=y
--CONFIG_PHYS_64BIT=y
--CONFIG_SMP=y
--CONFIG_NR_CPUS=24
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_FHANDLE=y
--CONFIG_AUDIT=y
--CONFIG_IRQ_DOMAIN_DEBUG=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
--CONFIG_BSD_PROCESS_ACCT=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_LOG_BUF_SHIFT=14
--CONFIG_CGROUPS=y
--CONFIG_CPUSETS=y
--CONFIG_CGROUP_CPUACCT=y
--CONFIG_CGROUP_SCHED=y
--CONFIG_BLK_DEV_INITRD=y
--CONFIG_EXPERT=y
--CONFIG_KALLSYMS_ALL=y
--CONFIG_PERF_EVENTS=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--# CONFIG_BLK_DEV_BSG is not set
--CONFIG_PARTITION_ADVANCED=y
--CONFIG_MAC_PARTITION=y
--CONFIG_C293_PCIE=y
--CONFIG_MPC8540_ADS=y
--CONFIG_MPC8560_ADS=y
--CONFIG_MPC85xx_CDS=y
--CONFIG_MPC85xx_MDS=y
--CONFIG_MPC8536_DS=y
--CONFIG_MPC85xx_DS=y
--CONFIG_MPC85xx_RDB=y
--CONFIG_P1010_RDB=y
--CONFIG_P1022_DS=y
--CONFIG_P1022_RDK=y
--CONFIG_P1023_RDB=y
--CONFIG_SOCRATES=y
--CONFIG_KSI8560=y
--CONFIG_XES_MPC85xx=y
--CONFIG_STX_GP3=y
--CONFIG_TQM8540=y
--CONFIG_TQM8541=y
--CONFIG_TQM8548=y
--CONFIG_TQM8555=y
--CONFIG_TQM8560=y
--CONFIG_SBC8548=y
--CONFIG_MVME2500=y
--CONFIG_QUICC_ENGINE=y
--CONFIG_QE_GPIO=y
--CONFIG_HIGHMEM=y
--# CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
--CONFIG_BINFMT_MISC=m
--CONFIG_MATH_EMULATION=y
--CONFIG_KEXEC=y
--CONFIG_FORCE_MAX_ZONEORDER=13
--CONFIG_PCI=y
--CONFIG_PCIEPORTBUS=y
--# CONFIG_PCIEASPM is not set
--CONFIG_PCI_MSI=y
--CONFIG_RAPIDIO=y
--CONFIG_FSL_RIO=y
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_XFRM_USER=y
--CONFIG_XFRM_SUB_POLICY=y
--CONFIG_XFRM_STATISTICS=y
--CONFIG_NET_KEY=y
--CONFIG_NET_KEY_MIGRATE=y
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_IP_ADVANCED_ROUTER=y
--CONFIG_IP_MULTIPLE_TABLES=y
--CONFIG_IP_ROUTE_MULTIPATH=y
--CONFIG_IP_ROUTE_VERBOSE=y
--CONFIG_IP_PNP=y
--CONFIG_IP_PNP_DHCP=y
--CONFIG_IP_PNP_BOOTP=y
--CONFIG_IP_PNP_RARP=y
--CONFIG_NET_IPIP=y
--CONFIG_IP_MROUTE=y
--CONFIG_IP_PIMSM_V1=y
--CONFIG_IP_PIMSM_V2=y
--CONFIG_INET_AH=y
--CONFIG_INET_ESP=y
--CONFIG_INET_IPCOMP=y
--# CONFIG_INET_XFRM_MODE_BEET is not set
--# CONFIG_INET_LRO is not set
--CONFIG_IPV6=y
--CONFIG_IP_SCTP=m
--CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
--CONFIG_DEVTMPFS=y
--CONFIG_DEVTMPFS_MOUNT=y
--CONFIG_MTD=y
--CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_BLOCK=y
--CONFIG_FTL=y
--CONFIG_MTD_CFI=y
--CONFIG_MTD_CFI_INTELEXT=y
--CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_PHYSMAP=y
--CONFIG_MTD_PHYSMAP_OF=y
--CONFIG_MTD_PLATRAM=y
--CONFIG_MTD_M25P80=y
--CONFIG_MTD_NAND=y
--CONFIG_MTD_NAND_FSL_ELBC=y
--CONFIG_MTD_NAND_FSL_IFC=y
--CONFIG_MTD_SPI_NOR=y
--CONFIG_MTD_UBI=y
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_NBD=y
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=131072
--CONFIG_EEPROM_AT24=y
--CONFIG_EEPROM_LEGACY=y
--CONFIG_BLK_DEV_SD=y
--CONFIG_CHR_DEV_ST=y
--CONFIG_BLK_DEV_SR=y
--CONFIG_BLK_DEV_SR_VENDOR=y
--CONFIG_CHR_DEV_SG=y
--CONFIG_SCSI_LOGGING=y
--CONFIG_SCSI_SYM53C8XX_2=y
--CONFIG_ATA=y
--CONFIG_SATA_AHCI=y
--CONFIG_SATA_FSL=y
--CONFIG_SATA_SIL24=y
--CONFIG_SATA_SIL=y
--CONFIG_PATA_ALI=y
--CONFIG_PATA_SIL680=y
--CONFIG_PATA_VIA=y
--CONFIG_NETDEVICES=y
--CONFIG_DUMMY=y
--CONFIG_FS_ENET=y
--CONFIG_FSL_XGMAC_MDIO=y
--CONFIG_UCC_GETH=y
--CONFIG_GIANFAR=y
--CONFIG_E1000=y
--CONFIG_E1000E=y
--CONFIG_IGB=y
--CONFIG_AT803X_PHY=y
--CONFIG_MARVELL_PHY=y
--CONFIG_DAVICOM_PHY=y
--CONFIG_CICADA_PHY=y
--CONFIG_VITESSE_PHY=y
--CONFIG_BROADCOM_PHY=y
--CONFIG_FIXED_PHY=y
--CONFIG_MDIO_BUS_MUX_GPIO=y
--CONFIG_MDIO_BUS_MUX_MMIOREG=y
--CONFIG_INPUT_FF_MEMLESS=m
--# CONFIG_INPUT_MOUSEDEV is not set
--# CONFIG_INPUT_KEYBOARD is not set
--# CONFIG_INPUT_MOUSE is not set
--CONFIG_SERIO_LIBPS2=y
--# CONFIG_LEGACY_PTYS is not set
--CONFIG_PPC_EPAPR_HV_BYTECHAN=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=6
--CONFIG_SERIAL_8250_RUNTIME_UARTS=6
--CONFIG_SERIAL_8250_MANY_PORTS=y
--CONFIG_SERIAL_8250_DETECT_IRQ=y
--CONFIG_SERIAL_8250_RSA=y
--CONFIG_SERIAL_QE=m
--CONFIG_NVRAM=y
--CONFIG_I2C_CHARDEV=y
--CONFIG_I2C_MUX=y
--CONFIG_I2C_MUX_PCA954x=y
--CONFIG_I2C_CPM=m
--CONFIG_I2C_MPC=y
--CONFIG_SPI=y
--CONFIG_SPI_GPIO=y
--CONFIG_SPI_FSL_SPI=y
--CONFIG_SPI_FSL_ESPI=y
--CONFIG_GPIO_MPC8XXX=y
--CONFIG_SENSORS_LM90=y
--CONFIG_SENSORS_INA2XX=y
--CONFIG_FB=y
--CONFIG_FB_FSL_DIU=y
--# CONFIG_VGA_CONSOLE is not set
--CONFIG_FRAMEBUFFER_CONSOLE=y
--CONFIG_SOUND=y
--CONFIG_SND=y
--# CONFIG_SND_SUPPORT_OLD_API is not set
--# CONFIG_SND_DRIVERS is not set
--CONFIG_SND_INTEL8X0=y
--# CONFIG_SND_PPC is not set
--# CONFIG_SND_USB is not set
--CONFIG_SND_SOC=y
--CONFIG_SND_POWERPC_SOC=y
--CONFIG_HID_A4TECH=y
--CONFIG_HID_APPLE=y
--CONFIG_HID_BELKIN=y
--CONFIG_HID_CHERRY=y
--CONFIG_HID_CHICONY=y
--CONFIG_HID_CYPRESS=y
--CONFIG_HID_EZKEY=y
--CONFIG_HID_GYRATION=y
--CONFIG_HID_LOGITECH=y
--CONFIG_HID_MICROSOFT=y
--CONFIG_HID_MONTEREY=y
--CONFIG_HID_PANTHERLORD=y
--CONFIG_HID_PETALYNX=y
--CONFIG_HID_SAMSUNG=y
--CONFIG_HID_SUNPLUS=y
--CONFIG_USB_HID=m
--CONFIG_USB=y
--CONFIG_USB_MON=y
--CONFIG_USB_EHCI_HCD=y
--CONFIG_USB_EHCI_FSL=y
--CONFIG_USB_OHCI_HCD=y
--CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
--CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
--CONFIG_USB_STORAGE=y
--CONFIG_MMC=y
--CONFIG_MMC_SDHCI=y
--CONFIG_MMC_SDHCI_PLTFM=y
--CONFIG_MMC_SDHCI_OF_ESDHC=y
--CONFIG_EDAC=y
--CONFIG_EDAC_MM_EDAC=y
--CONFIG_EDAC_MPC85XX=y
--CONFIG_RTC_CLASS=y
--CONFIG_RTC_DRV_DS1307=y
--CONFIG_RTC_DRV_DS1374=y
--CONFIG_RTC_DRV_DS3232=y
--CONFIG_RTC_DRV_CMOS=y
--CONFIG_DMADEVICES=y
--CONFIG_FSL_DMA=y
--CONFIG_UIO=y
--CONFIG_VIRT_DRIVERS=y
--CONFIG_FSL_HV_MANAGER=y
--CONFIG_FSL_CORENET_CF=y
--CONFIG_EXT2_FS=y
--CONFIG_EXT3_FS=y
--# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--CONFIG_ISO9660_FS=m
--CONFIG_JOLIET=y
--CONFIG_ZISOFS=y
--CONFIG_UDF_FS=m
--CONFIG_MSDOS_FS=m
--CONFIG_VFAT_FS=y
--CONFIG_NTFS_FS=y
--CONFIG_PROC_KCORE=y
--CONFIG_TMPFS=y
--CONFIG_HUGETLBFS=y
--CONFIG_ADFS_FS=m
--CONFIG_AFFS_FS=m
--CONFIG_HFS_FS=m
--CONFIG_HFSPLUS_FS=m
--CONFIG_BEFS_FS=m
--CONFIG_BFS_FS=m
--CONFIG_EFS_FS=m
--CONFIG_JFFS2_FS=y
--CONFIG_JFFS2_FS_DEBUG=1
--CONFIG_UBIFS_FS=y
--CONFIG_CRAMFS=y
--CONFIG_VXFS_FS=m
--CONFIG_HPFS_FS=m
--CONFIG_QNX4FS_FS=m
--CONFIG_SYSV_FS=m
--CONFIG_UFS_FS=m
--CONFIG_NFS_FS=y
--CONFIG_NFS_V4=y
--CONFIG_ROOT_NFS=y
--CONFIG_NFSD=y
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_CODEPAGE_850=y
--CONFIG_NLS_ISO8859_1=y
--CONFIG_CRC_T10DIF=y
--CONFIG_FONTS=y
--CONFIG_FONT_8x8=y
--CONFIG_FONT_8x16=y
--CONFIG_DEBUG_INFO=y
--CONFIG_MAGIC_SYSRQ=y
--CONFIG_DEBUG_SHIRQ=y
--CONFIG_DETECT_HUNG_TASK=y
--CONFIG_RCU_TRACE=y
--CONFIG_CRYPTO_NULL=y
--CONFIG_CRYPTO_PCBC=m
--CONFIG_CRYPTO_MD4=y
--CONFIG_CRYPTO_SHA256=y
--CONFIG_CRYPTO_SHA512=y
--CONFIG_CRYPTO_DEV_FSL_CAAM=y
--CONFIG_CRYPTO_DEV_TALITOS=y
+Yep, good suggestion.
+
+>>>(3) Each PF could have 6 IOV BARs and there're 15 available M64 BAR. It means
+>>>    only two VFs can be enabled in the extreme case. Would it be a problem?
+>>>
+>>
+>>Yes, you are right.
+>>
+>>Based on Alexey's mail, full isolation is more important than more VFs.
+>>
+>
+>Ok. Lets ignore this issue for now. Maybe it has to be considered in future.
+>Here's another problem:
+>
+>(4) In pnv_pci_sriov_enable(), we can bail early when num_vfs >= phb_avaiable_M64_BARs.
+>    no need to allocate PE number and PHB's M64 BARs, then hit failure and release
+>    the allocated resources.
+>
+
+Yep, good suggestion.
+
+>>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>>>index 712add5..1997e5d 100644
+>>>>--- a/arch/powerpc/include/asm/pci-bridge.h
+>>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>>>>@@ -214,10 +214,9 @@ struct pci_dn {
+>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>>>> 	u16     num_vfs;		/* number of VFs enabled*/
+>>>> 	int     offset;			/* PE# for the first VF PE */
+>>>>-#define M64_PER_IOV 4
+>>>>-	int     m64_per_iov;
+>>>>+#define MAX_M64_WINDOW  16
+>>>> #define IODA_INVALID_M64        (-1)
+>>>>-	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
+>>>>+	int     m64_wins[PCI_SRIOV_NUM_BARS][MAX_M64_WINDOW];
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>> #endif
+>>>
+>>>The "m64_wins" would be renamed to "m64_map". Also, it would have dynamic size:
+>>>
+>>>- When the IOV BAR is extended to 256 segments, its size is sizeof(int) * PCI_SRIOV_NUM_BARS;
+>>>- When the IOV BAR is extended to max_vf_num, its size is sizeof(int) * max_vf_num;
+>>>
+>>>> 	struct list_head child_list;
+>>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>index 5738d31..b3e7909 100644
+>>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>@@ -1168,7 +1168,7 @@ static int pnv_pci_vf_release_m64(struct pci_dev *pdev)
+>>>> 	pdn = pci_get_pdn(pdev);
+>>>>
+>>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>>>>-		for (j = 0; j < M64_PER_IOV; j++) {
+>>>>+		for (j = 0; j < MAX_M64_WINDOW; j++) {
+>>>> 			if (pdn->m64_wins[i][j] == IODA_INVALID_M64)
+>>>> 				continue;
+>>>> 			opal_pci_phb_mmio_enable(phb->opal_id,
+>>>>@@ -1193,8 +1193,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	int                    total_vfs;
+>>>> 	resource_size_t        size, start;
+>>>> 	int                    pe_num;
+>>>>-	int                    vf_groups;
+>>>>-	int                    vf_per_group;
+>>>>+	int                    m64s;
+>>>
+>>>"m64s" could have better name. For example, "vfs_per_m64_bar"...
+>>>
+>>
+>>m64s is used to represent number of M64 BARs necessary to enable num_vfs.
+>>vfs_per_m64_bar may be misleading.
+>>
+>>How about "m64_bars" ?
+>>
+>
+>Actually, "m64s" represents the number of PHB's M64 BARs required for the
+>number of VF BARs, not "enabled num_vfs", isn't it? Yes, "m64_bars_per_iov_bar"
+>or "m64_bars" are better.
+>
+>>>>
+>>>> 	bus = pdev->bus;
+>>>> 	hose = pci_bus_to_host(bus);
+>>>>@@ -1204,17 +1203,13 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>
+>>>> 	/* Initialize the m64_wins to IODA_INVALID_M64 */
+>>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>>>>-		for (j = 0; j < M64_PER_IOV; j++)
+>>>>+		for (j = 0; j < MAX_M64_WINDOW; j++)
+>>>> 			pdn->m64_wins[i][j] = IODA_INVALID_M64;
+>>>>
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>-		vf_groups = (num_vfs <= M64_PER_IOV) ? num_vfs: M64_PER_IOV;
+>>>>-		vf_per_group = (num_vfs <= M64_PER_IOV)? 1:
+>>>>-			roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-	} else {
+>>>>-		vf_groups = 1;
+>>>>-		vf_per_group = 1;
+>>>>-	}
+>>>>+	if (pdn->vfs_expanded != phb->ioda.total_pe)
+>>>>+		m64s = num_vfs;
+>>>>+	else
+>>>>+		m64s = 1;
+>>>
+>>>The condition (pdn->vfs_expanded != phb->ioda.total_pe) isn't precise enough as
+>>>explained below.
+>>>
+>>>>
+>>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>>> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>>>>@@ -1224,7 +1219,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>>> 			continue;
+>>>>
+>>>>-		for (j = 0; j < vf_groups; j++) {
+>>>>+		for (j = 0; j < m64s; j++) {
+>>>> 			do {
+>>>> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
+>>>> 						phb->ioda.m64_bar_idx + 1, 0);
+>>>>@@ -1235,10 +1230,9 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>
+>>>> 			pdn->m64_wins[i][j] = win;
+>>>>
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>+			if (pdn->vfs_expanded != phb->ioda.total_pe) {
+>>>> 				size = pci_iov_resource_size(pdev,
+>>>> 							PCI_IOV_RESOURCES + i);
+>>>>-				size = size * vf_per_group;
+>>>> 				start = res->start + size * j;
+>>>> 			} else {
+>>>> 				size = resource_size(res);
+>>>>@@ -1246,7 +1240,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 			}
+>>>>
+>>>> 			/* Map the M64 here */
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>+			if (pdn->vfs_expanded != phb->ioda.total_pe) {
+>>>> 				pe_num = pdn->offset + j;
+>>>> 				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+>>>> 						pe_num, OPAL_M64_WINDOW_TYPE,
+>>>>@@ -1267,7 +1261,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 				goto m64_failed;
+>>>> 			}
+>>>>
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV)
+>>>>+			if (pdn->vfs_expanded != phb->ioda.total_pe)
+>>>> 				rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>>>> 				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 2);
+>>>> 			else
+>>>>@@ -1311,15 +1305,13 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>>>> 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+>>>> }
+>>>>
+>>>>-static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>+static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+>>>> {
+>>>> 	struct pci_bus        *bus;
+>>>> 	struct pci_controller *hose;
+>>>> 	struct pnv_phb        *phb;
+>>>> 	struct pnv_ioda_pe    *pe, *pe_n;
+>>>> 	struct pci_dn         *pdn;
+>>>>-	u16                    vf_index;
+>>>>-	int64_t                rc;
+>>>>
+>>>> 	bus = pdev->bus;
+>>>> 	hose = pci_bus_to_host(bus);
+>>>>@@ -1329,35 +1321,6 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	if (!pdev->is_physfn)
+>>>> 		return;
+>>>>
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>>>>-		int   vf_group;
+>>>>-		int   vf_per_group;
+>>>>-		int   vf_index1;
+>>>>-
+>>>>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-
+>>>>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++)
+>>>>-			for (vf_index = vf_group * vf_per_group;
+>>>>-				vf_index < (vf_group + 1) * vf_per_group &&
+>>>>-				vf_index < num_vfs;
+>>>>-				vf_index++)
+>>>>-				for (vf_index1 = vf_group * vf_per_group;
+>>>>-					vf_index1 < (vf_group + 1) * vf_per_group &&
+>>>>-					vf_index1 < num_vfs;
+>>>>-					vf_index1++){
+>>>>-
+>>>>-					rc = opal_pci_set_peltv(phb->opal_id,
+>>>>-						pdn->offset + vf_index,
+>>>>-						pdn->offset + vf_index1,
+>>>>-						OPAL_REMOVE_PE_FROM_DOMAIN);
+>>>>-
+>>>>-					if (rc)
+>>>>-					    dev_warn(&pdev->dev, "%s: Failed to unlink same group PE#%d(%lld)\n",
+>>>>-						__func__,
+>>>>-						pdn->offset + vf_index1, rc);
+>>>>-				}
+>>>>-	}
+>>>>-
+>>>> 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
+>>>> 		if (pe->parent_dev != pdev)
+>>>> 			continue;
+>>>>@@ -1392,10 +1355,10 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
+>>>> 	num_vfs = pdn->num_vfs;
+>>>>
+>>>> 	/* Release VF PEs */
+>>>>-	pnv_ioda_release_vf_PE(pdev, num_vfs);
+>>>>+	pnv_ioda_release_vf_PE(pdev);
+>>>>
+>>>> 	if (phb->type == PNV_PHB_IODA2) {
+>>>>-		if (pdn->m64_per_iov == 1)
+>>>>+		if (pdn->vfs_expanded == phb->ioda.total_pe)
+>>>> 			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
+>>>>
+>>>> 		/* Release M64 windows */
+>>>>@@ -1418,7 +1381,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	int                    pe_num;
+>>>> 	u16                    vf_index;
+>>>> 	struct pci_dn         *pdn;
+>>>>-	int64_t                rc;
+>>>>
+>>>> 	bus = pdev->bus;
+>>>> 	hose = pci_bus_to_host(bus);
+>>>>@@ -1463,37 +1425,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>
+>>>> 		pnv_pci_ioda2_setup_dma_pe(phb, pe);
+>>>> 	}
+>>>>-
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>>>>-		int   vf_group;
+>>>>-		int   vf_per_group;
+>>>>-		int   vf_index1;
+>>>>-
+>>>>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-
+>>>>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++) {
+>>>>-			for (vf_index = vf_group * vf_per_group;
+>>>>-			     vf_index < (vf_group + 1) * vf_per_group &&
+>>>>-			     vf_index < num_vfs;
+>>>>-			     vf_index++) {
+>>>>-				for (vf_index1 = vf_group * vf_per_group;
+>>>>-				     vf_index1 < (vf_group + 1) * vf_per_group &&
+>>>>-				     vf_index1 < num_vfs;
+>>>>-				     vf_index1++) {
+>>>>-
+>>>>-					rc = opal_pci_set_peltv(phb->opal_id,
+>>>>-						pdn->offset + vf_index,
+>>>>-						pdn->offset + vf_index1,
+>>>>-						OPAL_ADD_PE_TO_DOMAIN);
+>>>>-
+>>>>-					if (rc)
+>>>>-					    dev_warn(&pdev->dev, "%s: Failed to link same group PE#%d(%lld)\n",
+>>>>-						__func__,
+>>>>-						pdn->offset + vf_index1, rc);
+>>>>-				}
+>>>>-			}
+>>>>-		}
+>>>>-	}
+>>>> }
+>>>>
+>>>> int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>@@ -1537,7 +1468,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>> 		 * the IOV BAR according to the PE# allocated to the VFs.
+>>>> 		 * Otherwise, the PE# for the VF will conflict with others.
+>>>> 		 */
+>>>>-		if (pdn->m64_per_iov == 1) {
+>>>>+		if (pdn->vfs_expanded == phb->ioda.total_pe) {
+>>>
+>>>This condition isn't precise enough. When PF occasionally supports 256 VFs
+>>>and the summed size of all IOV BARs (explained below) exceeds 64MB, we're
+>>>expecting to use singole-pe-mode M64 BARs, not shared-mode.
+>>>
+>>
+>>Yes, you are right. The vfs_expanded is not reliable.
+>>
+>>>> 			ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
+>>>> 			if (ret)
+>>>> 				goto m64_failed;
+>>>>@@ -1570,8 +1501,7 @@ int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	/* Allocate PCI data */
+>>>> 	add_dev_pci_data(pdev);
+>>>>
+>>>>-	pnv_pci_sriov_enable(pdev, num_vfs);
+>>>>-	return 0;
+>>>>+	return pnv_pci_sriov_enable(pdev, num_vfs);
+>>>> }
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>>
+>>>>@@ -2766,7 +2696,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>> 	pdn->vfs_expanded = 0;
+>>>>
+>>>> 	total_vfs = pci_sriov_get_totalvfs(pdev);
+>>>>-	pdn->m64_per_iov = 1;
+>>>> 	mul = phb->ioda.total_pe;
+>>>>
+>>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>>>@@ -2785,7 +2714,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>> 		if (size > (1 << 26)) {
+>>>
+>>>Actually, the condition isn't precise enough. In theory, every PF can have 6 IOV BARs.
+>>>If all of their size are 64MB, we will have 256 extended VFs. The total MMIO size needed
+>>>is: 96GB = (6 * 64MB * 256), which exceeds 64GB. The original idea would be to have
+>>>the scheme other than extending to 256 VFs when the sum of all IOV BARs is bigger
+>>>than 64MB, not single M64 BAR. It's different issue and you can fix it up in another
+>>>patch if you want.
+>>>
+>>
+>>I didn't get your point here.
+>>
+>>You mean it is necessary to check the sum of IOV BAR instead of a single one?
+>>
+>
+>I mean to check the sum of all VF BARs. For example, the VFs attached to its PF has two
+>VF BARs and each of them is 64MB. For this case, the MMIO resource can't be allocated
+>once extending them to 256 VFs. So we have to try "single-pe-mode" for this situation.
+>So the check becomes as below:
+>
+>	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+>	struct pnv_phb *phb = hose->private_data;
+>	resource_size_t total_vf_bar_sz = 0;
+>	resource_size_t gate;
+>
+>	/* Some comments to explain the "gate" */
+>	gate = phb->m64_segsize / 2;
+>	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>		total_vf_bar_sz += pci_iov_resource_size(pdev, PCI_IOV_RESOURCES + i);
+>
+>	if (total_vf_bar_sz >= gate)
+>		/* single-pe-mode */
+>	else
+>		/* shared-mode */
+>
+>Also, the gate value (1 << 26) should be variable depends on the PHB's M64 capacity.
+>
+
+Got your point.
+
+>>>> 			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
+>>>> 				 i, res);
+>>>>-			pdn->m64_per_iov = M64_PER_IOV;
+>>>> 			mul = roundup_pow_of_two(total_vfs);
+>>>> 			break;
+>>>> 		}
+>>>>-- 
+>>>>1.7.9.5
+>>>>
+>>
+>>-- 
+>>Richard Yang
+>>Help you, Help me
+
 -- 
-2.1.4
+Richard Yang
+Help you, Help me
