@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2ADC1A1DB2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:06:41 +1000 (AEST)
-Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout3.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65D1C1A1D60
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:06:48 +1000 (AEST)
+Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC02QJLV73RUB0@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:06:39 +0900 (KST)
+ with ESMTP id <0NSC032KXV6OHC60@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:06:46 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 44/46] usb: gadget: net2280: add net2280_match_ep() function
-Date: Fri, 31 Jul 2015 16:00:56 +0200
-Message-id: <1438351258-31578-45-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 45/46] usb: gadget: goku_udc: add goku_match_ep() function
+Date: Fri, 31 Jul 2015 16:00:57 +0200
+Message-id: <1438351258-31578-46-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,92 +42,92 @@ from platform specific logic.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/epautoconf.c  | 23 +----------------------
- drivers/usb/gadget/udc/net2280.c | 31 +++++++++++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 22 deletions(-)
+ drivers/usb/gadget/epautoconf.c   | 20 ++------------------
+ drivers/usb/gadget/udc/goku_udc.c | 25 +++++++++++++++++++++++++
+ 2 files changed, 27 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index cc0b084..d41fd82 100644
+index d41fd82..da45371 100644
 --- a/drivers/usb/gadget/epautoconf.c
 +++ b/drivers/usb/gadget/epautoconf.c
-@@ -86,28 +86,7 @@ struct usb_ep *usb_ep_autoconfig_ss(
+@@ -86,24 +86,8 @@ struct usb_ep *usb_ep_autoconfig_ss(
  	/* First, apply chip-specific "best usage" knowledge.
  	 * This might make a good usb_gadget_ops hook ...
  	 */
--	if (gadget_is_net2280(gadget)) {
--		char name[8];
--
--		if (type == USB_ENDPOINT_XFER_INT) {
--			/* ep-e, ep-f are PIO with only 64 byte fifos */
--			ep = gadget_find_ep_by_name(gadget, "ep-e");
+-	if (gadget_is_goku (gadget)) {
+-		if (USB_ENDPOINT_XFER_INT == type) {
+-			/* single buffering is enough */
+-			ep = gadget_find_ep_by_name(gadget, "ep3-bulk");
 -			if (ep && usb_gadget_ep_match_desc(gadget,
 -					ep, desc, ep_comp))
 -				goto found_ep;
--			ep = gadget_find_ep_by_name(gadget, "ep-f");
+-		} else if (USB_ENDPOINT_XFER_BULK == type
+-				&& (USB_DIR_IN & desc->bEndpointAddress)) {
+-			/* DMA may be available */
+-			ep = gadget_find_ep_by_name(gadget, "ep2-bulk");
 -			if (ep && usb_gadget_ep_match_desc(gadget,
 -					ep, desc, ep_comp))
 -				goto found_ep;
 -		}
 -
--		/* USB3380: use same address for usb and hardware endpoints */
--		snprintf(name, sizeof(name), "ep%d%s", usb_endpoint_num(desc),
--				usb_endpoint_dir_in(desc) ? "in" : "out");
--		ep = gadget_find_ep_by_name(gadget, name);
--		if (ep && usb_gadget_ep_match_desc(gadget, ep, desc, ep_comp))
--			goto found_ep;
--	} else if (gadget_is_goku (gadget)) {
-+	if (gadget_is_goku (gadget)) {
- 		if (USB_ENDPOINT_XFER_INT == type) {
- 			/* single buffering is enough */
- 			ep = gadget_find_ep_by_name(gadget, "ep3-bulk");
-diff --git a/drivers/usb/gadget/udc/net2280.c b/drivers/usb/gadget/udc/net2280.c
-index 872ca25..9d7eac1 100644
---- a/drivers/usb/gadget/udc/net2280.c
-+++ b/drivers/usb/gadget/udc/net2280.c
-@@ -1550,6 +1550,36 @@ static int net2280_pullup(struct usb_gadget *_gadget, int is_on)
- 	return 0;
+ #ifdef CONFIG_BLACKFIN
+-	} else if (gadget_is_musbhdrc(gadget)) {
++	if (gadget_is_musbhdrc(gadget)) {
+ 		if ((USB_ENDPOINT_XFER_BULK == type) ||
+ 		    (USB_ENDPOINT_XFER_ISOC == type)) {
+ 			if (USB_DIR_IN & desc->bEndpointAddress)
+@@ -119,8 +103,8 @@ struct usb_ep *usb_ep_autoconfig_ss(
+ 			ep = NULL;
+ 		if (ep && usb_gadget_ep_match_desc(gadget, ep, desc, ep_comp))
+ 			goto found_ep;
+-#endif
+ 	}
++#endif
+ 
+ 	/* Second, look at endpoints until an unclaimed one looks usable */
+ 	list_for_each_entry (ep, &gadget->ep_list, ep_list) {
+diff --git a/drivers/usb/gadget/udc/goku_udc.c b/drivers/usb/gadget/udc/goku_udc.c
+index 46b8d14..d5a93ea 100644
+--- a/drivers/usb/gadget/udc/goku_udc.c
++++ b/drivers/usb/gadget/udc/goku_udc.c
+@@ -990,6 +990,30 @@ static int goku_get_frame(struct usb_gadget *_gadget)
+ 	return -EOPNOTSUPP;
  }
  
-+static struct usb_ep *net2280_match_ep(struct usb_gadget *_gadget,
++static struct usb_ep *goku_match_ep(struct usb_gadget *g,
 +		struct usb_endpoint_descriptor *desc,
 +		struct usb_ss_ep_comp_descriptor *ep_comp)
 +{
-+	char name[8];
++	struct goku_udc	*dev = to_goku_udc(g);
 +	struct usb_ep *ep;
-+	u8 type;
-+
-+	type = usb_endpoint_type(desc);
++	u8 type = usb_endpoint_type(desc);
 +
 +	if (type == USB_ENDPOINT_XFER_INT) {
-+		/* ep-e, ep-f are PIO with only 64 byte fifos */
-+		ep = gadget_find_ep_by_name(_gadget, "ep-e");
-+		if (ep && usb_gadget_ep_match_desc(_gadget, ep, desc, ep_comp))
++		/* single buffering is enough */
++		ep = &dev->ep[3].ep;
++		if (ep && usb_gadget_ep_match_desc(g, ep, desc, ep_comp))
 +			return ep;
-+		ep = gadget_find_ep_by_name(_gadget, "ep-f");
-+		if (ep && usb_gadget_ep_match_desc(_gadget, ep, desc, ep_comp))
++	} else if (type == USB_ENDPOINT_XFER_BULK
++			&& usb_endpoint_dir_in(desc)) {
++		/* DMA may be available */
++		ep = &dev->ep[2].ep;
++		if (ep && usb_gadget_ep_match_desc(g, ep, desc, ep_comp))
 +			return ep;
 +	}
-+
-+	/* USB3380: use same address for usb and hardware endpoints */
-+	snprintf(name, sizeof(name), "ep%d%s", usb_endpoint_num(desc),
-+			usb_endpoint_dir_in(desc) ? "in" : "out");
-+	ep = gadget_find_ep_by_name(_gadget, name);
-+	if (ep && usb_gadget_ep_match_desc(_gadget, ep, desc, ep_comp))
-+		return ep;
 +
 +	return NULL;
 +}
 +
- static int net2280_start(struct usb_gadget *_gadget,
+ static int goku_udc_start(struct usb_gadget *g,
  		struct usb_gadget_driver *driver);
- static int net2280_stop(struct usb_gadget *_gadget);
-@@ -1561,6 +1591,7 @@ static const struct usb_gadget_ops net2280_ops = {
- 	.pullup		= net2280_pullup,
- 	.udc_start	= net2280_start,
- 	.udc_stop	= net2280_stop,
-+	.match_ep	= net2280_match_ep,
+ static int goku_udc_stop(struct usb_gadget *g);
+@@ -998,6 +1022,7 @@ static const struct usb_gadget_ops goku_ops = {
+ 	.get_frame	= goku_get_frame,
+ 	.udc_start	= goku_udc_start,
+ 	.udc_stop	= goku_udc_stop,
++	.match_ep	= goku_match_ep,
+ 	// no remote wakeup
+ 	// not selfpowered
  };
- 
- /*-------------------------------------------------------------------------*/
 -- 
 1.9.1
