@@ -3,9 +3,9 @@ Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED7F71A02A5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 15:54:01 +1000 (AEST)
-Date: Fri, 31 Jul 2015 07:53:57 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id E11511A02A5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 15:58:48 +1000 (AEST)
+Date: Fri, 31 Jul 2015 07:58:43 +0200
 From: Markus Pargmann <mpa@pengutronix.de>
 To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
 Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
@@ -15,14 +15,13 @@ Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
  Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel <linux-kernel@vger.kernel.org>,
  Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH 3/6] ASoC: fsl_ssi: enable AC'97 asymmetric rates
-Message-ID: <20150731055357.GW30895@pengutronix.de>
-References: <55BA35EB.6020901@maciej.szmigiero.name>
- <20150731052719.GU30895@pengutronix.de>
+Subject: Re: [PATCH 6/6] ASoC: fsl_ssi: adjust set DAI format in AC'97 mode
+Message-ID: <20150731055843.GX30895@pengutronix.de>
+References: <55BA364E.1000803@maciej.szmigiero.name>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="H5pgEA8DvTwLpheO"
-In-Reply-To: <20150731052719.GU30895@pengutronix.de>
+ protocol="application/pgp-signature"; boundary="U8v/hV883cEE9JJG"
+In-Reply-To: <55BA364E.1000803@maciej.szmigiero.name>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +32,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---H5pgEA8DvTwLpheO
+--U8v/hV883cEE9JJG
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 31, 2015 at 07:27:19AM +0200, Markus Pargmann wrote:
-> Hi,
+On Thu, Jul 30, 2015 at 04:35:58PM +0200, Maciej S. Szmigiero wrote:
+> Adjust set DAI format function in fsl_ssi driver so it
+> doesn't fail and clears RXDIR in AC'97 mode.
 >=20
-> On Thu, Jul 30, 2015 at 04:34:19PM +0200, Maciej S. Szmigiero wrote:
-> > AC'97 bus can support asymmetric playback/capture rates
-> > so enable them in this case in fsl_ssi driver.
-> >=20
-> > Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
-> > ---
-> >  sound/soc/fsl/fsl_ssi.c |    4 +++-
-> >  1 files changed, 3 insertions(+), 1 deletions(-)
-> >=20
-> > diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> > index a83b900..7f4f0b9 100644
-> > --- a/sound/soc/fsl/fsl_ssi.c
-> > +++ b/sound/soc/fsl/fsl_ssi.c
-> > @@ -1377,7 +1377,9 @@ static int fsl_ssi_probe(struct platform_device *=
-pdev)
-> > =20
-> >  	/* Are the RX and the TX clocks locked? */
-> >  	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
-> > -		ssi_private->cpu_dai_drv.symmetric_rates =3D 1;
-> > +		if (!fsl_ssi_is_ac97(ssi_private))
-> > +			ssi_private->cpu_dai_drv.symmetric_rates =3D 1;
-> > +
+> Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
+> ---
+>  sound/soc/fsl/fsl_ssi.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
 >=20
-> Why don't you use the DT property that is parsed here to enable
-> asymmetric rates?
+> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+> index 8e5ff5e..37aabe3 100644
+> --- a/sound/soc/fsl/fsl_ssi.c
+> +++ b/sound/soc/fsl/fsl_ssi.c
+> @@ -900,14 +900,16 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
+>  		scr &=3D ~CCSR_SSI_SCR_SYS_CLK_EN;
+>  		break;
+>  	default:
+> -		return -EINVAL;
+> +		if (!fsl_ssi_is_ac97(ssi_private))
+> +			return -EINVAL;
 
-Just found the last version of this series. Please use v2 and describe
-changes for a new iteration of a series.
+I think it would be better to add another case for the other mode which
+is supported (AC97) instead of using the default case.
 
-There is also a different setup with AC97 which does not use DMA. See
-the long comment at the top of the file about how ac97 is already used.
+>  	}
+> =20
+>  	stcr |=3D strcr;
+>  	srcr |=3D strcr;
+> =20
+> -	if (ssi_private->cpu_dai_drv.symmetric_rates) {
+> -		/* Need to clear RXDIR when using SYNC mode */
+> +	if (ssi_private->cpu_dai_drv.symmetric_rates
+> +		|| fsl_ssi_is_ac97(ssi_private)) {
+
+Please fix this indention. Most of the driver is written with 2 tab
+indention after a line break and the new policy seems to be to indent on
+the opening bracket.
 
 Regards,
 
 Markus
+
+> +		/* Need to clear RXDIR when using SYNC or AC97 mode */
+>  		srcr &=3D ~CCSR_SSI_SRCR_RXDIR;
+>  		scr |=3D CCSR_SSI_SCR_SYN;
+>  	}
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
 
 --=20
 Pengutronix e.K.                           |                             |
@@ -83,26 +97,26 @@ Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
 Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 
---H5pgEA8DvTwLpheO
+--U8v/hV883cEE9JJG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVuw10AAoJEEpcgKtcEGQQZfkP/jnu7MNjJkaHHFs7tYMuyVAD
-JtSHxTz5sn9eAXaLazQje3v9BZNrOkZH0wUeJ5hsUo9MybLxrxnPvPa3aQ69HFIV
-UiYNjFl+KBW4yFn0wpH3z5bu7ENZxe0Wq5I+265FxxdnqajEXPJsek6ZVWTOZjeB
-wFgK/16DpGOtfp3pUuMVp+hcEwfdXsVkCSobRz8TS8gREu7ACImb/gujep2XYg+W
-tqgJ0IsKuyKJkj4vs7H+7Bs9iM8DsWbqZLXL2A29GBZxQd0F8aACaj33SV/OBu4P
-+Qbyg7cbPUdBUTM0UV7h1oXFiSY3ShwnedO1ja2fBGcBNs6GAq9yHIWDX5/cswUC
-A/CGxZmGX3LPCFcQTPsJq2ko0Pl+iHd13Lol27KDC5G5U7CxzOSGeNSgmYnfjWRO
-DyuCfPm6Cn+UmnL6sq9M1GZYXfOu3aw06UGakjOEZwScAUiQf03KCbb1m/HXXw3A
-qvnKho2BFz9oUwR2DmOmmlOebmP1T4U/2M3THJV1OfH30d7Fmx3G4I/BNRQaLY2g
-RWH8DefDs7PfdFAacB1q72BmUmI7+J8SmTt5LV5WszYyxOGYDU643c2lYHCGgJhr
-MfX8aD+qVvGeL7kJ1eCjdROXiPrWINQUEYODJTFwKNy9eJxz58MNbWt/HFxtMxmc
-k/T7qeqlNKqqOnIXd7IF
-=TcmV
+iQIcBAEBAgAGBQJVuw6TAAoJEEpcgKtcEGQQWCUP/1X5ivApFgjHYKLYs70UCkRq
+o8NtSUErKFEYCEPhPDmcGX3jN3N/EM+c+C4g8IrJTl1wTbLy9zDO1ubf/s8IJJh+
+rHerNqgCAANJZUo4qHFO+hbH2400VaxhIt1nxTvAXEese9P3lTVIYg9jPbstXdDH
+6jTBSR4at5xI+KfzAyc6FBW915HuKF/lShNUDfO3tddp1X347cS0PbEVdMYdWsSp
+t35raOl2ItnqzNCbZs9brJUtgMWsebQMv3/+4vh5qK7LdCMPzrASUWKSTspt2chB
+H4U03A37X/IbkXka6NQ/DUQg4hA3bOGzR2Npl/T6ifzUgsRMuQLbekV8wYX9a9FX
+tw1RRnS3rFDADkzN32dw5qUdDlyIq7D7rW7huYxRM4jnXc4etJzPJOefZP4jTXVC
+te0UBpHZZ3QJRP5L/Dt34HAs9ij7Kb+MkgazAcYV3ANj8AqPTumGp5Hy7UnkRmS4
+qB2+tqxILCJn0NwqdnuPPHXR3VxI+0yeuT5YvWI229F1vqBw0OyKp7YTVunwAlYR
+W4XyWbWwKarC+dq1RhaVkMDp8tcgWmVWL7LgZQVizT+jVhqP2BNTpBTUgSItaoPU
+o4F60PYmg7jecpcSx7m488RxArjcjxNIrwYLoDjlr3yvcJKFy0nmxi8Z2j3oUIXJ
+jZe2T6k1GIOWaqWWSgVJ
+=o9vG
 -----END PGP SIGNATURE-----
 
---H5pgEA8DvTwLpheO--
+--U8v/hV883cEE9JJG--
