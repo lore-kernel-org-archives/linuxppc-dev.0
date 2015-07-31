@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 583231A1BD3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:04:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B4151A1BED
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:05:13 +1000 (AEST)
 Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout3.samsung.com
+ by mailout4.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC02TQPV486SA0@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:04:56 +0900 (KST)
+ with ESMTP id <0NSC00NBPV4NW670@mailout4.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:05:11 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 30/46] usb: gadget: s3c-hsudc: add ep capabilities support
-Date: Fri, 31 Jul 2015 16:00:42 +0200
-Message-id: <1438351258-31578-31-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 32/46] usb: gadget: udc-xilinx: add ep capabilities support
+Date: Fri, 31 Jul 2015 16:00:44 +0200
+Message-id: <1438351258-31578-33-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,34 +39,34 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/s3c-hsudc.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/usb/gadget/udc/udc-xilinx.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/s3c-hsudc.c b/drivers/usb/gadget/udc/s3c-hsudc.c
-index 85a712a..e9def42 100644
---- a/drivers/usb/gadget/udc/s3c-hsudc.c
-+++ b/drivers/usb/gadget/udc/s3c-hsudc.c
-@@ -1005,6 +1005,21 @@ static void s3c_hsudc_initep(struct s3c_hsudc *hsudc,
- 	hsep->stopped = 0;
- 	hsep->wedge = 0;
+diff --git a/drivers/usb/gadget/udc/udc-xilinx.c b/drivers/usb/gadget/udc/udc-xilinx.c
+index 1f24274..1cbb0ac 100644
+--- a/drivers/usb/gadget/udc/udc-xilinx.c
++++ b/drivers/usb/gadget/udc/udc-xilinx.c
+@@ -1317,12 +1317,21 @@ static void xudc_eps_init(struct xusb_udc *udc)
+ 			snprintf(ep->name, EPNAME_SIZE, "ep%d", ep_number);
+ 			ep->ep_usb.name = ep->name;
+ 			ep->ep_usb.ops = &xusb_ep_ops;
++
++			ep->ep_usb.caps.type_iso = true;
++			ep->ep_usb.caps.type_bulk = true;
++			ep->ep_usb.caps.type_int = true;
+ 		} else {
+ 			ep->ep_usb.name = ep0name;
+ 			usb_ep_set_maxpacket_limit(&ep->ep_usb, EP0_MAX_PACKET);
+ 			ep->ep_usb.ops = &xusb_ep0_ops;
++
++			ep->ep_usb.caps.type_control = true;
+ 		}
  
-+	if (epnum == 0) {
-+		hsep->ep.caps.type_control = true;
-+		hsep->ep.caps.dir_in = true;
-+		hsep->ep.caps.dir_out = true;
-+	} else {
-+		hsep->ep.caps.type_iso = true;
-+		hsep->ep.caps.type_bulk = true;
-+		hsep->ep.caps.type_int = true;
-+	}
++		ep->ep_usb.caps.dir_in = true;
++		ep->ep_usb.caps.dir_out = true;
 +
-+	if (epnum & 1)
-+		hsep->ep.caps.dir_in = true;
-+	else
-+		hsep->ep.caps.dir_out = true;
-+
- 	set_index(hsudc, epnum);
- 	writel(hsep->ep.maxpacket, hsudc->regs + S3C_MPR);
- }
+ 		ep->udc = udc;
+ 		ep->epnumber = ep_number;
+ 		ep->desc = NULL;
 -- 
 1.9.1
