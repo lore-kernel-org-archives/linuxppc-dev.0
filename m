@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B46A1A1D32
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:05:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 424221A1D75
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:05:42 +1000 (AEST)
 Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout3.samsung.com
+ by mailout1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC02TQPV486SA0@mailout3.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:05:05 +0900 (KST)
+ with ESMTP id <0NSC0336RV505N60@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:05:40 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,10 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 31/46] usb: gadget: s3c2410_udc: add ep capabilities support
-Date: Fri, 31 Jul 2015 16:00:43 +0200
-Message-id: <1438351258-31578-32-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 36/46] usb: gadget: atmel_usba_udc: add ep capabilities
+ support
+Date: Fri, 31 Jul 2015 16:00:48 +0200
+Message-id: <1438351258-31578-37-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,57 +40,30 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/s3c2410_udc.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/usb/gadget/udc/atmel_usba_udc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/s3c2410_udc.c b/drivers/usb/gadget/udc/s3c2410_udc.c
-index 5d9aa81..eb3571e 100644
---- a/drivers/usb/gadget/udc/s3c2410_udc.c
-+++ b/drivers/usb/gadget/udc/s3c2410_udc.c
-@@ -1691,6 +1691,8 @@ static struct s3c2410_udc memory = {
- 			.name		= ep0name,
- 			.ops		= &s3c2410_ep_ops,
- 			.maxpacket	= EP0_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_CONTROL,
-+						USB_EP_CAPS_DIR_ALL),
- 		},
- 		.dev		= &memory,
- 	},
-@@ -1702,6 +1704,8 @@ static struct s3c2410_udc memory = {
- 			.name		= "ep1-bulk",
- 			.ops		= &s3c2410_ep_ops,
- 			.maxpacket	= EP_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_ALL),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= EP_FIFO_SIZE,
-@@ -1714,6 +1718,8 @@ static struct s3c2410_udc memory = {
- 			.name		= "ep2-bulk",
- 			.ops		= &s3c2410_ep_ops,
- 			.maxpacket	= EP_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_ALL),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= EP_FIFO_SIZE,
-@@ -1726,6 +1732,8 @@ static struct s3c2410_udc memory = {
- 			.name		= "ep3-bulk",
- 			.ops		= &s3c2410_ep_ops,
- 			.maxpacket	= EP_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_ALL),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= EP_FIFO_SIZE,
-@@ -1738,6 +1746,8 @@ static struct s3c2410_udc memory = {
- 			.name		= "ep4-bulk",
- 			.ops		= &s3c2410_ep_ops,
- 			.maxpacket	= EP_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_ALL),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= EP_FIFO_SIZE,
+diff --git a/drivers/usb/gadget/udc/atmel_usba_udc.c b/drivers/usb/gadget/udc/atmel_usba_udc.c
+index 37d414e..267d84f 100644
+--- a/drivers/usb/gadget/udc/atmel_usba_udc.c
++++ b/drivers/usb/gadget/udc/atmel_usba_udc.c
+@@ -2067,6 +2067,17 @@ static struct usba_ep * usba_udc_pdata(struct platform_device *pdev,
+ 		ep->can_dma = pdata->ep[i].can_dma;
+ 		ep->can_isoc = pdata->ep[i].can_isoc;
+ 
++		if (i == 0) {
++			ep->ep.caps.type_control = true;
++		} else {
++			ep->ep.caps.type_iso = ep->can_isoc;
++			ep->ep.caps.type_bulk = true;
++			ep->ep.caps.type_int = true;
++		}
++
++		ep->ep.caps.dir_in = true;
++		ep->ep.caps.dir_out = true;
++
+ 		if (i)
+ 			list_add_tail(&ep->ep.ep_list, &udc->gadget.ep_list);
+ 	}
 -- 
 1.9.1
