@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F01FE1A1BF7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:05:34 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout2.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B46A1A1D32
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:05:37 +1000 (AEST)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC00JU4V50U520@mailout2.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:05:33 +0900 (KST)
+ with ESMTP id <0NSC02TQPV486SA0@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:05:05 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 35/46] usb: renesas: gadget: add ep capabilities support
-Date: Fri, 31 Jul 2015 16:00:47 +0200
-Message-id: <1438351258-31578-36-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 31/46] usb: gadget: s3c2410_udc: add ep capabilities support
+Date: Fri, 31 Jul 2015 16:00:43 +0200
+Message-id: <1438351258-31578-32-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,31 +39,57 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/renesas_usbhs/mod_gadget.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/usb/gadget/udc/s3c2410_udc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/usb/renesas_usbhs/mod_gadget.c b/drivers/usb/renesas_usbhs/mod_gadget.c
-index 494dfe0..de4f97d 100644
---- a/drivers/usb/renesas_usbhs/mod_gadget.c
-+++ b/drivers/usb/renesas_usbhs/mod_gadget.c
-@@ -1103,12 +1103,18 @@ int usbhs_mod_gadget_probe(struct usbhs_priv *priv)
- 		if (usbhsg_is_dcp(uep)) {
- 			gpriv->gadget.ep0 = &uep->ep;
- 			usb_ep_set_maxpacket_limit(&uep->ep, 64);
-+			uep->ep.caps.type_control = true;
- 		}
- 		/* init normal pipe */
- 		else {
- 			usb_ep_set_maxpacket_limit(&uep->ep, 512);
-+			uep->ep.caps.type_iso = true;
-+			uep->ep.caps.type_bulk = true;
-+			uep->ep.caps.type_int = true;
- 			list_add_tail(&uep->ep.ep_list, &gpriv->gadget.ep_list);
- 		}
-+		uep->ep.caps.dir_in = true;
-+		uep->ep.caps.dir_out = true;
- 	}
- 
- 	ret = usb_add_gadget_udc(dev, &gpriv->gadget);
+diff --git a/drivers/usb/gadget/udc/s3c2410_udc.c b/drivers/usb/gadget/udc/s3c2410_udc.c
+index 5d9aa81..eb3571e 100644
+--- a/drivers/usb/gadget/udc/s3c2410_udc.c
++++ b/drivers/usb/gadget/udc/s3c2410_udc.c
+@@ -1691,6 +1691,8 @@ static struct s3c2410_udc memory = {
+ 			.name		= ep0name,
+ 			.ops		= &s3c2410_ep_ops,
+ 			.maxpacket	= EP0_FIFO_SIZE,
++			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_CONTROL,
++						USB_EP_CAPS_DIR_ALL),
+ 		},
+ 		.dev		= &memory,
+ 	},
+@@ -1702,6 +1704,8 @@ static struct s3c2410_udc memory = {
+ 			.name		= "ep1-bulk",
+ 			.ops		= &s3c2410_ep_ops,
+ 			.maxpacket	= EP_FIFO_SIZE,
++			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
++						USB_EP_CAPS_DIR_ALL),
+ 		},
+ 		.dev		= &memory,
+ 		.fifo_size	= EP_FIFO_SIZE,
+@@ -1714,6 +1718,8 @@ static struct s3c2410_udc memory = {
+ 			.name		= "ep2-bulk",
+ 			.ops		= &s3c2410_ep_ops,
+ 			.maxpacket	= EP_FIFO_SIZE,
++			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
++						USB_EP_CAPS_DIR_ALL),
+ 		},
+ 		.dev		= &memory,
+ 		.fifo_size	= EP_FIFO_SIZE,
+@@ -1726,6 +1732,8 @@ static struct s3c2410_udc memory = {
+ 			.name		= "ep3-bulk",
+ 			.ops		= &s3c2410_ep_ops,
+ 			.maxpacket	= EP_FIFO_SIZE,
++			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
++						USB_EP_CAPS_DIR_ALL),
+ 		},
+ 		.dev		= &memory,
+ 		.fifo_size	= EP_FIFO_SIZE,
+@@ -1738,6 +1746,8 @@ static struct s3c2410_udc memory = {
+ 			.name		= "ep4-bulk",
+ 			.ops		= &s3c2410_ep_ops,
+ 			.maxpacket	= EP_FIFO_SIZE,
++			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
++						USB_EP_CAPS_DIR_ALL),
+ 		},
+ 		.dev		= &memory,
+ 		.fifo_size	= EP_FIFO_SIZE,
 -- 
 1.9.1
