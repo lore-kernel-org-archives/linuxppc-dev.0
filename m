@@ -1,35 +1,23 @@
-Return-Path: <vbabka@suse.cz>
-Message-ID: <55BBEC86.1070307@suse.cz>
-Date: Fri, 31 Jul 2015 23:45:42 +0200
-From: Vlastimil Babka <vbabka@suse.cz>
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 062A41A0711
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 07:47:36 +1000 (AEST)
+Date: Fri, 31 Jul 2015 23:47:12 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 00/20] powerpc: Interrupt cleanups and API change
+ preparation
+In-Reply-To: <1437021436.28475.7.camel@ellerman.id.au>
+Message-ID: <alpine.DEB.2.11.1507312344220.3825@nanos>
+References: <20150713135648.540293392@linutronix.de>
+ <1437021436.28475.7.camel@ellerman.id.au>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>,
- Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Lameter <cl@linux.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Mel Gorman <mgorman@suse.de>,
- Greg Thelen <gthelen@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Pekka Enberg <penberg@kernel.org>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Johannes Weiner <hannes@cmpxchg.org>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Gleb Natapov <gleb@kernel.org>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>,
- Cliff Whickman <cpw@sgi.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Robin Holt <robinmholt@gmail.com>
-Subject: Re: [PATCH v3 1/3] mm: rename alloc_pages_exact_node to
- __alloc_pages_node
-References: <1438274071-22551-1-git-send-email-vbabka@suse.cz>
- <alpine.DEB.2.11.1507301255380.5521@east.gentwo.org>
- <55BA822B.3020508@suse.cz>
- <alpine.DEB.2.10.1507311423310.5910@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.10.1507311423310.5910@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,38 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 31.7.2015 23:25, David Rientjes wrote:
-> On Thu, 30 Jul 2015, Vlastimil Babka wrote:
-> 
->> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
->> index aa58a32..56355f2 100644
->> --- a/mm/huge_memory.c
->> +++ b/mm/huge_memory.c
->> @@ -2469,7 +2469,7 @@ khugepaged_alloc_page(struct page **hpage, gfp_t gfp, struct mm_struct *mm,
->>  	 */
->>  	up_read(&mm->mmap_sem);
->>  
->> -	*hpage = alloc_pages_exact_node(node, gfp, HPAGE_PMD_ORDER);
->> +	*hpage = __alloc_pages_node(node, gfp, HPAGE_PMD_ORDER);
->>  	if (unlikely(!*hpage)) {
->>  		count_vm_event(THP_COLLAPSE_ALLOC_FAILED);
->>  		*hpage = ERR_PTR(-ENOMEM);
->> @@ -2568,9 +2568,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->>  
->>  	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
->>  
->> -	/* Only allocate from the target node */
->> -	gfp = alloc_hugepage_gfpmask(khugepaged_defrag(), __GFP_OTHER_NODE) |
->> -		__GFP_THISNODE;
->> +	gfp = alloc_hugepage_gfpmask(khugepaged_defrag(), 0);
->>  
->>  	/* release the mmap_sem read lock. */
->>  	new_page = khugepaged_alloc_page(hpage, gfp, mm, vma, address, node);
-> 
-> Hmm, where is the __GFP_THISNODE enforcement in khugepaged_alloc_page() 
-> that is removed in collapse_huge_page()?  I also don't see what happened 
-> to the __GFP_OTHER_NODE.
+On Thu, 16 Jul 2015, Michael Ellerman wrote:
 
-Crap, I messed up with git, this hunk was supposed to be gone. Thanks for
-noticing. Please apply without the collapse_huge_page hunk, or tell me to resend
-once more.
+Sorry I missed your reply ...
+
+> On Mon, 2015-07-13 at 20:50 +0000, Thomas Gleixner wrote:
+> > The following patch series contains the following changes:
+> > 
+> >     - Consolidation of chained interrupt handler setup/removal
+> > 
+> >     - Switch to functions which avoid a redundant interrupt
+> >       descriptor lookup
+> > 
+> >     - Preparation of interrupt flow handlers for the 'irq' argument
+> >       removal
+> > 
+> > The series has no dependencies ...
+> 
+> But I assume you have work that will depend on it? So you're going to merge it
+> via your tree at least I assume?
+
+Can be done either way. The last step will happen when the merge
+window closes. So all I care it that it lands in 4.3
+
+> > ... and is also available as a git branch for your convenience:
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git irq/arm
+> 
+> I can't find this.
+> 
+> Did you mean irq/ppc or irq/powerpc maybe? I can't find those either.
+
+Gah.
+
+git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git queue/irq/powerpc
+
+Sorry for the confusion.
+
+Thanks,
+
+	tglx
