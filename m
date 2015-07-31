@@ -2,16 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42FB31A18E0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 885241A17B0
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 14:13:32 +1000 (AEST)
-In-Reply-To: <1437389151-4042-1-git-send-email-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1438239234-29480-1-git-send-email-alistair@popple.id.au>
+To: Alistair Popple <alistair@popple.id.au>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [kernel] powerpc/powernv/ioda2: Fix calculation for memory
- allocated for TCE table
-Message-Id: <20150731041332.25C1D140321@ozlabs.org>
+Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
+ gwshan@linux.vnet.ibm.com, dja@axtens.net
+Subject: Re: powerpc/eeh-powernv: Fix unbalanced IRQ warning
+Message-Id: <20150731041332.6C02F140322@ozlabs.org>
 Date: Fri, 31 Jul 2015 14:13:32 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,21 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-20-07 at 10:45:51 UTC, Alexey Kardashevskiy wrote:
-> The existing code stores the amount of memory allocated for a TCE table.
-> At the moment it uses @offset which is a virtual offset in the TCE table
-> which is only correct for a one level tables and it does not include
-> memory allocated for intermediate levels. When multilevel TCE table is
-> requested, WARN_ON in tce_iommu_create_table() prints a warning.
+On Thu, 2015-30-07 at 06:53:54 UTC, Alistair Popple wrote:
+> pnv_eeh_next_error() re-enables the eeh opal event interrupt but it
+> gets called from a loop if there are more outstanding events to
+> process, resulting in a warning due to enabling an already enabled
+> interrupt. Instead the interrupt should only be re-enabled once the
+> last outstanding event has been processed.
 > 
-> This adds an additional counter to pnv_pci_ioda2_table_do_alloc_pages()
-> to count actually allocated memory.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Tested-by: Daniel Axtens <dja@axtens.net>
+> Reported-by: Daniel Axtens <dja@axtens.net>
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/3ba3a73e9f204ce7904c
+https://git.kernel.org/powerpc/c/b8d65e9662b1ffb3b52a
 
 cheers
