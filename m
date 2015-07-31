@@ -1,24 +1,26 @@
-Return-Path: <ukl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB4511A076F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 19:16:21 +1000 (AEST)
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-To: devicetree@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Linus Walleij <linus.walleij@linaro.org>,
- Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org,
- kernel@pengutronix.de
-Subject: [PATCH RESENT] powerpc: dts: don't fall back to fsl, pq3-gpio for fsl,
- mpc8572-gpio devices
-Date: Fri, 31 Jul 2015 11:16:06 +0200
-Message-Id: <1438334166-12579-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 61AFD1A0775
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 19:23:05 +1000 (AEST)
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E44441402A9
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 19:23:04 +1000 (AEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@ozlabs.org,  mikey@neuling.org,  imunsie@au.ibm.com
+Subject: Re: [PATCH] cxl: Fix ambiguous else warnings
+References: <1438324508-30341-1-git-send-email-dja__13473.5064967119$1438324749$gmane$org@axtens.net>
+Date: Fri, 31 Jul 2015 11:16:52 +0200
+In-Reply-To: <1438324508-30341-1-git-send-email-dja__13473.5064967119$1438324749$gmane$org@axtens.net>
+ (Daniel Axtens's message of "Fri, 31 Jul 2015 16:35:08 +1000")
+Message-ID: <87wpxg3cvv.fsf@igel.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While the handling of fsl,pq3-gpio and fsl,mpc8572-gpio is done in the
-same driver and the two hardly differ, the latter controller needs a
-workaround for an erratum in the gpio_get callback. To make this
-difference more explicit remove fsl,pq3-gpio from the list of
-compatibles for mpc8572 machines.
+Daniel Axtens <dja@axtens.net> writes:
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
----
-Hello,
+> Every time I build cxl I see the following warnings:
+>
+> /scratch/dja/linux-capi/drivers/misc/cxl/pci.c: In function ‘sanitise_afu_regs’:
+> /scratch/dja/linux-capi/drivers/misc/cxl/pci.c:712:6: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wparentheses]
+>    if (reg & CXL_PSL_DSISR_TRANS)
+>       ^
+> /scratch/dja/linux-capi/drivers/misc/cxl/irq.c: In function ‘fail_psl_irq’:
+> /scratch/dja/linux-capi/drivers/misc/cxl/irq.c:184:5: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wparentheses]
+>   if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
+>      ^
 
-got the parameters for git-send-email wrong and forgot to send this to the
-powerpc folks.
+Why are they ambigous?  Why doesn't cxl_p2n_write(afu, CXL_PSL_TFC_An,
+CXL_PSL_TFC_An_AE) expand to a proper statement?
 
-Best regards
-Uwe
+#define cxl_p2n_write(afu, reg, val) \
+	out_be64(_cxl_p2n_addr(afu, reg), val)
 
- arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Andreas.
 
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-index c8b2daa40ac8..41935709ebe8 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
-@@ -172,7 +172,7 @@
- 
- 	/* mark compat w/8572 to get some erratum treatment */
- 	gpio-controller@f000 {
--		compatible = "fsl,mpc8572-gpio", "fsl,pq3-gpio";
-+		compatible = "fsl,mpc8572-gpio";
- 	};
- 
- 	sata@18000 {
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
-index d44e25a48734..49294cf36b4e 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
-@@ -162,7 +162,7 @@
- /include/ "pq3-dma-1.dtsi"
- /include/ "pq3-gpio-0.dtsi"
- 	gpio-controller@f000 {
--		compatible = "fsl,mpc8572-gpio", "fsl,pq3-gpio";
-+		compatible = "fsl,mpc8572-gpio";
- 	};
- 
- 	L2: l2-cache-controller@20000 {
 -- 
-2.1.4
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
