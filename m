@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+Received: from mailout2.samsung.com (mailout2.samsung.com [203.254.224.25])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD5871A1C06
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:04:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 517C71A1DB6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:04:44 +1000 (AEST)
 Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout1.samsung.com
+ by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC0335YV3M5N60@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:04:34 +0900 (KST)
+ with ESMTP id <0NSC030U0V3UBW60@mailout2.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:04:42 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 27/46] usb: gadget: pxa25x_udc: add ep capabilities support
-Date: Fri, 31 Jul 2015 16:00:39 +0200
-Message-id: <1438351258-31578-28-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 28/46] usb: gadget: pxa27x_udc: add ep capabilities support
+Date: Fri, 31 Jul 2015 16:00:40 +0200
+Message-id: <1438351258-31578-29-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,156 +39,63 @@ Convert endpoint configuration to new capabilities model.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/udc/pxa25x_udc.c | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ drivers/usb/gadget/udc/pxa27x_udc.h | 40 +++++++++++++++++++++++--------------
+ 1 file changed, 25 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/usb/gadget/udc/pxa25x_udc.c b/drivers/usb/gadget/udc/pxa25x_udc.c
-index 27f9442..b4d25dc 100644
---- a/drivers/usb/gadget/udc/pxa25x_udc.c
-+++ b/drivers/usb/gadget/udc/pxa25x_udc.c
-@@ -1822,6 +1822,8 @@ static struct pxa25x_udc memory = {
- 			.name		= ep0name,
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= EP0_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_CONTROL,
-+						USB_EP_CAPS_DIR_ALL),
- 		},
- 		.dev		= &memory,
- 		.reg_udccs	= &UDCCS0,
-@@ -1834,6 +1836,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep1in-bulk",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= BULK_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= BULK_FIFO_SIZE,
-@@ -1847,6 +1851,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep2out-bulk",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= BULK_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_OUT),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= BULK_FIFO_SIZE,
-@@ -1862,6 +1868,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep3in-iso",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= ISO_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= ISO_FIFO_SIZE,
-@@ -1875,6 +1883,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep4out-iso",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= ISO_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO,
-+						USB_EP_CAPS_DIR_OUT),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= ISO_FIFO_SIZE,
-@@ -1889,6 +1899,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep5in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
-@@ -1904,6 +1916,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep6in-bulk",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= BULK_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= BULK_FIFO_SIZE,
-@@ -1917,6 +1931,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep7out-bulk",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= BULK_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_OUT),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= BULK_FIFO_SIZE,
-@@ -1931,6 +1947,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep8in-iso",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= ISO_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= ISO_FIFO_SIZE,
-@@ -1944,6 +1962,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep9out-iso",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= ISO_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO,
-+						USB_EP_CAPS_DIR_OUT),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= ISO_FIFO_SIZE,
-@@ -1958,6 +1978,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep10in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
-@@ -1973,6 +1995,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep11in-bulk",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= BULK_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= BULK_FIFO_SIZE,
-@@ -1986,6 +2010,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep12out-bulk",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= BULK_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK,
-+						USB_EP_CAPS_DIR_OUT),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= BULK_FIFO_SIZE,
-@@ -2000,6 +2026,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep13in-iso",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= ISO_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= ISO_FIFO_SIZE,
-@@ -2013,6 +2041,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep14out-iso",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= ISO_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO,
-+						USB_EP_CAPS_DIR_OUT),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= ISO_FIFO_SIZE,
-@@ -2027,6 +2057,8 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep15in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
-+			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
-+						USB_EP_CAPS_DIR_IN),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
+diff --git a/drivers/usb/gadget/udc/pxa27x_udc.h b/drivers/usb/gadget/udc/pxa27x_udc.h
+index 11e1423..cea2cb7 100644
+--- a/drivers/usb/gadget/udc/pxa27x_udc.h
++++ b/drivers/usb/gadget/udc/pxa27x_udc.h
+@@ -234,25 +234,35 @@
+ /*
+  * Endpoint definition helpers
+  */
+-#define USB_EP_DEF(addr, bname, dir, type, maxpkt) \
+-{ .usb_ep = { .name = bname, .ops = &pxa_ep_ops, .maxpacket = maxpkt, }, \
++#define USB_EP_DEF(addr, bname, dir, type, maxpkt, ctype, cdir) \
++{ .usb_ep = {	.name = bname, .ops = &pxa_ep_ops, .maxpacket = maxpkt, \
++		.caps = USB_EP_CAPS(ctype, cdir), }, \
+   .desc = {	.bEndpointAddress = addr | (dir ? USB_DIR_IN : 0), \
+-		.bmAttributes = type, \
++		.bmAttributes = USB_ENDPOINT_XFER_ ## type, \
+ 		.wMaxPacketSize = maxpkt, }, \
+   .dev = &memory \
+ }
+-#define USB_EP_BULK(addr, bname, dir) \
+-  USB_EP_DEF(addr, bname, dir, USB_ENDPOINT_XFER_BULK, BULK_FIFO_SIZE)
+-#define USB_EP_ISO(addr, bname, dir) \
+-  USB_EP_DEF(addr, bname, dir, USB_ENDPOINT_XFER_ISOC, ISO_FIFO_SIZE)
+-#define USB_EP_INT(addr, bname, dir) \
+-  USB_EP_DEF(addr, bname, dir, USB_ENDPOINT_XFER_INT, INT_FIFO_SIZE)
+-#define USB_EP_IN_BULK(n)	USB_EP_BULK(n, "ep" #n "in-bulk", 1)
+-#define USB_EP_OUT_BULK(n)	USB_EP_BULK(n, "ep" #n "out-bulk", 0)
+-#define USB_EP_IN_ISO(n)	USB_EP_ISO(n,  "ep" #n "in-iso", 1)
+-#define USB_EP_OUT_ISO(n)	USB_EP_ISO(n,  "ep" #n "out-iso", 0)
+-#define USB_EP_IN_INT(n)	USB_EP_INT(n,  "ep" #n "in-int", 1)
+-#define USB_EP_CTRL		USB_EP_DEF(0,  "ep0", 0, 0, EP0_FIFO_SIZE)
++#define USB_EP_BULK(addr, bname, dir, cdir) \
++	USB_EP_DEF(addr, bname, dir, BULK, BULK_FIFO_SIZE, \
++		USB_EP_CAPS_TYPE_BULK, cdir)
++#define USB_EP_ISO(addr, bname, dir, cdir) \
++	USB_EP_DEF(addr, bname, dir, ISOC, ISO_FIFO_SIZE, \
++		USB_EP_CAPS_TYPE_ISO, cdir)
++#define USB_EP_INT(addr, bname, dir, cdir) \
++	USB_EP_DEF(addr, bname, dir, INT, INT_FIFO_SIZE, \
++		USB_EP_CAPS_TYPE_INT, cdir)
++#define USB_EP_IN_BULK(n)	USB_EP_BULK(n, "ep" #n "in-bulk", 1, \
++					USB_EP_CAPS_DIR_IN)
++#define USB_EP_OUT_BULK(n)	USB_EP_BULK(n, "ep" #n "out-bulk", 0, \
++					USB_EP_CAPS_DIR_OUT)
++#define USB_EP_IN_ISO(n)	USB_EP_ISO(n,  "ep" #n "in-iso", 1, \
++					USB_EP_CAPS_DIR_IN)
++#define USB_EP_OUT_ISO(n)	USB_EP_ISO(n,  "ep" #n "out-iso", 0, \
++					USB_EP_CAPS_DIR_OUT)
++#define USB_EP_IN_INT(n)	USB_EP_INT(n,  "ep" #n "in-int", 1, \
++					USB_EP_CAPS_DIR_IN)
++#define USB_EP_CTRL	USB_EP_DEF(0,  "ep0", 0, CONTROL, EP0_FIFO_SIZE, \
++				USB_EP_CAPS_TYPE_CONTROL, USB_EP_CAPS_DIR_ALL)
+ 
+ #define PXA_EP_DEF(_idx, _addr, dir, _type, maxpkt, _config, iface, altset) \
+ { \
 -- 
 1.9.1
