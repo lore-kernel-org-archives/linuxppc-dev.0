@@ -3,14 +3,14 @@ Received: from lb3-smtp-cloud3.xs4all.net (lb3-smtp-cloud3.xs4all.net
  [194.109.24.30])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B63711A088D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 22:09:07 +1000 (AEST)
-Message-ID: <1438344538.13223.9.camel@tiscali.nl>
-Subject: [PATCH] windfarm: decrement client count when unregistering
+ by lists.ozlabs.org (Postfix) with ESMTPS id 131D61A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 22:12:24 +1000 (AEST)
+Message-ID: <1438344740.13223.12.camel@tiscali.nl>
+Subject: [PATCH] windfarm: make wf_critical_overtemp() static
 From: Paul Bolle <pebolle@tiscali.nl>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 31 Jul 2015 14:08:58 +0200
+Date: Fri, 31 Jul 2015 14:12:20 +0200
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,38 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-wf_unregister_client() increments the client count when a client
-unregisters. That is obviously incorrect. Decrement that client count
-instead.
-
-Fixes: 75722d3992f5 ("[PATCH] ppc64: Thermal control for SMU based machines")
+wf_critical_overtemp() is exported. But nothing uses that export.
+That's unsurprising because there's no header that defines it. Stop
+exporting that function and make it static.
 
 Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
 ---
-cross-compiled only. I don't have a PPC machine at hand, sorry. And this
-does need some run-time testing, I'd day.
+Cross compiled only.
 
-windfarm_corex_exit() contains:
-    BUG_ON(wf_client_count != 0);
+(And I really hope evolution didn't mangle this patch.)
 
-I wonder why that, apparently. never triggered.
+ drivers/macintosh/windfarm_core.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
- drivers/macintosh/windfarm_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/macintosh/windfarm_core.c
-b/drivers/macintosh/windfarm_core.c
-index 3ee198b65843..cc7ece1712b5 100644
+diff --git a/drivers/macintosh/windfarm_core.c b/drivers/macintosh/windfarm_core.c
+index cc7ece1712b5..681e5b4d4b6a 100644
 --- a/drivers/macintosh/windfarm_core.c
 +++ b/drivers/macintosh/windfarm_core.c
-@@ -435,7 +435,7 @@ int wf_unregister_client(struct notifier_block *nb)
+@@ -72,7 +72,7 @@ static inline void wf_notify(int event, void *param)
+ 	blocking_notifier_call_chain(&wf_client_list, event, param);
+ }
+ 
+-int wf_critical_overtemp(void)
++static int wf_critical_overtemp(void)
  {
- 	mutex_lock(&wf_lock);
- 	blocking_notifier_chain_unregister(&wf_client_list, nb);
--	wf_client_count++;
-+	wf_client_count--;
- 	if (wf_client_count == 0)
- 		wf_stop_thread();
- 	mutex_unlock(&wf_lock);
+ 	static char * critical_overtemp_path = "/sbin/critical_overtemp";
+ 	char *argv[] = { critical_overtemp_path, NULL };
+@@ -84,7 +84,6 @@ int wf_critical_overtemp(void)
+ 	return call_usermodehelper(critical_overtemp_path,
+ 				   argv, envp, UMH_WAIT_EXEC);
+ }
+-EXPORT_SYMBOL_GPL(wf_critical_overtemp);
+ 
+ static int wf_thread_func(void *data)
+ {
 -- 
 2.4.3
