@@ -1,31 +1,28 @@
-Return-Path: <r.baldyga@samsung.com>
-Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26BA81A1CF1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:06:56 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC00XJ1V7HLU50@mailout4.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:06:53 +0900 (KST)
-From: Robert Baldyga <r.baldyga@samsung.com>
-To: balbi@ti.com
-Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
- johnyoun@synopsys.com, dahlmann.thomas@arcor.de, nicolas.ferre@atmel.com,
- cernekee@gmail.com, leoli@freescale.com, daniel@zonque.org,
- haojian.zhuang@gmail.com, robert.jarzmik@free.fr, michal.simek@xilinx.com,
- devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-geode@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
- m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
- Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 46/46] usb: musb: gadget: add musb_match_ep() function
-Date: Fri, 31 Jul 2015 16:00:58 +0200
-Message-id: <1438351258-31578-47-git-send-email-r.baldyga@samsung.com>
-In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
-References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 790E91A3FAB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:38:42 +1000 (AEST)
+Message-ID: <55BB885C.3040305@maciej.szmigiero.name>
+Date: Fri, 31 Jul 2015 16:38:20 +0200
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+MIME-Version: 1.0
+To: Markus Pargmann <mpa@pengutronix.de>
+CC: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Timur Tabi <timur@tabi.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH 3/6] ASoC: fsl_ssi: enable AC'97 asymmetric rates
+References: <55BA35EB.6020901@maciej.szmigiero.name>
+ <20150731052719.GU30895@pengutronix.de>
+ <20150731055357.GW30895@pengutronix.de>
+In-Reply-To: <20150731055357.GW30895@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,102 +32,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add 'match_ep' callback to utilize chip-specific knowledge in endpoint matching
-process. Function does the same that was done by chip-specific code inside
-of epautoconf. Now this code can be removed from there to separate generic code
-from platform specific logic.
+Hi Markus,
 
-Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
----
- drivers/usb/gadget/epautoconf.c | 23 -----------------------
- drivers/usb/musb/musb_gadget.c  | 34 ++++++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+), 23 deletions(-)
+Thanks for looking into the changes.
 
-diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index da45371..254ece7 100644
---- a/drivers/usb/gadget/epautoconf.c
-+++ b/drivers/usb/gadget/epautoconf.c
-@@ -83,29 +83,6 @@ struct usb_ep *usb_ep_autoconfig_ss(
- 			goto found_ep;
- 	}
- 
--	/* First, apply chip-specific "best usage" knowledge.
--	 * This might make a good usb_gadget_ops hook ...
--	 */
--#ifdef CONFIG_BLACKFIN
--	if (gadget_is_musbhdrc(gadget)) {
--		if ((USB_ENDPOINT_XFER_BULK == type) ||
--		    (USB_ENDPOINT_XFER_ISOC == type)) {
--			if (USB_DIR_IN & desc->bEndpointAddress)
--				ep = gadget_find_ep_by_name(gadget, "ep5in");
--			else
--				ep = gadget_find_ep_by_name(gadget, "ep6out");
--		} else if (USB_ENDPOINT_XFER_INT == type) {
--			if (USB_DIR_IN & desc->bEndpointAddress)
--				ep = gadget_find_ep_by_name(gadget, "ep1in");
--			else
--				ep = gadget_find_ep_by_name(gadget, "ep2out");
--		} else
--			ep = NULL;
--		if (ep && usb_gadget_ep_match_desc(gadget, ep, desc, ep_comp))
--			goto found_ep;
--	}
--#endif
--
- 	/* Second, look at endpoints until an unclaimed one looks usable */
- 	list_for_each_entry (ep, &gadget->ep_list, ep_list) {
- 		if (usb_gadget_ep_match_desc(gadget, ep, desc, ep_comp))
-diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
-index 4150baf..02c3f8a 100644
---- a/drivers/usb/musb/musb_gadget.c
-+++ b/drivers/usb/musb/musb_gadget.c
-@@ -1684,6 +1684,39 @@ static int musb_gadget_pullup(struct usb_gadget *gadget, int is_on)
- 	return 0;
- }
- 
-+#ifdef CONFIG_BLACKFIN
-+static struct usb_ep *musb_match_ep(struct usb_gadget *g,
-+		struct usb_endpoint_descriptor *desc,
-+		struct usb_ss_ep_comp_descriptor *ep_comp)
-+{
-+	struct usb_ep *ep = NULL;
-+	u8 type = usb_endpoint_type(desc);
-+
-+	switch(type) {
-+	case USB_ENDPOINT_XFER_ISOC:
-+	case USB_ENDPOINT_XFER_BULK:
-+		if (usb_endpoint_dir_in(desc))
-+			ep = gadget_find_ep_by_name(g, "ep5in");
-+		else
-+			ep = gadget_find_ep_by_name(g, "ep6out");
-+		break;
-+	case USB_ENDPOINT_XFER_INT:
-+		if (usb_endpoint_dir_in(desc))
-+			ep = gadget_find_ep_by_name(g, "ep1in");
-+		else
-+			ep = gadget_find_ep_by_name(g, "ep2out");
-+	default:
-+	}
-+
-+	if (ep && usb_gadget_ep_match_desc(g, ep, desc, ep_comp))
-+		return ep;
-+
-+	return NULL;
-+}
-+#else
-+#define musb_match_ep NULL
-+#endif
-+
- static int musb_gadget_start(struct usb_gadget *g,
- 		struct usb_gadget_driver *driver);
- static int musb_gadget_stop(struct usb_gadget *g);
-@@ -1697,6 +1730,7 @@ static const struct usb_gadget_ops musb_gadget_operations = {
- 	.pullup			= musb_gadget_pullup,
- 	.udc_start		= musb_gadget_start,
- 	.udc_stop		= musb_gadget_stop,
-+	.match_ep		= musb_match_ep,
- };
- 
- /* ----------------------------------------------------------------------- */
--- 
-1.9.1
+On 31.07.2015 07:53, Markus Pargmann wrote:
+> On Fri, Jul 31, 2015 at 07:27:19AM +0200, Markus Pargmann wrote:
+>> Hi,
+>>
+>> On Thu, Jul 30, 2015 at 04:34:19PM +0200, Maciej S. Szmigiero wrote:
+>>> AC'97 bus can support asymmetric playback/capture rates
+>>> so enable them in this case in fsl_ssi driver.
+>>>
+>>> Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
+>>> ---
+>>>  sound/soc/fsl/fsl_ssi.c |    4 +++-
+>>>  1 files changed, 3 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+>>> index a83b900..7f4f0b9 100644
+>>> --- a/sound/soc/fsl/fsl_ssi.c
+>>> +++ b/sound/soc/fsl/fsl_ssi.c
+>>> @@ -1377,7 +1377,9 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+>>>  
+>>>  	/* Are the RX and the TX clocks locked? */
+>>>  	if (!of_find_property(np, "fsl,ssi-asynchronous", NULL)) {
+>>> -		ssi_private->cpu_dai_drv.symmetric_rates = 1;
+>>> +		if (!fsl_ssi_is_ac97(ssi_private))
+>>> +			ssi_private->cpu_dai_drv.symmetric_rates = 1;
+>>> +
+>>
+>> Why don't you use the DT property that is parsed here to enable
+>> asymmetric rates?
+
+Because in the AC'97 mode the driver supports only one channel config and one sample format
+anyway the remaining settings controlled by this property don't do anything.
+
+Since it should be safe to enable asymmetric rates with any AC'97 CODEC I think it is good
+to do it in driver than to add "fsl,ssi-asynchronous" to every AC'97 DT node.
+
+Also the description of this property in fsl,ssi.txt looks like that it only makes sense in
+non-AC'97 mode.
+
+> Just found the last version of this series. Please use v2 and describe
+> changes for a new iteration of a series.
+
+This is just a resubmission, there are no functional differences since
+it was originally submitted a month ago. 
+
+> There is also a different setup with AC97 which does not use DMA. See
+> the long comment at the top of the file about how ac97 is already used.
+
+I understand that the problem with FIQ handler described in comment
+on top of fsl_ssi.c only pertains incoming data, that is capture.
+
+This patch effectively does not touch capture rates as they are already
+limited to 48kHz only since this is the only capture rate defined in
+fsl_ssi AC'97 DAI driver capture capabilities.
+
+> Regards,
+> 
+> Markus
+
+Best regards,
+Maciej Szmigiero
