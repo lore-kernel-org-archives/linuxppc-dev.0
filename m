@@ -2,13 +2,13 @@ Return-Path: <r.baldyga@samsung.com>
 Received: from mailout4.samsung.com (mailout4.samsung.com [203.254.224.34])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 896E61A1A77
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:01:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3861B1A1A56
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:01:56 +1000 (AEST)
 Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
  by mailout4.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
  with ESMTP id <0NSC00XDPUYZLU50@mailout4.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:01:47 +0900 (KST)
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:01:54 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,9 +21,9 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 04/46] staging: emxx_udc: add ep capabilities support
-Date: Fri, 31 Jul 2015 16:00:16 +0200
-Message-id: <1438351258-31578-5-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 05/46] usb: chipidea: udc: add ep capabilities support
+Date: Fri, 31 Jul 2015 16:00:17 +0200
+Message-id: <1438351258-31578-6-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,103 +37,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Convert endpoint configuration to new capabilities model.
 
-Fixed typo in "epc-nulk" to "epc-bulk".
-
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/staging/emxx_udc/emxx_udc.c | 73 +++++++++++++++++++++----------------
- 1 file changed, 42 insertions(+), 31 deletions(-)
+ drivers/usb/chipidea/udc.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/drivers/staging/emxx_udc/emxx_udc.c b/drivers/staging/emxx_udc/emxx_udc.c
-index 3b7aa36..b6b76ff 100644
---- a/drivers/staging/emxx_udc/emxx_udc.c
-+++ b/drivers/staging/emxx_udc/emxx_udc.c
-@@ -3153,36 +3153,46 @@ static const struct usb_gadget_ops nbu2ss_gadget_ops = {
- 	.ioctl			= nbu2ss_gad_ioctl,
- };
+diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
+index b7cca3e..4aaa476 100644
+--- a/drivers/usb/chipidea/udc.c
++++ b/drivers/usb/chipidea/udc.c
+@@ -1624,6 +1624,20 @@ static int init_eps(struct ci_hdrc *ci)
  
--static const char g_ep0_name[] = "ep0";
--static const char g_ep1_name[] = "ep1-bulk";
--static const char g_ep2_name[] = "ep2-bulk";
--static const char g_ep3_name[] = "ep3in-int";
--static const char g_ep4_name[] = "ep4-iso";
--static const char g_ep5_name[] = "ep5-iso";
--static const char g_ep6_name[] = "ep6-bulk";
--static const char g_ep7_name[] = "ep7-bulk";
--static const char g_ep8_name[] = "ep8in-int";
--static const char g_ep9_name[] = "ep9-iso";
--static const char g_epa_name[] = "epa-iso";
--static const char g_epb_name[] = "epb-bulk";
--static const char g_epc_name[] = "epc-nulk";
--static const char g_epd_name[] = "epdin-int";
--
--static const char *gp_ep_name[NUM_ENDPOINTS] = {
--	g_ep0_name,
--	g_ep1_name,
--	g_ep2_name,
--	g_ep3_name,
--	g_ep4_name,
--	g_ep5_name,
--	g_ep6_name,
--	g_ep7_name,
--	g_ep8_name,
--	g_ep9_name,
--	g_epa_name,
--	g_epb_name,
--	g_epc_name,
--	g_epd_name,
-+static const struct {
-+	const char *name;
-+	const struct usb_ep_caps caps;
-+} ep_info[NUM_ENDPOINTS] = {
-+#define EP_INFO(_name, _caps) \
-+	{ \
-+		.name = _name, \
-+		.caps = _caps, \
-+	}
+ 			hwep->ep.name      = hwep->name;
+ 			hwep->ep.ops       = &usb_ep_ops;
 +
-+	EP_INFO("ep0",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_CONTROL, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep1-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep2-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep3in-int",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_INT, USB_EP_CAPS_DIR_IN)),
-+	EP_INFO("ep4-iso",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep5-iso",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep6-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep7-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("ep8in-int",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_INT, USB_EP_CAPS_DIR_IN)),
-+	EP_INFO("ep9-iso",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("epa-iso",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_ISO, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("epb-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("epc-bulk",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_BULK, USB_EP_CAPS_DIR_ALL)),
-+	EP_INFO("epdin-int",
-+		USB_EP_CAPS(USB_EP_CAPS_TYPE_INT, USB_EP_CAPS_DIR_IN)),
++			if (i == 0) {
++				hwep->ep.caps.type_control = true;
++			} else {
++				hwep->ep.caps.type_iso = true;
++				hwep->ep.caps.type_bulk = true;
++				hwep->ep.caps.type_int = true;
++			}
 +
-+#undef EP_INFO
- };
- 
- /*-------------------------------------------------------------------------*/
-@@ -3200,7 +3210,8 @@ static void __init nbu2ss_drv_ep_init(struct nbu2ss_udc *udc)
- 		ep->desc = NULL;
- 
- 		ep->ep.driver_data = NULL;
--		ep->ep.name = gp_ep_name[i];
-+		ep->ep.name = ep_info[i].name;
-+		ep->ep.caps = ep_info[i].caps;
- 		ep->ep.ops = &nbu2ss_ep_ops;
- 
- 		usb_ep_set_maxpacket_limit(&ep->ep,
++			if (j == TX)
++				hwep->ep.caps.dir_in = true;
++			else
++				hwep->ep.caps.dir_out = true;
++
+ 			/*
+ 			 * for ep0: maxP defined in desc, for other
+ 			 * eps, maxP is set by epautoconfig() called
 -- 
 1.9.1
