@@ -1,14 +1,14 @@
 Return-Path: <r.baldyga@samsung.com>
-Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C88BE1A1D74
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:05:56 +1000 (AEST)
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout1.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 613591A1DA8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Aug 2015 00:06:04 +1000 (AEST)
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NSC02OAUV5UB190@mailout1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:05:54 +0900 (KST)
+ with ESMTP id <0NSC02N2EV5YTYC0@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 31 Jul 2015 23:06:02 +0900 (KST)
 From: Robert Baldyga <r.baldyga@samsung.com>
 To: balbi@ti.com
 Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
@@ -21,10 +21,10 @@ Cc: gregkh@linuxfoundation.org, Peter.Chen@freescale.com,
  linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
  m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz,
  Robert Baldyga <r.baldyga@samsung.com>
-Subject: [PATCH v5 38/46] usb: gadget: epautoconf: remove pxa quirk from
- ep_matches()
-Date: Fri, 31 Jul 2015 16:00:50 +0200
-Message-id: <1438351258-31578-39-git-send-email-r.baldyga@samsung.com>
+Subject: [PATCH v5 39/46] usb: gadget: epautoconf: remove ep and desc
+ configuration from ep_matches()
+Date: Fri, 31 Jul 2015 16:00:51 +0200
+Message-id: <1438351258-31578-40-git-send-email-r.baldyga@samsung.com>
 In-reply-to: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,64 +36,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The same effect can be achieved by using capabilities flags, so now we can
-get rid of handling of hardware specific limitations in generic code.
+As function ep_matches() is used to match endpoint with usb descriptor it's
+highly unintuitive that it modifies endpoint and descriptor structures fields.
+This patch moves code configuring ep and desc from ep_matches() to
+usb_ep_autoconfig_ss(), so now function ep_matches() does nothing more than
+its name suggests.
 
 Signed-off-by: Robert Baldyga <r.baldyga@samsung.com>
 ---
- drivers/usb/gadget/epautoconf.c     | 5 -----
- drivers/usb/gadget/udc/pxa25x_udc.c | 9 +++------
- 2 files changed, 3 insertions(+), 11 deletions(-)
+ drivers/usb/gadget/epautoconf.c | 66 +++++++++++++++++++++--------------------
+ 1 file changed, 34 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
-index af4b10a..4f66e9d73 100644
+index 4f66e9d73..7bb28f1 100644
 --- a/drivers/usb/gadget/epautoconf.c
 +++ b/drivers/usb/gadget/epautoconf.c
-@@ -58,11 +58,6 @@ ep_matches (
- 		 */
- 		if (!ep->caps.type_int && !ep->caps.type_bulk)
- 			return 0;
--		/* for now, avoid PXA "interrupt-in";
--		 * it's documented as never using DATA1.
--		 */
--		if (gadget_is_pxa(gadget) && ep->caps.type_int)
--			return 0;
- 		break;
+@@ -82,13 +82,6 @@ ep_matches (
+ 
  	}
  
-diff --git a/drivers/usb/gadget/udc/pxa25x_udc.c b/drivers/usb/gadget/udc/pxa25x_udc.c
-index b4d25dc..b82cb14 100644
---- a/drivers/usb/gadget/udc/pxa25x_udc.c
-+++ b/drivers/usb/gadget/udc/pxa25x_udc.c
-@@ -1899,8 +1899,7 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep5in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
--			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
--						USB_EP_CAPS_DIR_IN),
-+			.caps		= USB_EP_CAPS(0, 0),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
-@@ -1978,8 +1977,7 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep10in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
--			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
--						USB_EP_CAPS_DIR_IN),
-+			.caps		= USB_EP_CAPS(0, 0),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
-@@ -2057,8 +2055,7 @@ static struct pxa25x_udc memory = {
- 			.name		= "ep15in-int",
- 			.ops		= &pxa25x_ep_ops,
- 			.maxpacket	= INT_FIFO_SIZE,
--			.caps		= USB_EP_CAPS(USB_EP_CAPS_TYPE_INT,
--						USB_EP_CAPS_DIR_IN),
-+			.caps		= USB_EP_CAPS(0, 0),
- 		},
- 		.dev		= &memory,
- 		.fifo_size	= INT_FIFO_SIZE,
+-	/*
+-	 * If the protocol driver hasn't yet decided on wMaxPacketSize
+-	 * and wants to know the maximum possible, provide the info.
+-	 */
+-	if (desc->wMaxPacketSize == 0)
+-		desc->wMaxPacketSize = cpu_to_le16(ep->maxpacket_limit);
+-
+ 	/* endpoint maxpacket size is an input parameter, except for bulk
+ 	 * where it's an output parameter representing the full speed limit.
+ 	 * the usb spec fixes high speed bulk maxpacket at 512 bytes.
+@@ -119,31 +112,6 @@ ep_matches (
+ 
+ 	/* MATCH!! */
+ 
+-	/* report address */
+-	desc->bEndpointAddress &= USB_DIR_IN;
+-	if (isdigit (ep->name [2])) {
+-		u8	num = simple_strtoul (&ep->name [2], NULL, 10);
+-		desc->bEndpointAddress |= num;
+-	} else if (desc->bEndpointAddress & USB_DIR_IN) {
+-		if (++gadget->in_epnum > 15)
+-			return 0;
+-		desc->bEndpointAddress = USB_DIR_IN | gadget->in_epnum;
+-	} else {
+-		if (++gadget->out_epnum > 15)
+-			return 0;
+-		desc->bEndpointAddress |= gadget->out_epnum;
+-	}
+-
+-	/* report (variable) full speed bulk maxpacket */
+-	if ((USB_ENDPOINT_XFER_BULK == type) && !ep_comp) {
+-		int size = ep->maxpacket_limit;
+-
+-		/* min() doesn't work on bitfields with gcc-3.5 */
+-		if (size > 64)
+-			size = 64;
+-		desc->wMaxPacketSize = cpu_to_le16(size);
+-	}
+-	ep->address = desc->bEndpointAddress;
+ 	return 1;
+ }
+ 
+@@ -280,6 +248,40 @@ struct usb_ep *usb_ep_autoconfig_ss(
+ 	/* Fail */
+ 	return NULL;
+ found_ep:
++
++	/*
++	 * If the protocol driver hasn't yet decided on wMaxPacketSize
++	 * and wants to know the maximum possible, provide the info.
++	 */
++	if (desc->wMaxPacketSize == 0)
++		desc->wMaxPacketSize = cpu_to_le16(ep->maxpacket_limit);
++
++	/* report address */
++	desc->bEndpointAddress &= USB_DIR_IN;
++	if (isdigit(ep->name[2])) {
++		u8 num = simple_strtoul(&ep->name[2], NULL, 10);
++		desc->bEndpointAddress |= num;
++	} else if (desc->bEndpointAddress & USB_DIR_IN) {
++		if (++gadget->in_epnum > 15)
++			return 0;
++		desc->bEndpointAddress = USB_DIR_IN | gadget->in_epnum;
++	} else {
++		if (++gadget->out_epnum > 15)
++			return 0;
++		desc->bEndpointAddress |= gadget->out_epnum;
++	}
++
++	/* report (variable) full speed bulk maxpacket */
++	if ((type == USB_ENDPOINT_XFER_BULK) && !ep_comp) {
++		int size = ep->maxpacket_limit;
++
++		/* min() doesn't work on bitfields with gcc-3.5 */
++		if (size > 64)
++			size = 64;
++		desc->wMaxPacketSize = cpu_to_le16(size);
++	}
++
++	ep->address = desc->bEndpointAddress;
+ 	ep->desc = NULL;
+ 	ep->comp_desc = NULL;
+ 	ep->claimed = true;
 -- 
 1.9.1
