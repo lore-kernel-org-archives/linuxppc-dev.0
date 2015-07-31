@@ -1,27 +1,26 @@
-Return-Path: <mpa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:67c:670:201:290:27ff:fe1d:cc33])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E11511A02A5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 15:58:48 +1000 (AEST)
-Date: Fri, 31 Jul 2015 07:58:43 +0200
-From: Markus Pargmann <mpa@pengutronix.de>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH 6/6] ASoC: fsl_ssi: adjust set DAI format in AC'97 mode
-Message-ID: <20150731055843.GX30895@pengutronix.de>
-References: <55BA364E.1000803@maciej.szmigiero.name>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07EED1A05A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jul 2015 16:37:25 +1000 (AEST)
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id CA20614031E
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jul 2015 16:37:22 +1000 (AEST)
+Received: by pabkd10 with SMTP id kd10so35843950pab.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Jul 2015 23:37:21 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
+ imunsie@au.ibm.com, Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] cxl: Fix ambiguous else warnings
+Date: Fri, 31 Jul 2015 16:35:08 +1000
+Message-Id: <1438324508-30341-1-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="U8v/hV883cEE9JJG"
-In-Reply-To: <55BA364E.1000803@maciej.szmigiero.name>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,92 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Every time I build cxl I see the following warnings:
 
---U8v/hV883cEE9JJG
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+/scratch/dja/linux-capi/drivers/misc/cxl/pci.c: In function ‘sanitise_afu_regs’:
+/scratch/dja/linux-capi/drivers/misc/cxl/pci.c:712:6: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wparentheses]
+   if (reg & CXL_PSL_DSISR_TRANS)
+      ^
+/scratch/dja/linux-capi/drivers/misc/cxl/irq.c: In function ‘fail_psl_irq’:
+/scratch/dja/linux-capi/drivers/misc/cxl/irq.c:184:5: warning: suggest explicit braces to avoid ambiguous ‘else’ [-Wparentheses]
+  if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
+     ^
 
-On Thu, Jul 30, 2015 at 04:35:58PM +0200, Maciej S. Szmigiero wrote:
-> Adjust set DAI format function in fsl_ssi driver so it
-> doesn't fail and clears RXDIR in AC'97 mode.
->=20
-> Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
-> ---
->  sound/soc/fsl/fsl_ssi.c |    8 +++++---
->  1 files changed, 5 insertions(+), 3 deletions(-)
->=20
-> diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-> index 8e5ff5e..37aabe3 100644
-> --- a/sound/soc/fsl/fsl_ssi.c
-> +++ b/sound/soc/fsl/fsl_ssi.c
-> @@ -900,14 +900,16 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
->  		scr &=3D ~CCSR_SSI_SCR_SYS_CLK_EN;
->  		break;
->  	default:
-> -		return -EINVAL;
-> +		if (!fsl_ssi_is_ac97(ssi_private))
-> +			return -EINVAL;
+They're annoying. Fix them by inserting the braces.
 
-I think it would be better to add another case for the other mode which
-is supported (AC97) instead of using the default case.
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ drivers/misc/cxl/irq.c | 5 +++--
+ drivers/misc/cxl/pci.c | 5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
->  	}
-> =20
->  	stcr |=3D strcr;
->  	srcr |=3D strcr;
-> =20
-> -	if (ssi_private->cpu_dai_drv.symmetric_rates) {
-> -		/* Need to clear RXDIR when using SYNC mode */
-> +	if (ssi_private->cpu_dai_drv.symmetric_rates
-> +		|| fsl_ssi_is_ac97(ssi_private)) {
-
-Please fix this indention. Most of the driver is written with 2 tab
-indention after a line break and the new policy seems to be to indent on
-the opening bracket.
-
-Regards,
-
-Markus
-
-> +		/* Need to clear RXDIR when using SYNC or AC97 mode */
->  		srcr &=3D ~CCSR_SSI_SRCR_RXDIR;
->  		scr |=3D CCSR_SSI_SCR_SYN;
->  	}
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->=20
-
---=20
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-
---U8v/hV883cEE9JJG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVuw6TAAoJEEpcgKtcEGQQWCUP/1X5ivApFgjHYKLYs70UCkRq
-o8NtSUErKFEYCEPhPDmcGX3jN3N/EM+c+C4g8IrJTl1wTbLy9zDO1ubf/s8IJJh+
-rHerNqgCAANJZUo4qHFO+hbH2400VaxhIt1nxTvAXEese9P3lTVIYg9jPbstXdDH
-6jTBSR4at5xI+KfzAyc6FBW915HuKF/lShNUDfO3tddp1X347cS0PbEVdMYdWsSp
-t35raOl2ItnqzNCbZs9brJUtgMWsebQMv3/+4vh5qK7LdCMPzrASUWKSTspt2chB
-H4U03A37X/IbkXka6NQ/DUQg4hA3bOGzR2Npl/T6ifzUgsRMuQLbekV8wYX9a9FX
-tw1RRnS3rFDADkzN32dw5qUdDlyIq7D7rW7huYxRM4jnXc4etJzPJOefZP4jTXVC
-te0UBpHZZ3QJRP5L/Dt34HAs9ij7Kb+MkgazAcYV3ANj8AqPTumGp5Hy7UnkRmS4
-qB2+tqxILCJn0NwqdnuPPHXR3VxI+0yeuT5YvWI229F1vqBw0OyKp7YTVunwAlYR
-W4XyWbWwKarC+dq1RhaVkMDp8tcgWmVWL7LgZQVizT+jVhqP2BNTpBTUgSItaoPU
-o4F60PYmg7jecpcSx7m488RxArjcjxNIrwYLoDjlr3yvcJKFy0nmxi8Z2j3oUIXJ
-jZe2T6k1GIOWaqWWSgVJ
-=o9vG
------END PGP SIGNATURE-----
-
---U8v/hV883cEE9JJG--
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index 121ec48f3ab4..c11e583a15a9 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -181,10 +181,11 @@ static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+ 
+ static irqreturn_t fail_psl_irq(struct cxl_afu *afu, struct cxl_irq_info *irq_info)
+ {
+-	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS)
++	if (irq_info->dsisr & CXL_PSL_DSISR_TRANS) {
+ 		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+-	else
++	} else {
+ 		cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
++	}
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 6d2e538331b6..29c7e4eb309a 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -709,10 +709,11 @@ static int sanitise_afu_regs(struct cxl_afu *afu)
+ 	reg = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
+ 	if (reg) {
+ 		dev_warn(&afu->dev, "AFU had pending DSISR: %#.16llx\n", reg);
+-		if (reg & CXL_PSL_DSISR_TRANS)
++		if (reg & CXL_PSL_DSISR_TRANS) {
+ 			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_AE);
+-		else
++		} else {
+ 			cxl_p2n_write(afu, CXL_PSL_TFC_An, CXL_PSL_TFC_An_A);
++		}
+ 	}
+ 	reg = cxl_p1n_read(afu, CXL_PSL_SERR_An);
+ 	if (reg) {
+-- 
+2.1.4
