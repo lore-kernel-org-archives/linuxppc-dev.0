@@ -1,22 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dave@stgolabs.net>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 63EC71A1D5B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 11:37:09 +1000 (AEST)
-Message-ID: <1438565822.8863.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] cxl: Fix ambiguous else warnings
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Andreas Schwab <schwab@linux-m68k.org>, Thomas Huth <thuth@redhat.com>,
- linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
-Date: Mon, 03 Aug 2015 11:37:02 +1000
-In-Reply-To: <1438562877.31010.16.camel@axtens.net>
-References: <1438324508-30341-1-git-send-email-dja__13473.5064967119$1438324749$gmane$org@axtens.net>
- <87wpxg3cvv.fsf@igel.home> <1438562207.31010.14.camel@axtens.net>
- <1438562604.8863.1.camel@ellerman.id.au>
- <1438562877.31010.16.camel@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D4381A1D76
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 11:40:03 +1000 (AEST)
+Message-ID: <1438548631.2249.125.camel@stgolabs.net>
+Subject: Re: [PATCH v2] arch: use WRITE_ONCE/READ_ONCE in
+ smp_store_release/smp_load_acquire
+From: Davidlohr Bueso <dave@stgolabs.net>
+To: Andrey Konovalov <andreyknvl@google.com>
+Cc: Russell King <linux@arm.linux.org.uk>, Catalin Marinas
+ <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Tony Luck
+ <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, James Hogan
+ <james.hogan@imgtec.com>, Ralf Baechle <ralf@linux-mips.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Martin
+ Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens
+ <heiko.carstens@de.ibm.com>, linux390@de.ibm.com, "David S. Miller"
+ <davem@davemloft.net>,  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
+ <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,  x86@kernel.org, Arnd
+ Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>, Alexander
+ Duyck <alexander.h.duyck@redhat.com>,  Andre Przywara
+ <andre.przywara@arm.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Borislav Petkov <bp@suse.de>, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, Dmitry Vyukov
+ <dvyukov@google.com>, Christian Borntraeger <borntraeger@de.ibm.com>
+In-Reply-To: <1438528264-714-1-git-send-email-andreyknvl@google.com>
+References: <1438528264-714-1-git-send-email-andreyknvl@google.com>
 Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 02 Aug 2015 13:50:31 -0700
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,15 +42,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-08-03 at 10:47 +1000, Daniel Axtens wrote:
-> > This should be a static inline, not a #define.
-> > 
-> I'm changing them to static inlines at the moment. Would you prefer a v3
-> of the EEH patches, or a new patch on top?
+On Sun, 2015-08-02 at 17:11 +0200, Andrey Konovalov wrote:
+> Replace ACCESS_ONCE() macro in smp_store_release() and smp_load_acquire()
+> with WRITE_ONCE() and READ_ONCE() on x86, arm, arm64, ia64, metag, mips,
+> powerpc, s390, sparc and asm-generic since ACCESS_ONCE does not work
+> reliably on non-scalar types.
+> 
+> WRITE_ONCE() and READ_ONCE() were introduced in the commits 230fa253df63
+> ("kernel: Provide READ_ONCE and ASSIGN_ONCE") and 43239cbe79fc ("kernel:
+> Change ASSIGN_ONCE(val, x) to WRITE_ONCE(x, val)").
+> 
+> Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
 
-Without looking closer I think a v3.
-
-ie. before you change the logic of the macro to include an if, it should become
-a static inline.
-
-cheers
+Acked-by: Davidlohr Bueso <dbueso@suse.de>
