@@ -1,25 +1,29 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0106.outbound.protection.outlook.com [65.55.169.106])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DDCC21A0631
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 17:49:35 +1000 (AEST)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2 2/2] powerpc/mpc85xx: Add FSL QorIQ DPAA FMan support
- to the SoC device tree(s)
-Date: Mon, 3 Aug 2015 07:49:29 +0000
-Message-ID: <DM2PR03MB509D0BD6BD59FE38B692545E6770@DM2PR03MB509.namprd03.prod.outlook.com>
-References: <1438230794-10983-1-git-send-email-igal.liberman@freescale.com>
- <1438287143.2993.367.camel@freescale.com>
-In-Reply-To: <1438287143.2993.367.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF2411A1BEF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 18:22:42 +1000 (AEST)
+Received: by obbop1 with SMTP id op1so93986059obb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Aug 2015 01:22:40 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1438334166-12579-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1438334166-12579-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Date: Mon, 3 Aug 2015 10:22:40 +0200
+Message-ID: <CACRpkdbL14+oP6wb4C7C1KndmeJHNNGytu9xvx4Wxns=zXUDKg@mail.gmail.com>
+Subject: Re: [PATCH RESENT] powerpc: dts: don't fall back to fsl, pq3-gpio for
+ fsl,mpc8572-gpio devices
+From: Linus Walleij <linus.walleij@linaro.org>
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Alexandre Courbot <gnurou@gmail.com>,
+ "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+ Sascha Hauer <kernel@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDMw
-LCAyMDE1IDExOjEyIFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBCdWN1
-cg0KPiBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-Zw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDIvMl0gcG93ZXJwYy9tcGM4NXh4OiBBZGQgRlNM
-IFFvcklRIERQQUEgRk1hbg0KPiBzdXBwb3J0IHRvIHRoZSBTb0MgZGV2aWNlIHRyZWUocykNCj4g
-DQo+IE9uIFRodSwgMjAxNS0wNy0zMCBhdCAwNzozMyArMDMwMCwgSWdhbC5MaWJlcm1hbiB3cm90
-ZToNCj4gPiBAQCAtMzA3LDQgKzMwNywxMTcgQEANCj4gPiAgICAgICAgICAgICAgIHJlZyA9IDww
-eGUwMDAwIDB4MTAwMD47DQo+ID4gICAgICAgICAgICAgICBmc2wsaGFzLXJzdGNyOw0KPiA+ICAg
-ICAgIH07DQo+ID4gKw0KPiA+ICsgICAgICBmbWFuQDEwMDAwMHsNCj4gPiArICAgICAgICAgICAg
-ICNhZGRyZXNzLWNlbGxzID0gPDE+Ow0KPiA+ICsgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8
-MT47DQo+ID4gKyAgICAgICAgICAgICBjZWxsLWluZGV4ID0gPDA+Ow0KPiA+ICsgICAgICAgICAg
-ICAgcmFuZ2VzID0gPDAgMHgxMDAwMDAgMHgxMDAwMDA+Ow0KPiA+ICsgICAgICAgICAgICAgY29t
-cGF0aWJsZSA9ICJmc2wsZm1hbiI7DQo+ID4gKyAgICAgICAgICAgICByZWcgPSA8MHgxMDAwMDAg
-MHgxMDAwMDA+Ow0KPiA+ICsgICAgICAgICAgICAgaW50ZXJydXB0cyA9IDwyNCAyIDAgMD4sIDwx
-NiAyIDEgMzA+Ow0KPiA+ICsgICAgICAgICAgICAgY2xvY2stZnJlcXVlbmN5ID0gPDA+Ow0KPiA+
-ICsgICAgICAgICAgICAgZnNsLHFtYW4tY2hhbm5lbC1yYW5nZSA9IDwweDQwIDB4Nz47DQo+IA0K
-PiBmbWFuIGlzIHN1cHBvc2VkIHRvIGhhdmUgY2xvY2tzL2Nsb2NrLW5hbWVzLCBub3QgY2xvY2st
-ZnJlcXVlbmN5Lg0KPiANCg0KVGhlIG5ldyBjbG9jayBiaW5kaW5nIGRvZXNuJ3Qgc3VwcG9ydCBQ
-MTAyMyB5ZXQuIA0KSSdsbCBkcm9wIFAxMDIzIGZyb20gdGhpcyBzdWJtaXNzaW9uLCBpdCdzIG5v
-dCBzdXBwb3J0ZWQgY3VycmVudGx5IGJ5IHRoZSBkcml2ZXIsIHdlJ2xsIHJlLWFkZCBpdCBsYXRl
-ci4gDQoNCj4gLVNjb3R0DQoNCg==
+On Fri, Jul 31, 2015 at 11:16 AM, Uwe Kleine-K=C3=B6nig
+<u.kleine-koenig@pengutronix.de> wrote:
+
+> While the handling of fsl,pq3-gpio and fsl,mpc8572-gpio is done in the
+> same driver and the two hardly differ, the latter controller needs a
+> workaround for an erratum in the gpio_get callback. To make this
+> difference more explicit remove fsl,pq3-gpio from the list of
+> compatibles for mpc8572 machines.
+>
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
+
+Yours,
+Linus Walleij
