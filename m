@@ -1,20 +1,21 @@
 Return-Path: <chenhui.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0111.outbound.protection.outlook.com [207.46.100.111])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F2A91A02C2
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 21:10:43 +1000 (AEST)
-Date: Mon, 3 Aug 2015 19:10:32 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 247161A02A5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 21:14:56 +1000 (AEST)
+Date: Mon, 3 Aug 2015 19:14:46 +0800
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: add sleep and deep sleep support
+Subject: Re: [PATCH v5] powerpc/rcpm: add RCPM driver
 To: Scott Wood <scottwood@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <Jason.Jin@freescale.com>
-Message-ID: <1438600232.7515.0@remotesmtp.freescale.net>
-In-Reply-To: <1438397837.2097.4.camel@freescale.com>
-References: <1437741961-6663-1-git-send-email-chenhui.zhao@freescale.com>
- <1438397837.2097.4.camel@freescale.com>
+CC: <Yuantian.Tang@freescale.com>, <b07421@freescale.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <devicetree@vger.kernel.org>
+Message-ID: <1438600486.7515.1@remotesmtp.freescale.net>
+In-Reply-To: <1438389906.19345.101.camel@freescale.com>
+References: <1435304656-34505-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1438389906.19345.101.camel@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,54 +29,29 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On Sat, Aug 1, 2015 at 10:57 AM, Scott Wood <scottwood@freescale.com> 
+On Sat, Aug 1, 2015 at 8:45 AM, Scott Wood <scottwood@freescale.com> 
 wrote:
-> On Fri, 2015-07-24 at 20:46 +0800, Chenhui Zhao wrote:
->>  +static void mpc85xx_pmc_set_wake(struct device *dev, void *enable)
->>   {
->>        int ret;
->>  +     u32 value[2];
->>  +
->>  +     if (!device_may_wakeup(dev))
->>  +             return;
->>  +
->>  +     if (!pmc_regs) {
->>  +             dev_err(dev, "%s: PMC is unavailable\n", __func__);
->>  +             return;
->>  +     }
->>  +
->>  +     ret = of_property_read_u32_array(dev->of_node, "sleep", 
->> value, 2);
-> 
-> This will crash on any device without an of_node.
-
-Add this before this line:
-if (!dev->of_node)
-	return;
-
-> 
-> 
->>  +     if (ret) {
->>  +             dev_dbg(dev, "%s: Can not find the \"sleep\" 
->> property.\n",
->>  +                     __func__);
->>  +             return;
->>  +     }
->>  +
->>  +     if (*(int *)enable)
->>  +             pmc_pmcdr_mask &= ~value[1];
+> On Fri, 2015-06-26 at 15:44 +0800, Yuantian.Tang@freescale.com wrote:
+>>  +static void rcpm_v1_set_ip_power(bool enable, u32 *mask)
+>>  +{
+>>  +     if (enable)
+>>  +             setbits32(&rcpm_v1_regs->ippdexpcr, *mask);
 >>  +     else
->>  +             pmc_pmcdr_mask |= value[1];
+>>  +             clrbits32(&rcpm_v1_regs->ippdexpcr, *mask);
+>>  +}
 >>  +
->>  +     if ((value[1] & 0xe0) && (pmc_flag & PMC_LOSSLESS))
->>  +             pmc_powmgtcsr = POWMGTCSR_LOSSLESS;
+>>  +static void rcpm_v2_set_ip_power(bool enable, u32 *mask)
+>>  +{
+>>  +     if (enable)
+>>  +             setbits32(&rcpm_v2_regs->ippdexpcr[0], *mask);
+>>  +     else
+>>  +             clrbits32(&rcpm_v2_regs->ippdexpcr[0], *mask);
 >>  +}
 > 
-> What is 0xe0?
+> Why do these take "u32 *mask" instead of "u32 mask"?
 > 
 > -Scott
 
-This is a mask value for the register PMCDR, which includes all bits 
-corresponding to eTSEC. Will use a macro instead.
+I think it can be used in the case where there are several mask values.
 
 -Chenhui
