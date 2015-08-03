@@ -1,42 +1,20 @@
-Return-Path: <andreyknvl@google.com>
-Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
- [IPv6:2a00:1450:400c:c05::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 01C831A0D01
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 01:11:30 +1000 (AEST)
-Received: by wibud3 with SMTP id ud3so84683588wib.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Aug 2015 08:11:26 -0700 (PDT)
-From: Andrey Konovalov <andreyknvl@google.com>
-To: Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
- Ralf Baechle <ralf@linux-mips.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
- "David S. Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>,
- Alexander Duyck <alexander.h.duyck@redhat.com>,
- Andre Przywara <andre.przywara@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Borislav Petkov <bp@suse.de>, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: Andrey Konovalov <andreyknvl@google.com>,
- Dmitry Vyukov <dvyukov@google.com>,
- Christian Borntraeger <borntraeger@de.ibm.com>,
- Davidlohr Bueso <dave@stgolabs.net>
-Subject: [PATCH v2] arch: use WRITE_ONCE/READ_ONCE in
- smp_store_release/smp_load_acquire
-Date: Sun,  2 Aug 2015 17:11:04 +0200
-Message-Id: <1438528264-714-1-git-send-email-andreyknvl@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 82DE01A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 10:08:26 +1000 (AEST)
+Message-ID: <1438560499.8863.0.camel@ellerman.id.au>
+Subject: [git pull] Please pull powerpc/linux.git powerpc-4.2-3 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: aik@ozlabs.ru, alistair@popple.id.au, gwshan@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ luis.henriques@canonical.com, Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Mon, 03 Aug 2015 10:08:19 +1000
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-Of+8wDFqmeFLtQ2VsC8E"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,236 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace ACCESS_ONCE() macro in smp_store_release() and smp_load_acquire()
-with WRITE_ONCE() and READ_ONCE() on x86, arm, arm64, ia64, metag, mips,
-powerpc, s390, sparc and asm-generic since ACCESS_ONCE does not work
-reliably on non-scalar types.
 
-WRITE_ONCE() and READ_ONCE() were introduced in the commits 230fa253df63
-("kernel: Provide READ_ONCE and ASSIGN_ONCE") and 43239cbe79fc ("kernel:
-Change ASSIGN_ONCE(val, x) to WRITE_ONCE(x, val)").
+--=-Of+8wDFqmeFLtQ2VsC8E
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andrey Konovalov <andreyknvl@google.com>
----
-Changed in v2:
-  - Other archs besides x86.
+Hi Linus,
 
- arch/arm/include/asm/barrier.h      | 4 ++--
- arch/arm64/include/asm/barrier.h    | 4 ++--
- arch/ia64/include/asm/barrier.h     | 4 ++--
- arch/metag/include/asm/barrier.h    | 4 ++--
- arch/mips/include/asm/barrier.h     | 4 ++--
- arch/powerpc/include/asm/barrier.h  | 4 ++--
- arch/s390/include/asm/barrier.h     | 4 ++--
- arch/sparc/include/asm/barrier_64.h | 4 ++--
- arch/x86/include/asm/barrier.h      | 8 ++++----
- include/asm-generic/barrier.h       | 4 ++--
- 10 files changed, 22 insertions(+), 22 deletions(-)
+Please pull some more powerpc fixes for 4.2:
 
-diff --git a/arch/arm/include/asm/barrier.h b/arch/arm/include/asm/barrier.h
-index 6c2327e..7039357 100644
---- a/arch/arm/include/asm/barrier.h
-+++ b/arch/arm/include/asm/barrier.h
-@@ -67,12 +67,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
- 	___p1;								\
-diff --git a/arch/arm64/include/asm/barrier.h b/arch/arm64/include/asm/barrier.h
-index 0fa47c4..ef93b20 100644
---- a/arch/arm64/include/asm/barrier.h
-+++ b/arch/arm64/include/asm/barrier.h
-@@ -44,12 +44,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
- 	___p1;								\
-diff --git a/arch/ia64/include/asm/barrier.h b/arch/ia64/include/asm/barrier.h
-index 843ba43..df896a1 100644
---- a/arch/ia64/include/asm/barrier.h
-+++ b/arch/ia64/include/asm/barrier.h
-@@ -66,12 +66,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
- 	___p1;								\
-diff --git a/arch/metag/include/asm/barrier.h b/arch/metag/include/asm/barrier.h
-index 5a696e5..172b7e5 100644
---- a/arch/metag/include/asm/barrier.h
-+++ b/arch/metag/include/asm/barrier.h
-@@ -90,12 +90,12 @@ static inline void fence(void)
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
- 	___p1;								\
-diff --git a/arch/mips/include/asm/barrier.h b/arch/mips/include/asm/barrier.h
-index 7ecba84..752e0b8 100644
---- a/arch/mips/include/asm/barrier.h
-+++ b/arch/mips/include/asm/barrier.h
-@@ -133,12 +133,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
- 	___p1;								\
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index 51ccc72..0eca6ef 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -76,12 +76,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_lwsync();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_lwsync();							\
- 	___p1;								\
-diff --git a/arch/s390/include/asm/barrier.h b/arch/s390/include/asm/barrier.h
-index e6f8615..d48fe01 100644
---- a/arch/s390/include/asm/barrier.h
-+++ b/arch/s390/include/asm/barrier.h
-@@ -42,12 +42,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
- 	___p1;								\
-diff --git a/arch/sparc/include/asm/barrier_64.h b/arch/sparc/include/asm/barrier_64.h
-index 809941e..14a9286 100644
---- a/arch/sparc/include/asm/barrier_64.h
-+++ b/arch/sparc/include/asm/barrier_64.h
-@@ -60,12 +60,12 @@ do {	__asm__ __volatile__("ba,pt	%%xcc, 1f\n\t" \
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
- 	___p1;								\
-diff --git a/arch/x86/include/asm/barrier.h b/arch/x86/include/asm/barrier.h
-index e51a8f8..d2bcfbe 100644
---- a/arch/x86/include/asm/barrier.h
-+++ b/arch/x86/include/asm/barrier.h
-@@ -57,12 +57,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
- 	___p1;								\
-@@ -74,12 +74,12 @@ do {									\
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	barrier();							\
- 	___p1;								\
-diff --git a/include/asm-generic/barrier.h b/include/asm-generic/barrier.h
-index 55e3abc..b42afad 100644
---- a/include/asm-generic/barrier.h
-+++ b/include/asm-generic/barrier.h
-@@ -108,12 +108,12 @@
- do {									\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
--	ACCESS_ONCE(*p) = (v);						\
-+	WRITE_ONCE(*p, v);						\
- } while (0)
- 
- #define smp_load_acquire(p)						\
- ({									\
--	typeof(*p) ___p1 = ACCESS_ONCE(*p);				\
-+	typeof(*p) ___p1 = READ_ONCE(*p);				\
- 	compiletime_assert_atomic_type(*p);				\
- 	smp_mb();							\
- 	___p1;								\
--- 
-2.5.0.rc2.392.g76e840b
+The following changes since commit c5dfd654d0ec0a28fe81e7bd4d4fd984a9855e09=
+:
+
+  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net (2015-07-22=
+ 14:45:25 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powe=
+rpc-4.2-3
+
+for you to fetch changes up to b8d65e9662b1ffb3b52a65fd11b0b968022dc6a1:
+
+  powerpc/eeh-powernv: Fix unbalanced IRQ warning (2015-07-30 19:01:32 +100=
+0)
+
+----------------------------------------------------------------
+powerpc fixes for 4.2 #2
+
+- TCE table memory calculation fix from Alexey
+- Build fix for ans-lcd from Luis
+- Unbalanced IRQ warning fix from Alistair
+
+----------------------------------------------------------------
+Alexey Kardashevskiy (1):
+      powerpc/powernv/ioda2: Fix calculation for memory allocated for TCE t=
+able
+
+Alistair Popple (1):
+      powerpc/eeh-powernv: Fix unbalanced IRQ warning
+
+Luis Henriques (1):
+      macintosh/ans-lcd: fix build failure after module_init/exit relocatio=
+n
+
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c    | 11 ++++++-----
+ drivers/macintosh/ans-lcd.c                  |  2 +-
+ 3 files changed, 8 insertions(+), 7 deletions(-)
+
+
+
+--=-Of+8wDFqmeFLtQ2VsC8E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJVvrDzAAoJEFHr6jzI4aWAYZUP/RpEjp7CIJK8y/1uWrigactb
+W8i121f11AwW2YTMvKu8P2QuhqHe8pznGwMeJbmDmUS8GTuNxQRViiV0KwL0mTTx
+vOT1zi3tlMSuG7smvRsXIUXvk+ZHHAMGp8+1qJXjodhwQEK0LyPZI9tqm7fOsvxn
+NkIeVDXVWJWeB46HhHd20OGqpPNgsksm5F6zGjx6EcDhHCoprtRlroIiHnqhULGe
+s9ZtxehXss6ArCu8Uos4D5PgsHNt+/mPRdz5+8XJfwH00dR+uQJBg9n3uX12c7Gy
+C6SgDynqyyBK7yKofr9QnQ1Pm4MllkOi4TSTRNRFAer9+vytDKcFwz7p+aGw+12z
+FBZF4gw8HnlNNh/dFPQAQGbF7bFyAXvR4k4zPGkYfCUJx9NhXOd+rBjVVdfmT+59
+KRhikUirE2PLT38ooB5yS1Q8tFrcZO6Sp5UqU4X0dt55/goeUUJyyuk1vc3A6O+v
+Db+tRO8TgHET5fjrxVcgR55cvOTZtW4+QvUKpWlgg/sl8vL8lf6aOV0OXoMF1hi0
+elyjzwQzocYnrsFNrFxFkV+/watWCivPP082Enq6kr9fkthg6OjUJR4NbBMVtJJJ
+fRWTi8F7OppyfSz2/CbnF4EJWi14zzFiHOSKTL0kTfyND2XEnca+5lz6OJLJwN2f
+JlxYBTVihGGWhSZ5i5Re
+=ULZx
+-----END PGP SIGNATURE-----
+
+--=-Of+8wDFqmeFLtQ2VsC8E--
