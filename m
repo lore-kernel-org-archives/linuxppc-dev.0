@@ -1,25 +1,38 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0106.outbound.protection.outlook.com [65.55.169.106])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 114CA1A0DAB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 17:36:28 +1000 (AEST)
-From: Liberman Igal <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2 1/2] powerpc/mpc85xx: Create dts components for the FSL
- QorIQ DPAA FMan
-Date: Mon, 3 Aug 2015 07:36:22 +0000
-Message-ID: <DM2PR03MB50930473A7D6DD5B7FD7D20E6770@DM2PR03MB509.namprd03.prod.outlook.com>
-References: <1438230764-10951-1-git-send-email-igal.liberman@freescale.com>
- <1438286389.2993.365.camel@freescale.com>
-In-Reply-To: <1438286389.2993.365.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 63EEB1A1A66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 17:36:39 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 3 Aug 2015 13:06:37 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id CB811E001A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 13:10:46 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t737aBZc45023452
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Aug 2015 13:06:12 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t737a9Sm007989
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Aug 2015 13:06:11 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>
+Subject: [PATCH v7 6/7] powerpc/powernv: generic nest pmu event functions
+Date: Mon,  3 Aug 2015 13:05:58 +0530
+Message-Id: <1438587359-6165-7-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1438587359-6165-1-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1438587359-6165-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +42,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDMw
-LCAyMDE1IDExOjAwIFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBCdWN1
-cg0KPiBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-Zw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDEvMl0gcG93ZXJwYy9tcGM4NXh4OiBDcmVhdGUg
-ZHRzIGNvbXBvbmVudHMgZm9yDQo+IHRoZSBGU0wgUW9ySVEgRFBBQSBGTWFuDQo+IA0KPiBPbiBU
-aHUsIDIwMTUtMDctMzAgYXQgMDc6MzIgKzAzMDAsIElnYWwuTGliZXJtYW4gd3JvdGU6DQo+ID4g
-K2ZtYW4wOiAgZm1hbkA0MDAwMDB7DQo+ID4gKyAgICAgI2FkZHJlc3MtY2VsbHMgPSA8MT47DQo+
-ID4gKyAgICAgI3NpemUtY2VsbHMgPSA8MT47DQo+ID4gKyAgICAgY2VsbC1pbmRleCA9IDwwPjsN
-Cj4gPiArICAgICBjb21wYXRpYmxlID0gImZzbCxmbWFuIjsNCj4gPiArICAgICByYW5nZXMgPSA8
-MCAweDQwMDAwMCAweDEwMDAwMD47DQo+ID4gKyAgICAgcmVnID0gPDB4NDAwMDAwIDB4MTAwMDAw
-PjsNCj4gPiArICAgICBpbnRlcnJ1cHRzID0gPDk2IDIgMCAwPiwgPDE2IDIgMSAxPjsNCj4gPiAr
-ICAgICBjbG9ja3MgPSA8JmNsb2NrZ2VuIDMgMD47DQo+ID4gKyAgICAgY2xvY2stbmFtZXMgPSAi
-Zm0wY2xrIjsNCj4gDQo+IGNsb2NrLW5hbWVzIHNob3VsZCBiZSAiZm1hbmNsayIgYXMgcGVyIHRo
-ZSBiaW5kaW5nLiAgQW5kIHdoeSB3b3VsZCB5b3UNCj4gd2FudCB0aGUgZHJpdmVyIHRvIGhhdmUg
-dG8gZW5jb2RlIHRoZSBmbWFuIGluZGV4IGludG8gdGhlIG5hbWUgaW4gb3JkZXIgdG8NCj4gbG9v
-ayB0aGUgY2xvY2sgdXAgYnkgbmFtZT8NCj4gDQoNCldlbGwsIHllcywgdGhpcyBzaG91bGQgYmUg
-ImZtYW5jbGsiLiBUaGUgZHJpdmVyIGRvZXNuJ3QgbmVlZCB0byBrbm93IHRoZSBpbmRleC4NCkkn
-bGwgZml4IHRoYXQgYW5kIHJlLXN1Ym1pdC4NCg0KSWdhbC4NCg0KPiAtU2NvdHQNCg0K
+Add set of generic nest pmu related event functions to be used by
+each nest pmu. Add code to register nest pmus.
+
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Daniel Axtens <dja@axtens.net>
+Cc: Stephane Eranian <eranian@google.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/nest-pmu.c | 101 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 101 insertions(+)
+
+diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+index 4a74ffb97741..f653a7ab6ed7 100644
+--- a/arch/powerpc/perf/nest-pmu.c
++++ b/arch/powerpc/perf/nest-pmu.c
+@@ -24,6 +24,97 @@ static struct attribute_group p8_nest_format_group = {
+ 	.attrs = p8_nest_format_attrs,
+ };
+ 
++static int p8_nest_event_init(struct perf_event *event)
++{
++	int chip_id;
++
++	if (event->attr.type != event->pmu->type)
++		return -ENOENT;
++
++	/* Sampling not supported yet */
++	if (event->hw.sample_period)
++		return -EINVAL;
++
++	/* unsupported modes and filters */
++	if (event->attr.exclude_user   ||
++	   event->attr.exclude_kernel ||
++	   event->attr.exclude_hv     ||
++	   event->attr.exclude_idle   ||
++	   event->attr.exclude_host   ||
++	   event->attr.exclude_guest)
++		return -EINVAL;
++
++	if (event->cpu < 0)
++		return -EINVAL;
++
++	chip_id = topology_physical_package_id(event->cpu);
++	event->hw.event_base = event->attr.config +
++					p8_nest_perchip_info[chip_id].vbase;
++
++	return 0;
++}
++
++static void p8_nest_read_counter(struct perf_event *event)
++{
++	u64 *addr, data;
++
++	addr = (u64 *)event->hw.event_base;
++	data = __be64_to_cpu(*addr);
++	local64_set(&event->hw.prev_count, data);
++}
++
++static void p8_nest_perf_event_update(struct perf_event *event)
++{
++	u64 counter_prev, counter_new, final_count, *addr;
++
++	addr = (u64 *)event->hw.event_base;
++	counter_prev = local64_read(&event->hw.prev_count);
++	counter_new = __be64_to_cpu(*addr);
++	final_count = counter_new - counter_prev;
++
++	local64_set(&event->hw.prev_count, counter_new);
++	local64_add(final_count, &event->count);
++}
++
++static void p8_nest_event_start(struct perf_event *event, int flags)
++{
++	p8_nest_read_counter(event);
++}
++
++static void p8_nest_event_stop(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_UPDATE)
++		p8_nest_perf_event_update(event);
++}
++
++static int p8_nest_event_add(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_START)
++		p8_nest_event_start(event, flags);
++
++	return 0;
++}
++
++/*
++ * Populate pmu ops in the structure
++ */
++static int update_pmu_ops(struct nest_pmu *pmu)
++{
++	if (!pmu)
++		return -EINVAL;
++
++	pmu->pmu.task_ctx_nr = perf_invalid_context;
++	pmu->pmu.event_init = p8_nest_event_init;
++	pmu->pmu.add = p8_nest_event_add;
++	pmu->pmu.del = p8_nest_event_stop;
++	pmu->pmu.start = p8_nest_event_start;
++	pmu->pmu.stop = p8_nest_event_stop;
++	pmu->pmu.read = p8_nest_perf_event_update;
++	pmu->pmu.attr_groups = pmu->attr_groups;
++
++	return 0;
++}
++
+ static int nest_event_info(char *name, struct nest_ima_events *p8_events)
+ {
+ 	char *buf;
+@@ -197,6 +288,16 @@ static int nest_pmu_create(struct device_node *dev, int pmu_index)
+ 
+ 	update_events_in_group(p8_events, idx, pmu_ptr);
+ 
++	update_pmu_ops(pmu_ptr);
++	/* Register the pmu */
++	ret = perf_pmu_register(&pmu_ptr->pmu, pmu_ptr->pmu.name, -1);
++	if (ret) {
++		pr_err("Nest PMU %s Register failed\n", pmu_ptr->pmu.name);
++		return ret;
++	}
++
++	pr_info("%s performance monitor hardware support registered\n",
++			pmu_ptr->pmu.name);
+ 	return 0;
+ }
+ 
+-- 
+1.9.1
