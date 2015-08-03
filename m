@@ -1,24 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 310461A0021
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 07:23:03 +1000 (AEST)
-Message-ID: <1438636971.2097.66.camel@freescale.com>
-Subject: Re: [PATCH 3/4] powerpc: pm: add EPU FSM configuration for deep sleep
-From: Scott Wood <scottwood@freescale.com>
-To: Chenhui Zhao <chenhui.zhao@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <Jason.Jin@freescale.com>
-Date: Mon, 3 Aug 2015 16:22:51 -0500
-In-Reply-To: <1438603291.7515.4@remotesmtp.freescale.net>
-References: <1438347186-8462-1-git-send-email-chenhui.zhao@freescale.com>
- <1438347186-8462-3-git-send-email-chenhui.zhao@freescale.com>
- <1438389711.19345.99.camel@freescale.com>
- <1438603291.7515.4@remotesmtp.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C2C71A0075
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 08:43:09 +1000 (AEST)
+Message-ID: <55BFEE68.7030007@maciej.szmigiero.name>
+Date: Tue, 04 Aug 2015 00:42:48 +0200
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
 MIME-Version: 1.0
+To: Mark Brown <broonie@kernel.org>
+CC: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Markus Pargmann <mpa@pengutronix.de>,
+ Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>,
+ Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH 6/6 v2] ASoC: fsl_ssi: adjust set DAI format in AC'97 mode
+References: <55BA364E.1000803@maciej.szmigiero.name>
+ <20150731055843.GX30895@pengutronix.de>
+ <55BB9082.4030206@maciej.szmigiero.name>
+ <20150802185103.GD19600@pengutronix.de>
+ <55BE9D3B.3090303@maciej.szmigiero.name>
+ <20150803162147.GB20873@sirena.org.uk>
+In-Reply-To: <20150803162147.GB20873@sirena.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +35,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-08-03 at 20:01 +0800, Chenhui Zhao wrote:
-> On Sat, Aug 1, 2015 at 8:41 AM, Scott Wood <scottwood@freescale.com> 
-> wrote:
-> > On Fri, 2015-07-31 at 20:53 +0800, Chenhui Zhao wrote:
-> > >  In the last stage of deep sleep, software will trigger a Finite
-> > >  State Machine (FSM) to control the hardware precedure, such as
-> > >  board isolation, killing PLLs, removing power, and so on.
-> > > 
-> > >  When the system is waked up by an interrupt, the FSM controls the
-> > >  hardware to complete the early resume precedure.
-> > > 
-> > >  This patch configure the EPU FSM preparing for deep sleep.
-> > > 
-> > >  Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-> > >  ---
-> > >   arch/powerpc/platforms/85xx/Makefile    |   2 +-
-> > >   arch/powerpc/platforms/85xx/sleep_fsm.c | 256
-> > >  ++++++++++++++++++++++++++++++++
-> > >   arch/powerpc/platforms/85xx/sleep_fsm.h | 104 +++++++++++++
-> > >   3 files changed, 361 insertions(+), 1 deletion(-)
-> > >   create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.c
-> > >   create mode 100644 arch/powerpc/platforms/85xx/sleep_fsm.h
-> > 
-> > When I asked why this was in drivers/platform[1], you said it was to 
-> > share
-> > with LS1, and that the values used were the same -- so why did you 
-> > move it to
-> > arch/powerpc?
+On 03.08.2015 18:21, Mark Brown wrote:
+> On Mon, Aug 03, 2015 at 12:44:11AM +0200, Maciej S. Szmigiero wrote:
+>> Adjust set DAI format function in fsl_ssi driver
+>> so it doesn't fail and clears RXDIR in AC'97 mode.
+>>
+>> Changes from v1: fix indentation to be consistent with rest
+>> of the driver.
 > 
-> There are some changes. LS1 will use PSCI (Power State Coordination 
-> Interface) to implement deep sleep. So these code just used by PowerPC.
+> Inter version changelogs go after the --- as covered in
+> SubmittingPatches.
+> 
+>>
+>> Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
+> 
+> Please don't bury new patches in reply to old submissions, especially
+> not individual patches - it makes it hard to work out what's going on
+> and make sure that the most current version of everything is being
+> applied.  In order to avoid confusion I'm not going to look at these,
+> please resubmit as a new thread.
+> 
+> Please also try to thread your patch series together (git send-email can
+> do this for you) - it also helps people keep track of things.
 
-Then remove the comment about the values being usable on ls1021.
+Thanks for information.
 
--Scott
+In cases like this where only one patch of six patch series is updated
+should other ones be resubmitted as well to keep the full patch series
+together?
+
+Best regards,
+Maciej Szmigiero
