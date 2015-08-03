@@ -1,38 +1,25 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0106.outbound.protection.outlook.com [65.55.169.106])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CBCE1A0D3B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 17:36:18 +1000 (AEST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Mon, 3 Aug 2015 13:06:16 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 19EA2E0021
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 13:10:26 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t737aBN442401902
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Aug 2015 13:06:11 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t737a3Pa007238
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Aug 2015 13:06:03 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Daniel Axtens <dja@axtens.net>, Stephane Eranian <eranian@google.com>
-Subject: [PATCH v7 1/7] powerpc/powernv: Data structure and macros definition
-Date: Mon,  3 Aug 2015 13:05:53 +0530
-Message-Id: <1438587359-6165-2-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1438587359-6165-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1438587359-6165-1-git-send-email-maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 114CA1A0DAB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Aug 2015 17:36:28 +1000 (AEST)
+From: Liberman Igal <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Madalin-Cristian Bucur <madalin.bucur@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH v2 1/2] powerpc/mpc85xx: Create dts components for the FSL
+ QorIQ DPAA FMan
+Date: Mon, 3 Aug 2015 07:36:22 +0000
+Message-ID: <DM2PR03MB50930473A7D6DD5B7FD7D20E6770@DM2PR03MB509.namprd03.prod.outlook.com>
+References: <1438230764-10951-1-git-send-email-igal.liberman@freescale.com>
+ <1438286389.2993.365.camel@freescale.com>
+In-Reply-To: <1438286389.2993.365.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,81 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create new header file "nest-pmu.h" to add the data structures
-and macros needed for the nest pmu support.
-
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Daniel Axtens <dja@axtens.net>
-Cc: Stephane Eranian <eranian@google.com>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/perf/nest-pmu.h | 54 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
- create mode 100644 arch/powerpc/perf/nest-pmu.h
-
-diff --git a/arch/powerpc/perf/nest-pmu.h b/arch/powerpc/perf/nest-pmu.h
-new file mode 100644
-index 000000000000..73aff2de3350
---- /dev/null
-+++ b/arch/powerpc/perf/nest-pmu.h
-@@ -0,0 +1,54 @@
-+/*
-+ * Nest Performance Monitor counter support for POWER8 processors.
-+ *
-+ * Copyright (C) 2015 Madhavan Srinivasan, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include <linux/perf_event.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
-+#include <asm/opal.h>
-+
-+#define P8_NEST_MAX_CHIPS		32
-+#define P8_NEST_MAX_PMUS		32
-+#define P8_NEST_MAX_PMU_NAME_LEN	256
-+#define P8_NEST_MAX_EVENTS_SUPPORTED	64
-+#define P8_NEST_ENGINE_START		1
-+#define P8_NEST_ENGINE_STOP		0
-+#define P8_NEST_MODE_PRODUCTION		1
-+
-+/*
-+ * Structure to hold per chip specific memory address
-+ * information for nest pmus. Nest Counter data are exported
-+ * in per-chip reserved memory region by the PORE Engine.
-+ */
-+struct perchip_nest_info {
-+	u32 chip_id;
-+	u64 pbase;
-+	u64 vbase;
-+	u32 size;
-+};
-+
-+/*
-+ * Place holder for nest pmu events and values.
-+ */
-+struct nest_ima_events {
-+	char *ev_name;
-+	char *ev_value;
-+};
-+
-+/*
-+ * Device tree parser code detects nest pmu support and
-+ * registers new nest pmus. This structure will
-+ * hold the pmu functions and attrs for each nest pmu and
-+ * will be referenced at the time of pmu registration.
-+ */
-+struct nest_pmu {
-+	struct pmu pmu;
-+	const struct attribute_group *attr_groups[4];
-+};
--- 
-1.9.1
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDMw
+LCAyMDE1IDExOjAwIFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
+dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBCdWN1
+cg0KPiBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
+Zw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDEvMl0gcG93ZXJwYy9tcGM4NXh4OiBDcmVhdGUg
+ZHRzIGNvbXBvbmVudHMgZm9yDQo+IHRoZSBGU0wgUW9ySVEgRFBBQSBGTWFuDQo+IA0KPiBPbiBU
+aHUsIDIwMTUtMDctMzAgYXQgMDc6MzIgKzAzMDAsIElnYWwuTGliZXJtYW4gd3JvdGU6DQo+ID4g
+K2ZtYW4wOiAgZm1hbkA0MDAwMDB7DQo+ID4gKyAgICAgI2FkZHJlc3MtY2VsbHMgPSA8MT47DQo+
+ID4gKyAgICAgI3NpemUtY2VsbHMgPSA8MT47DQo+ID4gKyAgICAgY2VsbC1pbmRleCA9IDwwPjsN
+Cj4gPiArICAgICBjb21wYXRpYmxlID0gImZzbCxmbWFuIjsNCj4gPiArICAgICByYW5nZXMgPSA8
+MCAweDQwMDAwMCAweDEwMDAwMD47DQo+ID4gKyAgICAgcmVnID0gPDB4NDAwMDAwIDB4MTAwMDAw
+PjsNCj4gPiArICAgICBpbnRlcnJ1cHRzID0gPDk2IDIgMCAwPiwgPDE2IDIgMSAxPjsNCj4gPiAr
+ICAgICBjbG9ja3MgPSA8JmNsb2NrZ2VuIDMgMD47DQo+ID4gKyAgICAgY2xvY2stbmFtZXMgPSAi
+Zm0wY2xrIjsNCj4gDQo+IGNsb2NrLW5hbWVzIHNob3VsZCBiZSAiZm1hbmNsayIgYXMgcGVyIHRo
+ZSBiaW5kaW5nLiAgQW5kIHdoeSB3b3VsZCB5b3UNCj4gd2FudCB0aGUgZHJpdmVyIHRvIGhhdmUg
+dG8gZW5jb2RlIHRoZSBmbWFuIGluZGV4IGludG8gdGhlIG5hbWUgaW4gb3JkZXIgdG8NCj4gbG9v
+ayB0aGUgY2xvY2sgdXAgYnkgbmFtZT8NCj4gDQoNCldlbGwsIHllcywgdGhpcyBzaG91bGQgYmUg
+ImZtYW5jbGsiLiBUaGUgZHJpdmVyIGRvZXNuJ3QgbmVlZCB0byBrbm93IHRoZSBpbmRleC4NCkkn
+bGwgZml4IHRoYXQgYW5kIHJlLXN1Ym1pdC4NCg0KSWdhbC4NCg0KPiAtU2NvdHQNCg0K
