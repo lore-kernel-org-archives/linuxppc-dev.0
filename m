@@ -1,16 +1,19 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 270481A1BD1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 00:37:24 +1000 (AEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH 3/5] powerpc/pseries: don't call strrchr() twice
-Date: Tue,  4 Aug 2015 17:36:47 +0300
-Message-Id: <1438699009-112794-3-git-send-email-andriy.shevchenko@linux.intel.com>
-In-Reply-To: <1438699009-112794-1-git-send-email-andriy.shevchenko@linux.intel.com>
-References: <1438699009-112794-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Return-Path: <ranshalit@gmail.com>
+Received: from mail-io0-x236.google.com (mail-io0-x236.google.com
+ [IPv6:2607:f8b0:4001:c06::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 25BDD1A076F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 01:29:29 +1000 (AEST)
+Received: by iodd187 with SMTP id d187so20429587iod.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2015 08:29:27 -0700 (PDT)
+MIME-Version: 1.0
+Date: Tue, 4 Aug 2015 18:29:27 +0300
+Message-ID: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
+Subject: GPMC in device tree
+From: Ran Shalit <ranshalit@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,26 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is no need to call strrchr() second time. We already know that in that
-case parent_path_len either 1 ("/foo") or bigger ("/foo/bar").
+Hello,
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- arch/powerpc/platforms/pseries/of_helpers.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I would please like to ask if describing flash nor used with GPMC,
+whould be done as described in:
+https://www.kernel.org/doc/Documentation/devicetree/bindings/mtd/gpmc-nor.txt
+It is described in the above link as "TI's GPMC", so I'm not sure if
+it is relevent for powerpc too.
 
-diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
-index 2f363e3..027446a 100644
---- a/arch/powerpc/platforms/pseries/of_helpers.c
-+++ b/arch/powerpc/platforms/pseries/of_helpers.c
-@@ -23,7 +23,7 @@ struct device_node *pseries_of_derive_parent(const char *path)
- 	if (!strcmp(path, "/"))
- 		return ERR_PTR(-EINVAL);
- 
--	if (strrchr(path, '/') != path) {
-+	if (parent_path_len > 1) {
- 		parent_path = kmalloc(parent_path_len, GFP_KERNEL);
- 		if (!parent_path)
- 			return ERR_PTR(-ENOMEM);
--- 
-2.4.6
+Thank you,
+Ran
