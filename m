@@ -1,33 +1,18 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9C9391A1803
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 19:07:35 +1000 (AEST)
-Date: Tue, 4 Aug 2015 10:07:09 +0100
-From: Mark Brown <broonie@kernel.org>
-To: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Markus Pargmann <mpa@pengutronix.de>, Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel <linux-kernel@vger.kernel.org>,
- Fabio Estevam <festevam@gmail.com>
-Message-ID: <20150804090709.GD20873@sirena.org.uk>
-References: <55BA364E.1000803@maciej.szmigiero.name>
- <20150731055843.GX30895@pengutronix.de>
- <55BB9082.4030206@maciej.szmigiero.name>
- <20150802185103.GD19600@pengutronix.de>
- <55BE9D3B.3090303@maciej.szmigiero.name>
- <20150803162147.GB20873@sirena.org.uk>
- <55BFEE68.7030007@maciej.szmigiero.name>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 46F431A1BFE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 19:07:59 +1000 (AEST)
+Message-ID: <55C080EA.9010000@c-s.fr>
+Date: Tue, 04 Aug 2015 11:07:54 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="4JxvUTD846AMAZAS"
-In-Reply-To: <55BFEE68.7030007@maciej.szmigiero.name>
-Subject: Re: [PATCH 6/6 v2] ASoC: fsl_ssi: adjust set DAI format in AC'97 mode
+To: Markus Stockhausen <stockhausen@collogia.de>
+CC: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
+ Scott Wood <scottwood@freescale.com>
+Subject: Re: Missing Linux patches
+References: <12EF8D94C6F8734FB2FF37B9FBEDD1735FCD349C@EXCHANGE.collogia.de>
+In-Reply-To: <12EF8D94C6F8734FB2FF37B9FBEDD1735FCD349C@EXCHANGE.collogia.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,32 +23,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---4JxvUTD846AMAZAS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Le 02/08/2015 21:05, Markus Stockhausen a écrit :
+> Hi Christophe,
+>
+> I saw that this patch from you is still missing in Linux mainline:
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html
+>
+> Is there any reason for not using it?
+>
+> Markus
 
-On Tue, Aug 04, 2015 at 12:42:48AM +0200, Maciej S. Szmigiero wrote:
+Hi,
 
-> In cases like this where only one patch of six patch series is updated
-> should other ones be resubmitted as well to keep the full patch series
-> together?
+I sent v3 of that Patch on 19 May 2015, taking into account all comments 
+I have received.
 
-Yes, any unapplied patches should be resubmitted.
+I have not received any further comments so I expect it will be applied.
 
---4JxvUTD846AMAZAS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVwIC8AAoJECTWi3JdVIfQSa0H/3CcmFH5br95nmZ/HhSuJfx2
-95RZRZ8FkTFUxlCTGOSdPgaRzO1zHq2tHXG8WLoxbUreLQFV1pHiZgp5KST4zDOn
-xG1rqBpMMbwGYomA/sNl76bUCh1ReYRh5j8Tf6RWixUBIUpzteWqJ5f14aIVJ2rv
-DdoF2zX0dk2Xp6KimSVCp4FsQrJoc5bhTWncQaP8OqQKnfO4nArHQHyTppDvGf0n
-eQRBlKcMc6AvWNRG5EvcKTeXexCZRUBLXOYApATyeX2TPRrIEDgb1RyHvaSzT2RV
-+ZdwCPkiy63vag2TPTEk3CFbnnQusgd6bKFsNhNIOl7Ks1/d7THBNvNT2f+mq7Q=
-=z9iT
------END PGP SIGNATURE-----
-
---4JxvUTD846AMAZAS--
+Christophe
