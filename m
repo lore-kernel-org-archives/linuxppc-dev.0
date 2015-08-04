@@ -1,20 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0111.outbound.protection.outlook.com [207.46.100.111])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CCEF1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 06:31:24 +1000 (AEST)
-Message-ID: <1438720268.2097.94.camel@freescale.com>
-Subject: Re: GPMC in device tree
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3CF531A0045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 06:37:13 +1000 (AEST)
+Message-ID: <1438720623.2097.95.camel@freescale.com>
+Subject: Re: [v5,RESEND] IFC: Change IO accessor based on endianness
 From: Scott Wood <scottwood@freescale.com>
-To: Ran Shalit <ranshalit@gmail.com>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 4 Aug 2015 15:31:08 -0500
-In-Reply-To: <CAJ2oMhLzck9SxgzcXpEXVk_Yf0KoM=D4cOToizoOUPQFZ4JjWA@mail.gmail.com>
-References: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
- <1438714472.2097.89.camel@freescale.com>
- <CAJ2oMhLzck9SxgzcXpEXVk_Yf0KoM=D4cOToizoOUPQFZ4JjWA@mail.gmail.com>
+To: Brian Norris <computersforpeace@gmail.com>
+CC: <linux-mtd@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
+ Jaiprakash Singh <b44839@freescale.com>
+Date: Tue, 4 Aug 2015 15:37:03 -0500
+In-Reply-To: <20150528011910.GA16716@home.buserror.net>
+References: <1432174631-30091-1-git-send-email-scottwood@freescale.com>
+ <20150528011910.GA16716@home.buserror.net>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,42 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-04 at 23:26 +0300, Ran Shalit wrote:
-> On Tue, Aug 4, 2015 at 9:54 PM, Scott Wood <scottwood@freescale.com> wrote:
-> > On Tue, 2015-08-04 at 18:29 +0300, Ran Shalit wrote:
-> > > Hello,
-> > > 
-> > > I would please like to ask if describing flash nor used with GPMC,
-> > > whould be done as described in:
-> > > https://www.kernel.org/doc/Documentation/devicetree/bindings/mtd/gpmc-nor.txt
-> > > It is described in the above link as "TI's GPMC", so I'm not sure if
-> > > it is relevent for powerpc too.
+On Wed, 2015-05-27 at 20:19 -0500, Scott Wood wrote:
+> On Wed, May 20, 2015 at 09:17:11PM -0500, Scott Wood wrote:
+> > From: Jaiprakash Singh <b44839@freescale.com>
 > > 
-> > That binding is for TI GPMC.
+> > IFC IO accressor are set at run time based
+> > on IFC IP registers endianness.IFC node in
+> > DTS file contains information about
+> > endianness.
 > > 
-> > Are you saying you have some PPC chip that has a flash controller called 
-> > GPMC?
+> > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > ---
+> > v5: I'm assuming it's the same as v4, but I didn't send v4, and this
+> > comes from a versionless [RESEND] that never made it to the mailing list,
+> > so bumping the version just in case.
 > > 
-> > -Scott
-> > 
+> >  .../bindings/memory-controllers/fsl/ifc.txt        |   3 +
+> >  drivers/memory/fsl_ifc.c                           |  43 ++--
+> >  drivers/mtd/nand/fsl_ifc_nand.c                    | 258 +++++++++++-----
+> > -----
+> >  include/linux/fsl_ifc.h                            |  50 ++++
+> >  4 files changed, 213 insertions(+), 141 deletions(-)
 > 
-> Hi Scott,
-> 
-> Thanks, I've worked with TI's chips, so I now understand that I made
-> here some confusion...
-> It is GPCM , not GPMC, my mistake.
-> We already configured it in u-boot, but on doing read/write from
-> kernel it doesn not work.
-> It seems that for the linux to use the correct driver, we need to
-> define the nor in the device tree.
-> Is there any example how to define nor GPCM in device tree ? Is it
-> possible not to override the existing GPCM configuration ?
+> Brian, can I get an ack for this?
 
-Pretty much all of the mpc8xxx/qoriq device trees have GPCM NOR defined.  See 
-Documentation/devicetree/bindings/powerpc/fsl/lbc.txt and examples such as 
-arch/powerpc/boot/dts/p4080ds.dts (part of the lbc node is in 
-arch/powerpc/boot/dts/fsl/p4080si-post.dtsi).
-
-Linux will not change the GPCM configuration.
+ping
 
 -Scott
