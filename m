@@ -1,18 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0147.outbound.protection.outlook.com [65.55.169.147])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0113.outbound.protection.outlook.com [157.56.110.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7658B1A0748
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 04:54:45 +1000 (AEST)
-Message-ID: <1438714472.2097.89.camel@freescale.com>
-Subject: Re: GPMC in device tree
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90B961A0748
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 05:43:38 +1000 (AEST)
+Message-ID: <1438717405.2097.90.camel@freescale.com>
+Subject: Re: Missing Linux patches
 From: Scott Wood <scottwood@freescale.com>
-To: Ran Shalit <ranshalit@gmail.com>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 4 Aug 2015 13:54:32 -0500
-In-Reply-To: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
-References: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
+To: leroy christophe <christophe.leroy@c-s.fr>
+CC: Markus Stockhausen <stockhausen@collogia.de>, LinuxPPC-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 4 Aug 2015 14:43:25 -0500
+In-Reply-To: <55C080EA.9010000@c-s.fr>
+References: <12EF8D94C6F8734FB2FF37B9FBEDD1735FCD349C@EXCHANGE.collogia.de>
+ <55C080EA.9010000@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,17 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-04 at 18:29 +0300, Ran Shalit wrote:
-> Hello,
+On Tue, 2015-08-04 at 11:07 +0200, leroy christophe wrote:
+> Le 02/08/2015 21:05, Markus Stockhausen a écrit :
+> > Hi Christophe,
+> > 
+> > I saw that this patch from you is still missing in Linux mainline:
+> > https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-September/121144.html
+> > 
+> > Is there any reason for not using it?
+> > 
+> > Markus
 > 
-> I would please like to ask if describing flash nor used with GPMC,
-> whould be done as described in:
-> https://www.kernel.org/doc/Documentation/devicetree/bindings/mtd/gpmc-nor.txt
-> It is described in the above link as "TI's GPMC", so I'm not sure if
-> it is relevent for powerpc too.
+> Hi,
+> 
+> I sent v3 of that Patch on 19 May 2015, taking into account all comments 
+> I have received.
+> 
+> I have not received any further comments so I expect it will be applied.
+> 
+> Christophe
 
-That binding is for TI GPMC.
-
-Are you saying you have some PPC chip that has a flash controller called GPMC?
+Yes, I plan to apply it.
 
 -Scott
