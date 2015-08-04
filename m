@@ -1,40 +1,25 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0138.outbound.protection.outlook.com [207.46.100.138])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 11B8A1A0748
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 21:19:19 +1000 (AEST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6A529140295
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2015 21:19:18 +1000 (AEST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 4 Aug 2015 16:49:16 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6BBE2E0060
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Aug 2015 16:53:27 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t74BIwLg53346352
- for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2015 16:48:59 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t74BIvun028128
- for <linuxppc-dev@ozlabs.org>; Tue, 4 Aug 2015 16:48:57 +0530
-Subject: [PATCH] powernv: Invoke opal_cec_reboot2() on unrecoverable HMI.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jeremy Kerr <jeremy.kerr@au1.ibm.com>
-Date: Tue, 04 Aug 2015 16:48:56 +0530
-Message-ID: <20150804111855.9750.86630.stgit@mars>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3EE371A076F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 23:52:21 +1000 (AEST)
+From: Liberman Igal <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Madalin-Cristian Bucur <madalin.bucur@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [v3, 1/2] powerpc/mpc85xx: Create dts components for the FSL QorIQ
+ DPAA FMan
+Date: Tue, 4 Aug 2015 13:52:14 +0000
+Message-ID: <DM2PR03MB509851209BA3F1CB941E30CE6760@DM2PR03MB509.namprd03.prod.outlook.com>
+References: <1438584241-10460-1-git-send-email-igal.liberman@freescale.com>
+ <1438664426.2097.75.camel@freescale.com>
+In-Reply-To: <1438664426.2097.75.camel@freescale.com>
 Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,57 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-
-Invoke new opal_cec_reboot2() call with reboot type
-OPAL_REBOOT_PLATFORM_ERROR (for unrecoverable HMI interrupts) to inform
-BMC/OCC about this error, so that BMC can collect relevant data for error
-analysis and decide what component to de-configure before rebooting.
-
-This patch depends on:
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-May/128341.html
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-May/128342.html
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-August/132045.html
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal-hmi.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index acefdf9..d000f4e 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -264,6 +264,8 @@ static void hmi_event_handler(struct work_struct *work)
- 	spin_unlock_irqrestore(&opal_hmi_evt_lock, flags);
- 
- 	if (unrecoverable) {
-+		int ret;
-+
- 		/* Pull all HMI events from OPAL before we panic. */
- 		while (opal_get_msg(__pa(&msg), sizeof(msg)) == OPAL_SUCCESS) {
- 			u32 type;
-@@ -278,6 +280,23 @@ static void hmi_event_handler(struct work_struct *work)
- 			hmi_evt = (struct OpalHMIEvent *)&msg.params[0];
- 			print_hmi_event_info(hmi_evt);
- 		}
-+
-+		/*
-+		 * Unrecoverable HMI exception. We need to inform BMC/OCC
-+		 * about this error so that it can collect relevant data
-+		 * for error analysis before rebooting.
-+		 */
-+		ret = opal_cec_reboot2(OPAL_REBOOT_PLATFORM_ERROR,
-+			"Unrecoverable HMI exception");
-+		if (ret == OPAL_UNSUPPORTED) {
-+			pr_emerg("Reboot type %d not supported\n",
-+						OPAL_REBOOT_PLATFORM_ERROR);
-+		}
-+
-+		/*
-+		 * Fall through and panic if opal_cec_reboot2() returns
-+		 * OPAL_UNSUPPORTED.
-+		 */
- 		panic("Unrecoverable HMI exception");
- 	}
- }
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
+LS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDA0
+LCAyMDE1IDg6MDAgQU0NCj4gVG86IExpYmVybWFuIElnYWwtQjMxOTUwIDxJZ2FsLkxpYmVybWFu
+QGZyZWVzY2FsZS5jb20+DQo+IENjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEJ1Y3VyDQo+IE1hZGFsaW4tQ3Jpc3RpYW4tQjMyNzE2
+IDxtYWRhbGluLmJ1Y3VyQGZyZWVzY2FsZS5jb20+OyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2Vy
+bmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW3YzLDEvMl0gcG93ZXJwYy9tcGM4NXh4OiBDcmVhdGUg
+ZHRzIGNvbXBvbmVudHMgZm9yIHRoZSBGU0wNCj4gUW9ySVEgRFBBQSBGTWFuDQo+IA0KPiBbUmVz
+ZW5kaW5nIGFmdGVyIGJvZ29maWx0ZXIgYWRqdXN0bWVudCBvbiB2Z2VyLmtlcm5lbC5vcmddDQo+
+IA0KPiBPbiBNb24sIEF1ZyAwMywgMjAxNSBhdCAwOTo0NDowMUFNICswMzAwLCBJZ2FsLkxpYmVy
+bWFuIHdyb3RlOg0KPiA+ICsgICAgIHhtZGlvMDogIG1kaW9AZjEwMDB7DQo+ID4gKyAgICAgICAg
+ICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiArICAgICAgICAgICAgICNzaXplLWNlbGxz
+ID0gPDA+Ow0KPiA+ICsgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2wsZm1hbi14bWRpbyI7
+DQo+ID4gKyAgICAgICAgICAgICByZWcgPSA8MHhmMTAwMCAweDEwMDA+Ow0KPiA+ICsgICAgICAg
+ICAgICAgaW50ZXJydXB0cyA9IDwxMDEgMSAwIDA+Ow0KPiA+ICsgICAgIH07DQo+IA0KPiBXaHkg
+aXMgdGhpcyA8MTAxIDEgMCAwPiBhbmQgbm90IDwxMDEgMiAwIDA+PyAgSW50ZXJuYWwgaW50ZXJy
+dXB0cyBhcmUgYWN0aXZlLQ0KPiBoaWdoLg0KPiANCg0KT0ssIEknbGwgZml4IHRoaXMgaXNzdWUu
+IFRoYW5rcy4NCklnYWwuDQoNCj4gPiArICAgICBtZGlvMDogIG1kaW9AZTExMjB7DQo+ID4gKyAg
+ICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiArICAgICAgICAgICAgICNzaXpl
+LWNlbGxzID0gPDA+Ow0KPiA+ICsgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJmc2wsZm1hbi1t
+ZGlvIjsNCj4gPiArICAgICAgICAgICAgIHJlZyA9IDwweGUxMTIwIDB4ZWUwPjsNCj4gPiArICAg
+ICAgICAgICAgIGludGVycnVwdHMgPSA8MTAwIDEgMCAwPjsNCj4gDQo+IExpa2V3aXNlLg0KPiAN
+Cj4gLVNjb3R0DQo=
