@@ -2,22 +2,31 @@ Return-Path: <prvs=651eb886a=julien.grall@citrix.com>
 Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2713E1A1BE5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 04:13:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB1D11A1BE5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 04:14:02 +1000 (AEST)
 From: Julien Grall <julien.grall@citrix.com>
 To: <xen-devel@lists.xenproject.org>
 CC: <ian.campbell@citrix.com>, <stefano.stabellini@eu.citrix.com>,
- <linux-kernel@vger.kernel.org>, Julien Grall <julien.grall@citrix.com>, David
- Vrabel <david.vrabel@citrix.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 7/8] hvc/xen: Further s/MFN/GFN clean-up
-Date: Tue, 4 Aug 2015 19:12:51 +0100
-Message-ID: <1438711972-18752-8-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
-References: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
+ <linux-kernel@vger.kernel.org>, Julien Grall <julien.grall@citrix.com>, Boris
+ Ostrovsky <boris.ostrovsky@oracle.com>, David Vrabel
+ <david.vrabel@citrix.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg
+ Kroah-Hartman <gregkh@linuxfoundation.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, "James E.J. Bottomley" <JBottomley@odin.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jiri Slaby
+ <jslaby@suse.com>, Juergen Gross <jgross@suse.com>, Konrad Rzeszutek Wilk
+ <konrad.wilk@oracle.com>, <linux-api@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-fbdev@vger.kernel.org>,
+ <linux-input@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-scsi@vger.kernel.org>, <netdev@vger.kernel.org>,
+ =?UTF-8?q?Roger=20Pau=20Monn=C3=A9?= <roger.pau@citrix.com>, Russell King
+ <linux@arm.linux.org.uk>, "Thomas Gleixner" <tglx@linutronix.de>, Tomi
+ Valkeinen <tomi.valkeinen@ti.com>, "Wei Liu" <wei.liu2@citrix.com>,
+ <x86@kernel.org>
+Subject: [PATCH v2 0/8] Use correctly the Xen memory terminologies in Linux
+Date: Tue, 4 Aug 2015 19:12:44 +0100
+Message-ID: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,85 +36,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-HVM_PARAM_CONSOLE_PFN is used to retrieved the console PFN for HVM
-guest. It returns a PFN (aka GFN) and not a MFN.
+Hi all,
 
-Furthermore, use directly virt_to_gfn for both PV and HVM domain rather
-than doing a special case for each of the them.
+This patch series aims to use the memory terminologies described in
+include/xen/mm.h [1] for Linux xen code.
 
-Signed-off-by: Julien Grall <julien.grall@citrix.com>
-Reviewed-by: David Vrabel <david.vrabel@citrix.com>
+Linux is using mistakenly MFN when GFN is meant, I suspect this is because the
+first support of Xen was for PV. This has brought some misimplementation
+of memory helpers on ARM and make the developper confused about the expected
+behavior.
+
+For instance, with pfn_to_mfn, we expect to get a MFN based on the name.
+Although, if we look at the implementation on x86, it's returning a GFN.
+Most of the callers are also using it this way.
+
+The first 2 patches of this series is ARM related in order to remove
+PV specific helpers which should not be used and fixing the implementation of
+pfn_to_mfn.
+
+The rest of the series is here rename most of the usage in the common code
+of MFN to GFN. I also took the opportunity to replace most of the call to
+pfn_to_gfn in the common code by page_to_gfn avoid construction such
+as pfn_to_gfn(page_to_pfn(...).
+
+Note the one xen-blkfront will be dropped by 64K series [2], I can include it
+if necessary.
+
+Major changes in v2:
+    - Use bfn rather than dfn for the DMA address
+    - Re-introduced pfn_to_mfn for PV guests only
+    - Typoes
+
+For all the changes see in each patch.
+
+This series is based on linus's branch. A branch with all the patches
+can be found here:
+    git://xenbits.xen.org/people/julieng/linux-arm.git branch page-renaming-v2
+
+It was been boot tested on ARM64 and only built for x86 and ARM32.
+I would be happy if someone can give a try on x86 as I don't have a x86
+box setup with Xen.
+
+Sincerely yours,
+
+[1] http://xenbits.xen.org/gitweb/?p=xen.git;a=commitdiff;h=e758ed14f390342513405dd766e874934573e6cb
+[2] https://lkml.org/lkml/2015/7/9/628
+
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: David Vrabel <david.vrabel@citrix.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ian Campbell <ian.campbell@citrix.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "James E.J. Bottomley" <JBottomley@odin.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 Cc: Jiri Slaby <jslaby@suse.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: linux-api@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-input@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-scsi@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Cc: "Roger Pau Monné" <roger.pau@citrix.com>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Wei Liu <wei.liu2@citrix.com>
+Cc: x86@kernel.org
 
----
-    Changes in v2:
-        - Add David's reviewed-by
----
- drivers/tty/hvc/hvc_xen.c | 15 +++++----------
- 1 file changed, 5 insertions(+), 10 deletions(-)
+Julien Grall (8):
+  arm/xen: Remove helpers which are PV specific
+  xen: Make clear that swiotlb and biomerge are dealing with DMA address
+  arm/xen: implement correctly pfn_to_mfn
+  xen: Use the correctly the Xen memory terminologies
+  xen/tmem: Use page_to_gfn rather than pfn_to_gfn
+  video/xen-fbfront: Further s/MFN/GFN clean-up
+  hvc/xen: Further s/MFN/GFN clean-up
+  xen/privcmd: Further s/MFN/GFN/ clean-up
 
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index efe5124..10beb15 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -200,7 +200,7 @@ static int xen_hvm_console_init(void)
- {
- 	int r;
- 	uint64_t v = 0;
--	unsigned long mfn;
-+	unsigned long gfn;
- 	struct xencons_info *info;
- 
- 	if (!xen_hvm_domain())
-@@ -217,7 +217,7 @@ static int xen_hvm_console_init(void)
- 	}
- 	/*
- 	 * If the toolstack (or the hypervisor) hasn't set these values, the
--	 * default value is 0. Even though mfn = 0 and evtchn = 0 are
-+	 * default value is 0. Even though gfn = 0 and evtchn = 0 are
- 	 * theoretically correct values, in practice they never are and they
- 	 * mean that a legacy toolstack hasn't initialized the pv console correctly.
- 	 */
-@@ -229,8 +229,8 @@ static int xen_hvm_console_init(void)
- 	r = hvm_get_parameter(HVM_PARAM_CONSOLE_PFN, &v);
- 	if (r < 0 || v == 0)
- 		goto err;
--	mfn = v;
--	info->intf = xen_remap(mfn << PAGE_SHIFT, PAGE_SIZE);
-+	gfn = v;
-+	info->intf = xen_remap(gfn << PAGE_SHIFT, PAGE_SIZE);
- 	if (info->intf == NULL)
- 		goto err;
- 	info->vtermno = HVC_COOKIE;
-@@ -375,7 +375,6 @@ static int xencons_connect_backend(struct xenbus_device *dev,
- 	int ret, evtchn, devid, ref, irq;
- 	struct xenbus_transaction xbt;
- 	grant_ref_t gref_head;
--	unsigned long mfn;
- 
- 	ret = xenbus_alloc_evtchn(dev, &evtchn);
- 	if (ret)
-@@ -390,10 +389,6 @@ static int xencons_connect_backend(struct xenbus_device *dev,
- 			irq, &domU_hvc_ops, 256);
- 	if (IS_ERR(info->hvc))
- 		return PTR_ERR(info->hvc);
--	if (xen_pv_domain())
--		mfn = virt_to_gfn(info->intf);
--	else
--		mfn = __pa(info->intf) >> PAGE_SHIFT;
- 	ret = gnttab_alloc_grant_references(1, &gref_head);
- 	if (ret < 0)
- 		return ret;
-@@ -402,7 +397,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
- 	if (ref < 0)
- 		return ref;
- 	gnttab_grant_foreign_access_ref(ref, info->xbdev->otherend_id,
--			mfn, 0);
-+					virt_to_gfn(info->intf), 0);
- 
-  again:
- 	ret = xenbus_transaction_start(&xbt);
+ arch/arm/include/asm/xen/page.h         | 44 ++++++++++++++++-----------------
+ arch/arm/xen/enlighten.c                | 18 +++++++-------
+ arch/arm/xen/mm.c                       |  4 +--
+ arch/x86/include/asm/xen/page.h         | 37 +++++++++++++++++++++------
+ arch/x86/xen/mmu.c                      | 32 ++++++++++++------------
+ arch/x86/xen/smp.c                      |  2 +-
+ drivers/block/xen-blkfront.c            |  6 ++---
+ drivers/input/misc/xen-kbdfront.c       |  4 +--
+ drivers/net/xen-netback/netback.c       |  4 +--
+ drivers/net/xen-netfront.c              |  8 +++---
+ drivers/scsi/xen-scsifront.c            |  8 +++---
+ drivers/tty/hvc/hvc_xen.c               | 18 ++++++--------
+ drivers/video/fbdev/xen-fbfront.c       | 20 +++++++--------
+ drivers/xen/balloon.c                   |  2 +-
+ drivers/xen/biomerge.c                  |  6 ++---
+ drivers/xen/events/events_base.c        |  2 +-
+ drivers/xen/events/events_fifo.c        |  4 +--
+ drivers/xen/gntalloc.c                  |  3 ++-
+ drivers/xen/manage.c                    |  2 +-
+ drivers/xen/privcmd.c                   | 44 ++++++++++++++++-----------------
+ drivers/xen/swiotlb-xen.c               | 16 ++++++------
+ drivers/xen/tmem.c                      | 21 ++++++----------
+ drivers/xen/xenbus/xenbus_client.c      |  2 +-
+ drivers/xen/xenbus/xenbus_dev_backend.c |  2 +-
+ drivers/xen/xenbus/xenbus_probe.c       |  8 +++---
+ drivers/xen/xlate_mmu.c                 | 18 +++++++-------
+ include/uapi/xen/privcmd.h              |  4 +++
+ include/xen/page.h                      |  4 +--
+ include/xen/xen-ops.h                   | 10 ++++----
+ 29 files changed, 183 insertions(+), 170 deletions(-)
+
 -- 
 2.1.4
