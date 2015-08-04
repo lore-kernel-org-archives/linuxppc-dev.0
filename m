@@ -1,40 +1,36 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 925801A0748
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 20:57:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A3BC1A0748
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 21:06:44 +1000 (AEST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 4 Aug 2015 04:57:55 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A26A01FF0046
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 04:49:02 -0600 (MDT)
+ Tue, 4 Aug 2015 05:06:42 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0308519D8045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Aug 2015 04:57:37 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t74Auxjs50659494
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Aug 2015 03:56:59 -0700
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t74B5lE843319416
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Aug 2015 04:05:47 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t74AvqKx020219
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Aug 2015 04:57:52 -0600
-Date: Tue, 4 Aug 2015 16:27:47 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
-Subject: Re: powerpc: Add an inline function to update HID0
-Message-ID: <20150804105747.GA19966@in.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
-References: <1438677058-12883-1-git-send-email-ego@linux.vnet.ibm.com>
- <20150804100858.1F272140306@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150804100858.1F272140306@ozlabs.org>
+ t74B6c27032693
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Aug 2015 05:06:38 -0600
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mikey@neuling.org
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc: Add an inline function to update HID0
+Date: Tue,  4 Aug 2015 16:36:24 +0530
+Message-Id: <1438686384-15629-1-git-send-email-ego@linux.vnet.ibm.com>
+In-Reply-To: <20150804105747.GA19966@in.ibm.com>
+References: <20150804105747.GA19966@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,59 +40,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Section 3.7 of Version 1.2 of the Power8 Processor User's Manual
+prescribes that updates to HID0 be preceded by a SYNC instruction and
+followed by an ISYNC instruction (Page 91).
 
-On Tue, Aug 04, 2015 at 08:08:58PM +1000, Michael Ellerman wrote:
-> On Tue, 2015-04-08 at 08:30:58 UTC, "Gautham R. Shenoy" wrote:
-> > Section 3.7 of Version 1.2 of the Power8 Processor User's Manual
-> > prescribes that updates to HID0 be preceded by a SYNC instruction and
-> > followed by an ISYNC instruction (Page 91).
-> > 
-> > Create a function name update_hid0() which follows this recipe and
-> > invoke it from the static split core path.
-> > 
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/kvm_ppc.h       | 11 +++++++++++
-> 
-> Why is it in there? It's not KVM related per se.
+Create an inline function name update_hid0() which follows this recipe
+and invoke it from the static split core path.
 
-Ok. Will fix this.
-> 
-> Where should it go? I think reg.h would be best, ideally near the definition
-> for HID0, though that's probably not possible because of ASSEMBLY requirements.
-> So at the bottom of reg.h ?
-> 
-> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> > index c6ef05b..325f1d6 100644
-> > --- a/arch/powerpc/include/asm/kvm_ppc.h
-> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> > @@ -685,4 +685,15 @@ static inline ulong kvmppc_get_ea_indexed(struct kvm_vcpu *vcpu, int ra, int rb)
-> >  
-> >  extern void xics_wake_cpu(int cpu);
-> >  
-> > +static inline void update_hid0(unsigned long hid0)
-> > +{
-> > +	/*
-> > +	 *  The HID0 update should at the very least be preceded by a
-> > +	 *  a SYNC instruction followed by an ISYNC instruction
-> > +	 */
-> > +	mb();
-> > +	mtspr(SPRN_HID0, hid0);
-> > +	isync();
-> 
-> That's going to turn into three separate inline asm blocks, which is maybe a
-> bit unfortunate. Have you checked the generated code is what we want, ie. just
-> sync, mtspr, isync ?
-> 
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+[v1--> v2: Moved defn of update_hid0 to reg.h from kvm_ppc.h]
 
-Yes, the objdump of subcore.o shows exactly these three instructions:
- 7c 00 04 ac     sync    
- 7c 70 fb a6     mtspr   1008,r3
- 4c 00 01 2c     isync
+ arch/powerpc/include/asm/reg.h           | 13 +++++++++++++
+ arch/powerpc/platforms/powernv/subcore.c |  4 ++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
-> cheers
->
---
-Thanks and Regards
-gautham. 
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index af56b5c..beb98ac 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -12,6 +12,8 @@
+ 
+ #include <linux/stringify.h>
+ #include <asm/cputable.h>
++#include <asm/barrier.h>
++#include <asm/synch.h>
+ 
+ /* Pickup Book E specific registers. */
+ #if defined(CONFIG_BOOKE) || defined(CONFIG_40x)
+@@ -1281,6 +1283,17 @@ struct pt_regs;
+ 
+ extern void ppc_save_regs(struct pt_regs *regs);
+ 
++static inline void update_hid0(unsigned long hid0)
++{
++	/*
++	 *  The HID0 update should at the very least be preceded by a
++	 *  a SYNC instruction followed by an ISYNC instruction
++	 */
++	mb();
++	mtspr(SPRN_HID0, hid0);
++	isync();
++}
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_REG_H */
+diff --git a/arch/powerpc/platforms/powernv/subcore.c b/arch/powerpc/platforms/powernv/subcore.c
+index f60f80a..37e77bf 100644
+--- a/arch/powerpc/platforms/powernv/subcore.c
++++ b/arch/powerpc/platforms/powernv/subcore.c
+@@ -190,7 +190,7 @@ static void unsplit_core(void)
+ 
+ 	hid0 = mfspr(SPRN_HID0);
+ 	hid0 &= ~HID0_POWER8_DYNLPARDIS;
+-	mtspr(SPRN_HID0, hid0);
++	update_hid0(hid0);
+ 	update_hid_in_slw(hid0);
+ 
+ 	while (mfspr(SPRN_HID0) & mask)
+@@ -227,7 +227,7 @@ static void split_core(int new_mode)
+ 	/* Write new mode */
+ 	hid0  = mfspr(SPRN_HID0);
+ 	hid0 |= HID0_POWER8_DYNLPARDIS | split_parms[i].value;
+-	mtspr(SPRN_HID0, hid0);
++	update_hid0(hid0);
+ 	update_hid_in_slw(hid0);
+ 
+ 	/* Wait for it to happen */
+-- 
+1.9.3
