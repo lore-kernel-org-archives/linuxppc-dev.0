@@ -1,22 +1,27 @@
-Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ranshalit@gmail.com>
+Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
+ [IPv6:2607:f8b0:4001:c05::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 873D01A00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 13:21:44 +1000 (AEST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [1/2] powerpc/config: enable teranetics PHY
-Date: Wed, 5 Aug 2015 03:06:40 +0000
-Message-ID: <BLUPR03MB14750DBFAA5B7BD0FE1974EDE2750@BLUPR03MB1475.namprd03.prod.outlook.com>
-References: <1437709533-26452-1-git-send-email-shh.xie@gmail.com>
- <20150805001848.GA2861@home.buserror.net>
- <1438734294.2097.102.camel@freescale.com>
- <1438734404.2097.104.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 162801A00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 13:56:48 +1000 (AEST)
+Received: by igr7 with SMTP id 7so87691381igr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2015 20:56:45 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1438723510.2097.97.camel@freescale.com>
+References: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
+ <1438714472.2097.89.camel@freescale.com>
+ <CAJ2oMhLzck9SxgzcXpEXVk_Yf0KoM=D4cOToizoOUPQFZ4JjWA@mail.gmail.com>
+ <1438720268.2097.94.camel@freescale.com>
+ <CAJ2oMhLDpbnqp=15Z_zWw8c1dY2fRCokG+_hneL=pFUMZdHN5Q@mail.gmail.com>
+ <1438723510.2097.97.camel@freescale.com>
+Date: Wed, 5 Aug 2015 06:56:45 +0300
+Message-ID: <CAJ2oMhKNXz56xcxmNFeaZXHct0ERf0m9V_uTbtCZCUKcGtPkqw@mail.gmail.com>
+Subject: Re: GPMC in device tree
+From: Ran Shalit <ranshalit@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +31,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBYaWUgU2hhb2h1aS1CMjE5ODkN
-Cj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMDUsIDIwMTUgMTE6MDAgQU0NCj4gVG86IFdvb2Qg
-U2NvdHQtQjA3NDIxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJq
-ZWN0OiBSRTogWzEvMl0gcG93ZXJwYy9jb25maWc6IGVuYWJsZSB0ZXJhbmV0aWNzIFBIWQ0KPiAN
-Cj4gPiBPbiBUdWUsIDIwMTUtMDgtMDQgYXQgMTk6MjQgLTA1MDAsIFNjb3R0IFdvb2Qgd3JvdGU6
-DQo+ID4gPiBPbiBUdWUsIDIwMTUtMDgtMDQgYXQgMTk6MTggLTA1MDAsIFNjb3R0IFdvb2Qgd3Jv
-dGU6DQo+ID4gPiA+IE9uIEZyaSwgSnVsIDI0LCAyMDE1IGF0IDExOjQ1OjMzQU0gKzA4MDAsIHNo
-YW9odWkgeGllIHdyb3RlOg0KPiA+ID4gPiA+IEZyb206IFNoYW9odWkgWGllIDxTaGFvaHVpLlhp
-ZUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gVGhlIFBIWSB1c2VzIFhBVUkg
-aW50ZXJmYWNlIHRvIGNvbm5lY3QgdG8gTUFDLCBtb3N0bHkgdGhlIFBIWQ0KPiA+ID4gPiA+IHVz
-ZWQgb24gcmlzZXIgY2FyZC4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFNo
-YW9odWkgWGllIDxTaGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+IC0tLQ0KPiA+
-ID4gPiA+ICBhcmNoL3Bvd2VycGMvY29uZmlncy9jb3JlbmV0MzJfc21wX2RlZmNvbmZpZyB8IDEg
-Kw0KPiA+ID4gPiA+IGFyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9zbXBfZGVmY29uZmln
-IHwgMSArDQo+ID4gPiA+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQo+ID4g
-PiA+DQo+ID4gPiA+IE5leHQgdGltZSwgcGxlYXNlIHVzZSBhIHN1YmplY3QgbGluZSB0aGF0IGxl
-dHMgbWUga25vdyB0aGF0IHRoaXMNCj4gPiA+ID4gaXMgYSBwYXRjaCB0aGF0IEknZCBiZSBwaWNr
-aW5nIHVwLCBzdWNoIGFzICJwb3dlcnBjLzg1eHg6IC4uLiIgb3INCj4gPiA+ID4gInBvd2VycGMv
-Y29yZW5ldDogLi4uIg0KPiA+ID4NCj4gPiA+IE1vcmUgaW1wb3J0YW50bHksIGRvbid0IHNlbmQg
-cGF0Y2hlcyB0byBlbmFibGUgY29uZmlnIG9wdGlvbnMgdGhhdA0KPiA+ID4gZG9uJ3QgZXhpc3Qu
-DQo+ID4NCj4gPiBTb3JyeSwgdGhpcyBjb21tZW50IHdhcyBtZWFudCBmb3IgcGF0Y2ggMi8yIChD
-T05GSUdfQVFVQU5USUFfUEhZKS4NCj4gPiBDT05GSUdfVEVSQU5FVElDU19QSFkgZG9lcyBleGlz
-dCBpbiBsaW51eC1uZXh0ICh0aGF0IGl0IGRlcGVuZHMgb24gYQ0KPiA+IHBhdGNoIGluIGxpbnV4
-LW5leHQgc2hvdWxkIGJlIG1lbnRpb25lZCBiZWxvdyB0aGUgLS0tKS4NCj4gSGkgU2NvdHQsDQo+
-IA0KPiBUaGUgQ09ORklHX0FRVUFOVElBX1BIWSB3YXMgYWRkZWQgaW4gYW5vdGhlciBwYXRjaCBz
-ZW50IHRvIG5ldC1uZXh0LCBpdA0KPiB3YXMgbm90IGFjY2VwdGVkIHdoZW4gSSBzZW50IHRoZSBw
-YXRjaCB0byBlbmFibGUgdGhpcyBjb25maWcsIGxhdGVyIHRoZQ0KPiBwYXRjaCB3YXMgYWNjZXB0
-ZWQgaW4gbmV0LW5leHQsDQo+IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJu
-ZWwvZ2l0L2RhdmVtL25ldC0NCj4gbmV4dC5naXQvY29tbWl0Lz9pZD1iZWU4MjU5ZGQzMWY0MTlh
-ODgzMTc0NTU2YjExZWRjNmY5YTE1M2QxDQpbUy5IXSBKdXN0IGZvdW5kIHRoZSBwYXRjaCB3YXMg
-YWxzbyBtZXJnZWQgaW4gTGludXgtbmV4dDoNCmh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9s
-aW51eC9rZXJuZWwvZ2l0L25leHQvbGludXgtbmV4dC5naXQvY29tbWl0Lz9pZD1iZWU4MjU5ZGQz
-MWY0MTlhODgzMTc0NTU2YjExZWRjNmY5YTE1M2QxDQoNClRoYW5rcy4NClNoYW9odWkNCj4gDQo+
-IEkgc2hvdWxkIG1lbnRpb24gdGhpcyBiZWxvdyB0aGUgLS0tLg0KPiBTb3JyeSENCj4gDQo+IFNo
-b3VsZCBJIHJlLXNlbmQgdGhlIHBhdGNoIG9mIGVuYWJsaW5nIGNvbmZpZyBvcHRpb24gb2YNCj4g
-Q09ORklHX0FRVUFOVElBX1BIWT8NCj4gDQo+IFRoYW5rcyENCj4gU2hhb2h1aQ0KDQo=
+On Wed, Aug 5, 2015 at 12:25 AM, Scott Wood <scottwood@freescale.com> wrote:
+> On Wed, 2015-08-05 at 00:22 +0300, Ran Shalit wrote:
+>> On Tue, Aug 4, 2015 at 11:31 PM, Scott Wood <scottwood@freescale.com> wrote:
+>> > On Tue, 2015-08-04 at 23:26 +0300, Ran Shalit wrote:
+>> > > On Tue, Aug 4, 2015 at 9:54 PM, Scott Wood <scottwood@freescale.com>
+>> > > wrote:
+>> > > > On Tue, 2015-08-04 at 18:29 +0300, Ran Shalit wrote:
+>> > > > > Hello,
+>> > > > >
+>> > > > > I would please like to ask if describing flash nor used with GPMC,
+>> > > > > whould be done as described in:
+>> > > > > https://www.kernel.org/doc/Documentation/devicetree/bindings/mtd/gpmc-nor.txt
+>> > > > > It is described in the above link as "TI's GPMC", so I'm not sure if
+>> > > > > it is relevent for powerpc too.
+>> > > >
+>> > > > That binding is for TI GPMC.
+>> > > >
+>> > > > Are you saying you have some PPC chip that has a flash controller
+>> > > > called
+>> > > > GPMC?
+>> > > >
+>> > > > -Scott
+>> > > >
+>> > >
+>> > > Hi Scott,
+>> > >
+>> > > Thanks, I've worked with TI's chips, so I now understand that I made
+>> > > here some confusion...
+>> > > It is GPCM , not GPMC, my mistake.
+>> > > We already configured it in u-boot, but on doing read/write from
+>> > > kernel it doesn not work.
+>> > > It seems that for the linux to use the correct driver, we need to
+>> > > define the nor in the device tree.
+>> > > Is there any example how to define nor GPCM in device tree ? Is it
+>> > > possible not to override the existing GPCM configuration ?
+>> >
+>> > Pretty much all of the mpc8xxx/qoriq device trees have GPCM NOR defined.
+>> > See
+>> > Documentation/devicetree/bindings/powerpc/fsl/lbc.txt and examples such as
+>> > arch/powerpc/boot/dts/p4080ds.dts (part of the lbc node is in
+>> > arch/powerpc/boot/dts/fsl/p4080si-post.dtsi).
+>> >
+>> > Linux will not change the GPCM configuration.
+>> >
+>> > -Scott
+>> >
+>>
+>> On more thing, if I may.
+>> The localbus is also connected to nvram & cpld.
+>> I've noticed that read/write works well, even though I didn't define
+>> anything in device tree.
+>> Is there any reasom to add these devices into device tree, or can we
+>> use the cpld and nvram without the definition in device tree ?
+>
+> I don't know what you're doing in your kernel to access devices that aren't
+> in the device tree.  You should add the devices to the device tree, and have
+> the kernel use it rather than hardcoded info.
+>
+> -Scott
+>
+Hi,
+
+Yes I understand.
+But It is worse noting that I have no localbus entry in the device tree.
+Yes, The nvram, cpld which are both connected to device tree, seems to
+work without any issues.
+
+Thanks,
+Ran
