@@ -1,22 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BECA21A1BF9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 12:00:07 +1000 (AEST)
-Message-ID: <1438740007.2304.4.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8A3A1A1CFF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 12:31:11 +1000 (AEST)
+Date: Tue, 4 Aug 2015 21:30:57 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
 Subject: Re: powerpc: Add an inline function to update HID0
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,  mikey@neuling.org
-Date: Wed, 05 Aug 2015 12:00:07 +1000
-In-Reply-To: <55C0C6C8.3030403@linux.vnet.ibm.com>
-References: <20150804100858.1F272140306@ozlabs.org>
- <55C0C6C8.3030403@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <20150805023057.GT11083@gate.crashing.org>
+References: <1438677058-12883-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20150804100858.1F272140306@ozlabs.org>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150804100858.1F272140306@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-04 at 19:36 +0530, Madhavan Srinivasan wrote:
+On Tue, Aug 04, 2015 at 08:08:58PM +1000, Michael Ellerman wrote:
+> > +static inline void update_hid0(unsigned long hid0)
+> > +{
+> > +	/*
+> > +	 *  The HID0 update should at the very least be preceded by a
+> > +	 *  a SYNC instruction followed by an ISYNC instruction
+> > +	 */
+> > +	mb();
+> > +	mtspr(SPRN_HID0, hid0);
+> > +	isync();
 > 
-> On Tuesday 04 August 2015 03:38 PM, Michael Ellerman wrote:
-> > On Tue, 2015-04-08 at 08:30:58 UTC, "Gautham R. Shenoy" wrote:
-> >> Section 3.7 of Version 1.2 of the Power8 Processor User's Manual
-> >> prescribes that updates to HID0 be preceded by a SYNC instruction and
-> >> followed by an ISYNC instruction (Page 91).
-> >>
-> >> Create a function name update_hid0() which follows this recipe and
-> >> invoke it from the static split core path.
-> >>
-> >> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/include/asm/kvm_ppc.h       | 11 +++++++++++
-> > Why is it in there? It's not KVM related per se.
-> >
-> > Where should it go? I think reg.h would be best, ideally near the definition
-> > for HID0, though that's probably not possible because of ASSEMBLY requirements.
-> > So at the bottom of reg.h ?
-> 
-> just to understand, Something like this will not do?
-> 
-> #define update_hid0(x)  __asm__ __volatile__(   "sync\n"\
->                                                 "mtspr " __stringify(SPRN_HID0)", %0\n"\
->                                                 "isync"::"r"(x));
-> 
+> That's going to turn into three separate inline asm blocks, which is maybe a
+> bit unfortunate. Have you checked the generated code is what we want, ie. just
+> sync, mtspr, isync ?
 
-Yeah we could do that also.
+The "mb()" is not such a great name anyway: you don't want a memory
+barrier, you want an actual sync instruction ("sync 0", "hwsync",
+whatever the currently preferred spelling is).
 
-The static inline is less ugly though.
+The function name should also say this is for POWER8 (the required
+sequences are different for some other processors; and some others
+might not even _have_ a HID0, or not at 1008).  power8_write_hid0
+or such?
 
-cheers
+For writing it as one asm, why not just
+
+  asm volatile("sync ; mtspr %0,%1 ; isync" : : "i"(SPRN_HID0), "r"(hid0));
+
+instead of the stringify stuff?
+
+
+Segher
