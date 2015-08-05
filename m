@@ -1,20 +1,21 @@
 Return-Path: <Shaohui.Xie@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0115.outbound.protection.outlook.com [157.56.110.115])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1756D1A00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 13:10:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 873D01A00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 13:21:44 +1000 (AEST)
 From: Shaohui Xie <Shaohui.Xie@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
 CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 Subject: RE: [1/2] powerpc/config: enable teranetics PHY
-Date: Wed, 5 Aug 2015 03:10:37 +0000
-Message-ID: <BLUPR03MB14755E5AE4FAEF4783BBA1DDE2750@BLUPR03MB1475.namprd03.prod.outlook.com>
+Date: Wed, 5 Aug 2015 03:06:40 +0000
+Message-ID: <BLUPR03MB14750DBFAA5B7BD0FE1974EDE2750@BLUPR03MB1475.namprd03.prod.outlook.com>
 References: <1437709533-26452-1-git-send-email-shh.xie@gmail.com>
  <20150805001848.GA2861@home.buserror.net>
-In-Reply-To: <20150805001848.GA2861@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ <1438734294.2097.102.camel@freescale.com>
+ <1438734404.2097.104.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,30 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Wednesday, August 05, 2015 8:19 AM
-> To: shaohui xie
-> Cc: linuxppc-dev@lists.ozlabs.org; Xie Shaohui-B21989
-> Subject: Re: [1/2] powerpc/config: enable teranetics PHY
->=20
-> On Fri, Jul 24, 2015 at 11:45:33AM +0800, shaohui xie wrote:
-> > From: Shaohui Xie <Shaohui.Xie@freescale.com>
-> >
-> > The PHY uses XAUI interface to connect to MAC, mostly the PHY used on
-> > riser card.
-> >
-> > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> > ---
-> >  arch/powerpc/configs/corenet32_smp_defconfig | 1 +
-> > arch/powerpc/configs/corenet64_smp_defconfig | 1 +
-> >  2 files changed, 2 insertions(+)
->=20
-> Next time, please use a subject line that lets me know that this is a
-> patch that I'd be picking up, such as "powerpc/85xx: ..." or
-> "powerpc/corenet: ..."
-OK.
-Sorry for the inconvenience.
-
-Thanks.
-Shaohui
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBYaWUgU2hhb2h1aS1CMjE5ODkN
+Cj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMDUsIDIwMTUgMTE6MDAgQU0NCj4gVG86IFdvb2Qg
+U2NvdHQtQjA3NDIxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJq
+ZWN0OiBSRTogWzEvMl0gcG93ZXJwYy9jb25maWc6IGVuYWJsZSB0ZXJhbmV0aWNzIFBIWQ0KPiAN
+Cj4gPiBPbiBUdWUsIDIwMTUtMDgtMDQgYXQgMTk6MjQgLTA1MDAsIFNjb3R0IFdvb2Qgd3JvdGU6
+DQo+ID4gPiBPbiBUdWUsIDIwMTUtMDgtMDQgYXQgMTk6MTggLTA1MDAsIFNjb3R0IFdvb2Qgd3Jv
+dGU6DQo+ID4gPiA+IE9uIEZyaSwgSnVsIDI0LCAyMDE1IGF0IDExOjQ1OjMzQU0gKzA4MDAsIHNo
+YW9odWkgeGllIHdyb3RlOg0KPiA+ID4gPiA+IEZyb206IFNoYW9odWkgWGllIDxTaGFvaHVpLlhp
+ZUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gVGhlIFBIWSB1c2VzIFhBVUkg
+aW50ZXJmYWNlIHRvIGNvbm5lY3QgdG8gTUFDLCBtb3N0bHkgdGhlIFBIWQ0KPiA+ID4gPiA+IHVz
+ZWQgb24gcmlzZXIgY2FyZC4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFNo
+YW9odWkgWGllIDxTaGFvaHVpLlhpZUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+IC0tLQ0KPiA+
+ID4gPiA+ICBhcmNoL3Bvd2VycGMvY29uZmlncy9jb3JlbmV0MzJfc21wX2RlZmNvbmZpZyB8IDEg
+Kw0KPiA+ID4gPiA+IGFyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9zbXBfZGVmY29uZmln
+IHwgMSArDQo+ID4gPiA+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQo+ID4g
+PiA+DQo+ID4gPiA+IE5leHQgdGltZSwgcGxlYXNlIHVzZSBhIHN1YmplY3QgbGluZSB0aGF0IGxl
+dHMgbWUga25vdyB0aGF0IHRoaXMNCj4gPiA+ID4gaXMgYSBwYXRjaCB0aGF0IEknZCBiZSBwaWNr
+aW5nIHVwLCBzdWNoIGFzICJwb3dlcnBjLzg1eHg6IC4uLiIgb3INCj4gPiA+ID4gInBvd2VycGMv
+Y29yZW5ldDogLi4uIg0KPiA+ID4NCj4gPiA+IE1vcmUgaW1wb3J0YW50bHksIGRvbid0IHNlbmQg
+cGF0Y2hlcyB0byBlbmFibGUgY29uZmlnIG9wdGlvbnMgdGhhdA0KPiA+ID4gZG9uJ3QgZXhpc3Qu
+DQo+ID4NCj4gPiBTb3JyeSwgdGhpcyBjb21tZW50IHdhcyBtZWFudCBmb3IgcGF0Y2ggMi8yIChD
+T05GSUdfQVFVQU5USUFfUEhZKS4NCj4gPiBDT05GSUdfVEVSQU5FVElDU19QSFkgZG9lcyBleGlz
+dCBpbiBsaW51eC1uZXh0ICh0aGF0IGl0IGRlcGVuZHMgb24gYQ0KPiA+IHBhdGNoIGluIGxpbnV4
+LW5leHQgc2hvdWxkIGJlIG1lbnRpb25lZCBiZWxvdyB0aGUgLS0tKS4NCj4gSGkgU2NvdHQsDQo+
+IA0KPiBUaGUgQ09ORklHX0FRVUFOVElBX1BIWSB3YXMgYWRkZWQgaW4gYW5vdGhlciBwYXRjaCBz
+ZW50IHRvIG5ldC1uZXh0LCBpdA0KPiB3YXMgbm90IGFjY2VwdGVkIHdoZW4gSSBzZW50IHRoZSBw
+YXRjaCB0byBlbmFibGUgdGhpcyBjb25maWcsIGxhdGVyIHRoZQ0KPiBwYXRjaCB3YXMgYWNjZXB0
+ZWQgaW4gbmV0LW5leHQsDQo+IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJu
+ZWwvZ2l0L2RhdmVtL25ldC0NCj4gbmV4dC5naXQvY29tbWl0Lz9pZD1iZWU4MjU5ZGQzMWY0MTlh
+ODgzMTc0NTU2YjExZWRjNmY5YTE1M2QxDQpbUy5IXSBKdXN0IGZvdW5kIHRoZSBwYXRjaCB3YXMg
+YWxzbyBtZXJnZWQgaW4gTGludXgtbmV4dDoNCmh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9s
+aW51eC9rZXJuZWwvZ2l0L25leHQvbGludXgtbmV4dC5naXQvY29tbWl0Lz9pZD1iZWU4MjU5ZGQz
+MWY0MTlhODgzMTc0NTU2YjExZWRjNmY5YTE1M2QxDQoNClRoYW5rcy4NClNoYW9odWkNCj4gDQo+
+IEkgc2hvdWxkIG1lbnRpb24gdGhpcyBiZWxvdyB0aGUgLS0tLg0KPiBTb3JyeSENCj4gDQo+IFNo
+b3VsZCBJIHJlLXNlbmQgdGhlIHBhdGNoIG9mIGVuYWJsaW5nIGNvbmZpZyBvcHRpb24gb2YNCj4g
+Q09ORklHX0FRVUFOVElBX1BIWT8NCj4gDQo+IFRoYW5rcyENCj4gU2hhb2h1aQ0KDQo=
