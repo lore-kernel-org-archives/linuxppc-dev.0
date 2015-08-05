@@ -1,30 +1,23 @@
-Return-Path: <mail@maciej.szmigiero.name>
-Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 959441A2752
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 01:29:14 +1000 (AEST)
-Message-ID: <55C22BBE.1010303@maciej.szmigiero.name>
-Date: Wed, 05 Aug 2015 17:29:02 +0200
-From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86F4A1A1C15
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 01:43:41 +1000 (AEST)
+From: Madalin Bucur <madalin.bucur@freescale.com>
+To: <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <davem@davemloft.net>, <scottwood@freescale.com>,
+ <igal.liberman@freescale.com>, <ppc@mindchasers.com>, <joe@perches.com>,
+ <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>, Madalin Bucur
+ <madalin.bucur@freescale.com>
+Subject: [v2 0/9] dpaa_eth: Add the Freescale DPAA Ethernet driver
+Date: Wed, 5 Aug 2015 18:41:20 +0300
+Message-ID: <1438789289-16304-1-git-send-email-madalin.bucur@freescale.com>
+Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
-To: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
-CC: Markus Pargmann <mpa@pengutronix.de>, Timur Tabi <timur@tabi.org>,
- Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
- linuxppc-dev@lists.ozlabs.org,
- linux-kernel <linux-kernel@vger.kernel.org>,
- Fabio Estevam <festevam@gmail.com>
-Subject: [PATCH 6/6 v2][RESEND] ASoC: fsl_ssi: adjust set DAI format in AC'97
- mode
-References: <55BA364E.1000803@maciej.szmigiero.name>
- <20150731055843.GX30895@pengutronix.de>
- <55BB9082.4030206@maciej.szmigiero.name>
- <20150802185103.GD19600@pengutronix.de>
-In-Reply-To: <20150802185103.GD19600@pengutronix.de>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +27,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adjust set DAI format function in fsl_ssi driver
-so it doesn't fail and clears RXDIR in AC'97 mode.
+This patch series adds the Ethernet driver for the Freescale
+QorIQ Data Path Acceleration Architecture (DPAA).
 
-Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
----
-Changes from v1: fix indentation to be consistent with rest
-of the driver.
+This version includes changes following the feedback received
+on previous versions from Eric Dumazet, Bob Cochran, Joe Perches,
+Paul Bolle, Joakim Tjernlund, Scott Wood, David Miller - thanks!
 
- sound/soc/fsl/fsl_ssi.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+Together with the driver a managed version of alloc_percpu
+is provided that simplifies the release of percpu memory.
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 8e5ff5e..1ba63bd 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -900,14 +900,16 @@ static int _fsl_ssi_set_dai_fmt(struct device *dev,
- 		scr &= ~CCSR_SSI_SCR_SYS_CLK_EN;
- 		break;
- 	default:
--		return -EINVAL;
-+		if (!fsl_ssi_is_ac97(ssi_private))
-+			return -EINVAL;
- 	}
- 
- 	stcr |= strcr;
- 	srcr |= strcr;
- 
--	if (ssi_private->cpu_dai_drv.symmetric_rates) {
--		/* Need to clear RXDIR when using SYNC mode */
-+	if (ssi_private->cpu_dai_drv.symmetric_rates
-+			|| fsl_ssi_is_ac97(ssi_private)) {
-+		/* Need to clear RXDIR when using SYNC or AC97 mode */
- 		srcr &= ~CCSR_SSI_SRCR_RXDIR;
- 		scr |= CCSR_SSI_SCR_SYN;
- 	}
+The Freescale DPAA architecture consists in a series of hardware
+blocks that support the Ethernet connectivity. The Ethernet driver
+depends upon the following drivers that are currently in the Linux
+kernel or in review:
+ - Peripheral Access Memory Unit (PAMU)
+    drivers/iommu/fsl_*
+ - Frame Manager (FMan)
+    drivers/net/ethernet/freescale/fman
+ - Queue Manager (QMan), Buffer Manager (BMan)
+    drivers/soc/fsl/qbman
+
+The latest FMan driver patches were submitted by Igal Liberman:
+https://patchwork.ozlabs.org/project/netdev/list/?submitter=64715&state=*&q=[v4,
+
+The latest Q/BMan drivers were submitted by Roy Pledge:
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=66331&state=*
+
+Changes from v1:
+ - bpool level Kconfig options removed
+ - print format using pr_fmt, cleaned up prints
+ - __hot/__cold removed
+ - gratuitous unlikely() removed
+ - code style aligned, consistent spacing for declarations
+ - comment formatting
+
+The complete patch set based on the v4.2-rc5 kernel can be found
+in the public git http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git
+under the tag ldup_public_git_20150805:
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git/log/?h=ldup_public_git_20150805
+
+There is one patch that needs to be applied to u-boot to align it
+to the latest device tree binding document specification used by
+the FMan driver. The patch is under the ldup_public_git_20150410
+tag in the public git at:
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/u-boot.git/log/?h=ldup_public_git_20150410
+
+Madalin Bucur (9):
+  devres: add devm_alloc_percpu()
+  dpaa_eth: add support for DPAA Ethernet
+  dpaa_eth: add support for S/G frames
+  dpaa_eth: add driver's Tx queue selection mechanism
+  dpaa_eth: add ethtool functionality
+  dpaa_eth: add sysfs exports
+  dpaa_eth: add debugfs counters
+  dpaa_eth: add debugfs entries
+  dpaa_eth: add trace points
+
+ Documentation/driver-model/devres.txt              |    4 +
+ drivers/base/devres.c                              |   64 +
+ drivers/net/ethernet/freescale/Kconfig             |    2 +
+ drivers/net/ethernet/freescale/Makefile            |    1 +
+ drivers/net/ethernet/freescale/dpaa/Kconfig        |   63 +
+ drivers/net/ethernet/freescale/dpaa/Makefile       |   17 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.c |  272 ++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.h |   43 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  860 +++++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  489 +++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_common.c  | 1358 ++++++++++++++++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_common.h  |  129 ++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c  |  704 ++++++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  167 +++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   |  141 ++
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |  230 ++++
+ include/linux/device.h                             |   19 +
+ 17 files changed, 4563 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
+
+-- 
+1.7.11.7
