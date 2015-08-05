@@ -1,26 +1,41 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0112.outbound.protection.outlook.com [207.46.100.112])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 940431A1E44
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 01:44:03 +1000 (AEST)
-From: Madalin Bucur <madalin.bucur@freescale.com>
-To: <netdev@vger.kernel.org>
-CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <davem@davemloft.net>, <scottwood@freescale.com>,
- <igal.liberman@freescale.com>, <ppc@mindchasers.com>, <joe@perches.com>,
- <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>, Madalin Bucur
- <madalin.bucur@freescale.com>, Ruxandra Ioana Radulescu
- <ruxandra.radulescu@freescale.com>
-Subject: [v2 9/9] dpaa_eth: add trace points
-Date: Wed, 5 Aug 2015 18:41:29 +0300
-Message-ID: <1438789289-16304-10-git-send-email-madalin.bucur@freescale.com>
-In-Reply-To: <1438789289-16304-1-git-send-email-madalin.bucur@freescale.com>
-References: <1438789289-16304-1-git-send-email-madalin.bucur@freescale.com>
-Reply-To: <madalin.bucur@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 884421A180C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 02:52:31 +1000 (AEST)
+Received: by pdrh1 with SMTP id h1so2862844pdr.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Aug 2015 09:52:29 -0700 (PDT)
+Date: Wed, 5 Aug 2015 09:52:25 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: Julien Grall <julien.grall@citrix.com>, xen-devel@lists.xenproject.org,
+ ian.campbell@citrix.com, linux-kernel@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ David Vrabel <david.vrabel@citrix.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>,
+ Wei Liu <wei.liu2@citrix.com>, Juergen Gross <jgross@suse.com>,
+ "James E.J. Bottomley" <JBottomley@odin.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger.kernel.org,
+ netdev@vger.kernel.org, linux-scsi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v2 4/8] xen: Use the correctly the Xen memory terminologies
+Message-ID: <20150805165225.GC3603@dtor-ws>
+References: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
+ <1438711972-18752-5-git-send-email-julien.grall@citrix.com>
+ <alpine.DEB.2.02.1508051108100.11337@kaball.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <alpine.DEB.2.02.1508051108100.11337@kaball.uk.xensource.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,234 +45,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add trace points on the hot processing path.
+On Wed, Aug 05, 2015 at 11:08:55AM +0100, Stefano Stabellini wrote:
+> On Tue, 4 Aug 2015, Julien Grall wrote:
+> > Based on include/xen/mm.h [1], Linux is mistakenly using MFN when GFN
+> > is meant, I suspect this is because the first support for Xen was for
+> > PV. This resulted in some misimplementation of helpers on ARM and
+> > confused developers about the expected behavior.
+> > 
+> > For instance, with pfn_to_mfn, we expect to get an MFN based on the name.
+> > Although, if we look at the implementation on x86, it's returning a GFN.
+> > 
+> > For clarity and avoid new confusion, replace any reference to mfn with
+> > gfn in any helpers used by PV drivers. The x86 code will still keep some
+> > reference of pfn_to_mfn but exclusively for PV (a BUG_ON has been added
+> > to ensure this). No changes as been made in the hypercall field, even
+> > though they may be invalid, in order to keep the same as the defintion
+> > in xen repo.
+> > 
+> > Take also the opportunity to simplify simple construction such
+> > as pfn_to_mfn(page_to_pfn(page)) into page_to_gfn. More complex clean up
+> > will come in follow-up patches.
+> > 
+> > [1] http://xenbits.xen.org/gitweb/?p=xen.git;a=commitdiff;h=e758ed14f390342513405dd766e874934573e6cb
+> > 
+> > Signed-off-by: Julien Grall <julien.grall@citrix.com>
+> > Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+> > Cc: Russell King <linux@arm.linux.org.uk>
+> > Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+> > Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+> > Cc: David Vrabel <david.vrabel@citrix.com>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Cc: "H. Peter Anvin" <hpa@zytor.com>
+> > Cc: x86@kernel.org
+> > Cc: "Roger Pau Monné" <roger.pau@citrix.com>
+> > Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > Cc: Ian Campbell <ian.campbell@citrix.com>
+> > Cc: Wei Liu <wei.liu2@citrix.com>
+> > Cc: Juergen Gross <jgross@suse.com>
+> > Cc: "James E.J. Bottomley" <JBottomley@odin.com>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Jiri Slaby <jslaby@suse.com>
+> > Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > Cc: linux-input@vger.kernel.org
+> > Cc: netdev@vger.kernel.org
+> > Cc: linux-scsi@vger.kernel.org
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Cc: linux-fbdev@vger.kernel.org
+> > Cc: linux-arm-kernel@lists.infradead.org
+> 
+> Aside from the x86 bits:
+> 
+> Reviewed-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
 
-Signed-off-by: Ruxandra Ioana Radulescu <ruxandra.radulescu@freescale.com>
----
- drivers/net/ethernet/freescale/dpaa/Makefile       |   1 +
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  12 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |   4 +
- .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   | 141 +++++++++++++++++++++
- 4 files changed, 158 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
+Not really important, but just in case anyone waits for my ack on input
+bits:
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/Makefile b/drivers/net/ethernet/freescale/dpaa/Makefile
-index 3427de4..bf7248a 100644
---- a/drivers/net/ethernet/freescale/dpaa/Makefile
-+++ b/drivers/net/ethernet/freescale/dpaa/Makefile
-@@ -11,6 +11,7 @@ ccflags-y += -I$(FMAN)/flib
- obj-$(CONFIG_FSL_DPAA_ETH) += fsl_dpa.o
- 
- fsl_dpa-objs += dpaa_eth.o dpaa_eth_sg.o dpaa_eth_common.o dpaa_ethtool.o dpaa_eth_sysfs.o
-+CFLAGS_dpaa_eth.o := -I$(src)
- ifeq ($(CONFIG_FSL_DPAA_ETH_DEBUGFS),y)
- fsl_dpa-objs += dpaa_debugfs.o
- endif
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index ea25bf1..7f2413b 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -61,6 +61,12 @@
- #include "dpaa_debugfs.h"
- #endif /* CONFIG_FSL_DPAA_ETH_DEBUGFS */
- 
-+/* CREATE_TRACE_POINTS only needs to be defined once. Other dpa files
-+ * using trace events only need to #include <trace/events/sched.h>
-+ */
-+#define CREATE_TRACE_POINTS
-+#include "dpaa_eth_trace.h"
-+
- #define DPA_NAPI_WEIGHT		64
- 
- /* Valid checksum indication */
-@@ -226,6 +232,9 @@ priv_rx_default_dqrr(struct qman_portal *portal,
- 	priv = netdev_priv(net_dev);
- 	dpa_bp = priv->dpa_bp;
- 
-+	/* Trace the Rx fd */
-+	trace_dpa_rx_fd(net_dev, fq, &dq->fd);
-+
- 	/* IRQ handler, non-migratable; safe to use raw_cpu_ptr here */
- 	percpu_priv = raw_cpu_ptr(priv->percpu_priv);
- 	count_ptr = raw_cpu_ptr(dpa_bp->percpu_count);
-@@ -282,6 +291,9 @@ priv_tx_conf_default_dqrr(struct qman_portal *portal,
- 	net_dev = ((struct dpa_fq *)fq)->net_dev;
- 	priv = netdev_priv(net_dev);
- 
-+	/* Trace the fd */
-+	trace_dpa_tx_conf_fd(net_dev, fq, &dq->fd);
-+
- 	/* Non-migratable context, safe to use raw_cpu_ptr */
- 	percpu_priv = raw_cpu_ptr(priv->percpu_priv);
- 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-index c66140e..4ac917a 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-@@ -36,6 +36,7 @@
- 
- #include "fm_ext.h"
- #include "mac.h"
-+#include "dpaa_eth_trace.h"
- 
- extern int dpa_rx_extra_headroom;
- extern int dpa_max_frm;
-@@ -417,6 +418,9 @@ static inline int dpa_xmit(struct dpa_priv_s *priv,
- 				_dpa_get_tx_conf_queue(priv, egress_fq)
- 				);
- 
-+	/* Trace this Tx fd */
-+	trace_dpa_tx_fd(priv->net_dev, egress_fq, fd);
-+
- 	for (i = 0; i < 100000; i++) {
- 		err = qman_enqueue(egress_fq, fd, 0);
- 		if (err != -EBUSY)
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
-new file mode 100644
-index 0000000..3b67477
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
-@@ -0,0 +1,141 @@
-+/* Copyright 2013-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM	dpaa_eth
-+
-+#if !defined(_DPAA_ETH_TRACE_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _DPAA_ETH_TRACE_H
-+
-+#include <linux/skbuff.h>
-+#include <linux/netdevice.h>
-+#include "dpaa_eth.h"
-+#include <linux/tracepoint.h>
-+
-+#define fd_format_name(format)	{ qm_fd_##format, #format }
-+#define fd_format_list	\
-+	fd_format_name(contig),	\
-+	fd_format_name(sg)
-+
-+/* This is used to declare a class of events.
-+ * individual events of this type will be defined below.
-+ */
-+
-+/* Store details about a frame descriptor and the FQ on which it was
-+ * transmitted/received.
-+ */
-+DECLARE_EVENT_CLASS(dpaa_eth_fd,
-+	/* Trace function prototype */
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	/* Repeat argument list here */
-+	TP_ARGS(netdev, fq, fd),
-+
-+	/* A structure containing the relevant information we want to record.
-+	 * Declare name and type for each normal element, name, type and size
-+	 * for arrays. Use __string for variable length strings.
-+	 */
-+	TP_STRUCT__entry(
-+		__field(u32,	fqid)
-+		__field(u64,	fd_addr)
-+		__field(u8,	fd_format)
-+		__field(u16,	fd_offset)
-+		__field(u32,	fd_length)
-+		__field(u32,	fd_status)
-+		__string(name,	netdev->name)
-+	),
-+
-+	/* The function that assigns values to the above declared fields */
-+	TP_fast_assign(
-+		__entry->fqid = fq->fqid;
-+		__entry->fd_addr = qm_fd_addr_get64(fd);
-+		__entry->fd_format = fd->format;
-+		__entry->fd_offset = dpa_fd_offset(fd);
-+		__entry->fd_length = dpa_fd_length(fd);
-+		__entry->fd_status = fd->status;
-+		__assign_str(name, netdev->name);
-+	),
-+
-+	/* This is what gets printed when the trace event is triggered */
-+	TP_printk("[%s] fqid=%d, fd: addr=0x%llx, format=%s, off=%u, len=%u, status=0x%08x",
-+		  __get_str(name), __entry->fqid, __entry->fd_addr,
-+		  __print_symbolic(__entry->fd_format, fd_format_list),
-+		  __entry->fd_offset, __entry->fd_length, __entry->fd_status)
-+);
-+
-+/* Now declare events of the above type. Format is:
-+ * DEFINE_EVENT(class, name, proto, args), with proto and args same as for class
-+ */
-+
-+/* Tx (egress) fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_tx_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* Rx fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_rx_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* Tx confirmation fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_tx_conf_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* If only one event of a certain type needs to be declared, use TRACE_EVENT().
-+ * The syntax is the same as for DECLARE_EVENT_CLASS().
-+ */
-+
-+#endif /* _DPAA_ETH_TRACE_H */
-+
-+/* This must be outside ifdef _DPAA_ETH_TRACE_H */
-+#undef TRACE_INCLUDE_PATH
-+#define TRACE_INCLUDE_PATH .
-+#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_FILE	dpaa_eth_trace
-+#include <trace/define_trace.h>
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+Thanks.
+
 -- 
-1.7.11.7
+Dmitry
