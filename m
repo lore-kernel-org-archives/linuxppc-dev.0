@@ -1,23 +1,16 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 848911A0BE0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 17:59:21 +1000 (AEST)
-Message-ID: <1438761561.20978.3.camel@neuling.org>
-Subject: Re: [PATCH] cxl: Don't ignore add_process_element result when
- attaching context
-From: Michael Neuling <mikey@neuling.org>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- benh@kernel.crashing.org, imunsie@au.ibm.com
-Date: Wed, 05 Aug 2015 17:59:21 +1000
-In-Reply-To: <1438144834.28422.46.camel@axtens.net>
-References: <1438142842-31603-1-git-send-email-dja@axtens.net>
- <1438143932.17434.1.camel@ellerman.id.au>
- <1438144834.28422.46.camel@axtens.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 5018D1A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 19:27:35 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3] powerpc32: rearrange instructions order in ip_fast_csum()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Message-Id: <20150805092730.C2F171A2412@localhost.localdomain>
+Date: Wed,  5 Aug 2015 11:27:30 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-07-29 at 14:40 +1000, Daniel Axtens wrote:
-> On Wed, 2015-07-29 at 14:25 +1000, Michael Ellerman wrote:
-> > On Wed, 2015-07-29 at 14:07 +1000, Daniel Axtens wrote:
-> > > Previously, when attaching a context in dedicated mode, we ignored
-> >=20
-> > Previously? You mean currently? Now is before this patch is applied.
-> I do mean currently. Apologies for the temporal confusion :)
->=20
-> >=20
-> > > the result of add_process_element, which could potentially fail.
-> > >=20
-> > > If add_process_element returns and error, pass it back to the caller.
-> >                                    ^
-> >=20
-> > I can fix.
-> >=20
-> Many thanks: it's good to know that my spelling mistakes will only be
-> immortalised in the list archives rather than in the kernel's git
-> history. :p
+On PPC_8xx, lwz has a 2 cycles latency, and branching also takes
+2 cycles. On some other powerpc, lwz has 3 cycles.
 
-Not to mention the double negative in the patch subject! "Don't
-ignore"... come on!?!?  :-P
+As the size of the header is minimum 5 words, we can unroll the loop
+for the first words to reduce number of branching, and we can re-order
+the instructions to limit loading latency.
 
-Mikey
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v3: Only use lwzu for the last load as lwzu has undocumented
+ 	additional latency
+
+ arch/powerpc/lib/checksum_32.S | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
+index 9c48ee0..3ef6e3f 100644
+--- a/arch/powerpc/lib/checksum_32.S
++++ b/arch/powerpc/lib/checksum_32.S
+@@ -26,14 +26,17 @@
+  */
+ _GLOBAL(ip_fast_csum)
+ 	lwz	r0,0(r3)
+-	lwzu	r5,4(r3)
+-	addic.	r4,r4,-2
++	lwz	r5,4(r3)
++	lwz	r6,8(r3)
++	lwzu	r7,12(r3)
++	addi	r4,r4,-4
+ 	addc	r0,r0,r5
+ 	mtctr	r4
+-	blelr-
+-1:	lwzu	r4,4(r3)
+-	adde	r0,r0,r4
++	adde	r0,r0,r6
++1:	adde	r0,r0,r7
++	lwzu	r7,4(r3)
+ 	bdnz	1b
++	adde	r0,r0,r7
+ 	addze	r0,r0		/* add in final carry */
+ 	rlwinm	r3,r0,16,0,31	/* fold two halves together */
+ 	add	r3,r0,r3
+-- 
+2.1.0
