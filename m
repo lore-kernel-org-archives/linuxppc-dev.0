@@ -1,28 +1,42 @@
-Return-Path: <ranshalit@gmail.com>
-Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
- [IPv6:2607:f8b0:4001:c06::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C1F91A0148
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 16:11:30 +1000 (AEST)
-Received: by ioii16 with SMTP id i16so39658536ioi.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Aug 2015 23:11:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A71241A0148
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 16:54:11 +1000 (AEST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 5 Aug 2015 00:54:08 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 25EE219D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Aug 2015 00:45:03 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t756rBDq47120606
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Aug 2015 23:53:11 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t756s4PI025492
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Aug 2015 00:54:05 -0600
+Date: Wed, 5 Aug 2015 12:24:00 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
+Subject: Re: powerpc: Add an inline function to update HID0
+Message-ID: <20150805065400.GA14701@in.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+References: <1438677058-12883-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20150804100858.1F272140306@ozlabs.org>
+ <20150805023057.GT11083@gate.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <CAJ2oMhKNXz56xcxmNFeaZXHct0ERf0m9V_uTbtCZCUKcGtPkqw@mail.gmail.com>
-References: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
- <1438714472.2097.89.camel@freescale.com>
- <CAJ2oMhLzck9SxgzcXpEXVk_Yf0KoM=D4cOToizoOUPQFZ4JjWA@mail.gmail.com>
- <1438720268.2097.94.camel@freescale.com>
- <CAJ2oMhLDpbnqp=15Z_zWw8c1dY2fRCokG+_hneL=pFUMZdHN5Q@mail.gmail.com>
- <1438723510.2097.97.camel@freescale.com>
- <CAJ2oMhKNXz56xcxmNFeaZXHct0ERf0m9V_uTbtCZCUKcGtPkqw@mail.gmail.com>
-Date: Wed, 5 Aug 2015 09:11:28 +0300
-Message-ID: <CAJ2oMhK0WHR2at7h2Cw46nXTtDBkgMxbATm95dNYwdLPrs+GPw@mail.gmail.com>
-Subject: Re: GPMC in device tree
-From: Ran Shalit <ranshalit@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150805023057.GT11083@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,84 +46,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 5, 2015 at 6:56 AM, Ran Shalit <ranshalit@gmail.com> wrote:
-> On Wed, Aug 5, 2015 at 12:25 AM, Scott Wood <scottwood@freescale.com> wrote:
->> On Wed, 2015-08-05 at 00:22 +0300, Ran Shalit wrote:
->>> On Tue, Aug 4, 2015 at 11:31 PM, Scott Wood <scottwood@freescale.com> wrote:
->>> > On Tue, 2015-08-04 at 23:26 +0300, Ran Shalit wrote:
->>> > > On Tue, Aug 4, 2015 at 9:54 PM, Scott Wood <scottwood@freescale.com>
->>> > > wrote:
->>> > > > On Tue, 2015-08-04 at 18:29 +0300, Ran Shalit wrote:
->>> > > > > Hello,
->>> > > > >
->>> > > > > I would please like to ask if describing flash nor used with GPMC,
->>> > > > > whould be done as described in:
->>> > > > > https://www.kernel.org/doc/Documentation/devicetree/bindings/mtd/gpmc-nor.txt
->>> > > > > It is described in the above link as "TI's GPMC", so I'm not sure if
->>> > > > > it is relevent for powerpc too.
->>> > > >
->>> > > > That binding is for TI GPMC.
->>> > > >
->>> > > > Are you saying you have some PPC chip that has a flash controller
->>> > > > called
->>> > > > GPMC?
->>> > > >
->>> > > > -Scott
->>> > > >
->>> > >
->>> > > Hi Scott,
->>> > >
->>> > > Thanks, I've worked with TI's chips, so I now understand that I made
->>> > > here some confusion...
->>> > > It is GPCM , not GPMC, my mistake.
->>> > > We already configured it in u-boot, but on doing read/write from
->>> > > kernel it doesn not work.
->>> > > It seems that for the linux to use the correct driver, we need to
->>> > > define the nor in the device tree.
->>> > > Is there any example how to define nor GPCM in device tree ? Is it
->>> > > possible not to override the existing GPCM configuration ?
->>> >
->>> > Pretty much all of the mpc8xxx/qoriq device trees have GPCM NOR defined.
->>> > See
->>> > Documentation/devicetree/bindings/powerpc/fsl/lbc.txt and examples such as
->>> > arch/powerpc/boot/dts/p4080ds.dts (part of the lbc node is in
->>> > arch/powerpc/boot/dts/fsl/p4080si-post.dtsi).
->>> >
->>> > Linux will not change the GPCM configuration.
->>> >
->>> > -Scott
->>> >
->>>
->>> On more thing, if I may.
->>> The localbus is also connected to nvram & cpld.
->>> I've noticed that read/write works well, even though I didn't define
->>> anything in device tree.
->>> Is there any reasom to add these devices into device tree, or can we
->>> use the cpld and nvram without the definition in device tree ?
->>
->> I don't know what you're doing in your kernel to access devices that aren't
->> in the device tree.  You should add the devices to the device tree, and have
->> the kernel use it rather than hardcoded info.
->>
->> -Scott
->>
-> Hi,
->
-> Yes I understand.
-> But It is worse noting that I have no localbus entry in the device tree.
-> Yes, The nvram, cpld which are both connected to device tree, seems to
-> work without any issues.
->
-> Thanks,
-> Ran
+Hi Segher,
 
-I apologyze for the bad english, I meant "it worth to note" that there
-is no localbus entry at all in the device tree.
-So I wander how the nvram and cpld worked...
-If I may please ask, what should be the "compatible" for generic
-devices such as  nvram/cpld ?
-I assume that if they worked without any entry, it means that there is
-no need for specific driver.
+Thanks for the suggestions. I will rename the function to
+update_power8_hid0() and use asm volatile.
 
-Regards,
-Ran
+
+On Tue, Aug 04, 2015 at 09:30:57PM -0500, Segher Boessenkool wrote:
+> On Tue, Aug 04, 2015 at 08:08:58PM +1000, Michael Ellerman wrote:
+> > > +static inline void update_hid0(unsigned long hid0)
+> > > +{
+> > > +	/*
+> > > +	 *  The HID0 update should at the very least be preceded by a
+> > > +	 *  a SYNC instruction followed by an ISYNC instruction
+> > > +	 */
+> > > +	mb();
+> > > +	mtspr(SPRN_HID0, hid0);
+> > > +	isync();
+> > 
+> > That's going to turn into three separate inline asm blocks, which is maybe a
+> > bit unfortunate. Have you checked the generated code is what we want, ie. just
+> > sync, mtspr, isync ?
+> 
+> The "mb()" is not such a great name anyway: you don't want a memory
+> barrier, you want an actual sync instruction ("sync 0", "hwsync",
+> whatever the currently preferred spelling is).
+> 
+> The function name should also say this is for POWER8 (the required
+> sequences are different for some other processors; and some others
+> might not even _have_ a HID0, or not at 1008).  power8_write_hid0
+> or such?
+> 
+> For writing it as one asm, why not just
+> 
+>   asm volatile("sync ; mtspr %0,%1 ; isync" : : "i"(SPRN_HID0), "r"(hid0));
+> 
+> instead of the stringify stuff?
+> 
+> 
+> Segher
+> 
+
+--
+Thanks and Regards
+gautham.
