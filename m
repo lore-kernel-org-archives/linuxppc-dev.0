@@ -1,41 +1,46 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
+Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B4CBB1A0655
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 23:24:59 +1000 (AEST)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C2D61A084F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 23:42:37 +1000 (AEST)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 816A41401AB
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 23:24:59 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 16B6B1402B7
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 23:42:37 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 6 Aug 2015 23:24:59 +1000
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Thu, 6 Aug 2015 23:42:36 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1F7F82BB0059
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 23:24:55 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4B5E03578055
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 23:42:31 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t76DOfD3327950
- for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2015 23:24:50 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t76DOLj6010596
- for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2015 23:24:22 +1000
-Message-ID: <55C35FF4.9050001@linux.vnet.ibm.com>
-Date: Thu, 06 Aug 2015 18:54:04 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ t76DgICU65732746
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2015 23:42:26 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t76DfwUD003979
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Aug 2015 23:41:58 +1000
+Date: Thu, 6 Aug 2015 21:41:41 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH V2 6/6] powerpc/powernv: allocate discrete PE# when using
+ M64 BAR in Single PE mode
+Message-ID: <20150806134141.GA6235@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150731020148.GA6151@richard>
+ <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1438737903-10399-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150806053601.GB5636@gwshan>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-CC: mikey@neuling.org
-Subject: Re: [V3] powerpc/irq: Enable some more exceptions in /proc/interrupts
- interface
-References: <20150804095726.66D4A1402E2@ozlabs.org>
-In-Reply-To: <20150804095726.66D4A1402E2@ozlabs.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150806053601.GB5636@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,44 +50,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/04/2015 03:27 PM, Michael Ellerman wrote:
-> On Mon, 2015-13-07 at 08:16:06 UTC, Anshuman Khandual wrote:
->> This patch enables facility unavailable exceptions for generic facility,
->> FPU, ALTIVEC and VSX in /proc/interrupts listing by incrementing their
->> newly added IRQ statistical counters as and when these exceptions happen.
->> This also adds couple of helper functions which will be called from within
->> the interrupt handler context to update their statistics. Similarly this
->> patch also enables alignment and program check exceptions as well.
-> 
-> ...
-> 
->> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
->> index 0a0399c2..a86180c 100644
->> --- a/arch/powerpc/kernel/exceptions-64s.S
->> +++ b/arch/powerpc/kernel/exceptions-64s.S
->> @@ -1158,6 +1158,7 @@ BEGIN_FTR_SECTION
->>  END_FTR_SECTION_IFSET(CPU_FTR_TM)
->>  #endif
->>  	bl	load_up_fpu
->> +	bl	fpu_unav_exceptions_count
-> 
-> Is it safe to call C code here?
+On Thu, Aug 06, 2015 at 03:36:01PM +1000, Gavin Shan wrote:
+>On Wed, Aug 05, 2015 at 09:25:03AM +0800, Wei Yang wrote:
+>>When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
+>>discrete.
+>>
+>>This patch restructures the patch to allocate discrete PE# for VFs when M64
+>>BAR is set to Single PE mode.
+>>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>---
+>> arch/powerpc/include/asm/pci-bridge.h     |    2 +-
+>> arch/powerpc/platforms/powernv/pci-ioda.c |   69 +++++++++++++++++++++--------
+>> 2 files changed, 51 insertions(+), 20 deletions(-)
+>>
+>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>index 8aeba4c..72415c7 100644
+>>--- a/arch/powerpc/include/asm/pci-bridge.h
+>>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>>@@ -213,7 +213,7 @@ struct pci_dn {
+>> #ifdef CONFIG_PCI_IOV
+>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>> 	u16     num_vfs;		/* number of VFs enabled*/
+>>-	int     offset;			/* PE# for the first VF PE */
+>>+	int     *offset;		/* PE# for the first VF PE or array */
+>> 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+>> #define IODA_INVALID_M64        (-1)
+>> 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+>
+>how about renaming "offset" to "pe_num_map", or "pe_map" ? Similar to the comments
+>I gave to the "m64_bar_map", num_of_max_vfs entries can be allocated. Though not
+>all of them will be used, not too much memory will be wasted.
+>
 
-Hmm, is it not ? I had that question but was not really sure. Dont
-understand the difference between 'fast_exception_return' and
-'ret_from_except' completely. Will converting the following sequence
-of code
+Thanks for your comment.
 
- 	bl	load_up_fpu
-+	bl	fpu_unav_exceptions_count
- 	b	fast_exception_return
+I have thought about change the name to make it more self explain. While
+another fact I want to take in is this field is also used to be reflect the
+shift offset when M64 BAR is used in the Shared Mode. So I maintain the name.
 
-into
+How about use "enum", one maintain the name "offset", and another one rename to
+"pe_num_map". And use the meaningful name at proper place?
 
- 	bl	load_up_fpu
-        RECONCILE_IRQ_STATE(r10, r11)
-        addi    r3,r1,STACK_FRAME_OVERHEAD
-+	bl	fpu_unav_exceptions_count
- 	b	ret_from_except
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index 4042303..9953829 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -1243,7 +1243,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>
+>> 			/* Map the M64 here */
+>> 			if (pdn->m64_single_mode) {
+>>-				pe_num = pdn->offset + j;
+>>+				pe_num = pdn->offset[j];
+>> 				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+>> 						pe_num, OPAL_M64_WINDOW_TYPE,
+>> 						pdn->m64_map[j][i], 0);
+>>@@ -1347,7 +1347,7 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
+>> 	struct pnv_phb        *phb;
+>> 	struct pci_dn         *pdn;
+>> 	struct pci_sriov      *iov;
+>>-	u16 num_vfs;
+>>+	u16                    num_vfs, i;
+>>
+>> 	bus = pdev->bus;
+>> 	hose = pci_bus_to_host(bus);
+>>@@ -1361,14 +1361,18 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
+>>
+>> 	if (phb->type == PNV_PHB_IODA2) {
+>> 		if (!pdn->m64_single_mode)
+>>-			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
+>>+			pnv_pci_vf_resource_shift(pdev, -*pdn->offset);
+>>
+>> 		/* Release M64 windows */
+>> 		pnv_pci_vf_release_m64(pdev, num_vfs);
+>>
+>> 		/* Release PE numbers */
+>>-		bitmap_clear(phb->ioda.pe_alloc, pdn->offset, num_vfs);
+>>-		pdn->offset = 0;
+>>+		if (pdn->m64_single_mode) {
+>>+			for (i = 0; i < num_vfs; i++)
+>>+				pnv_ioda_free_pe(phb, pdn->offset[i]);
+>>+		} else
+>>+			bitmap_clear(phb->ioda.pe_alloc, *pdn->offset, num_vfs);
+>>+		kfree(pdn->offset);
+>
+>Can pnv_ioda_free_pe() be reused to release PE ?
 
-help solve the problem ?
+You mean use it to similar thing in pnv_ioda_deconfigure_pe()?
+
+>
+>> 	}
+>> }
+>>
+>>@@ -1394,7 +1398,10 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>
+>> 	/* Reserve PE for each VF */
+>> 	for (vf_index = 0; vf_index < num_vfs; vf_index++) {
+>>-		pe_num = pdn->offset + vf_index;
+>>+		if (pdn->m64_single_mode)
+>>+			pe_num = pdn->offset[vf_index];
+>>+		else
+>>+			pe_num = *pdn->offset + vf_index;
+>>
+>> 		pe = &phb->ioda.pe_array[pe_num];
+>> 		pe->pe_number = pe_num;
+>>@@ -1436,6 +1443,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>> 	struct pnv_phb        *phb;
+>> 	struct pci_dn         *pdn;
+>> 	int                    ret;
+>>+	u16                    i;
+>>
+>> 	bus = pdev->bus;
+>> 	hose = pci_bus_to_host(bus);
+>>@@ -1462,19 +1470,38 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>> 		}
+>>
+>> 		/* Calculate available PE for required VFs */
+>>-		mutex_lock(&phb->ioda.pe_alloc_mutex);
+>>-		pdn->offset = bitmap_find_next_zero_area(
+>>-			phb->ioda.pe_alloc, phb->ioda.total_pe,
+>>-			0, num_vfs, 0);
+>>-		if (pdn->offset >= phb->ioda.total_pe) {
+>>+		if (pdn->m64_single_mode) {
+>>+			pdn->offset = kmalloc(sizeof(*pdn->offset) * num_vfs,
+>>+					GFP_KERNEL);
+>>+			if (!pdn->offset)
+>>+				return -ENOMEM;
+>>+			for (i = 0; i < num_vfs; i++)
+>>+				pdn->offset[i] = IODA_INVALID_PE;
+>>+			for (i = 0; i < num_vfs; i++) {
+>>+				pdn->offset[i] = pnv_ioda_alloc_pe(phb);
+>>+				if (pdn->offset[i] == IODA_INVALID_PE) {
+>>+					ret = -EBUSY;
+>>+					goto m64_failed;
+>>+				}
+>>+			}
+>>+		} else {
+>>+			pdn->offset = kmalloc(sizeof(*pdn->offset), GFP_KERNEL);
+>>+			if (!pdn->offset)
+>>+				return -ENOMEM;
+>>+			mutex_lock(&phb->ioda.pe_alloc_mutex);
+>>+			*pdn->offset = bitmap_find_next_zero_area(
+>>+				phb->ioda.pe_alloc, phb->ioda.total_pe,
+>>+				0, num_vfs, 0);
+>>+			if (*pdn->offset >= phb->ioda.total_pe) {
+>>+				mutex_unlock(&phb->ioda.pe_alloc_mutex);
+>>+				dev_info(&pdev->dev, "Failed to enable VF%d\n", num_vfs);
+>>+				kfree(pdn->offset);
+>>+				return -EBUSY;
+>>+			}
+>>+			bitmap_set(phb->ioda.pe_alloc, *pdn->offset, num_vfs);
+>> 			mutex_unlock(&phb->ioda.pe_alloc_mutex);
+>>-			dev_info(&pdev->dev, "Failed to enable VF%d\n", num_vfs);
+>>-			pdn->offset = 0;
+>>-			return -EBUSY;
+>> 		}
+>>-		bitmap_set(phb->ioda.pe_alloc, pdn->offset, num_vfs);
+>> 		pdn->num_vfs = num_vfs;
+>>-		mutex_unlock(&phb->ioda.pe_alloc_mutex);
+>>
+>> 		/* Assign M64 window accordingly */
+>> 		ret = pnv_pci_vf_assign_m64(pdev, num_vfs);
+>>@@ -1489,7 +1516,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>> 		 * Otherwise, the PE# for the VF will conflict with others.
+>> 		 */
+>> 		if (!pdn->m64_single_mode) {
+>>-			ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
+>>+			ret = pnv_pci_vf_resource_shift(pdev, *pdn->offset);
+>> 			if (ret)
+>> 				goto m64_failed;
+>> 		}
+>>@@ -1501,8 +1528,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>> 	return 0;
+>>
+>> m64_failed:
+>>-	bitmap_clear(phb->ioda.pe_alloc, pdn->offset, num_vfs);
+>>-	pdn->offset = 0;
+>>+	if (pdn->m64_single_mode) {
+>>+		for (i = 0; i < num_vfs; i++)
+>>+			pnv_ioda_free_pe(phb, pdn->offset[i]);
+>>+	} else
+>>+		bitmap_clear(phb->ioda.pe_alloc, *pdn->offset, num_vfs);
+>>+	kfree(pdn->offset);
+>>
+>> 	return ret;
+>> }
+>>-- 
+>>1.7.9.5
+>>
+
+-- 
+Richard Yang
+Help you, Help me
