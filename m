@@ -1,28 +1,25 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A5411A1D69
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 09:25:37 +1000 (AEST)
-Date: Thu, 6 Aug 2015 18:25:06 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 482BA1A0859
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 09:44:57 +1000 (AEST)
+Received: by pabxd6 with SMTP id xd6so55454843pab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2015 16:44:54 -0700 (PDT)
+Date: Thu, 6 Aug 2015 16:44:50 -0700
+From: Brian Norris <computersforpeace@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] powerpc32: optimise csum_partial() loop
-Message-ID: <20150806232506.GB22196@gate.crashing.org>
-References: <cover.1435655733.git.christophe.leroy@c-s.fr>
- <67cf476f657e87b2ea586951a57ae3ba3c1e3c0c.1435655733.git.christophe.leroy@c-s.fr>
- <20150806003059.GD18479@gate.crashing.org>
- <1438828301.2097.126.camel@freescale.com>
- <20150806043938.GE18479@gate.crashing.org>
- <1438901145.2097.170.camel@freescale.com>
-Mime-Version: 1.0
+Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Jaiprakash Singh <b44839@freescale.com>
+Subject: Re: [PATCH v5 RESEND] IFC: Change IO accessor based on endianness
+Message-ID: <20150806234450.GU10676@google.com>
+References: <1432174631-30091-1-git-send-email-scottwood@freescale.com>
+ <20150806165220.GS10676@google.com>
+ <1438903478.2097.196.camel@freescale.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1438901145.2097.170.camel@freescale.com>
+In-Reply-To: <1438903478.2097.196.camel@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 06, 2015 at 05:45:45PM -0500, Scott Wood wrote:
-> > The original loop was already optimal, as the comment said.
+On Thu, Aug 06, 2015 at 06:24:38PM -0500, Scott Wood wrote:
+> On Thu, 2015-08-06 at 09:52 -0700, Brian Norris wrote:
+> > Who takes patches for drivers/memory/ again? I can take it via MTD if
+> > no one else steps up.
+>  There's no maintainer listed.  IIRC, when we previously discussed the patch 
+> we both said that it could go via either of our trees.  I'll take it via mine.
+
+I recall the conversation. I was just confused (again) by there being no
+maintainer entry. Have at it.
+
+> > It's nothing new, but this patch continues the pattern of using a global
+> > pointer to the IFC device structure. Not pretty, but not worth holding
+> > this up over.
 > 
-> The comment says that bdnz has zero overhead.  That doesn't mean the adde 
-> won't stall waiting for the load result.
+> It's not pretty, but I see little reason to come up with more complicated 
+> infrastructure for the drivers finding each other given the low odds of ever 
+> seeing a single-kernel system with more than one IFC.  It's impossible with 
+> current chips.  If it ever does happen we can do something fancier.
 
-adde is execution serialising on those cores; it *always* stalls,
-that is, it won't run until it is next to complete.
+Yep, I figured as much.
 
-> > The new code adds extra instructions and a mispredicted branch.
-> 
-> Outside the main loop.
-
-Sure, I never said it was super-bad or anything.
-
-> >   You also might get less overlap between the loads and adde (I didn't check
-> > if there is any originally): those instructions are no longer
-> > interleaved.
-> >
-> > I think it is a stupid idea to optimise code for all 32-bit PowerPC
-> > CPUs based on solely what is best for a particularly simple, slow
-> > implementation; and that is what this patch is doing.
-> 
-> The simple and slow implementation is the one that needs optimizations the 
-> most.
-
-And, on the other hand, optimising for atypical (mostly) in-order
-single-issue chips without branch folding, hurts performance on
-other chips the most.  Well, dual-issue in-order might be worse :-P
-
-> If this makes performance non-negligibly worse on other 32-bit chips, and is 
-> an important improvement on 8xx, then we can use an ifdef since 8xx already 
-> requires its own kernel build.  I'd prefer to see a benchmark showing that it 
-> actually does make things worse on those chips, though.
-
-And I'd like to see a benchmark that shows it *does not* hurt performance
-on most chips, and does improve things on 8xx, and by how much.  But it
-isn't *me* who has to show that, it is not my patch.
-
-If these csum routines actually matter for performance that much, there
-really *should* be chip-specific implementations.
-
-
-Segher
+Brian
