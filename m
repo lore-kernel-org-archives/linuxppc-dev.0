@@ -1,46 +1,30 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
+ [IPv6:2607:f8b0:4002:c07::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD2E21A009B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 00:03:56 +1000 (AEST)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9CB371402B9
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 00:03:56 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 7 Aug 2015 00:03:56 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 095823578057
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 00:03:55 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t76E3k5H24379564
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 00:03:55 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t76E3MKB006802
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 00:03:22 +1000
-Date: Thu, 6 Aug 2015 22:03:04 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
- benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V2 5/6] powerpc/powernv: boundary the total vf bar size
- instead of the individual one
-Message-ID: <20150806140304.GC6235@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150731020148.GA6151@richard>
- <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-6-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806052851.GA5636@gwshan>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 135C41A009B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 00:09:33 +1000 (AEST)
+Received: by ykoo205 with SMTP id o205so63142601yko.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2015 07:09:31 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150806052851.GA5636@gwshan>
+In-Reply-To: <1438834307-26960-39-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1438834307-26960-39-git-send-email-gwshan@linux.vnet.ibm.com>
+From: Rob Herring <robherring2@gmail.com>
+Date: Thu, 6 Aug 2015 09:09:11 -0500
+Message-ID: <CAL_JsqJsfQjUiPFToyhkLYPbmxppb9BgWysgg46DrifFUqtQsw@mail.gmail.com>
+Subject: Re: [PATCH v6 38/42] drivers/of: Unflatten subordinate nodes after
+ specified level
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>,
+ Pantelis Antoniou <panto@antoniou-consulting.com>, aik@ozlabs.ru
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,73 +34,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 06, 2015 at 03:28:51PM +1000, Gavin Shan wrote:
->On Wed, Aug 05, 2015 at 09:25:02AM +0800, Wei Yang wrote:
->>Each VF could have 6 BARs at most. When the total BAR size exceeds the
->>gate, after expanding it will also exhaust the M64 Window.
->>
->>This patch limits the boundary by checking the total VF BAR size instead of
->>the individual BAR.
->>
->>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+On Wed, Aug 5, 2015 at 11:11 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
+> unflatten_dt_node() is called recursively to unflatten FDT nodes
+> with the assumption that FDT blob has only one root node, which
+> isn't true when the FDT blob represents device sub-tree. This
+> improves the function to supporting device sub-tree that have
+> multiple nodes in the first level:
 >
->Ok. I didn't look at this when giving comments to last patch. It turns
->you have the change in this patch. Please merge it with the previous
->patch.
+>    * Rename original unflatten_dt_node() to __unflatten_dt_node().
+>    * Wrapper unflatten_dt_node() calls __unflatten_dt_node() with
+>      adjusted current node depth to 1 to avoid underflow.
 >
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Hmm... I prefer to have them in two patches. One focus on the calculation of
-gate and the other focus on checking the total VF BAR size. This would help
-record the change.
+Acked-by: Rob Herring <robh@kernel.org>
 
->>---
->> arch/powerpc/platforms/powernv/pci-ioda.c |   13 +++++++------
->> 1 file changed, 7 insertions(+), 6 deletions(-)
->>
->>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>index 31dcedc..4042303 100644
->>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>@@ -2702,7 +2702,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->> 	struct pnv_phb *phb;
->> 	struct resource *res;
->> 	int i;
->>-	resource_size_t size, gate;
->>+	resource_size_t size, gate, total_vf_bar_sz;
->> 	struct pci_dn *pdn;
->> 	int mul, total_vfs;
->>
->>@@ -2729,6 +2729,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->> 	 * Window and limit the system flexibility.
->> 	 */
->> 	gate = phb->ioda.m64_segsize >> 1;
->>+	total_vf_bar_sz = 0;
->>
->> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
->>@@ -2741,13 +2742,13 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->> 			return;
->> 		}
->>
->>-		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
->>+		total_vf_bar_sz += pci_iov_resource_size(pdev,
->>+				i + PCI_IOV_RESOURCES);
->>
->> 		/* bigger than or equal to gate */
->>-		if (size >= gate) {
->>-			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size "
->>-				"is bigger than %lld, roundup power2\n",
->>-				 i, res, gate);
->>+		if (total_vf_bar_sz >= gate) {
->>+			dev_info(&pdev->dev, "PowerNV: VF BAR Total IOV size "
->>+				"is bigger than %lld, roundup power2\n", gate);
->> 			mul = roundup_pow_of_two(total_vfs);
->> 			pdn->m64_single_mode = true;
->> 			break;
->>-- 
->>1.7.9.5
->>
-
--- 
-Richard Yang
-Help you, Help me
+> ---
+>  drivers/of/fdt.c | 53 ++++++++++++++++++++++++++++++++++++++++-------------
+>  1 file changed, 40 insertions(+), 13 deletions(-)
+>
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 0749656..a18a2ce 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -161,7 +161,7 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
+>  }
+>
+>  /**
+> - * unflatten_dt_node - Alloc and populate a device_node from the flat tree
+> + * __unflatten_dt_node - Alloc and populate a device_node from the flat tree
+>   * @blob: The parent device tree blob
+>   * @mem: Memory chunk to use for allocating device nodes and properties
+>   * @poffset: pointer to node in flat tree
+> @@ -171,20 +171,20 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
+>   * @dryrun: If true, do not allocate device nodes but still calculate needed
+>   * memory size
+>   */
+> -static void * unflatten_dt_node(const void *blob,
+> +static void *__unflatten_dt_node(const void *blob,
+>                                 void *mem,
+>                                 int *poffset,
+>                                 struct device_node *dad,
+>                                 struct device_node **nodepp,
+>                                 unsigned long fpsize,
+> -                               bool dryrun)
+> +                               bool dryrun,
+> +                               int *depth)
+>  {
+>         const __be32 *p;
+>         struct device_node *np;
+>         struct property *pp, **prev_pp = NULL;
+>         const char *pathp;
+>         unsigned int l, allocl;
+> -       static int depth = 0;
+>         int old_depth;
+>         int offset;
+>         int has_name = 0;
+> @@ -337,13 +337,25 @@ static void * unflatten_dt_node(const void *blob,
+>                         np->type = "<NULL>";
+>         }
+>
+> -       old_depth = depth;
+> -       *poffset = fdt_next_node(blob, *poffset, &depth);
+> -       if (depth < 0)
+> -               depth = 0;
+> -       while (*poffset > 0 && depth > old_depth)
+> -               mem = unflatten_dt_node(blob, mem, poffset, np, NULL,
+> -                                       fpsize, dryrun);
+> +       /* Multiple nodes might be in the first depth level if
+> +        * the device tree is sub-tree. All nodes in current
+> +        * or deeper depth are unflattened after it returns.
+> +        */
+> +       old_depth = *depth;
+> +       *poffset = fdt_next_node(blob, *poffset, depth);
+> +       while (*poffset > 0) {
+> +               if (*depth < old_depth)
+> +                       break;
+> +
+> +               if (*depth == old_depth)
+> +                       mem = __unflatten_dt_node(blob, mem, poffset,
+> +                                                 dad, NULL, fpsize,
+> +                                                 dryrun, depth);
+> +               else if (*depth > old_depth)
+> +                       mem = __unflatten_dt_node(blob, mem, poffset,
+> +                                                 np, NULL, fpsize,
+> +                                                 dryrun, depth);
+> +       }
+>
+>         if (*poffset < 0 && *poffset != -FDT_ERR_NOTFOUND)
+>                 pr_err("unflatten: error %d processing FDT\n", *poffset);
+> @@ -369,6 +381,20 @@ static void * unflatten_dt_node(const void *blob,
+>         return mem;
+>  }
+>
+> +static void *unflatten_dt_node(const void *blob,
+> +                              void *mem,
+> +                              int *poffset,
+> +                              struct device_node *dad,
+> +                              struct device_node **nodepp,
+> +                              bool dryrun)
+> +{
+> +       int depth = 1;
+> +
+> +       return __unflatten_dt_node(blob, mem, poffset,
+> +                                  dad, nodepp, 0,
+> +                                  dryrun, &depth);
+> +}
+> +
+>  /**
+>   * __unflatten_device_tree - create tree of device_nodes from flat blob
+>   *
+> @@ -408,7 +434,8 @@ static void __unflatten_device_tree(const void *blob,
+>
+>         /* First pass, scan for size */
+>         start = 0;
+> -       size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL, NULL, 0, true);
+> +       size = (unsigned long)unflatten_dt_node(blob, NULL, &start,
+> +                                               NULL, NULL, true);
+>         size = ALIGN(size, 4);
+>
+>         pr_debug("  size is %lx, allocating...\n", size);
+> @@ -423,7 +450,7 @@ static void __unflatten_device_tree(const void *blob,
+>
+>         /* Second pass, do actual unflattening */
+>         start = 0;
+> -       unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false);
+> +       unflatten_dt_node(blob, mem, &start, NULL, mynodes, false);
+>         if (be32_to_cpup(mem + size) != 0xdeadbeef)
+>                 pr_warning("End of tree marker overwritten: %08x\n",
+>                            be32_to_cpup(mem + size));
+> --
+> 2.1.0
+>
