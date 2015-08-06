@@ -2,31 +2,30 @@ Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1A3C31A084F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 17:47:50 +1000 (AEST)
-Received: from mail-pd0-f171.google.com (mail-pd0-f171.google.com
- [209.85.192.171])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7632F1A084F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 19:00:10 +1000 (AEST)
+Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
+ [209.85.220.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9092B1402A0
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 17:47:49 +1000 (AEST)
-Received: by pdber20 with SMTP id er20so29049965pdb.1
- for <linuxppc-dev@ozlabs.org>; Thu, 06 Aug 2015 00:47:48 -0700 (PDT)
-Subject: Re: [PATCH V2 1/6] powerpc/powernv: don't enable SRIOV when VF BAR
- contains non M64 BAR
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 925391402B7
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 19:00:07 +1000 (AEST)
+Received: by pacrr5 with SMTP id rr5so22868633pac.3
+ for <linuxppc-dev@ozlabs.org>; Thu, 06 Aug 2015 02:00:06 -0700 (PDT)
+Subject: Re: [PATCH V2 2/6] powerpc/powernv: simplify the calculation of iov
+ resource
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <20150731020148.GA6151@richard>
  <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-2-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806043557.GA28524@gwshan> <55C2FA4D.4090102@ozlabs.ru>
- <20150806065730.GA20461@gwshan>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- linuxppc-dev@ozlabs.org
+ <1438737903-10399-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150806045139.GB28524@gwshan>
+Cc: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55C3111E.3070704@ozlabs.ru>
-Date: Thu, 6 Aug 2015 17:47:42 +1000
+Message-ID: <55C32210.9090803@ozlabs.ru>
+Date: Thu, 6 Aug 2015 19:00:00 +1000
 MIME-Version: 1.0
-In-Reply-To: <20150806065730.GA20461@gwshan>
+In-Reply-To: <20150806045139.GB28524@gwshan>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,157 +36,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/06/2015 04:57 PM, Gavin Shan wrote:
-> On Thu, Aug 06, 2015 at 04:10:21PM +1000, Alexey Kardashevskiy wrote:
->> On 08/06/2015 02:35 PM, Gavin Shan wrote:
->>> On Wed, Aug 05, 2015 at 09:24:58AM +0800, Wei Yang wrote:
->>>> On PHB_IODA2, we enable SRIOV devices by mapping IOV BAR with M64 BARs. If
->>>> a SRIOV device's BAR is not 64-bit prefetchable, this is not assigned from
->>>> M64 windwo, which means M64 BAR can't work on it.
-
-
-The proper text would be something like this:
-
-===
-SRIOV only supports 64bit MMIO. So if we fail to assign 64bit BAR, we 
-cannot enable the device.
-===
-
-
->>>>
->>>
->>> s/PHB_IODA2/PHB3
->>
->>
->> No, it is IODA2. OPEL does PHB3-specific bits, the host kernel just uses OPAL.
+On 08/06/2015 02:51 PM, Gavin Shan wrote:
+> On Wed, Aug 05, 2015 at 09:24:59AM +0800, Wei Yang wrote:
+>> The alignment of IOV BAR on PowerNV platform is the total size of the IOV
+>> BAR. No matter whether the IOV BAR is truncated or not, the total size
+>> could be calculated by (vfs_expanded * VF size).
 >>
 >
-> Ok.
+> s/VF size/VF BAR size
 >
->>
->>> s/windwo/window
->>>
->>>> This patch makes this explicit.
->>>>
->>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>
->>> The idea sounds right, but there is one question as below.
->>>
->>>> ---
->>>> arch/powerpc/platforms/powernv/pci-ioda.c |   25 +++++++++----------------
->>>> 1 file changed, 9 insertions(+), 16 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> index 5738d31..9b41dba 100644
->>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> @@ -908,9 +908,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->>>> 		if (!res->flags || !res->parent)
->>>> 			continue;
->>>>
->>>> -		if (!pnv_pci_is_mem_pref_64(res->flags))
->>>> -			continue;
->>>> -
->>>> 		/*
->>>> 		 * The actual IOV BAR range is determined by the start address
->>>> 		 * and the actual size for num_vfs VFs BAR.  This check is to
->>>> @@ -939,9 +936,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->>>> 		if (!res->flags || !res->parent)
->>>> 			continue;
->>>>
->>>> -		if (!pnv_pci_is_mem_pref_64(res->flags))
->>>> -			continue;
->>>> -
->>>> 		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->>>> 		res2 = *res;
->>>> 		res->start += size * offset;
->>>> @@ -1221,9 +1215,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->>>> 		if (!res->flags || !res->parent)
->>>> 			continue;
->>>>
->>>> -		if (!pnv_pci_is_mem_pref_64(res->flags))
->>>> -			continue;
->>>> -
->>>> 		for (j = 0; j < vf_groups; j++) {
->>>> 			do {
->>>> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
->>>> @@ -1510,6 +1501,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->>>> 	pdn = pci_get_pdn(pdev);
->>>>
->>>> 	if (phb->type == PNV_PHB_IODA2) {
->>>> +		if (!pdn->vfs_expanded) {
->>>> +			dev_info(&pdev->dev, "don't support this SRIOV device"
->>>> +				" with non M64 VF BAR\n");
->>>> +			return -EBUSY;
->>>> +		}
->>>> +
->>>
->>> It would be -ENOSPC since -EBUSY indicates the devices (VFs) are temparily
->>> unavailable. For this case, the VFs are permanently unavailable because of
->>> running out of space to accomodate M64 and non-M64 VF BARs.
->>>
->>> The error message could be printed with dev_warn() and it would be precise
->>> as below or something else you prefer:
->>>
->>> 	dev_warn(&pdev->dev, "SRIOV not supported because of non-M64 VF BAR\n");
->>
->>
->> Both messages are cryptic.
->>
->> If it is not M64 BAR, then what is it? It is always in one of M64 BARs (in
->> the worst case - BAR#15?), the difference is if it is segmented or not, no?
->>
+> I think the changelog would be more explicit:
 >
-> The VF BAR could be one of IO, M32, M64. If it's not M64, the VFs are supposed
-> to be disabled and the (IO and M32) resources won't be allocted, but for sure,
-> the IO and M32 resources can't be put into any one of the 16 PHB's M64 BARs.
-> would you recommend one better message then?
+> The alignment of IOV BAR on PowerNV platform is the total size of the
+> IOV BAR, no matter whether the IOV BAR is extended with number of max
+> VFs or number of max PE number (256). The alignment can be calculated
+> by (vfs_expaned * VF_BAR_size).
 
 
 
-dev_warn(&pdev->dev, "SRIOV is disabled as no space is left in 64bit MMIO 
-window\n");
+Is that really a PowerNV-specific requirement or it is valid for every 
+platform (I suspect this is the case here)?
 
-Or it is not "MMIO window"?
 
+Also, what is the exact meaning of "expanded" in @vfs_expanded? It is 
+either 255 (if individual VF BARs are <= 64MB) or 
+roundup_pow_of_two(total_vfs) (which is something like 4 or 16). What is 
+expanded here?
 
 
 >
->>>
->>>
->>>> 		/* Calculate available PE for required VFs */
->>>> 		mutex_lock(&phb->ioda.pe_alloc_mutex);
->>>> 		pdn->offset = bitmap_find_next_zero_area(
->>>> @@ -2774,9 +2771,10 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->>>> 		if (!res->flags || res->parent)
->>>> 			continue;
->>>> 		if (!pnv_pci_is_mem_pref_64(res->flags)) {
->>>> -			dev_warn(&pdev->dev, " non M64 VF BAR%d: %pR\n",
->>>> +			dev_warn(&pdev->dev, "Don't support SR-IOV with"
->>>> +					" non M64 VF BAR%d: %pR. \n",
->>>> 				 i, res);
->>>> -			continue;
->>>> +			return;
->>>> 		}
->>>>
->>>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
->>>> @@ -2795,11 +2793,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->>>> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
->>>> 		if (!res->flags || res->parent)
->>>> 			continue;
->>>> -		if (!pnv_pci_is_mem_pref_64(res->flags)) {
->>>> -			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
->>>> -				 i, res);
->>>> -			continue;
->>>> -		}
->>>
->>> When any one IOV BAR on the PF is non-M64, none of the VFs can be enabled.
->>> Will we still allocate/assign M64 or M32 resources for the IOV BARs? If so,
->>> I think it can be avoided.
->>>
->>>>
->>>> 		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
->>>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
+>> This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
+>> first case.
+>>
+>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>
+>> ---
+>> arch/powerpc/platforms/powernv/pci-ioda.c |   14 +++++++++-----
+>> 1 file changed, 9 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 9b41dba..7192e62 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -2987,12 +2987,16 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+>> 						      int resno)
+>> {
+>> 	struct pci_dn *pdn = pci_get_pdn(pdev);
+>> -	resource_size_t align, iov_align;
+>> -
+>> -	iov_align = resource_size(&pdev->resource[resno]);
+>> -	if (iov_align)
+>> -		return iov_align;
+>> +	resource_size_t align;
+>>
+>> +	/*
+>> +	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
+>> +	 * SR-IOV. While from hardware perspective, the range mapped by M64
+>> +	 * BAR should be size aligned.
+>> +	 *
+>> +	 * This function return the total IOV BAR size if expanded or just the
+>> +	 * individual size if not.
+>> +	 */
+>> 	align = pci_iov_resource_size(pdev, resno);
+>> 	if (pdn->vfs_expanded)
+>> 		return pdn->vfs_expanded * align;
+>> --
+>> 1.7.9.5
+>>
+>
 
 
 -- 
