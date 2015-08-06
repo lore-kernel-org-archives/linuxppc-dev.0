@@ -1,27 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0122.outbound.protection.outlook.com [65.55.169.122])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <pebolle@tiscali.nl>
+Received: from lb1-smtp-cloud6.xs4all.net (lb1-smtp-cloud6.xs4all.net
+ [194.109.24.24])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 90EAB1A08D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 08:46:01 +1000 (AEST)
-Message-ID: <1438901145.2097.170.camel@freescale.com>
-Subject: Re: [PATCH v2 2/2] powerpc32: optimise csum_partial() loop
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Date: Thu, 6 Aug 2015 17:45:45 -0500
-In-Reply-To: <20150806043938.GE18479@gate.crashing.org>
-References: <cover.1435655733.git.christophe.leroy@c-s.fr>
- <67cf476f657e87b2ea586951a57ae3ba3c1e3c0c.1435655733.git.christophe.leroy@c-s.fr>
- <20150806003059.GD18479@gate.crashing.org>
- <1438828301.2097.126.camel@freescale.com>
- <20150806043938.GE18479@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E6AF31A07E3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 09:09:53 +1000 (AEST)
+Message-ID: <1438902589.26981.14.camel@tiscali.nl>
+Subject: Re: windfarm: decrement client count when unregistering
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Fri, 07 Aug 2015 01:09:49 +0200
+In-Reply-To: <1438899707.25241.29.camel@tiscali.nl>
+References: <20150805041611.ACBD6140324@ozlabs.org>
+ <1438899707.25241.29.camel@tiscali.nl>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,46 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-08-05 at 23:39 -0500, Segher Boessenkool wrote:
-> On Wed, Aug 05, 2015 at 09:31:41PM -0500, Scott Wood wrote:
-> > On Wed, 2015-08-05 at 19:30 -0500, Segher Boessenkool wrote:
-> > > On Wed, Aug 05, 2015 at 03:29:35PM +0200, Christophe Leroy wrote:
-> > > > On the 8xx, load latency is 2 cycles and taking branches also takes
-> > > > 2 cycles. So let's unroll the loop.
-> > > 
-> > > This is not true for most other 32-bit PowerPC; this patch makes
-> > > performance worse on e.g. 6xx/7xx/7xxx.  Let's not!
-> > 
-> > Chips with a load latency greater than 2 cycles should also benefit from 
-> > the 
-> > unrolling.  Have you benchmarked this somewhere and seen it reduce 
-> > performance?  Do you know of any 32-bit PPC chips with a load latency 
-> > less 
-> > than 2 cycles?
+On vr, 2015-08-07 at 00:21 +0200, Paul Bolle wrote:
+> On wo, 2015-08-05 at 14:16 +1000, Michael Ellerman wrote:
+> > I also get an oops when removing windfarm_lm75_sensor, so I suspect there are
+> > gremlins in the module ref counting for windfarm.
 > 
-> The original loop was already optimal, as the comment said.
+> (This I haven't (yet) looked into.)
 
-The comment says that bdnz has zero overhead.  That doesn't mean the adde 
-won't stall waiting for the load result.
+And that might be, sort of, related. Because oops is probably triggered
+by the, it seems, rather straightforward chain of events triggered by
+unloading an I2C module. (So windfarm_lm75_sensor refcount must be
+zero.) Which gets interesting at:
 
-> The new code adds extra instructions and a mispredicted branch.
+    wf_lm75_remove()
+        wf_unregister_sensor(&wf_lm75_sensor->sens)
+            wf_put_sensor(&wf_lm75_sensor->sens)
+                module_put(wf_lm75_sensor->sens->ops->owner /* THIS_MODULE */)
 
-Outside the main loop.
+And in windfarm_lm75_sensor we trigger this issue because in the
+.probe() function there appears to be no corresponding call to
+try_module_get() preventing unloading the module, as we saw in windfarm_
+smu_sensors.
 
->   You also might get less overlap between the loads and adde (I didn't check
-> if there is any originally): those instructions are no longer
-> interleaved.
->
-> I think it is a stupid idea to optimise code for all 32-bit PowerPC
-> CPUs based on solely what is best for a particularly simple, slow
-> implementation; and that is what this patch is doing.
+So module refcounting looks broken for both these modules in opposite
+ways. Gremlins indeed.
 
-The simple and slow implementation is the one that needs optimizations the 
-most.
+Good luck!
 
-If this makes performance non-negligibly worse on other 32-bit chips, and is 
-an important improvement on 8xx, then we can use an ifdef since 8xx already 
-requires its own kernel build.  I'd prefer to see a benchmark showing that it 
-actually does make things worse on those chips, though.
 
--Scott
+Paul Bolle
