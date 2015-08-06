@@ -1,26 +1,26 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0117.outbound.protection.outlook.com [157.56.110.117])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F3DED1A3BF9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:40:11 +1000 (AEST)
-Date: Wed, 5 Aug 2015 23:39:38 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 630881A41FA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:47:45 +1000 (AEST)
+Date: Thu, 6 Aug 2015 12:32:21 +0800
+From: Chenhui Zhao <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH 3/3] PowerPC/mpc85xx: Add hotplug support on E6500 cores
 To: Scott Wood <scottwood@freescale.com>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] powerpc32: optimise csum_partial() loop
-Message-ID: <20150806043938.GE18479@gate.crashing.org>
-References: <cover.1435655733.git.christophe.leroy@c-s.fr>
- <67cf476f657e87b2ea586951a57ae3ba3c1e3c0c.1435655733.git.christophe.leroy@c-s.fr>
- <20150806003059.GD18479@gate.crashing.org>
- <1438828301.2097.126.camel@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1438828301.2097.126.camel@freescale.com>
+CC: <b29983@freescale.com>, <b07421@freescale.com>,
+ <linux-kernel@vger.kernel.org>, Tang Yuantian <Yuantian.Tang@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Message-ID: <1438835541.23384.1@remotesmtp.freescale.net>
+In-Reply-To: <1438831004.2097.146.camel@freescale.com>
+References: <1438334444-31919-1-git-send-email-b29983@freescale.com>
+ <1438334444-31919-3-git-send-email-b29983@freescale.com>
+ <1438388531.19345.88.camel@freescale.com>
+ <1438772906.21522.2@remotesmtp.freescale.net>
+ <1438831004.2097.146.camel@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +30,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 05, 2015 at 09:31:41PM -0500, Scott Wood wrote:
-> On Wed, 2015-08-05 at 19:30 -0500, Segher Boessenkool wrote:
-> > On Wed, Aug 05, 2015 at 03:29:35PM +0200, Christophe Leroy wrote:
-> > > On the 8xx, load latency is 2 cycles and taking branches also takes
-> > > 2 cycles. So let's unroll the loop.
-> > 
-> > This is not true for most other 32-bit PowerPC; this patch makes
-> > performance worse on e.g. 6xx/7xx/7xxx.  Let's not!
+
+
+On Thu, Aug 6, 2015 at 11:16 AM, Scott Wood <scottwood@freescale.com> 
+wrote:
+> On Wed, 2015-08-05 at 19:08 +0800, Chenhui Zhao wrote:
+>>  On Sat, Aug 1, 2015 at 8:22 AM, Scott Wood <scottwood@freescale.com>
+>>  wrote:
+>>  > On Fri, 2015-07-31 at 17:20 +0800,  b29983@freescale.comwrote:
+>>  > >  +             /*
+>>  > >  +              * If both threads are offline, reset core to 
+>> start.
+>>  > >  +              * When core is up, Thread 0 always gets up 
+>> first,
+>>  > >  +              * so bind the current logical cpu with Thread 0.
+>>  > >  +              */
+>>  > >  +             if (hw_cpu != cpu_first_thread_sibling(hw_cpu)) {
+>>  > >  +                     int hw_cpu1, hw_cpu2;
+>>  > >  +
+>>  > >  +                     hw_cpu1 = 
+>> get_hard_smp_processor_id(primary);
+>>  > >  +                     hw_cpu2 = 
+>> get_hard_smp_processor_id(primary +
+>>  > > 1);
+>>  > >  +                     set_hard_smp_processor_id(primary, 
+>> hw_cpu2);
+>>  > >  +                     set_hard_smp_processor_id(primary + 1,
+>>  > > hw_cpu1);
+>>  > >  +                     /* get new physical cpu id */
+>>  > >  +                     hw_cpu = get_hard_smp_processor_id(nr);
+>>  >
+>>  > NACK as discussed in http://patchwork.ozlabs.org/patch/454944/
+>>  >
+>>  > -Scott
+>> 
+>>  You said,
+>> 
+>>      There's no need for this. I have booting from a thread1, and 
+>> having
+>>  it
+>>      kick its thread0, working locally without messing with the 
+>> hwid/cpu
+>>      mapping.
+>> 
+>>  I still have questions here. After a core reset, how can you boot
+>>  Thread1
+>>  of the core first. As I know, Thread0 boots up first by default.
 > 
-> Chips with a load latency greater than 2 cycles should also benefit from the 
-> unrolling.  Have you benchmarked this somewhere and seen it reduce 
-> performance?  Do you know of any 32-bit PPC chips with a load latency less 
-> than 2 cycles?
+> So the issue isn't that thread1 comes up first, but that you *want* 
+> thread1
+> to come up first and it won't.  I don't think this remapping is an 
+> acceptable
+> answer, though.  Instead, if you need only thread1 to come up, start 
+> the
+> core, have thread0 start thread1, and then send thread0 into whatever 
+> waiting
+> state it would be in if thread1 had never been offlined.
+> 
+> -Scott
 
-The original loop was already optimal, as the comment said.  The new
-code adds extra instructions and a mispredicted branch.  You also
-might get less overlap between the loads and adde (I didn't check
-if there is any originally): those instructions are no longer
-interleaved.
+Remapping is a concise solution. what's the harm of it?
+Keeping things simple is good in my opinion.
 
-I think it is a stupid idea to optimise code for all 32-bit PowerPC
-CPUs based on solely what is best for a particularly simple, slow
-implementation; and that is what this patch is doing.
-
-
-Segher
+-Chenhui
