@@ -1,30 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <pebolle@tiscali.nl>
+Received: from lb1-smtp-cloud6.xs4all.net (lb1-smtp-cloud6.xs4all.net
+ [194.109.24.24])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D63F1A0651
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 04:03:07 +1000 (AEST)
-Message-ID: <1438884172.2097.155.camel@freescale.com>
-Subject: Re: [PATCH 1/3] Powerpc: mpc85xx: refactor the PM operations
-From: Scott Wood <scottwood@freescale.com>
-To: Chenhui Zhao <chenhui.zhao@freescale.com>
-CC: <b29983@freescale.com>, <b07421@freescale.com>,
- <linux-kernel@vger.kernel.org>, Tang Yuantian <Yuantian.Tang@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 6 Aug 2015 13:02:52 -0500
-In-Reply-To: <1438840466.23384.2@remotesmtp.freescale.net>
-References: <1438334444-31919-1-git-send-email-b29983@freescale.com>
- <1438387178.19345.77.camel@freescale.com>
- <1438601578.7515.2@remotesmtp.freescale.net>
- <1438633568.2097.35.camel@freescale.com>
- <1438769477.21522.0@remotesmtp.freescale.net>
- <1438829848.2097.129.camel@freescale.com>
- <1438834837.23384.0@remotesmtp.freescale.net>
- <1438839985.2097.151.camel@freescale.com>
- <1438840466.23384.2@remotesmtp.freescale.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 286CB1A088A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 08:21:57 +1000 (AEST)
+Message-ID: <1438899707.25241.29.camel@tiscali.nl>
+Subject: Re: windfarm: decrement client count when unregistering
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Date: Fri, 07 Aug 2015 00:21:47 +0200
+In-Reply-To: <20150805041611.ACBD6140324@ozlabs.org>
+References: <20150805041611.ACBD6140324@ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,76 +25,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-08-06 at 13:54 +0800, Chenhui Zhao wrote:
-> On Thu, Aug 6, 2015 at 1:46 PM, Scott Wood <scottwood@freescale.com> 
-> wrote:
-> > On Thu, 2015-08-06 at 12:20 +0800, Chenhui Zhao wrote:
-> > >  On Thu, Aug 6, 2015 at 10:57 AM, Scott Wood 
-> > > <scottwood@freescale.com>
-> > >  wrote:
-> > >  > On Wed, 2015-08-05 at 18:11 +0800, Chenhui Zhao wrote:
-> > >  > >  On Tue, Aug 4, 2015 at 4:26 AM, Scott Wood 
-> > > <scottwood@freescale.com>
-> > >  > >  wrote:
-> > >  > >  > On Mon, 2015-08-03 at 19:32 +0800, Chenhui Zhao wrote:
-> > >  > >  > >  >
-> > >  > >  >
-> > >  > >  > >  On Sat, Aug 1, 2015 at 7:59 AM, Scott Wood
-> > >  > > <scottwood@freescale.com>
-> > >  > >  > >  wrote:
-> > >  > >  >
-> > >  > >  > >  >
-> > >  > >  > >  > Could you explain irq_mask()?  Why would there still be 
-> > > IRQs
-> > >  > >  > > destined
-> > >  > >  > >  > for
-> > >  > >  > >  > this CPU at this point?
-> > >  > >  > >
-> > >  > >  > >  This function just masks irq by setting the registers in 
-> > > RCPM
-> > >  > > (for
-> > >  > >  > >  example, RCPM_CPMIMR, RCPM_CPMCIMR). Actually, all irqs to
-> > >  > > this CPU
-> > >  > >  > >  have been migrated to other CPUs.
-> > >  > >  >
-> > >  > >  > So why do we need to set those bits in RCPM?  Is it just 
-> > > caution?
-> > >  > >
-> > >  > >  Setting these bits can mask interrupts signalled to RCPM from 
-> > > MPIC
-> > >  > > as a
-> > >  > >  means of
-> > >  > >  waking up from a lower power state. So, cores will not be 
-> > > waked up
-> > >  > >  unexpectedly.
-> > >  >
-> > >  > Why would the MPIC be signalling those interrupts if they've been
-> > >  > masked at
-> > >  > the MPIC?
-> > >  >
-> > >  > -Scott
-> > >  >
-> > > 
-> > >  The interrupts to RCPM from MPIC are IRQ, Machine Check, NMI and
-> > >  Critical interrupts. Some of them didn't be masked in MPIC.
+On wo, 2015-08-05 at 14:16 +1000, Michael Ellerman wrote:
+> On Fri, 2015-31-07 at 12:08:58 UTC, Paul Bolle wrote:
+> > windfarm_corex_exit() contains:
+> >     BUG_ON(wf_client_count != 0);
 > > 
-> > What interrupt could actually happen to a sleeping cpu that this 
-> > protects
-> > against?
-> > 
-> > -Scott
+> > I wonder why that, apparently. never triggered.
 > 
-> Not sure. Maybe spurious interrupts or hardware exceptions.
+> Hmm interesting.
+> 
+> A quick test here on an iMacG5 shows that we get into a state where we can't
+> remove windfarm_core:
+> 
+>   $ lsmod
+>   Module                  Size  Used by
+>   windfarm_smu_sensors    7549  2
+>   windfarm_core          15391  1 windfarm_smu_sensors
+> 
+> 
+> Which means we can't trigger windfarm_core_exit() and the BUG_ON().
 
-Spurious interrupts happen due to race conditions.  They don't happen because 
-the MPIC is bored and decides to ring a CPU's doorbell and hide in the bushes.
+Perhaps this is what, roughly, happens:
 
-If by "hardware exceptions" you mean machine checks, how would such a machine 
-check be generated by a core that is off?
+smu_sensors_init()
+    smu_ads_create()
+        /* Let's assume this happens ... */
+        ads->sens.ops = &smu_cpuamp_ops
+        ads->sens.name = "cpu-current"
+    smu_ads_create()
+        /* ditto ... */
+        ads->sens.ops = &smu_cpuvolt_ops
+        ads->sens.name = "cpu-voltage"
 
->  However, setting them make sure dead cpus can not be waked up unexpectedly.
+    /* ... so this would then be true */
+    if (volt_sensor && curr_sensor)
+        /* and we do this */
+        smu_cpu_power_create(&volt_sensor->sens, &curr_sensor->sens)
+            wf_get_sensor(&volt_sensor->sens)
+                try_module_get(volt_sensor->sens->ops->owner /* THIS_MODULE */)
+            wf_get_sensor(&curr_sensor->sens)
+                try_module_get(curr_sensor->sens->ops->owner /* THIS_MODULE */)
 
-I'm not seeing enough value here to warrant resurrecting the old sleep node 
-stuff.
+The cleanup would have happened here:
 
--Scott
+smu_sensors_exit()
+    while (!list_empty(&smu_ads)
+        wf_unregister_sensor(&ads->sens)
+            wf_put_sensor()
+                /* would this also be done for sensors that never 
+                 * triggered a call to module_get()? */
+                module_put(ads->sens->ops->owner /* THIS MODULE */)
+
+But, whatever it is that smu_sensors_exit() wants to do, it will never
+be called since there are these two references to this module that
+smu_sensors_init() created itself, preventing the unloading of this
+module.
+
+Does the above look plausible?
+
+Note that this was only cobbled together by staring at the code for far
+too long. If I had some powerpc machine at hand I could have actually
+tested this with a few strategically placed printk()'s.
+
+> I also get an oops when removing windfarm_lm75_sensor, so I suspect there are
+> gremlins in the module ref counting for windfarm.
+
+(This I haven't (yet) looked into.)
+
+> I'll merge this as probably correct.
+
+Hope this helps,
+
+
+Paul Bolle
