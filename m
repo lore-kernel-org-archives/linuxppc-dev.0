@@ -1,30 +1,38 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yk0-x229.google.com (mail-yk0-x229.google.com
- [IPv6:2607:f8b0:4002:c07::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <prvs=6539df074=Stefano.Stabellini@citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D83B61A0808
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 00:20:06 +1000 (AEST)
-Received: by ykax123 with SMTP id x123so63659735yka.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2015 07:20:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 140AE1A0808
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 00:22:20 +1000 (AEST)
+Date: Thu, 6 Aug 2015 15:20:09 +0100
+From: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+To: Julien Grall <julien.grall@citrix.com>
+CC: Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ <linux-fbdev@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Jiri Slaby
+ <jslaby@suse.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Russell King
+ <linux@arm.linux.org.uk>, <linux-scsi@vger.kernel.org>, Tomi Valkeinen
+ <tomi.valkeinen@ti.com>, <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ <linux-input@vger.kernel.org>, <xen-devel@lists.xenproject.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ <ian.campbell@citrix.com>, "James E.J. Bottomley" <JBottomley@odin.com>,
+ Thomas Gleixner <tglx@linutronix.de>, <linux-arm-kernel@lists.infradead.org>,
+ Juergen Gross <jgross@suse.com>, Wei Liu <wei.liu2@citrix.com>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, <linux-kernel@vger.kernel.org>, David Vrabel
+ <david.vrabel@citrix.com>, <netdev@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, =?UTF-8?Q?Roger_Pau_Monn=C3=A9?=
+ <roger.pau@citrix.com>
+Subject: Re: [Xen-devel] [PATCH v2 4/8] xen: Use the correctly the Xen memory
+ terminologies
+In-Reply-To: <55C34250.3040801@citrix.com>
+Message-ID: <alpine.DEB.2.02.1508061520010.11337@kaball.uk.xensource.com>
+References: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
+ <1438711972-18752-5-git-send-email-julien.grall@citrix.com>
+ <55C33E4E.4050704@citrix.com>
+ <alpine.DEB.2.02.1508061205190.11337@kaball.uk.xensource.com>
+ <55C34250.3040801@citrix.com>
 MIME-Version: 1.0
-In-Reply-To: <1438834307-26960-41-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-41-git-send-email-gwshan@linux.vnet.ibm.com>
-From: Rob Herring <robherring2@gmail.com>
-Date: Thu, 6 Aug 2015 09:19:45 -0500
-Message-ID: <CAL_JsqK940pWJXazofnup8MHNTVO+0_1Zzcos4+uhhtwi=gwGQ@mail.gmail.com>
-Subject: Re: [PATCH v6 40/42] drivers/of: Return allocated memory chunk from
- of_fdt_unflatten_tree()
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Bjorn Helgaas <bhelgaas@google.com>, Grant Likely <grant.likely@linaro.org>,
- Pantelis Antoniou <panto@antoniou-consulting.com>, aik@ozlabs.ru
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,90 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 5, 2015 at 11:11 PM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
-> This changes of_fdt_unflatten_tree() so that it returns the allocated
-> memory chunk for unflattened device-tree, which can be released once
-> it's obsoleted.
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On Thu, 6 Aug 2015, Julien Grall wrote:
+> On 06/08/15 12:06, Stefano Stabellini wrote:
+> > On Thu, 6 Aug 2015, Julien Grall wrote:
+> >> Hi,
+> >>
+> >>
+> >> On 04/08/15 19:12, Julien Grall wrote:
+> >>> diff --git a/include/xen/page.h b/include/xen/page.h
+> >>> index c5ed20b..e7e1425 100644
+> >>> --- a/include/xen/page.h
+> >>> +++ b/include/xen/page.h
+> >>> @@ -3,9 +3,9 @@
+> >>>  
+> >>>  #include <asm/xen/page.h>
+> >>>  
+> >>> -static inline unsigned long page_to_mfn(struct page *page)
+> >>> +static inline unsigned long page_to_gfn(struct page *page)
+> >>>  {
+> >>> -	return pfn_to_mfn(page_to_pfn(page));
+> >>> +	return pfn_to_gfn(page_to_pfn(page));
+> >>>  }
+> >>
+> >> I've just noticed that there is a function gfn_to_page used for KVM.
+> >>
+> >> Maybe I should rename page_to_gfn to xen_page_to_gfn to avoid confusion
+> >> with KVM one?
+> > 
+> > Yeah, prepending xen would help to avoid namespace pollution.
+> 
+> Will do. May I keep your Reviewed-by for this mechanical change?
 
-Acked-by: Rob Herring <robh@kernel.org>
-
-> ---
->  drivers/of/fdt.c       | 11 ++++++-----
->  include/linux/of_fdt.h |  2 +-
->  2 files changed, 7 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 074870a..8e1ba7e 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -408,7 +408,7 @@ static void *unflatten_dt_node(const void *blob,
->   * @dt_alloc: An allocator that provides a virtual address to memory
->   * for the resulting tree
->   */
-> -static void __unflatten_device_tree(const void *blob,
-> +static void *__unflatten_device_tree(const void *blob,
->                              struct device_node *dad,
->                              struct device_node **mynodes,
->                              void * (*dt_alloc)(u64 size, u64 align))
-> @@ -421,7 +421,7 @@ static void __unflatten_device_tree(const void *blob,
->
->         if (!blob) {
->                 pr_debug("No device tree pointer\n");
-> -               return;
-> +               return NULL;
->         }
->
->         pr_debug("Unflattening device tree:\n");
-> @@ -431,7 +431,7 @@ static void __unflatten_device_tree(const void *blob,
->
->         if (fdt_check_header(blob)) {
->                 pr_err("Invalid device tree blob header\n");
-> -               return;
-> +               return NULL;
->         }
->
->         /* First pass, scan for size */
-> @@ -458,6 +458,7 @@ static void __unflatten_device_tree(const void *blob,
->                            be32_to_cpup(mem + size));
->
->         pr_debug(" <- unflatten_device_tree()\n");
-> +       return mem;
->  }
->
->  static void *kernel_tree_alloc(u64 size, u64 align)
-> @@ -473,11 +474,11 @@ static void *kernel_tree_alloc(u64 size, u64 align)
->   * pointers of the nodes so the normal device-tree walking functions
->   * can be used.
->   */
-> -void of_fdt_unflatten_tree(const unsigned long *blob,
-> +void *of_fdt_unflatten_tree(const unsigned long *blob,
->                         struct device_node *dad,
->                         struct device_node **mynodes)
->  {
-> -       __unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
-> +       return __unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
->  }
->  EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
->
-> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-> index 3644960..00db279 100644
-> --- a/include/linux/of_fdt.h
-> +++ b/include/linux/of_fdt.h
-> @@ -37,7 +37,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
->                                  unsigned long node);
->  extern int of_fdt_match(const void *blob, unsigned long node,
->                         const char *const *compat);
-> -extern void of_fdt_unflatten_tree(const unsigned long *blob,
-> +extern void *of_fdt_unflatten_tree(const unsigned long *blob,
->                                struct device_node *dad,
->                                struct device_node **mynodes);
->
-> --
-> 2.1.0
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Yes
