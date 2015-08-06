@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 402991A1885
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2CA051A1BED
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:39 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 6 Aug 2015 14:13:38 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 463762CE8064
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9B94E2CE805C
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:35 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t764DQFB44302530
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:34 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t764D1U9012945
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:02 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t764DSZw2621716
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:36 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t764D2TQ003648
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:03 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,9 +27,9 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v6 24/42] powerpc/powernv: Supports slot ID
-Date: Thu,  6 Aug 2015 14:11:29 +1000
-Message-Id: <1438834307-26960-25-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v6 35/42] powerpc/pci: Export traverse_pci_device_nodes()
+Date: Thu,  6 Aug 2015 14:11:40 +1000
+Message-Id: <1438834307-26960-36-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,77 +41,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PowerNV platform is running on top of skiboot firmware, which has
-changes to support PCI slots. PCI slots are identified by PHB's
-OPAL ID (PHB slot) or combo of that and PCI slot ID. The patch
-changes argument names of opal_pci_reset() and opal_pci_poll()
-to reflect the firmware's change. pnv_eeh_phb_poll() is also
-renamed to pnv_eeh_poll() to reflect the firmware's change.
+Previously we wouldn't remove pdn because PCI hotplug isn't
+supported. update_dn_pci_info() is called at system booting
+time to create pdn for PCI device nodes. However, it's going
+to be changed later because of PCI hotplug.
+
+This converts update_dn_pci_info() to add_pci_device_node_info(),
+traverse_pci_devices() to traverse_pci_device_nodes(). This also
+adds remove_pci_device_node_info() which will be used in subsequent
+patch at the moment of unplugging PCI devices. All those functions
+are exported for PowerNV hotplug driver to use.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h              | 4 ++--
- arch/powerpc/platforms/powernv/eeh-powernv.c | 8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h  |  4 ++-
+ arch/powerpc/include/asm/ppc-pci.h     |  8 ++++--
+ arch/powerpc/kernel/pci_dn.c           | 51 +++++++++++++++++++++++++++++-----
+ arch/powerpc/platforms/pseries/setup.c |  2 +-
+ 4 files changed, 53 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index a091c27..bbb3aa6 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -129,7 +129,7 @@ int64_t opal_pci_map_pe_dma_window(uint64_t phb_id, uint16_t pe_number, uint16_t
- int64_t opal_pci_map_pe_dma_window_real(uint64_t phb_id, uint16_t pe_number,
- 					uint16_t dma_window_number, uint64_t pci_start_addr,
- 					uint64_t pci_mem_size);
--int64_t opal_pci_reset(uint64_t phb_id, uint8_t reset_scope, uint8_t assert_state);
-+int64_t opal_pci_reset(uint64_t id, uint8_t reset_scope, uint8_t assert_state);
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 787a879..010eb54 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -237,7 +237,9 @@ extern struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
+ extern struct pci_dn *pci_get_pdn(struct pci_dev *pdev);
+ extern struct pci_dn *add_dev_pci_data(struct pci_dev *pdev);
+ extern void remove_dev_pci_data(struct pci_dev *pdev);
+-extern void *update_dn_pci_info(struct device_node *dn, void *data);
++extern void *add_pci_device_node_info(struct device_node *dn,
++				      struct pci_controller *phb);
++extern void remove_pci_device_node_info(struct device_node *np);
  
- int64_t opal_pci_get_hub_diag_data(uint64_t hub_id, void *diag_buffer,
- 				   uint64_t diag_buffer_len);
-@@ -146,7 +146,7 @@ int64_t opal_get_dpo_status(__be64 *dpo_timeout);
- int64_t opal_set_system_attention_led(uint8_t led_action);
- int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
- 			    __be16 *pci_error_type, __be16 *severity);
--int64_t opal_pci_poll(uint64_t phb_id);
-+int64_t opal_pci_poll(uint64_t id, uint8_t *val);
- int64_t opal_return_cpu(void);
- int64_t opal_check_token(uint64_t token);
- int64_t opal_reinit_cpus(uint64_t flags);
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 347b1cf..0350dab 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -745,12 +745,12 @@ static int pnv_eeh_get_state(struct eeh_pe *pe, int *delay)
- 	return ret;
+ static inline int pci_device_from_OF_node(struct device_node *np,
+ 					  u8 *bus, u8 *devfn)
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 916775d..c87ed42 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -33,9 +33,11 @@ extern struct pci_dev *isa_bridge_pcidev;	/* may be NULL if no ISA bus */
+ struct device_node;
+ struct pci_dn;
+ 
+-typedef void *(*traverse_func)(struct device_node *me, void *data);
+-void *traverse_pci_devices(struct device_node *start, traverse_func pre,
+-		void *data);
++typedef void *(*traverse_func)(struct device_node *me,
++			       struct pci_controller *phb);
++void *traverse_pci_device_nodes(struct device_node *start,
++				traverse_func pre,
++				struct pci_controller *phb);
+ void *traverse_pci_dn(struct pci_dn *root,
+ 		      void *(*fn)(struct pci_dn *, void *),
+ 		      void *data);
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index 53a11e9..3a38a55 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -283,9 +283,9 @@ void remove_dev_pci_data(struct pci_dev *pdev)
+  * Traverse_func that inits the PCI fields of the device node.
+  * NOTE: this *must* be done before read/write config to the device.
+  */
+-void *update_dn_pci_info(struct device_node *dn, void *data)
++void *add_pci_device_node_info(struct device_node *dn,
++			       struct pci_controller *phb)
+ {
+-	struct pci_controller *phb = data;
+ 	const __be32 *type = of_get_property(dn, "ibm,pci-config-space-type", NULL);
+ 	const __be32 *regs;
+ 	struct device_node *parent;
+@@ -342,6 +342,42 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+ 
+ 	return NULL;
+ }
++EXPORT_SYMBOL(add_pci_device_node_info);
++
++/**
++ * remove_pci_device_node_info - Remove pci_dn from PCI device node
++ * @dn: PCI device node
++ *
++ * Remove pci_dn from PCI device node. The pci_dn is also removed
++ * from the child list of the parent pci_dn.
++ */
++void remove_pci_device_node_info(struct device_node *np)
++{
++	struct pci_dn *pdn = np ? PCI_DN(np) : NULL;
++#ifdef CONFIG_EEH
++	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
++#endif
++
++	if (!pdn)
++		return;
++
++#ifdef CONFIG_EEH
++	if (edev) {
++		pdn->edev = NULL;
++		kfree(edev);
++	}
++#endif
++
++	BUG_ON(!list_empty(&pdn->child_list));
++	list_del(&pdn->list);
++	if (pdn->parent)
++		of_node_put(pdn->parent->node);
++
++	np->data = NULL;
++	kfree(pdn);
++}
++EXPORT_SYMBOL(remove_pci_device_node_info);
++
+ 
+ /*
+  * Traverse a device tree stopping each PCI device in the tree.
+@@ -361,8 +397,8 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+  * one of these nodes we also assume its siblings are non-pci for
+  * performance.
+  */
+-void *traverse_pci_devices(struct device_node *start, traverse_func pre,
+-		void *data)
++void *traverse_pci_device_nodes(struct device_node *start, traverse_func pre,
++				struct pci_controller *phb)
+ {
+ 	struct device_node *dn, *nextdn;
+ 	void *ret;
+@@ -377,7 +413,7 @@ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
+ 		if (classp)
+ 			class = of_read_number(classp, 1);
+ 
+-		if (pre && ((ret = pre(dn, data)) != NULL))
++		if (pre && ((ret = pre(dn, phb)) != NULL))
+ 			return ret;
+ 
+ 		/* If we are a PCI bridge, go down */
+@@ -400,6 +436,7 @@ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
+ 	}
+ 	return NULL;
+ }
++EXPORT_SYMBOL(traverse_pci_device_nodes);
+ 
+ static struct pci_dn *pci_dn_next_one(struct pci_dn *root,
+ 				      struct pci_dn *pdn)
+@@ -455,7 +492,7 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+ 	struct pci_dn *pdn;
+ 
+ 	/* PHB nodes themselves must not match */
+-	update_dn_pci_info(dn, phb);
++	add_pci_device_node_info(dn, phb);
+ 	pdn = dn->data;
+ 	if (pdn) {
+ 		pdn->devfn = pdn->busno = -1;
+@@ -465,7 +502,7 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
+ 	}
+ 
+ 	/* Update dn->phb ptrs for new phb and children devices */
+-	traverse_pci_devices(dn, update_dn_pci_info, phb);
++	traverse_pci_device_nodes(dn, add_pci_device_node_info, phb);
  }
  
--static s64 pnv_eeh_phb_poll(struct pnv_phb *phb)
-+static s64 pnv_eeh_poll(uint64_t id)
- {
- 	s64 rc = OPAL_HARDWARE;
- 
- 	while (1) {
--		rc = opal_pci_poll(phb->opal_id);
-+		rc = opal_pci_poll(id, NULL);
- 		if (rc <= 0)
- 			break;
- 
-@@ -790,7 +790,7 @@ int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
- 	 * reset followed by hot reset on root bus. So we also
- 	 * need the PCI bus settlement delay.
- 	 */
--	rc = pnv_eeh_phb_poll(phb);
-+	rc = pnv_eeh_poll(phb->opal_id);
- 	if (option == EEH_RESET_DEACTIVATE) {
- 		if (system_state < SYSTEM_RUNNING)
- 			udelay(1000 * EEH_PE_RST_SETTLE_TIME);
-@@ -833,7 +833,7 @@ static int pnv_eeh_root_reset(struct pci_controller *hose, int option)
- 		goto out;
- 
- 	/* Poll state of the PHB until the request is done */
--	rc = pnv_eeh_phb_poll(phb);
-+	rc = pnv_eeh_poll(phb->opal_id);
- 	if (option == EEH_RESET_DEACTIVATE)
- 		msleep(EEH_PE_RST_SETTLE_TIME);
- out:
+ /** 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 92974aa..ed8c894 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -262,7 +262,7 @@ static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long act
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 		pci = np->parent->data;
+ 		if (pci)
+-			update_dn_pci_info(np, pci->phb);
++			add_pci_device_node_info(np, pci->phb);
+ 		break;
+ 	default:
+ 		err = NOTIFY_DONE;
 -- 
 2.1.0
