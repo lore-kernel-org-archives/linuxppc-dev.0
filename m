@@ -1,24 +1,24 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D98C1A1CF9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4034C1A1BEF
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:38 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 6 Aug 2015 14:13:37 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id F0F262BB005F
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 54C162BB0062
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:35 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t764DR9o52887574
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:35 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t764DMdP27721886
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:30 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t764D2xJ027156
+ t764D1lE027126
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:03 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
@@ -27,10 +27,9 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v6 33/42] powerpc/powernv: Functions to get/reset PCI slot
- status
-Date: Thu,  6 Aug 2015 14:11:38 +1000
-Message-Id: <1438834307-26960-34-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v6 20/42] powerpc/powernv: Create PEs dynamically
+Date: Thu,  6 Aug 2015 14:11:25 +1000
+Message-Id: <1438834307-26960-21-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,177 +41,345 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch exports 4 functions, which base on corresponding OPAL
-APIs to get or set PCI slot status. Those functions are going to
-be used by PCI hotplug module in subsequent patches:
+Currently, the PEs and their associated resources are assigned
+in ppc_md.pcibios_fixup() except those consumed by SRIOV VFs.
+The function is called for once after PCI probing and resources
+assignment is finished which isn't hotplug friendly.
 
-   pnv_pci_get_device_tree()      opal_get_device_tree()
-   pnv_pci_get_presence_status()  opal_pci_get_presence_status()
-   pnv_pci_get_power_status()     opal_pci_get_power_status()
-   pnv_pci_set_power_status()     opal_pci_set_power_status()
+The patch creates PEs dynamically by ppc_md.pcibios_setup_bridge(),
+which is called on the event during system bootup and PCI hotplug:
+updating PCI bridge's windows after resource assignment/reassignment
+are finished. For partial hotplug case, where not all PCI devices
+belonging to the PE are unplugged and plugged again, we just need
+unbinding/binding the affected PCI devices with the corresponding
+PE without creating new one.
 
-Besides, the patch also exports pnv_pci_hotplug_notifier_{register,
-unregister}() to allow registration and unregistration of PCI hotplug
-notifier, which will be used to receive PCI hotplug message from skiboot
-firmware.
+Besides, it might require additional resources (e.g. M32) to the
+windows of the PCI bridge when unplugging current adapter, and
+insert a different adapter if there is one PCI slot, which is
+assumed behind root port, or the downstream bridge of the PCIE
+switch behind root port. The parent bridge of the newly plugged
+adapter would reject the request to add more resources, leading
+to hotplug failure. For the issue, the patch extends the windows
+of root port, or the upstream port of the PCIe switch behind root
+port to PHB's windows when ppc_md.pcibios_setup_bridge() is called.
+
+There is no upstream bridge for root bus, so we have to fix it up
+before any PE is created because the root bus PE is the ancestor
+to anyone else.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal-api.h            |  8 +++-
- arch/powerpc/include/asm/opal.h                |  5 ++
- arch/powerpc/include/asm/pnv-pci.h             |  7 +++
- arch/powerpc/platforms/powernv/opal-wrappers.S |  4 ++
- arch/powerpc/platforms/powernv/pci.c           | 66 ++++++++++++++++++++++++++
- 5 files changed, 89 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 226 ++++++++++++++++++------------
+ arch/powerpc/platforms/powernv/pci.h      |   1 +
+ 2 files changed, 137 insertions(+), 90 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 442995b..33c67ee 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -154,7 +154,11 @@
- #define OPAL_FLASH_WRITE			111
- #define OPAL_FLASH_ERASE			112
- #define OPAL_PRD_MSG				113
--#define OPAL_LAST				113
-+#define OPAL_GET_DEVICE_TREE			117
-+#define OPAL_PCI_GET_PRESENCE_STATUS		118
-+#define OPAL_PCI_GET_POWER_STATUS		119
-+#define OPAL_PCI_SET_POWER_STATUS		120
-+#define OPAL_LAST				120
- 
- /* Device tree flags */
- 
-@@ -361,6 +365,8 @@ enum opal_msg_type {
- 	OPAL_MSG_HMI_EVT,
- 	OPAL_MSG_DPO,
- 	OPAL_MSG_PRD,
-+	OPAL_MSG_OCC,
-+	OPAL_MSG_PCI_HOTPLUG,
- 	OPAL_MSG_TYPE_MAX,
- };
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index bbb3aa6..53b8528 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -203,6 +203,11 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
- 		uint64_t size, uint64_t token);
- int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
- 		uint64_t token);
-+int64_t opal_get_device_tree(uint32_t phandle, uint64_t buf, uint64_t len);
-+int64_t opal_pci_get_presence_status(uint64_t id, uint8_t *status);
-+int64_t opal_pci_get_power_status(uint64_t id, uint8_t *status);
-+int64_t opal_pci_set_power_status(uint64_t id, uint8_t status);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 8aa6ab8..37847a3 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1083,6 +1083,13 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ 				pci_name(dev));
+ 			continue;
+ 		}
 +
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index 6f77f71..7efa87f 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -13,6 +13,13 @@
- #include <linux/pci.h>
- #include <misc/cxl-base.h>
- 
-+extern int pnv_pci_get_device_tree(uint32_t phandle, void *buf, uint64_t len);
-+extern int pnv_pci_get_presence_status(uint64_t id, uint8_t *status);
-+extern int pnv_pci_get_power_status(uint64_t id, uint8_t *status);
-+extern int pnv_pci_set_power_status(uint64_t id, uint8_t status);
-+extern int pnv_pci_hotplug_notifier_register(struct notifier_block *nb);
-+extern int pnv_pci_hotplug_notifier_unregister(struct notifier_block *nb);
++		/* The PCI device might be not detached from the
++		 * PE in partial hotplug case.
++		 */
++		if (pdn->pe_number != IODA_INVALID_PE)
++			continue;
 +
- int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
- int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
- 			   unsigned int virq);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 88e4333..804f8cc 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -298,3 +298,7 @@ OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
- OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
- OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
- OPAL_CALL(opal_prd_msg,				OPAL_PRD_MSG);
-+OPAL_CALL(opal_get_device_tree,			OPAL_GET_DEVICE_TREE);
-+OPAL_CALL(opal_pci_get_presence_status,		OPAL_PCI_GET_PRESENCE_STATUS);
-+OPAL_CALL(opal_pci_get_power_status,		OPAL_PCI_GET_POWER_STATUS);
-+OPAL_CALL(opal_pci_set_power_status,		OPAL_PCI_SET_POWER_STATUS);
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 801e3e8..5982110 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -65,6 +65,72 @@ int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
- 	return rval ? -EIO : 0;
+ 		pdn->pe_number = pe->pe_number;
+ 		pe->dma32_weight += pnv_ioda_dma_weight(dev);
+ 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+@@ -1101,9 +1108,27 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+ 	struct pci_controller *hose = pci_bus_to_host(bus);
+ 	struct pnv_phb *phb = hose->private_data;
+ 	struct pnv_ioda_pe *pe = NULL;
++	int pe_num;
++
++	/* For partial hotplug case, the PE instance hasn't been destroyed
++	 * yet. We shouldn't allocated a new one and assign resources to
++	 * it. The existing PE instance should be reused, but we should
++	 * associate the devices to the PE.
++	 */
++	pe_num = phb->ioda.pe_rmap[bus->number << 8];
++	if (pe_num != IODA_INVALID_PE) {
++		pe = &phb->ioda.pe_array[pe_num];
++		pnv_ioda_setup_same_PE(bus, pe);
++		return NULL;
++	}
++
++	/* PE number for root bus should have been reserved */
++	if (pci_is_root_bus(bus) &&
++	    phb->ioda.root_pe_idx != IODA_INVALID_PE)
++		pe = &phb->ioda.pe_array[phb->ioda.root_pe_idx];
+ 
+ 	/* Check if PE is determined by M64 */
+-	if (phb->pick_m64_pe)
++	if (!pe && phb->pick_m64_pe)
+ 		pe = phb->pick_m64_pe(bus, all);
+ 
+ 	/* The PE number isn't pinned by M64 */
+@@ -1150,46 +1175,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+ 	return pe;
  }
  
-+int pnv_pci_get_device_tree(uint32_t phandle, void *buf, uint64_t len)
-+{
-+	int64_t rc;
-+
-+	if (!opal_check_token(OPAL_GET_DEVICE_TREE))
-+		return -ENXIO;
-+
-+	rc = opal_get_device_tree(phandle, (uint64_t)buf, len);
-+	if (rc != OPAL_SUCCESS)
-+		return -EIO;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_get_device_tree);
-+
-+int pnv_pci_get_presence_status(uint64_t id, uint8_t *status)
-+{
-+	int64_t rc;
-+
-+	if (!opal_check_token(OPAL_PCI_GET_PRESENCE_STATUS))
-+		return -ENXIO;
-+
-+	rc = opal_pci_get_presence_status(id, status);
-+	if (rc != OPAL_SUCCESS)
-+		return -EIO;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_get_presence_status);
-+
-+int pnv_pci_get_power_status(uint64_t id, uint8_t *status)
-+{
-+	int64_t rc;
-+
-+	if (!opal_check_token(OPAL_PCI_GET_POWER_STATUS))
-+		return -ENXIO;
-+
-+	rc = opal_pci_get_power_status(id, status);
-+	return pnv_pci_poll(id, rc, status);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_get_power_status);
-+
-+int pnv_pci_set_power_status(uint64_t id, uint8_t status)
-+{
-+	int64_t rc;
-+
-+	if (!opal_check_token(OPAL_PCI_SET_POWER_STATUS))
-+		return -ENXIO;
-+
-+	rc = opal_pci_set_power_status(id, status);
-+	return pnv_pci_poll(id, rc, NULL);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_set_power_status);
-+
-+int pnv_pci_hotplug_notifier_register(struct notifier_block *nb)
-+{
-+	return opal_message_notifier_register(OPAL_MSG_PCI_HOTPLUG, nb);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_hotplug_notifier_register);
-+
-+int pnv_pci_hotplug_notifier_unregister(struct notifier_block *nb)
-+{
-+	return opal_message_notifier_unregister(OPAL_MSG_PCI_HOTPLUG, nb);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_hotplug_notifier_unregister);
-+
- #ifdef CONFIG_PCI_MSI
- int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+-static void pnv_ioda_setup_PEs(struct pci_bus *bus)
+-{
+-	struct pci_dev *dev;
+-
+-	pnv_ioda_setup_bus_PE(bus, false);
+-
+-	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		if (dev->subordinate) {
+-			if (pci_pcie_type(dev) == PCI_EXP_TYPE_PCI_BRIDGE)
+-				pnv_ioda_setup_bus_PE(dev->subordinate, true);
+-			else
+-				pnv_ioda_setup_PEs(dev->subordinate);
+-		}
+-	}
+-}
+-
+-/*
+- * Configure PEs so that the downstream PCI buses and devices
+- * could have their associated PE#. Unfortunately, we didn't
+- * figure out the way to identify the PLX bridge yet. So we
+- * simply put the PCI bus and the subordinate behind the root
+- * port to PE# here. The game rule here is expected to be changed
+- * as soon as we can detected PLX bridge correctly.
+- */
+-static void pnv_pci_ioda_setup_PEs(void)
+-{
+-	struct pci_controller *hose, *tmp;
+-	struct pnv_phb *phb;
+-
+-	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+-		phb = hose->private_data;
+-
+-		/* M64 layout might affect PE allocation */
+-		if (phb->reserve_m64_pe)
+-			phb->reserve_m64_pe(hose->bus, NULL, true);
+-
+-		pnv_ioda_setup_PEs(hose->bus);
+-	}
+-}
+-
+ #ifdef CONFIG_PCI_IOV
+ static int pnv_pci_vf_release_m64(struct pci_dev *pdev)
  {
+@@ -2962,52 +2947,6 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+ 	}
+ }
+ 
+-static void pnv_pci_ioda_setup_seg(void)
+-{
+-	struct pci_controller *tmp, *hose;
+-	struct pnv_phb *phb;
+-	struct pnv_ioda_pe *pe;
+-
+-	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+-		phb = hose->private_data;
+-		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
+-			pnv_ioda_setup_pe_seg(hose, pe);
+-		}
+-	}
+-}
+-
+-static void pnv_pci_ioda_setup_DMA(void)
+-{
+-	struct pci_controller *hose, *tmp;
+-	struct pnv_phb *phb;
+-	struct pnv_ioda_pe *pe;
+-
+-	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+-		phb = hose->private_data;
+-		pnv_pci_ioda_setup_opal_tce_kill(phb);
+-
+-		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+-			if (!pe->dma32_weight)
+-				continue;
+-
+-			switch (phb->type) {
+-			case PNV_PHB_IODA1:
+-				pnv_ioda1_setup_dma(phb, pe);
+-				break;
+-			case PNV_PHB_IODA2:
+-				pnv_pci_ioda2_setup_dma_pe(phb, pe);
+-				break;
+-			default:
+-				pr_warn("%s: No DMA for PHB type %d\n",
+-					__func__, phb->type);
+-			}
+-		}
+-
+-		/* Mark the PHB initialization done */
+-		phb->initialized = 1;
+-	}
+-}
+-
+ static void pnv_pci_ioda_create_dbgfs(void)
+ {
+ #ifdef CONFIG_DEBUG_FS
+@@ -3029,9 +2968,8 @@ static void pnv_pci_ioda_create_dbgfs(void)
+ 
+ static void pnv_pci_ioda_fixup(void)
+ {
+-	pnv_pci_ioda_setup_PEs();
+-	pnv_pci_ioda_setup_seg();
+-	pnv_pci_ioda_setup_DMA();
++	struct pci_controller *hose, *tmp;
++	struct pnv_phb *phb;
+ 
+ 	pnv_pci_ioda_create_dbgfs();
+ 
+@@ -3039,6 +2977,12 @@ static void pnv_pci_ioda_fixup(void)
+ 	eeh_init();
+ 	eeh_addr_cache_build();
+ #endif
++
++	/* Notify initialization of PHB done */
++	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
++		phb = hose->private_data;
++		phb->initialized = 1;
++	}
+ }
+ 
+ /*
+@@ -3082,6 +3026,105 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+ 	return phb->ioda.io_segsize;
+ }
+ 
++/*
++ * We are updating root port or the upstream bridge behind the
++ * root port with PHB's windows in order to accommodate the
++ * changes on required resources during PCI (slot) hotplug,
++ * which is connected to either root port or the downstream
++ * ports of PCIe switch behind the root port.
++ */
++static void pnv_pci_fixup_bridge_resources(struct pci_bus *bus,
++					   unsigned long type)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct pci_dev *bridge = bus->self;
++	struct resource *r, *w;
++	int i;
++
++	/* Check if we need apply fixup to the bridge's windows */
++	if (!pci_is_root_bus(bridge->bus) &&
++	    !pci_is_root_bus(bridge->bus->self->bus))
++		return;
++
++	/* Fixup the resoureces */
++	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
++		r = &bridge->resource[PCI_BRIDGE_RESOURCES + i];
++		if (!r->flags || !r->parent)
++			continue;
++
++		w = NULL;
++		if (r->flags & type & IORESOURCE_IO)
++			w = &hose->io_resource;
++		else if (pnv_pci_is_mem_pref_64(r->flags) &&
++			 (type & IORESOURCE_PREFETCH) &&
++			 phb->ioda.m64_segsize)
++			w = &hose->mem_resources[1];
++		else if (r->flags & type & IORESOURCE_MEM)
++			w = &hose->mem_resources[0];
++
++		r->start = w->start;
++		r->end = w->end;
++	}
++}
++
++static void pnv_pci_setup_bridge(struct pci_bus *bus,
++				 unsigned long type)
++{
++	struct pci_controller *hose = pci_bus_to_host(bus);
++	struct pnv_phb *phb = hose->private_data;
++	struct pci_dev *bridge = bus->self;
++	struct pnv_ioda_pe *pe;
++	bool all = (pci_pcie_type(bridge) == PCI_EXP_TYPE_PCI_BRIDGE);
++
++	/* The root bus (ancestor PE) should be finalized
++	 * before anyone else
++	 */
++	if (!phb->ioda.root_pe_is_populated) {
++		pe = pnv_ioda_setup_bus_PE(phb->hose->bus, false);
++		if (pe && phb->ioda.root_pe_idx == IODA_INVALID_PE)
++			phb->ioda.root_pe_idx = pe->pe_number;
++			phb->ioda.root_pe_is_populated = true;
++		}
++
++	/* Extend bridge's windows if necessary */
++	pnv_pci_fixup_bridge_resources(bus, type);
++
++	/* Don't assign PE to bus which doesn't have any
++	 * subordinate PCI devices.
++	 */
++	if (list_empty(&bus->devices))
++		return;
++
++	/* Reserve PEs for M64 resource */
++	if (phb->reserve_m64_pe)
++		phb->reserve_m64_pe(bus, NULL, all);
++
++	/* Assign PE. We might run here because of partial hotplug.
++	 * For the case, we just pick up the existing PE and should
++	 * not allocate resources again.
++	 */
++	pe = pnv_ioda_setup_bus_PE(bus, all);
++	if (!pe)
++		return;
++
++	/* Setup MMIO mapping */
++	pnv_ioda_setup_pe_seg(hose, pe);
++
++	/* Setup DMA */
++	switch (phb->type) {
++	case PNV_PHB_IODA1:
++		pnv_ioda1_setup_dma(phb, pe);
++		break;
++	case PNV_PHB_IODA2:
++		pnv_pci_ioda2_setup_dma_pe(phb, pe);
++		break;
++	default:
++		pr_warn("%s: No DMA for PHB type %d\n",
++			__func__, phb->type);
++	}
++}
++
+ #ifdef CONFIG_PCI_IOV
+ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+ 						      int resno)
+@@ -3147,6 +3190,7 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+ #endif
+        .enable_device_hook = pnv_pci_enable_device_hook,
+        .window_alignment = pnv_pci_window_alignment,
++	.setup_bridge = pnv_pci_setup_bridge,
+        .reset_secondary_bus = pnv_pci_reset_secondary_bus,
+        .dma_set_mask = pnv_pci_ioda_dma_set_mask,
+        .shutdown = pnv_pci_ioda_shutdown,
+@@ -3218,6 +3262,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	if (phb->regs == NULL)
+ 		pr_err("  Failed to map registers !\n");
+ 
++	pnv_pci_ioda_setup_opal_tce_kill(phb);
++
+ 	/* Initialize more IODA stuff */
+ 	phb->ioda.total_pe_num = 1;
+ 	prop32 = of_get_property(np, "ibm,opal-num-pes", NULL);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index e93a489..a160491 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -136,6 +136,7 @@ struct pnv_phb {
+ 			/* Global bridge info */
+ 			unsigned int		total_pe_num;
+ 			unsigned int		root_pe_idx;
++			bool			root_pe_is_populated;
+ 			unsigned int		reserved_pe_idx;
+ 
+ 			/* 32-bit MMIO window */
 -- 
 2.1.0
