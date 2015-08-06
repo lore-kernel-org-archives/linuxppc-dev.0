@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A2D91A1C08
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D09DC1A1BFB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:15 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 6 Aug 2015 14:13:14 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DBC072CE8065
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8BC172CE805C
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:11 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t764D2ew44564632
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:11 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t764CxaZ51511490
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:06 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t764CctN002879
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:39 +1000
+ t764CbIn002827
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:38 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,10 +27,9 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v6 38/42] drivers/of: Unflatten subordinate nodes after
- specified level
-Date: Thu,  6 Aug 2015 14:11:43 +1000
-Message-Id: <1438834307-26960-39-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v6 21/42] powerpc/powernv: Remove DMA32 list of PEs
+Date: Thu,  6 Aug 2015 14:11:26 +1000
+Message-Id: <1438834307-26960-22-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,130 +41,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-unflatten_dt_node() is called recursively to unflatten FDT nodes
-with the assumption that FDT blob has only one root node, which
-isn't true when the FDT blob represents device sub-tree. This
-improves the function to supporting device sub-tree that have
-multiple nodes in the first level:
-
-   * Rename original unflatten_dt_node() to __unflatten_dt_node().
-   * Wrapper unflatten_dt_node() calls __unflatten_dt_node() with
-     adjusted current node depth to 1 to avoid underflow.
+Every PHB maintains a list of PEs based on their DMA32 weight. After
+patch "powerpc/powernv: Create PEs dynamically", the list is useless
+and it's safe to remove it.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/of/fdt.c | 53 ++++++++++++++++++++++++++++++++++++++++-------------
- 1 file changed, 40 insertions(+), 13 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 18 ------------------
+ arch/powerpc/platforms/powernv/pci.h      |  6 ------
+ 2 files changed, 24 deletions(-)
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 0749656..a18a2ce 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -161,7 +161,7 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 37847a3..84b771e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -938,20 +938,6 @@ out:
+ 	return 0;
  }
  
- /**
-- * unflatten_dt_node - Alloc and populate a device_node from the flat tree
-+ * __unflatten_dt_node - Alloc and populate a device_node from the flat tree
-  * @blob: The parent device tree blob
-  * @mem: Memory chunk to use for allocating device nodes and properties
-  * @poffset: pointer to node in flat tree
-@@ -171,20 +171,20 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
-  * @dryrun: If true, do not allocate device nodes but still calculate needed
-  * memory size
-  */
--static void * unflatten_dt_node(const void *blob,
-+static void *__unflatten_dt_node(const void *blob,
- 				void *mem,
- 				int *poffset,
- 				struct device_node *dad,
- 				struct device_node **nodepp,
- 				unsigned long fpsize,
--				bool dryrun)
-+				bool dryrun,
-+				int *depth)
+-static void pnv_ioda_link_pe_by_weight(struct pnv_phb *phb,
+-				       struct pnv_ioda_pe *pe)
+-{
+-	struct pnv_ioda_pe *lpe;
+-
+-	list_for_each_entry(lpe, &phb->ioda.pe_dma_list, dma_link) {
+-		if (lpe->dma32_weight < pe->dma32_weight) {
+-			list_add_tail(&pe->dma_link, &lpe->dma_link);
+-			return;
+-		}
+-	}
+-	list_add_tail(&pe->dma_link, &phb->ioda.pe_dma_list);
+-}
+-
+ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
  {
- 	const __be32 *p;
- 	struct device_node *np;
- 	struct property *pp, **prev_pp = NULL;
- 	const char *pathp;
- 	unsigned int l, allocl;
--	static int depth = 0;
- 	int old_depth;
- 	int offset;
- 	int has_name = 0;
-@@ -337,13 +337,25 @@ static void * unflatten_dt_node(const void *blob,
- 			np->type = "<NULL>";
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+@@ -1169,9 +1155,6 @@ static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
+ 	/* Put PE to the list */
+ 	list_add_tail(&pe->list, &phb->ioda.pe_list);
+ 
+-	/* Link the PE */
+-	pnv_ioda_link_pe_by_weight(phb, pe);
+-
+ 	return pe;
+ }
+ 
+@@ -3313,7 +3296,6 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 		phb->ioda.root_pe_idx = IODA_INVALID_PE;
  	}
  
--	old_depth = depth;
--	*poffset = fdt_next_node(blob, *poffset, &depth);
--	if (depth < 0)
--		depth = 0;
--	while (*poffset > 0 && depth > old_depth)
--		mem = unflatten_dt_node(blob, mem, poffset, np, NULL,
--					fpsize, dryrun);
-+	/* Multiple nodes might be in the first depth level if
-+	 * the device tree is sub-tree. All nodes in current
-+	 * or deeper depth are unflattened after it returns.
-+	 */
-+	old_depth = *depth;
-+	*poffset = fdt_next_node(blob, *poffset, depth);
-+	while (*poffset > 0) {
-+		if (*depth < old_depth)
-+			break;
-+
-+		if (*depth == old_depth)
-+			mem = __unflatten_dt_node(blob, mem, poffset,
-+						  dad, NULL, fpsize,
-+						  dryrun, depth);
-+		else if (*depth > old_depth)
-+			mem = __unflatten_dt_node(blob, mem, poffset,
-+						  np, NULL, fpsize,
-+						  dryrun, depth);
-+	}
+-	INIT_LIST_HEAD(&phb->ioda.pe_dma_list);
+ 	INIT_LIST_HEAD(&phb->ioda.pe_list);
+ 	mutex_init(&phb->ioda.pe_list_mutex);
  
- 	if (*poffset < 0 && *poffset != -FDT_ERR_NOTFOUND)
- 		pr_err("unflatten: error %d processing FDT\n", *poffset);
-@@ -369,6 +381,20 @@ static void * unflatten_dt_node(const void *blob,
- 	return mem;
- }
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index a160491..f8e6022 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -83,7 +83,6 @@ struct pnv_ioda_pe {
+ 	struct list_head	slaves;
  
-+static void *unflatten_dt_node(const void *blob,
-+			       void *mem,
-+			       int *poffset,
-+			       struct device_node *dad,
-+			       struct device_node **nodepp,
-+			       bool dryrun)
-+{
-+	int depth = 1;
-+
-+	return __unflatten_dt_node(blob, mem, poffset,
-+				   dad, nodepp, 0,
-+				   dryrun, &depth);
-+}
-+
- /**
-  * __unflatten_device_tree - create tree of device_nodes from flat blob
-  *
-@@ -408,7 +434,8 @@ static void __unflatten_device_tree(const void *blob,
+ 	/* Link in list of PE#s */
+-	struct list_head	dma_link;
+ 	struct list_head	list;
+ };
  
- 	/* First pass, scan for size */
- 	start = 0;
--	size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL, NULL, 0, true);
-+	size = (unsigned long)unflatten_dt_node(blob, NULL, &start,
-+						NULL, NULL, true);
- 	size = ALIGN(size, 4);
+@@ -185,11 +184,6 @@ struct pnv_phb {
+ 			/* 32-bit TCE tables allocation */
+ 			unsigned long		dma32_segcount;
  
- 	pr_debug("  size is %lx, allocating...\n", size);
-@@ -423,7 +450,7 @@ static void __unflatten_device_tree(const void *blob,
- 
- 	/* Second pass, do actual unflattening */
- 	start = 0;
--	unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false);
-+	unflatten_dt_node(blob, mem, &start, NULL, mynodes, false);
- 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
- 		pr_warning("End of tree marker overwritten: %08x\n",
- 			   be32_to_cpup(mem + size));
+-			/* Sorted list of used PE's, sorted at
+-			 * boot for resource allocation purposes
+-			 */
+-			struct list_head	pe_dma_list;
+-
+ 			/* TCE cache invalidate registers (physical and
+ 			 * remapped)
+ 			 */
 -- 
 2.1.0
