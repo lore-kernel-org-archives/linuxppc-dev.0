@@ -1,22 +1,22 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from lb1-smtp-cloud6.xs4all.net (lb1-smtp-cloud6.xs4all.net
- [194.109.24.24])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0103.outbound.protection.outlook.com [157.56.110.103])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6AF31A07E3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 09:09:53 +1000 (AEST)
-Message-ID: <1438902589.26981.14.camel@tiscali.nl>
-Subject: Re: windfarm: decrement client count when unregistering
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 07 Aug 2015 01:09:49 +0200
-In-Reply-To: <1438899707.25241.29.camel@tiscali.nl>
-References: <20150805041611.ACBD6140324@ozlabs.org>
- <1438899707.25241.29.camel@tiscali.nl>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 500761A0836
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 09:24:57 +1000 (AEST)
+Message-ID: <1438903478.2097.196.camel@freescale.com>
+Subject: Re: [PATCH v5 RESEND] IFC: Change IO accessor based on endianness
+From: Scott Wood <scottwood@freescale.com>
+To: Brian Norris <computersforpeace@gmail.com>
+CC: <linux-mtd@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
+ Jaiprakash Singh <b44839@freescale.com>
+Date: Thu, 6 Aug 2015 18:24:38 -0500
+In-Reply-To: <20150806165220.GS10676@google.com>
+References: <1432174631-30091-1-git-send-email-scottwood@freescale.com>
+ <20150806165220.GS10676@google.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On vr, 2015-08-07 at 00:21 +0200, Paul Bolle wrote:
-> On wo, 2015-08-05 at 14:16 +1000, Michael Ellerman wrote:
-> > I also get an oops when removing windfarm_lm75_sensor, so I suspect there are
-> > gremlins in the module ref counting for windfarm.
+On Thu, 2015-08-06 at 09:52 -0700, Brian Norris wrote:
+> On Wed, May 20, 2015 at 09:17:11PM -0500, Scott Wood wrote:
+> > From: Jaiprakash Singh <b44839@freescale.com>
+> > 
+> > IFC IO accressor are set at run time based
+> > on IFC IP registers endianness.IFC node in
+> > DTS file contains information about
+> > endianness.
+> > 
+> > Signed-off-by: Jaiprakash Singh <b44839@freescale.com>
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > ---
+> > v5: I'm assuming it's the same as v4, but I didn't send v4, and this
+> > comes from a versionless [RESEND] that never made it to the mailing list,
+> > so bumping the version just in case.
 > 
-> (This I haven't (yet) looked into.)
+> Acked-by: Brian Norris <computersforpeace@gmail.com>
+> 
+> Who takes patches for drivers/memory/ again? I can take it via MTD if
+> no one else steps up.
+ There's no maintainer listed.  IIRC, when we previously discussed the patch 
+we both said that it could go via either of our trees.  I'll take it via mine.
 
-And that might be, sort of, related. Because oops is probably triggered
-by the, it seems, rather straightforward chain of events triggered by
-unloading an I2C module. (So windfarm_lm75_sensor refcount must be
-zero.) Which gets interesting at:
+> It's nothing new, but this patch continues the pattern of using a global
+> pointer to the IFC device structure. Not pretty, but not worth holding
+> this up over.
 
-    wf_lm75_remove()
-        wf_unregister_sensor(&wf_lm75_sensor->sens)
-            wf_put_sensor(&wf_lm75_sensor->sens)
-                module_put(wf_lm75_sensor->sens->ops->owner /* THIS_MODULE */)
+It's not pretty, but I see little reason to come up with more complicated 
+infrastructure for the drivers finding each other given the low odds of ever 
+seeing a single-kernel system with more than one IFC.  It's impossible with 
+current chips.  If it ever does happen we can do something fancier.
 
-And in windfarm_lm75_sensor we trigger this issue because in the
-.probe() function there appears to be no corresponding call to
-try_module_get() preventing unloading the module, as we saw in windfarm_
-smu_sensors.
-
-So module refcounting looks broken for both these modules in opposite
-ways. Gremlins indeed.
-
-Good luck!
-
-
-Paul Bolle
+-Scott
