@@ -1,21 +1,30 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
- [IPv6:2607:f8b0:4001:c05::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0BB611A088A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 03:13:16 +1000 (AEST)
-Received: by igr7 with SMTP id 7so15470045igr.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Aug 2015 10:13:14 -0700 (PDT)
-From: Nicholas Krause <xerofoify@gmail.com>
-To: agraf@suse.com
-Cc: gleb@kernel.org, pbonzini@redhat.com, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] kvm:powerpc:Fix error handling in the function
- mpic_set_default_irq_routing
-Date: Thu,  6 Aug 2015 13:13:10 -0400
-Message-Id: <1438881190-27287-1-git-send-email-xerofoify@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D63F1A0651
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 04:03:07 +1000 (AEST)
+Message-ID: <1438884172.2097.155.camel@freescale.com>
+Subject: Re: [PATCH 1/3] Powerpc: mpc85xx: refactor the PM operations
+From: Scott Wood <scottwood@freescale.com>
+To: Chenhui Zhao <chenhui.zhao@freescale.com>
+CC: <b29983@freescale.com>, <b07421@freescale.com>,
+ <linux-kernel@vger.kernel.org>, Tang Yuantian <Yuantian.Tang@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 6 Aug 2015 13:02:52 -0500
+In-Reply-To: <1438840466.23384.2@remotesmtp.freescale.net>
+References: <1438334444-31919-1-git-send-email-b29983@freescale.com>
+ <1438387178.19345.77.camel@freescale.com>
+ <1438601578.7515.2@remotesmtp.freescale.net>
+ <1438633568.2097.35.camel@freescale.com>
+ <1438769477.21522.0@remotesmtp.freescale.net>
+ <1438829848.2097.129.camel@freescale.com>
+ <1438834837.23384.0@remotesmtp.freescale.net>
+ <1438839985.2097.151.camel@freescale.com>
+ <1438840466.23384.2@remotesmtp.freescale.net>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +34,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes error handling in the function mpic_set_default_irq_routing
-by checking if the call to the function kvm_set_irq_routing has failed
-and if so exit immediately to the caller by returning the error code
-returned by the call to mpic_set_default_irq_routing.
+On Thu, 2015-08-06 at 13:54 +0800, Chenhui Zhao wrote:
+> On Thu, Aug 6, 2015 at 1:46 PM, Scott Wood <scottwood@freescale.com> 
+> wrote:
+> > On Thu, 2015-08-06 at 12:20 +0800, Chenhui Zhao wrote:
+> > >  On Thu, Aug 6, 2015 at 10:57 AM, Scott Wood 
+> > > <scottwood@freescale.com>
+> > >  wrote:
+> > >  > On Wed, 2015-08-05 at 18:11 +0800, Chenhui Zhao wrote:
+> > >  > >  On Tue, Aug 4, 2015 at 4:26 AM, Scott Wood 
+> > > <scottwood@freescale.com>
+> > >  > >  wrote:
+> > >  > >  > On Mon, 2015-08-03 at 19:32 +0800, Chenhui Zhao wrote:
+> > >  > >  > >  >
+> > >  > >  >
+> > >  > >  > >  On Sat, Aug 1, 2015 at 7:59 AM, Scott Wood
+> > >  > > <scottwood@freescale.com>
+> > >  > >  > >  wrote:
+> > >  > >  >
+> > >  > >  > >  >
+> > >  > >  > >  > Could you explain irq_mask()?  Why would there still be 
+> > > IRQs
+> > >  > >  > > destined
+> > >  > >  > >  > for
+> > >  > >  > >  > this CPU at this point?
+> > >  > >  > >
+> > >  > >  > >  This function just masks irq by setting the registers in 
+> > > RCPM
+> > >  > > (for
+> > >  > >  > >  example, RCPM_CPMIMR, RCPM_CPMCIMR). Actually, all irqs to
+> > >  > > this CPU
+> > >  > >  > >  have been migrated to other CPUs.
+> > >  > >  >
+> > >  > >  > So why do we need to set those bits in RCPM?  Is it just 
+> > > caution?
+> > >  > >
+> > >  > >  Setting these bits can mask interrupts signalled to RCPM from 
+> > > MPIC
+> > >  > > as a
+> > >  > >  means of
+> > >  > >  waking up from a lower power state. So, cores will not be 
+> > > waked up
+> > >  > >  unexpectedly.
+> > >  >
+> > >  > Why would the MPIC be signalling those interrupts if they've been
+> > >  > masked at
+> > >  > the MPIC?
+> > >  >
+> > >  > -Scott
+> > >  >
+> > > 
+> > >  The interrupts to RCPM from MPIC are IRQ, Machine Check, NMI and
+> > >  Critical interrupts. Some of them didn't be masked in MPIC.
+> > 
+> > What interrupt could actually happen to a sleeping cpu that this 
+> > protects
+> > against?
+> > 
+> > -Scott
+> 
+> Not sure. Maybe spurious interrupts or hardware exceptions.
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- arch/powerpc/kvm/mpic.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Spurious interrupts happen due to race conditions.  They don't happen because 
+the MPIC is bored and decides to ring a CPU's doorbell and hide in the bushes.
 
-diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
-index 6249cdc..5a18859 100644
---- a/arch/powerpc/kvm/mpic.c
-+++ b/arch/powerpc/kvm/mpic.c
-@@ -1641,13 +1641,16 @@ static void mpic_destroy(struct kvm_device *dev)
- static int mpic_set_default_irq_routing(struct openpic *opp)
- {
- 	struct kvm_irq_routing_entry *routing;
-+	int ret;
- 
- 	/* Create a nop default map, so that dereferencing it still works */
- 	routing = kzalloc((sizeof(*routing)), GFP_KERNEL);
- 	if (!routing)
- 		return -ENOMEM;
- 
--	kvm_set_irq_routing(opp->kvm, routing, 0, 0);
-+	ret = kvm_set_irq_routing(opp->kvm, routing, 0, 0);
-+	if (ret)
-+		return ret;
- 
- 	kfree(routing);
- 	return 0;
--- 
-2.1.4
+If by "hardware exceptions" you mean machine checks, how would such a machine 
+check be generated by a core that is off?
+
+>  However, setting them make sure dead cpus can not be waked up unexpectedly.
+
+I'm not seeing enough value here to warrant resurrecting the old sleep node 
+stuff.
+
+-Scott
