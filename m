@@ -1,21 +1,32 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06C5E1A17F2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 20:16:29 +1000 (AEST)
-Subject: Re: [PATCH v3 1/1] KVM: PPC: Book3S: correct width in XER handling
-To: agraf@suse.de
-References: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
- <20150806012541.GA6697@tungsten.ozlabs.ibm.com>
-Cc: Sam Bobroff <sam.bobroff@au1.ibm.com>, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <55C333F9.3010003@redhat.com>
-Date: Thu, 6 Aug 2015 12:16:25 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F5BD1A17F2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 20:16:31 +1000 (AEST)
+Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
+ [209.85.192.172])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A36B81402A7
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 20:16:29 +1000 (AEST)
+Received: by pdrg1 with SMTP id g1so30905874pdr.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 06 Aug 2015 03:16:28 -0700 (PDT)
+Subject: Re: [PATCH V2 2/6] powerpc/powernv: simplify the calculation of iov
+ resource
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150731020148.GA6151@richard>
+ <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1438737903-10399-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150806045139.GB28524@gwshan> <55C32210.9090803@ozlabs.ru>
+ <20150806094102.GB13055@richard>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55C333DB.4080406@ozlabs.ru>
+Date: Thu, 6 Aug 2015 20:15:55 +1000
 MIME-Version: 1.0
-In-Reply-To: <20150806012541.GA6697@tungsten.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <20150806094102.GB13055@richard>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,168 +36,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 08/06/2015 07:41 PM, Wei Yang wrote:
+> On Thu, Aug 06, 2015 at 07:00:00PM +1000, Alexey Kardashevskiy wrote:
+>> On 08/06/2015 02:51 PM, Gavin Shan wrote:
+>>> On Wed, Aug 05, 2015 at 09:24:59AM +0800, Wei Yang wrote:
+>>>> The alignment of IOV BAR on PowerNV platform is the total size of the IOV
+>>>> BAR. No matter whether the IOV BAR is truncated or not, the total size
+>>>> could be calculated by (vfs_expanded * VF size).
+>>>>
+>>>
+>>> s/VF size/VF BAR size
+>>>
+>>> I think the changelog would be more explicit:
+>>>
+>>> The alignment of IOV BAR on PowerNV platform is the total size of the
+>>> IOV BAR, no matter whether the IOV BAR is extended with number of max
+>>> VFs or number of max PE number (256). The alignment can be calculated
+>>> by (vfs_expaned * VF_BAR_size).
+>>
+>>
+>>
+>> Is that really a PowerNV-specific requirement or it is valid for
+>> every platform (I suspect this is the case here)?
+>>
+>
+> Currently, it is PowerNV-specific.
 
-I'd also like to see this patch in the mainstream as it fixes a bug
-appearing when we switch from vCPU context to hypervisor context (guest
-crash).
 
-Laurent
+How is x86 different on this matter?
+Why would we need this extra alignment, not just VF's BAR alignment?
 
-On 06/08/2015 03:25, Sam Bobroff wrote:
-> Ping?
-> 
-> I think I've addressed all the comments in this version. Is there anything else
-> I need to look at?
-> 
-> Cheers,
-> Sam.
-> 
-> On Wed, May 27, 2015 at 09:56:57AM +1000, Sam Bobroff wrote:
->> In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
->> bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
->> accessed as such.
+
 >>
->> This patch corrects places where it is accessed as a 32 bit field by a
->> 64 bit kernel.  In some cases this is via a 32 bit load or store
->> instruction which, depending on endianness, will cause either the
->> lower or upper 32 bits to be missed.  In another case it is cast as a
->> u32, causing the upper 32 bits to be cleared.
+>> Also, what is the exact meaning of "expanded" in @vfs_expanded? It is
+>> either 255 (if individual VF BARs are <= 64MB) or
+>> roundup_pow_of_two(total_vfs) (which is something like 4 or 16). What
+>> is expanded here?
 >>
->> This patch corrects those places by extending the access methods to
->> 64 bits.
+>
+> PF's IOV BAR original size is (VF BAR size * total_vfs).
+>
+> After expanding, the IOV BAR size  is (VF BAR size * 256) or (VF BAR size *
+> roundup_pow_of_two(total_vfs)).
+
+
+Ufff, got it now. I'd store just an expanded IOV BAR size (not some magic 
+VFs number) because this is what it actually is:
+pdn->vfs_expanded * align
+
+
 >>
->> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
->> ---
+>>>
+>>>> This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
+>>>> first case.
+>>>>
+>>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>
+>>> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>
+>>>> ---
+>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   14 +++++++++-----
+>>>> 1 file changed, 9 insertions(+), 5 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> index 9b41dba..7192e62 100644
+>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> @@ -2987,12 +2987,16 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+>>>> 						      int resno)
+>>>> {
+>>>> 	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>>> -	resource_size_t align, iov_align;
+>>>> -
+>>>> -	iov_align = resource_size(&pdev->resource[resno]);
+>>>> -	if (iov_align)
+>>>> -		return iov_align;
+>>>> +	resource_size_t align;
+>>>>
+>>>> +	/*
+>>>> +	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
+>>>> +	 * SR-IOV. While from hardware perspective, the range mapped by M64
+>>>> +	 * BAR should be size aligned.
+>>>> +	 *
+>>>> +	 * This function return the total IOV BAR size if expanded or just the
+>>>> +	 * individual size if not.
+>>>> +	 */
+>>>> 	align = pci_iov_resource_size(pdev, resno);
+>>>> 	if (pdn->vfs_expanded)
+>>>> 		return pdn->vfs_expanded * align;
+>>>> --
+>>>> 1.7.9.5
+>>>>
+>>>
 >>
->> v3:
->> Adjust booke set/get xer to match book3s.
->>
->> v2:
->>
->> Also extend kvmppc_book3s_shadow_vcpu.xer to 64 bit.
->>
->>  arch/powerpc/include/asm/kvm_book3s.h     |    4 ++--
->>  arch/powerpc/include/asm/kvm_book3s_asm.h |    2 +-
->>  arch/powerpc/include/asm/kvm_booke.h      |    4 ++--
->>  arch/powerpc/kvm/book3s_hv_rmhandlers.S   |    6 +++---
->>  arch/powerpc/kvm/book3s_segment.S         |    4 ++--
->>  5 files changed, 10 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
->> index b91e74a..05a875a 100644
->> --- a/arch/powerpc/include/asm/kvm_book3s.h
->> +++ b/arch/powerpc/include/asm/kvm_book3s.h
->> @@ -225,12 +225,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
->>  	return vcpu->arch.cr;
->>  }
->>  
->> -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
->> +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
->>  {
->>  	vcpu->arch.xer = val;
->>  }
->>  
->> -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
->> +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
->>  {
->>  	return vcpu->arch.xer;
->>  }
->> diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
->> index 5bdfb5d..c4ccd2d 100644
->> --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
->> +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
->> @@ -112,7 +112,7 @@ struct kvmppc_book3s_shadow_vcpu {
->>  	bool in_use;
->>  	ulong gpr[14];
->>  	u32 cr;
->> -	u32 xer;
->> +	ulong xer;
->>  	ulong ctr;
->>  	ulong lr;
->>  	ulong pc;
->> diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
->> index 3286f0d..bc6e29e 100644
->> --- a/arch/powerpc/include/asm/kvm_booke.h
->> +++ b/arch/powerpc/include/asm/kvm_booke.h
->> @@ -54,12 +54,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
->>  	return vcpu->arch.cr;
->>  }
->>  
->> -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
->> +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
->>  {
->>  	vcpu->arch.xer = val;
->>  }
->>  
->> -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
->> +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
->>  {
->>  	return vcpu->arch.xer;
->>  }
->> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> index 4d70df2..d75be59 100644
->> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> @@ -870,7 +870,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
->>  	blt	hdec_soon
->>  
->>  	ld	r6, VCPU_CTR(r4)
->> -	lwz	r7, VCPU_XER(r4)
->> +	ld	r7, VCPU_XER(r4)
->>  
->>  	mtctr	r6
->>  	mtxer	r7
->> @@ -1103,7 +1103,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
->>  	mfctr	r3
->>  	mfxer	r4
->>  	std	r3, VCPU_CTR(r9)
->> -	stw	r4, VCPU_XER(r9)
->> +	std	r4, VCPU_XER(r9)
->>  
->>  	/* If this is a page table miss then see if it's theirs or ours */
->>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
->> @@ -1675,7 +1675,7 @@ kvmppc_hdsi:
->>  	bl	kvmppc_msr_interrupt
->>  fast_interrupt_c_return:
->>  6:	ld	r7, VCPU_CTR(r9)
->> -	lwz	r8, VCPU_XER(r9)
->> +	ld	r8, VCPU_XER(r9)
->>  	mtctr	r7
->>  	mtxer	r8
->>  	mr	r4, r9
->> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
->> index acee37c..ca8f174 100644
->> --- a/arch/powerpc/kvm/book3s_segment.S
->> +++ b/arch/powerpc/kvm/book3s_segment.S
->> @@ -123,7 +123,7 @@ no_dcbz32_on:
->>  	PPC_LL	r8, SVCPU_CTR(r3)
->>  	PPC_LL	r9, SVCPU_LR(r3)
->>  	lwz	r10, SVCPU_CR(r3)
->> -	lwz	r11, SVCPU_XER(r3)
->> +	PPC_LL	r11, SVCPU_XER(r3)
->>  
->>  	mtctr	r8
->>  	mtlr	r9
->> @@ -237,7 +237,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->>  	mfctr	r8
->>  	mflr	r9
->>  
->> -	stw	r5, SVCPU_XER(r13)
->> +	PPC_STL	r5, SVCPU_XER(r13)
->>  	PPC_STL	r6, SVCPU_FAULT_DAR(r13)
->>  	stw	r7, SVCPU_FAULT_DSISR(r13)
->>  	PPC_STL	r8, SVCPU_CTR(r13)
->> -- 
->> 1.7.10.4
 >>
 >> --
->> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+>> Alexey
+>
+
+
+-- 
+Alexey
