@@ -1,21 +1,27 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from lb1-smtp-cloud6.xs4all.net (lb1-smtp-cloud6.xs4all.net
- [194.109.24.24])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0122.outbound.protection.outlook.com [65.55.169.122])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 286CB1A088A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 08:21:57 +1000 (AEST)
-Message-ID: <1438899707.25241.29.camel@tiscali.nl>
-Subject: Re: windfarm: decrement client count when unregistering
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Fri, 07 Aug 2015 00:21:47 +0200
-In-Reply-To: <20150805041611.ACBD6140324@ozlabs.org>
-References: <20150805041611.ACBD6140324@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90EAB1A08D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 08:46:01 +1000 (AEST)
+Message-ID: <1438901145.2097.170.camel@freescale.com>
+Subject: Re: [PATCH v2 2/2] powerpc32: optimise csum_partial() loop
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Date: Thu, 6 Aug 2015 17:45:45 -0500
+In-Reply-To: <20150806043938.GE18479@gate.crashing.org>
+References: <cover.1435655733.git.christophe.leroy@c-s.fr>
+ <67cf476f657e87b2ea586951a57ae3ba3c1e3c0c.1435655733.git.christophe.leroy@c-s.fr>
+ <20150806003059.GD18479@gate.crashing.org>
+ <1438828301.2097.126.camel@freescale.com>
+ <20150806043938.GE18479@gate.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +31,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On wo, 2015-08-05 at 14:16 +1000, Michael Ellerman wrote:
-> On Fri, 2015-31-07 at 12:08:58 UTC, Paul Bolle wrote:
-> > windfarm_corex_exit() contains:
-> >     BUG_ON(wf_client_count != 0);
+On Wed, 2015-08-05 at 23:39 -0500, Segher Boessenkool wrote:
+> On Wed, Aug 05, 2015 at 09:31:41PM -0500, Scott Wood wrote:
+> > On Wed, 2015-08-05 at 19:30 -0500, Segher Boessenkool wrote:
+> > > On Wed, Aug 05, 2015 at 03:29:35PM +0200, Christophe Leroy wrote:
+> > > > On the 8xx, load latency is 2 cycles and taking branches also takes
+> > > > 2 cycles. So let's unroll the loop.
+> > > 
+> > > This is not true for most other 32-bit PowerPC; this patch makes
+> > > performance worse on e.g. 6xx/7xx/7xxx.  Let's not!
 > > 
-> > I wonder why that, apparently. never triggered.
+> > Chips with a load latency greater than 2 cycles should also benefit from 
+> > the 
+> > unrolling.  Have you benchmarked this somewhere and seen it reduce 
+> > performance?  Do you know of any 32-bit PPC chips with a load latency 
+> > less 
+> > than 2 cycles?
 > 
-> Hmm interesting.
-> 
-> A quick test here on an iMacG5 shows that we get into a state where we can't
-> remove windfarm_core:
-> 
->   $ lsmod
->   Module                  Size  Used by
->   windfarm_smu_sensors    7549  2
->   windfarm_core          15391  1 windfarm_smu_sensors
-> 
-> 
-> Which means we can't trigger windfarm_core_exit() and the BUG_ON().
+> The original loop was already optimal, as the comment said.
 
-Perhaps this is what, roughly, happens:
+The comment says that bdnz has zero overhead.  That doesn't mean the adde 
+won't stall waiting for the load result.
 
-smu_sensors_init()
-    smu_ads_create()
-        /* Let's assume this happens ... */
-        ads->sens.ops = &smu_cpuamp_ops
-        ads->sens.name = "cpu-current"
-    smu_ads_create()
-        /* ditto ... */
-        ads->sens.ops = &smu_cpuvolt_ops
-        ads->sens.name = "cpu-voltage"
+> The new code adds extra instructions and a mispredicted branch.
 
-    /* ... so this would then be true */
-    if (volt_sensor && curr_sensor)
-        /* and we do this */
-        smu_cpu_power_create(&volt_sensor->sens, &curr_sensor->sens)
-            wf_get_sensor(&volt_sensor->sens)
-                try_module_get(volt_sensor->sens->ops->owner /* THIS_MODULE */)
-            wf_get_sensor(&curr_sensor->sens)
-                try_module_get(curr_sensor->sens->ops->owner /* THIS_MODULE */)
+Outside the main loop.
 
-The cleanup would have happened here:
+>   You also might get less overlap between the loads and adde (I didn't check
+> if there is any originally): those instructions are no longer
+> interleaved.
+>
+> I think it is a stupid idea to optimise code for all 32-bit PowerPC
+> CPUs based on solely what is best for a particularly simple, slow
+> implementation; and that is what this patch is doing.
 
-smu_sensors_exit()
-    while (!list_empty(&smu_ads)
-        wf_unregister_sensor(&ads->sens)
-            wf_put_sensor()
-                /* would this also be done for sensors that never 
-                 * triggered a call to module_get()? */
-                module_put(ads->sens->ops->owner /* THIS MODULE */)
+The simple and slow implementation is the one that needs optimizations the 
+most.
 
-But, whatever it is that smu_sensors_exit() wants to do, it will never
-be called since there are these two references to this module that
-smu_sensors_init() created itself, preventing the unloading of this
-module.
+If this makes performance non-negligibly worse on other 32-bit chips, and is 
+an important improvement on 8xx, then we can use an ifdef since 8xx already 
+requires its own kernel build.  I'd prefer to see a benchmark showing that it 
+actually does make things worse on those chips, though.
 
-Does the above look plausible?
-
-Note that this was only cobbled together by staring at the code for far
-too long. If I had some powerpc machine at hand I could have actually
-tested this with a few strategically placed printk()'s.
-
-> I also get an oops when removing windfarm_lm75_sensor, so I suspect there are
-> gremlins in the module ref counting for windfarm.
-
-(This I haven't (yet) looked into.)
-
-> I'll merge this as probably correct.
-
-Hope this helps,
-
-
-Paul Bolle
+-Scott
