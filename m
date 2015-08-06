@@ -1,35 +1,25 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0116.outbound.protection.outlook.com [207.46.100.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 86C1E1A0787
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 11:26:44 +1000 (AEST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Thu, 6 Aug 2015 11:26:41 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9664D2BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 11:26:40 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t761QR6Q56295640
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 11:26:35 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t761Q7F8015040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 11:26:07 +1000
-Date: Thu, 6 Aug 2015 11:25:41 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: agraf@suse.de
-Subject: Re: [PATCH v3 1/1] KVM: PPC: Book3S: correct width in XER handling
-Message-ID: <20150806012541.GA6697@tungsten.ozlabs.ibm.com>
-References: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C0A51A0651
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 12:31:54 +1000 (AEST)
+Message-ID: <1438828301.2097.126.camel@freescale.com>
+Subject: Re: [PATCH v2 2/2] powerpc32: optimise csum_partial() loop
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: Christophe Leroy <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Date: Wed, 5 Aug 2015 21:31:41 -0500
+In-Reply-To: <20150806003059.GD18479@gate.crashing.org>
+References: <cover.1435655733.git.christophe.leroy@c-s.fr>
+ <67cf476f657e87b2ea586951a57ae3ba3c1e3c0c.1435655733.git.christophe.leroy@c-s.fr>
+ <20150806003059.GD18479@gate.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,153 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping?
+On Wed, 2015-08-05 at 19:30 -0500, Segher Boessenkool wrote:
+> On Wed, Aug 05, 2015 at 03:29:35PM +0200, Christophe Leroy wrote:
+> > On the 8xx, load latency is 2 cycles and taking branches also takes
+> > 2 cycles. So let's unroll the loop.
+> 
+> This is not true for most other 32-bit PowerPC; this patch makes
+> performance worse on e.g. 6xx/7xx/7xxx.  Let's not!
 
-I think I've addressed all the comments in this version. Is there anything else
-I need to look at?
+Chips with a load latency greater than 2 cycles should also benefit from the 
+unrolling.  Have you benchmarked this somewhere and seen it reduce 
+performance?  Do you know of any 32-bit PPC chips with a load latency less 
+than 2 cycles?
 
-Cheers,
-Sam.
-
-On Wed, May 27, 2015 at 09:56:57AM +1000, Sam Bobroff wrote:
-> In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
-> bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
-> accessed as such.
-> 
-> This patch corrects places where it is accessed as a 32 bit field by a
-> 64 bit kernel.  In some cases this is via a 32 bit load or store
-> instruction which, depending on endianness, will cause either the
-> lower or upper 32 bits to be missed.  In another case it is cast as a
-> u32, causing the upper 32 bits to be cleared.
-> 
-> This patch corrects those places by extending the access methods to
-> 64 bits.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
-> ---
-> 
-> v3:
-> Adjust booke set/get xer to match book3s.
-> 
-> v2:
-> 
-> Also extend kvmppc_book3s_shadow_vcpu.xer to 64 bit.
-> 
->  arch/powerpc/include/asm/kvm_book3s.h     |    4 ++--
->  arch/powerpc/include/asm/kvm_book3s_asm.h |    2 +-
->  arch/powerpc/include/asm/kvm_booke.h      |    4 ++--
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S   |    6 +++---
->  arch/powerpc/kvm/book3s_segment.S         |    4 ++--
->  5 files changed, 10 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> index b91e74a..05a875a 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -225,12 +225,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
->  	return vcpu->arch.cr;
->  }
->  
-> -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
-> +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
->  {
->  	vcpu->arch.xer = val;
->  }
->  
-> -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
-> +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
->  {
->  	return vcpu->arch.xer;
->  }
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> index 5bdfb5d..c4ccd2d 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> @@ -112,7 +112,7 @@ struct kvmppc_book3s_shadow_vcpu {
->  	bool in_use;
->  	ulong gpr[14];
->  	u32 cr;
-> -	u32 xer;
-> +	ulong xer;
->  	ulong ctr;
->  	ulong lr;
->  	ulong pc;
-> diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
-> index 3286f0d..bc6e29e 100644
-> --- a/arch/powerpc/include/asm/kvm_booke.h
-> +++ b/arch/powerpc/include/asm/kvm_booke.h
-> @@ -54,12 +54,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
->  	return vcpu->arch.cr;
->  }
->  
-> -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
-> +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
->  {
->  	vcpu->arch.xer = val;
->  }
->  
-> -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
-> +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
->  {
->  	return vcpu->arch.xer;
->  }
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index 4d70df2..d75be59 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -870,7 +870,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
->  	blt	hdec_soon
->  
->  	ld	r6, VCPU_CTR(r4)
-> -	lwz	r7, VCPU_XER(r4)
-> +	ld	r7, VCPU_XER(r4)
->  
->  	mtctr	r6
->  	mtxer	r7
-> @@ -1103,7 +1103,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
->  	mfctr	r3
->  	mfxer	r4
->  	std	r3, VCPU_CTR(r9)
-> -	stw	r4, VCPU_XER(r9)
-> +	std	r4, VCPU_XER(r9)
->  
->  	/* If this is a page table miss then see if it's theirs or ours */
->  	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
-> @@ -1675,7 +1675,7 @@ kvmppc_hdsi:
->  	bl	kvmppc_msr_interrupt
->  fast_interrupt_c_return:
->  6:	ld	r7, VCPU_CTR(r9)
-> -	lwz	r8, VCPU_XER(r9)
-> +	ld	r8, VCPU_XER(r9)
->  	mtctr	r7
->  	mtxer	r8
->  	mr	r4, r9
-> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-> index acee37c..ca8f174 100644
-> --- a/arch/powerpc/kvm/book3s_segment.S
-> +++ b/arch/powerpc/kvm/book3s_segment.S
-> @@ -123,7 +123,7 @@ no_dcbz32_on:
->  	PPC_LL	r8, SVCPU_CTR(r3)
->  	PPC_LL	r9, SVCPU_LR(r3)
->  	lwz	r10, SVCPU_CR(r3)
-> -	lwz	r11, SVCPU_XER(r3)
-> +	PPC_LL	r11, SVCPU_XER(r3)
->  
->  	mtctr	r8
->  	mtlr	r9
-> @@ -237,7 +237,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->  	mfctr	r8
->  	mflr	r9
->  
-> -	stw	r5, SVCPU_XER(r13)
-> +	PPC_STL	r5, SVCPU_XER(r13)
->  	PPC_STL	r6, SVCPU_FAULT_DAR(r13)
->  	stw	r7, SVCPU_FAULT_DSISR(r13)
->  	PPC_STL	r8, SVCPU_CTR(r13)
-> -- 
-> 1.7.10.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-Scott
