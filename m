@@ -1,38 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C10331A1BF7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:39 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 6 Aug 2015 14:13:39 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id BB02D2CE805F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:35 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t764DRKc62390448
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:35 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t764D2id002046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:03 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
- grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, aik@ozlabs.ru,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v6 28/42] powerpc/powernv: Fundamental reset in
- pnv_pci_reset_secondary_bus()
-Date: Thu,  6 Aug 2015 14:11:33 +1000
-Message-Id: <1438834307-26960-29-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 08D611A2CC1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:20:46 +1000 (AEST)
+Date: Thu, 6 Aug 2015 12:20:37 +0800
+From: Chenhui Zhao <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH 1/3] Powerpc: mpc85xx: refactor the PM operations
+To: Scott Wood <scottwood@freescale.com>
+CC: <b29983@freescale.com>, <b07421@freescale.com>,
+ <linux-kernel@vger.kernel.org>, Tang Yuantian <Yuantian.Tang@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Message-ID: <1438834837.23384.0@remotesmtp.freescale.net>
+In-Reply-To: <1438829848.2097.129.camel@freescale.com>
+References: <1438334444-31919-1-git-send-email-b29983@freescale.com>
+ <1438387178.19345.77.camel@freescale.com>
+ <1438601578.7515.2@remotesmtp.freescale.net>
+ <1438633568.2097.35.camel@freescale.com>
+ <1438769477.21522.0@remotesmtp.freescale.net>
+ <1438829848.2097.129.camel@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,54 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some subordinate PCI devices of one particular PCI bus might ask
-for fundamental reset because the default (hot) reset isn't enough
-for those PCI devices to be up successfully after reset.
 
-This iterates all PCI devices behind the specified PCI bus and issues
-fundamental reset if any one PCI device is asking for that. Otherwise,
-hot reset is still issued.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+On Thu, Aug 6, 2015 at 10:57 AM, Scott Wood <scottwood@freescale.com> 
+wrote:
+> On Wed, 2015-08-05 at 18:11 +0800, Chenhui Zhao wrote:
+>>  On Tue, Aug 4, 2015 at 4:26 AM, Scott Wood <scottwood@freescale.com>
+>>  wrote:
+>>  > On Mon, 2015-08-03 at 19:32 +0800, Chenhui Zhao wrote:
+>>  > >  >
+>>  >
+>>  > >  On Sat, Aug 1, 2015 at 7:59 AM, Scott Wood 
+>> <scottwood@freescale.com>
+>>  > >  wrote:
+>>  >
+>>  > >  >
+>>  > >  > Could you explain irq_mask()?  Why would there still be IRQs
+>>  > > destined
+>>  > >  > for
+>>  > >  > this CPU at this point?
+>>  > >
+>>  > >  This function just masks irq by setting the registers in RCPM 
+>> (for
+>>  > >  example, RCPM_CPMIMR, RCPM_CPMCIMR). Actually, all irqs to 
+>> this CPU
+>>  > >  have been migrated to other CPUs.
+>>  >
+>>  > So why do we need to set those bits in RCPM?  Is it just caution?
+>> 
+>>  Setting these bits can mask interrupts signalled to RCPM from MPIC 
+>> as a
+>>  means of
+>>  waking up from a lower power state. So, cores will not be waked up
+>>  unexpectedly.
+> 
+> Why would the MPIC be signalling those interrupts if they've been 
+> masked at
+> the MPIC?
+> 
+> -Scott
+> 
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 19cb947..4ae48ff 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1057,8 +1057,31 @@ static int pnv_eeh_vf_pe_reset(struct eeh_pe *pe, int option)
- 	return 0;
- }
- 
-+static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
-+{
-+	int *freset = data;
-+
-+	/*
-+	 * Stop the iteration immediately if there is any
-+	 * one PCI device requesting fundamental reset
-+	 */
-+	*freset |= pdev->needs_freset;
-+	return *freset;
-+}
-+
- void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
- {
-+	int option = EEH_RESET_HOT;
-+
-+	if (dev->subordinate) {
-+		int freset = 0;
-+
-+		pci_walk_bus(dev->subordinate,
-+			     pnv_pci_dev_reset_type,
-+			     &freset);
-+		option = freset ? EEH_RESET_FUNDAMENTAL : EEH_RESET_HOT;
-+	}
-+
- 	pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
- 	pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
- }
--- 
-2.1.0
+The interrupts to RCPM from MPIC are IRQ, Machine Check, NMI and 
+Critical interrupts. Some of them didn't be masked in MPIC.
+
+-Chenhui
