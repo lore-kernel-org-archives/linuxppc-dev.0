@@ -1,32 +1,34 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=653e5651f=julien.grall@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F5BD1A17F2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 20:16:31 +1000 (AEST)
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A36B81402A7
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Aug 2015 20:16:29 +1000 (AEST)
-Received: by pdrg1 with SMTP id g1so30905874pdr.2
- for <linuxppc-dev@ozlabs.org>; Thu, 06 Aug 2015 03:16:28 -0700 (PDT)
-Subject: Re: [PATCH V2 2/6] powerpc/powernv: simplify the calculation of iov
- resource
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150731020148.GA6151@richard>
- <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-3-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806045139.GB28524@gwshan> <55C32210.9090803@ozlabs.ru>
- <20150806094102.GB13055@richard>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55C333DB.4080406@ozlabs.ru>
-Date: Thu, 6 Aug 2015 20:15:55 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CF311A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 21:01:32 +1000 (AEST)
+Message-ID: <55C33E4E.4050704@citrix.com>
+Date: Thu, 6 Aug 2015 12:00:30 +0100
+From: Julien Grall <julien.grall@citrix.com>
 MIME-Version: 1.0
-In-Reply-To: <20150806094102.GB13055@richard>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+To: <xen-devel@lists.xenproject.org>
+CC: <linux-fbdev@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, "Jiri
+ Slaby" <jslaby@suse.com>, Thomas Gleixner <tglx@linutronix.de>,
+ <stefano.stabellini@eu.citrix.com>, Russell King <linux@arm.linux.org.uk>,
+ <linux-scsi@vger.kernel.org>, <x86@kernel.org>, Tomi Valkeinen
+ <tomi.valkeinen@ti.com>, <linux-input@vger.kernel.org>, "Jean-Christophe
+ Plagniol-Villard" <plagnioj@jcrosoft.com>, <ian.campbell@citrix.com>, "James
+ E.J. Bottomley" <JBottomley@odin.com>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, Ingo Molnar <mingo@redhat.com>,
+ <linux-arm-kernel@lists.infradead.org>, Juergen Gross <jgross@suse.com>,
+ "Wei Liu" <wei.liu2@citrix.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ <linux-kernel@vger.kernel.org>, David Vrabel <david.vrabel@citrix.com>,
+ <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ =?UTF-8?B?Um9nZXIg?= =?UTF-8?B?UGF1IE1vbm7DqQ==?= <roger.pau@citrix.com>
+Subject: Re: [Xen-devel] [PATCH v2 4/8] xen: Use the correctly the Xen memory
+ terminologies
+References: <1438711972-18752-1-git-send-email-julien.grall@citrix.com>
+ <1438711972-18752-5-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1438711972-18752-5-git-send-email-julien.grall@citrix.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,104 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/06/2015 07:41 PM, Wei Yang wrote:
-> On Thu, Aug 06, 2015 at 07:00:00PM +1000, Alexey Kardashevskiy wrote:
->> On 08/06/2015 02:51 PM, Gavin Shan wrote:
->>> On Wed, Aug 05, 2015 at 09:24:59AM +0800, Wei Yang wrote:
->>>> The alignment of IOV BAR on PowerNV platform is the total size of the IOV
->>>> BAR. No matter whether the IOV BAR is truncated or not, the total size
->>>> could be calculated by (vfs_expanded * VF size).
->>>>
->>>
->>> s/VF size/VF BAR size
->>>
->>> I think the changelog would be more explicit:
->>>
->>> The alignment of IOV BAR on PowerNV platform is the total size of the
->>> IOV BAR, no matter whether the IOV BAR is extended with number of max
->>> VFs or number of max PE number (256). The alignment can be calculated
->>> by (vfs_expaned * VF_BAR_size).
->>
->>
->>
->> Is that really a PowerNV-specific requirement or it is valid for
->> every platform (I suspect this is the case here)?
->>
->
-> Currently, it is PowerNV-specific.
+Hi,
 
 
-How is x86 different on this matter?
-Why would we need this extra alignment, not just VF's BAR alignment?
+On 04/08/15 19:12, Julien Grall wrote:
+> diff --git a/include/xen/page.h b/include/xen/page.h
+> index c5ed20b..e7e1425 100644
+> --- a/include/xen/page.h
+> +++ b/include/xen/page.h
+> @@ -3,9 +3,9 @@
+>  
+>  #include <asm/xen/page.h>
+>  
+> -static inline unsigned long page_to_mfn(struct page *page)
+> +static inline unsigned long page_to_gfn(struct page *page)
+>  {
+> -	return pfn_to_mfn(page_to_pfn(page));
+> +	return pfn_to_gfn(page_to_pfn(page));
+>  }
 
+I've just noticed that there is a function gfn_to_page used for KVM.
 
->>
->> Also, what is the exact meaning of "expanded" in @vfs_expanded? It is
->> either 255 (if individual VF BARs are <= 64MB) or
->> roundup_pow_of_two(total_vfs) (which is something like 4 or 16). What
->> is expanded here?
->>
->
-> PF's IOV BAR original size is (VF BAR size * total_vfs).
->
-> After expanding, the IOV BAR size  is (VF BAR size * 256) or (VF BAR size *
-> roundup_pow_of_two(total_vfs)).
+Maybe I should rename page_to_gfn to xen_page_to_gfn to avoid confusion
+with KVM one?
 
-
-Ufff, got it now. I'd store just an expanded IOV BAR size (not some magic 
-VFs number) because this is what it actually is:
-pdn->vfs_expanded * align
-
-
->>
->>>
->>>> This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
->>>> first case.
->>>>
->>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>
->>> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>
->>>> ---
->>>> arch/powerpc/platforms/powernv/pci-ioda.c |   14 +++++++++-----
->>>> 1 file changed, 9 insertions(+), 5 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> index 9b41dba..7192e62 100644
->>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> @@ -2987,12 +2987,16 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
->>>> 						      int resno)
->>>> {
->>>> 	struct pci_dn *pdn = pci_get_pdn(pdev);
->>>> -	resource_size_t align, iov_align;
->>>> -
->>>> -	iov_align = resource_size(&pdev->resource[resno]);
->>>> -	if (iov_align)
->>>> -		return iov_align;
->>>> +	resource_size_t align;
->>>>
->>>> +	/*
->>>> +	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
->>>> +	 * SR-IOV. While from hardware perspective, the range mapped by M64
->>>> +	 * BAR should be size aligned.
->>>> +	 *
->>>> +	 * This function return the total IOV BAR size if expanded or just the
->>>> +	 * individual size if not.
->>>> +	 */
->>>> 	align = pci_iov_resource_size(pdev, resno);
->>>> 	if (pdn->vfs_expanded)
->>>> 		return pdn->vfs_expanded * align;
->>>> --
->>>> 1.7.9.5
->>>>
->>>
->>
->>
->> --
->> Alexey
->
-
+Regards,
 
 -- 
-Alexey
+Julien Grall
