@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 61AD21A1C0D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C5941A0884
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:18 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 6 Aug 2015 14:13:16 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6054F3578068
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:12 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t764CxHX38862938
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:07 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t764CbQa026484
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:39 +1000
+ Thu, 6 Aug 2015 14:13:17 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7DDBA2BB0066
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:14 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t764D6nX22347988
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:14 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t764Cc0m001316
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:41 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,9 +27,9 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v6 09/42] powerpc/powernv: DMA32 cleanup
-Date: Thu,  6 Aug 2015 14:11:14 +1000
-Message-Id: <1438834307-26960-10-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v6 41/42] drivers/of: Export OF changeset functions
+Date: Thu,  6 Aug 2015 14:11:46 +1000
+Message-Id: <1438834307-26960-42-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,213 +41,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch cleans up DMA32 in pci-ioda.c. It shouldn't introduce
-behavioural changes:
-
-   * Rename various fields in "struct pnv_phb" and "struct pnv_ioda_pe"
-     as 32-bits DMA should be related to "DMA", not "TCE".
-   * Removed struct pnv_ioda_pe::tce32_segcount.
+The PowerNV PCI hotplug driver is going to use the OF changeset
+to manage the changed device sub-tree, which requires those OF
+changeset functions are exported.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 48 +++++++++++++++----------------
- arch/powerpc/platforms/powernv/pci.h      |  7 ++---
- 2 files changed, 27 insertions(+), 28 deletions(-)
+ drivers/of/dynamic.c  | 65 ++++++++++++++++++++++++++++++++++++---------------
+ drivers/of/overlay.c  |  8 +++----
+ drivers/of/unittest.c |  4 ++--
+ include/linux/of.h    |  2 ++
+ 4 files changed, 54 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 7342cfd..8456f37 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -917,7 +917,7 @@ static void pnv_ioda_link_pe_by_weight(struct pnv_phb *phb,
- 	struct pnv_ioda_pe *lpe;
+diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+index 53826b8..af65b5b 100644
+--- a/drivers/of/dynamic.c
++++ b/drivers/of/dynamic.c
+@@ -646,6 +646,7 @@ void of_changeset_init(struct of_changeset *ocs)
+ 	memset(ocs, 0, sizeof(*ocs));
+ 	INIT_LIST_HEAD(&ocs->entries);
+ }
++EXPORT_SYMBOL(of_changeset_init);
  
- 	list_for_each_entry(lpe, &phb->ioda.pe_dma_list, dma_link) {
--		if (lpe->dma_weight < pe->dma_weight) {
-+		if (lpe->dma32_weight < pe->dma32_weight) {
- 			list_add_tail(&pe->dma_link, &lpe->dma_link);
- 			return;
- 		}
-@@ -942,14 +942,14 @@ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
- 	if (dev->class == PCI_CLASS_SERIAL_USB_UHCI ||
- 	    dev->class == PCI_CLASS_SERIAL_USB_OHCI ||
- 	    dev->class == PCI_CLASS_SERIAL_USB_EHCI)
--		return 3 * phb->ioda.tce32_count;
-+		return 3 * phb->ioda.dma32_segcount;
+ /**
+  * of_changeset_destroy - Destroy a changeset
+@@ -662,20 +663,9 @@ void of_changeset_destroy(struct of_changeset *ocs)
+ 	list_for_each_entry_safe_reverse(ce, cen, &ocs->entries, node)
+ 		__of_changeset_entry_destroy(ce);
+ }
++EXPORT_SYMBOL(of_changeset_destroy);
  
- 	/* Increase the weight of RAID (includes Obsidian) */
- 	if ((dev->class >> 8) == PCI_CLASS_STORAGE_RAID)
--		return 15 * phb->ioda.tce32_count;
-+		return 15 * phb->ioda.dma32_segcount;
- 
- 	/* Default */
--	return 10 * phb->ioda.tce32_count;
-+	return 10 * phb->ioda.dma32_segcount;
+-/**
+- * of_changeset_apply - Applies a changeset
+- *
+- * @ocs:	changeset pointer
+- *
+- * Applies a changeset to the live tree.
+- * Any side-effects of live tree state changes are applied here on
+- * sucess, like creation/destruction of devices and side-effects
+- * like creation of sysfs properties and directories.
+- * Returns 0 on success, a negative error value in case of an error.
+- * On error the partially applied effects are reverted.
+- */
+-int of_changeset_apply(struct of_changeset *ocs)
++int __of_changeset_apply(struct of_changeset *ocs)
+ {
+ 	struct of_changeset_entry *ce;
+ 	int ret;
+@@ -704,17 +694,30 @@ int of_changeset_apply(struct of_changeset *ocs)
  }
  
- static int __pnv_ioda_phb_dma_weight(struct pci_dev *pdev, void *data)
-@@ -1057,7 +1057,7 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
- 			continue;
- 		}
- 		pdn->pe_number = pe->pe_number;
--		pe->dma_weight += pnv_ioda_dma_weight(dev);
-+		pe->dma32_weight += pnv_ioda_dma_weight(dev);
- 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
- 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
- 	}
-@@ -1094,10 +1094,10 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
- 	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
- 	pe->pbus = bus;
- 	pe->pdev = NULL;
--	pe->tce32_seg = -1;
-+	pe->dma32_seg = -1;
- 	pe->mve_number = -1;
- 	pe->rid = bus->busn_res.start << 8;
--	pe->dma_weight = 0;
-+	pe->dma32_weight = 0;
+ /**
+- * of_changeset_revert - Reverts an applied changeset
++ * of_changeset_apply - Applies a changeset
+  *
+  * @ocs:	changeset pointer
+  *
+- * Reverts a changeset returning the state of the tree to what it
+- * was before the application.
+- * Any side-effects like creation/destruction of devices and
+- * removal of sysfs properties and directories are applied.
++ * Applies a changeset to the live tree.
++ * Any side-effects of live tree state changes are applied here on
++ * sucess, like creation/destruction of devices and side-effects
++ * like creation of sysfs properties and directories.
+  * Returns 0 on success, a negative error value in case of an error.
++ * On error the partially applied effects are reverted.
+  */
+-int of_changeset_revert(struct of_changeset *ocs)
++int of_changeset_apply(struct of_changeset *ocs)
++{
++	int ret;
++
++	mutex_lock(&of_mutex);
++	ret = __of_changeset_apply(ocs);
++	mutex_unlock(&of_mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL(of_changeset_apply);
++
++int __of_changeset_revert(struct of_changeset *ocs)
+ {
+ 	struct of_changeset_entry *ce;
+ 	int ret;
+@@ -742,6 +745,29 @@ int of_changeset_revert(struct of_changeset *ocs)
+ }
  
- 	if (all)
- 		pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
-@@ -1460,7 +1460,7 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 		pe->flags = PNV_IODA_PE_VF;
- 		pe->pbus = NULL;
- 		pe->parent_dev = pdev;
--		pe->tce32_seg = -1;
-+		pe->dma32_seg = -1;
- 		pe->mve_number = -1;
- 		pe->rid = (pci_iov_virtfn_bus(pdev, vf_index) << 8) |
- 			   pci_iov_virtfn_devfn(pdev, vf_index);
-@@ -1936,7 +1936,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	/* XXX FIXME: Allocate multi-level tables on PHB3 */
- 
- 	/* We shouldn't already have a 32-bit DMA associated */
--	if (WARN_ON(pe->tce32_seg >= 0))
-+	if (WARN_ON(pe->dma32_seg >= 0))
- 		return;
- 
- 	tbl = pnv_pci_table_alloc(phb->hose->node);
-@@ -1945,7 +1945,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
- 
- 	/* Grab a 32-bit TCE table */
--	pe->tce32_seg = base;
-+	pe->dma32_seg = base;
- 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
- 		(base << 28), ((base + segs) << 28) - 1);
- 
-@@ -2006,8 +2006,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	return;
-  fail:
- 	/* XXX Failure: Try to fallback to 64-bit only ? */
--	if (pe->tce32_seg >= 0)
--		pe->tce32_seg = -1;
-+	if (pe->dma32_seg >= 0)
-+		pe->dma32_seg = -1;
- 	if (tce_mem)
- 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
- 	if (tbl) {
-@@ -2405,7 +2405,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	int64_t rc;
- 
- 	/* We shouldn't already have a 32-bit DMA associated */
--	if (WARN_ON(pe->tce32_seg >= 0))
-+	if (WARN_ON(pe->dma32_seg >= 0))
- 		return;
- 
- 	/* TVE #1 is selected by PCI address bit 59 */
-@@ -2415,7 +2415,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 			pe->pe_number);
- 
- 	/* The PE will reserve all possible 32-bits space */
--	pe->tce32_seg = 0;
-+	pe->dma32_seg = 0;
- 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
- 		phb->ioda.m32_pci_base);
- 
-@@ -2432,8 +2432,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 
- 	rc = pnv_pci_ioda2_setup_default_config(pe);
- 	if (rc) {
--		if (pe->tce32_seg >= 0)
--			pe->tce32_seg = -1;
-+		if (pe->dma32_seg >= 0)
-+			pe->dma32_seg = -1;
- 		return;
+ /**
++ * of_changeset_revert - Reverts an applied changeset
++ *
++ * @ocs:	changeset pointer
++ *
++ * Reverts a changeset returning the state of the tree to what it
++ * was before the application.
++ * Any side-effects like creation/destruction of devices and
++ * removal of sysfs properties and directories are applied.
++ * Returns 0 on success, a negative error value in case of an error.
++ */
++int of_changeset_revert(struct of_changeset *ocs)
++{
++	int ret;
++
++	mutex_lock(&of_mutex);
++	ret = __of_changeset_revert(ocs);
++	mutex_unlock(&of_mutex);
++
++	return ret;
++}
++EXPORT_SYMBOL(of_changeset_revert);
++
++/**
+  * of_changeset_action - Perform a changeset action
+  *
+  * @ocs:	changeset pointer
+@@ -779,3 +805,4 @@ int of_changeset_action(struct of_changeset *ocs, unsigned long action,
+ 	list_add_tail(&ce->node, &ocs->entries);
+ 	return 0;
+ }
++EXPORT_SYMBOL(of_changeset_action);
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index 24e025f..804ea33 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -378,9 +378,9 @@ int of_overlay_create(struct device_node *tree)
  	}
  
-@@ -2452,7 +2452,7 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 	/* Calculate the PHB's DMA weight */
- 	dma_weight = pnv_ioda_phb_dma_weight(phb);
- 	pr_info("PCI%04x has %ld DMA32 segments, total weight %d\n",
--		hose->global_number, phb->ioda.tce32_count, dma_weight);
-+		hose->global_number, phb->ioda.dma32_segcount, dma_weight);
+ 	/* apply the changeset */
+-	err = of_changeset_apply(&ov->cset);
++	err = __of_changeset_apply(&ov->cset);
+ 	if (err) {
+-		pr_err("%s: of_changeset_apply() failed for tree@%s\n",
++		pr_err("%s: __of_changeset_apply() failed for tree@%s\n",
+ 				__func__, tree->full_name);
+ 		goto err_revert_overlay;
+ 	}
+@@ -508,7 +508,7 @@ int of_overlay_destroy(int id)
  
- 	pnv_pci_ioda_setup_opal_tce_kill(phb);
  
-@@ -2461,7 +2461,7 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 	 * weight
- 	 */
- 	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
--		if (!pe->dma_weight)
-+		if (!pe->dma32_weight)
- 			continue;
+ 	list_del(&ov->node);
+-	of_changeset_revert(&ov->cset);
++	__of_changeset_revert(&ov->cset);
+ 	of_free_overlay_info(ov);
+ 	idr_remove(&ov_idr, id);
+ 	of_changeset_destroy(&ov->cset);
+@@ -539,7 +539,7 @@ int of_overlay_destroy_all(void)
+ 	/* the tail of list is guaranteed to be safe to remove */
+ 	list_for_each_entry_safe_reverse(ov, ovn, &ov_list, node) {
+ 		list_del(&ov->node);
+-		of_changeset_revert(&ov->cset);
++		__of_changeset_revert(&ov->cset);
+ 		of_free_overlay_info(ov);
+ 		idr_remove(&ov_idr, ov->id);
+ 		kfree(ov);
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 2270830..06eb3e5 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -527,7 +527,7 @@ static void __init of_unittest_changeset(void)
+ 	unittest(!of_changeset_update_property(&chgset, parent, ppupdate), "fail update prop\n");
+ 	unittest(!of_changeset_remove_property(&chgset, parent, ppremove), "fail remove prop\n");
+ 	mutex_lock(&of_mutex);
+-	unittest(!of_changeset_apply(&chgset), "apply failed\n");
++	unittest(!__of_changeset_apply(&chgset), "apply failed\n");
+ 	mutex_unlock(&of_mutex);
  
- 		/*
-@@ -2472,15 +2472,15 @@ static void pnv_ioda_setup_dma(struct pnv_phb *phb)
- 		if (phb->type == PNV_PHB_IODA1) {
- 			unsigned int segs, base = 0;
+ 	/* Make sure node names are constructed correctly */
+@@ -536,7 +536,7 @@ static void __init of_unittest_changeset(void)
+ 	of_node_put(np);
  
--			if (pe->dma_weight <
--			    dma_weight / phb->ioda.tce32_count)
-+			if (pe->dma32_weight <
-+			    dma_weight / phb->ioda.dma32_segcount)
- 				segs = 1;
- 			else
--				segs = (pe->dma_weight *
--					phb->ioda.tce32_count) / dma_weight;
-+				segs = (pe->dma32_weight *
-+					phb->ioda.dma32_segcount) / dma_weight;
+ 	mutex_lock(&of_mutex);
+-	unittest(!of_changeset_revert(&chgset), "revert failed\n");
++	unittest(!__of_changeset_revert(&chgset), "revert failed\n");
+ 	mutex_unlock(&of_mutex);
  
- 			pe_info(pe, "DMA32 weight %d, assigned %d segments\n",
--				pe->dma_weight, segs);
-+				pe->dma32_weight, segs);
- 			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
+ 	of_changeset_destroy(&chgset);
+diff --git a/include/linux/of.h b/include/linux/of.h
+index edc068d..5c030e1 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -1001,7 +1001,9 @@ extern int of_reconfig_get_state_change(unsigned long action,
  
- 			base += segs;
-@@ -3211,7 +3211,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	mutex_init(&phb->ioda.pe_list_mutex);
- 
- 	/* Calculate how many 32-bit TCE segments we have */
--	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
-+	phb->ioda.dma32_segcount = phb->ioda.m32_pci_base >> 28;
- 
- #if 0 /* We should really do that ... */
- 	rc = opal_pci_set_phb_mem_window(opal->phb_id,
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index addd3f7..574fe43 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -61,11 +61,10 @@ struct pnv_ioda_pe {
- 	/* "Weight" assigned to the PE for the sake of DMA resource
- 	 * allocations
- 	 */
--	unsigned int		dma_weight;
-+	unsigned int		dma32_weight;
- 
- 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
--	int			tce32_seg;
--	int			tce32_segcount;
-+	int			dma32_seg;
- 	struct iommu_table_group table_group;
- 
- 	/* 64-bit TCE bypass region */
-@@ -181,7 +180,7 @@ struct pnv_phb {
- 			unsigned char		pe_rmap[0x10000];
- 
- 			/* 32-bit TCE tables allocation */
--			unsigned long		tce32_count;
-+			unsigned long		dma32_segcount;
- 
- 			/* Sorted list of used PE's, sorted at
- 			 * boot for resource allocation purposes
+ extern void of_changeset_init(struct of_changeset *ocs);
+ extern void of_changeset_destroy(struct of_changeset *ocs);
++extern int __of_changeset_apply(struct of_changeset *ocs);
+ extern int of_changeset_apply(struct of_changeset *ocs);
++extern int __of_changeset_revert(struct of_changeset *ocs);
+ extern int of_changeset_revert(struct of_changeset *ocs);
+ extern int of_changeset_action(struct of_changeset *ocs,
+ 		unsigned long action, struct device_node *np,
 -- 
 2.1.0
