@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C73191A1BFB
+ by lists.ozlabs.org (Postfix) with ESMTPS id AF7F11A1819
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:16 +1000 (AEST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 6 Aug 2015 14:13:16 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 68C2D3578058
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:14 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t764D7mu59768962
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:15 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t764CbHN001262
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:41 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id BDC3F357808C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:12 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t764Cx5D48103596
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:08 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t764CcNw026518
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:40 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,9 +27,10 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v6 25/42] powerpc/powernv: Use PCI slot reset infrastructure
-Date: Thu,  6 Aug 2015 14:11:30 +1000
-Message-Id: <1438834307-26960-26-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v6 39/42] drivers/of: Allow to specify root node in
+ of_fdt_unflatten_tree()
+Date: Thu,  6 Aug 2015 14:11:44 +1000
+Message-Id: <1438834307-26960-40-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,78 +42,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The skiboot firmware might provide the capability of resetting PCI
-slot by property "ibm,reset-by-firmware" on the PCI slot associated
-device node. The patch checks on the property and route the reset
-to firmware if the property exists. Otherwise, we fail back to the
-old path as before.
+This introduces one more argument to of_fdt_unflatten_tree()
+to specify the root node for the FDT blob, which is going to be
+unflattened. In the result, the function can be used to unflatten
+FDT blob, which represents device sub-tree in PowerNV hotplug
+driver.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c | 44 +++++++++++++++++++++++++++-
- 1 file changed, 43 insertions(+), 1 deletion(-)
+ drivers/of/fdt.c       | 13 ++++++++-----
+ drivers/of/unittest.c  |  2 +-
+ include/linux/of_fdt.h |  1 +
+ 3 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 0350dab..7be2ebf 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -843,7 +843,7 @@ out:
- 	return 0;
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index a18a2ce..074870a 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -388,10 +388,11 @@ static void *unflatten_dt_node(const void *blob,
+ 			       struct device_node **nodepp,
+ 			       bool dryrun)
+ {
++	unsigned long fpsize = dad ? strlen(of_node_full_name(dad)) : 0;
+ 	int depth = 1;
+ 
+ 	return __unflatten_dt_node(blob, mem, poffset,
+-				   dad, nodepp, 0,
++				   dad, nodepp, fpsize,
+ 				   dryrun, &depth);
  }
  
--static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-+static int __pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
+@@ -408,6 +409,7 @@ static void *unflatten_dt_node(const void *blob,
+  * for the resulting tree
+  */
+ static void __unflatten_device_tree(const void *blob,
++			     struct device_node *dad,
+ 			     struct device_node **mynodes,
+ 			     void * (*dt_alloc)(u64 size, u64 align))
  {
- 	struct pci_dn *pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
- 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-@@ -894,6 +894,48 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- 	return 0;
- }
+@@ -435,7 +437,7 @@ static void __unflatten_device_tree(const void *blob,
+ 	/* First pass, scan for size */
+ 	start = 0;
+ 	size = (unsigned long)unflatten_dt_node(blob, NULL, &start,
+-						NULL, NULL, true);
++						dad, NULL, true);
+ 	size = ALIGN(size, 4);
  
-+static int pnv_eeh_bridge_reset(struct pci_dev *pdev, int option)
-+{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	struct device_node *dn = pdev ? pci_device_to_OF_node(pdev) : NULL;
-+	uint64_t id = (0x1ul << 60);
-+	uint8_t scope;
-+	int64_t rc;
-+
-+	/*
-+	 * If the firmware can't handle it, we will issue hot reset
-+	 * on the secondary bus despite the requested reset type.
-+	 */
-+	if (!dn || !of_get_property(dn, "ibm,reset-by-firmware", NULL))
-+		return __pnv_eeh_bridge_reset(pdev, option);
-+
-+	/* The firmware can handle the request */
-+	switch (option) {
-+	case EEH_RESET_HOT:
-+		scope = OPAL_RESET_PCI_HOT;
-+		break;
-+	case EEH_RESET_FUNDAMENTAL:
-+		scope = OPAL_RESET_PCI_FUNDAMENTAL;
-+		break;
-+	case EEH_RESET_DEACTIVATE:
-+		return 0;
-+	default:
-+		dev_warn(&pdev->dev, "%s: Unsupported reset %d\n",
-+			 __func__, option);
-+		return -EINVAL;
-+	}
-+
-+	hose = pci_bus_to_host(pdev->bus);
-+	phb = hose->private_data;
-+	id |= (pdev->bus->number << 24) | (pdev->devfn << 16) | phb->opal_id;
-+	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
-+	if (rc > 0)
-+		rc = pnv_eeh_poll(id);
-+
-+	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
-+}
-+
- static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, int pos,
- 				     u16 mask, bool af_flr_rst)
+ 	pr_debug("  size is %lx, allocating...\n", size);
+@@ -450,7 +452,7 @@ static void __unflatten_device_tree(const void *blob,
+ 
+ 	/* Second pass, do actual unflattening */
+ 	start = 0;
+-	unflatten_dt_node(blob, mem, &start, NULL, mynodes, false);
++	unflatten_dt_node(blob, mem, &start, dad, mynodes, false);
+ 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
+ 		pr_warning("End of tree marker overwritten: %08x\n",
+ 			   be32_to_cpup(mem + size));
+@@ -472,9 +474,10 @@ static void *kernel_tree_alloc(u64 size, u64 align)
+  * can be used.
+  */
+ void of_fdt_unflatten_tree(const unsigned long *blob,
++			struct device_node *dad,
+ 			struct device_node **mynodes)
  {
+-	__unflatten_device_tree(blob, mynodes, &kernel_tree_alloc);
++	__unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
+ }
+ EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
+ 
+@@ -1125,7 +1128,7 @@ bool __init early_init_dt_scan(void *params)
+  */
+ void __init unflatten_device_tree(void)
+ {
+-	__unflatten_device_tree(initial_boot_params, &of_root,
++	__unflatten_device_tree(initial_boot_params, NULL, &of_root,
+ 				early_init_dt_alloc_memory_arch);
+ 
+ 	/* Get pointer to "/chosen" and "/aliases" nodes for use everywhere */
+diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+index 1801634..2270830 100644
+--- a/drivers/of/unittest.c
++++ b/drivers/of/unittest.c
+@@ -907,7 +907,7 @@ static int __init unittest_data_add(void)
+ 			"not running tests\n", __func__);
+ 		return -ENOMEM;
+ 	}
+-	of_fdt_unflatten_tree(unittest_data, &unittest_data_node);
++	of_fdt_unflatten_tree(unittest_data, NULL, &unittest_data_node);
+ 	if (!unittest_data_node) {
+ 		pr_warn("%s: No tree to attach; not running tests\n", __func__);
+ 		return -ENODATA;
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index df9ef38..3644960 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -38,6 +38,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
+ extern int of_fdt_match(const void *blob, unsigned long node,
+ 			const char *const *compat);
+ extern void of_fdt_unflatten_tree(const unsigned long *blob,
++			       struct device_node *dad,
+ 			       struct device_node **mynodes);
+ 
+ /* TBD: Temporary export of fdt globals - remove when code fully merged */
 -- 
 2.1.0
