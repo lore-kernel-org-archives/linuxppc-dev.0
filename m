@@ -1,25 +1,25 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF7F11A1819
+ by lists.ozlabs.org (Postfix) with ESMTPS id E947D1A0655
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:16 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 6 Aug 2015 14:13:16 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id BDC3F357808C
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 410AD3578060
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 14:13:12 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t764Cx5D48103596
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:08 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t764D48050069656
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:13:12 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t764CcNw026518
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:40 +1000
+ t764CbDw026474
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 14:12:39 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
@@ -27,10 +27,9 @@ Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, aik@ozlabs.ru,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH v6 39/42] drivers/of: Allow to specify root node in
- of_fdt_unflatten_tree()
-Date: Thu,  6 Aug 2015 14:11:44 +1000
-Message-Id: <1438834307-26960-40-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v6 19/42] powerpc/powernv: Reserve PE# for root bus
+Date: Thu,  6 Aug 2015 14:11:24 +1000
+Message-Id: <1438834307-26960-20-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,107 +41,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This introduces one more argument to of_fdt_unflatten_tree()
-to specify the root node for the FDT blob, which is going to be
-unflattened. In the result, the function can be used to unflatten
-FDT blob, which represents device sub-tree in PowerNV hotplug
-driver.
+pcibios_setup_bridge() is normally called to update PCI bridge
+windows. It allocates PE for PCI buses. However it is not called
+on a root bus which does not have an upstream bridge.
+
+This reserves PE# for a root bus in advance. This will be used in
+the subsequent patch to do setup.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/of/fdt.c       | 13 ++++++++-----
- drivers/of/unittest.c  |  2 +-
- include/linux/of_fdt.h |  1 +
- 3 files changed, 10 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci.h      |  1 +
+ 2 files changed, 30 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index a18a2ce..074870a 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -388,10 +388,11 @@ static void *unflatten_dt_node(const void *blob,
- 			       struct device_node **nodepp,
- 			       bool dryrun)
- {
-+	unsigned long fpsize = dad ? strlen(of_node_full_name(dad)) : 0;
- 	int depth = 1;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 1c950e8..8aa6ab8 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -236,6 +236,13 @@ static int pnv_ioda1_init_m64(struct pnv_phb *phb)
+ 		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
+ 			phb->ioda.reserved_pe_idx);
  
- 	return __unflatten_dt_node(blob, mem, poffset,
--				   dad, nodepp, 0,
-+				   dad, nodepp, fpsize,
- 				   dryrun, &depth);
- }
++	/* Strip off the M64 segment corresponding to the PE#
++	 * for PCI root bus, which is last supported PE# or
++	 * (reserved PE# - 1).
++	 */
++	if (phb->ioda.root_pe_idx != IODA_INVALID_PE)
++		r->end -= phb->ioda.m64_segsize;
++
+ 	return 0;
  
-@@ -408,6 +409,7 @@ static void *unflatten_dt_node(const void *blob,
-  * for the resulting tree
-  */
- static void __unflatten_device_tree(const void *blob,
-+			     struct device_node *dad,
- 			     struct device_node **mynodes,
- 			     void * (*dt_alloc)(u64 size, u64 align))
- {
-@@ -435,7 +437,7 @@ static void __unflatten_device_tree(const void *blob,
- 	/* First pass, scan for size */
- 	start = 0;
- 	size = (unsigned long)unflatten_dt_node(blob, NULL, &start,
--						NULL, NULL, true);
-+						dad, NULL, true);
- 	size = ALIGN(size, 4);
+ fail:
+@@ -293,6 +300,13 @@ static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+ 		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
+ 			phb->ioda.reserved_pe_idx);
  
- 	pr_debug("  size is %lx, allocating...\n", size);
-@@ -450,7 +452,7 @@ static void __unflatten_device_tree(const void *blob,
++	/* Strip off the M64 segment corresponding to the PE#
++	 * for PCI root bus, which is last supported PE# or
++	 * (reserved PE# - 1).
++	 */
++	if (phb->ioda.root_pe_idx != IODA_INVALID_PE)
++		r->end -= phb->ioda.m64_segsize;
++
+ 	return 0;
  
- 	/* Second pass, do actual unflattening */
- 	start = 0;
--	unflatten_dt_node(blob, mem, &start, NULL, mynodes, false);
-+	unflatten_dt_node(blob, mem, &start, dad, mynodes, false);
- 	if (be32_to_cpup(mem + size) != 0xdeadbeef)
- 		pr_warning("End of tree marker overwritten: %08x\n",
- 			   be32_to_cpup(mem + size));
-@@ -472,9 +474,10 @@ static void *kernel_tree_alloc(u64 size, u64 align)
-  * can be used.
-  */
- void of_fdt_unflatten_tree(const unsigned long *blob,
-+			struct device_node *dad,
- 			struct device_node **mynodes)
- {
--	__unflatten_device_tree(blob, mynodes, &kernel_tree_alloc);
-+	__unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
- }
- EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
+ fail:
+@@ -3237,7 +3251,21 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	aux = memblock_virt_alloc(size, 0);
+ 	phb->ioda.pe_alloc = aux;
+ 	phb->ioda.pe_array = aux + pemap_off;
+-	set_bit(phb->ioda.reserved_pe_idx, phb->ioda.pe_alloc);
++
++	/* Choose number of PE for root bus, which shouldn't consume
++	 * any M64 resource. So we avoid picking low-end PE#, which
++	 * is usually bound with M64 resources closely.
++	 */
++	pnv_ioda_reserve_pe(phb, phb->ioda.reserved_pe_idx);
++	if (phb->ioda.reserved_pe_idx == 0) {
++		phb->ioda.root_pe_idx = phb->ioda.total_pe_num - 1;
++		pnv_ioda_reserve_pe(phb, phb->ioda.root_pe_idx);
++	} else if (phb->ioda.reserved_pe_idx == (phb->ioda.total_pe_num - 1)) {
++		phb->ioda.root_pe_idx = phb->ioda.reserved_pe_idx - 1;
++		pnv_ioda_reserve_pe(phb, phb->ioda.root_pe_idx);
++	} else {
++		phb->ioda.root_pe_idx = IODA_INVALID_PE;
++	}
  
-@@ -1125,7 +1128,7 @@ bool __init early_init_dt_scan(void *params)
-  */
- void __init unflatten_device_tree(void)
- {
--	__unflatten_device_tree(initial_boot_params, &of_root,
-+	__unflatten_device_tree(initial_boot_params, NULL, &of_root,
- 				early_init_dt_alloc_memory_arch);
+ 	INIT_LIST_HEAD(&phb->ioda.pe_dma_list);
+ 	INIT_LIST_HEAD(&phb->ioda.pe_list);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index fc899cd..e93a489 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -135,6 +135,7 @@ struct pnv_phb {
+ 		struct {
+ 			/* Global bridge info */
+ 			unsigned int		total_pe_num;
++			unsigned int		root_pe_idx;
+ 			unsigned int		reserved_pe_idx;
  
- 	/* Get pointer to "/chosen" and "/aliases" nodes for use everywhere */
-diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
-index 1801634..2270830 100644
---- a/drivers/of/unittest.c
-+++ b/drivers/of/unittest.c
-@@ -907,7 +907,7 @@ static int __init unittest_data_add(void)
- 			"not running tests\n", __func__);
- 		return -ENOMEM;
- 	}
--	of_fdt_unflatten_tree(unittest_data, &unittest_data_node);
-+	of_fdt_unflatten_tree(unittest_data, NULL, &unittest_data_node);
- 	if (!unittest_data_node) {
- 		pr_warn("%s: No tree to attach; not running tests\n", __func__);
- 		return -ENODATA;
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index df9ef38..3644960 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -38,6 +38,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
- extern int of_fdt_match(const void *blob, unsigned long node,
- 			const char *const *compat);
- extern void of_fdt_unflatten_tree(const unsigned long *blob,
-+			       struct device_node *dad,
- 			       struct device_node **mynodes);
- 
- /* TBD: Temporary export of fdt globals - remove when code fully merged */
+ 			/* 32-bit MMIO window */
 -- 
 2.1.0
