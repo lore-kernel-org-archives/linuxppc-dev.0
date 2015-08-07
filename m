@@ -1,47 +1,43 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F8E11A0075
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:44:03 +1000 (AEST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4312B1A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:46:48 +1000 (AEST)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 59DFF1402A8
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:44:03 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 1D5E31402A7
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:46:48 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 7 Aug 2015 13:44:02 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9A69A3578055
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:43:58 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t773hpho45285454
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 13:43:59 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t773hQah002852
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 13:43:26 +1000
-Date: Fri, 7 Aug 2015 13:43:01 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, aik@ozlabs.ru,
- benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V2 6/6] powerpc/powernv: allocate discrete PE# when using
- M64 BAR in Single PE mode
-Message-ID: <20150807034301.GA8624@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20150731020148.GA6151@richard>
- <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-7-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806053601.GB5636@gwshan> <20150806134141.GA6235@richard>
- <20150807013656.GB20794@gwshan> <20150807023333.GH8292@richard>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150807023333.GH8292@richard>
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 7 Aug 2015 13:46:47 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0C7AC2BB005B
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:46:45 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t773kWjr58130476
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 13:46:40 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t773kCqk012536
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 13:46:12 +1000
+Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ t773kChH012041
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 13:46:12 +1000
+Received: from ajd.ozlabs.ibm.com (unknown [9.192.254.114])
+ by ozlabs.au.ibm.com (Postfix) with ESMTP id 76751A021A
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:45:48 +1000 (AEST)
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/powernv: move dma_get_required_mask from pnv_phb to
+ pci_controller_ops
+Date: Fri,  7 Aug 2015 13:45:54 +1000
+Message-Id: <1438919154-6179-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,94 +47,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 07, 2015 at 10:33:33AM +0800, Wei Yang wrote:
->On Fri, Aug 07, 2015 at 11:36:56AM +1000, Gavin Shan wrote:
->>On Thu, Aug 06, 2015 at 09:41:41PM +0800, Wei Yang wrote:
->>>On Thu, Aug 06, 2015 at 03:36:01PM +1000, Gavin Shan wrote:
->>>>On Wed, Aug 05, 2015 at 09:25:03AM +0800, Wei Yang wrote:
->>>>>When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
->>>>>discrete.
->>>>>
->>>>>This patch restructures the patch to allocate discrete PE# for VFs when M64
->>>>>BAR is set to Single PE mode.
->>>>>
->>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>>>---
->>>>> arch/powerpc/include/asm/pci-bridge.h     |    2 +-
->>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   69 +++++++++++++++++++++--------
->>>>> 2 files changed, 51 insertions(+), 20 deletions(-)
->>>>>
->>>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>>>index 8aeba4c..72415c7 100644
->>>>>--- a/arch/powerpc/include/asm/pci-bridge.h
->>>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
->>>>>@@ -213,7 +213,7 @@ struct pci_dn {
->>>>> #ifdef CONFIG_PCI_IOV
->>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->>>>> 	u16     num_vfs;		/* number of VFs enabled*/
->>>>>-	int     offset;			/* PE# for the first VF PE */
->>>>>+	int     *offset;		/* PE# for the first VF PE or array */
->>>>> 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
->>>>> #define IODA_INVALID_M64        (-1)
->>>>> 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
->>>>
->>>>how about renaming "offset" to "pe_num_map", or "pe_map" ? Similar to the comments
->>>>I gave to the "m64_bar_map", num_of_max_vfs entries can be allocated. Though not
->>>>all of them will be used, not too much memory will be wasted.
->>>>
->>>
->>>Thanks for your comment.
->>>
->>>I have thought about change the name to make it more self explain. While
->>>another fact I want to take in is this field is also used to be reflect the
->>>shift offset when M64 BAR is used in the Shared Mode. So I maintain the name.
->>>
->>>How about use "enum", one maintain the name "offset", and another one rename to
->>>"pe_num_map". And use the meaningful name at proper place?
->>>
->
->So I suppose you agree with my naming proposal.
->
+Simplify the dma_get_required_mask call chain by moving it from pnv_phb to
+pci_controller_ops, similar to commit 763d2d8df1ee2b92ff09c
+("powerpc/powernv: Move dma_set_mask from pnv_phb to pci_controller_ops").
 
-No, I dislike the "enum" things.
+Previous call chain:
 
->>
->>Ok. I'm explaining it with more details. There are two cases: single vs shared
->>mode. When PHB M64 BARs run in single mode, you need an array to track the
->>allocated discrete PE#. The VF_index is the index to the array. When PHB M64
->>BARs run in shared mode, you need continuous PE#. No array required for this
->>case. Instead, the starting PE# should be stored to somewhere, which can
->>be pdn->offset[0] simply.
->>
->>So when allocating memory for this array, you just simply allocate (sizeof(*pdn->offset)
->>*max_vf_num) no matter what mode PHB's M64 BARs will run in. The point is nobody
->>can enable (max_vf_num + 1) VFs.
->
->The max_vf_num is 15?
->
+  0) call dma_get_required_mask() (kernel/dma.c)
+  1) call ppc_md.dma_get_required_mask, if it exists. On powernv, that
+     points to pnv_dma_get_required_mask() (platforms/powernv/setup.c)
+  2) device is PCI, therefore call pnv_pci_dma_get_required_mask()
+     (platforms/powernv/pci.c)
+  3) call phb->dma_get_required_mask if it exists
+  4) it only exists in the ioda case, where it points to
+       pnv_pci_ioda_dma_get_required_mask() (platforms/powernv/pci-ioda.c)
 
-I don't understand why you said: the max_vf_num is 15. Since max_vf_num is variable
-on different PFs, how can it be fixed value - 15 ?
+New call chain:
 
->>
->>With above way, the arrays for PE# and M64 BAR remapping needn't be allocated
->>when enabling SRIOV capability and releasing on disabling SRIOV capability.
->>Instead, those two arrays can be allocated during resource fixup time and free'ed
->>when destroying the pdn.
->>
->
->My same point of view like previous, if the memory is not in the concern, how
->about define them static?
->
+  0) call dma_get_required_mask() (kernel/dma.c)
+  1) device is PCI, therefore call pci_controller_ops.dma_get_required_mask
+     if it exists
+  2) in the ioda case, that points to pnv_pci_ioda_dma_get_required_mask()
+     (platforms/powernv/pci-ioda.c)
 
-It's a bad idea from my review. How many entries this array is going to have?
-256 * NUM_OF_MAX_VF_BARS ?
+In the p5ioc2 case, the call chain remains the same -
+dma_get_required_mask() does not find either a ppc_md call or
+pci_controller_ops call, so it calls __dma_get_required_mask().
 
->And for the long term, we may support more VFs. Then at that moment, we need
->to restructure the code to meet it.
->
->So I suggest if we want to allocate it dynamically, we allocate the exact
->number of space.
->
+Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Fine... it can be improved when it has to be, as you said.
+---
+
+dma_get_required_mask() is only used in a small handful of drivers, for
+which I don't have access to appropriate hardware, so this was tested by
+artificially inserting calls into the tg3 PCI network card driver.
+
+---
+ arch/powerpc/include/asm/pci-bridge.h     |  1 +
+ arch/powerpc/kernel/dma.c                 |  7 +++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |  7 ++++---
+ arch/powerpc/platforms/powernv/pci.c      | 11 -----------
+ arch/powerpc/platforms/powernv/pci.h      |  2 --
+ arch/powerpc/platforms/powernv/powernv.h  |  6 ------
+ arch/powerpc/platforms/powernv/setup.c    |  9 ---------
+ 7 files changed, 12 insertions(+), 31 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 712add5..37fc535 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -42,6 +42,7 @@ struct pci_controller_ops {
+ #endif
+ 
+ 	int             (*dma_set_mask)(struct pci_dev *dev, u64 dma_mask);
++	u64		(*dma_get_required_mask)(struct pci_dev *dev);
+ 
+ 	void		(*shutdown)(struct pci_controller *);
+ };
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 35e4dcc..9d68589 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -278,6 +278,13 @@ u64 dma_get_required_mask(struct device *dev)
+ 	if (ppc_md.dma_get_required_mask)
+ 		return ppc_md.dma_get_required_mask(dev);
+ 
++	if (dev_is_pci(dev)) {
++		struct pci_dev *pdev = to_pci_dev(dev);
++		struct pci_controller *phb = pci_bus_to_host(pdev->bus);
++		if (phb->controller_ops.dma_get_required_mask)
++			return phb->controller_ops.dma_get_required_mask(pdev);
++	}
++
+ 	return __dma_get_required_mask(dev);
+ }
+ EXPORT_SYMBOL_GPL(dma_get_required_mask);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 85cbc96..6f015d4 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1630,9 +1630,10 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+ 	return 0;
+ }
+ 
+-static u64 pnv_pci_ioda_dma_get_required_mask(struct pnv_phb *phb,
+-					      struct pci_dev *pdev)
++static u64 pnv_pci_ioda_dma_get_required_mask(struct pci_dev *pdev)
+ {
++	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
++	struct pnv_phb *phb = hose->private_data;
+ 	struct pci_dn *pdn = pci_get_pdn(pdev);
+ 	struct pnv_ioda_pe *pe;
+ 	u64 end, mask;
+@@ -3057,6 +3058,7 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
+        .window_alignment = pnv_pci_window_alignment,
+        .reset_secondary_bus = pnv_pci_reset_secondary_bus,
+        .dma_set_mask = pnv_pci_ioda_dma_set_mask,
++       .dma_get_required_mask = pnv_pci_ioda_dma_get_required_mask,
+        .shutdown = pnv_pci_ioda_shutdown,
+ };
+ 
+@@ -3203,7 +3205,6 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 
+ 	/* Setup TCEs */
+ 	phb->dma_dev_setup = pnv_pci_ioda_dma_dev_setup;
+-	phb->dma_get_required_mask = pnv_pci_ioda_dma_get_required_mask;
+ 
+ 	/* Setup MSI support */
+ 	pnv_pci_init_ioda_msis(phb);
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 765d8ed..3e7f6fd 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -761,17 +761,6 @@ void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
+ 		phb->dma_dev_setup(phb, pdev);
+ }
+ 
+-u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev)
+-{
+-	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+-	struct pnv_phb *phb = hose->private_data;
+-
+-	if (phb && phb->dma_get_required_mask)
+-		return phb->dma_get_required_mask(phb, pdev);
+-
+-	return __dma_get_required_mask(&pdev->dev);
+-}
+-
+ void pnv_pci_shutdown(void)
+ {
+ 	struct pci_controller *hose;
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 8ef2d28..93a319a 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -105,8 +105,6 @@ struct pnv_phb {
+ 			 unsigned int hwirq, unsigned int virq,
+ 			 unsigned int is_64, struct msi_msg *msg);
+ 	void (*dma_dev_setup)(struct pnv_phb *phb, struct pci_dev *pdev);
+-	u64 (*dma_get_required_mask)(struct pnv_phb *phb,
+-				     struct pci_dev *pdev);
+ 	void (*fixup_phb)(struct pci_controller *hose);
+ 	u32 (*bdfn_to_pe)(struct pnv_phb *phb, struct pci_bus *bus, u32 devfn);
+ 	int (*init_m64)(struct pnv_phb *phb);
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index 9269e30..6dbc0a1 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -12,15 +12,9 @@ struct pci_dev;
+ #ifdef CONFIG_PCI
+ extern void pnv_pci_init(void);
+ extern void pnv_pci_shutdown(void);
+-extern u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev);
+ #else
+ static inline void pnv_pci_init(void) { }
+ static inline void pnv_pci_shutdown(void) { }
+-
+-static inline u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev)
+-{
+-	return 0;
+-}
+ #endif
+ 
+ extern u32 pnv_get_supported_cpuidle_states(void);
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 53737e0..77a31c1 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -165,14 +165,6 @@ static void pnv_progress(char *s, unsigned short hex)
+ {
+ }
+ 
+-static u64 pnv_dma_get_required_mask(struct device *dev)
+-{
+-	if (dev_is_pci(dev))
+-		return pnv_pci_dma_get_required_mask(to_pci_dev(dev));
+-
+-	return __dma_get_required_mask(dev);
+-}
+-
+ static void pnv_shutdown(void)
+ {
+ 	/* Let the PCI code clear up IODA tables */
+@@ -314,7 +306,6 @@ define_machine(powernv) {
+ 	.machine_shutdown	= pnv_shutdown,
+ 	.power_save             = power7_idle,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-	.dma_get_required_mask	= pnv_dma_get_required_mask,
+ #ifdef CONFIG_KEXEC
+ 	.kexec_cpu_down		= pnv_kexec_cpu_down,
+ #endif
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
