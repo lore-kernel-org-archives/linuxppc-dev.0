@@ -1,22 +1,26 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 89C6B1A017D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 08:31:05 +1000 (AEST)
-Date: Fri, 07 Aug 2015 15:31:02 -0700 (PDT)
-Message-Id: <20150807.153102.533553009548852567.davem@davemloft.net>
-To: igal.liberman@freescale.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, scottwood@freescale.com,
- madalin.bucur@freescale.com, pebolle@tiscali.nl,
- joakim.tjernlund@transmode.se, ppc@mindchasers.com,
- stephen@networkplumber.org
-Subject: Re: [v4, 0/9] Freescale DPAA FMan
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1438766725-8053-1-git-send-email-igal.liberman@freescale.com>
-References: <1438766725-8053-1-git-send-email-igal.liberman@freescale.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07C431A017D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 08:35:15 +1000 (AEST)
+Date: Sat, 8 Aug 2015 00:34:56 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Vladimir Zapolskiy <vz@mleia.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Maxime Ripard <maxime.ripard@free-electrons.com>,
+ Jean Delvare <jdelvare@suse.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/8] misc: remove boundary checks from bin attr users
+Message-ID: <20150807223456.GA1527@katana>
+References: <1437945502-27944-1-git-send-email-vz@mleia.com>
+ <20150807161055.GD25357@katana> <55C4D9B2.3000708@mleia.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
+In-Reply-To: <55C4D9B2.3000708@mleia.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +30,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: <igal.liberman@freescale.com>
-Date: Wed, 5 Aug 2015 12:25:16 +0300
 
-> The Freescale Data Path Acceleration Architecture (DPAA)
-> is a set of hardware components on specific QorIQ multicore processors.
-> This architecture provides the infrastructure to support simplified
-> sharing of networking interfaces and accelerators by multiple CPU cores
-> and the accelerators.
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I think the directory and code structure of this new driver is
-quite excessive.
 
-Because you've split things up _so_ much, you have to have
-all of these directories, and even worse and much more important
-to me you have to export so many functions from one source file
-to another.
+> if we're talking about this particular series, you should have them in
+> your mailbox, since you have them applied in wsa/i2c/for-next:
 
-I think this is way too much.
+Those are already in linus tree. I mean all drivers which use struct
+i2c_driver. Or do you prefer they go via Greg? I am fine with both.
 
-For example, in one file you have a bunch of initialization routines.
-init_a(), init_b(), init_c(), and you export them all.  Then they
-are always called in sequence:
 
-	init_a();
-	init_b();
-	init_c();
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-This is completely pointless.  You just needed to export one
-function which calls all three functions.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-The namespace pollution of this driver is out of control.
+iQIcBAEBAgAGBQJVxTKQAAoJEBQN5MwUoCm2EWIP/RU7JTgjtGACCq42fx0JqEN1
+ta9GKrK1LCbdJtarMgM2JguNFCNEM5ZXBzscgkmC1n1qCGCXTIKI3mpSpUa6jadJ
+sI0Vc+EfM777WLTQAxz/j5ZR7qFR+b20CRrwEQCIt4/9UlNsbYZkDr2hl9TdVcDq
+L5oePCyfPqHXHF5cvdC1XZqGEkX1xzZTKBnxxMysRJ1FnNNGfj5l/fHZJfNgXqQr
+hiWRXWrHkuGi2whXAcniBbHZ6/WR7sIkhLSR8LK1SKCj1RJlNc73QoGjf8DR4RqC
+C/g/TzWql4Tp1mthq6yfIloIRbSJDyzxJChMOPouQB2yFIH/nxS+vjfDBPE4vgbF
+7/Pzx8Wp463VihqJnW8lbrBgOKHnu01s3aSUED2RyBIky47PSIneoL9QvIt8pH48
+LDVfNpAGcFLPMkhtBl7oS4/e07iYTcN0zUSpVQSgOwpbRmKnHp6j+r8oznX8kNGA
+D2nXMFCLghPvRdUr+VLcDnbTpQybkgvJwGlfGRsMAMQeajEaANNc4isAmUJCaPbl
+DZqMic5mVM79YiXiJXawDGW+7FepZeVj0tX4kZAzkb1sH80f+HiwDtqn02oiftj2
+0swhlCXF2lK8h3koO+M1qI3dcudeq6rQmaisqcy2lliTf/h2JxF6OJhkZX/mIhun
+R3Det08n+d4+j8VdnwxL
+=qjG3
+-----END PGP SIGNATURE-----
 
-You really need to completely rework the architecture and
-layout of this driver before I will even begin to review it
-again.
-
-And the lack of review interest by other developers should be an
-indication to you how undesirable this code submission is to read.
-
-Thanks.
+--6TrnltStXW4iwmi0--
