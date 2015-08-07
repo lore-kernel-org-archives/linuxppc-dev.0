@@ -1,40 +1,33 @@
-Return-Path: <wschmidt@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D4AAD1A0075
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 15:55:46 +1000 (AEST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <wschmidt@us.ibm.com>;
- Thu, 6 Aug 2015 23:55:44 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 771B119D8042
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 23:46:38 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t775teHX48169070
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 22:55:40 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t775teK4007749
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 23:55:40 -0600
-In-Reply-To: <20150805041928.GA32178@gate.crashing.org>
-References: <20150805140300.218ef661@kryten>
- <20150805041928.GA32178@gate.crashing.org>
-Subject: Re: RFC: Reducing the number of non volatile GPRs in the ppc64 kernel
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Alan Modra <amodra@gmail.com>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Michael Gschwind <mkg@us.ibm.com>,
- paulus@samba.org, Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-Message-ID: <OFD0811845.CF7950C1-ON86257E9A.002065FB-C1257E9A.00208EE6@us.ibm.com>
-From: Bill Schmidt <wschmidt@us.ibm.com>
-Date: Fri, 7 Aug 2015 07:55:37 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id C32E11A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 17:14:55 +1000 (AEST)
+Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
+ [209.85.220.48])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 46462140216
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 17:14:53 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so49451543pab.0
+ for <linuxppc-dev@ozlabs.org>; Fri, 07 Aug 2015 00:14:51 -0700 (PDT)
+Subject: Re: [PATCH V2 1/6] powerpc/powernv: don't enable SRIOV when VF BAR
+ contains non M64 BAR
+To: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <20150731020148.GA6151@richard>
+ <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1438737903-10399-2-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150806043557.GA28524@gwshan> <20150806141010.GD6235@richard>
+ <20150807012010.GB19021@gwshan> <20150807022405.GF8292@richard>
+Cc: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55C45AE1.3040404@ozlabs.ru>
+Date: Fri, 7 Aug 2015 17:14:41 +1000
 MIME-Version: 1.0
-Content-type: multipart/related;
- Boundary="0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B"
+In-Reply-To: <20150807022405.GF8292@richard>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,179 +37,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
-Content-type: multipart/alternative;
-	Boundary="1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B"
-
---1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: quoted-printable
-
-
-I agree with Segher.  We already know we have opportunities to do a bet=
-ter
-job with shrink-wrapping (pushing this kind of useless activity down pa=
-st
-early exits), so having examples of code to look at to improve this wou=
-ld
-be useful.
-
--- Bill
-
-Bill Schmidt, Ph.D.
-Linux on Power Toolchain
-IBM Linux Technology Center
-wschmidt@us.ibm.com   (507) 319-6873
-
-
-
-
-From:	Segher Boessenkool <segher@kernel.crashing.org>
-To:	Anton Blanchard <anton@samba.org>
-Cc:	linuxppc-dev@lists.ozlabs.org, Michael
-            Gschwind/Watson/IBM@IBMUS, Alan Modra <amodra@gmail.com>, B=
-ill
-            Schmidt/Rochester/IBM@IBMUS, Ulrich Weigand
-            <Ulrich.Weigand@de.ibm.com>, paulus@samba.org
-Date:	08/05/2015 06:20 AM
-Subject:	Re: RFC: Reducing the number of non volatile GPRs in the ppc64=
-
-            kernel
-
-
-
-Hi Anton,
-
-On Wed, Aug 05, 2015 at 02:03:00PM +1000, Anton Blanchard wrote:
-> While looking at traces of kernel workloads, I noticed places where g=
-cc
-> used a large number of non volatiles. Some of these functions
-> did very little work, and we spent most of our time saving the
-> non volatiles to the stack and reading them back.
-
-That is something that should be fixed in GCC -- do you have an example=
-
-of such a function?
-
-> It made me wonder if we have the right ratio of volatile to non
-> volatile GPRs. Since the kernel is completely self contained, we coul=
-d
-> potentially change that ratio.
+On 08/07/2015 12:24 PM, Wei Yang wrote:
+> On Fri, Aug 07, 2015 at 11:20:10AM +1000, Gavin Shan wrote:
+>> On Thu, Aug 06, 2015 at 10:10:10PM +0800, Wei Yang wrote:
+>>> On Thu, Aug 06, 2015 at 02:35:57PM +1000, Gavin Shan wrote:
+>>>> On Wed, Aug 05, 2015 at 09:24:58AM +0800, Wei Yang wrote:
+>>>>> On PHB_IODA2, we enable SRIOV devices by mapping IOV BAR with M64 BARs. If
+>>>>> a SRIOV device's BAR is not 64-bit prefetchable, this is not assigned from
+>>>>> M64 windwo, which means M64 BAR can't work on it.
+>>>>>
+>>>>
+>>>> s/PHB_IODA2/PHB3
+>>>> s/windwo/window
+>>>>
+>>>>> This patch makes this explicit.
+>>>>>
+>>>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>
+>>>> The idea sounds right, but there is one question as below.
+>>>>
+>>>>> ---
+>>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   25 +++++++++----------------
+>>>>> 1 file changed, 9 insertions(+), 16 deletions(-)
+>>>>>
+>>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>> index 5738d31..9b41dba 100644
+>>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>> @@ -908,9 +908,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>>>>> 		if (!res->flags || !res->parent)
+>>>>> 			continue;
+>>>>>
+>>>>> -		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>>>> -			continue;
+>>>>> -
+>>>>> 		/*
+>>>>> 		 * The actual IOV BAR range is determined by the start address
+>>>>> 		 * and the actual size for num_vfs VFs BAR.  This check is to
+>>>>> @@ -939,9 +936,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>>>>> 		if (!res->flags || !res->parent)
+>>>>> 			continue;
+>>>>>
+>>>>> -		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>>>> -			continue;
+>>>>> -
+>>>>> 		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+>>>>> 		res2 = *res;
+>>>>> 		res->start += size * offset;
+>>>>> @@ -1221,9 +1215,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>> 		if (!res->flags || !res->parent)
+>>>>> 			continue;
+>>>>>
+>>>>> -		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>>>> -			continue;
+>>>>> -
+>>>>> 		for (j = 0; j < vf_groups; j++) {
+>>>>> 			do {
+>>>>> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
+>>>>> @@ -1510,6 +1501,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>> 	pdn = pci_get_pdn(pdev);
+>>>>>
+>>>>> 	if (phb->type == PNV_PHB_IODA2) {
+>>>>> +		if (!pdn->vfs_expanded) {
+>>>>> +			dev_info(&pdev->dev, "don't support this SRIOV device"
+>>>>> +				" with non M64 VF BAR\n");
+>>>>> +			return -EBUSY;
+>>>>> +		}
+>>>>> +
+>>>>
+>>>> It would be -ENOSPC since -EBUSY indicates the devices (VFs) are temparily
+>>>> unavailable. For this case, the VFs are permanently unavailable because of
+>>>> running out of space to accomodate M64 and non-M64 VF BARs.
+>>>>
+>>>> The error message could be printed with dev_warn() and it would be precise
+>>>> as below or something else you prefer:
+>>>>
+>>>> 	dev_warn(&pdev->dev, "SRIOV not supported because of non-M64 VF BAR\n");
+>>>>
+>>>
+>>> Thanks for the comment, will change accordingly.
+>>>
+>>>>
+>>>>> 		/* Calculate available PE for required VFs */
+>>>>> 		mutex_lock(&phb->ioda.pe_alloc_mutex);
+>>>>> 		pdn->offset = bitmap_find_next_zero_area(
+>>>>> @@ -2774,9 +2771,10 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>>> 		if (!res->flags || res->parent)
+>>>>> 			continue;
+>>>>> 		if (!pnv_pci_is_mem_pref_64(res->flags)) {
+>>>>> -			dev_warn(&pdev->dev, " non M64 VF BAR%d: %pR\n",
+>>>>> +			dev_warn(&pdev->dev, "Don't support SR-IOV with"
+>>>>> +					" non M64 VF BAR%d: %pR. \n",
+>>>>> 				 i, res);
+>>>>> -			continue;
+>>>>> +			return;
+>>>>> 		}
+>>>>>
+>>>>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
+>>>>> @@ -2795,11 +2793,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>>> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>>>>> 		if (!res->flags || res->parent)
+>>>>> 			continue;
+>>>>> -		if (!pnv_pci_is_mem_pref_64(res->flags)) {
+>>>>> -			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
+>>>>> -				 i, res);
+>>>>> -			continue;
+>>>>> -		}
+>>>>
+>>>> When any one IOV BAR on the PF is non-M64, none of the VFs can be enabled.
+>>>> Will we still allocate/assign M64 or M32 resources for the IOV BARs? If so,
+>>>> I think it can be avoided.
+>>>>
+>>>
+>>> Don't get your point. You mean to avoid this function?
+>>>
+>>> Or clear the IOV BAR when we found one of it is non-M64?
+>>>
+>>
+>> I mean to clear all IOV BARs in case any more of them are IO or M32. In this
+>> case, the SRIOV capability won't be enabled. Otherwise, the resources for
+>> all IOV BARs are assigned and allocated by PCI subsystem, but they won't
+>> be used. Does it make sense to you?
+>>
 >
-> Attached is a quick hack to gcc and the kernel to decrease the number=
-
-> of non volatile GPRs to 8. I'm not sure if this is a good idea (and i=
-f
-> the volatile to non volatile ratio is right), but this gives us
-> something to play with.
-
-Instead of the GCC hack you can add a bunch of -fcall-used-r14 etc.
-options; does that not work for you?
-
-
-Segher
-
-
-=
-
---1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
-Content-transfer-encoding: quoted-printable
-
-<html><body>
-<p><font size=3D"2" face=3D"sans-serif">I agree with Segher. &nbsp;We a=
-lready know we have opportunities to do a better job with shrink-wrappi=
-ng (pushing this kind of useless activity down past early exits), so ha=
-ving examples of code to look at to improve this would be useful.<br>
-<br>
--- Bill<br>
-<br>
-Bill Schmidt, Ph.D.<br>
-Linux on Power Toolchain<br>
-IBM Linux Technology Center<br>
-wschmidt@us.ibm.com &nbsp; (507) 319-6873<br>
-</font><br>
-<br>
-<img width=3D"16" height=3D"16" src=3D"cid:1__=3D09BBF409DFB3E36B8f9e8a=
-93df938@us.ibm.com" border=3D"0" alt=3D"Inactive hide details for Seghe=
-r Boessenkool ---08/05/2015 06:20:02 AM---Hi Anton, On Wed, Aug 05, 201=
-5 at 02:03:00PM +1000, An"><font size=3D"2" color=3D"#424282" face=3D"s=
-ans-serif">Segher Boessenkool ---08/05/2015 06:20:02 AM---Hi Anton, On =
-Wed, Aug 05, 2015 at 02:03:00PM +1000, Anton Blanchard wrote:</font><br=
+> If we want to save MMIO space, this is not necessary.
 >
-<br>
-<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">From:	</font><fo=
-nt size=3D"1" face=3D"sans-serif">Segher Boessenkool &lt;segher@kernel.=
-crashing.org&gt;</font><br>
-<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">To:	</font><font=
- size=3D"1" face=3D"sans-serif">Anton Blanchard &lt;anton@samba.org&gt;=
-</font><br>
-<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">Cc:	</font><font=
- size=3D"1" face=3D"sans-serif">linuxppc-dev@lists.ozlabs.org, Michael =
-Gschwind/Watson/IBM@IBMUS, Alan Modra &lt;amodra@gmail.com&gt;, Bill Sc=
-hmidt/Rochester/IBM@IBMUS, Ulrich Weigand &lt;Ulrich.Weigand@de.ibm.com=
-&gt;, paulus@samba.org</font><br>
-<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">Date:	</font><fo=
-nt size=3D"1" face=3D"sans-serif">08/05/2015 06:20 AM</font><br>
-<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">Subject:	</font>=
-<font size=3D"1" face=3D"sans-serif">Re: RFC: Reducing the number of no=
-n volatile GPRs in the ppc64 kernel</font><br>
-<hr width=3D"100%" size=3D"2" align=3D"left" noshade style=3D"color:#80=
-91A5; "><br>
-<br>
-<br>
-<tt><font size=3D"2">Hi Anton,<br>
-<br>
-On Wed, Aug 05, 2015 at 02:03:00PM +1000, Anton Blanchard wrote:<br>
-&gt; While looking at traces of kernel workloads, I noticed places wher=
-e gcc<br>
-&gt; used a large number of non volatiles. Some of these functions<br>
-&gt; did very little work, and we spent most of our time saving the<br>=
+> The IOV BAR will be put into the optional list in assignment stage. So when
+> there is not enough MMIO space, they will not be assigned.
 
-&gt; non volatiles to the stack and reading them back.<br>
-<br>
-That is something that should be fixed in GCC -- do you have an example=
-<br>
-of such a function?<br>
-<br>
-&gt; It made me wonder if we have the right ratio of volatile to non<br=
+
+If we are not going to use non-64bit IOV BAR, why would we assign anything 
+to it at the first place? Or it is a common PCI code which does it?
+
+
+
+
+> For the long term, maybe P9/P10, we will finally adjust the solution to
+> support SRIOV devices with M32 MMIO. So I suggest to leave as it is.
 >
-&gt; volatile GPRs. Since the kernel is completely self contained, we c=
-ould<br>
-&gt; potentially change that ratio.<br>
-&gt; <br>
-&gt; Attached is a quick hack to gcc and the kernel to decrease the num=
-ber<br>
-&gt; of non volatile GPRs to 8. I'm not sure if this is a good idea (an=
-d if<br>
-&gt; the volatile to non volatile ratio is right), but this gives us<br=
->
-&gt; something to play with.<br>
-<br>
-Instead of the GCC hack you can add a bunch of -fcall-used-r14 etc.<br>=
-
-options; does that not work for you?<br>
-<br>
-<br>
-Segher<br>
-<br>
-</font></tt><br>
-<br>
-</body></html>=
+>>>>>
+>>>>> 		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
+>>>>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
 
 
---1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B--
 
-
---0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
-Content-type: image/gif;
-	name="graycol.gif"
-Content-Disposition: inline; filename="graycol.gif"
-Content-ID: <1__=09BBF409DFB3E36B8f9e8a93df938@us.ibm.com>
-Content-transfer-encoding: base64
-
-R0lGODlhEAAQAKECAMzMzAAAAP///wAAACH5BAEAAAIALAAAAAAQABAAAAIXlI+py+0PopwxUbpu
-ZRfKZ2zgSJbmSRYAIf4fT3B0aW1pemVkIGJ5IFVsZWFkIFNtYXJ0U2F2ZXIhAAA7
-
---0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B--
+-- 
+Alexey
