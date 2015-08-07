@@ -1,48 +1,18 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 24C1D1A0075
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 15:55:50 +1000 (AEST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E966B140187
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 15:55:49 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 7 Aug 2015 15:55:49 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 44F743578057
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 15:55:46 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t775tbb163045698
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 15:55:46 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t775tCMb002559
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 15:55:13 +1000
-Date: Fri, 7 Aug 2015 15:54:48 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, aik@ozlabs.ru,
- benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V2 6/6] powerpc/powernv: allocate discrete PE# when using
- M64 BAR in Single PE mode
-Message-ID: <20150807055448.GA26338@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20150731020148.GA6151@richard>
- <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-7-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806053601.GB5636@gwshan> <20150806134141.GA6235@richard>
- <20150807013656.GB20794@gwshan> <20150807023333.GH8292@richard>
- <20150807034301.GA8624@gwshan> <20150807054433.GA7971@richard>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150807054433.GA7971@richard>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AAF0F1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 16:19:55 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: aneesh.kumar@linux.vnet.ibm.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Jeremy Kerr <jk@ozlabs.org>
+Subject: [PATCH 1/5] powerpc/mm: Fix pte_pagesize_index() crash on 4K w/64K
+ hash
+Date: Fri,  7 Aug 2015 16:19:43 +1000
+Message-Id: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,127 +22,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 07, 2015 at 01:44:33PM +0800, Wei Yang wrote:
->On Fri, Aug 07, 2015 at 01:43:01PM +1000, Gavin Shan wrote:
->>On Fri, Aug 07, 2015 at 10:33:33AM +0800, Wei Yang wrote:
->>>On Fri, Aug 07, 2015 at 11:36:56AM +1000, Gavin Shan wrote:
->>>>On Thu, Aug 06, 2015 at 09:41:41PM +0800, Wei Yang wrote:
->>>>>On Thu, Aug 06, 2015 at 03:36:01PM +1000, Gavin Shan wrote:
->>>>>>On Wed, Aug 05, 2015 at 09:25:03AM +0800, Wei Yang wrote:
->>>>>>>When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
->>>>>>>discrete.
->>>>>>>
->>>>>>>This patch restructures the patch to allocate discrete PE# for VFs when M64
->>>>>>>BAR is set to Single PE mode.
->>>>>>>
->>>>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>>>>>---
->>>>>>> arch/powerpc/include/asm/pci-bridge.h     |    2 +-
->>>>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   69 +++++++++++++++++++++--------
->>>>>>> 2 files changed, 51 insertions(+), 20 deletions(-)
->>>>>>>
->>>>>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>>>>>index 8aeba4c..72415c7 100644
->>>>>>>--- a/arch/powerpc/include/asm/pci-bridge.h
->>>>>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
->>>>>>>@@ -213,7 +213,7 @@ struct pci_dn {
->>>>>>> #ifdef CONFIG_PCI_IOV
->>>>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->>>>>>> 	u16     num_vfs;		/* number of VFs enabled*/
->>>>>>>-	int     offset;			/* PE# for the first VF PE */
->>>>>>>+	int     *offset;		/* PE# for the first VF PE or array */
->>>>>>> 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
->>>>>>> #define IODA_INVALID_M64        (-1)
->>>>>>> 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
->>>>>>
->>>>>>how about renaming "offset" to "pe_num_map", or "pe_map" ? Similar to the comments
->>>>>>I gave to the "m64_bar_map", num_of_max_vfs entries can be allocated. Though not
->>>>>>all of them will be used, not too much memory will be wasted.
->>>>>>
->>>>>
->>>>>Thanks for your comment.
->>>>>
->>>>>I have thought about change the name to make it more self explain. While
->>>>>another fact I want to take in is this field is also used to be reflect the
->>>>>shift offset when M64 BAR is used in the Shared Mode. So I maintain the name.
->>>>>
->>>>>How about use "enum", one maintain the name "offset", and another one rename to
->>>>>"pe_num_map". And use the meaningful name at proper place?
->>>>>
->>>
->>>So I suppose you agree with my naming proposal.
->>>
->>
->>No, I dislike the "enum" things.
->>
->
->OK, then you suggest to rename it pe_num_map or keep it as offset?
->
+The powerpc kernel can be built to have either a 4K PAGE_SIZE or a 64K
+PAGE_SIZE.
 
-pe_num_map would be better.
+However when built with a 4K PAGE_SIZE there is an additional config
+option which can be enabled, PPC_HAS_HASH_64K, which means the kernel
+also knows how to hash a 64K page even though the base PAGE_SIZE is 4K.
 
->>>>
->>>>Ok. I'm explaining it with more details. There are two cases: single vs shared
->>>>mode. When PHB M64 BARs run in single mode, you need an array to track the
->>>>allocated discrete PE#. The VF_index is the index to the array. When PHB M64
->>>>BARs run in shared mode, you need continuous PE#. No array required for this
->>>>case. Instead, the starting PE# should be stored to somewhere, which can
->>>>be pdn->offset[0] simply.
->>>>
->>>>So when allocating memory for this array, you just simply allocate (sizeof(*pdn->offset)
->>>>*max_vf_num) no matter what mode PHB's M64 BARs will run in. The point is nobody
->>>>can enable (max_vf_num + 1) VFs.
->>>
->>>The max_vf_num is 15?
->>>
->>
->>I don't understand why you said: the max_vf_num is 15. Since max_vf_num is variable
->>on different PFs, how can it be fixed value - 15 ?
->>
->
->In Shared PE case, only one int to indicate the start PE# is fine.
->In Single PE mode, we totally could enable 15 VF, the same number of PEs for
->each VF, which is limited by the number M64 BARs we have in the system.
->
->If not, the number you expected is total_vfs?
->
+This is used in one obscure configuration, to support 64K pages for SPU
+local store on the Cell processor when the rest of the kernel is using
+4K pages.
 
-then it should be min(total_vfs, phb->ioda.m64_bar_idx), isn't it? 
+In this configuration, pte_pagesize_index() is defined to just pass
+through its arguments to get_slice_psize(). However pte_pagesize_index()
+is called for both user and kernel addresses, whereas get_slice_psize()
+only knows how to handle user addresses.
 
->>>>
->>>>With above way, the arrays for PE# and M64 BAR remapping needn't be allocated
->>>>when enabling SRIOV capability and releasing on disabling SRIOV capability.
->>>>Instead, those two arrays can be allocated during resource fixup time and free'ed
->>>>when destroying the pdn.
->>>>
->>>
->>>My same point of view like previous, if the memory is not in the concern, how
->>>about define them static?
->>>
->>
->>It's a bad idea from my review. How many entries this array is going to have?
->>256 * NUM_OF_MAX_VF_BARS ?
->>
->
->No.
->
->It has 15 * 6, 15 VFs we could enable at most and 6 VF BARs a VF could have at
->most.
->
+This has been broken forever, however until recently it happened to
+work. That was because in get_slice_psize() the large kernel address
+would cause the right shift of the slice mask to return zero.
 
-It's min(total_vfs, phb->ioda.m64_bar_idx) VFs that can be enabled at maximal
-degree, no?
+However in commit 7aa0727f3302 "powerpc/mm: Increase the slice range to
+64TB", the get_slice_psize() code was changed so that instead of a right
+shift we do an array lookup based on the address. When passed a kernel
+address this means we index way off the end of the slice array and
+return random junk.
 
->>>And for the long term, we may support more VFs. Then at that moment, we need
->>>to restructure the code to meet it.
->>>
->>>So I suggest if we want to allocate it dynamically, we allocate the exact
->>>number of space.
->>>
->>
->>Fine... it can be improved when it has to be, as you said.
->>
->
->-- 
->Richard Yang
->Help you, Help me
+That is only fatal if we happen to hit something non-zero, but when we
+do return a non-zero value we confuse the MMU code and eventually cause
+a check stop.
+
+This fix is ugly, but simple. When we're called for a kernel address we
+return 4K, which is always correct in this configuration, otherwise we
+use the slice mask.
+
+Fixes: 7aa0727f3302 ("powerpc/mm: Increase the slice range to 64TB")
+Reported-by: Cyril Bur <cyrilbur@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 3bb7488bd24b..7ee2300ee392 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -135,7 +135,19 @@
+ #define pte_iterate_hashed_end() } while(0)
+ 
+ #ifdef CONFIG_PPC_HAS_HASH_64K
+-#define pte_pagesize_index(mm, addr, pte)	get_slice_psize(mm, addr)
++/*
++ * We expect this to be called only for user addresses or kernel virtual
++ * addresses other than the linear mapping.
++ */
++#define pte_pagesize_index(mm, addr, pte)			\
++	({							\
++		unsigned int psize;				\
++		if (is_kernel_addr(addr))			\
++			psize = MMU_PAGE_4K;			\
++		else						\
++			psize = get_slice_psize(mm, addr);	\
++		psize;						\
++	})
+ #else
+ #define pte_pagesize_index(mm, addr, pte)	MMU_PAGE_4K
+ #endif
+-- 
+2.1.4
