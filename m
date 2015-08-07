@@ -1,31 +1,24 @@
-Return-Path: <chenhui.zhao@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0136.outbound.protection.outlook.com [65.55.169.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BC501A1D13
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:19:43 +1000 (AEST)
-Date: Fri, 7 Aug 2015 11:19:32 +0800
-From: Chenhui Zhao <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH 1/3] Powerpc: mpc85xx: refactor the PM operations
-To: Scott Wood <scottwood@freescale.com>
-CC: <b29983@freescale.com>, <b07421@freescale.com>,
- <linux-kernel@vger.kernel.org>, Tang Yuantian <Yuantian.Tang@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Message-ID: <1438917572.2431.0@remotesmtp.freescale.net>
-In-Reply-To: <1438884172.2097.155.camel@freescale.com>
-References: <1438334444-31919-1-git-send-email-b29983@freescale.com>
- <1438387178.19345.77.camel@freescale.com>
- <1438601578.7515.2@remotesmtp.freescale.net>
- <1438633568.2097.35.camel@freescale.com>
- <1438769477.21522.0@remotesmtp.freescale.net>
- <1438829848.2097.129.camel@freescale.com>
- <1438834837.23384.0@remotesmtp.freescale.net>
- <1438839985.2097.151.camel@freescale.com>
- <1438840466.23384.2@remotesmtp.freescale.net>
- <1438884172.2097.155.camel@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id A33E41A1DD0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:20:53 +1000 (AEST)
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 644661402A9
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:20:52 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so45094231pab.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 06 Aug 2015 20:20:50 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
+ imunsie@au.ibm.com, Daniel Axtens <dja@axtens.net>
+Subject: [PATCH 1/4] cxl: Compile with -Werror
+Date: Fri,  7 Aug 2015 13:18:17 +1000
+Message-Id: <1438917500-12100-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,98 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+It's a good idea, and it brings us in line with the rest of arch/powerpc.
 
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ drivers/misc/cxl/Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
 
-On Fri, Aug 7, 2015 at 2:02 AM, Scott Wood <scottwood@freescale.com> 
-wrote:
-> On Thu, 2015-08-06 at 13:54 +0800, Chenhui Zhao wrote:
->>  On Thu, Aug 6, 2015 at 1:46 PM, Scott Wood <scottwood@freescale.com>
->>  wrote:
->>  > On Thu, 2015-08-06 at 12:20 +0800, Chenhui Zhao wrote:
->>  > >  On Thu, Aug 6, 2015 at 10:57 AM, Scott Wood
->>  > > <scottwood@freescale.com>
->>  > >  wrote:
->>  > >  > On Wed, 2015-08-05 at 18:11 +0800, Chenhui Zhao wrote:
->>  > >  > >  On Tue, Aug 4, 2015 at 4:26 AM, Scott Wood
->>  > > <scottwood@freescale.com>
->>  > >  > >  wrote:
->>  > >  > >  > On Mon, 2015-08-03 at 19:32 +0800, Chenhui Zhao wrote:
->>  > >  > >  > >  >
->>  > >  > >  >
->>  > >  > >  > >  On Sat, Aug 1, 2015 at 7:59 AM, Scott Wood
->>  > >  > > <scottwood@freescale.com>
->>  > >  > >  > >  wrote:
->>  > >  > >  >
->>  > >  > >  > >  >
->>  > >  > >  > >  > Could you explain irq_mask()?  Why would there 
->> still be
->>  > > IRQs
->>  > >  > >  > > destined
->>  > >  > >  > >  > for
->>  > >  > >  > >  > this CPU at this point?
->>  > >  > >  > >
->>  > >  > >  > >  This function just masks irq by setting the 
->> registers in
->>  > > RCPM
->>  > >  > > (for
->>  > >  > >  > >  example, RCPM_CPMIMR, RCPM_CPMCIMR). Actually, all 
->> irqs to
->>  > >  > > this CPU
->>  > >  > >  > >  have been migrated to other CPUs.
->>  > >  > >  >
->>  > >  > >  > So why do we need to set those bits in RCPM?  Is it just
->>  > > caution?
->>  > >  > >
->>  > >  > >  Setting these bits can mask interrupts signalled to RCPM 
->> from
->>  > > MPIC
->>  > >  > > as a
->>  > >  > >  means of
->>  > >  > >  waking up from a lower power state. So, cores will not be
->>  > > waked up
->>  > >  > >  unexpectedly.
->>  > >  >
->>  > >  > Why would the MPIC be signalling those interrupts if they've 
->> been
->>  > >  > masked at
->>  > >  > the MPIC?
->>  > >  >
->>  > >  > -Scott
->>  > >  >
->>  > >
->>  > >  The interrupts to RCPM from MPIC are IRQ, Machine Check, NMI 
->> and
->>  > >  Critical interrupts. Some of them didn't be masked in MPIC.
->>  >
->>  > What interrupt could actually happen to a sleeping cpu that this
->>  > protects
->>  > against?
->>  >
->>  > -Scott
->> 
->>  Not sure. Maybe spurious interrupts or hardware exceptions.
-> 
-> Spurious interrupts happen due to race conditions.  They don't happen 
-> because
-> the MPIC is bored and decides to ring a CPU's doorbell and hide in 
-> the bushes.
-> 
-> If by "hardware exceptions" you mean machine checks, how would such a 
-> machine
-> check be generated by a core that is off?
-> 
->>   However, setting them make sure dead cpus can not be waked up 
->> unexpectedly.
-> 
-> I'm not seeing enough value here to warrant resurrecting the old 
-> sleep node
-> stuff.
-> 
-> -Scott
-
-My guess maybe not accurate. My point is that electronic parts don't 
-always work as expected. Taking preventative measures can make the 
-system more robust. In addition, this step is required in deep sleep 
-procedure.
-
--Chenhui
+diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+index 14e3f8219a11..6f484dfe78f9 100644
+--- a/drivers/misc/cxl/Makefile
++++ b/drivers/misc/cxl/Makefile
+@@ -1,3 +1,5 @@
++ccflags-y := -Werror
++
+ cxl-y				+= main.o file.o irq.o fault.o native.o
+ cxl-y				+= context.o sysfs.o debugfs.o pci.o trace.o
+ cxl-y				+= vphb.o api.o
+-- 
+2.1.4
