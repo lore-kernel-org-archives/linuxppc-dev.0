@@ -1,25 +1,23 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <prvs=6540fe219=julien.grall@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03C1E1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 02:34:53 +1000 (AEST)
-Date: Fri, 7 Aug 2015 18:10:55 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Vladimir Zapolskiy <vz@mleia.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Maxime Ripard <maxime.ripard@free-electrons.com>,
- Jean Delvare <jdelvare@suse.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Michael Neuling <mikey@neuling.org>, Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/8] misc: remove boundary checks from bin attr users
-Message-ID: <20150807161055.GD25357@katana>
-References: <1437945502-27944-1-git-send-email-vz@mleia.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97A1B1A1C5D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 02:35:57 +1000 (AEST)
+From: Julien Grall <julien.grall@citrix.com>
+To: <xen-devel@lists.xenproject.org>
+CC: <ian.campbell@citrix.com>, <stefano.stabellini@eu.citrix.com>,
+ <linux-kernel@vger.kernel.org>, Julien Grall <julien.grall@citrix.com>, David
+ Vrabel <david.vrabel@citrix.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v3 7/9] hvc/xen: Further s/MFN/GFN clean-up
+Date: Fri, 7 Aug 2015 17:34:40 +0100
+Message-ID: <1438965282-19103-8-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1438965282-19103-1-git-send-email-julien.grall@citrix.com>
+References: <1438965282-19103-1-git-send-email-julien.grall@citrix.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="wULyF7TL5taEdwHz"
-In-Reply-To: <1437945502-27944-1-git-send-email-vz@mleia.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +27,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+HVM_PARAM_CONSOLE_PFN is used to retrieved the console PFN for HVM
+guest. It returns a PFN (aka GFN) and not a MFN.
 
---wULyF7TL5taEdwHz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Furthermore, use directly virt_to_gfn for both PV and HVM domain rather
+than doing a special case for each of the them.
 
-Vladimir,
+Signed-off-by: Julien Grall <julien.grall@citrix.com>
+Reviewed-by: David Vrabel <david.vrabel@citrix.com>
 
-On Mon, Jul 27, 2015 at 12:18:22AM +0300, Vladimir Zapolskiy wrote:
-> This change removes a number of redundant checks on bin attribute
-> client's side, the same checks are done by sysfs_kf_bin_read() or
-> sysfs_kf_bin_write() caller from fs/sysfs/file.c.
->=20
-> Note, drivers/misc/pch_phub.c and drivers/misc/c2port/core.c may be
-> updated in a similar way, however this task is not done due to more
-> complicated read()/write() callbacks.
+---
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 
-Can you resend the patches which touch i2c drivers with me on cc? I'd
-like to take care of them.
+    Changes in v2:
+        - Add David's reviewed-by
+---
+ drivers/tty/hvc/hvc_xen.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
 
-Thanks,
-
-   Wolfram
-
-
---wULyF7TL5taEdwHz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVxNiPAAoJEBQN5MwUoCm2WZUP/RpeKlzxg8sa83oU8h6AEP+w
-tlkv3VRwta2HNDY10+UjMDEEa7vfOZvgC4ZtXQolVZM/nDT/8WPeWpYAfNiqD15U
-8y1Nn9trDPUq1z9BB6RkOFdSxztECQ+/tJmArtme1nqPuN5phzjQmHAWpKDv+5Aj
-uTwc6mMyC9Dp01gSd107KzzMe6QHo8hd64ztv2YklKkIcUj68nuC68WWSLWZGkw4
-pv2Fk3eRjK8uqiafGyfUY5DVqUHuxpymm3+CN9yAdMR48lQjCC5+k5g+OnQmTr2k
-n8GLZpKXT6ejPq4fqb6iUoppAKP5/WoGzRdQRbgvI6htZBPiQpS7Srl5Qi8hZeGS
-gjfDsB7+TDDbT+BpOKNLBKjKCvgUL098vXwYllY7XN5iIkR+HApLPxFhH98lhvUs
-inZebC/xCNHK5qQvuv/rxzfuavJsjnNICuHbc0HIBJ0H9Ed4FxDM7Dy6PTGUWOvo
-2/tVH07oCIs5A9BrI/5jvBlzcGG+tPzFaBE9VPvfBYHo+lm4SCGJslnWzRYCHv3s
-acgNpw7NzxYbkbLWHH+hD7JJlPHuWqoZZkz7Yi9mnD8Mnjb+tD2oHlVtDD73/qPD
-NPzd6kDGIWmtqU+8XB+55B+tjn/yHJBGpny8vEjyt7OAw2x8jE5Pvaq8wZ3O2U25
-LKaa+AJ/jAfZ6bN1FGKv
-=ptiU
------END PGP SIGNATURE-----
-
---wULyF7TL5taEdwHz--
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index efe5124..10beb15 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -200,7 +200,7 @@ static int xen_hvm_console_init(void)
+ {
+ 	int r;
+ 	uint64_t v = 0;
+-	unsigned long mfn;
++	unsigned long gfn;
+ 	struct xencons_info *info;
+ 
+ 	if (!xen_hvm_domain())
+@@ -217,7 +217,7 @@ static int xen_hvm_console_init(void)
+ 	}
+ 	/*
+ 	 * If the toolstack (or the hypervisor) hasn't set these values, the
+-	 * default value is 0. Even though mfn = 0 and evtchn = 0 are
++	 * default value is 0. Even though gfn = 0 and evtchn = 0 are
+ 	 * theoretically correct values, in practice they never are and they
+ 	 * mean that a legacy toolstack hasn't initialized the pv console correctly.
+ 	 */
+@@ -229,8 +229,8 @@ static int xen_hvm_console_init(void)
+ 	r = hvm_get_parameter(HVM_PARAM_CONSOLE_PFN, &v);
+ 	if (r < 0 || v == 0)
+ 		goto err;
+-	mfn = v;
+-	info->intf = xen_remap(mfn << PAGE_SHIFT, PAGE_SIZE);
++	gfn = v;
++	info->intf = xen_remap(gfn << PAGE_SHIFT, PAGE_SIZE);
+ 	if (info->intf == NULL)
+ 		goto err;
+ 	info->vtermno = HVC_COOKIE;
+@@ -375,7 +375,6 @@ static int xencons_connect_backend(struct xenbus_device *dev,
+ 	int ret, evtchn, devid, ref, irq;
+ 	struct xenbus_transaction xbt;
+ 	grant_ref_t gref_head;
+-	unsigned long mfn;
+ 
+ 	ret = xenbus_alloc_evtchn(dev, &evtchn);
+ 	if (ret)
+@@ -390,10 +389,6 @@ static int xencons_connect_backend(struct xenbus_device *dev,
+ 			irq, &domU_hvc_ops, 256);
+ 	if (IS_ERR(info->hvc))
+ 		return PTR_ERR(info->hvc);
+-	if (xen_pv_domain())
+-		mfn = virt_to_gfn(info->intf);
+-	else
+-		mfn = __pa(info->intf) >> PAGE_SHIFT;
+ 	ret = gnttab_alloc_grant_references(1, &gref_head);
+ 	if (ret < 0)
+ 		return ret;
+@@ -402,7 +397,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
+ 	if (ref < 0)
+ 		return ref;
+ 	gnttab_grant_foreign_access_ref(ref, info->xbdev->otherend_id,
+-			mfn, 0);
++					virt_to_gfn(info->intf), 0);
+ 
+  again:
+ 	ret = xenbus_transaction_start(&xbt);
+-- 
+2.1.4
