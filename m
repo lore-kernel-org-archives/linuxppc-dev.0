@@ -1,27 +1,20 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9C9011A1DC9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:21:02 +1000 (AEST)
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 13B6D1402A9
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:21:02 +1000 (AEST)
-Received: by pawu10 with SMTP id u10so77677266paw.1
- for <linuxppc-dev@ozlabs.org>; Thu, 06 Aug 2015 20:21:00 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
- imunsie@au.ibm.com, Daniel Axtens <dja@axtens.net>
-Subject: [PATCH 4/4] cxl: sparse: Silence iomem warning in debugfs file
- creation
-Date: Fri,  7 Aug 2015 13:18:20 +1000
-Message-Id: <1438917500-12100-4-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8347F1A1FB8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:25:41 +1000 (AEST)
+Message-ID: <1438917941.7605.19.camel@neuling.org>
+Subject: Re: [PATCH 1/4] cxl: Compile with -Werror
+From: Michael Neuling <mikey@neuling.org>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ imunsie@au.ibm.com
+Date: Fri, 07 Aug 2015 13:25:41 +1000
 In-Reply-To: <1438917500-12100-1-git-send-email-dja@axtens.net>
 References: <1438917500-12100-1-git-send-email-dja@axtens.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An IO address, tagged with __iomem, is passed to debugfs_create_file
-as private data. This requires that it be cast to void *. The cast
-creates a sparse warning:
-/scratch/dja/linux-capi/drivers/misc/cxl/debugfs.c:51:57: warning: cast removes address space of expression
+On Fri, 2015-08-07 at 13:18 +1000, Daniel Axtens wrote:
+> It's a good idea, and it brings us in line with the rest of arch/powerpc.
 
-The address space marker is added back in the file operations
-(fops_io_u64).
+Do you need to put this patch last so that you don't break bisecting the
+series?
 
-Silence the warning with __force.
+Mikey
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- drivers/misc/cxl/debugfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
-index 825c412580bc..18df6f44af2a 100644
---- a/drivers/misc/cxl/debugfs.c
-+++ b/drivers/misc/cxl/debugfs.c
-@@ -48,7 +48,7 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_io_x64, debugfs_io_u64_get, debugfs_io_u64_set, "0x
- static struct dentry *debugfs_create_io_x64(const char *name, umode_t mode,
- 					    struct dentry *parent, u64 __iomem *value)
- {
--	return debugfs_create_file(name, mode, parent, (void *)value, &fops_io_x64);
-+	return debugfs_create_file(name, mode, parent, (void __force *)value, &fops_io_x64);
- }
- 
- int cxl_debugfs_adapter_add(struct cxl *adapter)
--- 
-2.1.4
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> ---
+>  drivers/misc/cxl/Makefile | 2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
+> index 14e3f8219a11..6f484dfe78f9 100644
+> --- a/drivers/misc/cxl/Makefile
+> +++ b/drivers/misc/cxl/Makefile
+> @@ -1,3 +1,5 @@
+> +ccflags-y :=3D -Werror
+> +
+>  cxl-y				+=3D main.o file.o irq.o fault.o native.o
+>  cxl-y				+=3D context.o sysfs.o debugfs.o pci.o trace.o
+>  cxl-y				+=3D vphb.o api.o
