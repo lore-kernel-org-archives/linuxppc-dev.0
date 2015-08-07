@@ -1,29 +1,47 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 922B91A0021
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:49:05 +1000 (AEST)
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 298EC1A0655
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 13:51:37 +1000 (AEST)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A2DFB14010F
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:49:04 +1000 (AEST)
-Received: by pabxd6 with SMTP id xd6so59724709pab.2
- for <linuxppc-dev@ozlabs.org>; Thu, 06 Aug 2015 20:49:03 -0700 (PDT)
-Message-ID: <1438919211.6796.5.camel@axtens.net>
-Subject: Re: [PATCH] powerpc/powernv: move dma_get_required_mask from
- pnv_phb to pci_controller_ops
-From: Daniel Axtens <dja@axtens.net>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Date: Fri, 07 Aug 2015 13:46:51 +1000
-In-Reply-To: <1438919154-6179-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1438919154-6179-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-gyfxVO/fVz1OA1jA9N2P"
-Mime-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id E1B6F14029C
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:51:36 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 7 Aug 2015 13:51:35 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 145DA357805B
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 13:51:34 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t773pP0F54264062
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 13:51:33 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t773p1OU008870
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 13:51:01 +1000
+Date: Fri, 7 Aug 2015 13:50:37 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH V2 1/6] powerpc/powernv: don't enable SRIOV when VF BAR
+ contains non M64 BAR
+Message-ID: <20150807035037.GA9613@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <20150731020148.GA6151@richard>
+ <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1438737903-10399-2-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150806043557.GA28524@gwshan> <20150806141010.GD6235@richard>
+ <20150807012010.GB19021@gwshan> <20150807022405.GF8292@richard>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150807022405.GF8292@richard>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,74 +51,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Aug 07, 2015 at 10:24:05AM +0800, Wei Yang wrote:
+>On Fri, Aug 07, 2015 at 11:20:10AM +1000, Gavin Shan wrote:
+>>On Thu, Aug 06, 2015 at 10:10:10PM +0800, Wei Yang wrote:
+>>>On Thu, Aug 06, 2015 at 02:35:57PM +1000, Gavin Shan wrote:
+>>>>On Wed, Aug 05, 2015 at 09:24:58AM +0800, Wei Yang wrote:
+>>>>>On PHB_IODA2, we enable SRIOV devices by mapping IOV BAR with M64 BARs. If
+>>>>>a SRIOV device's BAR is not 64-bit prefetchable, this is not assigned from
+>>>>>M64 windwo, which means M64 BAR can't work on it.
+>>>>>
+>>>>
+>>>>s/PHB_IODA2/PHB3
+>>>>s/windwo/window
+>>>>
+>>>>>This patch makes this explicit.
+>>>>>
+>>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>
+>>>>The idea sounds right, but there is one question as below.
+>>>>
+>>>>>---
+>>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   25 +++++++++----------------
+>>>>> 1 file changed, 9 insertions(+), 16 deletions(-)
+>>>>>
+>>>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>>index 5738d31..9b41dba 100644
+>>>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>>@@ -908,9 +908,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>>>>> 		if (!res->flags || !res->parent)
+>>>>> 			continue;
+>>>>>
+>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>>>>-			continue;
+>>>>>-
+>>>>> 		/*
+>>>>> 		 * The actual IOV BAR range is determined by the start address
+>>>>> 		 * and the actual size for num_vfs VFs BAR.  This check is to
+>>>>>@@ -939,9 +936,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>>>>> 		if (!res->flags || !res->parent)
+>>>>> 			continue;
+>>>>>
+>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>>>>-			continue;
+>>>>>-
+>>>>> 		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+>>>>> 		res2 = *res;
+>>>>> 		res->start += size * offset;
+>>>>>@@ -1221,9 +1215,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>> 		if (!res->flags || !res->parent)
+>>>>> 			continue;
+>>>>>
+>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>>>>-			continue;
+>>>>>-
+>>>>> 		for (j = 0; j < vf_groups; j++) {
+>>>>> 			do {
+>>>>> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
+>>>>>@@ -1510,6 +1501,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>> 	pdn = pci_get_pdn(pdev);
+>>>>>
+>>>>> 	if (phb->type == PNV_PHB_IODA2) {
+>>>>>+		if (!pdn->vfs_expanded) {
+>>>>>+			dev_info(&pdev->dev, "don't support this SRIOV device"
+>>>>>+				" with non M64 VF BAR\n");
+>>>>>+			return -EBUSY;
+>>>>>+		}
+>>>>>+
+>>>>
+>>>>It would be -ENOSPC since -EBUSY indicates the devices (VFs) are temparily
+>>>>unavailable. For this case, the VFs are permanently unavailable because of
+>>>>running out of space to accomodate M64 and non-M64 VF BARs.
+>>>>
+>>>>The error message could be printed with dev_warn() and it would be precise
+>>>>as below or something else you prefer:
+>>>>
+>>>>	dev_warn(&pdev->dev, "SRIOV not supported because of non-M64 VF BAR\n");
+>>>>
+>>>
+>>>Thanks for the comment, will change accordingly.
+>>>
+>>>>
+>>>>> 		/* Calculate available PE for required VFs */
+>>>>> 		mutex_lock(&phb->ioda.pe_alloc_mutex);
+>>>>> 		pdn->offset = bitmap_find_next_zero_area(
+>>>>>@@ -2774,9 +2771,10 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>>> 		if (!res->flags || res->parent)
+>>>>> 			continue;
+>>>>> 		if (!pnv_pci_is_mem_pref_64(res->flags)) {
+>>>>>-			dev_warn(&pdev->dev, " non M64 VF BAR%d: %pR\n",
+>>>>>+			dev_warn(&pdev->dev, "Don't support SR-IOV with"
+>>>>>+					" non M64 VF BAR%d: %pR. \n",
+>>>>> 				 i, res);
+>>>>>-			continue;
+>>>>>+			return;
+>>>>> 		}
+>>>>>
+>>>>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
+>>>>>@@ -2795,11 +2793,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>>> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>>>>> 		if (!res->flags || res->parent)
+>>>>> 			continue;
+>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags)) {
+>>>>>-			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
+>>>>>-				 i, res);
+>>>>>-			continue;
+>>>>>-		}
+>>>>
+>>>>When any one IOV BAR on the PF is non-M64, none of the VFs can be enabled.
+>>>>Will we still allocate/assign M64 or M32 resources for the IOV BARs? If so,
+>>>>I think it can be avoided.
+>>>>
+>>>
+>>>Don't get your point. You mean to avoid this function?
+>>>
+>>>Or clear the IOV BAR when we found one of it is non-M64?
+>>>
+>>
+>>I mean to clear all IOV BARs in case any more of them are IO or M32. In this
+>>case, the SRIOV capability won't be enabled. Otherwise, the resources for
+>>all IOV BARs are assigned and allocated by PCI subsystem, but they won't
+>>be used. Does it make sense to you?
+>>
+>
+>If we want to save MMIO space, this is not necessary.
+>
+>The IOV BAR will be put into the optional list in assignment stage. So when
+>there is not enough MMIO space, they will not be assigned.
+>
 
---=-gyfxVO/fVz1OA1jA9N2P
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Why it's not necessary? The problem isn't related to MMIO space - enough, or
+not enough as I explained above. Lets have an example here: PF has two
+IOV BARs. One of the them is M32 BAR and the other is M64 BAR. For this case,
+the SRIOV won't be enabled on the PF. Will the code still assign M32 resources
+and M64 resources for those VF BARs (or IOV BARs)? If so, those VF BARs are
+never used. Aren't we wasting resources? And how much MMIO resources are wasted
+in this case?
 
-On Fri, 2015-08-07 at 13:45 +1000, Andrew Donnellan wrote:
-> Simplify the dma_get_required_mask call chain by moving it from pnv_phb t=
-o
-> pci_controller_ops, similar to commit 763d2d8df1ee2b92ff09c
-> ("powerpc/powernv: Move dma_set_mask from pnv_phb to pci_controller_ops")=
-.
->=20
-> Previous call chain:
->=20
->   0) call dma_get_required_mask() (kernel/dma.c)
->   1) call ppc_md.dma_get_required_mask, if it exists. On powernv, that
->      points to pnv_dma_get_required_mask() (platforms/powernv/setup.c)
->   2) device is PCI, therefore call pnv_pci_dma_get_required_mask()
->      (platforms/powernv/pci.c)
->   3) call phb->dma_get_required_mask if it exists
->   4) it only exists in the ioda case, where it points to
->        pnv_pci_ioda_dma_get_required_mask() (platforms/powernv/pci-ioda.c=
-)
->=20
-> New call chain:
->=20
->   0) call dma_get_required_mask() (kernel/dma.c)
->   1) device is PCI, therefore call pci_controller_ops.dma_get_required_ma=
-sk
->      if it exists
->   2) in the ioda case, that points to pnv_pci_ioda_dma_get_required_mask(=
-)
->      (platforms/powernv/pci-ioda.c)
->=20
-> In the p5ioc2 case, the call chain remains the same -
-> dma_get_required_mask() does not find either a ppc_md call or
-> pci_controller_ops call, so it calls __dma_get_required_mask().
->=20
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->=20
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+>For the long term, maybe P9/P10, we will finally adjust the solution to
+>support SRIOV devices with M32 MMIO. So I suggest to leave as it is.
+>
 
---=20
-Regards,
-Daniel
+I don't see how this problem is specific to P8. However, if you don't want
+to improve this case currently. I'm fine. somebody can improve it in future.
 
---=-gyfxVO/fVz1OA1jA9N2P
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCgAGBQJVxCorAAoJEPC3R3P2I92FiuoP/1UiaXurp0AID3Rkmr2Zll/C
-hygPbsu+DWyXApXrcIofrYtetUn4wEOjCNLc80Wu/bWuDgNTVEI07PUlbTN5sbBg
-Ce98b6Csf2y1WXmJ7f8K+w8l+WWSqVd1UNsoHOhHQOE4lBBGQILzf7we8Qjn8fTN
-CNQ4xW/KsKKX2fMszO3K4QqY4hf9RehdhVi6qbLotF4lRUZn31sujpUmFbJZiLVI
-CA00TS0/iqTZ/I1Nbg6udwI+ieAktNAjpmA7B1DSbRXOcYZO6TIYpa9T86cwZoO2
-UMIb86LJgKs8PW5gnp2G6k6xhrePCFscPyJFn3WQmKh/xsJghYJByhkFnTl5f73P
-HSksy3s+nq3TQ2euPvKSSTpDgKISlLjuWDhhJOw+Mdmz43VrzsnPYVU5fE2Lc7XQ
-2Aqmo5qqAf/7JbU8fV5SElQhbl1EJa+B5DPpPJpdf2DIq10ZxSkJ/AX9z1e8S77M
-FOs3dzTI6sXBd+qepjockD43nsdylY3JZftjZXGLqW/PckfUv/5oPp8fxicoiObD
-Z9gZODBpsqtupeJSzRkvts7mSfiwYz2wFVmA+py/VSbFqB7fy7S/+4MuN1OfdOi8
-uw1KjUzeO09TrA6VC+zhM4KL39719H8XGLlD7+7EBXCQqChzNY7t5BKY6NAWTF7q
-cNqeQ/YKtJqOxbFZx7WF
-=82ZU
------END PGP SIGNATURE-----
-
---=-gyfxVO/fVz1OA1jA9N2P--
+>>>>>
+>>>>> 		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
+>>>>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
+>>>>>-- 
+>>>>>1.7.9.5
+>>>>>
+>>>
+>>>-- 
+>>>Richard Yang
+>>>Help you, Help me
+>
+>-- 
+>Richard Yang
+>Help you, Help me
