@@ -1,49 +1,40 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 94D2E1A2C20
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 16:25:32 +1000 (AEST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <wschmidt@us.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E5DB61401C7
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 16:25:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D4AAD1A0075
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 15:55:46 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 7 Aug 2015 11:55:29 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id BA564E005C
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 11:59:42 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t776PMux63373350
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 11:55:23 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t776PLiC016677
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 11:55:22 +0530
-Date: Fri, 7 Aug 2015 14:25:18 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
- benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V2 6/6] powerpc/powernv: allocate discrete PE# when using
- M64 BAR in Single PE mode
-Message-ID: <20150807062518.GA15553@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150731020148.GA6151@richard>
- <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-7-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806053601.GB5636@gwshan> <20150806134141.GA6235@richard>
- <20150807013656.GB20794@gwshan> <20150807023333.GH8292@richard>
- <20150807034301.GA8624@gwshan> <20150807054433.GA7971@richard>
- <20150807055448.GA26338@gwshan>
+ for <linuxppc-dev@lists.ozlabs.org> from <wschmidt@us.ibm.com>;
+ Thu, 6 Aug 2015 23:55:44 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 771B119D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Aug 2015 23:46:38 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t775teHX48169070
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 22:55:40 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t775teK4007749
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Aug 2015 23:55:40 -0600
+In-Reply-To: <20150805041928.GA32178@gate.crashing.org>
+References: <20150805140300.218ef661@kryten>
+ <20150805041928.GA32178@gate.crashing.org>
+Subject: Re: RFC: Reducing the number of non volatile GPRs in the ppc64 kernel
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Alan Modra <amodra@gmail.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Michael Gschwind <mkg@us.ibm.com>,
+ paulus@samba.org, Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Message-ID: <OFD0811845.CF7950C1-ON86257E9A.002065FB-C1257E9A.00208EE6@us.ibm.com>
+From: Bill Schmidt <wschmidt@us.ibm.com>
+Date: Fri, 7 Aug 2015 07:55:37 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150807055448.GA26338@gwshan>
+Content-type: multipart/related;
+ Boundary="0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,140 +44,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 07, 2015 at 03:54:48PM +1000, Gavin Shan wrote:
->On Fri, Aug 07, 2015 at 01:44:33PM +0800, Wei Yang wrote:
->>On Fri, Aug 07, 2015 at 01:43:01PM +1000, Gavin Shan wrote:
->>>On Fri, Aug 07, 2015 at 10:33:33AM +0800, Wei Yang wrote:
->>>>On Fri, Aug 07, 2015 at 11:36:56AM +1000, Gavin Shan wrote:
->>>>>On Thu, Aug 06, 2015 at 09:41:41PM +0800, Wei Yang wrote:
->>>>>>On Thu, Aug 06, 2015 at 03:36:01PM +1000, Gavin Shan wrote:
->>>>>>>On Wed, Aug 05, 2015 at 09:25:03AM +0800, Wei Yang wrote:
->>>>>>>>When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
->>>>>>>>discrete.
->>>>>>>>
->>>>>>>>This patch restructures the patch to allocate discrete PE# for VFs when M64
->>>>>>>>BAR is set to Single PE mode.
->>>>>>>>
->>>>>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>>>>>>---
->>>>>>>> arch/powerpc/include/asm/pci-bridge.h     |    2 +-
->>>>>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   69 +++++++++++++++++++++--------
->>>>>>>> 2 files changed, 51 insertions(+), 20 deletions(-)
->>>>>>>>
->>>>>>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>>>>>>index 8aeba4c..72415c7 100644
->>>>>>>>--- a/arch/powerpc/include/asm/pci-bridge.h
->>>>>>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
->>>>>>>>@@ -213,7 +213,7 @@ struct pci_dn {
->>>>>>>> #ifdef CONFIG_PCI_IOV
->>>>>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->>>>>>>> 	u16     num_vfs;		/* number of VFs enabled*/
->>>>>>>>-	int     offset;			/* PE# for the first VF PE */
->>>>>>>>+	int     *offset;		/* PE# for the first VF PE or array */
->>>>>>>> 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
->>>>>>>> #define IODA_INVALID_M64        (-1)
->>>>>>>> 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
->>>>>>>
->>>>>>>how about renaming "offset" to "pe_num_map", or "pe_map" ? Similar to the comments
->>>>>>>I gave to the "m64_bar_map", num_of_max_vfs entries can be allocated. Though not
->>>>>>>all of them will be used, not too much memory will be wasted.
->>>>>>>
->>>>>>
->>>>>>Thanks for your comment.
->>>>>>
->>>>>>I have thought about change the name to make it more self explain. While
->>>>>>another fact I want to take in is this field is also used to be reflect the
->>>>>>shift offset when M64 BAR is used in the Shared Mode. So I maintain the name.
->>>>>>
->>>>>>How about use "enum", one maintain the name "offset", and another one rename to
->>>>>>"pe_num_map". And use the meaningful name at proper place?
->>>>>>
->>>>
->>>>So I suppose you agree with my naming proposal.
->>>>
->>>
->>>No, I dislike the "enum" things.
->>>
->>
->>OK, then you suggest to rename it pe_num_map or keep it as offset?
->>
->
->pe_num_map would be better.
->
->>>>>
->>>>>Ok. I'm explaining it with more details. There are two cases: single vs shared
->>>>>mode. When PHB M64 BARs run in single mode, you need an array to track the
->>>>>allocated discrete PE#. The VF_index is the index to the array. When PHB M64
->>>>>BARs run in shared mode, you need continuous PE#. No array required for this
->>>>>case. Instead, the starting PE# should be stored to somewhere, which can
->>>>>be pdn->offset[0] simply.
->>>>>
->>>>>So when allocating memory for this array, you just simply allocate (sizeof(*pdn->offset)
->>>>>*max_vf_num) no matter what mode PHB's M64 BARs will run in. The point is nobody
->>>>>can enable (max_vf_num + 1) VFs.
->>>>
->>>>The max_vf_num is 15?
->>>>
->>>
->>>I don't understand why you said: the max_vf_num is 15. Since max_vf_num is variable
->>>on different PFs, how can it be fixed value - 15 ?
->>>
->>
->>In Shared PE case, only one int to indicate the start PE# is fine.
->>In Single PE mode, we totally could enable 15 VF, the same number of PEs for
->>each VF, which is limited by the number M64 BARs we have in the system.
->>
->>If not, the number you expected is total_vfs?
->>
->
->then it should be min(total_vfs, phb->ioda.m64_bar_idx), isn't it? 
->
->>>>>
->>>>>With above way, the arrays for PE# and M64 BAR remapping needn't be allocated
->>>>>when enabling SRIOV capability and releasing on disabling SRIOV capability.
->>>>>Instead, those two arrays can be allocated during resource fixup time and free'ed
->>>>>when destroying the pdn.
->>>>>
->>>>
->>>>My same point of view like previous, if the memory is not in the concern, how
->>>>about define them static?
->>>>
->>>
->>>It's a bad idea from my review. How many entries this array is going to have?
->>>256 * NUM_OF_MAX_VF_BARS ?
->>>
->>
->>No.
->>
->>It has 15 * 6, 15 VFs we could enable at most and 6 VF BARs a VF could have at
->>most.
->>
->
->It's min(total_vfs, phb->ioda.m64_bar_idx) VFs that can be enabled at maximal
->degree, no?
->
+--0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
+Content-type: multipart/alternative;
+	Boundary="1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B"
 
-Yes, you are right. The number 15 is the one I used when the field is static.
-If we want to allocate it dynamically, we need to choose the smaller one.
+--1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: quoted-printable
 
-While I suggest to even improve this formula to min(num_vfs, m64_bar_idx),
-since num_vfs <= total_vfs always. That's why num_vfs entries are allocate in
-the code. 
 
->>>>And for the long term, we may support more VFs. Then at that moment, we need
->>>>to restructure the code to meet it.
->>>>
->>>>So I suggest if we want to allocate it dynamically, we allocate the exact
->>>>number of space.
->>>>
->>>
->>>Fine... it can be improved when it has to be, as you said.
->>>
->>
->>-- 
->>Richard Yang
->>Help you, Help me
+I agree with Segher.  We already know we have opportunities to do a bet=
+ter
+job with shrink-wrapping (pushing this kind of useless activity down pa=
+st
+early exits), so having examples of code to look at to improve this wou=
+ld
+be useful.
 
--- 
-Richard Yang
-Help you, Help me
+-- Bill
+
+Bill Schmidt, Ph.D.
+Linux on Power Toolchain
+IBM Linux Technology Center
+wschmidt@us.ibm.com   (507) 319-6873
+
+
+
+
+From:	Segher Boessenkool <segher@kernel.crashing.org>
+To:	Anton Blanchard <anton@samba.org>
+Cc:	linuxppc-dev@lists.ozlabs.org, Michael
+            Gschwind/Watson/IBM@IBMUS, Alan Modra <amodra@gmail.com>, B=
+ill
+            Schmidt/Rochester/IBM@IBMUS, Ulrich Weigand
+            <Ulrich.Weigand@de.ibm.com>, paulus@samba.org
+Date:	08/05/2015 06:20 AM
+Subject:	Re: RFC: Reducing the number of non volatile GPRs in the ppc64=
+
+            kernel
+
+
+
+Hi Anton,
+
+On Wed, Aug 05, 2015 at 02:03:00PM +1000, Anton Blanchard wrote:
+> While looking at traces of kernel workloads, I noticed places where g=
+cc
+> used a large number of non volatiles. Some of these functions
+> did very little work, and we spent most of our time saving the
+> non volatiles to the stack and reading them back.
+
+That is something that should be fixed in GCC -- do you have an example=
+
+of such a function?
+
+> It made me wonder if we have the right ratio of volatile to non
+> volatile GPRs. Since the kernel is completely self contained, we coul=
+d
+> potentially change that ratio.
+>
+> Attached is a quick hack to gcc and the kernel to decrease the number=
+
+> of non volatile GPRs to 8. I'm not sure if this is a good idea (and i=
+f
+> the volatile to non volatile ratio is right), but this gives us
+> something to play with.
+
+Instead of the GCC hack you can add a bunch of -fcall-used-r14 etc.
+options; does that not work for you?
+
+
+Segher
+
+
+=
+
+--1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
+Content-type: text/html; charset=US-ASCII
+Content-Disposition: inline
+Content-transfer-encoding: quoted-printable
+
+<html><body>
+<p><font size=3D"2" face=3D"sans-serif">I agree with Segher. &nbsp;We a=
+lready know we have opportunities to do a better job with shrink-wrappi=
+ng (pushing this kind of useless activity down past early exits), so ha=
+ving examples of code to look at to improve this would be useful.<br>
+<br>
+-- Bill<br>
+<br>
+Bill Schmidt, Ph.D.<br>
+Linux on Power Toolchain<br>
+IBM Linux Technology Center<br>
+wschmidt@us.ibm.com &nbsp; (507) 319-6873<br>
+</font><br>
+<br>
+<img width=3D"16" height=3D"16" src=3D"cid:1__=3D09BBF409DFB3E36B8f9e8a=
+93df938@us.ibm.com" border=3D"0" alt=3D"Inactive hide details for Seghe=
+r Boessenkool ---08/05/2015 06:20:02 AM---Hi Anton, On Wed, Aug 05, 201=
+5 at 02:03:00PM +1000, An"><font size=3D"2" color=3D"#424282" face=3D"s=
+ans-serif">Segher Boessenkool ---08/05/2015 06:20:02 AM---Hi Anton, On =
+Wed, Aug 05, 2015 at 02:03:00PM +1000, Anton Blanchard wrote:</font><br=
+>
+<br>
+<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">From:	</font><fo=
+nt size=3D"1" face=3D"sans-serif">Segher Boessenkool &lt;segher@kernel.=
+crashing.org&gt;</font><br>
+<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">To:	</font><font=
+ size=3D"1" face=3D"sans-serif">Anton Blanchard &lt;anton@samba.org&gt;=
+</font><br>
+<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">Cc:	</font><font=
+ size=3D"1" face=3D"sans-serif">linuxppc-dev@lists.ozlabs.org, Michael =
+Gschwind/Watson/IBM@IBMUS, Alan Modra &lt;amodra@gmail.com&gt;, Bill Sc=
+hmidt/Rochester/IBM@IBMUS, Ulrich Weigand &lt;Ulrich.Weigand@de.ibm.com=
+&gt;, paulus@samba.org</font><br>
+<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">Date:	</font><fo=
+nt size=3D"1" face=3D"sans-serif">08/05/2015 06:20 AM</font><br>
+<font size=3D"1" color=3D"#5F5F5F" face=3D"sans-serif">Subject:	</font>=
+<font size=3D"1" face=3D"sans-serif">Re: RFC: Reducing the number of no=
+n volatile GPRs in the ppc64 kernel</font><br>
+<hr width=3D"100%" size=3D"2" align=3D"left" noshade style=3D"color:#80=
+91A5; "><br>
+<br>
+<br>
+<tt><font size=3D"2">Hi Anton,<br>
+<br>
+On Wed, Aug 05, 2015 at 02:03:00PM +1000, Anton Blanchard wrote:<br>
+&gt; While looking at traces of kernel workloads, I noticed places wher=
+e gcc<br>
+&gt; used a large number of non volatiles. Some of these functions<br>
+&gt; did very little work, and we spent most of our time saving the<br>=
+
+&gt; non volatiles to the stack and reading them back.<br>
+<br>
+That is something that should be fixed in GCC -- do you have an example=
+<br>
+of such a function?<br>
+<br>
+&gt; It made me wonder if we have the right ratio of volatile to non<br=
+>
+&gt; volatile GPRs. Since the kernel is completely self contained, we c=
+ould<br>
+&gt; potentially change that ratio.<br>
+&gt; <br>
+&gt; Attached is a quick hack to gcc and the kernel to decrease the num=
+ber<br>
+&gt; of non volatile GPRs to 8. I'm not sure if this is a good idea (an=
+d if<br>
+&gt; the volatile to non volatile ratio is right), but this gives us<br=
+>
+&gt; something to play with.<br>
+<br>
+Instead of the GCC hack you can add a bunch of -fcall-used-r14 etc.<br>=
+
+options; does that not work for you?<br>
+<br>
+<br>
+Segher<br>
+<br>
+</font></tt><br>
+<br>
+</body></html>=
+
+
+--1__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B--
+
+
+--0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B
+Content-type: image/gif;
+	name="graycol.gif"
+Content-Disposition: inline; filename="graycol.gif"
+Content-ID: <1__=09BBF409DFB3E36B8f9e8a93df938@us.ibm.com>
+Content-transfer-encoding: base64
+
+R0lGODlhEAAQAKECAMzMzAAAAP///wAAACH5BAEAAAIALAAAAAAQABAAAAIXlI+py+0PopwxUbpu
+ZRfKZ2zgSJbmSRYAIf4fT3B0aW1pemVkIGJ5IFVsZWFkIFNtYXJ0U2F2ZXIhAAA7
+
+--0__=09BBF409DFB3E36B8f9e8a93df938690918c09BBF409DFB3E36B--
