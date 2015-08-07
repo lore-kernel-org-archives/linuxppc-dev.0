@@ -1,19 +1,49 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4EBEC1A0075
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 16:19:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: aneesh.kumar@linux.vnet.ibm.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH 5/5] powerpc/mm: Drop CONFIG_PPC_HAS_HASH_64K
-Date: Fri,  7 Aug 2015 16:19:47 +1000
-Message-Id: <1438928387-6454-5-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
-References: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 94D2E1A2C20
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 16:25:32 +1000 (AEST)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E5DB61401C7
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 16:25:31 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 7 Aug 2015 11:55:29 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id BA564E005C
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 11:59:42 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t776PMux63373350
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 11:55:23 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t776PLiC016677
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Aug 2015 11:55:22 +0530
+Date: Fri, 7 Aug 2015 14:25:18 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH V2 6/6] powerpc/powernv: allocate discrete PE# when using
+ M64 BAR in Single PE mode
+Message-ID: <20150807062518.GA15553@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150731020148.GA6151@richard>
+ <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1438737903-10399-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150806053601.GB5636@gwshan> <20150806134141.GA6235@richard>
+ <20150807013656.GB20794@gwshan> <20150807023333.GH8292@richard>
+ <20150807034301.GA8624@gwshan> <20150807054433.GA7971@richard>
+ <20150807055448.GA26338@gwshan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150807055448.GA26338@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,121 +53,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The relation between CONFIG_PPC_HAS_HASH_64K and CONFIG_PPC_64K_PAGES is
-painfully complicated.
+On Fri, Aug 07, 2015 at 03:54:48PM +1000, Gavin Shan wrote:
+>On Fri, Aug 07, 2015 at 01:44:33PM +0800, Wei Yang wrote:
+>>On Fri, Aug 07, 2015 at 01:43:01PM +1000, Gavin Shan wrote:
+>>>On Fri, Aug 07, 2015 at 10:33:33AM +0800, Wei Yang wrote:
+>>>>On Fri, Aug 07, 2015 at 11:36:56AM +1000, Gavin Shan wrote:
+>>>>>On Thu, Aug 06, 2015 at 09:41:41PM +0800, Wei Yang wrote:
+>>>>>>On Thu, Aug 06, 2015 at 03:36:01PM +1000, Gavin Shan wrote:
+>>>>>>>On Wed, Aug 05, 2015 at 09:25:03AM +0800, Wei Yang wrote:
+>>>>>>>>When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
+>>>>>>>>discrete.
+>>>>>>>>
+>>>>>>>>This patch restructures the patch to allocate discrete PE# for VFs when M64
+>>>>>>>>BAR is set to Single PE mode.
+>>>>>>>>
+>>>>>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>>>>>---
+>>>>>>>> arch/powerpc/include/asm/pci-bridge.h     |    2 +-
+>>>>>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   69 +++++++++++++++++++++--------
+>>>>>>>> 2 files changed, 51 insertions(+), 20 deletions(-)
+>>>>>>>>
+>>>>>>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>>>>>>>index 8aeba4c..72415c7 100644
+>>>>>>>>--- a/arch/powerpc/include/asm/pci-bridge.h
+>>>>>>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>>>>>>>>@@ -213,7 +213,7 @@ struct pci_dn {
+>>>>>>>> #ifdef CONFIG_PCI_IOV
+>>>>>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>>>>>>>> 	u16     num_vfs;		/* number of VFs enabled*/
+>>>>>>>>-	int     offset;			/* PE# for the first VF PE */
+>>>>>>>>+	int     *offset;		/* PE# for the first VF PE or array */
+>>>>>>>> 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+>>>>>>>> #define IODA_INVALID_M64        (-1)
+>>>>>>>> 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+>>>>>>>
+>>>>>>>how about renaming "offset" to "pe_num_map", or "pe_map" ? Similar to the comments
+>>>>>>>I gave to the "m64_bar_map", num_of_max_vfs entries can be allocated. Though not
+>>>>>>>all of them will be used, not too much memory will be wasted.
+>>>>>>>
+>>>>>>
+>>>>>>Thanks for your comment.
+>>>>>>
+>>>>>>I have thought about change the name to make it more self explain. While
+>>>>>>another fact I want to take in is this field is also used to be reflect the
+>>>>>>shift offset when M64 BAR is used in the Shared Mode. So I maintain the name.
+>>>>>>
+>>>>>>How about use "enum", one maintain the name "offset", and another one rename to
+>>>>>>"pe_num_map". And use the meaningful name at proper place?
+>>>>>>
+>>>>
+>>>>So I suppose you agree with my naming proposal.
+>>>>
+>>>
+>>>No, I dislike the "enum" things.
+>>>
+>>
+>>OK, then you suggest to rename it pe_num_map or keep it as offset?
+>>
+>
+>pe_num_map would be better.
+>
+>>>>>
+>>>>>Ok. I'm explaining it with more details. There are two cases: single vs shared
+>>>>>mode. When PHB M64 BARs run in single mode, you need an array to track the
+>>>>>allocated discrete PE#. The VF_index is the index to the array. When PHB M64
+>>>>>BARs run in shared mode, you need continuous PE#. No array required for this
+>>>>>case. Instead, the starting PE# should be stored to somewhere, which can
+>>>>>be pdn->offset[0] simply.
+>>>>>
+>>>>>So when allocating memory for this array, you just simply allocate (sizeof(*pdn->offset)
+>>>>>*max_vf_num) no matter what mode PHB's M64 BARs will run in. The point is nobody
+>>>>>can enable (max_vf_num + 1) VFs.
+>>>>
+>>>>The max_vf_num is 15?
+>>>>
+>>>
+>>>I don't understand why you said: the max_vf_num is 15. Since max_vf_num is variable
+>>>on different PFs, how can it be fixed value - 15 ?
+>>>
+>>
+>>In Shared PE case, only one int to indicate the start PE# is fine.
+>>In Single PE mode, we totally could enable 15 VF, the same number of PEs for
+>>each VF, which is limited by the number M64 BARs we have in the system.
+>>
+>>If not, the number you expected is total_vfs?
+>>
+>
+>then it should be min(total_vfs, phb->ioda.m64_bar_idx), isn't it? 
+>
+>>>>>
+>>>>>With above way, the arrays for PE# and M64 BAR remapping needn't be allocated
+>>>>>when enabling SRIOV capability and releasing on disabling SRIOV capability.
+>>>>>Instead, those two arrays can be allocated during resource fixup time and free'ed
+>>>>>when destroying the pdn.
+>>>>>
+>>>>
+>>>>My same point of view like previous, if the memory is not in the concern, how
+>>>>about define them static?
+>>>>
+>>>
+>>>It's a bad idea from my review. How many entries this array is going to have?
+>>>256 * NUM_OF_MAX_VF_BARS ?
+>>>
+>>
+>>No.
+>>
+>>It has 15 * 6, 15 VFs we could enable at most and 6 VF BARs a VF could have at
+>>most.
+>>
+>
+>It's min(total_vfs, phb->ioda.m64_bar_idx) VFs that can be enabled at maximal
+>degree, no?
+>
 
-But if we rearrange it enough we can see that PPC_HAS_HASH_64K
-essentially depends on PPC_STD_MMU_64 && PPC_64K_PAGES.
+Yes, you are right. The number 15 is the one I used when the field is static.
+If we want to allocate it dynamically, we need to choose the smaller one.
 
-We can then notice that PPC_HAS_HASH_64K is used in files that are only
-built for PPC_STD_MMU_64, meaning it's equivalent to PPC_64K_PAGES.
+While I suggest to even improve this formula to min(num_vfs, m64_bar_idx),
+since num_vfs <= total_vfs always. That's why num_vfs entries are allocate in
+the code. 
 
-So replace all uses and drop it.
+>>>>And for the long term, we may support more VFs. Then at that moment, we need
+>>>>to restructure the code to meet it.
+>>>>
+>>>>So I suggest if we want to allocate it dynamically, we allocate the exact
+>>>>number of space.
+>>>>
+>>>
+>>>Fine... it can be improved when it has to be, as you said.
+>>>
+>>
+>>-- 
+>>Richard Yang
+>>Help you, Help me
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Kconfig            |  6 ------
- arch/powerpc/mm/hash_low_64.S   |  4 ++--
- arch/powerpc/mm/hash_utils_64.c | 12 ++++++------
- 3 files changed, 8 insertions(+), 14 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3a4ba2809201..1e69dee29be3 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -514,11 +514,6 @@ config NODES_SPAN_OTHER_NODES
- 	def_bool y
- 	depends on NEED_MULTIPLE_NODES
- 
--config PPC_HAS_HASH_64K
--	bool
--	depends on PPC64
--	default n
--
- config STDBINUTILS
- 	bool "Using standard binutils settings"
- 	depends on 44x
-@@ -566,7 +561,6 @@ config PPC_16K_PAGES
- config PPC_64K_PAGES
- 	bool "64k page size"
- 	depends on !PPC_FSL_BOOK3E && (44x || PPC_STD_MMU_64 || PPC_BOOK3E_64)
--	select PPC_HAS_HASH_64K if PPC_STD_MMU_64
- 
- config PPC_256K_PAGES
- 	bool "256k page size"
-diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
-index 463174a4a647..3b49e3295901 100644
---- a/arch/powerpc/mm/hash_low_64.S
-+++ b/arch/powerpc/mm/hash_low_64.S
-@@ -701,7 +701,7 @@ htab_pte_insert_failure:
- 
- #endif /* CONFIG_PPC_64K_PAGES */
- 
--#ifdef CONFIG_PPC_HAS_HASH_64K
-+#ifdef CONFIG_PPC_64K_PAGES
- 
- /*****************************************************************************
-  *                                                                           *
-@@ -993,7 +993,7 @@ ht64_pte_insert_failure:
- 	b	ht64_bail
- 
- 
--#endif /* CONFIG_PPC_HAS_HASH_64K */
-+#endif /* CONFIG_PPC_64K_PAGES */
- 
- 
- /*****************************************************************************
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 5ec987f65b2c..aee70171355b 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -640,7 +640,7 @@ extern u32 ht64_call_hpte_updatepp[];
- 
- static void __init htab_finish_init(void)
- {
--#ifdef CONFIG_PPC_HAS_HASH_64K
-+#ifdef CONFIG_PPC_64K_PAGES
- 	patch_branch(ht64_call_hpte_insert1,
- 		ppc_function_entry(ppc_md.hpte_insert),
- 		BRANCH_SET_LINK);
-@@ -653,7 +653,7 @@ static void __init htab_finish_init(void)
- 	patch_branch(ht64_call_hpte_updatepp,
- 		ppc_function_entry(ppc_md.hpte_updatepp),
- 		BRANCH_SET_LINK);
--#endif /* CONFIG_PPC_HAS_HASH_64K */
-+#endif /* CONFIG_PPC_64K_PAGES */
- 
- 	patch_branch(htab_call_hpte_insert1,
- 		ppc_function_entry(ppc_md.hpte_insert),
-@@ -1151,12 +1151,12 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
- 		check_paca_psize(ea, mm, psize, user_region);
- #endif /* CONFIG_PPC_64K_PAGES */
- 
--#ifdef CONFIG_PPC_HAS_HASH_64K
-+#ifdef CONFIG_PPC_64K_PAGES
- 	if (psize == MMU_PAGE_64K)
- 		rc = __hash_page_64K(ea, access, vsid, ptep, trap,
- 				     flags, ssize);
- 	else
--#endif /* CONFIG_PPC_HAS_HASH_64K */
-+#endif /* CONFIG_PPC_64K_PAGES */
- 	{
- 		int spp = subpage_protection(mm, ea);
- 		if (access & spp)
-@@ -1264,12 +1264,12 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
- 		update_flags |= HPTE_LOCAL_UPDATE;
- 
- 	/* Hash it in */
--#ifdef CONFIG_PPC_HAS_HASH_64K
-+#ifdef CONFIG_PPC_64K_PAGES
- 	if (mm->context.user_psize == MMU_PAGE_64K)
- 		rc = __hash_page_64K(ea, access, vsid, ptep, trap,
- 				     update_flags, ssize);
- 	else
--#endif /* CONFIG_PPC_HAS_HASH_64K */
-+#endif /* CONFIG_PPC_64K_PAGES */
- 		rc = __hash_page_4K(ea, access, vsid, ptep, trap, update_flags,
- 				    ssize, subpage_protection(mm, ea));
- 
 -- 
-2.1.4
+Richard Yang
+Help you, Help me
