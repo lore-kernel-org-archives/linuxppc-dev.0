@@ -1,33 +1,25 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0120.outbound.protection.outlook.com [207.46.100.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E81A21A0021
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 18:13:22 +1000 (AEST)
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3C189140280
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 18:13:22 +1000 (AEST)
-Received: by pabxd6 with SMTP id xd6so64774734pab.2
- for <linuxppc-dev@ozlabs.org>; Fri, 07 Aug 2015 01:13:20 -0700 (PDT)
-Subject: Re: [PATCH V2 3/6] powerpc/powernv: use one M64 BAR in Single PE mode
- for one VF BAR
-To: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <20150731020148.GA6151@richard>
- <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-4-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806052025.GC28524@gwshan> <20150806093602.GA13055@richard>
- <20150806100701.GA5988@gwshan> <20150807014818.GC8292@richard>
-Cc: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55C4689A.6020805@ozlabs.ru>
-Date: Fri, 7 Aug 2015 18:13:14 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1B3D1A0926
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 18:14:44 +1000 (AEST)
+From: Hongtao Jia <hongtao.jia@freescale.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH V2] QorIQ/TMU: add thermal management support based on TMU
+Date: Fri, 7 Aug 2015 08:14:37 +0000
+Message-ID: <BLUPR03MB149127FBA4DC1504E81A31BE1730@BLUPR03MB149.namprd03.prod.outlook.com>
+References: <1438150779-22923-1-git-send-email-hongtao.jia@freescale.com>
+ <20150730065543.GB6157@localhost.localdomain>
+ <BLUPR03MB14917AE1F5EDBF5949F6DECE18B0@BLUPR03MB149.namprd03.prod.outlook.com>
+ <20150805194239.GA1230@localhost.localdomain>
+In-Reply-To: <20150805194239.GA1230@localhost.localdomain>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <20150807014818.GC8292@richard>
-Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,105 +29,588 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/07/2015 11:48 AM, Wei Yang wrote:
-> On Thu, Aug 06, 2015 at 08:07:01PM +1000, Gavin Shan wrote:
->> On Thu, Aug 06, 2015 at 05:36:02PM +0800, Wei Yang wrote:
->>> On Thu, Aug 06, 2015 at 03:20:25PM +1000, Gavin Shan wrote:
->>>> On Wed, Aug 05, 2015 at 09:25:00AM +0800, Wei Yang wrote:
->>>>> In current implementation, when VF BAR is bigger than 64MB, it uses 4 M64
->>>>> BAR in Single PE mode to cover the number of VFs required to be enabled.
->>>>> By doing so, several VFs would be in one VF Group and leads to interference
->>>>> between VFs in the same group.
->>>>>
->>>>> This patch changes the design by using one M64 BAR in Single PE mode for
->>>>> one VF BAR. This gives absolute isolation for VFs.
->>>>>
->>>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>>> ---
->>>>> arch/powerpc/include/asm/pci-bridge.h     |    5 +-
->>>>> arch/powerpc/platforms/powernv/pci-ioda.c |  180 ++++++++++++-----------------
->>>>> 2 files changed, 76 insertions(+), 109 deletions(-)
->>>>>
->>>>> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>>> index 712add5..8aeba4c 100644
->>>>> --- a/arch/powerpc/include/asm/pci-bridge.h
->>>>> +++ b/arch/powerpc/include/asm/pci-bridge.h
->>>>> @@ -214,10 +214,9 @@ struct pci_dn {
->>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->>>>> 	u16     num_vfs;		/* number of VFs enabled*/
->>>>> 	int     offset;			/* PE# for the first VF PE */
->>>>> -#define M64_PER_IOV 4
->>>>> -	int     m64_per_iov;
->>>>> +	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
->>>>> #define IODA_INVALID_M64        (-1)
->>>>> -	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
->>>>> +	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
->>>>
->>>> It can be explicit? For example:
->>>>
->>>> 	int	*m64_map;
->>>>
->>>> 	/* Initialization */
->>>> 	size_t size = sizeof(*pdn->m64_map) * PCI_SRIOV_NUM_BARS * num_of_max_VFs;
->>>> 	pdn->m64_map = kmalloc(size, GFP_KERNEL);
->>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
->>>> 		for (j = 0; j < num_of_max_VFs; j++)
->>>> 			pdn->m64_map[i * PCI_SRIOV_NUM_BARS + j] = PNV_INVALID_M64;
->>>>
->>>> 	/* Destroy */
->>>> 	int step = 1;
->>>>
->>>> 	if (!pdn->m64_single_mode)
->>>> 		step = phb->ioda.total_pe;
->>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS * num_of_max_VFs; i += step)
->>>> 		if (pdn->m64_map[i] == PNV_INVALID_M64)
->>>> 			continue;
->>>>
->>>> 		/* Unmap the window */
->>>> 	
->>>
->>> The m64_map is a pointer to an array with 6 elements, which represents the 6
->>> M64 BAR index for the 6 VF BARs.
->>>
->>>     When we use Shared Mode, one array is allocated. The six elements
->>>     represents the six M64 BAR(at most) used to map the whole IOV BAR.
->>>
->>>     When we use Single Mode, num_vfs array is allocate. Each array represents
->>>     the map between one VF's BAR and M64 BAR index.
->>>
->>> During the map and un-map, M64 BAR is assigned one by one in VF BAR's order.
->>> So I think the code is explicit.
->>>
->>> In your code, you allocate a big one dimension array to hold the M64 BAR
->>> index. It works, while I don't think this is more explicit than original code.
->>>
->>
->> When M64 is in Single Mode, array with (num_vfs * 6) entries is allocated
->> because every VF BAR (6 at most) will have one corresponding PHB M64 BAR.
->> Anything I missed?
->>
->> The point in my code is you needn't worry about the mode (single vs shared)
->> As I said, not too much memory wasted. However, it's up to you.
->>
->
-> If we don't want to save some memory, how about just define them static
-> instead of dynamically allocate?
+Thanks for your comments.
+Please see my questions inline.
+
+Thanks.
+---
+Best Regards,
+Hongtao
 
 
-I like static and you can make it uint8_t[][] (or char[][]) as these 
-indexes are not going to be bigger than 255 anyway.
+> -----Original Message-----
+> From: Eduardo Valentin [mailto:edubezval@gmail.com]
+> Sent: Thursday, August 06, 2015 3:43 AM
+> To: Jia Hongtao-B38951
+> Cc: linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Wood Scott-
+> B07421
+> Subject: Re: [PATCH V2] QorIQ/TMU: add thermal management support based
+> on TMU
+>=20
+> On Thu, Jul 30, 2015 at 08:13:09AM +0000, Hongtao Jia wrote:
+> > - "Any specific reason why not using OF thermal?"
+> > - No, actually.
+> >
+> > I'd like to use OF thermal after some clarification.
+> >
+> > Regarding to "cooling-maps". For some cases there should be more than
+> > one cpus as cooling device and they are independent.
+> > 1. Let's say 4. So we need to provide 4 maps like map0-map3. Right?
+>=20
+> That would depend on the amount of sensors you have. Do you have one
+> sensor per cpu? if the answer is yes, then you probably want to have four
+> different map entries, yes, but one on each thermal zone of each cpu
+> temperature sensor. if the answer is no, then you would need to have all
+> the maps in the same thermal zone.
+>=20
+> > 2. "cooling-max-level" may vary depend on switch settings or firmware.
+> Is that
+> >    OK if I do not provide "cooling-min-level" and "cooling-max-level"
+> property?
+>=20
+> That is already achievable by using the cooling-device property of a
+> cooling map.
+>=20
+> Please have a look in the example section of the
+> Documentation/devicetree/bindings/thermal/thermal.txt
 
+Yes, I read this file.
+So in my understanding:
+There is no need to provide "cooling-min-level" and "cooling-max-level" pro=
+perty.
+THERMAL_NO_LIMIT value in cooling device node will indicate the driver to
+automatically parse the min and max state, right?
 
+Talking about THERMAL_NO_LIMIT, I need to #include <dt-bindings/thermal/the=
+rmal.h>
+to provide the definition. But I got compiling error when build dtb file.
+I did some research and using "make t1040qds.dtb" in order to involve prepr=
+ocessor.
+But with simply adding "#include <dt-bindings/thermal/thermal.h>" to t1040s=
+i-post.dtsi
+at line 35 I still got error like this:
+Error: arch/powerpc/boot/dts/fsl/t1040si-post.dtsi:35.1-9 syntax error
+FATAL ERROR: Unable to parse input tree
 
->> I'm not fan of "int (*m64_map)[PCI_SRIOV_NUM_BARS]". Instead, you can replace
->> it with "int *m64_map" and calculate its size using following formula:
->>
->> 	sizeof(*pdn->m64_map) * PCI_SRIOV_NUM_BARS;
->>
->> 	sizeof(*pdn->m64_map) * PCI_SRIOV_NUM_BARS * num_vfs;
+Could you help me out here.
+Thanks.
 
-
-
-
--- 
-Alexey
+>=20
+> Let me know if you need further clarification.
+>=20
+>=20
+> BR,
+>=20
+> Eduardo Valentin
+>=20
+> >
+> > Thanks.
+> > -Hongtao
+> >
+> >
+> > > -----Original Message-----
+> > > From: Eduardo Valentin [mailto:edubezval@gmail.com]
+> > > Sent: Thursday, July 30, 2015 2:56 PM
+> > > To: Jia Hongtao-B38951
+> > > Cc: linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Wood
+> > > Scott-
+> > > B07421
+> > > Subject: Re: [PATCH V2] QorIQ/TMU: add thermal management support
+> > > based on TMU
+> > >
+> > > On Wed, Jul 29, 2015 at 02:19:39PM +0800, Jia Hongtao wrote:
+> > > > It supports one critical trip point and one passive trip point.
+> > > > The cpufreq is used as the cooling device to throttle CPUs when
+> > > > the passive trip is crossed.
+> > > >
+> > > > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> > > > ---
+> > > > This patch based on:
+> > > > http://patchwork.ozlabs.org/patch/482987/
+> > > >
+> > > > Changes for V2:
+> > > > * Add tmu-range parse.
+> > > > * Use default trend hook.
+> > > > * Using latest thermal_zone_bind_cooling_device API.
+> > > > * Add calibration check during initialization.
+> > > > * Disable/enalbe device when suspend/resume.
+> > > >
+> > > >  drivers/thermal/Kconfig         |  11 ++
+> > > >  drivers/thermal/Makefile        |   1 +
+> > > >  drivers/thermal/qoriq_thermal.c | 406
+> > > > ++++++++++++++++++++++++++++++++++++++++
+> > > >  3 files changed, 418 insertions(+)  create mode 100644
+> > > > drivers/thermal/qoriq_thermal.c
+> > > >
+> > > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > > index
+> > > > 118938e..a200745 100644
+> > > > --- a/drivers/thermal/Kconfig
+> > > > +++ b/drivers/thermal/Kconfig
+> > > > @@ -180,6 +180,17 @@ config IMX_THERMAL
+> > > >  	  cpufreq is used as the cooling device to throttle CPUs when
+> the
+> > > >  	  passive trip is crossed.
+> > > >
+> > > > +config QORIQ_THERMAL
+> > > > +	tristate "Freescale QorIQ Thermal Monitoring Unit"
+> > > > +	depends on CPU_THERMAL
+> > > > +	depends on OF
+> > > > +	default n
+> > > > +	help
+> > > > +	  Enable thermal management based on Freescale QorIQ Thermal
+> > > Monitoring
+> > > > +	  Unit (TMU). It supports one critical trip point and one
+> > > > +passive
+> > > trip
+> > > > +	  point. The cpufreq is used as the cooling device to
+> throttle
+> > > > +CPUs
+> > > when
+> > > > +	  the passive trip is crossed.
+> > > > +
+> > > >  config SPEAR_THERMAL
+> > > >  	bool "SPEAr thermal sensor driver"
+> > > >  	depends on PLAT_SPEAR
+> > > > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > > > index
+> > > > 535dfee..8c25859 100644
+> > > > --- a/drivers/thermal/Makefile
+> > > > +++ b/drivers/thermal/Makefile
+> > > > @@ -33,6 +33,7 @@ obj-$(CONFIG_DOVE_THERMAL)  	+=3D dove_thermal.o
+> > > >  obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
+> > > >  obj-$(CONFIG_ARMADA_THERMAL)	+=3D armada_thermal.o
+> > > >  obj-$(CONFIG_IMX_THERMAL)	+=3D imx_thermal.o
+> > > > +obj-$(CONFIG_QORIQ_THERMAL)	+=3D qoriq_thermal.o
+> > > >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D
+> db8500_cpufreq_cooling.o
+> > > >  obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
+> > > >  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+=3D x86_pkg_temp_thermal.o
+> > > > diff --git a/drivers/thermal/qoriq_thermal.c
+> > > > b/drivers/thermal/qoriq_thermal.c new file mode 100644 index
+> > > > 0000000..0694f42
+> > > > --- /dev/null
+> > > > +++ b/drivers/thermal/qoriq_thermal.c
+> > > > @@ -0,0 +1,406 @@
+> > > > +/*
+> > > > + * Copyright 2015 Freescale Semiconductor, Inc.
+> > > > + *
+> > > > + * This program is free software; you can redistribute it and/or
+> > > > +modify it
+> > > > + * under the terms and conditions of the GNU General Public
+> > > > +License,
+> > > > + * version 2, as published by the Free Software Foundation.
+> > > > + *
+> > > > + * This program is distributed in the hope it will be useful, but
+> > > > +WITHOUT
+> > > > + * ANY WARRANTY; without even the implied warranty of
+> > > > +MERCHANTABILITY or
+> > > > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+> > > > +License for
+> > > > + * more details.
+> > > > + *
+> > > > + */
+> > > > +
+> > > > +/*
+> > > > + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)  */
+> > > > +#include <linux/cpufreq.h> #include <linux/cpu_cooling.h>
+> > > > +#include <linux/module.h> #include <linux/platform_device.h>
+> > > > +#include <linux/err.h> #include <linux/io.h> #include
+> > > > +<linux/of.h> #include <linux/of_address.h> #include
+> > > > +<linux/thermal.h>
+> > > > +
+> > > > +#define SITES_MAX		16
+> > > > +
+> > > > +#define TMU_TEMP_PASSIVE	85000
+> > > > +#define TMU_TEMP_CRITICAL	95000
+> > > > +
+> > > > +#define TMU_PASSIVE_DELAY	1000	/* Milliseconds */
+> > > > +#define TMU_POLLING_DELAY	5000
+> > > > +
+> > > > +/* The driver supports 1 passive trip point and 1 critical trip
+> > > > +point */ enum tmu_thermal_trip {
+> > > > +	TMU_TRIP_PASSIVE,
+> > > > +	TMU_TRIP_CRITICAL,
+> > > > +	TMU_TRIP_NUM,
+> > > > +};
+> > > > +
+> > > > +/*
+> > > > + * QorIQ TMU Registers
+> > > > + */
+> > > > +struct qoriq_tmu_site_regs {
+> > > > +	__be32 tritsr;		/* Immediate Temperature Site
+> Register */
+> > > > +	__be32 tratsr;		/* Average Temperature Site Register
+> */
+> > > > +	u8 res0[0x8];
+> > > > +} __packed;
+> > > > +
+> > > > +struct qoriq_tmu_regs {
+> > > > +	__be32 tmr;		/* Mode Register */
+> > > > +#define TMR_DISABLE	0x0
+> > > > +#define TMR_ME		0x80000000
+> > > > +#define TMR_ALPF	0x0c000000
+> > > > +#define TMR_MSITE	0x00008000
+> > > > +#define TMR_ALL		(TMR_ME | TMR_ALPF | TMR_MSITE)
+> > > > +	__be32 tsr;		/* Status Register */
+> > > > +	__be32 tmtmir;		/* Temperature measurement interval
+> > > Register */
+> > > > +#define TMTMIR_DEFAULT	0x00000007
+> > > > +	u8 res0[0x14];
+> > > > +	__be32 tier;		/* Interrupt Enable Register */
+> > > > +#define TIER_DISABLE	0x0
+> > > > +	__be32 tidr;		/* Interrupt Detect Register */
+> > > > +	__be32 tiscr;		/* Interrupt Site Capture Register */
+> > > > +	__be32 ticscr;		/* Interrupt Critical Site Capture
+> Register
+> > > */
+> > > > +	u8 res1[0x10];
+> > > > +	__be32 tmhtcrh;		/* High Temperature Capture Register
+> */
+> > > > +	__be32 tmhtcrl;		/* Low Temperature Capture Register
+> */
+> > > > +	u8 res2[0x8];
+> > > > +	__be32 tmhtitr;		/* High Temperature Immediate
+> Threshold */
+> > > > +	__be32 tmhtatr;		/* High Temperature Average Threshold
+> */
+> > > > +	__be32 tmhtactr;	/* High Temperature Average Crit Threshold
+> */
+> > > > +	u8 res3[0x24];
+> > > > +	__be32 ttcfgr;		/* Temperature Configuration Register
+> */
+> > > > +	__be32 tscfgr;		/* Sensor Configuration Register */
+> > > > +	u8 res4[0x78];
+> > > > +	struct qoriq_tmu_site_regs site[SITES_MAX];
+> > > > +	u8 res5[0x9f8];
+> > > > +	__be32 ipbrr0;		/* IP Block Revision Register 0 */
+> > > > +	__be32 ipbrr1;		/* IP Block Revision Register 1 */
+> > > > +	u8 res6[0x310];
+> > > > +	__be32 ttr0cr;		/* Temperature Range 0 Control
+> Register */
+> > > > +	__be32 ttr1cr;		/* Temperature Range 1 Control
+> Register */
+> > > > +	__be32 ttr2cr;		/* Temperature Range 2 Control
+> Register */
+> > > > +	__be32 ttr3cr;		/* Temperature Range 3 Control
+> Register */
+> > > > +};
+> > > > +
+> > > > +/*
+> > > > + * Thermal zone data
+> > > > + */
+> > > > +struct qoriq_tmu_data {
+> > > > +	struct thermal_zone_device *tz;
+> > > > +	struct thermal_cooling_device *cdev;
+> > > > +	enum thermal_device_mode mode;
+> > > > +	unsigned long temp_passive;
+> > > > +	unsigned long temp_critical;
+> > > > +	struct qoriq_tmu_regs __iomem *regs; };
+> > > > +
+> > > > +static int tmu_get_mode(struct thermal_zone_device *tz,
+> > > > +			enum thermal_device_mode *mode) {
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	*mode =3D data->mode;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_set_mode(struct thermal_zone_device *tz,
+> > > > +			enum thermal_device_mode mode) {
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	if (mode =3D=3D THERMAL_DEVICE_ENABLED) {
+> > > > +		tz->polling_delay =3D TMU_POLLING_DELAY;
+> > > > +		tz->passive_delay =3D TMU_PASSIVE_DELAY;
+> > > > +		thermal_zone_device_update(tz);
+> > > > +	} else {
+> > > > +		tz->polling_delay =3D 0;
+> > > > +		tz->passive_delay =3D 0;
+> > > > +	}
+> > > > +
+> > > > +	data->mode =3D mode;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_temp(struct thermal_zone_device *tz, unsigned
+> > > > +long
+> > > > +*temp) {
+> > > > +	u8 val;
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	val =3D ioread32be(&data->regs->site[0].tritsr);
+> > > > +	*temp =3D (unsigned long)val * 1000;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_trip_type(struct thermal_zone_device *tz, int
+> trip,
+> > > > +			     enum thermal_trip_type *type) {
+> > > > +	*type =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
+> > > > +					     THERMAL_TRIP_CRITICAL;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_trip_temp(struct thermal_zone_device *tz, int
+> trip,
+> > > > +			     unsigned long *temp)
+> > > > +{
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	*temp =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? data->temp_passive :
+> > > > +					     data->temp_critical;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_crit_temp(struct thermal_zone_device *tz,
+> > > > +			     unsigned long *temp)
+> > > > +{
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	*temp =3D data->temp_critical;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_bind(struct thermal_zone_device *tz,
+> > > > +		    struct thermal_cooling_device *cdev) {
+> > > > +	int ret;
+> > > > +
+> > > > +	ret =3D thermal_zone_bind_cooling_device(tz, TMU_TRIP_PASSIVE,
+> cdev,
+> > > > +					       THERMAL_NO_LIMIT,
+> > > > +					       THERMAL_NO_LIMIT,
+> > > > +					       THERMAL_WEIGHT_DEFAULT);
+> > > > +	if (ret) {
+> > > > +		dev_err(&tz->device,
+> > > > +			"Binding zone %s with cdev %s failed:%d\n",
+> > > > +			tz->type, cdev->type, ret);
+> > > > +	}
+> > > > +
+> > > > +	return ret;
+> > > > +}
+> > > > +
+> > > > +static int tmu_unbind(struct thermal_zone_device *tz,
+> > > > +		      struct thermal_cooling_device *cdev) {
+> > > > +	int ret;
+> > > > +
+> > > > +	ret =3D thermal_zone_unbind_cooling_device(tz, TMU_TRIP_PASSIVE,
+> > > cdev);
+> > > > +	if (ret) {
+> > > > +		dev_err(&tz->device,
+> > > > +			"Unbinding zone %s with cdev %s failed:%d\n",
+> > > > +			tz->type, cdev->type, ret);
+> > > > +	}
+> > > > +
+> > > > +	return ret;
+> > > > +}
+> > > > +
+> > > > +static int qoriq_tmu_calibration(struct platform_device *pdev) {
+> > > > +	int i, val, len;
+> > > > +	u32 range[4];
+> > > > +	const __be32 *calibration;
+> > > > +	struct device_node *node =3D pdev->dev.of_node;
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
+> > > > +
+> > > > +	/* Disable monitoring before calibration */
+> > > > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > > +
+> > > > +	if (of_property_read_u32_array(node, "fsl,tmu-range", range,
+> 4))
+> > > > +		return -1;
+> > > > +
+> > > > +	/* Init temperature range registers */
+> > > > +	iowrite32be(range[0], &data->regs->ttr0cr);
+> > > > +	iowrite32be(range[1], &data->regs->ttr1cr);
+> > > > +	iowrite32be(range[2], &data->regs->ttr2cr);
+> > > > +	iowrite32be(range[3], &data->regs->ttr3cr);
+> > > > +
+> > > > +	calibration =3D of_get_property(node, "fsl,tmu-calibration",
+> &len);
+> > > > +	if (calibration =3D=3D NULL)
+> > > > +		return -1;
+> > > > +
+> > > > +	for (i =3D 0; i < len; i +=3D 8, calibration +=3D 2) {
+> > > > +		val =3D (int)of_read_number(calibration, 1);
+> > > > +		iowrite32be(val, &data->regs->ttcfgr);
+> > > > +		val =3D (int)of_read_number(calibration + 1, 1);
+> > > > +		iowrite32be(val, &data->regs->tscfgr);
+> > > > +	}
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data) {
+> > > > +	/* Disable interrupt, using polling instead */
+> > > > +	iowrite32be(TIER_DISABLE, &data->regs->tier);
+> > > > +
+> > > > +	/* Set update_interval */
+> > > > +	iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
+> > > > +
+> > > > +	/* Enable monitoring */
+> > > > +	iowrite32be(TMR_ALL, &data->regs->tmr); }
+> > > > +
+> > > > +static struct thermal_zone_device_ops tmu_tz_ops =3D {
+> > > > +	.bind =3D tmu_bind,
+> > > > +	.unbind =3D tmu_unbind,
+> > > > +	.get_temp =3D tmu_get_temp,
+> > > > +	.get_mode =3D tmu_get_mode,
+> > > > +	.set_mode =3D tmu_set_mode,
+> > > > +	.get_trip_type =3D tmu_get_trip_type,
+> > > > +	.get_trip_temp =3D tmu_get_trip_temp,
+> > > > +	.get_crit_temp =3D tmu_get_crit_temp, };
+> > > > +
+> > > > +static int qoriq_tmu_probe(struct platform_device *pdev) {
+> > > > +	int ret;
+> > > > +	struct cpumask clip_cpus;
+> > > > +	struct qoriq_tmu_data *data;
+> > > > +
+> > > > +	if (!cpufreq_get_current_driver()) {
+> > > > +		dev_dbg(&pdev->dev, "No cpufreq driver yet\n");
+> > > > +		return -EPROBE_DEFER;
+> > > > +	}
+> > > > +
+> > > > +	if (!pdev->dev.of_node) {
+> > > > +		dev_err(&pdev->dev, "Device OF-Node is NULL");
+> > > > +		return -EFAULT;
+> > > > +	}
+> > > > +
+> > > > +	data =3D devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
+> > > > +			    GFP_KERNEL);
+> > > > +	if (!data)
+> > > > +		return -ENOMEM;
+> > > > +
+> > > > +	dev_set_drvdata(&pdev->dev, data);
+> > > > +	data->regs =3D of_iomap(pdev->dev.of_node, 0);
+> > > > +
+> > > > +	if (!data->regs) {
+> > > > +		dev_err(&pdev->dev, "Failed to get memory region\n");
+> > > > +		ret =3D -ENODEV;
+> > > > +		goto err_iomap;
+> > > > +	}
+> > > > +
+> > > > +	ret =3D qoriq_tmu_calibration(pdev);	/* TMU calibration */
+> > > > +	if (ret < 0) {
+> > > > +		dev_err(&pdev->dev, "TMU calibration failed.\n");
+> > > > +		ret =3D -ENODEV;
+> > > > +		goto err_iomap;
+> > > > +	}
+> > > > +
+> > > > +	qoriq_tmu_init_device(data);	/* TMU initialization */
+> > > > +
+> > > > +	cpumask_setall(&clip_cpus);
+> > > > +	data->cdev =3D cpufreq_cooling_register(&clip_cpus);
+> > > > +	if (IS_ERR(data->cdev)) {
+> > > > +		ret =3D PTR_ERR(data->cdev);
+> > > > +		dev_err(&data->cdev->device,
+> > > > +			"Failed to register cpufreq cooling device: %d\n",
+> ret);
+> > > > +		goto err_cooling;
+> > > > +	}
+> > > > +
+> > > > +	data->temp_passive =3D TMU_TEMP_PASSIVE;
+> > > > +	data->temp_critical =3D TMU_TEMP_CRITICAL;
+> > > > +	data->tz =3D thermal_zone_device_register("tmu_thermal_zone",
+> > >
+> > > Any specific reason why not using OF thermal?
+> > >
+> > > > +						TMU_TRIP_NUM,
+> > > > +						0, data,
+> > > > +						&tmu_tz_ops, NULL,
+> > > > +						TMU_PASSIVE_DELAY,
+> > > > +						TMU_POLLING_DELAY);
+> > > > +
+> > > > +	if (IS_ERR(data->tz)) {
+> > > > +		ret =3D PTR_ERR(data->tz);
+> > > > +		dev_err(&pdev->dev,
+> > > > +			"Failed to register thermal zone device %d\n",
+> ret);
+> > > > +		goto err_thermal;
+> > > > +	}
+> > > > +
+> > > > +	data->mode =3D THERMAL_DEVICE_ENABLED;
+> > > > +
+> > > > +	return 0;
+> > > > +
+> > > > +err_thermal:
+> > > > +	cpufreq_cooling_unregister(data->cdev);
+> > > > +
+> > > > +err_cooling:
+> > > > +	iounmap(data->regs);
+> > > > +
+> > > > +err_iomap:
+> > > > +	dev_set_drvdata(&pdev->dev, NULL);
+> > > > +	devm_kfree(&pdev->dev, data);
+> > > > +
+> > > > +	return ret;
+> > > > +}
+> > > > +
+> > > > +static int qoriq_tmu_remove(struct platform_device *pdev) {
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
+> > > > +
+> > > > +	/* Disable monitoring */
+> > > > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > > +
+> > > > +	thermal_zone_device_unregister(data->tz);
+> > > > +	cpufreq_cooling_unregister(data->cdev);
+> > > > +	iounmap(data->regs);
+> > > > +
+> > > > +	dev_set_drvdata(&pdev->dev, NULL);
+> > > > +	devm_kfree(&pdev->dev, data);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +#ifdef CONFIG_PM_SLEEP
+> > > > +static int qoriq_tmu_suspend(struct device *dev) {
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
+> > > > +
+> > > > +	/* Disable monitoring */
+> > > > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > > +	data->mode =3D THERMAL_DEVICE_DISABLED;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int qoriq_tmu_resume(struct device *dev) {
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
+> > > > +
+> > > > +	/* Enable monitoring */
+> > > > +	iowrite32be(TMR_ALL, &data->regs->tmr);
+> > > > +	data->mode =3D THERMAL_DEVICE_ENABLED;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +#endif
+> > > > +
+> > > > +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
+> > > > +			 qoriq_tmu_suspend, qoriq_tmu_resume);
+> > > > +
+> > > > +static const struct of_device_id qoriq_tmu_match[] =3D {
+> > > > +	{ .compatible =3D "fsl,qoriq-tmu", },
+> > > > +	{},
+> > > > +};
+> > > > +
+> > > > +static struct platform_driver qoriq_tmu =3D {
+> > > > +	.driver	=3D {
+> > > > +		.owner		=3D THIS_MODULE,
+> > > > +		.name		=3D "qoriq_thermal",
+> > > > +		.pm =3D &qoriq_tmu_pm_ops,
+> > > > +		.of_match_table	=3D qoriq_tmu_match,
+> > > > +	},
+> > > > +	.probe	=3D qoriq_tmu_probe,
+> > > > +	.remove	=3D qoriq_tmu_remove,
+> > > > +};
+> > > > +module_platform_driver(qoriq_tmu);
+> > > > +
+> > > > +MODULE_AUTHOR("Jia Hongtao <hongtao.jia@freescale.com>");
+> > > > +MODULE_DESCRIPTION("Freescale QorIQ Thermal Monitoring Unit
+> > > > +driver"); MODULE_LICENSE("GPL v2");
+> > > > --
+> > > > 2.1.0.27.g96db324
+> > > >
