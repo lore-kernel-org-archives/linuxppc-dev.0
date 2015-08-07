@@ -1,31 +1,34 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0553F1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 19:11:35 +1000 (AEST)
-Received: from mail-pd0-f171.google.com (mail-pd0-f171.google.com
- [209.85.192.171])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9C3991A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 20:00:47 +1000 (AEST)
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 88BA414029D
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 19:11:33 +1000 (AEST)
-Received: by pdrg1 with SMTP id g1so43348468pdr.2
- for <linuxppc-dev@ozlabs.org>; Fri, 07 Aug 2015 02:11:32 -0700 (PDT)
-Subject: Re: [PATCH V2 4/6] powerpc/powernv: replace the hard coded boundary
- with gate
+ by ozlabs.org (Postfix) with ESMTPS id 27B95140280
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 20:00:45 +1000 (AEST)
+Received: by pdrg1 with SMTP id g1so43816055pdr.2
+ for <linuxppc-dev@ozlabs.org>; Fri, 07 Aug 2015 03:00:43 -0700 (PDT)
+Subject: Re: [PATCH V2 6/6] powerpc/powernv: allocate discrete PE# when using
+ M64 BAR in Single PE mode
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
  Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <20150731020148.GA6151@richard>
  <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-5-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806052633.GA4767@gwshan>
+ <1438737903-10399-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150806053601.GB5636@gwshan> <20150806134141.GA6235@richard>
+ <20150807013656.GB20794@gwshan> <20150807023333.GH8292@richard>
+ <20150807034301.GA8624@gwshan> <20150807054433.GA7971@richard>
+ <20150807055448.GA26338@gwshan>
 Cc: benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55C4763D.6050703@ozlabs.ru>
-Date: Fri, 7 Aug 2015 19:11:25 +1000
+Message-ID: <55C481C6.2080106@ozlabs.ru>
+Date: Fri, 7 Aug 2015 20:00:38 +1000
 MIME-Version: 1.0
-In-Reply-To: <20150806052633.GA4767@gwshan>
+In-Reply-To: <20150807055448.GA26338@gwshan>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,115 +39,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/06/2015 03:26 PM, Gavin Shan wrote:
-> On Wed, Aug 05, 2015 at 09:25:01AM +0800, Wei Yang wrote:
->> Based on the limitation of M64 Window size, when VF BAR size is bigger than
->> 64MB, IOV BAR just round up power of 2 of the total_vfs. While the 64MB is
->> a magic boundary in code, which is hard to maintain.
->>
->> This patch replaces the hard coded boundary with gate, which is calculated
->>from m64_segsize and adds comment to explain the reason for it.
->>
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> ---
->> arch/powerpc/platforms/powernv/pci-ioda.c |   22 +++++++++++++++++-----
->> 1 file changed, 17 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index f5d110c..31dcedc 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -2702,7 +2702,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->> 	struct pnv_phb *phb;
->> 	struct resource *res;
->> 	int i;
->> -	resource_size_t size;
->> +	resource_size_t size, gate;
->> 	struct pci_dn *pdn;
->> 	int mul, total_vfs;
->>
->> @@ -2718,6 +2718,17 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->>
->> 	total_vfs = pci_sriov_get_totalvfs(pdev);
->> 	mul = phb->ioda.total_pe;
->> +	/*
->> +	 * If bigger than or equal to half of m64_segsize, just round up power
->> +	 * of two.
->> +	 *
->> +	 * Generally, one M64 BAR maps one IOV BAR. To avoid conflict with
->> +	 * other devices, IOV BAR size is expanded to be (total_pe * VF size).
->> +	 * When VF size is half of m64_segsize , the expanded size would equal
->> +	 * to half of the whole M64 Window size, which will exhaust the M64
->> +	 * Window and limit the system flexibility.
->> +	 */
->
-> s/VF size/VF BAR size
-> s/m64_segsize/M64 segment size
-> s/M64 Window/M64 space
+On 08/07/2015 03:54 PM, Gavin Shan wrote:
+> On Fri, Aug 07, 2015 at 01:44:33PM +0800, Wei Yang wrote:
+>> On Fri, Aug 07, 2015 at 01:43:01PM +1000, Gavin Shan wrote:
+>>> On Fri, Aug 07, 2015 at 10:33:33AM +0800, Wei Yang wrote:
+>>>> On Fri, Aug 07, 2015 at 11:36:56AM +1000, Gavin Shan wrote:
+>>>>> On Thu, Aug 06, 2015 at 09:41:41PM +0800, Wei Yang wrote:
+>>>>>> On Thu, Aug 06, 2015 at 03:36:01PM +1000, Gavin Shan wrote:
+>>>>>>> On Wed, Aug 05, 2015 at 09:25:03AM +0800, Wei Yang wrote:
+>>>>>>>> When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
+>>>>>>>> discrete.
 
-I thought I started understanding the stuff and you just introduces new 
-term - "M64 space". Not "64bit MMIO space" but "M64 space" - what is this? 
-Is that 64GB 64bit MMIO window which we get from the hostboot?
+s/discrete/sparse/ may be?
 
 
->
->> +	gate = phb->ioda.m64_segsize >> 1;
+>>>>>>>>
+>>>>>>>> This patch restructures the patch to allocate discrete PE# for VFs when M64
+>>>>>>>> BAR is set to Single PE mode.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>>>>> ---
+>>>>>>>> arch/powerpc/include/asm/pci-bridge.h     |    2 +-
+>>>>>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   69 +++++++++++++++++++++--------
+>>>>>>>> 2 files changed, 51 insertions(+), 20 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>>>>>>> index 8aeba4c..72415c7 100644
+>>>>>>>> --- a/arch/powerpc/include/asm/pci-bridge.h
+>>>>>>>> +++ b/arch/powerpc/include/asm/pci-bridge.h
+>>>>>>>> @@ -213,7 +213,7 @@ struct pci_dn {
+>>>>>>>> #ifdef CONFIG_PCI_IOV
+>>>>>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>>>>>>>> 	u16     num_vfs;		/* number of VFs enabled*/
+>>>>>>>> -	int     offset;			/* PE# for the first VF PE */
+>>>>>>>> +	int     *offset;		/* PE# for the first VF PE or array */
+>>>>>>>> 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+>>>>>>>> #define IODA_INVALID_M64        (-1)
+>>>>>>>> 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+>>>>>>>
+>>>>>>> how about renaming "offset" to "pe_num_map", or "pe_map" ? Similar to the comments
+>>>>>>> I gave to the "m64_bar_map", num_of_max_vfs entries can be allocated. Though not
+>>>>>>> all of them will be used, not too much memory will be wasted.
+>>>>>>>
+>>>>>>
+>>>>>> Thanks for your comment.
+>>>>>>
+>>>>>> I have thought about change the name to make it more self explain. While
+>>>>>> another fact I want to take in is this field is also used to be reflect the
+>>>>>> shift offset when M64 BAR is used in the Shared Mode. So I maintain the name.
+>>>>>>
+>>>>>> How about use "enum", one maintain the name "offset", and another one rename to
+>>>>>> "pe_num_map". And use the meaningful name at proper place?
+>>>>>>
+>>>>
+>>>> So I suppose you agree with my naming proposal.
+>>>>
+>>>
+>>> No, I dislike the "enum" things.
+>>>
 >>
->> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
->> @@ -2732,10 +2743,11 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->>
->> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
->>
->> -		/* bigger than 64M */
->> -		if (size > (1 << 26)) {
->> -			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
->> -				 i, res);
->> +		/* bigger than or equal to gate */
->> +		if (size >= gate) {
->> +			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size "
->> +				"is bigger than %lld, roundup power2\n",
->> +				 i, res, gate);
->
-> If I understand the changes correctly, single VF BAR size is still checked against
-> the "gate" (128MB), not the total VF BAR size. Recap the comments I gave last time:
->
-> I mean to check the sum of all VF BARs. For example, the VFs attached to its PF has two
-> VF BARs and each of them is 64MB. For this case, the MMIO resource can't be allocated
-> once extending them to 256 VFs. So we have to try "single-pe-mode" for this situation.
-> So the check becomes as below:
->
->          struct pci_controller *hose = pci_bus_to_host(pdev->bus);
->          struct pnv_phb *phb = hose->private_data;
->          resource_size_t total_vf_bar_sz = 0;
->          resource_size_t gate;
->
->          /* Some comments to explain the "gate" */
->          gate = phb->m64_segsize / 2;
->          for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->                  total_vf_bar_sz += pci_iov_resource_size(pdev, PCI_IOV_RESOURCES + i);
->
->          if (total_vf_bar_sz >= gate)
-
-
-Why would be compare to the total size of the BARs? If VFs have 3 64MB BARs 
-each (these are 64bit BARs so up to 3 per VF, right?), which is 192MB in 
-total per VF, we can use 3 M64's, each in segmented mode (1 segment == 
-64MB) and cover many VFs.
-
-
-
->                  /* single-pe-mode */
->          else
->                  /* shared-mode */
->
->> 			mul = roundup_pow_of_two(total_vfs);
->> 			pdn->m64_single_mode = true;
->> 			break;
->> --
->> 1.7.9.5
+>> OK, then you suggest to rename it pe_num_map or keep it as offset?
 >>
 >
+> pe_num_map would be better.
+
+
++1. @offset is very confusing.
+
+It could be a linked list actually, "struct list_head pe_list" in pci_dn 
+and "struct list_head next" in struct pnv_ioda_pe.  I could not quickly 
+spot places where you would access this array outside a loop 
+for(i=0;i<num_vfs;++i).
+
 
 
 -- 
