@@ -1,27 +1,27 @@
-Return-Path: <vbabka@suse.cz>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 930F11A0023
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 21:50:07 +1000 (AEST)
-Subject: Re: [PATCH V6 4/6] mm: mlock: Add mlock flags to enable
- VM_LOCKONFAULT usage
-To: Eric B Munson <emunson@akamai.com>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <1438184575-10537-1-git-send-email-emunson@akamai.com>
- <1438184575-10537-5-git-send-email-emunson@akamai.com>
-Cc: Michal Hocko <mhocko@suse.cz>, Jonathan Corbet <corbet@lwn.net>,
- "Kirill A. Shutemov" <kirill@shutemov.name>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-arch@vger.kernel.org, linux-api@vger.kernel.org, linux-mm@kvack.org
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <55C49B69.9050805@suse.cz>
-Date: Fri, 7 Aug 2015 13:50:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 719AE1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 22:09:11 +1000 (AEST)
+Received: from mail-yk0-f175.google.com (mail-yk0-f175.google.com
+ [209.85.160.175])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id DE899140280
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Aug 2015 22:09:10 +1000 (AEST)
+Received: by ykdt205 with SMTP id t205so6292486ykd.1
+ for <linuxppc-dev@ozlabs.org>; Fri, 07 Aug 2015 05:09:08 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1438184575-10537-5-git-send-email-emunson@akamai.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <alpine.DEB.2.20.8.1508070306080.12626@trent.utfs.org>
+References: <alpine.DEB.2.20.8.1508070306080.12626@trent.utfs.org>
+Date: Fri, 7 Aug 2015 15:09:08 +0300
+Message-ID: <CAOJe8K2MN7vzn-OCLCqebp+xsVphNoRL_eGzUB_xuX5PfBLx+g@mail.gmail.com>
+Subject: Re: 4.1-rc6: ATA link is slow to respond, please be patient
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,87 +31,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2015 05:42 PM, Eric B Munson wrote:
-> The previous patch introduced a flag that specified pages in a VMA
-> should be placed on the unevictable LRU, but they should not be made
-> present when the area is created.  This patch adds the ability to set
-> this state via the new mlock system calls.
+On 8/7/15, Christian Kujau <lists@nerdbynature.de> wrote:
+> Hi,
 >
-> We add MLOCK_ONFAULT for mlock2 and MCL_ONFAULT for mlockall.
-> MLOCK_ONFAULT will set the VM_LOCKONFAULT modifier for VM_LOCKED.
-> MCL_ONFAULT should be used as a modifier to the two other mlockall
-> flags.  When used with MCL_CURRENT, all current mappings will be marked
-> with VM_LOCKED | VM_LOCKONFAULT.  When used with MCL_FUTURE, the
-> mm->def_flags will be marked with VM_LOCKED | VM_LOCKONFAULT.  When used
-> with both MCL_CURRENT and MCL_FUTURE, all current mappings and
-> mm->def_flags will be marked with VM_LOCKED | VM_LOCKONFAULT.
+> this PowerBook G4 was running 3.16 for a while but now I wanted to upgrade
+> to latest mainline. However, during bootup the following happens:
 >
-> Prior to this patch, mlockall() will unconditionally clear the
-> mm->def_flags any time it is called without MCL_FUTURE.  This behavior
-> is maintained after adding MCL_ONFAULT.  If a call to
-> mlockall(MCL_FUTURE) is followed by mlockall(MCL_CURRENT), the
-> mm->def_flags will be cleared and new VMAs will be unlocked.  This
-> remains true with or without MCL_ONFAULT in either mlockall()
-> invocation.
+> ===============================
+> [    2.237102] ata1: PATA max UDMA/100 irq 39
+> [    2.401708] ata1.00: ATA-8: SAMSUNG HM061GC, LR100-10, max UDMA/100
+> [    2.401764] ata1.00: 117231408 sectors, multi 16: LBA48
+> [    2.417633] ata1.00: configured for UDMA/100
+> [   44.918102] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> [   44.920452] ata1.00: failed command: READ DMA
+> [   44.922725] ata1.00: cmd c8/00:88:64:c2:12/00:00:00:00:00/e0 tag 0 dma
+> 69632 in
+> [   44.927257] ata1.00: status: { DRDY }
+> [   49.971784] ata1.00: qc timeout (cmd 0xec)
+> [   49.976529] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> [   49.978908] ata1.00: revalidation failed (errno=-5)
+> [   55.019662] ata1: link is slow to respond, please be patient (ready=0)
+> [   60.007677] ata1: device not ready (errno=-16), forcing hardreset
+> [   60.012670] ata1: soft resetting link
+> [   60.193638] ata1.00: configured for UDMA/100
+> [   60.196158] ata1.00: device reported invalid CHS sector 0
+> [   60.198610] ata1: EH complete
+> ===============================
+
+Interesting, I'll try to reproduce it on my G4.
+
 >
-> munlock() will unconditionally clear both vma flags.  munlockall()
-> unconditionally clears for VMA flags on all VMAs and in the
-> mm->def_flags field.
+> This happens only once, but systemd thinks there's a hard problem and will
+> drop to a recovery shell. I can start sshd and login remotely and then the
+> system appears to be running just fine.
 >
-> Signed-off-by: Eric B Munson <emunson@akamai.com>
-> Cc: Michal Hocko <mhocko@suse.cz>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-
-The logic seems ok, although the fact that apply_mlockall_flags() is 
-shared by both mlockall and munlockall makes it even more subtle than 
-before :)
-
-Anyway, just some nitpicks below.
-
-Acked-by: Vlastimil Babka <vbabka@suse.cz>
-
-[...]
-
-> +/*
-> + * Take the MCL_* flags passed into mlockall (or 0 if called from munlockall)
-> + * and translate into the appropriate modifications to mm->def_flags and/or the
-> + * flags for all current VMAs.
-> + *
-> + * There are a couple of sublties with this.  If mlockall() is called multiple
-
-                             ^ typo
-
-> + * times with different flags, the values do not necessarily stack.  If mlockall
-> + * is called once including the MCL_FUTURE flag and then a second time without
-> + * it, VM_LOCKED and VM_LOCKONFAULT will be cleared from mm->def_flags.
-> + */
->   static int apply_mlockall_flags(int flags)
->   {
->   	struct vm_area_struct * vma, * prev = NULL;
-> +	vm_flags_t to_add = 0;
+> This happened in 4.2.0-rc5 so I went back a few versions and found that
+> 4.1-rc5 was OK (the error does not show up and the system boots just fine)
+> and 4.1-rc6 is not.
 >
-> -	if (flags & MCL_FUTURE)
-> +	current->mm->def_flags &= ~(VM_LOCKED | VM_LOCKONFAULT);
-> +	if (flags & MCL_FUTURE) {
->   		current->mm->def_flags |= VM_LOCKED;
-> -	else
-> -		current->mm->def_flags &= ~VM_LOCKED;
+> Unfortunately a git-bisect between these two versions went completly off
+> the charts, I don't know what happened here:
 >
-> -	if (flags == MCL_FUTURE)
-> -		goto out;
-> +		if (flags & MCL_ONFAULT)
-> +			current->mm->def_flags |= VM_LOCKONFAULT;
-> +
-> +		/*
-> +		 * When there were only two flags, we used to early out if only
-> +		 * MCL_FUTURE was set.  Now that we have MCL_ONFAULT, we can
-> +		 * only early out if MCL_FUTURE is set, but MCL_CURRENT is not.
-
-Describing the relation to history of individual code lines in such 
-detail is noise imho. The stacking subtleties is already described above.
-
-> +		 * This is done, even though it promotes odd behavior, to
-> +		 * maintain behavior from older kernels
-> +		 */
-> +		if (!(flags & MCL_CURRENT))
-> +			goto out;
+> ==================================
+> first bad commit:
+>
+> 0fa372b6c95013af1334b3d5c9b5f03a70ecedab is the first bad commit
+> commit 0fa372b6c95013af1334b3d5c9b5f03a70ecedab
+> Author: Takashi Iwai <tiwai@suse.de>
+> Date:   Wed May 27 16:17:19 2015 +0200
+>
+>     ALSA: hda - Fix noise on AMD radeon 290x controller
+> ==================================
+>
+> I don't have this driver (or ALSA) even selected. I can reproduce this
+> error pretty reliably and I'd like to attempt another git-bisect
+> run when I'm more awake. But maybe somebody recognizes this error and
+> has a hint where this could come from?
+>
+> dmesg & .config:  http://nerdbynature.de/bits/v4.1-rc6/
+>
+> Thanks,
+> Christian.
+> --
+> BOFH excuse #225:
+>
+> It's those computer people in X {city of world}.  They keep stuffing things
+> up.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
