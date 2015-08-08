@@ -1,32 +1,35 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0140.outbound.protection.outlook.com [157.56.111.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <stefanb@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EE4171A0021
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 10:14:04 +1000 (AEST)
-Message-ID: <1438992828.2097.211.camel@freescale.com>
-Subject: Re: [PATCH 1/3] Powerpc: mpc85xx: refactor the PM operations
-From: Scott Wood <scottwood@freescale.com>
-To: Chenhui Zhao <chenhui.zhao@freescale.com>
-CC: <b29983@freescale.com>, <b07421@freescale.com>,
- <linux-kernel@vger.kernel.org>, Tang Yuantian <Yuantian.Tang@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Fri, 7 Aug 2015 19:13:48 -0500
-In-Reply-To: <1438917572.2431.0@remotesmtp.freescale.net>
-References: <1438334444-31919-1-git-send-email-b29983@freescale.com>
- <1438387178.19345.77.camel@freescale.com>
- <1438601578.7515.2@remotesmtp.freescale.net>
- <1438633568.2097.35.camel@freescale.com>
- <1438769477.21522.0@remotesmtp.freescale.net>
- <1438829848.2097.129.camel@freescale.com>
- <1438834837.23384.0@remotesmtp.freescale.net>
- <1438839985.2097.151.camel@freescale.com>
- <1438840466.23384.2@remotesmtp.freescale.net>
- <1438884172.2097.155.camel@freescale.com>
- <1438917572.2431.0@remotesmtp.freescale.net>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4B291A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 11:55:12 +1000 (AEST)
+Received: from /spool/local
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stefanb@linux.vnet.ibm.com>;
+ Fri, 7 Aug 2015 21:55:09 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6F95C6E801D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 21:46:53 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t781t7N566977976
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 8 Aug 2015 01:55:07 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t781t71S012118
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Aug 2015 21:55:07 -0400
+From: Stefan Berger <stefanb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@au1.ibm.com,
+ pmac@au1.ibm.com
+Cc: gcwilson@us.ibm.com, dimitris@us.ibm.com, latten@us.ibm.com,
+ lo1@us.ibm.com, stefanb@us.ibm.com,
+ Stefan Berger <stefanb@linux.vnet.ibm.com>
+Subject: [PATCH 00/16] Add vTPM support to SLOF
+Date: Fri,  7 Aug 2015 21:54:49 -0400
+Message-Id: <1438998905-4085665-1-git-send-email-stefanb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,100 +39,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-08-07 at 11:19 +0800, Chenhui Zhao wrote:
-> On Fri, Aug 7, 2015 at 2:02 AM, Scott Wood <scottwood@freescale.com> 
-> wrote:
-> > On Thu, 2015-08-06 at 13:54 +0800, Chenhui Zhao wrote:
-> > >  On Thu, Aug 6, 2015 at 1:46 PM, Scott Wood <scottwood@freescale.com>
-> > >  wrote:
-> > >  > On Thu, 2015-08-06 at 12:20 +0800, Chenhui Zhao wrote:
-> > >  > >  On Thu, Aug 6, 2015 at 10:57 AM, Scott Wood
-> > >  > > <scottwood@freescale.com>
-> > >  > >  wrote:
-> > >  > >  > On Wed, 2015-08-05 at 18:11 +0800, Chenhui Zhao wrote:
-> > >  > >  > >  On Tue, Aug 4, 2015 at 4:26 AM, Scott Wood
-> > >  > > <scottwood@freescale.com>
-> > >  > >  > >  wrote:
-> > >  > >  > >  > On Mon, 2015-08-03 at 19:32 +0800, Chenhui Zhao wrote:
-> > >  > >  > >  > >  >
-> > >  > >  > >  >
-> > >  > >  > >  > >  On Sat, Aug 1, 2015 at 7:59 AM, Scott Wood
-> > >  > >  > > <scottwood@freescale.com>
-> > >  > >  > >  > >  wrote:
-> > >  > >  > >  >
-> > >  > >  > >  > >  >
-> > >  > >  > >  > >  > Could you explain irq_mask()?  Why would there 
-> > > still be
-> > >  > > IRQs
-> > >  > >  > >  > > destined
-> > >  > >  > >  > >  > for
-> > >  > >  > >  > >  > this CPU at this point?
-> > >  > >  > >  > >
-> > >  > >  > >  > >  This function just masks irq by setting the 
-> > > registers in
-> > >  > > RCPM
-> > >  > >  > > (for
-> > >  > >  > >  > >  example, RCPM_CPMIMR, RCPM_CPMCIMR). Actually, all 
-> > > irqs to
-> > >  > >  > > this CPU
-> > >  > >  > >  > >  have been migrated to other CPUs.
-> > >  > >  > >  >
-> > >  > >  > >  > So why do we need to set those bits in RCPM?  Is it just
-> > >  > > caution?
-> > >  > >  > >
-> > >  > >  > >  Setting these bits can mask interrupts signalled to RCPM 
-> > > from
-> > >  > > MPIC
-> > >  > >  > > as a
-> > >  > >  > >  means of
-> > >  > >  > >  waking up from a lower power state. So, cores will not be
-> > >  > > waked up
-> > >  > >  > >  unexpectedly.
-> > >  > >  >
-> > >  > >  > Why would the MPIC be signalling those interrupts if they've 
-> > > been
-> > >  > >  > masked at
-> > >  > >  > the MPIC?
-> > >  > >  >
-> > >  > >  > -Scott
-> > >  > >  >
-> > >  > >
-> > >  > >  The interrupts to RCPM from MPIC are IRQ, Machine Check, NMI 
-> > > and
-> > >  > >  Critical interrupts. Some of them didn't be masked in MPIC.
-> > >  >
-> > >  > What interrupt could actually happen to a sleeping cpu that this
-> > >  > protects
-> > >  > against?
-> > >  >
-> > >  > -Scott
-> > > 
-> > >  Not sure. Maybe spurious interrupts or hardware exceptions.
-> > 
-> > Spurious interrupts happen due to race conditions.  They don't happen 
-> > because
-> > the MPIC is bored and decides to ring a CPU's doorbell and hide in 
-> > the bushes.
-> > 
-> > If by "hardware exceptions" you mean machine checks, how would such a 
-> > machine
-> > check be generated by a core that is off?
-> > 
-> > >   However, setting them make sure dead cpus can not be waked up 
-> > > unexpectedly.
-> > 
-> > I'm not seeing enough value here to warrant resurrecting the old 
-> > sleep node
-> > stuff.
-> > 
-> > -Scott
-> 
-> My guess maybe not accurate. My point is that electronic parts don't 
-> always work as expected. Taking preventative measures can make the 
-> system more robust. In addition, this step is required in deep sleep 
-> procedure.
+The following series of patches adds TPM support to SLOF.
+In particular it adds the following:
 
-The deep sleep part is more convincing -- so MPIC masking is not effective 
-during deep sleep?
+- TPM drivers for hardware interface and CRQ interface
+- TPM initialization
+- TPM logging area and firmware API to transfer it to the OS
+  (measurements are visible in sysfs)
+- Some measurement code (Static Core Root Of Trust)
+- TPM menu (accessible via 't' key during boot if TPM is available)
+- Firmware API extensions following Power Firmware Doc
+  (to make trusted grub work)
 
--Scott
+Necessarily, some of its parts are written in Forth, many are written
+in 'C'. The extensions are known to work with QEMU for ppc64 running Linux.
+
+Patches 4-6 will eventually need to be merged to avoid compiler warnings
+related to unused functions.
+
+Regards,
+    Stefan
+
+Stefan Berger (16):
+  Add a TPM driver implementation
+  Add TPM initialization support
+  Add sha1 implementation
+  Add initial support for logging
+  Extend internal firmware API
+  Return value of actual log in sml-get-handover-size
+  Perform some initial measurements
+  Add support for controlling the states of the TPM
+  Add support for a TPM menu to control the state of the TPM
+  Implement measurements of the master boot record
+  Measure the static core root of trust for measurements
+  Add TPM firmware API calls hash-all, log-event, hash-log-extend-event
+  Add TPM firmware API call get-maximum-cmd-size
+  Add TPM firmware API call pass-through-to-tpm
+  Add TPM firmware API call get-state
+  Add TPM firmware API call get-failure-reason
+
+ board-js2x/slof/OF.fs               |    2 +
+ board-qemu/Makefile                 |    2 +-
+ board-qemu/slof/Makefile            |   10 +-
+ board-qemu/slof/OF.fs               |    7 +
+ board-qemu/slof/tree.fs             |    3 +
+ board-qemu/slof/vio-vtpm-cdriver.fs |  144 ++++
+ board-qemu/slof/vtpm-sml.fs         |  108 +++
+ include/helpers.h                   |    1 +
+ lib/Makefile                        |    2 +-
+ lib/libtpm/Makefile                 |   51 ++
+ lib/libtpm/sha1.c                   |  197 +++++
+ lib/libtpm/sha1.h                   |   20 +
+ lib/libtpm/tcgbios.c                | 1563 +++++++++++++++++++++++++++++++++++
+ lib/libtpm/tcgbios.h                |   53 ++
+ lib/libtpm/tcgbios_int.h            |  206 +++++
+ lib/libtpm/tpm.code                 |  207 +++++
+ lib/libtpm/tpm.in                   |   33 +
+ lib/libtpm/tpm_drivers.c            |  456 ++++++++++
+ lib/libtpm/tpm_drivers.h            |   93 +++
+ slof/fs/packages/disk-label.fs      |    6 +-
+ slof/fs/start-up.fs                 |    9 +
+ slof/fs/tpm/tpm-static.fs           |  351 ++++++++
+ slof/helpers.c                      |    6 +
+ 23 files changed, 3524 insertions(+), 6 deletions(-)
+ create mode 100644 board-qemu/slof/vio-vtpm-cdriver.fs
+ create mode 100644 board-qemu/slof/vtpm-sml.fs
+ create mode 100644 lib/libtpm/Makefile
+ create mode 100644 lib/libtpm/sha1.c
+ create mode 100644 lib/libtpm/sha1.h
+ create mode 100644 lib/libtpm/tcgbios.c
+ create mode 100644 lib/libtpm/tcgbios.h
+ create mode 100644 lib/libtpm/tcgbios_int.h
+ create mode 100644 lib/libtpm/tpm.code
+ create mode 100644 lib/libtpm/tpm.in
+ create mode 100644 lib/libtpm/tpm_drivers.c
+ create mode 100644 lib/libtpm/tpm_drivers.h
+ create mode 100644 slof/fs/tpm/tpm-static.fs
+
+-- 
+1.9.3
