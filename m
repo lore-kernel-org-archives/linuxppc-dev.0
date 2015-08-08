@@ -1,26 +1,26 @@
-Return-Path: <f.fainelli@gmail.com>
-Received: from mail-ob0-x236.google.com (mail-ob0-x236.google.com
- [IPv6:2607:f8b0:4003:c01::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ED101A0021
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 03:38:44 +1000 (AEST)
-Received: by obbop1 with SMTP id op1so99193770obb.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2015 10:38:42 -0700 (PDT)
-Message-ID: <55C63E9A.5010704@gmail.com>
-Date: Sat, 08 Aug 2015 10:38:34 -0700
-From: Florian Fainelli <f.fainelli@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15D4B1A178F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 07:34:46 +1000 (AEST)
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 81CC21401C7
+ for <linuxppc-dev@ozlabs.org>; Sun,  9 Aug 2015 07:34:43 +1000 (AEST)
+In-Reply-To: <CAOJe8K3=cS2kG-YSjqBe8dtoKBEYYPoh9FM1WuO6YUsFX7ZZ4w@mail.gmail.com>
+References: <alpine.DEB.2.20.8.1508070306080.12626@trent.utfs.org>
+ <CAOJe8K3=cS2kG-YSjqBe8dtoKBEYYPoh9FM1WuO6YUsFX7ZZ4w@mail.gmail.com>
 MIME-Version: 1.0
-To: madalin.bucur@freescale.com, netdev@vger.kernel.org
-CC: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- davem@davemloft.net, scottwood@freescale.com,
- igal.liberman@freescale.com, ppc@mindchasers.com, joe@perches.com,
- pebolle@tiscali.nl, joakim.tjernlund@transmode.se
-Subject: Re: [v2 2/9] dpaa_eth: add support for DPAA Ethernet
-References: <1438789289-16304-1-git-send-email-madalin.bucur@freescale.com>
- <1438789289-16304-3-git-send-email-madalin.bucur@freescale.com>
-In-Reply-To: <1438789289-16304-3-git-send-email-madalin.bucur@freescale.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+ charset=UTF-8
+Subject: Re: 4.1-rc6: ATA link is slow to respond, please be patient
+From: Christian Kujau <lists@nerdbynature.de>
+Date: Sat, 08 Aug 2015 14:34:31 -0700
+To: Denis Kirjanov <kda@linux-powerpc.org>
+CC: linuxppc-dev@ozlabs.org,linux-kernel@vger.kernel.org
+Message-ID: <3D696BAF-5FD9-491B-AAA7-312547745376@nerdbynature.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +30,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 08/05/15 08:41, Madalin Bucur a écrit :
-> This introduces the Freescale Data Path Acceleration Architecture
-> (DPAA) Ethernet driver (dpaa_eth) that builds upon the DPAA QMan,
-> BMan, PAMU and FMan drivers to deliver Ethernet connectivity on
-> the Freescale DPAA QorIQ platforms.
-> 
-> Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
-> ---
-[snip]
-> +
-> +if FSL_DPAA_ETH
-> +
-> +config FSL_DPAA_CS_THRESHOLD_1G
-> +	hex "Egress congestion threshold on 1G ports"
-> +	range 0x1000 0x10000000
-> +	default "0x06000000"
+On August 8, 2015 1:57:05 AM PDT, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+>On 8/7/15, Christian Kujau <lists@nerdbynature.de> wrote:
+>> Hi,
+>>
+>> this PowerBook G4 was running 3.16 for a while but now I wanted to
+>upgrade
+>> to latest mainline. However, during bootup the following happens:
+>>
+>> ===============================
+>> [    2.237102] ata1: PATA max UDMA/100 irq 39
+>> [    2.401708] ata1.00: ATA-8: SAMSUNG HM061GC, LR100-10, max
+>UDMA/100
+>> [    2.401764] ata1.00: 117231408 sectors, multi 16: LBA48
+>> [    2.417633] ata1.00: configured for UDMA/100
+>> [   44.918102] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action
+>0x0
+>> [   44.920452] ata1.00: failed command: READ DMA
+>> [   44.922725] ata1.00: cmd c8/00:88:64:c2:12/00:00:00:00:00/e0 tag 0
+>dma
+>> 69632 in
+>> [   44.927257] ata1.00: status: { DRDY }
+>> [   49.971784] ata1.00: qc timeout (cmd 0xec)
+>> [   49.976529] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+>> [   49.978908] ata1.00: revalidation failed (errno=-5)
+>> [   55.019662] ata1: link is slow to respond, please be patient
+>(ready=0)
+>> [   60.007677] ata1: device not ready (errno=-16), forcing hardreset
+>> [   60.012670] ata1: soft resetting link
+>> [   60.193638] ata1.00: configured for UDMA/100
+>> [   60.196158] ata1.00: device reported invalid CHS sector 0
+>> [   60.198610] ata1: EH complete
+>> ===============================
+>
+>Just tried 4.2.0-rc5+ and haven't hit the issue.
+>
+>[   17.180034] pata-pci-macio 0002:20:0d.0: enabling device (0000 ->
+>0002)
+>[   17.185862] adb: starting probe task...
+>[   17.196011] pata-pci-macio 0002:20:0d.0: Activating pata-macio
+>chipset UniNorth ATA-6, Apple bus ID 3
+>[   17.202312] scsi host0: pata_macio
+>[   17.203698] ata1: PATA max UDMA/100 irq 39
+>[   17.219397] adb devices: [2]: 2 c4 [7]: 7 1f
+>[   17.225400] ADB keyboard at 2, handler 1
+>[   17.225560] Detected ADB keyboard, type ISO, swapping keys.
+>[   17.226642] input: ADB keyboard as /devices/virtual/input/input0
+>[   17.227590] input: ADB Powerbook buttons as
+>/devices/virtual/input/input1
+>[   17.227795] adb: finished probe task...
+>[   17.368537] ata1.00: ATA-6: TOSHIBA MK8026GAX, PA005B, max UDMA/100
+>[   17.368717] ata1.00: 156301488 sectors, multi 16: LBA48
+>[   17.376346] ata1.00: configured for UDMA/100
+>[   17.377544] scsi 0:0:0:0: Direct-Access     ATA      TOSHIBA
+>MK8026GA 5B   PQ: 0 ANSI: 5
+>[   17.386989] sd 0:0:0:0: [sda] 156301488 512-byte logical blocks:
+>(80.0 GB/74.5 GiB)
+>[   17.393144] sd 0:0:0:0: [sda] Write Protect is off
+>[   17.397579] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+>[   17.398215] sd 0:0:0:0: Attached scsi generic sg0 type 0
+>[   17.404124] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
+>enabled, doesn't support DPO or FUA
+>[   17.661225]  sda: [mac] sda1 sda2 sda3 sda4
+>[   17.672937] sd 0:0:0:0: [sda] Attached SCSI disk
+>[   18.223985] pata-macio 0.00020000:ata-3: Activating pata-macio
+>chipset KeyLargo ATA-3, Apple bus ID 0
+>[   18.233397] scsi host1: pata_macio
+>[   18.239172] ata2: PATA max MWDMA2 irq 24
+>
+>
+>>
+>> This happens only once, but systemd thinks there's a hard problem and
+>will
+>> drop to a recovery shell. I can start sshd and login remotely and
+>then the
+>> system appears to be running just fine.
+>>
+>> This happened in 4.2.0-rc5 so I went back a few versions and found
+>that
+>> 4.1-rc5 was OK (the error does not show up and the system boots just
+>fine)
+>> and 4.1-rc6 is not.
+>>
+>> Unfortunately a git-bisect between these two versions went completly
+>off
+>> the charts, I don't know what happened here:
+>>
+>> ==================================
+>> first bad commit:
+>>
+>> 0fa372b6c95013af1334b3d5c9b5f03a70ecedab is the first bad commit
+>> commit 0fa372b6c95013af1334b3d5c9b5f03a70ecedab
+>> Author: Takashi Iwai <tiwai@suse.de>
+>> Date:   Wed May 27 16:17:19 2015 +0200
+>>
+>>     ALSA: hda - Fix noise on AMD radeon 290x controller
+>> ==================================
+>>
+>> I don't have this driver (or ALSA) even selected. I can reproduce
+>this
+>> error pretty reliably and I'd like to attempt another git-bisect
+>> run when I'm more awake. But maybe somebody recognizes this error and
+>> has a hint where this could come from?
+>>
+>> dmesg & .config:  http://nerdbynature.de/bits/v4.1-rc6/
+>>
+>> Thanks,
+>> Christian.
+>> --
+>> BOFH excuse #225:
+>>
+>> It's those computer people in X {city of world}.  They keep stuffing
+>things
+>> up.
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-This sounds like something you would want to be able to configure at
-runtime, either via private sysfs attributes, or better, using ethtool
-and either a newly introduced set of tunables, or creating a private
-driver API for this.
+Can you send me your .config or did you use my .config, verbatim?
 
-> +	---help---
-> +	  The size in bytes of the egress Congestion State notification threshold on 1G ports.
-> +	  The 1G dTSECs can quite easily be flooded by cores doing Tx in a tight loop
-> +	  (e.g. by sending UDP datagrams at "while(1) speed"),
-> +	  and the larger the frame size, the more acute the problem.
-> +	  So we have to find a balance between these factors:
-> +	       - avoiding the device staying congested for a prolonged time (risking
-> +                 the netdev watchdog to fire - see also the tx_timeout module param);
-> +               - affecting performance of protocols such as TCP, which otherwise
-> +	         behave well under the congestion notification mechanism;
-> +	       - preventing the Tx cores from tightly-looping (as if the congestion
-> +	         threshold was too low to be effective);
-> +	       - running out of memory if the CS threshold is set too high.
-> +
-> +config FSL_DPAA_CS_THRESHOLD_10G
-> +	hex "Egress congestion threshold on 10G ports"
-> +	range 0x1000 0x20000000
-> +	default "0x10000000"
-> +	---help ---
-> +	  The size in bytes of the egress Congestion State notification threshold on 10G ports.
-> +
-> +config FSL_DPAA_INGRESS_CS_THRESHOLD
-> +	hex "Ingress congestion threshold on FMan ports"
-> +	default "0x10000000"
-> +	---help---
-> +	  The size in bytes of the ingress tail-drop threshold on FMan ports.
-> +	  Traffic piling up above this value will be rejected by QMan and discarded by FMan.
+I'll try another git-bisect later today.
 
-Same here.
+Thanks,
+Christian.
 -- 
-Florian
+make bzImage, not war
