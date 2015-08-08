@@ -1,37 +1,24 @@
-Return-Path: <stefanb@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7DB481A075F
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 11:55:16 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stefanb@linux.vnet.ibm.com>;
- Fri, 7 Aug 2015 21:55:14 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 5A1A038C803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 21:55:10 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t781tAmw65273958
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 8 Aug 2015 01:55:10 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t781t9kW012300
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Aug 2015 21:55:10 -0400
-From: Stefan Berger <stefanb@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@au1.ibm.com,
- pmac@au1.ibm.com
-Cc: gcwilson@us.ibm.com, dimitris@us.ibm.com, latten@us.ibm.com,
- lo1@us.ibm.com, stefanb@us.ibm.com,
- Stefan Berger <stefanb@linux.vnet.ibm.com>
-Subject: [PATCH 15/16] Add TPM firmware API call get-state
-Date: Fri,  7 Aug 2015 21:55:04 -0400
-Message-Id: <1438998905-4085665-16-git-send-email-stefanb@linux.vnet.ibm.com>
-In-Reply-To: <1438998905-4085665-1-git-send-email-stefanb@linux.vnet.ibm.com>
-References: <1438998905-4085665-1-git-send-email-stefanb@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 565891A045F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 12:29:30 +1000 (AEST)
+Date: Fri, 7 Aug 2015 21:29:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Yuanjie Huang <Yuanjie.Huang@windriver.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>, Paul Gortmaker
+ <paul.gortmaker@windriver.com>
+Subject: Re: powerpc/fsl_book3e: fix the relocatable bug in debug interrupt
+ handler
+Message-ID: <20150808022913.GA29133@home.buserror.net>
+References: <1438930690-28046-1-git-send-email-Yuanjie.Huang@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1438930690-28046-1-git-send-email-Yuanjie.Huang@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,140 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support for the TPM firmware API call get-state.
+[Please wrap commit messages at around 74 columns]
 
-Signed-off-by: Stefan Berger <stefanb@linux.vnet.ibm.com>
----
- board-qemu/slof/vio-vtpm-cdriver.fs |  8 ++++++++
- board-qemu/slof/vtpm-sml.fs         |  7 +++++++
- lib/libtpm/tcgbios.c                | 12 ++++++++++++
- lib/libtpm/tcgbios.h                |  1 +
- lib/libtpm/tpm.code                 | 10 ++++++++++
- lib/libtpm/tpm.in                   |  1 +
- slof/fs/tpm/tpm-static.fs           | 12 ++++++++++++
- 7 files changed, 51 insertions(+)
+On Fri, Aug 07, 2015 at 02:58:10PM +0800, Yuanjie Huang wrote:
+> PowerPC Book3E processor features hardware-supported single instruction
+> execution, and it is used for ptrace(PTRACE_SINGLESTEP, ...).  When a
+> debugger loads a debuggee, it typically sets the CPU to yield debug
+> interrupt on first instruction complete or branch taken.  However, the
+> newly-forked child process could run into instruction TLB miss
+> exception handler when switched to, and causes a debug interrupt in the
+> exception entry sequence.  This is not expected by caller of
+> ptrace(PTRACE_SINGLESTEP, ...), so the next instruction address saved
+> in DSRR0 is checked against the boundary of exception entry sequence,
+> to ensure the kernel only process the interrupt as a normal exception
+> if the address does not fall in the exception entry sequence.  Failure
+> in obtaining the correct boundary leads to such debug exception handled
+> as from privileged mode, and causes kernel oops.
+> 
+> The LOAD_REG_IMMEDIATE can't be used to load the boundary addresses
+> when relocatable enabled, so this patch replace them with
+> LOAD_REG_ADDR_PIC.  LR is backed up and restored before and after
+> calling LOAD_REG_ADDR_PIC, because LOAD_REG_ADDR_PIC clobbers it.
+> 
+> Signed-off-by: Yuanjie Huang <Yuanjie.Huang@windriver.com>
+> ---
+>  arch/powerpc/kernel/exceptions-64e.S | 24 ++++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> index 3e68d1c..c475f569 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -735,12 +735,24 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+>  	andis.	r15,r14,(DBSR_IC|DBSR_BT)@h
+>  	beq+	1f
+>  
+> +#ifdef CONFIG_RELOCATABLE
+> +	mflr	r14
+> +	LOAD_REG_ADDR_PIC(r15,interrupt_base_book3e)
+> +	mtlr	r14
+> +	cmpld	cr0,r10,r15
+> +	blt+	cr0,1f
+> +	LOAD_REG_ADDR_PIC(r15,interrupt_end_book3e)
+> +	mtlr	r14
+> +	cmpld	cr0,r10,r15
+> +	bge+	cr0,1f
+> +#else
 
-diff --git a/board-qemu/slof/vio-vtpm-cdriver.fs b/board-qemu/slof/vio-vtpm-cdriver.fs
-index 5d55148..474c24c 100644
---- a/board-qemu/slof/vio-vtpm-cdriver.fs
-+++ b/board-qemu/slof/vio-vtpm-cdriver.fs
-@@ -72,6 +72,14 @@ false VALUE vtpm-debug?
- ;
- 
- \ firmware API call
-+: get-state ( -- state )
-+    " get-state" call-forward IF
-+        \ call-forward failed; return a value
-+        0 \ invalid
-+    THEN
-+;
-+
-+\ firmware API call
- : hash-all ( data-ptr data-len hash-ptr -- )
-     " hash-all" call-forward IF
-         \ call-forward failed; clean up stack
-diff --git a/board-qemu/slof/vtpm-sml.fs b/board-qemu/slof/vtpm-sml.fs
-index 3ce1ace..449f6fc 100644
---- a/board-qemu/slof/vtpm-sml.fs
-+++ b/board-qemu/slof/vtpm-sml.fs
-@@ -52,6 +52,13 @@ log-base LOG-SIZE tpm-set-log-parameters
-     move
- ;
- 
-+: get-state ( -- state )
-+    vtpm-debug? IF
-+        ." Call to get-state" cr
-+    THEN
-+    vtpm-driver-get-state
-+;
-+
- : hash-all ( data-ptr data-len hash-ptr -- )
-     vtpm-debug? IF
-         ." Call to hash-all" cr
-diff --git a/lib/libtpm/tcgbios.c b/lib/libtpm/tcgbios.c
-index 6c991b2..02ad91a 100644
---- a/lib/libtpm/tcgbios.c
-+++ b/lib/libtpm/tcgbios.c
-@@ -1533,3 +1533,15 @@ err_exit:
- 
- 	return 0;
- }
-+
-+uint32_t tpm_driver_get_state(void)
-+{
-+	struct tpm_driver *td = tpm_state.tpm_driver_to_use;
-+
-+	/* do not check for a working TPM here */
-+
-+	if (!td)
-+		return PFW_DRV_STATE_INVALID;
-+
-+	return td->getstate();
-+}
-diff --git a/lib/libtpm/tcgbios.h b/lib/libtpm/tcgbios.h
-index 6951af3..05cadb0 100644
---- a/lib/libtpm/tcgbios.h
-+++ b/lib/libtpm/tcgbios.h
-@@ -38,6 +38,7 @@ bool tpm_log_event(struct pcpes *pcpes);
- uint32_t tpm_hash_all(const void *data, uint32_t datalen, void *hashptr);
- uint32_t tpm_get_maximum_cmd_size(void);
- uint32_t tpm_pass_through_to_tpm(unsigned char *buf, uint32_t cmdlen);
-+uint32_t tpm_driver_get_state(void);
- 
- /* flags returned by tpm_get_state */
- #define TPM_STATE_ENABLED        1
-diff --git a/lib/libtpm/tpm.code b/lib/libtpm/tpm.code
-index e763f45..574c7eb 100644
---- a/lib/libtpm/tpm.code
-+++ b/lib/libtpm/tpm.code
-@@ -153,6 +153,16 @@ PRIM(tpm_X2d_hash_X2d_log_X2d_extend_X2d_event)
- 	TOS.n = tpm_hash_log_extend_event(eventptr);
- MIRP
- 
-+/****************************************************/
-+/* Firmware API                                     */
-+/* SLOF:   tpm-driver-get-state ( -- state)         */
-+/* LIBTPM: state = tpm_driver_get_state(void)       */
-+/****************************************************/
-+PRIM(tpm_X2d_driver_X2d_get_X2d_state)
-+	PUSH;
-+	TOS.n = tpm_driver_get_state();
-+MIRP
-+
- /*****************************************************************/
- /* Firmware API                                                  */
- /* SLOF:   tpm-hash-all ( data-ptr data-len hash-ptr -- errcode) */
-diff --git a/lib/libtpm/tpm.in b/lib/libtpm/tpm.in
-index 8b7cde8..3dd78f4 100644
---- a/lib/libtpm/tpm.in
-+++ b/lib/libtpm/tpm.in
-@@ -29,3 +29,4 @@ cod(tpm-hash-log-extend-event)
- cod(tpm-hash-all)
- cod(tpm-get-maximum-cmd-size)
- cod(tpm-pass-through-to-tpm)
-+cod(tpm-driver-get-state)
-diff --git a/slof/fs/tpm/tpm-static.fs b/slof/fs/tpm/tpm-static.fs
-index f9583b0..31ac815 100644
---- a/slof/fs/tpm/tpm-static.fs
-+++ b/slof/fs/tpm/tpm-static.fs
-@@ -69,6 +69,18 @@ false VALUE vtpm-debug?
- ;
- 
- \ firmware API function
-+: vtpm-driver-get-state ( -- state )
-+    vtpm-available? IF
-+        tpm-driver-get-state
-+        vtpm-debug? IF
-+            ." VTPM: Return value from tpm-driver-get-state: " dup . cr
-+        THEN
-+    ELSE
-+        0 \ invalid
-+    THEN
-+;
-+
-+\ firmware API function
- : vtpm-log-event ( event-ptr -- ok? )
-     vtpm-available? IF
-         tpm-log-event
--- 
-1.9.3
+CONFIG_RELOCATABLE is not supported on 64-bit book3e without applying
+additional patches, such as the RFC patchset I posted recently that
+contained the patch "powerpc/book3e-64: rename interrupt_end_book3e with
+__end_interrupts".  But if you've applied that patchset, then you
+wouldn't be working with the name interrupt_base_book3e, so how are you
+seeing this?
+
+Also, why not use the RELOCATABLE version unconditionally?  I don't think
+this is a performance-critical path.
+
+-Scott
