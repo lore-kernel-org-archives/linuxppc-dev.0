@@ -1,35 +1,35 @@
 Return-Path: <stefanb@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95F921A03B5
+ by lists.ozlabs.org (Postfix) with ESMTPS id B26F31A045F
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Aug 2015 11:55:13 +1000 (AEST)
 Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stefanb@linux.vnet.ibm.com>;
  Fri, 7 Aug 2015 21:55:11 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 62A3E6E8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 21:46:55 -0400 (EDT)
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B0CED38C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Aug 2015 21:55:08 -0400 (EDT)
 Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t781t92756492220
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 8 Aug 2015 01:55:09 GMT
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t781t8M362980266
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 8 Aug 2015 01:55:08 GMT
 Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
  by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t781t9la012274
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Aug 2015 21:55:09 -0400
+ t781t8Jq012162
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Aug 2015 21:55:08 -0400
 From: Stefan Berger <stefanb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, nikunj@linux.vnet.ibm.com, aik@au1.ibm.com,
  pmac@au1.ibm.com
 Cc: gcwilson@us.ibm.com, dimitris@us.ibm.com, latten@us.ibm.com,
  lo1@us.ibm.com, stefanb@us.ibm.com,
  Stefan Berger <stefanb@linux.vnet.ibm.com>
-Subject: [PATCH 13/16] Add TPM firmware API call get-maximum-cmd-size
-Date: Fri,  7 Aug 2015 21:55:02 -0400
-Message-Id: <1438998905-4085665-14-git-send-email-stefanb@linux.vnet.ibm.com>
+Subject: [PATCH 05/16] Extend internal firmware API
+Date: Fri,  7 Aug 2015 21:54:54 -0400
+Message-Id: <1438998905-4085665-6-git-send-email-stefanb@linux.vnet.ibm.com>
 In-Reply-To: <1438998905-4085665-1-git-send-email-stefanb@linux.vnet.ibm.com>
 References: <1438998905-4085665-1-git-send-email-stefanb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,200 +41,333 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support for the firmware API call get-maximum-cmd-size.
+Extend the internal API of the TPM firmware support with additional
+functions for hashing data, extending the TPM's platform configuration
+registers with a hash, and appending to the log that is recording
+what was hashed.
 
 Signed-off-by: Stefan Berger <stefanb@linux.vnet.ibm.com>
 ---
- board-qemu/slof/vio-vtpm-cdriver.fs |  7 ++++++
- board-qemu/slof/vtpm-sml.fs         |  6 +++++
- lib/libtpm/tcgbios.c                | 44 +++++++++++++++++++++++++++++++++++++
- lib/libtpm/tcgbios.h                |  1 +
- lib/libtpm/tcgbios_int.h            |  7 ++++++
- lib/libtpm/tpm.code                 | 10 +++++++++
- lib/libtpm/tpm.in                   |  1 +
- slof/fs/tpm/tpm-static.fs           | 12 ++++++++++
- 8 files changed, 88 insertions(+)
+ lib/libtpm/tcgbios.c     | 276 +++++++++++++++++++++++++++++++++++++++++++++++
+ lib/libtpm/tcgbios_int.h |   1 +
+ 2 files changed, 277 insertions(+)
 
-diff --git a/board-qemu/slof/vio-vtpm-cdriver.fs b/board-qemu/slof/vio-vtpm-cdriver.fs
-index 44e5aec..22fef4f 100644
---- a/board-qemu/slof/vio-vtpm-cdriver.fs
-+++ b/board-qemu/slof/vio-vtpm-cdriver.fs
-@@ -95,6 +95,13 @@ false VALUE vtpm-debug?
-     THEN
- ;
- 
-+\ firmware API call
-+: get-maximum-cmd-size ( -- maximum-size )
-+    " get-maximum-cmd-size" call-forward IF
-+        0
-+    THEN
-+;
-+
- : open ( )
-     vtpm-debug? IF ." VTPM: vTPM open()" cr THEN
-     true
-diff --git a/board-qemu/slof/vtpm-sml.fs b/board-qemu/slof/vtpm-sml.fs
-index 8783bf1..e62c20c 100644
---- a/board-qemu/slof/vtpm-sml.fs
-+++ b/board-qemu/slof/vtpm-sml.fs
-@@ -73,6 +73,12 @@ log-base LOG-SIZE tpm-set-log-parameters
-     vtpm-hash-log-extend-event
- ;
- 
-+: get-maximum-cmd-size ( -- max-size )
-+    vtpm-debug? IF
-+        ." Call to get-maximum-cmd-size" cr
-+    THEN
-+    vtpm-get-maximum-cmd-size
-+;
- 
- : open  true ;
- : close ;
 diff --git a/lib/libtpm/tcgbios.c b/lib/libtpm/tcgbios.c
-index 621c3e8..b306edf 100644
+index afbaede..072ed4d 100644
 --- a/lib/libtpm/tcgbios.c
 +++ b/lib/libtpm/tcgbios.c
-@@ -35,6 +35,8 @@
- 	} \
- } while (0);
+@@ -24,6 +24,9 @@
+ #include "tcgbios.h"
+ #include "tcgbios_int.h"
+ #include "stdio.h"
++#include "sha1.h"
++#include "stddef.h"
++#include "helpers.h"
  
-+#define MIN(a, b) ((a) < (b) ? (a) : (b))
-+
- static const uint8_t Startup_ST_CLEAR[] = { 0x00, TPM_ST_CLEAR };
- static const uint8_t Startup_ST_STATE[] = { 0x00, TPM_ST_STATE };
+ #define DEBUG 0
+ #define dprintf(_x ...) do { \
+@@ -79,6 +82,8 @@ extern struct tpm_driver tpm_drivers[];
  
-@@ -71,6 +73,11 @@ static const uint8_t GetCapability_Durations[] = {
- 	0x00, 0x00, 0x01, 0x20
- };
+ static void *log_base;
+ static uint32_t log_area_size;
++/* next log entry goes here */
++static void *log_area_address_next;
  
-+static const uint8_t GetCapability_BufferSize[] = {
-+	0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x04,
-+	0x00, 0x00, 0x01, 0x24
-+};
-+
- static uint8_t evt_separator[] = {0xff,0xff,0xff,0xff};
+ /********************************************************
+   Extensions for TCG-enabled BIOS
+@@ -89,6 +94,7 @@ void tpm_set_log_parameters(void *addr, unsigned int size)
+ 	dprintf("Log is at 0x%llx; size is %u bytes\n",
+ 		(uint64_t)addr, size);
+ 	log_base = addr;
++	log_area_address_next = addr;
+ 	log_area_size = size;
+ }
  
- struct tpm_state {
-@@ -1461,3 +1468,40 @@ uint32_t tpm_measure_scrtm(void)
- 
- 	return rc;
+@@ -399,3 +405,273 @@ err_exit:
+ 		return rc;
+ 	return TCGBIOS_COMMAND_ERROR;
  }
 +
-+/*
-+ * tpm_get_maximum_cmd_size: Function for interfacing with the firmware API
-+ *
-+ * This function returns the maximum size a TPM command (or response) may have.
-+ */
-+uint32_t tpm_get_maximum_cmd_size(void)
++static void set_log_area_address_next(void *next)
++{
++	log_area_address_next = next;
++}
++
++static void *get_log_area_address_next(void)
++{
++	return log_area_address_next;
++}
++
++static uint32_t tpm_sha1_calc(const uint8_t *data, uint32_t length,
++			      uint8_t *hash)
 +{
 +	uint32_t rc;
 +	uint32_t returnCode;
-+	struct tpm_res_getcap_buffersize buffersize;
-+	uint32_t result;
-+	struct tpm_driver *td = tpm_state.tpm_driver_to_use;
++	struct tpm_res_sha1start start;
++	struct tpm_res_sha1complete complete;
++	uint32_t blocks = length / 64;
++	uint32_t rest = length & 0x3f;
++	uint32_t numbytes, numbytes_no;
++	uint32_t offset = 0;
 +
-+	if (!has_working_tpm())
-+		return 0;
-+
-+	rc = build_and_send_cmd(TPM_ORD_GetCapability,
-+				GetCapability_BufferSize,
-+				sizeof(GetCapability_BufferSize),
-+				(uint8_t *)&buffersize, sizeof(buffersize),
++	rc = build_and_send_cmd(TPM_ORD_SHA1Start,
++				NULL, 0,
++				(uint8_t *)&start, sizeof(start),
 +				&returnCode, TPM_DURATION_TYPE_SHORT);
 +
 +	if (rc || returnCode)
 +		goto err_exit;
 +
-+	result = MIN(cpu_to_be32(buffersize.buffersize), td->getbuffersize());
++	while (blocks > 0) {
 +
-+	return result;
++		numbytes = be32_to_cpu(start.max_num_bytes);
++		if (numbytes > blocks * 64)
++			 numbytes = blocks * 64;
++
++		numbytes_no = cpu_to_be32(numbytes);
++
++		rc = build_and_send_cmd_od(TPM_ORD_SHA1Update,
++					   (uint8_t *)&numbytes_no,
++					   sizeof(numbytes_no),
++					   NULL, 0, &returnCode,
++					   &data[offset], numbytes,
++					   TPM_DURATION_TYPE_SHORT);
++
++		if (rc || returnCode)
++			goto err_exit;
++
++		offset += numbytes;
++		blocks -= (numbytes / 64);
++	}
++
++	numbytes_no = cpu_to_be32(rest);
++
++	rc = build_and_send_cmd_od(TPM_ORD_SHA1Complete,
++				  (uint8_t *)&numbytes_no, sizeof(numbytes_no),
++				  (uint8_t *)&complete, sizeof(complete),
++				  &returnCode,
++				  &data[offset], rest,
++				  TPM_DURATION_TYPE_SHORT);
++
++	if (rc || returnCode)
++		goto err_exit;
++
++	memcpy(hash, complete.hash, sizeof(complete.hash));
++
++	return 0;
 +
 +err_exit:
-+	dprintf("TPM malfunctioning (line %d).\n", __LINE__);
++	dprintf("TPM SHA1 malfunctioning.\n");
 +
 +	tpm_state.tpm_working = 0;
++	if (rc)
++		return rc;
++	return TCGBIOS_COMMAND_ERROR;
++}
++
++static uint32_t sha1_calc(const uint8_t *data, uint32_t length, uint8_t *hash)
++{
++	if (tpm_state.tpm_driver_to_use &&
++	    length < tpm_state.tpm_driver_to_use->sha1threshold)
++		return tpm_sha1_calc(data, length, hash);
++
++	return sha1(data, length, hash);
++}
++
++/*
++ * Extend the ACPI log with the given entry by copying the
++ * entry data into the log.
++ *
++ * @pcpes: Pointer to the structure to be copied into the log
++ * @event: The event to be appended to 'pcpes'
++ * @event_length: The length of the event
++ *
++ * Output:
++ *  lower 16 bits of return code contain entry number
++ *  if entry number is '0', then upper 16 bits contain error code.
++ */
++static uint32_t tpm_extend_ofdt_log(struct pcpes *pcpes,
++				    const char *event, uint32_t event_length)
++{
++	uint32_t size;
++	uint32_t log_area_size = get_log_area_size();
++	uint8_t *log_area_start_address = get_log_base_ptr();
++	uint8_t *log_area_address_next = get_log_area_address_next();
++
++	dprintf("LASA_BASE = %p, LASA_NEXT = %p\n",
++		log_area_start_address, log_area_address_next);
++
++	if (!log_area_address_next || log_area_size == 0)
++		return TCGBIOS_LOGOVERFLOW;
++
++	size = offset_of(struct pcpes, event) + event_length;
++
++	if ((log_area_address_next + size - log_area_start_address) >
++	     log_area_size) {
++		dprintf("LOG OVERFLOW: size = %d\n", size);
++		return TCGBIOS_LOGOVERFLOW;
++	}
++
++	pcpes->eventdatasize = event_length;
++
++	memcpy(log_area_address_next, pcpes, offset_of(struct pcpes, event));
++	memcpy(log_area_address_next + offset_of(struct pcpes, event),
++	       event, event_length);
++
++	set_log_area_address_next(log_area_address_next + size);
 +
 +	return 0;
 +}
-diff --git a/lib/libtpm/tcgbios.h b/lib/libtpm/tcgbios.h
-index 0dacba2..2aa7d20 100644
---- a/lib/libtpm/tcgbios.h
-+++ b/lib/libtpm/tcgbios.h
-@@ -36,6 +36,7 @@ uint32_t tpm_process_opcode(uint8_t op, bool verbose);
- uint32_t tpm_hash_log_extend_event(struct pcpes *pcpes);
- bool tpm_log_event(struct pcpes *pcpes);
- uint32_t tpm_hash_all(const void *data, uint32_t datalen, void *hashptr);
-+uint32_t tpm_get_maximum_cmd_size(void);
- 
- /* flags returned by tpm_get_state */
- #define TPM_STATE_ENABLED        1
++
++static uint32_t is_preboot_if_shutdown(void)
++{
++	return tpm_state.if_shutdown;
++}
++
++static uint32_t shutdown_preboot_interface(void)
++{
++	uint32_t rc = 0;
++
++	if (!is_preboot_if_shutdown()) {
++		tpm_state.if_shutdown = 1;
++	} else {
++		rc = TCGBIOS_INTERFACE_SHUTDOWN;
++	}
++
++	return rc;
++}
++
++static void tpm_shutdown(void)
++{
++	reset_ofdt_log();
++	shutdown_preboot_interface();
++}
++
++/*
++ * Pass a TPM command through to the TPM
++ *
++ * @req: request buffer to send
++ * @reqlen: request buffer length
++ * @to_t: timeout type
++ * @rsp: response buffer
++ * @rsplen: size of response buffer in input
++ *          on output the number of bytes used in the buffer
++ *
++ * Returns an error code or 0 for successful sending of command
++ * and reception of response.
++ */
++static bool pass_through_to_tpm(unsigned char *req,
++				uint32_t reqlen,
++				enum tpmDurationType to_t,
++				unsigned char *rsp,
++				uint32_t *rsplen)
++{
++	uint8_t locty = 0;
++	struct iovec iovec[2] = {{ 0 }};
++
++	if (!has_working_tpm())
++	       return TCGBIOS_FATAL_COM_ERROR;
++
++	iovec[0].data = req;
++	iovec[0].length = reqlen;
++
++	return transmit(locty, iovec, rsp, rsplen, to_t);
++}
++
++/*
++ * Extend a PCR of the TPM with the given hash
++ *
++ * @hash: sha1 hash (20 bytes) to extend PCR with
++ * @pcrindex: the PCR to extend [ 0..23 ]
++ */
++static uint32_t tpm_extend(uint8_t *hash, uint32_t pcrindex)
++{
++	struct tpm_req_extend req = {
++		.tag	  = cpu_to_be16(TPM_TAG_RQU_CMD),
++		.totlen   = cpu_to_be32(sizeof(req)),
++		.ordinal  = cpu_to_be32(TPM_ORD_Extend),
++		.pcrindex = cpu_to_be32(pcrindex),
++	};
++	struct tpm_rsp_extend rsp;
++	uint32_t rsplen = sizeof(rsp);
++	uint32_t rc;
++
++	memcpy(req.digest, hash, sizeof(req.digest));
++
++	rc = pass_through_to_tpm((unsigned char *)&req, sizeof(req),
++				 TPM_DURATION_TYPE_SHORT,
++				 (unsigned char *)&rsp, &rsplen);
++	if (!rc) {
++		if (rsplen != sizeof(rsp)) {
++			dprintf("TPM_Extend response has unexpected size: %u\n",
++				rsplen);
++			rc = TCGBIOS_FATAL_COM_ERROR;
++		}
++	}
++
++	if (rc)
++		tpm_shutdown();
++
++	return rc;
++}
++
++/*
++ * Hash then given input data and append the hash to the log
++ *
++ * @hashdata: the data to hash
++ * @hashdatalen: the size of the data to hash
++ * @pcpes: the 'pcpes' to append to the log; the hash will be written into this
++ *         structure
++ * @event: the event to append to the pcpes
++ * @event_length: the lenth of the event array
++ */
++static uint32_t hash_log_event(const void *hashdata,
++			       uint32_t hashdatalen,
++			       struct pcpes *pcpes,
++			       const char *event, uint32_t event_length)
++{
++	uint32_t rc;
++
++	if (is_preboot_if_shutdown())
++		return TCGBIOS_INTERFACE_SHUTDOWN;
++
++	if (pcpes->pcrindex >= 24)
++		return TCGBIOS_INVALID_INPUT_PARA;
++
++	if (hashdata) {
++		rc = sha1_calc(hashdata, hashdatalen, pcpes->digest);
++		if (rc)
++			return rc;
++	}
++
++	return tpm_extend_ofdt_log(pcpes, event, event_length);
++}
++
++static uint32_t hash_log_extend_event(const void *hashdata,
++				      uint32_t hashdatalen,
++				      struct pcpes *pcpes,
++				      const char *event, uint32_t event_length,
++				      uint32_t pcrindex)
++{
++	uint32_t rc = 0;
++
++	rc = hash_log_event(hashdata, hashdatalen, pcpes, event, event_length);
++	if (rc)
++		return rc;
++
++	return tpm_extend(pcpes->digest, pcrindex);
++}
 diff --git a/lib/libtpm/tcgbios_int.h b/lib/libtpm/tcgbios_int.h
-index bedc2f1..249e205 100644
+index c8caf3b..888186c 100644
 --- a/lib/libtpm/tcgbios_int.h
 +++ b/lib/libtpm/tcgbios_int.h
-@@ -177,6 +177,13 @@ struct tpm_res_getcap_durations {
-     uint32_t    durations[TPM_NUM_DURATIONS];
- } __attribute__((packed));
+@@ -46,6 +46,7 @@
+ #define TPM_ST_DEACTIVATED               0x3
  
-+struct tpm_res_getcap_buffersize {
-+    TPM_RSP_HEADER
-+    uint32_t    size;
-+    uint32_t    buffersize;
-+} __attribute__((packed));
-+
-+
- struct tpm_res_sha1start {
-     TPM_RSP_HEADER
-     uint32_t    max_num_bytes;
-diff --git a/lib/libtpm/tpm.code b/lib/libtpm/tpm.code
-index acd3a10..5c3d4db 100644
---- a/lib/libtpm/tpm.code
-+++ b/lib/libtpm/tpm.code
-@@ -164,3 +164,13 @@ PRIM(tpm_X2d_hash_X2d_all)
- 	void *dataptr = TOS.a;
- 	TOS.n = tpm_hash_all(dataptr, datalen, hashptr);
- MIRP
-+
-+/****************************************************/
-+/* Firmware API                                     */
-+/* SLOF:   tpm-get-maximum-cmd-size ( -- max-size)  */
-+/* LIBTPM: maxsize = tpm_get_maximum_cmd_size()     */
-+/****************************************************/
-+PRIM(tpm_X2d_get_X2d_maximum_X2d_cmd_X2d_size)
-+	PUSH;
-+	TOS.n = tpm_get_maximum_cmd_size();
-+MIRP
-diff --git a/lib/libtpm/tpm.in b/lib/libtpm/tpm.in
-index ad57631..0923fc0 100644
---- a/lib/libtpm/tpm.in
-+++ b/lib/libtpm/tpm.in
-@@ -27,3 +27,4 @@ cod(tpm-measure-scrtm)
- cod(tpm-log-event)
- cod(tpm-hash-log-extend-event)
- cod(tpm-hash-all)
-+cod(tpm-get-maximum-cmd-size)
-diff --git a/slof/fs/tpm/tpm-static.fs b/slof/fs/tpm/tpm-static.fs
-index 31d3652..fca0058 100644
---- a/slof/fs/tpm/tpm-static.fs
-+++ b/slof/fs/tpm/tpm-static.fs
-@@ -108,6 +108,18 @@ false VALUE vtpm-debug?
-     THEN
- ;
+ #define TPM_TAG_RQU_CMD                  0x00c1
++#define TPM_TAG_RSP_CMD                  0x00c4
  
-+\ firmware API function
-+: vtpm-get-maximum-cmd-size ( -- max-size )
-+    vtpm-available? IF
-+        tpm-get-maximum-cmd-size                            ( -- max-size )
-+        vtpm-debug? IF
-+            ." VTPM: Return value from tpm-get-maximum-cmd-size: " dup . cr
-+        THEN
-+    ELSE
-+        0
-+    THEN
-+;
-+
- 1 CONSTANT TPM_ST_ENABLED
- 2 CONSTANT TPM_ST_ACTIVE
- 4 CONSTANT TPM_ST_OWNED
+ /* TPM command error codes */
+ #define TPM_INVALID_POSTINIT             0x26
 -- 
 1.9.3
