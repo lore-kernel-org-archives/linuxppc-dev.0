@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BFFA11A1799
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 12:30:02 +1000 (AEST)
-Message-ID: <1439087389.3715.55.camel@kernel.crashing.org>
-Subject: Re: powerpc: Add an inline function to update HID0
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
-Date: Sun, 09 Aug 2015 12:29:49 +1000
-In-Reply-To: <20150804100858.1F272140306@ozlabs.org>
-References: <20150804100858.1F272140306@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 772141A1799
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 14:17:13 +1000 (AEST)
+Received: from trent.utfs.org (trent.utfs.org [IPv6:2a03:3680:0:3::67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 051AD140297
+ for <linuxppc-dev@ozlabs.org>; Sun,  9 Aug 2015 14:17:11 +1000 (AEST)
+Date: Sat, 8 Aug 2015 21:17:02 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@ozlabs.org
+cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 4.1-rc6: ATA link is slow to respond, please be patient
+In-Reply-To: <alpine.DEB.2.20.8.1508070306080.12626@trent.utfs.org>
+Message-ID: <alpine.DEB.2.20.8.1508082049490.12626@trent.utfs.org>
+References: <alpine.DEB.2.20.8.1508070306080.12626@trent.utfs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +28,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-04 at 20:08 +1000, Michael Ellerman wrote:
-> On Tue, 2015-04-08 at 08:30:58 UTC, "Gautham R. Shenoy" wrote:
-> > Section 3.7 of Version 1.2 of the Power8 Processor User's Manual
-> > prescribes that updates to HID0 be preceded by a SYNC instruction and
-> > followed by an ISYNC instruction (Page 91).
-> > 
-> > Create a function name update_hid0() which follows this recipe and
-> > invoke it from the static split core path.
-> > 
-> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/kvm_ppc.h       | 11 +++++++++++
-> 
-> Why is it in there? It's not KVM related per se.
-> 
-> Where should it go? I think reg.h would be best, ideally near the definition
-> for HID0, though that's probably not possible because of ASSEMBLY requirements.
-> So at the bottom of reg.h ?
-> 
-> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> > index c6ef05b..325f1d6 100644
-> > --- a/arch/powerpc/include/asm/kvm_ppc.h
-> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> > @@ -685,4 +685,15 @@ static inline ulong kvmppc_get_ea_indexed(struct kvm_vcpu *vcpu, int ra, int rb)
-> >  
-> >  extern void xics_wake_cpu(int cpu);
-> >  
-> > +static inline void update_hid0(unsigned long hid0)
-> > +{
-> > +	/*
-> > +	 *  The HID0 update should at the very least be preceded by a
-> > +	 *  a SYNC instruction followed by an ISYNC instruction
-> > +	 */
-> > +	mb();
-> > +	mtspr(SPRN_HID0, hid0);
-> > +	isync();
-> 
-> That's going to turn into three separate inline asm blocks, which is maybe a
-> bit unfortunate. Have you checked the generated code is what we want, ie. just
-> sync, mtspr, isync ?
+[Adding linux-ide@vger.kernel.org]
 
-It depends on the processor, I'd rather we make this out of line in
-misc.S or similar and use the appropriate CPU table bits and pieces.
+On Fri, 7 Aug 2015, Christian Kujau wrote:
+> this PowerBook G4 was running 3.16 for a while but now I wanted to upgrade 
+> to latest mainline. However, during bootup the following happens:
+> 
+> ===============================
+> [    2.237102] ata1: PATA max UDMA/100 irq 39
+> [    2.401708] ata1.00: ATA-8: SAMSUNG HM061GC, LR100-10, max UDMA/100
+> [    2.401764] ata1.00: 117231408 sectors, multi 16: LBA48 
+> [    2.417633] ata1.00: configured for UDMA/100
+> [   44.918102] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> [   44.920452] ata1.00: failed command: READ DMA
+> [   44.922725] ata1.00: cmd c8/00:88:64:c2:12/00:00:00:00:00/e0 tag 0 dma 69632 in
+> [   44.927257] ata1.00: status: { DRDY }
+> [   49.971784] ata1.00: qc timeout (cmd 0xec)
+> [   49.976529] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> [   49.978908] ata1.00: revalidation failed (errno=-5)
+> [   55.019662] ata1: link is slow to respond, please be patient (ready=0)
+> [   60.007677] ata1: device not ready (errno=-16), forcing hardreset
+> [   60.012670] ata1: soft resetting link
+> [   60.193638] ata1.00: configured for UDMA/100
+> [   60.196158] ata1.00: device reported invalid CHS sector 0
+> [   60.198610] ata1: EH complete
+> ===============================
+> 
+> This happens only once, but systemd thinks there's a hard problem and will 
+> drop to a recovery shell. I can start sshd and login remotely and then the 
+> system appears to be running just fine.
+> 
+> This happened in 4.2.0-rc5 so I went back a few versions and found that
+> 4.1-rc5 was OK (the error does not show up and the system boots just fine)
+> and 4.1-rc6 is not.
+> 
 
-Some older CPUs require whacking it N times for example.
+After more digging around I noticed that the same error (with 
+changed wording) happens with a Debian 3.16.0-4-powerpc kernel - so it
+doesn't appear to be a recent regression as I suspected at first:
 
-Cheers,
-Ben.
+==================================
+[   46.907147] ata1: drained 572 bytes to clear DRQ
+[   46.907166] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+[   46.908419] ata1.00: failed command: READ DMA
+[   46.909058] ata1.00: cmd c8/00:80:9c:f9:60/00:00:00:00:00/e0 tag 0 dma 65536 in
+         res 40/00:fe:00:00:00/00:00:00:00:00/40 Emask 0x20 (host bus error)
+[   46.910303] ata1.00: status: { DRDY }
+[   46.970579] ata1.00: configured for UDMA/100
+[   46.971853] ata1.00: device reported invalid CHS sector 0
+[   46.972524] ata1: EH complete
+==================================
 
-> cheers
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Also, the error cannot repduced as reliably as I thought: sometimes, the 
+machine just boots w/o a hitch - and that might be the reasons why my 
+bisect attempts failed and incorrectly blamed totally unrelated commits: 
+after each "git bisect {good,bad}" (+compiling) I rebooted but there was a 
+chance that the system came up just fine / showed the same ATA error and 
+thus falsified the git-bisect results.
+
+I noticed that with this Debian 3.16 kernel, it happens less often when I 
+use the "irqpoll" option. But with 4.2-rc5 this doesn't seem to help much, 
+the system still hangs during boot but continues after the "EH complete " 
+message. And it doesn't appear afterwards, I can read from my root disk 
+just fine and a long SMART check also comes back fine.
+
+Because the error only appears to happen on the very first access after a 
+reboot, I tried to boot with rootdelay=30 - but of course then it just 
+waits "before" accessing the root disk. I'd need a magic option to wait a 
+few seconds "after" the first disk access, so that the boot framework 
+("systemd") won't be thrown off when /dev/sda isn't responding as fast as 
+expected.
+
+What _does_ seem to help a bit was to disable the the swap device, which 
+is configured as an encrypted dm-device here - and systemd was almost 
+always stumbling over this particular service during bootup. Because of 
+the ATA timeout, the dm-device could not be setup correctly and systemd 
+would bail out and drop me into a recovery shell. Without the swap device, 
+systemd would skip setting up swap and boot just fine (most of the time) 
+and I can setup swap once the system has been booted. So...there's that.
+
+It's still a mystery to me why /dev/sda is only behaving weird on its 
+first access.
+
+I've cc'ed linux-ide, maybe somebody has an idea on that?
+
+dmesg & .config:  http://nerdbynature.de/bits/v4.1-rc6/
+
+Thanks,
+Christian.
+
+
+> Unfortunately a git-bisect between these two versions went completly off 
+> the charts, I don't know what happened here:
+> ==================================
+> first bad commit:
+> 
+> 0fa372b6c95013af1334b3d5c9b5f03a70ecedab is the first bad commit
+> commit 0fa372b6c95013af1334b3d5c9b5f03a70ecedab
+> Author: Takashi Iwai <tiwai@suse.de>
+> Date:   Wed May 27 16:17:19 2015 +0200
+> 
+>     ALSA: hda - Fix noise on AMD radeon 290x controller
+> ==================================
+> 
+> I don't have this driver (or ALSA) even selected. I can reproduce this 
+> error pretty reliably and I'd like to attempt another git-bisect
+> run when I'm more awake. But maybe somebody recognizes this error and
+> has a hint where this could come from?
+> 
+> dmesg & .config:  http://nerdbynature.de/bits/v4.1-rc6/
+> 
+> Thanks,
+> Christian.
+> -- 
+> BOFH excuse #225:
+> 
+> It's those computer people in X {city of world}.  They keep stuffing things up.
+> 
+
+-- 
+BOFH excuse #263:
+
+It's stuck in the Web.
