@@ -1,32 +1,25 @@
-Return-Path: <ranshalit@gmail.com>
-Received: from mail-ig0-x236.google.com (mail-ig0-x236.google.com
- [IPv6:2607:f8b0:4001:c05::236])
+Return-Path: <dja@axtens.net>
+Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
+ [IPv6:2607:f8b0:400e:c02::235])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 443691A1BF8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 05:18:36 +1000 (AEST)
-Received: by igui7 with SMTP id i7so7488147igu.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Aug 2015 12:18:33 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAJ2oMhJO7c=qNR4GK4_uPKQpFrSk+C7T4g5v3XPXd4YyEiVyNw@mail.gmail.com>
-References: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
- <1438714472.2097.89.camel@freescale.com>
- <CAJ2oMhLzck9SxgzcXpEXVk_Yf0KoM=D4cOToizoOUPQFZ4JjWA@mail.gmail.com>
- <1438720268.2097.94.camel@freescale.com>
- <CAJ2oMhLDpbnqp=15Z_zWw8c1dY2fRCokG+_hneL=pFUMZdHN5Q@mail.gmail.com>
- <1438723510.2097.97.camel@freescale.com>
- <CAJ2oMhKNXz56xcxmNFeaZXHct0ERf0m9V_uTbtCZCUKcGtPkqw@mail.gmail.com>
- <CAJ2oMhK0WHR2at7h2Cw46nXTtDBkgMxbATm95dNYwdLPrs+GPw@mail.gmail.com>
- <CAJ2oMh+9Ls0if-yutBzCgZgdTZ+Z4zo1dKq+niRzL6uWvaQeqw@mail.gmail.com>
- <1438830473.2097.138.camel@freescale.com>
- <CAJ2oMhJO7c=qNR4GK4_uPKQpFrSk+C7T4g5v3XPXd4YyEiVyNw@mail.gmail.com>
-Date: Sun, 9 Aug 2015 22:18:33 +0300
-Message-ID: <CAJ2oMhKa3TTmMQ+C_3ZtYTHWKw2vqShnQCQNta-5kJAy-7NqSQ@mail.gmail.com>
-Subject: Re: GPMC in device tree
-From: Ran Shalit <ranshalit@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B84F1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 09:25:45 +1000 (AEST)
+Received: by pdbfa8 with SMTP id fa8so24395183pdb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Aug 2015 16:25:43 -0700 (PDT)
+Received: from abhimac.ozlabs.ibm.com ([122.99.82.10])
+ by smtp.gmail.com with ESMTPSA id fs13sm16156310pdb.29.2015.08.09.16.25.41
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Sun, 09 Aug 2015 16:25:42 -0700 (PDT)
+Message-ID: <1439162607.24612.9.camel@axtens.net>
+Subject: EEH regression: PE <-> device binding lost after reset
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 10 Aug 2015 09:23:27 +1000
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-tKGFKxtrrd6ohQRwZMcX"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,144 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 9, 2015 at 9:27 AM, Ran Shalit <ranshalit@gmail.com> wrote:
-> On Thu, Aug 6, 2015 at 6:07 AM, Scott Wood <scottwood@freescale.com> wrote:
->> On Wed, 2015-08-05 at 17:27 +0300, Ran Shalit wrote:
->>> On Wed, Aug 5, 2015 at 9:11 AM, Ran Shalit <ranshalit@gmail.com> wrote:
->>> > On Wed, Aug 5, 2015 at 6:56 AM, Ran Shalit <ranshalit@gmail.com> wrote:
->>> > > On Wed, Aug 5, 2015 at 12:25 AM, Scott Wood <scottwood@freescale.com>
->>> > > wrote:
->>> > > > On Wed, 2015-08-05 at 00:22 +0300, Ran Shalit wrote:
->>> > > > > On more thing, if I may.
->>> > > > > The localbus is also connected to nvram & cpld.
->>> > > > > I've noticed that read/write works well, even though I didn't define
->>> > > > > anything in device tree.
->>> > > > > Is there any reasom to add these devices into device tree, or can we
->>> > > > > use the cpld and nvram without the definition in device tree ?
->>> > > >
->>> > > > I don't know what you're doing in your kernel to access devices that
->>> > > > aren't
->>> > > > in the device tree.  You should add the devices to the device tree,
->>> > > > and have
->>> > > > the kernel use it rather than hardcoded info.
->>> > > >
->>> > > > -Scott
->>> > > >
->>> > > Hi,
->>> > >
->>> > > Yes I understand.
->>> > > But It is worse noting that I have no localbus entry in the device tree.
->>> > > Yes, The nvram, cpld which are both connected to device tree, seems to
->>> > > work without any issues.
->>> > >
->>> > > Thanks,
->>> > > Ran
->>> >
->>> > I apologyze for the bad english, I meant "it worth to note" that there
->>> > is no localbus entry at all in the device tree.
->>> > So I wander how the nvram and cpld worked...
->>
->> I don't know how it worked -- presumably there's something in your kernel
->> that hardcodes knowledge of those devices.
->>
->>> > If I may please ask, what should be the "compatible" for generic
->>> > devices such as  nvram/cpld ?
->>
->> CPLD is not a generic device.  The compatible should describe the logic that
->> has been programmed into the CPLD.
->>
->>> > I assume that if they worked without any entry, it means that there is
->>> > no need for specific driver.
->>> >
->>> > Regards,
->>> > Ran
->>>
->>> Hi,
->>>
->>> After studing the localbus configuration as should be configured in
->>> device tree for powerpc, I think I have come with the following
->>> configuration, (not yet tested on board):
->>>
->>>
->>>  localbus@e0005000{
->>> #address-cells = <2>;
->>> #size-cells = <1>;
->>>     compatible = "fsl,mpc8349-localbus", "simple-bus";
->>>      reg = <0xe0005000 0x1000>;
->>>      interrupts = <77 0x8>;
->>>      interrupt-parent = <&ipic>;
->>>
->>>
->>> /* NOR and NAND Flashes */
->>>    ranges = <0x0 0x0 0xff800000 0x00800000         /* 8MB NOR Flash */
->>>              0x1 0x0 0xF8000000 0x08000000      /* User flash (same
->>> nor, in burst mode) 128M */
->>>              0x2 0x0 0xf7e00000 0x00200000>;    /*NVRAM/CPLD C2 is
->>> selected in CPLD , */
->>> /*nvram 0xf7e00000 1MB */
->>> /*cpld      0xf7f00000 1M  (<- different address!)*/
->>> nor@0,0 {
->>> #address-cells = <1>;
->>> #size-cells = <1>;
->>> compatible = "cfi-flash";
->>> reg = <0x0 0x0 0x1000000>;
->>> #bank-width = <1>;
->>> device-width = <4>;
->>>
->>> };
->>> };
->>
->
-> Hi ,
->
-> I reboot the board, with the new device tree localbus, but I don't
-> have any new /dev/mtdX entry for the NOR flash.
-> There is no HW issue, becuase we can R/W access the NOR flash from u-boot.
-> Is there any hint what can be the issue here ? I've checked in kernel
-> config and validated that mtd is supported.
-> The NOR flash is S29GL512P , SPANSION.
->
-> localbus@e0005000 {
-> #address-cells = <2>;
-> #size-cells = <1>;
->    compatible = "fsl,mpc8349-localbus", "simple-bus";
->     reg = <0xe0005000 0x1000>;
->     interrupts = <77 0x8>;
->     interrupt-parent = <&ipic>;
->
->
-> # NOR and NAND Flashes
->   ranges = <0x0 0x0 0xff800000 0x00800000
->     0x1 0x0 0xF8000000 0x08000000
->     0x2 0x0 0xf7e00000 0x00200000>;
-> nor@0,0 {
-> #address-cells = <1>;
-> #size-cells = <1>;
-> compatible = "cfi-flash";
-> reg = <0x0 0x0 0x00800000>;
-> #bank-width = <1>;
-> device-width = <1>;
->
-> };
-> };
->
-> Best Regards,
-> Ran
 
-Hello,
+--=-tKGFKxtrrd6ohQRwZMcX
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Just to update,
-I eventually solved this issue.
-I don't do any configuration in device tree. All BRx configuration is
-already done in u-boot (as was done from the start), and everything
-seems to work OK: cpld, nvram.
+Hi,
 
-For NOR FPGA I only added NOR configuration to kernel:
+I'm experiencing a regression in EEH that was introduced somewhere
+between 4.0 and 4.1.
 
-CONFIG_MTD_PHYSMAP=y
-CONFIG_MTD_PHYSMAP_START=0xf8000000
-CONFIG_MTD_PHYSMAP_LEN=0x7800000
-CONFIG_MTD_PHYSMAP_BANKWIDTH=4
+I have been reproducing this with a CAPI (CXL) card, but the behaviour
+isn't CAPI related and the triggering code hasn't changed. CAPI cards
+are reprogrammed by PERSTing the slot they sit in, so CAPI exposes a
+'reset' file in sysfs that does "pci_set_pcie_reset_state(dev,
+pcie_warm_reset)", and then relies on EEH noticing to properly reset the
+card.
 
-Thank you for the tips,
-Ran
+In 4.0 and earlier, this worked: the slot would be persted, EEH would
+notice and hotplug. You could do this as many times as you liked.
+
+In 4.1 and later, you can do 1 successful reset, but any subsequent
+reset causes the following to be printed in dmesg:
+
+[  225.118656] cxl-pci 0006:01:00.0: CXL reset
+[  225.118663] pcibios_set_pcie_reset_state: No PE found on PCI device 0006=
+:01:00.0
+[  225.118672] cxl-pci 0006:01:00.0: cxl: pcie_warm_reset failed
+
+I'm digging through the commits between 4.0 and 4.1 at the moment, but I
+thought I'd post it here in hopes someone had an idea what the root
+cause was.=20
+
+
+--=20
+Regards,
+Daniel
+
+--=-tKGFKxtrrd6ohQRwZMcX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAABCgAGBQJVx+DvAAoJEPC3R3P2I92FzqQP/39gry4EJtNfQKK7/kO34R/i
+Ms5/Xu1jem7jtcoIqOyPfDXyK+08MyJH+6lTcRZar0avAQJwDfylkn+Esix+ahms
+yyN5Uf56reuHcgY0Z9zVuX9z3ejFub3pvEP6RBOO8EIEhWywopt/1chm0OZIeiQD
+mFenjEQxdQZ/Y0COY08kfj19UUVxoHVakI98KiO/TxrR13BiXdrPDMXk64YH/99i
+ST6mJ3wQb09+kziyyyUmqijOUfvmgjXepGe72IjkILHXyIPxTcBpFBhHtzSJHTN+
+B0cIO2UjBoSCjce8qyD8sNazA6Wq801TTRaGeJ6RPD9fNJpGJld18msBmzavvdEB
+EU0k/hw7/aUP8Y8zyvVZ/H9rKszoXOnDszHkvjcVckf9tgntUsHgyeyD5mJyg0Nu
+1pGC/4Z+ud5GOnJp9B8Zs6J1N0QBHuKuXdBqgTEcpGarW4HX9ETqmmFZ/94yMvzE
+AASS+ZmG4VrpqVuoWB9MGR8qv0o/k7TRhd3zkU5iIgn7NedI0ckQKw5fCFGfJUDi
+hqmQnOZBzfWtPbF6BXHOk7fWUC8ytNMvykCOTG2Is9EgYGp7XtA//X5BUr5yRsiD
+c6rJRSSQKaJ1Rd48ufDH2K8pJo0CjgsC1VCvNvAqSsKrpBZ6g6Es4MUVv/XqLXjG
+MeHLcpdDxUvS362ZU4Mc
+=tOy6
+-----END PGP SIGNATURE-----
+
+--=-tKGFKxtrrd6ohQRwZMcX--
