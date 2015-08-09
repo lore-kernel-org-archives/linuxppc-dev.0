@@ -1,21 +1,21 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 317FD1A1BF6
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 10:52:20 +1000 (AEST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <linux-kernel@vger.kernel.org>
-CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Joachim Eastwood <manabian@gmail.com>,
- <linux-arm-kernel@lists.infradead.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-serial@vger.kernel.org>
-Subject: [PATCH 0/5] drivers/tty: make more bool drivers explicitly non-modular
-Date: Sat, 8 Aug 2015 20:51:32 -0400
-Message-ID: <1439081497-14986-1-git-send-email-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 554121A1799
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 12:27:26 +1000 (AEST)
+Message-ID: <1439087233.3715.52.camel@kernel.crashing.org>
+Subject: Re: [V3] powerpc/irq: Enable some more exceptions in
+ /proc/interrupts interface
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ mikey@neuling.org
+Date: Sun, 09 Aug 2015 12:27:13 +1000
+In-Reply-To: <20150804095726.66D4A1402E2@ozlabs.org>
+References: <20150804095726.66D4A1402E2@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,59 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This second set of patches to drivers/tty steps outside of the serial
-dir, and an improved auditing finds two more serial drivers pretending
-to be modular that really are not.
+On Tue, 2015-08-04 at 19:57 +1000, Michael Ellerman wrote:
+> On Mon, 2015-13-07 at 08:16:06 UTC, Anshuman Khandual wrote:
+> > This patch enables facility unavailable exceptions for generic facility,
+> > FPU, ALTIVEC and VSX in /proc/interrupts listing by incrementing their
+> > newly added IRQ statistical counters as and when these exceptions happen.
+> > This also adds couple of helper functions which will be called from within
+> > the interrupt handler context to update their statistics. Similarly this
+> > patch also enables alignment and program check exceptions as well.
+> 
+> ...
+> 
+> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> > index 0a0399c2..a86180c 100644
+> > --- a/arch/powerpc/kernel/exceptions-64s.S
+> > +++ b/arch/powerpc/kernel/exceptions-64s.S
+> > @@ -1158,6 +1158,7 @@ BEGIN_FTR_SECTION
+> >  END_FTR_SECTION_IFSET(CPU_FTR_TM)
+> >  #endif
+> >  	bl	load_up_fpu
+> > +	bl	fpu_unav_exceptions_count
+> 
+> Is it safe to call C code here?
 
-The reasoning for doing this is the same as the first set[1] of patches
-and is largely copied below:
+Even if it was (at some stage it wasn't, I'd have to look very closely
+to see what's the situation now), we certainly don't want to add
+overhead to load_up_fpu.
 
-  In the previous merge window, we made changes to allow better
-  delineation between modular and non-modular code in commit
-  0fd972a7d91d6e15393c449492a04d94c0b89351 ("module: relocate module_init
-  from init.h to module.h").  This allows us to now ensure module code
-  looks modular and non-modular code does not accidentally look modular
-  without suffering build breakage.
-  
-  Here we target code that is, by nature of their Kconfig settings, only
-  available to be built-in, but implicitly presenting itself as being
-  possibly modular by way of using modular headers, macros, and functions.
-  
-  The goal here is to remove that illusion of modularity from these
-  drivers, but in a way that leaves the actual runtime unchanged.
-  In doing so, we remove code that has never been tested and adds
-  no value to the tree.  And we begin the process of expecting a
-  level of consistency between the Kconfig of a driver and the code
-  that the driver uses.
-  
-Build tested for allyesconfig on x86_64, and ARM for lpc81xx, and powerpc
-for hvc_console and mpsc, layered onto tty/tty-next as a baseline.
-
-Paul.
-
-[1] https://lkml.kernel.org/r/1437530538-5078-1-git-send-email-paul.gortmaker@windriver.com
---
-
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: Joachim Eastwood <manabian@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-serial@vger.kernel.org
-
-Paul Gortmaker (5):
-  drivers/tty: make pty.c slightly more explicitly non-modular
-  drivers/tty: make sysrq.c slightly more explicitly non-modular
-  drivers/tty: make hvc_console.c explicitly non-modular
-  drivers/tty: make serial/mpsc.c driver explicitly non-modular
-  drivers/tty: make serial 8250_lpc18xx.c explicitly non-modular
-
- drivers/tty/hvc/hvc_console.c          | 18 +----------------
- drivers/tty/pty.c                      |  7 +++++--
- drivers/tty/serial/8250/8250_lpc18xx.c | 19 ++++--------------
- drivers/tty/serial/mpsc.c              | 36 +++-------------------------------
- drivers/tty/sysrq.c                    |  6 +++++-
- 5 files changed, 18 insertions(+), 68 deletions(-)
-
--- 
-2.5.0
+> >  	b	fast_exception_return
+> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  2:	/* User process was in a transaction */
+> 
+> 
+> cheers
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
