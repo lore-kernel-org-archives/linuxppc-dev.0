@@ -1,30 +1,31 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (unknown [23.79.238.175])
- by lists.ozlabs.org (Postfix) with ESMTP id 4CB751A179E
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 15:23:02 +1000 (AEST)
-From: Eric B Munson <emunson@akamai.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric B Munson <emunson@akamai.com>, Michal Hocko <mhocko@suse.cz>,
- Vlastimil Babka <vbabka@suse.cz>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Guenter Roeck <linux@roeck-us.net>, Andrea Arcangeli <aarcange@redhat.com>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
- linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-am33-list@redhat.com, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v7 2/6] mm: mlock: Add new mlock system call
-Date: Sun,  9 Aug 2015 01:22:52 -0400
-Message-Id: <1439097776-27695-3-git-send-email-emunson@akamai.com>
-In-Reply-To: <1439097776-27695-1-git-send-email-emunson@akamai.com>
-References: <1439097776-27695-1-git-send-email-emunson@akamai.com>
+Return-Path: <ranshalit@gmail.com>
+Received: from mail-io0-x234.google.com (mail-io0-x234.google.com
+ [IPv6:2607:f8b0:4001:c06::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E4C671A1799
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 16:27:27 +1000 (AEST)
+Received: by ioii16 with SMTP id i16so144461393ioi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Aug 2015 23:27:25 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1438830473.2097.138.camel@freescale.com>
+References: <CAJ2oMhJgnPGUPKRGBXZALYcrn+sL8Nt0A6gfPN+Ei_c+06mUPg@mail.gmail.com>
+ <1438714472.2097.89.camel@freescale.com>
+ <CAJ2oMhLzck9SxgzcXpEXVk_Yf0KoM=D4cOToizoOUPQFZ4JjWA@mail.gmail.com>
+ <1438720268.2097.94.camel@freescale.com>
+ <CAJ2oMhLDpbnqp=15Z_zWw8c1dY2fRCokG+_hneL=pFUMZdHN5Q@mail.gmail.com>
+ <1438723510.2097.97.camel@freescale.com>
+ <CAJ2oMhKNXz56xcxmNFeaZXHct0ERf0m9V_uTbtCZCUKcGtPkqw@mail.gmail.com>
+ <CAJ2oMhK0WHR2at7h2Cw46nXTtDBkgMxbATm95dNYwdLPrs+GPw@mail.gmail.com>
+ <CAJ2oMh+9Ls0if-yutBzCgZgdTZ+Z4zo1dKq+niRzL6uWvaQeqw@mail.gmail.com>
+ <1438830473.2097.138.camel@freescale.com>
+Date: Sun, 9 Aug 2015 09:27:25 +0300
+Message-ID: <CAJ2oMhJO7c=qNR4GK4_uPKQpFrSk+C7T4g5v3XPXd4YyEiVyNw@mail.gmail.com>
+Subject: Re: GPMC in device tree
+From: Ran Shalit <ranshalit@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,126 +35,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the refactored mlock code, introduce a new system call for mlock.
-The new call will allow the user to specify what lock states are being
-added.  mlock2 is trivial at the moment, but a follow on patch will add
-a new mlock state making it useful.
+On Thu, Aug 6, 2015 at 6:07 AM, Scott Wood <scottwood@freescale.com> wrote:
+> On Wed, 2015-08-05 at 17:27 +0300, Ran Shalit wrote:
+>> On Wed, Aug 5, 2015 at 9:11 AM, Ran Shalit <ranshalit@gmail.com> wrote:
+>> > On Wed, Aug 5, 2015 at 6:56 AM, Ran Shalit <ranshalit@gmail.com> wrote:
+>> > > On Wed, Aug 5, 2015 at 12:25 AM, Scott Wood <scottwood@freescale.com>
+>> > > wrote:
+>> > > > On Wed, 2015-08-05 at 00:22 +0300, Ran Shalit wrote:
+>> > > > > On more thing, if I may.
+>> > > > > The localbus is also connected to nvram & cpld.
+>> > > > > I've noticed that read/write works well, even though I didn't define
+>> > > > > anything in device tree.
+>> > > > > Is there any reasom to add these devices into device tree, or can we
+>> > > > > use the cpld and nvram without the definition in device tree ?
+>> > > >
+>> > > > I don't know what you're doing in your kernel to access devices that
+>> > > > aren't
+>> > > > in the device tree.  You should add the devices to the device tree,
+>> > > > and have
+>> > > > the kernel use it rather than hardcoded info.
+>> > > >
+>> > > > -Scott
+>> > > >
+>> > > Hi,
+>> > >
+>> > > Yes I understand.
+>> > > But It is worse noting that I have no localbus entry in the device tree.
+>> > > Yes, The nvram, cpld which are both connected to device tree, seems to
+>> > > work without any issues.
+>> > >
+>> > > Thanks,
+>> > > Ran
+>> >
+>> > I apologyze for the bad english, I meant "it worth to note" that there
+>> > is no localbus entry at all in the device tree.
+>> > So I wander how the nvram and cpld worked...
+>
+> I don't know how it worked -- presumably there's something in your kernel
+> that hardcodes knowledge of those devices.
+>
+>> > If I may please ask, what should be the "compatible" for generic
+>> > devices such as  nvram/cpld ?
+>
+> CPLD is not a generic device.  The compatible should describe the logic that
+> has been programmed into the CPLD.
+>
+>> > I assume that if they worked without any entry, it means that there is
+>> > no need for specific driver.
+>> >
+>> > Regards,
+>> > Ran
+>>
+>> Hi,
+>>
+>> After studing the localbus configuration as should be configured in
+>> device tree for powerpc, I think I have come with the following
+>> configuration, (not yet tested on board):
+>>
+>>
+>>  localbus@e0005000{
+>> #address-cells = <2>;
+>> #size-cells = <1>;
+>>     compatible = "fsl,mpc8349-localbus", "simple-bus";
+>>      reg = <0xe0005000 0x1000>;
+>>      interrupts = <77 0x8>;
+>>      interrupt-parent = <&ipic>;
+>>
+>>
+>> /* NOR and NAND Flashes */
+>>    ranges = <0x0 0x0 0xff800000 0x00800000         /* 8MB NOR Flash */
+>>              0x1 0x0 0xF8000000 0x08000000      /* User flash (same
+>> nor, in burst mode) 128M */
+>>              0x2 0x0 0xf7e00000 0x00200000>;    /*NVRAM/CPLD C2 is
+>> selected in CPLD , */
+>> /*nvram 0xf7e00000 1MB */
+>> /*cpld      0xf7f00000 1M  (<- different address!)*/
+>> nor@0,0 {
+>> #address-cells = <1>;
+>> #size-cells = <1>;
+>> compatible = "cfi-flash";
+>> reg = <0x0 0x0 0x1000000>;
+>> #bank-width = <1>;
+>> device-width = <4>;
+>>
+>> };
+>> };
+>
 
-Signed-off-by: Eric B Munson <emunson@akamai.com>
-Acked-by: Vlastimil Babka <vbabka@suse.cz>
-Cc: Michal Hocko <mhocko@suse.cz>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: adi-buildroot-devel@lists.sourceforge.net
-Cc: linux-cris-kernel@axis.com
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: linux-am33-list@redhat.com
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-xtensa@linux-xtensa.org
-Cc: linux-api@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-mm@kvack.org
----
- arch/x86/entry/syscalls/syscall_32.tbl | 1 +
- arch/x86/entry/syscalls/syscall_64.tbl | 1 +
- include/linux/syscalls.h               | 2 ++
- include/uapi/asm-generic/unistd.h      | 4 +++-
- kernel/sys_ni.c                        | 1 +
- mm/mlock.c                             | 8 ++++++++
- 6 files changed, 16 insertions(+), 1 deletion(-)
+Hi ,
 
-diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-index ef8187f..8e06da6 100644
---- a/arch/x86/entry/syscalls/syscall_32.tbl
-+++ b/arch/x86/entry/syscalls/syscall_32.tbl
-@@ -365,3 +365,4 @@
- 356	i386	memfd_create		sys_memfd_create
- 357	i386	bpf			sys_bpf
- 358	i386	execveat		sys_execveat			stub32_execveat
-+360	i386	mlock2			sys_mlock2
-diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
-index 9ef32d5..67601e7 100644
---- a/arch/x86/entry/syscalls/syscall_64.tbl
-+++ b/arch/x86/entry/syscalls/syscall_64.tbl
-@@ -329,6 +329,7 @@
- 320	common	kexec_file_load		sys_kexec_file_load
- 321	common	bpf			sys_bpf
- 322	64	execveat		stub_execveat
-+324	common	mlock2			sys_mlock2
- 
- #
- # x32-specific system call numbers start at 512 to avoid cache impact
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index b45c45b..56a3d59 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -884,4 +884,6 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
- 			const char __user *const __user *argv,
- 			const char __user *const __user *envp, int flags);
- 
-+asmlinkage long sys_mlock2(unsigned long start, size_t len, int flags);
-+
- #endif
-diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-index e016bd9..14a6013 100644
---- a/include/uapi/asm-generic/unistd.h
-+++ b/include/uapi/asm-generic/unistd.h
-@@ -709,9 +709,11 @@ __SYSCALL(__NR_memfd_create, sys_memfd_create)
- __SYSCALL(__NR_bpf, sys_bpf)
- #define __NR_execveat 281
- __SC_COMP(__NR_execveat, sys_execveat, compat_sys_execveat)
-+#define __NR_mlock2 282
-+__SYSCALL(__NR_mlock2, sys_mlock2)
- 
- #undef __NR_syscalls
--#define __NR_syscalls 282
-+#define __NR_syscalls 283
- 
- /*
-  * All syscalls below here should go away really,
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index 7995ef5..4818b71 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -193,6 +193,7 @@ cond_syscall(sys_mlock);
- cond_syscall(sys_munlock);
- cond_syscall(sys_mlockall);
- cond_syscall(sys_munlockall);
-+cond_syscall(sys_mlock2);
- cond_syscall(sys_mincore);
- cond_syscall(sys_madvise);
- cond_syscall(sys_mremap);
-diff --git a/mm/mlock.c b/mm/mlock.c
-index 5692ee5..3094f27 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -643,6 +643,14 @@ SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
- 	return do_mlock(start, len, VM_LOCKED);
- }
- 
-+SYSCALL_DEFINE3(mlock2, unsigned long, start, size_t, len, int, flags)
-+{
-+	if (flags)
-+		return -EINVAL;
-+
-+	return do_mlock(start, len, VM_LOCKED);
-+}
-+
- SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)
- {
- 	int ret;
--- 
-1.9.1
+I reboot the board, with the new device tree localbus, but I don't
+have any new /dev/mtdX entry for the NOR flash.
+There is no HW issue, becuase we can R/W access the NOR flash from u-boot.
+Is there any hint what can be the issue here ? I've checked in kernel
+config and validated that mtd is supported.
+The NOR flash is S29GL512P , SPANSION.
+
+localbus@e0005000 {
+#address-cells = <2>;
+#size-cells = <1>;
+   compatible = "fsl,mpc8349-localbus", "simple-bus";
+    reg = <0xe0005000 0x1000>;
+    interrupts = <77 0x8>;
+    interrupt-parent = <&ipic>;
+
+
+# NOR and NAND Flashes
+  ranges = <0x0 0x0 0xff800000 0x00800000
+    0x1 0x0 0xF8000000 0x08000000
+    0x2 0x0 0xf7e00000 0x00200000>;
+nor@0,0 {
+#address-cells = <1>;
+#size-cells = <1>;
+compatible = "cfi-flash";
+reg = <0x0 0x0 0x00800000>;
+#bank-width = <1>;
+device-width = <1>;
+
+};
+};
+
+Best Regards,
+Ran
