@@ -1,19 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 554121A1799
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 12:27:26 +1000 (AEST)
-Message-ID: <1439087233.3715.52.camel@kernel.crashing.org>
-Subject: Re: [V3] powerpc/irq: Enable some more exceptions in
- /proc/interrupts interface
+ by lists.ozlabs.org (Postfix) with ESMTPS id BFFA11A1799
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Aug 2015 12:30:02 +1000 (AEST)
+Message-ID: <1439087389.3715.55.camel@kernel.crashing.org>
+Subject: Re: powerpc: Add an inline function to update HID0
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- mikey@neuling.org
-Date: Sun, 09 Aug 2015 12:27:13 +1000
-In-Reply-To: <20150804095726.66D4A1402E2@ozlabs.org>
-References: <20150804095726.66D4A1402E2@ozlabs.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
+Date: Sun, 09 Aug 2015 12:29:49 +1000
+In-Reply-To: <20150804100858.1F272140306@ozlabs.org>
+References: <20150804100858.1F272140306@ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,38 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-04 at 19:57 +1000, Michael Ellerman wrote:
-> On Mon, 2015-13-07 at 08:16:06 UTC, Anshuman Khandual wrote:
-> > This patch enables facility unavailable exceptions for generic facility,
-> > FPU, ALTIVEC and VSX in /proc/interrupts listing by incrementing their
-> > newly added IRQ statistical counters as and when these exceptions happen.
-> > This also adds couple of helper functions which will be called from within
-> > the interrupt handler context to update their statistics. Similarly this
-> > patch also enables alignment and program check exceptions as well.
+On Tue, 2015-08-04 at 20:08 +1000, Michael Ellerman wrote:
+> On Tue, 2015-04-08 at 08:30:58 UTC, "Gautham R. Shenoy" wrote:
+> > Section 3.7 of Version 1.2 of the Power8 Processor User's Manual
+> > prescribes that updates to HID0 be preceded by a SYNC instruction and
+> > followed by an ISYNC instruction (Page 91).
+> > 
+> > Create a function name update_hid0() which follows this recipe and
+> > invoke it from the static split core path.
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/kvm_ppc.h       | 11 +++++++++++
 > 
-> ...
+> Why is it in there? It's not KVM related per se.
 > 
-> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> > index 0a0399c2..a86180c 100644
-> > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > @@ -1158,6 +1158,7 @@ BEGIN_FTR_SECTION
-> >  END_FTR_SECTION_IFSET(CPU_FTR_TM)
-> >  #endif
-> >  	bl	load_up_fpu
-> > +	bl	fpu_unav_exceptions_count
+> Where should it go? I think reg.h would be best, ideally near the definition
+> for HID0, though that's probably not possible because of ASSEMBLY requirements.
+> So at the bottom of reg.h ?
 > 
-> Is it safe to call C code here?
+> > diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> > index c6ef05b..325f1d6 100644
+> > --- a/arch/powerpc/include/asm/kvm_ppc.h
+> > +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> > @@ -685,4 +685,15 @@ static inline ulong kvmppc_get_ea_indexed(struct kvm_vcpu *vcpu, int ra, int rb)
+> >  
+> >  extern void xics_wake_cpu(int cpu);
+> >  
+> > +static inline void update_hid0(unsigned long hid0)
+> > +{
+> > +	/*
+> > +	 *  The HID0 update should at the very least be preceded by a
+> > +	 *  a SYNC instruction followed by an ISYNC instruction
+> > +	 */
+> > +	mb();
+> > +	mtspr(SPRN_HID0, hid0);
+> > +	isync();
+> 
+> That's going to turn into three separate inline asm blocks, which is maybe a
+> bit unfortunate. Have you checked the generated code is what we want, ie. just
+> sync, mtspr, isync ?
 
-Even if it was (at some stage it wasn't, I'd have to look very closely
-to see what's the situation now), we certainly don't want to add
-overhead to load_up_fpu.
+It depends on the processor, I'd rather we make this out of line in
+misc.S or similar and use the appropriate CPU table bits and pieces.
 
-> >  	b	fast_exception_return
-> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> >  2:	/* User process was in a transaction */
-> 
-> 
+Some older CPUs require whacking it N times for example.
+
+Cheers,
+Ben.
+
 > cheers
 > _______________________________________________
 > Linuxppc-dev mailing list
