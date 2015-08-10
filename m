@@ -1,21 +1,25 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-io0-x232.google.com (mail-io0-x232.google.com
- [IPv6:2607:f8b0:4001:c06::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0105.outbound.protection.outlook.com [157.56.110.105])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 53FA41A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 01:27:38 +1000 (AEST)
-Received: by ioii16 with SMTP id i16so172785187ioi.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 08:27:35 -0700 (PDT)
-From: Nicholas Krause <xerofoify@gmail.com>
-To: gleb@kernel.org
-Cc: pbonzini@redhat.com, agraf@suse.com, benh@kernel.crashing.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] kvm:powerpc:Fix return statements for wrapper functions in
- the file book3s_64_mmu_hv.c
-Date: Mon, 10 Aug 2015 11:27:31 -0400
-Message-Id: <1439220451-26094-1-git-send-email-xerofoify@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E11B91A1790
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 04:58:02 +1000 (AEST)
+Message-ID: <1439233069.2097.227.camel@freescale.com>
+Subject: Re: powerpc/fsl_book3e: fix the relocatable bug in debug interrupt
+ handler
+From: Scott Wood <scottwood@freescale.com>
+To: "Huang, Yuanjie" <yuanjie.huang@windriver.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>, Paul Gortmaker
+ <paul.gortmaker@windriver.com>
+Date: Mon, 10 Aug 2015 13:57:49 -0500
+In-Reply-To: <55C80B29.7050308@windriver.com>
+References: <1438930690-28046-1-git-send-email-Yuanjie.Huang@windriver.com>
+ <20150808022913.GA29133@home.buserror.net> <55C80B29.7050308@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes the wrapper functions kvm_umap_hva_hv and the function
-kvm_unmap_hav_range_hv to return the return value of the function
-kvm_handle_hva or kvm_handle_hva_range that they are wrapped to
-call internally rather then always making the caller of these
-wrapper functions think they always run successfully by returning
-the value of zero directly.
+On Mon, 2015-08-10 at 10:23 +0800, Huang, Yuanjie wrote:
+> Hi Scott,
+> 
+> On 08/08/2015 10:29 AM, Scott Wood wrote:
+> > [Please wrap commit messages at around 74 columns]
+> Ok, I will when sending a new version.
+> > 
+> > On Fri, Aug 07, 2015 at 02:58:10PM +0800, Yuanjie Huang wrote:
+> > > PowerPC Book3E processor features hardware-supported single instruction
+> > > execution, and it is used for ptrace(PTRACE_SINGLESTEP, ...).  When a
+> > > debugger loads a debuggee, it typically sets the CPU to yield debug
+> > > interrupt on first instruction complete or branch taken.  However, the
+> > > newly-forked child process could run into instruction TLB miss
+> > > exception handler when switched to, and causes a debug interrupt in the
+> > > exception entry sequence.  This is not expected by caller of
+> > > ptrace(PTRACE_SINGLESTEP, ...), so the next instruction address saved
+> > > in DSRR0 is checked against the boundary of exception entry sequence,
+> > > to ensure the kernel only process the interrupt as a normal exception
+> > > if the address does not fall in the exception entry sequence.  Failure
+> > > in obtaining the correct boundary leads to such debug exception handled
+> > > as from privileged mode, and causes kernel oops.
+> > > 
+> > > The LOAD_REG_IMMEDIATE can't be used to load the boundary addresses
+> > > when relocatable enabled, so this patch replace them with
+> > > LOAD_REG_ADDR_PIC.  LR is backed up and restored before and after
+> > > calling LOAD_REG_ADDR_PIC, because LOAD_REG_ADDR_PIC clobbers it.
+> > > 
+> > > Signed-off-by: Yuanjie Huang <Yuanjie.Huang@windriver.com>
+> > > ---
+> > >   arch/powerpc/kernel/exceptions-64e.S | 24 ++++++++++++++++++++++++
+> > >   1 file changed, 24 insertions(+)
+> > > 
+> > > diff --git a/arch/powerpc/kernel/exceptions-64e.S 
+> > > b/arch/powerpc/kernel/exceptions-64e.S
+> > > index 3e68d1c..c475f569 100644
+> > > --- a/arch/powerpc/kernel/exceptions-64e.S
+> > > +++ b/arch/powerpc/kernel/exceptions-64e.S
+> > > @@ -735,12 +735,24 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+> > >           andis.  r15,r14,(DBSR_IC|DBSR_BT)@h
+> > >           beq+    1f
+> > >   
+> > > +#ifdef CONFIG_RELOCATABLE
+> > > + mflr    r14
+> > > + LOAD_REG_ADDR_PIC(r15,interrupt_base_book3e)
+> > > + mtlr    r14
+> > > + cmpld   cr0,r10,r15
+> > > + blt+    cr0,1f
+> > > + LOAD_REG_ADDR_PIC(r15,interrupt_end_book3e)
+> > > + mtlr    r14
+> > > + cmpld   cr0,r10,r15
+> > > + bge+    cr0,1f
+> > > +#else
+> > CONFIG_RELOCATABLE is not supported on 64-bit book3e without applying
+> > additional patches, such as the RFC patchset I posted recently that
+> > contained the patch "powerpc/book3e-64: rename interrupt_end_book3e with
+> > __end_interrupts".  But if you've applied that patchset, then you
+> > wouldn't be working with the name interrupt_base_book3e, so how are you
+> > seeing this?
+> 
+> Actually I have merged additional patches submitted but not merged to 
+> make CONFIG_RELOCATABLE work with 64-bit book3e. I am happy to delay 
+> this until those patches are merged, and sent an adjusted version. Shall 
+> I wait until they are merged?
 
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Yes, or base the patch on top of them and cite the dependency below the --- 
+line in the changelog.
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index dab68b7..0905c8f 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -774,14 +774,12 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
- 
- int kvm_unmap_hva_hv(struct kvm *kvm, unsigned long hva)
- {
--	kvm_handle_hva(kvm, hva, kvm_unmap_rmapp);
--	return 0;
-+	return kvm_handle_hva(kvm, hva, kvm_unmap_rmapp);
- }
- 
- int kvm_unmap_hva_range_hv(struct kvm *kvm, unsigned long start, unsigned long end)
- {
--	kvm_handle_hva_range(kvm, start, end, kvm_unmap_rmapp);
--	return 0;
-+	return kvm_handle_hva_range(kvm, start, end, kvm_unmap_rmapp);
- }
- 
- void kvmppc_core_flush_memslot_hv(struct kvm *kvm,
--- 
-2.1.4
+-Scott
+> 
