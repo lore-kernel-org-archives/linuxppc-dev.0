@@ -1,17 +1,21 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A26431A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:26:59 +1000 (AEST)
-In-Reply-To: <1429865684-6214-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D5171A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:27:00 +1000 (AEST)
+In-Reply-To: <1429186730-20723-1-git-send-email-weiyj_lk@163.com>
+To: weiyj_lk@163.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Wolfram Sang <wsa@the-dreams.de>,
+ Alexander Gordeev <agordeev@redhat.com>,
+ Wei Yongjun <yongjun_wei@trendmicro.com.cn>,
+ Thomas Gleixner <tglx@linutronix.de>, Jiang Liu <jiang.liu@linux.intel.com>,
+ Alistair Popple <alistair@popple.id.au>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: paulus@samba.org
-Subject: Re: [v2] powerpc/ftrace: add powerpc timebase as a trace clock source
-Message-Id: <20150810092659.9116614027C@ozlabs.org>
-Date: Mon, 10 Aug 2015 19:26:59 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/4xx: Fix return value check in hsta_msi_probe()
+Message-Id: <20150810092700.424571402D8@ozlabs.org>
+Date: Mon, 10 Aug 2015 19:27:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,18 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-24-04 at 08:54:44 UTC, "Naveen N. Rao" wrote:
-> Add a new powerpc-specific trace clock using the timebase register,
-> similar to x86-tsc. This gives us
-> - a fast, monotonic, hardware clock source for trace entries, and
-> - a clock that can be used to correlate events across cpus as well as across
->   hypervisor and guests.
+On Thu, 2015-16-04 at 12:18:50 UTC, weiyj_lk@163.com wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 > 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> Acked-by: Steven Rostedt <rostedt@goodmis.org>
+> In case of error, the functions platform_get_resource() and kmalloc()
+> returns NULL not ERR_PTR(). The IS_ERR() test in the return value check
+> should be replaced with NULL test.
+> 
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/197165d44925bd0fa892
+https://git.kernel.org/powerpc/c/35a7f41cc6bb7013e344
 
 cheers
