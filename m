@@ -1,25 +1,45 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
- [IPv6:2607:f8b0:400e:c02::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B84F1A0018
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 09:25:45 +1000 (AEST)
-Received: by pdbfa8 with SMTP id fa8so24395183pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Aug 2015 16:25:43 -0700 (PDT)
-Received: from abhimac.ozlabs.ibm.com ([122.99.82.10])
- by smtp.gmail.com with ESMTPSA id fs13sm16156310pdb.29.2015.08.09.16.25.41
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Sun, 09 Aug 2015 16:25:42 -0700 (PDT)
-Message-ID: <1439162607.24612.9.camel@axtens.net>
-Subject: EEH regression: PE <-> device binding lost after reset
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 10 Aug 2015 09:23:27 +1000
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-tKGFKxtrrd6ohQRwZMcX"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A6DE1A0259
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 10:24:33 +1000 (AEST)
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 82BDC140321
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 10:24:32 +1000 (AEST)
+Received: from /spool/local
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Sun, 9 Aug 2015 20:24:27 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3F1D238C8054
+ for <linuxppc-dev@ozlabs.org>; Sun,  9 Aug 2015 20:24:24 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7A0ONmZ59900008
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 00:24:24 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7A0ONVN029199
+ for <linuxppc-dev@ozlabs.org>; Sun, 9 Aug 2015 20:24:23 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net
+Cc: joel@jms.id.au, viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 2/6] powerpc/powernv: Add definition of OPAL_MSG_OCC
+ message type
+In-Reply-To: <1437033863-15864-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1437033863-15864-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Date: Mon, 10 Aug 2015 10:23:58 +1000
+Message-ID: <m31tfcf0td.fsf@oc8180480414.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +49,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+> Add OPAL_MSG_OCC message definition to opal_message_type to receive
+> OCC events like reset, load and throttled. Host performance can be
+> affected when OCC is reset or OCC throttles the max Pstate.
+> We can register to opal_message_notifier to receive OPAL_MSG_OCC type
+> of message and report it to the userspace so as to keep the user
+> informed about the reason for a performance drop in workloads.
+>
+> The reset and load OCC events are notified to kernel when FSP sends
+> OCC_RESET and OCC_LOAD commands.  Both reset and load messages are
+> sent to kernel on successful completion of reset and load operation
+> respectively.
 
---=-tKGFKxtrrd6ohQRwZMcX
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-I'm experiencing a regression in EEH that was introduced somewhere
-between 4.0 and 4.1.
-
-I have been reproducing this with a CAPI (CXL) card, but the behaviour
-isn't CAPI related and the triggering code hasn't changed. CAPI cards
-are reprogrammed by PERSTing the slot they sit in, so CAPI exposes a
-'reset' file in sysfs that does "pci_set_pcie_reset_state(dev,
-pcie_warm_reset)", and then relies on EEH noticing to properly reset the
-card.
-
-In 4.0 and earlier, this worked: the slot would be persted, EEH would
-notice and hotplug. You could do this as many times as you liked.
-
-In 4.1 and later, you can do 1 successful reset, but any subsequent
-reset causes the following to be printed in dmesg:
-
-[  225.118656] cxl-pci 0006:01:00.0: CXL reset
-[  225.118663] pcibios_set_pcie_reset_state: No PE found on PCI device 0006=
-:01:00.0
-[  225.118672] cxl-pci 0006:01:00.0: cxl: pcie_warm_reset failed
-
-I'm digging through the commits between 4.0 and 4.1 at the moment, but I
-thought I'd post it here in hopes someone had an idea what the root
-cause was.=20
-
-
---=20
-Regards,
-Daniel
-
---=-tKGFKxtrrd6ohQRwZMcX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCgAGBQJVx+DvAAoJEPC3R3P2I92FzqQP/39gry4EJtNfQKK7/kO34R/i
-Ms5/Xu1jem7jtcoIqOyPfDXyK+08MyJH+6lTcRZar0avAQJwDfylkn+Esix+ahms
-yyN5Uf56reuHcgY0Z9zVuX9z3ejFub3pvEP6RBOO8EIEhWywopt/1chm0OZIeiQD
-mFenjEQxdQZ/Y0COY08kfj19UUVxoHVakI98KiO/TxrR13BiXdrPDMXk64YH/99i
-ST6mJ3wQb09+kziyyyUmqijOUfvmgjXepGe72IjkILHXyIPxTcBpFBhHtzSJHTN+
-B0cIO2UjBoSCjce8qyD8sNazA6Wq801TTRaGeJ6RPD9fNJpGJld18msBmzavvdEB
-EU0k/hw7/aUP8Y8zyvVZ/H9rKszoXOnDszHkvjcVckf9tgntUsHgyeyD5mJyg0Nu
-1pGC/4Z+ud5GOnJp9B8Zs6J1N0QBHuKuXdBqgTEcpGarW4HX9ETqmmFZ/94yMvzE
-AASS+ZmG4VrpqVuoWB9MGR8qv0o/k7TRhd3zkU5iIgn7NedI0ckQKw5fCFGfJUDi
-hqmQnOZBzfWtPbF6BXHOk7fWUC8ytNMvykCOTG2Is9EgYGp7XtA//X5BUr5yRsiD
-c6rJRSSQKaJ1Rd48ufDH2K8pJo0CjgsC1VCvNvAqSsKrpBZ6g6Es4MUVv/XqLXjG
-MeHLcpdDxUvS362ZU4Mc
-=tOy6
------END PGP SIGNATURE-----
-
---=-tKGFKxtrrd6ohQRwZMcX--
+How is this done on OpenPower systems? Explanation involving just what
+OPAL does is likely better, rather than explaining in context of FSP,
+which Linux has no real knowledge of (OPAL provides all abstraction of
+it).
