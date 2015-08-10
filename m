@@ -1,22 +1,31 @@
-Return-Path: <Priyanka.Jain@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0132.outbound.protection.outlook.com [65.55.169.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A9851A03A0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 15:04:41 +1000 (AEST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, York Sun
- <yorksun@freescale.com>
-Subject: RE: [v3] powerpc/fsl-booke: Add T1040D4RDB/T1042D4RDB board support
-Date: Mon, 10 Aug 2015 05:04:34 +0000
-Message-ID: <BY1PR0301MB085343608CAF68AC3839C077EC700@BY1PR0301MB0853.namprd03.prod.outlook.com>
-References: <1438232635-11753-1-git-send-email-Priyanka.Jain@freescale.com>
- <20150808024043.GA29646@home.buserror.net>
-In-Reply-To: <20150808024043.GA29646@home.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id BBBDE1A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 15:33:25 +1000 (AEST)
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1F0C814027C
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 15:33:24 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 10 Aug 2015 11:03:23 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCH 1/5] powerpc/mm: Fix pte_pagesize_index() crash on 4K
+ w/64K hash
+In-Reply-To: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
+References: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
+Date: Mon, 10 Aug 2015 11:03:19 +0530
+Message-ID: <87614nr9ls.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +35,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8gU2NvdHQsIA0KDQpUMTA0MEQ0UkRCLCBUMTA0MkQ0UkRCIGFyZSBjb21wbGV0ZWx5IG5l
-dyBib2FyZHMuIA0KVGhleSBjYW4gc3VwcG9ydCBERFI0IG1lbW9yeSwgbmV3IHNlcmRlcyBwcm90
-b2NvbCAweDg2LCBldGggcGh5IGFkZHJlc3NlcyBhcmUgZGlmZmVyZW50ICh0aGFuIHByZXZpb3Vz
-IGJvYXJkcyksIG5vLiBvZiBldGggcG9ydHMgYXJlIGRpZmZlcmVudCwgZXRjDQoNClJlZ2FyZHMN
-ClByaXlhbmthDQoNCg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
-V29vZCBTY290dC1CMDc0MjENCj4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAwOCwgMjAxNSA4OjEx
-IEFNDQo+IFRvOiBKYWluIFByaXlhbmthLUIzMjE2Nw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc7IFN1biBZb3JrLVI1ODQ5NQ0KPiBTdWJqZWN0OiBSZTogW3YzXSBwb3dlcnBj
-L2ZzbC1ib29rZTogQWRkIFQxMDQwRDRSREIvVDEwNDJENFJEQiBib2FyZA0KPiBzdXBwb3J0DQo+
-IA0KPiBPbiBUaHUsIEp1bCAzMCwgMjAxNSBhdCAxMDozMzo1NUFNICswNTMwLCBQcml5YW5rYSBK
-YWluIHdyb3RlOg0KPiA+IFQxMDQwRDRSREIvVDEwNDJENFJEQiBhcmUgRnJlZXNjYWxlIFJlZmVy
-ZW5jZSBEZXNpZ24gQm9hcmQgd2hpY2ggY2FuDQo+ID4gc3VwcG9ydCBUMTA0MC9UMTA0MiBRb3JJ
-USBQb3dlciBBcmNoaXRlY3R1cmXihKIgcHJvY2Vzc29yIHJlc3BlY3RpdmVseQ0KPiANCj4gV2hh
-dCBpcyB0aGUgYWN0dWFsIG5hbWUgb2YgdGhpcyBib2FyZD8NCj4gaHR0cDovL3BhdGNod29yay5v
-emxhYnMub3JnL3BhdGNoLzUwNDk0NC8gY2hhbmdlcyB0aGUgbmFtZSBpbiBVLUJvb3QNCj4gZnJv
-bSAiVDEwNDBENFJEQiIgdG8gIlQxMDQwUkRCX0REUjQiLg0KPiANCj4gSXMgaXQgcmVhbGx5IGEg
-ZGlmZmVyZW50IGJvYXJkLCBvciBqdXN0IGRpZmZlcmVudCBSQU0/ICBJZiB0aGUgbGF0dGVyLCB3
-ZSBkb24ndA0KPiBzcGVjaWZ5IHRoZSBSQU0gdHlwZSBpbiB0aGUgZGV2aWNlIHRyZWUsIHNvIHdo
-eSBkbyB3ZSBuZWVkIHNlcGFyYXRlIGRldmljZQ0KPiB0cmVlcz8NCj4gDQo+IC1TY290dA0K
+Michael Ellerman <mpe@ellerman.id.au> writes:
+
+> The powerpc kernel can be built to have either a 4K PAGE_SIZE or a 64K
+> PAGE_SIZE.
+>
+> However when built with a 4K PAGE_SIZE there is an additional config
+> option which can be enabled, PPC_HAS_HASH_64K, which means the kernel
+> also knows how to hash a 64K page even though the base PAGE_SIZE is 4K.
+>
+> This is used in one obscure configuration, to support 64K pages for SPU
+> local store on the Cell processor when the rest of the kernel is using
+> 4K pages.
+>
+> In this configuration, pte_pagesize_index() is defined to just pass
+> through its arguments to get_slice_psize(). However pte_pagesize_index()
+> is called for both user and kernel addresses, whereas get_slice_psize()
+> only knows how to handle user addresses.
+>
+> This has been broken forever, however until recently it happened to
+> work. That was because in get_slice_psize() the large kernel address
+> would cause the right shift of the slice mask to return zero.
+>
+> However in commit 7aa0727f3302 "powerpc/mm: Increase the slice range to
+> 64TB", the get_slice_psize() code was changed so that instead of a right
+> shift we do an array lookup based on the address. When passed a kernel
+> address this means we index way off the end of the slice array and
+> return random junk.
+>
+> That is only fatal if we happen to hit something non-zero, but when we
+> do return a non-zero value we confuse the MMU code and eventually cause
+> a check stop.
+>
+> This fix is ugly, but simple. When we're called for a kernel address we
+> return 4K, which is always correct in this configuration, otherwise we
+> use the slice mask.
+>
+> Fixes: 7aa0727f3302 ("powerpc/mm: Increase the slice range to 64TB")
+> Reported-by: Cyril Bur <cyrilbur@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc64.h | 14 +++++++++++++-
+>  1 file changed, 13 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+> index 3bb7488bd24b..7ee2300ee392 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> @@ -135,7 +135,19 @@
+>  #define pte_iterate_hashed_end() } while(0)
+>
+>  #ifdef CONFIG_PPC_HAS_HASH_64K
+> -#define pte_pagesize_index(mm, addr, pte)	get_slice_psize(mm, addr)
+> +/*
+> + * We expect this to be called only for user addresses or kernel virtual
+> + * addresses other than the linear mapping.
+> + */
+> +#define pte_pagesize_index(mm, addr, pte)			\
+> +	({							\
+> +		unsigned int psize;				\
+> +		if (is_kernel_addr(addr))			\
+> +			psize = MMU_PAGE_4K;			\
+> +		else						\
+> +			psize = get_slice_psize(mm, addr);	\
+> +		psize;						\
+> +	})
+>  #else
+>  #define pte_pagesize_index(mm, addr, pte)	MMU_PAGE_4K
+>  #endif
+> -- 
+> 2.1.4
