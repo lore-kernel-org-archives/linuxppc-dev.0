@@ -1,45 +1,21 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A6DE1A0259
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 10:24:33 +1000 (AEST)
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 82BDC140321
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 10:24:32 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Sun, 9 Aug 2015 20:24:27 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3F1D238C8054
- for <linuxppc-dev@ozlabs.org>; Sun,  9 Aug 2015 20:24:24 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7A0ONmZ59900008
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 00:24:24 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7A0ONVN029199
- for <linuxppc-dev@ozlabs.org>; Sun, 9 Aug 2015 20:24:23 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net
-Cc: joel@jms.id.au, viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 2/6] powerpc/powernv: Add definition of OPAL_MSG_OCC
- message type
-In-Reply-To: <1437033863-15864-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1437033863-15864-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Date: Mon, 10 Aug 2015 10:23:58 +1000
-Message-ID: <m31tfcf0td.fsf@oc8180480414.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8DB31A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 11:37:07 +1000 (AEST)
+Message-ID: <1439170627.20774.5.camel@ellerman.id.au>
+Subject: Re: 4.1-rc6: ATA link is slow to respond, please be patient
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Date: Mon, 10 Aug 2015 11:37:07 +1000
+In-Reply-To: <alpine.DEB.2.20.8.1508082049490.12626@trent.utfs.org>
+References: <alpine.DEB.2.20.8.1508070306080.12626@trent.utfs.org>
+ <alpine.DEB.2.20.8.1508082049490.12626@trent.utfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,20 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> Add OPAL_MSG_OCC message definition to opal_message_type to receive
-> OCC events like reset, load and throttled. Host performance can be
-> affected when OCC is reset or OCC throttles the max Pstate.
-> We can register to opal_message_notifier to receive OPAL_MSG_OCC type
-> of message and report it to the userspace so as to keep the user
-> informed about the reason for a performance drop in workloads.
->
-> The reset and load OCC events are notified to kernel when FSP sends
-> OCC_RESET and OCC_LOAD commands.  Both reset and load messages are
-> sent to kernel on successful completion of reset and load operation
-> respectively.
+On Sat, 2015-08-08 at 21:17 -0700, Christian Kujau wrote:
+> [Adding linux-ide@vger.kernel.org]
+> 
+> On Fri, 7 Aug 2015, Christian Kujau wrote:
+> > this PowerBook G4 was running 3.16 for a while but now I wanted to upgrade 
+> > to latest mainline. However, during bootup the following happens:
+> > 
+> > ===============================
+> > [    2.237102] ata1: PATA max UDMA/100 irq 39
+> > [    2.401708] ata1.00: ATA-8: SAMSUNG HM061GC, LR100-10, max UDMA/100
+> > [    2.401764] ata1.00: 117231408 sectors, multi 16: LBA48 
+> > [    2.417633] ata1.00: configured for UDMA/100
+> > [   44.918102] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> > [   44.920452] ata1.00: failed command: READ DMA
+> > [   44.922725] ata1.00: cmd c8/00:88:64:c2:12/00:00:00:00:00/e0 tag 0 dma 69632 in
+> > [   44.927257] ata1.00: status: { DRDY }
+> > [   49.971784] ata1.00: qc timeout (cmd 0xec)
+> > [   49.976529] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> > [   49.978908] ata1.00: revalidation failed (errno=-5)
+> > [   55.019662] ata1: link is slow to respond, please be patient (ready=0)
+> > [   60.007677] ata1: device not ready (errno=-16), forcing hardreset
+> > [   60.012670] ata1: soft resetting link
+> > [   60.193638] ata1.00: configured for UDMA/100
+> > [   60.196158] ata1.00: device reported invalid CHS sector 0
+> > [   60.198610] ata1: EH complete
+> > ===============================
+> > 
+> > This happens only once, but systemd thinks there's a hard problem and will 
+> > drop to a recovery shell. I can start sshd and login remotely and then the 
+> > system appears to be running just fine.
+> > 
+> > This happened in 4.2.0-rc5 so I went back a few versions and found that
+> > 4.1-rc5 was OK (the error does not show up and the system boots just fine)
+> > and 4.1-rc6 is not.
+> > 
+> 
+> After more digging around I noticed that the same error (with 
+> changed wording) happens with a Debian 3.16.0-4-powerpc kernel - so it
+> doesn't appear to be a recent regression as I suspected at first:
+> 
+> ==================================
+> [   46.907147] ata1: drained 572 bytes to clear DRQ
+> [   46.907166] ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> [   46.908419] ata1.00: failed command: READ DMA
+> [   46.909058] ata1.00: cmd c8/00:80:9c:f9:60/00:00:00:00:00/e0 tag 0 dma 65536 in
+>          res 40/00:fe:00:00:00/00:00:00:00:00/40 Emask 0x20 (host bus error)
+> [   46.910303] ata1.00: status: { DRDY }
+> [   46.970579] ata1.00: configured for UDMA/100
+> [   46.971853] ata1.00: device reported invalid CHS sector 0
+> [   46.972524] ata1: EH complete
+> ==================================
+> 
+> Also, the error cannot repduced as reliably as I thought: sometimes, the 
+> machine just boots w/o a hitch - and that might be the reasons why my 
+> bisect attempts failed and incorrectly blamed totally unrelated commits: 
+> after each "git bisect {good,bad}" (+compiling) I rebooted but there was a 
+> chance that the system came up just fine / showed the same ATA error and 
+> thus falsified the git-bisect results.
 
-How is this done on OpenPower systems? Explanation involving just what
-OPAL does is likely better, rather than explaining in context of FSP,
-which Linux has no real knowledge of (OPAL provides all abstraction of
-it).
+Yes that would explain why the bisect went wrong. If you have an intermittent
+bug like that you have to be very careful about which commits you mark good or
+bad.
+
+I don't really know anything about disk drivers, so hopefully someone who does
+can chime in.
+
+cheers
