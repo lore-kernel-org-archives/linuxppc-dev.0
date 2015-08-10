@@ -1,49 +1,45 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
+Return-Path: <stewart@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EBE71A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 11:40:58 +1000 (AEST)
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 70A651A1D48
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 11:41:18 +1000 (AEST)
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C61771401CD
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 11:40:57 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id B53781401CD
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 11:41:17 +1000 (AEST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 10 Aug 2015 07:10:55 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id BC5A3E004C
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 07:15:11 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7A1eqVF49938648
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 07:10:52 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7A1epKR015163
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 07:10:52 +0530
-Date: Mon, 10 Aug 2015 09:40:50 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V2 1/6] powerpc/powernv: don't enable SRIOV when VF BAR
- contains non M64 BAR
-Message-ID: <20150810014050.GB8735@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150731020148.GA6151@richard>
- <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1438737903-10399-2-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150806043557.GA28524@gwshan> <20150806141010.GD6235@richard>
- <20150807012010.GB19021@gwshan> <20150807022405.GF8292@richard>
- <55C45AE1.3040404@ozlabs.ru>
+ for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Sun, 9 Aug 2015 19:41:15 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 4B3CC3E4003F
+ for <linuxppc-dev@ozlabs.org>; Sun,  9 Aug 2015 19:41:12 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7A1cSDA44171496
+ for <linuxppc-dev@ozlabs.org>; Sun, 9 Aug 2015 18:38:28 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7A1fBld031367
+ for <linuxppc-dev@ozlabs.org>; Sun, 9 Aug 2015 19:41:12 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, joel@jms.id.au,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 3/6] cpufreq: powernv: Register for OCC related
+ opal_message notification
+In-Reply-To: <1437033863-15864-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1437033863-15864-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Date: Mon, 10 Aug 2015 11:41:09 +1000
+Message-ID: <m3y4hjex8q.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55C45AE1.3040404@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,162 +49,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 07, 2015 at 05:14:41PM +1000, Alexey Kardashevskiy wrote:
->On 08/07/2015 12:24 PM, Wei Yang wrote:
->>On Fri, Aug 07, 2015 at 11:20:10AM +1000, Gavin Shan wrote:
->>>On Thu, Aug 06, 2015 at 10:10:10PM +0800, Wei Yang wrote:
->>>>On Thu, Aug 06, 2015 at 02:35:57PM +1000, Gavin Shan wrote:
->>>>>On Wed, Aug 05, 2015 at 09:24:58AM +0800, Wei Yang wrote:
->>>>>>On PHB_IODA2, we enable SRIOV devices by mapping IOV BAR with M64 BARs. If
->>>>>>a SRIOV device's BAR is not 64-bit prefetchable, this is not assigned from
->>>>>>M64 windwo, which means M64 BAR can't work on it.
->>>>>>
->>>>>
->>>>>s/PHB_IODA2/PHB3
->>>>>s/windwo/window
->>>>>
->>>>>>This patch makes this explicit.
->>>>>>
->>>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>>>
->>>>>The idea sounds right, but there is one question as below.
->>>>>
->>>>>>---
->>>>>>arch/powerpc/platforms/powernv/pci-ioda.c |   25 +++++++++----------------
->>>>>>1 file changed, 9 insertions(+), 16 deletions(-)
->>>>>>
->>>>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>>index 5738d31..9b41dba 100644
->>>>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>>@@ -908,9 +908,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->>>>>>		if (!res->flags || !res->parent)
->>>>>>			continue;
->>>>>>
->>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
->>>>>>-			continue;
->>>>>>-
->>>>>>		/*
->>>>>>		 * The actual IOV BAR range is determined by the start address
->>>>>>		 * and the actual size for num_vfs VFs BAR.  This check is to
->>>>>>@@ -939,9 +936,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->>>>>>		if (!res->flags || !res->parent)
->>>>>>			continue;
->>>>>>
->>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
->>>>>>-			continue;
->>>>>>-
->>>>>>		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->>>>>>		res2 = *res;
->>>>>>		res->start += size * offset;
->>>>>>@@ -1221,9 +1215,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->>>>>>		if (!res->flags || !res->parent)
->>>>>>			continue;
->>>>>>
->>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
->>>>>>-			continue;
->>>>>>-
->>>>>>		for (j = 0; j < vf_groups; j++) {
->>>>>>			do {
->>>>>>				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
->>>>>>@@ -1510,6 +1501,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
->>>>>>	pdn = pci_get_pdn(pdev);
->>>>>>
->>>>>>	if (phb->type == PNV_PHB_IODA2) {
->>>>>>+		if (!pdn->vfs_expanded) {
->>>>>>+			dev_info(&pdev->dev, "don't support this SRIOV device"
->>>>>>+				" with non M64 VF BAR\n");
->>>>>>+			return -EBUSY;
->>>>>>+		}
->>>>>>+
->>>>>
->>>>>It would be -ENOSPC since -EBUSY indicates the devices (VFs) are temparily
->>>>>unavailable. For this case, the VFs are permanently unavailable because of
->>>>>running out of space to accomodate M64 and non-M64 VF BARs.
->>>>>
->>>>>The error message could be printed with dev_warn() and it would be precise
->>>>>as below or something else you prefer:
->>>>>
->>>>>	dev_warn(&pdev->dev, "SRIOV not supported because of non-M64 VF BAR\n");
->>>>>
->>>>
->>>>Thanks for the comment, will change accordingly.
->>>>
->>>>>
->>>>>>		/* Calculate available PE for required VFs */
->>>>>>		mutex_lock(&phb->ioda.pe_alloc_mutex);
->>>>>>		pdn->offset = bitmap_find_next_zero_area(
->>>>>>@@ -2774,9 +2771,10 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->>>>>>		if (!res->flags || res->parent)
->>>>>>			continue;
->>>>>>		if (!pnv_pci_is_mem_pref_64(res->flags)) {
->>>>>>-			dev_warn(&pdev->dev, " non M64 VF BAR%d: %pR\n",
->>>>>>+			dev_warn(&pdev->dev, "Don't support SR-IOV with"
->>>>>>+					" non M64 VF BAR%d: %pR. \n",
->>>>>>				 i, res);
->>>>>>-			continue;
->>>>>>+			return;
->>>>>>		}
->>>>>>
->>>>>>		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
->>>>>>@@ -2795,11 +2793,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->>>>>>		res = &pdev->resource[i + PCI_IOV_RESOURCES];
->>>>>>		if (!res->flags || res->parent)
->>>>>>			continue;
->>>>>>-		if (!pnv_pci_is_mem_pref_64(res->flags)) {
->>>>>>-			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
->>>>>>-				 i, res);
->>>>>>-			continue;
->>>>>>-		}
->>>>>
->>>>>When any one IOV BAR on the PF is non-M64, none of the VFs can be enabled.
->>>>>Will we still allocate/assign M64 or M32 resources for the IOV BARs? If so,
->>>>>I think it can be avoided.
->>>>>
->>>>
->>>>Don't get your point. You mean to avoid this function?
->>>>
->>>>Or clear the IOV BAR when we found one of it is non-M64?
->>>>
->>>
->>>I mean to clear all IOV BARs in case any more of them are IO or M32. In this
->>>case, the SRIOV capability won't be enabled. Otherwise, the resources for
->>>all IOV BARs are assigned and allocated by PCI subsystem, but they won't
->>>be used. Does it make sense to you?
->>>
->>
->>If we want to save MMIO space, this is not necessary.
->>
->>The IOV BAR will be put into the optional list in assignment stage. So when
->>there is not enough MMIO space, they will not be assigned.
->
->
->If we are not going to use non-64bit IOV BAR, why would we assign
->anything to it at the first place? Or it is a common PCI code which
->does it?
->
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index d0c18c9..a634199 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -33,6 +33,7 @@
+>  #include <asm/firmware.h>
+>  #include <asm/reg.h>
+>  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+> +#include <asm/opal.h>
+>  
+>  #define POWERNV_MAX_PSTATES	256
+>  #define PMSR_PSAFE_ENABLE	(1UL << 30)
+> @@ -41,7 +42,7 @@
+>  #define PMSR_LP(x)		((x >> 48) & 0xFF)
+>  
+>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+> -static bool rebooting, throttled;
+> +static bool rebooting, throttled, occ_reset;
+>  
+>  static struct chip {
+>  	unsigned int id;
+> @@ -414,6 +415,74 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+>  	.notifier_call = powernv_cpufreq_reboot_notifier,
+>  };
+>  
+> +static char throttle_reason[][30] = {
+> +					"No throttling",
+> +					"Power Cap",
+> +					"Processor Over Temperature",
+> +					"Power Supply Failure",
+> +					"Over Current",
+> +					"OCC Reset"
+> +				     };
+> +
+> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+> +				   unsigned long msg_type, void *_msg)
+> +{
+> +	struct opal_msg *msg = _msg;
+> +	struct opal_occ_msg omsg;
+> +
+> +	if (msg_type != OPAL_MSG_OCC)
+> +		return 0;
+> +
+> +	omsg.type = be64_to_cpu(msg->params[0]);
+> +
+> +	switch (omsg.type) {
+> +	case OCC_RESET:
+> +		occ_reset = true;
+> +		/*
+> +		 * powernv_cpufreq_throttle_check() is called in
+> +		 * target() callback which can detect the throttle state
+> +		 * for governors like ondemand.
+> +		 * But static governors will not call target() often thus
+> +		 * report throttling here.
+> +		 */
+> +		if (!throttled) {
+> +			throttled = true;
+> +			pr_crit("CPU Frequency is throttled\n");
+> +		}
+> +		pr_info("OCC: Reset\n");
+> +		break;
+> +	case OCC_LOAD:
+> +		pr_info("OCC: Loaded\n");
+> +		break;
 
-Yes.
+I wonder if we could have the log messages be a bit clearer here, odds
+are, unless you're one of the people reading this code, you have no idea
+what an OCC is or what on earth "OCC: Loaded" means and why this
+*doesn't* mean that your CPUs are no longer throttled so that your
+computer doesn't catch fire/break/add 1+1 and get 4.
 
-First skiboot will allocate the range, then kernel read it. Kernel has two
-choice, use the address firmware allocated or re-assigned them as we did on
-powernv platform
+Also, do we export this information via sysfs somewhere? It would seem
+to want to go along with other cpufreq/cpu info there.
 
->
->
->
->>For the long term, maybe P9/P10, we will finally adjust the solution to
->>support SRIOV devices with M32 MMIO. So I suggest to leave as it is.
->>
->>>>>>
->>>>>>		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
->>>>>>		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
->
->
->
->-- 
->Alexey
+It feels like we could do much better at informing users as to what is
+going on.... maybe something like:
 
--- 
-Richard Yang
-Help you, Help me
+"OCC (On Chip Controller - enforces hard thermal/power limits) Resetting: CPU frequency throttled for duration"
+"OCC Loading, CPU frequency throttled until OCC started"
+"OCC Active, CPU frequency no longer throttled"
