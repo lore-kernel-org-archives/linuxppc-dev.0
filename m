@@ -1,45 +1,47 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
+Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70A651A1D48
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 11:41:18 +1000 (AEST)
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by lists.ozlabs.org (Postfix) with ESMTPS id C53781A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 11:49:10 +1000 (AEST)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B53781401CD
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 11:41:17 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 886841401E7
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 11:49:10 +1000 (AEST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Sun, 9 Aug 2015 19:41:15 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 4B3CC3E4003F
- for <linuxppc-dev@ozlabs.org>; Sun,  9 Aug 2015 19:41:12 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7A1cSDA44171496
- for <linuxppc-dev@ozlabs.org>; Sun, 9 Aug 2015 18:38:28 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7A1fBld031367
- for <linuxppc-dev@ozlabs.org>; Sun, 9 Aug 2015 19:41:12 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, joel@jms.id.au,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 3/6] cpufreq: powernv: Register for OCC related
- opal_message notification
-In-Reply-To: <1437033863-15864-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1437033863-15864-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Date: Mon, 10 Aug 2015 11:41:09 +1000
-Message-ID: <m3y4hjex8q.fsf@oc8180480414.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 10 Aug 2015 11:49:09 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 482312BB005C
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 11:49:06 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7A1mvV240239232
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 11:49:06 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7A1mXWS022339
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 11:48:33 +1000
+Date: Mon, 10 Aug 2015 09:48:15 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH V2 3/6] powerpc/powernv: use one M64 BAR in Single PE
+ mode for one VF BAR
+Message-ID: <20150810014815.GC8735@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150731020148.GA6151@richard>
+ <1438737903-10399-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1438737903-10399-4-git-send-email-weiyang@linux.vnet.ibm.com>
+ <55C3314A.3090305@ozlabs.ru> <20150807020108.GD8292@richard>
+ <55C4738E.5020608@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <55C4738E.5020608@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,84 +51,528 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index d0c18c9..a634199 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -33,6 +33,7 @@
->  #include <asm/firmware.h>
->  #include <asm/reg.h>
->  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
-> +#include <asm/opal.h>
->  
->  #define POWERNV_MAX_PSTATES	256
->  #define PMSR_PSAFE_ENABLE	(1UL << 30)
-> @@ -41,7 +42,7 @@
->  #define PMSR_LP(x)		((x >> 48) & 0xFF)
->  
->  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-> -static bool rebooting, throttled;
-> +static bool rebooting, throttled, occ_reset;
->  
->  static struct chip {
->  	unsigned int id;
-> @@ -414,6 +415,74 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
->  	.notifier_call = powernv_cpufreq_reboot_notifier,
->  };
->  
-> +static char throttle_reason[][30] = {
-> +					"No throttling",
-> +					"Power Cap",
-> +					"Processor Over Temperature",
-> +					"Power Supply Failure",
-> +					"Over Current",
-> +					"OCC Reset"
-> +				     };
-> +
-> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
-> +				   unsigned long msg_type, void *_msg)
-> +{
-> +	struct opal_msg *msg = _msg;
-> +	struct opal_occ_msg omsg;
-> +
-> +	if (msg_type != OPAL_MSG_OCC)
-> +		return 0;
-> +
-> +	omsg.type = be64_to_cpu(msg->params[0]);
-> +
-> +	switch (omsg.type) {
-> +	case OCC_RESET:
-> +		occ_reset = true;
-> +		/*
-> +		 * powernv_cpufreq_throttle_check() is called in
-> +		 * target() callback which can detect the throttle state
-> +		 * for governors like ondemand.
-> +		 * But static governors will not call target() often thus
-> +		 * report throttling here.
-> +		 */
-> +		if (!throttled) {
-> +			throttled = true;
-> +			pr_crit("CPU Frequency is throttled\n");
-> +		}
-> +		pr_info("OCC: Reset\n");
-> +		break;
-> +	case OCC_LOAD:
-> +		pr_info("OCC: Loaded\n");
-> +		break;
+On Fri, Aug 07, 2015 at 06:59:58PM +1000, Alexey Kardashevskiy wrote:
+>On 08/07/2015 12:01 PM, Wei Yang wrote:
+>>On Thu, Aug 06, 2015 at 08:04:58PM +1000, Alexey Kardashevskiy wrote:
+>>>On 08/05/2015 11:25 AM, Wei Yang wrote:
+>>>>In current implementation, when VF BAR is bigger than 64MB, it uses 4 M64
+>>>>BAR in Single PE mode to cover the number of VFs required to be enabled.
+>>>>By doing so, several VFs would be in one VF Group and leads to interference
+>>>>between VFs in the same group.
+>>>>
+>>>>This patch changes the design by using one M64 BAR in Single PE mode for
+>>>>one VF BAR. This gives absolute isolation for VFs.
+>>>>
+>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>---
+>>>>  arch/powerpc/include/asm/pci-bridge.h     |    5 +-
+>>>>  arch/powerpc/platforms/powernv/pci-ioda.c |  180 ++++++++++++-----------------
+>>>>  2 files changed, 76 insertions(+), 109 deletions(-)
+>>>>
+>>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>>>index 712add5..8aeba4c 100644
+>>>>--- a/arch/powerpc/include/asm/pci-bridge.h
+>>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>>>>@@ -214,10 +214,9 @@ struct pci_dn {
+>>>>  	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>>>>  	u16     num_vfs;		/* number of VFs enabled*/
+>>>>  	int     offset;			/* PE# for the first VF PE */
+>>>>-#define M64_PER_IOV 4
+>>>>-	int     m64_per_iov;
+>>>>+	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+>>>>  #define IODA_INVALID_M64        (-1)
+>>>>-	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
+>>>>+	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+>>>>  #endif /* CONFIG_PCI_IOV */
+>>>>  #endif
+>>>>  	struct list_head child_list;
+>>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>index 7192e62..f5d110c 100644
+>>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>@@ -1148,29 +1148,36 @@ static void pnv_pci_ioda_setup_PEs(void)
+>>>>  }
+>>>>
+>>>>  #ifdef CONFIG_PCI_IOV
+>>>>-static int pnv_pci_vf_release_m64(struct pci_dev *pdev)
+>>>>+static int pnv_pci_vf_release_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>  {
+>>>>  	struct pci_bus        *bus;
+>>>>  	struct pci_controller *hose;
+>>>>  	struct pnv_phb        *phb;
+>>>>  	struct pci_dn         *pdn;
+>>>>  	int                    i, j;
+>>>>+	int                    m64_bars;
+>>>>
+>>>>  	bus = pdev->bus;
+>>>>  	hose = pci_bus_to_host(bus);
+>>>>  	phb = hose->private_data;
+>>>>  	pdn = pci_get_pdn(pdev);
+>>>>
+>>>>+	if (pdn->m64_single_mode)
+>>>>+		m64_bars = num_vfs;
+>>>>+	else
+>>>>+		m64_bars = 1;
+>>>>+
+>>>>  	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>>>>-		for (j = 0; j < M64_PER_IOV; j++) {
+>>>>-			if (pdn->m64_wins[i][j] == IODA_INVALID_M64)
+>>>>+		for (j = 0; j < m64_bars; j++) {
+>>>>+			if (pdn->m64_map[j][i] == IODA_INVALID_M64)
+>>>>  				continue;
+>>>>  			opal_pci_phb_mmio_enable(phb->opal_id,
+>>>>-				OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 0);
+>>>>-			clear_bit(pdn->m64_wins[i][j], &phb->ioda.m64_bar_alloc);
+>>>>-			pdn->m64_wins[i][j] = IODA_INVALID_M64;
+>>>>+				OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 0);
+>>>>+			clear_bit(pdn->m64_map[j][i], &phb->ioda.m64_bar_alloc);
+>>>>+			pdn->m64_map[j][i] = IODA_INVALID_M64;
+>>>>  		}
+>>>>
+>>>>+	kfree(pdn->m64_map);
+>>>>  	return 0;
+>>>>  }
+>>>>
+>>>>@@ -1187,8 +1194,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>  	int                    total_vfs;
+>>>>  	resource_size_t        size, start;
+>>>>  	int                    pe_num;
+>>>>-	int                    vf_groups;
+>>>>-	int                    vf_per_group;
+>>>>+	int                    m64_bars;
+>>>>
+>>>>  	bus = pdev->bus;
+>>>>  	hose = pci_bus_to_host(bus);
+>>>>@@ -1196,26 +1202,26 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>  	pdn = pci_get_pdn(pdev);
+>>>>  	total_vfs = pci_sriov_get_totalvfs(pdev);
+>>>>
+>>>>-	/* Initialize the m64_wins to IODA_INVALID_M64 */
+>>>>-	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>>>>-		for (j = 0; j < M64_PER_IOV; j++)
+>>>>-			pdn->m64_wins[i][j] = IODA_INVALID_M64;
+>>>>+	if (pdn->m64_single_mode)
+>>>
+>>>
+>>>This is a physical function's @pdn, right?
+>>
+>>Yes
+>>
+>>>
+>>>
+>>>>+		m64_bars = num_vfs;
+>>>>+	else
+>>>>+		m64_bars = 1;
+>>>>+
+>>>>+	pdn->m64_map = kmalloc(sizeof(*pdn->m64_map) * m64_bars, GFP_KERNEL);
+>>>
+>>>
+>>>Assume we have SRIOV device with 16VF.
+>>>So it was m64_wins[6][4], now it is (roughly speaking) m64_map[6][16]
+>>>(for a single PE mode) or m64_map[6][1]. I believe m64_bars cannot be
+>>>bigger than 16 on PHB3, right? Is this checked anywhere (does it have
+>>>to)?
+>>
+>>In pnv_pci_vf_assign_m64(), we need to find_next_zero_bit() and check the
+>>return value. If exceed m64_bar_idx, means fail.
+>>
+>>>
+>>>This m64_wins -> m64_map change - is was not a map (what was it?),
+>>>and it is, is not it?
+>>
+>>Hmm... Gavin like this name.
+>>
+>>>
+>>>What does it store? An index of M64 BAR (0..15)?
+>>>
+>>
+>>Yes.
+>>
+>>>
+>>>
+>>>>+	if (!pdn->m64_map)
+>>>>+		return -ENOMEM;
+>>>>+	/* Initialize the m64_map to IODA_INVALID_M64 */
+>>>>+	for (i = 0; i < m64_bars ; i++)
+>>>>+		for (j = 0; j < PCI_SRIOV_NUM_BARS; j++)
+>>>>+			pdn->m64_map[i][j] = IODA_INVALID_M64;
+>>>>
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>-		vf_groups = (num_vfs <= M64_PER_IOV) ? num_vfs: M64_PER_IOV;
+>>>>-		vf_per_group = (num_vfs <= M64_PER_IOV)? 1:
+>>>>-			roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-	} else {
+>>>>-		vf_groups = 1;
+>>>>-		vf_per_group = 1;
+>>>>-	}
+>>>>
+>>>>  	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>>>  		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>>>>  		if (!res->flags || !res->parent)
+>>>>  			continue;
+>>>>
+>>>>-		for (j = 0; j < vf_groups; j++) {
+>>>>+		for (j = 0; j < m64_bars; j++) {
+>>>>  			do {
+>>>>  				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
+>>>>  						phb->ioda.m64_bar_idx + 1, 0);
+>>>>@@ -1224,12 +1230,11 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>  					goto m64_failed;
+>>>>  			} while (test_and_set_bit(win, &phb->ioda.m64_bar_alloc));
+>>>>
+>>>>-			pdn->m64_wins[i][j] = win;
+>>>>+			pdn->m64_map[j][i] = win;
+>>>>
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>+			if (pdn->m64_single_mode) {
+>>>>  				size = pci_iov_resource_size(pdev,
+>>>>  							PCI_IOV_RESOURCES + i);
+>>>>-				size = size * vf_per_group;
+>>>>  				start = res->start + size * j;
+>>>>  			} else {
+>>>>  				size = resource_size(res);
+>>>>@@ -1237,16 +1242,16 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>  			}
+>>>>
+>>>>  			/* Map the M64 here */
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>+			if (pdn->m64_single_mode) {
+>>>>  				pe_num = pdn->offset + j;
+>>>>  				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+>>>>  						pe_num, OPAL_M64_WINDOW_TYPE,
+>>>>-						pdn->m64_wins[i][j], 0);
+>>>>+						pdn->m64_map[j][i], 0);
+>>>>  			}
+>>>>
+>>>>  			rc = opal_pci_set_phb_mem_window(phb->opal_id,
+>>>>  						 OPAL_M64_WINDOW_TYPE,
+>>>>-						 pdn->m64_wins[i][j],
+>>>>+						 pdn->m64_map[j][i],
+>>>>  						 start,
+>>>>  						 0, /* unused */
+>>>>  						 size);
+>>>>@@ -1258,12 +1263,12 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>  				goto m64_failed;
+>>>>  			}
+>>>>
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV)
+>>>>+			if (pdn->m64_single_mode)
+>>>>  				rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>>>>-				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 2);
+>>>>+				     OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 2);
+>>>>  			else
+>>>>  				rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>>>>-				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 1);
+>>>>+				     OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 1);
+>>>>
+>>>>  			if (rc != OPAL_SUCCESS) {
+>>>>  				dev_err(&pdev->dev, "Failed to enable M64 window #%d: %llx\n",
+>>>>@@ -1275,7 +1280,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>>  	return 0;
+>>>>
+>>>>  m64_failed:
+>>>>-	pnv_pci_vf_release_m64(pdev);
+>>>>+	pnv_pci_vf_release_m64(pdev, num_vfs);
+>>>>  	return -EBUSY;
+>>>>  }
+>>>>
+>>>>@@ -1302,15 +1307,13 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>>>>  	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+>>>>  }
+>>>>
+>>>>-static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>+static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+>>>>  {
+>>>>  	struct pci_bus        *bus;
+>>>>  	struct pci_controller *hose;
+>>>>  	struct pnv_phb        *phb;
+>>>>  	struct pnv_ioda_pe    *pe, *pe_n;
+>>>>  	struct pci_dn         *pdn;
+>>>>-	u16                    vf_index;
+>>>>-	int64_t                rc;
+>>>>
+>>>>  	bus = pdev->bus;
+>>>>  	hose = pci_bus_to_host(bus);
+>>>>@@ -1320,35 +1323,6 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>  	if (!pdev->is_physfn)
+>>>>  		return;
+>>>>
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>>>>-		int   vf_group;
+>>>>-		int   vf_per_group;
+>>>>-		int   vf_index1;
+>>>>-
+>>>>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-
+>>>>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++)
+>>>>-			for (vf_index = vf_group * vf_per_group;
+>>>>-				vf_index < (vf_group + 1) * vf_per_group &&
+>>>>-				vf_index < num_vfs;
+>>>>-				vf_index++)
+>>>>-				for (vf_index1 = vf_group * vf_per_group;
+>>>>-					vf_index1 < (vf_group + 1) * vf_per_group &&
+>>>>-					vf_index1 < num_vfs;
+>>>>-					vf_index1++){
+>>>>-
+>>>>-					rc = opal_pci_set_peltv(phb->opal_id,
+>>>>-						pdn->offset + vf_index,
+>>>>-						pdn->offset + vf_index1,
+>>>>-						OPAL_REMOVE_PE_FROM_DOMAIN);
+>>>>-
+>>>>-					if (rc)
+>>>>-					    dev_warn(&pdev->dev, "%s: Failed to unlink same group PE#%d(%lld)\n",
+>>>>-						__func__,
+>>>>-						pdn->offset + vf_index1, rc);
+>>>>-				}
+>>>>-	}
+>>>>-
+>>>>  	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
+>>>>  		if (pe->parent_dev != pdev)
+>>>>  			continue;
+>>>>@@ -1383,14 +1357,14 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
+>>>>  	num_vfs = pdn->num_vfs;
+>>>>
+>>>>  	/* Release VF PEs */
+>>>>-	pnv_ioda_release_vf_PE(pdev, num_vfs);
+>>>>+	pnv_ioda_release_vf_PE(pdev);
+>>>>
+>>>>  	if (phb->type == PNV_PHB_IODA2) {
+>>>>-		if (pdn->m64_per_iov == 1)
+>>>>+		if (!pdn->m64_single_mode)
+>>>>  			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
+>>>>
+>>>>  		/* Release M64 windows */
+>>>>-		pnv_pci_vf_release_m64(pdev);
+>>>>+		pnv_pci_vf_release_m64(pdev, num_vfs);
+>>>>
+>>>>  		/* Release PE numbers */
+>>>>  		bitmap_clear(phb->ioda.pe_alloc, pdn->offset, num_vfs);
+>>>>@@ -1409,7 +1383,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>  	int                    pe_num;
+>>>>  	u16                    vf_index;
+>>>>  	struct pci_dn         *pdn;
+>>>>-	int64_t                rc;
+>>>>
+>>>>  	bus = pdev->bus;
+>>>>  	hose = pci_bus_to_host(bus);
+>>>>@@ -1454,37 +1427,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>
+>>>>  		pnv_pci_ioda2_setup_dma_pe(phb, pe);
+>>>>  	}
+>>>>-
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>>>>-		int   vf_group;
+>>>>-		int   vf_per_group;
+>>>>-		int   vf_index1;
+>>>>-
+>>>>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-
+>>>>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++) {
+>>>>-			for (vf_index = vf_group * vf_per_group;
+>>>>-			     vf_index < (vf_group + 1) * vf_per_group &&
+>>>>-			     vf_index < num_vfs;
+>>>>-			     vf_index++) {
+>>>>-				for (vf_index1 = vf_group * vf_per_group;
+>>>>-				     vf_index1 < (vf_group + 1) * vf_per_group &&
+>>>>-				     vf_index1 < num_vfs;
+>>>>-				     vf_index1++) {
+>>>>-
+>>>>-					rc = opal_pci_set_peltv(phb->opal_id,
+>>>>-						pdn->offset + vf_index,
+>>>>-						pdn->offset + vf_index1,
+>>>>-						OPAL_ADD_PE_TO_DOMAIN);
+>>>>-
+>>>>-					if (rc)
+>>>>-					    dev_warn(&pdev->dev, "%s: Failed to link same group PE#%d(%lld)\n",
+>>>>-						__func__,
+>>>>-						pdn->offset + vf_index1, rc);
+>>>>-				}
+>>>>-			}
+>>>>-		}
+>>>>-	}
+>>>>  }
+>>>>
+>>>>  int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>@@ -1507,6 +1449,18 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>  			return -EBUSY;
+>>>>  		}
+>>>>
+>>>>+		/*
+>>>>+		 * On PNV_PHB_IODA2, We just have 16 M64 BARs and M64 BAR #15
+>>>>+		 * is used to cover the whole system, which leaves only 15 M64
+>>>>+		 * BAR usable for VFs.
+>>>>+		 * When M64 BAR functions in Single PE mode, this means it
+>>>>+		 * just could enable 15 VFs.
+>>>>+		 */
+>>>>+		if (pdn->m64_single_mode && num_vfs >= 16) {
+>>>
+>>>Magic constant 16. Where did this 16 come from? My understanding is
+>>>it could come from
+>>>
+>>>1) hostboot or
+>>>2) OPAL or
+>>>3) architected on IODA2
+>>>4) defined in PHB3 (actually it has to be 2))
+>>>
+>>>which one is it? If 1) and 2) - make it a variable; if 3) - add a macro for it.
+>>>
+>>
+>>As Gavin indicated, this will change to "num_vfs > phb->ioda.m64_bar_idx"
+>
+>
+>This does not really answer my question ;) But I believe it is 4) as
+>PHB3 (IODA2 does not mention M64 at all) has only 16 M64's per PHB.
+>
 
-I wonder if we could have the log messages be a bit clearer here, odds
-are, unless you're one of the people reading this code, you have no idea
-what an OCC is or what on earth "OCC: Loaded" means and why this
-*doesn't* mean that your CPUs are no longer throttled so that your
-computer doesn't catch fire/break/add 1+1 and get 4.
+Yep, I think it is 4).
 
-Also, do we export this information via sysfs somewhere? It would seem
-to want to go along with other cpufreq/cpu info there.
+>Still, pnv_ioda_parse_m64_window() puts 15 to m64_bar_idx with no
+>explanation why. If there was "#define PNV_IODA2_PHB3_M64_MAX_NUMBER
+>16" somewhere OR some call to OPAL which returns this "16" on PHB3
+>but there is none.
+>
 
-It feels like we could do much better at informing users as to what is
-going on.... maybe something like:
+No place defined it.
 
-"OCC (On Chip Controller - enforces hard thermal/power limits) Resetting: CPU frequency throttled for duration"
-"OCC Loading, CPU frequency throttled until OCC started"
-"OCC Active, CPU frequency no longer throttled"
+We can leverage m64_bar_idx in this patch, and need another patch to fix this
+problem as mentioned above.
+
+>
+>
+>>
+>>>
+>>>>+			dev_info(&pdev->dev, "Not enough M64 BAR for VFs\n");
+>>>>+			return -EBUSY;
+>>>>+		}
+>>>>+
+>>>>  		/* Calculate available PE for required VFs */
+>>>>  		mutex_lock(&phb->ioda.pe_alloc_mutex);
+>>>>  		pdn->offset = bitmap_find_next_zero_area(
+>>>>@@ -1534,7 +1488,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>  		 * the IOV BAR according to the PE# allocated to the VFs.
+>>>>  		 * Otherwise, the PE# for the VF will conflict with others.
+>>>>  		 */
+>>>>-		if (pdn->m64_per_iov == 1) {
+>>>>+		if (!pdn->m64_single_mode) {
+>>>>  			ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
+>>>>  			if (ret)
+>>>>  				goto m64_failed;
+>>>>@@ -1567,8 +1521,7 @@ int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>  	/* Allocate PCI data */
+>>>>  	add_dev_pci_data(pdev);
+>>>>
+>>>>-	pnv_pci_sriov_enable(pdev, num_vfs);
+>>>>-	return 0;
+>>>>+	return pnv_pci_sriov_enable(pdev, num_vfs);
+>>>>  }
+>>>>  #endif /* CONFIG_PCI_IOV */
+>>>>
+>>>>@@ -2761,9 +2714,9 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>>
+>>>>  	pdn = pci_get_pdn(pdev);
+>>>>  	pdn->vfs_expanded = 0;
+>>>>+	pdn->m64_single_mode = false;
+>>>>
+>>>>  	total_vfs = pci_sriov_get_totalvfs(pdev);
+>>>>-	pdn->m64_per_iov = 1;
+>>>>  	mul = phb->ioda.total_pe;
+>>>>
+>>>>  	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>>>@@ -2783,8 +2736,8 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>>  		if (size > (1 << 26)) {
+>>>>  			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
+>>>>  				 i, res);
+>>>>-			pdn->m64_per_iov = M64_PER_IOV;
+>>>>  			mul = roundup_pow_of_two(total_vfs);
+>>>>+			pdn->m64_single_mode = true;
+>>>>  			break;
+>>>>  		}
+>>>>  	}
+>>>>@@ -2986,6 +2939,8 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+>>>>  static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+>>>>  						      int resno)
+>>>>  {
+>>>>+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+>>>>+	struct pnv_phb *phb = hose->private_data;
+>>>>  	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>>>  	resource_size_t align;
+>>>>
+>>>>@@ -2994,12 +2949,25 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+>>>>  	 * SR-IOV. While from hardware perspective, the range mapped by M64
+>>>>  	 * BAR should be size aligned.
+>>>>  	 *
+>>>>+	 * When IOV BAR is mapped with M64 BAR in Single PE mode, the hardware
+>>>>+	 * restriction to alignment is gone.
+>>>
+>>>
+>>>Gone? Does not BAR still have to be aligned to its size?
+>>>
+>>
+>>Yes, M64 BAR is always size aligned. While since in Single PE mode, the M64
+>>BAR size is the same as a VF BAR size, which means they have the same
+>>alignment now.  What I want to say is the extra hardware restriction is gone.
+>>
+>>Let me put more to explain this.
+>
+>Sure. Just add "extra powernv-specific" before "hardware restriction"
+>(or something like that).
+>
+>
+>
+>>>
+>>>>But if just use the VF BAR size
+>>>>+	 * as the alignment, PF BAR / VF BAR may be allocated with in one M64
+>>>>+	 * segment,
+>>>
+>>>
+>>>I thought each VF gets its own _segment_, am I wrong?
+>>>
+>>
+>> From the one M64 BAR map the VF BAR, yes.
+>>
+>>While we have M64 BAR#15 to cover the whole 64bit MMIO space, whose segment
+>>size is bigger then the one map the VF BARA. When not properly aligned, VF and
+>>PF may sit in the same segment of the M64 BAR#15.
+>
+>
+>When is M64 #15 not in a single mode? Always?
+>
+
+Always in shared mode. When we want to use the 64bit MMIO range, we need one
+M64 BAR to segment it.
+
+>
+>
+>>>
+>>>>which introduces the PE conflict between PF and VF. Based
+>>>>+	 * on this the minimum alignment of an IOV BAR is m64_segsize.
+>>>>
+>>>>+	 *
+>>>>  	 * This function return the total IOV BAR size if expanded or just the
+>>>>-	 * individual size if not.
+>>>>+	 * individual size if not, when M64 BAR is in Shared PE mode.
+>>>>+	 * If the M64 BAR is in Single PE mode, return the VF BAR size or
+>>>>+	 * m64_size if IOV BAR size is less.
+>>>>  	 */
+>>>>  	align = pci_iov_resource_size(pdev, resno);
+>>>>-	if (pdn->vfs_expanded)
+>>>>-		return pdn->vfs_expanded * align;
+>>>>+	if (pdn->vfs_expanded) {
+>>>>+		if (pdn->m64_single_mode)
+>>>>+			return max(align,
+>>>>+				(resource_size_t)phb->ioda.m64_segsize);
+>>>>+		else
+>>>>+			return pdn->vfs_expanded * align;
+>>>>+	}
+>>>>
+>>>>  	return align;
+>>>>  }
+>
+>
+>
+>-- 
+>Alexey
+
+-- 
+Richard Yang
+Help you, Help me
