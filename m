@@ -1,16 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9CD0A1A0935
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:27:03 +1000 (AEST)
-In-Reply-To: <1434075997-23216-1-git-send-email-haokexin@gmail.com>
-To: Kevin Hao <haokexin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48CF11A117D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:27:04 +1000 (AEST)
+In-Reply-To: <20150505080431.513.69688.stgit@mars.in.ibm.com>
+To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: pci: use %pR for printing struct resource
-Message-Id: <20150810092703.569C61401C7@ozlabs.org>
-Date: Mon, 10 Aug 2015 19:27:03 +1000 (AEST)
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: [v2,
+ 1/2] powerpc/powernv: display reason for Malfunction Alert HMI.
+Message-Id: <20150810092704.12ACB14056B@ozlabs.org>
+Date: Mon, 10 Aug 2015 19:27:04 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,14 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-12-06 at 02:26:37 UTC, Kevin Hao wrote:
-> Use %pR to simplify the debug code. This also make the debug info more
-> readable.
+On Tue, 2015-05-05 at 08:04:58 UTC, Mahesh Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> The V2 version of HMI event now carries additional information for
+> Malfunction Alert. It now contains error information about CORE and NX
+> checkstop. This patch checks and displays the check stop reason before
+> panic.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/ae2a84b4074cff81957b
+https://git.kernel.org/powerpc/c/c33e11d0dd2ebd2cd528
 
 cheers
