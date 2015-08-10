@@ -1,29 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BBBDE1A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 15:33:25 +1000 (AEST)
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C07D1A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 15:34:41 +1000 (AEST)
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1F0C814027C
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 15:33:24 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id A24081401E7
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 15:34:40 +1000 (AEST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 10 Aug 2015 11:03:23 +0530
+ Mon, 10 Aug 2015 11:04:38 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Jeremy Kerr <jk@ozlabs.org>
-Subject: Re: [PATCH 1/5] powerpc/mm: Fix pte_pagesize_index() crash on 4K
- w/64K hash
-In-Reply-To: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
+Subject: Re: [PATCH 3/5] powerpc/mm: Drop the 64K on 4K version of
+ pte_pagesize_index()
+In-Reply-To: <1438928387-6454-3-git-send-email-mpe@ellerman.id.au>
 References: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 10 Aug 2015 11:03:19 +0530
-Message-ID: <87614nr9ls.fsf@linux.vnet.ibm.com>
+ <1438928387-6454-3-git-send-email-mpe@ellerman.id.au>
+Date: Mon, 10 Aug 2015 11:04:29 +0530
+Message-ID: <87y4hjpuze.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,75 +38,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> The powerpc kernel can be built to have either a 4K PAGE_SIZE or a 64K
-> PAGE_SIZE.
+> Now that support for 64k pages with a 4K kernel is removed, this code is
+> unreachable.
 >
-> However when built with a 4K PAGE_SIZE there is an additional config
-> option which can be enabled, PPC_HAS_HASH_64K, which means the kernel
-> also knows how to hash a 64K page even though the base PAGE_SIZE is 4K.
+> CONFIG_PPC_HAS_HASH_64K can only be true when CONFIG_PPC_64K_PAGES is
+> also true.
 >
-> This is used in one obscure configuration, to support 64K pages for SPU
-> local store on the Cell processor when the rest of the kernel is using
-> 4K pages.
+> But when CONFIG_PPC_64K_PAGES is true we include pte-hash64.h which
+> includes pte-hash64-64k.h, which defines both pte_pagesize_index() and
+> crucially __real_pte, which means this defintion can never be used.
 >
-> In this configuration, pte_pagesize_index() is defined to just pass
-> through its arguments to get_slice_psize(). However pte_pagesize_index()
-> is called for both user and kernel addresses, whereas get_slice_psize()
-> only knows how to handle user addresses.
->
-> This has been broken forever, however until recently it happened to
-> work. That was because in get_slice_psize() the large kernel address
-> would cause the right shift of the slice mask to return zero.
->
-> However in commit 7aa0727f3302 "powerpc/mm: Increase the slice range to
-> 64TB", the get_slice_psize() code was changed so that instead of a right
-> shift we do an array lookup based on the address. When passed a kernel
-> address this means we index way off the end of the slice array and
-> return random junk.
->
-> That is only fatal if we happen to hit something non-zero, but when we
-> do return a non-zero value we confuse the MMU code and eventually cause
-> a check stop.
->
-> This fix is ugly, but simple. When we're called for a kernel address we
-> return 4K, which is always correct in this configuration, otherwise we
-> use the slice mask.
->
-> Fixes: 7aa0727f3302 ("powerpc/mm: Increase the slice range to 64TB")
-> Reported-by: Cyril Bur <cyrilbur@gmail.com>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-
 Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
 > ---
->  arch/powerpc/include/asm/pgtable-ppc64.h | 14 +++++++++++++-
->  1 file changed, 13 insertions(+), 1 deletion(-)
+>  arch/powerpc/include/asm/pgtable-ppc64.h | 12 ------------
+>  1 file changed, 12 deletions(-)
 >
 > diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-> index 3bb7488bd24b..7ee2300ee392 100644
+> index 7ee2300ee392..fa1dfb7f7b48 100644
 > --- a/arch/powerpc/include/asm/pgtable-ppc64.h
 > +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> @@ -135,7 +135,19 @@
+> @@ -134,23 +134,11 @@
+>
 >  #define pte_iterate_hashed_end() } while(0)
 >
->  #ifdef CONFIG_PPC_HAS_HASH_64K
-> -#define pte_pagesize_index(mm, addr, pte)	get_slice_psize(mm, addr)
-> +/*
-> + * We expect this to be called only for user addresses or kernel virtual
-> + * addresses other than the linear mapping.
-> + */
-> +#define pte_pagesize_index(mm, addr, pte)			\
-> +	({							\
-> +		unsigned int psize;				\
-> +		if (is_kernel_addr(addr))			\
-> +			psize = MMU_PAGE_4K;			\
-> +		else						\
-> +			psize = get_slice_psize(mm, addr);	\
-> +		psize;						\
-> +	})
->  #else
+> -#ifdef CONFIG_PPC_HAS_HASH_64K
+>  /*
+>   * We expect this to be called only for user addresses or kernel virtual
+>   * addresses other than the linear mapping.
+>   */
+> -#define pte_pagesize_index(mm, addr, pte)			\
+> -	({							\
+> -		unsigned int psize;				\
+> -		if (is_kernel_addr(addr))			\
+> -			psize = MMU_PAGE_4K;			\
+> -		else						\
+> -			psize = get_slice_psize(mm, addr);	\
+> -		psize;						\
+> -	})
+> -#else
 >  #define pte_pagesize_index(mm, addr, pte)	MMU_PAGE_4K
->  #endif
+> -#endif
+>
+>  #endif /* __real_pte */
+>
 > -- 
 > 2.1.4
