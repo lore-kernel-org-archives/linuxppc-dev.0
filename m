@@ -1,22 +1,45 @@
-Return-Path: <jk@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F9AA1A0CB4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 18:14:10 +1000 (AEST)
-Message-ID: <55C85D51.5080903@ozlabs.org>
-Date: Mon, 10 Aug 2015 16:14:09 +0800
-From: Jeremy Kerr <jk@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 03E4E1A0CDB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 18:19:17 +1000 (AEST)
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0D4691401AF
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 18:19:15 +1000 (AEST)
+Received: from /spool/local
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Mon, 10 Aug 2015 04:19:13 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id B6E0A6E801D
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 04:10:56 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7A8JBea45154418
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 08:19:11 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7A8JAqt010418
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 04:19:11 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, joel@jms.id.au
+Subject: Re: [PATCH v5 3/6] cpufreq: powernv: Register for OCC related
+ opal_message notification
+In-Reply-To: <55C857F8.6090502@linux.vnet.ibm.com>
+References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1437033863-15864-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <m3y4hjex8q.fsf@oc8180480414.ibm.com> <55C857F8.6090502@linux.vnet.ibm.com>
+Date: Mon, 10 Aug 2015 18:19:08 +1000
+Message-ID: <m3zj1zd08z.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-CC: aneesh.kumar@linux.vnet.ibm.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] powerpc/cell: Drop support for 64K local store on
- 4K kernels
-References: <1438928387-6454-1-git-send-email-mpe@ellerman.id.au>
- <1438928387-6454-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1438928387-6454-2-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +49,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>> Also, do we export this information via sysfs somewhere? It would seem
+>> to want to go along with other cpufreq/cpu info there.
+>
+> No we don't export the throttling status of the cpu via sysfs. Since the
+> throttling state is common across the chip, the per_cpu export will be
+> redundant. Did you mean something like one of the below:
+>
+> 1)/sys/devices/system/cpu/cpufreq/chipN_throttle
+>
+> 2)/sys/devices/system/cpu/cpuN/cpufreq/throttle
 
-> Back in the olden days we added support for using 64K pages to map the
-> SPU (Synergistic Processing Unit) local store on Cell, when the main
-> kernel was using 4K pages.
-> 
-> This was useful at the time because distros were using 4K pages, but
-> using 64K pages on the SPUs could reduce TLB pressure there.
-> 
-> However these days the number of Cell users is approaching zero, and
-> supporting this option adds unpleasant complexity to the memory
-> management code.
-> 
-> So drop the option, CONFIG_SPU_FS_64K_LS, and all related code.
-
-Yep, I'd be happy to drop this - impact should be little to none.
-
-Acked-by: Jeremy Kerr <jk@ozlabs.org>
-
-Cheers,
-
-
-Jeremy
+yeah, I was thinking something like that.
