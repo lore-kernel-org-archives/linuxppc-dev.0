@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41AFD1A02DF
+ by lists.ozlabs.org (Postfix) with ESMTPS id A26431A02DF
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:26:59 +1000 (AEST)
-In-Reply-To: <20150505080529.513.66351.stgit@mars.in.ibm.com>
-To: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1429865684-6214-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>
-Subject: Re: [v2,2/2] powerpc/powernv: Pull all HMI events before panic.
-Message-Id: <20150810092659.145671401F6@ozlabs.org>
+Cc: paulus@samba.org
+Subject: Re: [v2] powerpc/ftrace: add powerpc timebase as a trace clock source
+Message-Id: <20150810092659.9116614027C@ozlabs.org>
 Date: Mon, 10 Aug 2015 19:26:59 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,20 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-05 at 08:05:43 UTC, Mahesh Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Fri, 2015-24-04 at 08:54:44 UTC, "Naveen N. Rao" wrote:
+> Add a new powerpc-specific trace clock using the timebase register,
+> similar to x86-tsc. This gives us
+> - a fast, monotonic, hardware clock source for trace entries, and
+> - a clock that can be used to correlate events across cpus as well as across
+>   hypervisor and guests.
 > 
-> In the event of unrecovered HMI the existing code panics as soon as
-> it receives the first unrecovered HMI event. This makes host to report
-> partial information about HMIs before panic. There may be more errors
-> which would have caused the HMI and hence more HMI event would have been
-> generated waiting to be pulled by host. This patch implements a logic to
-> pull and display all the HMI event before going down panic path.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1852ae276ba6d5d481c3
+https://git.kernel.org/powerpc/c/197165d44925bd0fa892
 
 cheers
