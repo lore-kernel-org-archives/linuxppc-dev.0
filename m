@@ -1,25 +1,45 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f176.google.com (mail-pd0-f176.google.com
- [209.85.192.176])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 262281A03BD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 17:40:22 +1000 (AEST)
-Received: by pdbfa8 with SMTP id fa8so28461197pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 00:40:20 -0700 (PDT)
-Subject: Re: [PATCH v6 07/42] powerpc/powernv: Improve IO and M32 mapping
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-8-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
- grant.likely@linaro.org, robherring2@gmail.com, panto@antoniou-consulting.com
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55C85558.2050300@ozlabs.ru>
-Date: Mon, 10 Aug 2015 17:40:08 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5AC6F1A1D4D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 17:40:58 +1000 (AEST)
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 751D51401E7
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 17:40:57 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Mon, 10 Aug 2015 13:10:55 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 6F171125805E
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 13:14:04 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7A7Yduo34668794
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 13:10:50 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7A7VOdN016208
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 13:01:25 +0530
+Message-ID: <55C8534A.5040904@linux.vnet.ibm.com>
+Date: Mon, 10 Aug 2015 13:01:22 +0530
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1438834307-26960-8-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+CC: rjw@rjwysocki.net, joel@jms.id.au, viresh.kumar@linaro.org,
+ linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org, shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 2/6] powerpc/powernv: Add definition of OPAL_MSG_OCC
+ message type
+References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1437033863-15864-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <m31tfcf0td.fsf@oc8180480414.ibm.com>
+In-Reply-To: <m31tfcf0td.fsf@oc8180480414.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,205 +49,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/06/2015 02:11 PM, Gavin Shan wrote:
-> There're 3 windows (IO, M32 and M64) for PHB, root port and upstream
+Hi Stewart,
 
-These are actually IO, non-prefetchable and prefetchable windows which 
-happen to be IO, 32bit and 64bit windows but this has nothing to do with 
-the M32/M64 BAR registers in P7IOC/PHB3, do I understand this correctly?
+On 08/10/2015 05:53 AM, Stewart Smith wrote:
+> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>> Add OPAL_MSG_OCC message definition to opal_message_type to receive
+>> OCC events like reset, load and throttled. Host performance can be
+>> affected when OCC is reset or OCC throttles the max Pstate.
+>> We can register to opal_message_notifier to receive OPAL_MSG_OCC type
+>> of message and report it to the userspace so as to keep the user
+>> informed about the reason for a performance drop in workloads.
+>>
+>> The reset and load OCC events are notified to kernel when FSP sends
+>> OCC_RESET and OCC_LOAD commands.  Both reset and load messages are
+>> sent to kernel on successful completion of reset and load operation
+>> respectively.
+> 
+> How is this done on OpenPower systems? Explanation involving just what
+> OPAL does is likely better, rather than explaining in context of FSP,
+> which Linux has no real knowledge of (OPAL provides all abstraction of
+> it).
+> 
 
+In OpenPower systems, opal will only send OCC throttled event. OCC reset
+and load messages are not sent to kernel.
 
-> port of the PCIE switch behind root port. In order to support PCI
-> hotplug, we extend the start/end address of those 3 windows of root
-> port or upstream port to the start/end address of the 3 PHB's windows.
-> The current implementation, assigning IO or M32 segment based on the
-> bridge's windows, isn't reliable.
->
-> The patch fixes above issue by calculating PE's consumed IO or M32
-> segments from its contained devices, no PCI bridge windows involved
-> if the PE doesn't contain all the subordinate PCI buses.
+How about the following git log message?
 
-Please, rephrase it. How can PCI bridges be involved in PE consumption?
+Add OPAL_MSG_OCC message definition to opal_message_type to receive
+OCC events like reset, load and throttled. Host performance can be
+affected when OCC is reset or OCC throttles the max Pstate.  We can
+register to opal_message_notifier to receive OPAL_MSG_OCC type of
+message and report it to the userspace so as to keep the user informed
+about the reason for a performance drop in workloads.
 
+Opal will send reset and load events to kernel on successful
+completion of reset and load operation of OCC. During this duration
+the cpu frequency will be throttled until OCC is started. Opal will
+send a throttle message during the OCC reset-cycle to indicate that
+OCC is active.
 
-> Otherwise,
-> the PCI bridge windows still contribute to PE's consumed IO or M32
-> segments.
+Opal will send throttle message to kernel when OCC is active to
+indicate that the Pmax of the chip is reduced. The chip_id and
+throttle reason for reducing Pmax is queued along with the message.
 
-PCI bridge windows themselves consume PEs? Is that correct?
-
-
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/pci-ioda.c | 136 +++++++++++++++++-------------
->   1 file changed, 79 insertions(+), 57 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 488a53e..713f4b4 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2844,75 +2844,97 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->   }
->   #endif /* CONFIG_PCI_IOV */
->
-> -/*
-> - * This function is supposed to be called on basis of PE from top
-> - * to bottom style. So the the I/O or MMIO segment assigned to
-> - * parent PE could be overrided by its child PEs if necessary.
-> - */
-> -static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
-> -				  struct pnv_ioda_pe *pe)
-> +static int pnv_ioda_setup_one_res(struct pci_controller *hose,
-> +				  struct pnv_ioda_pe *pe,
-> +				  struct resource *res)
->   {
->   	struct pnv_phb *phb = hose->private_data;
->   	struct pci_bus_region region;
-> -	struct resource *res;
-> -	int i, index;
-> -	unsigned int segsize;
-> +	unsigned int index, segsize;
->   	unsigned long *segmap, *pe_segmap;
->   	uint16_t win;
->   	int64_t rc;
->
-> -	/*
-> -	 * NOTE: We only care PCI bus based PE for now. For PCI
-> -	 * device based PE, for example SRIOV sensitive VF should
-> -	 * be figured out later.
-> -	 */
-> -	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
-> +	/* Check if we need map the resource */
-> +	if (!res->parent || !res->flags || res->start > res->end)
-
-res->start >= res->end ?
-
-
-> +		return 0;
->
-> -	pci_bus_for_each_resource(pe->pbus, res, i) {
-> -		if (!res || !res->flags ||
-> -		    res->start > res->end)
-> -			continue;
-> +	if (res->flags & IORESOURCE_IO) {
-> +		region.start = res->start - phb->ioda.io_pci_base;
-> +		region.end   = res->end - phb->ioda.io_pci_base;
-> +		segsize      = phb->ioda.io_segsize;
-> +		segmap       = phb->ioda.io_segmap;
-> +		pe_segmap    = pe->io_segmap;
-> +		win          = OPAL_IO_WINDOW_TYPE;
-> +	} else if ((res->flags & IORESOURCE_MEM) &&
-> +		   !pnv_pci_is_mem_pref_64(res->flags)) {
-> +		region.start = res->start -
-> +			       hose->mem_offset[0] -
-> +			       phb->ioda.m32_pci_base;
-> +		region.end   = res->end -
-> +			       hose->mem_offset[0] -
-> +			       phb->ioda.m32_pci_base;
-> +		segsize      = phb->ioda.m32_segsize;
-> +		segmap       = phb->ioda.m32_segmap;
-> +		pe_segmap    = pe->m32_segmap;
-> +		win          = OPAL_M32_WINDOW_TYPE;
-> +	} else {
-> +		return 0;
-> +	}
->
-> -		if (res->flags & IORESOURCE_IO) {
-> -			region.start = res->start - phb->ioda.io_pci_base;
-> -			region.end   = res->end - phb->ioda.io_pci_base;
-> -			segsize      = phb->ioda.io_segsize;
-> -			segmap       = phb->ioda.io_segmap;
-> -			pe_segmap    = pe->io_segmap;
-> -			win          = OPAL_IO_WINDOW_TYPE;
-> -		} else if ((res->flags & IORESOURCE_MEM) &&
-> -			   !pnv_pci_is_mem_pref_64(res->flags)) {
-> -			region.start = res->start -
-> -				       hose->mem_offset[0] -
-> -				       phb->ioda.m32_pci_base;
-> -			region.end   = res->end -
-> -				       hose->mem_offset[0] -
-> -				       phb->ioda.m32_pci_base;
-> -			segsize      = phb->ioda.m32_segsize;
-> -			segmap       = phb->ioda.m32_segmap;
-> -			pe_segmap    = pe->m32_segmap;
-> -			win          = OPAL_M32_WINDOW_TYPE;
-> -		} else {
-> -			continue;
-> +	region.start = _ALIGN_DOWN(region.start, segsize);
-> +	region.end   = _ALIGN_UP(region.end, segsize);
-> +	index = region.start / segsize;
-> +	while (index < phb->ioda.total_pe &&
-> +	       region.start < region.end) {
-> +		rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-> +				pe->pe_number, win, 0, index);
-> +		if (rc != OPAL_SUCCESS) {
-> +			pr_warn("%s: Error %lld mapping (%d) seg#%d to PHB#%d-PE#%d\n",
-> +				__func__, rc, win, index,
-> +				pe->phb->hose->global_number,
-> +				pe->pe_number);
-> +			return -EIO;
->   		}
->
-> -		index = region.start / phb->ioda.io_segsize;
-> -		while (index < phb->ioda.total_pe &&
-> -		       region.start <= region.end) {
-> -			set_bit(index, segmap);
-> -			set_bit(index, pe_segmap);
-> -			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-> -					pe->pe_number, win, 0, index);
-> -			if (rc != OPAL_SUCCESS) {
-> -				pr_warn("%s: Error %lld mapping (%d) seg#%d to PHB#%d-PE#%d\n",
-> -					__func__, rc, win, index,
-> -					pe->phb->hose->global_number,
-> -					pe->pe_number);
-> -				break;
-> -			}
-> +		set_bit(index, segmap);
-> +		set_bit(index, pe_segmap);
-> +		region.start += segsize;
-> +		index++;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
-> +				  struct pnv_ioda_pe *pe)
-> +{
-> +	struct pci_dev *pdev;
-> +	struct resource *res;
-> +	int i;
-> +
-> +	/* This function only works for bus dependent PE */
-> +	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
-> +
-> +	list_for_each_entry(pdev, &pe->pbus->devices, bus_list) {
-> +		for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
-> +			res = &pdev->resource[i];
-> +			if (pnv_ioda_setup_one_res(hose, pe, res))
-> +				return;
-> +		}
-> +
-> +		/* If the PE contains all subordinate PCI buses, the
-> +		 * resources of the child bridges should be mapped
-> +		 * to the PE as well.
-> +		 */
-> +		if (!(pe->flags & PNV_IODA_PE_BUS_ALL) ||
-> +		    (pdev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
-> +			continue;
->
-> -			region.start += segsize;
-> -			index++;
-> +		for (i = 0; i <= PCI_BRIDGE_RESOURCE_NUM; i++) {
-> +			res = &pdev->resource[PCI_BRIDGE_RESOURCES + i];
-> +			if (pnv_ioda_setup_one_res(hose, pe, res))
-> +				return;
->   		}
->   	}
->   }
->
-
-
--- 
-Alexey
+Thanks and Regards,
+Shilpa
