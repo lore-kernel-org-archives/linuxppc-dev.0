@@ -1,25 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f182.google.com (mail-pd0-f182.google.com
- [209.85.192.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <B48286@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0123.outbound.protection.outlook.com [207.46.100.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B05D1A0CDB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 20:02:31 +1000 (AEST)
-Received: by pdbfa8 with SMTP id fa8so29814807pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 03:02:29 -0700 (PDT)
-Subject: Re: [PATCH v6 15/42] powerpc/powernv: PE oriented during configuration
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-16-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
- grant.likely@linaro.org, robherring2@gmail.com, panto@antoniou-consulting.com
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55C876AC.5060205@ozlabs.ru>
-Date: Mon, 10 Aug 2015 20:02:20 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DB9C1A2D09
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 20:04:01 +1000 (AEST)
+From: Hou Zhiqiang <B48286@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "galak@kernel.crashing.org" <galak@kernel.crashing.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Hu Vincent
+ <Mingkai.Hu@freescale.com>, Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Subject: RE: [PATCH] c293/pci: remove hook pcibios_fixup_phb
+Date: Mon, 10 Aug 2015 09:49:12 +0000
+Message-ID: <CY1PR0301MB0780A3D16B0BF3A45CF638C98B700@CY1PR0301MB0780.namprd03.prod.outlook.com>
+References: <1437473400-11184-1-git-send-email-B48286@freescale.com>
+ <CY1PR0301MB0780F0F41541CBFC5B5998018B8A0@CY1PR0301MB0780.namprd03.prod.outlook.com>
+ <1438363461.19345.18.camel@freescale.com>
+In-Reply-To: <1438363461.19345.18.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <1438834307-26960-16-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,201 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/06/2015 02:11 PM, Gavin Shan wrote:
-> Several functions used to configure PE take pe_number to indentify
-> PE instance. As the pe_number is included in PE instance after it
-> is reserved or allocated. It's convienent for those functions to
-> return PE instance which includes the required pe_number.
-
-This is a description for the half of the patch but this patch also adds a 
-return value to functions which did not have it before and I am not sure 
-you need all of them to return something. It would be cleaner if you added 
-"return" when/where you really need it, not just because it seems that it 
-may be convenient later.
-
-
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/pci-ioda.c | 51 ++++++++++++++++---------------
->   arch/powerpc/platforms/powernv/pci.h      |  2 +-
->   2 files changed, 27 insertions(+), 26 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 3094c61..9f53682 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -132,12 +132,12 @@ static inline bool pnv_pci_is_mem_pref_64(unsigned long flags)
->   		(IORESOURCE_MEM_64 | IORESOURCE_PREFETCH));
->   }
->
-> -static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
-> +static struct pnv_ioda_pe *pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
->   {
->   	if (!(pe_no >= 0 && pe_no < phb->ioda.total_pe)) {
->   		pr_warn("%s: Invalid PE %d on PHB#%x\n",
->   			__func__, pe_no, phb->hose->global_number);
-> -		return;
-> +		return NULL;
->   	}
->
->   	if (test_and_set_bit(pe_no, phb->ioda.pe_alloc))
-> @@ -146,9 +146,11 @@ static void pnv_ioda_reserve_pe(struct pnv_phb *phb, int pe_no)
->
->   	phb->ioda.pe_array[pe_no].phb = phb;
->   	phb->ioda.pe_array[pe_no].pe_number = pe_no;
-> +
-> +	return &phb->ioda.pe_array[pe_no];
->   }
->
-> -static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
-> +static struct pnv_ioda_pe *pnv_ioda_alloc_pe(struct pnv_phb *phb)
->   {
->   	unsigned long pe;
->
-> @@ -156,12 +158,12 @@ static int pnv_ioda_alloc_pe(struct pnv_phb *phb)
->   		pe = find_next_zero_bit(phb->ioda.pe_alloc,
->   					phb->ioda.total_pe, 0);
->   		if (pe >= phb->ioda.total_pe)
-> -			return IODA_INVALID_PE;
-> +			return NULL;
->   	} while(test_and_set_bit(pe, phb->ioda.pe_alloc));
->
->   	phb->ioda.pe_array[pe].phb = phb;
->   	phb->ioda.pe_array[pe].pe_number = pe;
-> -	return pe;
-> +	return &phb->ioda.pe_array[pe];
->   }
->
->   static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
-> @@ -334,7 +336,7 @@ static void pnv_ioda_reserve_m64_pe(struct pci_bus *bus,
->   	}
->   }
->
-> -static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
-> +static struct pnv_ioda_pe *pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->   {
->   	struct pci_controller *hose = pci_bus_to_host(bus);
->   	struct pnv_phb *phb = hose->private_data;
-> @@ -344,7 +346,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->
->   	/* Root bus shouldn't use M64 */
->   	if (pci_is_root_bus(bus))
-> -		return IODA_INVALID_PE;
-> +		return NULL;
->
->   	/* Allocate bitmap */
->   	size = _ALIGN_UP(phb->ioda.total_pe / 8, sizeof(unsigned long));
-> @@ -352,7 +354,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->   	if (!pe_alloc) {
->   		pr_warn("%s: Out of memory !\n",
->   			__func__);
-> -		return IODA_INVALID_PE;
-> +		return NULL;
->   	}
->
->   	/* Figure out reserved PE numbers by the PE */
-> @@ -365,7 +367,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->   	 */
->   	if (bitmap_empty(pe_alloc, phb->ioda.total_pe)) {
->   		kfree(pe_alloc);
-> -		return IODA_INVALID_PE;
-> +		return NULL;
->   	}
->
->   	/*
-> @@ -416,7 +418,7 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->   	}
->
->   	kfree(pe_alloc);
-> -	return master_pe->pe_number;
-> +	return master_pe;
->   }
->
->   static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
-> @@ -1069,28 +1071,26 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
->    * subordinate PCI devices and buses. The second type of PE is normally
->    * orgiriated by PCIe-to-PCI bridge or PLX switch downstream ports.
->    */
-> -static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
-> +static struct pnv_ioda_pe *pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->   {
->   	struct pci_controller *hose = pci_bus_to_host(bus);
->   	struct pnv_phb *phb = hose->private_data;
-> -	struct pnv_ioda_pe *pe;
-> -	int pe_num = IODA_INVALID_PE;
-> +	struct pnv_ioda_pe *pe = NULL;
->
->   	/* Check if PE is determined by M64 */
->   	if (phb->pick_m64_pe)
-> -		pe_num = phb->pick_m64_pe(bus, all);
-> +		pe = phb->pick_m64_pe(bus, all);
->
->   	/* The PE number isn't pinned by M64 */
-> -	if (pe_num == IODA_INVALID_PE)
-> -		pe_num = pnv_ioda_alloc_pe(phb);
-> +	if (!pe)
-> +		pe = pnv_ioda_alloc_pe(phb);
->
-> -	if (pe_num == IODA_INVALID_PE) {
-> -		pr_warning("%s: Not enough PE# available for PCI bus %04x:%02x\n",
-> +	if (!pe) {
-> +		pr_warning("%s: No enough PE# for PCI bus %04x:%02x\n",
->   			__func__, pci_domain_nr(bus), bus->number);
-> -		return;
-> +		return NULL;
->   	}
->
-> -	pe = &phb->ioda.pe_array[pe_num];
->   	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
->   	pe->pbus = bus;
->   	pe->pdev = NULL;
-> @@ -1101,17 +1101,16 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->
->   	if (all)
->   		pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
-> -			bus->busn_res.start, bus->busn_res.end, pe_num);
-> +			bus->busn_res.start, bus->busn_res.end, pe->pe_number);
->   	else
->   		pe_info(pe, "Secondary bus %d associated with PE#%d\n",
-> -			bus->busn_res.start, pe_num);
-> +			bus->busn_res.start, pe->pe_number);
->
->   	if (pnv_ioda_configure_pe(phb, pe)) {
->   		/* XXX What do we do here ? */
-> -		if (pe_num)
-> -			pnv_ioda_free_pe(phb, pe_num);
-> +		pnv_ioda_free_pe(phb, pe->pe_number);
->   		pe->pbus = NULL;
-> -		return;
-> +		return NULL;
->   	}
->
->   	/* Associate it with all child devices */
-> @@ -1122,6 +1121,8 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, bool all)
->
->   	/* Link the PE */
->   	pnv_ioda_link_pe_by_weight(phb, pe);
-> +
-> +	return pe;
->   }
->
->   static void pnv_ioda_setup_PEs(struct pci_bus *bus)
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 6f8568e..c0bc57f 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -121,7 +121,7 @@ struct pnv_phb {
->   	int (*init_m64)(struct pnv_phb *phb);
->   	void (*reserve_m64_pe)(struct pci_bus *bus,
->   			       unsigned long *pe_bitmap, bool all);
-> -	int (*pick_m64_pe)(struct pci_bus *bus, bool all);
-> +	struct pnv_ioda_pe* (*pick_m64_pe)(struct pci_bus *bus, bool all);
->   	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
->   	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
->   	int (*unfreeze_pe)(struct pnv_phb *phb, int pe_no, int opt);
->
-
-
--- 
-Alexey
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogMjAxNeW5tDjmnIgx5pelIDE6MjQNCj4gVG86IEhvdSBaaGlxaWFuZy1CNDgy
+ODYNCj4gQ2M6IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnOyBIdSBNaW5na2FpLQ0KPiBCMjEyODQ7IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0K
+PiBTdWJqZWN0OiBSZTogW1BBVENIXSBjMjkzL3BjaTogcmVtb3ZlIGhvb2sgcGNpYmlvc19maXh1
+cF9waGINCj4gDQo+IE9uIEZyaSwgMjAxNS0wNy0zMSBhdCAwNTo1OSAtMDUwMCwgSG91IFpoaXFp
+YW5nLUI0ODI4NiB3cm90ZToNCj4gPiBIaSBEb25nc2hlbmcgYW5kIFNjb3R0LA0KPiA+DQo+ID4g
+RG8geW91IGhhdmUgYW55IGNvbW1lbnQ/DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+ID4gPiBGcm9tOiBaaGlxaWFuZyBIb3UgW21haWx0bzpCNDgyODZAZnJlZXNjYWxl
+LmNvbV0NCj4gPiA+IFNlbnQ6IDIwMTXlubQ35pyIMjHml6UgMTg6MTANCj4gPiA+IFRvOiBnYWxh
+a0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+
+ID4gQ2M6IEh1IE1pbmdrYWktQjIxMjg0OyBXYW5nIERvbmdzaGVuZy1CNDA1MzQ7IEhvdSBaaGlx
+aWFuZy1CNDgyODYNCj4gPiA+IFN1YmplY3Q6IFtQQVRDSF0gYzI5My9wY2k6IHJlbW92ZSBob29r
+IHBjaWJpb3NfZml4dXBfcGhiDQo+ID4gPg0KPiA+ID4gRnJvbTogSG91IFpoaXFpYW5nIDxCNDgy
+ODZAZnJlZXNjYWxlLmNvbT4NCj4gPiA+DQo+ID4gPiBUaGUgYzI5M3BjaWUgYm9hcmQgaXMgYW4g
+ZW5kcG9pbnQgZGV2aWNlLCBhbmQgaXQgZG9lcyd0IG5lZWQgUE0uDQo+ID4gPg0KPiA+ID4gU2ln
+bmVkLW9mZi1ieTogSG91IFpoaXFpYW5nIDxCNDgyODZAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IC0t
+LQ0KPiA+ID4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9jMjkzcGNpZS5jIHwgMSAtDQo+
+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDEgZGVsZXRpb24oLSkNCj4gPiA+DQo+ID4gPiBkaWZmIC0t
+Z2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2MyOTNwY2llLmMNCj4gPiA+IGIvYXJj
+aC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2MyOTNwY2llLmMNCj4gPiA+IGluZGV4IDg0NDc2YjYu
+LjIxM2Q1YjggMTAwNjQ0DQo+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgv
+YzI5M3BjaWUuYw0KPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2MyOTNw
+Y2llLmMNCj4gPiA+IEBAIC02OCw3ICs2OCw2IEBAIGRlZmluZV9tYWNoaW5lKGMyOTNfcGNpZSkg
+ew0KPiA+ID4gICAgIC5pbml0X0lSUSAgICAgICAgICAgICAgID0gYzI5M19wY2llX3BpY19pbml0
+LA0KPiA+ID4gICNpZmRlZiBDT05GSUdfUENJDQo+ID4gPiAgICAgLnBjaWJpb3NfZml4dXBfYnVz
+ICAgICAgPSBmc2xfcGNpYmlvc19maXh1cF9idXMsDQo+ID4gPiAtICAgLnBjaWJpb3NfZml4dXBf
+cGhiICAgICAgPSBmc2xfcGNpYmlvc19maXh1cF9waGIsDQo+ID4gPiAgI2VuZGlmDQo+ID4gPiAg
+ICAgLmdldF9pcnEgICAgICAgICAgICAgICAgPSBtcGljX2dldF9pcnEsDQo+ID4gPiAgICAgLnJl
+c3RhcnQgICAgICAgICAgICAgICAgPSBmc2xfcnN0Y3JfcmVzdGFydCwNCj4gDQo+IElmIHRoaXMg
+aXMgYW4gZW5kcG9pbnQgd2h5IGRvIHlvdSBuZWVkIHBjaWJpb3NfZml4dXBfYnVzPw0KPiANCg0K
+VGhhbmtzIGFuZCB5ZXMsIGl0IGlzbid0IHVzZWQgaW4gZW5kcG9pbnQgbW9kZS4NClJlbW92ZWQg
+aXQgaW4gcGF0Y2ggdmVyc2lvbiAyLg0KDQo+IC1TY290dA0KDQpUaGFua3MsDQpaaGlxaWFuZw0K
