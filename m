@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 66E4E1A0935
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:27:02 +1000 (AEST)
-In-Reply-To: <1438344860.13223.14.camel@tiscali.nl>
-To: Paul Bolle <pebolle@tiscali.nl>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 086571A0935
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:27:03 +1000 (AEST)
+In-Reply-To: <1435613439.9587.56.camel@perches.com>
+To: Joe Perches <joe@perches.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: windfarm: remove three exported but unused functions
-Message-Id: <20150810092702.1CB2B14055A@ozlabs.org>
+Subject: Re: powerpc: Remove redundant breaks
+Message-Id: <20150810092702.B8A661401F6@ozlabs.org>
 Date: Mon, 10 Aug 2015 19:27:02 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,14 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-31-07 at 12:14:20 UTC, Paul Bolle wrote:
-> wf_find_control(), wf_find_sensor(), and wf_is_overtemp() are exported
-> but unused. Remove these three functions.
+On Mon, 2015-29-06 at 21:30:39 UTC, Joe Perches wrote:
+> break; break; isn't useful.
 > 
-> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> Remove one.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a368c29cf105485d2c34
+https://git.kernel.org/powerpc/c/a825ac078b50266fb091
 
 cheers
