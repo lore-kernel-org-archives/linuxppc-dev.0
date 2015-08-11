@@ -1,27 +1,26 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
- [209.85.220.49])
+Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
+ [209.85.220.47])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AE1E1A039F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 12:39:13 +1000 (AEST)
-Received: by pacgr6 with SMTP id gr6so39622898pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:39:11 -0700 (PDT)
-Subject: Re: [PATCH v6 10/42] powerpc/powernv: pnv_ioda_setup_dma() configure
- one PE only
+ by lists.ozlabs.org (Postfix) with ESMTPS id 598261A06F1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 12:47:34 +1000 (AEST)
+Received: by pacgr6 with SMTP id gr6so39767004pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:47:33 -0700 (PDT)
+Subject: Re: [PATCH v6 12/42] powerpc/powernv: Increase PE# capacity
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-11-git-send-email-gwshan@linux.vnet.ibm.com>
- <55C86F5F.70603@ozlabs.ru> <20150811002949.GA16482@gwshan>
+ <1438834307-26960-13-git-send-email-gwshan@linux.vnet.ibm.com>
+ <55C8747E.9090908@ozlabs.ru> <20150811003804.GA18283@gwshan>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
  bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55C96046.90102@ozlabs.ru>
-Date: Tue, 11 Aug 2015 12:39:02 +1000
+Message-ID: <55C9623D.6070409@ozlabs.ru>
+Date: Tue, 11 Aug 2015 12:47:25 +1000
 MIME-Version: 1.0
-In-Reply-To: <20150811002949.GA16482@gwshan>
+In-Reply-To: <20150811003804.GA18283@gwshan>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,175 +31,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2015 10:29 AM, Gavin Shan wrote:
-> On Mon, Aug 10, 2015 at 07:31:11PM +1000, Alexey Kardashevskiy wrote:
+On 08/11/2015 10:38 AM, Gavin Shan wrote:
+> On Mon, Aug 10, 2015 at 07:53:02PM +1000, Alexey Kardashevskiy wrote:
 >> On 08/06/2015 02:11 PM, Gavin Shan wrote:
->>> The original implementation of pnv_ioda_setup_dma() iterates the
->>> list of PEs and configures the DMA32 space for them one by one.
->>> The function was designed to be called during PHB fixup time.
->>> When configuring PE's DMA32 space in pcibios_setup_bridge(), in
->>> order to support PCI hotplug, we have to have the function PE
->>> oriented.
+>>> Each PHB maintains an array helping to translate RID (Request
+>>> ID) to PE# with the assumption that PE# takes 8 bits, indicating
+>>> that we can't have more than 256 PEs. However, pci_dn->pe_number
+>>> already had 4-bytes for the PE#.
 >>>
->>> This renames pnv_ioda_setup_dma() to pnv_ioda1_setup_dma() and
->>> adds one more argument "struct pnv_ioda_pe *pe" to it. The caller,
->>> pnv_pci_ioda_setup_DMA(), gets PE from the list and passes to it
->>> or pnv_pci_ioda2_setup_dma_pe(). The patch shouldn't cause behavioral
->>> changes.
+>>> The patch extends the PE# capacity so that each of them will be
+>>> 4-bytes long. Then we can use IODA_INVALID_PE to check one entry
+>>> in phb->pe_rmap[] is valid or not.
 >>>
 >>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >>> ---
->>>   arch/powerpc/platforms/powernv/pci-ioda.c | 75 +++++++++++++++----------------
->>>   1 file changed, 36 insertions(+), 39 deletions(-)
+>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++++++--
+>>>   arch/powerpc/platforms/powernv/pci.h      | 7 +++----
+>>>   2 files changed, 9 insertions(+), 6 deletions(-)
 >>>
 >>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> index 8456f37..cd22002 100644
+>>> index 57ba8fd..3094c61 100644
 >>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 >>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>> @@ -2443,52 +2443,29 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->>>   		pnv_ioda_setup_bus_dma(pe, pe->pbus);
->>>   }
+>>> @@ -786,7 +786,7 @@ static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
 >>>
->>> -static void pnv_ioda_setup_dma(struct pnv_phb *phb)
->>> +static unsigned int pnv_ioda1_setup_dma(struct pnv_phb *phb,
->>> +					struct pnv_ioda_pe *pe,
->>> +					unsigned int base)
->>>   {
->>>   	struct pci_controller *hose = phb->hose;
->>> -	struct pnv_ioda_pe *pe;
->>> -	unsigned int dma_weight;
->>> +	unsigned int dma_weight, segs;
+>>>   	/* Clear the reverse map */
+>>>   	for (rid = pe->rid; rid < rid_end; rid++)
+>>> -		phb->ioda.pe_rmap[rid] = 0;
+>>> +		phb->ioda.pe_rmap[rid] = IODA_INVALID_PE;
 >>>
->>>   	/* Calculate the PHB's DMA weight */
->>>   	dma_weight = pnv_ioda_phb_dma_weight(phb);
->>>   	pr_info("PCI%04x has %ld DMA32 segments, total weight %d\n",
->>>   		hose->global_number, phb->ioda.dma32_segcount, dma_weight);
+>>>   	/* Release from all parents PELT-V */
+>>>   	while (parent) {
+>>> @@ -3134,7 +3134,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>   	unsigned long size, pemap_off;
+>>>   	const __be64 *prop64;
+>>>   	const __be32 *prop32;
+>>> -	int len;
+>>> +	int len, i;
+>>>   	u64 phb_id;
+>>>   	void *aux;
+>>>   	long rc;
+>>> @@ -3201,6 +3201,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>   	if (prop32)
+>>>   		phb->ioda.reserved_pe = be32_to_cpup(prop32);
 >>>
->>> -	pnv_pci_ioda_setup_opal_tce_kill(phb);
->>> -
->>> -	/* Walk our PE list and configure their DMA segments, hand them
->>> -	 * out one base segment plus any residual segments based on
->>> -	 * weight
->>> -	 */
->>> -	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
->>> -		if (!pe->dma32_weight)
->>> -			continue;
->>> -
->>> -		/*
->>> -		 * For IODA2 compliant PHB3, we needn't care about the weight.
->>> -		 * The all available 32-bits DMA space will be assigned to
->>> -		 * the specific PE.
->>> -		 */
->>> -		if (phb->type == PNV_PHB_IODA1) {
->>> -			unsigned int segs, base = 0;
->>> -
->>> -			if (pe->dma32_weight <
->>> -			    dma_weight / phb->ioda.dma32_segcount)
->>> -				segs = 1;
->>> -			else
->>> -				segs = (pe->dma32_weight *
->>> -					phb->ioda.dma32_segcount) / dma_weight;
->>> -
->>> -			pe_info(pe, "DMA32 weight %d, assigned %d segments\n",
->>> -				pe->dma32_weight, segs);
->>> -			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
->>> +	if (pe->dma32_weight <
->>> +	    dma_weight / phb->ioda.dma32_segcount)
->>
->> Can be one line now.
->>
->
-> Indeed.
->
->>> +		segs = 1;
->>> +	else
->>> +		segs = (pe->dma32_weight *
->>> +			phb->ioda.dma32_segcount) / dma_weight;
->>> +	pe_info(pe, "DMA weight %d, assigned %d segments\n",
->>> +		pe->dma32_weight, segs);
->>> +	pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
->>
->>
->> Why not to merge pnv_ioda1_setup_dma() to pnv_pci_ioda_setup_dma_pe()?
->>
->
-> There're two reasons:
-> - They're separate logically. One is calculating number of DMA32 segments required.
->    Another one is allocate TCE32 tables and configure devices with them.
-> - In PCI hotplug path, I need pnv_ioda1_setup_dma() which has "pe" as parameter.
-
-
-And hotplug path does not care about dma weight why?
-
-
->
->>>
->>> -			base += segs;
->>> -		} else {
->>> -			pe_info(pe, "Assign DMA32 space\n");
->>> -			pnv_pci_ioda2_setup_dma_pe(phb, pe);
->>> -		}
->>> -	}
->>> +	return segs;
->>>   }
->>>
->>>   #ifdef CONFIG_PCI_MSI
->>> @@ -2955,12 +2932,32 @@ static void pnv_pci_ioda_setup_DMA(void)
->>>   {
->>>   	struct pci_controller *hose, *tmp;
->>>   	struct pnv_phb *phb;
->>> +	struct pnv_ioda_pe *pe;
->>> +	unsigned int base;
->>>
->>>   	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
->>> -		pnv_ioda_setup_dma(hose->private_data);
->>> +		phb = hose->private_data;
->>> +		pnv_pci_ioda_setup_opal_tce_kill(phb);
+>>> +	/* Invalidate RID to PE# mapping */
+>>> +	for (i = 0; i < ARRAY_SIZE(phb->ioda.pe_rmap); ++i)
+>>> +		phb->ioda.pe_rmap[i] = IODA_INVALID_PE;
 >>> +
->>> +		base = 0;
->>> +		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
->>> +			if (!pe->dma32_weight)
->>> +				continue;
->>> +
->>> +			switch (phb->type) {
->>> +			case PNV_PHB_IODA1:
->>> +				base += pnv_ioda1_setup_dma(phb, pe, base);
->>
->>
->> This @base handling seems never be tested between 8..11 as "[PATCH v6 11/42]
->> powerpc/powernv: Trace DMA32 segments consumed by PE"
->> removes it and I suspect you only tested the final version. Which is ok for
->> the final result but not ok for bisectability.
->>
->> Looks like 8/42, 9/42, 10/42, 11/42 need to be rearranged or merged to remove
->> this multiple @base touching.
->>
->
-> Why ?
-
-You are touching this @base from 8/42 to 11/12 and in between it is very 
-broken, you only get it fixed (by removing) in 11/42. Read my comment for 
-8/42. After every single patch in any patchset the functionality should not 
-break but it does in this patchset.
-
-
->
->>
->>> +				break;
->>> +			case PNV_PHB_IODA2:
->>> +				pnv_pci_ioda2_setup_dma_pe(phb, pe);
->>> +				break;
->>> +			default:
->>> +				pr_warn("%s: No DMA for PHB type %d\n",
->>> +					__func__, phb->type);
->>> +			}
->>> +		}
+>>>   	/* Parse 64-bit MMIO range */
+>>>   	pnv_ioda_parse_m64_window(phb);
 >>>
->>>   		/* Mark the PHB initialization done */
->>> -		phb = hose->private_data;
->>>   		phb->initialized = 1;
->>>   	}
->>>   }
+>>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>> index 1dc9578..6f8568e 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci.h
+>>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>>> @@ -175,11 +175,10 @@ struct pnv_phb {
+>>>   			struct list_head	pe_list;
+>>>   			struct mutex            pe_list_mutex;
+>>>
+>>> -			/* Reverse map of PEs, will have to extend if
+>>> -			 * we are to support more than 256 PEs, indexed
+>>> -			 * bus { bus, devfn }
+>>> +			/* Reverse map of PEs, indexed by
+>>> +			 * { bus, devfn }
+>>>   			 */
+>>> -			unsigned char		pe_rmap[0x10000];
+>>> +			int			pe_rmap[0x10000];
+>>
+>>
+>> 256k seems to be waste when only tiny fraction of it will ever be used. Using
+>> include/linux/hashtable.h makes sense here, and if you use a hashtable, you
+>> won't have to initialize anything with IODA_INVALID_PE.
+>>
+>
+> I'm not sure if I follow your idea completely. With hash table to trace
+> RID mapping here, won't more memory needed if all PCI buse numbers (0
+> to 255) are all valid? It means hash table doesn't have advantage in
+> memory consumption.
+
+You need 3 bytes - one for a bus and two for devfn - which makes it a 
+perfect 32bit has key and you only store existing devices in a hash so you 
+do not waste memory.
+
+
+> On the other hand, searching in hash table buckets
+> have to iterate list of conflicting items (keys), which is slow comparing
+> to what we have.
+
+How often do you expect this code to execute? Is not it setup-type and 
+hotplug only? Unless it is thousands times per second, it is not an issue here.
+
+
+> Actually, I like the idea, using array to map RID to PE#,
+> which was implemented by Ben.
+
+Where?
+
+
+
+>
+>>
+>>>
+>>>   			/* 32-bit TCE tables allocation */
+>>>   			unsigned long		dma32_segcount;
 >>>
 >
 > Thanks,
