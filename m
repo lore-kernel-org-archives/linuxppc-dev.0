@@ -1,43 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f178.google.com (mail-pd0-f178.google.com
+ [209.85.192.178])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D36F81A1D52
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:39 +1000 (AEST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 11 Aug 2015 10:53:38 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8552F2CE8058
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:35 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7B0rRQg22413492
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:35 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7B0r2ol011775
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:03 +1000
-Date: Tue, 11 Aug 2015 10:52:43 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Frank Rowand <frowand.list@gmail.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
- grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com, aik@ozlabs.ru
-Subject: Re: [PATCH v6 39/42] drivers/of: Allow to specify root node in
- of_fdt_unflatten_tree()
-Message-ID: <20150811005243.GB20729@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3017A1A039F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 12:06:36 +1000 (AEST)
+Received: by pdco4 with SMTP id o4so77737369pdc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 19:06:33 -0700 (PDT)
+Subject: Re: [PATCH v6 03/42] powerpc/powernv: Enable M64 on P7IOC
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-40-git-send-email-gwshan@linux.vnet.ibm.com>
- <55C928C5.2080305@gmail.com>
+ <1438834307-26960-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ <55C844F1.6060404@ozlabs.ru> <20150810234549.GA10753@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55C958A2.5060708@ozlabs.ru>
+Date: Tue, 11 Aug 2015 12:06:26 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55C928C5.2080305@gmail.com>
+In-Reply-To: <20150810234549.GA10753@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,118 +31,310 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 10, 2015 at 03:42:13PM -0700, Frank Rowand wrote:
->On 8/5/2015 9:11 PM, Gavin Shan wrote:
->> This introduces one more argument to of_fdt_unflatten_tree()
->> to specify the root node for the FDT blob, which is going to be
->> unflattened. In the result, the function can be used to unflatten
->> FDT blob, which represents device sub-tree in PowerNV hotplug
->> driver.
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  drivers/of/fdt.c       | 13 ++++++++-----
->>  drivers/of/unittest.c  |  2 +-
->>  include/linux/of_fdt.h |  1 +
->>  3 files changed, 10 insertions(+), 6 deletions(-)
->> 
->> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
->> index a18a2ce..074870a 100644
->> --- a/drivers/of/fdt.c
->> +++ b/drivers/of/fdt.c
->> @@ -388,10 +388,11 @@ static void *unflatten_dt_node(const void *blob,
->>  			       struct device_node **nodepp,
->>  			       bool dryrun)
->>  {
->> +	unsigned long fpsize = dad ? strlen(of_node_full_name(dad)) : 0;
->>  	int depth = 1;
->>  
->>  	return __unflatten_dt_node(blob, mem, poffset,
->> -				   dad, nodepp, 0,
->> +				   dad, nodepp, fpsize,
->>  				   dryrun, &depth);
->>  }
->>  
->> @@ -408,6 +409,7 @@ static void *unflatten_dt_node(const void *blob,
->>   * for the resulting tree
->>   */
->>  static void __unflatten_device_tree(const void *blob,
->> +			     struct device_node *dad,
->>  			     struct device_node **mynodes,
->>  			     void * (*dt_alloc)(u64 size, u64 align))
->>  {
+On 08/11/2015 09:45 AM, Gavin Shan wrote:
+> On Mon, Aug 10, 2015 at 04:30:09PM +1000, Alexey Kardashevskiy wrote:
+>> On 08/06/2015 02:11 PM, Gavin Shan wrote:
+>>> The patch enables M64 window on P7IOC, which has been enabled on
+>>> PHB3. Different from PHB3 where 16 M64 BARs are supported and each
+>>> of them can be owned by one particular PE# exclusively or divided
+>>> evenly to 256 segments, each P7IOC PHB has 16 M64 BARs and each
+>>> of them are divided into 8 segments.
+>>
+>> Is this a limitation of POWER7 chip or it is from IODA1?
+>>
 >
->Please add @dad to the documentation header for the function.
+>  From IODA1.
+>
+>>> So each P7IOC PHB can support
+>>> 128 M64 segments only. Also, P7IOC has M64DT, which helps mapping
+>>> one particular M64 segment# to arbitrary PE#. PHB3 doesn't have
+>>> M64DT, indicating that one M64 segment can only be pinned to the
+>>> fixed PE#. In order to have similar logic to support M64 for PHB3
+>>> and P7IOC, we just provide 128 M64 (16 BARs) segments and fixed
+>>> mapping between PE# and M64 segment# on P7IOC. In turn, we just
+>>> need different phb->init_m64() hooks for P7IOC and PHB3 to support
+>>> M64.
+>>>
+>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>> ---
+>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 116 ++++++++++++++++++++++++++----
+>>>   1 file changed, 104 insertions(+), 12 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> index 38b5405..e4ac703 100644
+>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>> @@ -172,6 +172,69 @@ static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
+>>>   	clear_bit(pe, phb->ioda.pe_alloc);
+>>>   }
+>>>
+>>> +static int pnv_ioda1_init_m64(struct pnv_phb *phb)
+>>> +{
+>>> +	struct resource *r;
+>>> +	int seg;
+>>> +
+>>> +	/* There are as many M64 segments as the maximum number
+>>> +	 * of PEs, which is 128.
+>>> +	 */
+>>> +	for (seg = 0; seg < phb->ioda.total_pe; seg += 8) {
+>>
+>>
+>> This "8" is used a lot across the patch, please make it a macro
+>> (PNV_PHB_P7IOC_SEGNUM or PNV_PHB_IODA1_SEGNUM or whatever you think it is)
+>> with a short comment why it is "8". Or a pnv_phb member.
+>>
+>
+> I would like to use "8". When having a macro, you have to check
+> the definition of the macro to get the real value of that.
+
+Give it a good name then.
+
+
+> However,
+> it makes sense to add more comments explaining why it's 8 here.
+
+You cannot comment it everywhere and everywhere is exact place when you'll 
+have to comment it as I believe sometime it is segments-per-M64 and 
+sometime it is number of bits in a byte (or not? anyway, this is will 
+always distract unless you use macro for segments-per-M64).
+
+
+>
+>>
+>>> +		unsigned long base;
+>>> +		int64_t rc;
+>>> +
+>>> +		base = phb->ioda.m64_base + seg * phb->ioda.m64_segsize;
+>>> +		rc = opal_pci_set_phb_mem_window(phb->opal_id,
+>>> +						 OPAL_M64_WINDOW_TYPE,
+>>> +						 seg / 8,
+>>> +						 base,
+>>> +						 0, /* unused */
+>>> +						 8 * phb->ioda.m64_segsize);
+>>> +		if (rc != OPAL_SUCCESS) {
+>>> +			pr_warn("  Error %lld setting M64 PHB#%d-BAR#%d\n",
+>>> +				rc, phb->hose->global_number, seg / 8);
+>>> +			goto fail;
+>>> +		}
+>>> +
+>>> +		rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>>> +					      OPAL_M64_WINDOW_TYPE,
+>>> +					      seg / 8,
+>>> +					      OPAL_ENABLE_M64_SPLIT);
+>>> +		if (rc != OPAL_SUCCESS) {
+>>> +			pr_warn("  Error %lld enabling M64 PHB#%d-BAR#%d\n",
+>>> +				rc, phb->hose->global_number, seg / 8);
+>>> +			goto fail;
+>>> +		}
+>>> +	}
+>>> +
+>>> +	/* Strip off the segment used by the reserved PE, which
+>>
+>> What is this reserved PE on P7IOC? "Strip off" means "exclude" here?
+>>
+>
+> 127 that was exported from skiboot. "Strip off" means "exclude".
+
+I like "exclude" lot better.
+
+
+>
+>>
+>>> +	 * is expected to be 0 or last supported PE#. The PHB's
+>>> +	 * first memory window traces the 32-bits MMIO range
+>>
+>> s/traces/filters/ ? Or I did not understand this comment...
+>>
+>
+> It seems you didn't understand it: there are two memory windows
+> in every PHB. The first one is tracing M32 resource and the
+> second one is tracing M64 resource.
+
+
+Tracing means logging, pretty much. Is this what you mean here?
+
+>
+>>
+>>> +	 * while the second one traces the 64-bits prefetchable
+>>> +	 * MMIO range that the PHB supports.
+>>
+>> 32/64 ranges comment seems irrelevant here.
+>>
+>
+> Maybe it's not so relevant, but still.
+
+Not relevant -> remove it. Put this text to the commit log.
+
+
+> We're stripping off the
+> M64 segment from the 2nd resource (as above), not first one.
+
+
+2nd window (not _resource_), you mean?
+
+
+>
+>>
+>>> +	 */
+>>> +	r = &phb->hose->mem_resources[1];
+>>> +	if (phb->ioda.reserved_pe == 0)
+>>> +		r->start += phb->ioda.m64_segsize;
+>>> +	else if (phb->ioda.reserved_pe == (phb->ioda.total_pe - 1))
+>>> +		r->end -= phb->ioda.m64_segsize;
+>>> +	else
+>>> +		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
+>>> +			phb->ioda.reserved_pe);
+>>> +
+>>> +	return 0;
+>>> +
+>>> +fail:
+>>> +	for ( ; seg >= 0; seg -= 8)
+>>> +		opal_pci_phb_mmio_enable(phb->opal_id,
+>>> +					 OPAL_M64_WINDOW_TYPE,
+>>> +					 seg / 8,
+>>> +					 OPAL_DISABLE_M64);
+>>> +
+>>> +	return -EIO;
+>>> +}
+>>> +
+>>>   /* The default M64 BAR is shared by all PEs */
+>>>   static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+>>>   {
+>>> @@ -256,9 +319,9 @@ static void pnv_ioda2_reserve_dev_m64_pe(struct pci_dev *pdev,
+>>>   	}
+>>>   }
+>>>
+>>> -static void pnv_ioda2_reserve_m64_pe(struct pci_bus *bus,
+>>> -				     unsigned long *pe_bitmap,
+>>> -				     bool all)
+>>> +static void pnv_ioda_reserve_m64_pe(struct pci_bus *bus,
+>>> +				    unsigned long *pe_bitmap,
+>>> +				    bool all)
+>>>   {
+>>>   	struct pci_dev *pdev;
+>>>
+>>> @@ -266,12 +329,12 @@ static void pnv_ioda2_reserve_m64_pe(struct pci_bus *bus,
+>>>   		pnv_ioda2_reserve_dev_m64_pe(pdev, pe_bitmap);
+>>>
+>>>   		if (all && pdev->subordinate)
+>>> -			pnv_ioda2_reserve_m64_pe(pdev->subordinate,
+>>> -						 pe_bitmap, all);
+>>> +			pnv_ioda_reserve_m64_pe(pdev->subordinate,
+>>> +						pe_bitmap, all);
+>>>   	}
+>>>   }
+>>>
+>>> -static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
+>>> +static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
+>>>   {
+>>>   	struct pci_controller *hose = pci_bus_to_host(bus);
+>>>   	struct pnv_phb *phb = hose->private_data;
+>>> @@ -293,7 +356,7 @@ static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
+>>>   	}
+>>>
+>>>   	/* Figure out reserved PE numbers by the PE */
+>>> -	pnv_ioda2_reserve_m64_pe(bus, pe_alloc, all);
+>>> +	pnv_ioda_reserve_m64_pe(bus, pe_alloc, all);
+>>>
+>>>   	/*
+>>>   	 * the current bus might not own M64 window and that's all
+>>> @@ -324,6 +387,26 @@ static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
+>>>   			pe->master = master_pe;
+>>>   			list_add_tail(&pe->list, &master_pe->slaves);
+>>>   		}
+>>> +
+>>> +		/* P7IOC supports M64DT, which helps mapping M64 segment
+>>> +		 * to one particular PE#. However, PHB3 has fixed mapping
+>>> +		 * between M64 segment and PE#. In order to have same logic
+>>> +		 * for P7IOC and PHB3, we enforce fixed mapping between M64
+>>> +		 * segment and PE# on P7IOC.
+>>> +		 */
+>>> +		if (phb->type == PNV_PHB_IODA1) {
+>>> +			int64_t rc;
+>>> +
+>>> +			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+>>> +							 pe->pe_number,
+>>> +							 OPAL_M64_WINDOW_TYPE,
+>>> +							 pe->pe_number / 8,
+>>> +							 pe->pe_number % 8);
+>>> +			if (rc != OPAL_SUCCESS)
+>>> +				pr_warn("%s: Error %lld mapping M64 for PHB#%d-PE#%d\n",
+>>> +					__func__, rc, phb->hose->global_number,
+>>> +					pe->pe_number);
+>>> +		}
+>>>   	}
+>>>
+>>>   	kfree(pe_alloc);
+>>> @@ -338,8 +421,8 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>>>   	const u32 *r;
+>>>   	u64 pci_addr;
+>>>
+>>> -	/* FIXME: Support M64 for P7IOC */
+>>> -	if (phb->type != PNV_PHB_IODA2) {
+>>> +	if (phb->type != PNV_PHB_IODA1 &&
+>>> +	    phb->type != PNV_PHB_IODA2) {
+>>>   		pr_info("  Not support M64 window\n");
+>>>   		return;
+>>
+>>
+>> You are adding P7IOC support so at least "fixme" should go. Also,
+>> pnv_ioda_parse_m64_window() is only called from pnv_pci_init_ioda_phb() which
+>> is called only with PNV_PHB_IODA1 and PNV_PHB_IODA2 (no other value is passed
+>> there a type) so the check above will never succeed, just remove it.
+>>
+>
+> The "fixme" is removed, isn't it?
+
+Ah, my bad.
+
+
+> As I explained last time, there will have another new type PHB and the function
+> will be called on the new type of PHB.
+
+Then a new patch adding new PHB should take care of this check too. This is 
+not something which can possibly happen on a real machine, we support one 
+of 2 (later - 3) PHBs and if a machine got something else, we won't get 
+that far anyway and we cannot gracefully fallback to some "generic PHB" 
+(like 440fx on x86) as we do not have one.
+
+At least make it BUG_ON() to document it.
+
+
+> The code has been there and it's not
+> in upstream yet. So it's reasonable to keep it, instead of removing it.
+
+No, not really.
+
+>
+>>>   	}
+>>> @@ -372,9 +455,18 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>>>
+>>>   	/* Use last M64 BAR to cover M64 window */
+>>>   	phb->ioda.m64_bar_idx = 15;
+>>> -	phb->init_m64 = pnv_ioda2_init_m64;
+>>> -	phb->reserve_m64_pe = pnv_ioda2_reserve_m64_pe;
+>>> -	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
+>>> +	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
+>>> +	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
+>>> +	switch (phb->type) {
+>>> +	case PNV_PHB_IODA1:
+>>> +		phb->init_m64 = pnv_ioda1_init_m64;
+>>> +		break;
+>>> +	case PNV_PHB_IODA2:
+>>> +		phb->init_m64 = pnv_ioda2_init_m64;
+>>> +		break;
+>>> +	default:
+>>> +		pr_debug("   M64 not supported\n");
+>>> +	}
+>>>   }
+>>>
+>>>   static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
+>>>
+>
+> Thanks,
+> Gavin
 >
 
-Yes, it will be included in next revision.
 
-
->> @@ -435,7 +437,7 @@ static void __unflatten_device_tree(const void *blob,
->>  	/* First pass, scan for size */
->>  	start = 0;
->>  	size = (unsigned long)unflatten_dt_node(blob, NULL, &start,
->> -						NULL, NULL, true);
->> +						dad, NULL, true);
->>  	size = ALIGN(size, 4);
->>  
->>  	pr_debug("  size is %lx, allocating...\n", size);
->> @@ -450,7 +452,7 @@ static void __unflatten_device_tree(const void *blob,
->>  
->>  	/* Second pass, do actual unflattening */
->>  	start = 0;
->> -	unflatten_dt_node(blob, mem, &start, NULL, mynodes, false);
->> +	unflatten_dt_node(blob, mem, &start, dad, mynodes, false);
->>  	if (be32_to_cpup(mem + size) != 0xdeadbeef)
->>  		pr_warning("End of tree marker overwritten: %08x\n",
->>  			   be32_to_cpup(mem + size));
->> @@ -472,9 +474,10 @@ static void *kernel_tree_alloc(u64 size, u64 align)
->>   * can be used.
->>   */
->>  void of_fdt_unflatten_tree(const unsigned long *blob,
->> +			struct device_node *dad,
->>  			struct device_node **mynodes)
->>  {
->> -	__unflatten_device_tree(blob, mynodes, &kernel_tree_alloc);
->> +	__unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
->>  }
->>  EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
->>  
->> @@ -1125,7 +1128,7 @@ bool __init early_init_dt_scan(void *params)
->>   */
->>  void __init unflatten_device_tree(void)
->>  {
->> -	__unflatten_device_tree(initial_boot_params, &of_root,
->> +	__unflatten_device_tree(initial_boot_params, NULL, &of_root,
->>  				early_init_dt_alloc_memory_arch);
->>  
->>  	/* Get pointer to "/chosen" and "/aliases" nodes for use everywhere */
->> diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
->> index 1801634..2270830 100644
->> --- a/drivers/of/unittest.c
->> +++ b/drivers/of/unittest.c
->> @@ -907,7 +907,7 @@ static int __init unittest_data_add(void)
->>  			"not running tests\n", __func__);
->>  		return -ENOMEM;
->>  	}
->> -	of_fdt_unflatten_tree(unittest_data, &unittest_data_node);
->> +	of_fdt_unflatten_tree(unittest_data, NULL, &unittest_data_node);
->>  	if (!unittest_data_node) {
->>  		pr_warn("%s: No tree to attach; not running tests\n", __func__);
->>  		return -ENODATA;
->> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
->> index df9ef38..3644960 100644
->> --- a/include/linux/of_fdt.h
->> +++ b/include/linux/of_fdt.h
->> @@ -38,6 +38,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
->>  extern int of_fdt_match(const void *blob, unsigned long node,
->>  			const char *const *compat);
->>  extern void of_fdt_unflatten_tree(const unsigned long *blob,
->> +			       struct device_node *dad,
->>  			       struct device_node **mynodes);
->>  
->>  /* TBD: Temporary export of fdt globals - remove when code fully merged */
->> 
-
-Thanks,
-Gavin
+-- 
+Alexey
