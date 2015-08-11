@@ -1,15 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id CC13A1A017D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 20:11:06 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] net: fs_enet: explicitly remove I flag on TX partial frames
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org
-Message-Id: <20150811101101.116E41A2414@localhost.localdomain>
-Date: Tue, 11 Aug 2015 12:11:00 +0200 (CEST)
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0110.outbound.protection.outlook.com [207.46.100.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8CB181A039F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 21:00:49 +1000 (AEST)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: David Miller <davem@davemloft.net>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
+ <scottwood@freescale.com>, Liberman Igal <Igal.Liberman@freescale.com>,
+ "ppc@mindchasers.com" <ppc@mindchasers.com>, "joe@perches.com"
+ <joe@perches.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
+ "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>
+Subject: RE: [v2 8/9] dpaa_eth: add debugfs entries
+Date: Tue, 11 Aug 2015 11:00:39 +0000
+Message-ID: <BL2PR03MB545A863C210E5BFC9DFC128E67F0@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1438789289-16304-1-git-send-email-madalin.bucur@freescale.com>
+ <1438789289-16304-9-git-send-email-madalin.bucur@freescale.com>
+ <20150807.153716.1393797980617992919.davem@davemloft.net>
+In-Reply-To: <20150807.153716.1393797980617992919.davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,28 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are not interested in interrupts for partially transmitted frames,
-we have to clear BD_ENET_TX_INTR explicitly otherwise it may remain
-from a previously used descriptor.
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+>=20
+> From: Madalin Bucur <madalin.bucur@freescale.com>
+> Date: Wed, 5 Aug 2015 18:41:28 +0300
+>=20
+> > Export per CPU counters through debugfs.
+> >
+> > Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+>=20
+> This is absolutely inappropriate.
+>=20
+> You can export these just fine via ethtool statistics.  There is zero rea=
+son
+> to add ugly debugfs crap for something like this.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+If you have such a strong adversity about the debugfs, then I'll export the=
+se
+debug counters through ethtool statistics in the next version.
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index b9ad34e..84c18ee 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -585,7 +585,8 @@ static int fs_enet_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	frag = skb_shinfo(skb)->frags;
- 	while (nr_frags) {
- 		CBDC_SC(bdp,
--			BD_ENET_TX_STATS | BD_ENET_TX_LAST | BD_ENET_TX_TC);
-+			BD_ENET_TX_STATS | BD_ENET_TX_INTR | BD_ENET_TX_LAST |
-+			BD_ENET_TX_TC);
- 		CBDS_SC(bdp, BD_ENET_TX_READY);
- 
- 		if ((CBDR_SC(bdp) & BD_ENET_TX_WRAP) == 0)
--- 
-2.1.0
+Madalin
