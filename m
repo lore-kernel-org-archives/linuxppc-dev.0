@@ -1,17 +1,15 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id A83A01A039F
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id A8E941A06F1
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 21:23:15 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
  Segher Boessenkool <segher@kernel.crashing.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 5/5] powerpc/pseries: re-use code from of_helpers module
-Date: Tue, 11 Aug 2015 14:23:09 +0300
-Message-Id: <1439292189-78925-5-git-send-email-andriy.shevchenko@linux.intel.com>
-In-Reply-To: <1439292189-78925-1-git-send-email-andriy.shevchenko@linux.intel.com>
-References: <1439292189-78925-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 1/5] powerpc/pseries: extract of_helpers module
+Date: Tue, 11 Aug 2015 14:23:05 +0300
+Message-Id: <1439292189-78925-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,67 +19,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The derive_parent() has similar semantics to what we have in newly introduced
-of_helpers module. The replacement reduces code base and propagates the actual
-error code to the caller.
+Extract a new module to share the code between other modules.
+
+There is no functional change.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/powerpc/platforms/pseries/dlpar.c | 31 +++++--------------------------
- 1 file changed, 5 insertions(+), 26 deletions(-)
+ arch/powerpc/platforms/pseries/Makefile     |  1 +
+ arch/powerpc/platforms/pseries/of_helpers.c | 38 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/of_helpers.h |  8 ++++++
+ arch/powerpc/platforms/pseries/reconfig.c   | 34 ++------------------------
+ 4 files changed, 49 insertions(+), 32 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/of_helpers.c
+ create mode 100644 arch/powerpc/platforms/pseries/of_helpers.h
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 47d9cebe..b7f243c 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -18,6 +18,8 @@
- #include <linux/cpu.h>
- #include <linux/slab.h>
- #include <linux/of.h>
+diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+index 0348079..2e857c2 100644
+--- a/arch/powerpc/platforms/pseries/Makefile
++++ b/arch/powerpc/platforms/pseries/Makefile
+@@ -2,6 +2,7 @@ ccflags-$(CONFIG_PPC64)			:= $(NO_MINIMAL_TOC)
+ ccflags-$(CONFIG_PPC_PSERIES_DEBUG)	+= -DDEBUG
+ 
+ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
++			   of_helpers.o \
+ 			   setup.o iommu.o event_sources.o ras.o \
+ 			   firmware.o power.o dlpar.o mobility.o rng.o
+ obj-$(CONFIG_SMP)	+= smp.o
+diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
+new file mode 100644
+index 0000000..1cbd896
+--- /dev/null
++++ b/arch/powerpc/platforms/pseries/of_helpers.c
+@@ -0,0 +1,38 @@
++#include <linux/string.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/of.h>
 +
 +#include "of_helpers.h"
- #include "offline_states.h"
- #include "pseries.h"
++
++/**
++ * pseries_of_derive_parent - basically like dirname(1)
++ * @path:  the full_name of a node to be added to the tree
++ *
++ * Returns the node which should be the parent of the node
++ * described by path.  E.g., for path = "/foo/bar", returns
++ * the node with full_name = "/foo".
++ */
++struct device_node *pseries_of_derive_parent(const char *path)
++{
++	struct device_node *parent = NULL;
++	char *parent_path = "/";
++	size_t parent_path_len = strrchr(path, '/') - path + 1;
++
++	/* reject if path is "/" */
++	if (!strcmp(path, "/"))
++		return ERR_PTR(-EINVAL);
++
++	if (strrchr(path, '/') != path) {
++		parent_path = kmalloc(parent_path_len, GFP_KERNEL);
++		if (!parent_path)
++			return ERR_PTR(-ENOMEM);
++		strlcpy(parent_path, path, parent_path_len);
++	}
++	parent = of_find_node_by_path(parent_path);
++	if (!parent)
++		return ERR_PTR(-EINVAL);
++	if (strcmp(parent_path, "/"))
++		kfree(parent_path);
++	return parent;
++}
+diff --git a/arch/powerpc/platforms/pseries/of_helpers.h b/arch/powerpc/platforms/pseries/of_helpers.h
+new file mode 100644
+index 0000000..bb83d39
+--- /dev/null
++++ b/arch/powerpc/platforms/pseries/of_helpers.h
+@@ -0,0 +1,8 @@
++#ifndef _PSERIES_OF_HELPERS_H
++#define _PSERIES_OF_HELPERS_H
++
++#include <linux/of.h>
++
++struct device_node *pseries_of_derive_parent(const char *path);
++
++#endif /* _PSERIES_OF_HELPERS_H */
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 0f31952..7c7fcc0 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -22,37 +22,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/mmu.h>
  
-@@ -244,36 +246,13 @@ cc_error:
- 	return first_dn;
- }
- 
+-/**
+- *	derive_parent - basically like dirname(1)
+- *	@path:  the full_name of a node to be added to the tree
+- *
+- *	Returns the node which should be the parent of the node
+- *	described by path.  E.g., for path = "/foo/bar", returns
+- *	the node with full_name = "/foo".
+- */
 -static struct device_node *derive_parent(const char *path)
 -{
--	struct device_node *parent;
--	char *last_slash;
+-	struct device_node *parent = NULL;
+-	char *parent_path = "/";
+-	size_t parent_path_len = strrchr(path, '/') - path + 1;
 -
--	last_slash = strrchr(path, '/');
--	if (last_slash == path) {
--		parent = of_find_node_by_path("/");
--	} else {
--		char *parent_path;
--		int parent_path_len = last_slash - path + 1;
+-	/* reject if path is "/" */
+-	if (!strcmp(path, "/"))
+-		return ERR_PTR(-EINVAL);
+-
+-	if (strrchr(path, '/') != path) {
 -		parent_path = kmalloc(parent_path_len, GFP_KERNEL);
 -		if (!parent_path)
--			return NULL;
--
+-			return ERR_PTR(-ENOMEM);
 -		strlcpy(parent_path, path, parent_path_len);
--		parent = of_find_node_by_path(parent_path);
--		kfree(parent_path);
 -	}
--
+-	parent = of_find_node_by_path(parent_path);
+-	if (!parent)
+-		return ERR_PTR(-EINVAL);
+-	if (strcmp(parent_path, "/"))
+-		kfree(parent_path);
 -	return parent;
 -}
--
- int dlpar_attach_node(struct device_node *dn)
++#include "of_helpers.h"
+ 
+ static int pSeries_reconfig_add_node(const char *path, struct property *proplist)
  {
- 	int rc;
+@@ -71,7 +41,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
+ 	of_node_set_flag(np, OF_DYNAMIC);
+ 	of_node_init(np);
  
--	dn->parent = derive_parent(dn->full_name);
--	if (!dn->parent)
--		return -ENOMEM;
-+	dn->parent = pseries_of_derive_parent(dn->full_name);
-+	if (IS_ERR(dn->parent))
-+		return PTR_ERR(dn_parent);
- 
- 	rc = of_attach_node(dn);
- 	if (rc) {
+-	np->parent = derive_parent(path);
++	np->parent = pseries_of_derive_parent(path);
+ 	if (IS_ERR(np->parent)) {
+ 		err = PTR_ERR(np->parent);
+ 		goto out_err;
 -- 
 2.5.0
