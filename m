@@ -1,23 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0102.outbound.protection.outlook.com [157.56.110.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BB981A0034
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 13:48:04 +1000 (AEST)
-Message-ID: <1439264868.4099.34.camel@freescale.com>
-Subject: Re: using general IRQs
-From: Scott Wood <scottwood@freescale.com>
-To: Ran Shalit <ranshalit@gmail.com>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 10 Aug 2015 22:47:48 -0500
-In-Reply-To: <CAJ2oMhLMJHc4+xy2iPF78n8A38o2a-ekZNy0s_d_osCP2eKn0Q@mail.gmail.com>
-References: <CAJ2oMhLX18merCHtge0oOQ2DSQ8BE1Zd=dAuPWzyTRNmr-DLiA@mail.gmail.com>
- <CAJ2oMhJVqph9vb=Q-vbzRRygT+s3wvtm9nVNJ9TLcB_6iQCVcA@mail.gmail.com>
- <1439260166.4099.14.camel@freescale.com>
- <CAJ2oMhLMJHc4+xy2iPF78n8A38o2a-ekZNy0s_d_osCP2eKn0Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20A7E1A0079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 13:51:58 +1000 (AEST)
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 61CBC14032B
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 13:51:57 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so120373532pab.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 20:51:55 -0700 (PDT)
+Date: Tue, 11 Aug 2015 13:52:49 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
+Subject: Re: [PATCH v2 04/10] cxl: Clean up adapter MMIO unmap path.
+Message-ID: <20150811135249.4fdacf75@camb691>
+In-Reply-To: <1438061323-20710-5-git-send-email-dja@axtens.net>
+References: <1438061323-20710-1-git-send-email-dja@axtens.net>
+ <1438061323-20710-5-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,100 +32,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-11 at 06:45 +0300, Ran Shalit wrote:
-> On Tue, Aug 11, 2015 at 5:29 AM, Scott Wood <scottwood@freescale.com> wrote:
-> > On Mon, 2015-08-10 at 13:40 +0300, Ran Shalit wrote:
-> > > On Mon, Aug 10, 2015 at 10:48 AM, Ran Shalit <ranshalit@gmail.com> 
-> > > wrote:
-> > > > Hello,
-> > > > 
-> > > > MPC8349 has general IRQ numbered 0-7,
-> > > > It is required to bind these IRQs with some routine , i.e. they are
-> > > > not used with any specific driver.
-> > > > 
-> > > > - Should they be configured as gpios in device tree so that we can use
-> > > > the gpio as irq in linux ? Is there any example ?
-> > > > - After configuration, can the gpios be used in linux using the
-> > > > standard /sys/class/gpio ?
-> > > > 
-> > > > Regards,
-> > > > Ran
-> > 
-> > What do you mean by "general IRQ"?  Do you mean external IRQs?
-> > 
-> > > I am trying to use only IRQ4, so I have tried to configure it as
-> > > following in device tree:
-> > > 
-> > > device tree:
-> > > 
-> > >   intc@0{
-> > >  compatible = "intc";
-> > >  #address-cells = <1>;
-> > >  #size-cells = <0>;
-> > >  reg = <0 0x1000>;
-> > >  interrupts = <4 0x8>;
-> > >   };
-> > > 
-> > > But I don't see IRQ4 listed in the interrupt list:
-> > > # cat /proc/interrupts
-> > 
-> > /proc/interrupts shows virtual interrupts, which do not necessarily
-> > correspond to anything in the device tree.  In particular, virtual 
-> > interrupts
-> > under 16 are reserved for ISA interrupts, and thus any mpic interrupts in
-> > that range will be remapped.
-> > 
-> > Additionally, putting an interrupt in the device tree does not make it 
-> > show
-> > up in /proc/interrupts.  Only interrupts for which a driver has 
-> > registered a
-> > handler will show up in /proc/interrupts.
-> > 
-> > -Scott
-> > 
-> > 
-> Hi Scott,
+On Tue, 28 Jul 2015 15:28:37 +1000
+Daniel Axtens <dja@axtens.net> wrote:
+
+>  - MMIO pointer unmapping is guarded by a null pointer check.
+>    However, iounmap doesn't null the pointer, just invalidate it.
+>    Therefore, explicitly null the pointer after unmapping.
 > 
-> I meant  external IRQ.
-> I am actually trying to use irq 4 interrupt.
+>  - afu_desc_mmio also needs to be unmapped.
 > 
-> I've added the above in device tree, and in kernel code I do:
-> np = of_find_node_by_name(NULL,"hello");
-
-Why are you looking for a node named "hello" when your node is named "intc"?
-
->   if (np == NULL)
->     {
->     printk("Error node not found\n");
->     }
->   printk("Node np = 0x%0x\n",np);                     <-- Node np = 
-> 0xdfffe2f0
-
-How could you possibly have gotten a non-NULL value for np, with the above 
-code and node, unless there's something you're not showing?
-
->   virq = irq_of_parse_and_map(np,0);
+>  - PCI regions are allocated in cxl_map_adapter_regs.
+>    Therefore they should be released in unmap, not elsewhere.
 > 
->   printk(" VIRQ: %d \n" , virq);                              <-- virq = 0 
-> !!??
 
-virq = 0 means the lookup failed.  Either there was no interrupt in the node, 
-or it couldn't be mapped for some reason.
+You've changed the order in which cxl_remove_adapter() does its work, which,
+I'm sure you've considered and it's fine, best to check.
 
->   if (0 > (error=request_irq(virq, &hello_IRQHandler, IRQF_SHARED,
-> "hello", &value))) {
->       printk(KERN_WARNING"hello_IRQHandler: Init: Unable to allocate
-> IRQ error = %d\n\n", error);
->     return -1;
->   <-- request_irq return -22 ....
->   }
+Acked-by: Cyril Bur <cyrilbur@gmail.com>
+
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> ---
+>  drivers/misc/cxl/pci.c | 24 ++++++++++++++++++------
+>  1 file changed, 18 insertions(+), 6 deletions(-)
 > 
-> 
->  But it fails in request_irq (it return -22).
-> Also, irq_of_parse_and_map(np,0) returns 0. I think it should have returned 
-> 4.
-
-I already explained why it won't return 4 (see the part about virtual 
-interrupts).
-
--Scott
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 1849c1785b49..adcf938f2fdb 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -539,10 +539,18 @@ err:
+>  
+>  static void cxl_unmap_slice_regs(struct cxl_afu *afu)
+>  {
+> -	if (afu->p2n_mmio)
+> +	if (afu->p2n_mmio) {
+>  		iounmap(afu->p2n_mmio);
+> -	if (afu->p1n_mmio)
+> +		afu->p2n_mmio = NULL;
+> +	}
+> +	if (afu->p1n_mmio) {
+>  		iounmap(afu->p1n_mmio);
+> +		afu->p1n_mmio = NULL;
+> +	}
+> +	if (afu->afu_desc_mmio) {
+> +		iounmap(afu->afu_desc_mmio);
+> +		afu->afu_desc_mmio = NULL;
+> +	}
+>  }
+>  
+>  static void cxl_release_afu(struct device *dev)
+> @@ -920,10 +928,16 @@ err1:
+>  
+>  static void cxl_unmap_adapter_regs(struct cxl *adapter)
+>  {
+> -	if (adapter->p1_mmio)
+> +	if (adapter->p1_mmio) {
+>  		iounmap(adapter->p1_mmio);
+> -	if (adapter->p2_mmio)
+> +		adapter->p1_mmio = NULL;
+> +		pci_release_region(to_pci_dev(adapter->dev.parent), 2);
+> +	}
+> +	if (adapter->p2_mmio) {
+>  		iounmap(adapter->p2_mmio);
+> +		adapter->p2_mmio = NULL;
+> +		pci_release_region(to_pci_dev(adapter->dev.parent), 0);
+> +	}
+>  }
+>  
+>  static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
+> @@ -1132,8 +1146,6 @@ static void cxl_remove_adapter(struct cxl *adapter)
+>  
+>  	device_unregister(&adapter->dev);
+>  
+> -	pci_release_region(pdev, 0);
+> -	pci_release_region(pdev, 2);
+>  	pci_disable_device(pdev);
+>  }
+>  
