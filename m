@@ -1,26 +1,26 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F6CD1A0079
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D36F81A1D52
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:39 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 11 Aug 2015 10:52:58 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3FB223578055
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:52:55 +1000 (EST)
+ Tue, 11 Aug 2015 10:53:38 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8552F2CE8058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:35 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7B0ql4w3604968
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:52:56 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7B0rRQg22413492
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:35 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7B0qLEu010881
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:52:22 +1000
-Date: Tue, 11 Aug 2015 10:52:02 +1000
+ t7B0r2ol011775
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 10:53:03 +1000
+Date: Tue, 11 Aug 2015 10:52:43 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Frank Rowand <frowand.list@gmail.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -28,16 +28,16 @@ Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com, aik@ozlabs.ru
-Subject: Re: [PATCH v6 40/42] drivers/of: Return allocated memory chunk from
+Subject: Re: [PATCH v6 39/42] drivers/of: Allow to specify root node in
  of_fdt_unflatten_tree()
-Message-ID: <20150811005202.GA20729@gwshan>
+Message-ID: <20150811005243.GB20729@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-41-git-send-email-gwshan@linux.vnet.ibm.com>
- <55C928D8.3040200@gmail.com>
+ <1438834307-26960-40-git-send-email-gwshan@linux.vnet.ibm.com>
+ <55C928C5.2080305@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55C928D8.3040200@gmail.com>
+In-Reply-To: <55C928C5.2080305@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,98 +47,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 10, 2015 at 03:42:32PM -0700, Frank Rowand wrote:
+On Mon, Aug 10, 2015 at 03:42:13PM -0700, Frank Rowand wrote:
 >On 8/5/2015 9:11 PM, Gavin Shan wrote:
-
-Frank, thanks for your comments. All of them will be included
-in next revision.
-
-Thanks,
-Gavin
-
->> This changes of_fdt_unflatten_tree() so that it returns the allocated
->> memory chunk for unflattened device-tree, which can be released once
->> it's obsoleted.
+>> This introduces one more argument to of_fdt_unflatten_tree()
+>> to specify the root node for the FDT blob, which is going to be
+>> unflattened. In the result, the function can be used to unflatten
+>> FDT blob, which represents device sub-tree in PowerNV hotplug
+>> driver.
 >> 
 >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >> ---
->>  drivers/of/fdt.c       | 11 ++++++-----
->>  include/linux/of_fdt.h |  2 +-
->>  2 files changed, 7 insertions(+), 6 deletions(-)
+>>  drivers/of/fdt.c       | 13 ++++++++-----
+>>  drivers/of/unittest.c  |  2 +-
+>>  include/linux/of_fdt.h |  1 +
+>>  3 files changed, 10 insertions(+), 6 deletions(-)
 >> 
 >> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
->> index 074870a..8e1ba7e 100644
+>> index a18a2ce..074870a 100644
 >> --- a/drivers/of/fdt.c
 >> +++ b/drivers/of/fdt.c
->> @@ -408,7 +408,7 @@ static void *unflatten_dt_node(const void *blob,
->>   * @dt_alloc: An allocator that provides a virtual address to memory
->>   * for the resulting tree
->>   */
->> -static void __unflatten_device_tree(const void *blob,
->> +static void *__unflatten_device_tree(const void *blob,
->>  			     struct device_node *dad,
->>  			     struct device_node **mynodes,
->>  			     void * (*dt_alloc)(u64 size, u64 align))
->
->Please add a description of the return value to the documentation header.
->
->
->> @@ -421,7 +421,7 @@ static void __unflatten_device_tree(const void *blob,
+>> @@ -388,10 +388,11 @@ static void *unflatten_dt_node(const void *blob,
+>>  			       struct device_node **nodepp,
+>>  			       bool dryrun)
+>>  {
+>> +	unsigned long fpsize = dad ? strlen(of_node_full_name(dad)) : 0;
+>>  	int depth = 1;
 >>  
->>  	if (!blob) {
->>  		pr_debug("No device tree pointer\n");
->> -		return;
->> +		return NULL;
->>  	}
->>  
->>  	pr_debug("Unflattening device tree:\n");
->> @@ -431,7 +431,7 @@ static void __unflatten_device_tree(const void *blob,
->>  
->>  	if (fdt_check_header(blob)) {
->>  		pr_err("Invalid device tree blob header\n");
->> -		return;
->> +		return NULL;
->>  	}
->>  
->>  	/* First pass, scan for size */
->> @@ -458,6 +458,7 @@ static void __unflatten_device_tree(const void *blob,
->>  			   be32_to_cpup(mem + size));
->>  
->>  	pr_debug(" <- unflatten_device_tree()\n");
->> +	return mem;
+>>  	return __unflatten_dt_node(blob, mem, poffset,
+>> -				   dad, nodepp, 0,
+>> +				   dad, nodepp, fpsize,
+>>  				   dryrun, &depth);
 >>  }
 >>  
->>  static void *kernel_tree_alloc(u64 size, u64 align)
->> @@ -473,11 +474,11 @@ static void *kernel_tree_alloc(u64 size, u64 align)
->>   * pointers of the nodes so the normal device-tree walking functions
+>> @@ -408,6 +409,7 @@ static void *unflatten_dt_node(const void *blob,
+>>   * for the resulting tree
+>>   */
+>>  static void __unflatten_device_tree(const void *blob,
+>> +			     struct device_node *dad,
+>>  			     struct device_node **mynodes,
+>>  			     void * (*dt_alloc)(u64 size, u64 align))
+>>  {
+>
+>Please add @dad to the documentation header for the function.
+>
+
+Yes, it will be included in next revision.
+
+
+>> @@ -435,7 +437,7 @@ static void __unflatten_device_tree(const void *blob,
+>>  	/* First pass, scan for size */
+>>  	start = 0;
+>>  	size = (unsigned long)unflatten_dt_node(blob, NULL, &start,
+>> -						NULL, NULL, true);
+>> +						dad, NULL, true);
+>>  	size = ALIGN(size, 4);
+>>  
+>>  	pr_debug("  size is %lx, allocating...\n", size);
+>> @@ -450,7 +452,7 @@ static void __unflatten_device_tree(const void *blob,
+>>  
+>>  	/* Second pass, do actual unflattening */
+>>  	start = 0;
+>> -	unflatten_dt_node(blob, mem, &start, NULL, mynodes, false);
+>> +	unflatten_dt_node(blob, mem, &start, dad, mynodes, false);
+>>  	if (be32_to_cpup(mem + size) != 0xdeadbeef)
+>>  		pr_warning("End of tree marker overwritten: %08x\n",
+>>  			   be32_to_cpup(mem + size));
+>> @@ -472,9 +474,10 @@ static void *kernel_tree_alloc(u64 size, u64 align)
 >>   * can be used.
 >>   */
->> -void of_fdt_unflatten_tree(const unsigned long *blob,
->> +void *of_fdt_unflatten_tree(const unsigned long *blob,
->
->Please add a description of the return value to the documentation header.
->
->
->>  			struct device_node *dad,
+>>  void of_fdt_unflatten_tree(const unsigned long *blob,
+>> +			struct device_node *dad,
 >>  			struct device_node **mynodes)
 >>  {
->> -	__unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
->> +	return __unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
+>> -	__unflatten_device_tree(blob, mynodes, &kernel_tree_alloc);
+>> +	__unflatten_device_tree(blob, dad, mynodes, &kernel_tree_alloc);
 >>  }
 >>  EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
 >>  
+>> @@ -1125,7 +1128,7 @@ bool __init early_init_dt_scan(void *params)
+>>   */
+>>  void __init unflatten_device_tree(void)
+>>  {
+>> -	__unflatten_device_tree(initial_boot_params, &of_root,
+>> +	__unflatten_device_tree(initial_boot_params, NULL, &of_root,
+>>  				early_init_dt_alloc_memory_arch);
+>>  
+>>  	/* Get pointer to "/chosen" and "/aliases" nodes for use everywhere */
+>> diff --git a/drivers/of/unittest.c b/drivers/of/unittest.c
+>> index 1801634..2270830 100644
+>> --- a/drivers/of/unittest.c
+>> +++ b/drivers/of/unittest.c
+>> @@ -907,7 +907,7 @@ static int __init unittest_data_add(void)
+>>  			"not running tests\n", __func__);
+>>  		return -ENOMEM;
+>>  	}
+>> -	of_fdt_unflatten_tree(unittest_data, &unittest_data_node);
+>> +	of_fdt_unflatten_tree(unittest_data, NULL, &unittest_data_node);
+>>  	if (!unittest_data_node) {
+>>  		pr_warn("%s: No tree to attach; not running tests\n", __func__);
+>>  		return -ENODATA;
 >> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
->> index 3644960..00db279 100644
+>> index df9ef38..3644960 100644
 >> --- a/include/linux/of_fdt.h
 >> +++ b/include/linux/of_fdt.h
->> @@ -37,7 +37,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
->>  				 unsigned long node);
+>> @@ -38,6 +38,7 @@ extern bool of_fdt_is_big_endian(const void *blob,
 >>  extern int of_fdt_match(const void *blob, unsigned long node,
 >>  			const char *const *compat);
->> -extern void of_fdt_unflatten_tree(const unsigned long *blob,
->> +extern void *of_fdt_unflatten_tree(const unsigned long *blob,
->>  			       struct device_node *dad,
+>>  extern void of_fdt_unflatten_tree(const unsigned long *blob,
+>> +			       struct device_node *dad,
 >>  			       struct device_node **mynodes);
 >>  
+>>  /* TBD: Temporary export of fdt globals - remove when code fully merged */
 >> 
->
+
+Thanks,
+Gavin
