@@ -1,26 +1,30 @@
-Return-Path: <ranshalit@gmail.com>
-Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
- [IPv6:2607:f8b0:4001:c05::22a])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 067E01A017D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 16:40:26 +1000 (AEST)
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F5B41A017D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 16:27:12 +1000 (AEST)
-Received: by igbij6 with SMTP id ij6so84517229igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 23:27:10 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1439264868.4099.34.camel@freescale.com>
-References: <CAJ2oMhLX18merCHtge0oOQ2DSQ8BE1Zd=dAuPWzyTRNmr-DLiA@mail.gmail.com>
- <CAJ2oMhJVqph9vb=Q-vbzRRygT+s3wvtm9nVNJ9TLcB_6iQCVcA@mail.gmail.com>
- <1439260166.4099.14.camel@freescale.com>
- <CAJ2oMhLMJHc4+xy2iPF78n8A38o2a-ekZNy0s_d_osCP2eKn0Q@mail.gmail.com>
- <1439264868.4099.34.camel@freescale.com>
-Date: Tue, 11 Aug 2015 09:27:10 +0300
-Message-ID: <CAJ2oMh+W_TTn_v8nk-KB5ntz7d3qw37e5D1880Y=6Bgbq0uKGg@mail.gmail.com>
-Subject: Re: using general IRQs
-From: Ran Shalit <ranshalit@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by ozlabs.org (Postfix) with ESMTPS id 66EBA140326
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 16:40:24 +1000 (AEST)
+Received: by pawu10 with SMTP id u10so157431439paw.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 23:40:22 -0700 (PDT)
+Message-ID: <1439275084.24419.27.camel@axtens.net>
+Subject: Re: [PATCH v2 04/10] cxl: Clean up adapter MMIO unmap path.
+From: Daniel Axtens <dja@axtens.net>
+To: Cyril Bur <cyrilbur@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
+Date: Tue, 11 Aug 2015 16:38:04 +1000
+In-Reply-To: <20150811135249.4fdacf75@camb691>
+References: <1438061323-20710-1-git-send-email-dja@axtens.net>
+ <1438061323-20710-5-git-send-email-dja@axtens.net>
+ <20150811135249.4fdacf75@camb691>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-4rF3oPP6Q20Vm96/kiOQ"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,117 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 11, 2015 at 6:47 AM, Scott Wood <scottwood@freescale.com> wrote:
-> On Tue, 2015-08-11 at 06:45 +0300, Ran Shalit wrote:
->> On Tue, Aug 11, 2015 at 5:29 AM, Scott Wood <scottwood@freescale.com> wrote:
->> > On Mon, 2015-08-10 at 13:40 +0300, Ran Shalit wrote:
->> > > On Mon, Aug 10, 2015 at 10:48 AM, Ran Shalit <ranshalit@gmail.com>
->> > > wrote:
->> > > > Hello,
->> > > >
->> > > > MPC8349 has general IRQ numbered 0-7,
->> > > > It is required to bind these IRQs with some routine , i.e. they are
->> > > > not used with any specific driver.
->> > > >
->> > > > - Should they be configured as gpios in device tree so that we can use
->> > > > the gpio as irq in linux ? Is there any example ?
->> > > > - After configuration, can the gpios be used in linux using the
->> > > > standard /sys/class/gpio ?
->> > > >
->> > > > Regards,
->> > > > Ran
->> >
->> > What do you mean by "general IRQ"?  Do you mean external IRQs?
->> >
->> > > I am trying to use only IRQ4, so I have tried to configure it as
->> > > following in device tree:
->> > >
->> > > device tree:
->> > >
->> > >   intc@0{
->> > >  compatible = "intc";
->> > >  #address-cells = <1>;
->> > >  #size-cells = <0>;
->> > >  reg = <0 0x1000>;
->> > >  interrupts = <4 0x8>;
->> > >   };
->> > >
->> > > But I don't see IRQ4 listed in the interrupt list:
->> > > # cat /proc/interrupts
->> >
->> > /proc/interrupts shows virtual interrupts, which do not necessarily
->> > correspond to anything in the device tree.  In particular, virtual
->> > interrupts
->> > under 16 are reserved for ISA interrupts, and thus any mpic interrupts in
->> > that range will be remapped.
->> >
->> > Additionally, putting an interrupt in the device tree does not make it
->> > show
->> > up in /proc/interrupts.  Only interrupts for which a driver has
->> > registered a
->> > handler will show up in /proc/interrupts.
->> >
->> > -Scott
->> >
->> >
->> Hi Scott,
->>
->> I meant  external IRQ.
->> I am actually trying to use irq 4 interrupt.
->>
->> I've added the above in device tree, and in kernel code I do:
->> np = of_find_node_by_name(NULL,"hello");
->
-> Why are you looking for a node named "hello" when your node is named "intc"?
-I apologyze, this is the node I'm using
 
-hello@0{
- compatible = "hello";
-  #address-cells = <1>;
-  #size-cells = <0>;
-  reg = <0 0x1000>;
-  interrupts = <4 0x8>;
-};
+--=-4rF3oPP6Q20Vm96/kiOQ
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
->
->>   if (np == NULL)
->>     {
->>     printk("Error node not found\n");
->>     }
->>   printk("Node np = 0x%0x\n",np);                     <-- Node np =
->> 0xdfffe2f0
->
-> How could you possibly have gotten a non-NULL value for np, with the above
-> code and node, unless there's something you're not showing?
-You are right, The node is named hello in my device
+Hi Cyril,
+> >  - PCI regions are allocated in cxl_map_adapter_regs.
+> >    Therefore they should be released in unmap, not elsewhere.
+> >=20
+>=20
+> You've changed the order in which cxl_remove_adapter() does its work, whi=
+ch,
+> I'm sure you've considered and it's fine, best to check.
 
->
->>   virq = irq_of_parse_and_map(np,0);
->>
->>   printk(" VIRQ: %d \n" , virq);                              <-- virq = 0
->> !!??
->
-> virq = 0 means the lookup failed.  Either there was no interrupt in the node,
-> or it couldn't be mapped for some reason.
->
->>   if (0 > (error=request_irq(virq, &hello_IRQHandler, IRQF_SHARED,
->> "hello", &value))) {
->>       printk(KERN_WARNING"hello_IRQHandler: Init: Unable to allocate
->> IRQ error = %d\n\n", error);
->>     return -1;
->>   <-- request_irq return -22 ....
->>   }
->>
->>
->>  But it fails in request_irq (it return -22).
->> Also, irq_of_parse_and_map(np,0) returns 0. I think it should have returned
->> 4.
->
-> I already explained why it won't return 4 (see the part about virtual
-> interrupts).
+Yeah, I have considered this. I've also tested it a lot.
 
-Thank you very much,
-I now have success with the request_irq code.
+Thanks for the review.
 
-Best Regards,
-Ran
+> Acked-by: Cyril Bur <cyrilbur@gmail.com>
+
+
+--=20
+Regards,
+Daniel
+
+--=-4rF3oPP6Q20Vm96/kiOQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAABCgAGBQJVyZhMAAoJEPC3R3P2I92FZ3wQAM7r61uSMHM3x2r3NGtdGJyd
+vmkilzgRUnkhDfyj6xKyiqB/7yA27D4IVBnHMTLtOh6LVIiX+yUBN8SnL8iiZVgq
+kJWoYhgxQiHJQDLaecul91SgGF8cd9Pgw0dlCecTQX92/gGrzWkQZ5/svvlZz6F8
+76FW9UE7quJewo6G0l8BhtzW9wpy/lRQ8oHir4IrYrM2yWZ0oFGBRkmyPbuAmk0T
+mJwhhC9Ur53vcelTSpC1T1JiQeyDaBVjivpGImWl3Vdg1QvOp88QirfmmeGO0y5b
+VB0V3/ZDjMFShmuse8SRxcgYFbu55hS+TpJqlmRkvDiAqPX2JjS14nYZjSW8+s9w
+lQcR8tY2NLNrum4KGdkFUisXtSe3p3LTdkFxVojY1a8ZuOxPcbS070eaiIkSZX5R
+nCo4wDrDnReTTfGQf/1MBGjxMwFYhv56vbGNTr2bF5cCUPaJ9vLkhTRSutHhShJd
+4bOhKoDyRB19afJEwhA7CknXuAP1fXMZrWVAgqjLCaV+L0HTBcWtAhaTZUWufxjJ
+SbbuoGvwxq4f2A04Jx2fKx0FkrE3A9DQB5XzVZuNEK8fJ25VsBKw2JH4ML1/1Viv
+2CBXoR4nr//8CZzVh4PlV6pJhJcFgG5OA1t/EvDOKSNt8UT3RWiLg3rbwVggBOd3
+P+6AzGr7PivbIVa0u3IP
+=Gkzf
+-----END PGP SIGNATURE-----
+
+--=-4rF3oPP6Q20Vm96/kiOQ--
