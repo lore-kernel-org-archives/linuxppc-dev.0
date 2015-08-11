@@ -1,28 +1,31 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 576F61A1D5B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 13:59:00 +1000 (AEST)
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07FA81A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 14:13:53 +1000 (AEST)
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BE7AB14031D
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 13:58:59 +1000 (AEST)
-Received: by pabyb7 with SMTP id yb7so120492781pab.0
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 20:58:57 -0700 (PDT)
-Date: Tue, 11 Aug 2015 13:59:53 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Daniel Axtens <dja@axtens.net>
+ by ozlabs.org (Postfix) with ESMTPS id E8BD414031D
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 14:13:50 +1000 (AEST)
+Received: by pawu10 with SMTP id u10so154751648paw.1
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 21:13:49 -0700 (PDT)
+Message-ID: <1439266290.24419.18.camel@axtens.net>
+Subject: Re: [PATCH v2 01/10] cxl: Drop commands if the PCI channel is not
+ in normal state
+From: Daniel Axtens <dja@axtens.net>
+To: Cyril Bur <cyrilbur@gmail.com>
 Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
-Subject: Re: [PATCH v2 06/10] cxl: Refactor AFU init/teardown
-Message-ID: <20150811135953.1c5d6e53@camb691>
-In-Reply-To: <1438061323-20710-7-git-send-email-dja@axtens.net>
+Date: Tue, 11 Aug 2015 14:11:30 +1000
+In-Reply-To: <20150811133158.4576a716@camb691>
 References: <1438061323-20710-1-git-send-email-dja@axtens.net>
- <1438061323-20710-7-git-send-email-dja@axtens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ <1438061323-20710-2-git-send-email-dja@axtens.net>
+ <20150811133158.4576a716@camb691>
+Content-Type: multipart/signed; micalg="pgp-sha512";
+ protocol="application/pgp-signature"; boundary="=-PBriVJis7iql4rIQYqCN"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,188 +35,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Jul 2015 15:28:39 +1000
-Daniel Axtens <dja@axtens.net> wrote:
 
-> As with an adapter, some aspects of initialisation are done only once
-> in the lifetime of an AFU: for example, allocating memory, or setting
-> up sysfs/debugfs files.
-> 
-> However, we may want to be able to do some parts of the initialisation
-> multiple times: for example, in error recovery we want to be able to
-> tear down and then re-map IO memory and IRQs.
-> 
-> Therefore, refactor AFU init/teardown as follows.
-> 
->  - Create two new functions: 'cxl_configure_afu', and its pair
->    'cxl_deconfigure_afu'. As with the adapter functions,
->    these (de)configure resources that do not need to last the entire
->    lifetime of the AFU.
-> 
->  - Allocating and releasing memory remain the task of 'cxl_alloc_afu'
->    and 'cxl_release_afu'.
-> 
->  - Once-only functions that do not involve allocating/releasing memory
->    stay in the overarching 'cxl_init_afu'/'cxl_remove_afu' pair.
->    However, the task of picking an AFU mode and activating it has been
->    broken out.
-> 
+--=-PBriVJis7iql4rIQYqCN
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+> Hey Daniel, keeping in mind I can't exactly test it, and that I don't kno=
+w the
+> ins and outs of CAPI, the code looks nice and it makes sence to me.
+>=20
+Thanks!
 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> ---
->  drivers/misc/cxl/pci.c | 87 +++++++++++++++++++++++++++++---------------------
->  1 file changed, 50 insertions(+), 37 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 7f47e2221524..98a8207da88d 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -753,45 +753,67 @@ ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
->  	return count;
->  }
->  
-> -static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
-> +static int cxl_configure_afu(struct cxl_afu *afu, struct cxl *adapter, struct pci_dev *dev)
->  {
-> -	struct cxl_afu *afu;
-> -	bool free = true;
->  	int rc;
->  
-> -	if (!(afu = cxl_alloc_afu(adapter, slice)))
-> -		return -ENOMEM;
-> -
-> -	if ((rc = dev_set_name(&afu->dev, "afu%i.%i", adapter->adapter_num, slice)))
-> -		goto err1;
-> -
->  	if ((rc = cxl_map_slice_regs(afu, adapter, dev)))
-> -		goto err1;
-> +		return rc;
->  
->  	if ((rc = sanitise_afu_regs(afu)))
-> -		goto err2;
-> +		goto err1;
->  
->  	/* We need to reset the AFU before we can read the AFU descriptor */
->  	if ((rc = __cxl_afu_reset(afu)))
-> -		goto err2;
-> +		goto err1;
->  
->  	if (cxl_verbose)
->  		dump_afu_descriptor(afu);
->  
->  	if ((rc = cxl_read_afu_descriptor(afu)))
-> -		goto err2;
-> +		goto err1;
->  
->  	if ((rc = cxl_afu_descriptor_looks_ok(afu)))
-> -		goto err2;
-> +		goto err1;
->  
->  	if ((rc = init_implementation_afu_regs(afu)))
-> -		goto err2;
-> +		goto err1;
->  
->  	if ((rc = cxl_register_serr_irq(afu)))
-> -		goto err2;
-> +		goto err1;
->  
->  	if ((rc = cxl_register_psl_irq(afu)))
-> -		goto err3;
-> +		goto err2;
-> +
-> +	return 0;
-> +
-> +err2:
-> +	cxl_release_serr_irq(afu);
-> +err1:
-> +	cxl_unmap_slice_regs(afu);
-> +	return rc;
-> +}
-> +
-> +static void cxl_deconfigure_afu(struct cxl_afu *afu)
-> +{
-> +	cxl_release_psl_irq(afu);
-> +	cxl_release_serr_irq(afu);
-> +	cxl_unmap_slice_regs(afu);
-> +}
-> +
-> +static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
-> +{
-> +	struct cxl_afu *afu;
-> +	int rc;
-> +
-> +	if (!(afu = cxl_alloc_afu(adapter, slice)))
-> +		return -ENOMEM;
-> +
-> +	if ((rc = dev_set_name(&afu->dev, "afu%i.%i", adapter->adapter_num, slice)))
-> +		goto err_free;
-> +
-> +	if ((rc = cxl_configure_afu(afu, adapter, dev)))
-> +		goto err_free;
->  
->  	/* Don't care if this fails */
->  	cxl_debugfs_afu_add(afu);
-> @@ -806,10 +828,6 @@ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
->  	if ((rc = cxl_sysfs_afu_add(afu)))
->  		goto err_put1;
->  
-> -
-> -	if ((rc = cxl_afu_select_best_mode(afu)))
-> -		goto err_put2;
-> -
->  	adapter->afu[afu->slice] = afu;
->  
->  	if ((rc = cxl_pci_vphb_add(afu)))
-> @@ -817,21 +835,16 @@ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
->  
->  	return 0;
->  
-> -err_put2:
-> -	cxl_sysfs_afu_remove(afu);
->  err_put1:
-> -	device_unregister(&afu->dev);
-> -	free = false;
-> +	cxl_deconfigure_afu(afu);
->  	cxl_debugfs_afu_remove(afu);
-> -	cxl_release_psl_irq(afu);
-> -err3:
-> -	cxl_release_serr_irq(afu);
-> -err2:
-> -	cxl_unmap_slice_regs(afu);
-> -err1:
-> -	if (free)
-> -		kfree(afu);
-> +	device_unregister(&afu->dev);
->  	return rc;
-> +
-> +err_free:
-> +	kfree(afu);
-> +	return rc;
-> +
->  }
->  
->  static void cxl_remove_afu(struct cxl_afu *afu)
-> @@ -851,10 +864,7 @@ static void cxl_remove_afu(struct cxl_afu *afu)
->  	cxl_context_detach_all(afu);
->  	cxl_afu_deactivate_mode(afu);
->  
-> -	cxl_release_psl_irq(afu);
-> -	cxl_release_serr_irq(afu);
-> -	cxl_unmap_slice_regs(afu);
-> -
-> +	cxl_deconfigure_afu(afu);
->  	device_unregister(&afu->dev);
->  }
->  
-> @@ -1207,6 +1217,9 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
->  	for (slice = 0; slice < adapter->slices; slice++) {
->  		if ((rc = cxl_init_afu(adapter, slice, dev)))
->  			dev_err(&dev->dev, "AFU %i failed to initialise: %i\n", slice, rc);
-> +
-> +		if ((rc = cxl_afu_select_best_mode(adapter->afu[slice])))
-> +			dev_err(&dev->dev, "AFU %i failed to start: %i\n", slice, rc);
->  	}
->  
->  	return 0;
+> Some very minor points,
+>=20
+> Otherwise
+>=20
+> Acked-by: Cyril Bur <cyrilbur@gmail.com>
+>=20
+
+> > =20
+> > +static inline bool cxl_adapter_link_ok(struct cxl *cxl)
+> > +{
+> > +	struct pci_dev *pdev;
+> > +
+> > +	pdev =3D to_pci_dev(cxl->dev.parent);
+> > +	return (pdev->error_state =3D=3D pci_channel_io_normal);
+> > +}
+> > +
+>=20
+> In the process of reviewing these patches I read the style guide in furth=
+ur
+> detail and (it doesn't 100% commit one way or the other but) it suggests =
+it may
+> be wise to get GCC choose if it should inline or not, unless you have an =
+reason=20
+> (the macro replacment below being a good example)... Just a thought.
+>=20
+
+This sits in a bunch of hot paths and tight loops... and it's a
+glorified macro. I will bear this in mind for the future: I hadn't
+thought through the tradeoffs.
+
+
+>=20
+> So a birdy has informed me these are going to become inlines, you can
+> therefore disregard those comments. I am much more in favour of inlines!
+>=20
+Yep, they're going to become inlines. yay for inlines.
+
+> > +	/* We could be asked to terminate when the hw is down.  That
+>=20
+>                                                                ^
+> I'm notoriously bad for having a low care threshhold but I do have a high=
+ care
+> threshhold for consistency. Double space after period? Are you sure?
+>=20
+Fixed.
+
+--=20
+Regards,
+Daniel
+
+--=-PBriVJis7iql4rIQYqCN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAABCgAGBQJVyXXzAAoJEPC3R3P2I92FfucP/3QSCFIEM/whDCNuWI7ILQ0w
+zWMfl0jqja4Sdz5CgxVQgH6FBghHNoSSyJeyhL2FDQx9JZKNX/vdiGljJ/MOo6dm
+tKf0iHmK3XT/3LaM1PnxDWuKbbv10+nc7NBITYWnSsQQavQwDXWThvIKL/Ao/8yg
+T8ofASFjVGo8p0/6I3e0oleFdZOBZPC3x4NLI09ubCTHep12DRh5uJiXFpFzZczk
+h8U3UtKY6ZCXSCmOgyNhtZ0al6MCnBypY3tMYC2KLVe/zIQ3pRLppkN947Ezu9ip
+H3JR8zcO6/jpVA6G4/ADl8i+4NiUJuEplzKDewSK8uQD9xLEu9px+R2pjDxwwI8o
+8zVt3yiqdGyd7xV6n2zhayiutWuTP52LB596jUlVVPR0vorjHuj+PLbpTU48lkT/
+90StKjgZI1kxvBysXc7mFNKXTVafME7YqCcoYlKg5fu9FS62/A+t39fLV+FLefMm
+8R1p4YpVBBQu8ihZv/rTY4dDQCvui1525xpFT9cyM8Puuz1K1PFau7gEe9WLpL5I
+y7D+mrc/6ZEekZEKGSQelKCP6+fahe/87GkLwq9Q1JjdYBcyClQdStIJYFNfYXzO
+zYjlI7ia2q+CmUFTrTtpJ9Wm1igBmb7RUIZ1s1+JAZmaw/UZ/bNt60YCLqdncS2K
+n/mySDP1nCQl3+ToIlvT
+=523N
+-----END PGP SIGNATURE-----
+
+--=-PBriVJis7iql4rIQYqCN--
