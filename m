@@ -1,36 +1,15 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A72891A039F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 19:56:14 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Tue, 11 Aug 2015 19:56:13 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id BCE362CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 19:56:09 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7B9u2d026280030
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 19:56:10 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7B9taYJ028590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 19:55:37 +1000
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: anton@samba.org, linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com
-Subject: Re: [PATCH RESEND] powerpc/numa: initialize distance lookup table
- from drconf path
-In-Reply-To: <1435815541-11860-1-git-send-email-nikunj@linux.vnet.ibm.com>
-References: <1435815541-11860-1-git-send-email-nikunj@linux.vnet.ibm.com>
-Date: Tue, 11 Aug 2015 15:25:17 +0530
-Message-ID: <87si7q2lq2.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id D2C151A039F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 20:11:06 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] net: fs_enet: mask interrupts for TX partial frames.
+To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Message-Id: <20150811101103.045721A2414@localhost.localdomain>
+Date: Tue, 11 Aug 2015 12:11:03 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,48 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We are not interested in interrupts for partially transmitted frames.
+Unlike SCC and FCC, the FEC doesn't handle the I bit in buffer
+descriptors, instead it defines two interrupt bits, TXB and TXF.
 
-Hi Michael,
+We have to mask TXB in order to only get interrupts once the
+frame is fully transmitted.
 
-Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> writes:
-> In some situations, a NUMA guest that supports
-> ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
-> distances between nodes. This is because of two problems in the
-> current code.
->
-> 1) Different representations of associativity lists.
->
->    There is an assumption about the associativity list in
->    initialize_distance_lookup_table(). Associativity list has two forms:
->
->    a) [cpu,memory]@x/ibm,associativity has following
->       format:
->            <N> <N integers>
->
->    b) ibm,dynamic-reconfiguration-memory/ibm,associativity-lookup-arrays
->
->            <M> <N> <M associativity lists each having N integers>
->            M = the number of associativity lists
->            N = the number of entries per associativity list
->
->    Fix initialize_distance_lookup_table() so that it does not assume
->    "case a". And update the caller to skip the length field before
->    sending the associativity list.
->
-> 2) Distance table not getting updated from drconf path.
->
->    Node distance table will not get initialized in certain cases as
->    ibm,dynamic-reconfiguration-memory path does not initialize the
->    lookup table.
->
->    Call initialize_distance_lookup_table() from drconf path with
->    appropriate associativity list.
->
-> Reported-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-> Acked-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Have you pulled this?
-
-Regards,
-Nikunj
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+index b34214e..016743e 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
+@@ -110,7 +110,7 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ }
+ 
+ #define FEC_NAPI_RX_EVENT_MSK	(FEC_ENET_RXF | FEC_ENET_RXB)
+-#define FEC_NAPI_TX_EVENT_MSK	(FEC_ENET_TXF | FEC_ENET_TXB)
++#define FEC_NAPI_TX_EVENT_MSK	(FEC_ENET_TXF)
+ #define FEC_RX_EVENT		(FEC_ENET_RXF)
+ #define FEC_TX_EVENT		(FEC_ENET_TXF)
+ #define FEC_ERR_EVENT_MSK	(FEC_ENET_HBERR | FEC_ENET_BABR | \
+-- 
+2.1.0
