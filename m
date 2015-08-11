@@ -1,28 +1,26 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E8E1C1A01FB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 16:00:27 +1000 (AEST)
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
+Return-Path: <ranshalit@gmail.com>
+Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c05::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 173571402BC
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 16:00:26 +1000 (AEST)
-Received: by pabyb7 with SMTP id yb7so122677272pab.0
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 23:00:25 -0700 (PDT)
-Date: Tue, 11 Aug 2015 16:01:20 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
-Subject: Re: [PATCH v2 05/10] cxl: Refactor adaptor init/teardown
-Message-ID: <20150811160120.01815326@camb691>
-In-Reply-To: <1438061323-20710-6-git-send-email-dja@axtens.net>
-References: <1438061323-20710-1-git-send-email-dja@axtens.net>
- <1438061323-20710-6-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F5B41A017D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 16:27:12 +1000 (AEST)
+Received: by igbij6 with SMTP id ij6so84517229igb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Aug 2015 23:27:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1439264868.4099.34.camel@freescale.com>
+References: <CAJ2oMhLX18merCHtge0oOQ2DSQ8BE1Zd=dAuPWzyTRNmr-DLiA@mail.gmail.com>
+ <CAJ2oMhJVqph9vb=Q-vbzRRygT+s3wvtm9nVNJ9TLcB_6iQCVcA@mail.gmail.com>
+ <1439260166.4099.14.camel@freescale.com>
+ <CAJ2oMhLMJHc4+xy2iPF78n8A38o2a-ekZNy0s_d_osCP2eKn0Q@mail.gmail.com>
+ <1439264868.4099.34.camel@freescale.com>
+Date: Tue, 11 Aug 2015 09:27:10 +0300
+Message-ID: <CAJ2oMh+W_TTn_v8nk-KB5ntz7d3qw37e5D1880Y=6Bgbq0uKGg@mail.gmail.com>
+Subject: Re: using general IRQs
+From: Ran Shalit <ranshalit@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,284 +30,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Jul 2015 15:28:38 +1000
-Daniel Axtens <dja@axtens.net> wrote:
+On Tue, Aug 11, 2015 at 6:47 AM, Scott Wood <scottwood@freescale.com> wrote:
+> On Tue, 2015-08-11 at 06:45 +0300, Ran Shalit wrote:
+>> On Tue, Aug 11, 2015 at 5:29 AM, Scott Wood <scottwood@freescale.com> wrote:
+>> > On Mon, 2015-08-10 at 13:40 +0300, Ran Shalit wrote:
+>> > > On Mon, Aug 10, 2015 at 10:48 AM, Ran Shalit <ranshalit@gmail.com>
+>> > > wrote:
+>> > > > Hello,
+>> > > >
+>> > > > MPC8349 has general IRQ numbered 0-7,
+>> > > > It is required to bind these IRQs with some routine , i.e. they are
+>> > > > not used with any specific driver.
+>> > > >
+>> > > > - Should they be configured as gpios in device tree so that we can use
+>> > > > the gpio as irq in linux ? Is there any example ?
+>> > > > - After configuration, can the gpios be used in linux using the
+>> > > > standard /sys/class/gpio ?
+>> > > >
+>> > > > Regards,
+>> > > > Ran
+>> >
+>> > What do you mean by "general IRQ"?  Do you mean external IRQs?
+>> >
+>> > > I am trying to use only IRQ4, so I have tried to configure it as
+>> > > following in device tree:
+>> > >
+>> > > device tree:
+>> > >
+>> > >   intc@0{
+>> > >  compatible = "intc";
+>> > >  #address-cells = <1>;
+>> > >  #size-cells = <0>;
+>> > >  reg = <0 0x1000>;
+>> > >  interrupts = <4 0x8>;
+>> > >   };
+>> > >
+>> > > But I don't see IRQ4 listed in the interrupt list:
+>> > > # cat /proc/interrupts
+>> >
+>> > /proc/interrupts shows virtual interrupts, which do not necessarily
+>> > correspond to anything in the device tree.  In particular, virtual
+>> > interrupts
+>> > under 16 are reserved for ISA interrupts, and thus any mpic interrupts in
+>> > that range will be remapped.
+>> >
+>> > Additionally, putting an interrupt in the device tree does not make it
+>> > show
+>> > up in /proc/interrupts.  Only interrupts for which a driver has
+>> > registered a
+>> > handler will show up in /proc/interrupts.
+>> >
+>> > -Scott
+>> >
+>> >
+>> Hi Scott,
+>>
+>> I meant  external IRQ.
+>> I am actually trying to use irq 4 interrupt.
+>>
+>> I've added the above in device tree, and in kernel code I do:
+>> np = of_find_node_by_name(NULL,"hello");
+>
+> Why are you looking for a node named "hello" when your node is named "intc"?
+I apologyze, this is the node I'm using
 
-> Some aspects of initialisation are done only once in the lifetime of
-> an adapter: for example, allocating memory for the adapter,
-> allocating the adapter number, or setting up sysfs/debugfs files.
-> 
-> However, we may want to be able to do some parts of the
-> initialisation multiple times: for example, in error recovery we
-> want to be able to tear down and then re-map IO memory and IRQs.
-> 
-> Therefore, refactor CXL init/teardown as follows.
-> 
->  - Keep the overarching functions 'cxl_init_adapter' and its pair,
->    'cxl_remove_adapter'.
-> 
->  - Move all 'once only' allocation/freeing steps to the existing
->    'cxl_alloc_adapter' function, and its pair 'cxl_release_adapter'
->    (This involves moving allocation of the adapter number out of
->    cxl_init_adapter.)
-> 
->  - Create two new functions: 'cxl_configure_adapter', and its pair
->    'cxl_deconfigure_adapter'. These two functions 'wire up' the
->    hardware --- they (de)configure resources that do not need to
->    last the entire lifetime of the adapter
-> 
+hello@0{
+ compatible = "hello";
+  #address-cells = <1>;
+  #size-cells = <0>;
+  reg = <0 0x1000>;
+  interrupts = <4 0x8>;
+};
 
-You have a dilema with the use of ugly if (rc = foo()). I don't like it but the
-file is littered with it.
+>
+>>   if (np == NULL)
+>>     {
+>>     printk("Error node not found\n");
+>>     }
+>>   printk("Node np = 0x%0x\n",np);                     <-- Node np =
+>> 0xdfffe2f0
+>
+> How could you possibly have gotten a non-NULL value for np, with the above
+> code and node, unless there's something you're not showing?
+You are right, The node is named hello in my device
 
-Looks like the majority of uses in this file the conditional block is only
-one line then it makes sense (or at least in terms of numbers of lines... fair
-enough), however, if you have a conditional block spanning multiple lines, I
-don't like.
+>
+>>   virq = irq_of_parse_and_map(np,0);
+>>
+>>   printk(" VIRQ: %d \n" , virq);                              <-- virq = 0
+>> !!??
+>
+> virq = 0 means the lookup failed.  Either there was no interrupt in the node,
+> or it couldn't be mapped for some reason.
+>
+>>   if (0 > (error=request_irq(virq, &hello_IRQHandler, IRQF_SHARED,
+>> "hello", &value))) {
+>>       printk(KERN_WARNING"hello_IRQHandler: Init: Unable to allocate
+>> IRQ error = %d\n\n", error);
+>>     return -1;
+>>   <-- request_irq return -22 ....
+>>   }
+>>
+>>
+>>  But it fails in request_irq (it return -22).
+>> Also, irq_of_parse_and_map(np,0) returns 0. I think it should have returned
+>> 4.
+>
+> I already explained why it won't return 4 (see the part about virtual
+> interrupts).
 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> ---
->  drivers/misc/cxl/pci.c | 138 ++++++++++++++++++++++++++++++-------------------
->  1 file changed, 85 insertions(+), 53 deletions(-)
-> 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index adcf938f2fdb..7f47e2221524 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -966,7 +966,6 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
->  	CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
->  	CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
->  	adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
-> -	adapter->perst_loads_image = true;
->  	adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
->  
->  	CXL_READ_VSEC_NAFUS(dev, vsec, &adapter->slices);
-> @@ -1026,22 +1025,34 @@ static void cxl_release_adapter(struct device *dev)
->  
->  	pr_devel("cxl_release_adapter\n");
->  
-> +	cxl_remove_adapter_nr(adapter);
-> +
->  	kfree(adapter);
->  }
->  
-> -static struct cxl *cxl_alloc_adapter(struct pci_dev *dev)
-> +static struct cxl *cxl_alloc_adapter(void)
->  {
->  	struct cxl *adapter;
-> +	int rc;
->  
->  	if (!(adapter = kzalloc(sizeof(struct cxl), GFP_KERNEL)))
->  		return NULL;
->  
-> -	adapter->dev.parent = &dev->dev;
-> -	adapter->dev.release = cxl_release_adapter;
-> -	pci_set_drvdata(dev, adapter);
->  	spin_lock_init(&adapter->afu_list_lock);
->  
-> +	if ((rc = cxl_alloc_adapter_nr(adapter)))
+Thank you very much,
+I now have success with the request_irq code.
 
-Humf
-
-> +		goto err1;
-> +
-> +	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
-
-Humf
-> +		goto err2;
-> +
->  	return adapter;
-> +
-> +err2:
-> +	cxl_remove_adapter_nr(adapter);
-> +err1:
-> +	kfree(adapter);
-> +	return NULL;
->  }
->  
->  static int sanitise_adapter_regs(struct cxl *adapter)
-> @@ -1050,57 +1061,94 @@ static int sanitise_adapter_regs(struct cxl *adapter)
->  	return cxl_tlb_slb_invalidate(adapter);
->  }
->  
-> -static struct cxl *cxl_init_adapter(struct pci_dev *dev)
-> +/* This should contain *only* operations that can safely be done in
-> + * both creation and recovery.
-> + */
-> +static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
->  {
-> -	struct cxl *adapter;
-> -	bool free = true;
->  	int rc;
->  
-> +	adapter->dev.parent = &dev->dev;
-> +	adapter->dev.release = cxl_release_adapter;
-> +	pci_set_drvdata(dev, adapter);
->  
-> -	if (!(adapter = cxl_alloc_adapter(dev)))
-> -		return ERR_PTR(-ENOMEM);
-> +	if ((rc = pci_enable_device(dev))) {
-
-Backets...
-
-> +		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
-> +		return rc;
-> +	}
->  
->  	if ((rc = cxl_read_vsec(adapter, dev)))
-> -		goto err1;
-> +		return rc;
->  
->  	if ((rc = cxl_vsec_looks_ok(adapter, dev)))
-> -		goto err1;
-> +	        return rc;
->  
->  	if ((rc = setup_cxl_bars(dev)))
-> -		goto err1;
-> +		return rc;
->  
->  	if ((rc = switch_card_to_cxl(dev)))
-> -		goto err1;
-> -
-> -	if ((rc = cxl_alloc_adapter_nr(adapter)))
-> -		goto err1;
-> -
-> -	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
-> -		goto err2;
-> +		return rc;
->  
->  	if ((rc = cxl_update_image_control(adapter)))
-> -		goto err2;
-> +		return rc;
->  
->  	if ((rc = cxl_map_adapter_regs(adapter, dev)))
-> -		goto err2;
-> +		return rc;
->  
->  	if ((rc = sanitise_adapter_regs(adapter)))
-> -		goto err2;
-> +		goto err;
->  
->  	if ((rc = init_implementation_adapter_regs(adapter, dev)))
-> -		goto err3;
-> +		goto err;
->  
->  	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_CAPI)))
-> -		goto err3;
-> +		goto err;
->  
->  	/* If recovery happened, the last step is to turn on snooping.
->  	 * In the non-recovery case this has no effect */
-> -	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON))) {
-> -		goto err3;
-> -	}
-> +	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON)))
-> +		goto err;
->  
->  	if ((rc = cxl_register_psl_err_irq(adapter)))
-> -		goto err3;
-> +		goto err;
-> +
-> +	return 0;
-> +
-> +err:
-> +	cxl_unmap_adapter_regs(adapter);
-> +	return rc;
-> +
-> +}
-> +
-> +static void cxl_deconfigure_adapter(struct cxl *adapter)
-> +{
-> +	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
-> +
-> +	cxl_release_psl_err_irq(adapter);
-> +	cxl_unmap_adapter_regs(adapter);
-> +
-> +	pci_disable_device(pdev);
-> +}
-> +
-> +static struct cxl *cxl_init_adapter(struct pci_dev *dev)
-> +{
-> +	struct cxl *adapter;
-> +	int rc;
-> +
-> +	adapter = cxl_alloc_adapter();
-> +	if (!adapter)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	/* Set defaults for parameters which need to persist over
-> +	 * configure/reconfigure
-> +	 */
-> +	adapter->perst_loads_image = true;
-> +
-> +	if ((rc = cxl_configure_adapter(adapter, dev))) {
-
-Brackets
-
-> +		pci_disable_device(dev);
-> +		cxl_release_adapter(&adapter->dev);
-> +		return ERR_PTR(rc);
-> +	}
->  
->  	/* Don't care if this one fails: */
->  	cxl_debugfs_adapter_add(adapter);
-> @@ -1118,35 +1166,25 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
->  	return adapter;
->  
->  err_put1:
-> -	device_unregister(&adapter->dev);
-> -	free = false;
-> +	/* This should mirror cxl_remove_adapter, except without the
-> +	 * sysfs parts
-> +	 */
->  	cxl_debugfs_adapter_remove(adapter);
-> -	cxl_release_psl_err_irq(adapter);
-> -err3:
-> -	cxl_unmap_adapter_regs(adapter);
-> -err2:
-> -	cxl_remove_adapter_nr(adapter);
-> -err1:
-> -	if (free)
-> -		kfree(adapter);
-> +	cxl_deconfigure_adapter(adapter);
-> +	device_unregister(&adapter->dev);
->  	return ERR_PTR(rc);
->  }
->  
->  static void cxl_remove_adapter(struct cxl *adapter)
->  {
-> -	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
-> -
-> -	pr_devel("cxl_release_adapter\n");
-> +	pr_devel("cxl_remove_adapter\n");
->  
->  	cxl_sysfs_adapter_remove(adapter);
->  	cxl_debugfs_adapter_remove(adapter);
-> -	cxl_release_psl_err_irq(adapter);
-> -	cxl_unmap_adapter_regs(adapter);
-> -	cxl_remove_adapter_nr(adapter);
->  
-> -	device_unregister(&adapter->dev);
-> +	cxl_deconfigure_adapter(adapter);
->  
-> -	pci_disable_device(pdev);
-> +	device_unregister(&adapter->dev);
->  }
->  
->  static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
-> @@ -1160,15 +1198,9 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
->  	if (cxl_verbose)
->  		dump_cxl_config_space(dev);
->  
-> -	if ((rc = pci_enable_device(dev))) {
-> -		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
-> -		return rc;
-> -	}
-> -
->  	adapter = cxl_init_adapter(dev);
->  	if (IS_ERR(adapter)) {
->  		dev_err(&dev->dev, "cxl_init_adapter failed: %li\n", PTR_ERR(adapter));
-> -		pci_disable_device(dev);
->  		return PTR_ERR(adapter);
->  	}
->  
+Best Regards,
+Ran
