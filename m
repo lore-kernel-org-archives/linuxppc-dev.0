@@ -1,26 +1,26 @@
 Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20A7E1A0079
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 13:51:58 +1000 (AEST)
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA83D1A026C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 13:58:07 +1000 (AEST)
+Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c02::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 61CBC14032B
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 13:51:57 +1000 (AEST)
-Received: by pabyb7 with SMTP id yb7so120373532pab.0
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 20:51:55 -0700 (PDT)
-Date: Tue, 11 Aug 2015 13:52:49 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 29B4614032B
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 13:58:07 +1000 (AEST)
+Received: by pdrg1 with SMTP id g1so78685077pdr.2
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 20:58:05 -0700 (PDT)
+Date: Tue, 11 Aug 2015 13:59:00 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: Daniel Axtens <dja@axtens.net>
 Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
-Subject: Re: [PATCH v2 04/10] cxl: Clean up adapter MMIO unmap path.
-Message-ID: <20150811135249.4fdacf75@camb691>
-In-Reply-To: <1438061323-20710-5-git-send-email-dja@axtens.net>
+Subject: Re: [PATCH v2 10/10] cxl: Add CONFIG_CXL_EEH symbol
+Message-ID: <20150811135900.41b08808@camb691>
+In-Reply-To: <1438061323-20710-11-git-send-email-dja@axtens.net>
 References: <1438061323-20710-1-git-send-email-dja@axtens.net>
- <1438061323-20710-5-git-send-email-dja@axtens.net>
+ <1438061323-20710-11-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,79 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Jul 2015 15:28:37 +1000
+On Tue, 28 Jul 2015 15:28:43 +1000
 Daniel Axtens <dja@axtens.net> wrote:
 
->  - MMIO pointer unmapping is guarded by a null pointer check.
->    However, iounmap doesn't null the pointer, just invalidate it.
->    Therefore, explicitly null the pointer after unmapping.
+> CONFIG_CXL_EEH is for CXL's EEH related code.
 > 
->  - afu_desc_mmio also needs to be unmapped.
+> As well as the EEH callbacks, it should guard sysfs and
+> kernel API changes that are only required for CXL EEH.
 > 
->  - PCI regions are allocated in cxl_map_adapter_regs.
->    Therefore they should be released in unmap, not elsewhere.
+> We now have all the pieces in place, so add it now.
 > 
 
-You've changed the order in which cxl_remove_adapter() does its work, which,
-I'm sure you've considered and it's fine, best to check.
-
-Acked-by: Cyril Bur <cyrilbur@gmail.com>
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
 
 > Signed-off-by: Daniel Axtens <dja@axtens.net>
 > ---
->  drivers/misc/cxl/pci.c | 24 ++++++++++++++++++------
->  1 file changed, 18 insertions(+), 6 deletions(-)
+>  drivers/misc/cxl/Kconfig | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 1849c1785b49..adcf938f2fdb 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -539,10 +539,18 @@ err:
+> diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+> index b6db9ebd52c2..c151fc1fe14c 100644
+> --- a/drivers/misc/cxl/Kconfig
+> +++ b/drivers/misc/cxl/Kconfig
+> @@ -11,11 +11,17 @@ config CXL_KERNEL_API
+>  	bool
+>  	default n
 >  
->  static void cxl_unmap_slice_regs(struct cxl_afu *afu)
->  {
-> -	if (afu->p2n_mmio)
-> +	if (afu->p2n_mmio) {
->  		iounmap(afu->p2n_mmio);
-> -	if (afu->p1n_mmio)
-> +		afu->p2n_mmio = NULL;
-> +	}
-> +	if (afu->p1n_mmio) {
->  		iounmap(afu->p1n_mmio);
-> +		afu->p1n_mmio = NULL;
-> +	}
-> +	if (afu->afu_desc_mmio) {
-> +		iounmap(afu->afu_desc_mmio);
-> +		afu->afu_desc_mmio = NULL;
-> +	}
->  }
->  
->  static void cxl_release_afu(struct device *dev)
-> @@ -920,10 +928,16 @@ err1:
->  
->  static void cxl_unmap_adapter_regs(struct cxl *adapter)
->  {
-> -	if (adapter->p1_mmio)
-> +	if (adapter->p1_mmio) {
->  		iounmap(adapter->p1_mmio);
-> -	if (adapter->p2_mmio)
-> +		adapter->p1_mmio = NULL;
-> +		pci_release_region(to_pci_dev(adapter->dev.parent), 2);
-> +	}
-> +	if (adapter->p2_mmio) {
->  		iounmap(adapter->p2_mmio);
-> +		adapter->p2_mmio = NULL;
-> +		pci_release_region(to_pci_dev(adapter->dev.parent), 0);
-> +	}
->  }
->  
->  static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
-> @@ -1132,8 +1146,6 @@ static void cxl_remove_adapter(struct cxl *adapter)
->  
->  	device_unregister(&adapter->dev);
->  
-> -	pci_release_region(pdev, 0);
-> -	pci_release_region(pdev, 2);
->  	pci_disable_device(pdev);
->  }
->  
+> +config CXL_EEH
+> +	bool
+> +	default n
+> +	select EEH
+> +
+>  config CXL
+>  	tristate "Support for IBM Coherent Accelerators (CXL)"
+>  	depends on PPC_POWERNV && PCI_MSI
+>  	select CXL_BASE
+>  	select CXL_KERNEL_API
+> +	select CXL_EEH
+>  	default m
+>  	help
+>  	  Select this option to enable driver support for IBM Coherent
