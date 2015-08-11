@@ -1,21 +1,33 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0119.outbound.protection.outlook.com [65.55.169.119])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <prvs=658ea894d=david.vrabel@citrix.com>
+Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27DC31A0567
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 02:56:54 +1000 (AEST)
-Message-ID: <1439312201.4099.40.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/corenet32: enable DMA in defconfig
-From: Scott Wood <scottwood@freescale.com>
-To: Yuan Yao-B46683 <yao.yuan@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 11 Aug 2015 11:56:41 -0500
-In-Reply-To: <CY1PR0301MB1562FDF93D4C9774AD7266E6837F0@CY1PR0301MB1562.namprd03.prod.outlook.com>
-References: <1437620446-47626-1-git-send-email-yao.yuan@freescale.com>
- <CY1PR0301MB1562FDF93D4C9774AD7266E6837F0@CY1PR0301MB1562.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55DD91A026C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 03:37:34 +1000 (AEST)
+Message-ID: <55CA32D5.606@citrix.com>
+Date: Tue, 11 Aug 2015 18:37:25 +0100
+From: David Vrabel <david.vrabel@citrix.com>
 MIME-Version: 1.0
+To: Julien Grall <julien.grall@citrix.com>, <xen-devel@lists.xenproject.org>
+CC: <linux-fbdev@vger.kernel.org>, <x86@kernel.org>, <netdev@vger.kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Jiri Slaby <jslaby@suse.com>, "Thomas
+ Gleixner" <tglx@linutronix.de>, Russell King <linux@arm.linux.org.uk>,
+ <linux-scsi@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ <stefano.stabellini@eu.citrix.com>, Ingo Molnar <mingo@redhat.com>,
+ <linux-input@vger.kernel.org>, Jean-Christophe Plagniol-Villard
+ <plagnioj@jcrosoft.com>, <ian.campbell@citrix.com>, "James E.J. Bottomley"
+ <JBottomley@odin.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ <linux-arm-kernel@lists.infradead.org>, Juergen Gross <jgross@suse.com>,
+ "Wei Liu" <wei.liu2@citrix.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ <linux-kernel@vger.kernel.org>, David Vrabel <david.vrabel@citrix.com>,
+ <linux-api@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ =?UTF-8?B?Um9n?= =?UTF-8?B?ZXIgUGF1IE1vbm7DqQ==?= <roger.pau@citrix.com>
+Subject: Re: [Xen-devel] [PATCH v3 0/9] Use correctly the Xen memory
+ terminologies
+References: <1438965282-19103-1-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1438965282-19103-1-git-send-email-julien.grall@citrix.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,16 +37,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-11 at 05:35 -0500, Yuan Yao-B46683 wrote:
-> Hi Scott,
+On 07/08/15 17:34, Julien Grall wrote:
+> Hi all,
 > 
-> Could you please take some times help to review this patch? 
-> 
-> Thanks.
-> 
-> Best Regards,
-> Yuan Yao
+> This patch series aims to use the memory terminologies described in
+> include/xen/mm.h [1] for Linux xen code.
 
-I've already pushed it to my next branch.
+Applied to for-linus-4.3, thanks.
 
--Scott
+David
