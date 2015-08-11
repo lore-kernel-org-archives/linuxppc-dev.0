@@ -2,25 +2,25 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D0EE21A01FB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 15:56:13 +1000 (AEST)
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
+ by lists.ozlabs.org (Postfix) with ESMTPS id E8E1C1A01FB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 16:00:27 +1000 (AEST)
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46E891401AD
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 15:56:13 +1000 (AEST)
-Received: by pawu10 with SMTP id u10so156600408paw.1
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 22:56:11 -0700 (PDT)
-Date: Tue, 11 Aug 2015 15:57:02 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 173571402BC
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 16:00:26 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so122677272pab.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 23:00:25 -0700 (PDT)
+Date: Tue, 11 Aug 2015 16:01:20 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: Daniel Axtens <dja@axtens.net>
 Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
-Subject: Re: [PATCH v2 07/10] cxl: Don't remove AFUs/vPHBs in cxl_reset
-Message-ID: <20150811155702.41b63c38@camb691>
-In-Reply-To: <1438061323-20710-8-git-send-email-dja@axtens.net>
+Subject: Re: [PATCH v2 05/10] cxl: Refactor adaptor init/teardown
+Message-ID: <20150811160120.01815326@camb691>
+In-Reply-To: <1438061323-20710-6-git-send-email-dja@axtens.net>
 References: <1438061323-20710-1-git-send-email-dja@axtens.net>
- <1438061323-20710-8-git-send-email-dja@axtens.net>
+ <1438061323-20710-6-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,38 +32,284 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Jul 2015 15:28:40 +1000
+On Tue, 28 Jul 2015 15:28:38 +1000
 Daniel Axtens <dja@axtens.net> wrote:
 
-> If the driver doesn't participate in EEH, the AFUs will be removed
-> by cxl_remove, which will be invoked by EEH.
+> Some aspects of initialisation are done only once in the lifetime of
+> an adapter: for example, allocating memory for the adapter,
+> allocating the adapter number, or setting up sysfs/debugfs files.
 > 
-> If the driver does particpate in EEH, the vPHB needs to stick around
-> so that the it can particpate.
+> However, we may want to be able to do some parts of the
+> initialisation multiple times: for example, in error recovery we
+> want to be able to tear down and then re-map IO memory and IRQs.
 > 
-> In both cases, we shouldn't remove the AFU/vPHB.
+> Therefore, refactor CXL init/teardown as follows.
+> 
+>  - Keep the overarching functions 'cxl_init_adapter' and its pair,
+>    'cxl_remove_adapter'.
+> 
+>  - Move all 'once only' allocation/freeing steps to the existing
+>    'cxl_alloc_adapter' function, and its pair 'cxl_release_adapter'
+>    (This involves moving allocation of the adapter number out of
+>    cxl_init_adapter.)
+> 
+>  - Create two new functions: 'cxl_configure_adapter', and its pair
+>    'cxl_deconfigure_adapter'. These two functions 'wire up' the
+>    hardware --- they (de)configure resources that do not need to
+>    last the entire lifetime of the adapter
 > 
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+You have a dilema with the use of ugly if (rc = foo()). I don't like it but the
+file is littered with it.
+
+Looks like the majority of uses in this file the conditional block is only
+one line then it makes sense (or at least in terms of numbers of lines... fair
+enough), however, if you have a conditional block spanning multiple lines, I
+don't like.
 
 > Signed-off-by: Daniel Axtens <dja@axtens.net>
 > ---
->  drivers/misc/cxl/pci.c | 5 -----
->  1 file changed, 5 deletions(-)
+>  drivers/misc/cxl/pci.c | 138 ++++++++++++++++++++++++++++++-------------------
+>  1 file changed, 85 insertions(+), 53 deletions(-)
 > 
 > diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 98a8207da88d..0acf9e62733e 100644
+> index adcf938f2fdb..7f47e2221524 100644
 > --- a/drivers/misc/cxl/pci.c
 > +++ b/drivers/misc/cxl/pci.c
-> @@ -877,11 +877,6 @@ int cxl_reset(struct cxl *adapter)
+> @@ -966,7 +966,6 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
+>  	CXL_READ_VSEC_BASE_IMAGE(dev, vsec, &adapter->base_image);
+>  	CXL_READ_VSEC_IMAGE_STATE(dev, vsec, &image_state);
+>  	adapter->user_image_loaded = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
+> -	adapter->perst_loads_image = true;
+>  	adapter->perst_select_user = !!(image_state & CXL_VSEC_USER_IMAGE_LOADED);
 >  
->  	dev_info(&dev->dev, "CXL reset\n");
+>  	CXL_READ_VSEC_NAFUS(dev, vsec, &adapter->slices);
+> @@ -1026,22 +1025,34 @@ static void cxl_release_adapter(struct device *dev)
 >  
-> -	for (i = 0; i < adapter->slices; i++) {
-> -		cxl_pci_vphb_remove(adapter->afu[i]);
-> -		cxl_remove_afu(adapter->afu[i]);
+>  	pr_devel("cxl_release_adapter\n");
+>  
+> +	cxl_remove_adapter_nr(adapter);
+> +
+>  	kfree(adapter);
+>  }
+>  
+> -static struct cxl *cxl_alloc_adapter(struct pci_dev *dev)
+> +static struct cxl *cxl_alloc_adapter(void)
+>  {
+>  	struct cxl *adapter;
+> +	int rc;
+>  
+>  	if (!(adapter = kzalloc(sizeof(struct cxl), GFP_KERNEL)))
+>  		return NULL;
+>  
+> -	adapter->dev.parent = &dev->dev;
+> -	adapter->dev.release = cxl_release_adapter;
+> -	pci_set_drvdata(dev, adapter);
+>  	spin_lock_init(&adapter->afu_list_lock);
+>  
+> +	if ((rc = cxl_alloc_adapter_nr(adapter)))
+
+Humf
+
+> +		goto err1;
+> +
+> +	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
+
+Humf
+> +		goto err2;
+> +
+>  	return adapter;
+> +
+> +err2:
+> +	cxl_remove_adapter_nr(adapter);
+> +err1:
+> +	kfree(adapter);
+> +	return NULL;
+>  }
+>  
+>  static int sanitise_adapter_regs(struct cxl *adapter)
+> @@ -1050,57 +1061,94 @@ static int sanitise_adapter_regs(struct cxl *adapter)
+>  	return cxl_tlb_slb_invalidate(adapter);
+>  }
+>  
+> -static struct cxl *cxl_init_adapter(struct pci_dev *dev)
+> +/* This should contain *only* operations that can safely be done in
+> + * both creation and recovery.
+> + */
+> +static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+>  {
+> -	struct cxl *adapter;
+> -	bool free = true;
+>  	int rc;
+>  
+> +	adapter->dev.parent = &dev->dev;
+> +	adapter->dev.release = cxl_release_adapter;
+> +	pci_set_drvdata(dev, adapter);
+>  
+> -	if (!(adapter = cxl_alloc_adapter(dev)))
+> -		return ERR_PTR(-ENOMEM);
+> +	if ((rc = pci_enable_device(dev))) {
+
+Backets...
+
+> +		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
+> +		return rc;
+> +	}
+>  
+>  	if ((rc = cxl_read_vsec(adapter, dev)))
+> -		goto err1;
+> +		return rc;
+>  
+>  	if ((rc = cxl_vsec_looks_ok(adapter, dev)))
+> -		goto err1;
+> +	        return rc;
+>  
+>  	if ((rc = setup_cxl_bars(dev)))
+> -		goto err1;
+> +		return rc;
+>  
+>  	if ((rc = switch_card_to_cxl(dev)))
+> -		goto err1;
+> -
+> -	if ((rc = cxl_alloc_adapter_nr(adapter)))
+> -		goto err1;
+> -
+> -	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
+> -		goto err2;
+> +		return rc;
+>  
+>  	if ((rc = cxl_update_image_control(adapter)))
+> -		goto err2;
+> +		return rc;
+>  
+>  	if ((rc = cxl_map_adapter_regs(adapter, dev)))
+> -		goto err2;
+> +		return rc;
+>  
+>  	if ((rc = sanitise_adapter_regs(adapter)))
+> -		goto err2;
+> +		goto err;
+>  
+>  	if ((rc = init_implementation_adapter_regs(adapter, dev)))
+> -		goto err3;
+> +		goto err;
+>  
+>  	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_CAPI)))
+> -		goto err3;
+> +		goto err;
+>  
+>  	/* If recovery happened, the last step is to turn on snooping.
+>  	 * In the non-recovery case this has no effect */
+> -	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON))) {
+> -		goto err3;
+> -	}
+> +	if ((rc = pnv_phb_to_cxl_mode(dev, OPAL_PHB_CAPI_MODE_SNOOP_ON)))
+> +		goto err;
+>  
+>  	if ((rc = cxl_register_psl_err_irq(adapter)))
+> -		goto err3;
+> +		goto err;
+> +
+> +	return 0;
+> +
+> +err:
+> +	cxl_unmap_adapter_regs(adapter);
+> +	return rc;
+> +
+> +}
+> +
+> +static void cxl_deconfigure_adapter(struct cxl *adapter)
+> +{
+> +	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
+> +
+> +	cxl_release_psl_err_irq(adapter);
+> +	cxl_unmap_adapter_regs(adapter);
+> +
+> +	pci_disable_device(pdev);
+> +}
+> +
+> +static struct cxl *cxl_init_adapter(struct pci_dev *dev)
+> +{
+> +	struct cxl *adapter;
+> +	int rc;
+> +
+> +	adapter = cxl_alloc_adapter();
+> +	if (!adapter)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	/* Set defaults for parameters which need to persist over
+> +	 * configure/reconfigure
+> +	 */
+> +	adapter->perst_loads_image = true;
+> +
+> +	if ((rc = cxl_configure_adapter(adapter, dev))) {
+
+Brackets
+
+> +		pci_disable_device(dev);
+> +		cxl_release_adapter(&adapter->dev);
+> +		return ERR_PTR(rc);
+> +	}
+>  
+>  	/* Don't care if this one fails: */
+>  	cxl_debugfs_adapter_add(adapter);
+> @@ -1118,35 +1166,25 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
+>  	return adapter;
+>  
+>  err_put1:
+> -	device_unregister(&adapter->dev);
+> -	free = false;
+> +	/* This should mirror cxl_remove_adapter, except without the
+> +	 * sysfs parts
+> +	 */
+>  	cxl_debugfs_adapter_remove(adapter);
+> -	cxl_release_psl_err_irq(adapter);
+> -err3:
+> -	cxl_unmap_adapter_regs(adapter);
+> -err2:
+> -	cxl_remove_adapter_nr(adapter);
+> -err1:
+> -	if (free)
+> -		kfree(adapter);
+> +	cxl_deconfigure_adapter(adapter);
+> +	device_unregister(&adapter->dev);
+>  	return ERR_PTR(rc);
+>  }
+>  
+>  static void cxl_remove_adapter(struct cxl *adapter)
+>  {
+> -	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
+> -
+> -	pr_devel("cxl_release_adapter\n");
+> +	pr_devel("cxl_remove_adapter\n");
+>  
+>  	cxl_sysfs_adapter_remove(adapter);
+>  	cxl_debugfs_adapter_remove(adapter);
+> -	cxl_release_psl_err_irq(adapter);
+> -	cxl_unmap_adapter_regs(adapter);
+> -	cxl_remove_adapter_nr(adapter);
+>  
+> -	device_unregister(&adapter->dev);
+> +	cxl_deconfigure_adapter(adapter);
+>  
+> -	pci_disable_device(pdev);
+> +	device_unregister(&adapter->dev);
+>  }
+>  
+>  static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+> @@ -1160,15 +1198,9 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+>  	if (cxl_verbose)
+>  		dump_cxl_config_space(dev);
+>  
+> -	if ((rc = pci_enable_device(dev))) {
+> -		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
+> -		return rc;
 > -	}
 > -
->  	/* pcie_warm_reset requests a fundamental pci reset which includes a
->  	 * PERST assert/deassert.  PERST triggers a loading of the image
->  	 * if "user" or "factory" is selected in sysfs */
+>  	adapter = cxl_init_adapter(dev);
+>  	if (IS_ERR(adapter)) {
+>  		dev_err(&dev->dev, "cxl_init_adapter failed: %li\n", PTR_ERR(adapter));
+> -		pci_disable_device(dev);
+>  		return PTR_ERR(adapter);
+>  	}
+>  
