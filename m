@@ -2,26 +2,25 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E8021A0034
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 13:31:06 +1000 (AEST)
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 762AD1A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Aug 2015 13:42:02 +1000 (AEST)
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8659914056B
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 13:31:05 +1000 (AEST)
-Received: by pabyb7 with SMTP id yb7so120012139pab.0
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 20:31:03 -0700 (PDT)
-Date: Tue, 11 Aug 2015 13:31:58 +1000
+ by ozlabs.org (Postfix) with ESMTPS id E22701402BC
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 13:42:01 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so120203520pab.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Aug 2015 20:42:00 -0700 (PDT)
+Date: Tue, 11 Aug 2015 13:42:54 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: Daniel Axtens <dja@axtens.net>
 Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au.ibm.com
-Subject: Re: [PATCH v2 01/10] cxl: Drop commands if the PCI channel is not
- in normal state
-Message-ID: <20150811133158.4576a716@camb691>
-In-Reply-To: <1438061323-20710-2-git-send-email-dja@axtens.net>
+Subject: Re: [PATCH v2 02/10] cxl: Allocate and release the SPA with the AFU
+Message-ID: <20150811134254.0358f0e3@camb691>
+In-Reply-To: <1438061323-20710-3-git-send-email-dja@axtens.net>
 References: <1438061323-20710-1-git-send-email-dja@axtens.net>
- <1438061323-20710-2-git-send-email-dja@axtens.net>
+ <1438061323-20710-3-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,449 +32,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Jul 2015 15:28:34 +1000
+On Tue, 28 Jul 2015 15:28:35 +1000
 Daniel Axtens <dja@axtens.net> wrote:
 
-> If the PCI channel has gone down, don't attempt to poke the hardware.
+> Previously the SPA was allocated and freed upon entering and leaving
+> AFU-directed mode. This causes some issues for error recovery - contexts
+> hold a pointer inside the SPA, and they may persist after the AFU has
+> been detached.
 > 
-> We need to guard every time cxl_whatever_(read|write) is called. This
-> is because a call to those functions will dereference an offset into an
-> mmio register, and the mmio mappings get invalidated in the EEH
-> teardown.
+> We would ideally like to allocate the SPA when the AFU is allocated, and
+> release it until the AFU is released. However, we don't know how big the
+> SPA needs to be until we read the AFU descriptor.
+> 
+> Therefore, restructure the code:
+> 
+>  - Allocate the SPA only once, on the first attach.
+> 
+>  - Release the SPA only when the entire AFU is being released (not
+>    detached). Guard the release with a NULL check, so we don't free
+>    if it was never allocated (e.g. dedicated mode)
 > 
 
-Hey Daniel, keeping in mind I can't exactly test it, and that I don't know the
-ins and outs of CAPI, the code looks nice and it makes sence to me.
+I'm sure you tested this :), looks fine to me, from an outsiders perspective
+code appears to do what the commit message says.
 
-Some very minor points,
-
-Otherwise
+Just one super minor question, you do the NULL check in the caller. How obvious
+is the error if/when a caller forgets?
 
 Acked-by: Cyril Bur <cyrilbur@gmail.com>
 
-> Check in the read/write functions in the header.
-> We give them the same semantics as usual PCI operations:
->  - a write to a channel that is down is ignored.
->  - a read from a channel that is down returns all fs.
-> 
-> Also, we try to access the MMIO space of a vPHB device as part of the
-> PCI disable path. Because that's a read that bypasses most of our usual
-> checks, we handle it explicitly.
-> 
-> As far as user visible warnings go:
->  - Check link state in file ops, return -EIO if down.
->  - Be reasonably quiet if there's an error in a teardown path,
->    or when we already know the hardware is going down.
->  - Throw a big WARN if someone tries to start a CXL operation
->    while the card is down. This gives a useful stacktrace for
->    debugging whatever is doing that.
-> 
 > Signed-off-by: Daniel Axtens <dja@axtens.net>
 > ---
->  drivers/misc/cxl/context.c |  6 +++-
->  drivers/misc/cxl/cxl.h     | 34 ++++++++++++++++------
->  drivers/misc/cxl/file.c    | 19 +++++++++++++
->  drivers/misc/cxl/native.c  | 71 ++++++++++++++++++++++++++++++++++++++++++++--
->  drivers/misc/cxl/vphb.c    | 26 +++++++++++++++++
->  5 files changed, 144 insertions(+), 12 deletions(-)
+>  drivers/misc/cxl/cxl.h    |  3 +++
+>  drivers/misc/cxl/native.c | 28 ++++++++++++++++++----------
+>  drivers/misc/cxl/pci.c    |  3 +++
+>  3 files changed, 24 insertions(+), 10 deletions(-)
 > 
-> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-> index 1287148629c0..615842115848 100644
-> --- a/drivers/misc/cxl/context.c
-> +++ b/drivers/misc/cxl/context.c
-> @@ -193,7 +193,11 @@ int __detach_context(struct cxl_context *ctx)
->  	if (status != STARTED)
->  		return -EBUSY;
->  
-> -	WARN_ON(cxl_detach_process(ctx));
-> +	/* Only warn if we detached while the link was OK.
-> +	 * If detach fails when hw is down, we don't care.
-> +	 */
-> +	WARN_ON(cxl_detach_process(ctx) &&
-> +		cxl_adapter_link_ok(ctx->afu->adapter));
->  	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
->  	put_pid(ctx->pid);
->  	cxl_ctx_put();
 > diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 4fd66cabde1e..47eadbcfd379 100644
+> index 47eadbcfd379..88a88c445e2a 100644
 > --- a/drivers/misc/cxl/cxl.h
 > +++ b/drivers/misc/cxl/cxl.h
-> @@ -531,6 +531,14 @@ struct cxl_process_element {
->  	__be32 software_state;
->  } __packed;
+> @@ -603,6 +603,9 @@ void unregister_cxl_calls(struct cxl_calls *calls);
+>  int cxl_alloc_adapter_nr(struct cxl *adapter);
+>  void cxl_remove_adapter_nr(struct cxl *adapter);
 >  
-> +static inline bool cxl_adapter_link_ok(struct cxl *cxl)
-> +{
-> +	struct pci_dev *pdev;
+> +int cxl_alloc_spa(struct cxl_afu *afu);
+> +void cxl_release_spa(struct cxl_afu *afu);
 > +
-> +	pdev = to_pci_dev(cxl->dev.parent);
-> +	return (pdev->error_state == pci_channel_io_normal);
-> +}
-> +
-
-In the process of reviewing these patches I read the style guide in furthur
-detail and (it doesn't 100% commit one way or the other but) it suggests it may
-be wise to get GCC choose if it should inline or not, unless you have an reason 
-(the macro replacment below being a good example)... Just a thought.
-
->  static inline void __iomem *_cxl_p1_addr(struct cxl *cxl, cxl_p1_reg_t reg)
->  {
->  	WARN_ON(!cpu_has_feature(CPU_FTR_HVMODE));
-> @@ -538,9 +546,11 @@ static inline void __iomem *_cxl_p1_addr(struct cxl *cxl, cxl_p1_reg_t reg)
->  }
->  
->  #define cxl_p1_write(cxl, reg, val) \
-> -	out_be64(_cxl_p1_addr(cxl, reg), val)
-> +	if (cxl_adapter_link_ok(cxl)) \
-> +		out_be64(_cxl_p1_addr(cxl, reg), val)
->  #define cxl_p1_read(cxl, reg) \
-> -	in_be64(_cxl_p1_addr(cxl, reg))
-> +	(cxl_adapter_link_ok(cxl) ? in_be64(_cxl_p1_addr(cxl, reg)) \
-> +	 : (~0ULL))
->  
->  static inline void __iomem *_cxl_p1n_addr(struct cxl_afu *afu, cxl_p1n_reg_t reg)
->  {
-> @@ -549,9 +559,11 @@ static inline void __iomem *_cxl_p1n_addr(struct cxl_afu *afu, cxl_p1n_reg_t reg
->  }
->  
->  #define cxl_p1n_write(afu, reg, val) \
-> -	out_be64(_cxl_p1n_addr(afu, reg), val)
-> +	if (cxl_adapter_link_ok(afu->adapter)) \
-> +		out_be64(_cxl_p1n_addr(afu, reg), val)
->  #define cxl_p1n_read(afu, reg) \
-> -	in_be64(_cxl_p1n_addr(afu, reg))
-> +	(cxl_adapter_link_ok(afu->adapter) ? in_be64(_cxl_p1n_addr(afu, reg)) \
-> +	 : (~0ULL))
->  
-
-In the interest of safety and consistency, you might want braces around afu
-when you dereference it. ie (afu)->adapter.
-
->  static inline void __iomem *_cxl_p2n_addr(struct cxl_afu *afu, cxl_p2n_reg_t reg)
->  {
-> @@ -559,15 +571,21 @@ static inline void __iomem *_cxl_p2n_addr(struct cxl_afu *afu, cxl_p2n_reg_t reg
->  }
->  
->  #define cxl_p2n_write(afu, reg, val) \
-> -	out_be64(_cxl_p2n_addr(afu, reg), val)
-> +	if (cxl_adapter_link_ok(afu->adapter)) \
-> +		out_be64(_cxl_p2n_addr(afu, reg), val)
->  #define cxl_p2n_read(afu, reg) \
-> -	in_be64(_cxl_p2n_addr(afu, reg))
-> +	(cxl_adapter_link_ok(afu->adapter) ? in_be64(_cxl_p2n_addr(afu, reg)) \
-> +	 : (~0ULL))
->  
->  
->  #define cxl_afu_cr_read64(afu, cr, off) \
-> -	in_le64((afu)->afu_desc_mmio + (afu)->crs_offset + ((cr) * (afu)->crs_len) + (off))
-> +	(cxl_adapter_link_ok(afu->adapter) ? \
-> +	 in_le64((afu)->afu_desc_mmio + (afu)->crs_offset + ((cr) * (afu)->crs_len) + (off)) : \
-> +	 (~0ULL))
->  #define cxl_afu_cr_read32(afu, cr, off) \
-> -	in_le32((afu)->afu_desc_mmio + (afu)->crs_offset + ((cr) * (afu)->crs_len) + (off))
-> +	(cxl_adapter_link_ok(afu->adapter) ? \
-> +	 in_le32((afu)->afu_desc_mmio + (afu)->crs_offset + ((cr) * (afu)->crs_len) + (off)) : \
-> +	 0xffffffff)
-
-Previous comment applies here, the existing code has (afu)->
-
-
-So a birdy has informed me these are going to become inlines, you can
-therefore disregard those comments. I am much more in favour of inlines!
-
->  u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off);
->  u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off);
->  
-> diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-> index e3f4b69527a9..b99b4fa84ebd 100644
-> --- a/drivers/misc/cxl/file.c
-> +++ b/drivers/misc/cxl/file.c
-> @@ -73,6 +73,11 @@ static int __afu_open(struct inode *inode, struct file *file, bool master)
->  	if (!afu->current_mode)
->  		goto err_put_afu;
->  
-> +	if (!cxl_adapter_link_ok(adapter)) {
-> +		rc = -EIO;
-> +		goto err_put_afu;
-> +	}
-> +
->  	if (!(ctx = cxl_context_alloc())) {
->  		rc = -ENOMEM;
->  		goto err_put_afu;
-> @@ -238,6 +243,9 @@ long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
->  	if (ctx->status == CLOSED)
->  		return -EIO;
->  
-> +	if (!cxl_adapter_link_ok(ctx->afu->adapter))
-> +		return -EIO;
-> +
->  	pr_devel("afu_ioctl\n");
->  	switch (cmd) {
->  	case CXL_IOCTL_START_WORK:
-> @@ -265,6 +273,9 @@ int afu_mmap(struct file *file, struct vm_area_struct *vm)
->  	if (ctx->status != STARTED)
->  		return -EIO;
->  
-> +	if (!cxl_adapter_link_ok(ctx->afu->adapter))
-> +		return -EIO;
-> +
->  	return cxl_context_iomap(ctx, vm);
->  }
->  
-> @@ -309,6 +320,9 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
->  	int rc;
->  	DEFINE_WAIT(wait);
->  
-> +	if (!cxl_adapter_link_ok(ctx->afu->adapter))
-> +		return -EIO;
-> +
->  	if (count < CXL_READ_MIN_SIZE)
->  		return -EINVAL;
->  
-> @@ -319,6 +333,11 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
->  		if (ctx_event_pending(ctx))
->  			break;
->  
-> +		if (!cxl_adapter_link_ok(ctx->afu->adapter)) {
-> +			rc = -EIO;
-> +			goto out;
-> +		}
-> +
->  		if (file->f_flags & O_NONBLOCK) {
->  			rc = -EAGAIN;
->  			goto out;
+>  int cxl_file_init(void);
+>  void cxl_file_exit(void);
+>  int cxl_register_adapter(struct cxl *adapter);
 > diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index 10567f245818..16948915eb0d 100644
+> index 16948915eb0d..debd97147b58 100644
 > --- a/drivers/misc/cxl/native.c
 > +++ b/drivers/misc/cxl/native.c
-> @@ -41,6 +41,12 @@ static int afu_control(struct cxl_afu *afu, u64 command,
->  			rc = -EBUSY;
->  			goto out;
->  		}
-> +		if (!cxl_adapter_link_ok(afu->adapter)) {
-> +			afu->enabled = enabled;
-> +			rc = -EIO;
-> +			goto out;
-> +		}
-> +
->  		pr_devel_ratelimited("AFU control... (0x%.16llx)\n",
->  				     AFU_Cntl | command);
->  		cpu_relax();
-> @@ -85,6 +91,10 @@ int __cxl_afu_reset(struct cxl_afu *afu)
+> @@ -182,10 +182,8 @@ static int spa_max_procs(int spa_size)
+>  	return ((spa_size / 8) - 96) / 17;
+>  }
 >  
->  int cxl_afu_check_and_enable(struct cxl_afu *afu)
+> -static int alloc_spa(struct cxl_afu *afu)
+> +int cxl_alloc_spa(struct cxl_afu *afu)
 >  {
-> +	if (!cxl_adapter_link_ok(afu->adapter)) {
-> +		WARN(1, "Refusing to enable afu while link down!\n");
-> +		return -EIO;
-> +	}
->  	if (afu->enabled)
->  		return 0;
->  	return afu_enable(afu);
-> @@ -103,6 +113,12 @@ int cxl_psl_purge(struct cxl_afu *afu)
+> -	u64 spap;
+> -
+>  	/* Work out how many pages to allocate */
+>  	afu->spa_order = 0;
+>  	do {
+> @@ -204,6 +202,13 @@ static int alloc_spa(struct cxl_afu *afu)
+>  	pr_devel("spa pages: %i afu->spa_max_procs: %i   afu->num_procs: %i\n",
+>  		 1<<afu->spa_order, afu->spa_max_procs, afu->num_procs);
 >  
->  	pr_devel("PSL purge request\n");
->  
-> +	if (!cxl_adapter_link_ok(afu->adapter)) {
-> +		dev_warn(&afu->dev, "PSL Purge called with link down, ignoring\n");
-> +		rc = -EIO;
-> +		goto out;
-> +	}
+> +	return 0;
+> +}
 > +
->  	if ((AFU_Cntl & CXL_AFU_Cntl_An_ES_MASK) != CXL_AFU_Cntl_An_ES_Disabled) {
->  		WARN(1, "psl_purge request while AFU not disabled!\n");
->  		cxl_afu_disable(afu);
-> @@ -119,6 +135,11 @@ int cxl_psl_purge(struct cxl_afu *afu)
->  			rc = -EBUSY;
->  			goto out;
->  		}
-> +		if (!cxl_adapter_link_ok(afu->adapter)) {
-> +			rc = -EIO;
-> +			goto out;
-> +		}
+> +static void attach_spa(struct cxl_afu *afu)
+> +{
+> +	u64 spap;
 > +
->  		dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
->  		pr_devel_ratelimited("PSL purging... PSL_CNTL: 0x%.16llx  PSL_DSISR: 0x%.16llx\n", PSL_CNTL, dsisr);
->  		if (dsisr & CXL_PSL_DSISR_TRANS) {
-> @@ -215,6 +236,8 @@ int cxl_tlb_slb_invalidate(struct cxl *adapter)
->  			dev_warn(&adapter->dev, "WARNING: CXL adapter wide TLBIA timed out!\n");
->  			return -EBUSY;
->  		}
-> +		if (!cxl_adapter_link_ok(adapter))
-> +			return -EIO;
->  		cpu_relax();
->  	}
+>  	afu->sw_command_status = (__be64 *)((char *)afu->spa +
+>  					    ((afu->spa_max_procs + 3) * 128));
 >  
-> @@ -224,6 +247,8 @@ int cxl_tlb_slb_invalidate(struct cxl *adapter)
->  			dev_warn(&adapter->dev, "WARNING: CXL adapter wide SLBIA timed out!\n");
->  			return -EBUSY;
->  		}
-> +		if (!cxl_adapter_link_ok(adapter))
-> +			return -EIO;
->  		cpu_relax();
->  	}
->  	return 0;
-> @@ -240,6 +265,11 @@ int cxl_afu_slbia(struct cxl_afu *afu)
->  			dev_warn(&afu->dev, "WARNING: CXL AFU SLBIA timed out!\n");
->  			return -EBUSY;
->  		}
-> +		/* If the adapter has gone down, we can assume that we
-> +		 * will PERST it and that will invalidate everything.
-> +		 */
-> +		if (!cxl_adapter_link_ok(afu->adapter))
-> +			return -EIO;
->  		cpu_relax();
->  	}
->  	return 0;
-> @@ -279,6 +309,8 @@ static void slb_invalid(struct cxl_context *ctx)
->  	cxl_p1_write(adapter, CXL_PSL_SLBIA, CXL_TLB_SLB_IQ_LPIDPID);
+> @@ -212,13 +217,15 @@ static int alloc_spa(struct cxl_afu *afu)
+>  	spap |= CXL_PSL_SPAP_V;
+>  	pr_devel("cxl: SPA allocated at 0x%p. Max processes: %i, sw_command_status: 0x%p CXL_PSL_SPAP_An=0x%016llx\n", afu->spa, afu->spa_max_procs, afu->sw_command_status, spap);
+>  	cxl_p1n_write(afu, CXL_PSL_SPAP_An, spap);
+> -
+> -	return 0;
+>  }
 >  
->  	while (1) {
-> +		if (!cxl_adapter_link_ok(adapter))
-> +			break;
->  		slbia = cxl_p1_read(adapter, CXL_PSL_SLBIA);
->  		if (!(slbia & CXL_TLB_SLB_P))
->  			break;
-> @@ -308,6 +340,11 @@ static int do_process_element_cmd(struct cxl_context *ctx,
->  			rc = -EBUSY;
->  			goto out;
->  		}
-> +		if (!cxl_adapter_link_ok(ctx->afu->adapter)) {
-> +			dev_warn(&ctx->afu->dev, "WARNING: Device link down, aborting Process Element Command!\n");
-> +			rc = -EIO;
-> +			goto out;
-> +		}
->  		state = be64_to_cpup(ctx->afu->sw_command_status);
->  		if (state == ~0ULL) {
->  			pr_err("cxl: Error adding process element to AFU\n");
-> @@ -355,8 +392,13 @@ static int terminate_process_element(struct cxl_context *ctx)
->  
->  	mutex_lock(&ctx->afu->spa_mutex);
->  	pr_devel("%s Terminate pe: %i started\n", __func__, ctx->pe);
-> -	rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_TERMINATE,
-> -				    CXL_PE_SOFTWARE_STATE_V | CXL_PE_SOFTWARE_STATE_T);
-> +	/* We could be asked to terminate when the hw is down.  That
-
-                                                               ^
-I'm notoriously bad for having a low care threshhold but I do have a high care
-threshhold for consistency. Double space after period? Are you sure?
-
-> +	 * should always succeed: it's not running if the hw has gone
-> +	 * away and is being reset.
-> +	 */
-> +	if (cxl_adapter_link_ok(ctx->afu->adapter))
-> +		rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_TERMINATE,
-> +					    CXL_PE_SOFTWARE_STATE_V | CXL_PE_SOFTWARE_STATE_T);
->  	ctx->elem->software_state = 0;	/* Remove Valid bit */
->  	pr_devel("%s Terminate pe: %i finished\n", __func__, ctx->pe);
->  	mutex_unlock(&ctx->afu->spa_mutex);
-> @@ -369,7 +411,14 @@ static int remove_process_element(struct cxl_context *ctx)
->  
->  	mutex_lock(&ctx->afu->spa_mutex);
->  	pr_devel("%s Remove pe: %i started\n", __func__, ctx->pe);
-> -	if (!(rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_REMOVE, 0)))
-> +
-> +	/* We could be asked to remove when the hw is down.  Again, if
-
-Also here                                                   ^
-
-> +	 * the hw is down, the PE is gone, so we succeed.
-> +	 */
-> +	if (cxl_adapter_link_ok(ctx->afu->adapter))
-> +		rc = do_process_element_cmd(ctx, CXL_SPA_SW_CMD_REMOVE, 0);
-> +
-> +	if (!rc)
->  		ctx->pe_inserted = false;
->  	slb_invalid(ctx);
->  	pr_devel("%s Remove pe: %i finished\n", __func__, ctx->pe);
-> @@ -614,6 +663,11 @@ int cxl_afu_activate_mode(struct cxl_afu *afu, int mode)
->  	if (!(mode & afu->modes_supported))
->  		return -EINVAL;
->  
-> +	if (!cxl_adapter_link_ok(afu->adapter)) {
-> +		WARN(1, "Device link is down, refusing to activate!\n");
-> +		return -EIO;
-> +	}
-> +
->  	if (mode == CXL_MODE_DIRECTED)
->  		return activate_afu_directed(afu);
->  	if (mode == CXL_MODE_DEDICATED)
-> @@ -624,6 +678,11 @@ int cxl_afu_activate_mode(struct cxl_afu *afu, int mode)
->  
->  int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
+> -static void release_spa(struct cxl_afu *afu)
+> +static inline void detach_spa(struct cxl_afu *afu)
 >  {
-> +	if (!cxl_adapter_link_ok(ctx->afu->adapter)) {
-> +		WARN(1, "Device link is down, refusing to attach process!\n");
-> +		return -EIO;
-> +	}
+>  	cxl_p1n_write(afu, CXL_PSL_SPAP_An, 0);
+> +}
 > +
->  	ctx->kernel = kernel;
->  	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
->  		return attach_afu_directed(ctx, wed, amr);
-> @@ -668,6 +727,12 @@ int cxl_get_irq(struct cxl_afu *afu, struct cxl_irq_info *info)
->  {
->  	u64 pidtid;
+> +void cxl_release_spa(struct cxl_afu *afu)
+> +{
+>  	free_pages((unsigned long) afu->spa, afu->spa_order);
+>  }
 >  
-> +	/* If the adapter has gone away, we can't get any meaningful
-> +	 * information.
-> +	 */
-> +	if (!cxl_adapter_link_ok(afu->adapter))
-> +		return -EIO;
-> +
->  	info->dsisr = cxl_p2n_read(afu, CXL_PSL_DSISR_An);
->  	info->dar = cxl_p2n_read(afu, CXL_PSL_DAR_An);
->  	info->dsr = cxl_p2n_read(afu, CXL_PSL_DSR_An);
-> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-> index 2eba002b580b..2930911c1e42 100644
-> --- a/drivers/misc/cxl/vphb.c
-> +++ b/drivers/misc/cxl/vphb.c
-> @@ -138,6 +138,26 @@ static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
+> @@ -446,8 +453,11 @@ static int activate_afu_directed(struct cxl_afu *afu)
+>  
+>  	dev_info(&afu->dev, "Activating AFU directed mode\n");
+>  
+> -	if (alloc_spa(afu))
+> -		return -ENOMEM;
+> +	if (afu->spa == NULL) {
+> +		if (cxl_alloc_spa(afu))
+> +			return -ENOMEM;
+> +	}
+> +	attach_spa(afu);
+>  
+>  	cxl_p1n_write(afu, CXL_PSL_SCNTL_An, CXL_PSL_SCNTL_An_PM_AFU);
+>  	cxl_p1n_write(afu, CXL_PSL_AMOR_An, 0xFFFFFFFFFFFFFFFFULL);
+> @@ -560,8 +570,6 @@ static int deactivate_afu_directed(struct cxl_afu *afu)
+>  	cxl_afu_disable(afu);
+>  	cxl_psl_purge(afu);
+>  
+> -	release_spa(afu);
+> -
 >  	return 0;
 >  }
 >  
-> +
-> +static inline bool cxl_config_link_ok(struct pci_bus *bus)
-> +{
-> +	struct pci_controller *phb;
-> +	struct cxl_afu *afu;
-> +
-> +	/* Config space IO is based on phb->cfg_addr, which is based on
-> +	 * afu_desc_mmio. This isn't safe to read/write when the link
-
-And yet not here         ^
-
-> +	 * goes down, as EEH tears down MMIO space.
-> +	 *
-> +	 * Check if the link is OK before proceeding.
-> +	 */
-> +
-> +	phb = pci_bus_to_host(bus);
-> +	if (phb == NULL)
-> +		return false;
-> +	afu = (struct cxl_afu *)phb->private_data;
-> +	return cxl_adapter_link_ok(afu->adapter);
-> +}
-> +
->  static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
->  				int offset, int len, u32 *val)
->  {
-> @@ -150,6 +170,9 @@ static int cxl_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
->  	if (rc)
->  		return rc;
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 32ad09705949..1849c1785b49 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -551,6 +551,9 @@ static void cxl_release_afu(struct device *dev)
 >  
-> +	if (!cxl_config_link_ok(bus))
-> +		return PCIBIOS_DEVICE_NOT_FOUND;
-> +
->  	/* Can only read 32 bits */
->  	*val = (in_le32(ioaddr) >> shift) & mask;
->  	return PCIBIOS_SUCCESSFUL;
-> @@ -167,6 +190,9 @@ static int cxl_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
->  	if (rc)
->  		return rc;
+>  	pr_devel("cxl_release_afu\n");
 >  
-> +	if (!cxl_config_link_ok(bus))
-> +		return PCIBIOS_DEVICE_NOT_FOUND;
+> +	if (afu->spa)
+> +		cxl_release_spa(afu);
 > +
->  	/* Can only write 32 bits so do read-modify-write */
->  	mask <<= shift;
->  	val <<= shift;
+>  	kfree(afu);
+>  }
+>  
