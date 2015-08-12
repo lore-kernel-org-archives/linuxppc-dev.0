@@ -2,28 +2,27 @@ Return-Path: <cyrilbur@gmail.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3362B1A1D30
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:38:08 +1000 (AEST)
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 313C31A2B06
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:39:45 +1000 (AEST)
+Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c03::22b])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F214D1401AF
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:38:06 +1000 (AEST)
-Received: by pacgr6 with SMTP id gr6so7845597pac.2
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 23:38:05 -0700 (PDT)
-Date: Wed, 12 Aug 2015 16:39:00 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 7AE631401C7
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:39:44 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so7901696pab.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 23:39:43 -0700 (PDT)
+Date: Wed, 12 Aug 2015 16:40:37 +1000
 From: Cyril Bur <cyrilbur@gmail.com>
 To: Daniel Axtens <dja@axtens.net>
 Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Manoj Kumar
  <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com
-Subject: Re: [PATCH v3 09/11] cxl: Allow the kernel to trust that an image
- won't change on PERST.
-Message-ID: <20150812163900.3ee1b41b@camb691>
-In-Reply-To: <1439340500-18610-10-git-send-email-dja@axtens.net>
+Subject: Re: [PATCH v3 10/11] cxl: EEH support
+Message-ID: <20150812164037.332ae249@camb691>
+In-Reply-To: <1439340500-18610-11-git-send-email-dja@axtens.net>
 References: <1439340500-18610-1-git-send-email-dja@axtens.net>
- <1439340500-18610-10-git-send-email-dja@axtens.net>
+ <1439340500-18610-11-git-send-email-dja@axtens.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,161 +34,328 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 12 Aug 2015 10:48:18 +1000
+On Wed, 12 Aug 2015 10:48:19 +1000
 Daniel Axtens <dja@axtens.net> wrote:
 
-> Provide a kernel API and a sysfs entry which allow a user to specify
-> that when a card is PERSTed, it's image will stay the same, allowing
-> it to participate in EEH.
-> 
-> cxl_reset is used to reflash the card. In that case, we cannot safely
-> assert that the image will not change. Therefore, disallow cxl_reset
-> if the flag is set.
+> EEH (Enhanced Error Handling) allows a driver to recover from the
+> temporary failure of an attached PCI card. Enable basic CXL support
+> for EEH.
 > 
 
-Looks much better without all the #ifdefs!!
+Looks like the only change since was the removal of the #ifdef, if that is
+correct.
 
 Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
 
 > Signed-off-by: Daniel Axtens <dja@axtens.net>
 > ---
->  Documentation/ABI/testing/sysfs-class-cxl | 10 ++++++++++
->  drivers/misc/cxl/api.c                    |  7 +++++++
->  drivers/misc/cxl/cxl.h                    |  1 +
->  drivers/misc/cxl/pci.c                    |  7 +++++++
->  drivers/misc/cxl/sysfs.c                  | 26 ++++++++++++++++++++++++++
->  include/misc/cxl.h                        | 10 ++++++++++
->  6 files changed, 61 insertions(+)
+>  drivers/misc/cxl/cxl.h  |   1 +
+>  drivers/misc/cxl/pci.c  | 252 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/misc/cxl/vphb.c |   8 ++
+>  3 files changed, 261 insertions(+)
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-> index acfe9df83139..b07e86d4597f 100644
-> --- a/Documentation/ABI/testing/sysfs-class-cxl
-> +++ b/Documentation/ABI/testing/sysfs-class-cxl
-> @@ -223,3 +223,13 @@ Description:    write only
->                  Writing 1 will issue a PERST to card which may cause the card
->                  to reload the FPGA depending on load_image_on_perst.
->  Users:		https://github.com/ibm-capi/libcxl
-> +
-> +What:		/sys/class/cxl/<card>/perst_reloads_same_image
-> +Date:		July 2015
-> +Contact:	linuxppc-dev@lists.ozlabs.org
-> +Description:	read/write
-> +		Trust that when an image is reloaded via PERST, it will not
-> +		have changed.
-> +		0 = don't trust, the image may be different (default)
-> +		1 = trust that the image will not change.
-> +Users:		https://github.com/ibm-capi/libcxl
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index 729e0851167d..6a768a9ad22f 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -327,3 +327,10 @@ int cxl_afu_reset(struct cxl_context *ctx)
->  	return cxl_afu_check_and_enable(afu);
->  }
->  EXPORT_SYMBOL_GPL(cxl_afu_reset);
-> +
-> +void cxl_perst_reloads_same_image(struct cxl_afu *afu,
-> +				  bool perst_reloads_same_image)
-> +{
-> +	afu->adapter->perst_same_image = perst_reloads_same_image;
-> +}
-> +EXPORT_SYMBOL_GPL(cxl_perst_reloads_same_image);
 > diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index d540542f9931..cda02412b01e 100644
+> index cda02412b01e..6f5386653dae 100644
 > --- a/drivers/misc/cxl/cxl.h
 > +++ b/drivers/misc/cxl/cxl.h
-> @@ -493,6 +493,7 @@ struct cxl {
->  	bool user_image_loaded;
->  	bool perst_loads_image;
->  	bool perst_select_user;
-> +	bool perst_same_image;
->  };
+> @@ -726,6 +726,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
 >  
->  int cxl_alloc_one_irq(struct cxl *adapter);
+>  void cxl_stop_trace(struct cxl *cxl);
+>  int cxl_pci_vphb_add(struct cxl_afu *afu);
+> +void cxl_pci_vphb_reconfigure(struct cxl_afu *afu);
+>  void cxl_pci_vphb_remove(struct cxl_afu *afu);
+>  
+>  extern struct pci_driver cxl_pci_driver;
 > diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 023a2086830b..b4a68a896a33 100644
+> index b4a68a896a33..1eb26a357ce0 100644
 > --- a/drivers/misc/cxl/pci.c
 > +++ b/drivers/misc/cxl/pci.c
-> @@ -874,6 +874,12 @@ int cxl_reset(struct cxl *adapter)
->  	int i;
->  	u32 val;
+> @@ -24,6 +24,7 @@
+>  #include <asm/io.h>
 >  
-> +	if (adapter->perst_same_image) {
-> +		dev_warn(&dev->dev,
-> +			 "cxl: refusing to reset/reflash when perst_reloads_same_image is set.\n");
-> +		return -EINVAL;
-> +	}
-> +
->  	dev_info(&dev->dev, "CXL reset\n");
+>  #include "cxl.h"
+> +#include <misc/cxl.h>
 >  
->  	/* pcie_warm_reset requests a fundamental pci reset which includes a
-> @@ -1148,6 +1154,7 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
->  	 * configure/reconfigure
->  	 */
->  	adapter->perst_loads_image = true;
-> +	adapter->perst_same_image = false;
 >  
->  	rc = cxl_configure_adapter(adapter, dev);
->  	if (rc) {
-> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-> index 31f38bc71a3d..6619cf1f6e1f 100644
-> --- a/drivers/misc/cxl/sysfs.c
-> +++ b/drivers/misc/cxl/sysfs.c
-> @@ -112,12 +112,38 @@ static ssize_t load_image_on_perst_store(struct device *device,
->  	return count;
+>  #define CXL_PCI_VSEC_ID	0x1280
+> @@ -1246,10 +1247,261 @@ static void cxl_remove(struct pci_dev *dev)
+>  	cxl_remove_adapter(adapter);
 >  }
 >  
-> +static ssize_t perst_reloads_same_image_show(struct device *device,
-> +				 struct device_attribute *attr,
-> +				 char *buf)
+> +static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
+> +						pci_channel_state_t state)
 > +{
-> +	struct cxl *adapter = to_cxl_adapter(device);
+> +	struct pci_dev *afu_dev;
+> +	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
+> +	pci_ers_result_t afu_result = PCI_ERS_RESULT_NEED_RESET;
 > +
-> +	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->perst_same_image);
+> +	/* There should only be one entry, but go through the list
+> +	 * anyway
+> +	 */
+> +	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+> +		if (!afu_dev->driver)
+> +			continue;
+> +
+> +		afu_dev->error_state = state;
+> +
+> +		if (afu_dev->driver->err_handler)
+> +			afu_result = afu_dev->driver->err_handler->error_detected(afu_dev,
+> +										  state);
+> +		/* Disconnect trumps all, NONE trumps NEED_RESET */
+> +		if (afu_result == PCI_ERS_RESULT_DISCONNECT)
+> +			result = PCI_ERS_RESULT_DISCONNECT;
+> +		else if ((afu_result == PCI_ERS_RESULT_NONE) &&
+> +			 (result == PCI_ERS_RESULT_NEED_RESET))
+> +			result = PCI_ERS_RESULT_NONE;
+> +	}
+> +	return result;
 > +}
 > +
-> +static ssize_t perst_reloads_same_image_store(struct device *device,
-> +				 struct device_attribute *attr,
-> +				 const char *buf, size_t count)
+> +static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
+> +					       pci_channel_state_t state)
 > +{
-> +	struct cxl *adapter = to_cxl_adapter(device);
-> +	int rc;
-> +	int val;
+> +	struct cxl *adapter = pci_get_drvdata(pdev);
+> +	struct cxl_afu *afu;
+> +	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
+> +	int i;
 > +
-> +	rc = sscanf(buf, "%i", &val);
-> +	if ((rc != 1) || !(val == 1 || val == 0))
-> +		return -EINVAL;
+> +	/* At this point, we could still have an interrupt pending.
+> +	 * Let's try to get them out of the way before they do
+> +	 * anything we don't like.
+> +	 */
+> +	schedule();
 > +
-> +	adapter->perst_same_image = (val == 1 ? true : false);
-> +	return count;
+> +	/* If we're permanently dead, give up. */
+> +	if (state == pci_channel_io_perm_failure) {
+> +		/* Tell the AFU drivers; but we don't care what they
+> +		 * say, we're going away.
+> +		 */
+> +		for (i = 0; i < adapter->slices; i++) {
+> +			afu = adapter->afu[i];
+> +			cxl_vphb_error_detected(afu, state);
+> +		}
+> +		return PCI_ERS_RESULT_DISCONNECT;
+> +	}
+> +
+> +	/* Are we reflashing?
+> +	 *
+> +	 * If we reflash, we could come back as something entirely
+> +	 * different, including a non-CAPI card. As such, by default
+> +	 * we don't participate in the process. We'll be unbound and
+> +	 * the slot re-probed. (TODO: check EEH doesn't blindly rebind
+> +	 * us!)
+> +	 *
+> +	 * However, this isn't the entire story: for reliablity
+> +	 * reasons, we usually want to reflash the FPGA on PERST in
+> +	 * order to get back to a more reliable known-good state.
+> +	 *
+> +	 * This causes us a bit of a problem: if we reflash we can't
+> +	 * trust that we'll come back the same - we could have a new
+> +	 * image and been PERSTed in order to load that
+> +	 * image. However, most of the time we actually *will* come
+> +	 * back the same - for example a regular EEH event.
+> +	 *
+> +	 * Therefore, we allow the user to assert that the image is
+> +	 * indeed the same and that we should continue on into EEH
+> +	 * anyway.
+> +	 */
+> +	if (adapter->perst_loads_image && !adapter->perst_same_image) {
+> +		/* TODO take the PHB out of CXL mode */
+> +		dev_info(&pdev->dev, "reflashing, so opting out of EEH!\n");
+> +		return PCI_ERS_RESULT_NONE;
+> +	}
+> +
+> +	/*
+> +	 * At this point, we want to try to recover.  We'll always
+> +	 * need a complete slot reset: we don't trust any other reset.
+> +	 *
+> +	 * Now, we go through each AFU:
+> +	 *  - We send the driver, if bound, an error_detected callback.
+> +	 *    We expect it to clean up, but it can also tell us to give
+> +	 *    up and permanently detach the card. To simplify things, if
+> +	 *    any bound AFU driver doesn't support EEH, we give up on EEH.
+> +	 *
+> +	 *  - We detach all contexts associated with the AFU. This
+> +	 *    does not free them, but puts them into a CLOSED state
+> +	 *    which causes any the associated files to return useful
+> +	 *    errors to userland. It also unmaps, but does not free,
+> +	 *    any IRQs.
+> +	 *
+> +	 *  - We clean up our side: releasing and unmapping resources we hold
+> +	 *    so we can wire them up again when the hardware comes back up.
+> +	 *
+> +	 * Driver authors should note:
+> +	 *
+> +	 *  - Any contexts you create in your kernel driver (except
+> +	 *    those associated with anonymous file descriptors) are
+> +	 *    your responsibility to free and recreate. Likewise with
+> +	 *    any attached resources.
+> +	 *
+> +	 *  - We will take responsibility for re-initialising the
+> +	 *    device context (the one set up for you in
+> +	 *    cxl_pci_enable_device_hook and accessed through
+> +	 *    cxl_get_context). If you've attached IRQs or other
+> +	 *    resources to it, they remains yours to free.
+> +	 *
+> +	 * All calls you make into cxl that normally touch the
+> +	 * hardware will not touch the hardware during recovery. So
+> +	 * you can call the same functions to release resources as you
+> +	 * normally would.
+> +	 *
+> +	 * Two examples:
+> +	 *
+> +	 * 1) If you normally free all your resources at the end of
+> +	 *    each request, or if you use anonymous FDs, your
+> +	 *    error_detected callback can simply set a flag to tell
+> +	 *    your driver not to start any new calls. You can then
+> +	 *    clear the flag in the resume callback.
+> +	 *
+> +	 * 2) If you normally allocate your resources on startup:
+> +	 *     * Set a flag in error_detected as above.
+> +	 *     * Let CXL detach your contexts.
+> +	 *     * In slot_reset, free the old resources and allocate new ones.
+> +	 *     * In resume, clear the flag to allow things to start.
+> +	 */
+> +	for (i = 0; i < adapter->slices; i++) {
+> +		afu = adapter->afu[i];
+> +
+> +		result = cxl_vphb_error_detected(afu, state);
+> +
+> +		/* Only continue if everyone agrees on NEED_RESET */
+> +		if (result != PCI_ERS_RESULT_NEED_RESET)
+> +			return result;
+> +
+> +		cxl_context_detach_all(afu);
+> +		cxl_afu_deactivate_mode(afu);
+> +		cxl_deconfigure_afu(afu);
+> +	}
+> +	cxl_deconfigure_adapter(adapter);
+> +
+> +	return result;
 > +}
 > +
->  static struct device_attribute adapter_attrs[] = {
->  	__ATTR_RO(caia_version),
->  	__ATTR_RO(psl_revision),
->  	__ATTR_RO(base_image),
->  	__ATTR_RO(image_loaded),
->  	__ATTR_RW(load_image_on_perst),
-> +	__ATTR_RW(perst_reloads_same_image),
->  	__ATTR(reset, S_IWUSR, NULL, reset_adapter_store),
+> +static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
+> +{
+> +	struct cxl *adapter = pci_get_drvdata(pdev);
+> +	struct cxl_afu *afu;
+> +	struct cxl_context *ctx;
+> +	struct pci_dev *afu_dev;
+> +	pci_ers_result_t afu_result = PCI_ERS_RESULT_RECOVERED;
+> +	pci_ers_result_t result = PCI_ERS_RESULT_RECOVERED;
+> +	int i;
+> +
+> +	if (cxl_configure_adapter(adapter, pdev))
+> +		goto err;
+> +
+> +	for (i = 0; i < adapter->slices; i++) {
+> +		afu = adapter->afu[i];
+> +
+> +		if (cxl_configure_afu(afu, adapter, pdev))
+> +			goto err;
+> +
+> +		if (cxl_afu_select_best_mode(afu))
+> +			goto err;
+> +
+> +		cxl_pci_vphb_reconfigure(afu);
+> +
+> +		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+> +			/* Reset the device context.
+> +			 * TODO: make this less disruptive
+> +			 */
+> +			ctx = cxl_get_context(afu_dev);
+> +
+> +			if (ctx && cxl_release_context(ctx))
+> +				goto err;
+> +
+> +			ctx = cxl_dev_context_init(afu_dev);
+> +			if (!ctx)
+> +				goto err;
+> +
+> +			afu_dev->dev.archdata.cxl_ctx = ctx;
+> +
+> +			if (cxl_afu_check_and_enable(afu))
+> +				goto err;
+> +
+> +			afu_dev->error_state = pci_channel_io_normal;
+> +
+> +			/* If there's a driver attached, allow it to
+> +			 * chime in on recovery. Drivers should check
+> +			 * if everything has come back OK.
+> +			 */
+> +			if (!afu_dev->driver)
+> +				continue;
+> +
+> +			if (afu_dev->driver->err_handler &&
+> +			    afu_dev->driver->err_handler->slot_reset)
+> +				afu_result = afu_dev->driver->err_handler->slot_reset(afu_dev);
+> +
+> +			if (afu_result == PCI_ERS_RESULT_DISCONNECT)
+> +				result = PCI_ERS_RESULT_DISCONNECT;
+> +		}
+> +	}
+> +	return result;
+> +
+> +err:
+> +	/* All the bits that happen in both error_detected and cxl_remove
+> +	 * should be idempotent, so we don't need to worry about leaving a mix
+> +	 * of unconfigured and reconfigured resources.
+> +	 */
+> +	dev_err(&pdev->dev, "EEH recovery failed. Asking to be disconnected.\n");
+> +	return PCI_ERS_RESULT_DISCONNECT;
+> +}
+> +
+> +static void cxl_pci_resume(struct pci_dev *pdev)
+> +{
+> +	struct cxl *adapter = pci_get_drvdata(pdev);
+> +	struct cxl_afu *afu;
+> +	struct pci_dev *afu_dev;
+> +	int i;
+> +
+> +	/* Everything is back now. Drivers should restart work now.
+> +	 * This is not the place to be checking if everything came back up
+> +	 * properly, because there's no return value: do that in slot_reset.
+> +	 */
+> +	for (i = 0; i < adapter->slices; i++) {
+> +		afu = adapter->afu[i];
+> +
+> +		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
+> +			if (afu_dev->driver && afu_dev->driver->err_handler &&
+> +			    afu_dev->driver->err_handler->resume)
+> +				afu_dev->driver->err_handler->resume(afu_dev);
+> +		}
+> +	}
+> +}
+> +
+> +static const struct pci_error_handlers cxl_err_handler = {
+> +	.error_detected = cxl_pci_error_detected,
+> +	.slot_reset = cxl_pci_slot_reset,
+> +	.resume = cxl_pci_resume,
+> +};
+> +
+>  struct pci_driver cxl_pci_driver = {
+>  	.name = "cxl-pci",
+>  	.id_table = cxl_pci_tbl,
+>  	.probe = cxl_probe,
+>  	.remove = cxl_remove,
+>  	.shutdown = cxl_remove,
+> +	.err_handler = &cxl_err_handler,
 >  };
+> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+> index d1c3509c925d..af336ff6655e 100644
+> --- a/drivers/misc/cxl/vphb.c
+> +++ b/drivers/misc/cxl/vphb.c
+> @@ -266,6 +266,14 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
+>  	return 0;
+>  }
 >  
-> diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-> index 7a6c1d6cc173..f2ffe5bd720d 100644
-> --- a/include/misc/cxl.h
-> +++ b/include/misc/cxl.h
-> @@ -200,4 +200,14 @@ unsigned int cxl_fd_poll(struct file *file, struct poll_table_struct *poll);
->  ssize_t cxl_fd_read(struct file *file, char __user *buf, size_t count,
->  			   loff_t *off);
+> +void cxl_pci_vphb_reconfigure(struct cxl_afu *afu)
+> +{
+> +	/* When we are reconfigured, the AFU's MMIO space is unmapped
+> +	 * and remapped. We need to reflect this in the PHB's view of
+> +	 * the world.
+> +	 */
+> +	afu->phb->cfg_addr = afu->afu_desc_mmio + afu->crs_offset;
+> +}
 >  
-> +/*
-> + * For EEH, a driver may want to assert a PERST will reload the same image
-> + * from flash into the FPGA.
-> + *
-> + * This is a property of the entire adapter, not a single AFU, so drivers
-> + * should set this property with care!
-> + */
-> +void cxl_perst_reloads_same_image(struct cxl_afu *afu,
-> +				  bool perst_reloads_same_image);
-> +
->  #endif /* _MISC_CXL_H */
+>  void cxl_pci_vphb_remove(struct cxl_afu *afu)
+>  {
