@@ -1,17 +1,17 @@
-Return-Path: <ppc@mindchasers.com>
-Received: from smtp.webfaction.com (mail6.webfaction.com [74.55.86.74])
- by lists.ozlabs.org (Postfix) with ESMTP id 99EC21A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 13:47:07 +1000 (AEST)
-Message-ID: <55CABC70.50106@mindchasers.com>
-Date: Tue, 11 Aug 2015 23:24:32 -0400
-From: Bob Cochran <ppc@mindchasers.com>
-MIME-Version: 1.0
-To: Ran Shalit <ranshalit@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- gdb <gdb@sourceware.org>
-Subject: Re: gdb with powerpc
-References: <CAJ2oMhLr9aoZ258hm0-xuRuW5iksLMOgNOL=hQh6S4SteFNDeg@mail.gmail.com>
-In-Reply-To: <CAJ2oMhLr9aoZ258hm0-xuRuW5iksLMOgNOL=hQh6S4SteFNDeg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED98C1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 14:11:17 +1000 (AEST)
+In-Reply-To: <1438153805-31828-4-git-send-email-khandual@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mikey@neuling.org
+Subject: Re: [4/8] powerpc/slb: Add some helper functions to improve
+ modularization
+Message-Id: <20150812041117.CFFC91401CD@ozlabs.org>
+Date: Wed, 12 Aug 2015 14:11:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2015 12:50 PM, Ran Shalit wrote:
-> Hello,
->
-> I would like to ask if anyone tried remote debugging with
-> gdb/gdbserver on powerpc.
->
-[snip]
->                                 ^
->
-> As an alternative, Is anyone familiar with binary package with
-> gdb/gdbserver for powerpc used with x86 host ?
+On Wed, 2015-29-07 at 07:10:01 UTC, Anshuman Khandual wrote:
+> This patch adds the following six helper functions to help improve
+> modularization and readability of the code.
+> 
+> (1) slb_invalidate_all:		Invalidates the entire SLB
+> (2) slb_invalidate:		Invalidates SLB entries present in PACA
+> (3) mmu_linear_vsid_flags:	VSID flags for kernel linear mapping
+> (4) mmu_virtual_vsid_flags:	VSID flags for kernel virtual mapping
+> (5) mmu_vmemmap_vsid_flags:	VSID flags for kernel vmem mapping
+> (6) mmu_io_vsid_flags:		VSID flags for kernel I/O mapping
 
-I use the powerpc toolchain built using the Yocto Project recipes, and 
-this includes gdb and gdbserver (if you include the gdb recipe ).  I can 
-run gdb remotely and on my target ( both 32-bit and 64-bit targets ).
+That's too many changes for one patch, it's certainly not a single logical change.
 
-They also have pre-built toolchains that might include gdb, but I don't 
-use them.
+I'm happy with all the flag ones being done in a single patch, but please do
+the other two in separate patches.
 
-
->
-> Best Regards,
-> Ran
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+cheers
