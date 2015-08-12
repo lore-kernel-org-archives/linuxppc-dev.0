@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C0CA61A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:10:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FBFB1A06F0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:10:12 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 28/31] powerpc: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:47 +0200
-Message-Id: <1439363150-8661-29-git-send-email-hch@lst.de>
+Subject: [PATCH 29/31] parisc: handle page-less SG entries
+Date: Wed, 12 Aug 2015 09:05:48 +0200
+Message-Id: <1439363150-8661-30-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,40 +33,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make all cache invalidation conditional on sg_has_page().
+Make all cache invalidation conditional on sg_has_page() and use
+sg_phys to get the physical address directly.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/kernel/dma.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ arch/parisc/kernel/pci-dma.c | 29 ++++++++++++++++++-----------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index 35e4dcc..cece40b 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -135,7 +135,10 @@ static int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl,
- 	for_each_sg(sgl, sg, nents, i) {
- 		sg->dma_address = sg_phys(sg) + get_dma_offset(dev);
- 		sg->dma_length = sg->length;
--		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+diff --git a/arch/parisc/kernel/pci-dma.c b/arch/parisc/kernel/pci-dma.c
+index b9402c9..6cad0e0 100644
+--- a/arch/parisc/kernel/pci-dma.c
++++ b/arch/parisc/kernel/pci-dma.c
+@@ -483,11 +483,13 @@ static int pa11_dma_map_sg(struct device *dev, struct scatterlist *sglist, int n
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for_each_sg(sglist, sg, nents, i) {
+-		unsigned long vaddr = (unsigned long)sg_virt(sg);
+-
+-		sg_dma_address(sg) = (dma_addr_t) virt_to_phys(vaddr);
++		sg_dma_address(sg) = sg_phys(sg);
+ 		sg_dma_len(sg) = sg->length;
+-		flush_kernel_dcache_range(vaddr, sg->length);
++
 +		if (sg_has_page(sg)) {
-+			__dma_sync_page(sg_page(sg), sg->offset, sg->length,
-+					direction);
++			flush_kernel_dcache_range((unsigned long)sg_virt(sg),
++						  sg->length);
 +		}
  	}
- 
  	return nents;
-@@ -200,7 +203,10 @@ static inline void dma_direct_sync_sg(struct device *dev,
- 	int i;
+ }
+@@ -504,9 +506,10 @@ static void pa11_dma_unmap_sg(struct device *dev, struct scatterlist *sglist, in
  
- 	for_each_sg(sgl, sg, nents, i)
--		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
-+		if (sg_has_page(sg)) {
-+			__dma_sync_page(sg_page(sg), sg->offset, sg->length,
-+					direction);
-+		}
+ 	/* once we do combining we'll need to use phys_to_virt(sg_dma_address(sglist)) */
+ 
+-	for_each_sg(sglist, sg, nents, i)
+-		flush_kernel_vmap_range(sg_virt(sg), sg->length);
+-	return;
++	for_each_sg(sglist, sg, nents, i) {
++		if (sg_has_page(sg))
++			flush_kernel_vmap_range(sg_virt(sg), sg->length);
++	}
  }
  
- static inline void dma_direct_sync_single(struct device *dev,
+ static void pa11_dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, unsigned long offset, size_t size, enum dma_data_direction direction)
+@@ -530,8 +533,10 @@ static void pa11_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sgl
+ 
+ 	/* once we do combining we'll need to use phys_to_virt(sg_dma_address(sglist)) */
+ 
+-	for_each_sg(sglist, sg, nents, i)
+-		flush_kernel_vmap_range(sg_virt(sg), sg->length);
++	for_each_sg(sglist, sg, nents, i) {
++		if (sg_has_page(sg))
++			flush_kernel_vmap_range(sg_virt(sg), sg->length);
++	}
+ }
+ 
+ static void pa11_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sglist, int nents, enum dma_data_direction direction)
+@@ -541,8 +546,10 @@ static void pa11_dma_sync_sg_for_device(struct device *dev, struct scatterlist *
+ 
+ 	/* once we do combining we'll need to use phys_to_virt(sg_dma_address(sglist)) */
+ 
+-	for_each_sg(sglist, sg, nents, i)
+-		flush_kernel_vmap_range(sg_virt(sg), sg->length);
++	for_each_sg(sglist, sg, nents, i) {
++		if (sg_has_page(sg))
++			flush_kernel_vmap_range(sg_virt(sg), sg->length);
++	}
+ }
+ 
+ struct hppa_dma_ops pcxl_dma_ops = {
 -- 
 1.9.1
