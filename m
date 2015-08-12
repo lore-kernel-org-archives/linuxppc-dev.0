@@ -1,19 +1,26 @@
-Return-Path: <palves@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E27031A0034
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 09:57:21 +1000 (AEST)
-Message-ID: <55CA8BDD.30708@redhat.com>
-Date: Wed, 12 Aug 2015 00:57:17 +0100
-From: Pedro Alves <palves@redhat.com>
-MIME-Version: 1.0
-To: Ran Shalit <ranshalit@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- gdb <gdb@sourceware.org>
-Subject: Re: gdb with powerpc
-References: <CAJ2oMhLr9aoZ258hm0-xuRuW5iksLMOgNOL=hQh6S4SteFNDeg@mail.gmail.com>
-In-Reply-To: <CAJ2oMhLr9aoZ258hm0-xuRuW5iksLMOgNOL=hQh6S4SteFNDeg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDF2E1A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 10:50:50 +1000 (AEST)
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A5A0D1401AF
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 10:50:49 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so1901886pab.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 17:50:47 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, cyrilbur@gmail.com,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ Manoj Kumar <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com,
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH v3 00/11] CXL EEH Handling
+Date: Wed, 12 Aug 2015 10:48:09 +1000
+Message-Id: <1439340500-18610-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,27 +30,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2015 05:50 PM, Ran Shalit wrote:
-> Hello,
-> 
-> I would like to ask if anyone tried remote debugging with
-> gdb/gdbserver on powerpc.
-> I've tried to cross-compile gdb for powerpc, but I get into troubles.
-> I am using the following compiler:
-> powerpc-buildroot-linux-gnu-gcc (Buildroot 2014.11) 4.8.3
-> 
+CXL accelerators are unfortunately not immune from failure. This patch
+set enables them to particpate in the Extended Error Handling process.
 
-> gcc -c -g -O2    -I. -I.././gdb -I.././gdb/config
+This series starts with a number of preparatory patches:
 
-Looks like you're using your host x86 gcc to build a ppc program.
-That can't work.
+ - Patch 1 is cleanup: converting macros to static inlines.
 
-> As an alternative, Is anyone familiar with binary package with
-> gdb/gdbserver for powerpc used with x86 host ?
+ - Patch 2 makes sure we don't touch the hardware when it has failed.
+ 
+ - Patches 3-5 make the 'unplug' functions idempotent, so that if we
+   get part way through recovery and then fail, being completely
+   unplugged as part of removal doesn't cause us to oops out.
 
-Please try following the instructions at:
+ - Patches 6 and 7 refactor init and teardown paths for the adapter
+   and AFUs, so that they can be configured and deconfigured
+   separately from their allocation and release.
 
- https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver
+ - Patch 8 stops cxl_reset from breaking EEH.
 
-Thanks,
-Pedro Alves
+Patches 9 and 10 are parts of EEH.
+
+ - Firstly we have a kernel flag that allows us to confidently assert
+   the hardware will not change (be reflashed) when it it reset. We
+   need this in order to be able to safely do EEH recovery.
+
+ - We then have the EEH support itself.
+
+Finally, we add a CONFIG_CXL_EEH symbol. This allows drivers to depend
+on the API we provide to enable CXL EEH, or to be easily backportable
+if EEH is optional.
+
+Changes from v2 are mostly minor cleanups, reflecting some review and
+further testing.
+ - Use static inlines instead of macros.
+ - Propagate PCI link state to devices on the vPHB.
+ - Various cleanup, thanks Cyril Bur.
+ - Use pci_channel_offline instead of a direct check.
+ - Don't ifdef, just provide the symbol so that drivers know that the
+   new API is available. Thanks to Cyril for patiently explaining this
+   to me about 3 times before I understood.
+
+Changes from v1:
+ - More comprehensive link down checks, including vPHB.
+ - Rebased to apply cleanly to 4.2-rc4.
+ - cxl reset changes.
+ - CONFIG_CXL_EEH symbol addition.
+ - add better vPHB support to EEH.
+
+Daniel Axtens (11):
+  cxl: Convert MMIO read/write macros to inline functions
+  cxl: Drop commands if the PCI channel is not in normal state
+  cxl: Allocate and release the SPA with the AFU
+  cxl: Make IRQ release idempotent
+  cxl: Clean up adapter MMIO unmap path.
+  cxl: Refactor adaptor init/teardown
+  cxl: Refactor AFU init/teardown
+  cxl: Don't remove AFUs/vPHBs in cxl_reset
+  cxl: Allow the kernel to trust that an image won't change on PERST.
+  cxl: EEH support
+  cxl: Add CONFIG_CXL_EEH symbol
+
+ Documentation/ABI/testing/sysfs-class-cxl |  10 +
+ drivers/misc/cxl/Kconfig                  |   6 +
+ drivers/misc/cxl/api.c                    |   7 +
+ drivers/misc/cxl/context.c                |   6 +-
+ drivers/misc/cxl/cxl.h                    |  84 ++++-
+ drivers/misc/cxl/file.c                   |  19 ++
+ drivers/misc/cxl/irq.c                    |   9 +
+ drivers/misc/cxl/native.c                 | 104 +++++-
+ drivers/misc/cxl/pci.c                    | 517 ++++++++++++++++++++++++------
+ drivers/misc/cxl/sysfs.c                  |  26 ++
+ drivers/misc/cxl/vphb.c                   |  34 ++
+ include/misc/cxl.h                        |  10 +
+ 12 files changed, 700 insertions(+), 132 deletions(-)
+
+-- 
+2.1.4
