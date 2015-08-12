@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42CFF1A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0016E1A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:39 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 17/31] ia64/sba_iommu: remove sba_sg_address
-Date: Wed, 12 Aug 2015 09:05:36 +0200
-Message-Id: <1439363150-8661-18-git-send-email-hch@lst.de>
+Subject: [PATCH 18/31] nios2: handle page-less SG entries
+Date: Wed, 12 Aug 2015 09:05:37 +0200
+Message-Id: <1439363150-8661-19-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,109 +33,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Make all cache invalidation conditional on sg_has_page() and use
+sg_phys to get the physical address directly.
+
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/ia64/hp/common/sba_iommu.c | 22 ++++++++++------------
- 1 file changed, 10 insertions(+), 12 deletions(-)
+ arch/nios2/mm/dma-mapping.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 344387a..9e5aa8e 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -248,8 +248,6 @@ static int reserve_sba_gart = 1;
- static SBA_INLINE void sba_mark_invalid(struct ioc *, dma_addr_t, size_t);
- static SBA_INLINE void sba_free_range(struct ioc *, dma_addr_t, size_t);
+diff --git a/arch/nios2/mm/dma-mapping.c b/arch/nios2/mm/dma-mapping.c
+index ac5da75..1a0a68d 100644
+--- a/arch/nios2/mm/dma-mapping.c
++++ b/arch/nios2/mm/dma-mapping.c
+@@ -64,13 +64,11 @@ int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 	BUG_ON(!valid_dma_direction(direction));
  
--#define sba_sg_address(sg)	sg_virt((sg))
+ 	for_each_sg(sg, sg, nents, i) {
+-		void *addr;
 -
- #ifdef FULL_VALID_PDIR
- static u64 prefetch_spill_page;
- #endif
-@@ -397,7 +395,7 @@ sba_dump_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
- 	while (nents-- > 0) {
- 		printk(KERN_DEBUG " %d : DMA %08lx/%05x CPU %p\n", nents,
- 		       startsg->dma_address, startsg->dma_length,
--		       sba_sg_address(startsg));
-+		       sg_virt(startsg));
- 		startsg = sg_next(startsg);
+-		addr = sg_virt(sg);
+-		if (addr) {
+-			__dma_sync_for_device(addr, sg->length, direction);
+-			sg->dma_address = sg_phys(sg);
++		if (sg_has_page(sg)) {
++			__dma_sync_for_device(sg_virt(sg), sg->length,
++						direction);
+ 		}
++		sg->dma_address = sg_phys(sg);
+ 	}
+ 
+ 	return nents;
+@@ -113,9 +111,8 @@ void dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
+ 		return;
+ 
+ 	for_each_sg(sg, sg, nhwentries, i) {
+-		addr = sg_virt(sg);
+-		if (addr)
+-			__dma_sync_for_cpu(addr, sg->length, direction);
++		if (sg_has_page(sg))
++			__dma_sync_for_cpu(sg_virt(sg), sg->length, direction);
  	}
  }
-@@ -409,7 +407,7 @@ sba_check_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
- 	int the_nents = nents;
+ EXPORT_SYMBOL(dma_unmap_sg);
+@@ -166,8 +163,10 @@ void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
+ 	BUG_ON(!valid_dma_direction(direction));
  
- 	while (the_nents-- > 0) {
--		if (sba_sg_address(the_sg) == 0x0UL)
-+		if (sg_virt(the_sg) == 0x0UL)
- 			sba_dump_sg(NULL, startsg, nents);
- 		the_sg = sg_next(the_sg);
- 	}
-@@ -1243,11 +1241,11 @@ sba_fill_pdir(
- 		if (dump_run_sg)
- 			printk(" %2d : %08lx/%05x %p\n",
- 				nents, startsg->dma_address, cnt,
--				sba_sg_address(startsg));
-+				sg_virt(startsg));
- #else
- 		DBG_RUN_SG(" %d : %08lx/%05x %p\n",
- 				nents, startsg->dma_address, cnt,
--				sba_sg_address(startsg));
-+				sg_virt(startsg));
- #endif
- 		/*
- 		** Look for the start of a new DMA stream
-@@ -1267,7 +1265,7 @@ sba_fill_pdir(
- 		** Look for a VCONTIG chunk
- 		*/
- 		if (cnt) {
--			unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
-+			unsigned long vaddr = (unsigned long) sg_virt(startsg);
- 			ASSERT(pdirp);
+ 	/* Make sure that gcc doesn't leave the empty loop body.  */
+-	for_each_sg(sg, sg, nelems, i)
+-		__dma_sync_for_cpu(sg_virt(sg), sg->length, direction);
++	for_each_sg(sg, sg, nelems, i) {
++		if (sg_has_page(sg))
++			__dma_sync_for_cpu(sg_virt(sg), sg->length, direction);
++	}
+ }
+ EXPORT_SYMBOL(dma_sync_sg_for_cpu);
  
- 			/* Since multiple Vcontig blocks could make up
-@@ -1335,7 +1333,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
- 	int idx;
+@@ -179,8 +178,10 @@ void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+ 	BUG_ON(!valid_dma_direction(direction));
  
- 	while (nents > 0) {
--		unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
-+		unsigned long vaddr = (unsigned long) sg_virt(startsg);
- 
- 		/*
- 		** Prepare for first/next DMA stream
-@@ -1380,7 +1378,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
- 			**
- 			** append the next transaction?
- 			*/
--			vaddr = (unsigned long) sba_sg_address(startsg);
-+			vaddr = (unsigned long) sg_virt(startsg);
- 			if  (vcontig_end == vaddr)
- 			{
- 				vcontig_len += startsg->length;
-@@ -1479,7 +1477,7 @@ static int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist,
- 	if (likely((ioc->dma_mask & ~to_pci_dev(dev)->dma_mask) == 0)) {
- 		for_each_sg(sglist, sg, nents, filled) {
- 			sg->dma_length = sg->length;
--			sg->dma_address = virt_to_phys(sba_sg_address(sg));
-+			sg->dma_address = virt_to_phys(sg_virt(sg));
- 		}
- 		return filled;
- 	}
-@@ -1487,7 +1485,7 @@ static int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist,
- 	/* Fast path single entry scatterlists. */
- 	if (nents == 1) {
- 		sglist->dma_length = sglist->length;
--		sglist->dma_address = sba_map_single_attrs(dev, sba_sg_address(sglist), sglist->length, dir, attrs);
-+		sglist->dma_address = sba_map_single_attrs(dev, sg_virt(sglist), sglist->length, dir, attrs);
- 		return 1;
- 	}
- 
-@@ -1563,7 +1561,7 @@ static void sba_unmap_sg_attrs(struct device *dev, struct scatterlist *sglist,
- #endif
- 
- 	DBG_RUN_SG("%s() START %d entries,  %p,%x\n",
--		   __func__, nents, sba_sg_address(sglist), sglist->length);
-+		   __func__, nents, sg_virt(sglist), sglist->length);
- 
- #ifdef ASSERT_PDIR_SANITY
- 	ioc = GET_IOC(dev);
+ 	/* Make sure that gcc doesn't leave the empty loop body.  */
+-	for_each_sg(sg, sg, nelems, i)
+-		__dma_sync_for_device(sg_virt(sg), sg->length, direction);
+-
++	for_each_sg(sg, sg, nelems, i) {
++		if (sg_has_page(sg))
++			__dma_sync_for_device(sg_virt(sg), sg->length,
++					direction);
++	}
+ }
+ EXPORT_SYMBOL(dma_sync_sg_for_device);
 -- 
 1.9.1
