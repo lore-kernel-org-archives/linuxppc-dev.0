@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D83F71A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 814331A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:29 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 14/31] sparc32/io-unit: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:33 +0200
-Message-Id: <1439363150-8661-15-git-send-email-hch@lst.de>
+Subject: [PATCH 15/31] sparc32/iommu: handle page-less SG entries
+Date: Wed, 12 Aug 2015 09:05:34 +0200
+Message-Id: <1439363150-8661-16-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,89 +33,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the iommu offset we just need and offset into the page.  Calculate
-that using the physical address instead of using the virtual address
-so that we don't require a virtual mapping.
+Pass a PFN to iommu_get_one instad of calculating it locall from a
+page structure so that we don't need pages for every address we can
+DMA to or from.
+
+Also further restrict the cache flushing as we now have a non-highmem
+way of not kernel virtual mapped physical addresses.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/sparc/mm/io-unit.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+ arch/sparc/mm/iommu.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/sparc/mm/io-unit.c b/arch/sparc/mm/io-unit.c
-index f311bf2..82f97ae 100644
---- a/arch/sparc/mm/io-unit.c
-+++ b/arch/sparc/mm/io-unit.c
-@@ -91,13 +91,14 @@ static int __init iounit_init(void)
- subsys_initcall(iounit_init);
+diff --git a/arch/sparc/mm/iommu.c b/arch/sparc/mm/iommu.c
+index 491511d..3ed53d7 100644
+--- a/arch/sparc/mm/iommu.c
++++ b/arch/sparc/mm/iommu.c
+@@ -174,7 +174,7 @@ static void iommu_flush_iotlb(iopte_t *iopte, unsigned int niopte)
+ 	}
+ }
  
- /* One has to hold iounit->lock to call this */
--static unsigned long iounit_get_area(struct iounit_struct *iounit, unsigned long vaddr, int size)
-+static dma_addr_t iounit_get_area(struct iounit_struct *iounit,
-+		unsigned long paddr, int size)
+-static u32 iommu_get_one(struct device *dev, struct page *page, int npages)
++static u32 iommu_get_one(struct device *dev, unsigned long pfn, int npages)
  {
- 	int i, j, k, npages;
--	unsigned long rotor, scan, limit;
-+	unsigned long rotor, scan, limit, dma_addr;
- 	iopte_t iopte;
+ 	struct iommu_struct *iommu = dev->archdata.iommu;
+ 	int ioptex;
+@@ -183,7 +183,7 @@ static u32 iommu_get_one(struct device *dev, struct page *page, int npages)
+ 	int i;
  
--        npages = ((vaddr & ~PAGE_MASK) + size + (PAGE_SIZE-1)) >> PAGE_SHIFT;
-+        npages = ((paddr & ~PAGE_MASK) + size + (PAGE_SIZE-1)) >> PAGE_SHIFT;
+ 	/* page color = pfn of page */
+-	ioptex = bit_map_string_get(&iommu->usemap, npages, page_to_pfn(page));
++	ioptex = bit_map_string_get(&iommu->usemap, npages, pfn);
+ 	if (ioptex < 0)
+ 		panic("iommu out");
+ 	busa0 = iommu->start + (ioptex << PAGE_SHIFT);
+@@ -192,11 +192,11 @@ static u32 iommu_get_one(struct device *dev, struct page *page, int npages)
+ 	busa = busa0;
+ 	iopte = iopte0;
+ 	for (i = 0; i < npages; i++) {
+-		iopte_val(*iopte) = MKIOPTE(page_to_pfn(page), IOPERM);
++		iopte_val(*iopte) = MKIOPTE(pfn, IOPERM);
+ 		iommu_invalidate_page(iommu->regs, busa);
+ 		busa += PAGE_SIZE;
+ 		iopte++;
+-		page++;
++		pfn++;
+ 	}
  
- 	/* A tiny bit of magic ingredience :) */
- 	switch (npages) {
-@@ -106,7 +107,7 @@ static unsigned long iounit_get_area(struct iounit_struct *iounit, unsigned long
- 	default: i = 0x0213; break;
- 	}
- 	
--	IOD(("iounit_get_area(%08lx,%d[%d])=", vaddr, size, npages));
-+	IOD(("iounit_get_area(%08lx,%d[%d])=", paddr, size, npages));
- 	
- next:	j = (i & 15);
- 	rotor = iounit->rotor[j - 1];
-@@ -121,7 +122,7 @@ nexti:	scan = find_next_zero_bit(iounit->bmap, limit, scan);
- 		}
- 		i >>= 4;
- 		if (!(i & 15))
--			panic("iounit_get_area: Couldn't find free iopte slots for (%08lx,%d)\n", vaddr, size);
-+			panic("iounit_get_area: Couldn't find free iopte slots for (%08lx,%d)\n", paddr, size);
- 		goto next;
- 	}
- 	for (k = 1, scan++; k < npages; k++)
-@@ -129,14 +130,14 @@ nexti:	scan = find_next_zero_bit(iounit->bmap, limit, scan);
- 			goto nexti;
- 	iounit->rotor[j - 1] = (scan < limit) ? scan : iounit->limit[j - 1];
- 	scan -= npages;
--	iopte = MKIOPTE(__pa(vaddr & PAGE_MASK));
--	vaddr = IOUNIT_DMA_BASE + (scan << PAGE_SHIFT) + (vaddr & ~PAGE_MASK);
-+	iopte = MKIOPTE(paddr & PAGE_MASK);
-+	dma_addr = IOUNIT_DMA_BASE + (scan << PAGE_SHIFT) + (paddr & ~PAGE_MASK);
- 	for (k = 0; k < npages; k++, iopte = __iopte(iopte_val(iopte) + 0x100), scan++) {
- 		set_bit(scan, iounit->bmap);
- 		sbus_writel(iopte, &iounit->page_table[scan]);
- 	}
--	IOD(("%08lx\n", vaddr));
--	return vaddr;
-+	IOD(("%08lx\n", dma_addr));
-+	return dma_addr;
+ 	iommu_flush_iotlb(iopte0, npages);
+@@ -214,7 +214,7 @@ static u32 iommu_get_scsi_one(struct device *dev, char *vaddr, unsigned int len)
+ 	off = (unsigned long)vaddr & ~PAGE_MASK;
+ 	npages = (off + len + PAGE_SIZE-1) >> PAGE_SHIFT;
+ 	page = virt_to_page((unsigned long)vaddr & PAGE_MASK);
+-	busa = iommu_get_one(dev, page, npages);
++	busa = iommu_get_one(dev, page_to_pfn(page), npages);
+ 	return busa + off;
  }
  
- static __u32 iounit_get_scsi_one(struct device *dev, char *vaddr, unsigned long len)
-@@ -145,7 +146,7 @@ static __u32 iounit_get_scsi_one(struct device *dev, char *vaddr, unsigned long
- 	unsigned long ret, flags;
- 	
- 	spin_lock_irqsave(&iounit->lock, flags);
--	ret = iounit_get_area(iounit, (unsigned long)vaddr, len);
-+	ret = iounit_get_area(iounit, virt_to_phys(vaddr), len);
- 	spin_unlock_irqrestore(&iounit->lock, flags);
- 	return ret;
- }
-@@ -159,7 +160,7 @@ static void iounit_get_scsi_sgl(struct device *dev, struct scatterlist *sg, int
- 	spin_lock_irqsave(&iounit->lock, flags);
+@@ -243,7 +243,7 @@ static void iommu_get_scsi_sgl_gflush(struct device *dev, struct scatterlist *sg
  	while (sz != 0) {
  		--sz;
--		sg->dma_address = iounit_get_area(iounit, (unsigned long) sg_virt(sg), sg->length);
-+		sg->dma_address = iounit_get_area(iounit, sg_phys(sg), sg->length);
+ 		n = (sg->length + sg->offset + PAGE_SIZE-1) >> PAGE_SHIFT;
+-		sg->dma_address = iommu_get_one(dev, sg_page(sg), n) + sg->offset;
++		sg->dma_address = iommu_get_one(dev, sg_pfn(sg), n) + sg->offset;
+ 		sg->dma_length = sg->length;
+ 		sg = sg_next(sg);
+ 	}
+@@ -264,7 +264,8 @@ static void iommu_get_scsi_sgl_pflush(struct device *dev, struct scatterlist *sg
+ 		 * XXX Is this a good assumption?
+ 		 * XXX What if someone else unmaps it here and races us?
+ 		 */
+-		if ((page = (unsigned long) page_address(sg_page(sg))) != 0) {
++		if (sg_has_page(sg) &&
++		    (page = (unsigned long) page_address(sg_page(sg))) != 0) {
+ 			for (i = 0; i < n; i++) {
+ 				if (page != oldpage) {	/* Already flushed? */
+ 					flush_page_for_dma(page);
+@@ -274,7 +275,7 @@ static void iommu_get_scsi_sgl_pflush(struct device *dev, struct scatterlist *sg
+ 			}
+ 		}
+ 
+-		sg->dma_address = iommu_get_one(dev, sg_page(sg), n) + sg->offset;
++		sg->dma_address = iommu_get_one(dev, sg_pfn(sg), n) + sg->offset;
  		sg->dma_length = sg->length;
  		sg = sg_next(sg);
  	}
