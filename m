@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FC451A06F0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:08:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 01DE51A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:00 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,11 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 03/31] dma-debug: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:22 +0200
-Message-Id: <1439363150-8661-4-git-send-email-hch@lst.de>
-In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
-References: <1439363150-8661-1-git-send-email-hch@lst.de>
+Subject: RFC: prepare for struct scatterlist entries without page backing
+Date: Wed, 12 Aug 2015 09:05:19 +0200
+Message-Id: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,62 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use sg_pfn to get a the PFN and skip checks that require a kernel
-virtual address.
+Dan Williams started to look into addressing I/O to and from
+Persistent Memory in his series from June:
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- lib/dma-debug.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+	http://thread.gmane.org/gmane.linux.kernel.cross-arch/27944
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index dace71f..a215a80 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -1368,7 +1368,7 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 
- 		entry->type           = dma_debug_sg;
- 		entry->dev            = dev;
--		entry->pfn	      = page_to_pfn(sg_page(s));
-+		entry->pfn	      = sg_pfn(s);
- 		entry->offset	      = s->offset,
- 		entry->size           = sg_dma_len(s);
- 		entry->dev_addr       = sg_dma_address(s);
-@@ -1376,7 +1376,7 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 		entry->sg_call_ents   = nents;
- 		entry->sg_mapped_ents = mapped_ents;
- 
--		if (!PageHighMem(sg_page(s))) {
-+		if (sg_has_page(s) && !PageHighMem(sg_page(s))) {
- 			check_for_stack(dev, sg_virt(s));
- 			check_for_illegal_area(dev, sg_virt(s), sg_dma_len(s));
- 		}
-@@ -1419,7 +1419,7 @@ void debug_dma_unmap_sg(struct device *dev, struct scatterlist *sglist,
- 		struct dma_debug_entry ref = {
- 			.type           = dma_debug_sg,
- 			.dev            = dev,
--			.pfn		= page_to_pfn(sg_page(s)),
-+			.pfn		= sg_pfn(s),
- 			.offset		= s->offset,
- 			.dev_addr       = sg_dma_address(s),
- 			.size           = sg_dma_len(s),
-@@ -1580,7 +1580,7 @@ void debug_dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
- 		struct dma_debug_entry ref = {
- 			.type           = dma_debug_sg,
- 			.dev            = dev,
--			.pfn		= page_to_pfn(sg_page(s)),
-+			.pfn		= sg_pfn(s),
- 			.offset		= s->offset,
- 			.dev_addr       = sg_dma_address(s),
- 			.size           = sg_dma_len(s),
-@@ -1613,7 +1613,7 @@ void debug_dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
- 		struct dma_debug_entry ref = {
- 			.type           = dma_debug_sg,
- 			.dev            = dev,
--			.pfn		= page_to_pfn(sg_page(s)),
-+			.pfn		= sg_pfn(s),
- 			.offset		= s->offset,
- 			.dev_addr       = sg_dma_address(s),
- 			.size           = sg_dma_len(s),
--- 
-1.9.1
+I've started looking into DMA mapping of these SGLs specifically instead
+of the map_pfn method in there.  In addition to supporting NVDIMM backed
+I/O I also suspect this would be highly useful for media drivers that
+go through nasty hoops to be able to DMA from/to their ioremapped regions,
+with vb2_dc_get_userptr in drivers/media/v4l2-core/videobuf2-dma-contig.c
+being a prime example for the unsafe hacks currently used.
+
+It turns out most DMA mapping implementation can handle SGLs without
+page structures with some fairly simple mechanical work.  Most of it
+is just about consistently using sg_phys.  For implementations that
+need to flush caches we need a new helper that skips these cache
+flushes if a entry doesn't have a kernel virtual address.
+
+However the ccio (parisc) and sba_iommu (parisc & ia64) IOMMUs seem
+to be operate mostly on virtual addresses.  It's a fairly odd concept
+that I don't fully grasp, so I'll need some help with those if we want
+to bring this forward.
+
+Additional this series skips ARM entirely for now.  The reason is
+that most arm implementations of the .map_sg operation just iterate
+over all entries and call ->map_page for it, which means we'd need
+to convert those to a ->map_pfn similar to Dan's previous approach.
