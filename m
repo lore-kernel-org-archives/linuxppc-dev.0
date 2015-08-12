@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46C3B1A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D6EF1A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:51 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 20/31] avr32: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:39 +0200
-Message-Id: <1439363150-8661-21-git-send-email-hch@lst.de>
+Subject: [PATCH 21/31] blackfin: handle page-less SG entries
+Date: Wed, 12 Aug 2015 09:05:40 +0200
+Message-Id: <1439363150-8661-22-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,46 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make all cache invalidation conditional on sg_has_page() and use
-sg_phys to get the physical address directly, bypassing the noop
-page_to_bus.
+Switch from sg_virt to sg_phys as blackfin like all nommu architectures
+has a 1:1 virtual to physical mapping.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/avr32/include/asm/dma-mapping.h | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/blackfin/kernel/dma-mapping.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/avr32/include/asm/dma-mapping.h b/arch/avr32/include/asm/dma-mapping.h
-index ae7ac92..a662ce2 100644
---- a/arch/avr32/include/asm/dma-mapping.h
-+++ b/arch/avr32/include/asm/dma-mapping.h
-@@ -216,11 +216,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
- 	struct scatterlist *sg;
+diff --git a/arch/blackfin/kernel/dma-mapping.c b/arch/blackfin/kernel/dma-mapping.c
+index df437e5..e2c4d1a 100644
+--- a/arch/blackfin/kernel/dma-mapping.c
++++ b/arch/blackfin/kernel/dma-mapping.c
+@@ -120,7 +120,7 @@ dma_map_sg(struct device *dev, struct scatterlist *sg_list, int nents,
+ 	int i;
  
- 	for_each_sg(sglist, sg, nents, i) {
--		char *virt;
--
--		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
--		virt = sg_virt(sg);
--		dma_cache_sync(dev, virt, sg->length, direction);
+ 	for_each_sg(sg_list, sg, nents, i) {
+-		sg->dma_address = (dma_addr_t) sg_virt(sg);
 +		sg->dma_address = sg_phys(sg);
-+		if (sg_has_page(sg))
-+			dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
+ 		__dma_sync(sg_dma_address(sg), sg_dma_len(sg), direction);
  	}
  
- 	return nents;
-@@ -328,8 +326,10 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sglist,
+@@ -135,7 +135,7 @@ void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg_list,
  	int i;
- 	struct scatterlist *sg;
  
--	for_each_sg(sglist, sg, nents, i)
--		dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
-+	for_each_sg(sglist, sg, nents, i) {
-+		if (sg_has_page(sg))
-+			dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
-+	}
+ 	for_each_sg(sg_list, sg, nelems, i) {
+-		sg->dma_address = (dma_addr_t) sg_virt(sg);
++		sg->dma_address = sg_phys(sg);
+ 		__dma_sync(sg_dma_address(sg), sg_dma_len(sg), direction);
+ 	}
  }
- 
- /* Now for the API extensions over the pci_ one */
 -- 
 1.9.1
