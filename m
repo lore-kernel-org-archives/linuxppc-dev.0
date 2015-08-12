@@ -3,14 +3,16 @@ Received: from na01-bl2-obe.outbound.protection.outlook.com
  (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A79DD1A1D31
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 06:15:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E008F1A1D32
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 06:15:10 +1000 (AEST)
 From: Roy Pledge <Roy.Pledge@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
 CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [v2 00/11] Freescale DPAA QBMan Drivers
-Date: Wed, 12 Aug 2015 16:14:46 -0400
-Message-ID: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
+Subject: [v2 10/11] soc/qman: Add HOTPLUG_CPU support to the QMan driver
+Date: Wed, 12 Aug 2015 16:14:56 -0400
+Message-ID: <1439410497-19039-11-git-send-email-Roy.Pledge@freescale.com>
+In-Reply-To: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
+References: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
 Reply-To: <Roy.Pledge@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -23,115 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Hai-Ying Wang <Haiying.Wang@freescale.com>
 
-The Freescale Data Path Acceleration Architecture (DPAA) is a set of hardware components on specific QorIQ multicore processors. This architecture provides the infrastructure to support simplified sharing of networking interfaces and accelerators by multiple CPU cores and the accelerators.
+Add support for CPU hotplug for the DPAA 1.0 Queue Manager
+driver.
 
-The Queue Manager (QMan) is a hardware queue management block that allows software and accelerators on the datapath to enqueue and dequeue frames in order to communicate.
+Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+Signed-off-by: Roy Pledge <Roy.Pledge@freescale.com>
+---
+ drivers/soc/fsl/qbman/qman_portal.c |   43 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-The Buffer Manager (BMan) is a hardware buffer pool management block that allows software and accelerators on the datapath to acquire and release buffers in order to build frames.
-
-This patch set introduces the QBMan driver code that configures initializes the QBMan hardware and provides APIs for software to use the frame queues and buffer pools the blocks provide. These drivers provide the base fuctionality for software to communicate with the other DPAA accelerators on Freescale QorIQ processors.
-
-Changes from v1:
-	- Cleanup Kconfig options
-	- Changed base QMan and BMan drivers to only be buit in.
-	  Will add loadable support in future patch
-	- Replace panic() call with WARN_ON()
-	- Elimanated some unused APIs
-	- Replaced PowerPC specific IO accessors with platform independent versions
-
-
-
-Emil Medve (1):
-  powerpc: re-add devm_ioremap_prot()
-
-Geoff Thorpe (7):
-  soc/fsl: Introduce DPAA BMan device management driver
-  soc/fsl: Introduce the DPAA BMan portal driver
-  soc/fsl: Introduce drivers for the DPAA QMan
-  soc/bman: Add self-tester for BMan driver
-  soc/qman: Add self-tester for QMan driver
-  soc/bman: Add debugfs support for the BMan driver
-  soc/qman: Add debugfs support for the QMan driver
-
-Hai-Ying Wang (2):
-  soc/bman: Add HOTPLUG_CPU support to the BMan driver
-  soc/qman: Add HOTPLUG_CPU support to the QMan driver
-
-Madalin Bucur (1):
-  soc/qman: add qman_delete_cgr_safe()
-
- arch/powerpc/include/asm/io.h                 |    3 +
- arch/powerpc/lib/Makefile                     |    1 +
- arch/powerpc/lib/devres.c                     |   43 +
- arch/powerpc/platforms/85xx/corenet_generic.c |   16 +
- arch/powerpc/platforms/85xx/p1023_rdb.c       |   14 +
- drivers/soc/Kconfig                           |    1 +
- drivers/soc/Makefile                          |    1 +
- drivers/soc/fsl/Kconfig                       |    5 +
- drivers/soc/fsl/Makefile                      |    3 +
- drivers/soc/fsl/qbman/Kconfig                 |  120 +
- drivers/soc/fsl/qbman/Makefile                |   20 +
- drivers/soc/fsl/qbman/bman-debugfs.c          |  117 +
- drivers/soc/fsl/qbman/bman.c                  |  553 +++++
- drivers/soc/fsl/qbman/bman.h                  |  542 +++++
- drivers/soc/fsl/qbman/bman_api.c              | 1072 +++++++++
- drivers/soc/fsl/qbman/bman_portal.c           |  391 ++++
- drivers/soc/fsl/qbman/bman_priv.h             |  134 ++
- drivers/soc/fsl/qbman/bman_test.c             |   56 +
- drivers/soc/fsl/qbman/bman_test.h             |   34 +
- drivers/soc/fsl/qbman/bman_test_api.c         |  184 ++
- drivers/soc/fsl/qbman/bman_test_thresh.c      |  198 ++
- drivers/soc/fsl/qbman/bman_utils.c            |   72 +
- drivers/soc/fsl/qbman/dpaa_resource.c         |  359 +++
- drivers/soc/fsl/qbman/dpaa_sys.h              |  271 +++
- drivers/soc/fsl/qbman/qman-debugfs.c          | 1313 +++++++++++
- drivers/soc/fsl/qbman/qman.c                  | 1026 +++++++++
- drivers/soc/fsl/qbman/qman.h                  | 1128 ++++++++++
- drivers/soc/fsl/qbman/qman_api.c              | 2921 +++++++++++++++++++++++++
- drivers/soc/fsl/qbman/qman_driver.c           |   83 +
- drivers/soc/fsl/qbman/qman_portal.c           |  672 ++++++
- drivers/soc/fsl/qbman/qman_priv.h             |  287 +++
- drivers/soc/fsl/qbman/qman_test.c             |   57 +
- drivers/soc/fsl/qbman/qman_test.h             |   44 +
- drivers/soc/fsl/qbman/qman_test_api.c         |  216 ++
- drivers/soc/fsl/qbman/qman_test_stash.c       |  502 +++++
- drivers/soc/fsl/qbman/qman_utils.c            |  305 +++
- include/soc/fsl/bman.h                        |  518 +++++
- include/soc/fsl/qman.h                        | 1977 +++++++++++++++++
- 38 files changed, 15259 insertions(+)
- create mode 100644 arch/powerpc/lib/devres.c
- create mode 100644 drivers/soc/fsl/Kconfig
- create mode 100644 drivers/soc/fsl/Makefile
- create mode 100644 drivers/soc/fsl/qbman/Kconfig
- create mode 100644 drivers/soc/fsl/qbman/Makefile
- create mode 100644 drivers/soc/fsl/qbman/bman-debugfs.c
- create mode 100644 drivers/soc/fsl/qbman/bman.c
- create mode 100644 drivers/soc/fsl/qbman/bman.h
- create mode 100644 drivers/soc/fsl/qbman/bman_api.c
- create mode 100644 drivers/soc/fsl/qbman/bman_portal.c
- create mode 100644 drivers/soc/fsl/qbman/bman_priv.h
- create mode 100644 drivers/soc/fsl/qbman/bman_test.c
- create mode 100644 drivers/soc/fsl/qbman/bman_test.h
- create mode 100644 drivers/soc/fsl/qbman/bman_test_api.c
- create mode 100644 drivers/soc/fsl/qbman/bman_test_thresh.c
- create mode 100644 drivers/soc/fsl/qbman/bman_utils.c
- create mode 100644 drivers/soc/fsl/qbman/dpaa_resource.c
- create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.h
- create mode 100644 drivers/soc/fsl/qbman/qman-debugfs.c
- create mode 100644 drivers/soc/fsl/qbman/qman.c
- create mode 100644 drivers/soc/fsl/qbman/qman.h
- create mode 100644 drivers/soc/fsl/qbman/qman_api.c
- create mode 100644 drivers/soc/fsl/qbman/qman_driver.c
- create mode 100644 drivers/soc/fsl/qbman/qman_portal.c
- create mode 100644 drivers/soc/fsl/qbman/qman_priv.h
- create mode 100644 drivers/soc/fsl/qbman/qman_test.c
- create mode 100644 drivers/soc/fsl/qbman/qman_test.h
- create mode 100644 drivers/soc/fsl/qbman/qman_test_api.c
- create mode 100644 drivers/soc/fsl/qbman/qman_test_stash.c
- create mode 100644 drivers/soc/fsl/qbman/qman_utils.c
- create mode 100644 include/soc/fsl/bman.h
- create mode 100644 include/soc/fsl/qman.h
-
---
+diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+index ad9e3ba..85acba2 100644
+--- a/drivers/soc/fsl/qbman/qman_portal.c
++++ b/drivers/soc/fsl/qbman/qman_portal.c
+@@ -474,6 +474,46 @@ static void qman_offline_cpu(unsigned int cpu)
+ 	}
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static void qman_online_cpu(unsigned int cpu)
++{
++	struct qman_portal *p;
++	const struct qm_portal_config *pcfg;
++
++	p = (struct qman_portal *)affine_portals[cpu];
++	if (p) {
++		pcfg = qman_get_qm_portal_config(p);
++		if (pcfg) {
++			irq_set_affinity(pcfg->public_cfg.irq, cpumask_of(cpu));
++			qman_portal_update_sdest(pcfg, cpu);
++		}
++	}
++}
++
++static int qman_hotplug_cpu_callback(struct notifier_block *nfb,
++				     unsigned long action, void *hcpu)
++{
++	unsigned int cpu = (unsigned long)hcpu;
++
++	switch (action) {
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		qman_online_cpu(cpu);
++		break;
++	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
++		qman_offline_cpu(cpu);
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block qman_hotplug_cpu_notifier = {
++	.notifier_call = qman_hotplug_cpu_callback,
++};
++#endif /* CONFIG_HOTPLUG_CPU */
++
+ __init int qman_init(void)
+ {
+ 	struct cpumask slave_cpus;
+@@ -597,6 +637,9 @@ __init int qman_init(void)
+ 	cpumask_andnot(&offline_cpus, cpu_possible_mask, cpu_online_mask);
+ 	for_each_cpu(cpu, &offline_cpus)
+ 		qman_offline_cpu(cpu);
++#ifdef CONFIG_HOTPLUG_CPU
++	register_hotcpu_notifier(&qman_hotplug_cpu_notifier);
++#endif
+ 	return 0;
+ }
+ 
+-- 
 1.7.9.5
