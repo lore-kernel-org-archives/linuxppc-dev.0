@@ -1,38 +1,20 @@
-Return-Path: <mstsxfx@gmail.com>
-Received: from mail-wi0-f173.google.com (mail-wi0-f173.google.com
- [209.85.212.173])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C5D81A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 19:46:03 +1000 (AEST)
-Received: by wijp15 with SMTP id p15so210163884wij.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 02:45:59 -0700 (PDT)
-Date: Wed, 12 Aug 2015 11:45:58 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Eric B Munson <emunson@akamai.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Vlastimil Babka <vbabka@suse.cz>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Guenter Roeck <linux@roeck-us.net>,
- Andrea Arcangeli <aarcange@redhat.com>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net,
- linux-cris-kernel@axis.com, linux-ia64@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH v7 2/6] mm: mlock: Add new mlock system call
-Message-ID: <20150812094558.GD14940@dhcp22.suse.cz>
-References: <1439097776-27695-1-git-send-email-emunson@akamai.com>
- <1439097776-27695-3-git-send-email-emunson@akamai.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1439097776-27695-3-git-send-email-emunson@akamai.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E11631A1D98
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 19:47:17 +1000 (AEST)
+Message-ID: <1439372831.24479.2.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/xmon: Allow limiting the size of the paca display
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Date: Wed, 12 Aug 2015 19:47:11 +1000
+In-Reply-To: <55CAFBC6.8060700@linux.vnet.ibm.com>
+References: <1439362653-14665-1-git-send-email-mpe@ellerman.id.au>
+ <55CAFBC6.8060700@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,135 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun 09-08-15 01:22:52, Eric B Munson wrote:
-> With the refactored mlock code, introduce a new system call for mlock.
-> The new call will allow the user to specify what lock states are being
-> added.  mlock2 is trivial at the moment, but a follow on patch will add
-> a new mlock state making it useful.
-
-Looks good to me
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-
-> Signed-off-by: Eric B Munson <emunson@akamai.com>
-> Acked-by: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Michal Hocko <mhocko@suse.cz>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Andrea Arcangeli <aarcange@redhat.com>
-> Cc: linux-alpha@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: adi-buildroot-devel@lists.sourceforge.net
-> Cc: linux-cris-kernel@axis.com
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linux-m68k@lists.linux-m68k.org
-> Cc: linux-am33-list@redhat.com
-> Cc: linux-parisc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-sh@vger.kernel.org
-> Cc: sparclinux@vger.kernel.org
-> Cc: linux-xtensa@linux-xtensa.org
-> Cc: linux-api@vger.kernel.org
-> Cc: linux-arch@vger.kernel.org
-> Cc: linux-mm@kvack.org
-> ---
->  arch/x86/entry/syscalls/syscall_32.tbl | 1 +
->  arch/x86/entry/syscalls/syscall_64.tbl | 1 +
->  include/linux/syscalls.h               | 2 ++
->  include/uapi/asm-generic/unistd.h      | 4 +++-
->  kernel/sys_ni.c                        | 1 +
->  mm/mlock.c                             | 8 ++++++++
->  6 files changed, 16 insertions(+), 1 deletion(-)
+On Wed, 2015-08-12 at 13:24 +0530, Anshuman Khandual wrote:
+> On 08/12/2015 12:27 PM, Michael Ellerman wrote:
+> > @@ -2090,9 +2092,12 @@ static void dump_one_paca(int cpu)
+> >  	printf(" %-*s = %s\n", 16, "present", cpu_present(cpu) ? "yes" : "no");
+> >  	printf(" %-*s = %s\n", 16, "online", cpu_online(cpu) ? "yes" : "no");
+> >  
+> > +	i = 4; /* We always print the first four lines */
+> > +
+> >  #define DUMP(paca, name, format) \
+> > -	printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18, paca->name, \
+> > -		offsetof(struct paca_struct, name));
+> > +	if (!num_lines || i++ < num_lines)
 > 
-> diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-> index ef8187f..8e06da6 100644
-> --- a/arch/x86/entry/syscalls/syscall_32.tbl
-> +++ b/arch/x86/entry/syscalls/syscall_32.tbl
-> @@ -365,3 +365,4 @@
->  356	i386	memfd_create		sys_memfd_create
->  357	i386	bpf			sys_bpf
->  358	i386	execveat		sys_execveat			stub32_execveat
-> +360	i386	mlock2			sys_mlock2
-> diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
-> index 9ef32d5..67601e7 100644
-> --- a/arch/x86/entry/syscalls/syscall_64.tbl
-> +++ b/arch/x86/entry/syscalls/syscall_64.tbl
-> @@ -329,6 +329,7 @@
->  320	common	kexec_file_load		sys_kexec_file_load
->  321	common	bpf			sys_bpf
->  322	64	execveat		stub_execveat
-> +324	common	mlock2			sys_mlock2
->  
->  #
->  # x32-specific system call numbers start at 512 to avoid cache impact
-> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-> index b45c45b..56a3d59 100644
-> --- a/include/linux/syscalls.h
-> +++ b/include/linux/syscalls.h
-> @@ -884,4 +884,6 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
->  			const char __user *const __user *argv,
->  			const char __user *const __user *envp, int flags);
->  
-> +asmlinkage long sys_mlock2(unsigned long start, size_t len, int flags);
-> +
->  #endif
-> diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-> index e016bd9..14a6013 100644
-> --- a/include/uapi/asm-generic/unistd.h
-> +++ b/include/uapi/asm-generic/unistd.h
-> @@ -709,9 +709,11 @@ __SYSCALL(__NR_memfd_create, sys_memfd_create)
->  __SYSCALL(__NR_bpf, sys_bpf)
->  #define __NR_execveat 281
->  __SC_COMP(__NR_execveat, sys_execveat, compat_sys_execveat)
-> +#define __NR_mlock2 282
-> +__SYSCALL(__NR_mlock2, sys_mlock2)
->  
->  #undef __NR_syscalls
-> -#define __NR_syscalls 282
-> +#define __NR_syscalls 283
->  
->  /*
->   * All syscalls below here should go away really,
-> diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-> index 7995ef5..4818b71 100644
-> --- a/kernel/sys_ni.c
-> +++ b/kernel/sys_ni.c
-> @@ -193,6 +193,7 @@ cond_syscall(sys_mlock);
->  cond_syscall(sys_munlock);
->  cond_syscall(sys_mlockall);
->  cond_syscall(sys_munlockall);
-> +cond_syscall(sys_mlock2);
->  cond_syscall(sys_mincore);
->  cond_syscall(sys_madvise);
->  cond_syscall(sys_mremap);
-> diff --git a/mm/mlock.c b/mm/mlock.c
-> index 5692ee5..3094f27 100644
-> --- a/mm/mlock.c
-> +++ b/mm/mlock.c
-> @@ -643,6 +643,14 @@ SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
->  	return do_mlock(start, len, VM_LOCKED);
->  }
->  
-> +SYSCALL_DEFINE3(mlock2, unsigned long, start, size_t, len, int, flags)
-> +{
-> +	if (flags)
-> +		return -EINVAL;
-> +
-> +	return do_mlock(start, len, VM_LOCKED);
-> +}
-> +
->  SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)
->  {
->  	int ret;
-> -- 
-> 1.9.1
+> All look good except the fact that we are using 0 to signify that
+> there is no limit to the number of lines. Is not it bit confusing ?
 
--- 
-Michal Hocko
-SUSE Labs
+Maybe a bit, but it's the simplest option, and it's not uncommon for zero to
+mean "no limit". chage(1) springs to mind as an example.
+
+And in terms of xmon it's hardly the most confusing part :)
+
+cheers
