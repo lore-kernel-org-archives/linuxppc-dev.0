@@ -1,30 +1,15 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 313C31A2B06
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:39:45 +1000 (AEST)
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7AE631401C7
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:39:44 +1000 (AEST)
-Received: by pabyb7 with SMTP id yb7so7901696pab.0
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 23:39:43 -0700 (PDT)
-Date: Wed, 12 Aug 2015 16:40:37 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, Manoj Kumar
- <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com
-Subject: Re: [PATCH v3 10/11] cxl: EEH support
-Message-ID: <20150812164037.332ae249@camb691>
-In-Reply-To: <1439340500-18610-11-git-send-email-dja@axtens.net>
-References: <1439340500-18610-1-git-send-email-dja@axtens.net>
- <1439340500-18610-11-git-send-email-dja@axtens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 720801A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:57:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: khandual@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/xmon: Allow limiting the size of the paca display
+Date: Wed, 12 Aug 2015 16:57:33 +1000
+Message-Id: <1439362653-14665-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,328 +19,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 12 Aug 2015 10:48:19 +1000
-Daniel Axtens <dja@axtens.net> wrote:
+The paca display is already more than 24 lines, which can be problematic
+if you have an old school 80x24 terminal, or more likely you are on a
+virtual terminal which does not scroll for whatever reason.
 
-> EEH (Enhanced Error Handling) allows a driver to recover from the
-> temporary failure of an attached PCI card. Enable basic CXL support
-> for EEH.
-> 
+We'd like to expand the paca display even more, so add a way to limit
+the number of lines that are displayed.
 
-Looks like the only change since was the removal of the #ifdef, if that is
-correct.
+This adds a third form of 'dp' which is 'dp # #', where the first number
+is the cpu, and the second is the number of lines to display.
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+Example output:
 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> ---
->  drivers/misc/cxl/cxl.h  |   1 +
->  drivers/misc/cxl/pci.c  | 252 ++++++++++++++++++++++++++++++++++++++++++++++++
->  drivers/misc/cxl/vphb.c |   8 ++
->  3 files changed, 261 insertions(+)
-> 
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index cda02412b01e..6f5386653dae 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -726,6 +726,7 @@ int cxl_psl_purge(struct cxl_afu *afu);
->  
->  void cxl_stop_trace(struct cxl *cxl);
->  int cxl_pci_vphb_add(struct cxl_afu *afu);
-> +void cxl_pci_vphb_reconfigure(struct cxl_afu *afu);
->  void cxl_pci_vphb_remove(struct cxl_afu *afu);
->  
->  extern struct pci_driver cxl_pci_driver;
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index b4a68a896a33..1eb26a357ce0 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -24,6 +24,7 @@
->  #include <asm/io.h>
->  
->  #include "cxl.h"
-> +#include <misc/cxl.h>
->  
->  
->  #define CXL_PCI_VSEC_ID	0x1280
-> @@ -1246,10 +1247,261 @@ static void cxl_remove(struct pci_dev *dev)
->  	cxl_remove_adapter(adapter);
->  }
->  
-> +static pci_ers_result_t cxl_vphb_error_detected(struct cxl_afu *afu,
-> +						pci_channel_state_t state)
-> +{
-> +	struct pci_dev *afu_dev;
-> +	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
-> +	pci_ers_result_t afu_result = PCI_ERS_RESULT_NEED_RESET;
-> +
-> +	/* There should only be one entry, but go through the list
-> +	 * anyway
-> +	 */
-> +	list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
-> +		if (!afu_dev->driver)
-> +			continue;
-> +
-> +		afu_dev->error_state = state;
-> +
-> +		if (afu_dev->driver->err_handler)
-> +			afu_result = afu_dev->driver->err_handler->error_detected(afu_dev,
-> +										  state);
-> +		/* Disconnect trumps all, NONE trumps NEED_RESET */
-> +		if (afu_result == PCI_ERS_RESULT_DISCONNECT)
-> +			result = PCI_ERS_RESULT_DISCONNECT;
-> +		else if ((afu_result == PCI_ERS_RESULT_NONE) &&
-> +			 (result == PCI_ERS_RESULT_NEED_RESET))
-> +			result = PCI_ERS_RESULT_NONE;
-> +	}
-> +	return result;
-> +}
-> +
-> +static pci_ers_result_t cxl_pci_error_detected(struct pci_dev *pdev,
-> +					       pci_channel_state_t state)
-> +{
-> +	struct cxl *adapter = pci_get_drvdata(pdev);
-> +	struct cxl_afu *afu;
-> +	pci_ers_result_t result = PCI_ERS_RESULT_NEED_RESET;
-> +	int i;
-> +
-> +	/* At this point, we could still have an interrupt pending.
-> +	 * Let's try to get them out of the way before they do
-> +	 * anything we don't like.
-> +	 */
-> +	schedule();
-> +
-> +	/* If we're permanently dead, give up. */
-> +	if (state == pci_channel_io_perm_failure) {
-> +		/* Tell the AFU drivers; but we don't care what they
-> +		 * say, we're going away.
-> +		 */
-> +		for (i = 0; i < adapter->slices; i++) {
-> +			afu = adapter->afu[i];
-> +			cxl_vphb_error_detected(afu, state);
-> +		}
-> +		return PCI_ERS_RESULT_DISCONNECT;
-> +	}
-> +
-> +	/* Are we reflashing?
-> +	 *
-> +	 * If we reflash, we could come back as something entirely
-> +	 * different, including a non-CAPI card. As such, by default
-> +	 * we don't participate in the process. We'll be unbound and
-> +	 * the slot re-probed. (TODO: check EEH doesn't blindly rebind
-> +	 * us!)
-> +	 *
-> +	 * However, this isn't the entire story: for reliablity
-> +	 * reasons, we usually want to reflash the FPGA on PERST in
-> +	 * order to get back to a more reliable known-good state.
-> +	 *
-> +	 * This causes us a bit of a problem: if we reflash we can't
-> +	 * trust that we'll come back the same - we could have a new
-> +	 * image and been PERSTed in order to load that
-> +	 * image. However, most of the time we actually *will* come
-> +	 * back the same - for example a regular EEH event.
-> +	 *
-> +	 * Therefore, we allow the user to assert that the image is
-> +	 * indeed the same and that we should continue on into EEH
-> +	 * anyway.
-> +	 */
-> +	if (adapter->perst_loads_image && !adapter->perst_same_image) {
-> +		/* TODO take the PHB out of CXL mode */
-> +		dev_info(&pdev->dev, "reflashing, so opting out of EEH!\n");
-> +		return PCI_ERS_RESULT_NONE;
-> +	}
-> +
-> +	/*
-> +	 * At this point, we want to try to recover.  We'll always
-> +	 * need a complete slot reset: we don't trust any other reset.
-> +	 *
-> +	 * Now, we go through each AFU:
-> +	 *  - We send the driver, if bound, an error_detected callback.
-> +	 *    We expect it to clean up, but it can also tell us to give
-> +	 *    up and permanently detach the card. To simplify things, if
-> +	 *    any bound AFU driver doesn't support EEH, we give up on EEH.
-> +	 *
-> +	 *  - We detach all contexts associated with the AFU. This
-> +	 *    does not free them, but puts them into a CLOSED state
-> +	 *    which causes any the associated files to return useful
-> +	 *    errors to userland. It also unmaps, but does not free,
-> +	 *    any IRQs.
-> +	 *
-> +	 *  - We clean up our side: releasing and unmapping resources we hold
-> +	 *    so we can wire them up again when the hardware comes back up.
-> +	 *
-> +	 * Driver authors should note:
-> +	 *
-> +	 *  - Any contexts you create in your kernel driver (except
-> +	 *    those associated with anonymous file descriptors) are
-> +	 *    your responsibility to free and recreate. Likewise with
-> +	 *    any attached resources.
-> +	 *
-> +	 *  - We will take responsibility for re-initialising the
-> +	 *    device context (the one set up for you in
-> +	 *    cxl_pci_enable_device_hook and accessed through
-> +	 *    cxl_get_context). If you've attached IRQs or other
-> +	 *    resources to it, they remains yours to free.
-> +	 *
-> +	 * All calls you make into cxl that normally touch the
-> +	 * hardware will not touch the hardware during recovery. So
-> +	 * you can call the same functions to release resources as you
-> +	 * normally would.
-> +	 *
-> +	 * Two examples:
-> +	 *
-> +	 * 1) If you normally free all your resources at the end of
-> +	 *    each request, or if you use anonymous FDs, your
-> +	 *    error_detected callback can simply set a flag to tell
-> +	 *    your driver not to start any new calls. You can then
-> +	 *    clear the flag in the resume callback.
-> +	 *
-> +	 * 2) If you normally allocate your resources on startup:
-> +	 *     * Set a flag in error_detected as above.
-> +	 *     * Let CXL detach your contexts.
-> +	 *     * In slot_reset, free the old resources and allocate new ones.
-> +	 *     * In resume, clear the flag to allow things to start.
-> +	 */
-> +	for (i = 0; i < adapter->slices; i++) {
-> +		afu = adapter->afu[i];
-> +
-> +		result = cxl_vphb_error_detected(afu, state);
-> +
-> +		/* Only continue if everyone agrees on NEED_RESET */
-> +		if (result != PCI_ERS_RESULT_NEED_RESET)
-> +			return result;
-> +
-> +		cxl_context_detach_all(afu);
-> +		cxl_afu_deactivate_mode(afu);
-> +		cxl_deconfigure_afu(afu);
-> +	}
-> +	cxl_deconfigure_adapter(adapter);
-> +
-> +	return result;
-> +}
-> +
-> +static pci_ers_result_t cxl_pci_slot_reset(struct pci_dev *pdev)
-> +{
-> +	struct cxl *adapter = pci_get_drvdata(pdev);
-> +	struct cxl_afu *afu;
-> +	struct cxl_context *ctx;
-> +	struct pci_dev *afu_dev;
-> +	pci_ers_result_t afu_result = PCI_ERS_RESULT_RECOVERED;
-> +	pci_ers_result_t result = PCI_ERS_RESULT_RECOVERED;
-> +	int i;
-> +
-> +	if (cxl_configure_adapter(adapter, pdev))
-> +		goto err;
-> +
-> +	for (i = 0; i < adapter->slices; i++) {
-> +		afu = adapter->afu[i];
-> +
-> +		if (cxl_configure_afu(afu, adapter, pdev))
-> +			goto err;
-> +
-> +		if (cxl_afu_select_best_mode(afu))
-> +			goto err;
-> +
-> +		cxl_pci_vphb_reconfigure(afu);
-> +
-> +		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
-> +			/* Reset the device context.
-> +			 * TODO: make this less disruptive
-> +			 */
-> +			ctx = cxl_get_context(afu_dev);
-> +
-> +			if (ctx && cxl_release_context(ctx))
-> +				goto err;
-> +
-> +			ctx = cxl_dev_context_init(afu_dev);
-> +			if (!ctx)
-> +				goto err;
-> +
-> +			afu_dev->dev.archdata.cxl_ctx = ctx;
-> +
-> +			if (cxl_afu_check_and_enable(afu))
-> +				goto err;
-> +
-> +			afu_dev->error_state = pci_channel_io_normal;
-> +
-> +			/* If there's a driver attached, allow it to
-> +			 * chime in on recovery. Drivers should check
-> +			 * if everything has come back OK.
-> +			 */
-> +			if (!afu_dev->driver)
-> +				continue;
-> +
-> +			if (afu_dev->driver->err_handler &&
-> +			    afu_dev->driver->err_handler->slot_reset)
-> +				afu_result = afu_dev->driver->err_handler->slot_reset(afu_dev);
-> +
-> +			if (afu_result == PCI_ERS_RESULT_DISCONNECT)
-> +				result = PCI_ERS_RESULT_DISCONNECT;
-> +		}
-> +	}
-> +	return result;
-> +
-> +err:
-> +	/* All the bits that happen in both error_detected and cxl_remove
-> +	 * should be idempotent, so we don't need to worry about leaving a mix
-> +	 * of unconfigured and reconfigured resources.
-> +	 */
-> +	dev_err(&pdev->dev, "EEH recovery failed. Asking to be disconnected.\n");
-> +	return PCI_ERS_RESULT_DISCONNECT;
-> +}
-> +
-> +static void cxl_pci_resume(struct pci_dev *pdev)
-> +{
-> +	struct cxl *adapter = pci_get_drvdata(pdev);
-> +	struct cxl_afu *afu;
-> +	struct pci_dev *afu_dev;
-> +	int i;
-> +
-> +	/* Everything is back now. Drivers should restart work now.
-> +	 * This is not the place to be checking if everything came back up
-> +	 * properly, because there's no return value: do that in slot_reset.
-> +	 */
-> +	for (i = 0; i < adapter->slices; i++) {
-> +		afu = adapter->afu[i];
-> +
-> +		list_for_each_entry(afu_dev, &afu->phb->bus->devices, bus_list) {
-> +			if (afu_dev->driver && afu_dev->driver->err_handler &&
-> +			    afu_dev->driver->err_handler->resume)
-> +				afu_dev->driver->err_handler->resume(afu_dev);
-> +		}
-> +	}
-> +}
-> +
-> +static const struct pci_error_handlers cxl_err_handler = {
-> +	.error_detected = cxl_pci_error_detected,
-> +	.slot_reset = cxl_pci_slot_reset,
-> +	.resume = cxl_pci_resume,
-> +};
-> +
->  struct pci_driver cxl_pci_driver = {
->  	.name = "cxl-pci",
->  	.id_table = cxl_pci_tbl,
->  	.probe = cxl_probe,
->  	.remove = cxl_remove,
->  	.shutdown = cxl_remove,
-> +	.err_handler = &cxl_err_handler,
->  };
-> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-> index d1c3509c925d..af336ff6655e 100644
-> --- a/drivers/misc/cxl/vphb.c
-> +++ b/drivers/misc/cxl/vphb.c
-> @@ -266,6 +266,14 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
->  	return 0;
->  }
->  
-> +void cxl_pci_vphb_reconfigure(struct cxl_afu *afu)
-> +{
-> +	/* When we are reconfigured, the AFU's MMIO space is unmapped
-> +	 * and remapped. We need to reflect this in the PHB's view of
-> +	 * the world.
-> +	 */
-> +	afu->phb->cfg_addr = afu->afu_desc_mmio + afu->crs_offset;
-> +}
->  
->  void cxl_pci_vphb_remove(struct cxl_afu *afu)
->  {
+  5:mon> dp 3 6
+  paca for cpu 0x3 @ c00000000fdc0d80:
+   possible         = yes
+   present          = yes
+   online           = yes
+   lock_token       = 0x8000            	(0xa)
+   paca_index       = 0x3               	(0x8)
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/xmon/xmon.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index e599259d84fc..6f44e9c07f34 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -205,6 +205,7 @@ Commands:\n\
+ #ifdef CONFIG_PPC64
+   "\
+   dp[#]	dump paca for current cpu, or cpu #\n\
++  dp##  dump paca for cpu #, only # lines\n\
+   dpa	dump paca for all possible cpus\n"
+ #endif
+   "\
+@@ -2070,9 +2071,10 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
+ }
+ 
+ #ifdef CONFIG_PPC64
+-static void dump_one_paca(int cpu)
++static void dump_one_paca(int cpu, int num_lines)
+ {
+ 	struct paca_struct *p;
++	int i;
+ 
+ 	if (setjmp(bus_error_jmp) != 0) {
+ 		printf("*** Error dumping paca for cpu 0x%x!\n", cpu);
+@@ -2090,9 +2092,12 @@ static void dump_one_paca(int cpu)
+ 	printf(" %-*s = %s\n", 16, "present", cpu_present(cpu) ? "yes" : "no");
+ 	printf(" %-*s = %s\n", 16, "online", cpu_online(cpu) ? "yes" : "no");
+ 
++	i = 4; /* We always print the first four lines */
++
+ #define DUMP(paca, name, format) \
+-	printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18, paca->name, \
+-		offsetof(struct paca_struct, name));
++	if (!num_lines || i++ < num_lines)	\
++		printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18, \
++		       paca->name, offsetof(struct paca_struct, name));
+ 
+ 	DUMP(p, lock_token, "x");
+ 	DUMP(p, paca_index, "x");
+@@ -2135,7 +2140,7 @@ static void dump_all_pacas(void)
+ 	}
+ 
+ 	for_each_possible_cpu(cpu)
+-		dump_one_paca(cpu);
++		dump_one_paca(cpu, 0);
+ }
+ 
+ static void dump_pacas(void)
+@@ -2151,10 +2156,12 @@ static void dump_pacas(void)
+ 
+ 	termch = c;	/* Put c back, it wasn't 'a' */
+ 
+-	if (scanhex(&num))
+-		dump_one_paca(num);
+-	else
+-		dump_one_paca(xmon_owner);
++	if (scanhex(&num)) {
++		unsigned long lines = 0;
++		scanhex(&lines);
++		dump_one_paca(num, lines);
++	} else
++		dump_one_paca(xmon_owner, 0);
+ }
+ #endif
+ 
+-- 
+2.1.4
