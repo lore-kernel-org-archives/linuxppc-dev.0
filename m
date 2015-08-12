@@ -1,18 +1,19 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id ED3B71A06F2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:41:05 +1000 (AEST)
-Message-Id: <2460c12cedeec09fab43844e126582f8f53f4be3.1439382635.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 143091A1D2D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:41:07 +1000 (AEST)
+Message-Id: <d6b368478df22450db3786649b04dd66dd9c5f0e.1439382635.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1439382631.git.christophe.leroy@c-s.fr>
 References: <cover.1439382631.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 05/20] powerpc/8xx: Fix vaddr for IMMR early remap
+Subject: [PATCH 06/20] powerpc32: iounmap() cannot vunmap() area mapped by
+ TLBCAMs either
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 12 Aug 2015 15:41:02 +0200 (CEST)
+Date: Wed, 12 Aug 2015 15:41:04 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,82 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
-648K rodata, 508K init, 290K bss, 6644K reserved)
-Kernel virtual memory layout:
-  * 0xfffdf000..0xfffff000  : fixmap
-  * 0xfde00000..0xfe000000  : consistent mem
-  * 0xfddf6000..0xfde00000  : early ioremap
-  * 0xc9000000..0xfddf6000  : vmalloc & ioremap
-SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-
-Mapping IMMR 1:1 is just wrong because it may overlap with another
-area. On most mpc8xx boards it is OK because IMMR is set to
-0xff000000 but for instance on EP88xC board, IMMR is at 0xfa200000
-which overlaps with VM ioremap area
-
-This patch fixes the virtual address for remapping IMMR to 0xff000000,
-regardless of the value of IMMR.
-
-The size of IMMR area is 256kbytes (CPM at offset 0, security engine
-at offset 128) so 512kbytes is enough and allows to handle the EP88xC
-case (which is not 8Mbytes but only 2Mbytes aligned) the same way.
+iounmap() cannot vunmap() area mapped by TLBCAMs either
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/Kconfig.debug     |  1 -
- arch/powerpc/kernel/head_8xx.S | 10 +++++-----
- 2 files changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/mm/pgtable_32.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index 3a510f4..70168a2 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -326,7 +326,6 @@ config PPC_EARLY_DEBUG_40x_PHYSADDR
- config PPC_EARLY_DEBUG_CPM_ADDR
- 	hex "CPM UART early debug transmit descriptor address"
- 	depends on PPC_EARLY_DEBUG_CPM
--	default "0xfa202008" if PPC_EP88XC
- 	default "0xf0001ff8" if CPM2
- 	default "0xff002008" if CPM1
- 	help
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index a10a48f..93752eb 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -758,7 +758,7 @@ start_here:
-  * virtual to physical.  Also, set the cache mode since that is defined
-  * by TLB entries and perform any additional mapping (like of the IMMR).
-  * If configured to pin some TLBs, we pin the first 8 Mbytes of kernel,
-- * 24 Mbytes of data, and the 8M IMMR space.  Anything not covered by
-+ * 24 Mbytes of data, and the 512k IMMR space.  Anything not covered by
-  * these mappings is mapped by page tables.
-  */
- initial_mmu:
-@@ -807,7 +807,7 @@ initial_mmu:
- 	ori	r8, r8, MD_APG_INIT@l
- 	mtspr	SPRN_MD_AP, r8
- 
--	/* Map another 8 MByte at the IMMR to get the processor
-+	/* Map 512 kBytes at 0xff000000 for the IMMR to get the processor
- 	 * internal registers (among other things).
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 7692d1b..03a073a 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -278,7 +278,9 @@ void iounmap(volatile void __iomem *addr)
+ 	 * If mapped by BATs then there is nothing to do.
+ 	 * Calling vfree() generates a benign warning.
  	 */
- #ifdef CONFIG_PIN_TLB
-@@ -815,12 +815,12 @@ initial_mmu:
- 	mtspr	SPRN_MD_CTR, r10
- #endif
- 	mfspr	r9, 638			/* Get current IMMR */
--	andis.	r9, r9, 0xff80		/* Get 8Mbyte boundary */
-+	andis.	r9, r9, 0xfff8		/* Get 512 kbytes boundary */
+-	if (v_mapped_by_bats((unsigned long)addr)) return;
++	if (v_mapped_by_bats((unsigned long)addr) ||
++	    v_mapped_by_tlbcam((unsigned long)addr))
++		return;
  
--	mr	r8, r9			/* Create vaddr for TLB */
-+	lis	r8, 0xff00		/* Create vaddr for TLB at 0xff000000 */
- 	ori	r8, r8, MD_EVALID	/* Mark it valid */
- 	mtspr	SPRN_MD_EPN, r8
--	li	r8, MD_PS8MEG		/* Set 8M byte page */
-+	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
- 	ori	r8, r8, MD_SVALID	/* Make it valid */
- 	mtspr	SPRN_MD_TWC, r8
- 	mr	r8, r9			/* Create paddr for TLB */
+ 	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
+ 		vunmap((void *) (PAGE_MASK & (unsigned long)addr));
 -- 
 2.1.0
