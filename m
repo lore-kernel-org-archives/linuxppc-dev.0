@@ -1,18 +1,33 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 17BC01A1D1E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:41:37 +1000 (AEST)
-Message-Id: <6a0cd25e465c1faa258db9612ce06225654ca369.1439382638.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1439382631.git.christophe.leroy@c-s.fr>
-References: <cover.1439382631.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 20/20] powerpc32: remove ioremap_base
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 12 Aug 2015 15:41:33 +0200 (CEST)
+Return-Path: <boaz@plexistor.com>
+Received: from mail-wi0-f177.google.com (mail-wi0-f177.google.com
+ [209.85.212.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E26131A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 22:42:55 +1000 (AEST)
+Received: by wicja10 with SMTP id ja10so111706393wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 05:42:51 -0700 (PDT)
+Message-ID: <55CB3F47.3000902@plexistor.com>
+Date: Wed, 12 Aug 2015 15:42:47 +0300
+From: Boaz Harrosh <boaz@plexistor.com>
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>, torvalds@linux-foundation.org,
+ axboe@kernel.dk
+CC: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-nvdimm@ml01.01.org, dhowells@redhat.com,
+ sparclinux@vger.kernel.org, egtvedt@samfundet.no,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ dwmw2@infradead.org, hskinnemoen@gmail.com,
+ linux-xtensa@linux-xtensa.org, grundler@parisc-linux.org,
+ realmz6@gmail.com, alex.williamson@redhat.com,
+ linux-metag@vger.kernel.org, monstr@monstr.eu,
+ linux-parisc@vger.kernel.org, vgupta@synopsys.com,
+ linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linux-media@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: RFC: prepare for struct scatterlist entries without page backing
+References: <1439363150-8661-1-git-send-email-hch@lst.de>
+In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,57 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ioremap_base is not initialised and is nowhere used so remove it
+On 08/12/2015 10:05 AM, Christoph Hellwig wrote:
+> Dan Williams started to look into addressing I/O to and from
+> Persistent Memory in his series from June:
+> 
+> 	http://thread.gmane.org/gmane.linux.kernel.cross-arch/27944
+> 
+> I've started looking into DMA mapping of these SGLs specifically instead
+> of the map_pfn method in there.  In addition to supporting NVDIMM backed
+> I/O I also suspect this would be highly useful for media drivers that
+> go through nasty hoops to be able to DMA from/to their ioremapped regions,
+> with vb2_dc_get_userptr in drivers/media/v4l2-core/videobuf2-dma-contig.c
+> being a prime example for the unsafe hacks currently used.
+> 
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/mm/mmu_decl.h                  | 1 -
- arch/powerpc/mm/pgtable_32.c                | 1 -
- arch/powerpc/platforms/embedded6xx/mpc10x.h | 8 --------
- 3 files changed, 10 deletions(-)
+The support I have suggested and submitted for zone-less sections.
+(In my add_persistent_memory() patchset)
 
-diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
-index 99e88bc..6f1e7cd 100644
---- a/arch/powerpc/mm/mmu_decl.h
-+++ b/arch/powerpc/mm/mmu_decl.h
-@@ -100,7 +100,6 @@ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
- 
- extern int __map_without_bats;
- extern int __allow_ioremap_reserved;
--extern unsigned long ioremap_base;
- extern unsigned int rtas_data, rtas_size;
- 
- struct hash_pte;
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 1f2fdbc..dc51ab4 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -37,7 +37,6 @@
- 
- #include "mmu_decl.h"
- 
--unsigned long ioremap_base;
- unsigned long ioremap_bot;
- EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
- 
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc10x.h b/arch/powerpc/platforms/embedded6xx/mpc10x.h
-index b290b63..8de6104 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc10x.h
-+++ b/arch/powerpc/platforms/embedded6xx/mpc10x.h
-@@ -138,14 +138,6 @@
- #define MPC10X_EUMB_WP_OFFSET		0x000ff000 /* Data path diagnostic, watchpoint reg offset */
- #define MPC10X_EUMB_WP_SIZE		0x00001000 /* Data path diagnostic, watchpoint reg size */
- 
--/*
-- * Define some recommended places to put the EUMB regs.
-- * For both maps, recommend putting the EUMB from 0xeff00000 to 0xefffffff.
-- */
--extern unsigned long			ioremap_base;
--#define	MPC10X_MAPA_EUMB_BASE		(ioremap_base - MPC10X_EUMB_SIZE)
--#define	MPC10X_MAPB_EUMB_BASE		MPC10X_MAPA_EUMB_BASE
--
- enum ppc_sys_devices {
- 	MPC10X_IIC1,
- 	MPC10X_DMA0,
--- 
-2.1.0
+Would work perfectly well and transparent for all such multimedia cases.
+(All hacks removed). In fact I have loaded pmem (with-pages) on a VRAM
+a few times and it is great easy fun. (I wanted to experiment with cached
+memory over a pcie)
+
+> It turns out most DMA mapping implementation can handle SGLs without
+> page structures with some fairly simple mechanical work.  Most of it
+> is just about consistently using sg_phys.  For implementations that
+> need to flush caches we need a new helper that skips these cache
+> flushes if a entry doesn't have a kernel virtual address.
+> 
+> However the ccio (parisc) and sba_iommu (parisc & ia64) IOMMUs seem
+> to be operate mostly on virtual addresses.  It's a fairly odd concept
+> that I don't fully grasp, so I'll need some help with those if we want
+> to bring this forward.
+> 
+> Additional this series skips ARM entirely for now.  The reason is
+> that most arm implementations of the .map_sg operation just iterate
+> over all entries and call ->map_page for it, which means we'd need
+> to convert those to a ->map_pfn similar to Dan's previous approach.
+> 
+
+All this endless work for nothing more than uglyfing the Kernel, and
+It will never end. When a real and fully working solution is right
+here for more then a year.
+
+If you are really up for a deep audit and a mammoth testing effort,
+why not do a more worthy, and order of magnitude smaller work and support
+2M and 1G variable sized "pages". All the virtual-vs-phisical-vs-caching
+just works.
+
+Most of the core work is there. Block layer and lots of other subsytems
+already support sending a single page-pointer with bvec_offset bvec_len
+bigger then 4K. Other system will be small fixes sprinkled around but
+not at all this endless stream of subsystem after another of patches.
+And for why.
+
+The novelty of pages is the section object, the section is reached
+from page* from virtual as well as physical planes. And is a center
+that translate from all plains to all plains. You keep this concept
+only make 2M-page sections and 1G-page sections.
+
+It is a bit of work but is worth while, and accelerating tremendously
+lots of workloads. Not like this abomination which only branches
+things more and more, and making things fatter and slower.
+
+It all feels like a typhoon, the inertia of tones and tons of
+men hours work, in a huge wave. How will you ever stop such a
+rushing mass. I'm trying to dock under but, surly it makes me sad.
+
+Thanks
+Boaz
