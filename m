@@ -1,39 +1,34 @@
-Return-Path: <catalin.marinas@gmail.com>
-Received: from mail-ig0-x22e.google.com (mail-ig0-x22e.google.com
- [IPv6:2607:f8b0:4001:c05::22e])
+Return-Path: <grantgrundler@gmail.com>
+Received: from mail-wi0-x236.google.com (mail-wi0-x236.google.com
+ [IPv6:2a00:1450:400c:c05::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C15A51A1DBA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 02:27:08 +1000 (AEST)
-Received: by igbpg9 with SMTP id pg9so17364199igb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 09:27:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C28E1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 03:56:30 +1000 (AEST)
+Received: by wibhh20 with SMTP id hh20so40594441wib.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 10:56:26 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1439363150-8661-32-git-send-email-hch@lst.de>
+In-Reply-To: <1439398807.2825.51.camel@HansenPartnership.com>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
- <1439363150-8661-32-git-send-email-hch@lst.de>
-From: Catalin Marinas <catalin.marinas@gmail.com>
-Date: Wed, 12 Aug 2015 17:26:44 +0100
-Message-ID: <CAHkRjk6ykXd1=DLZ16dKiyrBXWmd80WC4gLyoN50JYigJG_-bQ@mail.gmail.com>
-Subject: Re: [PATCH 31/31] dma-mapping-common: skip kmemleak checks for
- page-less SG entries
-To: Christoph Hellwig <hch@lst.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, axboe@kernel.dk,
- Dan Williams <dan.j.williams@intel.com>, vgupta@synopsys.com,
- hskinnemoen@gmail.com,
- egtvedt@samfundet.no, realmz6@gmail.com, David Howells <dhowells@redhat.com>,
- Michal Simek <monstr@monstr.eu>, "x86@kernel.org" <x86@kernel.org>,
- David Woodhouse <dwmw2@infradead.org>,
- alex.williamson@redhat.com, grundler@parisc-linux.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-metag@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- sparclinux@vger.kernel.org,
+ <1439398807.2825.51.camel@HansenPartnership.com>
+Date: Wed, 12 Aug 2015 10:56:26 -0700
+Message-ID: <CAP6odjhfTHzgEivDUxXyU=VBG4U85ETxv1gcogE9GVGoGQ37-w@mail.gmail.com>
+Subject: Re: RFC: prepare for struct scatterlist entries without page backing
+From: Grant Grundler <grantgrundler@gmail.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Christoph Hellwig <hch@lst.de>,
+ Linus Torvalds <torvalds@linux-foundation.org>, axboe@kernel.dk,
+ dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
+ egtvedt@samfundet.no, realmz6@gmail.com, dhowells@redhat.com,
+ monstr@monstr.eu, x86@kernel.org, David Woodhouse <dwmw2@infradead.org>,
+ alex.williamson@redhat.com, Grant Grundler <grundler@parisc-linux.org>,
+ open list <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc <linux-parisc@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
- Linux Media Mailing List <linux-media@vger.kernel.org>
+ linux-media@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,31 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christoph,
+On Wed, Aug 12, 2015 at 10:00 AM, James Bottomley
+<James.Bottomley@hansenpartnership.com> wrote:
+> On Wed, 2015-08-12 at 09:05 +0200, Christoph Hellwig wrote:
+...
+>> However the ccio (parisc) and sba_iommu (parisc & ia64) IOMMUs seem
+>> to be operate mostly on virtual addresses.  It's a fairly odd concept
+>> that I don't fully grasp, so I'll need some help with those if we want
+>> to bring this forward.
 
-On 12 August 2015 at 08:05, Christoph Hellwig <hch@lst.de> wrote:
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  include/asm-generic/dma-mapping-common.h | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
-> index 940d5ec..afc3eaf 100644
-> --- a/include/asm-generic/dma-mapping-common.h
-> +++ b/include/asm-generic/dma-mapping-common.h
-> @@ -51,8 +51,10 @@ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
->         int i, ents;
->         struct scatterlist *s;
->
-> -       for_each_sg(sg, s, nents, i)
-> -               kmemcheck_mark_initialized(sg_virt(s), s->length);
-> +       for_each_sg(sg, s, nents, i) {
-> +               if (sg_has_page(s))
-> +                       kmemcheck_mark_initialized(sg_virt(s), s->length);
-> +       }
+James explained the primary function of IOMMUs on parisc (DMA-Cache
+coherency) much better than I ever could.
 
-Just a nitpick for the subject, it should say "kmemcheck" rather than
-"kmemleak" (different features ;)).
+Three more observations:
+1) the IOMMU can be bypassed by 64-bit DMA devices on IA64.
 
--- 
-Catalin
+2) IOMMU enables 32-bit DMA devices to reach > 32-bit physical memory
+and thus avoiding bounce buffers. parisc and older IA-64 have some
+32-bit PCI devices - e.g. IDE boot HDD.
+
+3) IOMMU acts as a proxy for IO devices by fetching cachelines of data
+for PA-RISC systems whose memory controllers ONLY serve cacheline
+sized transactions. ie. 32-bit DMA results in the IOMMU fetching the
+cacheline and updating just the 32-bits in a DMA cache coherent
+fashion.
+
+Bonus thought:
+4) IOMMU can improve DMA performance in some cases using "hints"
+provided by the OS (e.g. prefetching DMA data or using READ_CURRENT
+bus transactions instead of normal memory fetches.)
+
+cheers,
+grant
