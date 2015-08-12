@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 065431A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F9DF1A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:18 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 10/31] powerpc/iommu: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:29 +0200
-Message-Id: <1439363150-8661-11-git-send-email-hch@lst.de>
+Subject: [PATCH 11/31] sparc/iommu: handle page-less SG entries
+Date: Wed, 12 Aug 2015 09:05:30 +0200
+Message-Id: <1439363150-8661-12-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,64 +33,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For the iommu offset we just need and offset into the page.  Calculate
-that using the physical address instead of using the virtual address
-so that we don't require a virtual mapping.
+Use sg_phys() instead of __pa(sg_virt(sg)) so that we don't
+require a kernel virtual address.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/kernel/iommu.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/sparc/kernel/iommu.c        | 2 +-
+ arch/sparc/kernel/iommu_common.h | 4 +---
+ arch/sparc/kernel/pci_sun4v.c    | 2 +-
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index a8e3490..0f52e40 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -457,7 +457,7 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 
- 	max_seg_size = dma_get_max_seg_size(dev);
- 	for_each_sg(sglist, s, nelems, i) {
--		unsigned long vaddr, npages, entry, slen;
-+		unsigned long paddr, npages, entry, slen;
- 
- 		slen = s->length;
- 		/* Sanity check */
-@@ -466,22 +466,22 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
+index 5320689..2ad89d2 100644
+--- a/arch/sparc/kernel/iommu.c
++++ b/arch/sparc/kernel/iommu.c
+@@ -486,7 +486,7 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
  			continue;
  		}
  		/* Allocate iommu entries for that segment */
--		vaddr = (unsigned long) sg_virt(s);
--		npages = iommu_num_pages(vaddr, slen, IOMMU_PAGE_SIZE(tbl));
+-		paddr = (unsigned long) SG_ENT_PHYS_ADDRESS(s);
 +		paddr = sg_phys(s);
-+		npages = iommu_num_pages(paddr, slen, IOMMU_PAGE_SIZE(tbl));
- 		align = 0;
- 		if (tbl->it_page_shift < PAGE_SHIFT && slen >= PAGE_SIZE &&
--		    (vaddr & ~PAGE_MASK) == 0)
-+		    (paddr & ~PAGE_MASK) == 0)
- 			align = PAGE_SHIFT - tbl->it_page_shift;
- 		entry = iommu_range_alloc(dev, tbl, npages, &handle,
- 					  mask >> tbl->it_page_shift, align);
+ 		npages = iommu_num_pages(paddr, slen, IO_PAGE_SIZE);
+ 		entry = iommu_tbl_range_alloc(dev, &iommu->tbl, npages,
+ 					      &handle, (unsigned long)(-1), 0);
+diff --git a/arch/sparc/kernel/iommu_common.h b/arch/sparc/kernel/iommu_common.h
+index b40cec2..8e2c211 100644
+--- a/arch/sparc/kernel/iommu_common.h
++++ b/arch/sparc/kernel/iommu_common.h
+@@ -33,15 +33,13 @@
+  */
+ #define IOMMU_PAGE_SHIFT		13
  
--		DBG("  - vaddr: %lx, size: %lx\n", vaddr, slen);
-+		DBG("  - paddr: %lx, size: %lx\n", paddr, slen);
+-#define SG_ENT_PHYS_ADDRESS(SG)	(__pa(sg_virt((SG))))
+-
+ static inline int is_span_boundary(unsigned long entry,
+ 				   unsigned long shift,
+ 				   unsigned long boundary_size,
+ 				   struct scatterlist *outs,
+ 				   struct scatterlist *sg)
+ {
+-	unsigned long paddr = SG_ENT_PHYS_ADDRESS(outs);
++	unsigned long paddr = sg_phys(outs);
+ 	int nr = iommu_num_pages(paddr, outs->dma_length + sg->length,
+ 				 IO_PAGE_SIZE);
  
- 		/* Handle failure */
- 		if (unlikely(entry == DMA_ERROR_CODE)) {
- 			if (printk_ratelimit())
- 				dev_info(dev, "iommu_alloc failed, tbl %p "
--					 "vaddr %lx npages %lu\n", tbl, vaddr,
-+					 "paddr %lx npages %lu\n", tbl, paddr,
- 					 npages);
- 			goto failure;
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index d2fe57d..a7a6e41 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -370,7 +370,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 			continue;
  		}
-@@ -496,7 +496,7 @@ int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 
- 		/* Insert into HW table */
- 		build_fail = tbl->it_ops->set(tbl, entry, npages,
--					      vaddr & IOMMU_PAGE_MASK(tbl),
-+					      paddr & IOMMU_PAGE_MASK(tbl),
- 					      direction, attrs);
- 		if(unlikely(build_fail))
- 			goto failure;
+ 		/* Allocate iommu entries for that segment */
+-		paddr = (unsigned long) SG_ENT_PHYS_ADDRESS(s);
++		paddr = sg_phys(s);
+ 		npages = iommu_num_pages(paddr, slen, IO_PAGE_SIZE);
+ 		entry = iommu_tbl_range_alloc(dev, &iommu->tbl, npages,
+ 					      &handle, (unsigned long)(-1), 0);
 -- 
 1.9.1
