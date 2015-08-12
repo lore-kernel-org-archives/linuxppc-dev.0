@@ -1,28 +1,16 @@
-Return-Path: <dja@axtens.net>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B638F1A1D37
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 10:51:36 +1000 (AEST)
-Received: from mail-pd0-x234.google.com (mail-pd0-x234.google.com
- [IPv6:2607:f8b0:400e:c02::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 38CF81401DE
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 10:51:36 +1000 (AEST)
-Received: by pdrg1 with SMTP id g1so961682pdr.2
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Aug 2015 17:51:34 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, cyrilbur@gmail.com,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Manoj Kumar <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH v3 11/11] cxl: Add CONFIG_CXL_EEH symbol
-Date: Wed, 12 Aug 2015 10:48:20 +1000
-Message-Id: <1439340500-18610-12-git-send-email-dja@axtens.net>
-In-Reply-To: <1439340500-18610-1-git-send-email-dja@axtens.net>
-References: <1439340500-18610-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F6A81A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 13:19:56 +1000 (AEST)
+In-Reply-To: <1438917500-12100-3-git-send-email-dja@axtens.net>
+To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mikey@neuling.org, Daniel Axtens <dja@axtens.net>, imunsie@au.ibm.com
+Subject: Re: [3/4] cxl: sparse: Flag iomem pointers properly
+Message-Id: <20150812031955.EACBD1401CD@ozlabs.org>
+Date: Wed, 12 Aug 2015 13:19:55 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,39 +20,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_CXL_EEH is for CXL's EEH related code.
+On Fri, 2015-07-08 at 03:18:19 UTC, Daniel Axtens wrote:
+> Sparse identifies the following address space issues:
+> /scratch/dja/linux-capi/drivers/misc/cxl/vphb.c:125:17: warning: incorrect type in assignment (different address spaces)
+> /scratch/dja/linux-capi/drivers/misc/cxl/vphb.c:125:17:    expected void volatile [noderef] <asn:2>*<noident>
+> /scratch/dja/linux-capi/drivers/misc/cxl/vphb.c:125:17:    got void *<noident>
+> /scratch/dja/linux-capi/drivers/misc/cxl/vphb.c:220:23: warning: incorrect type in assignment (different address spaces)
+> /scratch/dja/linux-capi/drivers/misc/cxl/vphb.c:220:23:    expected void [noderef] <asn:2>*cfg_data
+> /scratch/dja/linux-capi/drivers/misc/cxl/vphb.c:220:23:    got void *<noident>
 
-Other drivers can depend on or #ifdef on this symbol to access the API
-for configuring PERST behaviour, allowing CXL to participate in the
-EEH process.
+Please trim these to just the sub-path under linux, and a two space indent is nice:
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- drivers/misc/cxl/Kconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+  drivers/misc/cxl/vphb.c:220:23:    got void *<noident>
 
-diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
-index b6db9ebd52c2..c151fc1fe14c 100644
---- a/drivers/misc/cxl/Kconfig
-+++ b/drivers/misc/cxl/Kconfig
-@@ -11,11 +11,17 @@ config CXL_KERNEL_API
- 	bool
- 	default n
- 
-+config CXL_EEH
-+	bool
-+	default n
-+	select EEH
-+
- config CXL
- 	tristate "Support for IBM Coherent Accelerators (CXL)"
- 	depends on PPC_POWERNV && PCI_MSI
- 	select CXL_BASE
- 	select CXL_KERNEL_API
-+	select CXL_EEH
- 	default m
- 	help
- 	  Select this option to enable driver support for IBM Coherent
--- 
-2.1.4
+> Fix those by flagging __iomem in the relevant casts.
+> 
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> Acked-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  drivers/misc/cxl/vphb.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
+> index 2eba002b580b..a7b55772a91c 100644
+> --- a/drivers/misc/cxl/vphb.c
+> +++ b/drivers/misc/cxl/vphb.c
+> @@ -122,7 +122,7 @@ static int cxl_pcie_config_info(struct pci_bus *bus, unsigned int devfn,
+>  		return PCIBIOS_BAD_REGISTER_NUMBER;
+>  	addr = cxl_pcie_cfg_addr(phb, bus->number, devfn, offset);
+>  
+> -	*ioaddr = (void *)(addr & ~0x3ULL);
+> +	*ioaddr = (void __iomem *)(addr & ~0x3ULL);
+
+But shouldn't cxl_pcie_cfg_addr() be returning something that is __iomem ?
+
+> @@ -217,7 +217,7 @@ int cxl_pci_vphb_add(struct cxl_afu *afu)
+>  	/* Setup the PHB using arch provided callback */
+>  	phb->ops = &cxl_pcie_pci_ops;
+>  	phb->cfg_addr = afu->afu_desc_mmio + afu->crs_offset;
+> -	phb->cfg_data = (void *)(u64)afu->crs_len;
+> +	phb->cfg_data = (void __iomem *)(u64)afu->crs_len;
+
+crs_len is already a u64 so that u64 cast is pointless.
+
+cheers
