@@ -1,19 +1,19 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 845221A1D59
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:41:19 +1000 (AEST)
-Message-Id: <39fcfa2ff233532ec857a2da412fcb80c0186250.1439382636.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 813A31A1D25
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:41:22 +1000 (AEST)
+Message-Id: <766c0a5d33d5fc501652e81900e442f27dfa03a4.1439382636.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1439382631.git.christophe.leroy@c-s.fr>
 References: <cover.1439382631.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 12/20] powerpc/8xx: move 8xx SPRN defines into reg_8xx.h and
- add some missing ones
+Subject: [PATCH 13/20] powerpc/8xx: Handle CPU6 ERRATA directly in mtspr()
+ macro
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 12 Aug 2015 15:41:16 +0200 (CEST)
+Date: Wed, 12 Aug 2015 15:41:19 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,173 +23,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move 8xx SPRN defines into reg_8xx.h and add some missing ones
+MPC8xx has an ERRATA on the use of mtspr() for some registers
+This patch includes the ERRATA handling directly into mtspr() macro
+so that mtspr() users don't need to bother about that errata
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/mmu-8xx.h | 26 +++++++++++++-------------
- arch/powerpc/include/asm/reg_8xx.h | 24 ++++++++++++++++++++++++
- 2 files changed, 37 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/reg.h     |  2 +
+ arch/powerpc/include/asm/reg_8xx.h | 82 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index f05500a..44408d6 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -11,7 +11,7 @@
-  * is written, and the contents of several registers are used to
-  * create the entry.
-  */
--#define SPRN_MI_CTR	784	/* Instruction TLB control register */
-+/* SPRN_MI_CTR */	/* Instruction TLB control register */
- #define MI_GPM		0x80000000	/* Set domain manager mode */
- #define MI_PPM		0x40000000	/* Set subpage protection */
- #define MI_CIDEF	0x20000000	/* Set cache inhibit when MMU dis */
-@@ -23,7 +23,7 @@
- /* These are the Ks and Kp from the PowerPC books.  For proper operation,
-  * Ks = 0, Kp = 1.
-  */
--#define SPRN_MI_AP	786
-+/* SPRN_MI_AP */
- #define MI_Ks		0x80000000	/* Should not be set */
- #define MI_Kp		0x40000000	/* Should always be set */
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index bb27588..336895d 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1203,9 +1203,11 @@
+ #define mfspr(rn)	({unsigned long rval; \
+ 			asm volatile("mfspr %0," __stringify(rn) \
+ 				: "=r" (rval)); rval;})
++#ifndef mtspr
+ #define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : \
+ 				     : "r" ((unsigned long)(v)) \
+ 				     : "memory")
++#endif
  
-@@ -44,7 +44,7 @@
-  * about the last instruction TLB miss.  When MI_RPN is written, bits in
-  * this register are used to create the TLB entry.
-  */
--#define SPRN_MI_EPN	787
-+/* SPRN_MI_EPN */
- #define MI_EPNMASK	0xfffff000	/* Effective page number for entry */
- #define MI_EVALID	0x00000200	/* Entry is valid */
- #define MI_ASIDMASK	0x0000000f	/* ASID match value */
-@@ -54,7 +54,7 @@
-  * For the instruction TLB, it contains bits that get loaded into the
-  * TLB entry when the MI_RPN is written.
-  */
--#define SPRN_MI_TWC	789
-+/* SPRN_MI_TWC */
- #define MI_APG		0x000001e0	/* Access protection group (0) */
- #define MI_GUARDED	0x00000010	/* Guarded storage */
- #define MI_PSMASK	0x0000000c	/* Mask of page size bits */
-@@ -68,7 +68,7 @@
-  * causes a TLB entry to be created for the instruction TLB, using
-  * additional information from the MI_EPN, and MI_TWC registers.
-  */
--#define SPRN_MI_RPN	790
-+/* SPRN_MI_RPN */
- #define MI_SPS16K	0x00000008	/* Small page size (0 = 4k, 1 = 16k) */
- 
- /* Define an RPN value for mapping kernel memory to large virtual
-@@ -78,7 +78,7 @@
-  */
- #define MI_BOOTINIT	0x000001fd
- 
--#define SPRN_MD_CTR	792	/* Data TLB control register */
-+/* SPRN_MD_CTR */	/* Data TLB control register */
- #define MD_GPM		0x80000000	/* Set domain manager mode */
- #define MD_PPM		0x40000000	/* Set subpage protection */
- #define MD_CIDEF	0x20000000	/* Set cache inhibit when MMU dis */
-@@ -89,14 +89,14 @@
- #define MD_IDXMASK	0x00001f00	/* TLB index to be loaded */
- #define MD_RESETVAL	0x04000000	/* Value of register at reset */
- 
--#define SPRN_M_CASID	793	/* Address space ID (context) to match */
-+/* SPRN_M_CASID */	/* Address space ID (context) to match */
- #define MC_ASIDMASK	0x0000000f	/* Bits used for ASID value */
- 
- 
- /* These are the Ks and Kp from the PowerPC books.  For proper operation,
-  * Ks = 0, Kp = 1.
-  */
--#define SPRN_MD_AP	794
-+/* SPRN_MD_AP */
- #define MD_Ks		0x80000000	/* Should not be set */
- #define MD_Kp		0x40000000	/* Should always be set */
- 
-@@ -117,7 +117,7 @@
-  * about the last instruction TLB miss.  When MD_RPN is written, bits in
-  * this register are used to create the TLB entry.
-  */
--#define SPRN_MD_EPN	795
-+/* SPRN_MD_EPN */
- #define MD_EPNMASK	0xfffff000	/* Effective page number for entry */
- #define MD_EVALID	0x00000200	/* Entry is valid */
- #define MD_ASIDMASK	0x0000000f	/* ASID match value */
-@@ -127,7 +127,7 @@
-  * During a software tablewalk, reading this register provides the address
-  * of the entry associated with MD_EPN.
-  */
--#define SPRN_M_TWB	796
-+/* SPRN_M_TWB */
- #define	M_L1TB		0xfffff000	/* Level 1 table base address */
- #define M_L1INDX	0x00000ffc	/* Level 1 index, when read */
- 					/* Reset value is undefined */
-@@ -137,7 +137,7 @@
-  * when the MD_RPN is written.  It is also provides the hardware assist
-  * for finding the PTE address during software tablewalk.
-  */
--#define SPRN_MD_TWC	797
-+/* SPRN_MD_TWC */
- #define MD_L2TB		0xfffff000	/* Level 2 table base address */
- #define MD_L2INDX	0xfffffe00	/* Level 2 index (*pte), when read */
- #define MD_APG		0x000001e0	/* Access protection group (0) */
-@@ -155,13 +155,13 @@
-  * causes a TLB entry to be created for the data TLB, using
-  * additional information from the MD_EPN, and MD_TWC registers.
-  */
--#define SPRN_MD_RPN	798
-+/* SPRN_MD_RPN */
- #define MD_SPS16K	0x00000008	/* Small page size (0 = 4k, 1 = 16k) */
- 
- /* This is a temporary storage register that could be used to save
-  * a processor working register during a tablewalk.
-  */
--#define SPRN_M_TW	799
-+/* SPRN_M_TW */
- 
- #ifndef __ASSEMBLY__
- typedef struct {
+ static inline unsigned long mfvtb (void)
+ {
 diff --git a/arch/powerpc/include/asm/reg_8xx.h b/arch/powerpc/include/asm/reg_8xx.h
-index e8ea346..150323c 100644
+index 150323c..59f9b72 100644
 --- a/arch/powerpc/include/asm/reg_8xx.h
 +++ b/arch/powerpc/include/asm/reg_8xx.h
-@@ -4,6 +4,21 @@
- #ifndef _ASM_POWERPC_REG_8xx_H
- #define _ASM_POWERPC_REG_8xx_H
+@@ -63,4 +63,86 @@
+ #define DC_DFWT		0x40000000	/* Data cache is forced write through */
+ #define DC_LES		0x20000000	/* Caches are little endian mode */
  
-+/* MMU registers */
-+#define SPRN_MI_CTR	784	/* Instruction TLB control register */
-+#define SPRN_MI_AP	786
-+#define SPRN_MI_EPN	787
-+#define SPRN_MI_TWC	789
-+#define SPRN_MI_RPN	790
-+#define SPRN_MD_CTR	792	/* Data TLB control register */
-+#define SPRN_M_CASID	793	/* Address space ID (context) to match */
-+#define SPRN_MD_AP	794
-+#define SPRN_MD_EPN	795
-+#define SPRN_M_TWB	796
-+#define SPRN_MD_TWC	797
-+#define SPRN_MD_RPN	798
-+#define SPRN_M_TW	799
++#ifdef CONFIG_8xx_CPU6
++#define do_mtspr_cpu6(rn, rn_addr, v)	\
++	do {								\
++		int _reg_cpu6 = rn_addr, _tmp_cpu6[1];		\
++		asm volatile("stw %0, %1;"				\
++			     "lwz %0, %1;"				\
++			     "mtspr " __stringify(rn) ",%2" :		\
++			     : "r" (_reg_cpu6), "m"(_tmp_cpu6),		\
++			       "r" ((unsigned long)(v))			\
++			     : "memory");				\
++	} while (0)
 +
- /* Cache control on the MPC8xx is provided through some additional
-  * special purpose registers.
-  */
-@@ -14,6 +29,15 @@
- #define SPRN_DC_ADR	569	/* Address needed for some commands */
- #define SPRN_DC_DAT	570	/* Read-only data register */
- 
-+/* Misc Debug */
-+#define SPRN_DPDR	630
-+#define SPRN_MI_CAM	816
-+#define SPRN_MI_RAM0	817
-+#define SPRN_MI_RAM1	818
-+#define SPRN_MD_CAM	824
-+#define SPRN_MD_RAM0	825
-+#define SPRN_MD_RAM1	826
++#define do_mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" :	\
++				     : "r" ((unsigned long)(v))		\
++				     : "memory")
++#define mtspr(rn, v) \
++	do {								\
++		if (rn == SPRN_IMMR)					\
++			do_mtspr_cpu6(rn, 0x3d30, v);			\
++		else if (rn == SPRN_IC_CST)				\
++			do_mtspr_cpu6(rn, 0x2110, v);			\
++		else if (rn == SPRN_IC_ADR)				\
++			do_mtspr_cpu6(rn, 0x2310, v);			\
++		else if (rn == SPRN_IC_DAT)				\
++			do_mtspr_cpu6(rn, 0x2510, v);			\
++		else if (rn == SPRN_DC_CST)				\
++			do_mtspr_cpu6(rn, 0x3110, v);			\
++		else if (rn == SPRN_DC_ADR)				\
++			do_mtspr_cpu6(rn, 0x3310, v);			\
++		else if (rn == SPRN_DC_DAT)				\
++			do_mtspr_cpu6(rn, 0x3510, v);			\
++		else if (rn == SPRN_MI_CTR)				\
++			do_mtspr_cpu6(rn, 0x2180, v);			\
++		else if (rn == SPRN_MI_AP)				\
++			do_mtspr_cpu6(rn, 0x2580, v);			\
++		else if (rn == SPRN_MI_EPN)				\
++			do_mtspr_cpu6(rn, 0x2780, v);			\
++		else if (rn == SPRN_MI_TWC)				\
++			do_mtspr_cpu6(rn, 0x2b80, v);			\
++		else if (rn == SPRN_MI_RPN)				\
++			do_mtspr_cpu6(rn, 0x2d80, v);			\
++		else if (rn == SPRN_MI_CAM)				\
++			do_mtspr_cpu6(rn, 0x2190, v);			\
++		else if (rn == SPRN_MI_RAM0)				\
++			do_mtspr_cpu6(rn, 0x2390, v);			\
++		else if (rn == SPRN_MI_RAM1)				\
++			do_mtspr_cpu6(rn, 0x2590, v);			\
++		else if (rn == SPRN_MD_CTR)				\
++			do_mtspr_cpu6(rn, 0x3180, v);			\
++		else if (rn == SPRN_M_CASID)				\
++			do_mtspr_cpu6(rn, 0x3380, v);			\
++		else if (rn == SPRN_MD_AP)				\
++			do_mtspr_cpu6(rn, 0x3580, v);			\
++		else if (rn == SPRN_MD_EPN)				\
++			do_mtspr_cpu6(rn, 0x3780, v);			\
++		else if (rn == SPRN_M_TWB)				\
++			do_mtspr_cpu6(rn, 0x3980, v);			\
++		else if (rn == SPRN_MD_TWC)				\
++			do_mtspr_cpu6(rn, 0x3b80, v);			\
++		else if (rn == SPRN_MD_RPN)				\
++			do_mtspr_cpu6(rn, 0x3d80, v);			\
++		else if (rn == SPRN_M_TW)				\
++			do_mtspr_cpu6(rn, 0x3f80, v);			\
++		else if (rn == SPRN_MD_CAM)				\
++			do_mtspr_cpu6(rn, 0x3190, v);			\
++		else if (rn == SPRN_MD_RAM0)				\
++			do_mtspr_cpu6(rn, 0x3390, v);			\
++		else if (rn == SPRN_MD_RAM1)				\
++			do_mtspr_cpu6(rn, 0x3590, v);			\
++		else if (rn == SPRN_DEC)				\
++			do_mtspr_cpu6(rn, 0x2c00, v);			\
++		else if (rn == SPRN_TBWL)				\
++			do_mtspr_cpu6(rn, 0x3880, v);			\
++		else if (rn == SPRN_TBWU)				\
++			do_mtspr_cpu6(rn, 0x3a80, v);			\
++		else if (rn == SPRN_DPDR)				\
++			do_mtspr_cpu6(rn, 0x2d30, v);			\
++		else							\
++			do_mtspr(rn, v);				\
++	} while (0)
++#endif
 +
- /* Commands.  Only the first few are available to the instruction cache.
- */
- #define	IDC_ENABLE	0x02000000	/* Cache enable */
+ #endif /* _ASM_POWERPC_REG_8xx_H */
 -- 
 2.1.0
