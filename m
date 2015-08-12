@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2DF061A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42CFF1A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:35 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 16/31] s390: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:35 +0200
-Message-Id: <1439363150-8661-17-git-send-email-hch@lst.de>
+Subject: [PATCH 17/31] ia64/sba_iommu: remove sba_sg_address
+Date: Wed, 12 Aug 2015 09:05:36 +0200
+Message-Id: <1439363150-8661-18-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,70 +33,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use sg_phys() instead of page_to_phys(sg_page(sg)) so that we don't
-require a page structure for all DMA memory.
-
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/s390/pci/pci_dma.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ arch/ia64/hp/common/sba_iommu.c | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/arch/s390/pci/pci_dma.c b/arch/s390/pci/pci_dma.c
-index 6fd8d58..aae5a47 100644
---- a/arch/s390/pci/pci_dma.c
-+++ b/arch/s390/pci/pci_dma.c
-@@ -272,14 +272,13 @@ int dma_set_mask(struct device *dev, u64 mask)
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index 344387a..9e5aa8e 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -248,8 +248,6 @@ static int reserve_sba_gart = 1;
+ static SBA_INLINE void sba_mark_invalid(struct ioc *, dma_addr_t, size_t);
+ static SBA_INLINE void sba_free_range(struct ioc *, dma_addr_t, size_t);
+ 
+-#define sba_sg_address(sg)	sg_virt((sg))
+-
+ #ifdef FULL_VALID_PDIR
+ static u64 prefetch_spill_page;
+ #endif
+@@ -397,7 +395,7 @@ sba_dump_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
+ 	while (nents-- > 0) {
+ 		printk(KERN_DEBUG " %d : DMA %08lx/%05x CPU %p\n", nents,
+ 		       startsg->dma_address, startsg->dma_length,
+-		       sba_sg_address(startsg));
++		       sg_virt(startsg));
+ 		startsg = sg_next(startsg);
+ 	}
  }
- EXPORT_SYMBOL_GPL(dma_set_mask);
+@@ -409,7 +407,7 @@ sba_check_sg( struct ioc *ioc, struct scatterlist *startsg, int nents)
+ 	int the_nents = nents;
  
--static dma_addr_t s390_dma_map_pages(struct device *dev, struct page *page,
--				     unsigned long offset, size_t size,
-+static dma_addr_t s390_dma_map_phys(struct device *dev, unsigned long pa,
-+				     size_t size,
- 				     enum dma_data_direction direction,
- 				     struct dma_attrs *attrs)
- {
- 	struct zpci_dev *zdev = get_zdev(to_pci_dev(dev));
- 	unsigned long nr_pages, iommu_page_index;
--	unsigned long pa = page_to_phys(page) + offset;
- 	int flags = ZPCI_PTE_VALID;
- 	dma_addr_t dma_addr;
+ 	while (the_nents-- > 0) {
+-		if (sba_sg_address(the_sg) == 0x0UL)
++		if (sg_virt(the_sg) == 0x0UL)
+ 			sba_dump_sg(NULL, startsg, nents);
+ 		the_sg = sg_next(the_sg);
+ 	}
+@@ -1243,11 +1241,11 @@ sba_fill_pdir(
+ 		if (dump_run_sg)
+ 			printk(" %2d : %08lx/%05x %p\n",
+ 				nents, startsg->dma_address, cnt,
+-				sba_sg_address(startsg));
++				sg_virt(startsg));
+ #else
+ 		DBG_RUN_SG(" %d : %08lx/%05x %p\n",
+ 				nents, startsg->dma_address, cnt,
+-				sba_sg_address(startsg));
++				sg_virt(startsg));
+ #endif
+ 		/*
+ 		** Look for the start of a new DMA stream
+@@ -1267,7 +1265,7 @@ sba_fill_pdir(
+ 		** Look for a VCONTIG chunk
+ 		*/
+ 		if (cnt) {
+-			unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
++			unsigned long vaddr = (unsigned long) sg_virt(startsg);
+ 			ASSERT(pdirp);
  
-@@ -301,7 +300,7 @@ static dma_addr_t s390_dma_map_pages(struct device *dev, struct page *page,
+ 			/* Since multiple Vcontig blocks could make up
+@@ -1335,7 +1333,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
+ 	int idx;
  
- 	if (!dma_update_trans(zdev, pa, dma_addr, size, flags)) {
- 		atomic64_add(nr_pages, &zdev->mapped_pages);
--		return dma_addr + (offset & ~PAGE_MASK);
-+		return dma_addr + (pa & ~PAGE_MASK);
+ 	while (nents > 0) {
+-		unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
++		unsigned long vaddr = (unsigned long) sg_virt(startsg);
+ 
+ 		/*
+ 		** Prepare for first/next DMA stream
+@@ -1380,7 +1378,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
+ 			**
+ 			** append the next transaction?
+ 			*/
+-			vaddr = (unsigned long) sba_sg_address(startsg);
++			vaddr = (unsigned long) sg_virt(startsg);
+ 			if  (vcontig_end == vaddr)
+ 			{
+ 				vcontig_len += startsg->length;
+@@ -1479,7 +1477,7 @@ static int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist,
+ 	if (likely((ioc->dma_mask & ~to_pci_dev(dev)->dma_mask) == 0)) {
+ 		for_each_sg(sglist, sg, nents, filled) {
+ 			sg->dma_length = sg->length;
+-			sg->dma_address = virt_to_phys(sba_sg_address(sg));
++			sg->dma_address = virt_to_phys(sg_virt(sg));
+ 		}
+ 		return filled;
+ 	}
+@@ -1487,7 +1485,7 @@ static int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist,
+ 	/* Fast path single entry scatterlists. */
+ 	if (nents == 1) {
+ 		sglist->dma_length = sglist->length;
+-		sglist->dma_address = sba_map_single_attrs(dev, sba_sg_address(sglist), sglist->length, dir, attrs);
++		sglist->dma_address = sba_map_single_attrs(dev, sg_virt(sglist), sglist->length, dir, attrs);
+ 		return 1;
  	}
  
- out_free:
-@@ -312,6 +311,16 @@ out_err:
- 	return DMA_ERROR_CODE;
- }
+@@ -1563,7 +1561,7 @@ static void sba_unmap_sg_attrs(struct device *dev, struct scatterlist *sglist,
+ #endif
  
-+static dma_addr_t s390_dma_map_pages(struct device *dev, struct page *page,
-+				     unsigned long offset, size_t size,
-+				     enum dma_data_direction direction,
-+				     struct dma_attrs *attrs)
-+{
-+	unsigned long pa = page_to_phys(page) + offset;
-+
-+	return s390_dma_map_phys(dev, pa, size, direction, attrs);
-+}
-+
- static void s390_dma_unmap_pages(struct device *dev, dma_addr_t dma_addr,
- 				 size_t size, enum dma_data_direction direction,
- 				 struct dma_attrs *attrs)
-@@ -384,8 +393,7 @@ static int s390_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 	int i;
+ 	DBG_RUN_SG("%s() START %d entries,  %p,%x\n",
+-		   __func__, nents, sba_sg_address(sglist), sglist->length);
++		   __func__, nents, sg_virt(sglist), sglist->length);
  
- 	for_each_sg(sg, s, nr_elements, i) {
--		struct page *page = sg_page(s);
--		s->dma_address = s390_dma_map_pages(dev, page, s->offset,
-+		s->dma_address = s390_dma_map_phys(dev, sg_phys(s),
- 						    s->length, dir, NULL);
- 		if (!dma_mapping_error(dev, s->dma_address)) {
- 			s->dma_length = s->length;
+ #ifdef ASSERT_PDIR_SANITY
+ 	ioc = GET_IOC(dev);
 -- 
 1.9.1
