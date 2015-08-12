@@ -1,43 +1,42 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3DB4D1A0567
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:23:43 +1000 (AEST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 068561A0567
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:28:26 +1000 (AEST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 97CF114018C
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:23:42 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id A7D1A1401DE
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:28:25 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 12 Aug 2015 11:53:39 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 385C4E005C
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 11:57:58 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7C6NHdu14745804
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 11:53:18 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7C6NGXJ027712
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 11:53:16 +0530
-Message-ID: <55CAE654.3030106@linux.vnet.ibm.com>
-Date: Wed, 12 Aug 2015 11:53:16 +0530
+ Wed, 12 Aug 2015 16:28:24 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id ADE2A2CE805A
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:28:21 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7C6SEOJ65929312
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:28:22 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7C6RmY1015511
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 16:27:49 +1000
+Message-ID: <55CAE753.8000807@linux.vnet.ibm.com>
+Date: Wed, 12 Aug 2015 11:57:31 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
 CC: linuxppc-dev@ozlabs.org, mikey@neuling.org
-Subject: Re: [PATCH] powerpc/prom: Use DRCONF flags while processing detected
- LMBs
-References: <1438866307-19637-1-git-send-email-khandual@linux.vnet.ibm.com>
- <55C415C4.9080704@linux.vnet.ibm.com>
- <1439243331.7047.0.camel@ellerman.id.au>
-In-Reply-To: <1439243331.7047.0.camel@ellerman.id.au>
+Subject: Re: [PATCH 8/8] powerpc/xmon: Add some more elements to the existing
+ PACA dump list
+References: <1438153805-31828-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1438153805-31828-8-git-send-email-khandual@linux.vnet.ibm.com>
+ <1439359555.27815.1.camel@ellerman.id.au>
+In-Reply-To: <1439359555.27815.1.camel@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -48,18 +47,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2015 03:18 AM, Michael Ellerman wrote:
-> On Fri, 2015-08-07 at 07:49 +0530, Madhavan Srinivasan wrote:
->> > 
->> > On Thursday 06 August 2015 06:35 PM, Anshuman Khandual wrote:
->>> > > This patch just replaces hard coded values with existing
->> > 
->> >   Please drop "This patch just" and start with "Replace hard ..."
->> > 
->> >   https://www.kernel.org/doc/Documentation/SubmittingPatches 
-> Yeah I rewrote it as:
+On 08/12/2015 11:35 AM, Michael Ellerman wrote:
+> On Wed, 2015-07-29 at 12:40 +0530, Anshuman Khandual wrote:
+>> This patch adds a set of new elements to the existing PACA dump list
+>> inside an xmon session which can be listed below improving the overall
+>> xmon debug support.
+>>
+>> (1) hmi_event_available
+>> (2) dscr_default
+>> (3) vmalloc_sllp
+>> (4) slb_cache_ptr
+>> (5) sprg_vdso
+>> (6) tm_scratch
+>> (7) core_idle_state_ptr
+>> (8) thread_idle_state
+>> (9) thread_mask
+>> (10) slb_shadow
+>> (11) pgd
+>> (12) kernel_pgd
+>> (13) tcd_ptr
+>> (14) mc_kstack
+>> (15) crit_kstack
+>> (16) dbg_kstack
+>> (17) user_time
+>> (18) system_time
+>> (19) user_time_scaled
+>> (20) starttime
+>> (21) starttime_user
+>> (22) startspurr
+>> (23) utime_sspurr
+>> (24) stolen_time
 > 
->     Replace hard coded values with existing DRCONF flags while procesing
->     detected LMBs from the device tree. Does not change any functionality.
+> Adding these makes the paca display much longer than 24 lines. I know in
+> general we don't worry too much about folks on 80x24 green screens, but it's
+> nice if xmon works OK on those. Or on virtual consoles that don't scroll for
+> whatever reason.
+> 
+> So I'm going to hold off on this one until we have a way to display some of the
+> paca. I have an idea for that and will send a patch if it works.
+> 
 
-Thanks Michael.
+Sure, if you believe that is the best thing to do at the moment.
