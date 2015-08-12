@@ -1,19 +1,19 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 990E81A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:41:01 +1000 (AEST)
-Message-Id: <7d3df600a31006222dbdff33cd8710695df7a5c3.1439382634.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 969C81A1D2E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:41:03 +1000 (AEST)
+Message-Id: <c5e4a7a8cee211720399b2149147eca442661639.1439382635.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1439382631.git.christophe.leroy@c-s.fr>
 References: <cover.1439382631.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 03/20] powerpc: Update documentation for noltlbs kernel
- parameter
+Subject: [PATCH 04/20] powerpc/8xx: move setup_initial_memory_limit() into
+ 8xx_mmu.c
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com, Jonathan Corbet <corbet@lwn.net>
+ scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>, linux-doc@vger.kernel.org
-Date: Wed, 12 Aug 2015 15:40:58 +0200 (CEST)
+ Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 12 Aug 2015 15:41:00 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now the noltlbs kernel parameter is also applicable to PPC8xx
+Now we have a 8xx specific .c file for that so put it in there
+as other powerpc variants do
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- Documentation/kernel-parameters.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/8xx_mmu.c | 17 +++++++++++++++++
+ arch/powerpc/mm/init_32.c | 19 -------------------
+ 2 files changed, 17 insertions(+), 19 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index ca80921..572d8fd 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2474,7 +2474,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	nolapic_timer	[X86-32,APIC] Do not use the local APIC timer.
+diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
+index be6f041..0ddcb37 100644
+--- a/arch/powerpc/mm/8xx_mmu.c
++++ b/arch/powerpc/mm/8xx_mmu.c
+@@ -81,3 +81,20 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
  
- 	noltlbs		[PPC] Do not use large page/tlb entries for kernel
--			lowmem mapping on PPC40x.
-+			lowmem mapping on PPC40x and PPC8xx
- 
- 	nomca		[IA-64] Disable machine check abort handling
- 
+ 	return mapped;
+ }
++
++void setup_initial_memory_limit(phys_addr_t first_memblock_base,
++				phys_addr_t first_memblock_size)
++{
++	/* We don't currently support the first MEMBLOCK not mapping 0
++	 * physical on those processors
++	 */
++	BUG_ON(first_memblock_base != 0);
++
++#ifdef CONFIG_PIN_TLB
++	/* 8xx can only access 24MB at the moment */
++	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
++#else
++	/* 8xx can only access 8MB at the moment */
++	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
++#endif
++}
+diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
+index a10be66..1a18e4b 100644
+--- a/arch/powerpc/mm/init_32.c
++++ b/arch/powerpc/mm/init_32.c
+@@ -193,22 +193,3 @@ void __init MMU_init(void)
+ 	/* Shortly after that, the entire linear mapping will be available */
+ 	memblock_set_current_limit(lowmem_end_addr);
+ }
+-
+-#ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
+-void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+-				phys_addr_t first_memblock_size)
+-{
+-	/* We don't currently support the first MEMBLOCK not mapping 0
+-	 * physical on those processors
+-	 */
+-	BUG_ON(first_memblock_base != 0);
+-
+-#ifdef CONFIG_PIN_TLB
+-	/* 8xx can only access 24MB at the moment */
+-	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
+-#else
+-	/* 8xx can only access 8MB at the moment */
+-	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
+-#endif
+-}
+-#endif /* CONFIG_8xx */
 -- 
 2.1.0
