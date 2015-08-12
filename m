@@ -1,16 +1,16 @@
 Return-Path: <roy.pledge@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
+ (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6985B1A1D41
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 06:15:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 285F71A1D37
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 06:15:12 +1000 (AEST)
 From: Roy Pledge <Roy.Pledge@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
 CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [v2 07/11] soc/bman: Add debugfs support for the BMan driver
-Date: Wed, 12 Aug 2015 16:14:53 -0400
-Message-ID: <1439410497-19039-8-git-send-email-Roy.Pledge@freescale.com>
+Subject: [v2 09/11] soc/bman: Add HOTPLUG_CPU support to the BMan driver
+Date: Wed, 12 Aug 2015 16:14:55 -0400
+Message-ID: <1439410497-19039-10-git-send-email-Roy.Pledge@freescale.com>
 In-Reply-To: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
 References: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
 Reply-To: <Roy.Pledge@freescale.com>
@@ -25,247 +25,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+From: Hai-Ying Wang <Haiying.Wang@freescale.com>
 
-Add debugfs support for querying the state of hardware based
-Buffer Manager pools used in DPAA 1.0.
+Add support for CPU hotplug for the DPAA 1.0 Buffer Manager
+driver
 
-Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
 Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 Signed-off-by: Roy Pledge <Roy.Pledge@freescale.com>
 ---
- drivers/soc/fsl/qbman/Kconfig        |    7 ++
- drivers/soc/fsl/qbman/Makefile       |    1 +
- drivers/soc/fsl/qbman/bman-debugfs.c |  117 ++++++++++++++++++++++++++++++++++
- drivers/soc/fsl/qbman/bman_api.c     |   19 ++++++
- drivers/soc/fsl/qbman/dpaa_sys.h     |    7 +-
- 5 files changed, 145 insertions(+), 6 deletions(-)
- create mode 100644 drivers/soc/fsl/qbman/bman-debugfs.c
+ drivers/soc/fsl/qbman/bman_portal.c |   40 +++++++++++++++++++++++++++++++++++
+ drivers/soc/fsl/qbman/dpaa_sys.h    |    3 +++
+ 2 files changed, 43 insertions(+)
 
-diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-index 1f2063a..919ef15 100644
---- a/drivers/soc/fsl/qbman/Kconfig
-+++ b/drivers/soc/fsl/qbman/Kconfig
-@@ -54,6 +54,13 @@ config FSL_BMAN_TEST_THRESH
- 	  "drainer" thread, and the other threads that they observe exactly
- 	  the depletion state changes that are expected.
- 
-+config FSL_BMAN_DEBUGFS
-+	tristate "BMan debugfs support"
-+	depends on DEBUG_FS
-+	default n
-+	help
-+		BMan debugfs support
-+
- config FSL_QMAN
- 	bool "QMan device management"
- 	default n
-diff --git a/drivers/soc/fsl/qbman/Makefile b/drivers/soc/fsl/qbman/Makefile
-index 82f5482..2b53fbc 100644
---- a/drivers/soc/fsl/qbman/Makefile
-+++ b/drivers/soc/fsl/qbman/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_FSL_BMAN_TEST)			+= bman-test.o
- bman-test-y					 = bman_test.o
- bman-test-$(CONFIG_FSL_BMAN_TEST_API)		+= bman_test_api.o
- bman-test-$(CONFIG_FSL_BMAN_TEST_THRESH)	+= bman_test_thresh.o
-+obj-$(CONFIG_FSL_BMAN_DEBUGFS)			+= bman-debugfs.o
- 
- obj-$(CONFIG_FSL_QMAN)				+= qman_api.o qman_utils.o qman_driver.o
- obj-$(CONFIG_FSL_QMAN_CONFIG)			+= qman.o qman_portal.o
-diff --git a/drivers/soc/fsl/qbman/bman-debugfs.c b/drivers/soc/fsl/qbman/bman-debugfs.c
-new file mode 100644
-index 0000000..b384f47
---- /dev/null
-+++ b/drivers/soc/fsl/qbman/bman-debugfs.c
-@@ -0,0 +1,117 @@
-+/* Copyright 2010 - 2015 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include "bman_priv.h"
-+
-+static struct dentry *dfs_root; /* debugfs root directory */
-+
-+/* Query Buffer Pool State */
-+
-+static int query_bp_state_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+	struct bm_pool_state state;
-+	int i, j;
-+	u32 mask;
-+
-+	memset(&state, 0, sizeof(state));
-+	ret = bman_query_pools(&state);
-+	if (ret) {
-+		seq_printf(file, "Error %d\n", ret);
-+		return ret;
-+	}
-+
-+	seq_puts(file, "bp_id  free_buffers_avail  bp_depleted\n");
-+	for (i = 0; i < 2; i++) {
-+		mask = 0x80000000;
-+		for (j = 0; j < 32; j++) {
-+			seq_printf(file,
-+			 "  %-2u	   %-3s		    %-3s\n",
-+			 (i * 32) + j,
-+			 state.as.state.__state[i] & mask ? "no" : "yes",
-+			 state.ds.state.__state[i] & mask ? "yes" : "no");
-+			 mask >>= 1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int query_bp_state_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, query_bp_state_show, NULL);
-+}
-+
-+static const struct file_operations query_bp_state_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= query_bp_state_open,
-+	.read		= seq_read,
-+	.release	= single_release,
-+};
-+
-+static int __init bman_debugfs_init(void)
-+{
-+	int ret = 0;
-+	struct dentry *d;
-+
-+	dfs_root = debugfs_create_dir("bman", NULL);
-+	if (dfs_root == NULL) {
-+		pr_err("Cannot create dir\n");
-+		return -ENOMEM;
-+	}
-+
-+	d = debugfs_create_file("query_bp_state",
-+		S_IRUGO,
-+		dfs_root,
-+		NULL,
-+		&query_bp_state_fops);
-+	if (d == NULL) {
-+		ret = -ENOMEM;
-+		pr_err("Cannot create query_bp_state\n");
-+		goto _return;
-+	}
-+
-+	return 0;
-+
-+_return:
-+	debugfs_remove_recursive(dfs_root);
-+
-+	return ret;
-+}
-+
-+static void __exit bman_debugfs_exit(void)
-+{
-+	debugfs_remove_recursive(dfs_root);
-+}
-+
-+module_init(bman_debugfs_init);
-+module_exit(bman_debugfs_exit);
-+
-+MODULE_LICENSE("Dual BSD/GPL");
-diff --git a/drivers/soc/fsl/qbman/bman_api.c b/drivers/soc/fsl/qbman/bman_api.c
-index a389db9..d8918fc 100644
---- a/drivers/soc/fsl/qbman/bman_api.c
-+++ b/drivers/soc/fsl/qbman/bman_api.c
-@@ -1014,6 +1014,25 @@ int bman_flush_stockpile(struct bman_pool *pool, u32 flags)
+diff --git a/drivers/soc/fsl/qbman/bman_portal.c b/drivers/soc/fsl/qbman/bman_portal.c
+index 62d8f64..f33d671 100644
+--- a/drivers/soc/fsl/qbman/bman_portal.c
++++ b/drivers/soc/fsl/qbman/bman_portal.c
+@@ -129,6 +129,42 @@ static void __cold bman_offline_cpu(unsigned int cpu)
+ 	}
  }
- EXPORT_SYMBOL(bman_flush_stockpile);
  
-+int bman_query_pools(struct bm_pool_state *state)
++#ifdef CONFIG_HOTPLUG_CPU
++static void __cold bman_online_cpu(unsigned int cpu)
 +{
-+	struct bman_portal *p = get_affine_portal();
-+	struct bm_mc_result *mcr;
-+	__maybe_unused unsigned long irqflags;
++	struct bman_portal *p = (struct bman_portal *)affine_bportals[cpu];
++	const struct bm_portal_config *pcfg;
 +
-+	PORTAL_IRQ_LOCK(p, irqflags);
-+	bm_mc_start(&p->p);
-+	bm_mc_commit(&p->p, BM_MCC_VERB_CMD_QUERY);
-+	while (!(mcr = bm_mc_result(&p->p)))
-+		cpu_relax();
-+	DPA_ASSERT((mcr->verb & BM_MCR_VERB_CMD_MASK) == BM_MCR_VERB_CMD_QUERY);
-+	*state = mcr->query;
-+	PORTAL_IRQ_UNLOCK(p, irqflags);
-+	put_affine_portal();
-+	return 0;
++	if (p) {
++		pcfg = bman_get_bm_portal_config(p);
++		if (pcfg)
++			irq_set_affinity(pcfg->public_cfg.irq, cpumask_of(cpu));
++	}
 +}
-+EXPORT_SYMBOL(bman_query_pools);
 +
- #ifdef CONFIG_FSL_BMAN
- u32 bman_query_free_buffers(struct bman_pool *pool)
++static int __cold bman_hotplug_cpu_callback(struct notifier_block *nfb,
++					    unsigned long action, void *hcpu)
++{
++	unsigned int cpu = (unsigned long)hcpu;
++
++	switch (action) {
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		bman_online_cpu(cpu);
++		break;
++	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
++		bman_offline_cpu(cpu);
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block bman_hotplug_cpu_notifier = {
++	.notifier_call = bman_hotplug_cpu_callback,
++};
++#endif /* CONFIG_HOTPLUG_CPU */
++
+ static int __cold bman_portal_probe(struct platform_device *of_dev)
  {
+ 	struct device *dev = &of_dev->dev;
+@@ -342,6 +378,10 @@ static int __init bman_portal_driver_register(struct platform_driver *drv)
+ 	for_each_cpu(cpu, &offline_cpus)
+ 		bman_offline_cpu(cpu);
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++	register_hotcpu_notifier(&bman_hotplug_cpu_notifier);
++#endif
++
+ 	bman_seed_bpid_range(0, bman_pool_max);
+ 
+ 	return 0;
 diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h b/drivers/soc/fsl/qbman/dpaa_sys.h
-index cef9095..3cf446a 100644
+index 0dd341c..d1da092 100644
 --- a/drivers/soc/fsl/qbman/dpaa_sys.h
 +++ b/drivers/soc/fsl/qbman/dpaa_sys.h
-@@ -38,6 +38,7 @@
- #include <linux/of_irq.h>
- #include <linux/of_reserved_mem.h>
- #include <linux/kthread.h>
-+#include <linux/debugfs.h>
+@@ -43,6 +43,9 @@
+ #include <linux/vmalloc.h>
  #include <linux/platform_device.h>
  #include <linux/ctype.h>
++#ifdef CONFIG_HOTPLUG_CPU
++#include <linux/cpu.h>
++#endif
  
-@@ -76,9 +77,7 @@ int dpaa_resource_reserve(struct dpaa_resource *alloc, u32 base, u32 num);
- #define DPA_PORTAL_CE 0
- #define DPA_PORTAL_CI 1
+ #include <asm/pgtable.h>
  
--/***********************/
- /* Misc inline assists */
--/***********************/
- 
- /* TODO: NB, we currently assume that hwsync() and lwsync() imply compiler
-  * barriers and that dcb*() won't fall victim to compiler or execution
-@@ -157,9 +156,7 @@ static inline void copy_words(void *dest, const void *src, size_t sz)
- #define copy_words memcpy
- #endif
- 
--/************/
- /* RB-trees */
--/************/
- 
- /* We encapsulate RB-trees so that its easier to use non-linux forms in
-  * non-linux systems. This also encapsulates the extra plumbing that linux code
-@@ -215,9 +212,7 @@ static inline type *name##_find(struct dpa_rbtree *tree, u32 val) \
- 	return NULL; \
- }
- 
--/************/
- /* Bootargs */
--/************/
- 
- /* QMan has "qportals=" and BMan has "bportals=", they use the same syntax
-  * though; a comma-separated list of items, each item being a cpu index and/or a
 -- 
 1.7.9.5
