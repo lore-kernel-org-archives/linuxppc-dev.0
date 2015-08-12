@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B5ABC1A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B3E191A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:59 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 24/31] xtensa: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:43 +0200
-Message-Id: <1439363150-8661-25-git-send-email-hch@lst.de>
+Subject: [PATCH 25/31] frv: handle page-less SG entries
+Date: Wed, 12 Aug 2015 09:05:44 +0200
+Message-Id: <1439363150-8661-26-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,55 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make all cache invalidation conditional on sg_has_page().
+Only call kmap_atomic_primary when the SG entry is mapped into
+kernel virtual space.
+
+XXX: the code already looks odd due to the lack of pairing between
+kmap_atomic_primary and kunmap_atomic_primary.  Does it work either
+before or after this patch?
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/xtensa/include/asm/dma-mapping.h | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
+ arch/frv/mb93090-mb00/pci-dma.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/xtensa/include/asm/dma-mapping.h b/arch/xtensa/include/asm/dma-mapping.h
-index 1f5f6dc..262a1d1 100644
---- a/arch/xtensa/include/asm/dma-mapping.h
-+++ b/arch/xtensa/include/asm/dma-mapping.h
-@@ -61,10 +61,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
- 	BUG_ON(direction == DMA_NONE);
+diff --git a/arch/frv/mb93090-mb00/pci-dma.c b/arch/frv/mb93090-mb00/pci-dma.c
+index 4d1f01d..77b3a1c 100644
+--- a/arch/frv/mb93090-mb00/pci-dma.c
++++ b/arch/frv/mb93090-mb00/pci-dma.c
+@@ -63,6 +63,9 @@ int dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	dampr2 = __get_DAMPR(2);
  
  	for_each_sg(sglist, sg, nents, i) {
--		BUG_ON(!sg_page(sg));
--
- 		sg->dma_address = sg_phys(sg);
--		consistent_sync(sg_virt(sg), sg->length, direction);
-+		if (sg_has_page(sg))
-+			consistent_sync(sg_virt(sg), sg->length, direction);
- 	}
++		if (!sg_has_page(sg))
++			continue;
++
+ 		vaddr = kmap_atomic_primary(sg_page(sg));
  
- 	return nents;
-@@ -131,8 +130,10 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sglist, int nelems,
- 	int i;
- 	struct scatterlist *sg;
- 
--	for_each_sg(sglist, sg, nelems, i)
--		consistent_sync(sg_virt(sg), sg->length, dir);
-+	for_each_sg(sglist, sg, nelems, i) {
-+		if (sg_has_page(sg))
-+			consistent_sync(sg_virt(sg), sg->length, dir);
-+	}
- }
- 
- static inline void
-@@ -142,8 +143,10 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sglist,
- 	int i;
- 	struct scatterlist *sg;
- 
--	for_each_sg(sglist, sg, nelems, i)
--		consistent_sync(sg_virt(sg), sg->length, dir);
-+	for_each_sg(sglist, sg, nelems, i) {
-+		if (sg_has_page(sg))
-+			consistent_sync(sg_virt(sg), sg->length, dir);
-+	}
- }
- static inline int
- dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ 		frv_dcache_writeback((unsigned long) vaddr,
 -- 
 1.9.1
