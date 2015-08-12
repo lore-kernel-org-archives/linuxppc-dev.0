@@ -1,17 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
+ [209.85.220.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C860E1A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 21:55:34 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: khandual@linux.vnet.ibm.com
-Subject: [PATCH v2] powerpc/xmon: Allow limiting the size of the paca display
-Date: Wed, 12 Aug 2015 21:55:25 +1000
-Message-Id: <1439380525-9986-1-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1439362653-14665-1-git-send-email-mpe@ellerman.id.au>
-References: <1439362653-14665-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 519911A0567
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 22:57:43 +1000 (AEST)
+Received: by pacrr5 with SMTP id rr5so14284546pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 05:57:41 -0700 (PDT)
+Subject: Re: [PATCH v6 05/42] powerpc/powernv: Track IO/M32/M64 segments from
+ PE
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1438834307-26960-6-git-send-email-gwshan@linux.vnet.ibm.com>
+ <55C84FD8.302@ozlabs.ru> <20150811000342.GB10753@gwshan>
+ <55C95CAE.1090908@ozlabs.ru> <20150812104502.GB7690@gwshan>
+ <55CB2865.4090402@ozlabs.ru> <20150812112019.GA14309@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55CB42BD.3070809@ozlabs.ru>
+Date: Wed, 12 Aug 2015 22:57:33 +1000
+MIME-Version: 1.0
+In-Reply-To: <20150812112019.GA14309@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,138 +34,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The paca display is already more than 24 lines, which can be problematic
-if you have an old school 80x24 terminal, or more likely you are on a
-virtual terminal which does not scroll for whatever reason.
+On 08/12/2015 09:20 PM, Gavin Shan wrote:
+> On Wed, Aug 12, 2015 at 09:05:09PM +1000, Alexey Kardashevskiy wrote:
+>> On 08/12/2015 08:45 PM, Gavin Shan wrote:
+>>> On Tue, Aug 11, 2015 at 12:23:42PM +1000, Alexey Kardashevskiy wrote:
+>>>> On 08/11/2015 10:03 AM, Gavin Shan wrote:
+>>>>> On Mon, Aug 10, 2015 at 05:16:40PM +1000, Alexey Kardashevskiy wrote:
+>>>>>> On 08/06/2015 02:11 PM, Gavin Shan wrote:
+>>>>>>> The patch is adding 6 bitmaps, three to PE and three to PHB, to track
+>>>>>>
+>>>>>> The patch is also removing 2 arrays (io_segmap and m32_segmap), what is that
+>>>>>> all about? Also, there was no m64_segmap, now there is, needs an explanation
+>>>>>> may be.
+>>>>>>
+>>>>>
+>>>>> Originally, the bitmaps (io_segmap and m32_segmap) are allocated dynamically.
+>>>>> Now, they have fixed sizes - 512 bits.
+>>>>>
+>>>>> The subject "powerpc/powernv: Track IO/M32/M64 segments from PE" indicates
+>>>>> why m64_segmap is added.
+>>>>
+>>>>
+>>>> But before this patch, you somehow managed to keep it working without a map
+>>>> for M64, by the same time you needed map for IO and M32. It seems you are
+>>>> making things consistent in this patch but it also feels like you do not have
+>>>> to do so as M64 did not need a map before and I cannot see why it needs one
+>>>> now.
+>>>>
+>>>
+>>> The M64 map is used by [PATCH v6 23/42] powerpc/powernv: Release PEs dynamically
+>>> where the M64 segments consumed by one particular PE will be released.
+>>
+>>
+>> Then add it where it is really started being used. It is really hard to
+>> review a patch which is actually spread between patches. Do not count that
+>> reviewers will just trust you.
+>>
+>
+> Ok. I'll try.
+>
+>>
+>>>>>>
+>>>>>>> the consumed by one particular PE, which can be released once the PE
+>>>>>>> is destroyed during PCI unplugging time. Also, we're using fixed
+>>>>>>> quantity of bits to trace the used IO, M32 and M64 segments by PEs
+>>>>>>> in one particular PHB.
+>>>>>>>
+>>>>>>
+>>>>>> Out of curiosity - have you considered having just 3 arrays, in PHB, storing
+>>>>>> PE numbers, and ditching PE's arrays? Does PE itself need to know what PEs it
+>>>>>> is using? Not sure about this master/slave PEs though.
+>>>>>>
+>>>>>
+>>>>> I don't follow your suggestion. Can you rephrase and explain it a bit more?
+>>>>
+>>>>
+>>>> Please explains in what situations you need same map in both PHB and PE and
+>>>> how you are going to use them. For example, pe::m64_segmap and
+>>>> phb::m64_segmap.
+>>>>
+>>>> I believe you need to know what segment is used by what PE and that's it and
+>>>> having 2 bitmaps is overcomplicated hard to follow. Is there anything else
+>>>> what I am missing?
+>>>>
+>>>
+>>> The situation is same to all (IO, M32 and M64) segment maps. Taking m64_segmap
+>>> as an example, it will be used when creating or destroying the PE who consumes
+>>> M64 segments. phb::m64_segmap is recording the M64 segment usage in PHB's domain.
+>>> It's used to check same M64 segment won't be used for towice. pe::m64_segmap tracks
+>>> the M64 segments consumed by the PE.
+>>
+>>
+>> You could have a single map in PHB, key would be a segment number and value
+>> would be PE number. No need to have a map in PE. At all. No need to
+>> initialize bitmaps, etc.
+>>
+>
+> So it would be arrays for various segmant maps if I understood your suggestion
+> as below. Please confirm:
+>
+> #define PNV_IODA_MAX_SEG_NUM	512
+>
+> 	int struct pnv_phb::io_segmap[PNV_IODA_MAX_SEG_NUM];
+> 			    m32_segmap[PNV_IODA_MAX_SEG_NUM];
+> 			    m64_segmap[PNV_IODA_MAX_SEG_NUM];
+> - Initially, they are initialize to IODA_INVALID_PE;
+> - When one segment is assigned to one PE, the corresponding entry
+>    of the array is set to PE number.
+> - When one segment is relased, the corresponding entry of the array
+>    is set to IODA_INVALID_PE;
 
-We'd like to expand the paca display even more, so add a way to limit
-the number of lines that are displayed.
 
-This adds a third form of 'dp' which is 'dp # #', where the first number
-is the cpu, and the second is the number of lines to display.
+No, not arrays, I meant DEFINE_HASHTABLE(), hash_add(), etc from 
+include/linux/hashtable.h.
 
-Example output:
-
-  5:mon> dp 3 6
-  paca for cpu 0x3 @ c00000000fe00c00:
-   possible         = yes
-   present          = yes
-   online           = yes
-   lock_token       = 0x8000            	(0xa)
-   paca_index       = 0x3               	(0x8)
-   kernel_toc       = 0xc000000001230300	(0x10)
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
-
-v2: Honour the limit even for the initial lines, and change the
-    implementation to use goto to bail out early rather than checking
-    continuously.
+http://kernelnewbies.org/FAQ/Hashtables is a good place to start :)
 
 
- arch/powerpc/xmon/xmon.c | 40 +++++++++++++++++++++++++++++-----------
- 1 file changed, 29 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index e599259d84fc..2950c6aface4 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -205,6 +205,7 @@ Commands:\n\
- #ifdef CONFIG_PPC64
-   "\
-   dp[#]	dump paca for current cpu, or cpu #\n\
-+  dp##  dump paca for cpu #, only # lines\n\
-   dpa	dump paca for all possible cpus\n"
- #endif
-   "\
-@@ -2070,9 +2071,10 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
- }
- 
- #ifdef CONFIG_PPC64
--static void dump_one_paca(int cpu)
-+static void dump_one_paca(int cpu, int num_lines)
- {
- 	struct paca_struct *p;
-+	int line;
- 
- 	if (setjmp(bus_error_jmp) != 0) {
- 		printf("*** Error dumping paca for cpu 0x%x!\n", cpu);
-@@ -2082,17 +2084,28 @@ static void dump_one_paca(int cpu)
- 	catch_memory_errors = 1;
- 	sync();
- 
-+#define CHECK_LINE()				\
-+	if (num_lines && line++ >= num_lines)	\
-+		goto out;			\
-+
-+#define DUMP(paca, name, format)					\
-+	printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18,	\
-+	       paca->name, offsetof(struct paca_struct, name));		\
-+	CHECK_LINE();
-+
- 	p = &paca[cpu];
- 
-+	line = 0;
-+
- 	printf("paca for cpu 0x%x @ %p:\n", cpu, p);
-+	CHECK_LINE();
- 
- 	printf(" %-*s = %s\n", 16, "possible", cpu_possible(cpu) ? "yes" : "no");
-+	CHECK_LINE();
- 	printf(" %-*s = %s\n", 16, "present", cpu_present(cpu) ? "yes" : "no");
-+	CHECK_LINE();
- 	printf(" %-*s = %s\n", 16, "online", cpu_online(cpu) ? "yes" : "no");
--
--#define DUMP(paca, name, format) \
--	printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18, paca->name, \
--		offsetof(struct paca_struct, name));
-+	CHECK_LINE();
- 
- 	DUMP(p, lock_token, "x");
- 	DUMP(p, paca_index, "x");
-@@ -2119,8 +2132,10 @@ static void dump_one_paca(int cpu)
- 	DUMP(p, irq_work_pending, "x");
- 	DUMP(p, nap_state_lost, "x");
- 
-+#undef CHECK_LINE
- #undef DUMP
- 
-+out:
- 	catch_memory_errors = 0;
- 	sync();
- }
-@@ -2135,12 +2150,12 @@ static void dump_all_pacas(void)
- 	}
- 
- 	for_each_possible_cpu(cpu)
--		dump_one_paca(cpu);
-+		dump_one_paca(cpu, 0);
- }
- 
- static void dump_pacas(void)
- {
--	unsigned long num;
-+	unsigned long num, lines;
- 	int c;
- 
- 	c = inchar();
-@@ -2151,10 +2166,13 @@ static void dump_pacas(void)
- 
- 	termch = c;	/* Put c back, it wasn't 'a' */
- 
--	if (scanhex(&num))
--		dump_one_paca(num);
--	else
--		dump_one_paca(xmon_owner);
-+	num = xmon_owner;
-+	scanhex(&num);
-+
-+	lines = 0;
-+	scanhex(&lines);
-+
-+	dump_one_paca(num, lines);
- }
- #endif
- 
 -- 
-2.1.4
+Alexey
