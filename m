@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 9FB2F1A06F0
+ by lists.ozlabs.org (Postfix) with ESMTP id 9EE2A1A067D
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 23:40:57 +1000 (AEST)
-Message-Id: <3388d8026959610ea22be34f198b3874d87cb961.1439382634.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1439382631.git.christophe.leroy@c-s.fr>
-References: <cover.1439382631.git.christophe.leroy@c-s.fr>
+Message-Id: <cover.1439382631.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 01/20] powerpc/8xx: Save r3 all the time in DTLB miss handler
+Subject: [PATCH 00/20] powerpc/8xx: Use large pages for RAM and IMMR and other
+ improvments.
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
+ scottwood@freescale.com, Jonathan Corbet <corbet@lwn.net>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Wed, 12 Aug 2015 15:40:54 +0200 (CEST)
+ Joakim Tjernlund <joakim.tjernlund@transmode.se>, linux-doc@vger.kernel.org
+Date: Wed, 12 Aug 2015 15:40:52 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +21,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are spending between 40 and 160 cycles with a mean of 65 cycles in
-the TLB handling routines (measured with mftbl) so make it more
-simple althought it adds one instruction.
+The main purpose of this patchset is to dramatically reduce the time
+spent in DTLB miss handler. This is achieved by:
+1/ Mapping RAM with 8M pages
+2/ Mapping IMMR with a fixed 512K page
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+On a live running system (VoIP gateway for Air Trafic Control), over
+a 10 minutes period (with 277s idle), we get 87 millions DTLB misses
+and approximatly 35 secondes are spent in DTLB handler.
+This represents 5.8% of the overall time and even 10.8% of the
+non-idle time.
+Among those 87 millions DTLB misses, 15% are on user addresses and
+85% are on kernel addresses. And within the kernel addresses, 93%
+are on addresses from the linear address space and only 7% are on
+addresses from the virtual address space.
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 78c1eba..1557926 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -385,23 +385,20 @@ InstructionTLBMiss:
- 
- 	. = 0x1200
- DataStoreTLBMiss:
--#ifdef CONFIG_8xx_CPU6
- 	mtspr	SPRN_SPRG_SCRATCH2, r3
--#endif
- 	EXCEPTION_PROLOG_0
--	mfcr	r10
-+	mfcr	r3
- 
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
--	mfspr	r11, SPRN_MD_EPN
--	IS_KERNEL(r11, r11)
-+	mfspr	r10, SPRN_MD_EPN
-+	IS_KERNEL(r11, r10)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
- 	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
--	mtcr	r10
--	mfspr	r10, SPRN_MD_EPN
-+	mtcr	r3
- 
- 	/* Insert level 1 index */
- 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-@@ -453,9 +450,7 @@ DataStoreTLBMiss:
- 	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
- 
- 	/* Restore registers */
--#ifdef CONFIG_8xx_CPU6
- 	mfspr	r3, SPRN_SPRG_SCRATCH2
--#endif
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	EXCEPTION_EPILOG_0
- 	rfi
+Once the full patchset applied, the number of DTLB misses during the
+period is reduced to 11.8 millions for a duration of 5.8s, which
+represents 2% of the non-idle time.
+
+This patch also includes other miscellaneous improvements:
+1/ Handling of CPU6 ERRATA directly in mtspr() C macro to reduce code
+specific to PPC8xx
+2/ Rewrite of a few non critical ASM functions in C
+3/ Removal of some unused items
+
+See related patches for details
+
+
+Christophe Leroy (20):
+  powerpc/8xx: Save r3 all the time in DTLB miss handler
+  powerpc/8xx: Map linear kernel RAM with 8M pages
+  powerpc: Update documentation for noltlbs kernel parameter
+  powerpc/8xx: move setup_initial_memory_limit() into 8xx_mmu.c
+  powerpc/8xx: Fix vaddr for IMMR early remap
+  powerpc32: iounmap() cannot vunmap() area mapped by TLBCAMs either
+  powerpc32: refactor x_mapped_by_bats() and x_mapped_by_tlbcam()
+    together
+  powerpc/8xx: Map IMMR area with 512k page at a fixed address
+  powerpc/8xx: show IMMR area in startup memory layout
+  powerpc/8xx: CONFIG_PIN_TLB unneeded for CONFIG_PPC_EARLY_DEBUG_CPM
+  powerpc/8xx: map 16M RAM at startup
+  powerpc/8xx: move 8xx SPRN defines into reg_8xx.h and add some missing
+    ones
+  powerpc/8xx: Handle CPU6 ERRATA directly in mtspr() macro
+  powerpc/8xx: remove special handling of CPU6 errata in set_dec()
+  powerpc/8xx: rewrite set_context() in C
+  powerpc/8xx: rewrite flush_instruction_cache() in C
+  powerpc32: Remove clear_pages()
+  powerpc32: Remove useless/wrong MMU:setio progress message
+  powerpc/8xx: also use r3 in the ITLB miss in all situations
+  powerpc32: remove ioremap_base
+
+ Documentation/kernel-parameters.txt         |   2 +-
+ arch/powerpc/Kconfig.debug                  |   2 -
+ arch/powerpc/include/asm/mmu-8xx.h          |  26 ++--
+ arch/powerpc/include/asm/page_32.h          |   3 +-
+ arch/powerpc/include/asm/pgtable-ppc32.h    |   5 +
+ arch/powerpc/include/asm/reg.h              |   2 +
+ arch/powerpc/include/asm/reg_8xx.h          | 106 ++++++++++++++++
+ arch/powerpc/include/asm/time.h             |   6 +-
+ arch/powerpc/kernel/head_8xx.S              | 151 +++++++++-------------
+ arch/powerpc/kernel/misc_32.S               |  17 +--
+ arch/powerpc/kernel/ppc_ksyms_32.c          |   1 -
+ arch/powerpc/mm/8xx_mmu.c                   | 190 ++++++++++++++++++++++++++++
+ arch/powerpc/mm/Makefile                    |   1 +
+ arch/powerpc/mm/init_32.c                   |  23 ----
+ arch/powerpc/mm/mem.c                       |   4 +
+ arch/powerpc/mm/mmu_decl.h                  |  16 +--
+ arch/powerpc/mm/pgtable_32.c                |  54 +++++++-
+ arch/powerpc/platforms/embedded6xx/mpc10x.h |   8 --
+ 18 files changed, 444 insertions(+), 173 deletions(-)
+ create mode 100644 arch/powerpc/mm/8xx_mmu.c
+
 -- 
 2.1.0
