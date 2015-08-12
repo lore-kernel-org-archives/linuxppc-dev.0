@@ -1,21 +1,40 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <Vineet.Gupta1@synopsys.com>
+Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
+ [198.182.47.9])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9048F1A0567
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 20:27:10 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Cyril Bur' <cyrilbur@gmail.com>, Daniel Axtens <dja@axtens.net>
-CC: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "mikey@neuling.org"
- <mikey@neuling.org>, "imunsie@au.ibm.com" <imunsie@au.ibm.com>
-Subject: RE: [PATCH v2 05/10] cxl: Refactor adaptor init/teardown
-Date: Wed, 12 Aug 2015 10:14:27 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB794DF@AcuExch.aculab.com>
-References: <1438061323-20710-1-git-send-email-dja@axtens.net>
- <1438061323-20710-6-git-send-email-dja@axtens.net>
- <20150811160120.01815326@camb691>
-In-Reply-To: <20150811160120.01815326@camb691>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id CF1061A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 20:35:18 +1000 (AEST)
+From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
+To: Christoph Hellwig <hch@lst.de>, "torvalds@linux-foundation.org"
+ <torvalds@linux-foundation.org>, "axboe@kernel.dk" <axboe@kernel.dk>
+CC: "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "hskinnemoen@gmail.com" <hskinnemoen@gmail.com>, "egtvedt@samfundet.no"
+ <egtvedt@samfundet.no>, "realmz6@gmail.com" <realmz6@gmail.com>,
+ "dhowells@redhat.com" <dhowells@redhat.com>, "monstr@monstr.eu"
+ <monstr@monstr.eu>, "x86@kernel.org" <x86@kernel.org>, "dwmw2@infradead.org"
+ <dwmw2@infradead.org>, "alex.williamson@redhat.com"
+ <alex.williamson@redhat.com>, "grundler@parisc-linux.org"
+ <grundler@parisc-linux.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arch@vger.kernel.org"
+ <linux-arch@vger.kernel.org>, "linux-alpha@vger.kernel.org"
+ <linux-alpha@vger.kernel.org>, "linux-ia64@vger.kernel.org"
+ <linux-ia64@vger.kernel.org>, "linux-metag@vger.kernel.org"
+ <linux-metag@vger.kernel.org>, "linux-mips@linux-mips.org"
+ <linux-mips@linux-mips.org>, "linux-parisc@vger.kernel.org"
+ <linux-parisc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-s390@vger.kernel.org"
+ <linux-s390@vger.kernel.org>, "sparclinux@vger.kernel.org"
+ <sparclinux@vger.kernel.org>, "linux-xtensa@linux-xtensa.org"
+ <linux-xtensa@linux-xtensa.org>, "linux-nvdimm@ml01.01.org"
+ <linux-nvdimm@ml01.01.org>, "linux-media@vger.kernel.org"
+ <linux-media@vger.kernel.org>
+Subject: Re: [PATCH 19/31] arc: handle page-less SG entries
+Date: Wed, 12 Aug 2015 10:28:55 +0000
+Message-ID: <C2D7FE5348E1B147BCA15975FBA23075665B21F5@IN01WEMBXB.internal.synopsys.com>
+References: <1439363150-8661-1-git-send-email-hch@lst.de>
+ <1439363150-8661-20-git-send-email-hch@lst.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,27 +45,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQ3lyaWwgQnVyDQo+IFNlbnQ6IDExIEF1Z3VzdCAyMDE1IDA3OjAxDQouLi4NCj4gWW91
-IGhhdmUgYSBkaWxlbWEgd2l0aCB0aGUgdXNlIG9mIHVnbHkgaWYgKHJjID0gZm9vKCkpLiBJIGRv
-bid0IGxpa2UgaXQgYnV0IHRoZQ0KPiBmaWxlIGlzIGxpdHRlcmVkIHdpdGggaXQuDQo+IA0KPiBM
-b29rcyBsaWtlIHRoZSBtYWpvcml0eSBvZiB1c2VzIGluIHRoaXMgZmlsZSB0aGUgY29uZGl0aW9u
-YWwgYmxvY2sgaXMgb25seQ0KPiBvbmUgbGluZSB0aGVuIGl0IG1ha2VzIHNlbnNlIChvciBhdCBs
-ZWFzdCBpbiB0ZXJtcyBvZiBudW1iZXJzIG9mIGxpbmVzLi4uIGZhaXINCj4gZW5vdWdoKSwgaG93
-ZXZlciwgaWYgeW91IGhhdmUgYSBjb25kaXRpb25hbCBibG9jayBzcGFubmluZyBtdWx0aXBsZSBs
-aW5lcywgSQ0KPiBkb24ndCBsaWtlLg0KLi4uDQo+ID4gIAlrZnJlZShhZGFwdGVyKTsNCj4gPiAg
-fQ0KPiA+DQo+ID4gLXN0YXRpYyBzdHJ1Y3QgY3hsICpjeGxfYWxsb2NfYWRhcHRlcihzdHJ1Y3Qg
-cGNpX2RldiAqZGV2KQ0KPiA+ICtzdGF0aWMgc3RydWN0IGN4bCAqY3hsX2FsbG9jX2FkYXB0ZXIo
-dm9pZCkNCj4gPiAgew0KPiA+ICAJc3RydWN0IGN4bCAqYWRhcHRlcjsNCj4gPiArCWludCByYzsN
-Cj4gPg0KPiA+ICAJaWYgKCEoYWRhcHRlciA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBjeGwpLCBH
-RlBfS0VSTkVMKSkpDQo+ID4gIAkJcmV0dXJuIE5VTEw7DQo+ID4NCj4gPiAtCWFkYXB0ZXItPmRl
-di5wYXJlbnQgPSAmZGV2LT5kZXY7DQo+ID4gLQlhZGFwdGVyLT5kZXYucmVsZWFzZSA9IGN4bF9y
-ZWxlYXNlX2FkYXB0ZXI7DQo+ID4gLQlwY2lfc2V0X2RydmRhdGEoZGV2LCBhZGFwdGVyKTsNCj4g
-PiAgCXNwaW5fbG9ja19pbml0KCZhZGFwdGVyLT5hZnVfbGlzdF9sb2NrKTsNCj4gPg0KPiA+ICsJ
-aWYgKChyYyA9IGN4bF9hbGxvY19hZGFwdGVyX25yKGFkYXB0ZXIpKSkNCj4gDQo+IEh1bWYNCj4g
-DQo+ID4gKwkJZ290byBlcnIxOw0KPiA+ICsNCj4gPiArCWlmICgocmMgPSBkZXZfc2V0X25hbWUo
-JmFkYXB0ZXItPmRldiwgImNhcmQlaSIsIGFkYXB0ZXItPmFkYXB0ZXJfbnVtKSkpDQo+IA0KPiBI
-dW1mDQo+ID4gKwkJZ290byBlcnIyOw0KPiA+ICsNCj4gPiAgCXJldHVybiBhZGFwdGVyOw0KPiA+
-ICsNCj4gPiArZXJyMjoNCj4gPiArCWN4bF9yZW1vdmVfYWRhcHRlcl9ucihhZGFwdGVyKTsNCj4g
-PiArZXJyMToNCj4gPiArCWtmcmVlKGFkYXB0ZXIpOw0KPiA+ICsJcmV0dXJuIE5VTEw7DQo+ID4g
-IH0NCi4uLg0KDQpUaGUgZnVuY3Rpb24gYWJvdmUgZG9lc24ndCBldmVuIHVzZSB0aGUgJ3JjJyB2
-YWx1ZS4NCg0KCURhdmlkDQo=
+On Wednesday 12 August 2015 12:39 PM, Christoph Hellwig wrote:=0A=
+> Make all cache invalidation conditional on sg_has_page() and use=0A=
+> sg_phys to get the physical address directly.=0A=
+>=0A=
+> Signed-off-by: Christoph Hellwig <hch@lst.de>=0A=
+=0A=
+With a minor nit below.=0A=
+=0A=
+Acked-by: Vineet Gupta <vgupta@synopsys.com>=0A=
+=0A=
+> ---=0A=
+>  arch/arc/include/asm/dma-mapping.h | 26 +++++++++++++++++++-------=0A=
+>  1 file changed, 19 insertions(+), 7 deletions(-)=0A=
+>=0A=
+> diff --git a/arch/arc/include/asm/dma-mapping.h b/arch/arc/include/asm/dm=
+a-mapping.h=0A=
+> index 2d28ba9..42eb526 100644=0A=
+> --- a/arch/arc/include/asm/dma-mapping.h=0A=
+> +++ b/arch/arc/include/asm/dma-mapping.h=0A=
+> @@ -108,9 +108,13 @@ dma_map_sg(struct device *dev, struct scatterlist *s=
+g,=0A=
+>  	struct scatterlist *s;=0A=
+>  	int i;=0A=
+>  =0A=
+> -	for_each_sg(sg, s, nents, i)=0A=
+> -		s->dma_address =3D dma_map_page(dev, sg_page(s), s->offset,=0A=
+> -					       s->length, dir);=0A=
+> +	for_each_sg(sg, s, nents, i) {=0A=
+> +		if (sg_has_page(s)) {=0A=
+> +			_dma_cache_sync((unsigned long)sg_virt(s), s->length,=0A=
+> +					dir);=0A=
+> +		}=0A=
+> +		s->dma_address =3D sg_phys(s);=0A=
+> +	}=0A=
+>  =0A=
+>  	return nents;=0A=
+>  }=0A=
+> @@ -163,8 +167,12 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatt=
+erlist *sglist, int nelems,=0A=
+>  	int i;=0A=
+>  	struct scatterlist *sg;=0A=
+>  =0A=
+> -	for_each_sg(sglist, sg, nelems, i)=0A=
+> -		_dma_cache_sync((unsigned int)sg_virt(sg), sg->length, dir);=0A=
+> +	for_each_sg(sglist, sg, nelems, i) {=0A=
+> +		if (sg_has_page(sg)) {=0A=
+> +			_dma_cache_sync((unsigned int)sg_virt(sg), sg->length,=0A=
+> +					dir);=0A=
+> +		}=0A=
+> +	}=0A=
+>  }=0A=
+>  =0A=
+>  static inline void=0A=
+> @@ -174,8 +182,12 @@ dma_sync_sg_for_device(struct device *dev, struct sc=
+atterlist *sglist,=0A=
+>  	int i;=0A=
+>  	struct scatterlist *sg;=0A=
+>  =0A=
+> -	for_each_sg(sglist, sg, nelems, i)=0A=
+> -		_dma_cache_sync((unsigned int)sg_virt(sg), sg->length, dir);=0A=
+> +	for_each_sg(sglist, sg, nelems, i) {=0A=
+> +		if (sg_has_page(sg)) {=0A=
+> +			_dma_cache_sync((unsigned int)sg_virt(sg), sg->length,=0A=
+> +				dir);=0A=
+=0A=
+For consistency, could u please fix the left alignment of @dir above - anot=
+her tab=0A=
+perhaps ?=0A=
+=0A=
+> +		}=0A=
+> +	}=0A=
+>  }=0A=
+>  =0A=
+>  static inline int dma_supported(struct device *dev, u64 dma_mask)=0A=
+=0A=
