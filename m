@@ -1,32 +1,22 @@
-Return-Path: <egtvedt@samfundet.no>
-Received: from cassarossa.samfundet.no (cassarossa.samfundet.no
- [IPv6:2001:67c:29f4::29])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 54FE71A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 20:04:06 +1000 (AEST)
-Date: Wed, 12 Aug 2015 11:36:16 +0200
-From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-To: Christoph Hellwig <hch@lst.de>
-Cc: torvalds@linux-foundation.org, axboe@kernel.dk,
- dan.j.williams@intel.com, vgupta@synopsys.com,
- hskinnemoen@gmail.com, realmz6@gmail.com, dhowells@redhat.com,
- monstr@monstr.eu, x86@kernel.org, dwmw2@infradead.org,
- alex.williamson@redhat.com, grundler@parisc-linux.org,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
- linux-media@vger.kernel.org
-Subject: Re: [PATCH 20/31] avr32: handle page-less SG entries
-Message-ID: <20150812093615.GA16483@samfundet.no>
-References: <1439363150-8661-1-git-send-email-hch@lst.de>
- <1439363150-8661-21-git-send-email-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9048F1A0567
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 20:27:10 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Cyril Bur' <cyrilbur@gmail.com>, Daniel Axtens <dja@axtens.net>
+CC: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "mikey@neuling.org"
+ <mikey@neuling.org>, "imunsie@au.ibm.com" <imunsie@au.ibm.com>
+Subject: RE: [PATCH v2 05/10] cxl: Refactor adaptor init/teardown
+Date: Wed, 12 Aug 2015 10:14:27 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB794DF@AcuExch.aculab.com>
+References: <1438061323-20710-1-git-send-email-dja@axtens.net>
+ <1438061323-20710-6-git-send-email-dja@axtens.net>
+ <20150811160120.01815326@camb691>
+In-Reply-To: <20150811160120.01815326@camb691>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1439363150-8661-21-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Around Wed 12 Aug 2015 09:05:39 +0200 or thereabout, Christoph Hellwig wrote:
-> Make all cache invalidation conditional on sg_has_page() and use
-> sg_phys to get the physical address directly, bypassing the noop
-> page_to_bus.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-
-> ---
->  arch/avr32/include/asm/dma-mapping.h | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/avr32/include/asm/dma-mapping.h b/arch/avr32/include/asm/dma-mapping.h
-> index ae7ac92..a662ce2 100644
-> --- a/arch/avr32/include/asm/dma-mapping.h
-> +++ b/arch/avr32/include/asm/dma-mapping.h
-> @@ -216,11 +216,9 @@ dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
->  	struct scatterlist *sg;
->  
->  	for_each_sg(sglist, sg, nents, i) {
-> -		char *virt;
-> -
-> -		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
-> -		virt = sg_virt(sg);
-> -		dma_cache_sync(dev, virt, sg->length, direction);
-> +		sg->dma_address = sg_phys(sg);
-> +		if (sg_has_page(sg))
-> +			dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
->  	}
->  
->  	return nents;
-> @@ -328,8 +326,10 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sglist,
->  	int i;
->  	struct scatterlist *sg;
->  
-> -	for_each_sg(sglist, sg, nents, i)
-> -		dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
-> +	for_each_sg(sglist, sg, nents, i) {
-> +		if (sg_has_page(sg))
-> +			dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
-> +	}
->  }
->  
->  /* Now for the API extensions over the pci_ one */
--- 
-mvh
-Hans-Christian Egtvedt
+RnJvbTogQ3lyaWwgQnVyDQo+IFNlbnQ6IDExIEF1Z3VzdCAyMDE1IDA3OjAxDQouLi4NCj4gWW91
+IGhhdmUgYSBkaWxlbWEgd2l0aCB0aGUgdXNlIG9mIHVnbHkgaWYgKHJjID0gZm9vKCkpLiBJIGRv
+bid0IGxpa2UgaXQgYnV0IHRoZQ0KPiBmaWxlIGlzIGxpdHRlcmVkIHdpdGggaXQuDQo+IA0KPiBM
+b29rcyBsaWtlIHRoZSBtYWpvcml0eSBvZiB1c2VzIGluIHRoaXMgZmlsZSB0aGUgY29uZGl0aW9u
+YWwgYmxvY2sgaXMgb25seQ0KPiBvbmUgbGluZSB0aGVuIGl0IG1ha2VzIHNlbnNlIChvciBhdCBs
+ZWFzdCBpbiB0ZXJtcyBvZiBudW1iZXJzIG9mIGxpbmVzLi4uIGZhaXINCj4gZW5vdWdoKSwgaG93
+ZXZlciwgaWYgeW91IGhhdmUgYSBjb25kaXRpb25hbCBibG9jayBzcGFubmluZyBtdWx0aXBsZSBs
+aW5lcywgSQ0KPiBkb24ndCBsaWtlLg0KLi4uDQo+ID4gIAlrZnJlZShhZGFwdGVyKTsNCj4gPiAg
+fQ0KPiA+DQo+ID4gLXN0YXRpYyBzdHJ1Y3QgY3hsICpjeGxfYWxsb2NfYWRhcHRlcihzdHJ1Y3Qg
+cGNpX2RldiAqZGV2KQ0KPiA+ICtzdGF0aWMgc3RydWN0IGN4bCAqY3hsX2FsbG9jX2FkYXB0ZXIo
+dm9pZCkNCj4gPiAgew0KPiA+ICAJc3RydWN0IGN4bCAqYWRhcHRlcjsNCj4gPiArCWludCByYzsN
+Cj4gPg0KPiA+ICAJaWYgKCEoYWRhcHRlciA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBjeGwpLCBH
+RlBfS0VSTkVMKSkpDQo+ID4gIAkJcmV0dXJuIE5VTEw7DQo+ID4NCj4gPiAtCWFkYXB0ZXItPmRl
+di5wYXJlbnQgPSAmZGV2LT5kZXY7DQo+ID4gLQlhZGFwdGVyLT5kZXYucmVsZWFzZSA9IGN4bF9y
+ZWxlYXNlX2FkYXB0ZXI7DQo+ID4gLQlwY2lfc2V0X2RydmRhdGEoZGV2LCBhZGFwdGVyKTsNCj4g
+PiAgCXNwaW5fbG9ja19pbml0KCZhZGFwdGVyLT5hZnVfbGlzdF9sb2NrKTsNCj4gPg0KPiA+ICsJ
+aWYgKChyYyA9IGN4bF9hbGxvY19hZGFwdGVyX25yKGFkYXB0ZXIpKSkNCj4gDQo+IEh1bWYNCj4g
+DQo+ID4gKwkJZ290byBlcnIxOw0KPiA+ICsNCj4gPiArCWlmICgocmMgPSBkZXZfc2V0X25hbWUo
+JmFkYXB0ZXItPmRldiwgImNhcmQlaSIsIGFkYXB0ZXItPmFkYXB0ZXJfbnVtKSkpDQo+IA0KPiBI
+dW1mDQo+ID4gKwkJZ290byBlcnIyOw0KPiA+ICsNCj4gPiAgCXJldHVybiBhZGFwdGVyOw0KPiA+
+ICsNCj4gPiArZXJyMjoNCj4gPiArCWN4bF9yZW1vdmVfYWRhcHRlcl9ucihhZGFwdGVyKTsNCj4g
+PiArZXJyMToNCj4gPiArCWtmcmVlKGFkYXB0ZXIpOw0KPiA+ICsJcmV0dXJuIE5VTEw7DQo+ID4g
+IH0NCi4uLg0KDQpUaGUgZnVuY3Rpb24gYWJvdmUgZG9lc24ndCBldmVuIHVzZSB0aGUgJ3JjJyB2
+YWx1ZS4NCg0KCURhdmlkDQo=
