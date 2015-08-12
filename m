@@ -1,43 +1,29 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f173.google.com (mail-pd0-f173.google.com
+ [209.85.192.173])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ABD31A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 21:02:43 +1000 (AEST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 12 Aug 2015 16:32:40 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id E0DAA1258069
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:35:51 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7CB2FMh65732770
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:32:17 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7CB2GWn014378
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 16:32:18 +0530
-Date: Wed, 12 Aug 2015 20:28:58 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org,
- benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
- grant.likely@linaro.org, robherring2@gmail.com,
- panto@antoniou-consulting.com
-Subject: Re: [PATCH v6 03/42] powerpc/powernv: Enable M64 on P7IOC
-Message-ID: <20150812102858.GA7690@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71A231A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 21:05:19 +1000 (AEST)
+Received: by pdco4 with SMTP id o4so6382240pdc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 04:05:17 -0700 (PDT)
+Subject: Re: [PATCH v6 05/42] powerpc/powernv: Track IO/M32/M64 segments from
+ PE
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <55C844F1.6060404@ozlabs.ru> <20150810234549.GA10753@gwshan>
- <55C958A2.5060708@ozlabs.ru>
+ <1438834307-26960-6-git-send-email-gwshan@linux.vnet.ibm.com>
+ <55C84FD8.302@ozlabs.ru> <20150811000342.GB10753@gwshan>
+ <55C95CAE.1090908@ozlabs.ru> <20150812104502.GB7690@gwshan>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ bhelgaas@google.com, grant.likely@linaro.org, robherring2@gmail.com,
+ panto@antoniou-consulting.com
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55CB2865.4090402@ozlabs.ru>
+Date: Wed, 12 Aug 2015 21:05:09 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55C958A2.5060708@ozlabs.ru>
+In-Reply-To: <20150812104502.GB7690@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,322 +33,306 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 11, 2015 at 12:06:26PM +1000, Alexey Kardashevskiy wrote:
->On 08/11/2015 09:45 AM, Gavin Shan wrote:
->>On Mon, Aug 10, 2015 at 04:30:09PM +1000, Alexey Kardashevskiy wrote:
->>>On 08/06/2015 02:11 PM, Gavin Shan wrote:
->>>>The patch enables M64 window on P7IOC, which has been enabled on
->>>>PHB3. Different from PHB3 where 16 M64 BARs are supported and each
->>>>of them can be owned by one particular PE# exclusively or divided
->>>>evenly to 256 segments, each P7IOC PHB has 16 M64 BARs and each
->>>>of them are divided into 8 segments.
->>>
->>>Is this a limitation of POWER7 chip or it is from IODA1?
->>>
->>
->> From IODA1.
->>
->>>>So each P7IOC PHB can support
->>>>128 M64 segments only. Also, P7IOC has M64DT, which helps mapping
->>>>one particular M64 segment# to arbitrary PE#. PHB3 doesn't have
->>>>M64DT, indicating that one M64 segment can only be pinned to the
->>>>fixed PE#. In order to have similar logic to support M64 for PHB3
->>>>and P7IOC, we just provide 128 M64 (16 BARs) segments and fixed
->>>>mapping between PE# and M64 segment# on P7IOC. In turn, we just
->>>>need different phb->init_m64() hooks for P7IOC and PHB3 to support
->>>>M64.
+On 08/12/2015 08:45 PM, Gavin Shan wrote:
+> On Tue, Aug 11, 2015 at 12:23:42PM +1000, Alexey Kardashevskiy wrote:
+>> On 08/11/2015 10:03 AM, Gavin Shan wrote:
+>>> On Mon, Aug 10, 2015 at 05:16:40PM +1000, Alexey Kardashevskiy wrote:
+>>>> On 08/06/2015 02:11 PM, Gavin Shan wrote:
+>>>>> The patch is adding 6 bitmaps, three to PE and three to PHB, to track
 >>>>
->>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>---
->>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 116 ++++++++++++++++++++++++++----
->>>>  1 file changed, 104 insertions(+), 12 deletions(-)
+>>>> The patch is also removing 2 arrays (io_segmap and m32_segmap), what is that
+>>>> all about? Also, there was no m64_segmap, now there is, needs an explanation
+>>>> may be.
 >>>>
->>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>index 38b5405..e4ac703 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>@@ -172,6 +172,69 @@ static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
->>>>  	clear_bit(pe, phb->ioda.pe_alloc);
->>>>  }
+>>>
+>>> Originally, the bitmaps (io_segmap and m32_segmap) are allocated dynamically.
+>>> Now, they have fixed sizes - 512 bits.
+>>>
+>>> The subject "powerpc/powernv: Track IO/M32/M64 segments from PE" indicates
+>>> why m64_segmap is added.
+>>
+>>
+>> But before this patch, you somehow managed to keep it working without a map
+>> for M64, by the same time you needed map for IO and M32. It seems you are
+>> making things consistent in this patch but it also feels like you do not have
+>> to do so as M64 did not need a map before and I cannot see why it needs one
+>> now.
+>>
+>
+> The M64 map is used by [PATCH v6 23/42] powerpc/powernv: Release PEs dynamically
+> where the M64 segments consumed by one particular PE will be released.
+
+
+Then add it where it is really started being used. It is really hard to 
+review a patch which is actually spread between patches. Do not count that 
+reviewers will just trust you.
+
+
 >>>>
->>>>+static int pnv_ioda1_init_m64(struct pnv_phb *phb)
->>>>+{
->>>>+	struct resource *r;
->>>>+	int seg;
->>>>+
->>>>+	/* There are as many M64 segments as the maximum number
->>>>+	 * of PEs, which is 128.
->>>>+	 */
->>>>+	for (seg = 0; seg < phb->ioda.total_pe; seg += 8) {
+>>>>> the consumed by one particular PE, which can be released once the PE
+>>>>> is destroyed during PCI unplugging time. Also, we're using fixed
+>>>>> quantity of bits to trace the used IO, M32 and M64 segments by PEs
+>>>>> in one particular PHB.
+>>>>>
+>>>>
+>>>> Out of curiosity - have you considered having just 3 arrays, in PHB, storing
+>>>> PE numbers, and ditching PE's arrays? Does PE itself need to know what PEs it
+>>>> is using? Not sure about this master/slave PEs though.
+>>>>
 >>>
->>>
->>>This "8" is used a lot across the patch, please make it a macro
->>>(PNV_PHB_P7IOC_SEGNUM or PNV_PHB_IODA1_SEGNUM or whatever you think it is)
->>>with a short comment why it is "8". Or a pnv_phb member.
->>>
+>>> I don't follow your suggestion. Can you rephrase and explain it a bit more?
 >>
->>I would like to use "8". When having a macro, you have to check
->>the definition of the macro to get the real value of that.
->
->Give it a good name then.
->
->
->>However,
->>it makes sense to add more comments explaining why it's 8 here.
->
->You cannot comment it everywhere and everywhere is exact place when you'll
->have to comment it as I believe sometime it is segments-per-M64 and sometime
->it is number of bits in a byte (or not? anyway, this is will always distract
->unless you use macro for segments-per-M64).
->
-
-Ok. I will use PNV_PHB_IODA1_SEGNUM then.
-
 >>
->>>
->>>>+		unsigned long base;
->>>>+		int64_t rc;
->>>>+
->>>>+		base = phb->ioda.m64_base + seg * phb->ioda.m64_segsize;
->>>>+		rc = opal_pci_set_phb_mem_window(phb->opal_id,
->>>>+						 OPAL_M64_WINDOW_TYPE,
->>>>+						 seg / 8,
->>>>+						 base,
->>>>+						 0, /* unused */
->>>>+						 8 * phb->ioda.m64_segsize);
->>>>+		if (rc != OPAL_SUCCESS) {
->>>>+			pr_warn("  Error %lld setting M64 PHB#%d-BAR#%d\n",
->>>>+				rc, phb->hose->global_number, seg / 8);
->>>>+			goto fail;
->>>>+		}
->>>>+
->>>>+		rc = opal_pci_phb_mmio_enable(phb->opal_id,
->>>>+					      OPAL_M64_WINDOW_TYPE,
->>>>+					      seg / 8,
->>>>+					      OPAL_ENABLE_M64_SPLIT);
->>>>+		if (rc != OPAL_SUCCESS) {
->>>>+			pr_warn("  Error %lld enabling M64 PHB#%d-BAR#%d\n",
->>>>+				rc, phb->hose->global_number, seg / 8);
->>>>+			goto fail;
->>>>+		}
->>>>+	}
->>>>+
->>>>+	/* Strip off the segment used by the reserved PE, which
->>>
->>>What is this reserved PE on P7IOC? "Strip off" means "exclude" here?
->>>
+>> Please explains in what situations you need same map in both PHB and PE and
+>> how you are going to use them. For example, pe::m64_segmap and
+>> phb::m64_segmap.
 >>
->>127 that was exported from skiboot. "Strip off" means "exclude".
->
->I like "exclude" lot better.
->
-
-Ok. Will use it.
-
+>> I believe you need to know what segment is used by what PE and that's it and
+>> having 2 bitmaps is overcomplicated hard to follow. Is there anything else
+>> what I am missing?
 >>
+>
+> The situation is same to all (IO, M32 and M64) segment maps. Taking m64_segmap
+> as an example, it will be used when creating or destroying the PE who consumes
+> M64 segments. phb::m64_segmap is recording the M64 segment usage in PHB's domain.
+> It's used to check same M64 segment won't be used for towice. pe::m64_segmap tracks
+> the M64 segments consumed by the PE.
+
+
+You could have a single map in PHB, key would be a segment number and value 
+would be PE number. No need to have a map in PE. At all. No need to 
+initialize bitmaps, etc.
+
+
+
+>>>> It would be easier to read patches if this one was right before
+>>>> [PATCH v6 23/42] powerpc/powernv: Release PEs dynamically
+>>>>
 >>>
->>>>+	 * is expected to be 0 or last supported PE#. The PHB's
->>>>+	 * first memory window traces the 32-bits MMIO range
+>>> I'll try to reoder the patch, but not expect too much...
 >>>
->>>s/traces/filters/ ? Or I did not understand this comment...
+>>>>
+>>>>
+>>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>>> ---
+>>>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 29 +++++++++++++++--------------
+>>>>>   arch/powerpc/platforms/powernv/pci.h      | 18 ++++++++++++++----
+>>>>>   2 files changed, 29 insertions(+), 18 deletions(-)
+>>>>>
+>>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>> index e4ac703..78b49a1 100644
+>>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>> @@ -388,6 +388,12 @@ static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
+>>>>>   			list_add_tail(&pe->list, &master_pe->slaves);
+>>>>>   		}
+>>>>>
+>>>>> +		/* M64 segments consumed by slave PEs are tracked
+>>>>> +		 * by master PE
+>>>>> +		 */
+>>>>> +		set_bit(pe->pe_number, master_pe->m64_segmap);
+>>>>> +		set_bit(pe->pe_number, phb->ioda.m64_segmap);
+>>>>> +
+>>>>>   		/* P7IOC supports M64DT, which helps mapping M64 segment
+>>>>>   		 * to one particular PE#. However, PHB3 has fixed mapping
+>>>>>   		 * between M64 segment and PE#. In order to have same logic
+>>>>> @@ -2871,9 +2877,11 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+>>>>>
+>>>>>   			while (index < phb->ioda.total_pe &&
+>>>>>   			       region.start <= region.end) {
+>>>>> -				phb->ioda.io_segmap[index] = pe->pe_number;
+>>>>> +				set_bit(index, pe->io_segmap);
+>>>>> +				set_bit(index, phb->ioda.io_segmap);
+>>>>>   				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+>>>>> -					pe->pe_number, OPAL_IO_WINDOW_TYPE, 0, index);
+>>>>> +					pe->pe_number, OPAL_IO_WINDOW_TYPE,
+>>>>> +					0, index);
+>>>>
+>>>> Unrelated change.
+>>>>
 >>>
+>>> True, will drop. However, checkpatch.pl will complain wtih:
+>>> exceeding 80 characters.
 >>
->>It seems you didn't understand it: there are two memory windows
->>in every PHB. The first one is tracing M32 resource and the
->>second one is tracing M64 resource.
->
->
->Tracing means logging, pretty much. Is this what you mean here?
->
-
-No, it means "recording", not "logging". So it would be appropriate
-to replace it with "track"?
-
+>> It will not as you are not changing these lines, it only complains on changes.
+>>
+>>
 >>
 >>>
->>>>+	 * while the second one traces the 64-bits prefetchable
->>>>+	 * MMIO range that the PHB supports.
+>>>>>   				if (rc != OPAL_SUCCESS) {
+>>>>>   					pr_err("%s: OPAL error %d when mapping IO "
+>>>>>   					       "segment #%d to PE#%d\n",
+>>>>> @@ -2896,9 +2904,11 @@ static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
+>>>>>
+>>>>>   			while (index < phb->ioda.total_pe &&
+>>>>>   			       region.start <= region.end) {
+>>>>> -				phb->ioda.m32_segmap[index] = pe->pe_number;
+>>>>> +				set_bit(index, pe->m32_segmap);
+>>>>> +				set_bit(index, phb->ioda.m32_segmap);
+>>>>>   				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+>>>>> -					pe->pe_number, OPAL_M32_WINDOW_TYPE, 0, index);
+>>>>> +					pe->pe_number, OPAL_M32_WINDOW_TYPE,
+>>>>> +					0, index);
+>>>>
+>>>> Unrelated change.
+>>>>
 >>>
->>>32/64 ranges comment seems irrelevant here.
+>>> same as above.
 >>>
+>>>>>   				if (rc != OPAL_SUCCESS) {
+>>>>>   					pr_err("%s: OPAL error %d when mapping M32 "
+>>>>>   					       "segment#%d to PE#%d",
+>>>>> @@ -3090,7 +3100,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>>>   {
+>>>>>   	struct pci_controller *hose;
+>>>>>   	struct pnv_phb *phb;
+>>>>> -	unsigned long size, m32map_off, pemap_off, iomap_off = 0;
+>>>>> +	unsigned long size, pemap_off;
+>>>>>   	const __be64 *prop64;
+>>>>>   	const __be32 *prop32;
+>>>>>   	int len;
+>>>>> @@ -3175,19 +3185,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>>>
+>>>>>   	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
+>>>>
+>>>>
+>>>> This comment came with if(IODA1) below, since you are removing the condition
+>>>> below, makes sense to remove the comment as well or move it where people will
+>>>> look for it (arch/powerpc/platforms/powernv/pci.h ?)
+>>>>
+>>>
+>>> Yes, will do.
+>>>
+>>>>
+>>>>>   	size = _ALIGN_UP(phb->ioda.total_pe / 8, sizeof(unsigned long));
+>>>>> -	m32map_off = size;
+>>>>> -	size += phb->ioda.total_pe * sizeof(phb->ioda.m32_segmap[0]);
+>>>>> -	if (phb->type == PNV_PHB_IODA1) {
+>>>>> -		iomap_off = size;
+>>>>> -		size += phb->ioda.total_pe * sizeof(phb->ioda.io_segmap[0]);
+>>>>> -	}
+>>>>>   	pemap_off = size;
+>>>>>   	size += phb->ioda.total_pe * sizeof(struct pnv_ioda_pe);
+>>>>>   	aux = memblock_virt_alloc(size, 0);
+>>>>
+>>>>
+>>>> After adding static arrays to PE and PHB, do you still need this "aux"?
+>>>>
+>>>
+>>> "aux" is still needed to tell the boundary of pe_alloc_bitmap and pe_array.
+>>>>
+>>>>>   	phb->ioda.pe_alloc = aux;
+>>>>> -	phb->ioda.m32_segmap = aux + m32map_off;
+>>>>> -	if (phb->type == PNV_PHB_IODA1)
+>>>>> -		phb->ioda.io_segmap = aux + iomap_off;
+>>>>>   	phb->ioda.pe_array = aux + pemap_off;
+>>>>>   	set_bit(phb->ioda.reserved_pe, phb->ioda.pe_alloc);
+>>>>>
+>>>>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>>>> index 62239b1..08a4e57 100644
+>>>>> --- a/arch/powerpc/platforms/powernv/pci.h
+>>>>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>>>>> @@ -49,6 +49,15 @@ struct pnv_ioda_pe {
+>>>>>   	/* PE number */
+>>>>>   	unsigned int		pe_number;
+>>>>>
+>>>>> +	/* IO/M32/M64 segments consumed by the PE. Each PE can
+>>>>> +	 * have one M64 segment at most, but M64 segments consumed
+>>>>> +	 * by slave PEs will be contributed to the master PE. One
+>>>>> +	 * PE can own multiple IO and M32 segments.
+>>>>
+>>>>
+>>>> A PE can have multiple IO and M32 segments but just one M64 segment? Is this
+>>>> correct for IODA1 or IODA2 or both? Is this a limitation of this
+>>>> implementation or it comes from P7IOC/PHB3 hardware?
+>>>>
+>>>
+>>> It's correct for IO and M32. However, on IODA1 or IODA2, one PE can have
+>>> multiple M64 segments as well.
 >>
->>Maybe it's not so relevant, but still.
+>>
+>> But the comment says "Each PE can have one M64 segment at most". Which
+>> statement is correct?
+>>
 >
->Not relevant -> remove it. Put this text to the commit log.
+> The comment is correct regarding PHB's 15th M64 BAR: Each PE can have one
+> M64 segment at post. It's from hardware limitation. However, once one PE
+> consumes multiple M64 segments. all those M64 segments will be tracked in
+> "master" PE and it's determined by software implementation.
 >
+>>>>> +	 */
+>>>>> +	unsigned long		io_segmap[8];
+>>>>> +	unsigned long		m32_segmap[8];
+>>>>> +	unsigned long		m64_segmap[8];
+>>>>
+>>>> Magic constant "8", 64bit*8 = 512 PEs - where did this come from?
+>>>>
+>>>> Anyway,
+>>>>
+>>>> #define PNV_IODA_MAX_PE_NUM	512
+>>>>
+>>>> unsigned long io_segmap[PNV_IODA_MAX_PE_NUM/BITS_PER_LONG]
+>>>>
+>>>
+>>> I prefer "8", not macro for 3 reasons:
+>>> - The macro won't be used in the code.
+>>
+>> You will use it 6 times in the header, if you give it a good name, people
+>> won't have to guess if the meaning of all these "8"s is the same and you
+>> won't have to comment every use of it in this header file (now you have).
+>>
+>> Also, using BITS_PER_LONG tells the reader that this is a bitmask for sure.
+>>
+>>
+>>> - The total segment number of specific resource is variable
+>>>    on IODA1 and IODA2. I just choosed the max value with margin.
+>>> - PNV_IODA_MAX_PE_NUM, indicating max PE number, isn't 512 on
+>>>    IODA1 or IODA2.
+>>
+>> Give it a better name.
+>>
+>
+> Ok. It it has to be a macro, then it's as below:
+>
+> #define PNV_IODA_MAX_SEG_NUM	512
 
-Ok.
 
->>We're stripping off the
->>M64 segment from the 2nd resource (as above), not first one.
->
->
->2nd window (not _resource_), you mean?
->
-
-I mean struct pci_controller::mem_resources[1].
+Thanks mate :)
 
 
->
 >>
 >>>
->>>>+	 */
->>>>+	r = &phb->hose->mem_resources[1];
->>>>+	if (phb->ioda.reserved_pe == 0)
->>>>+		r->start += phb->ioda.m64_segsize;
->>>>+	else if (phb->ioda.reserved_pe == (phb->ioda.total_pe - 1))
->>>>+		r->end -= phb->ioda.m64_segsize;
->>>>+	else
->>>>+		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
->>>>+			phb->ioda.reserved_pe);
->>>>+
->>>>+	return 0;
->>>>+
->>>>+fail:
->>>>+	for ( ; seg >= 0; seg -= 8)
->>>>+		opal_pci_phb_mmio_enable(phb->opal_id,
->>>>+					 OPAL_M64_WINDOW_TYPE,
->>>>+					 seg / 8,
->>>>+					 OPAL_DISABLE_M64);
->>>>+
->>>>+	return -EIO;
->>>>+}
->>>>+
->>>>  /* The default M64 BAR is shared by all PEs */
->>>>  static int pnv_ioda2_init_m64(struct pnv_phb *phb)
->>>>  {
->>>>@@ -256,9 +319,9 @@ static void pnv_ioda2_reserve_dev_m64_pe(struct pci_dev *pdev,
->>>>  	}
->>>>  }
->>>>
->>>>-static void pnv_ioda2_reserve_m64_pe(struct pci_bus *bus,
->>>>-				     unsigned long *pe_bitmap,
->>>>-				     bool all)
->>>>+static void pnv_ioda_reserve_m64_pe(struct pci_bus *bus,
->>>>+				    unsigned long *pe_bitmap,
->>>>+				    bool all)
->>>>  {
->>>>  	struct pci_dev *pdev;
->>>>
->>>>@@ -266,12 +329,12 @@ static void pnv_ioda2_reserve_m64_pe(struct pci_bus *bus,
->>>>  		pnv_ioda2_reserve_dev_m64_pe(pdev, pe_bitmap);
->>>>
->>>>  		if (all && pdev->subordinate)
->>>>-			pnv_ioda2_reserve_m64_pe(pdev->subordinate,
->>>>-						 pe_bitmap, all);
->>>>+			pnv_ioda_reserve_m64_pe(pdev->subordinate,
->>>>+						pe_bitmap, all);
->>>>  	}
->>>>  }
->>>>
->>>>-static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>+static int pnv_ioda_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>  {
->>>>  	struct pci_controller *hose = pci_bus_to_host(bus);
->>>>  	struct pnv_phb *phb = hose->private_data;
->>>>@@ -293,7 +356,7 @@ static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>  	}
->>>>
->>>>  	/* Figure out reserved PE numbers by the PE */
->>>>-	pnv_ioda2_reserve_m64_pe(bus, pe_alloc, all);
->>>>+	pnv_ioda_reserve_m64_pe(bus, pe_alloc, all);
->>>>
->>>>  	/*
->>>>  	 * the current bus might not own M64 window and that's all
->>>>@@ -324,6 +387,26 @@ static int pnv_ioda2_pick_m64_pe(struct pci_bus *bus, bool all)
->>>>  			pe->master = master_pe;
->>>>  			list_add_tail(&pe->list, &master_pe->slaves);
->>>>  		}
->>>>+
->>>>+		/* P7IOC supports M64DT, which helps mapping M64 segment
->>>>+		 * to one particular PE#. However, PHB3 has fixed mapping
->>>>+		 * between M64 segment and PE#. In order to have same logic
->>>>+		 * for P7IOC and PHB3, we enforce fixed mapping between M64
->>>>+		 * segment and PE# on P7IOC.
->>>>+		 */
->>>>+		if (phb->type == PNV_PHB_IODA1) {
->>>>+			int64_t rc;
->>>>+
->>>>+			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
->>>>+							 pe->pe_number,
->>>>+							 OPAL_M64_WINDOW_TYPE,
->>>>+							 pe->pe_number / 8,
->>>>+							 pe->pe_number % 8);
->>>>+			if (rc != OPAL_SUCCESS)
->>>>+				pr_warn("%s: Error %lld mapping M64 for PHB#%d-PE#%d\n",
->>>>+					__func__, rc, phb->hose->global_number,
->>>>+					pe->pe_number);
->>>>+		}
->>>>  	}
->>>>
->>>>  	kfree(pe_alloc);
->>>>@@ -338,8 +421,8 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
->>>>  	const u32 *r;
->>>>  	u64 pci_addr;
->>>>
->>>>-	/* FIXME: Support M64 for P7IOC */
->>>>-	if (phb->type != PNV_PHB_IODA2) {
->>>>+	if (phb->type != PNV_PHB_IODA1 &&
->>>>+	    phb->type != PNV_PHB_IODA2) {
->>>>  		pr_info("  Not support M64 window\n");
->>>>  		return;
->>>
->>>
->>>You are adding P7IOC support so at least "fixme" should go. Also,
->>>pnv_ioda_parse_m64_window() is only called from pnv_pci_init_ioda_phb() which
->>>is called only with PNV_PHB_IODA1 and PNV_PHB_IODA2 (no other value is passed
->>>there a type) so the check above will never succeed, just remove it.
->>>
->>
->>The "fixme" is removed, isn't it?
+>>>>> +
+>>>>>   	/* "Weight" assigned to the PE for the sake of DMA resource
+>>>>>   	 * allocations
+>>>>>   	 */
+>>>>> @@ -145,15 +154,16 @@ struct pnv_phb {
+>>>>>   			unsigned int		io_segsize;
+>>>>>   			unsigned int		io_pci_base;
+>>>>>
+>>>>> +			/* IO, M32, M64 segment maps */
+>>>>> +			unsigned long		io_segmap[8];
+>>>>> +			unsigned long		m32_segmap[8];
+>>>>> +			unsigned long		m64_segmap[8];
+>>>>> +
+>>>>>   			/* PE allocation */
+>>>>>   			struct mutex		pe_alloc_mutex;
+>>>>>   			unsigned long		*pe_alloc;
+>>>>>   			struct pnv_ioda_pe	*pe_array;
+>>>>>
+>>>>> -			/* M32 & IO segment maps */
+>>>>> -			unsigned int		*m32_segmap;
+>>>>> -			unsigned int		*io_segmap;
+>>>>> -
+>>>>>   			/* IRQ chip */
+>>>>>   			int			irq_chip_init;
+>>>>>   			struct irq_chip		irq_chip;
+>>>>>
 >
->Ah, my bad.
->
->
->>As I explained last time, there will have another new type PHB and the function
->>will be called on the new type of PHB.
->
->Then a new patch adding new PHB should take care of this check too. This is
->not something which can possibly happen on a real machine, we support one of
->2 (later - 3) PHBs and if a machine got something else, we won't get that far
->anyway and we cannot gracefully fallback to some "generic PHB" (like 440fx on
->x86) as we do not have one.
->
->At least make it BUG_ON() to document it.
+> Thanks,
+> Gavin
 >
 
-ok. I'll change accordingly.
 
->>The code has been there and it's not
->>in upstream yet. So it's reasonable to keep it, instead of removing it.
->
->No, not really.
->
->>
->>>>  	}
->>>>@@ -372,9 +455,18 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
->>>>
->>>>  	/* Use last M64 BAR to cover M64 window */
->>>>  	phb->ioda.m64_bar_idx = 15;
->>>>-	phb->init_m64 = pnv_ioda2_init_m64;
->>>>-	phb->reserve_m64_pe = pnv_ioda2_reserve_m64_pe;
->>>>-	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
->>>>+	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
->>>>+	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
->>>>+	switch (phb->type) {
->>>>+	case PNV_PHB_IODA1:
->>>>+		phb->init_m64 = pnv_ioda1_init_m64;
->>>>+		break;
->>>>+	case PNV_PHB_IODA2:
->>>>+		phb->init_m64 = pnv_ioda2_init_m64;
->>>>+		break;
->>>>+	default:
->>>>+		pr_debug("   M64 not supported\n");
->>>>+	}
->>>>  }
->>>>
->>>>  static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
->>>>
-
-Thanks,
-Gavin
+-- 
+Alexey
