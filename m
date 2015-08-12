@@ -2,19 +2,19 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D69B1A1D30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 04:57:34 +1000 (AEST)
-Subject: Re: [PATCH v3 1/1] KVM: PPC: Book3S: correct width in XER handling
-To: Laurent Vivier <lvivier@redhat.com>
-References: <edf0cbb1d82070438f6b03f55e35347ef996503d.1432684609.git.sam.bobroff@au1.ibm.com>
- <20150806012541.GA6697@tungsten.ozlabs.ibm.com> <55C333F9.3010003@redhat.com>
-Cc: Sam Bobroff <sam.bobroff@au1.ibm.com>, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 005A71A1D30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 05:05:38 +1000 (AEST)
+Subject: Re: [PATCH] kvm:powerpc:Fix incorrect return statement in the
+ function mpic_set_default_irq_routing
+To: Nicholas Krause <xerofoify@gmail.com>, gleb@kernel.org
+References: <1438962893-3370-1-git-send-email-xerofoify@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, pbonzini@redhat.com, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org
 From: Alexander Graf <agraf@suse.de>
-Message-ID: <55CB9718.80803@suse.de>
-Date: Wed, 12 Aug 2015 20:57:28 +0200
+Message-ID: <55CB98FE.4060908@suse.de>
+Date: Wed, 12 Aug 2015 21:05:34 +0200
 MIME-Version: 1.0
-In-Reply-To: <55C333F9.3010003@redhat.com>
+In-Reply-To: <1438962893-3370-1-git-send-email-xerofoify@gmail.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,14 +27,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 06.08.15 12:16, Laurent Vivier wrote:
-> Hi,
+On 07.08.15 17:54, Nicholas Krause wrote:
+> This fixes the incorrect return statement in the function
+> mpic_set_default_irq_routing from always returning zero
+> to signal success to this function's caller to instead
+> return the return value of kvm_set_irq_routing as this
+> function can fail and we need to correctly signal the
+> caller of mpic_set_default_irq_routing when the call
+> to this particular function has failed.
 > 
-> I'd also like to see this patch in the mainstream as it fixes a bug
-> appearing when we switch from vCPU context to hypervisor context (guest
-> crash).
+> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
 
-Thanks, applied to kvm-ppc-queue.
+I like the patch, but I don't see it on the kvm-ppc mailing list. It
+doesn't show up on patchwork or spinics. Did something go wrong while
+sending it out?
 
 
 Alex
