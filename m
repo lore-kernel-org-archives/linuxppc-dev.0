@@ -1,18 +1,16 @@
 Return-Path: <roy.pledge@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
+ (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A702F1A1D30
+ by lists.ozlabs.org (Postfix) with ESMTPS id A79DD1A1D31
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 06:15:08 +1000 (AEST)
 From: Roy Pledge <Roy.Pledge@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
 CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [v2 01/11] powerpc: re-add devm_ioremap_prot()
-Date: Wed, 12 Aug 2015 16:14:47 -0400
-Message-ID: <1439410497-19039-2-git-send-email-Roy.Pledge@freescale.com>
-In-Reply-To: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
-References: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
+Subject: [v2 00/11] Freescale DPAA QBMan Drivers
+Date: Wed, 12 Aug 2015 16:14:46 -0400
+Message-ID: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
 Reply-To: <Roy.Pledge@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -25,95 +23,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Emil Medve <Emilian.Medve@Freescale.com>
 
-devm_ioremap_prot() was removed in commit dedd24a12,
-and was introduced in commit b41e5fffe8.
+The Freescale Data Path Acceleration Architecture (DPAA) is a set of hardware components on specific QorIQ multicore processors. This architecture provides the infrastructure to support simplified sharing of networking interfaces and accelerators by multiple CPU cores and the accelerators.
 
-This reverts commit dedd24a12fe6735898feeb06184ee346907abb5d.
+The Queue Manager (QMan) is a hardware queue management block that allows software and accelerators on the datapath to enqueue and dequeue frames in order to communicate.
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
- arch/powerpc/include/asm/io.h |    3 +++
- arch/powerpc/lib/Makefile     |    1 +
- arch/powerpc/lib/devres.c     |   43 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 47 insertions(+)
+The Buffer Manager (BMan) is a hardware buffer pool management block that allows software and accelerators on the datapath to acquire and release buffers in order to build frames.
+
+This patch set introduces the QBMan driver code that configures initializes the QBMan hardware and provides APIs for software to use the frame queues and buffer pools the blocks provide. These drivers provide the base fuctionality for software to communicate with the other DPAA accelerators on Freescale QorIQ processors.
+
+Changes from v1:
+	- Cleanup Kconfig options
+	- Changed base QMan and BMan drivers to only be buit in.
+	  Will add loadable support in future patch
+	- Replace panic() call with WARN_ON()
+	- Elimanated some unused APIs
+	- Replaced PowerPC specific IO accessors with platform independent versions
+
+
+
+Emil Medve (1):
+  powerpc: re-add devm_ioremap_prot()
+
+Geoff Thorpe (7):
+  soc/fsl: Introduce DPAA BMan device management driver
+  soc/fsl: Introduce the DPAA BMan portal driver
+  soc/fsl: Introduce drivers for the DPAA QMan
+  soc/bman: Add self-tester for BMan driver
+  soc/qman: Add self-tester for QMan driver
+  soc/bman: Add debugfs support for the BMan driver
+  soc/qman: Add debugfs support for the QMan driver
+
+Hai-Ying Wang (2):
+  soc/bman: Add HOTPLUG_CPU support to the BMan driver
+  soc/qman: Add HOTPLUG_CPU support to the QMan driver
+
+Madalin Bucur (1):
+  soc/qman: add qman_delete_cgr_safe()
+
+ arch/powerpc/include/asm/io.h                 |    3 +
+ arch/powerpc/lib/Makefile                     |    1 +
+ arch/powerpc/lib/devres.c                     |   43 +
+ arch/powerpc/platforms/85xx/corenet_generic.c |   16 +
+ arch/powerpc/platforms/85xx/p1023_rdb.c       |   14 +
+ drivers/soc/Kconfig                           |    1 +
+ drivers/soc/Makefile                          |    1 +
+ drivers/soc/fsl/Kconfig                       |    5 +
+ drivers/soc/fsl/Makefile                      |    3 +
+ drivers/soc/fsl/qbman/Kconfig                 |  120 +
+ drivers/soc/fsl/qbman/Makefile                |   20 +
+ drivers/soc/fsl/qbman/bman-debugfs.c          |  117 +
+ drivers/soc/fsl/qbman/bman.c                  |  553 +++++
+ drivers/soc/fsl/qbman/bman.h                  |  542 +++++
+ drivers/soc/fsl/qbman/bman_api.c              | 1072 +++++++++
+ drivers/soc/fsl/qbman/bman_portal.c           |  391 ++++
+ drivers/soc/fsl/qbman/bman_priv.h             |  134 ++
+ drivers/soc/fsl/qbman/bman_test.c             |   56 +
+ drivers/soc/fsl/qbman/bman_test.h             |   34 +
+ drivers/soc/fsl/qbman/bman_test_api.c         |  184 ++
+ drivers/soc/fsl/qbman/bman_test_thresh.c      |  198 ++
+ drivers/soc/fsl/qbman/bman_utils.c            |   72 +
+ drivers/soc/fsl/qbman/dpaa_resource.c         |  359 +++
+ drivers/soc/fsl/qbman/dpaa_sys.h              |  271 +++
+ drivers/soc/fsl/qbman/qman-debugfs.c          | 1313 +++++++++++
+ drivers/soc/fsl/qbman/qman.c                  | 1026 +++++++++
+ drivers/soc/fsl/qbman/qman.h                  | 1128 ++++++++++
+ drivers/soc/fsl/qbman/qman_api.c              | 2921 +++++++++++++++++++++++++
+ drivers/soc/fsl/qbman/qman_driver.c           |   83 +
+ drivers/soc/fsl/qbman/qman_portal.c           |  672 ++++++
+ drivers/soc/fsl/qbman/qman_priv.h             |  287 +++
+ drivers/soc/fsl/qbman/qman_test.c             |   57 +
+ drivers/soc/fsl/qbman/qman_test.h             |   44 +
+ drivers/soc/fsl/qbman/qman_test_api.c         |  216 ++
+ drivers/soc/fsl/qbman/qman_test_stash.c       |  502 +++++
+ drivers/soc/fsl/qbman/qman_utils.c            |  305 +++
+ include/soc/fsl/bman.h                        |  518 +++++
+ include/soc/fsl/qman.h                        | 1977 +++++++++++++++++
+ 38 files changed, 15259 insertions(+)
  create mode 100644 arch/powerpc/lib/devres.c
+ create mode 100644 drivers/soc/fsl/Kconfig
+ create mode 100644 drivers/soc/fsl/Makefile
+ create mode 100644 drivers/soc/fsl/qbman/Kconfig
+ create mode 100644 drivers/soc/fsl/qbman/Makefile
+ create mode 100644 drivers/soc/fsl/qbman/bman-debugfs.c
+ create mode 100644 drivers/soc/fsl/qbman/bman.c
+ create mode 100644 drivers/soc/fsl/qbman/bman.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_api.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_portal.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_priv.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_test.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_test.h
+ create mode 100644 drivers/soc/fsl/qbman/bman_test_api.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_test_thresh.c
+ create mode 100644 drivers/soc/fsl/qbman/bman_utils.c
+ create mode 100644 drivers/soc/fsl/qbman/dpaa_resource.c
+ create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.h
+ create mode 100644 drivers/soc/fsl/qbman/qman-debugfs.c
+ create mode 100644 drivers/soc/fsl/qbman/qman.c
+ create mode 100644 drivers/soc/fsl/qbman/qman.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_api.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_driver.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_portal.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_priv.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test.h
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_api.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_test_stash.c
+ create mode 100644 drivers/soc/fsl/qbman/qman_utils.c
+ create mode 100644 include/soc/fsl/bman.h
+ create mode 100644 include/soc/fsl/qman.h
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index a8d2ef3..9eaf301 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -855,6 +855,9 @@ static inline void * bus_to_virt(unsigned long address)
- 
- #define clrsetbits_8(addr, clear, set) clrsetbits(8, addr, clear, set)
- 
-+void __iomem *devm_ioremap_prot(struct device *dev, resource_size_t offset,
-+				size_t size, unsigned long flags);
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_POWERPC_IO_H */
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index a47e142..7ae60f0 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -13,6 +13,7 @@ obj-y += string.o alloc.o crtsavres.o ppc_ksyms.o code-patching.o \
- 	 feature-fixups.o
- 
- obj-$(CONFIG_PPC32)	+= div64.o copy_32.o
-+obj-$(CONFIG_HAS_IOMEM)	+= devres.o
- 
- obj64-y	+= copypage_64.o copyuser_64.o usercopy_64.o mem_64.o hweight_64.o \
- 	   copyuser_power7.o string_64.o copypage_power7.o memcpy_power7.o \
-diff --git a/arch/powerpc/lib/devres.c b/arch/powerpc/lib/devres.c
-new file mode 100644
-index 0000000..8df55fc
---- /dev/null
-+++ b/arch/powerpc/lib/devres.c
-@@ -0,0 +1,43 @@
-+/*
-+ * Copyright (C) 2008 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/device.h>	/* devres_*(), devm_ioremap_release() */
-+#include <linux/gfp.h>
-+#include <linux/io.h>		/* ioremap_prot() */
-+#include <linux/export.h>	/* EXPORT_SYMBOL() */
-+
-+/**
-+ * devm_ioremap_prot - Managed ioremap_prot()
-+ * @dev: Generic device to remap IO address for
-+ * @offset: BUS offset to map
-+ * @size: Size of map
-+ * @flags: Page flags
-+ *
-+ * Managed ioremap_prot().  Map is automatically unmapped on driver
-+ * detach.
-+ */
-+void __iomem *devm_ioremap_prot(struct device *dev, resource_size_t offset,
-+				 size_t size, unsigned long flags)
-+{
-+	void __iomem **ptr, *addr;
-+
-+	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return NULL;
-+
-+	addr = ioremap_prot(offset, size, flags);
-+	if (addr) {
-+		*ptr = addr;
-+		devres_add(dev, ptr);
-+	} else
-+		devres_free(ptr);
-+
-+	return addr;
-+}
-+EXPORT_SYMBOL(devm_ioremap_prot);
--- 
+--
 1.7.9.5
