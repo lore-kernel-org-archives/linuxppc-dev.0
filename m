@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3E191A067D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:09:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 74E6A1A067D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Aug 2015 17:10:02 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: torvalds@linux-foundation.org,
 	axboe@kernel.dk
@@ -19,9 +19,9 @@ Cc: dan.j.williams@intel.com, vgupta@synopsys.com, hskinnemoen@gmail.com,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-xtensa@linux-xtensa.org, linux-nvdimm@ml01.01.org,
  linux-media@vger.kernel.org
-Subject: [PATCH 25/31] frv: handle page-less SG entries
-Date: Wed, 12 Aug 2015 09:05:44 +0200
-Message-Id: <1439363150-8661-26-git-send-email-hch@lst.de>
+Subject: [PATCH 26/31] openrisc: handle page-less SG entries
+Date: Wed, 12 Aug 2015 09:05:45 +0200
+Message-Id: <1439363150-8661-27-git-send-email-hch@lst.de>
 In-Reply-To: <1439363150-8661-1-git-send-email-hch@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,31 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only call kmap_atomic_primary when the SG entry is mapped into
-kernel virtual space.
-
-XXX: the code already looks odd due to the lack of pairing between
-kmap_atomic_primary and kunmap_atomic_primary.  Does it work either
-before or after this patch?
+Make all cache invalidation conditional on sg_has_page() and use
+sg_phys to get the physical address directly.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/frv/mb93090-mb00/pci-dma.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/openrisc/kernel/dma.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/frv/mb93090-mb00/pci-dma.c b/arch/frv/mb93090-mb00/pci-dma.c
-index 4d1f01d..77b3a1c 100644
---- a/arch/frv/mb93090-mb00/pci-dma.c
-+++ b/arch/frv/mb93090-mb00/pci-dma.c
-@@ -63,6 +63,9 @@ int dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
- 	dampr2 = __get_DAMPR(2);
+diff --git a/arch/openrisc/kernel/dma.c b/arch/openrisc/kernel/dma.c
+index 0b77ddb..94ed052 100644
+--- a/arch/openrisc/kernel/dma.c
++++ b/arch/openrisc/kernel/dma.c
+@@ -184,8 +184,13 @@ or1k_map_sg(struct device *dev, struct scatterlist *sg,
+ 	int i;
  
- 	for_each_sg(sglist, sg, nents, i) {
-+		if (!sg_has_page(sg))
-+			continue;
-+
- 		vaddr = kmap_atomic_primary(sg_page(sg));
+ 	for_each_sg(sg, s, nents, i) {
+-		s->dma_address = or1k_map_page(dev, sg_page(s), s->offset,
+-					       s->length, dir, NULL);
++		if (sg_has_page(s)) {
++			s->dma_address = or1k_map_page(dev, sg_page(s),
++						s->offset, s->length, dir,
++						NULL);
++		} else {
++			s->dma_address = sg_phys(s);
++		}
+ 	}
  
- 		frv_dcache_writeback((unsigned long) vaddr,
+ 	return nents;
 -- 
 1.9.1
