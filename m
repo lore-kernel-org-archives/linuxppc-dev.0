@@ -1,45 +1,41 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-wi0-f174.google.com (mail-wi0-f174.google.com
- [209.85.212.174])
+Return-Path: <julian.calaby@gmail.com>
+Received: from mail-ig0-x236.google.com (mail-ig0-x236.google.com
+ [IPv6:2607:f8b0:4001:c05::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 169271A0034
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 07:20:37 +1000 (AEST)
-Received: by wicja10 with SMTP id ja10so83849513wic.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 14:20:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD99F1A1A79
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 09:40:52 +1000 (AEST)
+Received: by igbjg10 with SMTP id jg10so1776797igb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 16:40:50 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1439484671-15718-8-git-send-email-ross.zwisler@linux.intel.com>
-References: <1439484671-15718-1-git-send-email-ross.zwisler@linux.intel.com>
- <1439484671-15718-8-git-send-email-ross.zwisler@linux.intel.com>
-Date: Thu, 13 Aug 2015 14:20:33 -0700
-Message-ID: <CAPcyv4j=h1FULCnmLbwNv6E0ySyZNKniM3GZEnNCpGeiqCb+Kg@mail.gmail.com>
-Subject: Re: [PATCH v2 7/7] pmem, dax: have direct_access use __pmem annotation
-From: Dan Williams <dan.j.williams@intel.com>
-To: Ross Zwisler <ross.zwisler@linux.intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Jonathan Corbet <corbet@lwn.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Matthew Wilcox <willy@linux.intel.com>,
- Jeff Layton <jlayton@primarydata.com>, Christoph Hellwig <hch@lst.de>,
- Andrew Morton <akpm@linux-foundation.org>, Omar Sandoval <osandov@osandov.com>,
- Boaz Harrosh <boaz@plexistor.com>, Miklos Szeredi <mszeredi@suse.cz>,
- Jan Kara <jack@suse.cz>, Wolfram Sang <wsa@the-dreams.de>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>, Ameen Ali <ameenali023@gmail.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Sagi Grimberg <sagig@mellanox.com>,
- Mike Snitzer <snitzer@redhat.com>, Tejun Heo <tj@kernel.org>,
- Shaohua Li <shli@fb.com>,
- Ming Lei <ming.lei@canonical.com>, linux-doc@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- Dave Chinner <david@fromorbit.com>
+In-Reply-To: <20150813143528.GC17183@lst.de>
+References: <1439363150-8661-1-git-send-email-hch@lst.de>
+ <55CB3F47.3000902@plexistor.com>
+ <CAGRGNgUKkaPnyvn30DXyNpdiXQzS6J=1+mQ3ick8C8=bhx_RHA@mail.gmail.com>
+ <20150813143528.GC17183@lst.de>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Fri, 14 Aug 2015 09:40:30 +1000
+Message-ID: <CAGRGNgWXO9fYSf5YxPM9atSCmUdHB_WDB=n8zd=7eWK1GaJU4A@mail.gmail.com>
+Subject: Re: RFC: prepare for struct scatterlist entries without page backing
+To: Christoph Hellwig <hch@lst.de>
+Cc: Boaz Harrosh <boaz@plexistor.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, axboe@kernel.dk,
+ linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-nvdimm@ml01.01.org, David Howells <dhowells@redhat.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ David Woodhouse <dwmw2@infradead.org>,
+ =?UTF-8?Q?H=C3=A5vard_Skinnemoen?= <hskinnemoen@gmail.com>,
+ linux-xtensa@linux-xtensa.org, grundler@parisc-linux.org,
+ Miao Steven <realmz6@gmail.com>, alex.williamson@redhat.com,
+ linux-metag@vger.kernel.org,
+ Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
+ vgupta@synopsys.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-alpha@vger.kernel.org,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -50,38 +46,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 13, 2015 at 9:51 AM, Ross Zwisler
-<ross.zwisler@linux.intel.com> wrote:
-> Update the annotation for the kaddr pointer returned by direct_access()
-> so that it is a __pmem pointer.  This is consistent with the PMEM driver
-> and with how this direct_access() pointer is used in the DAX code.
->
-> Signed-off-by: Ross Zwisler <ross.zwisler@linux.intel.com>
-> ---
->  Documentation/filesystems/Locking |  3 ++-
->  arch/powerpc/sysdev/axonram.c     |  7 ++++---
->  drivers/block/brd.c               |  4 ++--
->  drivers/nvdimm/pmem.c             |  4 ++--
->  drivers/s390/block/dcssblk.c      | 10 +++++----
->  fs/block_dev.c                    |  2 +-
->  fs/dax.c                          | 44 +++++++++++++++++++++------------------
->  include/linux/blkdev.h            |  8 +++----
->  8 files changed, 45 insertions(+), 37 deletions(-)
->
-> diff --git a/Documentation/filesystems/Locking b/Documentation/filesystems/Locking
-> index 6a34a0f..06d4434 100644
-> --- a/Documentation/filesystems/Locking
-> +++ b/Documentation/filesystems/Locking
-> @@ -397,7 +397,8 @@ prototypes:
->         int (*release) (struct gendisk *, fmode_t);
->         int (*ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
->         int (*compat_ioctl) (struct block_device *, fmode_t, unsigned, unsigned long);
-> -       int (*direct_access) (struct block_device *, sector_t, void **, unsigned long *);
-> +       int (*direct_access) (struct block_device *, sector_t, void __pmem **,
-> +                               unsigned long *);
+Hi Christoph,
 
-So this collides with the __pfn_t work.  I think the we have a
-reasonable chance of getting that in to 4.3, so I'd wait to see if we
-hit any major roadblocks with that set [1] before merging these.
+On Fri, Aug 14, 2015 at 12:35 AM, Christoph Hellwig <hch@lst.de> wrote:
+> On Thu, Aug 13, 2015 at 09:37:37AM +1000, Julian Calaby wrote:
+>> I.e. ~90% of this patch set seems to be just mechanically dropping
+>> BUG_ON()s and converting open coded stuff to use accessor functions
+>> (which should be macros or get inlined, right?) - and the remaining
+>> bit is not flushing if we don't have a physical page somewhere.
+>
+> Which is was 90%.  By lines changed most actually is the diffs for
+> the cache flushing.
 
-[1]: https://lists.01.org/pipermail/linux-nvdimm/2015-August/001803.html
+I was talking in terms of changes made, not lines changed: by my
+recollection, about a third of the patches didn't touch flush calls
+and most of the lines changed looked like refactoring so that making
+the flush call conditional would be easier.
+
+I guess it smelled like you were doing lots of distinct changes in a
+single patch and I got my numbers wrong.
+
+>> Would it make sense to split this patch set into a few bits: one to
+>> drop all the useless BUG_ON()s, one to convert all the open coded
+>> stuff to accessor functions, then another to do the actual page-less
+>> sg stuff?
+>
+> Without the ifs the BUG_ON() actually are useful to assert we
+> never feed the sort of physical addresses we can't otherwise support,
+> so I don't think that part is doable.
+
+My point is that there's a couple of patches that only remove
+BUG_ON()s, which implies that for that particular driver it doesn't
+matter if there's a physical page or not, so therefore that code is
+purely "documentation".
+
+Thanks,
+
+-- 
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+Profile: http://www.google.com/profiles/julian.calaby/
