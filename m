@@ -2,30 +2,38 @@ Return-Path: <hch@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AB3D1A0034
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:40:40 +1000 (AEST)
-Date: Thu, 13 Aug 2015 16:40:36 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 399EF1A1D58
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:40:53 +1000 (AEST)
+Date: Thu, 13 Aug 2015 16:31:50 +0200
 From: Christoph Hellwig <hch@lst.de>
-To: Boaz Harrosh <boaz@plexistor.com>
-Cc: Christoph Hellwig <hch@lst.de>, torvalds@linux-foundation.org,
- axboe@kernel.dk, linux-mips@linux-mips.org,
- linux-ia64@vger.kernel.org, linux-nvdimm@ml01.01.org,
- dhowells@redhat.com, sparclinux@vger.kernel.org,
- egtvedt@samfundet.no, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, dwmw2@infradead.org,
- hskinnemoen@gmail.com, linux-xtensa@linux-xtensa.org,
- grundler@parisc-linux.org, realmz6@gmail.com,
- alex.williamson@redhat.com, linux-metag@vger.kernel.org,
- monstr@monstr.eu, linux-parisc@vger.kernel.org, vgupta@synopsys.com,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linux-media@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: RFC: prepare for struct scatterlist entries without page backing
-Message-ID: <20150813144036.GB17375@lst.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Dan Williams <dan.j.williams@intel.com>,
+ Vineet Gupta <vgupta@synopsys.com>,
+ =?iso-8859-1?Q?H=E5vard?= Skinnemoen <hskinnemoen@gmail.com>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ Miao Steven <realmz6@gmail.com>, David Howells <dhowells@redhat.com>,
+ Michal Simek <monstr@monstr.eu>, the arch/x86 maintainers <x86@kernel.org>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Alex Williamson <alex.williamson@redhat.com>, grundler@parisc-linux.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+ linux-alpha@vger.kernel.org,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-metag@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>,
+ Parisc List <linux-parisc@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390 <linux-s390@vger.kernel.org>, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@ml01.01.org>,
+ Linux Media Mailing List <linux-media@vger.kernel.org>
+Subject: Re: [PATCH 29/31] parisc: handle page-less SG entries
+Message-ID: <20150813143150.GA17183@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
- <55CB3F47.3000902@plexistor.com>
+ <1439363150-8661-30-git-send-email-hch@lst.de>
+ <CA+55aFxsH9Lde7wqZi555vqfH2uxeQqC9cjeca9L6Wr=XpyzXA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55CB3F47.3000902@plexistor.com>
+In-Reply-To: <CA+55aFxsH9Lde7wqZi555vqfH2uxeQqC9cjeca9L6Wr=XpyzXA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,22 +43,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 12, 2015 at 03:42:47PM +0300, Boaz Harrosh wrote:
-> The support I have suggested and submitted for zone-less sections.
-> (In my add_persistent_memory() patchset)
->
-> Would work perfectly well and transparent for all such multimedia cases.
-> (All hacks removed). In fact I have loaded pmem (with-pages) on a VRAM
-> a few times and it is great easy fun. (I wanted to experiment with cached
-> memory over a pcie)
+On Wed, Aug 12, 2015 at 09:01:02AM -0700, Linus Torvalds wrote:
+> I'm assuming that anybody who wants to use the page-less
+> scatter-gather lists always does so on memory that isn't actually
+> virtually mapped at all, or only does so on sane architectures that
+> are cache coherent at a physical level, but I'd like that assumption
+> *documented* somewhere.
 
-And everyone agree that it was both buggy and incomplete.
+It's temporarily mapped by kmap-like helpers.  That code isn't in
+this series. The most recent version of it is here:
 
-Dan has done a respin of the page backed nvdimm work with most of
-these comments addressed.
+https://git.kernel.org/cgit/linux/kernel/git/djbw/nvdimm.git/commit/?h=pfn&id=de8237c99fdb4352be2193f3a7610e902b9bb2f0
 
-I have to say I hate both pfn-based I/O [1] and page backed nvdimms with
-passion, so we're looking into the lesser evil with an open mind.
-
-[1] not the SGL part posted here, which I think is quite sane.  The bio
-    side is much worse, though.
+note that it's not doing the cache flushing it would have to do yet, but
+it's also only enabled for x86 at the moment.
