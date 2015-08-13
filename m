@@ -1,28 +1,23 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 78AFE1A1D71
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 14:14:57 +1000 (AEST)
-Received: from mail-pd0-x22b.google.com (mail-pd0-x22b.google.com
- [IPv6:2607:f8b0:400e:c02::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EE1BA140291
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2015 14:14:56 +1000 (AEST)
-Received: by pdrh1 with SMTP id h1so14616229pdr.0
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 21:14:55 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, cyrilbur@gmail.com,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Manoj Kumar <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH v4 11/11] cxl: Add CONFIG_CXL_EEH symbol
-Date: Thu, 13 Aug 2015 14:11:29 +1000
-Message-Id: <1439439089-25151-12-git-send-email-dja@axtens.net>
-In-Reply-To: <1439439089-25151-1-git-send-email-dja@axtens.net>
-References: <1439439089-25151-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 09AEA1A1D5A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 17:01:08 +1000 (AEST)
+Date: Thu, 13 Aug 2015 02:00:43 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/20] powerpc/8xx: Map linear kernel RAM with 8M pages
+Message-ID: <20150813070043.GA29938@gate.crashing.org>
+References: <cover.1439382631.git.christophe.leroy@c-s.fr>
+ <f4a53e003d35f37d7825b88d7f07ae88a918ed3c.1439382634.git.christophe.leroy@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f4a53e003d35f37d7825b88d7f07ae88a918ed3c.1439382634.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_CXL_EEH is for CXL's EEH related code.
+On Wed, Aug 12, 2015 at 03:40:56PM +0200, Christophe Leroy wrote:
+>  	/* Insert level 1 index */
+>  	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+>  	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+> +	mtcr	r11
 
-Other drivers can depend on or #ifdef on this symbol to configure
-PERST behaviour, allowing CXL to participate in the EEH process.
+Maybe mtcrf is faster?  You only want one field, anyhow.
 
-Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- drivers/misc/cxl/Kconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+> +	bgt-	cr7,5f		/* CR7.GT = bit 29 = Large page (8M or 512K) */
 
-diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
-index b6db9ebd52c2..c151fc1fe14c 100644
---- a/drivers/misc/cxl/Kconfig
-+++ b/drivers/misc/cxl/Kconfig
-@@ -11,11 +11,17 @@ config CXL_KERNEL_API
- 	bool
- 	default n
- 
-+config CXL_EEH
-+	bool
-+	default n
-+	select EEH
-+
- config CXL
- 	tristate "Support for IBM Coherent Accelerators (CXL)"
- 	depends on PPC_POWERNV && PCI_MSI
- 	select CXL_BASE
- 	select CXL_KERNEL_API
-+	select CXL_EEH
- 	default m
- 	help
- 	  Select this option to enable driver support for IBM Coherent
--- 
-2.1.4
+You can write this as   bt- 29,5f   which should be easier to read.
+
+>  	/* Insert level 1 index */
+>  3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+>  	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+> +	mtcr	r11
+> +	bgt	cr7,200f
+
+Same here...  Probably good to comment it, too.
+
+
+Segher
