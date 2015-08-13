@@ -1,26 +1,26 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF6F81A0671
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 10:00:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 601E91A04B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 10:03:36 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 13 Aug 2015 10:00:07 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 34FA62CE8056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 10:00:04 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7CNxooV131348
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 09:59:58 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7CNxUoq006914
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 09:59:31 +1000
-Date: Thu, 13 Aug 2015 09:59:05 +1000
+ Thu, 13 Aug 2015 10:03:33 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 60A7B2BB0059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 10:03:30 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7D03KfP43122864
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 10:03:28 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7D02uxx007927
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 10:02:57 +1000
+Date: Thu, 13 Aug 2015 10:02:31 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -28,17 +28,16 @@ Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, bhelgaas@google.com,
  grant.likely@linaro.org, robherring2@gmail.com,
  panto@antoniou-consulting.com
-Subject: Re: [PATCH v6 10/42] powerpc/powernv: pnv_ioda_setup_dma() configure
- one PE only
-Message-ID: <20150812235905.GB5009@gwshan>
+Subject: Re: [PATCH v6 11/42] powerpc/powernv: Trace DMA32 segments consumed
+ by PE
+Message-ID: <20150813000231.GC5009@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1438834307-26960-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1438834307-26960-11-git-send-email-gwshan@linux.vnet.ibm.com>
- <55C86F5F.70603@ozlabs.ru> <20150811002949.GA16482@gwshan>
- <55C96046.90102@ozlabs.ru>
+ <1438834307-26960-12-git-send-email-gwshan@linux.vnet.ibm.com>
+ <55C87254.3020204@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55C96046.90102@ozlabs.ru>
+In-Reply-To: <55C87254.3020204@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,183 +47,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 11, 2015 at 12:39:02PM +1000, Alexey Kardashevskiy wrote:
->On 08/11/2015 10:29 AM, Gavin Shan wrote:
->>On Mon, Aug 10, 2015 at 07:31:11PM +1000, Alexey Kardashevskiy wrote:
->>>On 08/06/2015 02:11 PM, Gavin Shan wrote:
->>>>The original implementation of pnv_ioda_setup_dma() iterates the
->>>>list of PEs and configures the DMA32 space for them one by one.
->>>>The function was designed to be called during PHB fixup time.
->>>>When configuring PE's DMA32 space in pcibios_setup_bridge(), in
->>>>order to support PCI hotplug, we have to have the function PE
->>>>oriented.
->>>>
->>>>This renames pnv_ioda_setup_dma() to pnv_ioda1_setup_dma() and
->>>>adds one more argument "struct pnv_ioda_pe *pe" to it. The caller,
->>>>pnv_pci_ioda_setup_DMA(), gets PE from the list and passes to it
->>>>or pnv_pci_ioda2_setup_dma_pe(). The patch shouldn't cause behavioral
->>>>changes.
->>>>
->>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>---
->>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 75 +++++++++++++++----------------
->>>>  1 file changed, 36 insertions(+), 39 deletions(-)
->>>>
->>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>index 8456f37..cd22002 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>@@ -2443,52 +2443,29 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->>>>  		pnv_ioda_setup_bus_dma(pe, pe->pbus);
->>>>  }
->>>>
->>>>-static void pnv_ioda_setup_dma(struct pnv_phb *phb)
->>>>+static unsigned int pnv_ioda1_setup_dma(struct pnv_phb *phb,
->>>>+					struct pnv_ioda_pe *pe,
->>>>+					unsigned int base)
->>>>  {
->>>>  	struct pci_controller *hose = phb->hose;
->>>>-	struct pnv_ioda_pe *pe;
->>>>-	unsigned int dma_weight;
->>>>+	unsigned int dma_weight, segs;
->>>>
->>>>  	/* Calculate the PHB's DMA weight */
->>>>  	dma_weight = pnv_ioda_phb_dma_weight(phb);
->>>>  	pr_info("PCI%04x has %ld DMA32 segments, total weight %d\n",
->>>>  		hose->global_number, phb->ioda.dma32_segcount, dma_weight);
->>>>
->>>>-	pnv_pci_ioda_setup_opal_tce_kill(phb);
->>>>-
->>>>-	/* Walk our PE list and configure their DMA segments, hand them
->>>>-	 * out one base segment plus any residual segments based on
->>>>-	 * weight
->>>>-	 */
->>>>-	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
->>>>-		if (!pe->dma32_weight)
->>>>-			continue;
->>>>-
->>>>-		/*
->>>>-		 * For IODA2 compliant PHB3, we needn't care about the weight.
->>>>-		 * The all available 32-bits DMA space will be assigned to
->>>>-		 * the specific PE.
->>>>-		 */
->>>>-		if (phb->type == PNV_PHB_IODA1) {
->>>>-			unsigned int segs, base = 0;
->>>>-
->>>>-			if (pe->dma32_weight <
->>>>-			    dma_weight / phb->ioda.dma32_segcount)
->>>>-				segs = 1;
->>>>-			else
->>>>-				segs = (pe->dma32_weight *
->>>>-					phb->ioda.dma32_segcount) / dma_weight;
->>>>-
->>>>-			pe_info(pe, "DMA32 weight %d, assigned %d segments\n",
->>>>-				pe->dma32_weight, segs);
->>>>-			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
->>>>+	if (pe->dma32_weight <
->>>>+	    dma_weight / phb->ioda.dma32_segcount)
->>>
->>>Can be one line now.
->>>
+On Mon, Aug 10, 2015 at 07:43:48PM +1000, Alexey Kardashevskiy wrote:
+>On 08/06/2015 02:11 PM, Gavin Shan wrote:
+>>On P7IOC, the whole DMA32 space is divided evenly to 256MB segments.
+>>Each PE can consume one or multiple DMA32 segments. Current code
+>>doesn't trace the available DMA32 segments and those consumed by
+>>one particular PE. It's conflicting with PCI hotplug.
 >>
->>Indeed.
+>>The patch introduces one bitmap to PHB to trace the available
+>>DMA32 segments for allocation, more fields to "struct pnv_ioda_pe"
+>>to trace the consumed DMA32 segments by the PE, which is going to
+>>be released when the PE is destroyed at PCI unplugging time.
 >>
->>>>+		segs = 1;
->>>>+	else
->>>>+		segs = (pe->dma32_weight *
->>>>+			phb->ioda.dma32_segcount) / dma_weight;
->>>>+	pe_info(pe, "DMA weight %d, assigned %d segments\n",
->>>>+		pe->dma32_weight, segs);
->>>>+	pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
->>>
->>>
->>>Why not to merge pnv_ioda1_setup_dma() to pnv_pci_ioda_setup_dma_pe()?
->>>
+>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>---
+>>  arch/powerpc/platforms/powernv/pci-ioda.c | 40 +++++++++++++++++++++++--------
+>>  arch/powerpc/platforms/powernv/pci.h      |  4 +++-
+>>  2 files changed, 33 insertions(+), 11 deletions(-)
 >>
->>There're two reasons:
->>- They're separate logically. One is calculating number of DMA32 segments required.
->>   Another one is allocate TCE32 tables and configure devices with them.
->>- In PCI hotplug path, I need pnv_ioda1_setup_dma() which has "pe" as parameter.
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index cd22002..57ba8fd 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -1946,6 +1946,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>>
+>>  	/* Grab a 32-bit TCE table */
+>>  	pe->dma32_seg = base;
+>>+	pe->dma32_segcount = segs;
+>>  	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+>>  		(base << 28), ((base + segs) << 28) - 1);
+>>
+>>@@ -2006,8 +2007,13 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>>  	return;
+>>   fail:
+>>  	/* XXX Failure: Try to fallback to 64-bit only ? */
+>>-	if (pe->dma32_seg >= 0)
+>>+	if (pe->dma32_seg >= 0) {
+>>+		bitmap_clear(phb->ioda.dma32_segmap,
+>>+			     pe->dma32_seg, pe->dma32_segcount);
+>>  		pe->dma32_seg = -1;
+>>+		pe->dma32_segcount = 0;
+>>+	}
+>>+
+>>  	if (tce_mem)
+>>  		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+>>  	if (tbl) {
+>>@@ -2443,12 +2449,11 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>>  		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+>>  }
+>>
+>>-static unsigned int pnv_ioda1_setup_dma(struct pnv_phb *phb,
+>>-					struct pnv_ioda_pe *pe,
+>>-					unsigned int base)
+>>+static void pnv_ioda1_setup_dma(struct pnv_phb *phb,
+>>+					struct pnv_ioda_pe *pe)
+>>  {
+>>  	struct pci_controller *hose = phb->hose;
+>>-	unsigned int dma_weight, segs;
+>>+	unsigned int dma_weight, base, segs;
+>>
+>>  	/* Calculate the PHB's DMA weight */
+>>  	dma_weight = pnv_ioda_phb_dma_weight(phb);
+>>@@ -2461,11 +2466,28 @@ static unsigned int pnv_ioda1_setup_dma(struct pnv_phb *phb,
+>>  	else
+>>  		segs = (pe->dma32_weight *
+>>  			phb->ioda.dma32_segcount) / dma_weight;
+>>+
+>>+	/*
+>>+	 * Allocate DMA32 segments. We might not have enough
+>>+	 * resources available. However we expect at least one
+>>+	 * to be available.
+>>+	 */
+>>+	do {
+>>+		base = bitmap_find_next_zero_area(phb->ioda.dma32_segmap,
+>>+						  phb->ioda.dma32_segcount,
+>>+						  0, segs, 0);
+>>+		if (base < phb->ioda.dma32_segcount) {
+>>+			bitmap_set(phb->ioda.dma32_segmap, base, segs);
+>>+			break;
+>>+		}
+>>+	} while (--segs);
 >
 >
->And hotplug path does not care about dma weight why?
+>If segs==0 before entering the loop, the loop will execute 0xfffffffe times.
+>Make it for(;segs;--segs){ }.
 >
 
-PHB3 doesn't care about DMA weight, but P7IOC needs.
+"segs" is always equal to or bigger than 1 when entering the loop.
 
+>>+
+>>+	if (WARN_ON(!segs))
+>>+		return;
+>>+
+>>  	pe_info(pe, "DMA weight %d, assigned %d segments\n",
+>>  		pe->dma32_weight, segs);
+>>  	pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
+>>-
+>>-	return segs;
+>>  }
 >>
->>>>
->>>>-			base += segs;
->>>>-		} else {
->>>>-			pe_info(pe, "Assign DMA32 space\n");
->>>>-			pnv_pci_ioda2_setup_dma_pe(phb, pe);
->>>>-		}
->>>>-	}
->>>>+	return segs;
->>>>  }
->>>>
->>>>  #ifdef CONFIG_PCI_MSI
->>>>@@ -2955,12 +2932,32 @@ static void pnv_pci_ioda_setup_DMA(void)
->>>>  {
->>>>  	struct pci_controller *hose, *tmp;
->>>>  	struct pnv_phb *phb;
->>>>+	struct pnv_ioda_pe *pe;
->>>>+	unsigned int base;
->>>>
->>>>  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
->>>>-		pnv_ioda_setup_dma(hose->private_data);
->>>>+		phb = hose->private_data;
->>>>+		pnv_pci_ioda_setup_opal_tce_kill(phb);
->>>>+
->>>>+		base = 0;
->>>>+		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
->>>>+			if (!pe->dma32_weight)
->>>>+				continue;
->>>>+
->>>>+			switch (phb->type) {
->>>>+			case PNV_PHB_IODA1:
->>>>+				base += pnv_ioda1_setup_dma(phb, pe, base);
->>>
->>>
->>>This @base handling seems never be tested between 8..11 as "[PATCH v6 11/42]
->>>powerpc/powernv: Trace DMA32 segments consumed by PE"
->>>removes it and I suspect you only tested the final version. Which is ok for
->>>the final result but not ok for bisectability.
->>>
->>>Looks like 8/42, 9/42, 10/42, 11/42 need to be rearranged or merged to remove
->>>this multiple @base touching.
->>>
+>>  #ifdef CONFIG_PCI_MSI
+>>@@ -2933,20 +2955,18 @@ static void pnv_pci_ioda_setup_DMA(void)
+>>  	struct pci_controller *hose, *tmp;
+>>  	struct pnv_phb *phb;
+>>  	struct pnv_ioda_pe *pe;
+>>-	unsigned int base;
 >>
->>Why ?
->
->You are touching this @base from 8/42 to 11/12 and in between it is very
->broken, you only get it fixed (by removing) in 11/42. Read my comment for
->8/42. After every single patch in any patchset the functionality should not
->break but it does in this patchset.
->
-
-Please refer the reply to PATCH[8/42] then.
-
-
->
+>>  	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+>>  		phb = hose->private_data;
+>>  		pnv_pci_ioda_setup_opal_tce_kill(phb);
 >>
->>>
->>>>+				break;
->>>>+			case PNV_PHB_IODA2:
->>>>+				pnv_pci_ioda2_setup_dma_pe(phb, pe);
->>>>+				break;
->>>>+			default:
->>>>+				pr_warn("%s: No DMA for PHB type %d\n",
->>>>+					__func__, phb->type);
->>>>+			}
->>>>+		}
->>>>
->>>>  		/* Mark the PHB initialization done */
->>>>-		phb = hose->private_data;
->>>>  		phb->initialized = 1;
->>>>  	}
->>>>  }
->>>>
+>>-		base = 0;
+>>  		list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+>>  			if (!pe->dma32_weight)
+>>  				continue;
+>>
+>>  			switch (phb->type) {
+>>  			case PNV_PHB_IODA1:
+>>-				base += pnv_ioda1_setup_dma(phb, pe, base);
+>>+				pnv_ioda1_setup_dma(phb, pe);
+>>  				break;
+>>  			case PNV_PHB_IODA2:
+>>  				pnv_pci_ioda2_setup_dma_pe(phb, pe);
+>>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>>index 574fe43..1dc9578 100644
+>>--- a/arch/powerpc/platforms/powernv/pci.h
+>>+++ b/arch/powerpc/platforms/powernv/pci.h
+>>@@ -65,6 +65,7 @@ struct pnv_ioda_pe {
+>>
+>>  	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+>>  	int			dma32_seg;
+>>+	int			dma32_segcount;
+>>  	struct iommu_table_group table_group;
+>>
+>>  	/* 64-bit TCE bypass region */
+>>@@ -153,10 +154,11 @@ struct pnv_phb {
+>>  			unsigned int		io_segsize;
+>>  			unsigned int		io_pci_base;
+>>
+>>-			/* IO, M32, M64 segment maps */
+>>+			/* IO, M32, M64, DMA32 segment maps */
+>>  			unsigned long		io_segmap[8];
+>>  			unsigned long		m32_segmap[8];
+>>  			unsigned long		m64_segmap[8];
+>>+			unsigned long		dma32_segmap[8];
+>>
+>>  			/* PE allocation */
+>>  			struct mutex		pe_alloc_mutex;
 >>
 
 Thanks,
