@@ -1,29 +1,22 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E8FFC1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 03:58:18 +1000 (AEST)
-Date: Thu, 13 Aug 2015 19:58:14 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Christoph Hellwig <hch@lst.de>, akpm@linux-foundation.org,
- arnd@arndb.de, catalin.marinas@arm.com, will.deacon@arm.com,
- ysato@users.sourceforge.jp, monstr@monstr.eu, jonas@southpole.se,
- cmetcalf@ezchip.com, gxt@mprc.pku.edu.cn, x86@kernel.org,
- linux-alpha@vger.kernel.org, linux-hexagon@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] dma-mapping: consolidate dma_set_mask
-Message-ID: <20150813175814.GB21103@lst.de>
-References: <1439478248-15183-1-git-send-email-hch@lst.de>
- <1439478248-15183-6-git-send-email-hch@lst.de>
- <20150813152505.GR7557@n2100.arm.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E8C5B1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 04:45:00 +1000 (AEST)
+Message-ID: <1439491483.4099.101.camel@freescale.com>
+Subject: Re: [PATCH 2/3] powerpc/e6500: hw tablewalk: optimize a bit for tcd
+ lock acquiring codes
+From: Scott Wood <scottwood@freescale.com>
+To: Kevin Hao <haokexin@gmail.com>
+CC: <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 13 Aug 2015 13:44:43 -0500
+In-Reply-To: <1439466697-18989-2-git-send-email-haokexin@gmail.com>
+References: <1439466697-18989-1-git-send-email-haokexin@gmail.com>
+ <1439466697-18989-2-git-send-email-haokexin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150813152505.GR7557@n2100.arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,29 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 13, 2015 at 04:25:05PM +0100, Russell King - ARM Linux wrote:
-> On Thu, Aug 13, 2015 at 05:04:08PM +0200, Christoph Hellwig wrote:
-> > diff --git a/arch/arm/common/dmabounce.c b/arch/arm/common/dmabounce.c
-> > index 1143c4d..260f52a 100644
-> > --- a/arch/arm/common/dmabounce.c
-> > +++ b/arch/arm/common/dmabounce.c
-> > @@ -440,14 +440,6 @@ static void dmabounce_sync_for_device(struct device *dev,
-> >  	arm_dma_ops.sync_single_for_device(dev, handle, size, dir);
-> >  }
-> >  
-> > -static int dmabounce_set_mask(struct device *dev, u64 dma_mask)
-> > -{
-> > -	if (dev->archdata.dmabounce)
-> > -		return 0;
-> > -
-> > -	return arm_dma_ops.set_dma_mask(dev, dma_mask);
+On Thu, 2015-08-13 at 19:51 +0800, Kevin Hao wrote:
+> It makes no sense to put the instructions for calculating the lock
+> value (cpu number + 1) and the clearing of eq bit of cr1 in lbarx/stbcx
+> loop. And when the lock is acquired by the other thread, the current
+> lock value has no chance to equal with the lock value used by current
+> cpu. So we can skip the comparing for these two lock values in the
+> lbz/bne loop.
 > 
-> Are you sure about this?  A user of dmabounce gets to request any mask
-> with the original code (even though it was never written back... which
-> is a separate bug.)  After this, it seems that this will get limited
-> by the dma_supported() check.  As this old code is about bouncing any
-> buffer into DMA-able memory, it doesn't care about the DMA mask.
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> ---
+>  arch/powerpc/mm/tlb_low_64e.S | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+> index 765b419883f2..e4185581c5a7 100644
+> --- a/arch/powerpc/mm/tlb_low_64e.S
+> +++ b/arch/powerpc/mm/tlb_low_64e.S
+> @@ -308,11 +308,11 @@ BEGIN_FTR_SECTION               /* CPU_FTR_SMT */
+>        *
+>        * MAS6:IND should be already set based on MAS4
+>        */
+> -1:   lbarx   r15,0,r11
+>       lhz     r10,PACAPACAINDEX(r13)
+> -     cmpdi   r15,0
+> -     cmpdi   cr1,r15,1       /* set cr1.eq = 0 for non-recursive */
+>       addi    r10,r10,1
+> +     crclr   cr1*4+eq        /* set cr1.eq = 0 for non-recursive */
+> +1:   lbarx   r15,0,r11
+> +     cmpdi   r15,0
+>       bne     2f
 
-I think you're right.  With the default dma_supported implementation
-it would be fine, but ARM uses a custom one.  I'll keep the arm
-specific dma_set_mask implementation for the next round.
+You're optimizing the contended case at the expense of introducing stalls in 
+the uncontended case.  Does it really matter if there are more instructions 
+in the loop?  This change just means that you'll spin in the loop for more 
+iterations (if it even does that -- I think the cycles per loop iteration 
+might be the same before and after, due to load latency and pairing) while 
+waiting for the other thread to release the lock.
+
+Do you have any benchmark results for this patch?
+
+-Scott
