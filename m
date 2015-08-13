@@ -1,26 +1,26 @@
 Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF9991A1D76
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 14:14:24 +1000 (AEST)
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F11B1A1D59
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 14:14:29 +1000 (AEST)
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5198A1401E7
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2015 14:14:24 +1000 (AEST)
-Received: by pacrr5 with SMTP id rr5so28690274pac.3
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 21:14:22 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id B0BB5140291
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2015 14:14:28 +1000 (AEST)
+Received: by pacgr6 with SMTP id gr6so28641035pac.2
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Aug 2015 21:14:27 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, cyrilbur@gmail.com,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  Manoj Kumar <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com,
  Daniel Axtens <dja@axtens.net>
-Subject: [PATCH v4 04/11] cxl: Make IRQ release idempotent
-Date: Thu, 13 Aug 2015 14:11:22 +1000
-Message-Id: <1439439089-25151-5-git-send-email-dja@axtens.net>
+Subject: [PATCH v4 05/11] cxl: Clean up adapter MMIO unmap path.
+Date: Thu, 13 Aug 2015 14:11:23 +1000
+Message-Id: <1439439089-25151-6-git-send-email-dja@axtens.net>
 In-Reply-To: <1439439089-25151-1-git-send-email-dja@axtens.net>
 References: <1439439089-25151-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,50 +32,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Check if an IRQ is mapped before releasing it.
+ - MMIO pointer unmapping is guarded by a null pointer check.
+   However, iounmap doesn't null the pointer, just invalidate it.
+   Therefore, explicitly null the pointer after unmapping.
 
-This will simplify future EEH code by allowing unconditional unmapping
-of IRQs.
+ - afu_desc_mmio also needs to be unmapped.
+
+ - PCI regions are allocated in cxl_map_adapter_regs.
+   Therefore they should be released in unmap, not elsewhere.
 
 Acked-by: Cyril Bur <cyrilbur@gmail.com>
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- drivers/misc/cxl/irq.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/misc/cxl/pci.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index 77e5d0e7ebe1..9a1e5732c1af 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -341,6 +341,9 @@ int cxl_register_psl_err_irq(struct cxl *adapter)
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 62a762d94de3..484d35a5aead 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -539,10 +539,18 @@ err:
  
- void cxl_release_psl_err_irq(struct cxl *adapter)
+ static void cxl_unmap_slice_regs(struct cxl_afu *afu)
  {
-+	if (adapter->err_virq != irq_find_mapping(NULL, adapter->err_hwirq))
-+		return;
-+
- 	cxl_p1_write(adapter, CXL_PSL_ErrIVTE, 0x0000000000000000);
- 	cxl_unmap_irq(adapter->err_virq, adapter);
- 	cxl_release_one_irq(adapter, adapter->err_hwirq);
-@@ -374,6 +377,9 @@ int cxl_register_serr_irq(struct cxl_afu *afu)
+-	if (afu->p2n_mmio)
++	if (afu->p2n_mmio) {
+ 		iounmap(afu->p2n_mmio);
+-	if (afu->p1n_mmio)
++		afu->p2n_mmio = NULL;
++	}
++	if (afu->p1n_mmio) {
+ 		iounmap(afu->p1n_mmio);
++		afu->p1n_mmio = NULL;
++	}
++	if (afu->afu_desc_mmio) {
++		iounmap(afu->afu_desc_mmio);
++		afu->afu_desc_mmio = NULL;
++	}
+ }
  
- void cxl_release_serr_irq(struct cxl_afu *afu)
- {
-+	if (afu->serr_virq != irq_find_mapping(NULL, afu->serr_hwirq))
-+		return;
-+
- 	cxl_p1n_write(afu, CXL_PSL_SERR_An, 0x0000000000000000);
- 	cxl_unmap_irq(afu->serr_virq, afu);
- 	cxl_release_one_irq(afu->adapter, afu->serr_hwirq);
-@@ -400,6 +406,9 @@ int cxl_register_psl_irq(struct cxl_afu *afu)
+ static void cxl_release_afu(struct device *dev)
+@@ -919,10 +927,16 @@ err1:
  
- void cxl_release_psl_irq(struct cxl_afu *afu)
+ static void cxl_unmap_adapter_regs(struct cxl *adapter)
  {
-+	if (afu->psl_virq != irq_find_mapping(NULL, afu->psl_hwirq))
-+		return;
-+
- 	cxl_unmap_irq(afu->psl_virq, afu);
- 	cxl_release_one_irq(afu->adapter, afu->psl_hwirq);
- 	kfree(afu->psl_irq_name);
+-	if (adapter->p1_mmio)
++	if (adapter->p1_mmio) {
+ 		iounmap(adapter->p1_mmio);
+-	if (adapter->p2_mmio)
++		adapter->p1_mmio = NULL;
++		pci_release_region(to_pci_dev(adapter->dev.parent), 2);
++	}
++	if (adapter->p2_mmio) {
+ 		iounmap(adapter->p2_mmio);
++		adapter->p2_mmio = NULL;
++		pci_release_region(to_pci_dev(adapter->dev.parent), 0);
++	}
+ }
+ 
+ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
+@@ -1131,8 +1145,6 @@ static void cxl_remove_adapter(struct cxl *adapter)
+ 
+ 	device_unregister(&adapter->dev);
+ 
+-	pci_release_region(pdev, 0);
+-	pci_release_region(pdev, 2);
+ 	pci_disable_device(pdev);
+ }
+ 
 -- 
 2.1.4
