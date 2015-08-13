@@ -2,12 +2,13 @@ Return-Path: <hch@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 399EF1A1D58
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D7141A1D73
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:40:53 +1000 (AEST)
-Date: Thu, 13 Aug 2015 16:31:50 +0200
+Date: Thu, 13 Aug 2015 16:33:25 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <axboe@kernel.dk>, Dan Williams <dan.j.williams@intel.com>,
+Cc: Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>,
+ Dan Williams <dan.j.williams@intel.com>,
  Vineet Gupta <vgupta@synopsys.com>,
  =?iso-8859-1?Q?H=E5vard?= Skinnemoen <hskinnemoen@gmail.com>,
  Hans-Christian Egtvedt <egtvedt@samfundet.no>,
@@ -26,14 +27,15 @@ Cc: Jens Axboe <axboe@kernel.dk>, Dan Williams <dan.j.williams@intel.com>,
  linux-xtensa@linux-xtensa.org,
  "linux-nvdimm@lists.01.org" <linux-nvdimm@ml01.01.org>,
  Linux Media Mailing List <linux-media@vger.kernel.org>
-Subject: Re: [PATCH 29/31] parisc: handle page-less SG entries
-Message-ID: <20150813143150.GA17183@lst.de>
+Subject: Re: [PATCH 31/31] dma-mapping-common: skip kmemleak checks for
+ page-less SG entries
+Message-ID: <20150813143325.GB17183@lst.de>
 References: <1439363150-8661-1-git-send-email-hch@lst.de>
- <1439363150-8661-30-git-send-email-hch@lst.de>
- <CA+55aFxsH9Lde7wqZi555vqfH2uxeQqC9cjeca9L6Wr=XpyzXA@mail.gmail.com>
+ <1439363150-8661-32-git-send-email-hch@lst.de>
+ <CA+55aFxfZM81HNfo2ysfhGwrhx6GX-+F--+jLFmMVv+Z0id2rw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFxsH9Lde7wqZi555vqfH2uxeQqC9cjeca9L6Wr=XpyzXA@mail.gmail.com>
+In-Reply-To: <CA+55aFxfZM81HNfo2ysfhGwrhx6GX-+F--+jLFmMVv+Z0id2rw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,17 +45,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 12, 2015 at 09:01:02AM -0700, Linus Torvalds wrote:
-> I'm assuming that anybody who wants to use the page-less
-> scatter-gather lists always does so on memory that isn't actually
-> virtually mapped at all, or only does so on sane architectures that
-> are cache coherent at a physical level, but I'd like that assumption
-> *documented* somewhere.
+On Wed, Aug 12, 2015 at 09:05:15AM -0700, Linus Torvalds wrote:
+> [ Again, I'm responding to one random patch - this pattern was in
+> other patches too.  ]
+> 
+> A question: do we actually expect to mix page-less and pageful SG
+> entries in the same SG list?
+> 
+> How does that happen?
 
-It's temporarily mapped by kmap-like helpers.  That code isn't in
-this series. The most recent version of it is here:
-
-https://git.kernel.org/cgit/linux/kernel/git/djbw/nvdimm.git/commit/?h=pfn&id=de8237c99fdb4352be2193f3a7610e902b9bb2f0
-
-note that it's not doing the cache flushing it would have to do yet, but
-it's also only enabled for x86 at the moment.
+Both for DAX and the video buffer case people could do direct I/O
+spanning the boundary between such a VMA and a normal one unless
+we add special code to prevent that.  Right now I don't think it's
+all that useful, but then again it doesn't seem harmful either
+and adding those checks might add up.
