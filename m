@@ -1,33 +1,26 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 388681A1D94
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:02:21 +1000 (AEST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Fri, 14 Aug 2015 11:32:16 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1E9331258018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 11:35:28 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7E61oDw54329488
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 11:31:51 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7E61p5a018192
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 11:31:52 +0530
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: capi-linux@lists.linux.ibm.com, Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id D41761A1D74
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:05:59 +1000 (AEST)
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8E21F140293
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 16:05:57 +1000 (AEST)
+Received: by pacrr5 with SMTP id rr5so53452727pac.3
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2015 23:05:56 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Subject: [PATCH] cxl: Plug irq_bitmap getting leaked in cxl_context
-Date: Fri, 14 Aug 2015 11:31:31 +0530
-Message-Id: <1439532091-11734-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+ Manoj Kumar <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] powerpc/eeh: Probe after unbalanced kref check
+Date: Fri, 14 Aug 2015 16:03:19 +1000
+Message-Id: <1439532199-12099-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,29 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch plugs the leak of irq_bitmap, allocated as part of
-initialization of cxl_context struct; during the call to
-afu_allocate_irqs. The bitmap is now release during the call to function
-afu_release_irqs.
+In the complete hotplug case, EEH PEs are supposed to be released
+and set to NULL. Normally, this is done by eeh_remove_device(),
+which is called from pcibios_release_device().
 
-Reported-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+However, if something is holding a kref to the device, it will not
+be released, and the PE will remain. eeh_add_device_late() has
+a check for this which will explictly destroy the PE in this case.
+
+This check in eeh_add_device_late() occurs after a call to
+eeh_ops->probe(). On PowerNV, probe is a pointer to pnv_eeh_probe(),
+which will exit without probing if there is an existing PE.
+
+This means that on PowerNV, devices with outstanding krefs will not
+be rediscovered by EEH correctly after a complete hotplug. This is
+affecting CXL (CAPI) devices in the field.
+
+Put the probe after the kref check so that the PE is destroyed
+and affected devices are correctly rediscovered by EEH.
+
+Fixes: d91dafc02f42 ("powerpc/eeh: Delay probing EEH device during hotplug")
+Cc: stable@vger.kernel.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- drivers/misc/cxl/irq.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/eeh.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index 680cd26..c8f1f9d 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -511,4 +511,8 @@ void afu_release_irqs(struct cxl_context *ctx, void *cookie)
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index af9b597b10af..8e61d717915e 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1116,9 +1116,6 @@ void eeh_add_device_late(struct pci_dev *dev)
+ 		return;
+ 	}
  
- 	afu_irq_name_free(ctx);
- 	cxl_release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
+-	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
+-		eeh_ops->probe(pdn, NULL);
+-
+ 	/*
+ 	 * The EEH cache might not be removed correctly because of
+ 	 * unbalanced kref to the device during unplug time, which
+@@ -1142,6 +1139,9 @@ void eeh_add_device_late(struct pci_dev *dev)
+ 		dev->dev.archdata.edev = NULL;
+ 	}
+ 
++	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
++		eeh_ops->probe(pdn, NULL);
 +
-+	kfree(ctx->irq_bitmap);
-+	ctx->irq_bitmap = NULL;
-+	ctx->irq_count = 0;
- }
+ 	edev->pdev = dev;
+ 	dev->dev.archdata.edev = edev;
+ 
 -- 
-2.2.1
+2.1.4
