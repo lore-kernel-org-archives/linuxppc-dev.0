@@ -1,35 +1,35 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04AAB1A1D90
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:51:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B1041A1D91
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:51:17 +1000 (AEST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 14 Aug 2015 00:51:15 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A7FC01FF004B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:42:23 -0600 (MDT)
+ Fri, 14 Aug 2015 00:51:14 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 7AE211FF0042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:42:21 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7E6pDuF44761308
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 23:51:13 -0700
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7E6pBhA55967884
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 23:51:11 -0700
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7E6pDWY027303
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:51:13 -0600
+ t7E6pBLq027143
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:51:11 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
  Michael Ellerman <mpe@ellerman.id.au>
 Cc: <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [PATCH v5 6/8] perf: Add return value for perf_event_read().
-Date: Thu, 13 Aug 2015 23:49:39 -0700
-Message-Id: <1439534981-7937-7-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v5 2/8] perf: Split perf_event_read() and perf_event_count()
+Date: Thu, 13 Aug 2015 23:49:35 -0700
+Message-Id: <1439534981-7937-3-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1439534981-7937-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1439534981-7937-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,165 +41,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we implement the ability to read several counters at once (using
-the PERF_PMU_TXN_READ transaction interface), perf_event_read() can
-fail when the 'group' parameter is true (eg: trying to read too many
-events at once).
+perf_event_read() does two things:
 
-For now, have perf_event_read() return an integer. Ignore the return
-value when 'group' parameter is false.
+	- call the PMU to read/update the counter value, and
+	- compute the total count of the event and its children
+
+Not all callers need both. perf_event_reset() for instance needs the
+first piece but doesn't need the second.  Similarly, when we implement
+the ability to read a group of events using the transaction interface,
+we would need the two pieces done independently.
+
+Break up perf_event_read() and have it just read/update the counter
+and have the callers compute the total count if necessary.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- kernel/events/core.c |   45 ++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 34 insertions(+), 11 deletions(-)
+ kernel/events/core.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/events/core.c b/kernel/events/core.c
-index 2221ebe..e3ce047 100644
+index 4435bf5..f9ca8cb 100644
 --- a/kernel/events/core.c
 +++ b/kernel/events/core.c
-@@ -3177,6 +3177,7 @@ void perf_event_exec(void)
- struct perf_read_data {
- 	struct perf_event *event;
- 	bool group;
-+	int ret;
- };
- 
- /*
-@@ -3217,6 +3218,7 @@ static void __perf_event_read(void *info)
- 		if (sub->state == PERF_EVENT_STATE_ACTIVE)
- 			sub->pmu->read(sub);
- 	}
-+	data->ret = 0;
- 
- unlock:
- 	raw_spin_unlock(&ctx->lock);
-@@ -3230,8 +3232,10 @@ static inline u64 perf_event_count(struct perf_event *event)
+@@ -3212,7 +3212,7 @@ static inline u64 perf_event_count(struct perf_event *event)
  	return __perf_event_count(event);
  }
  
--static void perf_event_read(struct perf_event *event, bool group)
-+static int perf_event_read(struct perf_event *event, bool group)
+-static u64 perf_event_read(struct perf_event *event)
++static void perf_event_read(struct perf_event *event)
  {
-+	int ret = 0;
-+
  	/*
  	 * If event is enabled and currently active on a CPU, update the
- 	 * value in the event structure:
-@@ -3240,9 +3244,11 @@ static void perf_event_read(struct perf_event *event, bool group)
- 		struct perf_read_data data = {
- 			.event = event,
- 			.group = group,
-+			.ret = 0,
- 		};
- 		smp_call_function_single(event->oncpu,
- 					 __perf_event_read, &data, 1);
-+		ret = data.ret;
- 	} else if (event->state == PERF_EVENT_STATE_INACTIVE) {
- 		struct perf_event_context *ctx = event->ctx;
- 		unsigned long flags;
-@@ -3263,6 +3269,8 @@ static void perf_event_read(struct perf_event *event, bool group)
- 			update_event_times(event);
+@@ -3238,8 +3238,6 @@ static u64 perf_event_read(struct perf_event *event)
+ 		update_event_times(event);
  		raw_spin_unlock_irqrestore(&ctx->lock, flags);
  	}
-+
-+	return ret;
+-
+-	return perf_event_count(event);
  }
  
  /*
-@@ -3775,7 +3783,7 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
+@@ -3751,14 +3749,18 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
+ 	*running = 0;
  
  	mutex_lock(&event->child_mutex);
- 
--	perf_event_read(event, false);
-+	(void)perf_event_read(event, false);
- 	total += perf_event_count(event);
- 
+-	total += perf_event_read(event);
++
++	perf_event_read(event);
++	total += perf_event_count(event);
++
  	*enabled += event->total_time_enabled +
-@@ -3784,7 +3792,7 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
+ 			atomic64_read(&event->child_total_time_enabled);
+ 	*running += event->total_time_running +
  			atomic64_read(&event->child_total_time_running);
  
  	list_for_each_entry(child, &event->child_list, child_list) {
--		perf_event_read(child, false);
-+		(void)perf_event_read(child, false);
- 		total += perf_event_count(child);
+-		total += perf_event_read(child);
++		perf_event_read(child);
++		total += perf_event_count(child);
  		*enabled += child->total_time_enabled;
  		*running += child->total_time_running;
-@@ -3795,13 +3803,16 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
- }
- EXPORT_SYMBOL_GPL(perf_event_read_value);
- 
--static void __perf_read_group_add(struct perf_event *leader,
-+static int __perf_read_group_add(struct perf_event *leader,
- 					u64 read_format, u64 *values)
- {
- 	struct perf_event *sub;
- 	int n = 1; /* skip @nr */
-+	int ret;
- 
--	perf_event_read(leader, true);
-+	ret = perf_event_read(leader, true);
-+	if (ret)
-+		return ret;
- 
- 	/*
- 	 * Since we co-schedule groups, {enabled,running} times of siblings
-@@ -3830,6 +3841,8 @@ static void __perf_read_group_add(struct perf_event *leader,
- 		if (read_format & PERF_FORMAT_ID)
- 			values[n++] = primary_event_id(sub);
  	}
-+
-+	return 0;
- }
- 
- static int perf_read_group(struct perf_event *event,
-@@ -3837,7 +3850,7 @@ static int perf_read_group(struct perf_event *event,
- {
- 	struct perf_event *leader = event->group_leader, *child;
- 	struct perf_event_context *ctx = leader->ctx;
--	int ret = event->read_size;
-+	int ret;
- 	u64 *values;
- 
- 	lockdep_assert_held(&ctx->mutex);
-@@ -3854,17 +3867,27 @@ static int perf_read_group(struct perf_event *event,
- 	 */
- 	mutex_lock(&leader->child_mutex);
- 
--	__perf_read_group_add(leader, read_format, values);
--	list_for_each_entry(child, &leader->child_list, child_list)
--		__perf_read_group_add(child, read_format, values);
-+	ret = __perf_read_group_add(leader, read_format, values);
-+	if (ret)
-+		goto unlock;
-+
-+	list_for_each_entry(child, &leader->child_list, child_list) {
-+		ret = __perf_read_group_add(child, read_format, values);
-+		if (ret)
-+			goto unlock;
-+	}
- 
- 	mutex_unlock(&leader->child_mutex);
- 
-+	ret = event->read_size;
- 	if (copy_to_user(buf, values, event->read_size))
- 		ret = -EFAULT;
-+	goto out;
- 
-+unlock:
-+	mutex_unlock(&leader->child_mutex);
-+out:
- 	kfree(values);
--
- 	return ret;
- }
- 
-@@ -3970,7 +3993,7 @@ static unsigned int perf_poll(struct file *file, poll_table *wait)
+@@ -3918,7 +3920,7 @@ static unsigned int perf_poll(struct file *file, poll_table *wait)
  
  static void _perf_event_reset(struct perf_event *event)
  {
--	perf_event_read(event, false);
-+	(void)perf_event_read(event, false);
+-	(void)perf_event_read(event);
++	perf_event_read(event);
  	local64_set(&event->count, 0);
  	perf_event_update_userpage(event);
  }
