@@ -1,37 +1,34 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 978741A1DCC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:51:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D9221A2C1C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:59:38 +1000 (AEST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 14 Aug 2015 00:51:18 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 944FF1FF0041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:42:24 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7E6pEmW52953242
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Aug 2015 23:51:14 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7E6pEV2027390
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 00:51:14 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [PATCH v5 8/8] powerpc/perf/hv-24x7: Use PERF_PMU_TXN_READ interface
-Date: Thu, 13 Aug 2015 23:49:41 -0700
-Message-Id: <1439534981-7937-9-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1439534981-7937-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1439534981-7937-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Fri, 14 Aug 2015 16:59:36 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A140D3578056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:59:32 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7E6xPup48431352
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:59:33 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7E6wxAZ032740
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:59:00 +1000
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, mikey@neuling.org,
+ imunsie@au1.ibm.com, Michael Ellerman <mpe@ellerman.id.au>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: [PATCH][RESEND] cxl:Plug irq_bitmap getting leaked in cxl_context
+Date: Fri, 14 Aug 2015 12:28:38 +0530
+Message-Id: <1439535518-19192-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,236 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 24x7 counters in Powerpc allow monitoring a large number of counters
-simultaneously. They also allow reading several counters in a single
-HCALL so we can get a more consistent snapshot of the system.
+This patch plugs the leak of irq_bitmap, allocated as part of
+initialization of cxl_context struct; during the call to
+afu_allocate_irqs. The bitmap is now release during the call to function
+afu_release_irqs.
 
-Use the PMU's transaction interface to monitor and read several event
-counters at once. The idea is that users can group several 24x7 events
-into a single group of events. We use the following logic to submit
-the group of events to the PMU and read the values:
-
-	pmu->start_txn()		// Initialize before first event
-
-	for each event in group
-		pmu->read(event);	// Queue each event to be read
-
-	pmu->commit_txn()		// Read/update all queuedcounters
-
-The ->commit_txn() also updates the event counts in the respective
-perf_event objects.  The perf subsystem can then directly get the
-event counts from the perf_event and can avoid submitting a new
-->read() request to the PMU.
-
-Thanks to input from Peter Zijlstra.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Reported-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 ---
-Changelog[v3]
-	- [Peter Zijlstra] Save the transaction state in ->start_txn() and
-	  remove the flags parameter from ->commit_txn() and ->cancel_txn().
----
- arch/powerpc/perf/hv-24x7.c |  166 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 164 insertions(+), 2 deletions(-)
+ drivers/misc/cxl/irq.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 4d1a8d1..c4eee39 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -142,6 +142,15 @@ static struct attribute_group event_long_desc_group = {
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index 680cd26..c8f1f9d 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -511,4 +511,8 @@ void afu_release_irqs(struct cxl_context *ctx, void *cookie)
  
- static struct kmem_cache *hv_page_cache;
- 
-+DEFINE_PER_CPU(int, hv_24x7_txn_flags);
-+DEFINE_PER_CPU(int, hv_24x7_txn_err);
+ 	afu_irq_name_free(ctx);
+ 	cxl_release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
 +
-+struct hv_24x7_hw {
-+	struct perf_event *events[255];
-+};
-+
-+DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
-+
- /*
-  * request_buffer and result_buffer are not required to be 4k aligned,
-  * but are not allowed to cross any 4k boundary. Aligning them to 4k is
-@@ -1233,9 +1242,48 @@ static void update_event_count(struct perf_event *event, u64 now)
- static void h_24x7_event_read(struct perf_event *event)
- {
- 	u64 now;
-+	struct hv_24x7_request_buffer *request_buffer;
-+	struct hv_24x7_hw *h24x7hw;
-+	int txn_flags;
-+
-+	txn_flags = __this_cpu_read(hv_24x7_txn_flags);
-+
-+	/*
-+	 * If in a READ transaction, add this counter to the list of
-+	 * counters to read during the next HCALL (i.e commit_txn()).
-+	 * If not in a READ transaction, go ahead and make the HCALL
-+	 * to read this counter by itself.
-+	 */
-+
-+	if (txn_flags & PERF_PMU_TXN_READ) {
-+		int i;
-+		int ret;
- 
--	now = h_24x7_get_value(event);
--	update_event_count(event, now);
-+		if (__this_cpu_read(hv_24x7_txn_err))
-+			return;
-+
-+		request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
-+
-+		ret = add_event_to_24x7_request(event, request_buffer);
-+		if (ret) {
-+			__this_cpu_write(hv_24x7_txn_err, ret);
-+		} else {
-+			/*
-+			 * Assoicate the event with the HCALL request index,
-+			 * so ->commit_txn() can quickly find/update count.
-+			 */
-+			i = request_buffer->num_requests - 1;
-+
-+			h24x7hw = &get_cpu_var(hv_24x7_hw);
-+			h24x7hw->events[i] = event;
-+			put_cpu_var(h24x7hw);
-+		}
-+
-+		put_cpu_var(hv_24x7_reqb);
-+	} else {
-+		now = h_24x7_get_value(event);
-+		update_event_count(event, now);
-+	}
++	kfree(ctx->irq_bitmap);
++	ctx->irq_bitmap = NULL;
++	ctx->irq_count = 0;
  }
- 
- static void h_24x7_event_start(struct perf_event *event, int flags)
-@@ -1257,6 +1305,117 @@ static int h_24x7_event_add(struct perf_event *event, int flags)
- 	return 0;
- }
- 
-+/*
-+ * 24x7 counters only support READ transactions. They are
-+ * always counting and dont need/support ADD transactions.
-+ * Cache the flags, but otherwise ignore transactions that
-+ * are not PERF_PMU_TXN_READ.
-+ */
-+static void h_24x7_event_start_txn(struct pmu *pmu, int flags)
-+{
-+	struct hv_24x7_request_buffer *request_buffer;
-+	struct hv_24x7_data_result_buffer *result_buffer;
-+
-+	/* We should not be called if we are already in a txn */
-+	WARN_ON_ONCE(__this_cpu_read(hv_24x7_txn_flags));
-+
-+	__this_cpu_write(hv_24x7_txn_flags, flags);
-+	if (flags & ~PERF_PMU_TXN_READ)
-+		return;
-+
-+	request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
-+	result_buffer = (void *)get_cpu_var(hv_24x7_resb);
-+
-+	init_24x7_request(request_buffer, result_buffer);
-+
-+	put_cpu_var(hv_24x7_resb);
-+	put_cpu_var(hv_24x7_reqb);
-+}
-+
-+/*
-+ * Clean up transaction state.
-+ *
-+ * NOTE: Ignore state of request and result buffers for now.
-+ *	 We will initialize them during the next read/txn.
-+ */
-+static void reset_txn(void)
-+{
-+	__this_cpu_write(hv_24x7_txn_flags, 0);
-+	__this_cpu_write(hv_24x7_txn_err, 0);
-+}
-+
-+/*
-+ * 24x7 counters only support READ transactions. They are always counting
-+ * and dont need/support ADD transactions. Clear ->txn_flags but otherwise
-+ * ignore transactions that are not of type PERF_PMU_TXN_READ.
-+ *
-+ * For READ transactions, submit all pending 24x7 requests (i.e requests
-+ * that were queued by h_24x7_event_read()), to the hypervisor and update
-+ * the event counts.
-+ */
-+static int h_24x7_event_commit_txn(struct pmu *pmu)
-+{
-+	struct hv_24x7_request_buffer *request_buffer;
-+	struct hv_24x7_data_result_buffer *result_buffer;
-+	struct hv_24x7_result *resb;
-+	struct perf_event *event;
-+	u64 count;
-+	int i, ret, txn_flags;
-+	struct hv_24x7_hw *h24x7hw;
-+
-+	txn_flags = __this_cpu_read(hv_24x7_txn_flags);
-+	WARN_ON_ONCE(!txn_flags);
-+
-+	ret = 0;
-+	if (txn_flags & ~PERF_PMU_TXN_READ)
-+		goto out;
-+
-+	ret = __this_cpu_read(hv_24x7_txn_err);
-+	if (ret)
-+		goto out;
-+
-+	request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
-+	result_buffer = (void *)get_cpu_var(hv_24x7_resb);
-+
-+	ret = make_24x7_request(request_buffer, result_buffer);
-+	if (ret) {
-+		log_24x7_hcall(request_buffer, result_buffer, ret);
-+		goto put_reqb;
-+	}
-+
-+	h24x7hw = &get_cpu_var(hv_24x7_hw);
-+
-+	/* Update event counts from hcall */
-+	for (i = 0; i < request_buffer->num_requests; i++) {
-+		resb = &result_buffer->results[i];
-+		count = be64_to_cpu(resb->elements[0].element_data[0]);
-+		event = h24x7hw->events[i];
-+		h24x7hw->events[i] = NULL;
-+		update_event_count(event, count);
-+	}
-+
-+	put_cpu_var(hv_24x7_hw);
-+
-+put_reqb:
-+	put_cpu_var(hv_24x7_resb);
-+	put_cpu_var(hv_24x7_reqb);
-+out:
-+	reset_txn();
-+	return ret;
-+}
-+
-+/*
-+ * 24x7 counters only support READ transactions. They are always counting
-+ * and dont need/support ADD transactions. However, regardless of type
-+ * of transaction, all we need to do is cleanup, so we don't have to check
-+ * the type of transaction.
-+ */
-+static void h_24x7_event_cancel_txn(struct pmu *pmu)
-+{
-+	WARN_ON_ONCE(!__this_cpu_read(hv_24x7_txn_flags));
-+	reset_txn();
-+}
-+
- static struct pmu h_24x7_pmu = {
- 	.task_ctx_nr = perf_invalid_context,
- 
-@@ -1268,6 +1427,9 @@ static struct pmu h_24x7_pmu = {
- 	.start       = h_24x7_event_start,
- 	.stop        = h_24x7_event_stop,
- 	.read        = h_24x7_event_read,
-+	.start_txn   = h_24x7_event_start_txn,
-+	.commit_txn  = h_24x7_event_commit_txn,
-+	.cancel_txn  = h_24x7_event_cancel_txn,
- };
- 
- static int hv_24x7_init(void)
 -- 
-1.7.9.5
+2.2.1
