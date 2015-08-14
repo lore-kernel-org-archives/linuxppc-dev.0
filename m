@@ -1,23 +1,19 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id DE43A1A1D94
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 02:19:38 +1000 (AEST)
-From: Marc Zyngier <marc.zyngier@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Will Deacon <will.deacon@arm.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>
-Cc: Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH v2 4/4] arm64: dts: Drop linux,
- pci-probe-only from the Seattle DTS
-Date: Fri, 14 Aug 2015 17:19:19 +0100
-Message-Id: <1439569159-10051-5-git-send-email-marc.zyngier@arm.com>
-In-Reply-To: <1439569159-10051-1-git-send-email-marc.zyngier@arm.com>
-References: <1439569159-10051-1-git-send-email-marc.zyngier@arm.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id D96B91A031D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 02:34:08 +1000 (AEST)
+Received: from exch1.transmode.se (exch1.transmode.se [192.168.201.16])
+ by smtp.transmode.se (Postfix) with ESMTP id 6ABF11187047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 18:34:04 +0200 (CEST)
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: PCI not working in 4.1 for p2010rdb(Freescale) based board
+Date: Fri, 14 Aug 2015 16:34:03 +0000
+Message-ID: <1439570043.3120.214.camel@transmode.se>
+References: <1439558152.3120.207.camel@transmode.se>
+In-Reply-To: <1439558152.3120.207.camel@transmode.se>
+Content-Type: text/plain; charset="iso-8859-15"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The linux,pci-probe-only property mandates an argument to indicate
-whether or not to engage the "probe-only" mode, but the Seattle
-DTS just provides a naked property, which is illegal.
+On Fri, 2015-08-14 at 13:15 +0000, Joakim Tjernlund wrote:
+> I upgraded our kernel for our custom p2010rdb based board from 3.4 to 4.1=
+ and I cannot get the
+> PCI controller to work, it is not initialized as can be seem by the below=
+ dmesg fro 3.4 and 4.1.
+> Sorry to say, PCI is not my cup of tea so I don't not know how to find th=
+e culprit.
+> I have checked what I can but nothing stands out and I would appreciate s=
+ome help/pointers
 
-Also, it turns out that the board is perfectly happy without
-probe-only, so let's drop this altogether.
+Naturally I found the problem shortly after sending this :)
+Stupid copy&paste error ...
 
-Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
----
- arch/arm64/boot/dts/amd/amd-overdrive.dts | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/arch/arm64/boot/dts/amd/amd-overdrive.dts b/arch/arm64/boot/dts/amd/amd-overdrive.dts
-index 564a3f7..128fa94 100644
---- a/arch/arm64/boot/dts/amd/amd-overdrive.dts
-+++ b/arch/arm64/boot/dts/amd/amd-overdrive.dts
-@@ -14,7 +14,6 @@
- 
- 	chosen {
- 		stdout-path = &serial0;
--		linux,pci-probe-only;
- 	};
- };
- 
--- 
-2.1.4
+    Jocke=
