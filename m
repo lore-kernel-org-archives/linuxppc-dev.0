@@ -1,41 +1,21 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 14F561A031D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 02:17:48 +1000 (AEST)
-Received: by wicja10 with SMTP id ja10so25990440wic.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 09:17:45 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20150813.211155.1774898831276303437.davem@davemloft.net>
-References: <20150813143150.GA17183@lst.de>
- <CAA9_cmcNA__N_yVTKsEqLAKBuoL-hx73t6opdsmb7w-0qKXaWg@mail.gmail.com>
- <1439524760.8421.23.camel@HansenPartnership.com>
- <20150813.211155.1774898831276303437.davem@davemloft.net>
-Date: Fri, 14 Aug 2015 09:17:45 -0700
-Message-ID: <CAPcyv4idztwrtr5wBQkiTSNT8L3HWf8zk9webheQAmunLD7cBw@mail.gmail.com>
-Subject: Re: [PATCH 29/31] parisc: handle page-less SG entries
-From: Dan Williams <dan.j.williams@intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: Jej B <James.Bottomley@hansenpartnership.com>,
- Christoph Hellwig <hch@lst.de>,
- "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
- linux-mips@linux-mips.org,
- linux-ia64@vger.kernel.org, linux-nvdimm <linux-nvdimm@ml01.01.org>,
- dhowells@redhat.com,
- sparclinux@vger.kernel.org, egtvedt@samfundet.no, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, X86 ML <x86@kernel.org>,
- David Woodhouse <dwmw2@infradead.org>, hskinnemoen@gmail.com,
- linux-xtensa@linux-xtensa.org,
- grundler@parisc-linux.org, realmz6@gmail.com, alex.williamson@redhat.com,
- linux-metag@vger.kernel.org, Jens Axboe <axboe@kernel.dk>,
- Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
- vgupta@synopsys.com,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-alpha@vger.kernel.org,
- linux-media@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 23C401A031D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 02:19:28 +1000 (AEST)
+From: Marc Zyngier <marc.zyngier@arm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Will Deacon <will.deacon@arm.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>
+Cc: Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, devicetree@vger.kernel.org
+Subject: [PATCH v2 0/4] PCI: arm64/powerpc: Fix parsing of linux,
+ pci-probe-only
+Date: Fri, 14 Aug 2015 17:19:15 +0100
+Message-Id: <1439569159-10051-1-git-send-email-marc.zyngier@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,37 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 13, 2015 at 9:11 PM, David Miller <davem@davemloft.net> wrote:
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
->> At least on some PA architectures, you have to be very careful.
->> Improperly managed, multiple aliases will cause the system to crash
->> (actually a machine check in the cache chequerboard). For the most
->> temperamental systems, we need the cache line flushed and the alias
->> mapping ejected from the TLB cache before we access the same page at an
->> inequivalent alias.
->
-> Also, I want to mention that on sparc64 we manage the cache aliasing
-> state in the page struct.
->
-> Until a page is mapped into userspace, we just record the most recent
-> cpu to store into that page with kernel side mappings.  Once the page
-> ends up being mapped or the cpu doing kernel side stores changes, we
-> actually perform the cache flush.
->
-> Generally speaking, I think that all actual physical memory the kernel
-> operates on should have a struct page backing it.  So this whole
-> discussion of operating on physical memory in scatter lists without
-> backing page structs feels really foreign to me.
+The pci-host-generic driver parses the linux,pci-probe-only property,
+and assumes that it will have a boolean parameter.
 
-So the only way for page-less pfns to enter the system is through the
-->direct_access() method provided by a pmem device's struct
-block_device_operations.  Architectures that require struct page for
-cache management to must disable ->direct_access() in this case.
+Turns out that the Seattle DTS file has a naked "linux,pci-probe-only"
+property, which leads to the driver dereferencing some unsuspecting
+memory location. Nothing really bad happens (we end up reading some
+other bit of DT, fortunately), but that not a reason to keep it this
+way. Turns out that the Pseries code (where this code was lifted from)
+may suffer from the same issue.
 
-If an arch still wants to support pmem+DAX then it needs something
-like this patchset (feedback welcome) to map pmem pfns:
+The first patch introduces a common (and fixed) version of that check
+that can be used by drivers and architectures that require it. The two
+following patches change the pci-host-generic driver and the powerpc
+code to use it.
 
-https://lkml.org/lkml/2015/8/12/970
+Finally, the bad property is removed from the Seatle DTS, because it
+is simply not necessary (it actually prevents me from using SR-IOV,
+which otherwise runs fine without the probe-only thing).
 
-Effectively this would disable ->direct_access() on /dev/pmem0, but
-permit ->direct_access() on /dev/pmem0m.
+This has been tested on the offending Seattle board.
+
+* From v1:
+  - Consolidate the parsing in of_pci.c (Bjorn)
+
+Marc Zyngier (4):
+  of/pci: Add of_pci_check_probe_only to parse "linux,pci-probe-only"
+  PCI: pci-host-generic: Fix lookup of linux,pci-probe-only property
+  powerpc: PCI: Fix lookup of linux,pci-probe-only property
+  arm64: dts: Drop linux,pci-probe-only from the Seattle DTS
+
+ arch/arm64/boot/dts/amd/amd-overdrive.dts |  1 -
+ arch/powerpc/platforms/pseries/setup.c    | 14 ++------------
+ drivers/of/of_pci.c                       | 30 ++++++++++++++++++++++++++++++
+ drivers/pci/host/pci-host-generic.c       |  9 +--------
+ include/linux/of_pci.h                    |  3 +++
+ 5 files changed, 36 insertions(+), 21 deletions(-)
+
+-- 
+2.1.4
