@@ -1,22 +1,45 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0103.outbound.protection.outlook.com [207.46.100.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 020691A1D39
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 13:39:34 +1000 (AEST)
-Message-ID: <1439523559.4099.116.camel@freescale.com>
-Subject: Re: [PATCH 3/3] powerpc/e6500: hw tablewalk: order the memory
- access when acquire/release tcd lock
-From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 13 Aug 2015 22:39:19 -0500
-In-Reply-To: <1439466697-18989-3-git-send-email-haokexin@gmail.com>
-References: <1439466697-18989-1-git-send-email-haokexin@gmail.com>
- <1439466697-18989-3-git-send-email-haokexin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D34241A1DC7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 13:40:40 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5D52A14018C
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 13:40:40 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 14 Aug 2015 13:40:38 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 597642BB0051
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 13:40:35 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7E3eSfi41812210
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 13:40:36 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7E3e2bF024565
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 13:40:02 +1000
+Date: Fri, 14 Aug 2015 11:39:44 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3 2/6] powerpc/powernv: simplify the calculation of iov
+ resource alignment
+Message-ID: <20150814033944.GA11381@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1439475071-7001-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1439475071-7001-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150814010458.GA19889@gwshan>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150814010458.GA19889@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +49,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-08-13 at 19:51 +0800, Kevin Hao wrote:
-> I didn't find anything unusual. But I think we do need to order the
-> load/store of esel_next when acquire/release tcd lock. For acquire,
-> add a data dependency to order the loads of lock and esel_next.
-> For release, even there already have a "isync" here, but it doesn't
-> guarantee any memory access order. So we still need "lwsync" for
-> the two stores for lock and esel_next.
+On Fri, Aug 14, 2015 at 11:04:58AM +1000, Gavin Shan wrote:
+>On Thu, Aug 13, 2015 at 10:11:07PM +0800, Wei Yang wrote:
+>>The alignment of IOV BAR on PowerNV platform is the total size of the IOV
+>>BAR. No matter whether the IOV BAR is extended with number of
+>>roundup_pow_of_two(total_vfs) or number of max PE number (256), the total
+>>size could be calculated by (vfs_expanded * VF_BAR_size).
+>>
+>>This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
+>>first case.
+>>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>---
+>> arch/powerpc/platforms/powernv/pci-ioda.c |   14 +++++++++-----
+>> 1 file changed, 9 insertions(+), 5 deletions(-)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index 9ac324e..67b8f72 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -2987,12 +2987,16 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+>> 						      int resno)
+>> {
+>> 	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>-	resource_size_t align, iov_align;
+>>-
+>>-	iov_align = resource_size(&pdev->resource[resno]);
+>>-	if (iov_align)
+>>-		return iov_align;
+>>+	resource_size_t align;
+>>
+>>+	/*
+>>+	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
+>>+	 * SR-IOV. While from hardware perspective, the range mapped by M64
+>>+	 * BAR should be size aligned.
+>>+	 *
+>>+	 * This function return the total IOV BAR size if expanded or just the
+>>+	 * individual size if not.
+>>+	 */
+>
+>s/return/returns
+>
 
-I was going to say that esel_next is just a hint and it doesn't really matter 
-if we occasionally get the wrong value, unless it happens often enough to 
-cause more performance degradation than the lwsync causes.  However, with the 
-A-008139 workaround we do need to read the same value from esel_next both 
-times.  It might be less costly to save/restore an additional register 
-instead of lwsync, though.
+Thanks :-)
 
--Scott
+>> 	align = pci_iov_resource_size(pdev, resno);
+>> 	if (pdn->vfs_expanded)
+>> 		return pdn->vfs_expanded * align;
+>>-- 
+>>1.7.9.5
+>>
+
+-- 
+Richard Yang
+Help you, Help me
