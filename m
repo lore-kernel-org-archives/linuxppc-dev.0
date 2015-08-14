@@ -1,44 +1,42 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
+Return-Path: <sam.bobroff@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3C1A1A0779
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 11:05:58 +1000 (AEST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB5AE1A1D32
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 11:53:30 +1000 (AEST)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 934711401CD
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:05:58 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 5E88C1401EF
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:53:30 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 14 Aug 2015 11:05:58 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B53293578056
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:05:55 +1000 (EST)
+ for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Fri, 14 Aug 2015 11:53:29 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 617A82CE8050
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:53:25 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7E15kIE39452796
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:05:54 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7E1rBRq49217678
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:53:19 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7E15Nr7021945
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:05:23 +1000
-Date: Fri, 14 Aug 2015 11:04:58 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: aik@ozlabs.ru, gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v3 2/6] powerpc/powernv: simplify the calculation of iov
- resource alignment
-Message-ID: <20150814010458.GA19889@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1439475071-7001-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1439475071-7001-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ t7E1qq86019437
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 11:52:53 +1000
+Date: Fri, 14 Aug 2015 11:52:26 +1000
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] powerpc/xmon: Allow limiting the size of the paca
+ display
+Message-ID: <20150814015225.GA2064@tungsten.ozlabs.ibm.com>
+References: <1439362653-14665-1-git-send-email-mpe@ellerman.id.au>
+ <1439380525-9986-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1439475071-7001-3-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1439380525-9986-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,50 +46,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 13, 2015 at 10:11:07PM +0800, Wei Yang wrote:
->The alignment of IOV BAR on PowerNV platform is the total size of the IOV
->BAR. No matter whether the IOV BAR is extended with number of
->roundup_pow_of_two(total_vfs) or number of max PE number (256), the total
->size could be calculated by (vfs_expanded * VF_BAR_size).
->
->This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
->first case.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->---
-> arch/powerpc/platforms/powernv/pci-ioda.c |   14 +++++++++-----
-> 1 file changed, 9 insertions(+), 5 deletions(-)
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 9ac324e..67b8f72 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -2987,12 +2987,16 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
-> 						      int resno)
-> {
-> 	struct pci_dn *pdn = pci_get_pdn(pdev);
->-	resource_size_t align, iov_align;
->-
->-	iov_align = resource_size(&pdev->resource[resno]);
->-	if (iov_align)
->-		return iov_align;
->+	resource_size_t align;
->
->+	/*
->+	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
->+	 * SR-IOV. While from hardware perspective, the range mapped by M64
->+	 * BAR should be size aligned.
->+	 *
->+	 * This function return the total IOV BAR size if expanded or just the
->+	 * individual size if not.
->+	 */
+On Wed, Aug 12, 2015 at 09:55:25PM +1000, Michael Ellerman wrote:
+> The paca display is already more than 24 lines, which can be problematic
+> if you have an old school 80x24 terminal, or more likely you are on a
+> virtual terminal which does not scroll for whatever reason.
+> 
+> We'd like to expand the paca display even more, so add a way to limit
+> the number of lines that are displayed.
+> 
+> This adds a third form of 'dp' which is 'dp # #', where the first number
+> is the cpu, and the second is the number of lines to display.
+> 
+> Example output:
+> 
+>   5:mon> dp 3 6
+>   paca for cpu 0x3 @ c00000000fe00c00:
+>    possible         = yes
+>    present          = yes
+>    online           = yes
+>    lock_token       = 0x8000            	(0xa)
+>    paca_index       = 0x3               	(0x8)
 
-s/return/returns
+Michael,
 
-> 	align = pci_iov_resource_size(pdev, resno);
-> 	if (pdn->vfs_expanded)
-> 		return pdn->vfs_expanded * align;
->-- 
->1.7.9.5
->
+This patch inspired me to do the additional work to make the output paged, more
+like the memory dump commands.
+
+I'll post it shortly as "powerpc/xmon: Paged output for paca display".
+
+Cheers,
+Sam.
