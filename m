@@ -1,44 +1,24 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5FDEA1A1D98
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 17:31:46 +1000 (AEST)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id D47F41A1D37
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 17:44:07 +1000 (AEST)
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2F9BC14016A
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 17:31:46 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 14 Aug 2015 17:31:45 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B8FDF3578055
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 17:31:43 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7E7VZHF64880668
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 17:31:43 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7E7V9xD032234
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 17:31:11 +1000
-Date: Fri, 14 Aug 2015 17:30:45 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Manoj Kumar <kumarmn@us.ibm.com>, mikey@neuling.org,
- imunsie@au1.ibm.com, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/eeh: Probe after unbalanced kref check
-Message-ID: <20150814073045.GA28724@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1439532199-12099-1-git-send-email-dja@axtens.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1439532199-12099-1-git-send-email-dja@axtens.net>
+ by ozlabs.org (Postfix) with ESMTPS id A0C541401DE
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 17:44:06 +1000 (AEST)
+Received: by pabyb7 with SMTP id yb7so54699044pab.0
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 00:44:03 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
+ imunsie@au.ibm.com, Daniel Axtens <dja@axtens.net>
+Subject: [PATCH v5 00/11] CXL EEH Handling
+Date: Fri, 14 Aug 2015 17:41:16 +1000
+Message-Id: <1439538087-32137-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,64 +28,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 14, 2015 at 04:03:19PM +1000, Daniel Axtens wrote:
->In the complete hotplug case, EEH PEs are supposed to be released
->and set to NULL. Normally, this is done by eeh_remove_device(),
->which is called from pcibios_release_device().
->
->However, if something is holding a kref to the device, it will not
->be released, and the PE will remain. eeh_add_device_late() has
->a check for this which will explictly destroy the PE in this case.
->
->This check in eeh_add_device_late() occurs after a call to
->eeh_ops->probe(). On PowerNV, probe is a pointer to pnv_eeh_probe(),
->which will exit without probing if there is an existing PE.
->
->This means that on PowerNV, devices with outstanding krefs will not
->be rediscovered by EEH correctly after a complete hotplug. This is
->affecting CXL (CAPI) devices in the field.
->
->Put the probe after the kref check so that the PE is destroyed
->and affected devices are correctly rediscovered by EEH.
->
->Fixes: d91dafc02f42 ("powerpc/eeh: Delay probing EEH device during hotplug")
->Cc: stable@vger.kernel.org
->Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
->Signed-off-by: Daniel Axtens <dja@axtens.net>
+CXL accelerators are unfortunately not immune from failure. This patch
+set enables them to particpate in the Extended Error Handling process.
 
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+This series starts with a number of preparatory patches:
 
-Thanks,
-Gavin
+ - Patch 1 is cleanup: converting macros to static inlines.
 
->---
-> arch/powerpc/kernel/eeh.c | 6 +++---
-> 1 file changed, 3 insertions(+), 3 deletions(-)
->
->diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->index af9b597b10af..8e61d717915e 100644
->--- a/arch/powerpc/kernel/eeh.c
->+++ b/arch/powerpc/kernel/eeh.c
->@@ -1116,9 +1116,6 @@ void eeh_add_device_late(struct pci_dev *dev)
-> 		return;
-> 	}
->
->-	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
->-		eeh_ops->probe(pdn, NULL);
->-
-> 	/*
-> 	 * The EEH cache might not be removed correctly because of
-> 	 * unbalanced kref to the device during unplug time, which
->@@ -1142,6 +1139,9 @@ void eeh_add_device_late(struct pci_dev *dev)
-> 		dev->dev.archdata.edev = NULL;
-> 	}
->
->+	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
->+		eeh_ops->probe(pdn, NULL);
->+
-> 	edev->pdev = dev;
-> 	dev->dev.archdata.edev = edev;
->
->-- 
->2.1.4
->
+ - Patch 2 makes sure we don't touch the hardware when it has failed.
+ 
+ - Patches 3-5 make the 'unplug' functions idempotent, so that if we
+   get part way through recovery and then fail, being completely
+   unplugged as part of removal doesn't cause us to oops out.
+
+ - Patches 6 and 7 refactor init and teardown paths for the adapter
+   and AFUs, so that they can be configured and deconfigured
+   separately from their allocation and release.
+
+ - Patch 8 stops cxl_reset from breaking EEH.
+
+Patches 9 and 10 are parts of EEH.
+
+ - Firstly we have a kernel flag that allows us to confidently assert
+   the hardware will not change (be reflashed) when it it reset. We
+   need this in order to be able to safely do EEH recovery.
+
+ - We then have the EEH support itself.
+
+Finally, we add a CONFIG_CXL_EEH symbol. This allows drivers to depend
+on the API we provide to enable CXL EEH, or to be easily backportable
+if EEH is optional.
+
+Changes from v4 are trivial:
+ - Undo the rc/if split - this will be redone in a follow-up patch.
+ - Rebase on top of mpe's next tree so as to solve some merge
+   conflicts.
+
+Changes from v3 are minor:
+ - Clarification of responsibility of CXL driver vs driver bound to
+   vPHB with regards to preventing inappropriate access of hardware
+   during recovery.
+ - Clean up unused rc in cxl_alloc_adapter, thanks David Laight.
+ - Break setting rc and testing rc into different lines, thanks mpe
+   and Cyril.
+ - If we fail to init an AFU, don't try to select the best mode.
+
+Changes from v2 are mostly minor cleanups, reflecting some review and
+further testing.
+ - Use static inlines instead of macros.
+ - Propagate PCI link state to devices on the vPHB.
+ - Various cleanup, thanks Cyril Bur.
+ - Use pci_channel_offline instead of a direct check.
+ - Don't ifdef, just provide the symbol so that drivers know that the
+   new API is available. Thanks to Cyril for patiently explaining this
+   to me about 3 times before I understood.
+
+Changes from v1:
+ - More comprehensive link down checks, including vPHB.
+ - Rebased to apply cleanly to 4.2-rc4.
+ - cxl reset changes.
+ - CONFIG_CXL_EEH symbol addition.
+ - add better vPHB support to EEH.
+
+Daniel Axtens (11):
+  cxl: Convert MMIO read/write macros to inline functions
+  cxl: Drop commands if the PCI channel is not in normal state
+  cxl: Allocate and release the SPA with the AFU
+  cxl: Make IRQ release idempotent
+  cxl: Clean up adapter MMIO unmap path.
+  cxl: Refactor adaptor init/teardown
+  cxl: Refactor AFU init/teardown
+  cxl: Don't remove AFUs/vPHBs in cxl_reset
+  cxl: Allow the kernel to trust that an image won't change on PERST.
+  cxl: EEH support
+  cxl: Add CONFIG_CXL_EEH symbol
+
+ Documentation/ABI/testing/sysfs-class-cxl |  10 +
+ drivers/misc/cxl/Kconfig                  |   6 +
+ drivers/misc/cxl/api.c                    |   7 +
+ drivers/misc/cxl/context.c                |   6 +-
+ drivers/misc/cxl/cxl.h                    |  84 ++++-
+ drivers/misc/cxl/file.c                   |  19 ++
+ drivers/misc/cxl/irq.c                    |   9 +
+ drivers/misc/cxl/native.c                 | 105 +++++-
+ drivers/misc/cxl/pci.c                    | 525 ++++++++++++++++++++++++------
+ drivers/misc/cxl/sysfs.c                  |  26 ++
+ drivers/misc/cxl/vphb.c                   |  34 ++
+ include/misc/cxl.h                        |  10 +
+ 12 files changed, 708 insertions(+), 133 deletions(-)
+
+-- 
+2.1.4
