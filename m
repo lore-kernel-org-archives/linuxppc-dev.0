@@ -1,26 +1,43 @@
-Return-Path: <dja@axtens.net>
+Return-Path: <imunsie@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D41761A1D74
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:05:59 +1000 (AEST)
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7422B1A1D47
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Aug 2015 16:13:18 +1000 (AEST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8E21F140293
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 16:05:57 +1000 (AEST)
-Received: by pacrr5 with SMTP id rr5so53452727pac.3
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Aug 2015 23:05:56 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org,
+ by ozlabs.org (Postfix) with ESMTPS id 1D80914027F
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 16:13:18 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Fri, 14 Aug 2015 16:13:16 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C6ED93578058
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 16:13:14 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7E6D1Od45482234
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 16:13:09 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7E6CfRP009551
+ for <linuxppc-dev@ozlabs.org>; Fri, 14 Aug 2015 16:12:42 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, mpe <mpe@ellerman.id.au>,
+ benh <benh@kernel.crashing.org>, cyrilbur <cyrilbur@gmail.com>,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Manoj Kumar <kumarmn@us.ibm.com>, mikey@neuling.org, imunsie@au.ibm.com,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
-Subject: [PATCH] powerpc/eeh: Probe after unbalanced kref check
-Date: Fri, 14 Aug 2015 16:03:19 +1000
-Message-Id: <1439532199-12099-1-git-send-email-dja@axtens.net>
+ Manoj Kumar <kumarmn@us.ibm.com>, mikey <mikey@neuling.org>
+Subject: Re: [PATCH v4 06/11] cxl: Refactor adaptor init/teardown
+In-reply-to: <1439439089-25151-7-git-send-email-dja@axtens.net>
+References: <1439439089-25151-1-git-send-email-dja@axtens.net>
+ <1439439089-25151-7-git-send-email-dja@axtens.net>
+Date: Fri, 14 Aug 2015 16:12:13 +1000
+Message-Id: <1439531040-sup-2913@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +47,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the complete hotplug case, EEH PEs are supposed to be released
-and set to NULL. Normally, this is done by eeh_remove_device(),
-which is called from pcibios_release_device().
+Excerpts from Daniel Axtens's message of 2015-08-13 14:11:24 +1000:
+> +/* This should contain *only* operations that can safely be done in
+> + * both creation and recovery.
+> + */
+> +static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+>  {
+> -    struct cxl *adapter;
+> -    bool free = true;
+>      int rc;
+>  
+> +    adapter->dev.parent = &dev->dev;
+> +    adapter->dev.release = cxl_release_adapter;
+> +    pci_set_drvdata(dev, adapter);
 
-However, if something is holding a kref to the device, it will not
-be released, and the PE will remain. eeh_add_device_late() has
-a check for this which will explictly destroy the PE in this case.
+These seem a bit odd here (though perfectly harmless) - not sure these
+need to be done again on recovery (but maybe I'm wrong?) - seems more
+like something that should be done early in cxl_init_adapter?
 
-This check in eeh_add_device_late() occurs after a call to
-eeh_ops->probe(). On PowerNV, probe is a pointer to pnv_eeh_probe(),
-which will exit without probing if there is an existing PE.
+> -    if ((rc = cxl_update_image_control(adapter)))
+> -        goto err2;
+> +    rc = cxl_update_image_control(adapter);
+> +    if (rc)
 
-This means that on PowerNV, devices with outstanding krefs will not
-be rediscovered by EEH correctly after a complete hotplug. This is
-affecting CXL (CAPI) devices in the field.
+These types of coding style changes should really be in a separate patch
+to make it easier to see exactly how you have changed the init path in
+this one. I know mpe wanted these changed and after looking at the diff
+pretty carefully I realise that you haven't actually changed much
+functionally so I'll let this pass, but if you happen to do another
+respin please move the style changes into a separate patch.
 
-Put the probe after the kref check so that the PE is destroyed
-and affected devices are correctly rediscovered by EEH.
-
-Fixes: d91dafc02f42 ("powerpc/eeh: Delay probing EEH device during hotplug")
-Cc: stable@vger.kernel.org
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/kernel/eeh.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index af9b597b10af..8e61d717915e 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1116,9 +1116,6 @@ void eeh_add_device_late(struct pci_dev *dev)
- 		return;
- 	}
- 
--	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
--		eeh_ops->probe(pdn, NULL);
--
- 	/*
- 	 * The EEH cache might not be removed correctly because of
- 	 * unbalanced kref to the device during unplug time, which
-@@ -1142,6 +1139,9 @@ void eeh_add_device_late(struct pci_dev *dev)
- 		dev->dev.archdata.edev = NULL;
- 	}
- 
-+	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
-+		eeh_ops->probe(pdn, NULL);
-+
- 	edev->pdev = dev;
- 	dev->dev.archdata.edev = edev;
- 
--- 
-2.1.4
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
