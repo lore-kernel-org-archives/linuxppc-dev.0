@@ -3,8 +3,8 @@ Received: from na01-bn1-obe.outbound.protection.outlook.com
  (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE0561A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 16:42:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE5381A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 16:42:05 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: Mike Turquette <mturquette@linaro.org>, Tang Yuantian
  <Yuantian.Tang@freescale.com>
@@ -13,10 +13,9 @@ CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liberman Igal-B31950
  <madalin.bucur@freescale.com>, <linux-clk@vger.kernel.org>,
  <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <devicetree@vger.kernel.org>, Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v2 1/5] cpufreq: qoriq: Don't look at clock implementation
- details
-Date: Sat, 15 Aug 2015 01:41:18 -0500
-Message-ID: <1439620882-20449-2-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v2 2/5] powerpc/fsl: Move fsl_guts.h out of arch/powerpc
+Date: Sat, 15 Aug 2015 01:41:19 -0500
+Message-ID: <1439620882-20449-3-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1439620882-20449-1-git-send-email-scottwood@freescale.com>
 References: <1439620882-20449-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -30,135 +29,260 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Get the CPU clock's potential parent clocks from the clock interface
-itself, rather than manually parsing the clocks property to find a
-phandle, looking at the clock-names property of that, and assuming that
-those are valid parent clocks for the cpu clock.
-
-This is necessary for cpufreq to continue working once the clocks
-are generated based on the clock driver's knowledge of the chip
-rather than a fragile device-tree description of the mux options.
+Freescale's Layerscape ARM chips use the same structure.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
 v2: non-RFC
 
- drivers/cpufreq/qoriq-cpufreq.c | 47 ++++++++++++++++-------------------------
- 1 file changed, 18 insertions(+), 29 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c                       | 2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c                       | 2 +-
+ arch/powerpc/platforms/85xx/p1022_ds.c                          | 2 +-
+ arch/powerpc/platforms/85xx/p1022_rdk.c                         | 2 +-
+ arch/powerpc/platforms/85xx/smp.c                               | 2 +-
+ arch/powerpc/platforms/85xx/twr_p102x.c                         | 2 +-
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c                      | 2 +-
+ drivers/iommu/fsl_pamu.c                                        | 2 +-
+ arch/powerpc/include/asm/fsl_guts.h => include/linux/fsl/guts.h | 6 ++----
+ sound/soc/fsl/mpc8610_hpcd.c                                    | 2 +-
+ sound/soc/fsl/p1022_ds.c                                        | 2 +-
+ sound/soc/fsl/p1022_rdk.c                                       | 2 +-
+ 12 files changed, 13 insertions(+), 15 deletions(-)
+ rename arch/powerpc/include/asm/fsl_guts.h => include/linux/fsl/guts.h (98%)
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 358f075..32ab99e 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -11,6 +11,7 @@
- #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index a392e94..f0be439 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -34,6 +34,7 @@
+ #include <linux/of_device.h>
+ #include <linux/phy.h>
+ #include <linux/memblock.h>
++#include <linux/fsl/guts.h>
  
- #include <linux/clk.h>
-+#include <linux/clk-provider.h>
- #include <linux/cpufreq.h>
- #include <linux/errno.h>
+ #include <linux/atomic.h>
+ #include <asm/time.h>
+@@ -51,7 +52,6 @@
+ #include <asm/qe_ic.h>
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
+-#include <asm/fsl_guts.h>
+ #include "smp.h"
+ 
+ #include "mpc85xx.h"
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index e358bed..50dcc00 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -17,6 +17,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/interrupt.h>
+ #include <linux/of_platform.h>
++#include <linux/fsl/guts.h>
+ 
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -27,7 +28,6 @@
+ #include <asm/mpic.h>
+ #include <asm/qe.h>
+ #include <asm/qe_ic.h>
+-#include <asm/fsl_guts.h>
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index 6ac986d3..371df82 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -16,6 +16,7 @@
+  * kind, whether express or implied.
+  */
+ 
++#include <linux/fsl/guts.h>
+ #include <linux/pci.h>
+ #include <linux/of_platform.h>
+ #include <asm/div64.h>
+@@ -25,7 +26,6 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ #include <asm/udbg.h>
+-#include <asm/fsl_guts.h>
+ #include <asm/fsl_lbc.h>
+ #include "smp.h"
+ 
+diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
+index 680232d..5087bec 100644
+--- a/arch/powerpc/platforms/85xx/p1022_rdk.c
++++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
+@@ -12,6 +12,7 @@
+  * kind, whether express or implied.
+  */
+ 
++#include <linux/fsl/guts.h>
+ #include <linux/pci.h>
+ #include <linux/of_platform.h>
+ #include <asm/div64.h>
+@@ -21,7 +22,6 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ #include <asm/udbg.h>
+-#include <asm/fsl_guts.h>
+ #include "smp.h"
+ 
+ #include "mpc85xx.h"
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index b8b8216..6ac7786 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -19,6 +19,7 @@
+ #include <linux/kexec.h>
+ #include <linux/highmem.h>
+ #include <linux/cpu.h>
++#include <linux/fsl/guts.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/pgtable.h>
+@@ -26,7 +27,6 @@
+ #include <asm/mpic.h>
+ #include <asm/cacheflush.h>
+ #include <asm/dbell.h>
+-#include <asm/fsl_guts.h>
+ #include <asm/code-patching.h>
+ #include <asm/cputhreads.h>
+ 
+diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
+index 30e002f..892e613 100644
+--- a/arch/powerpc/platforms/85xx/twr_p102x.c
++++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+@@ -15,6 +15,7 @@
+ #include <linux/kernel.h>
  #include <linux/init.h>
-@@ -99,9 +100,10 @@ static u32 get_bus_freq(void)
- 	return sysfreq;
- }
+ #include <linux/errno.h>
++#include <linux/fsl/guts.h>
+ #include <linux/pci.h>
+ #include <linux/of_platform.h>
  
--static struct device_node *cpu_to_clk_node(int cpu)
-+static struct clk *cpu_to_clk(int cpu)
- {
--	struct device_node *np, *clk_np;
-+	struct device_node *np;
-+	struct clk *clk;
+@@ -23,7 +24,6 @@
+ #include <asm/mpic.h>
+ #include <asm/qe.h>
+ #include <asm/qe_ic.h>
+-#include <asm/fsl_guts.h>
  
- 	if (!cpu_present(cpu))
- 		return NULL;
-@@ -110,37 +112,32 @@ static struct device_node *cpu_to_clk_node(int cpu)
- 	if (!np)
- 		return NULL;
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 55413a5..437a9c3 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -24,6 +24,7 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ #include <linux/of.h>
++#include <linux/fsl/guts.h>
  
--	clk_np = of_parse_phandle(np, "clocks", 0);
--	if (!clk_np)
--		return NULL;
--
-+	clk = of_clk_get(np, 0);
- 	of_node_put(np);
--
--	return clk_np;
-+	return clk;
- }
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -38,7 +39,6 @@
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/simple_gpio.h>
+-#include <asm/fsl_guts.h>
  
- /* traverse cpu nodes to get cpu mask of sharing clock wire */
- static void set_affected_cpus(struct cpufreq_policy *policy)
- {
--	struct device_node *np, *clk_np;
- 	struct cpumask *dstp = policy->cpus;
-+	struct clk *clk;
-+	const char *ourname, *theirname;
- 	int i;
+ #include "mpc86xx.h"
  
--	np = cpu_to_clk_node(policy->cpu);
--	if (!np)
--		return;
-+	ourname = __clk_get_name(policy->clk);
+diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
+index abeedc9..24705c2 100644
+--- a/drivers/iommu/fsl_pamu.c
++++ b/drivers/iommu/fsl_pamu.c
+@@ -20,11 +20,11 @@
  
- 	for_each_present_cpu(i) {
--		clk_np = cpu_to_clk_node(i);
--		if (!clk_np)
-+		clk = cpu_to_clk(i);
-+		if (IS_ERR(clk)) {
-+			pr_err("%s: no clock for cpu %d\n", __func__, i);
- 			continue;
-+		}
+ #include "fsl_pamu.h"
  
--		if (clk_np == np)
-+		theirname = __clk_get_name(clk);
-+		if (!strcmp(ourname, theirname))
- 			cpumask_set_cpu(i, dstp);
--
--		of_node_put(clk_np);
- 	}
--	of_node_put(np);
- }
++#include <linux/fsl/guts.h>
+ #include <linux/interrupt.h>
+ #include <linux/genalloc.h>
  
- /* reduce the duplicated frequencies in frequency table */
-@@ -219,17 +216,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_nomem2;
- 	}
+ #include <asm/mpc85xx.h>
+-#include <asm/fsl_guts.h>
  
--	pnode = of_parse_phandle(np, "clocks", 0);
--	if (!pnode) {
--		pr_err("%s: could not get clock information\n", __func__);
--		goto err_nomem2;
--	}
-+	count = __clk_get_num_parents(policy->clk);
+ /* define indexes for each operation mapping scenario */
+ #define OMI_QMAN        0x00
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/include/linux/fsl/guts.h
+similarity index 98%
+rename from arch/powerpc/include/asm/fsl_guts.h
+rename to include/linux/fsl/guts.h
+index 43b6bb1..3acf613 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/include/linux/fsl/guts.h
+@@ -12,9 +12,8 @@
+  * option) any later version.
+  */
  
--	count = of_property_count_strings(pnode, "clock-names");
- 	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
- 	if (!data->pclk) {
- 		pr_err("%s: no memory\n", __func__);
--		goto err_node;
-+		goto err_nomem2;
- 	}
+-#ifndef __ASM_POWERPC_FSL_GUTS_H__
+-#define __ASM_POWERPC_FSL_GUTS_H__
+-#ifdef __KERNEL__
++#ifndef __FSL_GUTS_H__
++#define __FSL_GUTS_H__
  
- 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
-@@ -244,7 +236,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		mask = 0x0;
+ /**
+  * Global Utility Registers.
+@@ -189,4 +188,3 @@ static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
+ #endif
  
- 	for (i = 0; i < count; i++) {
--		clk = of_clk_get(pnode, i);
-+		clk = clk_get_parent_by_index(policy->clk, i);
- 		data->pclk[i] = clk;
- 		freq = clk_get_rate(clk);
- 		/*
-@@ -288,10 +280,7 @@ err_nomem1:
- 	kfree(table);
- err_pclk:
- 	kfree(data->pclk);
--err_node:
--	of_node_put(pnode);
- err_nomem2:
--	policy->driver_data = NULL;
- 	kfree(data);
- err_np:
- 	of_node_put(np);
+ #endif
+-#endif
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index 9621b91..6f236f1 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -12,11 +12,11 @@
+ 
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
++#include <linux/fsl/guts.h>
+ #include <linux/of_address.h>
+ #include <linux/of_device.h>
+ #include <linux/slab.h>
+ #include <sound/soc.h>
+-#include <asm/fsl_guts.h>
+ 
+ #include "fsl_dma.h"
+ #include "fsl_ssi.h"
+diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
+index 71c1a7d..747aab0 100644
+--- a/sound/soc/fsl/p1022_ds.c
++++ b/sound/soc/fsl/p1022_ds.c
+@@ -11,12 +11,12 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/fsl/guts.h>
+ #include <linux/interrupt.h>
+ #include <linux/of_address.h>
+ #include <linux/of_device.h>
+ #include <linux/slab.h>
+ #include <sound/soc.h>
+-#include <asm/fsl_guts.h>
+ 
+ #include "fsl_dma.h"
+ #include "fsl_ssi.h"
+diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
+index ee29048..1dd49e5 100644
+--- a/sound/soc/fsl/p1022_rdk.c
++++ b/sound/soc/fsl/p1022_rdk.c
+@@ -18,12 +18,12 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/fsl/guts.h>
+ #include <linux/interrupt.h>
+ #include <linux/of_address.h>
+ #include <linux/of_device.h>
+ #include <linux/slab.h>
+ #include <sound/soc.h>
+-#include <asm/fsl_guts.h>
+ 
+ #include "fsl_dma.h"
+ #include "fsl_ssi.h"
 -- 
 2.1.4
