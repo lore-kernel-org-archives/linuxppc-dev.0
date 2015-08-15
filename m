@@ -1,27 +1,48 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0123.outbound.protection.outlook.com [207.46.100.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA1981A1E58
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 16:43:50 +1000 (AEST)
-Message-ID: <1439621017.15601.23.camel@freescale.com>
-Subject: Re: [RFC PATCH 0/8] clk: qoriq: Move chip-specific knowledge into
- driver
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Turquette <mturquette@linaro.org>
-CC: Tang Yuantian <Yuantian.Tang@freescale.com>, "Rafael J. Wysocki"
- <rjw@rjwysocki.net>, Liberman Igal-B31950 <Igal.Liberman@freescale.com>,
- Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>,
- <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
- <devicetree@vger.kernel.org>
-Date: Sat, 15 Aug 2015 01:43:37 -0500
-In-Reply-To: <20150811182535.31346.52965@quantum>
-References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
- <20150811182535.31346.52965@quantum>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 595381A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 19:11:58 +1000 (AEST)
+Date: Sat, 15 Aug 2015 11:11:54 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
+ Jonathan Corbet <corbet@lwn.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Matthew Wilcox <willy@linux.intel.com>,
+ Jeff Layton <jlayton@primarydata.com>, Christoph Hellwig <hch@lst.de>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Omar Sandoval <osandov@osandov.com>, Boaz Harrosh <boaz@plexistor.com>,
+ Miklos Szeredi <mszeredi@suse.cz>, Jan Kara <jack@suse.cz>,
+ Wolfram Sang <wsa@the-dreams.de>,
+ Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Ameen Ali <ameenali023@gmail.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ Sagi Grimberg <sagig@mellanox.com>,
+ Mike Snitzer <snitzer@redhat.com>, Tejun Heo <tj@kernel.org>,
+ Shaohua Li <shli@fb.com>, Ming Lei <ming.lei@canonical.com>,
+ linux-doc@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-s390@vger.kernel.org, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ Dave Chinner <david@fromorbit.com>
+Subject: Re: [PATCH v2 7/7] pmem, dax: have direct_access use __pmem annotation
+Message-ID: <20150815091154.GA21290@lst.de>
+References: <1439484671-15718-1-git-send-email-ross.zwisler@linux.intel.com>
+ <1439484671-15718-8-git-send-email-ross.zwisler@linux.intel.com>
+ <CAPcyv4j=h1FULCnmLbwNv6E0ySyZNKniM3GZEnNCpGeiqCb+Kg@mail.gmail.com>
+ <1439571318.16263.3.camel@linux.intel.com>
+ <CAPcyv4gBwa=ud7FZcAK=uq8F-9RVdZNf+-=ROB0K7G3SkiP1FQ@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAPcyv4gBwa=ud7FZcAK=uq8F-9RVdZNf+-=ROB0K7G3SkiP1FQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +52,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-11 at 11:25 -0700, Michael Turquette wrote:
-> Hi Scott,
+On Fri, Aug 14, 2015 at 09:58:16AM -0700, Dan Williams wrote:
+> > I'll merge with your code for v3.
 > 
-> Quoting Scott Wood (2015-06-18 19:49:10)
-> > The existing device tree bindings are error-prone and inflexible. 
-> > Correct the mistake by moving the knowledge into the driver, which
-> > has more flexibility in describing the quirks of each chip.  This leaves
-> > the device tree to its proper role of identifying a programming interface
-> > rather than describing its individual registers.
-> 
-> Sorry for not responding to this one sooner. Fell through the cracks.
-> 
-> All of the changes to drives/clk/clk-qoriq.c look great to me. I assume
-> you need to keep all of these patches together and want to the take
-> through the freescale tree? If so feel free to add,
-> 
-> Acked-by: Michael Turquette <mturquette@baylibre.com>
+> Sounds, let me go rebase the __pfn_t patches on -mm so we'all lined up
+> and collision free.
 
-I just sent a non-RFC v2, with improved compatibility with old device trees 
-(especially ls1021a).  It depends on the cpufreq patch though (at least, to 
-avoid breaking qoriq-cpufreq until that patch is merged), so I'll also need 
-an ack from Rafael for that if I'm taking it through my tree.
+I'm doubt that we'll have PFN mapping ready for 4.3.  I'd rather see
+Ross series goes first, and move the patch to remove the size argument
+from ->direct access [1] over to this series as well.
 
--Scott
+[1] https://git.kernel.org/cgit/linux/kernel/git/djbw/nvdimm.git/commit/?h=pfn&id=8e15e69fb9e61ac563c5a7ffd9dd9a7b545cced3
