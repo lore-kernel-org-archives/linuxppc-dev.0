@@ -1,19 +1,22 @@
 Return-Path: <dan.j.williams@intel.com>
-Received: from mail-io0-f176.google.com (mail-io0-f176.google.com
- [209.85.223.176])
+Received: from mail-ig0-f177.google.com (mail-ig0-f177.google.com
+ [209.85.213.177])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 989821A0034
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2015 01:44:30 +1000 (AEST)
-Received: by iodb91 with SMTP id b91so111634328iod.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 08:44:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C38CE1A009B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2015 01:49:16 +1000 (AEST)
+Received: by igui7 with SMTP id i7so29848896igu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 08:49:14 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20150815091950.GA21487@lst.de>
+In-Reply-To: <20150815091154.GA21290@lst.de>
 References: <1439484671-15718-1-git-send-email-ross.zwisler@linux.intel.com>
  <1439484671-15718-8-git-send-email-ross.zwisler@linux.intel.com>
- <20150815091950.GA21487@lst.de>
-Date: Sat, 15 Aug 2015 08:44:27 -0700
-Message-ID: <CAPcyv4gHatJxtJ_Utc07L-EiX0f=SnkEoAVsB9PNDhtwmxrobQ@mail.gmail.com>
+ <CAPcyv4j=h1FULCnmLbwNv6E0ySyZNKniM3GZEnNCpGeiqCb+Kg@mail.gmail.com>
+ <1439571318.16263.3.camel@linux.intel.com>
+ <CAPcyv4gBwa=ud7FZcAK=uq8F-9RVdZNf+-=ROB0K7G3SkiP1FQ@mail.gmail.com>
+ <20150815091154.GA21290@lst.de>
+Date: Sat, 15 Aug 2015 08:49:14 -0700
+Message-ID: <CAPcyv4hKsew+pNS+2i9rvfR+JCsXcKFURaQ2Cf3t5HZoTWWsvg@mail.gmail.com>
 Subject: Re: [PATCH v2 7/7] pmem, dax: have direct_access use __pmem annotation
 From: Dan Williams <dan.j.williams@intel.com>
 To: Christoph Hellwig <hch@lst.de>
@@ -53,29 +56,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 15, 2015 at 2:19 AM, Christoph Hellwig <hch@lst.de> wrote:
-> On Thu, Aug 13, 2015 at 10:51:11AM -0600, Ross Zwisler wrote:
->> Update the annotation for the kaddr pointer returned by direct_access()
->> so that it is a __pmem pointer.  This is consistent with the PMEM driver
->> and with how this direct_access() pointer is used in the DAX code.
+On Sat, Aug 15, 2015 at 2:11 AM, Christoph Hellwig <hch@lst.de> wrote:
+> On Fri, Aug 14, 2015 at 09:58:16AM -0700, Dan Williams wrote:
+>> > I'll merge with your code for v3.
+>>
+>> Sounds, let me go rebase the __pfn_t patches on -mm so we'all lined up
+>> and collision free.
 >
-> IFF we stick to the __pmem annotations this looks good.
+> I'm doubt that we'll have PFN mapping ready for 4.3.  I'd rather see
+> Ross series goes first, and move the patch to remove the size argument
+> from ->direct access [1] over to this series as well.
 >
-> That beeing said I start to really dislike them.  We don't special
-> accesors to read/write from pmem, we just need to explicitly commit
-> it if we want to make it persistent.  So I really don't see the need
-> to treat it special and require all the force casts to and from the
-> attribute.
+> [1] https://git.kernel.org/cgit/linux/kernel/git/djbw/nvdimm.git/commit/?h=pfn&id=8e15e69fb9e61ac563c5a7ffd9dd9a7b545cced3
 
-I'm not going to put up much of a fight if it's really getting in the way....
-
-That said, while we don't need special accessors we do need guarantees
-that anything that has written to a persistent memory address has done
-so in a way that wmb_pmem() is able to flush it.  It's more of a "I've
-audited this code path for wmb_pmem() compatibility so use this api to
-write to pmem."
-
-Perhaps a better way to statically check for missed flushes might be
-to have acquire_pmem_for_write() + release() annotations and the final
-release does a wmb_pmem(), but as far as I can tell the sparse
-acquire/release annotations don't stack.
+Yes, let's do it.  The need for DAX persistence guarantees is a higher
+priority than solving the DAX vs PMEM unbind bug.  Especially if we
+can defer __pfn_t and get some basic struct page mapping into 4.3 as
+well.
