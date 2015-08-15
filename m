@@ -1,51 +1,46 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-io0-f172.google.com (mail-io0-f172.google.com
- [209.85.223.172])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 573AB1A009B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2015 04:05:28 +1000 (AEST)
-Received: by iodt126 with SMTP id t126so114378638iod.2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Aug 2015 11:05:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6FDFB1A0037
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2015 09:29:26 +1000 (AEST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 44EFC14012C
+ for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2015 09:29:25 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Sun, 16 Aug 2015 09:29:24 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4D7CF2CE8052
+ for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2015 09:29:20 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7FNT5XA52363330
+ for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2015 09:29:14 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7FNSlVH008727
+ for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2015 09:28:47 +1000
+Date: Sun, 16 Aug 2015 09:28:22 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3 6/6] powerpc/powernv: allocate sparse PE# when using
+ M64 BAR in Single PE mode
+Message-ID: <20150815232822.GA6225@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1439475071-7001-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1439475071-7001-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150814010300.GC18334@gwshan> <55CF142A.5090208@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20150815160055.GB26248@lst.de>
-References: <1439484671-15718-1-git-send-email-ross.zwisler@linux.intel.com>
- <1439484671-15718-8-git-send-email-ross.zwisler@linux.intel.com>
- <20150815091950.GA21487@lst.de>
- <CAPcyv4gHatJxtJ_Utc07L-EiX0f=SnkEoAVsB9PNDhtwmxrobQ@mail.gmail.com>
- <20150815160055.GB26248@lst.de>
-Date: Sat, 15 Aug 2015 11:05:26 -0700
-Message-ID: <CAPcyv4gp8bnQpMn1yAVJpu3ZtEtBjmyZrO2SW9OhRJj92y0w1w@mail.gmail.com>
-Subject: Re: [PATCH v2 7/7] pmem, dax: have direct_access use __pmem annotation
-From: Dan Williams <dan.j.williams@intel.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Jonathan Corbet <corbet@lwn.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe <axboe@kernel.dk>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Matthew Wilcox <willy@linux.intel.com>,
- Jeff Layton <jlayton@primarydata.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Omar Sandoval <osandov@osandov.com>, Boaz Harrosh <boaz@plexistor.com>,
- Miklos Szeredi <mszeredi@suse.cz>, Jan Kara <jack@suse.cz>,
- Wolfram Sang <wsa@the-dreams.de>,
- =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>, Ameen Ali <ameenali023@gmail.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Sagi Grimberg <sagig@mellanox.com>,
- Mike Snitzer <snitzer@redhat.com>, Tejun Heo <tj@kernel.org>,
- Shaohua Li <shli@fb.com>,
- Ming Lei <ming.lei@canonical.com>, linux-doc@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org,
- linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- Dave Chinner <david@fromorbit.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <55CF142A.5090208@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,22 +50,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 15, 2015 at 9:00 AM, Christoph Hellwig <hch@lst.de> wrote:
-> On Sat, Aug 15, 2015 at 08:44:27AM -0700, Dan Williams wrote:
->> That said, while we don't need special accessors we do need guarantees
->> that anything that has written to a persistent memory address has done
->> so in a way that wmb_pmem() is able to flush it.  It's more of a "I've
->> audited this code path for wmb_pmem() compatibility so use this api to
->> write to pmem."
+On Sat, Aug 15, 2015 at 08:27:54PM +1000, Alexey Kardashevskiy wrote:
+>On 08/14/2015 11:03 AM, Gavin Shan wrote:
+>>On Thu, Aug 13, 2015 at 10:11:11PM +0800, Wei Yang wrote:
+>>>When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
+>>>sparse.
+>>>
+>>>This patch restructures the patch to allocate sparse PE# for VFs when M64
+>>>BAR is set to Single PE mode.
+>>>
+>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>---
+>>>arch/powerpc/include/asm/pci-bridge.h     |    2 +-
+>>>arch/powerpc/platforms/powernv/pci-ioda.c |   59 +++++++++++++++++++----------
+>>>2 files changed, 41 insertions(+), 20 deletions(-)
+>>>
+>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>>index 9d33ada..b026ef8 100644
+>>>--- a/arch/powerpc/include/asm/pci-bridge.h
+>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>>>@@ -214,7 +214,7 @@ struct pci_dn {
+>>>#ifdef CONFIG_PCI_IOV
+>>>	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>>>	u16     num_vfs;		/* number of VFs enabled*/
+>>>-	int     offset;			/* PE# for the first VF PE */
+>>>+	int     pe_num_map[MAX_M64_BAR];/* PE# for the first VF PE or array */
+>>
+>>Same question as to "m64_map". pdn for non-PF doesn't need it.
 >
-> I'm more worried about things where don't just do plain loads and stores
-> to a pmem region but DMA, which will end up as a nightmare of casts.
 >
-> But we can wait and see how that evolves in the end..
+>non-PF is VF, right?
+>
 
-It's already not possible to do something like dma_map_single() on an
-ioremap()'d address, so there currently are't any __iomem/DMA
-collisions.  As long as DMA setup is relative to a physical address
-resource I think we're ok.
+3 types of devices: (A) PF (B) VF (C) All others. Here, I mean (C).
 
-Making sure a DMA is both complete and persistent though is a different problem.
+Thanks,
+Gavin
