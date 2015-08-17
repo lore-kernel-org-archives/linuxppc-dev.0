@@ -1,40 +1,23 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBB991A2B69
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 15:48:59 +1000 (AEST)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BD1611402B1
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Aug 2015 15:48:59 +1000 (AEST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 17 Aug 2015 15:48:58 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8096A3578047
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Aug 2015 15:48:56 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7H5mgFm66322588
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Aug 2015 15:48:50 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7H5mNdm030036
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Aug 2015 15:48:24 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, mikey <mikey@neuling.org>
-Subject: Re: [PATCH v5 11/11] cxl: Add CONFIG_CXL_EEH symbol
-In-reply-to: <1439538087-32137-12-git-send-email-dja@axtens.net>
-References: <1439538087-32137-1-git-send-email-dja@axtens.net>
- <1439538087-32137-12-git-send-email-dja@axtens.net>
-Date: Mon, 17 Aug 2015 15:47:55 +1000
-Message-Id: <1439790469-sup-4908@delenn.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E709A1A1D73
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 15:50:42 +1000 (AEST)
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+To: Wang Dongsheng <Dongsheng.Wang@freescale.com>, Scott Wood
+ <scottwood@freescale.com>
+CC: Priyanka Jain <Priyanka.Jain@freescale.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v2 1/2] powerpc/85xx: Add binding for SCFG
+Date: Mon, 17 Aug 2015 05:50:35 +0000
+Message-ID: <SN1PR0301MB16165146428CF6A8C48FF1B29D790@SN1PR0301MB1616.namprd03.prod.outlook.com>
+References: <1439521930-28191-1-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1439521930-28191-1-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,4 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+Hi Scott,
+
+Could you apply the patches?
+
+Regards,
+-Dongsheng
+
+> -----Original Message-----
+> From: Dongsheng Wang [mailto:dongsheng.wang@freescale.com]
+> Sent: Friday, August 14, 2015 11:12 AM
+> To: Wood Scott-B07421
+> Cc: Jain Priyanka-B32167; devicetree@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; Wang Dongsheng-B40534
+> Subject: [PATCH v2 1/2] powerpc/85xx: Add binding for SCFG
+>=20
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>=20
+> SCFG provides SoC specific configuration and status registers for
+> the chip. Add this for powerpc platform.
+>=20
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ---
+> *V2*
+> - Remove scfg description in board.txt and create scfg.txt for scfg.
+> - Change "fsl,<board>-scfg" to "fsl,<chip>-scfg"
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/scfg.txt
+> b/Documentation/devicetree/bindings/powerpc/fsl/scfg.txt
+> new file mode 100644
+> index 0000000..0532c46
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/scfg.txt
+> @@ -0,0 +1,18 @@
+> +Freescale Supplement configuration unit (SCFG)
+> +
+> +SCFG is the supplemental configuration unit, that provides SoC specific
+> +configuration and status registers for the chip. Such as getting PEX por=
+t
+> +status.
+> +
+> +Required properties:
+> +
+> +- compatible: should be "fsl,<chip>-scfg"
+> +- reg: should contain base address and length of SCFG memory-mapped
+> +registers
+> +
+> +Example:
+> +
+> +	scfg: global-utilities@fc000 {
+> +		compatible =3D "fsl,t1040-scfg";
+> +		reg =3D <0xfc000 0x1000>;
+> +	};
+> --
+> 2.1.0.27.g96db324
