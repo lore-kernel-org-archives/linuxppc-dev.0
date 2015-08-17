@@ -1,18 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ACAB1A1DDA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 18:03:32 +1000 (AEST)
-In-Reply-To: <1439532199-12099-1-git-send-email-dja@axtens.net>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- imunsie@au.ibm.com, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Manoj Kumar <kumarmn@us.ibm.com>, Daniel Axtens <dja@axtens.net>
-Subject: Re: powerpc/eeh: Probe after unbalanced kref check
-Message-Id: <20150817080331.ED70D1402B6@ozlabs.org>
-Date: Mon, 17 Aug 2015 18:03:31 +1000 (AEST)
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id BF40C1A2351
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 18:05:26 +1000 (AEST)
+Date: Mon, 17 Aug 2015 18:04:59 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-m68k <linux-m68k@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [RFC v5 00/26] Re-use nvram module
+In-Reply-To: <CAMuHMdWUQsSG8cZmKX8tHMN1=87Og-xboAFzhP1vWyQF+A3_eg@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1508171756180.626@nippy.intranet>
+References: <20150725074559.543547894@telegraphics.com.au>
+ <CAMuHMdWUQsSG8cZmKX8tHMN1=87Og-xboAFzhP1vWyQF+A3_eg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,34 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-14-08 at 06:03:19 UTC, Daniel Axtens wrote:
-> In the complete hotplug case, EEH PEs are supposed to be released
-> and set to NULL. Normally, this is done by eeh_remove_device(),
-> which is called from pcibios_release_device().
-> 
-> However, if something is holding a kref to the device, it will not
-> be released, and the PE will remain. eeh_add_device_late() has
-> a check for this which will explictly destroy the PE in this case.
-> 
-> This check in eeh_add_device_late() occurs after a call to
-> eeh_ops->probe(). On PowerNV, probe is a pointer to pnv_eeh_probe(),
-> which will exit without probing if there is an existing PE.
-> 
-> This means that on PowerNV, devices with outstanding krefs will not
-> be rediscovered by EEH correctly after a complete hotplug. This is
-> affecting CXL (CAPI) devices in the field.
-> 
-> Put the probe after the kref check so that the PE is destroyed
-> and affected devices are correctly rediscovered by EEH.
-> 
-> Fixes: d91dafc02f42 ("powerpc/eeh: Delay probing EEH device during hotplug")
-> Cc: stable@vger.kernel.org
-> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Applied to powerpc next, thanks.
+On Sun, 16 Aug 2015, Geert Uytterhoeven wrote:
 
-https://git.kernel.org/powerpc/c/e642d11bdbfe8eb10116
+> Hi Finn,
+> 
+> On Sat, Jul 25, 2015 at 9:45 AM, Finn Thain <fthain@telegraphics.com.au> 
+> wrote:
+> > The generic NVRAM module, drivers/char/generic_nvram, implements a 
+> > /dev/nvram misc device. It is used only by 32-bit PowerPC platforms 
+> > and isn't generic enough to be more widely used.
+> 
+> [...]
+> 
+> Thanks!
+> 
+> You can add my
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> to patches 03, 04, 11, 19, 23, 24, 25, 26.
 
-cheers
+Thanks for reviewing.
+
+> 
+> BTW, checkpatch reported a few newly-introduced whitespace errors in 
+> patches 03, 05, 16, 24, and 25.
+
+I will check again, but I'm sure those are all deliberate. I examined all 
+the "errors" and "warnings" before submitting.
+
+checkpatch doesn't really understand the difference between whitespace 
+used for indentation of statements (according to scope) and whitespace 
+used for alignment of terms or parameters (when line-wrapped). Any tool 
+that fails to make that distinction can't be depended upon to correctly 
+validate the elisp in Documentation/CodingStyle, for example.
+
+-- 
+
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
