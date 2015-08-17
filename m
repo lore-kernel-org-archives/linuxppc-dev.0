@@ -1,31 +1,19 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D6F2B1A0372
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 14:23:35 +1000 (AEST)
-Received: from mail-pd0-x22f.google.com (mail-pd0-x22f.google.com
- [IPv6:2607:f8b0:400e:c02::22f])
+Return-Path: <ranshalit@gmail.com>
+Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
+ [IPv6:2607:f8b0:4001:c05::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A61861402B4
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Aug 2015 14:23:33 +1000 (AEST)
-Received: by pdrg1 with SMTP id g1so51308159pdr.2
- for <linuxppc-dev@ozlabs.org>; Sun, 16 Aug 2015 21:23:31 -0700 (PDT)
-Message-ID: <1439785260.29526.50.camel@axtens.net>
-Subject: Re: [PATCH v5 11/11] cxl: Add CONFIG_CXL_EEH symbol
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org, mikey@neuling.org,
- imunsie@au.ibm.com
-Date: Mon, 17 Aug 2015 14:21:00 +1000
-In-Reply-To: <1439783558.14494.2.camel@ellerman.id.au>
-References: <1439538087-32137-1-git-send-email-dja@axtens.net>
- <1439538087-32137-12-git-send-email-dja@axtens.net>
- <1439783558.14494.2.camel@ellerman.id.au>
-Content-Type: multipart/signed; micalg="pgp-sha512";
- protocol="application/pgp-signature"; boundary="=-yZmZ7ke4oE7VJH2PiT04"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D22FB1A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 15:24:11 +1000 (AEST)
+Received: by igbjg10 with SMTP id jg10so47835787igb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Aug 2015 22:24:09 -0700 (PDT)
+MIME-Version: 1.0
+Date: Mon, 17 Aug 2015 08:24:09 +0300
+Message-ID: <CAJ2oMhJWVxnr4OPnMdFdYPYgpwh3Nxm4S13XXXV4GCpqP4YmTg@mail.gmail.com>
+Subject: IRQ handler is not called with external IRQ
+From: Ran Shalit <ranshalit@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,57 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---=-yZmZ7ke4oE7VJH2PiT04
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi Michael,
-
-> I'd rather we didn't have select EEH here, instead ..
->=20
-> >  config CXL
-> >  	tristate "Support for IBM Coherent Accelerators (CXL)"
-> >  	depends on PPC_POWERNV && PCI_MSI
->=20
-> It should be a dependency here.
->=20
-> In practice it won't make any difference with the current way the options=
- are
-> defined, but I think it's the right way to do it.
->=20
-> I'm happy to fix it up if you're OK with it.
->=20
-
-That's sounds fine to me. Thanks heaps!
+Hello,
 
 
---=20
-Regards,
-Daniel
+I have strange behaviour with external IRQ:
+The registration on external IRQ is successful, but on simulating
+interrupt the interrupt handler called.
+It seems that the interrupt was received according to SEPNR which
+shows that IRQ #2 interrupt is pending, but the handler was not
+called.
 
---=-yZmZ7ke4oE7VJH2PiT04
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+These are the steps I done:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
+1. in DTS (using all external IRQ #2):
 
-iQIcBAABCgAGBQJV0WEtAAoJEPC3R3P2I92FgQEP/1pioYF0uY+d1zRyO5/2RroD
-QMNxGFLvc0TePNg07mkh4u45UC3fM7W+st0+LRSXS/bUZ7g3pyfl5zgba9HKEvRm
-jrIYibi0BpkMhVv9SLCC3XItMX5dMaQ3mRCt9rv5ZsWXA+abAZQbPycxCwj0hbhU
-c282CqJ/RpayM5lWR6aWYNECnBUKPB/8hk56Aimmc3MXcXRPMBnAoqjqBQvfb2+Q
-XzlgpDwEgZh6L1XM6w1YQ5cw9JO+ip/AFgjrAA09EuCBGdBQksZE7V3Tdn+zot6O
-VHexA2+LrZ2990jcJZIGG8CfELjwghZ+xpK3Pkj50fCylMiafS9DrAGiMqlnscLU
-8BjvXE1OSweSxXT91Xi1OEWFUxX7mzvYRlOZrLQ4cmuJVo2bJ8mu++3aZpI/nCL5
-CGrJciZN27DxJFLIpDahYWHm4SdrrogwXcd9n67PNzs1LighxTCaR5HH0Hk4cq5v
-UkMchm7cQd6qDy5SkibZwwUqnXgdwmNcYgZa0V5L/jUL0nQmVplUWmguSkepQbH4
-qutmzc7irrUCtLw1e++iymP/vy+LYEVVtmPvkitFEuKap0NyxQkE3aA9uX4YrZhK
-brVsbAPas1WDT4KIKa3Ae1FUt/wkrsktSBtQn/zFJJVOUcjAlo8a1VBcHShx4MCU
-yB9NGq2e8dJ9arhMY/Fz
-=xv+M
------END PGP SIGNATURE-----
+  intc2@0{
+  compatible = "intc2";
+   #address-cells = <1>;
+   #size-cells = <0>;
+   reg = <0 0x1000>;
+   interrupts = <2 0x8> ;
+   interrupt-parent = <&ipic>;
+  };
 
---=-yZmZ7ke4oE7VJH2PiT04--
+2. registration in kernel for all interrupts:
+
+  np = of_find_node_by_name(NULL,"intc2");
+  if (np == NULL)
+  {
+      printk("Error node not found\n");
+  }
+     printk("Node np = 0x%0x\n",np);
+     virq = irq_of_parse_and_map(np,0);
+     printk(KERN_INFO"IRQHandler: ISR Setup VIRQ: %d \n" , virq);
+     if (0 > (error=request_irq(virq, &IRQHandler, 0, "intc2", &value))) {
+     printk(KERN_WARNING"IRQHandler: Init: Unable to allocate IRQ
+error = %d\n\n", error);
+     return -1;
+  }
+
+
+3. interrupt handler code:
+
+int newval = 0;
+static irqreturn_t hello_IRQHandler(int irq, void *dev_id)
+{
+         unsigned int status;
+         struct timespec curr_tm;
+         printk("key_irq!!!!!\n");
+         return IRQ_HANDLED;
+}
+
+4. in boot I get print which show success with request_irq():
+
+intc_init
+Node np = 0xdfffe288
+IRQHandler: ISR Setup VIRQ: 22
+NET: Registered protocol family 17
+
+5. forcing interrupt in IRQ #2, or #4 result in SEPNR change, but
+there is no printing from interrupt handler
+
+6. validation in SEPNR register that interrupt was received:
+
+# devmem2 0xe000072c
+/dev/mem opened.
+Memory mapped at address 0xb7b80000.
+Value at address 0xE000072C (0xb7b8072c): 0x20000000
+
+
+Thank you for any suggestion,
+
+Ran
