@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 56A181A1DD0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:38:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D99721A1DD2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:38:08 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 17 Aug 2015 16:38:05 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2E10F2BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:38:03 +1000 (EST)
+ Mon, 17 Aug 2015 16:38:06 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DD29A3578058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:38:04 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7H6bs5s45744128
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:38:03 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7H6boHj55443534
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:37:58 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7H6bURp028902
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:37:30 +1000
+ t7H6bWTb028967
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 16:37:32 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  ryabinin.a.a@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [RFC PATCH V1 5/8] kasan: Enable arch to hook into kasan callbacks.
-Date: Mon, 17 Aug 2015 12:06:37 +0530
-Message-Id: <1439793400-18147-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH V1 6/8] kasan: Allow arch to overrride kasan shadow offsets
+Date: Mon, 17 Aug 2015 12:06:38 +0530
+Message-Id: <1439793400-18147-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,77 +39,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We add enable/disable callbacks in this patch which architecture
-can implemement. We will use this in the later patches for architecture
-like ppc64, that cannot have early zero page kasan shadow region for the
-entire virtual address space. Such architectures also cannot use
-inline kasan support.
+Some archs may want to provide kasan shadow memory as a constant
+offset from the address. Such arch even though cannot use inline kasan
+support, they can work with outofline kasan support.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- mm/kasan/kasan.c |  9 +++++++++
- mm/kasan/kasan.h | 15 +++++++++++++++
- 2 files changed, 24 insertions(+)
+ include/linux/kasan.h | 3 +++
+ mm/kasan/kasan.h      | 3 +++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/mm/kasan/kasan.c b/mm/kasan/kasan.c
-index 7b28e9cdf1c7..e4d33afd0eaf 100644
---- a/mm/kasan/kasan.c
-+++ b/mm/kasan/kasan.c
-@@ -43,6 +43,9 @@ static void kasan_poison_shadow(const void *address, size_t size, u8 value)
+diff --git a/include/linux/kasan.h b/include/linux/kasan.h
+index 5486d777b706..e458ca64cdaf 100644
+--- a/include/linux/kasan.h
++++ b/include/linux/kasan.h
+@@ -15,11 +15,14 @@ struct vm_struct;
+ #include <asm/kasan.h>
+ #include <linux/sched.h>
+ 
++#ifndef kasan_mem_to_shadow
+ static inline void *kasan_mem_to_shadow(const void *addr)
  {
- 	void *shadow_start, *shadow_end;
+ 	return (void *)((unsigned long)addr >> KASAN_SHADOW_SCALE_SHIFT)
+ 		+ KASAN_SHADOW_OFFSET;
+ }
++#define kasan_mem_to_shadow kasan_mem_to_shadow
++#endif
  
-+	if (!kasan_enabled())
-+		return;
-+
- 	shadow_start = kasan_mem_to_shadow(address);
- 	shadow_end = kasan_mem_to_shadow(address + size);
- 
-@@ -51,6 +54,9 @@ static void kasan_poison_shadow(const void *address, size_t size, u8 value)
- 
- void kasan_unpoison_shadow(const void *address, size_t size)
- {
-+	if (!kasan_enabled())
-+		return;
-+
- 	kasan_poison_shadow(address, size, 0);
- 
- 	if (size & KASAN_SHADOW_MASK) {
-@@ -238,6 +244,9 @@ static __always_inline void check_memory_region(unsigned long addr,
- {
- 	struct kasan_access_info info;
- 
-+	if (!kasan_enabled())
-+		return;
-+
- 	if (unlikely(size == 0))
- 		return;
- 
+ /* Enable reporting bugs after kasan_disable_current() */
+ static inline void kasan_enable_current(void)
 diff --git a/mm/kasan/kasan.h b/mm/kasan/kasan.h
-index a6b46cc94907..deb547d5a916 100644
+index deb547d5a916..c0686f2b1224 100644
 --- a/mm/kasan/kasan.h
 +++ b/mm/kasan/kasan.h
-@@ -68,6 +68,21 @@ static inline bool kasan_report_enabled(void)
- 	return !current->kasan_depth;
+@@ -57,11 +57,14 @@ struct kasan_global {
+ void kasan_report_error(struct kasan_access_info *info);
+ void kasan_report_user_access(struct kasan_access_info *info);
+ 
++#ifndef kasan_shadow_to_mem
+ static inline const void *kasan_shadow_to_mem(const void *shadow_addr)
+ {
+ 	return (void *)(((unsigned long)shadow_addr - KASAN_SHADOW_OFFSET)
+ 		<< KASAN_SHADOW_SCALE_SHIFT);
  }
- 
-+#ifndef kasan_enabled
-+/*
-+ * Some archs may want to disable kasan callbacks.
-+ */
-+static inline bool kasan_enabled(void)
-+{
-+	return true;
-+}
-+#define kasan_enabled kasan_enabled
-+#else
-+#ifdef CONFIG_KASAN_INLINE
-+#error "Kasan inline support cannot work with KASAN arch hooks"
++#define kasan_shadow_to_mem kasan_shadow_to_mem
 +#endif
-+#endif
-+
- void kasan_report(unsigned long addr, size_t size,
- 		bool is_write, unsigned long ip);
  
+ static inline bool kasan_report_enabled(void)
+ {
 -- 
 2.5.0
