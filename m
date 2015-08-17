@@ -1,24 +1,25 @@
 Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-vk0-x229.google.com (mail-vk0-x229.google.com
- [IPv6:2607:f8b0:400c:c05::229])
+Received: from mail-vk0-x22e.google.com (mail-vk0-x22e.google.com
+ [IPv6:2607:f8b0:400c:c05::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E8971A0501
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 21:29:21 +1000 (AEST)
-Received: by vkbg64 with SMTP id g64so39916766vkb.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 04:29:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8BB8D1A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 21:36:58 +1000 (AEST)
+Received: by vkaw128 with SMTP id w128so22477816vka.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 04:36:56 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <87mvxqp7l5.fsf@linux.vnet.ibm.com>
+In-Reply-To: <1439793400-18147-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1439794492.2416.8.camel@kernel.crashing.org>
- <87mvxqp7l5.fsf@linux.vnet.ibm.com>
-Date: Mon, 17 Aug 2015 14:29:18 +0300
-Message-ID: <CAPAsAGzLY86BLT2KwE+dc=R+rnTPbMbxH_V4eror-Nvnd=3K8w@mail.gmail.com>
-Subject: Re: [RFC PATCH V1 0/8] KASAN ppc64 support
+ <1439793400-18147-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Mon, 17 Aug 2015 14:36:56 +0300
+Message-ID: <CAPAsAGxs8NhxJ22DXOgcbBkuALzd0zd7WL+SCGeNmsWCrMi3nA@mail.gmail.com>
+Subject: Re: [RFC PATCH V1 4/8] kasan: Don't use kasan shadow pointer in
+ generic functions
 From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,25 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-08-17 12:50 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
-> Because of the above I concluded that we may not be able to do
-> inline instrumentation. Now if we are not doing inline instrumentation,
-> we can simplify kasan support by not creating a shadow mapping at all
-> for vmalloc and vmemmap region. Hence the idea of returning the address
-> of a zero page for anything other than kernel linear map region.
+On 08/17/2015 09:36 AM, Aneesh Kumar K.V wrote:
+> We can't use generic functions like print_hex_dump to access kasan
+> shadow region. This require us to setup another kasan shadow region
+> for the address passed (kasan shadow address). Most architecture won't
+> be able to do that. Hence remove dumping kasan shadow region dump. If
+> we really want to do this we will have to have a kasan internal implemen
+> tation of print_hex_dump for which we will disable address sanitizer
+> operation.
 >
 
-Yes, mapping zero page needed only for inline instrumentation.
-You simply don't need to check shadow for vmalloc/vmemmap.
+I didn't understand that.
+Yes, you don't have shadow for shadow. But, for shadow addresses you
+return return (void *)kasan_zero_page in kasan_mem_to_shadow(), so we
+should be fine to access shadow in generic code.
 
-So, instead of redefining kasan_mem_to_shadow() I'd suggest to
-add one more arch hook. Something like:
-
-bool kasan_tracks_vaddr(unsigned long addr)
-{
-     return REGION_ID(addr) == KERNEL_REGION_ID;
-}
-
-And in check_memory_region():
-       if (!(kasan_enabled() && kasan_tracks_vaddr(addr)))
-               return;
+And with kasan_tracks_vaddr(), this should work too.
