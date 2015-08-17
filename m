@@ -1,23 +1,33 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id B628C1A2BAD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 18:48:36 +1000 (AEST)
-Date: Mon, 17 Aug 2015 18:48:11 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: linux-kernel <linux-kernel@vger.kernel.org>,
- linux-m68k <linux-m68k@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC v5 00/26] Re-use nvram module
-In-Reply-To: <CAMuHMdWXgeA5ts+O2tJ+dqcXfeGkVuP7oxBuGTcZw3-dQqzfRA@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.1508171831020.2171@nippy.intranet>
-References: <20150725074559.543547894@telegraphics.com.au>
- <CAMuHMdWUQsSG8cZmKX8tHMN1=87Og-xboAFzhP1vWyQF+A3_eg@mail.gmail.com>
- <alpine.LNX.2.00.1508171756180.626@nippy.intranet>
- <CAMuHMdWXgeA5ts+O2tJ+dqcXfeGkVuP7oxBuGTcZw3-dQqzfRA@mail.gmail.com>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1BF961A0502
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 19:01:39 +1000 (AEST)
+Date: Mon, 17 Aug 2015 10:01:32 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Marc Zyngier <Marc.Zyngier@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
+ Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+ "grant.likely@linaro.org" <grant.likely@linaro.org>,
+ Rob Herring <robh+dt@kernel.org>, "agraf@suse.de" <agraf@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Subject: Re: [PATCH v2 2/4] PCI: pci-host-generic: Fix lookup of
+ linux,pci-probe-only property
+Message-ID: <20150817090132.GC1688@arm.com>
+References: <1439569159-10051-1-git-send-email-marc.zyngier@arm.com>
+ <1439569159-10051-3-git-send-email-marc.zyngier@arm.com>
+ <20150814164051.GF26431@google.com>
+ <20150814164324.GC22809@arm.com>
+ <CAErSpo5abs2Qj25Bs+JVg87ve346f_RVz7jhNwqdv856+WvXQA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAErSpo5abs2Qj25Bs+JVg87ve346f_RVz7jhNwqdv856+WvXQA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Mon, 17 Aug 2015, Geert Uytterhoeven wrote:
-
-> On Mon, Aug 17, 2015 at 10:04 AM, Finn Thain 
-> <fthain@telegraphics.com.au> wrote:
-> >> BTW, checkpatch reported a few newly-introduced whitespace errors in 
-> >> patches 03, 05, 16, 24, and 25.
+On Fri, Aug 14, 2015 at 09:26:21PM +0100, Bjorn Helgaas wrote:
+> On Fri, Aug 14, 2015 at 11:43 AM, Will Deacon <will.deacon@arm.com> wrote:
+> > On Fri, Aug 14, 2015 at 05:40:51PM +0100, Bjorn Helgaas wrote:
+> >> Do we need support for pci-probe-only in pci-host-generic at all?
+> >> You're removing the use in amd-overdrive.dts, and there are no other
+> >> DTs in the kernel tree that mention it.
+> >>
+> >> If we can live without it, that would be nice.  It seems like a relic from
+> >> days when we couldn't reliably assign resources.  (I'm not saying we can do
+> >> that reliably even today, but I'd rather make it reliable than turn it
+> >> off.)
 > >
-> > I will check again, but I'm sure those are all deliberate. I examined 
-> > all the "errors" and "warnings" before submitting.
-> >
-> > checkpatch doesn't really understand the difference between whitespace 
-> > used for indentation of statements (according to scope) and whitespace 
-> > used for alignment of terms or parameters (when line-wrapped). Any 
-> > tool that fails to make that distinction can't be depended upon to 
-> > correctly validate the elisp in Documentation/CodingStyle, for 
-> > example.
+> > Kvmtool certainly uses it (and generates its own DT, hence why you don't
+> > see it in mainline). Not sure about qemu, though.
 > 
-> Checkpatch complains because you don't replace a sequence of 8 spaces by 
-> a TAB in continuation lines.
+> Do you know why kvmtool wants probe-only?  Would something break if we
+> didn't support probe-only?  I guess we'd be looking for a case where
+> Linux assigns resources and that assignment doesn't work with kvmtool?
 
-Right. Were such a sequence used for indentation, a tab should be used 
-instead. After those tabs, spaces are needed for alignment (see elisp 
-example mentioned above).
+It's basically because the BARs aren't writable other than to find the
+region size. It could fixed with a bit of pain, but it doesn't help older
+kvmtools that do work with mainline today.
 
-But I sure wouldn't want to try to encode that distinction in regexp (as 
-opposed to comparing a patch with its pretty-printed version, as might be 
-generated by an actual C parser). So I expect some false positives from 
-checkpatch.
-
--- 
-
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
+Will
