@@ -1,44 +1,39 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26CE61A0372
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 05:11:28 +1000 (AEST)
-Date: Mon, 17 Aug 2015 21:11:23 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Ross Zwisler <ross.zwisler@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-nvdimm@lists.01.org,
- Dan Williams <dan.j.williams@intel.com>, Christoph Hellwig <hch@lst.de>,
- Matthew Wilcox <matthew.r.wilcox@intel.com>,
- Dave Chinner <david@fromorbit.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Ameen Ali <ameenali023@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Boaz Harrosh <boaz@plexistor.com>,
- Gerald Schaefer <gerald.schaefer@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Jan Kara <jack@suse.cz>,
- Jeff Layton <jlayton@primarydata.com>, Jens Axboe <axboe@kernel.dk>,
- Jonathan Corbet <corbet@lwn.net>, Kees Cook <keescook@chromium.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Matthew Wilcox <willy@linux.intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Mike Snitzer <snitzer@redhat.com>,
- Miklos Szeredi <mszeredi@suse.cz>, Ming Lei <ming.lei@canonical.com>,
- Omar Sandoval <osandov@osandov.com>, Paul Mackerras <paulus@samba.org>,
- Sagi Grimberg <sagig@mellanox.com>, Shaohua Li <shli@fb.com>,
- Tejun Heo <tj@kernel.org>, Wolfram Sang <wsa@the-dreams.de>,
- Yigal Korman <yigal@plexistor.com>, linux-doc@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-s390@vger.kernel.org,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 7/7] pmem, dax: have direct_access use __pmem annotation
-Message-ID: <20150817191123.GE6752@lst.de>
-References: <1439836211-4719-1-git-send-email-ross.zwisler@linux.intel.com>
- <1439836211-4719-8-git-send-email-ross.zwisler@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1439836211-4719-8-git-send-email-ross.zwisler@linux.intel.com>
+Return-Path: <ross.zwisler@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9B6551A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 06:07:39 +1000 (AEST)
+Message-ID: <1439842038.11296.1.camel@linux.intel.com>
+Subject: Re: [PATCH v2 7/7] pmem, dax: have direct_access use __pmem annotation
+From: Ross Zwisler <ross.zwisler@linux.intel.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Christoph Hellwig <hch@lst.de>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-nvdimm@lists.01.org"
+ <linux-nvdimm@lists.01.org>, Jonathan Corbet <corbet@lwn.net>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Jens Axboe
+ <axboe@kernel.dk>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko
+ Carstens <heiko.carstens@de.ibm.com>,  linux390@de.ibm.com, Alexander Viro
+ <viro@zeniv.linux.org.uk>, Matthew Wilcox <willy@linux.intel.com>, Jeff
+ Layton <jlayton@primarydata.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Omar Sandoval <osandov@osandov.com>, Boaz
+ Harrosh <boaz@plexistor.com>, Miklos Szeredi <mszeredi@suse.cz>, Jan Kara
+ <jack@suse.cz>,  Wolfram Sang <wsa@the-dreams.de>, Uwe
+ =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,  Gerald
+ Schaefer <gerald.schaefer@de.ibm.com>, Ameen Ali <ameenali023@gmail.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>, Sagi Grimberg
+ <sagig@mellanox.com>, Mike Snitzer <snitzer@redhat.com>, Tejun Heo
+ <tj@kernel.org>, Shaohua Li <shli@fb.com>,  Ming Lei
+ <ming.lei@canonical.com>, linux-doc@vger.kernel.org, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, linux-s390@vger.kernel.org, linux-fsdevel
+ <linux-fsdevel@vger.kernel.org>, Dave Chinner <david@fromorbit.com>
+Date: Mon, 17 Aug 2015 14:07:18 -0600
+In-Reply-To: <CAPcyv4gHatJxtJ_Utc07L-EiX0f=SnkEoAVsB9PNDhtwmxrobQ@mail.gmail.com>
+References: <1439484671-15718-1-git-send-email-ross.zwisler@linux.intel.com>
+ <1439484671-15718-8-git-send-email-ross.zwisler@linux.intel.com>
+ <20150815091950.GA21487@lst.de>
+ <CAPcyv4gHatJxtJ_Utc07L-EiX0f=SnkEoAVsB9PNDhtwmxrobQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,6 +43,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Looks fine,
+On Sat, 2015-08-15 at 08:44 -0700, Dan Williams wrote:
+> On Sat, Aug 15, 2015 at 2:19 AM, Christoph Hellwig <hch@lst.de> wrote:
+> > On Thu, Aug 13, 2015 at 10:51:11AM -0600, Ross Zwisler wrote:
+> >> Update the annotation for the kaddr pointer returned by direct_access()
+> >> so that it is a __pmem pointer.  This is consistent with the PMEM driver
+> >> and with how this direct_access() pointer is used in the DAX code.
+> >
+> > IFF we stick to the __pmem annotations this looks good.
+> >
+> > That beeing said I start to really dislike them.  We don't special
+> > accesors to read/write from pmem, we just need to explicitly commit
+> > it if we want to make it persistent.  So I really don't see the need
+> > to treat it special and require all the force casts to and from the
+> > attribute.
+> 
+> I'm not going to put up much of a fight if it's really getting in the way....
+> 
+> That said, while we don't need special accessors we do need guarantees
+> that anything that has written to a persistent memory address has done
+> so in a way that wmb_pmem() is able to flush it.  It's more of a "I've
+> audited this code path for wmb_pmem() compatibility so use this api to
+> write to pmem."
+> 
+> Perhaps a better way to statically check for missed flushes might be
+> to have acquire_pmem_for_write() + release() annotations and the final
+> release does a wmb_pmem(), but as far as I can tell the sparse
+> acquire/release annotations don't stack.
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+FWIW I've been on the fence about the __pmem annotations, but my current
+thought is that we really do need a way of saying that stores to these
+pointers need special care for wmb_pmem() to do its thing and that __pmem does
+a reasonably good job of that.  If we can figure out a cooler way, such as the
+write() + release() flow Dan is talking about, great.  But I think we need
+something to keep us from making errors by storing to PMEM pointers and
+leaving data in the processor cache.
