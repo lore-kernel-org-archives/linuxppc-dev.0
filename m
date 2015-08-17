@@ -1,23 +1,44 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E709A1A1D73
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 15:50:42 +1000 (AEST)
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-To: Wang Dongsheng <Dongsheng.Wang@freescale.com>, Scott Wood
- <scottwood@freescale.com>
-CC: Priyanka Jain <Priyanka.Jain@freescale.com>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v2 1/2] powerpc/85xx: Add binding for SCFG
-Date: Mon, 17 Aug 2015 05:50:35 +0000
-Message-ID: <SN1PR0301MB16165146428CF6A8C48FF1B29D790@SN1PR0301MB1616.namprd03.prod.outlook.com>
-References: <1439521930-28191-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1439521930-28191-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id B1E601A2E9E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 15:53:58 +1000 (AEST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Sun, 16 Aug 2015 23:53:56 -0600
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5951AC90041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 01:44:58 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7H5rrcX53870730
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 05:53:53 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7H5rqKI015258
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 01:53:53 -0400
+Date: Mon, 17 Aug 2015 11:23:45 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] book3s_hv_rmhandlers:Pass the correct trap argument to
+ kvmhv_commence_exit
+Message-ID: <20150817055345.GA13304@in.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+References: <1432196824-21791-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20150814050728.GB13544@tungsten.ozlabs.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150814050728.GB13544@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +48,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+Hi Sam,
 
-Could you apply the patches?
+On Fri, Aug 14, 2015 at 03:07:28PM +1000, Sam Bobroff wrote:
+> On Thu, May 21, 2015 at 01:57:04PM +0530, Gautham R. Shenoy wrote:
+> > In guest_exit_cont we call kvmhv_commence_exit which expects the trap
+> > number as the argument. However r3 doesn't contain the trap number at
+> > this point and as a result we would be calling the function with a
+> > spurious trap number.
+> > 
+> > Fix this by copying r12 into r3 before calling kvmhv_commence_exit as
+> > r12 contains the trap number
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 
+> Hi Gautham,
+> 
+> I agree with your logic: r3 is quite clearly corrupted in that path. So:
+> 
+> Reviewed-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> 
+> Just one comment: Do you have a case of this causing some visible problem due
+> to the corrupted trap number? (I'll test the patch if you do.)
+> 
 
-Regards,
--Dongsheng
+Actually no! I found this bug while reviewing the code for some other issue.
 
-> -----Original Message-----
-> From: Dongsheng Wang [mailto:dongsheng.wang@freescale.com]
-> Sent: Friday, August 14, 2015 11:12 AM
-> To: Wood Scott-B07421
-> Cc: Jain Priyanka-B32167; devicetree@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> Subject: [PATCH v2 1/2] powerpc/85xx: Add binding for SCFG
->=20
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> SCFG provides SoC specific configuration and status registers for
-> the chip. Add this for powerpc platform.
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
-> *V2*
-> - Remove scfg description in board.txt and create scfg.txt for scfg.
-> - Change "fsl,<board>-scfg" to "fsl,<chip>-scfg"
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/scfg.txt
-> b/Documentation/devicetree/bindings/powerpc/fsl/scfg.txt
-> new file mode 100644
-> index 0000000..0532c46
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/scfg.txt
-> @@ -0,0 +1,18 @@
-> +Freescale Supplement configuration unit (SCFG)
-> +
-> +SCFG is the supplemental configuration unit, that provides SoC specific
-> +configuration and status registers for the chip. Such as getting PEX por=
-t
-> +status.
-> +
-> +Required properties:
-> +
-> +- compatible: should be "fsl,<chip>-scfg"
-> +- reg: should contain base address and length of SCFG memory-mapped
-> +registers
-> +
-> +Example:
-> +
-> +	scfg: global-utilities@fc000 {
-> +		compatible =3D "fsl,t1040-scfg";
-> +		reg =3D <0xfc000 0x1000>;
-> +	};
-> --
-> 2.1.0.27.g96db324
+> Cheers,
+> Sam.
+
+--
+Thanks and Regards
+gautham.
