@@ -1,19 +1,43 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22E091A0372
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 00:13:04 +1000 (AEST)
-Message-ID: <55D1B970.1020405@freescale.com>
-Date: Mon, 17 Aug 2015 13:37:36 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
-MIME-Version: 1.0
-To: <linuxppc-dev@lists.ozlabs.org>, Ran Shalit <ranshalit@gmail.com>
-Subject: Re: using general IRQs
-References: <CAJ2oMhLX18merCHtge0oOQ2DSQ8BE1Zd=dAuPWzyTRNmr-DLiA@mail.gmail.com>
-In-Reply-To: <CAJ2oMhLX18merCHtge0oOQ2DSQ8BE1Zd=dAuPWzyTRNmr-DLiA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <ross.zwisler@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 060B01A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 04:31:48 +1000 (AEST)
+From: Ross Zwisler <ross.zwisler@linux.intel.com>
+To: linux-kernel@vger.kernel.org, linux-nvdimm@lists.01.org,
+ Dan Williams <dan.j.williams@intel.com>, Christoph Hellwig <hch@lst.de>,
+ Matthew Wilcox <matthew.r.wilcox@intel.com>,
+ Dave Chinner <david@fromorbit.com>
+Cc: Ross Zwisler <ross.zwisler@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>,
+ =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Ameen Ali <ameenali023@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Boaz Harrosh <boaz@plexistor.com>, Borislav Petkov <bp@suse.de>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+ Greg KH <gregkh@linuxfoundation.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Jan Kara <jack@suse.cz>, Jeff Layton <jlayton@primarydata.com>,
+ Jens Axboe <axboe@kernel.dk>, Jiri Slaby <jslaby@suse.com>,
+ Joe Perches <joe@perches.com>, Jonathan Corbet <corbet@lwn.net>,
+ Juergen Gross <jgross@suse.com>, Kees Cook <keescook@chromium.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Matthew Wilcox <willy@linux.intel.com>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Mike Snitzer <snitzer@redhat.com>,
+ Miklos Szeredi <mszeredi@suse.cz>, Ming Lei <ming.lei@canonical.com>,
+ Omar Sandoval <osandov@osandov.com>, Paul Mackerras <paulus@samba.org>,
+ Sagi Grimberg <sagig@mellanox.com>, Shaohua Li <shli@fb.com>,
+ Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Toshi Kani <toshi.kani@hp.com>, Wolfram Sang <wsa@the-dreams.de>,
+ Yigal Korman <yigal@plexistor.com>, linux-doc@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-s390@vger.kernel.org,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: [PATCH v3 0/7] dax: I/O path enhancements
+Date: Mon, 17 Aug 2015 12:30:04 -0600
+Message-Id: <1439836211-4719-1-git-send-email-ross.zwisler@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +47,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2015 10:48 AM, Ran Shalit wrote:
-> Hello,
-> 
-> MPC8349 has general IRQ numbered 0-7,
-> It is required to bind these IRQs with some routine , i.e. they are
-> not used with any specific driver.
-> 
-> - Should they be configured as gpios in device tree so that we can use
-> the gpio as irq in linux ? Is there any example ?
+The goal of this series is to enhance the DAX I/O path so that all operations
+that store data (I/O writes, zeroing blocks, punching holes, etc.) properly
+synchronize the stores to media using the PMEM API.  This ensures that the data
+DAX is writing is durable on media before the operation completes.
 
-If it's a gpio then yes, you need to use it as a gpio. Not familiar with MPC8349,
-but newer FSL chips can select between gpio or irq through a RCW field (IRQ_BASE?).
+Patches 1-4 are a few random cleanups.
 
-Note that for gpios there's special apis, such as:  of_get_gpio(), gpio_request_one() a.s.o.
-Also you'll need to update your device tree node to something like:
+Changes from v2:
+ - Introduce copy_from_iter_pmem() as part of the PMEM API. Keep the use of
+   __arch_wmb_cache_pmem() internal to the implmentation of the PMEM API. (Dan)
 
-  intc2@0{
-   compatible = "intc2";
-   reg = <0 0x1000>;
-   gpios = <&gpio0 4 0>;
-  };
+Ross Zwisler (7):
+  brd: make rd_size static
+  pmem, x86: move x86 PMEM API to new pmem.h header
+  pmem: remove layer when calling arch_has_wmb_pmem()
+  pmem, x86: clean up conditional pmem includes
+  pmem: add copy_from_iter_pmem() and clear_pmem()
+  dax: update I/O path to do proper PMEM flushing
+  pmem, dax: have direct_access use __pmem annotation
 
-See Documentation/gpio.txt for more info.
+ Documentation/filesystems/Locking |   3 +-
+ MAINTAINERS                       |   1 +
+ arch/powerpc/sysdev/axonram.c     |   7 +-
+ arch/x86/include/asm/cacheflush.h |  71 ------------------
+ arch/x86/include/asm/pmem.h       | 152 ++++++++++++++++++++++++++++++++++++++
+ drivers/block/brd.c               |   6 +-
+ drivers/nvdimm/pmem.c             |   4 +-
+ drivers/s390/block/dcssblk.c      |  10 ++-
+ fs/block_dev.c                    |   2 +-
+ fs/dax.c                          |  68 ++++++++++-------
+ include/linux/blkdev.h            |   8 +-
+ include/linux/pmem.h              |  78 +++++++++++++++----
+ 12 files changed, 282 insertions(+), 128 deletions(-)
+ create mode 100644 arch/x86/include/asm/pmem.h
 
----
-Best Regards, Laurentiu
+-- 
+2.1.0
