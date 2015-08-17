@@ -1,26 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id D1B241A0372
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 23:05:44 +1000 (AEST)
-Message-ID: <55D1DC24.2020407@c-s.fr>
-Date: Mon, 17 Aug 2015 15:05:40 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <Laurentiu.Tudor@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22E091A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 00:13:04 +1000 (AEST)
+Message-ID: <55D1B970.1020405@freescale.com>
+Date: Mon, 17 Aug 2015 13:37:36 +0300
+From: Laurentiu Tudor <b10716@freescale.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Scott Wood <scottwood@freescale.com>
-CC: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] powerpc32: optimise csum_partial() loop
-References: <cover.1435655733.git.christophe.leroy@c-s.fr>
- <67cf476f657e87b2ea586951a57ae3ba3c1e3c0c.1435655733.git.christophe.leroy@c-s.fr>
- <20150806003059.GD18479@gate.crashing.org>
- <1438828301.2097.126.camel@freescale.com>
- <20150806043938.GE18479@gate.crashing.org>
- <1438901145.2097.170.camel@freescale.com>
- <20150806232506.GB22196@gate.crashing.org> <55D1BDF0.4090008@c-s.fr>
- <55D1BED4.4040808@c-s.fr>
-In-Reply-To: <55D1BED4.4040808@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+To: <linuxppc-dev@lists.ozlabs.org>, Ran Shalit <ranshalit@gmail.com>
+Subject: Re: using general IRQs
+References: <CAJ2oMhLX18merCHtge0oOQ2DSQ8BE1Zd=dAuPWzyTRNmr-DLiA@mail.gmail.com>
+In-Reply-To: <CAJ2oMhLX18merCHtge0oOQ2DSQ8BE1Zd=dAuPWzyTRNmr-DLiA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,55 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 08/10/2015 10:48 AM, Ran Shalit wrote:
+> Hello,
+> 
+> MPC8349 has general IRQ numbered 0-7,
+> It is required to bind these IRQs with some routine , i.e. they are
+> not used with any specific driver.
+> 
+> - Should they be configured as gpios in device tree so that we can use
+> the gpio as irq in linux ? Is there any example ?
 
+If it's a gpio then yes, you need to use it as a gpio. Not familiar with MPC8349,
+but newer FSL chips can select between gpio or irq through a RCW field (IRQ_BASE?).
 
-Le 17/08/2015 13:00, leroy christophe a écrit :
->
->
-> Le 17/08/2015 12:56, leroy christophe a écrit :
->>
->>
->> Le 07/08/2015 01:25, Segher Boessenkool a écrit :
->>> On Thu, Aug 06, 2015 at 05:45:45PM -0500, Scott Wood wrote:
->>>> If this makes performance non-negligibly worse on other 32-bit 
->>>> chips, and is
->>>> an important improvement on 8xx, then we can use an ifdef since 8xx 
->>>> already
->>>> requires its own kernel build.  I'd prefer to see a benchmark 
->>>> showing that it
->>>> actually does make things worse on those chips, though.
->>> And I'd like to see a benchmark that shows it *does not* hurt 
->>> performance
->>> on most chips, and does improve things on 8xx, and by how much. But it
->>> isn't *me* who has to show that, it is not my patch.
->> Ok, following this discussion I made some additional measurement and 
->> it looks like:
->> * There is almost no change on the 885
->> * There is a non negligeable degradation on the 8323 (19.5 tb ticks 
->> instead of 15.3)
->>
->> Thanks for pointing this out, I think my patch is therefore not good.
->>
-> Oops, I was talking about my other past, the one that was to optimise 
-> ip_csum_fast.
-> I still have to measure csum_partial
->
-Now, I have the results for csum_partial(). The measurement is done with 
-mftbl() before and after calling the function, with IRQ off to get a 
-stable measure. Measurement is done with a transfer of vmlinux file done 
-3 times via scp toward the target. We get approximatly 50000 calls to 
-csum_partial()
+Note that for gpios there's special apis, such as:  of_get_gpio(), gpio_request_one() a.s.o.
+Also you'll need to update your device tree node to something like:
 
-On MPC885:
-1/ Without the patchset, mean time spent in csum_partial() is 167 tb ticks.
-2/ With the patchset, mean time is 150 tb ticks
+  intc2@0{
+   compatible = "intc2";
+   reg = <0 0x1000>;
+   gpios = <&gpio0 4 0>;
+  };
 
-On MPC8323:
-1/ Without the patchset, mean time is 287 tb ticks
-2/ With the patchset, mean time is 256 tb ticks
+See Documentation/gpio.txt for more info.
 
-The improvement is approximatly 10% in both cases
-
-So, unlike my patch on ip_fast_csum(), this one is worth it.
-
-Christophe
+---
+Best Regards, Laurentiu
