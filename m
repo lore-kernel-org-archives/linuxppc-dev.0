@@ -1,22 +1,22 @@
 Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-vk0-x236.google.com (mail-vk0-x236.google.com
- [IPv6:2607:f8b0:400c:c05::236])
+Received: from mail-vk0-x22d.google.com (mail-vk0-x22d.google.com
+ [IPv6:2607:f8b0:400c:c05::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 914841A0151
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 18:50:51 +1000 (AEST)
-Received: by vkfi73 with SMTP id i73so66475320vkf.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 01:50:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 365C11A0153
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:12:20 +1000 (AEST)
+Received: by vkao123 with SMTP id o123so5711312vka.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 02:12:18 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <87zj1pnodu.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87egj1p3ke.fsf@linux.vnet.ibm.com>
 References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1439794492.2416.8.camel@kernel.crashing.org>
- <87mvxqp7l5.fsf@linux.vnet.ibm.com>
- <CAPAsAGzLY86BLT2KwE+dc=R+rnTPbMbxH_V4eror-Nvnd=3K8w@mail.gmail.com>
- <87zj1pnodu.fsf@linux.vnet.ibm.com>
-Date: Tue, 18 Aug 2015 11:50:49 +0300
-Message-ID: <CAPAsAGz40+1+P7ANVjU0WKCsiF4=sKNEs2+Jx_gdcKpkL5nL+A@mail.gmail.com>
-Subject: Re: [RFC PATCH V1 0/8] KASAN ppc64 support
+ <1439793400-18147-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <CAPAsAGxs8NhxJ22DXOgcbBkuALzd0zd7WL+SCGeNmsWCrMi3nA@mail.gmail.com>
+ <87egj1p3ke.fsf@linux.vnet.ibm.com>
+Date: Tue, 18 Aug 2015 12:12:17 +0300
+Message-ID: <CAPAsAGxmwfPMX4WOJxMCx4W2BP8LVtzN-M_54Xx_hqk2OhZYHw@mail.gmail.com>
+Subject: Re: [RFC PATCH V1 4/8] kasan: Don't use kasan shadow pointer in
+ generic functions
 From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
@@ -31,47 +31,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-08-18 8:42 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
+2015-08-18 8:29 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
 > Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
 >
->> 2015-08-17 12:50 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
->>> Because of the above I concluded that we may not be able to do
->>> inline instrumentation. Now if we are not doing inline instrumentation,
->>> we can simplify kasan support by not creating a shadow mapping at all
->>> for vmalloc and vmemmap region. Hence the idea of returning the address
->>> of a zero page for anything other than kernel linear map region.
+>> On 08/17/2015 09:36 AM, Aneesh Kumar K.V wrote:
+>>> We can't use generic functions like print_hex_dump to access kasan
+>>> shadow region. This require us to setup another kasan shadow region
+>>> for the address passed (kasan shadow address). Most architecture won't
+>>> be able to do that. Hence remove dumping kasan shadow region dump. If
+>>> we really want to do this we will have to have a kasan internal implemen
+>>> tation of print_hex_dump for which we will disable address sanitizer
+>>> operation.
 >>>
 >>
->> Yes, mapping zero page needed only for inline instrumentation.
->> You simply don't need to check shadow for vmalloc/vmemmap.
+>> I didn't understand that.
+>> Yes, you don't have shadow for shadow. But, for shadow addresses you
+>> return return (void *)kasan_zero_page in kasan_mem_to_shadow(), so we
+>> should be fine to access shadow in generic code.
 >>
->> So, instead of redefining kasan_mem_to_shadow() I'd suggest to
->> add one more arch hook. Something like:
->>
->> bool kasan_tracks_vaddr(unsigned long addr)
->> {
->>      return REGION_ID(addr) == KERNEL_REGION_ID;
->> }
->>
->> And in check_memory_region():
->>        if (!(kasan_enabled() && kasan_tracks_vaddr(addr)))
->>                return;
 >
+> But in general IMHO it is not correct to pass shadow address to generic
+> functions, because that requires arch to setup shadow for the shadow.
+
+Yes, we have this shadow for shadow in x86_64/arm64.
+
+> With one of the initial implementation of ppc64 support, I had page
+> table entries setup for vmalloc and vmemmap shadow and that is when I
+> hit the issue. We cannot expect arch to setup shadow regions like what is
+> expected here. If we really need to print the shadow memory content, we
+> could possibly make a copy of print_hex_dump in kasan_init.c . Let me
+> know whether you think printing shadow area content is needed.
 >
-> But that is introducting conditionals in core code for no real benefit.
-> This also will break when we eventually end up tracking vmalloc ?
 
-Ok, that's a very good reason to not do this.
+It was quite useful sometimes, so I think we should keep it.
+But I agree with you, that it would be better to avoid accesses to shadow memory
+in generic code.
+Another way to deal with this would be to copy shadow content in buffer,
+and then print_hex_dump() it.
 
-I see one potential problem in the way you use kasan_zero_page, though.
-memset/memcpy of large portions of memory ( > 8 * PAGE_SIZE) will end up
-in overflowing kasan_zero_page when we check shadow in memory_is_poisoned_n()
-
-> In that case our mem_to_shadow will esentially be a switch
-> statement returning different offsets for kernel region and vmalloc
-> region. As far as core kernel code is considered, it just need to
-> ask arch to get the shadow address for a memory and instead of adding
-> conditionals in core, my suggestion is, we handle this in an arch function.
->
 > -aneesh
 >
