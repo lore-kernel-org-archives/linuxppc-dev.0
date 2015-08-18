@@ -1,33 +1,43 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0488D1A0151
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 09:11:47 +1000 (AEST)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1A5D51A04F0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 07:14:01 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id C3A6814012C
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:11:46 +1000 (AEST)
 Received: from /spool/local
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Tue, 18 Aug 2015 18:13:56 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 7D2E31DC0080
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 17:12:50 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7ILEFl85152912
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 18:14:16 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7ILDoGu005701
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 18:13:51 -0300
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: gpiccoli@linux.vnet.ibm.com, gwshan@linux.vnet.ibm.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH 0/2] Disable MSI/MSI-X interrupts manually at PCI probe time
- in PowerPC architecture
-Date: Tue, 18 Aug 2015 18:13:48 -0300
-Message-Id: <1439932430-13375-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Wed, 19 Aug 2015 09:11:45 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7BEC82CE802D
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:11:42 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7INBYaO40173726
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:11:42 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7INB9cs029607
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:11:09 +1000
+Message-ID: <55D3BB7D.9040402@au1.ibm.com>
+Date: Wed, 19 Aug 2015 09:10:53 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@ozlabs.org, imunsie@au1.ibm.com, dja@axtens.net
+Subject: Re: [PATCH] cxl: Allow release of contexts which have been OPENED
+ but not STARTED
+References: <1439879415-9925-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <1439889583.31374.1.camel@ellerman.id.au>
+ <1439914990.1628.6.camel@neuling.org>
+In-Reply-To: <1439914990.1628.6.camel@neuling.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,25 +47,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These 2 patches correct a bogus behaviour introduced by commit 1851617cd2
-("PCI/MSI: Disable MSI at enumeration even if kernel doesn't support MSI").
-The commit moved the logic responsible to disable MSI/MSI-X interrupts
-at PCI probe time to a new function, named pci_msi_setup_pci_dev(), that
-is not reachable in the code path of PowerPC pSeries platform.
+On 19/08/15 02:23, Michael Neuling wrote:
+>> So this doesn't break when you add a new state, is it worth writing it as:
+>>
+>> 	if (ctx->status >= STARTED)
+>> 		return -EBUSY;
+>>
+>> ?
+>
+> Yeah I think that would be more future proof, although it won't make a
+> difference with the current code.
 
-Since then, devices aren't able to activate MSI/MSI-X capability, even
-after boot. The first patch makes the function pci_msi_setup_pci_dev()
-non-static. The second patch inserts a call to the function in powerpc
-code, so it explicitly disables MSI/MSI-X interrupts at PCI probe time.
+Sounds reasonable, I'll submit a V2.
 
-Guilherme G. Piccoli (2):
-  PCI: Make pci_msi_setup_pci_dev() non-static for use by arch code
-  powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe time in OF case
 
- arch/powerpc/kernel/pci_of_scan.c | 3 +++
- drivers/pci/probe.c               | 2 +-
- include/linux/pci.h               | 1 +
- 3 files changed, 5 insertions(+), 1 deletion(-)
+Andrew
 
 -- 
-2.1.0
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
