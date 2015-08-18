@@ -1,21 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0110.outbound.protection.outlook.com [65.55.169.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA2DD1A0239
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 20:43:30 +1000 (AEST)
-In-Reply-To: <1437971974-2434-2-git-send-email-dave.long@linaro.org>
-To: "David A. Long" <dave.long@linaro.org>,
- linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2,
- 1/2] Move the pt_regs_offset struct definition from arch to common
- include file
-Message-Id: <20150818104330.B24DC14032B@ozlabs.org>
-Date: Tue, 18 Aug 2015 20:43:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 73EC51A0239
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 01:46:09 +1000 (AEST)
+Message-ID: <1439912743.2784.0.camel@freescale.com>
+Subject: Re: [PATCH V2] powerpc/85xx: Remove unused pci fixup hooks on c293pcie
+From: Scott Wood <scottwood@freescale.com>
+To: Hou Zhiqiang-B48286 <B48286@freescale.com>
+CC: "galak@kernel.crashing.org" <galak@kernel.crashing.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Hu
+ Mingkai-B21284" <Mingkai.Hu@freescale.com>, Wang Dongsheng-B40534
+ <Dongsheng.Wang@freescale.com>
+Date: Tue, 18 Aug 2015 10:45:43 -0500
+In-Reply-To: <CY1PR0301MB0780D0F57AED04231C73C3438B780@CY1PR0301MB0780.namprd03.prod.outlook.com>
+References: <1439199585-37464-1-git-send-email-B48286@freescale.com>
+ <CY1PR0301MB0780D0F57AED04231C73C3438B780@CY1PR0301MB0780.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-27-07 at 04:39:33 UTC, "David A. Long" wrote:
-> From: "David A. Long" <dave.long@linaro.org>
+On Tue, 2015-08-18 at 04:26 -0500, Hou Zhiqiang-B48286 wrote:
+> Hi Scott,
 > 
-> The pt_regs_offset structure is used for the HAVE_REGS_AND_STACK_ACCESS_API
-> feature and has identical definitions in four different arch ptrace.h
-> include files. It seems unlikely that definition would ever need to be
-> changed regardless of architecture so lets move it into
-> include/linux/ptrace.h, along with macros commonly used to access it.
+> Removed both pcibios_fixup_phb and pcibios_fixup_bus.
+> Could you please help to apply it?
 
-Thanks for cleaning this up. Tested successfully on powerpc.
+I applied it and sent a pull request yesterday.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-cheers
+-Scott
