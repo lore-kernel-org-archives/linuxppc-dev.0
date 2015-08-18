@@ -1,21 +1,40 @@
-Return-Path: <ranshalit@gmail.com>
-Received: from mail-io0-x22c.google.com (mail-io0-x22c.google.com
- [IPv6:2607:f8b0:4001:c06::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C7091A0239
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 15:24:41 +1000 (AEST)
-Received: by iodv127 with SMTP id v127so160914245iod.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Aug 2015 22:24:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6F211A0153
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 15:29:26 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 18 Aug 2015 10:59:24 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 203151258019
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 10:58:40 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7I5TLmE61341752
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 10:59:21 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7I5TL7E016314
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 10:59:21 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH V1 4/8] kasan: Don't use kasan shadow pointer in
+ generic functions
+In-Reply-To: <CAPAsAGxs8NhxJ22DXOgcbBkuALzd0zd7WL+SCGeNmsWCrMi3nA@mail.gmail.com>
+References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1439793400-18147-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <CAPAsAGxs8NhxJ22DXOgcbBkuALzd0zd7WL+SCGeNmsWCrMi3nA@mail.gmail.com>
+Date: Tue, 18 Aug 2015 10:59:21 +0530
+Message-ID: <87egj1p3ke.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAJ2oMhJWVxnr4OPnMdFdYPYgpwh3Nxm4S13XXXV4GCpqP4YmTg@mail.gmail.com>
-References: <CAJ2oMhJWVxnr4OPnMdFdYPYgpwh3Nxm4S13XXXV4GCpqP4YmTg@mail.gmail.com>
-Date: Tue, 18 Aug 2015 08:24:38 +0300
-Message-ID: <CAJ2oMh+VUU5E2BRPsNJeX2WDK1wZeL3K_-13beuZ2+=GY7N9Lg@mail.gmail.com>
-Subject: Re: IRQ handler is not called with external IRQ
-From: Ran Shalit <ranshalit@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,85 +44,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 17, 2015 at 8:24 AM, Ran Shalit <ranshalit@gmail.com> wrote:
-> Hello,
->
->
-> I have strange behaviour with external IRQ:
-> The registration on external IRQ is successful, but on simulating
-> interrupt the interrupt handler called.
-> It seems that the interrupt was received according to SEPNR which
-> shows that IRQ #2 interrupt is pending, but the handler was not
-> called.
->
-> These are the steps I done:
->
-> 1. in DTS (using all external IRQ #2):
->
->   intc2@0{
->   compatible = "intc2";
->    #address-cells = <1>;
->    #size-cells = <0>;
->    reg = <0 0x1000>;
->    interrupts = <2 0x8> ;
->    interrupt-parent = <&ipic>;
->   };
->
-> 2. registration in kernel for all interrupts:
->
->   np = of_find_node_by_name(NULL,"intc2");
->   if (np == NULL)
->   {
->       printk("Error node not found\n");
->   }
->      printk("Node np = 0x%0x\n",np);
->      virq = irq_of_parse_and_map(np,0);
->      printk(KERN_INFO"IRQHandler: ISR Setup VIRQ: %d \n" , virq);
->      if (0 > (error=request_irq(virq, &IRQHandler, 0, "intc2", &value))) {
->      printk(KERN_WARNING"IRQHandler: Init: Unable to allocate IRQ
-> error = %d\n\n", error);
->      return -1;
->   }
->
->
-> 3. interrupt handler code:
->
-> int newval = 0;
-> static irqreturn_t hello_IRQHandler(int irq, void *dev_id)
-> {
->          unsigned int status;
->          struct timespec curr_tm;
->          printk("key_irq!!!!!\n");
->          return IRQ_HANDLED;
-> }
->
-> 4. in boot I get print which show success with request_irq():
->
-> intc_init
-> Node np = 0xdfffe288
-> IRQHandler: ISR Setup VIRQ: 22
-> NET: Registered protocol family 17
->
-> 5. forcing interrupt in IRQ #2, or #4 result in SEPNR change, but
-> there is no printing from interrupt handler
->
-> 6. validation in SEPNR register that interrupt was received:
->
-> # devmem2 0xe000072c
-> /dev/mem opened.
-> Memory mapped at address 0xb7b80000.
-> Value at address 0xE000072C (0xb7b8072c): 0x20000000
->
->
-> Thank you for any suggestion,
->
-> Ran
+Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
 
-The issue been resolved after changing device tree interrupt numbers
-according to  Table 8-6 in reference manual.
-Thank you very much for the feedbacks.
+> On 08/17/2015 09:36 AM, Aneesh Kumar K.V wrote:
+>> We can't use generic functions like print_hex_dump to access kasan
+>> shadow region. This require us to setup another kasan shadow region
+>> for the address passed (kasan shadow address). Most architecture won't
+>> be able to do that. Hence remove dumping kasan shadow region dump. If
+>> we really want to do this we will have to have a kasan internal implemen
+>> tation of print_hex_dump for which we will disable address sanitizer
+>> operation.
+>>
+>
+> I didn't understand that.
+> Yes, you don't have shadow for shadow. But, for shadow addresses you
+> return return (void *)kasan_zero_page in kasan_mem_to_shadow(), so we
+> should be fine to access shadow in generic code.
+>
 
+But in general IMHO it is not correct to pass shadow address to generic
+functions, because that requires arch to setup shadow for the shadow.
+With one of the initial implementation of ppc64 support, I had page
+table entries setup for vmalloc and vmemmap shadow and that is when I
+hit the issue. We cannot expect arch to setup shadow regions like what is
+expected here. If we really need to print the shadow memory content, we
+could possibly make a copy of print_hex_dump in kasan_init.c . Let me
+know whether you think printing shadow area content is needed.
 
-Regards,
-
-Ran
+-aneesh
