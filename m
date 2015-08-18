@@ -1,31 +1,23 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D1951A0153
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 10:58:43 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 18 Aug 2015 10:58:41 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 570452BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 10:58:39 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7I0wTig38600708
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 10:58:37 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7I0w60E024590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 10:58:06 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc: Export include/uapi/asm/eeh.h
-Date: Tue, 18 Aug 2015 10:57:40 +1000
-Message-Id: <1439859460-7497-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C12D1A0239
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 12:51:12 +1000 (AEST)
+Message-ID: <1439866271.1763.5.camel@ellerman.id.au>
+Subject: Re: [PATCH 2/2] ppc64: Add a flag to tell the kernel it's booting
+ from kexec
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Simon Horman <horms@verge.net.au>, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org
+Date: Tue, 18 Aug 2015 12:51:11 +1000
+In-Reply-To: <1439837987.15601.29.camel@freescale.com>
+References: <1437249439-31496-1-git-send-email-scottwood@freescale.com>
+ <1437249439-31496-2-git-send-email-scottwood@freescale.com>
+ <1439837987.15601.29.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds include/uapi/asm/eeh.h to kbuild so that the header
-file will be exported automatically with below command. The
-header file was added by commit ed3e81f ("powerpc/eeh: Move PE
-state constants around")
+On Mon, 2015-08-17 at 13:59 -0500, Scott Wood wrote:
+> On Sat, 2015-07-18 at 14:57 -0500, Scott Wood wrote:
+> > It needs to know this because the SMP release mechanism for Freescale
+> > book3e is different from when booting with normal hardware.  In theory
+> > we could simulate the normal spin table mechanism, but not (easily) at
+> > the addresses U-Boot put in the device tree -- so there'd need to be
+> > even more communication between the kernel and kexec to set that up.
+> > Since there's already a similar flag being set (for kdump only), this
+> > seemed like a reasonable approach.
+> > 
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > ---
+> >  kexec/arch/ppc64/kexec-elf-ppc64.c | 11 ++++++++++-
+> >  kexec/arch/ppc64/kexec-ppc64.h     |  2 ++
+> >  purgatory/arch/ppc64/v2wrap.S      | 11 +++++++++++
+> >  3 files changed, 23 insertions(+), 1 deletion(-)
+> 
+> Any comment on these two patches?
 
-   make INSTALL_HDR_PATH=/tmp/headers \
-        SRCARCH=powerpc headers_install
+We should probably reserve 0x58 in the kernel's head_64.S too?
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/uapi/asm/Kbuild | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
-index f44a0278..dab3717 100644
---- a/arch/powerpc/include/uapi/asm/Kbuild
-+++ b/arch/powerpc/include/uapi/asm/Kbuild
-@@ -6,6 +6,7 @@ header-y += bitsperlong.h
- header-y += bootx.h
- header-y += byteorder.h
- header-y += cputable.h
-+header-y += eeh.h
- header-y += elf.h
- header-y += epapr_hcalls.h
- header-y += errno.h
--- 
-2.1.0
+cheers
