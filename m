@@ -1,25 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 32C4A1A0239
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 13:31:02 +1000 (AEST)
-Message-ID: <1439868650.15601.61.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C5EB1A0151
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 13:53:12 +1000 (AEST)
+Message-ID: <1439869991.1763.7.camel@ellerman.id.au>
 Subject: Re: [PATCH 2/2] ppc64: Add a flag to tell the kernel it's booting
  from kexec
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: Simon Horman <horms@verge.net.au>, <linuxppc-dev@lists.ozlabs.org>,
- <kexec@lists.infradead.org>
-Date: Mon, 17 Aug 2015 22:30:50 -0500
-In-Reply-To: <1439866271.1763.5.camel@ellerman.id.au>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Simon Horman <horms@verge.net.au>, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org
+Date: Tue, 18 Aug 2015 13:53:11 +1000
+In-Reply-To: <1439868650.15601.61.camel@freescale.com>
 References: <1437249439-31496-1-git-send-email-scottwood@freescale.com>
  <1437249439-31496-2-git-send-email-scottwood@freescale.com>
  <1439837987.15601.29.camel@freescale.com>
  <1439866271.1763.5.camel@ellerman.id.au>
+ <1439868650.15601.61.camel@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-18 at 12:51 +1000, Michael Ellerman wrote:
-> On Mon, 2015-08-17 at 13:59 -0500, Scott Wood wrote:
-> > On Sat, 2015-07-18 at 14:57 -0500, Scott Wood wrote:
-> > > It needs to know this because the SMP release mechanism for Freescale
-> > > book3e is different from when booting with normal hardware.  In theory
-> > > we could simulate the normal spin table mechanism, but not (easily) at
-> > > the addresses U-Boot put in the device tree -- so there'd need to be
-> > > even more communication between the kernel and kexec to set that up.
-> > > Since there's already a similar flag being set (for kdump only), this
-> > > seemed like a reasonable approach.
+On Mon, 2015-08-17 at 22:30 -0500, Scott Wood wrote:
+> On Tue, 2015-08-18 at 12:51 +1000, Michael Ellerman wrote:
+> > On Mon, 2015-08-17 at 13:59 -0500, Scott Wood wrote:
+> > > On Sat, 2015-07-18 at 14:57 -0500, Scott Wood wrote:
+> > > > It needs to know this because the SMP release mechanism for Freescale
+> > > > book3e is different from when booting with normal hardware.  In theory
+> > > > we could simulate the normal spin table mechanism, but not (easily) at
+> > > > the addresses U-Boot put in the device tree -- so there'd need to be
+> > > > even more communication between the kernel and kexec to set that up.
+> > > > Since there's already a similar flag being set (for kdump only), this
+> > > > seemed like a reasonable approach.
+> > > > 
+> > > > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > > > ---
+> > > >  kexec/arch/ppc64/kexec-elf-ppc64.c | 11 ++++++++++-
+> > > >  kexec/arch/ppc64/kexec-ppc64.h     |  2 ++
+> > > >  purgatory/arch/ppc64/v2wrap.S      | 11 +++++++++++
+> > > >  3 files changed, 23 insertions(+), 1 deletion(-)
 > > > 
-> > > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > > ---
-> > >  kexec/arch/ppc64/kexec-elf-ppc64.c | 11 ++++++++++-
-> > >  kexec/arch/ppc64/kexec-ppc64.h     |  2 ++
-> > >  purgatory/arch/ppc64/v2wrap.S      | 11 +++++++++++
-> > >  3 files changed, 23 insertions(+), 1 deletion(-)
+> > > Any comment on these two patches?
 > > 
-> > Any comment on these two patches?
+> > We should probably reserve 0x58 in the kernel's head_64.S too?
 > 
-> We should probably reserve 0x58 in the kernel's head_64.S too?
+> That's done in http://patchwork.ozlabs.org/patch/497417/
 
-That's done in http://patchwork.ozlabs.org/patch/497417/
+Right, sorry should have reviewed those :)
 
-Or do you mean that you want the kernel change to go in before the userspace 
-change?
+> Or do you mean that you want the kernel change to go in before the userspace 
+> change?
 
--Scott
+No I'm not bothered about the ordering really.
+
+cheers
