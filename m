@@ -1,21 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 984761A0239
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:19:49 +1000 (AEST)
-Message-ID: <1439889583.31374.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] cxl: Allow release of contexts which have been OPENED
- but not STARTED
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, dja@axtens.net, benh@kernel.crashing.org,
- mikey@neuling.org, imunsie@au1.ibm.com
-Date: Tue, 18 Aug 2015 19:19:43 +1000
-In-Reply-To: <1439879415-9925-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1439879415-9925-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3FA491A0239
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:22:09 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 18 Aug 2015 19:22:08 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5A1582CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:22:06 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7I9LxTG22609992
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:22:07 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7I9LXC0027692
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:21:34 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH V1 0/8] KASAN ppc64 support
+In-Reply-To: <CAPAsAGz40+1+P7ANVjU0WKCsiF4=sKNEs2+Jx_gdcKpkL5nL+A@mail.gmail.com>
+References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1439794492.2416.8.camel@kernel.crashing.org>
+ <87mvxqp7l5.fsf@linux.vnet.ibm.com>
+ <CAPAsAGzLY86BLT2KwE+dc=R+rnTPbMbxH_V4eror-Nvnd=3K8w@mail.gmail.com>
+ <87zj1pnodu.fsf@linux.vnet.ibm.com>
+ <CAPAsAGz40+1+P7ANVjU0WKCsiF4=sKNEs2+Jx_gdcKpkL5nL+A@mail.gmail.com>
+Date: Tue, 18 Aug 2015 14:51:06 +0530
+Message-ID: <87wpwtne9p.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +45,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-18 at 16:30 +1000, Andrew Donnellan wrote:
-> If we open a context but do not start it (either because we do not attempt
-> to start it, or because it fails to start for some reason), we are left
-> with a context in state OPENED. Previously, cxl_release_context() only
-> allowed releasing contexts in state CLOSED, so attempting to release an
-> OPENED context would fail.
-> 
-> In particular, this bug causes available contexts to run out after some EEH
-> failures, where drivers attempt to release contexts that have failed to
-> start.
-> 
-> Allow releasing contexts in any state other than STARTED, i.e. OPENED or
-> CLOSED (we can't release a STARTED context as it's currently using the
-> hardware).
-> 
-> Cc: stable@vger.kernel.org
-> Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> ---
->  drivers/misc/cxl/api.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index 6a768a9..1c520b8 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -59,7 +59,7 @@ EXPORT_SYMBOL_GPL(cxl_get_phys_dev);
->  
->  int cxl_release_context(struct cxl_context *ctx)
->  {
-> -	if (ctx->status != CLOSED)
-> +	if (ctx->status == STARTED)
->  		return -EBUSY;
+Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
 
-So this doesn't break when you add a new state, is it worth writing it as:
+> 2015-08-18 8:42 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
+>> Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
+>>
+>>
+>> But that is introducting conditionals in core code for no real benefit.
+>> This also will break when we eventually end up tracking vmalloc ?
+>
+> Ok, that's a very good reason to not do this.
+>
+> I see one potential problem in the way you use kasan_zero_page, though.
+> memset/memcpy of large portions of memory ( > 8 * PAGE_SIZE) will end up
+> in overflowing kasan_zero_page when we check shadow in memory_is_poisoned_n()
+>
 
-	if (ctx->status >= STARTED)
-		return -EBUSY;
+Any suggestion on how to fix that ? I guess we definitely don't want to
+check for addr and size in memset/memcpy. The other option is to
+do zero page mapping as is done for other architectures. That is we map
+via page table a zero page. But we still have the issue of memory we
+need to map the entire vmalloc range (page table memory). I was hoping to
+avoid all those complexities.
 
-?
 
-cheers
+-aneesh
