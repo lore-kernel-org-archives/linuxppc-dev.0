@@ -1,19 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 263E71A0153
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 20:21:36 +1000 (AEST)
-In-Reply-To: <1437801670-23705-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linux-leds@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, j.anaszewski@samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 28B701A0239
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 20:24:49 +1000 (AEST)
+In-Reply-To: <1438273132-20926-6-git-send-email-javier@osg.samsung.com>
+To: Javier Martinez Canillas <javier@osg.samsung.com>,
+ linux-kernel@vger.kernel.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, arnd@arndb.de,
- cooloney@gmail.com, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- rpurdie@rpsys.net, khandual@linux.vnet.ibm.com
-Subject: Re: [v8,3/3] leds/powernv: Add driver for PowerNV platform
-Message-Id: <20150818102136.0C9DD1402B5@ozlabs.org>
-Date: Tue, 18 Aug 2015 20:21:35 +1000 (AEST)
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [05/27] macintosh: therm_windtunnel: Export I2C module alias
+ information
+Message-Id: <20150818102449.06B531406A9@ozlabs.org>
+Date: Tue, 18 Aug 2015 20:24:48 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-25-07 at 05:21:10 UTC, Vasant Hegde wrote:
-> This patch implements LED driver for PowerNV platform using the existing
-> generic LED class framework.
+On Thu, 2015-30-07 at 16:18:30 UTC, Javier Martinez Canillas wrote:
+> The I2C core always reports the MODALIAS uevent as "i2c:<client name"
+> regardless if the driver was matched using the I2C id_table or the
+> of_match_table. So the driver needs to export the I2C table and this
+> be built into the module or udev won't have the necessary information
+> to auto load the correct module when the device is added.
 > 
-> PowerNV platform has below type of LEDs:
->   - System attention
->       Indicates there is a problem with the system that needs attention.
->   - Identify
->       Helps the user locate/identify a particular FRU or resource in the
->       system.
->   - Fault
->       Indicates there is a problem with the FRU or resource at the
->       location with which the indicator is associated.
+> Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+> ---
+> 
+>  drivers/macintosh/therm_windtunnel.c | 1 +
+>  1 file changed, 1 insertion(+)
 
-Hi Vasant,
-
-I'm waiting for a respin of this based on the discussion between you and
-Jackek.
-
-If I don't see it soon it will miss v4.3.
+Who are you expecting to merge this?
 
 cheers
