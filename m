@@ -1,22 +1,22 @@
 Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-vk0-x234.google.com (mail-vk0-x234.google.com
- [IPv6:2607:f8b0:400c:c05::234])
+Received: from mail-vk0-x236.google.com (mail-vk0-x236.google.com
+ [IPv6:2607:f8b0:400c:c05::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B7161A0153
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 18:40:29 +1000 (AEST)
-Received: by vkm66 with SMTP id 66so5673351vkm.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 01:40:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 914841A0151
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 18:50:51 +1000 (AEST)
+Received: by vkfi73 with SMTP id i73so66475320vkf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 01:50:49 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <874mjxp38l.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87zj1pnodu.fsf@linux.vnet.ibm.com>
 References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1439793400-18147-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <55D1CFE7.2070801@gmail.com>
- <CAPAsAGxSpA7XYWzL9R=uewwgF7-wN9ihbXQto-csd=RBWbPZqw@mail.gmail.com>
- <874mjxp38l.fsf@linux.vnet.ibm.com>
-Date: Tue, 18 Aug 2015 11:40:27 +0300
-Message-ID: <CAPAsAGxLS7f-McL=wYv5Ht13HJW0N7a8wz+k4R4+GMjHAmEfag@mail.gmail.com>
-Subject: Re: [RFC PATCH V1 7/8] powerpc/mm: kasan: Add kasan support for ppc64
+ <1439794492.2416.8.camel@kernel.crashing.org>
+ <87mvxqp7l5.fsf@linux.vnet.ibm.com>
+ <CAPAsAGzLY86BLT2KwE+dc=R+rnTPbMbxH_V4eror-Nvnd=3K8w@mail.gmail.com>
+ <87zj1pnodu.fsf@linux.vnet.ibm.com>
+Date: Tue, 18 Aug 2015 11:50:49 +0300
+Message-ID: <CAPAsAGz40+1+P7ANVjU0WKCsiF4=sKNEs2+Jx_gdcKpkL5nL+A@mail.gmail.com>
+Subject: Re: [RFC PATCH V1 0/8] KASAN ppc64 support
 From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
@@ -31,29 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-08-18 8:36 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
+2015-08-18 8:42 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
 > Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
 >
->> 2015-08-17 15:13 GMT+03:00 Andrey Ryabinin <ryabinin.a.a@gmail.com>:
+>> 2015-08-17 12:50 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
+>>> Because of the above I concluded that we may not be able to do
+>>> inline instrumentation. Now if we are not doing inline instrumentation,
+>>> we can simplify kasan support by not creating a shadow mapping at all
+>>> for vmalloc and vmemmap region. Hence the idea of returning the address
+>>> of a zero page for anything other than kernel linear map region.
 >>>
->>> Did you disable stack instrumentation (in scripts/Makefile.kasa),
->>> or you version of gcc doesn't support it (e.g. like 4.9.x on x86) ?
->>>
->>> Because this can't work with stack instrumentation as you don't have shadow for stack in early code.
->>>
->>> But this should be doable, as I think. All you need is to setup shadow for init task's
->>> stack before executing any instrumented function.
 >>
->> And you also need to define CONFIG_KASAN_SHADOW_OFFSET, so it will be
->> passed to GCC
->> via -fasan-shadow-offset= option.
+>> Yes, mapping zero page needed only for inline instrumentation.
+>> You simply don't need to check shadow for vmalloc/vmemmap.
+>>
+>> So, instead of redefining kasan_mem_to_shadow() I'd suggest to
+>> add one more arch hook. Something like:
+>>
+>> bool kasan_tracks_vaddr(unsigned long addr)
+>> {
+>>      return REGION_ID(addr) == KERNEL_REGION_ID;
+>> }
+>>
+>> And in check_memory_region():
+>>        if (!(kasan_enabled() && kasan_tracks_vaddr(addr)))
+>>                return;
 >
-> I am using KASAN minimal config. Hence this was not needed. Do we need
-> to pass that option for outline instrumentation ? If not it would be a
-> good idea to split that out and make it depend on KASAN_INLINE
 >
+> But that is introducting conditionals in core code for no real benefit.
+> This also will break when we eventually end up tracking vmalloc ?
 
-We need to pass this for stack instrumentation too.
+Ok, that's a very good reason to not do this.
 
+I see one potential problem in the way you use kasan_zero_page, though.
+memset/memcpy of large portions of memory ( > 8 * PAGE_SIZE) will end up
+in overflowing kasan_zero_page when we check shadow in memory_is_poisoned_n()
+
+> In that case our mem_to_shadow will esentially be a switch
+> statement returning different offsets for kernel region and vmalloc
+> region. As far as core kernel code is considered, it just need to
+> ask arch to get the shadow address for a memory and instead of adding
+> conditionals in core, my suggestion is, we handle this in an arch function.
+>
 > -aneesh
 >
