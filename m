@@ -1,29 +1,19 @@
-Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-vk0-x22d.google.com (mail-vk0-x22d.google.com
- [IPv6:2607:f8b0:400c:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8BB871A0153
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:30:35 +1000 (AEST)
-Received: by vkao123 with SMTP id o123so5859311vka.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 02:30:33 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <87wpwtne9p.fsf@linux.vnet.ibm.com>
-References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1439794492.2416.8.camel@kernel.crashing.org>
- <87mvxqp7l5.fsf@linux.vnet.ibm.com>
- <CAPAsAGzLY86BLT2KwE+dc=R+rnTPbMbxH_V4eror-Nvnd=3K8w@mail.gmail.com>
- <87zj1pnodu.fsf@linux.vnet.ibm.com>
- <CAPAsAGz40+1+P7ANVjU0WKCsiF4=sKNEs2+Jx_gdcKpkL5nL+A@mail.gmail.com>
- <87wpwtne9p.fsf@linux.vnet.ibm.com>
-Date: Tue, 18 Aug 2015 12:30:33 +0300
-Message-ID: <CAPAsAGzq9M=t7n82wX9xYTwu8bj3U8CsquzE=gLiKW2hVSwmjg@mail.gmail.com>
-Subject: Re: [RFC PATCH V1 0/8] KASAN ppc64 support
-From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 263E71A0153
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 20:21:36 +1000 (AEST)
+In-Reply-To: <1437801670-23705-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linux-leds@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, j.anaszewski@samsung.com
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, arnd@arndb.de,
+ cooloney@gmail.com, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ rpurdie@rpsys.net, khandual@linux.vnet.ibm.com
+Subject: Re: [v8,3/3] leds/powernv: Add driver for PowerNV platform
+Message-Id: <20150818102136.0C9DD1402B5@ozlabs.org>
+Date: Tue, 18 Aug 2015 20:21:35 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-08-18 12:21 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
-> Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
->
->> 2015-08-18 8:42 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
->>> Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
->>>
->>>
->>> But that is introducting conditionals in core code for no real benefit.
->>> This also will break when we eventually end up tracking vmalloc ?
->>
->> Ok, that's a very good reason to not do this.
->>
->> I see one potential problem in the way you use kasan_zero_page, though.
->> memset/memcpy of large portions of memory ( > 8 * PAGE_SIZE) will end up
->> in overflowing kasan_zero_page when we check shadow in memory_is_poisoned_n()
->>
->
-> Any suggestion on how to fix that ? I guess we definitely don't want to
+On Sat, 2015-25-07 at 05:21:10 UTC, Vasant Hegde wrote:
+> This patch implements LED driver for PowerNV platform using the existing
+> generic LED class framework.
+> 
+> PowerNV platform has below type of LEDs:
+>   - System attention
+>       Indicates there is a problem with the system that needs attention.
+>   - Identify
+>       Helps the user locate/identify a particular FRU or resource in the
+>       system.
+>   - Fault
+>       Indicates there is a problem with the FRU or resource at the
+>       location with which the indicator is associated.
 
-Wait, I was wrong, we should be fine.
-In memory_is_poisoned_n():
+Hi Vasant,
 
-ret = memory_is_zero(kasan_mem_to_shadow((void *)addr),
-            kasan_mem_to_shadow((void *)addr + size - 1) + 1);
+I'm waiting for a respin of this based on the discussion between you and
+Jackek.
 
-So this will be: memory_is_zero(kasan_zero_page, (char *)kasan_zero_page + 1);
-Which means that we will access only 1 byte of kasan_zero_page.
+If I don't see it soon it will miss v4.3.
 
-
-> check for addr and size in memset/memcpy. The other option is to
-> do zero page mapping as is done for other architectures. That is we map
-> via page table a zero page. But we still have the issue of memory we
-> need to map the entire vmalloc range (page table memory). I was hoping to
-> avoid all those complexities.
->
->
-> -aneesh
->
+cheers
