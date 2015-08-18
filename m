@@ -1,27 +1,21 @@
-Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-vk0-x22d.google.com (mail-vk0-x22d.google.com
- [IPv6:2607:f8b0:400c:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 365C11A0153
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:12:20 +1000 (AEST)
-Received: by vkao123 with SMTP id o123so5711312vka.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 02:12:18 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <87egj1p3ke.fsf@linux.vnet.ibm.com>
-References: <1439793400-18147-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1439793400-18147-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <CAPAsAGxs8NhxJ22DXOgcbBkuALzd0zd7WL+SCGeNmsWCrMi3nA@mail.gmail.com>
- <87egj1p3ke.fsf@linux.vnet.ibm.com>
-Date: Tue, 18 Aug 2015 12:12:17 +0300
-Message-ID: <CAPAsAGxmwfPMX4WOJxMCx4W2BP8LVtzN-M_54Xx_hqk2OhZYHw@mail.gmail.com>
-Subject: Re: [RFC PATCH V1 4/8] kasan: Don't use kasan shadow pointer in
- generic functions
-From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 984761A0239
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Aug 2015 19:19:49 +1000 (AEST)
+Message-ID: <1439889583.31374.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] cxl: Allow release of contexts which have been OPENED
+ but not STARTED
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, dja@axtens.net, benh@kernel.crashing.org,
+ mikey@neuling.org, imunsie@au1.ibm.com
+Date: Tue, 18 Aug 2015 19:19:43 +1000
+In-Reply-To: <1439879415-9925-1-git-send-email-andrew.donnellan@au1.ibm.com>
+References: <1439879415-9925-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,43 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-08-18 8:29 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
-> Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
->
->> On 08/17/2015 09:36 AM, Aneesh Kumar K.V wrote:
->>> We can't use generic functions like print_hex_dump to access kasan
->>> shadow region. This require us to setup another kasan shadow region
->>> for the address passed (kasan shadow address). Most architecture won't
->>> be able to do that. Hence remove dumping kasan shadow region dump. If
->>> we really want to do this we will have to have a kasan internal implemen
->>> tation of print_hex_dump for which we will disable address sanitizer
->>> operation.
->>>
->>
->> I didn't understand that.
->> Yes, you don't have shadow for shadow. But, for shadow addresses you
->> return return (void *)kasan_zero_page in kasan_mem_to_shadow(), so we
->> should be fine to access shadow in generic code.
->>
->
-> But in general IMHO it is not correct to pass shadow address to generic
-> functions, because that requires arch to setup shadow for the shadow.
+On Tue, 2015-08-18 at 16:30 +1000, Andrew Donnellan wrote:
+> If we open a context but do not start it (either because we do not attempt
+> to start it, or because it fails to start for some reason), we are left
+> with a context in state OPENED. Previously, cxl_release_context() only
+> allowed releasing contexts in state CLOSED, so attempting to release an
+> OPENED context would fail.
+> 
+> In particular, this bug causes available contexts to run out after some EEH
+> failures, where drivers attempt to release contexts that have failed to
+> start.
+> 
+> Allow releasing contexts in any state other than STARTED, i.e. OPENED or
+> CLOSED (we can't release a STARTED context as it's currently using the
+> hardware).
+> 
+> Cc: stable@vger.kernel.org
+> Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> ---
+>  drivers/misc/cxl/api.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+> index 6a768a9..1c520b8 100644
+> --- a/drivers/misc/cxl/api.c
+> +++ b/drivers/misc/cxl/api.c
+> @@ -59,7 +59,7 @@ EXPORT_SYMBOL_GPL(cxl_get_phys_dev);
+>  
+>  int cxl_release_context(struct cxl_context *ctx)
+>  {
+> -	if (ctx->status != CLOSED)
+> +	if (ctx->status == STARTED)
+>  		return -EBUSY;
 
-Yes, we have this shadow for shadow in x86_64/arm64.
+So this doesn't break when you add a new state, is it worth writing it as:
 
-> With one of the initial implementation of ppc64 support, I had page
-> table entries setup for vmalloc and vmemmap shadow and that is when I
-> hit the issue. We cannot expect arch to setup shadow regions like what is
-> expected here. If we really need to print the shadow memory content, we
-> could possibly make a copy of print_hex_dump in kasan_init.c . Let me
-> know whether you think printing shadow area content is needed.
->
+	if (ctx->status >= STARTED)
+		return -EBUSY;
 
-It was quite useful sometimes, so I think we should keep it.
-But I agree with you, that it would be better to avoid accesses to shadow memory
-in generic code.
-Another way to deal with this would be to copy shadow content in buffer,
-and then print_hex_dump() it.
+?
 
-> -aneesh
->
+cheers
