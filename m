@@ -1,31 +1,42 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 82CE81A0514
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 07:36:59 +1000 (AEST)
-Date: Wed, 19 Aug 2015 14:36:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Ingo Molnar <mingo@kernel.org>, arnd@arndb.de, linux@arm.linux.org.uk,
- catalin.marinas@arm.com, will.deacon@arm.com, ysato@users.sourceforge.jp,
- monstr@monstr.eu, jonas@southpole.se, cmetcalf@ezchip.com,
- gxt@mprc.pku.edu.cn, x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: provide more common DMA API functions V2
-Message-Id: <20150819143656.3a38eb538ffac60386e1224a@linux-foundation.org>
-In-Reply-To: <20150819080814.GA18115@lst.de>
-References: <1439795216-32189-1-git-send-email-hch@lst.de>
- <20150817142429.95a3965e0b35d0f35d3c4cfe@linux-foundation.org>
- <20150818053825.GA20771@lst.de>
- <20150817224552.43d7267d.akpm@linux-foundation.org>
- <20150818075107.GA31884@gmail.com> <20150819080814.GA18115@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 784321A0E13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 07:37:18 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 19 Aug 2015 22:37:13 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id EF35617D8059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 22:38:45 +0100 (BST)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7JLb9oe34144364
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 21:37:09 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7JLb9GR030004
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 15:37:09 -0600
+Message-ID: <55D4F702.4020503@linux.vnet.ibm.com>
+Date: Wed, 19 Aug 2015 23:37:06 +0200
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: David Laight <David.Laight@ACULAB.COM>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.cz>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ben Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/hvsi: Fix endianness issues in the HVSI driver
+References: <1438334990-11765-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1CB71D3E@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CB71D3E@AcuExch.aculab.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +46,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 19 Aug 2015 10:08:14 +0200 Christoph Hellwig <hch@lst.de> wrote:
-
-> On Tue, Aug 18, 2015 at 09:51:07AM +0200, Ingo Molnar wrote:
-> > I.e. shouldn't this be:
-> > 
-> > > I'll merge these 5 patches for 4.4.  That means I'll release them into 
-> > > linux-next after 4.2 is released.
-> > >
-> > > [...]
-> > > 
-> > > Linus will be releasing 4.2 in 1-2 weeks and until then, linux-next is supposed 
-> > > to contain only 4.3 material.  Once 4.2 is released and the 4.3 merge window 
-> > > opens, linux-next is open for 4.4 material.
-> > 
-> > ?
+On 03/08/2015 13:00, David Laight wrote:
+> From: Laurent Dufour
+>> Sent: 31 July 2015 10:30
+>> This patch fixes several endianness issues detected when running the HVSI
+>> driver in little endian mode.
+>>
+>> These issues are raised in little endian mode because the data exchanged in
+>> memory between the kernel and the hypervisor has to be in big endian
+>> format.
+> ...
+>> diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
+>> index 41901997c0d6..a75146f600cb 100644
+>> --- a/drivers/tty/hvc/hvsi.c
+>> +++ b/drivers/tty/hvc/hvsi.c
+>> @@ -240,9 +240,9 @@ static void hvsi_recv_control(struct hvsi_struct *hp, uint8_t *packet,
+>>  {
+>>  	struct hvsi_control *header = (struct hvsi_control *)packet;
+>>
+>> -	switch (header->verb) {
+>> +	switch (be16_to_cpu(header->verb)) {
+>>  		case VSV_MODEM_CTL_UPDATE:
+>> -			if ((header->word & HVSI_TSCD) == 0) {
+>> +			if ((be32_to_cpu(header->word) & HVSI_TSCD) == 0) {
 > 
-> That would make a lot more sense.  But also be said as I intended
-> these as the simple part of the dma work I'd like to get into 4.3.
+> It is generally best to byteswap constants.
 > 
-> Andrew, if you think it's not 4.3 material I'd rather keep them in
-> my git tree for now so that I can stack additional patches I have
-> in progress on top.  A non-git based tree like yours is unfortunately
-> very bad for patches that are dependencies for others.
+> 	David
 
-I think these will be OK for 4.3.  It's all quiet so far and any
-problems will probably show up at compile time so they'll get fixed
-promptly.
+Thanks David for your review.
+Regarding the byte swapping of the constants, I'm wondering if this  the
+best way here.
+For instance, Benjamin wrote a similar patch to fix another endianness
+issue (99fc1d91b8fc) and he doesn't convert the constant neither.
+It think that byte swapping the constant value will impact more code,
+and may not ease code reading.
+
+Cheers,
+Laurent.
