@@ -1,21 +1,42 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C36091A0035
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 14:49:30 +1000 (AEST)
-Message-ID: <1439959770.24918.5.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44B511A0151
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 15:13:08 +1000 (AEST)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1205714076F
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 15:13:07 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 19 Aug 2015 15:13:07 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 764853578047
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 15:13:03 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7J5CuEk1966496
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 15:13:04 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7J5CUAn009561
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 15:12:31 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Matt Ochs <mrochs@us.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ mikey <mikey@neuling.org>, linux-kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH 2/2] cxl: add set/get private data to context struct
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Cc: mikey <mikey@neuling.org>, linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Matt Ochs <mrochs@us.ibm.com>
-Date: Wed, 19 Aug 2015 14:49:30 +1000
-In-Reply-To: <1439957971-30483-2-git-send-email-imunsie@au.ibm.com>
+In-reply-to: <1439959770.24918.5.camel@ellerman.id.au>
 References: <1439957971-30483-1-git-send-email-imunsie@au.ibm.com>
  <1439957971-30483-2-git-send-email-imunsie@au.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1439959770.24918.5.camel@ellerman.id.au>
+Date: Wed, 19 Aug 2015 15:12:01 +1000
+Message-Id: <1439960447-sup-3936@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +46,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-08-19 at 14:19 +1000, Ian Munsie wrote:
-> From: Michael Neuling <mikey@neuling.org>
-> 
-> This provides AFU drivers a means to associate private data with a cxl
-> context. This is particularly intended for make the new callbacks for
-> driver specific events easier for AFU drivers to use, as they can easily
-> get back to any private data structures they may use.
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> ---
->  drivers/misc/cxl/api.c | 21 +++++++++++++++++++++
->  drivers/misc/cxl/cxl.h |  3 +++
->  include/misc/cxl.h     |  7 +++++++
->  3 files changed, 31 insertions(+)
-> 
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index e0f0c78..5f0b22e 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -70,6 +70,27 @@ int cxl_release_context(struct cxl_context *ctx)
->  }
->  EXPORT_SYMBOL_GPL(cxl_release_context);
->  
-> +
-> +int cxl_set_priv(struct cxl_context *ctx, void *priv)
-> +{
-> +	if (!ctx)
-> +		return -EINVAL;
-> +
-> +	ctx->priv = priv;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(cxl_set_priv);
-> +
-> +void *cxl_get_priv(struct cxl_context *ctx)
-> +{
-> +	if (!ctx)
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	return ctx->priv;
-> +}
-> +EXPORT_SYMBOL_GPL(cxl_get_priv);
+Excerpts from Michael Ellerman's message of 2015-08-19 14:49:30 +1000:
+> Do we really need the accessors? They don't buy anything I can see over just
+> using ctx->priv directly.
 
+The reasoning there is because we don't currently expose the contents of
+stuct cxl_context to afu drivers, rather they just treat it as an opaque
+type.
 
-Do we really need the accessors? They don't buy anything I can see over just
-using ctx->priv directly.
+We could potentially change this to expose the details, but there's a
+lot of junk in there that's just internal details of the cxl driver that
+isn't of interest to an afu driver that I'd rather not expose.
 
-cheers
+We also already have another accessor function (cxl_process_element) in
+the api, so it's not out of place.
+
+FWIW I'm not opposed to changing how this api works if it ultimately
+makes things better, but I want to wait until the cxlflash superpipe
+support is merged so any patches that change the api can change it at
+the same time.
+
+Cheers,
+-Ian
