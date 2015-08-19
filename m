@@ -1,41 +1,22 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 570551A0151
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 09:53:12 +1000 (AEST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1FDB7140562
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:53:11 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 19 Aug 2015 09:53:11 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 255532CE802D
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:53:07 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7INqwGI17301564
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:53:06 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7INqYbl028476
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 09:52:34 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, mikey <mikey@neuling.org>,
- dja <dja@axtens.net>
-Subject: Re: [PATCH V2] cxl: Allow release of contexts which have been OPENED
- but not STARTED
-In-reply-to: <1439940438-3585-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1439940438-3585-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Wed, 19 Aug 2015 09:52:05 +1000
-Message-Id: <1439941913-sup-4288@delenn.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B5EE1A04EF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 10:44:46 +1000 (AEST)
+Message-ID: <1439945086.23217.5.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/2] PCI: Make pci_msi_setup_pci_dev() non-static for
+ use by arch code
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, paulus@samba.org
+Date: Wed, 19 Aug 2015 10:44:46 +1000
+In-Reply-To: <1439932430-13375-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1439932430-13375-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1439932430-13375-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,4 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+Hi Guilherme,
+
+Thanks for the patches.
+
+On Tue, 2015-08-18 at 18:13 -0300, Guilherme G. Piccoli wrote:
+> Commit 1851617cd2 ("PCI/MSI: Disable MSI at enumeration even if kernel
+> doesn't support MSI") changed the location of the code that disables
+> MSI/MSI-X interrupts at PCI probe time in devices that have this flag set.
+> It moved the code from pci_msi_init_pci_dev() to a new function named
+> pci_msi_setup_pci_dev(), called by pci_setup_device().
+
+OK.
+
+> Since then, the pSeries platform of the powerpc architecture needs to
+> disable MSI at PCI probe time manually, as the code flow doesn't
+> reach pci_setup_device(). 
+>
+> For doing so, it wants to call
+> pci_msi_setup_pci_dev(). This patch makes the required function
+> non-static, so that it will be called on PCI probe path on powerpc pSeries
+> platform in next patch.
+
+I didn't follow that entirely, I think you mean something like:
+
+  The pseries PCI probing code does not call pci_setup_device(), so since
+  commit 1851617cd2 pci_msi_setup_pci_dev() is not called and MSIs are left
+  enabled, which is a bug.
+
+  To fix this the pseries PCI probe should manually call
+  pci_msi_setup_pci_dev(), so make it non-static.
+
+
+Does that look OK?
+
+Also you haven't CC'ed the original author of the commit, or the PCI
+maintainer, or the relevant lists.
+
+That would be:
+
+    Michael S. Tsirkin <mst@redhat.com>
+    Bjorn Helgaas <bhelgaas@google.com>
+    linux-pci@vger.kernel.org
+    linux-kernel@vger.kernel.org
+
+
+And finally both patches should have a fixes line, such as:
+
+Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't support MSI")
+
+cheers
