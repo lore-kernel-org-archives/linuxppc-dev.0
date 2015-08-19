@@ -1,38 +1,27 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <roy.pledge@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0104.outbound.protection.outlook.com [207.46.100.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB65E1A1930
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 04:54:18 +1000 (AEST)
-Received: from /spool/local
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Wed, 19 Aug 2015 15:54:14 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id E0D593520082
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 14:53:05 -0400 (EDT)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7JIqfvN47448318
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 15:52:41 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7JIsAIp005463
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 15:54:11 -0300
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: gpiccoli@linux.vnet.ibm.com, mpe@ellerman.id.au, linux-pci@vger.kernel.org,
- gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- bhelgaas@google.com, mst@redhat.com
-Subject: [PATCH v2 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe
- time in OF case
-Date: Wed, 19 Aug 2015 15:54:10 -0300
-Message-Id: <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
-In-Reply-To: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>,
- <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
-References: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>,
- <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D068C1A0514
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 06:53:02 +1000 (AEST)
+From: Roy Pledge <roy.pledge@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Madalin-Cristian
+ Bucur" <madalin.bucur@freescale.com>, Haiying Wang
+ <Haiying.Wang@freescale.com>
+Subject: RE: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
+Date: Wed, 19 Aug 2015 20:52:55 +0000
+Message-ID: <BN3PR0301MB12670C0BE318280D1C53FE0F8C670@BN3PR0301MB1267.namprd03.prod.outlook.com>
+References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
+ <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
+ <1430858734.16357.256.camel@freescale.com>
+ <BN3PR0301MB1267E5A61E7E5BC2789F9E898CDA0@BN3PR0301MB1267.namprd03.prod.outlook.com>
+ <1431470762.16357.511.camel@freescale.com>
+In-Reply-To: <1431470762.16357.511.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,43 +31,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes since v2:
- * Added "Fixes" line
- * Improved commit reference by using 12 first chars of SHA
-
->8----------8<
-
-Since the commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even
-if kernel doesn't support MSI"), MSI/MSI-X interrupts aren't being
-disabled at PCI probe time, as the logic responsible for this was moved
-in the aforementioned commit from pci_device_add() to pci_setup_device().
-The latter function is not reachable on PowerPC pSeries platform during
-Open Firmware PCI probing time.
-
-This patch calls pci_msi_setup_pci_dev() explicitly to disable MSI/MSI-X
-during PCI probe time on pSeries platform.
-
-Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
-doesn't support MSI")
-
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/pci_of_scan.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 42e02a2..0e920f3 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -191,6 +191,9 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
- 
- 	pci_device_add(dev, bus);
- 
-+	/* Disable MSI/MSI-X here to avoid bogus interrupts */
-+	pci_msi_setup_pci_dev(dev);
-+
- 	return dev;
- }
- EXPORT_SYMBOL(of_create_pci_dev);
--- 
-2.1.0
+U29ycnkgZm9yIGRpZ2dpbmcgdXAgYW4gb2xkIHRocmVhZCBoZXJlIFNjb3R0LCBidXQgd2UgbmV2
+ZXIgZGlkIGNsb3NlIG9uIHRoaXMgZGlzY3Vzc2lvbi4gIFNlZSBteSByZXBsaWVzIGlubGluZSBi
+ZWxvdy4uLi4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNj
+b3R0LUIwNzQyMQ0KPiBTZW50OiBUdWVzZGF5LCBNYXkgMTIsIDIwMTUgNjo0NiBQTQ0KPiBUbzog
+UGxlZGdlIFJveS1SMDEzNTYNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBk
+ZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgQnVjdXINCj4gTWFkYWxpbi1DcmlzdGlhbi1CMzI3
+MTYNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIHBvd2VycGMvcW1hbjogQ2hhbmdlIGZzbCxx
+bWFuLWNoYW5uZWwtaWQgdG8gY2VsbC0NCj4gaW5kZXgNCj4gDQo+IE9uIFR1ZSwgMjAxNS0wNS0x
+MiBhdCAxNjoxOSAtMDUwMCwgUGxlZGdlIFJveS1SMDEzNTYgd3JvdGU6DQo+ID4gPiA+DQo+ID4g
+PiA+IEkgZG9uJ3QgYmVsaWV2ZSB0aGlzIGlzIGNvcnJlY3QgLSBsZXQgbWUgZXhwbGFpbiB0aGUg
+cmF0aW9uYWwgd2h5DQo+ID4gPiA+IHdlIGhhZCB0d28NCj4gPiA+IHByb3BlcnRpZXMgaW4gdGhl
+IFFNYW4gcG9ydGFsIHRvIGJlZ2luIHdpdGguDQo+ID4gPiA+DQo+ID4gPiA+IFRoZSB0d28gcHJv
+cGVydGllcyBpbiBxdWVzdGlvbiBhcmUgY2VsbC1pbmRleCBhbmQgZnNsLHFtYW4tY2hhbm5lbC1p
+ZC4NCj4gPiA+ID4NCj4gPiA+ID4gVGhlIGNlbGwtaW5kZXggcHJvcGVydHkgaXMgdXNlZCBpbiB1
+LWJvb3QgYXMgYW4gaW5kZXggZm9yIHRoZQ0KPiA+ID4gPiBzb2Z0d2FyZSBwb3J0YWwNCj4gPiA+
+IElEIHdoZW4gYWRkaW5nIHRoZSBmc2wsbGlvZG4gZnJvbSB0aGUgVS1ib290IHRhYmxlIGludG8g
+dGhlIGRldmljZSB0cmVlLg0KPiA+ID4NCj4gPiA+IFRoZSBkZXZpY2UgdHJlZSBpcyBub3Qgc3Vw
+cG9zZWQgdG8gY29udGFpbiBhcmJpdHJhcnkgc29mdHdhcmUgaWRlbnRpZmllcnMuDQo+ID4NCj4g
+PiBJIGFncmVlIC0gdGhpcyBpcyB3aHkgdGhlIG9yaWdpbmFsIGRldmljZSB0cmVlIGJpbmRpbmdz
+IHJlbW92ZWQNCj4gPiBjZWxsLWluZGV4IGFzIGl0IGNhbiBiZSBjYWxjdWxhdGVkLg0KPiAgVW5m
+b3J0dW5hdGVseSB1LWJvb3QgcmVsaWVkIG9uDQo+ID4gdGhpcyB2YWx1ZSBiZWluZyBwcmVzZW50
+IHNvIHRvIGJlIGJhY2t3YXJkIGNvbXBhdGlibGUgd2UgZG9uJ3QgaGF2ZSBhDQo+ID4gd2F5IHRv
+IHJlbW92ZSBpdC4gIEknbSBub3Qgc3VyZSBvbiB3aGF0IHRoZSBwcm9jZWR1cmUgaXMgdG8gY2hh
+bmdlDQo+ID4gdGhpbmdzIHUtYm9vdCByZWxpZXMgb24sDQo+IA0KPiBHZW5lcmFsbHkgdGhlIHBy
+b2NlZHVyZSBpcyB0aGF0IHdlIGRvbid0IGNoYW5nZSBpdC4gIEl0IHdvdWxkbid0IGJlIHNvIGJh
+ZCBpZg0KPiB1c2luZyBhbiBvbGQgVS1Cb290IGp1c3QgbWVhbnQgdGhhdCBkYXRhcGF0aCBkb2Vz
+bid0IHdvcmsgd2l0aCB1cHN0cmVhbQ0KPiBrZXJuZWxzIChzaW5jZSB0aGF0IGRvZXNuJ3Qgd29y
+ayBub3cpLCBidXQgYSBkdHMgdGhhdCBtYWtlcyBleGlzdGluZyBVLUJvb3QNCj4gY3Jhc2ggaXMg
+YW5vdGhlciBtYXR0ZXIuDQoNCklmIHRoaXMgaXMgdHJ1ZSB0aGVuIHdlIGNhbiBuZXZlciByZW1v
+dmUgdGhlIGNlbGwtaW5kZXggcHJvcGVydHkuICBUaGUgY2VsbC1pbmRleCBpbiB0aGlzIGNhc2Ug
+aXMgcmVmZXJyaW5nIHRvIHRoZSBwb3J0YWwgaW5kZXggd2hpY2ggY291bGQgYmUgY2FsY3VsYXRl
+ZCBmcm9tIHRoZSBxbWFuLXBvcnRhbEBYWFhYIHZhbHVlLiAgTXkgcHJlZmVyZW5jZSB3b3VsZCBi
+ZSB0byBlbGltaW5hdGUgY2VsbC1pbmRleCBhbmQgcmVwbGFjZSBpdCB3aXRoIHRoaXMgY2FsY3Vs
+YXRpb24gYnV0IHRoYXQgd291bGQgbWVhbiBvbGRlciB1LWJvb3Qgd291bGQgZmFpbCB0byB3b3Jr
+IHdpdGggbmV3ZXIga2VybmVsLiAgV2hpbGUgdGhlIGJ1ZyB0aGF0IGNhdXNlZCBvbGRlciB1LWJv
+b3QgdG8gY3Jhc2ggaWYgdGhpcyBwcm9wZXJ0eSBpcyBhbm5veWluZyB0aGlzIGhhcyBiZWVuIGFk
+ZHJlc3NlZCBpbiBtb3JlIHJlY2VudCB1LWJvb3RzLiBJIGNhbid0IGNvbW1lbnQgb24gYSBwb2xp
+Y3kgd2hlcmUgdS1ib290IG11c3QgYWx3YXlzIGJvb3QgbmV3ZXIgdmVyc2lvbiBvZiBMaW51eCAt
+IHRoYXQgbWVhbnMgTGludXggd2lsbCBoYXZlIHRvIGRyYWcgYWxvbmcgYmFnZ2FnZSBsaWtlIHRo
+aXMgcHJvcGVydHkgZm9yIGEgbG9uZyB0aW1lIChmb3JldmVyPykuIA0KDQo+ID4gPg0KPiA+ID4g
+PiBUaGUgIGZzbCxxbWFuLWNoYW5uZWwtaWQgcHJvcGVydHkgaXMgdXNlZCBpbiBMaW51eCBhbmQg
+Y29ycmVzcG9uZHMNCj4gPiA+ID4gdG8gYSBoYXJkd2FyZSB2YWx1ZSB0aGF0IGluZGljYXRlcyB3
+aGljaCBjaGFubmVsIGlzIGRlZGljYXRlZCB0bw0KPiA+ID4gPiB0aGUgc29mdHdhcmUgcG9ydGFs
+Lg0KPiA+ID4gPg0KPiA+ID4gPiBXaGlsZSBJJ20gbm90IGF3YXJlIG9mIGEgY3VycmVudCBTb0Mg
+d2hlcmUgdGhlIGNoYW5uZWwgSUQgZm9yIGENCj4gPiA+ID4gc29mdHdhcmUgcG9ydGFsIGRvZXMg
+bm90IG1hdGNoIHRoZSBpbmRleCAoaS5lLiBTV1AgMCB1c2VzIGNoYW5uZWwNCj4gPiA+ID4gMCwN
+Cj4gPiA+ID4gZXRjLikNCj4gPiA+DQo+ID4gPiBUaHVzIHRoZXJlJ3Mgbm8gYmFja3dhcmQgY29t
+cGF0aWJpbGl0eSBpc3N1ZSB3aXRoIHJlZGVmaW5pbmcNCj4gPiA+IGNlbGwtaW5kZXggdG8gbWVh
+biB0aGUgY2hhbm5lbCBJRC4NCj4gPg0KPiA+IENoYW5uZWwgSURzIGRvIGNoYW5nZSBhbmQgYXJl
+IGRlZmluZWQgd2hlbiB0aGUgU29DIGlzIGNyZWF0ZWQNCj4gDQo+IEJ1dCBmb3IgU29DcyB0aGF0
+IGFscmVhZHkgZXhpc3QsIHRoZXkgd29uJ3QgY2hhbmdlLCByaWdodD8gIFdlIGRvbid0IG5lZWQg
+dG8NCj4gY2FyZSBhYm91dCB3aGF0IGV4aXN0aW5nIFUtQm9vdCBkb2VzIG9uIG5ldyBTb0NzLCBz
+aW5jZSBVLUJvb3Qgd291bGQNCj4gbmVlZCB0byBiZSBjaGFuZ2VkIHRvIHN1cHBvcnQgdGhlIG5l
+dyBTb0MgYXQgYWxsLg0KDQpUaGlzIGNvZGUgaXNuJ3QgbG9va2luZyBhdCBTb0MgcHJvZHVjdCBu
+dW1iZXJzIC0gdGhlIHdob2xlIHBvaW50IG9mIHB1dHRpbmcgdGhpcyBpbiB0aGUgZGV2aWNlIHRy
+ZWUgaXMgdG8gYXZvaWQgZG9pbmcganVzdCB0aGF0LiAgSWYgd2UgaGFkIHRvIGFkZCBjb2RlIGZv
+ciBlYWNoIFNvQyB0byB1LWJvb3Qgd2UgbWF5IGFzIHdlbGwgZ2V0IHJpZCBvZiB0aGUgZGV2aWNl
+IHRyZWUgYW5kIGhhcmRjb2RlIHRoaXMgY29uZmlndXJhdGlvbiBpbiB0aGUgc291cmNlIGZpbGUg
+dGhhdCBpcyBTb0Mgc3BlY2lmaWMuDQoNCj4gDQo+ID4gIChsb29rIGF0IGNoZWNrcyBmb3IgUU1h
+biB2ZXJzaW9ucyBhbmQgYWRqdXN0bWVudHMgZm9yIFBvb2wgQ2hhbm5lbA0KPiA+IElEcyBpbiB0
+aGUgZHJpdmVyKS4gIElmIHRoZSBjaGFubmVsIElEIGZvciBwb3J0YWwgMCBldmVyIGJlY29tZXMg
+bm9uDQo+ID4gemVybyB3ZSBqdXN0IGVuZCB1cCBoYXZpbmcgdG8gbWFrZSBhIG1lc3MgaW4gdGhl
+IGNvZGUgb3IgcmVpbnRyb2R1Y2UNCj4gPiB0aGlzIGZpZWxkLg0KPiANCj4gV2hhdCBkZWZpbmVz
+IHRoYXQgcG9ydGFsIGFzICJwb3J0YWwgMCI/DQoNClBvcnRhbCAwIGlzIHBvcnRhbCAwIGJlY2F1
+c2UgaXQgaXMgYXQgb2Zmc2V0IDAgaW4gdGhlIFFNYW4gcG9ydGFsIG1lbW9yeSByZWdpb24uICBQ
+b3J0YWwgMSBpcyBhdCAweDQwMDAgZXRjLi4uICBOb3RlIHRoYXQgdGhpcyBpcyBub3QgdGhlIGNh
+c2UgZm9yIGZvcnRoY29taW5nIEFSTSBkZXZpY2VzIGFzIHBvcnRhbHMgYXJlIGRpc3RyaWJ1dGVk
+IGF0IDY0SyBpbnRlcnZhbHMuICBIb3dldmVyIHNpbmNlIHRoZSBkZXZpY2UgdHJlZSBwYXJzaW5n
+IGNvZGUgZm9yIEFSTSBpcyBzZXBhcmF0ZSBmcm9tIHRoZSBQUEMgY29kZSB0aGlzIHdpbGwgbm90
+IHBvc2UgYW55IGlzc3VlLg0KDQoNCj4gDQo+ID4gPiA+IGl0IGlzIHBvc3NpYmxlIHRoYXQgZnV0
+dXJlIFNvQ3MgY291bGQgc3RyYXkgZnJvbSB0aGlzIG1vZGVsLCB0aGVyZQ0KPiA+ID4gPiBpcyBu
+byByZWFzb24gZm9yIHBvcnRhbCBpbmRleCB0byBlcXVhbCBjaGFubmVsIElEIGF0IGFsbCB0aW1l
+cy4NCj4gPiA+DQo+ID4gPiBIb3cgY2FuIGZ1dHVyZSBTb0NzIGRpY3RhdGUgaG93IHdlIGFzc2ln
+biBhIHNvZnR3YXJlLWRlZmluZWQNCj4gaWRlbnRpZmllcj8NCj4gPiA+IElmIHNvZnR3YXJlIHdh
+bnRzIGl0IHRvIGJlIHRoZSBzYW1lIGFzIHRoZSBjaGFubmVsIGlkLCB0aGVuIGl0IHdpbGwgYmUu
+DQo+ID4gPg0KPiA+ID4gSWYgdGhlcmUgaXMgc29tZSBhc3BlY3Qgb2YgdGhlIGhhcmR3YXJlIGl0
+c2VsZiAobm90IHRoZQ0KPiA+ID4gZG9jdW1lbnRhdGlvbikgdGhhdCBjZWxsLWluZGV4IGN1cnJl
+bnRseSBjb3JyZXNwb25kcyB0bywgb3RoZXIgdGhhbg0KPiA+ID4gdGhlIGNoYW5uZWwgaWQsIHBs
+ZWFzZSBtYWtlIHRoYXQgY2xlYXIuDQo+ID4NCj4gPiBDaGFubmVsIElEIGlzIGRlZmluZWQgaW4g
+dGhlIFNvQyBSVEwgLSBpdCBpcyBub3QgY29udHJvbGxlZCBieQ0KPiA+IHNvZnR3YXJlIGFuZCBp
+dCBpcyBub3QgYSBzb2Z0d2FyZSBhc3NpZ25lZCBpZGVudGlmaWVyLiAgSXQgaXMgbm90DQo+ID4g
+cG9zc2libGUgZm9yIFNXIHRvIHNldCB0aGVzZSB2YWx1ZXMuDQo+IA0KPiBJIHNhaWQgIm90aGVy
+IHRoYW4gdGhlIGNoYW5uZWwgaWQiLiAgSW4gcGFydGljdWxhciwgSSB3YXMgYXNraW5nIGFib3V0
+IHRoZQ0KPiBjb25jZXB0IG9mICJwb3J0YWwgaW5kZXgiLg0KDQpUaGUgb25seSB0aGluZyBjZWxs
+LWluZGV4IGluZGljYXRlcyBpcyB0aGUgb2Zmc2V0IG9mIHRoZSBwb3J0YWwgaW4gdGhlIFFNYW4g
+YWRkcmVzcyBzcGFjZS4gIExpbnV4IGRvZXNuJ3QgbG9vayBhdCB0aGlzIHZhbHVlLiAgSWYgd2Ug
+Y2FuIGdldCBwYXN0IHRoZSBpc3N1ZSBvZiBvbGQgdS1ib290cyBub3Qgd29ya2luZyBJIHdvdWxk
+IGhhcHBpbHkgcHJvZHVjZSBwYXRjaGVzIHRoYXQgcmVtb3ZlIHRoaXMgZnJvbSB1LWJvb3QgYW5k
+IHRoZSBkZXZpY2UgdHJlZXMgYW5kIHN0YXJ0IHVzaW5nIHVuaXQtYWRkcmVzcyBmb3IgZGV0ZXJt
+aW5pbmcgd2hpY2ggcG9ydGFsIGlzIGJlaW5nIGluZGV4ZWQuICBTaW5jZSBjaGFubmVsLWlkIGlz
+IGEgcHJvcGVydHkgb2YgYSBwb3J0YWwgSSBiZWxpZXZlIGl0IHNob3VsZCBiZSBsZWZ0IGFzIGlz
+LiBJZiBub3QgSSBiZWxpZXZlIGl0IGlzIGJlc3QgdG8gbGVhdmUgYm90aCB2YWx1ZXMgaW4gcGxh
+Y2UgDQoNClJveQ0KIA0KDQo=
