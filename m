@@ -1,32 +1,37 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 003691A0514
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 18:08:19 +1000 (AEST)
-Date: Wed, 19 Aug 2015 10:08:14 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Christoph Hellwig <hch@lst.de>, arnd@arndb.de,
- linux@arm.linux.org.uk, catalin.marinas@arm.com,
- will.deacon@arm.com, ysato@users.sourceforge.jp, monstr@monstr.eu,
- jonas@southpole.se, cmetcalf@ezchip.com, gxt@mprc.pku.edu.cn,
- x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: provide more common DMA API functions V2
-Message-ID: <20150819080814.GA18115@lst.de>
-References: <1439795216-32189-1-git-send-email-hch@lst.de>
- <20150817142429.95a3965e0b35d0f35d3c4cfe@linux-foundation.org>
- <20150818053825.GA20771@lst.de>
- <20150817224552.43d7267d.akpm@linux-foundation.org>
- <20150818075107.GA31884@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1D651A0514
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 18:42:35 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 19 Aug 2015 14:12:33 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 14B8FE0058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 14:11:50 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7J8gSFw50200792
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 14:12:28 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7J8gRhT007212
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 14:12:28 +0530
+Message-ID: <55D44173.9020700@linux.vnet.ibm.com>
+Date: Wed, 19 Aug 2015 14:12:27 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150818075107.GA31884@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linux-leds@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, j.anaszewski@samsung.com
+CC: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, arnd@arndb.de,
+ cooloney@gmail.com, rpurdie@rpsys.net, khandual@linux.vnet.ibm.com
+Subject: Re: [v8,3/3] leds/powernv: Add driver for PowerNV platform
+References: <20150818102136.0C9DD1402B5@ozlabs.org>
+In-Reply-To: <20150818102136.0C9DD1402B5@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,24 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 18, 2015 at 09:51:07AM +0200, Ingo Molnar wrote:
-> I.e. shouldn't this be:
+On 08/18/2015 03:51 PM, Michael Ellerman wrote:
+> On Sat, 2015-25-07 at 05:21:10 UTC, Vasant Hegde wrote:
+>> This patch implements LED driver for PowerNV platform using the existing
+>> generic LED class framework.
+>>
+>> PowerNV platform has below type of LEDs:
+>>   - System attention
+>>       Indicates there is a problem with the system that needs attention.
+>>   - Identify
+>>       Helps the user locate/identify a particular FRU or resource in the
+>>       system.
+>>   - Fault
+>>       Indicates there is a problem with the FRU or resource at the
+>>       location with which the indicator is associated.
 > 
-> > I'll merge these 5 patches for 4.4.  That means I'll release them into 
-> > linux-next after 4.2 is released.
-> >
-> > [...]
-> > 
-> > Linus will be releasing 4.2 in 1-2 weeks and until then, linux-next is supposed 
-> > to contain only 4.3 material.  Once 4.2 is released and the 4.3 merge window 
-> > opens, linux-next is open for 4.4 material.
+> Hi Vasant,
 > 
-> ?
+> I'm waiting for a respin of this based on the discussion between you and
+> Jackek.
+> 
+> If I don't see it soon it will miss v4.3.
 
-That would make a lot more sense.  But also be said as I intended
-these as the simple part of the dma work I'd like to get into 4.3.
+Michael,
 
-Andrew, if you think it's not 4.3 material I'd rather keep them in
-my git tree for now so that I can stack additional patches I have
-in progress on top.  A non-git based tree like yours is unfortunately
-very bad for patches that are dependencies for others.
+I'll post v9 in a day or two.
+
+-Vasant
