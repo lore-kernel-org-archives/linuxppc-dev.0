@@ -1,40 +1,19 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 702871A0514
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 07:53:55 +1000 (AEST)
-Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 19 Aug 2015 22:53:52 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 44F0A219005C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 22:53:23 +0100 (BST)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7JLrn3n32571494
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 21:53:49 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7JLrmtQ008437
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 15:53:49 -0600
-Message-ID: <55D4FAE9.7000504@linux.vnet.ibm.com>
-Date: Wed, 19 Aug 2015 23:53:45 +0200
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/hvsi: Fix endianness issues in the HVSI driver
-References: <1438334990-11765-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1438649494.9418.0.camel@ellerman.id.au>
-In-Reply-To: <1438649494.9418.0.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8EE81A005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:14:14 +1000 (AEST)
+In-Reply-To: <1435815541-11860-1-git-send-email-nikunj@linux.vnet.ibm.com>
+To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: anton@samba.org, linux-kernel@vger.kernel.org, nikunj@linux.vnet.ibm.com,
+ bharata@linux.vnet.ibm.com
+Subject: Re: [RESEND] powerpc/numa: initialize distance lookup table from
+ drconf path
+Message-Id: <20150819231414.BF91C140771@ozlabs.org>
+Date: Thu, 20 Aug 2015 09:14:14 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,29 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/08/2015 02:51, Michael Ellerman wrote:
-> On Fri, 2015-07-31 at 11:29 +0200, Laurent Dufour wrote:
->> This patch fixes several endianness issues detected when running the HVSI
->> driver in little endian mode.
->>
->> These issues are raised in little endian mode because the data exchanged in
->> memory between the kernel and the hypervisor has to be in big endian
->> format.
+On Thu, 2015-02-07 at 05:39:01 UTC, Nikunj A Dadhania wrote:
+> In some situations, a NUMA guest that supports
+> ibm,dynamic-memory-reconfiguration node will end up having flat NUMA
+> distances between nodes. This is because of two problems in the
+> current code.
 > 
-> Can you include the sparse output before and after?
+> 1) Different representations of associativity lists.
+> 
+>    There is an assumption about the associativity list in
+>    initialize_distance_lookup_table(). Associativity list has two forms:
+> 
+>    a) [cpu,memory]@x/ibm,associativity has following
+>       format:
+>            <N> <N integers>
+> 
+>    b) ibm,dynamic-reconfiguration-memory/ibm,associativity-lookup-arrays
+> 
+>            <M> <N> <M associativity lists each having N integers>
+>            M = the number of associativity lists
+>            N = the number of entries per associativity list
+> 
+>    Fix initialize_distance_lookup_table() so that it does not assume
+>    "case a". And update the caller to skip the length field before
+>    sending the associativity list.
+> 
+> 2) Distance table not getting updated from drconf path.
+> 
+>    Node distance table will not get initialized in certain cases as
+>    ibm,dynamic-reconfiguration-memory path does not initialize the
+>    lookup table.
+> 
+>    Call initialize_distance_lookup_table() from drconf path with
+>    appropriate associativity list.
+> 
+> Reported-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+> Acked-by: Anton Blanchard <anton@samba.org>
 
-Hi Michael,
+Applied to powerpc next, thanks.
 
-Here is the output message displayed on the console when the bug occurred:
+https://git.kernel.org/powerpc/c/1d805440a364b4a68562
 
-[    0.000517] irq: (null) didn't like hwirq-0x1000a00 to VIRQ16 mapping
-(rc=-22)
-[    0.000578] hvsi_console_init: couldn't create irq mapping for 0x1000a00
-
-With the patch is applied, the hvsi driver is initializing correctly and
-no message is displayed, except the one saying the number of device the
-hvsi driver has configured. For instance:
-[    1.535783] HVSI: registered 1 devices
-
-Cheers,
-Laurent.
+cheers
