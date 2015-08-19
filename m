@@ -1,22 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B08F1A0E13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:14:18 +1000 (AEST)
-In-Reply-To: <1438934377-4922-6-git-send-email-a.hajda@samsung.com>
-To: Andrzej Hajda <a.hajda@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B0981A2CAD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:26:46 +1000 (AEST)
+Message-ID: <1440026806.13406.2.camel@ellerman.id.au>
+Subject: Re: Ping Re: [PATCH 0/8] math-emu: Update kernel math-emu code from
+ current glibc soft-fp
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Andrzej Hajda <a.hajda@samsung.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [05/31] arch/powerpc/nvram: use kmemdup rather than duplicating
- its implementation
-Message-Id: <20150819231417.6ED15140D17@ozlabs.org>
-Date: Thu, 20 Aug 2015 09:14:17 +1000 (AEST)
+To: Joseph Myers <joseph@codesourcery.com>
+Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+Date: Thu, 20 Aug 2015 09:26:46 +1000
+In-Reply-To: <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
+References: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
+ <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-07-08 at 07:59:11 UTC, Andrzej Hajda wrote:
-> The patch was generated using fixed coccinelle semantic patch
-> scripts/coccinelle/api/memdup.cocci [1].
+On Wed, 2015-08-19 at 14:39 +0000, Joseph Myers wrote:
+> I'd like to ping this patch series, not having seen any comments on it.
 > 
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2014320
+> [PATCH 0/8] math-emu: Update kernel math-emu code from current glibc soft-fp
+> https://lkml.org/lkml/2015/7/2/394
 > 
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
-> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> [PATCH 1/8] math-emu: Move math-emu to math-emu-old
+> https://lkml.org/lkml/2015/7/2/395
+> 
+> [PATCH 2/8] math-emu: Import current glibc soft-fp as include/math-emu
+> https://lkml.org/lkml/2015/7/2/398
+> 
+> [PATCH 3/8] alpha/math-emu: Move alpha from math-emu-old to math-emu
+> https://lkml.org/lkml/2015/7/2/399
+> 
+> [PATCH 4/8] powerpc/math-emu: Move powerpc from math-emu-old to math-emu
+> https://lkml.org/lkml/2015/7/2/400
+> 
+> [PATCH 5/8] s390/math-emu: Move s390 from math-emu-old to math-emu
+> https://lkml.org/lkml/2015/7/2/401
+> 
+> [PATCH 6/8] sh/math-emu: Move sh from math-emu-old to math-emu
+> https://lkml.org/lkml/2015/7/2/402
+> 
+> [PATCH 7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
+> https://lkml.org/lkml/2015/7/2/404
+> 
+> [PATCH 8/8] math-emu: Remove math-emu-old
+> https://lkml.org/lkml/2015/7/2/405
+> 
+> As noted in patch 0, the dependencies are as follows: patch 2 depends on 
+> patch 1, patches 3-7 depend on patches 1 and 2 but are independent of each 
+> other, patch 8 depends on all the other patches.
 
-Applied to powerpc next, thanks.
+Hi Joseph,
 
-https://git.kernel.org/powerpc/c/fc9e9cbf4e48f28525ed
+I have done some testing on powerpc, and it seems good.
+
+I'm reluctant to proceed with merging them though until we've heard at least
+*something* from the other maintainers.
+
+We don't want to end up with math-emu-old hanging around for ever.
 
 cheers
