@@ -1,22 +1,25 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA4CB1A19F1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 07:48:51 +1000 (AEST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <linux-kernel@vger.kernel.org>
-CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.com>, Joachim Eastwood <manabian@gmail.com>,
- <linux-arm-kernel@lists.infradead.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-serial@vger.kernel.org>
-Subject: [PATCH v2 0/5] drivers/tty: make more bool drivers explicitly
- non-modular
-Date: Wed, 19 Aug 2015 17:48:04 -0400
-Message-ID: <1440020889-12120-1-git-send-email-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 25C3F1A1D90
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 07:50:58 +1000 (AEST)
+Message-ID: <1440021013.2737.14.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/hvsi: Fix endianness issues in the HVSI driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, David Laight
+ <David.Laight@ACULAB.COM>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
+ <jslaby@suse.cz>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Date: Thu, 20 Aug 2015 07:50:13 +1000
+In-Reply-To: <55D4F702.4020503@linux.vnet.ibm.com>
+References: <1438334990-11765-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1CB71D3E@AcuExch.aculab.com>
+ <55D4F702.4020503@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,62 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[v2: drop dead module code removal from 8250_lpc18xx.c ; instead convert it
- from bool to tristate ; also add ack to hvc_console commit.]
+On Wed, 2015-08-19 at 23:37 +0200, Laurent Dufour wrote:
+> On 03/08/2015 13:00, David Laight wrote:
+From: Laurent Dufour
+> > > Sent: 31 July 2015 10:30
+> > > This patch fixes several endianness issues detected when running
+> > > the HVSI
+> > > driver in little endian mode.
+> > > 
+> > > These issues are raised in little endian mode because the data
+> > > exchanged in
+> > > memory between the kernel and the hypervisor has to be in big
+> > > endian
+> > > format.
+> > ...
+> > > diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
+> > > index 41901997c0d6..a75146f600cb 100644
+> > > --- a/drivers/tty/hvc/hvsi.c
+> > > +++ b/drivers/tty/hvc/hvsi.c
+> > > @@ -240,9 +240,9 @@ static void hvsi_recv_control(struct
+> > > hvsi_struct *hp, uint8_t *packet,
+> > >  {
+> > >  	struct hvsi_control *header = (struct hvsi_control
+> > > *)packet;
+> > > 
+> > > -	switch (header->verb) {
+> > > +	switch (be16_to_cpu(header->verb)) {
+> > >  		case VSV_MODEM_CTL_UPDATE:
+> > > -			if ((header->word & HVSI_TSCD) == 0) {
+> > > +			if ((be32_to_cpu(header->word) &
+> > > HVSI_TSCD) == 0) {
+> > 
+> > It is generally best to byteswap constants.
+> > 
+> > 	David
+> 
+> Thanks David for your review.
+> Regarding the byte swapping of the constants, I'm wondering if this 
+>  the
+> best way here.
+> For instance, Benjamin wrote a similar patch to fix another
+> endianness
+> issue (99fc1d91b8fc) and he doesn't convert the constant neither.
+> It think that byte swapping the constant value will impact more code,
+> and may not ease code reading.
 
-This second set of patches to drivers/tty steps outside of the serial
-dir, and an improved auditing finds two more serial drivers pretending
-to be modular that really are not.
+Right, I disagree with byteswapping the constants at their definition
+point, however maybe he meant using cpu_to_be16(CONSTANT) ?
 
-The reasoning for doing this is the same as the first set[1] of patches
-and is largely copied below:
+In any case, it's pretty moot as we have the lhbrx instruction which
+will do the load and byteswap and for HVSI, even if it was a tad slower
+than a normal load, it would not make a noticeable difference.
 
-  In the previous merge window, we made changes to allow better
-  delineation between modular and non-modular code in commit
-  0fd972a7d91d6e15393c449492a04d94c0b89351 ("module: relocate module_init
-  from init.h to module.h").  This allows us to now ensure module code
-  looks modular and non-modular code does not accidentally look modular
-  without suffering build breakage.
-  
-  Here we target code that is, by nature of their Kconfig settings, only
-  available to be built-in, but implicitly presenting itself as being
-  possibly modular by way of using modular headers, macros, and functions.
-  
-  The goal here is to remove that illusion of modularity from these
-  drivers, but in a way that leaves the actual runtime unchanged.
-  In doing so, we remove code that has never been tested and adds
-  no value to the tree.  And we begin the process of expecting a
-  level of consistency between the Kconfig of a driver and the code
-  that the driver uses.
-  
-Build tested for allyesconfig on x86_64, and ARM for lpc81xx, and powerpc
-for hvc_console and mpsc, layered onto tty/tty-next as a baseline.
-
-Paul.
-
-[1] https://lkml.kernel.org/r/1437530538-5078-1-git-send-email-paul.gortmaker@windriver.com
---
-
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: Joachim Eastwood <manabian@gmail.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-serial@vger.kernel.org
-
-Paul Gortmaker (5):
-  drivers/tty: make pty.c slightly more explicitly non-modular
-  drivers/tty: make sysrq.c slightly more explicitly non-modular
-  drivers/tty: make hvc_console.c explicitly non-modular
-  drivers/tty: make serial/mpsc.c driver explicitly non-modular
-  drivers/tty: make serial 8250_lpc18xx.c Kconfig a tristate
-
- drivers/tty/hvc/hvc_console.c   | 18 +-----------------
- drivers/tty/pty.c               |  7 +++++--
- drivers/tty/serial/8250/Kconfig |  2 +-
- drivers/tty/serial/mpsc.c       | 36 +++---------------------------------
- drivers/tty/sysrq.c             |  6 +++++-
- 5 files changed, 15 insertions(+), 54 deletions(-)
-
--- 
-2.5.0
+Ben.
