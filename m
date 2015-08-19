@@ -1,22 +1,40 @@
-Return-Path: <joseph_myers@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E03591A0514
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 01:07:19 +1000 (AEST)
-Date: Wed, 19 Aug 2015 14:39:27 +0000
-From: Joseph Myers <joseph@codesourcery.com>
-To: <linux-kernel@vger.kernel.org>, <linux-alpha@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
- <linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>,
- <mpe@ellerman.id.au>
-Subject: Ping Re: [PATCH 0/8] math-emu: Update kernel math-emu code from
- current glibc soft-fp
-In-Reply-To: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
-Message-ID: <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
-References: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 566E41A0514
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 02:20:43 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Thu, 20 Aug 2015 02:20:41 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B05D52BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 02:20:39 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7JGKUvZ59310290
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 02:20:39 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7JGK5KJ019528
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 02:20:06 +1000
+Message-ID: <55D4ACA1.30801@linux.vnet.ibm.com>
+Date: Wed, 19 Aug 2015 21:49:45 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+CC: linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, stewart@linux.vnet.ibm.com,
+ j.anaszewski81@gmail.com, arnd@arndb.de, cooloney@gmail.com,
+ rpurdie@rpsys.net, khandual@linux.vnet.ibm.com, benh@kernel.crashing.org
+Subject: Re: [PATCH v9 3/3] leds/powernv: Add driver for PowerNV platform
+References: <1439980886-16360-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <1439980886-16360-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ <55D478AF.4080009@samsung.com>
+In-Reply-To: <55D478AF.4080009@samsung.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +44,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'd like to ping this patch series, not having seen any comments on it.
+On 08/19/2015 06:08 PM, Jacek Anaszewski wrote:
+> Hi Vasant,
 
-[PATCH 0/8] math-emu: Update kernel math-emu code from current glibc soft-fp
-https://lkml.org/lkml/2015/7/2/394
+Hello Jacek,
 
-[PATCH 1/8] math-emu: Move math-emu to math-emu-old
-https://lkml.org/lkml/2015/7/2/395
+> 
+> I've found two superfluous lines. Please find my remarks below.
 
-[PATCH 2/8] math-emu: Import current glibc soft-fp as include/math-emu
-https://lkml.org/lkml/2015/7/2/398
+Thanks for the review. I will fix both issues and will send v10 soon.
 
-[PATCH 3/8] alpha/math-emu: Move alpha from math-emu-old to math-emu
-https://lkml.org/lkml/2015/7/2/399
-
-[PATCH 4/8] powerpc/math-emu: Move powerpc from math-emu-old to math-emu
-https://lkml.org/lkml/2015/7/2/400
-
-[PATCH 5/8] s390/math-emu: Move s390 from math-emu-old to math-emu
-https://lkml.org/lkml/2015/7/2/401
-
-[PATCH 6/8] sh/math-emu: Move sh from math-emu-old to math-emu
-https://lkml.org/lkml/2015/7/2/402
-
-[PATCH 7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
-https://lkml.org/lkml/2015/7/2/404
-
-[PATCH 8/8] math-emu: Remove math-emu-old
-https://lkml.org/lkml/2015/7/2/405
-
-As noted in patch 0, the dependencies are as follows: patch 2 depends on 
-patch 1, patches 3-7 depend on patches 1 and 2 but are independent of each 
-other, patch 8 depends on all the other patches.
-
--- 
-Joseph S. Myers
-joseph@codesourcery.com
+-Vasant
