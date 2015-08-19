@@ -1,36 +1,39 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB1A51A085D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 02:50:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6169E1A1930
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 04:45:32 +1000 (AEST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Wed, 19 Aug 2015 22:20:06 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 99D881258061
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 22:19:23 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7JGo4Dx5439814
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 22:20:04 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7JGo22r005492
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 22:20:03 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-To: linux-leds@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, j.anaszewski@samsung.com, stewart@linux.vnet.ibm.com,
- j.anaszewski81@gmail.com, arnd@arndb.de, cooloney@gmail.com,
- rpurdie@rpsys.net, khandual@linux.vnet.ibm.com, benh@kernel.crashing.org,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: [PATCH v10 2/3] powerpc/powernv: Create LED platform device
-Date: Wed, 19 Aug 2015 22:19:53 +0530
-Message-Id: <1440002994-25662-3-git-send-email-hegdevasant@linux.vnet.ibm.com>
-In-Reply-To: <1440002994-25662-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
-References: <1440002994-25662-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Wed, 19 Aug 2015 15:45:28 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 194531DC006D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 14:44:23 -0400 (EDT)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7JIhgGK18612518
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 15:43:43 -0300
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7JIjMF3004431
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 15:45:23 -0300
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: gpiccoli@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, paulus@samba.org, bhelgaas@google.com,
+ mst@redhat.com
+Subject: [PATCH v2 1/2] PCI: Make pci_msi_setup_pci_dev() non-static for use
+ by arch code
+Date: Wed, 19 Aug 2015 15:45:22 -0300
+Message-Id: <1440009922-30248-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+In-Reply-To: <1439945086.23217.5.camel@ellerman.id.au>,
+ <1439932077-11427-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1439945086.23217.5.camel@ellerman.id.au>,
+ <1439932077-11427-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,48 +43,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds platform devices for leds. Also export LED related
-OPAL API's so that led driver can use these APIs.
+Thanks very much for your suggestions Michael. I agree with them all,
+so I'm sending the patch v2 (see below).
 
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+About the relevant mailing lists, I already sent to the linux-pci and
+already cc'ed Bjorn Helgaas - the problem is that I made a mistake and
+sent 2 different emails using git send-email. I'm really sorry about
+this.
+
+Now I'm trying to correct my mistake sending this message
+simultaneously to both lists (and to a bunch of cc's) using two
+Message-IDs in my reply. Hope it works...
+
+Cheers
+
+
+Changes since v2:
+ * Made commit message more clear
+ * Added "Fixes" line
+ * Improved commit reference by using 12 first chars of SHA
+
+>8----------8<
+
+Commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+doesn't support MSI") changed the location of the code that disables
+MSI/MSI-X interrupts at PCI probe time in devices that have this flag
+set. It moved the code from pci_msi_init_pci_dev() to a new function
+named pci_msi_setup_pci_dev(), called by pci_setup_device().
+
+The pseries PCI probing code does not call pci_setup_device(), so since
+the aforementioned commit the function pci_msi_setup_pci_dev() is not
+called and MSI/MSI-X interrupts are left enabled, which is a bug. To fix
+this, the pseries PCI probe should manually call pci_msi_setup_pci_dev(),
+so this patch makes it non-static.
+
+Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+doesn't support MSI")
+
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/pci/probe.c | 2 +-
+ include/linux/pci.h | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index f084afa..6839358 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -648,7 +648,7 @@ static void opal_init_heartbeat(void)
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index cefd636..520c5b6 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1103,7 +1103,7 @@ int pci_cfg_space_size(struct pci_dev *dev)
  
- static int __init opal_init(void)
+ #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
+ 
+-static void pci_msi_setup_pci_dev(struct pci_dev *dev)
++void pci_msi_setup_pci_dev(struct pci_dev *dev)
  {
--	struct device_node *np, *consoles;
-+	struct device_node *np, *consoles, *leds;
- 	int rc;
+ 	/*
+ 	 * Disable the MSI hardware to avoid screaming interrupts
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 8a0321a..860c751 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1202,6 +1202,7 @@ struct msix_entry {
+ 	u16	entry;	/* driver uses to specify entry, OS writes */
+ };
  
- 	opal_node = of_find_node_by_path("/ibm,opal");
-@@ -689,6 +689,13 @@ static int __init opal_init(void)
- 	/* Setup a heatbeat thread if requested by OPAL */
- 	opal_init_heartbeat();
++void pci_msi_setup_pci_dev(struct pci_dev *dev);
  
-+	/* Create leds platform devices */
-+	leds = of_find_node_by_path("/ibm,opal/leds");
-+	if (leds) {
-+		of_platform_device_create(leds, "opal_leds", NULL);
-+		of_node_put(leds);
-+	}
-+
- 	/* Create "opal" kobject under /sys/firmware */
- 	rc = opal_sysfs_init();
- 	if (rc == 0) {
-@@ -841,3 +848,6 @@ EXPORT_SYMBOL_GPL(opal_rtc_write);
- EXPORT_SYMBOL_GPL(opal_tpo_read);
- EXPORT_SYMBOL_GPL(opal_tpo_write);
- EXPORT_SYMBOL_GPL(opal_i2c_request);
-+/* Export these symbols for PowerNV LED class driver */
-+EXPORT_SYMBOL_GPL(opal_leds_get_ind);
-+EXPORT_SYMBOL_GPL(opal_leds_set_ind);
+ #ifdef CONFIG_PCI_MSI
+ int pci_msi_vec_count(struct pci_dev *dev);
 -- 
 2.1.0
