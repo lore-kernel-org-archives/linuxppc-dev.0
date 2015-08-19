@@ -1,44 +1,39 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
+Return-Path: <imunsie@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 090ED1A1D99
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 12:22:35 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9F151A0151
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Aug 2015 14:21:05 +1000 (AEST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 874A514030F
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 12:22:34 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 7704E140327
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 14:21:05 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 19 Aug 2015 12:22:33 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6D4D82CE8055
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 12:22:30 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7J2MF9L61669410
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 12:22:24 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7J2LvjR021096
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 12:21:57 +1000
-Date: Wed, 19 Aug 2015 12:21:31 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: aik@ozlabs.ru, gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH V4 6/6] powerpc/powernv: allocate sparse PE# when using
- M64 BAR in Single PE mode
-Message-ID: <20150819022131.GB17094@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1439949704-8023-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1439949704-8023-7-git-send-email-weiyang@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1439949704-8023-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 19 Aug 2015 14:21:03 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9CE3D3578052
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 14:21:01 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7J4Ks6k62849060
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 14:21:02 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7J4KSd7007860
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Aug 2015 14:20:29 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: mpe <mpe@ellerman.id.au>
+Cc: mikey <mikey@neuling.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Matt Ochs <mrochs@us.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>
+Subject: [PATCH 1/2] cxl: Add mechanism for delivering AFU driver specific
+ events
+Date: Wed, 19 Aug 2015 14:19:30 +1000
+Message-Id: <1439957971-30483-1-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,184 +43,261 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 19, 2015 at 10:01:44AM +0800, Wei Yang wrote:
->When M64 BAR is set to Single PE mode, the PE# assigned to VF could be
->sparse.
->
->This patch restructures the patch to allocate sparse PE# for VFs when M64
->BAR is set to Single PE mode. Also it rename the offset to pe_num_map to
->reflect the content is the PE number.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+This adds an afu_driver_ops structure with event_pending and
+deliver_event callbacks. An AFU driver can fill these out and associate
+it with a context to enable passing custom AFU specific events to
+userspace.
 
->---
-> arch/powerpc/include/asm/pci-bridge.h     |    2 +-
-> arch/powerpc/platforms/powernv/pci-ioda.c |   79 ++++++++++++++++++++++-------
-> 2 files changed, 61 insertions(+), 20 deletions(-)
->
->diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->index 8aeba4c..b3a226b 100644
->--- a/arch/powerpc/include/asm/pci-bridge.h
->+++ b/arch/powerpc/include/asm/pci-bridge.h
->@@ -213,7 +213,7 @@ struct pci_dn {
-> #ifdef CONFIG_PCI_IOV
-> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
-> 	u16     num_vfs;		/* number of VFs enabled*/
->-	int     offset;			/* PE# for the first VF PE */
->+	int     *pe_num_map;		/* PE# for the first VF PE or array */
-> 	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
-> #define IODA_INVALID_M64        (-1)
-> 	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 4bc83b8..779f52a 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -1243,7 +1243,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
->
-> 			/* Map the M64 here */
-> 			if (pdn->m64_single_mode) {
->-				pe_num = pdn->offset + j;
->+				pe_num = pdn->pe_num_map[j];
-> 				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-> 						pe_num, OPAL_M64_WINDOW_TYPE,
-> 						pdn->m64_map[j][i], 0);
->@@ -1347,7 +1347,7 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
-> 	struct pnv_phb        *phb;
-> 	struct pci_dn         *pdn;
-> 	struct pci_sriov      *iov;
->-	u16 num_vfs;
->+	u16                    num_vfs, i;
->
-> 	bus = pdev->bus;
-> 	hose = pci_bus_to_host(bus);
->@@ -1361,14 +1361,21 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
->
-> 	if (phb->type == PNV_PHB_IODA2) {
-> 		if (!pdn->m64_single_mode)
->-			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
->+			pnv_pci_vf_resource_shift(pdev, -*pdn->pe_num_map);
->
-> 		/* Release M64 windows */
-> 		pnv_pci_vf_release_m64(pdev, num_vfs);
->
-> 		/* Release PE numbers */
->-		bitmap_clear(phb->ioda.pe_alloc, pdn->offset, num_vfs);
->-		pdn->offset = 0;
->+		if (pdn->m64_single_mode) {
->+			for (i = 0; i < num_vfs; i++) {
->+				if (pdn->pe_num_map[i] != IODA_INVALID_PE)
->+					pnv_ioda_free_pe(phb, pdn->pe_num_map[i]);
->+			}
->+		} else
->+			bitmap_clear(phb->ioda.pe_alloc, *pdn->pe_num_map, num_vfs);
->+		/* Releasing pe_num_map */
->+		kfree(pdn->pe_num_map);
-> 	}
-> }
->
->@@ -1394,7 +1401,10 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
->
-> 	/* Reserve PE for each VF */
-> 	for (vf_index = 0; vf_index < num_vfs; vf_index++) {
->-		pe_num = pdn->offset + vf_index;
->+		if (pdn->m64_single_mode)
->+			pe_num = pdn->pe_num_map[vf_index];
->+		else
->+			pe_num = *pdn->pe_num_map + vf_index;
->
-> 		pe = &phb->ioda.pe_array[pe_num];
-> 		pe->pe_number = pe_num;
->@@ -1436,6 +1446,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> 	struct pnv_phb        *phb;
-> 	struct pci_dn         *pdn;
-> 	int                    ret;
->+	u16                    i;
->
-> 	bus = pdev->bus;
-> 	hose = pci_bus_to_host(bus);
->@@ -1458,20 +1469,42 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> 			return -EBUSY;
-> 		}
->
->+		/* Allocating pe_num_map */
->+		if (pdn->m64_single_mode)
->+			pdn->pe_num_map = kmalloc(sizeof(*pdn->pe_num_map) * num_vfs,
->+					GFP_KERNEL);
->+		else
->+			pdn->pe_num_map = kmalloc(sizeof(*pdn->pe_num_map), GFP_KERNEL);
->+
->+		if (!pdn->pe_num_map)
->+			return -ENOMEM;
->+
-> 		/* Calculate available PE for required VFs */
->-		mutex_lock(&phb->ioda.pe_alloc_mutex);
->-		pdn->offset = bitmap_find_next_zero_area(
->-			phb->ioda.pe_alloc, phb->ioda.total_pe,
->-			0, num_vfs, 0);
->-		if (pdn->offset >= phb->ioda.total_pe) {
->+		if (pdn->m64_single_mode) {
->+			for (i = 0; i < num_vfs; i++)
->+				pdn->pe_num_map[i] = IODA_INVALID_PE;
->+			for (i = 0; i < num_vfs; i++) {
->+				pdn->pe_num_map[i] = pnv_ioda_alloc_pe(phb);
->+				if (pdn->pe_num_map[i] == IODA_INVALID_PE) {
->+					ret = -EBUSY;
->+					goto m64_failed;
->+				}
->+			}
->+		} else {
->+			mutex_lock(&phb->ioda.pe_alloc_mutex);
->+			*pdn->pe_num_map = bitmap_find_next_zero_area(
->+				phb->ioda.pe_alloc, phb->ioda.total_pe,
->+				0, num_vfs, 0);
->+			if (*pdn->pe_num_map >= phb->ioda.total_pe) {
->+				mutex_unlock(&phb->ioda.pe_alloc_mutex);
->+				dev_info(&pdev->dev, "Failed to enable VF%d\n", num_vfs);
->+				kfree(pdn->pe_num_map);
->+				return -EBUSY;
->+			}
->+			bitmap_set(phb->ioda.pe_alloc, *pdn->pe_num_map, num_vfs);
-> 			mutex_unlock(&phb->ioda.pe_alloc_mutex);
->-			dev_info(&pdev->dev, "Failed to enable VF%d\n", num_vfs);
->-			pdn->offset = 0;
->-			return -EBUSY;
-> 		}
->-		bitmap_set(phb->ioda.pe_alloc, pdn->offset, num_vfs);
-> 		pdn->num_vfs = num_vfs;
->-		mutex_unlock(&phb->ioda.pe_alloc_mutex);
->
-> 		/* Assign M64 window accordingly */
-> 		ret = pnv_pci_vf_assign_m64(pdev, num_vfs);
->@@ -1486,7 +1519,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> 		 * Otherwise, the PE# for the VF will conflict with others.
-> 		 */
-> 		if (!pdn->m64_single_mode) {
->-			ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
->+			ret = pnv_pci_vf_resource_shift(pdev, *pdn->pe_num_map);
-> 			if (ret)
-> 				goto m64_failed;
-> 		}
->@@ -1498,8 +1531,16 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> 	return 0;
->
-> m64_failed:
->-	bitmap_clear(phb->ioda.pe_alloc, pdn->offset, num_vfs);
->-	pdn->offset = 0;
->+	if (pdn->m64_single_mode) {
->+		for (i = 0; i < num_vfs; i++) {
->+			if (pdn->pe_num_map[i] != IODA_INVALID_PE)
->+				pnv_ioda_free_pe(phb, pdn->pe_num_map[i]);
->+		}
->+	} else
->+		bitmap_clear(phb->ioda.pe_alloc, *pdn->pe_num_map, num_vfs);
->+
->+	/* Releasing pe_num_map */
->+	kfree(pdn->pe_num_map);
->
-> 	return ret;
-> }
->-- 
->1.7.9.5
->
+The cxl driver will call event_pending() during poll, select, read, etc.
+calls to check if an AFU driver specific event is pending, and will call
+deliver_event() to deliver that event. This way, the cxl driver takes
+care of all the usual locking semantics around these calls and handles
+all the generic cxl events, so that the AFU driver only needs to worry
+about it's own events.
+
+The deliver_event() call is passed a struct cxl_event buffer to fill in.
+The header will already be filled in for an AFU driver event, and the
+AFU driver is expected to expand the header.size as necessary (up to
+max_size, defined by struct cxl_event_afu_driver_reserved) and fill out
+it's own information.
+
+Conflicts between AFU specific events are not expected, due to the fact
+that each AFU specific driver has it's own mechanism to deliver an AFU
+file descriptor to userspace.
+
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ drivers/misc/cxl/Kconfig |  5 +++++
+ drivers/misc/cxl/api.c   |  7 +++++++
+ drivers/misc/cxl/cxl.h   |  6 +++++-
+ drivers/misc/cxl/file.c  | 37 +++++++++++++++++++++++++++----------
+ include/misc/cxl.h       | 29 +++++++++++++++++++++++++++++
+ include/uapi/misc/cxl.h  | 13 +++++++++++++
+ 6 files changed, 86 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/misc/cxl/Kconfig b/drivers/misc/cxl/Kconfig
+index 8756d06..560412c 100644
+--- a/drivers/misc/cxl/Kconfig
++++ b/drivers/misc/cxl/Kconfig
+@@ -15,12 +15,17 @@ config CXL_EEH
+ 	bool
+ 	default n
+ 
++config CXL_AFU_DRIVER_OPS
++	bool
++	default n
++
+ config CXL
+ 	tristate "Support for IBM Coherent Accelerators (CXL)"
+ 	depends on PPC_POWERNV && PCI_MSI && EEH
+ 	select CXL_BASE
+ 	select CXL_KERNEL_API
+ 	select CXL_EEH
++	select CXL_AFU_DRIVER_OPS
+ 	default m
+ 	help
+ 	  Select this option to enable driver support for IBM Coherent
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 6a768a9..e0f0c78 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -267,6 +267,13 @@ struct cxl_context *cxl_fops_get_context(struct file *file)
+ }
+ EXPORT_SYMBOL_GPL(cxl_fops_get_context);
+ 
++void cxl_set_driver_ops(struct cxl_context *ctx,
++			struct cxl_afu_driver_ops *ops)
++{
++	ctx->afu_driver_ops = ops;
++}
++EXPORT_SYMBOL_GPL(cxl_set_driver_ops);
++
+ int cxl_start_work(struct cxl_context *ctx,
+ 		   struct cxl_ioctl_start_work *work)
+ {
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 6f53866..30e44a8 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -24,6 +24,7 @@
+ #include <asm/reg.h>
+ #include <misc/cxl-base.h>
+ 
++#include <misc/cxl.h>
+ #include <uapi/misc/cxl.h>
+ 
+ extern uint cxl_verbose;
+@@ -34,7 +35,7 @@ extern uint cxl_verbose;
+  * Bump version each time a user API change is made, whether it is
+  * backwards compatible ot not.
+  */
+-#define CXL_API_VERSION 1
++#define CXL_API_VERSION 2
+ #define CXL_API_VERSION_COMPATIBLE 1
+ 
+ /*
+@@ -462,6 +463,9 @@ struct cxl_context {
+ 	bool pending_fault;
+ 	bool pending_afu_err;
+ 
++	/* Used by AFU drivers for driver specific event delivery */
++	struct cxl_afu_driver_ops *afu_driver_ops;
++
+ 	struct rcu_head rcu;
+ };
+ 
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 57bdb47..2ebaca3 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -279,6 +279,22 @@ int afu_mmap(struct file *file, struct vm_area_struct *vm)
+ 	return cxl_context_iomap(ctx, vm);
+ }
+ 
++static inline int _ctx_event_pending(struct cxl_context *ctx)
++{
++	bool afu_driver_event_pending = false;
++
++	if (ctx->afu_driver_ops && ctx->afu_driver_ops->event_pending)
++		afu_driver_event_pending = ctx->afu_driver_ops->event_pending(ctx);
++
++	return (ctx->pending_irq || ctx->pending_fault ||
++	    ctx->pending_afu_err || afu_driver_event_pending);
++}
++
++static inline int ctx_event_pending(struct cxl_context *ctx)
++{
++	return _ctx_event_pending(ctx) || (ctx->status == CLOSED);
++}
++
+ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+@@ -291,8 +307,7 @@ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
+ 	pr_devel("afu_poll wait done pe: %i\n", ctx->pe);
+ 
+ 	spin_lock_irqsave(&ctx->lock, flags);
+-	if (ctx->pending_irq || ctx->pending_fault ||
+-	    ctx->pending_afu_err)
++	if (_ctx_event_pending(ctx))
+ 		mask |= POLLIN | POLLRDNORM;
+ 	else if (ctx->status == CLOSED)
+ 		/* Only error on closed when there are no futher events pending
+@@ -305,12 +320,6 @@ unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
+ 	return mask;
+ }
+ 
+-static inline int ctx_event_pending(struct cxl_context *ctx)
+-{
+-	return (ctx->pending_irq || ctx->pending_fault ||
+-	    ctx->pending_afu_err || (ctx->status == CLOSED));
+-}
+-
+ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 			loff_t *off)
+ {
+@@ -360,7 +369,15 @@ ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 	memset(&event, 0, sizeof(event));
+ 	event.header.process_element = ctx->pe;
+ 	event.header.size = sizeof(struct cxl_event_header);
+-	if (ctx->pending_irq) {
++	if (ctx->afu_driver_ops
++			&& ctx->afu_driver_ops->event_pending
++			&& ctx->afu_driver_ops->deliver_event
++			&& ctx->afu_driver_ops->event_pending(ctx)) {
++		pr_devel("afu_read delivering AFU driver specific event\n");
++		event.header.type = CXL_EVENT_AFU_DRIVER;
++		ctx->afu_driver_ops->deliver_event(&event, ctx, sizeof(event));
++		WARN_ON(event.header.size > sizeof(event));
++	} else if (ctx->pending_irq) {
+ 		pr_devel("afu_read delivering AFU interrupt\n");
+ 		event.header.size += sizeof(struct cxl_event_afu_interrupt);
+ 		event.header.type = CXL_EVENT_AFU_INTERRUPT;
+@@ -538,7 +555,7 @@ int __init cxl_file_init(void)
+ 	 * If these change we really need to update API.  Either change some
+ 	 * flags or update API version number CXL_API_VERSION.
+ 	 */
+-	BUILD_BUG_ON(CXL_API_VERSION != 1);
++	BUILD_BUG_ON(CXL_API_VERSION != 2);
+ 	BUILD_BUG_ON(sizeof(struct cxl_ioctl_start_work) != 64);
+ 	BUILD_BUG_ON(sizeof(struct cxl_event_header) != 8);
+ 	BUILD_BUG_ON(sizeof(struct cxl_event_afu_interrupt) != 8);
+diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+index f2ffe5b..73e03a6 100644
+--- a/include/misc/cxl.h
++++ b/include/misc/cxl.h
+@@ -210,4 +210,33 @@ ssize_t cxl_fd_read(struct file *file, char __user *buf, size_t count,
+ void cxl_perst_reloads_same_image(struct cxl_afu *afu,
+ 				  bool perst_reloads_same_image);
+ 
++/*
++ * AFU driver ops allows an AFU driver to create their own events to pass to
++ * userspace through the file descriptor as a simpler alternative to overriding
++ * the read() and poll() calls that works with the generic cxl events. These
++ * events are given priority over the generic cxl events, so will be delivered
++ * first if multiple types of events are pending.
++ *
++ * even_pending() will be called by the cxl driver to check if an event is
++ * pending (e.g. in select/poll/read calls).
++ *
++ * deliver_event() will be called to fill out a cxl_event structure with the
++ * driver specific event. The header will already have the type and
++ * process_element fields filled in, and header.size will be set to
++ * sizeof(struct cxl_event_header). The AFU driver can extend that size up to
++ * max_size (which can be increased if necessary by reserving more space in the
++ * struct cxl_event_afu_driver_reserved definition).
++ *
++ * Both of these calls are made with a spin lock held, so they must not sleep.
++ */
++struct cxl_afu_driver_ops {
++	bool (*event_pending) (struct cxl_context *cxl);
++	void (*deliver_event) (struct cxl_event *event,
++			       struct cxl_context *cxl, size_t max_size);
++};
++
++/* Associate the above driver ops with a specific context */
++void cxl_set_driver_ops(struct cxl_context *ctx,
++			struct cxl_afu_driver_ops *ops);
++
+ #endif /* _MISC_CXL_H */
+diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
+index 99a8ca1..97f20b3 100644
+--- a/include/uapi/misc/cxl.h
++++ b/include/uapi/misc/cxl.h
+@@ -67,6 +67,7 @@ enum cxl_event_type {
+ 	CXL_EVENT_AFU_INTERRUPT = 1,
+ 	CXL_EVENT_DATA_STORAGE  = 2,
+ 	CXL_EVENT_AFU_ERROR     = 3,
++	CXL_EVENT_AFU_DRIVER    = 4,
+ };
+ 
+ struct cxl_event_header {
+@@ -98,12 +99,24 @@ struct cxl_event_afu_error {
+ 	__u64 error;
+ };
+ 
++struct cxl_event_afu_driver_reserved {
++	/*
++	 * Reserves space for AFU driver specific events. If an AFU driver
++	 * needs a larger buffer they should increase this to match so the cxl
++	 * driver will allocate enough space.
++	 *
++	 * This is not ABI. The contents will be, but that's up the AFU driver.
++	 */
++	__u64 reserved[4];
++};
++
+ struct cxl_event {
+ 	struct cxl_event_header header;
+ 	union {
+ 		struct cxl_event_afu_interrupt irq;
+ 		struct cxl_event_data_storage fault;
+ 		struct cxl_event_afu_error afu_error;
++		struct cxl_event_afu_driver_reserved afu_driver_event;
+ 	};
+ };
+ 
+-- 
+2.1.4
