@@ -2,15 +2,20 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 94D2C1A1930
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:14:17 +1000 (AEST)
-In-Reply-To: <1435900280-12947-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B08F1A0E13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:14:18 +1000 (AEST)
+In-Reply-To: <1438934377-4922-6-git-send-email-a.hajda@samsung.com>
+To: Andrzej Hajda <a.hajda@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Subject: Re: [RESEND] powerpc/configs: enable RTC class support
-Message-Id: <20150819231417.33D151409A0@ozlabs.org>
+Cc: Andrzej Hajda <a.hajda@samsung.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [05/31] arch/powerpc/nvram: use kmemdup rather than duplicating
+ its implementation
+Message-Id: <20150819231417.6ED15140D17@ozlabs.org>
 Date: Thu, 20 Aug 2015 09:14:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,22 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-03-07 at 05:11:20 UTC, Vaibhav Jain wrote:
-> A working rtc kernel driver is needed so that hwclock can synchronize
-> system clock to rtc during shutdown/boot. We already have a powernv
-> platform rtc driver located at drivers/rtc/rtc-opal.c. However it depends
-> on CONFIG_RTC_CLASS which is disabled by default. Hence the driver isn't
-> enabled and not compiled for the powernv kernel.
+On Fri, 2015-07-08 at 07:59:11 UTC, Andrzej Hajda wrote:
+> The patch was generated using fixed coccinelle semantic patch
+> scripts/coccinelle/api/memdup.cocci [1].
 > 
-> We fix this by enabling rtc class support in pseries defconfig which
-> enables this driver and compiles it into the pseries kernel. In case
-> CONFIG_PPC_POWERNV is not enabled we fallback to 'Generic RTC support'
-> driver which emulates the legacy 'PC RTC driver'.
+> [1]: http://permalink.gmane.org/gmane.linux.kernel/2014320
 > 
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e0ad784b65a64a617179
+https://git.kernel.org/powerpc/c/fc9e9cbf4e48f28525ed
 
 cheers
