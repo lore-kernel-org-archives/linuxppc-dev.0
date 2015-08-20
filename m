@@ -1,21 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dominik@greysector.net>
+Received: from watanuki.greysector.net (watanuki.greysector.net
+ [IPv6:2a01:4f8:bc:610::b2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E584C1A0175
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 14:54:07 +1000 (AEST)
-Message-ID: <1440046447.13406.15.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 14/17] powerpc/book3e-64/kexec: Enable SMP release
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Tiejun Chen <tiejun.chen@intel.com>,
- kexec@lists.infradead.org
-Date: Thu, 20 Aug 2015 14:54:07 +1000
-In-Reply-To: <1437250134-307-15-git-send-email-scottwood@freescale.com>
-References: <1437250134-307-1-git-send-email-scottwood@freescale.com>
- <1437250134-307-15-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 302231A0175
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 17:39:48 +1000 (AEST)
+Received: from mokona.greysector.net (81.obywatelska.supermedia.pl
+ [212.180.237.81])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by watanuki.greysector.net (Postfix) with ESMTPS id DB65520103
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:31:10 +0200 (CEST)
+Received: from mokona.greysector.net (localhost [127.0.0.1])
+ by mokona.greysector.net (Postfix) with ESMTP id 404CC125A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:31:10 +0200 (CEST)
+Received: from sakura.greysector.net (unknown [192.193.115.36])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mokona.greysector.net (Postfix) with ESMTPSA id 5E56D1259
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 09:31:09 +0200 (CEST)
+Date: Thu, 20 Aug 2015 09:31:07 +0200
+From: Dominik 'Rathann' Mierzejewski <dominik@greysector.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: error: 'asm' operand has impossible constraints when compiling
+ gromacs 5.1 on PPC64 and PPC64LE with VSX SMD
+Message-ID: <20150820073106.GB10057@sakura.greysector.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +36,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+Hello!
+When gromacs-5.1 is configured for double precision, I get the following
+compilation error when building the internal tests (make check):
+[...]
+[ 94%] Building CXX object src/gromacs/simd/tests/CMakeFiles/simd-test.dir/simd_integer.cpp.o
+cd /builddir/build/BUILD/gromacs-5.1/openmpi_d/src/gromacs/simd/tests && /usr/bin/c++   -DGMX_DOUBLE -DGTEST_USE_OWN_TR1_TUPLE=1 -DHAVE_CONFIG_H -DTEST_DATA_PATH=\"src/gromacs/simd/tests\" -DTEST_TEMP_PATH=\"/builddir/build/BUILD/gromacs-5.1/openmpi_d/src/gromacs/simd/tests/Testing/Temporary\" -mvsx   -std=c++0x -O2 -g -pipe -Wall -Werror=format-security -Wp
+,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -specs=/usr/lib/rpm/redhat/redhat-hardened-cc1 -m64  -Wundef -Wextra -Wno-missing-field-initializers -Wpointer-arith -Wall -Wno-unused-function   -funroll-all-loops -fexcess-precision=fast  -Wno-array-bounds  -isystem /builddir/build/BUILD/gromacs-5.1/src/external/gmock-1.7.0/gtest/include -isystem /builddir/build/BUILD/gromacs-5.1/src/external/gmock-1.7.0/include -I/builddir/build/BUILD/gromacs-5.1/openmpi_d/src/external/tng_io/include -I/builddir/build/BUILD/gromacs-5.1/src/external/tng_io/include -I/builddir/build/BUILD/gromacs-5.1/openmpi_d/src -I/builddir/build/BUILD/gromacs-5.1/src/external/thread_mpi/include -I/builddir/build/BUILD/gromacs-5.1/src -I/usr/include/openmpi-ppc64    -Wno-unused-variable -o CMakeFiles/simd-test.dir/simd_integer.cpp.o -c /builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/tests/simd_integer.cpp
+In file included from /builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/simd.h:138:0,
+                 from /builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/tests/simd_integer.cpp:37:
+/builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/impl_ibm_vsx/impl_ibm_vsx.h: In member function 'virtual void gmx::test::{anonymous}::SimdIntegerTest_gmxSimdCvtI2R_Test::TestBody()':
+/builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/impl_ibm_vsx/impl_ibm_vsx.h:452:80: error: 'asm' operand has impossible constraints
+     __asm__ ("xvcvsxwdp %0,%1" : "=ww" (x) : "ww" ((__vector signed int) (ix)));
+                                                                                ^
+/builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/impl_ibm_vsx/impl_ibm_vsx.h:452:80: error: 'asm' operand has impossible constraints
+     __asm__ ("xvcvsxwdp %0,%1" : "=ww" (x) : "ww" ((__vector signed int) (ix)));
+                                                                                ^
+src/gromacs/simd/tests/CMakeFiles/simd-test.dir/build.make:209: recipe for target 'src/gromacs/simd/tests/CMakeFiles/simd-test.dir/simd_integer.cpp.o' failed
+make[3]: *** [src/gromacs/simd/tests/CMakeFiles/simd-test.dir/simd_integer.cpp.o] Error 1
+[...]
 
-Sorry for the delay. So I'm back to square one on this patch.
+This happens on:
 
-On Sat, 2015-07-18 at 15:08 -0500, Scott Wood wrote:
-> booted_from_exec is similar to __run_at_load, except that it is set for
-> regular kexec as well as kdump.
-> 
-> The flag is needed because the SMP release mechanism for FSL book3e is
-> different from when booting with normal hardware.  In theory we could
-> simulate the normal spin table mechanism, but not at the addresses
-> U-Boot put in the device tree -- so there'd need to be even more
-> communication between the kernel and kexec to set that up.  Since
-> there's already a similar flag being set (for kdump only), this seemed
-> like a reasonable approach.
+$ cat /proc/cpuinfo 
+processor	: 0
+cpu		: POWER8E (raw), altivec supported
+clock		: 3425.000000MHz
+revision	: 2.1 (pvr 004b 0201)
 
-Although this is a reasonable approach, I don't think it's the best approach.
+processor	: 1
+cpu		: POWER8E (raw), altivec supported
+clock		: 3425.000000MHz
+revision	: 2.1 (pvr 004b 0201)
 
-AFAICS there's no reason why we can't use a device tree property for this, so I
-think we should do that.
+timebase	: 512000000
+platform	: pSeries
+model		: IBM pSeries (emulated by qemu)
+machine		: CHRP IBM pSeries (emulated by qemu)
 
-It avoids using up space in the low memory area, and also any ambiguities about
-whether the value has been set or not.
+in Fedora rawhide (F24) chroot while building the gromacs package
+(http://pkgs.fedoraproject.org/cgit/gromacs.git) under mock.
+You have to remove the %ifnarch ppc64 ppc64le part in %install section
+to reproduce.
 
-The reason we used a flag like this for __run_at_load is we need to access that
-very early, ie. before we've even relocated the kernel, well before we have
-(easy) access to the flattened device tree.
+More details here: http://redmine.gromacs.org/issues/1808
 
-In contrast for this, you don't need to know you're booted from kexec until
-much later, so using a device tree property is cleaner and just as easy.
+AltiVec assembly is far beyond my skill, so I'd appreciate it if someone
+could help figure it out.
 
-If you want to call it "linux,kexec-boot" or similar that's fine. Equally you
-could make it more specific, something like "fsl,avoid-spin-table".
-
-
-Also below ...
-
-> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-> index 5152289..4abda43 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -305,10 +310,13 @@ static int smp_85xx_kick_cpu(int nr)
->  		__secondary_hold_acknowledge = -1;
->  	}
->  #endif
-> -	flush_spin_table(spin_table);
-> -	out_be32(&spin_table->pir, hw_cpu);
-> -	out_be32(&spin_table->addr_l, __pa(__early_start));
-> -	flush_spin_table(spin_table);
-> +
-> +	if (have_spin_table) {
-> +		flush_spin_table(spin_table);
-> +		out_be32(&spin_table->pir, hw_cpu);
-> +		out_be32(&spin_table->addr_l, __pa(__early_start));
-> +		flush_spin_table(spin_table);
-> +	}
->  
->  	/* Wait a bit for the CPU to ack. */
->  	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
-
-This looks like it's inside an #ifdef CONFIG_PPC32 block, which doesn't make
-sense, so I must be missing a lead-up patch or something? (I looked on the list
-but didn't find anything immediately)
-
-cheers
+Regards,
+Dominik
+-- 
+Fedora http://fedoraproject.org/wiki/User:Rathann
+RPMFusion http://rpmfusion.org
+"Faith manages."
+        -- Delenn to Lennier in Babylon 5:"Confessions and Lamentations"
