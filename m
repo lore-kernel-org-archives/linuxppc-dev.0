@@ -1,41 +1,42 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <John.Youn@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay.synopsys.com [198.182.47.9])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A81CE1A1D62
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 05:10:56 +1000 (AEST)
-Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Thu, 20 Aug 2015 16:10:51 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 7BED0352007B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 15:09:42 -0400 (EDT)
-Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7KJBCiv4034578
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 16:11:13 -0300
-Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
- by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7KJAlQ3029482
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 16:10:47 -0300
-Message-ID: <55D62636.5050403@linux.vnet.ibm.com>
-Date: Thu, 20 Aug 2015 16:10:46 -0300
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C46E51A1D63
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 06:16:54 +1000 (AEST)
+From: John Youn <John.Youn@synopsys.com>
+To: "balbi@ti.com" <balbi@ti.com>, Robert Baldyga <r.baldyga@hackerion.com>
+CC: Robert Baldyga <r.baldyga@samsung.com>, "gregkh@linuxfoundation.org"
+ <gregkh@linuxfoundation.org>, "Peter.Chen@freescale.com"
+ <Peter.Chen@freescale.com>, "John.Youn@synopsys.com"
+ <John.Youn@synopsys.com>, "dahlmann.thomas@arcor.de"
+ <dahlmann.thomas@arcor.de>, "nicolas.ferre@atmel.com"
+ <nicolas.ferre@atmel.com>, "cernekee@gmail.com" <cernekee@gmail.com>,
+ "leoli@freescale.com" <leoli@freescale.com>, "daniel@zonque.org"
+ <daniel@zonque.org>, "haojian.zhuang@gmail.com" <haojian.zhuang@gmail.com>,
+ "robert.jarzmik@free.fr" <robert.jarzmik@free.fr>, "michal.simek@xilinx.com"
+ <michal.simek@xilinx.com>, "devel@driverdev.osuosl.org"
+ <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-usb@vger.kernel.org"
+ <linux-usb@vger.kernel.org>, "linux-omap@vger.kernel.org"
+ <linux-omap@vger.kernel.org>, "linux-geode@lists.infradead.org"
+ <linux-geode@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "andrzej.p@samsung.com"
+ <andrzej.p@samsung.com>, "m.szyprowski@samsung.com"
+ <m.szyprowski@samsung.com>, "stern@rowland.harvard.edu"
+ <stern@rowland.harvard.edu>, "petr.cvek@tul.cz" <petr.cvek@tul.cz>
+Subject: Re: [PATCH v5 01/46] usb: gadget: encapsulate endpoint claiming
+ mechanism
+Date: Thu, 20 Aug 2015 20:07:35 +0000
+Message-ID: <2B3535C5ECE8B5419E3ECBE30077290901DC3380D9@us01wembx1.internal.synopsys.com>
+References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
+ <1438351258-31578-2-git-send-email-r.baldyga@samsung.com>
+ <20150820153553.GD1639@saruman.tx.rr.com> <55D6001E.3000504@hackerion.com>
+ <20150820164808.GB4938@saruman.tx.rr.com> <55D60B80.7040800@hackerion.com>
+ <20150820174409.GB7270@saruman.tx.rr.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- bhelgaas@google.com, mst@redhat.com
-Subject: Re: [PATCH v2 1/2] PCI: Make pci_msi_setup_pci_dev() non-static for
- use by arch code
-References: <1439945086.23217.5.camel@ellerman.id.au> ,
- <1439932077-11427-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1440009922-30248-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1440032549.13406.3.camel@ellerman.id.au>
-In-Reply-To: <1440032549.13406.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,47 +46,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/19/2015 10:02 PM, Michael Ellerman wrote:
-> In future you should send a reply like the above to my mail, and then
-> separately send the new patch series. My preference is that the new series is
-> not a reply to anything, though some other maintainers may disagree on that
-> point.
-
-OK, sure. I can send new patch series as new messages instead of replies 
-to the same thread.
-
-
-> The other question, which I neglected to ask yesterday, is what is the symptom
-> of the bug? ie. does the system fail to boot or otherwise crash etc.?
-
-This is briefly explained on cover-letter, but I can elaborate a bit 
-more: I was testing driver issues on kernel 2.6.32 (RHEL 6.6), and when 
-I tried the mainline kernel, the driver wasn't able to enable MSI-X 
-capabilities. Interestingly, on kernel 4.1 this behavior doesn't happen 
-and the driver can use MSI-X interrupts.
-
-So, I figured that something was wrong and found the problem described 
-on the patches. I tried the proposed solution (calling manually the 
-function that is not reachable anymore) and it works.
-
-Regarding the bnx2x driver, below are two dmesg outputs:
-
-1) With kernel 4.2-rc7
-bnx2x 0000:01:00.0: no msix capability found
-
-2) With kernel 4.1
-bnx2x 0000:01:00.0: msix capability found
-bnx2x 0000:01:00.0 eth2: using MSI-X  IRQs: sp 24  fp[0] 26 ... fp[7] 33
-
-> This is changes *in* v2, or since v1.
-
-My bad, sorry.
-
-
-> Or anywhere after the first '---', which means the version commentary is
-> discarded in the final commit.
-
-I used scissors, but there's no problem in stop using it in this list. 
-Thanks for the suggestion.
-
-Cheers
+On 8/20/2015 10:45 AM, Felipe Balbi wrote:=0A=
+> Hi,=0A=
+> =0A=
+> On Thu, Aug 20, 2015 at 07:16:48PM +0200, Robert Baldyga wrote:=0A=
+>> On 08/20/2015 06:48 PM, Felipe Balbi wrote:=0A=
+>>> On Thu, Aug 20, 2015 at 06:28:14PM +0200, Robert Baldyga wrote:=0A=
+>>>> Hi Felipe,=0A=
+>>>>=0A=
+>>>> On 08/20/2015 05:35 PM, Felipe Balbi wrote:=0A=
+>>>> [...]=0A=
+>>>>> just letting you know that this regresses all gadget drivers making t=
+hem=0A=
+>>>>> try to disable previously disabled endpoints and enable previously=0A=
+>>>>> enabled endpoints.=0A=
+>>>>>=0A=
+>>>>> I have a possible fix (see below) but then it shows a problem on the=
+=0A=
+>>>>> host side when using with g_zero (see further below):=0A=
+>>>>>=0A=
+>>>>> commit 3b8932100aacb6cfbffe288ca93025d8b8430c00=0A=
+>>>>> Author: Felipe Balbi <balbi@ti.com>=0A=
+>>>>> Date:   Wed Aug 19 18:05:27 2015 -0500=0A=
+>>>>>=0A=
+>>>>>     usb: gadget: fix ep->claimed lifetime=0A=
+>>>>>=0A=
+>>>>>     In order to fix a regression introduced by commit=0A=
+>>>>>     cc476b42a39d ("usb: gadget: encapsulate endpoint=0A=
+>>>>>     claiming mechanism") we have to introduce a simple=0A=
+>>>>>     helper to check if a particular is enabled or not.=0A=
+>>>>>=0A=
+>>>>>     After that, we need to move ep->claimed lifetime to=0A=
+>>>>>     usb_ep_enable() and usb_ep_disable() since those=0A=
+>>>>>     are the only functions which actually enable and=0A=
+>>>>>     disable endpoints.=0A=
+>>>>>=0A=
+>>>>>     A follow-up patch will come to drop all driver_data=0A=
+>>>>>     checks from function drivers, since those are, now,=0A=
+>>>>>     pointless.=0A=
+>>>>>=0A=
+>>>>>     Fixes: cc476b42a39d ("usb: gadget: encapsulate endpoint=0A=
+>>>>>     	claiming mechanism")=0A=
+>>>>>     Cc: Robert Baldyga <r.baldyga@samsung.com>=0A=
+>>>>>     Signed-off-by: Felipe Balbi <balbi@ti.com>=0A=
+>>>>>=0A=
+>>>>> diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epa=
+utoconf.c=0A=
+>>>>> index 978435a51038..ad45070cd76f 100644=0A=
+>>>>> --- a/drivers/usb/gadget/epautoconf.c=0A=
+>>>>> +++ b/drivers/usb/gadget/epautoconf.c=0A=
+>>>>> @@ -126,7 +126,6 @@ found_ep:=0A=
+>>>>>  	ep->address =3D desc->bEndpointAddress;=0A=
+>>>>>  	ep->desc =3D NULL;=0A=
+>>>>>  	ep->comp_desc =3D NULL;=0A=
+>>>>> -	ep->claimed =3D true;=0A=
+>>>>=0A=
+>>>> Removing this line causes autoconfig can return the same endpoint many=
+=0A=
+>>>> times. This probably causes problems with g_zero.=0A=
+>>>>=0A=
+>>>> I will try to fix it ASAP.=0A=
+>>>=0A=
+>>> I was considering the same thing, but the lifetime of ->claimed doesn't=
+=0A=
+>>> look correct to me either way. Note that once the flag is enabled, it=
+=0A=
+>>> won't get disabled by most gadget drivers.=0A=
+>>=0A=
+>> And it should not be. This flag is indicator, that endpoint is used by s=
+ome=0A=
+>> function. It should be set once by usb_ep_autoconfig() and cleared by=0A=
+>> usb_ep_autoconfig_reset().=0A=
+=0A=
+And the 'claimed' flag should be used for the ep autoconfig=0A=
+mechanism alone. We may want to reset it during the autoconfig=0A=
+phase for multiple configs and alt-interfaces. So there should be=0A=
+separate 'claimed' and 'enabled' flags.=0A=
+=0A=
+=0A=
+> =0A=
+> have you considered switching interfaces and/or alternate settings ?=0A=
+=0A=
+We ran into similar issues before with this very scenario. Handling=0A=
+of set_config(0 or N), in both addressed and configured states, and=0A=
+set_interface requests.=0A=
+=0A=
+=0A=
+John=0A=
+=0A=
