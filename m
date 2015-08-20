@@ -1,22 +1,36 @@
-Return-Path: <vbabka@suse.cz>
-From: Vlastimil Babka <vbabka@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>,
- Greg Thelen <gthelen@google.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Christoph Lameter <cl@linux.com>, Pekka Enberg <penberg@kernel.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Johannes Weiner <hannes@cmpxchg.org>, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, Vlastimil Babka <vbabka@suse.cz>,
- Mel Gorman <mgorman@techsingularity.net>
-Subject: [PATCH 3/3] mm: use numa_mem_id() in alloc_pages_node()
-Date: Thu, 20 Aug 2015 13:43:22 +0200
-Message-Id: <1440071002-19085-3-git-send-email-vbabka@suse.cz>
-In-Reply-To: <1440071002-19085-1-git-send-email-vbabka@suse.cz>
-References: <1440071002-19085-1-git-send-email-vbabka@suse.cz>
+Return-Path: <dominik@greysector.net>
+Received: from watanuki.greysector.net (watanuki.greysector.net
+ [IPv6:2a01:4f8:bc:610::b2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA61B1A1D7F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 21:45:52 +1000 (AEST)
+Received: from mokona.greysector.net (81.obywatelska.supermedia.pl
+ [212.180.237.81])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by watanuki.greysector.net (Postfix) with ESMTPS id D237D20138
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 13:45:48 +0200 (CEST)
+Received: from mokona.greysector.net (localhost [127.0.0.1])
+ by mokona.greysector.net (Postfix) with ESMTP id 57F5C125A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 13:45:47 +0200 (CEST)
+Received: from sakura.greysector.net (unknown [192.193.115.36])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mokona.greysector.net (Postfix) with ESMTPSA id EC1D8A96
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 13:45:46 +0200 (CEST)
+Date: Thu, 20 Aug 2015 13:45:44 +0200
+From: Dominik 'Rathann' Mierzejewski <dominik@greysector.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: error: 'asm' operand has impossible constraints when compiling
+ gromacs 5.1 on PPC64 and PPC64LE with VSX SMD
+Message-ID: <20150820114543.GF2964@sakura.greysector.net>
+References: <20150820073106.GB10057@sakura.greysector.net>
+ <20150820092649.GD26407@gate.crashing.org>
+ <20150820094644.GA2964@sakura.greysector.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150820094644.GA2964@sakura.greysector.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +40,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-alloc_pages_node() might fail when called with NUMA_NO_NODE and
-__GFP_THISNODE on a CPU belonging to a memoryless node. To make the
-local-node fallback more robust and prevent such situations, use
-numa_mem_id(), which was introduced for similar scenarios in the slab
-context.
+On Thursday, 20 August 2015 at 11:46, Dominik 'Rathann' Mierzejewski wrote:
+> On Thursday, 20 August 2015 at 11:26, Segher Boessenkool wrote:
+> > Hi,
+> > 
+> > On Thu, Aug 20, 2015 at 09:31:07AM +0200, Dominik 'Rathann' Mierzejewski wrote:
+> > > /builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/impl_ibm_vsx/impl_ibm_vsx.h:452:80: error: 'asm' operand has impossible constraints
+> > >      __asm__ ("xvcvsxwdp %0,%1" : "=ww" (x) : "ww" ((__vector signed int) (ix)));
+> > >                                                                                 ^
+> > 
+> > Please file a bug report; see  http://gcc.gnu.org/bugs/  .
+> > Thanks!
+> 
+> I'll try.
+> 
+> > (Btw, you forgot the most important piece of information -- the GCC
+> > version).
+> 
+> It's gcc-5.1.1 and it's mentioned in the gromacs bug report, but you're
+> right, I forgot to mention it explicitly in the e-mail, sorry.
 
-Suggested-by: Christoph Lameter <cl@linux.com>
-Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
-Acked-by: David Rientjes <rientjes@google.com>
-Acked-by: Mel Gorman <mgorman@techsingularity.net>
-Acked-by: Christoph Lameter <cl@linux.com>
----
- v3: better commit message
+Bug filed: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67291
 
- include/linux/gfp.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 4a12cae2..f92cbd2 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -318,13 +318,14 @@ __alloc_pages_node(int nid, gfp_t gfp_mask, unsigned int order)
- 
- /*
-  * Allocate pages, preferring the node given as nid. When nid == NUMA_NO_NODE,
-- * prefer the current CPU's node. Otherwise node must be valid and online.
-+ * prefer the current CPU's closest node. Otherwise node must be valid and
-+ * online.
-  */
- static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
- 						unsigned int order)
- {
- 	if (nid == NUMA_NO_NODE)
--		nid = numa_node_id();
-+		nid = numa_mem_id();
- 
- 	return __alloc_pages_node(nid, gfp_mask, order);
- }
+Regards,
+Dominik
 -- 
-2.5.0
+Fedora http://fedoraproject.org/wiki/User:Rathann
+RPMFusion http://rpmfusion.org
+"Faith manages."
+        -- Delenn to Lennier in Babylon 5:"Confessions and Lamentations"
