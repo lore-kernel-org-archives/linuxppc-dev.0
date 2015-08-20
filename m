@@ -1,18 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20D4D1A0103
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 18:38:12 +1000 (AEST)
-In-Reply-To: <1439940438-3585-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 009031A0103
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 18:38:13 +1000 (AEST)
+In-Reply-To: <1440002994-25662-4-git-send-email-hegdevasant@linux.vnet.ibm.com>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, linux-leds@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, imunsie@au1.ibm.com,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, dja@axtens.net
-Subject: Re: [V2] cxl: Allow release of contexts which have been OPENED but
- not STARTED
-Message-Id: <20150820083812.01673140293@ozlabs.org>
-Date: Thu, 20 Aug 2015 18:38:11 +1000 (AEST)
+Cc: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, arnd@arndb.de,
+ cooloney@gmail.com, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ rpurdie@rpsys.net, j.anaszewski@samsung.com, khandual@linux.vnet.ibm.com
+Subject: Re: [v10,3/3] leds/powernv: Add driver for PowerNV platform
+Message-Id: <20150820083812.88640140297@ozlabs.org>
+Date: Thu, 20 Aug 2015 18:38:12 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-18-08 at 23:27:18 UTC, Andrew Donnellan wrote:
-> If we open a context but do not start it (either because we do not attempt
-> to start it, or because it fails to start for some reason), we are left
-> with a context in state OPENED. Previously, cxl_release_context() only
-> allowed releasing contexts in state CLOSED, so attempting to release an
-> OPENED context would fail.
+On Wed, 2015-19-08 at 16:49:54 UTC, Vasant Hegde wrote:
+> This patch implements LED driver for PowerNV platform using the existing
+> generic LED class framework.
 > 
-> In particular, this bug causes available contexts to run out after some EEH
-> failures, where drivers attempt to release contexts that have failed to
-> start.
+> PowerNV platform has below type of LEDs:
+>   - System attention
+>       Indicates there is a problem with the system that needs attention.
+>   - Identify
+>       Helps the user locate/identify a particular FRU or resource in the
+>       system.
+>   - Fault
+>       Indicates there is a problem with the FRU or resource at the
+>       location with which the indicator is associated.
 > 
-> Allow releasing contexts in any state with a value lower than STARTED, i.e.
-> OPENED or CLOSED (we can't release a STARTED context as it's currently
-> using the hardware, and we assume that contexts in any new states which may
-> be added in future with a value higher than STARTED are also unsafe to
-> release).
+> We register classdev structures for all individual LEDs detected on the
+> system through LED specific device tree nodes. Device tree nodes specify
+> what all kind of LEDs present on the same location code. It registers
+> LED classdev structure for each of them.
 > 
-> Cc: stable@vger.kernel.org
-> Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> All the system LEDs can be found in the same regular path /sys/class/leds/.
+> We don't use LED colors. We use LED node and led-types property to form
+> LED classdev. Our LEDs have names in this format.
+> 
+>         <location_code>:<attention|identify|fault>
+> 
+> Any positive brightness value would turn on the LED and a zero value would
+> turn off the LED. The driver will return LED_FULL (255) for any turned on
+> LED and LED_OFF (0) for any turned off LED.
+> 
+> The platform level implementation of LED get and set state has been
+> achieved through OPAL calls. These calls are made available for the
+> driver by exporting from architecture specific codes.
+> 
+> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Acked-by: Jacek Anaszewski <j.anaszewski@samsung.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7c26b9cf5347c2427215
+https://git.kernel.org/powerpc/c/84ad6e5cd3e8b365c893
 
 cheers
