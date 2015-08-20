@@ -1,22 +1,33 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <r.baldyga@hackerion.com>
+Received: from sender163-mail.zoho.com (sender163-mail.zoho.com
+ [74.201.84.163])
+ (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27A751A02BF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 02:58:49 +1000 (AEST)
-Date: Thu, 20 Aug 2015 09:58:39 -0700
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Nicholas Krause <xerofoify@gmail.com>
-Cc: gleb@kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, pbonzini@redhat.com,
- linuxppc-dev@lists.ozlabs.org, agraf@suse.com
-Subject: Re: [PATCH] kvm:powerpc:Fix return statements for wrapper functions
- in the file book3s_64_mmu_hv.c
-Message-ID: <20150820165839.GA12530@fergus.ozlabs.ibm.com>
-References: <1439220451-26094-1-git-send-email-xerofoify@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB2981A0103
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 03:17:03 +1000 (AEST)
+Message-ID: <55D60B80.7040800@hackerion.com>
+Date: Thu, 20 Aug 2015 19:16:48 +0200
+From: Robert Baldyga <r.baldyga@hackerion.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1439220451-26094-1-git-send-email-xerofoify@gmail.com>
+To: balbi@ti.com
+CC: Robert Baldyga <r.baldyga@samsung.com>, gregkh@linuxfoundation.org,
+ Peter.Chen@freescale.com, johnyoun@synopsys.com,
+ dahlmann.thomas@arcor.de, nicolas.ferre@atmel.com, cernekee@gmail.com,
+ leoli@freescale.com, daniel@zonque.org, haojian.zhuang@gmail.com,
+ robert.jarzmik@free.fr, michal.simek@xilinx.com,
+ devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-omap@vger.kernel.org,
+ linux-geode@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, andrzej.p@samsung.com,
+ m.szyprowski@samsung.com, stern@rowland.harvard.edu, petr.cvek@tul.cz
+Subject: Re: [PATCH v5 01/46] usb: gadget: encapsulate endpoint claiming
+ mechanism
+References: <1438351258-31578-1-git-send-email-r.baldyga@samsung.com>
+ <1438351258-31578-2-git-send-email-r.baldyga@samsung.com>
+ <20150820153553.GD1639@saruman.tx.rr.com> <55D6001E.3000504@hackerion.com>
+ <20150820164808.GB4938@saruman.tx.rr.com>
+In-Reply-To: <20150820164808.GB4938@saruman.tx.rr.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +37,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 10, 2015 at 11:27:31AM -0400, Nicholas Krause wrote:
-> This fixes the wrapper functions kvm_umap_hva_hv and the function
-> kvm_unmap_hav_range_hv to return the return value of the function
-> kvm_handle_hva or kvm_handle_hva_range that they are wrapped to
-> call internally rather then always making the caller of these
-> wrapper functions think they always run successfully by returning
-> the value of zero directly.
+On 08/20/2015 06:48 PM, Felipe Balbi wrote:
+> On Thu, Aug 20, 2015 at 06:28:14PM +0200, Robert Baldyga wrote:
+>> Hi Felipe,
+>>
+>> On 08/20/2015 05:35 PM, Felipe Balbi wrote:
+>> [...]
+>>> just letting you know that this regresses all gadget drivers making them
+>>> try to disable previously disabled endpoints and enable previously
+>>> enabled endpoints.
+>>>
+>>> I have a possible fix (see below) but then it shows a problem on the
+>>> host side when using with g_zero (see further below):
+>>>
+>>> commit 3b8932100aacb6cfbffe288ca93025d8b8430c00
+>>> Author: Felipe Balbi <balbi@ti.com>
+>>> Date:   Wed Aug 19 18:05:27 2015 -0500
+>>>
+>>>      usb: gadget: fix ep->claimed lifetime
+>>>
+>>>      In order to fix a regression introduced by commit
+>>>      cc476b42a39d ("usb: gadget: encapsulate endpoint
+>>>      claiming mechanism") we have to introduce a simple
+>>>      helper to check if a particular is enabled or not.
+>>>
+>>>      After that, we need to move ep->claimed lifetime to
+>>>      usb_ep_enable() and usb_ep_disable() since those
+>>>      are the only functions which actually enable and
+>>>      disable endpoints.
+>>>
+>>>      A follow-up patch will come to drop all driver_data
+>>>      checks from function drivers, since those are, now,
+>>>      pointless.
+>>>
+>>>      Fixes: cc476b42a39d ("usb: gadget: encapsulate endpoint
+>>>      	claiming mechanism")
+>>>      Cc: Robert Baldyga <r.baldyga@samsung.com>
+>>>      Signed-off-by: Felipe Balbi <balbi@ti.com>
+>>>
+>>> diff --git a/drivers/usb/gadget/epautoconf.c b/drivers/usb/gadget/epautoconf.c
+>>> index 978435a51038..ad45070cd76f 100644
+>>> --- a/drivers/usb/gadget/epautoconf.c
+>>> +++ b/drivers/usb/gadget/epautoconf.c
+>>> @@ -126,7 +126,6 @@ found_ep:
+>>>   	ep->address = desc->bEndpointAddress;
+>>>   	ep->desc = NULL;
+>>>   	ep->comp_desc = NULL;
+>>> -	ep->claimed = true;
+>>
+>> Removing this line causes autoconfig can return the same endpoint many
+>> times. This probably causes problems with g_zero.
+>>
+>> I will try to fix it ASAP.
+>
+> I was considering the same thing, but the lifetime of ->claimed doesn't
+> look correct to me either way. Note that once the flag is enabled, it
+> won't get disabled by most gadget drivers.
 
-In fact these functions do always run successfully, and there is no
-bug fixed here (see below).
+And it should not be. This flag is indicator, that endpoint is used by 
+some function. It should be set once by usb_ep_autoconfig() and cleared 
+by usb_ep_autoconfig_reset().
 
-I don't object to the change per se, since it reduces the code size
-very slightly, but the commit message and headline needs to be
-reworded to avoid giving the impression that this fixes something.
+I wonder what is reason of this enable/disable regression. Maybe the 
+problem is that we don't set ep->driver_data to NULL in 
+usb_ep_autoconfig_reset() (so far it was done). Does this problem occur 
+while gadget is binded to UDC for the first time, or at any next time? 
+Unfortunately at this moment I don't have access to my hardware, so it 
+will take a moment before I will setup some testing environment.
 
->  int kvm_unmap_hva_hv(struct kvm *kvm, unsigned long hva)
->  {
-> -	kvm_handle_hva(kvm, hva, kvm_unmap_rmapp);
-> -	return 0;
-> +	return kvm_handle_hva(kvm, hva, kvm_unmap_rmapp);
->  }
->  
->  int kvm_unmap_hva_range_hv(struct kvm *kvm, unsigned long start, unsigned long end)
->  {
-> -	kvm_handle_hva_range(kvm, start, end, kvm_unmap_rmapp);
-> -	return 0;
-> +	return kvm_handle_hva_range(kvm, start, end, kvm_unmap_rmapp);
-
-kvm_handle_hva and kvm_handle_hva_range call the handler function
-(kvm_unmap_rmapp in this case) one or more times, and return the
-logical OR of the return values from the handler.  Since
-kvm_unmap_rmapp always returns 0, the return value from
-kvm_handle_hva{,_range} will always be 0 here.
-
-Paul.
+Thanks,
+Robert
