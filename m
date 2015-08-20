@@ -1,35 +1,24 @@
-Return-Path: <dominik@greysector.net>
-Received: from watanuki.greysector.net (watanuki.greysector.net
- [IPv6:2a01:4f8:bc:610::b2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <prvs=6671701fa=david.vrabel@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 797981A1D62
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 19:46:57 +1000 (AEST)
-Received: from mokona.greysector.net (81.obywatelska.supermedia.pl
- [212.180.237.81])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by watanuki.greysector.net (Postfix) with ESMTPS id 86527200FE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:46:51 +0200 (CEST)
-Received: from mokona.greysector.net (localhost [127.0.0.1])
- by mokona.greysector.net (Postfix) with ESMTP id E9D1B1259
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:46:50 +0200 (CEST)
-Received: from sakura.greysector.net (unknown [192.193.115.36])
- (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mokona.greysector.net (Postfix) with ESMTPSA id 1E958A96
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:46:49 +0200 (CEST)
-Date: Thu, 20 Aug 2015 11:46:44 +0200
-From: Dominik 'Rathann' Mierzejewski <dominik@greysector.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: error: 'asm' operand has impossible constraints when compiling
- gromacs 5.1 on PPC64 and PPC64LE with VSX SMD
-Message-ID: <20150820094644.GA2964@sakura.greysector.net>
-References: <20150820073106.GB10057@sakura.greysector.net>
- <20150820092649.GD26407@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0EEBD1A1D63
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 19:56:20 +1000 (AEST)
+Message-ID: <55D5A42E.7070800@citrix.com>
+Date: Thu, 20 Aug 2015 10:55:58 +0100
+From: David Vrabel <david.vrabel@citrix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150820092649.GD26407@gate.crashing.org>
+To: Julien Grall <julien.grall@citrix.com>, <xen-devel@lists.xenproject.org>
+CC: <ian.campbell@citrix.com>, <stefano.stabellini@eu.citrix.com>, "Greg
+ Kroah-Hartman" <gregkh@linuxfoundation.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, David Vrabel <david.vrabel@citrix.com>,
+ "Boris Ostrovsky" <boris.ostrovsky@oracle.com>, Jiri Slaby <jslaby@suse.cz>,
+ <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [Xen-devel] [PATCH v3 11/20] tty/hvc: xen: Use xen page definition
+References: <1438966019-19322-1-git-send-email-julien.grall@citrix.com>
+ <1438966019-19322-12-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1438966019-19322-12-git-send-email-julien.grall@citrix.com>
+Content-Type: text/plain; charset="windows-1252"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,29 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, 20 August 2015 at 11:26, Segher Boessenkool wrote:
-> Hi,
-> 
-> On Thu, Aug 20, 2015 at 09:31:07AM +0200, Dominik 'Rathann' Mierzejewski wrote:
-> > /builddir/build/BUILD/gromacs-5.1/src/gromacs/simd/impl_ibm_vsx/impl_ibm_vsx.h:452:80: error: 'asm' operand has impossible constraints
-> >      __asm__ ("xvcvsxwdp %0,%1" : "=ww" (x) : "ww" ((__vector signed int) (ix)));
-> >                                                                                 ^
-> 
-> Please file a bug report; see  http://gcc.gnu.org/bugs/  .
-> Thanks!
+On 07/08/15 17:46, Julien Grall wrote:
+> The console ring is always based on the page granularity of Xen.
+[...]
+> --- a/drivers/tty/hvc/hvc_xen.c
+> +++ b/drivers/tty/hvc/hvc_xen.c
+> @@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
+>  	if (r < 0 || v == 0)
+>  		goto err;
+>  	gfn = v;
+> -	info->intf = xen_remap(gfn << PAGE_SHIFT, PAGE_SIZE);
+> +	info->intf = xen_remap(gfn << XEN_PAGE_SHIFT, PAGE_SIZE);
 
-I'll try.
+You need XEN_PAGE_SIZE here I think...
 
-> (Btw, you forgot the most important piece of information -- the GCC
-> version).
+>  	if (info->intf == NULL)
+>  		goto err;
+>  	info->vtermno = HVC_COOKIE;
+> @@ -472,7 +472,7 @@ static int xencons_resume(struct xenbus_device *dev)
+>  	struct xencons_info *info = dev_get_drvdata(&dev->dev);
+>  
+>  	xencons_disconnect_backend(info);
+> -	memset(info->intf, 0, PAGE_SIZE);
+> +	memset(info->intf, 0, XEN_PAGE_SIZE);
 
-It's gcc-5.1.1 and it's mentioned in the gromacs bug report, but you're
-right, I forgot to mention it explicitly in the e-mail, sorry.
+...particularly since you use it here.
 
-Regards,
-Dominik
--- 
-Fedora http://fedoraproject.org/wiki/User:Rathann
-RPMFusion http://rpmfusion.org
-"Faith manages."
-        -- Delenn to Lennier in Babylon 5:"Confessions and Lamentations"
+David
