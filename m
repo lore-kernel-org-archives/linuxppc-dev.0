@@ -2,30 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401BF1A0102
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:09:56 +1000 (AEST)
-Message-ID: <1440032995.13406.6.camel@ellerman.id.au>
-Subject: Re: provide more common DMA API functions V2
+ by lists.ozlabs.org (Postfix) with ESMTPS id B4AA61A00FC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:40:11 +1000 (AEST)
+Message-ID: <1440034811.13406.9.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/hvsi: Fix endianness issues in the HVSI driver
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jonas@southpole.se,
- linux-ia64@vger.kernel.org, monstr@monstr.eu, linux@arm.linux.org.uk,
- ysato@users.sourceforge.jp, arnd@arndb.de, linux-mips@linux-mips.org,
- linux-sh@vger.kernel.org, catalin.marinas@arm.com, x86@kernel.org,
- will.deacon@arm.com, linux-kernel@vger.kernel.org, Ingo Molnar
- <mingo@kernel.org>,  cmetcalf@ezchip.com, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org,  linux-hexagon@vger.kernel.org,
- linux-s390@vger.kernel.org, gxt@mprc.pku.edu.cn,
- linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
-Date: Thu, 20 Aug 2015 11:09:55 +1000
-In-Reply-To: <20150820095233.30bb9689@canb.auug.org.au>
-References: <1439795216-32189-1-git-send-email-hch@lst.de>
- <20150817142429.95a3965e0b35d0f35d3c4cfe@linux-foundation.org>
- <20150818053825.GA20771@lst.de>
- <20150817224552.43d7267d.akpm@linux-foundation.org>
- <20150818075107.GA31884@gmail.com> <20150819080814.GA18115@lst.de>
- <20150819143656.3a38eb538ffac60386e1224a@linux-foundation.org>
- <20150820095233.30bb9689@canb.auug.org.au>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>,
+ linux-kernel@vger.kernel.org
+Date: Thu, 20 Aug 2015 11:40:11 +1000
+In-Reply-To: <55D4FAE9.7000504@linux.vnet.ibm.com>
+References: <1438334990-11765-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1438649494.9418.0.camel@ellerman.id.au>
+ <55D4FAE9.7000504@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,30 +27,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-08-20 at 09:52 +1000, Stephen Rothwell wrote:
-> Hi Andrew (sorry, I can't tell who made the incorrect statement below
-> that I am replying to),
-> 
-> On Wed, 19 Aug 2015 14:36:56 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > On Wed, 19 Aug 2015 10:08:14 +0200 Christoph Hellwig <hch@lst.de> wrote:
+On Wed, 2015-08-19 at 23:53 +0200, Laurent Dufour wrote:
+> On 04/08/2015 02:51, Michael Ellerman wrote:
+> > On Fri, 2015-07-31 at 11:29 +0200, Laurent Dufour wrote:
+> >> This patch fixes several endianness issues detected when running the HVSI
+> >> driver in little endian mode.
+> >>
+> >> These issues are raised in little endian mode because the data exchanged in
+> >> memory between the kernel and the hypervisor has to be in big endian
+> >> format.
 > > 
-> > > On Tue, Aug 18, 2015 at 09:51:07AM +0200, Ingo Molnar wrote:
-> > > > I.e. shouldn't this be:
-> > > > 
-> > > > > I'll merge these 5 patches for 4.4.  That means I'll release them into 
-> > > > > linux-next after 4.2 is released.
-> > > > >
-> > > > > [...]
-> > > > > 
-> > > > > Linus will be releasing 4.2 in 1-2 weeks and until then, linux-next is supposed 
-> > > > > to contain only 4.3 material.  Once 4.2 is released and the 4.3 merge window 
-> > > > > opens, linux-next is open for 4.4 material.
+> > Can you include the sparse output before and after?
 > 
-> Just to be clear: the above should read "Once 4.2 is released and the
-> 4.3 merge window *closes* (i.e. v4.3-rc1 is released), linux-next is
-> open for 4.4 material".
+> Hi Michael,
+> 
+> Here is the output message displayed on the console when the bug occurred:
+> 
+> [    0.000517] irq: (null) didn't like hwirq-0x1000a00 to VIRQ16 mapping (rc=-22)
+> [    0.000578] hvsi_console_init: couldn't create irq mapping for 0x1000a00
+> 
+> With the patch is applied, the hvsi driver is initializing correctly and
+> no message is displayed, except the one saying the number of device the
+> hvsi driver has configured. For instance:
 
-/me registers www.whatdamnkernelversionareweuptoagain.com
+> [    1.535783] HVSI: registered 1 devices
+
+
+OK that's also good.
+
+I was talking about the output from sparse endian checking, as the driver seems
+to already be endian annotated.
+
+ie, before:
+
+$ make C=2 CF=-D__CHECK_ENDIAN__
+...
+drivers/tty/hvc/hvsi.c:245:36: warning: restricted __be32 degrades to integer
+drivers/tty/hvc/hvsi.c:243:23: warning: restricted __be16 degrades to integer
+drivers/tty/hvc/hvsi.c:243:23: warning: restricted __be16 degrades to integer
+drivers/tty/hvc/hvsi.c:277:36: warning: restricted __be32 degrades to integer
+drivers/tty/hvc/hvsi.c:279:36: warning: restricted __be32 degrades to integer
+drivers/tty/hvc/hvsi.c:298:26: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:298:26:    expected restricted __be16 [assigned] [usertype] seqno
+drivers/tty/hvc/hvsi.c:298:26:    got int
+drivers/tty/hvc/hvsi.c:299:21: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:299:21:    expected restricted __be16 [assigned] [usertype] verb
+drivers/tty/hvc/hvsi.c:299:21:    got int
+drivers/tty/hvc/hvsi.c:301:28: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:301:28:    expected restricted __be16 [assigned] [usertype] query_seqno
+drivers/tty/hvc/hvsi.c:301:28:    got int
+drivers/tty/hvc/hvsi.c:322:60: warning: incorrect type in argument 2 (different base types)
+drivers/tty/hvc/hvsi.c:322:60:    expected unsigned short [unsigned] [usertype] query_seqno
+drivers/tty/hvc/hvsi.c:322:60:    got restricted __be16 [usertype] seqno
+drivers/tty/hvc/hvsi.c:558:26: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:558:26:    expected restricted __be16 [assigned] [usertype] seqno
+drivers/tty/hvc/hvsi.c:558:26:    got int
+drivers/tty/hvc/hvsi.c:559:21: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:559:21:    expected restricted __be16 [assigned] [usertype] verb
+drivers/tty/hvc/hvsi.c:559:21:    got unsigned short [unsigned] [usertype] verb
+drivers/tty/hvc/hvsi.c:600:26: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:600:26:    expected restricted __be16 [assigned] [usertype] seqno
+drivers/tty/hvc/hvsi.c:600:26:    got int
+drivers/tty/hvc/hvsi.c:602:21: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:602:21:    expected restricted __be16 [assigned] [usertype] verb
+drivers/tty/hvc/hvsi.c:602:21:    got int
+drivers/tty/hvc/hvsi.c:603:21: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:603:21:    expected restricted __be32 [assigned] [usertype] mask
+drivers/tty/hvc/hvsi.c:603:21:    got int
+drivers/tty/hvc/hvsi.c:606:29: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:606:29:    expected restricted __be32 [assigned] [usertype] word
+drivers/tty/hvc/hvsi.c:606:29:    got int
+drivers/tty/hvc/hvsi.c:683:26: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:683:26:    expected restricted __be16 [assigned] [usertype] seqno
+drivers/tty/hvc/hvsi.c:683:26:    got int
+drivers/tty/hvc/hvsi.c:700:26: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:700:26:    expected restricted __be16 [assigned] [usertype] seqno
+drivers/tty/hvc/hvsi.c:700:26:    got int
+drivers/tty/hvc/hvsi.c:702:21: warning: incorrect type in assignment (different base types)
+drivers/tty/hvc/hvsi.c:702:21:    expected restricted __be16 [assigned] [usertype] verb
+drivers/tty/hvc/hvsi.c:702:21:    got int
+...
+
+And with your patch applied there are no warnings from hvsi.c!
+
+So it seems you fixed all the issues, or at least all the issues we can detect
+with sparse. So I'll merge this as-is with an updated changelog.
 
 cheers
