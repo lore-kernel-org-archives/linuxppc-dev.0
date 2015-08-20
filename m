@@ -2,18 +2,30 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEDE61A00FC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:08:27 +1000 (AEST)
-Message-ID: <1440032907.13406.5.camel@ellerman.id.au>
-Subject: Re: [1/1] powerpc/xmon: Paged output for paca display
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401BF1A0102
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:09:56 +1000 (AEST)
+Message-ID: <1440032995.13406.6.camel@ellerman.id.au>
+Subject: Re: provide more common DMA API functions V2
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, khandual@linux.vnet.ibm.com
-Date: Thu, 20 Aug 2015 11:08:27 +1000
-In-Reply-To: <20150820004247.GA2363@tungsten.ozlabs.ibm.com>
-References: <e9e27ee5cee97ac3be2599646243fefc319f92a9.1439520906.git.sam.bobroff@au1.ibm.com>
- <20150818062632.3C4F114032F@ozlabs.org>
- <20150820004247.GA2363@tungsten.ozlabs.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jonas@southpole.se,
+ linux-ia64@vger.kernel.org, monstr@monstr.eu, linux@arm.linux.org.uk,
+ ysato@users.sourceforge.jp, arnd@arndb.de, linux-mips@linux-mips.org,
+ linux-sh@vger.kernel.org, catalin.marinas@arm.com, x86@kernel.org,
+ will.deacon@arm.com, linux-kernel@vger.kernel.org, Ingo Molnar
+ <mingo@kernel.org>,  cmetcalf@ezchip.com, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org,  linux-hexagon@vger.kernel.org,
+ linux-s390@vger.kernel.org, gxt@mprc.pku.edu.cn,
+ linuxppc-dev@lists.ozlabs.org, Christoph Hellwig <hch@lst.de>
+Date: Thu, 20 Aug 2015 11:09:55 +1000
+In-Reply-To: <20150820095233.30bb9689@canb.auug.org.au>
+References: <1439795216-32189-1-git-send-email-hch@lst.de>
+ <20150817142429.95a3965e0b35d0f35d3c4cfe@linux-foundation.org>
+ <20150818053825.GA20771@lst.de>
+ <20150817224552.43d7267d.akpm@linux-foundation.org>
+ <20150818075107.GA31884@gmail.com> <20150819080814.GA18115@lst.de>
+ <20150819143656.3a38eb538ffac60386e1224a@linux-foundation.org>
+ <20150820095233.30bb9689@canb.auug.org.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,50 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-08-20 at 10:42 +1000, Sam Bobroff wrote:
-> On Tue, Aug 18, 2015 at 04:26:32PM +1000, Michael Ellerman wrote:
-> > On Fri, 2015-14-08 at 02:55:14 UTC, Sam bobroff wrote:
-> > > The paca display is already more than 24 lines, which can be problematic
-> > > if you have an old school 80x24 terminal, or more likely you are on a
-> > > virtual terminal which does not scroll for whatever reason.
-...
-> > > 
-> > > (Based on a similar patch by Michael Ellerman <mpe@ellerman.id.au>
-> > > "[v2] powerpc/xmon: Allow limiting the size of the paca display".
-> > > This patch is an alternative and cannot coexist with the original.)
-> > 
-> > 
-> > So this is nice, but ... the diff is twice the size of my version, plus 128
-> > bytes of BSS, so I'm not sure the added benefit is sufficient to justify the
-> > added code complexity.
-> > 
-> > But you can convince me otherwise if you feel strongly about it.
+On Thu, 2015-08-20 at 09:52 +1000, Stephen Rothwell wrote:
+> Hi Andrew (sorry, I can't tell who made the incorrect statement below
+> that I am replying to),
 > 
-> I do think the output is a lot better paged like this :-)
-
-OK.
-
-> The 128 byte buffer is a lot more than it needs for this particular command; it
-> could quite comfortably be lowered to about 32 (I was leaving space for other
-> commands to use it but there aren't any so far). I'll do this and repost.
+> On Wed, 19 Aug 2015 14:36:56 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >
+> > On Wed, 19 Aug 2015 10:08:14 +0200 Christoph Hellwig <hch@lst.de> wrote:
+> > 
+> > > On Tue, Aug 18, 2015 at 09:51:07AM +0200, Ingo Molnar wrote:
+> > > > I.e. shouldn't this be:
+> > > > 
+> > > > > I'll merge these 5 patches for 4.4.  That means I'll release them into 
+> > > > > linux-next after 4.2 is released.
+> > > > >
+> > > > > [...]
+> > > > > 
+> > > > > Linus will be releasing 4.2 in 1-2 weeks and until then, linux-next is supposed 
+> > > > > to contain only 4.3 material.  Once 4.2 is released and the 4.3 merge window 
+> > > > > opens, linux-next is open for 4.4 material.
 > 
-> Also, because the last_cmd_buf system is not specific to the paca display, it
-> could be used by the other paged commands (like the memory dumps). If we did
-> this we could (probably) remove ndump, nidump and ncsum which are all longs,
-> although I haven't worked out how much buffer space would be needed in
-> last_cmd_buf to support these (they have their own paging code but the
-> positional information could be stored in the string buffer). It's probably not
-> much work but might be a bit tricky. Do you think it's worth doing?
+> Just to be clear: the above should read "Once 4.2 is released and the
+> 4.3 merge window *closes* (i.e. v4.3-rc1 is released), linux-next is
+> open for 4.4 material".
 
-Not sure. The xmon code is in general incredibly crufty, so any clean ups are
-always welcome. Certainly if we could come up with a general paging system that
-would be great.
-
-> Since we're looking at memory usage, it looks like "tmpstr[128]" could be
-> removed without much work, saving 128 bytes and removing an unnecessary global
-> variable. If it actually turns out to be easy to do I'll post a separate patch.
-
-Cool. Obviously in absolute terms 128 bytes is a non-issue, it was only meant
-as a comparison between the two approaches.
+/me registers www.whatdamnkernelversionareweuptoagain.com
 
 cheers
