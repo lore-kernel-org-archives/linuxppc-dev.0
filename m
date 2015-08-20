@@ -1,41 +1,24 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7475E1A076A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 10:43:52 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0B4A4140187
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2015 10:43:52 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Thu, 20 Aug 2015 10:43:50 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id AE2F73578047
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2015 10:43:48 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7K0hfYi65208466
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2015 10:43:49 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7K0hF69010460
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Aug 2015 10:43:16 +1000
-Date: Thu, 20 Aug 2015 10:42:47 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, khandual@linux.vnet.ibm.com
-Subject: Re: [1/1] powerpc/xmon: Paged output for paca display
-Message-ID: <20150820004247.GA2363@tungsten.ozlabs.ibm.com>
-References: <e9e27ee5cee97ac3be2599646243fefc319f92a9.1439520906.git.sam.bobroff@au1.ibm.com>
- <20150818062632.3C4F114032F@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150818062632.3C4F114032F@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45DEE1A00FC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 11:02:29 +1000 (AEST)
+Message-ID: <1440032549.13406.3.camel@ellerman.id.au>
+Subject: Re: [PATCH v2 1/2] PCI: Make pci_msi_setup_pci_dev() non-static for
+ use by arch code
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ bhelgaas@google.com, mst@redhat.com
+Date: Thu, 20 Aug 2015 11:02:29 +1000
+In-Reply-To: <1440009922-30248-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+References: <1439945086.23217.5.camel@ellerman.id.au>
+ ,<1439932077-11427-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1440009922-30248-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,93 +28,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 18, 2015 at 04:26:32PM +1000, Michael Ellerman wrote:
-> On Fri, 2015-14-08 at 02:55:14 UTC, Sam bobroff wrote:
-> > The paca display is already more than 24 lines, which can be problematic
-> > if you have an old school 80x24 terminal, or more likely you are on a
-> > virtual terminal which does not scroll for whatever reason.
-> > 
-> > This adds an optional letter to the "dp" and "dpa" xmon commands
-> > ("dpp" and "dppa"), which will enable a "per-page" display (with 16
-> > line pages): the first page  will be displayed and if there was data
-> > that didn't fit, it will display a message indicating that the user can
-> > use enter to display the next page. The intent is that this feels
-> > similar to the way the memory display functions work.
-> > 
-> > This is implemented by running over the entire output both for the
-> > initial command and for each subsequent page: the visible part is
-> > clipped out by checking line numbers. Handling the empty command as
-> > "more" is done by writing a special command into a static buffer that
-> > indicates where to move the sliding visibility window. This is similar
-> > to the approach used for the memory dump commands except that the
-> > state data is encoded into the "last_cmd" string, rather than a set of
-> > static variables. The memory dump commands could probably be rewritten
-> > to make use of the same buffer and remove their other static
-> > variables.
-> > 
-> > Sample output:
-> > 
-> > 0:mon> dpp1
-> > paca for cpu 0x1 @ c00000000fdc0480:
-> >  possible         = yes
-> >  present          = yes
-> >  online           = yes
-> >  lock_token       = 0x8000            	(0x8)
-> >  paca_index       = 0x1               	(0xa)
-> >  kernel_toc       = 0xc000000000eb2400	(0x10)
-> >  kernelbase       = 0xc000000000000000	(0x18)
-> >  kernel_msr       = 0xb000000000001032	(0x20)
-> >  emergency_sp     = 0xc00000003ffe8000	(0x28)
-> >  mc_emergency_sp  = 0xc00000003ffe4000	(0x2e0)
-> >  in_mce           = 0x0               	(0x2e8)
-> >  data_offset      = 0x7f170000        	(0x30)
-> >  hw_cpu_id        = 0x8               	(0x38)
-> >  cpu_start        = 0x1               	(0x3a)
-> >  kexec_state      = 0x0               	(0x3b)
-> > [Enter for next page]
-> > 0:mon>
-> >  __current        = 0xc00000007e696620	(0x290)
-> >  kstack           = 0xc00000007e6ebe30	(0x298)
-> >  stab_rr          = 0xb               	(0x2a0)
-> >  saved_r1         = 0xc00000007ef37860	(0x2a8)
-> >  trap_save        = 0x0               	(0x2b8)
-> >  soft_enabled     = 0x0               	(0x2ba)
-> >  irq_happened     = 0x1               	(0x2bb)
-> >  io_sync          = 0x0               	(0x2bc)
-> >  irq_work_pending = 0x0               	(0x2bd)
-> >  nap_state_lost   = 0x0               	(0x2be)
-> > 0:mon>
-> > 
-> > (Based on a similar patch by Michael Ellerman <mpe@ellerman.id.au>
-> > "[v2] powerpc/xmon: Allow limiting the size of the paca display".
-> > This patch is an alternative and cannot coexist with the original.)
+On Wed, 2015-08-19 at 15:45 -0300, Guilherme G. Piccoli wrote:
+> Thanks very much for your suggestions Michael. I agree with them all,
+> so I'm sending the patch v2 (see below).
 > 
+> About the relevant mailing lists, I already sent to the linux-pci and
+> already cc'ed Bjorn Helgaas - the problem is that I made a mistake and
+> sent 2 different emails using git send-email. I'm really sorry about
+> this.
 > 
-> So this is nice, but ... the diff is twice the size of my version, plus 128
-> bytes of BSS, so I'm not sure the added benefit is sufficient to justify the
-> added code complexity.
+> Now I'm trying to correct my mistake sending this message
+> simultaneously to both lists (and to a bunch of cc's) using two
+> Message-IDs in my reply. Hope it works...
+
+OK.
+
+In future you should send a reply like the above to my mail, and then
+separately send the new patch series. My preference is that the new series is
+not a reply to anything, though some other maintainers may disagree on that
+point.
+
+The other question, which I neglected to ask yesterday, is what is the symptom
+of the bug? ie. does the system fail to boot or otherwise crash etc.?
+
+
+> Changes since v2:
+
+This is changes *in* v2, or since v1.
+
+And it doesn't go here, it goes below ...
+
+>  * Made commit message more clear
+>  * Added "Fixes" line
+>  * Improved commit reference by using 12 first chars of SHA
 > 
-> But you can convince me otherwise if you feel strongly about it.
+> >8----------8<
 > 
-> cheers
+> Commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+> doesn't support MSI") changed the location of the code that disables
+> MSI/MSI-X interrupts at PCI probe time in devices that have this flag
+> set. It moved the code from pci_msi_init_pci_dev() to a new function
+> named pci_msi_setup_pci_dev(), called by pci_setup_device().
+> 
+> The pseries PCI probing code does not call pci_setup_device(), so since
+> the aforementioned commit the function pci_msi_setup_pci_dev() is not
+> called and MSI/MSI-X interrupts are left enabled, which is a bug. To fix
+> this, the pseries PCI probe should manually call pci_msi_setup_pci_dev(),
+> so this patch makes it non-static.
+> 
+> Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+> doesn't support MSI")
+> 
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> ---
 
-I do think the output is a lot better paged like this :-)
+Here.
 
-The 128 byte buffer is a lot more than it needs for this particular command; it
-could quite comfortably be lowered to about 32 (I was leaving space for other
-commands to use it but there aren't any so far). I'll do this and repost.
+Or anywhere after the first '---', which means the version commentary is
+discarded in the final commit.
 
-Also, because the last_cmd_buf system is not specific to the paca display, it
-could be used by the other paged commands (like the memory dumps). If we did
-this we could (probably) remove ndump, nidump and ncsum which are all longs,
-although I haven't worked out how much buffer space would be needed in
-last_cmd_buf to support these (they have their own paging code but the
-positional information could be stored in the string buffer). It's probably not
-much work but might be a bit tricky. Do you think it's worth doing?
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index cefd636..520c5b6 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1103,7 +1103,7 @@ int pci_cfg_space_size(struct pci_dev *dev)
+>  
+>  #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
+>  
+> -static void pci_msi_setup_pci_dev(struct pci_dev *dev)
+> +void pci_msi_setup_pci_dev(struct pci_dev *dev)
+>  {
+>  	/*
+>  	 * Disable the MSI hardware to avoid screaming interrupts
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 8a0321a..860c751 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -1202,6 +1202,7 @@ struct msix_entry {
+>  	u16	entry;	/* driver uses to specify entry, OS writes */
+>  };
+>  
+> +void pci_msi_setup_pci_dev(struct pci_dev *dev);
+>  
+>  #ifdef CONFIG_PCI_MSI
+>  int pci_msi_vec_count(struct pci_dev *dev);
 
-Since we're looking at memory usage, it looks like "tmpstr[128]" could be
-removed without much work, saving 128 bytes and removing an unnecessary global
-variable. If it actually turns out to be easy to do I'll post a separate patch.
 
-Thanks for the revew,
-Sam.
+cheers
