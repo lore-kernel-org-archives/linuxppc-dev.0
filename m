@@ -1,31 +1,25 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C01AB1A0258
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 17:28:08 +1000 (AEST)
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E29401A0052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 16:46:01 +1000 (AEST)
-Received: by padfo6 with SMTP id fo6so240953pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 23:45:59 -0700 (PDT)
-Date: Fri, 21 Aug 2015 14:45:47 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/8] jump_label: introduce
- DEFINE_STATIC_KEY_{TRUE,FALSE}_ARRAY macros
-Message-ID: <20150821064547.GD12451@pek-khao-d1.corp.ad.wrs.com>
-References: <1440072876-8321-1-git-send-email-haokexin@gmail.com>
- <1440072876-8321-4-git-send-email-haokexin@gmail.com>
- <20150821062826.GA566@gmail.com>
- <20150821063458.GC12451@pek-khao-d1.corp.ad.wrs.com>
- <20150821064059.GA2934@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="5p8PegU4iirBW1oA"
-In-Reply-To: <20150821064059.GA2934@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4AF17140779
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2015 17:28:06 +1000 (AEST)
+Received: by pawq9 with SMTP id q9so46772709paw.3
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2015 00:28:04 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
+ imunsie@au.ibm.com, Ryan Grimm <grimm@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] cxl: Remove racy attempt to force EEH invocation in reset
+Date: Fri, 21 Aug 2015 17:25:15 +1000
+Message-Id: <1440141915-27716-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +29,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+cxl_reset currently PERSTs the slot, and then repeatedly tries to
+read MMIO space in order to kick off EEH.
 
---5p8PegU4iirBW1oA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+There are 2 problems with this: it's unnecessary, and it's racy.
 
-On Fri, Aug 21, 2015 at 08:40:59AM +0200, Ingo Molnar wrote:
-> Please also Cc: peterz and me to the next submission of the series - stat=
-ic key=20
-> (and jump label) changes go through the locking tree normally, and there'=
-s a=20
-> number of changes pending already for v4.3:
+It's unnecessary because the PERST will bring down the PHB link.
+That will be picked up by the CAPP, which will send out an HMI.
+Skiboot, noticing an HMI from the CAPP, will send an OPAL
+notification to the kernel, which will trigger EEH recovery.
 
-Sure.
+It's also racy: the EEH recovery triggered by the CAPP will
+eventually cause the MMIO space to have its mapping invalidated
+and the pointer NULLed out. This races with our attempt to read
+the MMIO space. This is causing OOPSes in testing.
 
-Thanks,
-Kevin
+Simply drop all the attempts to force EEH detection, and trust
+that Skiboot will send the notification and that we'll act on it.
+The Skiboot code to send the EEH notification has been in Skiboot
+for as long as CAPP recovery has been supported, so we don't need
+to worry about breaking obscure setups with ancient firmware.
 
---5p8PegU4iirBW1oA
-Content-Type: application/pgp-signature
+Cc: Ryan Grimm <grimm@linux.vnet.ibm.com>
+Cc: stable@vger.kernel.org
+Fixes: 62fa19d4b4fd ("cxl: Add ability to reset the card")
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+---
+Oddly, the commit message in 62fa19d4b4fd ("cxl: Add ability to
+reset the card") is correct in its explanation of EEH triggering.
 
-iQEcBAEBCAAGBQJV1skbAAoJEJNY7TDerrFxCLMIAKEQ0TjMvM/2Ncp2wDCfzYIX
-x23Vz8eCV38+dExtHTW70xfyLgTdXHatQHnkT5FYeRsaSnMuGH2OSjmxc7vRUMuC
-gtLY0a0cX87qXX5TS98BBGh3YjwLF62OYyjFNprzQbOcQTkQFLDOSuJwhV/z5u/p
-5mTIAUsnwdD2IVz/QRyDJRwyAMmwmx6rgvbGFyZ1RkGEcMO39GaK4hjmLgljiZ0g
-aho4qqptwxWYWNb/C4STzDv8mvlhIvAbzBwjeEA82jQFJ3oiErJ6hxa3YoXVhFGw
-e3ypeIyZ/QrYeN9rmBwFpYk42zKfkB/w/KmfZ4eeICrDkYCGJKgqbf3SyQAvB2k=
-=iXCf
------END PGP SIGNATURE-----
+My guess is that the extra code was added because in our development
+environment (bml) the notifications don't seem to work reliably.
 
---5p8PegU4iirBW1oA--
+However, I have tested that the notifications do work on real/normal
+hardware.
+---
+ drivers/misc/cxl/pci.c | 16 ----------------
+ 1 file changed, 16 deletions(-)
+
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index be3839e34b7c..84bb9adbccb1 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -887,8 +887,6 @@ int cxl_reset(struct cxl *adapter)
+ {
+ 	struct pci_dev *dev = to_pci_dev(adapter->dev.parent);
+ 	int rc;
+-	int i;
+-	u32 val;
+ 
+ 	if (adapter->perst_same_image) {
+ 		dev_warn(&dev->dev,
+@@ -906,20 +904,6 @@ int cxl_reset(struct cxl *adapter)
+ 		return rc;
+ 	}
+ 
+-	/* the PERST done above fences the PHB.  So, reset depends on EEH
+-	 * to unbind the driver, tell Sapphire to reinit the PHB, and rebind
+-	 * the driver.  Do an mmio read explictly to ensure EEH notices the
+-	 * fenced PHB.  Retry for a few seconds before giving up. */
+-	i = 0;
+-	while (((val = mmio_read32be(adapter->p1_mmio)) != 0xffffffff) &&
+-		(i < 5)) {
+-		msleep(500);
+-		i++;
+-	}
+-
+-	if (val != 0xffffffff)
+-		dev_err(&dev->dev, "cxl: PERST failed to trigger EEH\n");
+-
+ 	return rc;
+ }
+ 
+-- 
+2.5.0
