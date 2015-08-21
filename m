@@ -1,24 +1,28 @@
-Return-Path: <yinghai@kernel.org>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
+ [IPv6:2a00:1450:400c:c05::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 15C0A1A03A5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 16:23:01 +1000 (AEST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F4741A0260
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 16:28:33 +1000 (AEST)
+Received: by widdq5 with SMTP id dq5so7468230wid.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Aug 2015 23:28:29 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Fri, 21 Aug 2015 08:28:26 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Kevin Hao <haokexin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
- Yijing Wang <wangyijing@huawei.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
- Michal Simek <monstr@monstr.eu>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org
-Subject: [PATCH v4 31/52] PCI: Unify skip_ioresource_align()
-Date: Thu, 20 Aug 2015 23:20:46 -0700
-Message-Id: <1440138067-4314-32-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1440138067-4314-1-git-send-email-yinghai@kernel.org>
-References: <1440138067-4314-1-git-send-email-yinghai@kernel.org>
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 3/8] jump_label: introduce
+ DEFINE_STATIC_KEY_{TRUE,FALSE}_ARRAY macros
+Message-ID: <20150821062826.GA566@gmail.com>
+References: <1440072876-8321-1-git-send-email-haokexin@gmail.com>
+ <1440072876-8321-4-git-send-email-haokexin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1440072876-8321-4-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,191 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are powerpc generic version and x86 local version for
-skip_ioresource_align().
 
-Move the powerpc version to setup-bus.c, and kill x86 local version.
+* Kevin Hao <haokexin@gmail.com> wrote:
 
-Also kill dummy version in microblaze.
+> These are used to define a static_key_{true,false} array.
+> 
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> ---
+>  include/linux/jump_label.h | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/include/linux/jump_label.h b/include/linux/jump_label.h
+> index 7f653e8f6690..5c1d6a49dd6b 100644
+> --- a/include/linux/jump_label.h
+> +++ b/include/linux/jump_label.h
+> @@ -267,6 +267,12 @@ struct static_key_false {
+>  #define DEFINE_STATIC_KEY_FALSE(name)	\
+>  	struct static_key_false name = STATIC_KEY_FALSE_INIT
+>  
+> +#define DEFINE_STATIC_KEY_TRUE_ARRAY(name, n)	\
+> +	struct static_key_true name[n] = { [0 ... n - 1] = STATIC_KEY_TRUE_INIT }
+> +
+> +#define DEFINE_STATIC_KEY_FALSE_ARRAY(name, n)	\
+> +	struct static_key_false name[n] = { [0 ... n - 1] = STATIC_KEY_FALSE_INIT }
 
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arch@vger.kernel.org
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- arch/microblaze/pci/pci-common.c |  8 --------
- arch/powerpc/kernel/pci-common.c | 11 +----------
- arch/x86/include/asm/pci_x86.h   |  1 -
- arch/x86/pci/common.c            |  4 ++--
- arch/x86/pci/i386.c              | 12 ++----------
- drivers/pci/setup-bus.c          |  9 +++++++++
- include/asm-generic/pci-bridge.h |  2 ++
- 7 files changed, 16 insertions(+), 31 deletions(-)
+I think the define makes the code more obfuscated and less clear, the open-coded 
+initialization is pretty dense and easy to read to begin with.
 
-diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
-index ae838ed..09b1af6 100644
---- a/arch/microblaze/pci/pci-common.c
-+++ b/arch/microblaze/pci/pci-common.c
-@@ -878,11 +878,6 @@ void pcibios_fixup_bus(struct pci_bus *bus)
- }
- EXPORT_SYMBOL(pcibios_fixup_bus);
- 
--static int skip_isa_ioresource_align(struct pci_dev *dev)
--{
--	return 0;
--}
--
- /*
-  * We need to avoid collisions with `mirrored' VGA ports
-  * and other strange ISA hardware, so we always want the
-@@ -899,12 +894,9 @@ static int skip_isa_ioresource_align(struct pci_dev *dev)
- resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
--	struct pci_dev *dev = data;
- 	resource_size_t start = res->start;
- 
- 	if (res->flags & IORESOURCE_IO) {
--		if (skip_isa_ioresource_align(dev))
--			return start;
- 		if (start & 0x300)
- 			start = (start + 0x3ff) & ~0x3ff;
- 	}
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index b9de34d..2d8d654 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1064,15 +1064,6 @@ void pci_fixup_cardbus(struct pci_bus *bus)
- 	pcibios_setup_bus_devices(bus);
- }
- 
--
--static int skip_isa_ioresource_align(struct pci_dev *dev)
--{
--	if (pci_has_flag(PCI_CAN_SKIP_ISA_ALIGN) &&
--	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
--		return 1;
--	return 0;
--}
--
- /*
-  * We need to avoid collisions with `mirrored' VGA ports
-  * and other strange ISA hardware, so we always want the
-@@ -1093,7 +1084,7 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 	resource_size_t start = res->start;
- 
- 	if (res->flags & IORESOURCE_IO) {
--		if (skip_isa_ioresource_align(dev))
-+		if (skip_isa_ioresource_align(dev->bus))
- 			return start;
- 		if (start & 0x300)
- 			start = (start + 0x3ff) & ~0x3ff;
-diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
-index 164e3f8..ddac225 100644
---- a/arch/x86/include/asm/pci_x86.h
-+++ b/arch/x86/include/asm/pci_x86.h
-@@ -28,7 +28,6 @@ do {						\
- #define PCI_ASSIGN_ROMS		0x1000
- #define PCI_BIOS_IRQ_SCAN	0x2000
- #define PCI_ASSIGN_ALL_BUSSES	0x4000
--#define PCI_CAN_SKIP_ISA_ALIGN	0x8000
- #define PCI_USE__CRS		0x10000
- #define PCI_CHECK_ENABLE_AMD_MMCONF	0x20000
- #define PCI_HAS_IO_ECS		0x40000
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 8fd6f44..e8df922 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -83,7 +83,7 @@ DEFINE_RAW_SPINLOCK(pci_config_lock);
- 
- static int __init can_skip_ioresource_align(const struct dmi_system_id *d)
- {
--	pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
-+	pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
- 	printk(KERN_INFO "PCI: %s detected, can skip ISA alignment\n", d->ident);
- 	return 0;
- }
-@@ -619,7 +619,7 @@ char *__init pcibios_setup(char *str)
- 		pci_routeirq = 1;
- 		return NULL;
- 	} else if (!strcmp(str, "skip_isa_align")) {
--		pci_probe |= PCI_CAN_SKIP_ISA_ALIGN;
-+		pci_add_flags(PCI_CAN_SKIP_ISA_ALIGN);
- 		return NULL;
- 	} else if (!strcmp(str, "noioapicquirk")) {
- 		noioapicquirk = 1;
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 0a9f2ca..3f17726 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -33,6 +33,7 @@
- #include <linux/errno.h>
- #include <linux/bootmem.h>
- 
-+#include <asm-generic/pci-bridge.h>
- #include <asm/pat.h>
- #include <asm/e820.h>
- #include <asm/pci_x86.h>
-@@ -128,15 +129,6 @@ static void __init pcibios_fw_addr_list_del(void)
- 	pcibios_fw_addr_done = true;
- }
- 
--static int
--skip_isa_ioresource_align(struct pci_dev *dev) {
--
--	if ((pci_probe & PCI_CAN_SKIP_ISA_ALIGN) &&
--	    !(dev->bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
--		return 1;
--	return 0;
--}
--
- /*
-  * We need to avoid collisions with `mirrored' VGA ports
-  * and other strange ISA hardware, so we always want the
-@@ -158,7 +150,7 @@ pcibios_align_resource(void *data, const struct resource *res,
- 	resource_size_t start = res->start;
- 
- 	if (res->flags & IORESOURCE_IO) {
--		if (skip_isa_ioresource_align(dev))
-+		if (skip_isa_ioresource_align(dev->bus))
- 			return start;
- 		if (start & 0x300)
- 			start = (start + 0x3ff) & ~0x3ff;
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index 7fb08ef..1f08bed 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -1157,6 +1157,15 @@ static resource_size_t window_alignment(struct pci_bus *bus,
- 	return max(align, arch_align);
- }
- 
-+int skip_isa_ioresource_align(struct pci_bus *bus)
-+{
-+	if (pci_has_flag(PCI_CAN_SKIP_ISA_ALIGN) &&
-+	    !(bus->bridge_ctl & PCI_BRIDGE_CTL_ISA))
-+		return 1;
-+
-+	return 0;
-+}
-+
- static resource_size_t size_aligned_for_isa(resource_size_t size)
- {
- 	/*
-diff --git a/include/asm-generic/pci-bridge.h b/include/asm-generic/pci-bridge.h
-index 20db2e5..fab4bd0 100644
---- a/include/asm-generic/pci-bridge.h
-+++ b/include/asm-generic/pci-bridge.h
-@@ -60,6 +60,8 @@ static inline int pci_has_flag(int flag)
- {
- 	return pci_flags & flag;
- }
-+
-+int skip_isa_ioresource_align(struct pci_bus *bus);
- #else
- static inline void pci_set_flags(int flags) { }
- static inline void pci_add_flags(int flags) { }
--- 
-1.8.4.5
+Thanks,
+
+	Ingo
