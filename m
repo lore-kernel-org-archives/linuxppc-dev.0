@@ -1,40 +1,25 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EEA841A022F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 14:25:35 +1000 (AEST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A057C140AF3
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2015 14:25:35 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Fri, 21 Aug 2015 14:25:32 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8F2F62BB0052
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2015 14:25:29 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7L4PEJa49479878
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2015 14:25:23 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7L4OuH9006661
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Aug 2015 14:24:56 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, khandual@linux.vnet.ibm.com
-Subject: [PATCH v2 2/2] powerpc/xmon: Paginate kernel log buffer display
-Date: Fri, 21 Aug 2015 14:24:28 +1000
-Message-Id: <b2566bb9759662fbbc8dd8718c59fcefdb4df3b0.1440131027.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1440131027.git.sam.bobroff@au1.ibm.com>
-References: <cover.1440131027.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1440131027.git.sam.bobroff@au1.ibm.com>
-References: <cover.1440131027.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BF921A022F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Aug 2015 16:22:47 +1000 (AEST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
+ Yijing Wang <wangyijing@huawei.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 42/52] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit
+ resource in OF parsing
+Date: Thu, 20 Aug 2015 23:20:57 -0700
+Message-Id: <1440138067-4314-43-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1440138067-4314-1-git-send-email-yinghai@kernel.org>
+References: <1440138067-4314-1-git-send-email-yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,50 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel log buffer is often much longer than the size of a terminal
-so paginate it's output.
+For device resource PREF bit setting under bridge 64-bit pref resource,
+we need to make sure only set PREF for 64bit resource, so set
+IORESOUCE_MEM_64 for 64bit resource during of device resource flags
+parsing.
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Yijing Wang <wangyijing@huawei.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/xmon/xmon.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/pci_of_scan.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 9ce9e7d..fdd765e 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -248,9 +248,7 @@ Commands:\n\
- "  u	dump TLB\n"
- #endif
- "  ?	help\n"
--#ifdef CONFIG_PPC64
--"  .#	limit output to # lines per page (dump paca only)\n"
--#endif
-+"  .#	limit output to # lines per page (for dp#, dpa, dl)\n"
- "  zr	reboot\n\
-   zh	halt\n"
- ;
-@@ -850,6 +848,7 @@ static void paged_set_size(void)
- 		paged_size = 0;
- 	}
- }
-+
- static void paged_reset(void)
- {
- 	paged_cur_page = 0;
-@@ -2372,10 +2371,12 @@ dump_log_buf(void)
- 	sync();
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 42e02a2..f31bfd0 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -44,8 +44,10 @@ static unsigned int pci_parse_of_flags(u32 addr0, int bridge)
  
- 	kmsg_dump_rewind_nolock(&dumper);
-+	paged_start();
- 	while (kmsg_dump_get_line_nolock(&dumper, false, buf, sizeof(buf), &len)) {
- 		buf[len] = '\0';
--		printf("%s", buf);
-+		XMON_PRINTF("%s", buf);
- 	}
-+	paged_end("dl\n");
- 
- 	sync();
- 	/* wait a little while to see if we get a machine check */
+ 	if (addr0 & 0x02000000) {
+ 		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
+-		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
++		if (addr0 & 0x01000000)
++			flags |= IORESOURCE_MEM_64
++				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		if (addr0 & 0x40000000)
+ 			flags |= IORESOURCE_PREFETCH
+ 				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
 -- 
-2.1.4
+1.8.4.5
