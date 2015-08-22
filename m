@@ -2,19 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8AAA41A027F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2015 21:13:36 +1000 (AEST)
-Message-ID: <1440242015.28532.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/powernv: Fix mis-merge of OPAL support for LEDS
- driver
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69DFA1A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Aug 2015 21:17:00 +1000 (AEST)
+Message-ID: <1440242219.28532.2.camel@ellerman.id.au>
+Subject: Re: linux-next: build failure after merge of the powerpc tree
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- khandual@linux.vnet.ibm.com, stewart@linux.vnet.ibm.com
-Date: Sat, 22 Aug 2015 21:13:35 +1000
-In-Reply-To: <55D7F547.2090607@linux.vnet.ibm.com>
-References: <1440200525-22360-1-git-send-email-mpe@ellerman.id.au>
- <55D7F547.2090607@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>
+Date: Sat, 22 Aug 2015 21:16:59 +1000
+In-Reply-To: <55D7F616.1060308@linux.vnet.ibm.com>
+References: <20150821182535.4423868e@canb.auug.org.au>
+ <55D6E86E.105@linux.vnet.ibm.com> <1440200403.13795.1.camel@ellerman.id.au>
+ <55D7F616.1060308@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,40 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-08-22 at 09:36 +0530, Vasant Hegde wrote:
-> On 08/22/2015 05:12 AM, Michael Ellerman wrote:
-> > When I merged the OPAL support for the powernv LEDS driver I missed a
-> > hunk.
+On Sat, 2015-08-22 at 09:39 +0530, Vasant Hegde wrote:
+> On 08/22/2015 05:10 AM, Michael Ellerman wrote:
+> > On Fri, 2015-08-21 at 14:29 +0530, Vasant Hegde wrote:
+> >> On 08/21/2015 01:55 PM, Stephen Rothwell wrote:
+> >>> Hi all,
+> >>>
+> >>> After merging the nvdimm tree, today's linux-next build (powerpc
+> >>> allyesconfig) failed like this:
+> >>
+> >> Stephen,
+> >>
+> >> Thanks for reporting! I checked powerpc tree.. This is because of commit
+> >> 8a8d9181 in powerpc tree.. Basically Michael missed one hunk (below hunk in
+> >> opal-api.h)
 > > 
-> > This is slightly modified from the original patch, as the original added
-> > code to opal-api.h which is not in the skiboot version, which is
-> > discouraged.
-> 
-> Yeah. I should have made sure opal-api.h is in sync with skiboot. On skiboot
-> side I added below macros to fsp-leds.h instead of opal-api.h :-(
-
-Yeah, I should have remembered too. We'll try to remember in future.
-
-> Anyway for now these macros are used by led driver only (on both side).. Hence I
-> think its fine to add to driver code itself. But we should make sure these
-> strings won't change as we use them while creating sysfs entries and use that
-> information to identify the type of LED.
-
-Sure. If you want to add a comment or something saying they must not change
-that's fine by me.
-
-> > Instead those values are moved into the driver, which is the only place
-> > they are used.
+> > Hmm, looks like it.
 > > 
-> > Fixes: 8a8d91817aec ("powerpc/powernv: Add OPAL interfaces for accessing and modifying system LED states")
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > I do remember the patch didn't apply to my tree, so I guess I accidentally
+> > dropped a hunk when I was forcing it to apply.
 > 
-> Patch looks good.
+> Hmmm yeah..My patchset was based on upstream tree (4.2-rc7) instead of powerpc
+> next tree.
+
+That's OK. Usually that works fine, and usually when there is a conflict I can
+just fix it up. I'm not sure how I managed to drop that chunk, I'll have to go
+back and look at what I did. I suspect I hand-edited the patch, and if you do
+that wrong it can lead to patch just ignoring the rest of the patch.
+
+I probably should have just asked you to rebase on my next, but given it was
+already version 10 I didn't really feel like doing another revision :)
+
+> > Also we're obviously not building this in any of our defconfigs. Can you please
+> > send a patch to enable it for pseries_defconfig and ppc64_defconfig.
 > 
-> Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> Sure.. Will send separate patch.
 
 Thanks.
-
-I've pushed it to next.
 
 cheers
