@@ -1,19 +1,15 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 457101A1BDE
+ by lists.ozlabs.org (Postfix) with ESMTP id 4C5491A1CEE
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2015 21:13:31 +1000 (AEST)
-Message-Id: <20150823104131.037716253@telegraphics.com.au>
-Date: Sun, 23 Aug 2015 20:41:35 +1000
+Message-Id: <20150823104131.527712293@telegraphics.com.au>
+Date: Sun, 23 Aug 2015 20:41:37 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>,
- Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
- Darren Hart <dvhart@infradead.org>, ibm-acpi-devel@lists.sourceforge.net,
- platform-driver-x86@vger.kernel.org
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: [RFC v6 06/25] x86/thinkpad_acpi: Use arch_nvram_ops methods instead
- of nvram_read_byte() and nvram_write_byte()
+ <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [RFC v6 08/25] char/nvram: Implement NVRAM read/write methods
 References: <20150823104129.517600532@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,99 +20,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make use of arch_nvram_ops in the thinkpad_acpi driver so that the
-nvram_* function exports can be removed.
+Refactor the RTC "CMOS" NVRAM functions so that they can be used as
+arch_nvram_ops methods. Checksumming logic is moved from the misc device
+operations to the nvram read/write operations.
 
-This patch series was tested on a ThinkPad T43.
+This makes the misc device implementation more generic. This also
+preserves the locking semantics such that "read if checksum valid" and
+"write and update checksum" remain atomic operations.
+
+PPC64 implements byte-range read/write methods which are similar to
+file_operations struct methods. Other platforms provide only
+byte-at-a-time functions. So the misc device prefers the former but
+will fall back on the latter.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Reviewed-by: Darren Hart <dvhart@linux.intel.com>
 
 ---
- drivers/platform/x86/thinkpad_acpi.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/char/nvram.c |  162 +++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 114 insertions(+), 48 deletions(-)
 
-Index: linux/drivers/platform/x86/thinkpad_acpi.c
+Index: linux/drivers/char/nvram.c
 ===================================================================
---- linux.orig/drivers/platform/x86/thinkpad_acpi.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/drivers/platform/x86/thinkpad_acpi.c	2015-08-23 20:41:01.000000000 +1000
-@@ -2312,30 +2312,30 @@ static void hotkey_read_nvram(struct tp_
- 	u8 d;
+--- linux.orig/drivers/char/nvram.c	2015-08-23 20:41:02.000000000 +1000
++++ linux/drivers/char/nvram.c	2015-08-23 20:41:03.000000000 +1000
+@@ -41,6 +41,7 @@
+ #include <linux/init.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
++#include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/io.h>
+ #include <linux/uaccess.h>
+@@ -178,9 +179,48 @@ static ssize_t nvram_get_size(void)
+ 	return NVRAM_BYTES;
+ }
  
- 	if (m & TP_NVRAM_HKEY_GROUP_HK2) {
--		d = nvram_read_byte(TP_NVRAM_ADDR_HK2);
-+		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_HK2);
- 		n->thinkpad_toggle = !!(d & TP_NVRAM_MASK_HKT_THINKPAD);
- 		n->zoom_toggle = !!(d & TP_NVRAM_MASK_HKT_ZOOM);
- 		n->display_toggle = !!(d & TP_NVRAM_MASK_HKT_DISPLAY);
- 		n->hibernate_toggle = !!(d & TP_NVRAM_MASK_HKT_HIBERNATE);
- 	}
- 	if (m & TP_ACPI_HKEY_THNKLGHT_MASK) {
--		d = nvram_read_byte(TP_NVRAM_ADDR_THINKLIGHT);
-+		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_THINKLIGHT);
- 		n->thinklight_toggle = !!(d & TP_NVRAM_MASK_THINKLIGHT);
- 	}
- 	if (m & TP_ACPI_HKEY_DISPXPAND_MASK) {
--		d = nvram_read_byte(TP_NVRAM_ADDR_VIDEO);
-+		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_VIDEO);
- 		n->displayexp_toggle =
- 				!!(d & TP_NVRAM_MASK_HKT_DISPEXPND);
- 	}
- 	if (m & TP_NVRAM_HKEY_GROUP_BRIGHTNESS) {
--		d = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
-+		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
- 		n->brightness_level = (d & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
- 				>> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
- 		n->brightness_toggle =
- 				!!(d & TP_NVRAM_MASK_HKT_BRIGHTNESS);
- 	}
- 	if (m & TP_NVRAM_HKEY_GROUP_VOLUME) {
--		d = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
-+		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
- 		n->volume_level = (d & TP_NVRAM_MASK_LEVEL_VOLUME)
- 				>> TP_NVRAM_POS_LEVEL_VOLUME;
- 		n->mute = !!(d & TP_NVRAM_MASK_MUTE);
-@@ -6156,7 +6156,7 @@ static unsigned int tpacpi_brightness_nv
++static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
++{
++	char *p = buf;
++	loff_t i;
++
++	spin_lock_irq(&rtc_lock);
++	if (!__nvram_check_checksum()) {
++		spin_unlock_irq(&rtc_lock);
++		return -EIO;
++	}
++	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
++		*p = __nvram_read_byte(i);
++	spin_unlock_irq(&rtc_lock);
++
++	*ppos = i;
++	return p - buf;
++}
++
++static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
++{
++	char *p = buf;
++	loff_t i;
++
++	spin_lock_irq(&rtc_lock);
++	if (!__nvram_check_checksum()) {
++		spin_unlock_irq(&rtc_lock);
++		return -EIO;
++	}
++	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
++		__nvram_write_byte(*p, i);
++	__nvram_set_checksum();
++	spin_unlock_irq(&rtc_lock);
++
++	*ppos = i;
++	return p - buf;
++}
++
+ const struct nvram_ops arch_nvram_ops = {
+ 	.read_byte      = nvram_read_byte,
+ 	.write_byte     = nvram_write_byte,
++	.read           = nvram_read,
++	.write          = nvram_write,
+ 	.get_size       = nvram_get_size,
+ 	.set_checksum   = nvram_set_checksum,
+ 	.initialize     = nvram_initialize,
+@@ -215,69 +255,95 @@ static loff_t nvram_misc_llseek(struct f
+ static ssize_t nvram_misc_read(struct file *file, char __user *buf,
+                                size_t count, loff_t *ppos)
  {
- 	u8 lnvram;
+-	unsigned char contents[NVRAM_BYTES];
+-	unsigned i = *ppos;
+-	unsigned char *tmp;
+-
+-	spin_lock_irq(&rtc_lock);
++	loff_t i;
++	char __user *p = buf;
  
--	lnvram = (nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
-+	lnvram = (arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
- 		  & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
- 		  >> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
- 	lnvram &= bright_maxlvl;
-@@ -6181,7 +6181,7 @@ static void tpacpi_brightness_checkpoint
- 	if (unlikely(!acpi_ec_read(TP_EC_BACKLIGHT, &lec)))
- 		goto unlock;
- 	lec &= TP_EC_BACKLIGHT_LVLMSK;
--	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
-+	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
+-	if (!__nvram_check_checksum())
+-		goto checksum_err;
+-
+-	for (tmp = contents; count-- > 0 && i < NVRAM_BYTES; ++i, ++tmp)
+-		*tmp = __nvram_read_byte(i);
+-
+-	spin_unlock_irq(&rtc_lock);
+-
+-	if (copy_to_user(buf, contents, tmp - contents))
++	if (!access_ok(VERIFY_WRITE, buf, count))
+ 		return -EFAULT;
++	if (*ppos >= nvram_size)
++		return 0;
  
- 	if (lec != ((b_nvram & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
- 			     >> TP_NVRAM_POS_LEVEL_BRIGHTNESS)) {
-@@ -6189,7 +6189,7 @@ static void tpacpi_brightness_checkpoint
- 		b_nvram &= ~(TP_NVRAM_MASK_LEVEL_BRIGHTNESS <<
- 				TP_NVRAM_POS_LEVEL_BRIGHTNESS);
- 		b_nvram |= lec;
--		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
-+		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
- 		dbg_printk(TPACPI_DBG_BRGHT,
- 			   "updated NVRAM backlight level to %u (0x%02x)\n",
- 			   (unsigned int) lec, (unsigned int) b_nvram);
-@@ -6797,13 +6797,13 @@ static void tpacpi_volume_checkpoint_nvr
- 	if (unlikely(!acpi_ec_read(TP_EC_AUDIO, &lec)))
- 		goto unlock;
- 	lec &= ec_mask;
--	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
-+	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
+-	*ppos = i;
+-
+-	return tmp - contents;
++	/* If the arch provided a byte range read op, use it. Otherwise
++	 * fall back on the byte-at-a-time accessor.
++	 */
++	if (arch_nvram_ops.read != NULL) {
++		char *tmp;
++		ssize_t ret;
++
++		count = min_t(size_t, count, nvram_size - *ppos);
++		count = min_t(size_t, count, PAGE_SIZE);
++
++		tmp = kmalloc(count, GFP_KERNEL);
++		if (!tmp)
++			return -ENOMEM;
++
++		ret = arch_nvram_ops.read(tmp, count, ppos);
++		if (ret <= 0)
++			goto out;
++
++		if (copy_to_user(buf, tmp, ret)) {
++			*ppos -= ret;
++			ret = -EFAULT;
++		}
++
++out:
++		kfree(tmp);
++		return ret;
++	}
  
- 	if (lec != (b_nvram & ec_mask)) {
- 		/* NVRAM needs update */
- 		b_nvram &= ~ec_mask;
- 		b_nvram |= lec;
--		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
-+		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
- 		dbg_printk(TPACPI_DBG_MIXER,
- 			   "updated NVRAM mixer status to 0x%02x (0x%02x)\n",
- 			   (unsigned int) lec, (unsigned int) b_nvram);
+-checksum_err:
+-	spin_unlock_irq(&rtc_lock);
+-	return -EIO;
++	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count)
++		if (__put_user(arch_nvram_ops.read_byte(i), p))
++			return -EFAULT;
++	*ppos = i;
++	return p - buf;
+ }
+ 
+ static ssize_t nvram_misc_write(struct file *file, const char __user *buf,
+                                 size_t count, loff_t *ppos)
+ {
+-	unsigned char contents[NVRAM_BYTES];
+-	unsigned i = *ppos;
+-	unsigned char *tmp;
+-
+-	if (i >= NVRAM_BYTES)
+-		return 0;	/* Past EOF */
+-
+-	if (count > NVRAM_BYTES - i)
+-		count = NVRAM_BYTES - i;
+-	if (count > NVRAM_BYTES)
+-		return -EFAULT;	/* Can't happen, but prove it to gcc */
++	loff_t i;
++	const char __user *p = buf;
+ 
+-	if (copy_from_user(contents, buf, count))
++	if (!access_ok(VERIFY_READ, buf, count))
+ 		return -EFAULT;
++	if (*ppos >= nvram_size)
++		return 0;
+ 
+-	spin_lock_irq(&rtc_lock);
+-
+-	if (!__nvram_check_checksum())
+-		goto checksum_err;
+-
+-	for (tmp = contents; count--; ++i, ++tmp)
+-		__nvram_write_byte(*tmp, i);
+-
+-	__nvram_set_checksum();
++	/* If the arch provided a byte range write op, use it. Otherwise
++	 * fall back on the byte-at-a-time accessor.
++	 */
++	if (arch_nvram_ops.write != NULL) {
++		char *tmp;
++		ssize_t ret;
++
++		count = min_t(size_t, count, nvram_size - *ppos);
++		count = min_t(size_t, count, PAGE_SIZE);
++
++		tmp = kmalloc(count, GFP_KERNEL);
++		if (!tmp)
++			return -ENOMEM;
++
++		if (copy_from_user(tmp, buf, count)) {
++			ret = -EFAULT;
++			goto out;
++		}
++
++		ret = arch_nvram_ops.write(tmp, count, ppos);
++
++out:
++		kfree(tmp);
++		return ret;
++	}
+ 
+-	spin_unlock_irq(&rtc_lock);
++	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count) {
++		char c;
+ 
++		if (__get_user(c, p))
++			return -EFAULT;
++		arch_nvram_ops.write_byte(c, i);
++	}
+ 	*ppos = i;
+-
+-	return tmp - contents;
+-
+-checksum_err:
+-	spin_unlock_irq(&rtc_lock);
+-	return -EIO;
++	return p - buf;
+ }
+ 
+ static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
