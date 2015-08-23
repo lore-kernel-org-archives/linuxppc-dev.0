@@ -1,18 +1,15 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 3F76A1A0E5F
+ by lists.ozlabs.org (Postfix) with ESMTP id 46CE41A17B0
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2015 21:13:32 +1000 (AEST)
-Message-Id: <20150823104134.788267773@telegraphics.com.au>
-Date: Sun, 23 Aug 2015 20:41:50 +1000
+Message-Id: <20150823104135.038022438@telegraphics.com.au>
+Date: Sun, 23 Aug 2015 20:41:51 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v6 21/25] powerpc: Adopt nvram module for PPC64
+ <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [RFC v6 22/25] m68k/mac: Adopt naming and calling conventions for
+ PRAM routines
 References: <20150823104129.517600532@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,360 +20,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adopt nvram module to reduce code duplication.
-
-The IOC_NVRAM_GET_OFFSET ioctl as implemented on PPC64 validates the offset
-returned by pmac_get_partition(). Add this test to the nvram module.
-
-Note that the old PPC32 generic_nvram module lacked this test.
-So when CONFIG_PPC32 && CONFIG_PPC_PMAC, the IOC_NVRAM_GET_OFFSET ioctl
-would have returned 0 (always). But when CONFIG_PPC64 && CONFIG_PPC_PMAC,
-the IOC_NVRAM_GET_OFFSET ioctl would have returned -1 (which is -EPERM)
-when the requested partition was not found.
-
-With this patch, the result is now -EINVAL on both PPC32 and PPC64 when
-the requested PowerMac NVRAM partition is not found.
-
-This is a userspace-visible change, in the non-existent partition case,
-which would be in an error path for an IOC_NVRAM_GET_OFFSET ioctl syscall.
+Adopt the existing *_read_byte and *_write_byte naming convention.
+Rename via_pram_readbyte and via_pram_writebyte to avoid confusion.
+Adjust calling conventions of mac_pram_* functions to match the
+arch_nvram_ops struct methods.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 ---
 
-BTW, the IOC_NVRAM_SYNC ioctl call returns -EINVAL on PPC64. This patch
-retains this behaviour though it might be better to actually perform a sync.
-Both PPC64 and PPC32 kernels implement ppc_md.nvram_sync() for Core99,
-but on PPC64 the ioctl is unimplemented (unlike PPC32).
+Changes since v1:
+- Don't introduce the arch_nvram_ops struct in this patch, even if it 
+would form a logical progression. Since the struct would get replaced
+later on, some might see it as churn.
+
+Changes since v2:
+- Rename via_pram_send() and via_pram_recv() as
+via_rtc_send() and via_rtc_recv() resp.
 
 ---
+ arch/m68k/mac/misc.c |   91 +++++++++++++++++++++++++--------------------------
+ 1 file changed, 46 insertions(+), 45 deletions(-)
 
-Changed since v1:
-- The -ENOENT that appeared in v1 was changed to -EINVAL, to be
-consistent with existing logic, that is,
-	if (part < pmac_nvram_OF || part > pmac_nvram_NR)
-		return -EINVAL;
-
-Changed since v3:
-- Fixed comment in powerpc/platforms/pseries/nvram.c
-
----
- arch/powerpc/Kconfig                     |    3 
- arch/powerpc/kernel/nvram_64.c           |  203 ++++---------------------------
- arch/powerpc/platforms/powermac/Makefile |    5 
- arch/powerpc/platforms/powermac/setup.c  |    2 
- arch/powerpc/platforms/pseries/nvram.c   |    2 
- drivers/char/nvram.c                     |    2 
- 6 files changed, 36 insertions(+), 181 deletions(-)
-
-Index: linux/arch/powerpc/Kconfig
+Index: linux/arch/m68k/mac/misc.c
 ===================================================================
---- linux.orig/arch/powerpc/Kconfig	2015-08-23 20:41:18.000000000 +1000
-+++ linux/arch/powerpc/Kconfig	2015-08-23 20:41:20.000000000 +1000
-@@ -179,10 +179,9 @@ config SYSVIPC_COMPAT
- 	depends on COMPAT && SYSVIPC
- 	default y
- 
--# All PPC32s use generic nvram driver through ppc_md
- config HAVE_ARCH_NVRAM_OPS
- 	bool
--	default y if PPC32
-+	default y
- 
- config SCHED_OMIT_FRAME_POINTER
- 	bool
-Index: linux/arch/powerpc/kernel/nvram_64.c
-===================================================================
---- linux.orig/arch/powerpc/kernel/nvram_64.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/arch/powerpc/kernel/nvram_64.c	2015-08-23 20:41:20.000000000 +1000
-@@ -7,12 +7,6 @@
-  *      2 of the License, or (at your option) any later version.
-  *
-  * /dev/nvram driver for PPC64
-- *
-- * This perhaps should live in drivers/char
-- *
-- * TODO: Split the /dev/nvram part (that one can use
-- *       drivers/char/generic_nvram.c) from the arch & partition
-- *       parsing code.
-  */
- 
- #include <linux/module.h>
-@@ -731,153 +725,6 @@ static void oops_to_nvram(struct kmsg_du
- 	spin_unlock_irqrestore(&lock, flags);
+--- linux.orig/arch/m68k/mac/misc.c	2015-08-23 20:40:53.000000000 +1000
++++ linux/arch/m68k/mac/misc.c	2015-08-23 20:41:22.000000000 +1000
+@@ -61,7 +61,7 @@ static void cuda_write_time(long data)
+ 		cuda_poll();
  }
  
--static loff_t dev_nvram_llseek(struct file *file, loff_t offset, int origin)
--{
--	int size;
--
--	if (ppc_md.nvram_size == NULL)
--		return -ENODEV;
--	size = ppc_md.nvram_size();
--
--	switch (origin) {
--	case 1:
--		offset += file->f_pos;
--		break;
--	case 2:
--		offset += size;
--		break;
--	}
--	if (offset < 0)
--		return -EINVAL;
--	file->f_pos = offset;
--	return file->f_pos;
--}
--
--
--static ssize_t dev_nvram_read(struct file *file, char __user *buf,
--			  size_t count, loff_t *ppos)
--{
--	ssize_t ret;
--	char *tmp = NULL;
--	ssize_t size;
--
--	if (!ppc_md.nvram_size) {
--		ret = -ENODEV;
--		goto out;
--	}
--
--	size = ppc_md.nvram_size();
--	if (size < 0) {
--		ret = size;
--		goto out;
--	}
--
--	if (*ppos >= size) {
--		ret = 0;
--		goto out;
--	}
--
--	count = min_t(size_t, count, size - *ppos);
--	count = min(count, PAGE_SIZE);
--
--	tmp = kmalloc(count, GFP_KERNEL);
--	if (!tmp) {
--		ret = -ENOMEM;
--		goto out;
--	}
--
--	ret = ppc_md.nvram_read(tmp, count, ppos);
--	if (ret <= 0)
--		goto out;
--
--	if (copy_to_user(buf, tmp, ret))
--		ret = -EFAULT;
--
--out:
--	kfree(tmp);
--	return ret;
--
--}
--
--static ssize_t dev_nvram_write(struct file *file, const char __user *buf,
--			  size_t count, loff_t *ppos)
--{
--	ssize_t ret;
--	char *tmp = NULL;
--	ssize_t size;
--
--	ret = -ENODEV;
--	if (!ppc_md.nvram_size)
--		goto out;
--
--	ret = 0;
--	size = ppc_md.nvram_size();
--	if (*ppos >= size || size < 0)
--		goto out;
--
--	count = min_t(size_t, count, size - *ppos);
--	count = min(count, PAGE_SIZE);
--
--	ret = -ENOMEM;
--	tmp = kmalloc(count, GFP_KERNEL);
--	if (!tmp)
--		goto out;
--
--	ret = -EFAULT;
--	if (copy_from_user(tmp, buf, count))
--		goto out;
--
--	ret = ppc_md.nvram_write(tmp, count, ppos);
--
--out:
--	kfree(tmp);
--	return ret;
--
--}
--
--static long dev_nvram_ioctl(struct file *file, unsigned int cmd,
--			    unsigned long arg)
--{
--	switch(cmd) {
--#ifdef CONFIG_PPC_PMAC
--	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
--		printk(KERN_WARNING "nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
--	case IOC_NVRAM_GET_OFFSET: {
--		int part, offset;
--
--		if (!machine_is(powermac))
--			return -EINVAL;
--		if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
--			return -EFAULT;
--		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
--			return -EINVAL;
--		offset = pmac_get_partition(part);
--		if (offset < 0)
--			return offset;
--		if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
--			return -EFAULT;
--		return 0;
--	}
--#endif /* CONFIG_PPC_PMAC */
--	default:
--		return -EINVAL;
--	}
--}
--
--const struct file_operations nvram_fops = {
--	.owner		= THIS_MODULE,
--	.llseek		= dev_nvram_llseek,
--	.read		= dev_nvram_read,
--	.write		= dev_nvram_write,
--	.unlocked_ioctl	= dev_nvram_ioctl,
--};
--
--static struct miscdevice nvram_dev = {
--	NVRAM_MINOR,
--	"nvram",
--	&nvram_fops
--};
--
- 
- #ifdef DEBUG_NVRAM
- static void __init nvram_print_partitions(char * label)
-@@ -1026,6 +873,8 @@ loff_t __init nvram_create_partition(con
- 	long size = 0;
- 	int rc;
- 
-+	BUILD_BUG_ON(NVRAM_BLOCK_LEN != 16);
-+
- 	/* Convert sizes from bytes to blocks */
- 	req_size = _ALIGN_UP(req_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
- 	min_size = _ALIGN_UP(min_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
-@@ -1226,29 +1075,41 @@ int __init nvram_scan_partitions(void)
- 	return err;
- }
- 
--static int __init nvram_init(void)
-+
-+#if IS_ENABLED(CONFIG_NVRAM)
-+
-+static ssize_t ppc_nvram_read(char *buf, size_t count, loff_t *index)
+-static __u8 cuda_read_pram(int offset)
++static unsigned char cuda_pram_read_byte(int offset)
  {
--	int rc;
--	
--	BUILD_BUG_ON(NVRAM_BLOCK_LEN != 16);
-+	if (ppc_md.nvram_read)
-+		return ppc_md.nvram_read(buf, count, index);
-+	return -EINVAL;
-+}
- 
--	if (ppc_md.nvram_size == NULL || ppc_md.nvram_size() <= 0)
--		return  -ENODEV;
-+static ssize_t ppc_nvram_write(char *buf, size_t count, loff_t *index)
-+{
-+	if (ppc_md.nvram_write)
-+		return ppc_md.nvram_write(buf, count, index);
-+	return -EINVAL;
-+}
- 
--  	rc = misc_register(&nvram_dev);
--	if (rc != 0) {
--		printk(KERN_ERR "nvram_init: failed to register device\n");
--		return rc;
--	}
--  	
--  	return rc;
-+static ssize_t ppc_nvram_get_size(void)
-+{
-+	if (ppc_md.nvram_size)
-+		return ppc_md.nvram_size();
-+	return -ENODEV;
+ 	struct adb_request req;
+ 	if (cuda_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
+@@ -72,7 +72,7 @@ static __u8 cuda_read_pram(int offset)
+ 	return req.reply[3];
  }
  
--static void __exit nvram_cleanup(void)
-+static long ppc_nvram_sync(void)
+-static void cuda_write_pram(int offset, __u8 data)
++static void cuda_pram_write_byte(unsigned char data, int offset)
  {
--        misc_deregister( &nvram_dev );
-+	return -EINVAL;
- }
- 
--module_init(nvram_init);
--module_exit(nvram_cleanup);
--MODULE_LICENSE("GPL");
-+const struct nvram_ops arch_nvram_ops = {
-+	.read           = ppc_nvram_read,
-+	.write          = ppc_nvram_write,
-+	.get_size       = ppc_nvram_get_size,
-+	.sync           = ppc_nvram_sync,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+
-+#endif /* CONFIG_NVRAM */
-Index: linux/arch/powerpc/platforms/powermac/Makefile
-===================================================================
---- linux.orig/arch/powerpc/platforms/powermac/Makefile	2015-08-23 20:40:53.000000000 +1000
-+++ linux/arch/powerpc/platforms/powermac/Makefile	2015-08-23 20:41:20.000000000 +1000
-@@ -9,11 +9,6 @@ obj-y				+= pic.o setup.o time.o feature
- 				   sleep.o low_i2c.o cache.o pfunc_core.o \
- 				   pfunc_base.o udbg_scc.o udbg_adb.o
- obj-$(CONFIG_PMAC_BACKLIGHT)	+= backlight.o
--# CONFIG_NVRAM is an arch. independent tristate symbol, for pmac32 we really
--# need this to be a bool.  Cheat here and pretend CONFIG_NVRAM=m is really
--# CONFIG_NVRAM=y
- obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
--# ppc64 pmac doesn't define CONFIG_NVRAM but needs nvram stuff
--obj-$(CONFIG_PPC64)		+= nvram.o
- obj-$(CONFIG_PPC32)		+= bootx_init.o
- obj-$(CONFIG_SMP)		+= smp.o
-Index: linux/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/powermac/setup.c	2015-08-23 20:41:18.000000000 +1000
-+++ linux/arch/powerpc/platforms/powermac/setup.c	2015-08-23 20:41:20.000000000 +1000
-@@ -321,7 +321,7 @@ static void __init pmac_setup_arch(void)
- 	find_via_pmu();
- 	smu_init();
- 
--#if IS_ENABLED(CONFIG_NVRAM) || defined(CONFIG_PPC64)
-+#if IS_ENABLED(CONFIG_NVRAM)
- 	pmac_nvram_init();
+ 	struct adb_request req;
+ 	if (cuda_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
+@@ -84,8 +84,8 @@ static void cuda_write_pram(int offset,
+ #else
+ #define cuda_read_time() 0
+ #define cuda_write_time(n)
+-#define cuda_read_pram NULL
+-#define cuda_write_pram NULL
++#define cuda_pram_read_byte NULL
++#define cuda_pram_write_byte NULL
  #endif
  
-Index: linux/drivers/char/nvram.c
-===================================================================
---- linux.orig/drivers/char/nvram.c	2015-08-23 20:41:16.000000000 +1000
-+++ linux/drivers/char/nvram.c	2015-08-23 20:41:20.000000000 +1000
-@@ -342,6 +342,8 @@ static long nvram_misc_ioctl(struct file
- 			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
- 				return -EINVAL;
- 			offset = pmac_get_partition(part);
-+			if (offset < 0)
-+				return -EINVAL;
- 			if (copy_to_user((void __user *)arg,
- 			                 &offset, sizeof(offset)) != 0)
- 				return -EFAULT;
-Index: linux/arch/powerpc/platforms/pseries/nvram.c
-===================================================================
---- linux.orig/arch/powerpc/platforms/pseries/nvram.c	2015-08-23 20:40:53.000000000 +1000
-+++ linux/arch/powerpc/platforms/pseries/nvram.c	2015-08-23 20:41:20.000000000 +1000
-@@ -7,8 +7,6 @@
-  *      2 of the License, or (at your option) any later version.
-  *
-  * /dev/nvram driver for PPC64
-- *
-- * This perhaps should live in drivers/char
+ #ifdef CONFIG_ADB_PMU68K
+@@ -116,7 +116,7 @@ static void pmu_write_time(long data)
+ 		pmu_poll();
+ }
+ 
+-static __u8 pmu_read_pram(int offset)
++static unsigned char pmu_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
+ 	if (pmu_request(&req, NULL, 3, PMU_READ_NVRAM,
+@@ -127,7 +127,7 @@ static __u8 pmu_read_pram(int offset)
+ 	return req.reply[3];
+ }
+ 
+-static void pmu_write_pram(int offset, __u8 data)
++static void pmu_pram_write_byte(unsigned char data, int offset)
+ {
+ 	struct adb_request req;
+ 	if (pmu_request(&req, NULL, 4, PMU_WRITE_NVRAM,
+@@ -139,8 +139,8 @@ static void pmu_write_pram(int offset, _
+ #else
+ #define pmu_read_time() 0
+ #define pmu_write_time(n)
+-#define pmu_read_pram NULL
+-#define pmu_write_pram NULL
++#define pmu_pram_read_byte NULL
++#define pmu_pram_write_byte NULL
+ #endif
+ 
+ #if 0 /* def CONFIG_ADB_MACIISI */
+@@ -169,7 +169,7 @@ static void maciisi_write_time(long data
+ 			(data >> 8) & 0xFF, data & 0xFF);
+ }
+ 
+-static __u8 maciisi_read_pram(int offset)
++static unsigned char maciisi_pram_read_byte(int offset)
+ {
+ 	struct adb_request req;
+ 	if (maciisi_request(&req, NULL, 4, CUDA_PACKET, CUDA_GET_PRAM,
+@@ -178,7 +178,7 @@ static __u8 maciisi_read_pram(int offset
+ 	return req.reply[3];
+ }
+ 
+-static void maciisi_write_pram(int offset, __u8 data)
++static void maciisi_pram_write_byte(unsigned char data, int offset)
+ {
+ 	struct adb_request req;
+ 	maciisi_request(&req, NULL, 5, CUDA_PACKET, CUDA_SET_PRAM,
+@@ -187,8 +187,8 @@ static void maciisi_write_pram(int offse
+ #else
+ #define maciisi_read_time() 0
+ #define maciisi_write_time(n)
+-#define maciisi_read_pram NULL
+-#define maciisi_write_pram NULL
++#define maciisi_pram_read_byte NULL
++#define maciisi_pram_write_byte NULL
+ #endif
+ 
+ /*
+@@ -198,7 +198,7 @@ static void maciisi_write_pram(int offse
+  * the RTC should be enabled.
   */
  
+-static __u8 via_pram_readbyte(void)
++static __u8 via_rtc_recv(void)
+ {
+ 	int	i,reg;
+ 	__u8	data;
+@@ -225,7 +225,7 @@ static __u8 via_pram_readbyte(void)
+ 	return data;
+ }
  
+-static void via_pram_writebyte(__u8 data)
++static void via_rtc_send(__u8 data)
+ {
+ 	int	i,reg,bit;
+ 
+@@ -262,17 +262,17 @@ static void via_pram_command(int command
+ 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
+ 
+ 	if (command & 0xFF00) {		/* extended (two-byte) command */
+-		via_pram_writebyte((command & 0xFF00) >> 8);
+-		via_pram_writebyte(command & 0xFF);
++		via_rtc_send((command & 0xFF00) >> 8);
++		via_rtc_send(command & 0xFF);
+ 		is_read = command & 0x8000;
+ 	} else {			/* one-byte command */
+-		via_pram_writebyte(command);
++		via_rtc_send(command);
+ 		is_read = command & 0x80;
+ 	}
+ 	if (is_read) {
+-		*data = via_pram_readbyte();
++		*data = via_rtc_recv();
+ 	} else {
+-		via_pram_writebyte(*data);
++		via_rtc_send(*data);
+ 	}
+ 
+ 	/* All done, disable the RTC */
+@@ -282,12 +282,12 @@ static void via_pram_command(int command
+ 	local_irq_restore(flags);
+ }
+ 
+-static __u8 via_read_pram(int offset)
++static unsigned char via_pram_read_byte(int offset)
+ {
+ 	return 0;
+ }
+ 
+-static void via_write_pram(int offset, __u8 data)
++static void via_pram_write_byte(unsigned char data, int offset)
+ {
+ }
+ 
+@@ -453,50 +453,51 @@ void pmu_shutdown(void)
+  *-------------------------------------------------------------------
+  */
+ 
+-void mac_pram_read(int offset, __u8 *buffer, int len)
++unsigned char mac_pram_read_byte(int addr)
+ {
+-	__u8 (*func)(int);
+-	int i;
++	unsigned char (*func)(int);
+ 
+ 	switch(macintosh_config->adb_type) {
+ 	case MAC_ADB_IISI:
+-		func = maciisi_read_pram; break;
++		func = maciisi_pram_read_byte;
++		break;
+ 	case MAC_ADB_PB1:
+ 	case MAC_ADB_PB2:
+-		func = pmu_read_pram; break;
++		func = pmu_pram_read_byte;
++		break;
+ 	case MAC_ADB_CUDA:
+-		func = cuda_read_pram; break;
++		func = cuda_pram_read_byte;
++		break;
+ 	default:
+-		func = via_read_pram;
+-	}
+-	if (!func)
+-		return;
+-	for (i = 0 ; i < len ; i++) {
+-		buffer[i] = (*func)(offset++);
++		func = via_pram_read_byte;
+ 	}
++
++	if (func)
++		return (*func)(addr);
++	return 0xff;
+ }
+ 
+-void mac_pram_write(int offset, __u8 *buffer, int len)
++void mac_pram_write_byte(unsigned char val, int addr)
+ {
+-	void (*func)(int, __u8);
+-	int i;
++	void (*func)(unsigned char, int);
+ 
+ 	switch(macintosh_config->adb_type) {
+ 	case MAC_ADB_IISI:
+-		func = maciisi_write_pram; break;
++		func = maciisi_pram_write_byte;
++		break;
+ 	case MAC_ADB_PB1:
+ 	case MAC_ADB_PB2:
+-		func = pmu_write_pram; break;
++		func = pmu_pram_write_byte;
++		break;
+ 	case MAC_ADB_CUDA:
+-		func = cuda_write_pram; break;
++		func = cuda_pram_write_byte;
++		break;
+ 	default:
+-		func = via_write_pram;
+-	}
+-	if (!func)
+-		return;
+-	for (i = 0 ; i < len ; i++) {
+-		(*func)(offset++, buffer[i]);
++		func = via_pram_write_byte;
+ 	}
++
++	if (func)
++		(*func)(val, addr);
+ }
+ 
+ void mac_poweroff(void)
