@@ -1,14 +1,18 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 46BFC1A0EF6
+ by lists.ozlabs.org (Postfix) with ESMTP id 3F76A1A0E5F
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2015 21:13:32 +1000 (AEST)
-Message-Id: <20150823104135.297693098@telegraphics.com.au>
-Date: Sun, 23 Aug 2015 20:41:52 +1000
+Message-Id: <20150823104134.788267773@telegraphics.com.au>
+Date: Sun, 23 Aug 2015 20:41:50 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [RFC v6 23/25] m68k/mac: Use macros for RTC accesses not magic numbers
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [RFC v6 21/25] powerpc: Adopt nvram module for PPC64
 References: <20150823104129.517600532@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,136 +23,360 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Adopt nvram module to reduce code duplication.
+
+The IOC_NVRAM_GET_OFFSET ioctl as implemented on PPC64 validates the offset
+returned by pmac_get_partition(). Add this test to the nvram module.
+
+Note that the old PPC32 generic_nvram module lacked this test.
+So when CONFIG_PPC32 && CONFIG_PPC_PMAC, the IOC_NVRAM_GET_OFFSET ioctl
+would have returned 0 (always). But when CONFIG_PPC64 && CONFIG_PPC_PMAC,
+the IOC_NVRAM_GET_OFFSET ioctl would have returned -1 (which is -EPERM)
+when the requested partition was not found.
+
+With this patch, the result is now -EINVAL on both PPC32 and PPC64 when
+the requested PowerMac NVRAM partition is not found.
+
+This is a userspace-visible change, in the non-existent partition case,
+which would be in an error path for an IOC_NVRAM_GET_OFFSET ioctl syscall.
+
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 ---
 
-This is intended to improve code style and not affect code behaviour.
-I've tested this on a Quadra 650.
-
-I don't know the meanings of the 4 undocumented write protect register
-bits 0x55, so I decided against defining 4 macros for those bits.
+BTW, the IOC_NVRAM_SYNC ioctl call returns -EINVAL on PPC64. This patch
+retains this behaviour though it might be better to actually perform a sync.
+Both PPC64 and PPC32 kernels implement ppc_md.nvram_sync() for Core99,
+but on PPC64 the ioctl is unimplemented (unlike PPC32).
 
 ---
- arch/m68k/mac/misc.c |   59 +++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 41 insertions(+), 18 deletions(-)
 
-Index: linux/arch/m68k/mac/misc.c
+Changed since v1:
+- The -ENOENT that appeared in v1 was changed to -EINVAL, to be
+consistent with existing logic, that is,
+	if (part < pmac_nvram_OF || part > pmac_nvram_NR)
+		return -EINVAL;
+
+Changed since v3:
+- Fixed comment in powerpc/platforms/pseries/nvram.c
+
+---
+ arch/powerpc/Kconfig                     |    3 
+ arch/powerpc/kernel/nvram_64.c           |  203 ++++---------------------------
+ arch/powerpc/platforms/powermac/Makefile |    5 
+ arch/powerpc/platforms/powermac/setup.c  |    2 
+ arch/powerpc/platforms/pseries/nvram.c   |    2 
+ drivers/char/nvram.c                     |    2 
+ 6 files changed, 36 insertions(+), 181 deletions(-)
+
+Index: linux/arch/powerpc/Kconfig
 ===================================================================
---- linux.orig/arch/m68k/mac/misc.c	2015-08-23 20:41:22.000000000 +1000
-+++ linux/arch/m68k/mac/misc.c	2015-08-23 20:41:23.000000000 +1000
-@@ -242,6 +242,21 @@ static void via_rtc_send(__u8 data)
- }
+--- linux.orig/arch/powerpc/Kconfig	2015-08-23 20:41:18.000000000 +1000
++++ linux/arch/powerpc/Kconfig	2015-08-23 20:41:20.000000000 +1000
+@@ -179,10 +179,9 @@ config SYSVIPC_COMPAT
+ 	depends on COMPAT && SYSVIPC
+ 	default y
  
- /*
-+ * These values can be found in Inside Macintosh vol. III ch. 2
-+ * which has a description of the RTC chip in the original Mac.
-+ */
-+
-+#define RTC_FLG_READ            BIT(7)
-+#define RTC_FLG_WRITE_PROTECT   BIT(7)
-+#define RTC_CMD_READ(r)         (RTC_FLG_READ | (r << 2))
-+#define RTC_CMD_WRITE(r)        (r << 2)
-+#define RTC_REG_SECONDS_0       0
-+#define RTC_REG_SECONDS_1       1
-+#define RTC_REG_SECONDS_2       2
-+#define RTC_REG_SECONDS_3       3
-+#define RTC_REG_WRITE_PROTECT   13
-+
-+/*
-  * Execute a VIA PRAM/RTC command. For read commands
-  * data should point to a one-byte buffer for the
-  * resulting data. For write commands it should point
-@@ -250,13 +265,17 @@ static void via_rtc_send(__u8 data)
-  * This function disables all interrupts while running.
+-# All PPC32s use generic nvram driver through ppc_md
+ config HAVE_ARCH_NVRAM_OPS
+ 	bool
+-	default y if PPC32
++	default y
+ 
+ config SCHED_OMIT_FRAME_POINTER
+ 	bool
+Index: linux/arch/powerpc/kernel/nvram_64.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/nvram_64.c	2015-08-23 20:40:53.000000000 +1000
++++ linux/arch/powerpc/kernel/nvram_64.c	2015-08-23 20:41:20.000000000 +1000
+@@ -7,12 +7,6 @@
+  *      2 of the License, or (at your option) any later version.
+  *
+  * /dev/nvram driver for PPC64
+- *
+- * This perhaps should live in drivers/char
+- *
+- * TODO: Split the /dev/nvram part (that one can use
+- *       drivers/char/generic_nvram.c) from the arch & partition
+- *       parsing code.
   */
  
--static void via_pram_command(int command, __u8 *data)
-+static void via_rtc_command(int command, __u8 *data)
- {
- 	unsigned long flags;
- 	int	is_read;
- 
- 	local_irq_save(flags);
- 
-+	/* The least significant bits must be 0b01 according to Inside Mac */
-+
-+	command = (command & ~3) | 1;
-+
- 	/* Enable the RTC and make sure the strobe line is high */
- 
- 	via1[vBufB] = (via1[vBufB] | VIA1B_vRTCClk) & ~VIA1B_vRTCEnb;
-@@ -264,10 +283,10 @@ static void via_pram_command(int command
- 	if (command & 0xFF00) {		/* extended (two-byte) command */
- 		via_rtc_send((command & 0xFF00) >> 8);
- 		via_rtc_send(command & 0xFF);
--		is_read = command & 0x8000;
-+		is_read = command & (RTC_FLG_READ << 8);
- 	} else {			/* one-byte command */
- 		via_rtc_send(command);
--		is_read = command & 0x80;
-+		is_read = command & RTC_FLG_READ;
- 	}
- 	if (is_read) {
- 		*data = via_rtc_recv();
-@@ -306,10 +325,10 @@ static long via_read_time(void)
- 	} result, last_result;
- 	int count = 1;
- 
--	via_pram_command(0x81, &last_result.cdata[3]);
--	via_pram_command(0x85, &last_result.cdata[2]);
--	via_pram_command(0x89, &last_result.cdata[1]);
--	via_pram_command(0x8D, &last_result.cdata[0]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0), &last_result.cdata[3]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1), &last_result.cdata[2]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2), &last_result.cdata[1]);
-+	via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3), &last_result.cdata[0]);
- 
- 	/*
- 	 * The NetBSD guys say to loop until you get the same reading
-@@ -317,10 +336,14 @@ static long via_read_time(void)
- 	 */
- 
- 	while (1) {
--		via_pram_command(0x81, &result.cdata[3]);
--		via_pram_command(0x85, &result.cdata[2]);
--		via_pram_command(0x89, &result.cdata[1]);
--		via_pram_command(0x8D, &result.cdata[0]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_0),
-+		                &result.cdata[3]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_1),
-+		                &result.cdata[2]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_2),
-+		                &result.cdata[1]);
-+		via_rtc_command(RTC_CMD_READ(RTC_REG_SECONDS_3),
-+		                &result.cdata[0]);
- 
- 		if (result.idata == last_result.idata)
- 			return result.idata - RTC_OFFSET;
-@@ -356,18 +379,18 @@ static void via_write_time(long time)
- 	/* Clear the write protect bit */
- 
- 	temp = 0x55;
--	via_pram_command(0x35, &temp);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
- 
- 	data.idata = time + RTC_OFFSET;
--	via_pram_command(0x01, &data.cdata[3]);
--	via_pram_command(0x05, &data.cdata[2]);
--	via_pram_command(0x09, &data.cdata[1]);
--	via_pram_command(0x0D, &data.cdata[0]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_0), &data.cdata[3]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_1), &data.cdata[2]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_2), &data.cdata[1]);
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_SECONDS_3), &data.cdata[0]);
- 
- 	/* Set the write protect bit */
- 
--	temp = 0xD5;
--	via_pram_command(0x35, &temp);
-+	temp = 0x55 | RTC_FLG_WRITE_PROTECT;
-+	via_rtc_command(RTC_CMD_WRITE(RTC_REG_WRITE_PROTECT), &temp);
+ #include <linux/module.h>
+@@ -731,153 +725,6 @@ static void oops_to_nvram(struct kmsg_du
+ 	spin_unlock_irqrestore(&lock, flags);
  }
  
- static void via_shutdown(void)
+-static loff_t dev_nvram_llseek(struct file *file, loff_t offset, int origin)
+-{
+-	int size;
+-
+-	if (ppc_md.nvram_size == NULL)
+-		return -ENODEV;
+-	size = ppc_md.nvram_size();
+-
+-	switch (origin) {
+-	case 1:
+-		offset += file->f_pos;
+-		break;
+-	case 2:
+-		offset += size;
+-		break;
+-	}
+-	if (offset < 0)
+-		return -EINVAL;
+-	file->f_pos = offset;
+-	return file->f_pos;
+-}
+-
+-
+-static ssize_t dev_nvram_read(struct file *file, char __user *buf,
+-			  size_t count, loff_t *ppos)
+-{
+-	ssize_t ret;
+-	char *tmp = NULL;
+-	ssize_t size;
+-
+-	if (!ppc_md.nvram_size) {
+-		ret = -ENODEV;
+-		goto out;
+-	}
+-
+-	size = ppc_md.nvram_size();
+-	if (size < 0) {
+-		ret = size;
+-		goto out;
+-	}
+-
+-	if (*ppos >= size) {
+-		ret = 0;
+-		goto out;
+-	}
+-
+-	count = min_t(size_t, count, size - *ppos);
+-	count = min(count, PAGE_SIZE);
+-
+-	tmp = kmalloc(count, GFP_KERNEL);
+-	if (!tmp) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
+-
+-	ret = ppc_md.nvram_read(tmp, count, ppos);
+-	if (ret <= 0)
+-		goto out;
+-
+-	if (copy_to_user(buf, tmp, ret))
+-		ret = -EFAULT;
+-
+-out:
+-	kfree(tmp);
+-	return ret;
+-
+-}
+-
+-static ssize_t dev_nvram_write(struct file *file, const char __user *buf,
+-			  size_t count, loff_t *ppos)
+-{
+-	ssize_t ret;
+-	char *tmp = NULL;
+-	ssize_t size;
+-
+-	ret = -ENODEV;
+-	if (!ppc_md.nvram_size)
+-		goto out;
+-
+-	ret = 0;
+-	size = ppc_md.nvram_size();
+-	if (*ppos >= size || size < 0)
+-		goto out;
+-
+-	count = min_t(size_t, count, size - *ppos);
+-	count = min(count, PAGE_SIZE);
+-
+-	ret = -ENOMEM;
+-	tmp = kmalloc(count, GFP_KERNEL);
+-	if (!tmp)
+-		goto out;
+-
+-	ret = -EFAULT;
+-	if (copy_from_user(tmp, buf, count))
+-		goto out;
+-
+-	ret = ppc_md.nvram_write(tmp, count, ppos);
+-
+-out:
+-	kfree(tmp);
+-	return ret;
+-
+-}
+-
+-static long dev_nvram_ioctl(struct file *file, unsigned int cmd,
+-			    unsigned long arg)
+-{
+-	switch(cmd) {
+-#ifdef CONFIG_PPC_PMAC
+-	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
+-		printk(KERN_WARNING "nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
+-	case IOC_NVRAM_GET_OFFSET: {
+-		int part, offset;
+-
+-		if (!machine_is(powermac))
+-			return -EINVAL;
+-		if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
+-			return -EFAULT;
+-		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
+-			return -EINVAL;
+-		offset = pmac_get_partition(part);
+-		if (offset < 0)
+-			return offset;
+-		if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
+-			return -EFAULT;
+-		return 0;
+-	}
+-#endif /* CONFIG_PPC_PMAC */
+-	default:
+-		return -EINVAL;
+-	}
+-}
+-
+-const struct file_operations nvram_fops = {
+-	.owner		= THIS_MODULE,
+-	.llseek		= dev_nvram_llseek,
+-	.read		= dev_nvram_read,
+-	.write		= dev_nvram_write,
+-	.unlocked_ioctl	= dev_nvram_ioctl,
+-};
+-
+-static struct miscdevice nvram_dev = {
+-	NVRAM_MINOR,
+-	"nvram",
+-	&nvram_fops
+-};
+-
+ 
+ #ifdef DEBUG_NVRAM
+ static void __init nvram_print_partitions(char * label)
+@@ -1026,6 +873,8 @@ loff_t __init nvram_create_partition(con
+ 	long size = 0;
+ 	int rc;
+ 
++	BUILD_BUG_ON(NVRAM_BLOCK_LEN != 16);
++
+ 	/* Convert sizes from bytes to blocks */
+ 	req_size = _ALIGN_UP(req_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
+ 	min_size = _ALIGN_UP(min_size, NVRAM_BLOCK_LEN) / NVRAM_BLOCK_LEN;
+@@ -1226,29 +1075,41 @@ int __init nvram_scan_partitions(void)
+ 	return err;
+ }
+ 
+-static int __init nvram_init(void)
++
++#if IS_ENABLED(CONFIG_NVRAM)
++
++static ssize_t ppc_nvram_read(char *buf, size_t count, loff_t *index)
+ {
+-	int rc;
+-	
+-	BUILD_BUG_ON(NVRAM_BLOCK_LEN != 16);
++	if (ppc_md.nvram_read)
++		return ppc_md.nvram_read(buf, count, index);
++	return -EINVAL;
++}
+ 
+-	if (ppc_md.nvram_size == NULL || ppc_md.nvram_size() <= 0)
+-		return  -ENODEV;
++static ssize_t ppc_nvram_write(char *buf, size_t count, loff_t *index)
++{
++	if (ppc_md.nvram_write)
++		return ppc_md.nvram_write(buf, count, index);
++	return -EINVAL;
++}
+ 
+-  	rc = misc_register(&nvram_dev);
+-	if (rc != 0) {
+-		printk(KERN_ERR "nvram_init: failed to register device\n");
+-		return rc;
+-	}
+-  	
+-  	return rc;
++static ssize_t ppc_nvram_get_size(void)
++{
++	if (ppc_md.nvram_size)
++		return ppc_md.nvram_size();
++	return -ENODEV;
+ }
+ 
+-static void __exit nvram_cleanup(void)
++static long ppc_nvram_sync(void)
+ {
+-        misc_deregister( &nvram_dev );
++	return -EINVAL;
+ }
+ 
+-module_init(nvram_init);
+-module_exit(nvram_cleanup);
+-MODULE_LICENSE("GPL");
++const struct nvram_ops arch_nvram_ops = {
++	.read           = ppc_nvram_read,
++	.write          = ppc_nvram_write,
++	.get_size       = ppc_nvram_get_size,
++	.sync           = ppc_nvram_sync,
++};
++EXPORT_SYMBOL(arch_nvram_ops);
++
++#endif /* CONFIG_NVRAM */
+Index: linux/arch/powerpc/platforms/powermac/Makefile
+===================================================================
+--- linux.orig/arch/powerpc/platforms/powermac/Makefile	2015-08-23 20:40:53.000000000 +1000
++++ linux/arch/powerpc/platforms/powermac/Makefile	2015-08-23 20:41:20.000000000 +1000
+@@ -9,11 +9,6 @@ obj-y				+= pic.o setup.o time.o feature
+ 				   sleep.o low_i2c.o cache.o pfunc_core.o \
+ 				   pfunc_base.o udbg_scc.o udbg_adb.o
+ obj-$(CONFIG_PMAC_BACKLIGHT)	+= backlight.o
+-# CONFIG_NVRAM is an arch. independent tristate symbol, for pmac32 we really
+-# need this to be a bool.  Cheat here and pretend CONFIG_NVRAM=m is really
+-# CONFIG_NVRAM=y
+ obj-$(CONFIG_NVRAM:m=y)		+= nvram.o
+-# ppc64 pmac doesn't define CONFIG_NVRAM but needs nvram stuff
+-obj-$(CONFIG_PPC64)		+= nvram.o
+ obj-$(CONFIG_PPC32)		+= bootx_init.o
+ obj-$(CONFIG_SMP)		+= smp.o
+Index: linux/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/powermac/setup.c	2015-08-23 20:41:18.000000000 +1000
++++ linux/arch/powerpc/platforms/powermac/setup.c	2015-08-23 20:41:20.000000000 +1000
+@@ -321,7 +321,7 @@ static void __init pmac_setup_arch(void)
+ 	find_via_pmu();
+ 	smu_init();
+ 
+-#if IS_ENABLED(CONFIG_NVRAM) || defined(CONFIG_PPC64)
++#if IS_ENABLED(CONFIG_NVRAM)
+ 	pmac_nvram_init();
+ #endif
+ 
+Index: linux/drivers/char/nvram.c
+===================================================================
+--- linux.orig/drivers/char/nvram.c	2015-08-23 20:41:16.000000000 +1000
++++ linux/drivers/char/nvram.c	2015-08-23 20:41:20.000000000 +1000
+@@ -342,6 +342,8 @@ static long nvram_misc_ioctl(struct file
+ 			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
+ 				return -EINVAL;
+ 			offset = pmac_get_partition(part);
++			if (offset < 0)
++				return -EINVAL;
+ 			if (copy_to_user((void __user *)arg,
+ 			                 &offset, sizeof(offset)) != 0)
+ 				return -EFAULT;
+Index: linux/arch/powerpc/platforms/pseries/nvram.c
+===================================================================
+--- linux.orig/arch/powerpc/platforms/pseries/nvram.c	2015-08-23 20:40:53.000000000 +1000
++++ linux/arch/powerpc/platforms/pseries/nvram.c	2015-08-23 20:41:20.000000000 +1000
+@@ -7,8 +7,6 @@
+  *      2 of the License, or (at your option) any later version.
+  *
+  * /dev/nvram driver for PPC64
+- *
+- * This perhaps should live in drivers/char
+  */
+ 
+ 
