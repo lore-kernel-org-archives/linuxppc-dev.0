@@ -1,16 +1,22 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id F1A851A0E56
+ by lists.ozlabs.org (Postfix) with ESMTP id EFAFC1A0D01
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2015 21:13:31 +1000 (AEST)
-Message-Id: <20150823104134.037715974@telegraphics.com.au>
-Date: Sun, 23 Aug 2015 20:41:47 +1000
+Message-Id: <20150823104133.787700941@telegraphics.com.au>
+Date: Sun, 23 Aug 2015 20:41:46 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v6 18/25] nvram: Drop nvram_* symbol exports and prototypes
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Subject: [RFC v6 17/25] powerpc,
+ fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and
+ nvram_write_byte()
 References: <20150823104129.517600532@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,138 +27,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drivers now use the arch_nvram_ops calls so remove the function exports and
-prototypes. nvram_check_checksum() is unused so remove it.
+Make use of arch_nvram_ops in device drivers so that the nvram_* function
+exports can be removed.
+
+Since they are no longer global symbols, rename the PPC32 nvram_* functions
+appropriately.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 ---
- arch/m68k/atari/nvram.c |    6 +++---
- drivers/char/nvram.c    |   27 +++++----------------------
- include/linux/nvram.h   |    8 --------
- 3 files changed, 8 insertions(+), 33 deletions(-)
 
-Index: linux/drivers/char/nvram.c
+Changed since v4:
+- Split off the CONFIG_PPC32, CONFIG_PPC_PMAC and CONFIG_NVRAM tests into
+a separate patch.
+
+---
+ arch/powerpc/kernel/setup_32.c             |    8 ++++----
+ drivers/char/generic_nvram.c               |    4 ++--
+ drivers/video/fbdev/controlfb.c            |    4 ++--
+ drivers/video/fbdev/imsttfb.c              |    4 ++--
+ drivers/video/fbdev/matrox/matroxfb_base.c |    2 +-
+ drivers/video/fbdev/platinumfb.c           |    4 ++--
+ drivers/video/fbdev/valkyriefb.c           |    4 ++--
+ 7 files changed, 15 insertions(+), 15 deletions(-)
+
+Index: linux/arch/powerpc/kernel/setup_32.c
 ===================================================================
---- linux.orig/drivers/char/nvram.c	2015-08-23 20:41:11.000000000 +1000
-+++ linux/drivers/char/nvram.c	2015-08-23 20:41:16.000000000 +1000
-@@ -82,13 +82,12 @@ static ssize_t nvram_size;
-  * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
-  */
+--- linux.orig/arch/powerpc/kernel/setup_32.c	2015-08-23 20:41:11.000000000 +1000
++++ linux/arch/powerpc/kernel/setup_32.c	2015-08-23 20:41:14.000000000 +1000
+@@ -170,20 +170,18 @@ __setup("l3cr=", ppc_setup_l3cr);
  
--unsigned char __nvram_read_byte(int i)
-+static unsigned char __nvram_read_byte(int i)
- {
- 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
- }
--EXPORT_SYMBOL(__nvram_read_byte);
+ #ifdef CONFIG_GENERIC_NVRAM
  
--unsigned char nvram_read_byte(int i)
-+static unsigned char nvram_read_byte(int i)
+-unsigned char nvram_read_byte(int addr)
++static unsigned char ppc_nvram_read_byte(int addr)
  {
- 	unsigned long flags;
- 	unsigned char c;
-@@ -98,16 +97,14 @@ unsigned char nvram_read_byte(int i)
- 	spin_unlock_irqrestore(&rtc_lock, flags);
- 	return c;
+ 	if (ppc_md.nvram_read_val)
+ 		return ppc_md.nvram_read_val(addr);
+ 	return 0xff;
  }
 -EXPORT_SYMBOL(nvram_read_byte);
  
- /* This races nicely with trying to read with checksum checking (nvram_read) */
--void __nvram_write_byte(unsigned char c, int i)
-+static void __nvram_write_byte(unsigned char c, int i)
+-void nvram_write_byte(unsigned char val, int addr)
++static void ppc_nvram_write_byte(unsigned char val, int addr)
  {
- 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
- }
--EXPORT_SYMBOL(__nvram_write_byte);
- 
--void nvram_write_byte(unsigned char c, int i)
-+static void nvram_write_byte(unsigned char c, int i)
- {
- 	unsigned long flags;
- 
-@@ -115,14 +112,13 @@ void nvram_write_byte(unsigned char c, i
- 	__nvram_write_byte(c, i);
- 	spin_unlock_irqrestore(&rtc_lock, flags);
+ 	if (ppc_md.nvram_write_val)
+ 		ppc_md.nvram_write_val(addr, val);
  }
 -EXPORT_SYMBOL(nvram_write_byte);
  
- /* On PCs, the checksum is built only over bytes 2..31 */
- #define PC_CKS_RANGE_START	2
- #define PC_CKS_RANGE_END	31
- #define PC_CKS_LOC		32
- 
--int __nvram_check_checksum(void)
-+static int __nvram_check_checksum(void)
+ static ssize_t ppc_nvram_get_size(void)
  {
- 	int i;
- 	unsigned short sum = 0;
-@@ -134,19 +130,6 @@ int __nvram_check_checksum(void)
- 	    __nvram_read_byte(PC_CKS_LOC+1);
- 	return (sum & 0xffff) == expect;
+@@ -200,6 +198,8 @@ static long ppc_nvram_sync(void)
  }
--EXPORT_SYMBOL(__nvram_check_checksum);
--
--int nvram_check_checksum(void)
--{
--	unsigned long flags;
--	int rv;
--
--	spin_lock_irqsave(&rtc_lock, flags);
--	rv = __nvram_check_checksum();
--	spin_unlock_irqrestore(&rtc_lock, flags);
--	return rv;
--}
--EXPORT_SYMBOL(nvram_check_checksum);
  
- static void __nvram_set_checksum(void)
- {
-Index: linux/include/linux/nvram.h
+ const struct nvram_ops arch_nvram_ops = {
++	.read_byte      = ppc_nvram_read_byte,
++	.write_byte     = ppc_nvram_write_byte,
+ 	.get_size       = ppc_nvram_get_size,
+ 	.sync           = ppc_nvram_sync,
+ };
+Index: linux/drivers/char/generic_nvram.c
 ===================================================================
---- linux.orig/include/linux/nvram.h	2015-08-23 20:41:11.000000000 +1000
-+++ linux/include/linux/nvram.h	2015-08-23 20:41:16.000000000 +1000
-@@ -3,14 +3,6 @@
- 
- #include <uapi/linux/nvram.h>
- 
--/* __foo is foo without grabbing the rtc_lock - get it yourself */
--extern unsigned char __nvram_read_byte(int i);
--extern unsigned char nvram_read_byte(int i);
--extern void __nvram_write_byte(unsigned char c, int i);
--extern void nvram_write_byte(unsigned char c, int i);
--extern int __nvram_check_checksum(void);
--extern int nvram_check_checksum(void);
--
- struct nvram_ops {
- 	ssize_t         (*read)(char *, size_t, loff_t *);
- 	ssize_t         (*write)(char *, size_t, loff_t *);
-Index: linux/arch/m68k/atari/nvram.c
+--- linux.orig/drivers/char/generic_nvram.c	2015-08-23 20:41:11.000000000 +1000
++++ linux/drivers/char/generic_nvram.c	2015-08-23 20:41:14.000000000 +1000
+@@ -63,7 +63,7 @@ static ssize_t read_nvram(struct file *f
+ 	if (*ppos >= nvram_len)
+ 		return 0;
+ 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
+-		if (__put_user(nvram_read_byte(i), p))
++		if (__put_user(arch_nvram_ops.read_byte(i), p))
+ 			return -EFAULT;
+ 	*ppos = i;
+ 	return p - buf;
+@@ -83,7 +83,7 @@ static ssize_t write_nvram(struct file *
+ 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
+ 		if (__get_user(c, p))
+ 			return -EFAULT;
+-		nvram_write_byte(c, i);
++		arch_nvram_ops.write_byte(c, i);
+ 	}
+ 	*ppos = i;
+ 	return p - buf;
+Index: linux/drivers/video/fbdev/controlfb.c
 ===================================================================
---- linux.orig/arch/m68k/atari/nvram.c	2015-08-23 20:41:05.000000000 +1000
-+++ linux/arch/m68k/atari/nvram.c	2015-08-23 20:41:16.000000000 +1000
-@@ -33,13 +33,13 @@
-  * periodic 11 min sync from kernel/time/ntp.c vs. this driver.)
-  */
+--- linux.orig/drivers/video/fbdev/controlfb.c	2015-08-23 20:40:53.000000000 +1000
++++ linux/drivers/video/fbdev/controlfb.c	2015-08-23 20:41:14.000000000 +1000
+@@ -415,7 +415,7 @@ static int __init init_control(struct fb
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode == CMODE_NVRAM) {
+-		cmode = nvram_read_byte(NV_CMODE);
++		cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ 		if(cmode < CMODE_8 || cmode > CMODE_32)
+ 			cmode = CMODE_8;
+ 	} else
+@@ -423,7 +423,7 @@ static int __init init_control(struct fb
+ 		cmode=default_cmode;
+ #ifdef CONFIG_NVRAM
+ 	if (default_vmode == VMODE_NVRAM) {
+-		vmode = nvram_read_byte(NV_VMODE);
++		vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (vmode < 1 || vmode > VMODE_MAX ||
+ 		    control_mac_modes[vmode - 1].m[full] < cmode) {
+ 			sense = read_control_sense(p);
+Index: linux/drivers/video/fbdev/imsttfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/imsttfb.c	2015-08-23 20:41:13.000000000 +1000
++++ linux/drivers/video/fbdev/imsttfb.c	2015-08-23 20:41:14.000000000 +1000
+@@ -1393,12 +1393,12 @@ static void init_imstt(struct fb_info *i
+ 		int vmode = init_vmode, cmode = init_cmode;
  
--unsigned char __nvram_read_byte(int i)
-+static unsigned char __nvram_read_byte(int i)
- {
- 	return CMOS_READ(NVRAM_FIRST_BYTE + i);
- }
+ 		if (vmode == -1) {
+-			vmode = nvram_read_byte(NV_VMODE);
++			vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 			if (vmode <= 0 || vmode > VMODE_MAX)
+ 				vmode = VMODE_640_480_67;
+ 		}
+ 		if (cmode == -1) {
+-			cmode = nvram_read_byte(NV_CMODE);
++			cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ 			if (cmode < CMODE_8 || cmode > CMODE_32)
+ 				cmode = CMODE_8;
+ 		}
+Index: linux/drivers/video/fbdev/matrox/matroxfb_base.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/matrox/matroxfb_base.c	2015-08-23 20:41:13.000000000 +1000
++++ linux/drivers/video/fbdev/matrox/matroxfb_base.c	2015-08-23 20:41:14.000000000 +1000
+@@ -1878,7 +1878,7 @@ static int initMatrox2(struct matrox_fb_
+ 			default_vmode = VMODE_640_480_60;
+ #if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
+ 		if (default_cmode == CMODE_NVRAM)
+-			default_cmode = nvram_read_byte(NV_CMODE);
++			default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 			default_cmode = CMODE_8;
+Index: linux/drivers/video/fbdev/platinumfb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/platinumfb.c	2015-08-23 20:40:53.000000000 +1000
++++ linux/drivers/video/fbdev/platinumfb.c	2015-08-23 20:41:14.000000000 +1000
+@@ -349,7 +349,7 @@ static int platinum_init_fb(struct fb_in
+ 	printk(KERN_INFO "platinumfb: Monitor sense value = 0x%x, ", sense);
+ 	if (default_vmode == VMODE_NVRAM) {
+ #ifdef CONFIG_NVRAM
+-		default_vmode = nvram_read_byte(NV_VMODE);
++		default_vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <= 0 || default_vmode > VMODE_MAX ||
+ 		    !platinum_reg_init[default_vmode-1])
+ #endif
+@@ -362,7 +362,7 @@ static int platinum_init_fb(struct fb_in
+ 		default_vmode = VMODE_640_480_60;
+ #ifdef CONFIG_NVRAM
+ 	if (default_cmode == CMODE_NVRAM)
+-		default_cmode = nvram_read_byte(NV_CMODE);
++		default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
+ 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
+ 		default_cmode = CMODE_8;
+Index: linux/drivers/video/fbdev/valkyriefb.c
+===================================================================
+--- linux.orig/drivers/video/fbdev/valkyriefb.c	2015-08-23 20:41:13.000000000 +1000
++++ linux/drivers/video/fbdev/valkyriefb.c	2015-08-23 20:41:14.000000000 +1000
+@@ -285,7 +285,7 @@ static void __init valkyrie_choose_mode(
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+ #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_vmode == VMODE_NVRAM) {
+-		default_vmode = nvram_read_byte(NV_VMODE);
++		default_vmode = arch_nvram_ops.read_byte(NV_VMODE);
+ 		if (default_vmode <= 0
+ 		 || default_vmode > VMODE_MAX
+ 		 || !valkyrie_reg_init[default_vmode - 1])
+@@ -298,7 +298,7 @@ static void __init valkyrie_choose_mode(
+ 		default_vmode = VMODE_640_480_67;
+ #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_cmode == CMODE_NVRAM)
+-		default_cmode = nvram_read_byte(NV_CMODE);
++		default_cmode = arch_nvram_ops.read_byte(NV_CMODE);
+ #endif
  
- /* This races nicely with trying to read with checksum checking */
--void __nvram_write_byte(unsigned char c, int i)
-+static void __nvram_write_byte(unsigned char c, int i)
- {
- 	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
- }
-@@ -51,7 +51,7 @@ void __nvram_write_byte(unsigned char c,
- #define ATARI_CKS_RANGE_END	47
- #define ATARI_CKS_LOC		48
- 
--int __nvram_check_checksum(void)
-+static int __nvram_check_checksum(void)
- {
- 	int i;
- 	unsigned char sum = 0;
+ 	/*
