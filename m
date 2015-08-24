@@ -1,22 +1,43 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-yk0-x22f.google.com (mail-yk0-x22f.google.com
- [IPv6:2607:f8b0:4002:c07::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 132141A1DAF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 21:21:09 +1000 (AEST)
-Received: by ykll84 with SMTP id l84so130763818ykl.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 04:21:07 -0700 (PDT)
-From: Kevin Hao <haokexin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A902F1A1D8D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 22:18:43 +1000 (AEST)
+Received: from /spool/local
+ by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Mon, 24 Aug 2015 09:18:38 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 11E213520078
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 08:17:30 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7OCGqX838666362
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 09:16:53 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7OCIY8i018937
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 09:18:35 -0300
+Subject: Re: [PATCH v2 1/2] PCI: Make pci_msi_setup_pci_dev() non-static for
+ use by arch code
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 6/6] powerpc: use jump label for mmu_has_feature
-Date: Mon, 24 Aug 2015 19:20:28 +0800
-Message-Id: <1440415228-8006-7-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1440415228-8006-1-git-send-email-haokexin@gmail.com>
-References: <1440415228-8006-1-git-send-email-haokexin@gmail.com>
+References: <1439945086.23217.5.camel@ellerman.id.au>
+ <1439932077-11427-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1440009922-30248-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1440032549.13406.3.camel@ellerman.id.au>
+ <55D62636.5050403@linux.vnet.ibm.com>
+ <1440401878.15373.2.camel@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ bhelgaas@google.com, mst@redhat.com
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Message-ID: <55DB0B9A.5090407@linux.vnet.ibm.com>
+Date: Mon, 24 Aug 2015 09:18:34 -0300
+MIME-Version: 1.0
+In-Reply-To: <1440401878.15373.2.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,132 +47,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mmu features are fixed once the probe of mmu features are done.
-And the function mmu_has_feature() does be used in some hot path.
-The checking of the mmu features for each time of invoking of
-mmu_has_feature() seems suboptimal. This tries to reduce this
-overhead of this check by using jump label.
+On 08/24/2015 04:37 AM, Michael Ellerman wrote:
+>> more: I was testing driver issues on kernel 2.6.32 (RHEL 6.6), and when
+>> I tried the mainline kernel, the driver wasn't able to enable MSI-X
+>> capabilities. Interestingly, on kernel 4.1 this behavior doesn't happen
+>> and the driver can use MSI-X interrupts.
+>>
+>> So, I figured that something was wrong and found the problem described
+>> on the patches. I tried the proposed solution (calling manually the
+>> function that is not reachable anymore) and it works.
+>>
+>> Regarding the bnx2x driver, below are two dmesg outputs:
+>>
+>> 1) With kernel 4.2-rc7
+>> bnx2x 0000:01:00.0: no msix capability found
+>
+> OK. This is because the initialisation of dev->msix_cap was lost due to commit
+> 1851617cd2da.
+>
+>> 2) With kernel 4.1
+>> bnx2x 0000:01:00.0: msix capability found
+>> bnx2x 0000:01:00.0 eth2: using MSI-X  IRQs: sp 24  fp[0] 26 ... fp[7] 33
+>
+> OK. And I assume with these patches you see the above output again.
 
-The generated assemble code of the following c program:
-	if (mmu_has_feature(MMU_FTR_XXX))
-		xxx()
-Before:
-	lis     r9,-16230
-	lwz     r9,12324(r9)
-	lwz     r9,24(r9)
-	andi.   r10,r9,16
-	beqlr+
+Exactly. With the proposed patches applied, dev->msix_cap is initialized 
+normally, so the driver is able to do its job as usual.
 
-After:
-	nop	if MMU_FTR_XXX is enabled
-	b xxx	if MMU_FTR_XXX is not enabled
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
-v2: Use the open-coded definition and initialization for mmu_feat_keys[].
+>>> Or anywhere after the first '---', which means the version commentary is
+>>> discarded in the final commit.
+>>
+>> I used scissors, but there's no problem in stop using it in this list.
+>
+> Thanks, but my scripts don't grok scissors. So I prefer the commentary after
+> the '---'.
 
- arch/powerpc/include/asm/mmu.h | 29 +++++++++++++++++++++++++++++
- arch/powerpc/kernel/cputable.c | 17 +++++++++++++++++
- arch/powerpc/kernel/setup_32.c |  1 +
- arch/powerpc/kernel/setup_64.c |  1 +
- 4 files changed, 48 insertions(+)
+Thanks for the info.
 
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 3d5abfe6ba67..e091de352a75 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -109,6 +109,34 @@
- DECLARE_PER_CPU(int, next_tlbcam_idx);
- #endif
- 
-+#ifdef CONFIG_JUMP_LABEL
-+#include <linux/jump_label.h>
-+
-+#define MAX_MMU_FEATURES	(8 * sizeof(((struct cpu_spec *)0)->mmu_features))
-+
-+extern struct static_key_true mmu_feat_keys[MAX_MMU_FEATURES];
-+
-+extern void mmu_feat_keys_init(void);
-+
-+static inline int mmu_has_feature(unsigned long feature)
-+{
-+	int i;
-+
-+	i = __builtin_ctzl(feature);
-+	return static_branch_likely(&mmu_feat_keys[i]);
-+}
-+
-+static inline void mmu_clear_feature(unsigned long feature)
-+{
-+	int i;
-+
-+	i = __builtin_ctzl(feature);
-+	cur_cpu_spec->mmu_features &= ~feature;
-+	static_branch_disable(&mmu_feat_keys[i]);
-+}
-+#else
-+static inline void mmu_feat_keys_init(void) { }
-+
- static inline int mmu_has_feature(unsigned long feature)
- {
- 	return (cur_cpu_spec->mmu_features & feature);
-@@ -118,6 +146,7 @@ static inline void mmu_clear_feature(unsigned long feature)
- {
- 	cur_cpu_spec->mmu_features &= ~feature;
- }
-+#endif
- 
- extern unsigned int __start___mmu_ftr_fixup, __stop___mmu_ftr_fixup;
- 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index ea94931c5e70..6b505c98520b 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2214,4 +2214,21 @@ void __init cpu_feat_keys_init(void)
- 			static_branch_disable(&cpu_feat_keys[i]);
- 	}
- }
-+
-+struct static_key_true mmu_feat_keys[MAX_MMU_FEATURES] = {
-+			[0 ... MAX_MMU_FEATURES - 1] = STATIC_KEY_TRUE_INIT
-+};
-+EXPORT_SYMBOL_GPL(mmu_feat_keys);
-+
-+void __init mmu_feat_keys_init(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < MAX_MMU_FEATURES; i++) {
-+		unsigned long f = 1ul << i;
-+
-+		if (!(cur_cpu_spec->mmu_features & f))
-+			static_branch_disable(&mmu_feat_keys[i]);
-+	}
-+}
- #endif
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 93756175a13c..8acff5a4bc3e 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -116,6 +116,7 @@ notrace void __init machine_init(u64 dt_ptr)
- 
- 	jump_label_init();
- 	cpu_feat_keys_init();
-+	mmu_feat_keys_init();
- 
- 	/* Enable early debugging if any specified (see udbg.h) */
- 	udbg_early_init();
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 4cf3894d91fa..df6f98f1c46c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -252,6 +252,7 @@ void __init early_setup(unsigned long dt_ptr)
- 
- 	jump_label_init();
- 	cpu_feat_keys_init();
-+	mmu_feat_keys_init();
- 
- 	/* -------- printk is now safe to use ------- */
- 
--- 
-2.1.0
+Cheers
