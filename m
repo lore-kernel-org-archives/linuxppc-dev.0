@@ -1,19 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A3A4C1A1D92
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 22:43:08 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: linux-pci@vger.kernel.org, gpiccoli@linux.vnet.ibm.com,
- bhelgaas@google.com, mst@redhat.com
-Subject: [PATCH 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe
- time in OF case
-Date: Mon, 24 Aug 2015 22:42:47 +1000
-Message-Id: <1440420167-8879-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1440420167-8879-1-git-send-email-mpe@ellerman.id.au>
-References: <1440420167-8879-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC4511A013E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 02:27:04 +1000 (AEST)
+From: Scott Wood <scottwood@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+CC: Scott Wood <scottwood@freescale.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Hongtao Jia <hongtao.jia@freescale.com>
+Subject: [PATCH] powerpc/fsl_pci: Check for get_user/probe_kernel_address
+ failure
+Date: Mon, 24 Aug 2015 11:26:44 -0500
+Message-ID: <1440433604-1520-1-git-send-email-scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-
-Since commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if
-kernel doesn't support MSI"), the setup of dev->msi_cap/msix_cap and the
-disable of MSI/MSI-X interrupts isn't being done at PCI probe time, as
-the logic responsible for this was moved in the aforementioned commit
-from pci_device_add() to pci_setup_device(). The latter function is not
-reachable on PowerPC pseries platform during Open Firmware PCI probing
-time.
-
-This exhibits as drivers not being able to enable MSI, eg:
-
-  bnx2x 0000:01:00.0: no msix capability found
-
-This patch calls pci_msi_setup_pci_dev() explicitly to disable MSI/MSI-X
-during PCI probe time on pSeries platform.
-
-Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't support MSI")
-[mpe: Flesh out change log and clarify comment]
-Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Reported-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hongtao Jia <hongtao.jia@freescale.com>
 ---
- arch/powerpc/kernel/pci_of_scan.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/sysdev/fsl_pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 42e02a2d570b..efc3fa54c90b 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -191,6 +191,9 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index ebc1f412..5dab1fd 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -1002,7 +1002,7 @@ int fsl_pci_mcheck_exception(struct pt_regs *regs)
+ 			ret = probe_kernel_address(regs->nip, inst);
+ 		}
  
- 	pci_device_add(dev, bus);
- 
-+	/* Setup MSI caps & disable MSI/MSI-X interrupts */
-+	pci_msi_setup_pci_dev(dev);
-+
- 	return dev;
- }
- EXPORT_SYMBOL(of_create_pci_dev);
+-		if (mcheck_handle_load(regs, inst)) {
++		if (ret && mcheck_handle_load(regs, inst)) {
+ 			regs->nip += 4;
+ 			return 1;
+ 		}
 -- 
 2.1.4
