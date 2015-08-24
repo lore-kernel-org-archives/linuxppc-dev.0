@@ -2,16 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F027C1A1D92
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 22:43:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A3A4C1A1D92
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 22:43:08 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: linux-pci@vger.kernel.org, gpiccoli@linux.vnet.ibm.com,
  bhelgaas@google.com, mst@redhat.com
-Subject: [PATCH 1/2] PCI: Make pci_msi_setup_pci_dev() non-static for use by
- arch code
-Date: Mon, 24 Aug 2015 22:42:46 +1000
-Message-Id: <1440420167-8879-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe
+ time in OF case
+Date: Mon, 24 Aug 2015 22:42:47 +1000
+Message-Id: <1440420167-8879-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1440420167-8879-1-git-send-email-mpe@ellerman.id.au>
+References: <1440420167-8879-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +25,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
 
-Commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
-doesn't support MSI") changed the location of the code that initialises
-dev->msi_cap/msix_cap and then disables MSI/MSI-X interrupts at PCI
-probe time in devices that have this flag set. It moved the code from
-pci_msi_init_pci_dev() to a new function named pci_msi_setup_pci_dev(),
-called by pci_setup_device().
+Since commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if
+kernel doesn't support MSI"), the setup of dev->msi_cap/msix_cap and the
+disable of MSI/MSI-X interrupts isn't being done at PCI probe time, as
+the logic responsible for this was moved in the aforementioned commit
+from pci_device_add() to pci_setup_device(). The latter function is not
+reachable on PowerPC pseries platform during Open Firmware PCI probing
+time.
 
-The pseries PCI probing code does not call pci_setup_device(), so since
-the aforementioned commit the function pci_msi_setup_pci_dev() is not
-called and MSI/MSI-X interrupts are left enabled. Additionally because
-dev->msi_cap/msix_cap are not initialised no driver can ever enable
-MSI/MSI-X.
+This exhibits as drivers not being able to enable MSI, eg:
 
-To fix this, the pseries PCI probe should manually call
-pci_msi_setup_pci_dev(), so this patch makes it non-static.
+  bnx2x 0000:01:00.0: no msix capability found
+
+This patch calls pci_msi_setup_pci_dev() explicitly to disable MSI/MSI-X
+during PCI probe time on pSeries platform.
 
 Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't support MSI")
-[mpe: Update change log to mention dev->msi_cap/msix_cap]
+[mpe: Flesh out change log and clarify comment]
 Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- drivers/pci/probe.c | 2 +-
- include/linux/pci.h | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/pci_of_scan.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-
-Bjorn, I plan to put this series in my fixes branch and ask Linus to pull it
-before the 4.2 release. Unless you want to take it.
-
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index b978bbfe044c..f6ae0d0052eb 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1108,7 +1108,7 @@ int pci_cfg_space_size(struct pci_dev *dev)
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 42e02a2d570b..efc3fa54c90b 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -191,6 +191,9 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
  
- #define LEGACY_IO_RESOURCE	(IORESOURCE_IO | IORESOURCE_PCI_FIXED)
+ 	pci_device_add(dev, bus);
  
--static void pci_msi_setup_pci_dev(struct pci_dev *dev)
-+void pci_msi_setup_pci_dev(struct pci_dev *dev)
- {
- 	/*
- 	 * Disable the MSI hardware to avoid screaming interrupts
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 8a0321a8fb59..860c751810fc 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1202,6 +1202,7 @@ struct msix_entry {
- 	u16	entry;	/* driver uses to specify entry, OS writes */
- };
- 
-+void pci_msi_setup_pci_dev(struct pci_dev *dev);
- 
- #ifdef CONFIG_PCI_MSI
- int pci_msi_vec_count(struct pci_dev *dev);
++	/* Setup MSI caps & disable MSI/MSI-X interrupts */
++	pci_msi_setup_pci_dev(dev);
++
+ 	return dev;
+ }
+ EXPORT_SYMBOL(of_create_pci_dev);
 -- 
 2.1.4
