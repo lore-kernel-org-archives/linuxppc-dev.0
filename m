@@ -1,16 +1,26 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id A24621A1CEE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Aug 2015 21:13:32 +1000 (AEST)
-Message-Id: <20150823104134.538270549@telegraphics.com.au>
-Date: Sun, 23 Aug 2015 20:41:49 +1000
-From: Finn Thain <fthain@telegraphics.com.au>
-To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC v6 20/25] char/generic_nvram: Remove as unused
-References: <20150823104129.517600532@telegraphics.com.au>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36A581A1D63
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 17:37:59 +1000 (AEST)
+Message-ID: <1440401878.15373.2.camel@ellerman.id.au>
+Subject: Re: [PATCH v2 1/2] PCI: Make pci_msi_setup_pci_dev() non-static for
+ use by arch code
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
+ bhelgaas@google.com, mst@redhat.com
+Date: Mon, 24 Aug 2015 17:37:58 +1000
+In-Reply-To: <55D62636.5050403@linux.vnet.ibm.com>
+References: <1439945086.23217.5.camel@ellerman.id.au>
+ ,<1439932077-11427-2-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1440009922-30248-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1440032549.13406.3.camel@ellerman.id.au>
+ <55D62636.5050403@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,209 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-And thus eliminate some twisted CONFIG_GENERIC_NVRAM logic.
+On Thu, 2015-08-20 at 16:10 -0300, Guilherme G. Piccoli wrote:
+> On 08/19/2015 10:02 PM, Michael Ellerman wrote:
+> > In future you should send a reply like the above to my mail, and then
+> > separately send the new patch series. My preference is that the new series is
+> > not a reply to anything, though some other maintainers may disagree on that
+> > point.
+> 
+> OK, sure. I can send new patch series as new messages instead of replies 
+> to the same thread.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Thanks.
 
----
- drivers/char/Makefile        |    6 -
- drivers/char/generic_nvram.c |  175 -------------------------------------------
- 2 files changed, 1 insertion(+), 180 deletions(-)
+> > The other question, which I neglected to ask yesterday, is what is the symptom
+> > of the bug? ie. does the system fail to boot or otherwise crash etc.?
+> 
+> This is briefly explained on cover-letter, but I can elaborate a bit 
 
-Index: linux/drivers/char/Makefile
-===================================================================
---- linux.orig/drivers/char/Makefile	2015-08-23 20:40:53.000000000 +1000
-+++ linux/drivers/char/Makefile	2015-08-23 20:41:19.000000000 +1000
-@@ -29,11 +29,7 @@ obj-$(CONFIG_GEN_RTC)		+= genrtc.o
- obj-$(CONFIG_EFI_RTC)		+= efirtc.o
- obj-$(CONFIG_DS1302)		+= ds1302.o
- obj-$(CONFIG_XILINX_HWICAP)	+= xilinx_hwicap/
--ifeq ($(CONFIG_GENERIC_NVRAM),y)
--  obj-$(CONFIG_NVRAM)	+= generic_nvram.o
--else
--  obj-$(CONFIG_NVRAM)	+= nvram.o
--endif
-+obj-$(CONFIG_NVRAM)		+= nvram.o
- obj-$(CONFIG_TOSHIBA)		+= toshiba.o
- obj-$(CONFIG_DS1620)		+= ds1620.o
- obj-$(CONFIG_HW_RANDOM)		+= hw_random/
-Index: linux/drivers/char/generic_nvram.c
-===================================================================
---- linux.orig/drivers/char/generic_nvram.c	2015-08-23 20:41:14.000000000 +1000
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,175 +0,0 @@
--/*
-- * Generic /dev/nvram driver for architectures providing some
-- * "generic" hooks, that is :
-- *
-- * nvram_read_byte, nvram_write_byte, nvram_sync, nvram_get_size
-- *
-- * Note that an additional hook is supported for PowerMac only
-- * for getting the nvram "partition" informations
-- *
-- */
--
--#define NVRAM_VERSION "1.1"
--
--#include <linux/module.h>
--
--#include <linux/types.h>
--#include <linux/errno.h>
--#include <linux/fs.h>
--#include <linux/miscdevice.h>
--#include <linux/fcntl.h>
--#include <linux/init.h>
--#include <linux/mutex.h>
--#include <linux/nvram.h>
--#include <asm/uaccess.h>
--#include <asm/nvram.h>
--#ifdef CONFIG_PPC_PMAC
--#include <asm/machdep.h>
--#endif
--
--static DEFINE_MUTEX(nvram_mutex);
--static ssize_t nvram_len;
--
--static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
--{
--	switch (origin) {
--	case 0:
--		break;
--	case 1:
--		offset += file->f_pos;
--		break;
--	case 2:
--		offset += nvram_len;
--		break;
--	default:
--		offset = -1;
--	}
--	if (offset < 0)
--		return -EINVAL;
--
--	file->f_pos = offset;
--
--	return file->f_pos;
--}
--
--static ssize_t read_nvram(struct file *file, char __user *buf,
--			  size_t count, loff_t *ppos)
--{
--	unsigned int i;
--	char __user *p = buf;
--
--	if (!access_ok(VERIFY_WRITE, buf, count))
--		return -EFAULT;
--	if (*ppos >= nvram_len)
--		return 0;
--	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
--		if (__put_user(arch_nvram_ops.read_byte(i), p))
--			return -EFAULT;
--	*ppos = i;
--	return p - buf;
--}
--
--static ssize_t write_nvram(struct file *file, const char __user *buf,
--			   size_t count, loff_t *ppos)
--{
--	unsigned int i;
--	const char __user *p = buf;
--	char c;
--
--	if (!access_ok(VERIFY_READ, buf, count))
--		return -EFAULT;
--	if (*ppos >= nvram_len)
--		return 0;
--	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count) {
--		if (__get_user(c, p))
--			return -EFAULT;
--		arch_nvram_ops.write_byte(c, i);
--	}
--	*ppos = i;
--	return p - buf;
--}
--
--static int nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
--{
--	switch(cmd) {
--#ifdef CONFIG_PPC_PMAC
--	case OBSOLETE_PMAC_NVRAM_GET_OFFSET:
--		printk(KERN_WARNING "nvram: Using obsolete PMAC_NVRAM_GET_OFFSET ioctl\n");
--	case IOC_NVRAM_GET_OFFSET: {
--		int part, offset;
--
--		if (!machine_is(powermac))
--			return -EINVAL;
--		if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
--			return -EFAULT;
--		if (part < pmac_nvram_OF || part > pmac_nvram_NR)
--			return -EINVAL;
--		offset = pmac_get_partition(part);
--		if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
--			return -EFAULT;
--		break;
--	}
--#endif /* CONFIG_PPC_PMAC */
--	case IOC_NVRAM_SYNC:
--		arch_nvram_ops.sync();
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
--}
--
--static long nvram_unlocked_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
--{
--	int ret;
--
--	mutex_lock(&nvram_mutex);
--	ret = nvram_ioctl(file, cmd, arg);
--	mutex_unlock(&nvram_mutex);
--
--	return ret;
--}
--
--const struct file_operations nvram_fops = {
--	.owner		= THIS_MODULE,
--	.llseek		= nvram_llseek,
--	.read		= read_nvram,
--	.write		= write_nvram,
--	.unlocked_ioctl	= nvram_unlocked_ioctl,
--};
--
--static struct miscdevice nvram_dev = {
--	NVRAM_MINOR,
--	"nvram",
--	&nvram_fops
--};
--
--int __init nvram_init(void)
--{
--	int ret;
--
--	if (arch_nvram_ops.get_size == NULL)
--		return -ENODEV;
--
--	nvram_len = arch_nvram_ops.get_size();
--	if (nvram_len < 0)
--		return nvram_len;
--
--	ret = misc_register(&nvram_dev);
--	if (ret)
--		return ret;
--
--	pr_info("Generic non-volatile memory driver v%s\n", NVRAM_VERSION);
--
--	return 0;
--}
--
--void __exit nvram_cleanup(void)
--{
--        misc_deregister( &nvram_dev );
--}
--
--module_init(nvram_init);
--module_exit(nvram_cleanup);
--MODULE_LICENSE("GPL");
+Sure, but the cover-letter is not committed, so the commit change logs need to
+be self describing.
+
+> more: I was testing driver issues on kernel 2.6.32 (RHEL 6.6), and when 
+> I tried the mainline kernel, the driver wasn't able to enable MSI-X 
+> capabilities. Interestingly, on kernel 4.1 this behavior doesn't happen 
+> and the driver can use MSI-X interrupts.
+> 
+> So, I figured that something was wrong and found the problem described 
+> on the patches. I tried the proposed solution (calling manually the 
+> function that is not reachable anymore) and it works.
+> 
+> Regarding the bnx2x driver, below are two dmesg outputs:
+> 
+> 1) With kernel 4.2-rc7
+> bnx2x 0000:01:00.0: no msix capability found
+
+OK. This is because the initialisation of dev->msix_cap was lost due to commit
+1851617cd2da.
+
+> 2) With kernel 4.1
+> bnx2x 0000:01:00.0: msix capability found
+> bnx2x 0000:01:00.0 eth2: using MSI-X  IRQs: sp 24  fp[0] 26 ... fp[7] 33
+
+OK. And I assume with these patches you see the above output again.
+
+> > This is changes *in* v2, or since v1.
+> 
+> My bad, sorry.
+> 
+> > Or anywhere after the first '---', which means the version commentary is
+> > discarded in the final commit.
+> 
+> I used scissors, but there's no problem in stop using it in this list.
+
+Thanks, but my scripts don't grok scissors. So I prefer the commentary after
+the '---'.
+
+cheers
