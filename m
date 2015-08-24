@@ -1,20 +1,20 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yk0-x22a.google.com (mail-yk0-x22a.google.com
- [IPv6:2607:f8b0:4002:c07::22a])
+Received: from mail-yk0-x22d.google.com (mail-yk0-x22d.google.com
+ [IPv6:2607:f8b0:4002:c07::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E83361A1DB5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 21:21:00 +1000 (AEST)
-Received: by ykdt205 with SMTP id t205so131365031ykd.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 04:20:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FD101A1DB1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 21:21:05 +1000 (AEST)
+Received: by ykdt205 with SMTP id t205so131366561ykd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Aug 2015 04:21:03 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/6] powerpc: move the cpu_has_feature to a separate file
-Date: Mon, 24 Aug 2015 19:20:26 +0800
-Message-Id: <1440415228-8006-5-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v2 5/6] powerpc: use the jump label for cpu_has_feature
+Date: Mon, 24 Aug 2015 19:20:27 +0800
+Message-Id: <1440415228-8006-6-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1440415228-8006-1-git-send-email-haokexin@gmail.com>
 References: <1440415228-8006-1-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,257 +26,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We plan to use jump label for cpu_has_feature. In order to implement
-this we need to include the linux/jump_label.h in asm/cputable.h.
-But it seems that asm/cputable.h is so basic header file for ppc that
-it is almost included by all the other header files. The including of
-the linux/jump_label.h will introduces various recursive inclusion.
-And it is very hard to fix that. So we choose to move the function
-cpu_has_feature to a separate header file before using the jump label
-for it. No functional change.
+The cpu features are fixed once the probe of cpu features are done.
+And the function cpu_has_feature() does be used in some hot path.
+The checking of the cpu features for each time of invoking of
+cpu_has_feature() seems suboptimal. This tries to reduce this
+overhead of this check by using jump label.
+
+The generated assemble code of the following c program:
+	if (cpu_has_feature(CPU_FTR_XXX))
+		xxx()
+
+Before:
+	lis     r9,-16230
+	lwz     r9,12324(r9)
+	lwz     r9,12(r9)
+	andi.   r10,r9,512
+	beqlr-
+
+After:
+	nop	if CPU_FTR_XXX is enabled
+	b xxx	if CPU_FTR_XXX is not enabled
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
-v2: No change.
+v2: Use the open-coded definition and initialization for cpu_feat_keys[].
 
- arch/powerpc/include/asm/cacheflush.h   |  1 +
- arch/powerpc/include/asm/cpufeatures.h  | 14 ++++++++++++++
- arch/powerpc/include/asm/cputable.h     |  8 --------
- arch/powerpc/include/asm/cputime.h      |  1 +
- arch/powerpc/include/asm/dbell.h        |  1 +
- arch/powerpc/include/asm/dcr-native.h   |  1 +
- arch/powerpc/include/asm/mman.h         |  1 +
- arch/powerpc/include/asm/time.h         |  1 +
- arch/powerpc/include/asm/xor.h          |  1 +
- arch/powerpc/kernel/align.c             |  1 +
- arch/powerpc/kernel/irq.c               |  1 +
- arch/powerpc/kernel/process.c           |  1 +
- arch/powerpc/kernel/setup-common.c      |  1 +
- arch/powerpc/kernel/setup_32.c          |  1 +
- arch/powerpc/kernel/smp.c               |  1 +
- arch/powerpc/platforms/cell/pervasive.c |  1 +
- arch/powerpc/xmon/ppc-dis.c             |  1 +
- 17 files changed, 29 insertions(+), 8 deletions(-)
- create mode 100644 arch/powerpc/include/asm/cpufeatures.h
+ arch/powerpc/include/asm/cpufeatures.h | 20 ++++++++++++++++++++
+ arch/powerpc/include/asm/cputable.h    |  8 ++++++++
+ arch/powerpc/kernel/cputable.c         | 20 ++++++++++++++++++++
+ arch/powerpc/kernel/setup_32.c         |  1 +
+ arch/powerpc/kernel/setup_64.c         |  1 +
+ 5 files changed, 50 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index 6229e6b6037b..3bdcd9231852 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -11,6 +11,7 @@
- 
- #include <linux/mm.h>
- #include <asm/cputable.h>
-+#include <asm/cpufeatures.h>
- 
- /*
-  * No cache flushing is required when address mappings are changed,
 diff --git a/arch/powerpc/include/asm/cpufeatures.h b/arch/powerpc/include/asm/cpufeatures.h
-new file mode 100644
-index 000000000000..37650db5044f
---- /dev/null
+index 37650db5044f..405a97fe6ef9 100644
+--- a/arch/powerpc/include/asm/cpufeatures.h
 +++ b/arch/powerpc/include/asm/cpufeatures.h
-@@ -0,0 +1,14 @@
-+#ifndef __ASM_POWERPC_CPUFEATURES_H
-+#define __ASM_POWERPC_CPUFEATURES_H
+@@ -3,6 +3,25 @@
+ 
+ #include <asm/cputable.h>
+ 
++#ifdef CONFIG_JUMP_LABEL
++#include <linux/jump_label.h>
 +
-+#include <asm/cputable.h>
++extern struct static_key_true cpu_feat_keys[MAX_CPU_FEATURES];
 +
 +static inline int cpu_has_feature(unsigned long feature)
 +{
-+	return (CPU_FTRS_ALWAYS & feature) ||
-+	       (CPU_FTRS_POSSIBLE
-+		& cur_cpu_spec->cpu_features
-+		& feature);
-+}
++	int i;
 +
-+#endif /* __ASM_POWERPC_CPUFEATURE_H */
++	if (CPU_FTRS_ALWAYS & feature)
++		return 1;
++
++	if (!(CPU_FTRS_POSSIBLE & feature))
++		return 0;
++
++	i = __builtin_ctzl(feature);
++	return static_branch_likely(&cpu_feat_keys[i]);
++}
++#else
+ static inline int cpu_has_feature(unsigned long feature)
+ {
+ 	return (CPU_FTRS_ALWAYS & feature) ||
+@@ -10,5 +29,6 @@ static inline int cpu_has_feature(unsigned long feature)
+ 		& cur_cpu_spec->cpu_features
+ 		& feature);
+ }
++#endif
+ 
+ #endif /* __ASM_POWERPC_CPUFEATURE_H */
 diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index b118072670fb..ae4b6ef341cd 100644
+index ae4b6ef341cd..2ebee2894102 100644
 --- a/arch/powerpc/include/asm/cputable.h
 +++ b/arch/powerpc/include/asm/cputable.h
-@@ -556,14 +556,6 @@ enum {
- };
- #endif /* __powerpc64__ */
+@@ -114,6 +114,12 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
  
--static inline int cpu_has_feature(unsigned long feature)
--{
--	return (CPU_FTRS_ALWAYS & feature) ||
--	       (CPU_FTRS_POSSIBLE
--		& cur_cpu_spec->cpu_features
--		& feature);
--}
--
- #define HBP_NUM 1
+ extern const char *powerpc_base_platform;
  
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index e2452550bcb1..b91837865c0e 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -28,6 +28,7 @@ static inline void setup_cputime_one_jiffy(void) { }
- #include <asm/div64.h>
- #include <asm/time.h>
- #include <asm/param.h>
-+#include <asm/cpufeatures.h>
++#ifdef CONFIG_JUMP_LABEL
++extern void cpu_feat_keys_init(void);
++#else
++static inline void cpu_feat_keys_init(void) { }
++#endif
++
+ /* TLB flush actions. Used as argument to cpu_spec.flush_tlb() hook */
+ enum {
+ 	TLB_INVAL_SCOPE_GLOBAL = 0,	/* invalidate all TLBs */
+@@ -124,6 +130,8 @@ enum {
  
- typedef u64 __nocast cputime_t;
- typedef u64 __nocast cputime64_t;
-diff --git a/arch/powerpc/include/asm/dbell.h b/arch/powerpc/include/asm/dbell.h
-index 5fa6b20eba10..2d9eae338f70 100644
---- a/arch/powerpc/include/asm/dbell.h
-+++ b/arch/powerpc/include/asm/dbell.h
-@@ -16,6 +16,7 @@
+ /* CPU kernel features */
+ 
++#define MAX_CPU_FEATURES	(8 * sizeof(((struct cpu_spec *)0)->cpu_features))
++
+ /* Retain the 32b definitions all use bottom half of word */
+ #define CPU_FTR_COHERENT_ICACHE		ASM_CONST(0x00000001)
+ #define CPU_FTR_L2CR			ASM_CONST(0x00000002)
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 7d80bfdfb15e..ea94931c5e70 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -15,6 +15,7 @@
  #include <linux/threads.h>
+ #include <linux/init.h>
+ #include <linux/export.h>
++#include <linux/jump_label.h>
  
- #include <asm/ppc-opcode.h>
-+#include <asm/cpufeatures.h>
- 
- #define PPC_DBELL_MSG_BRDCAST	(0x04000000)
- #define PPC_DBELL_TYPE(x)	(((x) & 0xf) << (63-36))
-diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/include/asm/dcr-native.h
-index 4efc11dacb98..0186ba05bfe1 100644
---- a/arch/powerpc/include/asm/dcr-native.h
-+++ b/arch/powerpc/include/asm/dcr-native.h
-@@ -24,6 +24,7 @@
- 
- #include <linux/spinlock.h>
+ #include <asm/oprofile_impl.h>
  #include <asm/cputable.h>
-+#include <asm/cpufeatures.h>
+@@ -2195,3 +2196,22 @@ struct cpu_spec * __init identify_cpu(unsigned long offset, unsigned int pvr)
  
- typedef struct {
- 	unsigned int base;
-diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
-index 8565c254151a..74922ad05e6c 100644
---- a/arch/powerpc/include/asm/mman.h
-+++ b/arch/powerpc/include/asm/mman.h
-@@ -13,6 +13,7 @@
- 
- #include <asm/cputable.h>
- #include <linux/mm.h>
-+#include <asm/cpufeatures.h>
- 
- /*
-  * This file is included by linux/mman.h, so we can't use cacl_vm_prot_bits()
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 6f69828458fb..fa63005f827f 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -18,6 +18,7 @@
- #include <linux/percpu.h>
- 
- #include <asm/processor.h>
-+#include <asm/cpufeatures.h>
- 
- /* time.c */
- extern unsigned long tb_ticks_per_jiffy;
-diff --git a/arch/powerpc/include/asm/xor.h b/arch/powerpc/include/asm/xor.h
-index 0abb97f3be10..15ba0d07937f 100644
---- a/arch/powerpc/include/asm/xor.h
-+++ b/arch/powerpc/include/asm/xor.h
-@@ -23,6 +23,7 @@
- #ifdef CONFIG_ALTIVEC
- 
- #include <asm/cputable.h>
-+#include <asm/cpufeatures.h>
- 
- void xor_altivec_2(unsigned long bytes, unsigned long *v1_in,
- 		   unsigned long *v2_in);
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index 86150fbb42c3..eaf1c04e51a6 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -26,6 +26,7 @@
- #include <asm/emulated_ops.h>
- #include <asm/switch_to.h>
- #include <asm/disassemble.h>
-+#include <asm/cpufeatures.h>
- 
- struct aligninfo {
- 	unsigned char len;
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 45096033d37b..60355e06ae86 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -74,6 +74,7 @@
- #endif
- #define CREATE_TRACE_POINTS
- #include <asm/trace.h>
-+#include <asm/cpufeatures.h>
- 
- DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
- EXPORT_PER_CPU_SYMBOL(irq_stat);
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 75b6676c1a0b..3e35b19288fc 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -57,6 +57,7 @@
- #include <asm/code-patching.h>
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-+#include <asm/cpufeatures.h>
- 
- /* Transactional Memory debug */
- #ifdef TM_DEBUG_SW
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 44c8d03558ac..7648b532b330 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -61,6 +61,7 @@
- #include <asm/cputhreads.h>
- #include <mm/mmu_decl.h>
- #include <asm/fadump.h>
-+#include <asm/cpufeatures.h>
- 
- #ifdef DEBUG
- #include <asm/udbg.h>
+ 	return NULL;
+ }
++
++#ifdef CONFIG_JUMP_LABEL
++struct static_key_true cpu_feat_keys[MAX_CPU_FEATURES] = {
++			[0 ... MAX_CPU_FEATURES - 1] = STATIC_KEY_TRUE_INIT
++};
++EXPORT_SYMBOL_GPL(cpu_feat_keys);
++
++void __init cpu_feat_keys_init(void)
++{
++	int i;
++
++	for (i = 0; i < MAX_CPU_FEATURES; i++) {
++		unsigned long f = 1ul << i;
++
++		if (!(cur_cpu_spec->cpu_features & f))
++			static_branch_disable(&cpu_feat_keys[i]);
++	}
++}
++#endif
 diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 35980a2785ba..f0868f510b3b 100644
+index f0868f510b3b..93756175a13c 100644
 --- a/arch/powerpc/kernel/setup_32.c
 +++ b/arch/powerpc/kernel/setup_32.c
-@@ -38,6 +38,7 @@
- #include <asm/udbg.h>
- #include <asm/mmu_context.h>
- #include <asm/epapr_hcalls.h>
-+#include <asm/cpufeatures.h>
+@@ -115,6 +115,7 @@ notrace void __init machine_init(u64 dt_ptr)
+ 	lockdep_init();
  
- #define DBG(fmt...)
+ 	jump_label_init();
++	cpu_feat_keys_init();
  
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index ec9ec2058d2d..9188823fb0e3 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -53,6 +53,7 @@
- #include <asm/vdso.h>
- #include <asm/debug.h>
- #include <asm/kexec.h>
-+#include <asm/cpufeatures.h>
+ 	/* Enable early debugging if any specified (see udbg.h) */
+ 	udbg_early_init();
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index f0802a0b4a20..4cf3894d91fa 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -251,6 +251,7 @@ void __init early_setup(unsigned long dt_ptr)
+ 	lockdep_init();
  
- #ifdef DEBUG
- #include <asm/udbg.h>
-diff --git a/arch/powerpc/platforms/cell/pervasive.c b/arch/powerpc/platforms/cell/pervasive.c
-index d17e98bc0c10..036215b8192c 100644
---- a/arch/powerpc/platforms/cell/pervasive.c
-+++ b/arch/powerpc/platforms/cell/pervasive.c
-@@ -35,6 +35,7 @@
- #include <asm/pgtable.h>
- #include <asm/reg.h>
- #include <asm/cell-regs.h>
-+#include <asm/cpufeatures.h>
+ 	jump_label_init();
++	cpu_feat_keys_init();
  
- #include "pervasive.h"
+ 	/* -------- printk is now safe to use ------- */
  
-diff --git a/arch/powerpc/xmon/ppc-dis.c b/arch/powerpc/xmon/ppc-dis.c
-index 89098f320ad5..ca556b8be9ea 100644
---- a/arch/powerpc/xmon/ppc-dis.c
-+++ b/arch/powerpc/xmon/ppc-dis.c
-@@ -20,6 +20,7 @@ along with this file; see the file COPYING.  If not, write to the Free
- Software Foundation, 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA.  */
- 
- #include <asm/cputable.h>
-+#include <asm/cpufeatures.h>
- #include "nonstdio.h"
- #include "ansidecl.h"
- #include "ppc.h"
 -- 
 2.1.0
