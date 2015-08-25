@@ -1,10 +1,10 @@
 Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
+ (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FA2F1A0138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 12:40:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5DC401A0138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 13:03:22 +1000 (AEST)
 From: Zhao Qiang <qiang.zhao@freescale.com>
 To: Laura Abbott <labbott@redhat.com>, Scott Wood <scottwood@freescale.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -12,13 +12,13 @@ CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
  <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
  Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v6 1/3] genalloc:support memory-allocation with
- bytes-alignment to genalloc
-Date: Tue, 25 Aug 2015 02:40:09 +0000
-Message-ID: <SN1PR0301MB155021CDD677EFB6D1EAE79F9B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Subject: RE: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage muram
+Date: Tue, 25 Aug 2015 03:03:09 +0000
+Message-ID: <SN1PR0301MB1550C9087AFB9FEB6CD1B0899B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
- <55DBA477.5020608@redhat.com>
-In-Reply-To: <55DBA477.5020608@redhat.com>
+ <1440408703-6113-3-git-send-email-qiang.zhao@freescale.com>
+ <55DBA98D.1070202@redhat.com>
+In-Reply-To: <55DBA98D.1070202@redhat.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,90 +30,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/25/2015 07:11 AM, Laura Abbott wrote:
+
 > -----Original Message-----
 > From: Laura Abbott [mailto:labbott@redhat.com]
-> Sent: Tuesday, August 25, 2015 7:11 AM
+> Sent: Tuesday, August 25, 2015 7:32 AM
 > To: Zhao Qiang-B45475; Wood Scott-B07421
 > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
 > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
 > Yang-Leo-R58472; paulus@samba.org
-> Subject: Re: [PATCH v6 1/3] genalloc:support memory-allocation with
-> bytes-alignment to genalloc
+> Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage
+> muram
 >=20
 > On 08/24/2015 02:31 AM, Zhao Qiang wrote:
-> > Bytes alignment is required to manage some special RAM, so add
-> > gen_pool_first_fit_align to genalloc, meanwhile add
-> > gen_pool_alloc_data to pass data to gen_pool_first_fit_align(modify
-> > gen_pool_alloc as a wrapper)
-> >
-> > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> > ---
-> > Changes for v6:
-> > 	- patches set v6 include a new patch because of using
-> > 	- genalloc to manage QE MURAM, patch 0001 is the new
-> > 	- patch, adding bytes alignment for allocation for use.
-> >
-> >   include/linux/genalloc.h | 23 +++++++++++++++----
-> >   lib/genalloc.c           | 58
-> +++++++++++++++++++++++++++++++++++++++++++-----
-> >   2 files changed, 72 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h index
-> > 1ccaab4..55da07e 100644
-> > --- a/include/linux/genalloc.h
-> > +++ b/include/linux/genalloc.h
-> > @@ -34,6 +34,7 @@
-> >
-> >   struct device;
-> >   struct device_node;
-> > +struct gen_pool;
-> >
-> >   /**
-> >    * Allocation callback function type definition @@ -47,7 +48,7 @@
-> > typedef unsigned long (*genpool_algo_t)(unsigned long *map,
-> >   			unsigned long size,
-> >   			unsigned long start,
-> >   			unsigned int nr,
-> > -			void *data);
-> > +			void *data, struct gen_pool *pool);
-> >
-> >   /*
-> >    *  General purpose special memory pool descriptor.
-> > @@ -73,6 +74,13 @@ struct gen_pool_chunk {
-> >   	unsigned long bits[0];		/* bitmap for allocating memory chunk
-> */
-> >   };
-> >
-> > +/*
-> > + *  gen_pool data descriptor for gen_pool_first_fit_align.
-> > + */
-> > +struct genpool_data_align {
-> > +	int align;		/* alignment by bytes for starting address */
-> > +};
+>=20
+>=20
+> > +out:
+> > +	of_node_put(np);
+> > +	return ret;
+> > +}
 > > +
+> > +/**
+> > + * qe_muram_alloc - allocate the requested size worth of multi-user
+> > +ram
+> > + * @size: number of bytes to allocate
+> > + * @align: requested alignment, in bytes
+> > + *
+> > + * This function returns an offset into the muram area.
+> > + * Use qe_dpram_addr() to get the virtual address of the area.
+> > + * Use qe_muram_free() to free the allocation.
+> > + */
+> > +unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
+> > +{
+> > +	unsigned long start;
+> > +	unsigned long flags;
+> > +	struct muram_block *entry;
+> > +
+> > +	spin_lock_irqsave(&qe_muram_lock, flags);
+> > +	muram_pool_data.align =3D align;
+> > +	start =3D gen_pool_alloc(muram_pool, size);
 >=20
-> (sorry for chiming in late, I've been traveling)
+> The advantage of creating gen_pool_alloc_data was so that you could pass
+> in the align automatically without having to modify the structure.
+> Is there a reason you aren't using that?
 >=20
-> Is there an advantage here to wrapping this in a structure instead of
-> just passing a pointer to an align integer?
+> > +	memset(qe_muram_addr(start), 0, size);
+>=20
+> There doesn't seem to be a check for allocation failure from the
+> gen_alloc.
 
+gen_pool_alloc will return 0 if there is error, but if the address returned=
+ is=20
+just 0x0, it can't distinguish it is address or error.
 
-Please look at the commit message for
-ca279cf1065fb689abea1dc7d8c11787729bb185 which adds "data":
+>=20
+> > +	entry =3D kmalloc(sizeof(*entry), GFP_KERNEL);
+> > +	if (!entry)
+> > +		goto out;
+> > +	entry->start =3D start;
+> > +	entry->size =3D size;
+> > +	list_add(&entry->head, &muram_block_list);
+>=20
+> What's the point of keeping the block list anyway? It's used only in this
+> file and it only seems to duplicate what gen_alloc is doing internally.
+> Is there some lookup functionality you still need? Could you use a
+> gen_alloc API to do so?
 
-"As I can't predict all the possible requirements/needs for all allocation =
-  =20
-uses cases, I add a "free" field 'void *data' to pass any needed    =20
-information to the allocation function.  For example 'data' could be used  =
-  =20
-to handle a structure where you store the alignment, the expected memory   =
- =20
-bank, the requester device, or any information that could influence the    =
-=20
-allocation algorithm."
+I need to record the size when allocation, so when free the block, I can ge=
+t=20
+The right size for the block, and pass the right size to=20
+gen_pool_free(struct gen_pool *pool, unsigned long addr, size_t size).
 
+>=20
 >=20
 > Thanks,
 > Laura
--Zhao=20
+Thanks=20
+Zhao
