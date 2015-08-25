@@ -1,22 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0142.outbound.protection.outlook.com [65.55.169.142])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0118.outbound.protection.outlook.com [157.56.111.118])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 859661A0EF6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 10:13:11 +1000 (AEST)
-Message-ID: <1440461499.25477.23.camel@freescale.com>
-Subject: Re: [v2 02/11] soc/fsl: Introduce DPAA BMan device management driver
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E5B31A0138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 11:25:38 +1000 (AEST)
+Date: Mon, 24 Aug 2015 20:25:23 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: <Roy.Pledge@freescale.com>
+To: Roy Pledge <Roy.Pledge@freescale.com>
 CC: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>
-Date: Mon, 24 Aug 2015 19:11:39 -0500
-In-Reply-To: <1439410497-19039-3-git-send-email-Roy.Pledge@freescale.com>
-References: <1439410497-19039-1-git-send-email-Roy.Pledge@freescale.com>
- <1439410497-19039-3-git-send-email-Roy.Pledge@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [v2 03/11] soc/fsl: Introduce the DPAA BMan portal driver
+Message-ID: <20150825012523.GA3862@home.buserror.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1439410497-19039-4-git-send-email-Roy.Pledge@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,933 +24,501 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-08-12 at 16:14 -0400, Roy Pledge wrote:
-> From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-> 
-> This driver enables the Freescale DPAA 1.0 Buffer Manager block. BMan
-> is a hardware buffer pool manager that allows accelerators
-> connected to the SoC datapath to acquire and release buffers during
-> data processing.
-> 
-> Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> Signed-off-by: Roy Pledge <Roy.Pledge@freescale.com>
-> ---
->  drivers/soc/Kconfig               |    1 +
->  drivers/soc/Makefile              |    1 +
->  drivers/soc/fsl/Kconfig           |    5 +
->  drivers/soc/fsl/Makefile          |    3 +
->  drivers/soc/fsl/qbman/Kconfig     |   25 ++
->  drivers/soc/fsl/qbman/Makefile    |    1 +
->  drivers/soc/fsl/qbman/bman.c      |  553 
-> +++++++++++++++++++++++++++++++++++++
->  drivers/soc/fsl/qbman/bman_priv.h |   53 ++++
->  drivers/soc/fsl/qbman/dpaa_sys.h  |   55 ++++
->  9 files changed, 697 insertions(+)
->  create mode 100644 drivers/soc/fsl/Kconfig
->  create mode 100644 drivers/soc/fsl/Makefile
->  create mode 100644 drivers/soc/fsl/qbman/Kconfig
->  create mode 100644 drivers/soc/fsl/qbman/Makefile
->  create mode 100644 drivers/soc/fsl/qbman/bman.c
->  create mode 100644 drivers/soc/fsl/qbman/bman_priv.h
->  create mode 100644 drivers/soc/fsl/qbman/dpaa_sys.h
-> 
-> diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
-> index 96ddecb..4e3c8f4 100644
-> --- a/drivers/soc/Kconfig
-> +++ b/drivers/soc/Kconfig
-> @@ -1,6 +1,7 @@
->  menu "SOC (System On Chip) specific Drivers"
->  
->  source "drivers/soc/mediatek/Kconfig"
-> +source "drivers/soc/fsl/Kconfig"
->  source "drivers/soc/qcom/Kconfig"
->  source "drivers/soc/sunxi/Kconfig"
->  source "drivers/soc/ti/Kconfig"
-> diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
-> index 7dc7c0d..7adcd97 100644
-> --- a/drivers/soc/Makefile
-> +++ b/drivers/soc/Makefile
-> @@ -3,6 +3,7 @@
->  #
->  
->  obj-$(CONFIG_ARCH_MEDIATEK)  += mediatek/
-> +obj-$(CONFIG_FSL_SOC)                += fsl/
->  obj-$(CONFIG_ARCH_QCOM)              += qcom/
->  obj-$(CONFIG_ARCH_SUNXI)     += sunxi/
->  obj-$(CONFIG_ARCH_TEGRA)     += tegra/
-> diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
-> new file mode 100644
-> index 0000000..daa9c0d
-> --- /dev/null
-> +++ b/drivers/soc/fsl/Kconfig
-> @@ -0,0 +1,5 @@
-> +menu "Freescale SOC (System On Chip) specific Drivers"
-> +
-> +source "drivers/soc/fsl/qbman/Kconfig"
-> +
-> +endmenu
-> diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-> new file mode 100644
-> index 0000000..19e74bb
-> --- /dev/null
-> +++ b/drivers/soc/fsl/Makefile
-> @@ -0,0 +1,3 @@
-> +# Common
-> +obj-$(CONFIG_FSL_DPA)                                += qbman/
-> +
-> diff --git a/drivers/soc/fsl/qbman/Kconfig b/drivers/soc/fsl/qbman/Kconfig
-> new file mode 100644
-> index 0000000..be4ae01
-> --- /dev/null
-> +++ b/drivers/soc/fsl/qbman/Kconfig
-> @@ -0,0 +1,25 @@
-> +menuconfig FSL_DPA
-> +     bool "Freescale DPAA support"
-> +     depends on FSL_SOC || COMPILE_TEST
-> +     default n
-
-Drop the COMPILE_TEST -- this driver still has PPCisms that will break the 
-build elsewhere.
-
-> +     help
-> +             FSL Data-Path Acceleration Architecture drivers
-> +
-> +             These are not the actual Ethernet driver(s)
-> +
-> +if FSL_DPA
-> +
-> +config FSL_DPA_CHECKING
-> +     bool "additional driver checking"
-> +     default n
-> +     help
-> +             Compiles in additional checks to sanity-check the drivers and
-> +             any use of it by other code. Not recommended for performance
-> +
-> +config FSL_BMAN
-> +     tristate "BMan device management"
-> +     default n
-> +     help
-> +             FSL DPAA BMan driver
-
-Please describe here what BMan is and when it should be enabled.  Why isn't 
-it always enabled when DPA is enabled?
-
-> +endif # FSL_DPA
-> diff --git a/drivers/soc/fsl/qbman/Makefile b/drivers/soc/fsl/qbman/Makefile
-> new file mode 100644
-> index 0000000..02014d9
-> --- /dev/null
-> +++ b/drivers/soc/fsl/qbman/Makefile
-> @@ -0,0 +1 @@
-> +obj-$(CONFIG_FSL_BMAN)                               += bman.o
+On Wed, Aug 12, 2015 at 04:14:49PM -0400, Roy Pledge wrote:
 > diff --git a/drivers/soc/fsl/qbman/bman.c b/drivers/soc/fsl/qbman/bman.c
-> new file mode 100644
-> index 0000000..9a500ce
-> --- /dev/null
+> index 9a500ce..d6e2204 100644
+> --- a/drivers/soc/fsl/qbman/bman.c
 > +++ b/drivers/soc/fsl/qbman/bman.c
-> @@ -0,0 +1,553 @@
-> +/* Copyright (c) 2009 - 2015 Freescale Semiconductor, Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are 
-> met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *    notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *    notice, this list of conditions and the following disclaimer in the
-> + *    documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *    names of its contributors may be used to endorse or promote products
-> + *    derived from this software without specific prior written permission.
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-> IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-> DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-> SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
-> AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
-> TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
-> OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
+> @@ -165,11 +165,11 @@ static struct bman *bm_create(void *regs)
+>  
+>  static inline u32 __bm_in(struct bman *bm, u32 offset)
+>  {
+> -	return in_be32((void *)bm + offset);
+> +	return ioread32be((void *)bm + offset);
+>  }
+>  static inline void __bm_out(struct bman *bm, u32 offset, u32 val)
+>  {
+> -	out_be32((void *)bm + offset, val);
+> +	iowrite32be(val, (void*) bm + offset);
+>  }
+
+Don't introduce a problem in one patch and then fix it in another.  What
+does this change have to do with introducing the portal driver?
+
+>  #define bm_in(reg)		__bm_in(bm, REG_##reg)
+>  #define bm_out(reg, val)	__bm_out(bm, REG_##reg, val)
+> @@ -341,6 +341,7 @@ u32 bm_pool_free_buffers(u32 bpid)
+>  {
+>  	return bm_in(POOL_CONTENT(bpid));
+>  }
+> +EXPORT_SYMBOL(bm_pool_free_buffers);
+
+If you're exporting this (or even making it global), where's the
+documentation?
+
+> +/* BTW, the drivers (and h/w programming model) already obtain the required
+> + * synchronisation for portal accesses via lwsync(), hwsync(), and
+> + * data-dependencies. Use of barrier()s or other order-preserving primitives
+> + * simply degrade performance. Hence the use of the __raw_*() interfaces, which
+> + * simply ensure that the compiler treats the portal registers as volatile (ie.
+> + * non-coherent). */
+
+volatile does not mean "non-coherent".
+
+Be careful with this regarding endian, e.g. on ARM we can run the CPU in
+big or little endian on the same chip, and the raw accessors also
+unfortunately bypass endian conversion.
+
 > +
-> +#include "bman_priv.h"
+> +/* Cache-inhibited register access. */
+> +#define __bm_in(bm, o)		__raw_readl((bm)->addr_ci + (o))
+> +#define __bm_out(bm, o, val)	__raw_writel((val), (bm)->addr_ci + (o))
+> +#define bm_in(reg)		__bm_in(&portal->addr, BM_REG_##reg)
+> +#define bm_out(reg, val)	__bm_out(&portal->addr, BM_REG_##reg, val)
+
+Don't have multiple implementations of bm_in/out, with the same name,
+where bm in both refers to "bman", but which have different functions.
+
+> +/* Cache-enabled (index) register access */
+> +#define __bm_cl_touch_ro(bm, o) dcbt_ro((bm)->addr_ce + (o))
+> +#define __bm_cl_touch_rw(bm, o) dcbt_rw((bm)->addr_ce + (o))
+> +#define __bm_cl_in(bm, o)	__raw_readl((bm)->addr_ce + (o))
+> +#define __bm_cl_out(bm, o, val) \
+> +	do { \
+> +		u32 *__tmpclout = (bm)->addr_ce + (o); \
+> +		__raw_writel((val), __tmpclout); \
+> +		dcbf(__tmpclout); \
+> +	} while (0)
+> +#define __bm_cl_invalidate(bm, o) dcbi((bm)->addr_ce + (o))
+> +#define bm_cl_touch_ro(reg) __bm_cl_touch_ro(&portal->addr, BM_CL_##reg##_CENA)
+> +#define bm_cl_touch_rw(reg) __bm_cl_touch_rw(&portal->addr, BM_CL_##reg##_CENA)
+> +#define bm_cl_in(reg)	    __bm_cl_in(&portal->addr, BM_CL_##reg##_CENA)
+> +#define bm_cl_out(reg, val) __bm_cl_out(&portal->addr, BM_CL_##reg##_CENA, val)
+> +#define bm_cl_invalidate(reg)\
+> +	__bm_cl_invalidate(&portal->addr, BM_CL_##reg##_CENA)
+
+Define these using functions to operate on pointers, and pass the pointer
+in without all the token-pasting.  Some extra explanation of the cache
+manipulation would also be helpful.
+
+> +/* --- RCR API --- */
+> +
+> +/* Bit-wise logic to wrap a ring pointer by clearing the "carry bit" */
+> +#define RCR_CARRYCLEAR(p) \
+> +	(void *)((unsigned long)(p) & (~(unsigned long)(BM_RCR_SIZE << 6)))
+
+This could be a function.
+
+Where does 6 come from?  You use it again in the next function.  Please
+define it symbolically.
+
+> +
+> +/* Bit-wise logic to convert a ring pointer to a ring index */
+> +static inline u8 RCR_PTR2IDX(struct bm_rcr_entry *e)
+> +{
+> +	return ((uintptr_t)e >> 6) & (BM_RCR_SIZE - 1);
+> +}
+
+This is a function, so don't use ALLCAPS.
+
+> +/* Increment the 'cursor' ring pointer, taking 'vbit' into account */
+> +static inline void RCR_INC(struct bm_rcr *rcr)
+> +{
+> +	/* NB: this is odd-looking, but experiments show that it generates
+> +	 * fast code with essentially no branching overheads. We increment to
+> +	 * the next RCR pointer and handle overflow and 'vbit'. */
+> +	struct bm_rcr_entry *partial = rcr->cursor + 1;
+> +
+> +	rcr->cursor = RCR_CARRYCLEAR(partial);
+> +	if (partial != rcr->cursor)
+> +		rcr->vbit ^= BM_RCR_VERB_VBIT;
+> +}
+> +
+> +static inline int bm_rcr_init(struct bm_portal *portal, enum bm_rcr_pmode pmode,
+> +		__maybe_unused enum bm_rcr_cmode cmode)
+> +{
+> +	/* This use of 'register', as well as all other occurrences, is because
+> +	 * it has been observed to generate much faster code with gcc than is
+> +	 * otherwise the case. */
+> +	register struct bm_rcr *rcr = &portal->rcr;
+
+What version of GCC?  Normal optimization settings?
+
+Has the seemingly excessive use of inline also been benchmarked against
+not doing so?
+
+> +/* Buffer Pool Cleanup */
+> +static inline int bm_shutdown_pool(struct bm_portal *p, u32 bpid)
+> +{
+> +	struct bm_mc_command *bm_cmd;
+> +	struct bm_mc_result *bm_res;
+> +	int aq_count = 0;
+> +	bool stop = false;
+> +
+> +	while (!stop) {
+> +		/* Acquire buffers until empty */
+> +		bm_cmd = bm_mc_start(p);
+> +		bm_cmd->acquire.bpid = bpid;
+> +		bm_mc_commit(p, BM_MCC_VERB_CMD_ACQUIRE |  1);
+> +		while (!(bm_res = bm_mc_result(p)))
+> +			cpu_relax();
+
+How long can this take?  How about a timeout?
+
+And it looks like this happens with interrupts disabled. :-(
+
+> +/* Compilation constants */
+> +#define RCR_THRESH	2	/* reread h/w CI when running out of space */
+> +#define IRQNAME		"BMan portal %d"
+> +#define MAX_IRQNAME	16	/* big enough for "BMan portal %d" */
+> +#define FSL_DPA_PORTAL_SHARE 1  /* Allow portals to be shared */
+
+If (some of) these are meant to be tunable they need to go in Kconfig.
+
+> +struct bman_portal {
+> +	struct bm_portal p;
+
+What is the conceptual difference between 'bman_portal' and 'bm_portal'?
+
+> +	/* 2-element array. pools[0] is mask, pools[1] is snapshot. */
+> +	struct bman_depletion *pools;
+> +	int thresh_set;
+> +	unsigned long irq_sources;
+> +	u32 slowpoll;	/* only used when interrupts are off */
+> +#ifdef FSL_DPA_CAN_WAIT_SYNC
+> +	struct bman_pool *rcri_owned; /* only 1 release WAIT_SYNC at a time */
+> +#endif
+> +#ifdef FSL_DPA_PORTAL_SHARE
+> +	raw_spinlock_t sharing_lock; /* only used if is_shared */
+> +	int is_shared;
+> +	struct bman_portal *sharing_redirect;
+> +#endif
+> +	/* When the cpu-affine portal is activated, this is non-NULL */
+> +	const struct bm_portal_config *config;
+> +	/* 64-entry hash-table of pool objects that are tracking depletion
+> +	 * entry/exit (ie. BMAN_POOL_FLAG_DEPLETION). This isn't fast-path, so
+> +	 * we're not fussy about cache-misses and so forth - whereas the above
+> +	 * members should all fit in one cacheline.
+> +	 * BTW, with 64 entries in the hash table and 64 buffer pools to track,
+> +	 * you'll never guess the hash-function ... */
+> +	struct bman_pool *cb[64];
+> +	char irqname[MAX_IRQNAME];
+> +	/* Track if the portal was alloced by the driver */
+> +	u8 alloced;
+> +};
+
+Consider sorting this to minimize padding, and keeping cache-hot members
+together (e.g. I see "slowpoll" which is "only used when interrupts are
+off" between presumably-cache-hot things like bm_portal and the lock).
+
+s/u8 alloced/bool alloced/
+
+> +#ifdef FSL_DPA_PORTAL_SHARE
+> +#define PORTAL_IRQ_LOCK(p, irqflags) \
+> +	do { \
+> +		if ((p)->is_shared) \
+> +			raw_spin_lock_irqsave(&(p)->sharing_lock, irqflags); \
+> +		else \
+> +			local_irq_save(irqflags); \
+> +	} while (0)
+> +#define PORTAL_IRQ_UNLOCK(p, irqflags) \
+> +	do { \
+> +		if ((p)->is_shared) \
+> +			raw_spin_unlock_irqrestore(&(p)->sharing_lock, \
+> +						   irqflags); \
+> +		else \
+> +			local_irq_restore(irqflags); \
+> +	} while (0)
+> +#else
+> +#define PORTAL_IRQ_LOCK(p, irqflags) local_irq_save(irqflags)
+> +#define PORTAL_IRQ_UNLOCK(p, irqflags) local_irq_restore(irqflags)
+> +#endif
+
+Don't use macros or allcaps.
+
+If you're using raw locks and/or local_irq_save, the time of the critical
+section must be bounded.  How long can this be held for?
+
+> +static cpumask_t affine_mask;
+> +static DEFINE_SPINLOCK(affine_mask_lock);
+> +static DEFINE_PER_CPU(struct bman_portal, bman_affine_portal);
+> +static inline struct bman_portal *get_raw_affine_portal(void)
+> +{
+> +	return &get_cpu_var(bman_affine_portal);
+> +}
+> +#ifdef FSL_DPA_PORTAL_SHARE
+> +static inline struct bman_portal *get_affine_portal(void)
+> +{
+> +	struct bman_portal *p = get_raw_affine_portal();
+> +
+> +	if (p->sharing_redirect)
+> +		return p->sharing_redirect;
+> +	return p;
+> +}
+
+Where can I find documentation of the sharing_redirect mechanism?  What
+is it needed for in the context of getting basic datapath support
+working?
+
+> +/* GOTCHA: this object type refers to a pool, it isn't *the* pool. There may be
+> + * more than one such object per BMan buffer pool, eg. if different users of the
+> + * pool are operating via different portals. */
+> +struct bman_pool {
+
+So maybe call it struct bman_pool_user or similar?
+
+> +/* In the case that the application's core loop calls
+> + * bman_poll(),
+
+application?
+
+> we ought to balance how often we incur the overheads of the
+> + * slow-path poll. We'll use two decrementer sources. The idle decrementer
+> + * constant is used when the last slow-poll detected no work to do, and the busy
+> + * decrementer constant when the last slow-poll had work to do. */
+
+Why does this driver care whether the timer is implemented with a
+decrementer?  What is a "decrementer source"?
+
+> +#define SLOW_POLL_IDLE 1000
+> +#define SLOW_POLL_BUSY 10
+> +static u32 __poll_portal_slow(struct bman_portal *p, u32 is);
+> +
+> +/* Portal interrupt handler */
+> +static irqreturn_t portal_isr(__always_unused int irq, void *ptr)
+> +{
+> +	struct bman_portal *p = ptr;
+> +	u32 clear = p->irq_sources;
+> +	u32 is = bm_isr_status_read(&p->p) & p->irq_sources;
+> +
+> +	clear |= __poll_portal_slow(p, is);
+> +	bm_isr_status_clear(&p->p, clear);
+> +	return IRQ_HANDLED;
+> +}
+
+No IRQ_NONE check, even behind the debug check ifdef?
+
+> +struct bman_portal *bman_create_portal(
+> +				       struct bman_portal *portal,
+> +				       const struct bm_portal_config *config)
+> +{
+> +	struct bm_portal *__p;
+
+Please don't use gratuitous underscores.
+
+> +struct bman_portal *bman_create_affine_slave(struct bman_portal *redirect,
+> +								int cpu)
+> +{
+> +#ifdef FSL_DPA_PORTAL_SHARE
+> +	struct bman_portal *p = &per_cpu(bman_affine_portal, cpu);
+> +
+> +	BUG_ON(p->config);
+> +	BUG_ON(p->is_shared);
+> +	BUG_ON(!redirect->config->public_cfg.is_shared);
+
+More BUG_ON()s...
+
+> +static u32 __poll_portal_slow(struct bman_portal *p, u32 is)
+> +{
+> +	struct bman_depletion tmp;
+> +	u32 ret = is;
+> +
+> +	/* There is a gotcha to be aware of. If we do the query before clearing
+> +	 * the status register, we may miss state changes that occur between the
+> +	 * two. If we write to clear the status register before the query, the
+> +	 * cache-enabled query command may overtake the status register write
+> +	 * unless we use a heavyweight sync (which we don't want). Instead, we
+> +	 * write-to-clear the status register then *read it back* before doing
+> +	 * the query, hence the odd while loop with the 'is' accumulation. */
+> +	if (is & BM_PIRQ_BSCN) {
+> +		struct bm_mc_result *mcr;
+> +		__maybe_unused unsigned long irqflags;
+> +		unsigned int i, j;
+> +		u32 __is;
+> +
+> +		bm_isr_status_clear(&p->p, BM_PIRQ_BSCN);
+> +		while ((__is = bm_isr_status_read(&p->p)) & BM_PIRQ_BSCN) {
+> +			is |= __is;
+> +			bm_isr_status_clear(&p->p, BM_PIRQ_BSCN);
+> +		}
+> +		is &= ~BM_PIRQ_BSCN;
+> +		PORTAL_IRQ_LOCK(p, irqflags);
+> +		bm_mc_start(&p->p);
+> +		bm_mc_commit(&p->p, BM_MCC_VERB_CMD_QUERY);
+> +		while (!(mcr = bm_mc_result(&p->p)))
+> +			cpu_relax();
+> +		tmp = mcr->query.ds.state;
+> +		PORTAL_IRQ_UNLOCK(p, irqflags);
+
+Another apparently unbounded loop inside the lock.
+
+> +	ier = bm_isr_enable_read(&p->p);
+> +	/* Using "~ier" (rather than "bits" or "~p->irq_sources") creates a
+> +	 * data-dependency, ie. to protect against re-ordering. */
+> +	bm_isr_status_clear(&p->p, ~ier);
+
+Aren't bm_isr_enable_read/bm_isr_status_clear() implemented with I/O
+accessors that ensure ordering anyway?
+
+> +	PORTAL_IRQ_UNLOCK(p, irqflags);
+> +	put_affine_portal();
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(bman_irqsource_remove);
+> +
+> +const cpumask_t *bman_affine_cpus(void)
+> +{
+> +	return &affine_mask;
+> +}
+> +EXPORT_SYMBOL(bman_affine_cpus);
+> +
+> +u32 bman_poll_slow(void)
+> +{
+> +	struct bman_portal *p = get_poll_portal();
+> +	u32 ret;
+> +
+> +#ifdef FSL_DPA_PORTAL_SHARE
+> +	if (unlikely(p->sharing_redirect))
+> +		ret = (u32)-1;
+> +	else
+> +#endif
+> +	{
+> +		u32 is = bm_isr_status_read(&p->p) & ~p->irq_sources;
+> +
+> +		ret = __poll_portal_slow(p, is);
+> +		bm_isr_status_clear(&p->p, ret);
+> +	}
+> +	put_poll_portal();
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(bman_poll_slow);
+> +
+> +/* Legacy wrapper */
+> +void bman_poll(void)
+
+What legacy?  This is a brand new driver, as far as mainline is
+concerned.  What is this retaining compatibility with?
+
+> +static inline struct bm_rcr_entry *try_rel_start(struct bman_portal **p,
+> +#ifdef FSL_DPA_CAN_WAIT
+> +					__maybe_unused struct bman_pool *pool,
+> +#endif
+> +					__maybe_unused unsigned long *irqflags,
+> +					__maybe_unused u32 flags)
+
+Please don't vary the arguments of a function based on an ifdef.
+
+> +#ifdef CONFIG_FSL_DPA_CHECKING
+> +	if (!atomic_dec_and_test(&pool->in_use)) {
+> +		pr_crit("Parallel attempts to enter bman_released() detected.");
+> +		panic("only one instance of bman_released/acquired allowed");
+> +	}
+
+No panics.
+
+> +#ifndef __FSL_BMAN_H
+> +#define __FSL_BMAN_H
+> +
+> +#ifdef __cplusplus
+> +extern "C" {
+> +#endif
+
+This is not needed.
+
+> +/* Enable blocking waits */
+> +#define FSL_DPA_CAN_WAIT       1
+> +#define FSL_DPA_CAN_WAIT_SYNC  1
+
+Again, put them in Kconfig if it's really needed to keep both code paths.
+
 > +
 > +/* Last updated for v00.79 of the BG */
 
-Don't make obscure references to ancient internal documents.
+Same comment as previous patch.
 
 > +
-> +struct bman;
+> +/* Portal processing (interrupt) sources */
+> +#define BM_PIRQ_RCRI	0x00000002	/* RCR Ring (below threshold) */
+> +#define BM_PIRQ_BSCN	0x00000001	/* Buffer depletion State Change */
 > +
-> +/* Register offsets */
-> +#define REG_POOL_SWDET(n)    (0x0000 + ((n) * 0x04))
-> +#define REG_POOL_HWDET(n)    (0x0100 + ((n) * 0x04))
-> +#define REG_POOL_SWDXT(n)    (0x0200 + ((n) * 0x04))
-> +#define REG_POOL_HWDXT(n)    (0x0300 + ((n) * 0x04))
-> +#define REG_POOL_CONTENT(n)  (0x0600 + ((n) * 0x04))
-> +#define REG_FBPR_FPC         0x0800
-> +#define REG_ECSR             0x0a00
-> +#define REG_ECIR             0x0a04
-> +#define REG_EADR             0x0a08
-> +#define REG_EDATA(n)         (0x0a10 + ((n) * 0x04))
-> +#define REG_SBEC(n)          (0x0a80 + ((n) * 0x04))
-> +#define REG_IP_REV_1         0x0bf8
-> +#define REG_IP_REV_2         0x0bfc
-> +#define REG_FBPR_BARE                0x0c00
-> +#define REG_FBPR_BAR         0x0c04
-> +#define REG_FBPR_AR          0x0c10
-> +#define REG_SRCIDR           0x0d04
-> +#define REG_LIODNR           0x0d08
-> +#define REG_ERR_ISR          0x0e00  /* + "enum bm_isr_reg" */
-> +
-> +/* Used by all error interrupt registers except 'inhibit' */
-> +#define BM_EIRQ_IVCI 0x00000010      /* Invalid Command Verb */
-> +#define BM_EIRQ_FLWI 0x00000008      /* FBPR Low Watermark */
-> +#define BM_EIRQ_MBEI 0x00000004      /* Multi-bit ECC Error */
-> +#define BM_EIRQ_SBEI 0x00000002      /* Single-bit ECC Error */
-> +#define BM_EIRQ_BSCN 0x00000001      /* pool State Change Notification */
-> +
-> +/* BMAN_ECIR valid error bit */
-> +#define PORTAL_ECSR_ERR      (BM_EIRQ_IVCI)
-> +
-> +union bman_ecir {
-> +     u32 ecir_raw;
-> +     struct {
-> +             u32 __reserved1:4;
-> +             u32 portal_num:4;
-> +             u32 __reserved2:12;
-> +             u32 numb:4;
-> +             u32 __reserved3:2;
-> +             u32 pid:6;
-> +     } __packed info;
+> +/* This wrapper represents a bit-array for the depletion state of the 64 BMan
+> + * buffer pools. */
+> +struct bman_depletion {
+> +	u32 __state[2];
 > +};
 
-I've seen GCC generate some awful code when bitfields are combined with 
-packed.  Why are either necessary here?
+Why underscores?
 
-
-> +
-> +union bman_eadr {
-> +     u32 eadr_raw;
-> +     struct {
-> +             u32 __reserved1:5;
-> +             u32 memid:3;
-> +             u32 __reserved2:14;
-> +             u32 eadr:10;
-> +     } __packed info;
-> +};
-> +
-> +struct bman_hwerr_txt {
-> +     u32 mask;
-> +     const char *txt;
-> +};
-> +
-> +#define BMAN_HWE_TXT(a, b) { .mask = BM_EIRQ_##a, .txt = b }
-> +
-> +static const struct bman_hwerr_txt bman_hwerr_txts[] = {
-> +     BMAN_HWE_TXT(IVCI, "Invalid Command Verb"),
-> +     BMAN_HWE_TXT(FLWI, "FBPR Low Watermark"),
-> +     BMAN_HWE_TXT(MBEI, "Multi-bit ECC Error"),
-> +     BMAN_HWE_TXT(SBEI, "Single-bit ECC Error"),
-> +     BMAN_HWE_TXT(BSCN, "Pool State Change Notification"),
-> +};
-> +#define BMAN_HWE_COUNT (sizeof(bman_hwerr_txts)/sizeof(struct 
-> bman_hwerr_txt))
-
-Use ARRAY_SIZE().
-
-> +struct bman_error_info_mdata {
-> +     u16 addr_mask;
-> +     u16 bits;
-> +     const char *txt;
-> +};
-> +
-> +#define BMAN_ERR_MDATA(a, b, c) { .addr_mask = a, .bits = b, .txt = c}
-> +static const struct bman_error_info_mdata error_mdata[] = {
-> +     BMAN_ERR_MDATA(0x03FF, 192, "Stockpile memory"),
-> +     BMAN_ERR_MDATA(0x00FF, 256, "SW portal ring memory port 1"),
-> +     BMAN_ERR_MDATA(0x00FF, 256, "SW portal ring memory port 2"),
-> +};
-
-Is all this detail necessary (and complete/up-to-date), versus printing raw 
-
-values and having the person investigating the issue look up the error 
-values?  Is there anything a normal user, who wouldn't be expected to look 
-such things up, can do themselves in response to seeing the string output?
-
-> +#define BMAN_ERR_MDATA_COUNT \
-> +     (sizeof(error_mdata)/sizeof(struct bman_error_info_mdata))
-> +
-> +/* Add this in Kconfig */
-> +#define BMAN_ERRS_TO_UNENABLE (BM_EIRQ_FLWI)
-
-"unenable"?
-
-Why should it be added to Kconfig?
-
-> +
-> +/**
-> + * bm_err_isr_<reg>_<verb> - Manipulate global interrupt registers
-> + * @v: for accessors that write values, this is the 32-bit value
-> + *
-> + * Manipulates BMAN_ERR_ISR, BMAN_ERR_IER, BMAN_ERR_ISDR, BMAN_ERR_IIR. All
-> + * manipulations except bm_err_isr_[un]inhibit() use 32-bit masks composed 
-> of
-> + * the BM_EIRQ_*** definitions. Note that "bm_err_isr_enable_write" means
-> + * "write the enable register" rather than "enable the write register"!
-> + */
-> +#define bm_err_isr_status_read(bm)   \
-> +             __bm_err_isr_read(bm, bm_isr_status)
-> +#define bm_err_isr_status_clear(bm, m)       \
-> +             __bm_err_isr_write(bm, bm_isr_status, m)
-> +#define bm_err_isr_enable_read(bm)   \
-> +             __bm_err_isr_read(bm, bm_isr_enable)
-> +#define bm_err_isr_enable_write(bm, v)       \
-> +             __bm_err_isr_write(bm, bm_isr_enable, v)
-> +#define bm_err_isr_disable_read(bm)  \
-> +             __bm_err_isr_read(bm, bm_isr_disable)
-> +#define bm_err_isr_disable_write(bm, v)      \
-> +             __bm_err_isr_write(bm, bm_isr_disable, v)
-> +#define bm_err_isr_inhibit(bm)               \
-> +             __bm_err_isr_write(bm, bm_isr_inhibit, 1)
-> +#define bm_err_isr_uninhibit(bm)     \
-> +             __bm_err_isr_write(bm, bm_isr_inhibit, 0)
-
-Do these wrappers really contribute much to readability, especially given 
-that you need a comment to disambiguate one of them?
-
-> +/*
-> + * TODO: unimplemented registers
-> + *
-> + * BMAN_POOLk_SDCNT, BMAN_POOLk_HDCNT, BMAN_FULT,
-> + * BMAN_VLDPL, BMAN_EECC, BMAN_SBET, BMAN_EINJ
-> + */
-> +
-
-Why are they TODO?  What do you plan to do with them?
-
-> +/* Encapsulate "struct bman *" as a cast of the register space address. */
-> +
-> +static struct bman *bm_create(void *regs)
+> +#define BMAN_DEPLETION_EMPTY { { 0x00000000, 0x00000000 } }
+> +#define BMAN_DEPLETION_FULL { { 0xffffffff, 0xffffffff } }
+> +#define __bmdep_word(x) ((x) >> 5)
+> +#define __bmdep_shift(x) ((x) & 0x1f)
+> +#define __bmdep_bit(x) (0x80000000 >> __bmdep_shift(x))
+> +static inline void bman_depletion_init(struct bman_depletion *c)
 > +{
-> +     return (struct bman *)regs;
+> +	c->__state[0] = c->__state[1] = 0;
+> +}
+> +static inline void bman_depletion_fill(struct bman_depletion *c)
+> +{
+> +	c->__state[0] = c->__state[1] = ~0;
+> +}
+> +static inline int bman_depletion_get(const struct bman_depletion *c, u8 bpid)
+> +{
+> +	return c->__state[__bmdep_word(bpid)] & __bmdep_bit(bpid);
+> +}
+> +static inline void bman_depletion_set(struct bman_depletion *c, u8 bpid)
+> +{
+> +	c->__state[__bmdep_word(bpid)] |= __bmdep_bit(bpid);
+> +}
+> +static inline void bman_depletion_unset(struct bman_depletion *c, u8 bpid)
+> +{
+> +	c->__state[__bmdep_word(bpid)] &= ~__bmdep_bit(bpid);
 > +}
 
-NACK
+You appear to be reimplementing __set_bit()/__clear_bit/test_bit().
 
-If you want the regs to be a struct, then actually define the members of the 
-struct, use __iomem, don't hide the cast in a vaguely named function that 
-isn't actually creating anything, and call it something like "struct 
-bman_regs" so that it's clear that it's a register struct rather than a 
-driver state struct.
-
-
-> +
-> +static inline u32 __bm_in(struct bman *bm, u32 offset)
+> +static inline dma_addr_t bm_buf_addr(const struct bm_buffer *buf)
 > +{
-> +     return in_be32((void *)bm + offset);
-> +}
-> +static inline void __bm_out(struct bman *bm, u32 offset, u32 val)
-> +{
-> +     out_be32((void *)bm + offset, val);
-> +}
-> +#define bm_in(reg)           __bm_in(bm, REG_##reg)
-> +#define bm_out(reg, val)     __bm_out(bm, REG_##reg, val)
-> +
-> +static u32 __bm_err_isr_read(struct bman *bm, enum bm_isr_reg n)
-> +{
-> +     return __bm_in(bm, REG_ERR_ISR + (n << 2));
-> +}
-> +
-> +static void __bm_err_isr_write(struct bman *bm, enum bm_isr_reg n, u32 val)
-> +{
-> +     __bm_out(bm, REG_ERR_ISR + (n << 2), val);
-> +}
-> +
-> +static void bm_get_version(struct bman *bm, u16 *id, u8 *major, u8 *minor)
-> +{
-> +     u32 v = bm_in(IP_REV_1);
-> +     *id = (v >> 16);
-> +     *major = (v >> 8) & 0xff;
-> +     *minor = v & 0xff;
-> +}
-> +
-> +static u32 __generate_thresh(u32 val, int roundup)
-> +{
-> +     u32 e = 0;      /* co-efficient, exponent */
-> +     int oddbit = 0;
-> +
-> +     while (val > 0xff) {
-> +             oddbit = val & 1;
-> +             val >>= 1;
-> +             e++;
-> +             if (roundup && oddbit)
-> +                     val++;
-> +     }
-> +     DPA_ASSERT(e < 0x10);
-> +     return val | (e << 8);
-> +}
-> +
-> +static void bm_set_pool(struct bman *bm, u8 pool, u32 swdet, u32 swdxt,
-> +                     u32 hwdet, u32 hwdxt)
-> +{
-> +     DPA_ASSERT(pool < bman_pool_max);
-> +
-> +     bm_out(POOL_SWDET(pool), __generate_thresh(swdet, 0));
-> +     bm_out(POOL_SWDXT(pool), __generate_thresh(swdxt, 1));
-> +     bm_out(POOL_HWDET(pool), __generate_thresh(hwdet, 0));
-> +     bm_out(POOL_HWDXT(pool), __generate_thresh(hwdxt, 1));
-> +}
-> +
-> +static void bm_set_memory(struct bman *bm, u64 ba, int prio, u32 size)
-> +{
-> +     u32 exp = ilog2(size);
-> +     /* choke if size isn't within range */
-> +     DPA_ASSERT((size >= 4096) && (size <= 1073741824) &&
-> +                     is_power_of_2(size));
-> +     /* choke if '[e]ba' has lower-alignment than 'size' */
-> +     DPA_ASSERT(!(ba & (size - 1)));
-> +     bm_out(FBPR_BARE, upper_32_bits(ba));
-> +     bm_out(FBPR_BAR, lower_32_bits(ba));
-> +     bm_out(FBPR_AR, (prio ? 0x40000000 : 0) | (exp - 1));
-> +}
-> +
-> +/*****************/
-> +/* Config driver */
-> +/*****************/
-> +
-> +/* We support only one of these. */
-> +static struct bman *bm;
-
-Please don't have both a file-scope "bm" and parameter "bm"s in the same file.
-
-> +
-> +/* And this state belongs to 'bm' */
-> +static dma_addr_t fbpr_a;
-> +static size_t fbpr_sz;
-
-So why aren't they in "struct bman"?
-
-> +static int bman_fbpr(struct reserved_mem *rmem)
-> +{
-> +     fbpr_a = rmem->base;
-> +     fbpr_sz = rmem->size;
-> +
-> +     WARN_ON(!(fbpr_a && fbpr_sz));
-> +
-> +     return 0;
-> +}
-> +RESERVEDMEM_OF_DECLARE(bman_fbpr, "fsl,bman-fbpr", bman_fbpr);
-> +
-> +int bm_pool_set(u32 bpid, const u32 *thresholds)
-> +{
-> +     if (!bm)
-> +             return -ENODEV;
-> +     bm_set_pool(bm, bpid, thresholds[0], thresholds[1],
-> +             thresholds[2], thresholds[3]);
-> +     return 0;
-> +}
-> +EXPORT_SYMBOL(bm_pool_set);
-
-Why does there need to be both bm_pool_set() and bm_set_pool() that do the 
-some thing with a different calling convention?
-
-> +
-> +static void log_edata_bits(u32 bit_count)
-> +{
-> +     u32 i, j, mask = 0xffffffff;
-> +
-> +     pr_warn("ErrInt, EDATA:\n");
-> +     i = bit_count/32;
-> +     if (bit_count%32) {
-> +             i++;
-> +             mask = ~(mask << bit_count%32);
-> +     }
-> +     j = 16-i;
-> +     pr_warn("  0x%08x\n", bm_in(EDATA(j)) & mask);
-> +     j++;
-> +     for (; j < 16; j++)
-> +             pr_warn("  0x%08x\n", bm_in(EDATA(j)));
+> +	return (dma_addr_t)buf->addr;
 > +}
 
-Put spaces around binary operators.
+You cannot convert a virtual address to a DMA address by casting.
 
-Where does the 16 come from?  I see 8 EDATA registers, and no possibility for 
-a non-multiple-of-32 number of bits.  I also see the manual saying that "bit 0
-from the memory is always in bit 0 of BMAN_EDATA0" so why is this code trying 
-to right-justify it?
+> +/* Macro, so we compile better if 'v' isn't always 64-bit */
 
-Why not just keep it simple and print all the EDATA registers?
+Have you actually seen a difference if the function is inlined?
 
-> +
-> +static void log_additional_error_info(u32 isr_val, u32 ecsr_val)
-> +{
-> +     union bman_ecir ecir_val;
-> +     union bman_eadr eadr_val;
-> +
-> +     ecir_val.ecir_raw = bm_in(ECIR);
-> +     /* Is portal info valid */
-> +     if (ecsr_val & PORTAL_ECSR_ERR) {
-> +             pr_warn("ErrInt: SWP id %d, numb %d, pid %d\n",
-> +                     ecir_val.info.portal_num, ecir_val.info.numb,
-> +                     ecir_val.info.pid);
-> +     }
-> +     if (ecsr_val & (BM_EIRQ_SBEI|BM_EIRQ_MBEI)) {
-> +             eadr_val.eadr_raw = bm_in(EADR);
-> +             pr_warn("ErrInt: EADR Memory: %s, 0x%x\n",
-> +                     error_mdata[eadr_val.info.memid].txt,
-> +                     error_mdata[eadr_val.info.memid].addr_mask
-> +                             & eadr_val.info.eadr);
-> +             log_edata_bits(error_mdata[eadr_val.info.memid].bits);
-> +     }
-> +}
-> +
-> +/* BMan interrupt handler */
-> +static irqreturn_t bman_isr(int irq, void *ptr)
-> +{
-> +     u32 isr_val, ier_val, ecsr_val, isr_mask, i;
-> +
-> +     ier_val = bm_err_isr_enable_read(bm);
-> +     isr_val = bm_err_isr_status_read(bm);
-> +     ecsr_val = bm_in(ECSR);
-> +     isr_mask = isr_val & ier_val;
-> +
-> +     if (!isr_mask)
-> +             return IRQ_NONE;
-> +
-> +     for (i = 0; i < BMAN_HWE_COUNT; i++) {
-> +             if (bman_hwerr_txts[i].mask & isr_mask) {
-> +                     pr_warn("ErrInt: %s\n", bman_hwerr_txts[i].txt);
+> +#define bm_buffer_set64(buf, v) \
+> +	do { \
+> +		struct bm_buffer *__buf931 = (buf); \
+> +		__buf931->hi = upper_32_bits(v); \
+> +		__buf931->lo = lower_32_bits(v); \
+> +	} while (0)
 
-Use ptr to get to a struct device so you can use dev_err() here.
+931?
 
-> +                     if (bman_hwerr_txts[i].mask & ecsr_val) {
-> +                             log_additional_error_info(isr_mask, ecsr_val);
-> +                             /* Re-arm error capture registers */
-> +                             bm_out(ECSR, ecsr_val);
-> +                     }
-> +                     if (bman_hwerr_txts[i].mask & BMAN_ERRS_TO_UNENABLE) {
-> +                             pr_devel("Un-enabling error 0x%x\n",
-> +                                     bman_hwerr_txts[i].mask);
-> +                             ier_val &= ~bman_hwerr_txts[i].mask;
-> +                             bm_err_isr_enable_write(bm, ier_val);
-> +                     }
-> +             }
-> +     }
-> +     bm_err_isr_status_clear(bm, isr_val);
-> +
-> +     return IRQ_HANDLED;
-> +}
-> +
-> +u32 bm_pool_free_buffers(u32 bpid)
-> +{
-> +     return bm_in(POOL_CONTENT(bpid));
-> +}
-> +
-> +static ssize_t show_fbpr_fpc(struct device *dev,
-> +     struct device_attribute *dev_attr, char *buf)
-> +{
-> +     return snprintf(buf, PAGE_SIZE, "%u\n", bm_in(FBPR_FPC));
-> +};
-> +
-> +static ssize_t show_pool_count(struct device *dev,
-> +     struct device_attribute *dev_attr, char *buf)
-> +{
-> +     u32 data;
-> +     int i;
-> +
-> +     if (kstrtoint(dev_attr->attr.name, 10, &i))
-> +             return -EINVAL;
-> +     data = bm_in(POOL_CONTENT(i));
-> +     return snprintf(buf, PAGE_SIZE, "%d\n", data);
-> +};
-> +
-> +static ssize_t show_err_isr(struct device *dev,
-> +     struct device_attribute *dev_attr, char *buf)
-> +{
-> +     return snprintf(buf, PAGE_SIZE, "0x%08x\n", bm_in(ERR_ISR));
-> +};
-> +
-> +static ssize_t show_sbec(struct device *dev,
-> +     struct device_attribute *dev_attr, char *buf)
-> +{
-> +     int i;
-> +
-> +     if (sscanf(dev_attr->attr.name, "sbec_%d", &i) != 1)
-> +             return -EINVAL;
-> +     return snprintf(buf, PAGE_SIZE, "%u\n", bm_in(SBEC(i)));
-> +};
-> +
-> +static DEVICE_ATTR(err_isr, S_IRUSR, show_err_isr, NULL);
-> +static DEVICE_ATTR(fbpr_fpc, S_IRUSR, show_fbpr_fpc, NULL);
-> +
-> +/* Didn't use DEVICE_ATTR as 64 of this would be required.
-> + * Initialize them when needed. */
-> +static char *name_attrs_pool_count; /* "xx" + null-terminator */
-> +static struct device_attribute *dev_attr_buffer_pool_count;
-> +
-> +static DEVICE_ATTR(sbec_0, S_IRUSR, show_sbec, NULL);
-> +static DEVICE_ATTR(sbec_1, S_IRUSR, show_sbec, NULL);
-> +
-> +static struct attribute *bman_dev_attributes[] = {
-> +     &dev_attr_fbpr_fpc.attr,
-> +     &dev_attr_err_isr.attr,
-> +     NULL
-> +};
-> +
-> +static struct attribute *bman_dev_ecr_attributes[] = {
-> +     &dev_attr_sbec_0.attr,
-> +     &dev_attr_sbec_1.attr,
-> +     NULL
-> +};
-> +
-> +static struct attribute **bman_dev_pool_count_attributes;
-> +
-> +/* root level */
-> +static const struct attribute_group bman_dev_attr_grp = {
-> +     .name = NULL,
-> +     .attrs = bman_dev_attributes
-> +};
-> +static const struct attribute_group bman_dev_ecr_grp = {
-> +     .name = "error_capture",
-> +     .attrs = bman_dev_ecr_attributes
-> +};
-> +static struct attribute_group bman_dev_pool_countent_grp = {
-> +     .name = "pool_count",
-> +};
+What type is "buf" supposed to be?
 
-What do these sysfs attributes get used for, and where are they documented?
+> +/* See 1.5.3.5.4: "Release Command" */
+> +struct bm_rcr_entry {
+> +	union {
+> +		struct {
+> +			u8 __dont_write_directly__verb;
+> +			u8 bpid; /* used with BM_RCR_VERB_CMD_BPID_SINGLE */
+> +			u8 __reserved1[62];
+> +		};
+> +		struct bm_buffer bufs[8];
+> +	};
+> +} __packed;
+> +#define BM_RCR_VERB_VBIT		0x80
+> +#define BM_RCR_VERB_CMD_MASK		0x70	/* one of two values; */
+> +#define BM_RCR_VERB_CMD_BPID_SINGLE	0x20
+> +#define BM_RCR_VERB_CMD_BPID_MULTI	0x30
+> +#define BM_RCR_VERB_BUFCOUNT_MASK	0x0f	/* values 1..8 */
+> +
+> +/* See 1.5.3.1: "Acquire Command" */
+> +/* See 1.5.3.2: "Query Command" */
 
-> +static int of_fsl_bman_remove(struct platform_device *ofdev)
-> +{
-> +     sysfs_remove_group(&ofdev->dev.kobj, &bman_dev_attr_grp);
-> +     return 0;
-> +};
-
-This does not seem sufficient.  At the least, you're creating more than one 
-sysfs group in probe*().  How does this stop references to memory that was 
-allocated using devm?  Keep in mind that userspace can unbind a device from 
-its driver, and there's nothing you can do to block it (unlike module 
-removal).  The remove() function has to be able to completely halt access to 
-the device before returning, and any memory that needs to survive past 
-remove() can't be allocated with devm.
-
-If unbinding is not viable for this driver (which does not seem completely 
-unreasonable given that it is subsystem infrastructure rather than a 
-standalone device), then at least WARN in remove() (and no point doing 
-anything else) to make it obvious that this is unsupported.
-
-> +
-> +static int of_fsl_bman_probe(struct platform_device *ofdev)
-> +{
-> +     int ret, err_irq, i;
-> +     struct device *dev = &ofdev->dev;
-> +     struct device_node *node = dev->of_node;
-> +     struct resource res;
-> +     u32 __iomem *regs;
-> +     u16 id;
-> +     u8 major, minor;
-> +
-> +     if (!of_device_is_available(node))
-> +             return -ENODEV;
-
-The base OF platform code will check this for you.
-
-> +
-> +     ret = of_address_to_resource(node, 0, &res);
-> +     if (ret) {
-> +             dev_err(dev, "Can't get %s property 'reg'\n", node->full_name);
-> +             return ret;
-> +     }
-> +     regs = devm_ioremap(dev, res.start, res.end - res.start + 1);
-> +     if (!regs)
-> +             return -ENXIO;
-> +
-> +     bm = bm_create(regs);
-> +
-> +     bm_get_version(bm, &id, &major, &minor);
-> +     dev_info(dev, "Bman ver:%04x,%02x,%02x\n", id, major, minor);
-> +     if ((major == 1) && (minor == 0))
-> +             bman_pool_max = 64;
-> +     else if ((major == 2) && (minor == 0))
-> +             bman_pool_max = 8;
-> +     else if ((major == 2) && (minor == 1))
-> +             bman_pool_max = 64;
-> +     else
-> +             dev_warn(dev, "unknown Bman version, default to rev1.0\n");
-
-Why is it safe to default to rev 1.0 rather than refusing to bind to an 
-unknown version?
-
-Also, unnecessary parentheses.
-
-> +
-> +
-> +     bm_set_memory(bm, fbpr_a, 0, fbpr_sz);
-> +
-> +     err_irq = of_irq_to_resource(node, 0, NULL);
-> +     if (err_irq == NO_IRQ) {
-> +             dev_info(dev, "Can't get %s property 'interrupts'\n",
-> +                      node->full_name);
-> +             return -ENODEV;
-> +     }
-> +     ret = devm_request_irq(dev, err_irq, bman_isr, IRQF_SHARED, "bman-err",
-> +                            node);
-> +     if (ret)  {
-> +             dev_err(dev, "devm_request_irq() failed %d for '%s'\n",
-> +                     ret, node->full_name);
-> +             return ret;
-> +     }
-> +     /* Disable Buffer Pool State Change */
-> +     bm_err_isr_disable_write(bm, BM_EIRQ_BSCN);
-> +     /* Write-to-clear any stale bits, (eg. starvation being asserted prior
-> +      * to resource allocation during driver init). */
-> +     bm_err_isr_status_clear(bm, 0xffffffff);
-> +     /* Enable Error Interrupts */
-> +     bm_err_isr_enable_write(bm, 0xffffffff);
-> +
-> +     ret = sysfs_create_group(&dev->kobj, &bman_dev_attr_grp);
-> +     if (ret)
-> +             goto done;
-> +     ret = sysfs_create_group(&dev->kobj, &bman_dev_ecr_grp);
-> +     if (ret)
-> +             goto del_group_0;
-> +
-> +     name_attrs_pool_count = devm_kmalloc(dev,
-> +             sizeof(char) * bman_pool_max * 3, GFP_KERNEL);
-> +     if (!name_attrs_pool_count)
-> +             goto del_group_1;
-> +
-> +     dev_attr_buffer_pool_count = devm_kmalloc(dev,
-> +             sizeof(struct device_attribute) * bman_pool_max, GFP_KERNEL);
-> +     if (!dev_attr_buffer_pool_count)
-> +             goto del_group_1;
-> +
-> +     bman_dev_pool_count_attributes = devm_kmalloc(dev,
-> +             sizeof(struct attribute *) * (bman_pool_max + 1), GFP_KERNEL);
-> +     if (!bman_dev_pool_count_attributes)
-> +             goto del_group_1;
-> +
-> +     for (i = 0; i < bman_pool_max; i++) {
-> +             ret = scnprintf((name_attrs_pool_count + i * 3), 3, "%d", i);
-> +             if (!ret)
-> +                     goto del_group_1;
-> +             dev_attr_buffer_pool_count[i].attr.name =
-> +                     (name_attrs_pool_count + i * 3);
-> +             dev_attr_buffer_pool_count[i].attr.mode = S_IRUSR;
-> +             dev_attr_buffer_pool_count[i].show = show_pool_count;
-> +             bman_dev_pool_count_attributes[i] =
-> +                     &dev_attr_buffer_pool_count[i].attr;
-> +     }
-> +     bman_dev_pool_count_attributes[bman_pool_max] = NULL;
-> +
-> +     bman_dev_pool_countent_grp.attrs = bman_dev_pool_count_attributes;
-> +
-> +     ret = sysfs_create_group(&dev->kobj, &bman_dev_pool_countent_grp);
-> +     if (ret)
-> +             goto del_group_1;
-> +
-> +     goto done;
-> +
-> +del_group_1:
-> +     sysfs_remove_group(&dev->kobj, &bman_dev_ecr_grp);
-> +del_group_0:
-> +     sysfs_remove_group(&dev->kobj, &bman_dev_attr_grp);
-> +done:
-> +     if (ret)
-> +             dev_err(dev, "Cannot create dev attributes ret=%d\n", ret);
-> +
-> +     return ret;
-> +};
-> +
-> +static const struct of_device_id of_fsl_bman_ids[] = {
-> +     {
-> +             .compatible = "fsl,bman",
-> +     },
-> +     {}
-> +};
-> +MODULE_DEVICE_TABLE(of, of_fsl_bman_ids);
-> +
-> +static struct platform_driver of_fsl_bman_driver = {
-> +     .driver = {
-> +             .name = KBUILD_MODNAME,
-> +             .of_match_table = of_fsl_bman_ids,
-> +     },
-> +     .probe = of_fsl_bman_probe,
-> +     .remove = of_fsl_bman_remove,
-> +};
-> +
-> +module_platform_driver(of_fsl_bman_driver);
-> diff --git a/drivers/soc/fsl/qbman/bman_priv.h 
-> b/drivers/soc/fsl/qbman/bman_priv.h
-> new file mode 100644
-> index 0000000..702e469
-> --- /dev/null
-> +++ b/drivers/soc/fsl/qbman/bman_priv.h
-> @@ -0,0 +1,53 @@
-> +/* Copyright 2008 - 2015 Freescale Semiconductor, Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are 
-> met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *    notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *    notice, this list of conditions and the following disclaimer in the
-> + *    documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *    names of its contributors may be used to endorse or promote products
-> + *    derived from this software without specific prior written permission.
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-> IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-> DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-> SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
-> AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
-> TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
-> OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include "dpaa_sys.h"
-> +
-> +/* used by CCSR and portal interrupt code */
-> +enum bm_isr_reg {
-> +     bm_isr_status = 0,
-> +     bm_isr_enable = 1,
-> +     bm_isr_disable = 2,
-> +     bm_isr_inhibit = 3
-> +};
-
-struct bm_isr_regs {
-        u32 status;
-        u32 enable;
-        u32 disable;
-        u32 inhibit;
-};
-
-...and then you won't need __bm_err_isr_read/__bm_err_isr_write because it'll 
-just be a straightforward in_be32/out_be32() (or an wrapper that handles 
-endianness, if ls1043a ended up making this little-endian).
-
-Or better, define all the registers in a struct rather than just these, and 
-more of the I/O wrappers go away.
-
-> +
-> +/* Set depletion thresholds associated with a buffer pool. Requires that 
-> the
-> + * operating system have access to BMan CCSR (ie. compiled in support and
-> + * run-time access courtesy of the device-tree). */
-
-/* 
- * Please use standard
- * Linux multi-line
- * comment style,
- * here and elsewhere.
- */
-
-
-> +int bm_pool_set(u32 bpid, const u32 *thresholds);
-> +#define BM_POOL_THRESH_SW_ENTER 0
-> +#define BM_POOL_THRESH_SW_EXIT       1
-> +#define BM_POOL_THRESH_HW_ENTER 2
-> +#define BM_POOL_THRESH_HW_EXIT       3
-> +
-> +/* Read the free buffer count for a given buffer */
-> +u32 bm_pool_free_buffers(u32 bpid);
-> diff --git a/drivers/soc/fsl/qbman/dpaa_sys.h 
-> b/drivers/soc/fsl/qbman/dpaa_sys.h
-> new file mode 100644
-> index 0000000..cdaf3f7
-> --- /dev/null
-> +++ b/drivers/soc/fsl/qbman/dpaa_sys.h
-> @@ -0,0 +1,55 @@
-> +/* Copyright 2008 - 2015 Freescale Semiconductor, Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are 
-> met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *    notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *    notice, this list of conditions and the following disclaimer in the
-> + *    documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *    names of its contributors may be used to endorse or promote products
-> + *    derived from this software without specific prior written permission.
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-> IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-> DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-> SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
-> AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
-> TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
-> OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +#ifndef __DPAA_SYS_H
-> +#define __DPAA_SYS_H
-> +
-> +#include <linux/module.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
-> +#include <linux/of_reserved_mem.h>
-> +#include <linux/platform_device.h>
-> +
-> +#ifdef CONFIG_FSL_DPA_CHECKING
-> +#define DPA_ASSERT(x) \
-> +     do { \
-> +             if (!(x)) { \
-> +                     pr_crit("ASSERT: (%s:%d) %s\n", __FILE__, __LINE__, \
-> +                             __stringify_1(x)); \
-> +                     dump_stack(); \
-> +                     panic("assertion failure"); \
-> +             } \
-
-Again, do not panic here.  Use one of the WARN macros.
+1.5.3.1 of what document?  In DPAARM that's "FMan Network Interfaces".
 
 -Scott
