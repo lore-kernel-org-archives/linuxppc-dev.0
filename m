@@ -1,32 +1,28 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CE301A0138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 17:55:18 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Tue, 25 Aug 2015 17:55:17 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D93552CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 17:55:14 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7P7t40E6881418
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 17:55:12 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7P7sgQC018609
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 17:54:42 +1000
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-leds@vger.kernel.org, j.anaszewski@samsung.com, mpe@ellerman.id.au,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/configs: Enable LEDS support
-Date: Tue, 25 Aug 2015 13:24:14 +0530
-Message-Id: <1440489254-8162-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B19F21A0E56
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 18:10:10 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Laura Abbott <labbott@redhat.com>, Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH v6 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Tue, 25 Aug 2015 08:09:56 +0000
+Message-ID: <SN1PR0301MB1550544FC379016F263EDCDD9B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
+ <55DBA477.5020608@redhat.com>
+ <SN1PR0301MB155021CDD677EFB6D1EAE79F9B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <55DBE896.9030702@redhat.com>
+In-Reply-To: <55DBE896.9030702@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +32,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 84ad6e5c added LEDS support for PowerNV platform. Lets
-update ppc64_defconfig to pick LEDS driver.
+On 08/25/2015 12:01 PM, Laura Abbott wrote:
 
-Presently PowerNV LEDS driver is specific to FSP based PowerNV
-platform. Hence added it as 'm'. So that we will be loaded only
-if we have required device tree support.
+> -----Original Message-----
+> From: Laura Abbott [mailto:labbott@redhat.com]
+> Sent: Tuesday, August 25, 2015 12:01 PM
+> To: Zhao Qiang-B45475; Wood Scott-B07421
+> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> Yang-Leo-R58472; paulus@samba.org
+> Subject: Re: [PATCH v6 1/3] genalloc:support memory-allocation with
+> bytes-alignment to genalloc
+>=20
+> On 08/24/2015 07:40 PM, Zhao Qiang wrote:
+> > On 08/25/2015 07:11 AM, Laura Abbott wrote:
+> >> -----Original Message-----
+> >> From: Laura Abbott [mailto:labbott@redhat.com]
+> >> Sent: Tuesday, August 25, 2015 7:11 AM
+> >> To: Zhao Qiang-B45475; Wood Scott-B07421
+> >> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> >> lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
+> >> Li Yang-Leo-R58472; paulus@samba.org
+> >> Subject: Re: [PATCH v6 1/3] genalloc:support memory-allocation with
+> >> bytes-alignment to genalloc
+> >>
+> >> On 08/24/2015 02:31 AM, Zhao Qiang wrote:
+> >>> Bytes alignment is required to manage some special RAM, so add
+> >>> gen_pool_first_fit_align to genalloc, meanwhile add
+> >>> gen_pool_alloc_data to pass data to gen_pool_first_fit_align(modify
+> >>> gen_pool_alloc as a wrapper)
+> >>>
+> >>> Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> >>> ---
+> >>> Changes for v6:
+> >>> 	- patches set v6 include a new patch because of using
+> >>> 	- genalloc to manage QE MURAM, patch 0001 is the new
+> >>> 	- patch, adding bytes alignment for allocation for use.
+> >>>
+> >>>    include/linux/genalloc.h | 23 +++++++++++++++----
+> >>>    lib/genalloc.c           | 58
+> >> +++++++++++++++++++++++++++++++++++++++++++-----
+> >>>    2 files changed, 72 insertions(+), 9 deletions(-)
+> >>>
+> >>> diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
+> >>> index 1ccaab4..55da07e 100644
+> >>> --- a/include/linux/genalloc.h
+> >>> +++ b/include/linux/genalloc.h
+> >>> @@ -34,6 +34,7 @@
+> >>>
+> >>>    struct device;
+> >>>    struct device_node;
+> >>> +struct gen_pool;
+> >>>
+> >>>    /**
+> >>>     * Allocation callback function type definition @@ -47,7 +48,7 @@
+> >>> typedef unsigned long (*genpool_algo_t)(unsigned long *map,
+> >>>    			unsigned long size,
+> >>>    			unsigned long start,
+> >>>    			unsigned int nr,
+> >>> -			void *data);
+> >>> +			void *data, struct gen_pool *pool);
+> >>>
+> >>>    /*
+> >>>     *  General purpose special memory pool descriptor.
+> >>> @@ -73,6 +74,13 @@ struct gen_pool_chunk {
+> >>>    	unsigned long bits[0];		/* bitmap for allocating memory
+> chunk
+> >> */
+> >>>    };
+> >>>
+> >>> +/*
+> >>> + *  gen_pool data descriptor for gen_pool_first_fit_align.
+> >>> + */
+> >>> +struct genpool_data_align {
+> >>> +	int align;		/* alignment by bytes for starting address */
+> >>> +};
+> >>> +
+> >>
+> >> (sorry for chiming in late, I've been traveling)
+> >>
+> >> Is there an advantage here to wrapping this in a structure instead of
+> >> just passing a pointer to an align integer?
+> >
+> >
+> > Please look at the commit message for
+> > ca279cf1065fb689abea1dc7d8c11787729bb185 which adds "data":
+> >
+> > "As I can't predict all the possible requirements/needs for all
+> > allocation uses cases, I add a "free" field 'void *data' to pass any
+> > needed information to the allocation function.  For example 'data'
+> > could be used to handle a structure where you store the alignment, the
+> > expected memory bank, the requester device, or any information that
+> > could influence the allocation algorithm."
+> >
+>=20
+> Right, I understand what the purpose is but I'm not sure what you're
+> getting from the structure vs passing a pointer, e.g.
+>=20
+> int align;
+>=20
+> align =3D 4;
+>=20
+> gen_pool_alloc_data(&pool, size, &align);
+>=20
+> it just seems to obfuscate what's going on by wrapping a single integer
+> in a structure that's narrowly defined in a generic function right now. I
+> guess it could change later which would necessitate having the structure
+> but again it's so generic I'm not sure what else you would pass that
+> would be applicable to all clients.
 
-Also note that powernv LEDS driver needs NEW_LEDS and LEDS_CLASS
-as well. Hence added them to config file.
+Scott and me have discussed about this issue in my RFC patch.
+Please review: http://patchwork.ozlabs.org/patch/493297/
 
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
----
-Michael,
-  This is PowerNV specific config. Hence I've not updated pseries_defconfig.
-  Let me know if you want me to update pseries_defconfig config as well.
-
-Vasant
-
- arch/powerpc/configs/ppc64_defconfig | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index a97efc2..6bc0ee4 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -355,3 +355,6 @@ CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM_BOOK3S_64=m
- CONFIG_KVM_BOOK3S_64_HV=m
-+CONFIG_NEW_LEDS=y
-+CONFIG_LEDS_CLASS=m
-+CONFIG_LEDS_POWERNV=m
--- 
-2.1.0
+>=20
+> Thanks,
+> Laura
