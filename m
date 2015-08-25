@@ -1,28 +1,26 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wi0-x230.google.com (mail-wi0-x230.google.com
+ [IPv6:2a00:1450:400c:c05::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B19F21A0E56
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 18:10:10 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Laura Abbott <labbott@redhat.com>, Scott Wood <scottwood@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v6 1/3] genalloc:support memory-allocation with
- bytes-alignment to genalloc
-Date: Tue, 25 Aug 2015 08:09:56 +0000
-Message-ID: <SN1PR0301MB1550544FC379016F263EDCDD9B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
- <55DBA477.5020608@redhat.com>
- <SN1PR0301MB155021CDD677EFB6D1EAE79F9B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <55DBE896.9030702@redhat.com>
-In-Reply-To: <55DBE896.9030702@redhat.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E4C031A0E56
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 18:23:52 +1000 (AEST)
+Received: by wijp15 with SMTP id p15so7646173wij.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 01:23:49 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Tue, 25 Aug 2015 10:23:47 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Kevin Hao <haokexin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/6] powerpc: use jump label for {cpu,mmu}_has_feature()
+Message-ID: <20150825082346.GB19914@gmail.com>
+References: <1440415228-8006-1-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1440415228-8006-1-git-send-email-haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,118 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/25/2015 12:01 PM, Laura Abbott wrote:
 
-> -----Original Message-----
-> From: Laura Abbott [mailto:labbott@redhat.com]
-> Sent: Tuesday, August 25, 2015 12:01 PM
-> To: Zhao Qiang-B45475; Wood Scott-B07421
-> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
-> Yang-Leo-R58472; paulus@samba.org
-> Subject: Re: [PATCH v6 1/3] genalloc:support memory-allocation with
-> bytes-alignment to genalloc
->=20
-> On 08/24/2015 07:40 PM, Zhao Qiang wrote:
-> > On 08/25/2015 07:11 AM, Laura Abbott wrote:
-> >> -----Original Message-----
-> >> From: Laura Abbott [mailto:labbott@redhat.com]
-> >> Sent: Tuesday, August 25, 2015 7:11 AM
-> >> To: Zhao Qiang-B45475; Wood Scott-B07421
-> >> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> >> lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
-> >> Li Yang-Leo-R58472; paulus@samba.org
-> >> Subject: Re: [PATCH v6 1/3] genalloc:support memory-allocation with
-> >> bytes-alignment to genalloc
-> >>
-> >> On 08/24/2015 02:31 AM, Zhao Qiang wrote:
-> >>> Bytes alignment is required to manage some special RAM, so add
-> >>> gen_pool_first_fit_align to genalloc, meanwhile add
-> >>> gen_pool_alloc_data to pass data to gen_pool_first_fit_align(modify
-> >>> gen_pool_alloc as a wrapper)
-> >>>
-> >>> Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> >>> ---
-> >>> Changes for v6:
-> >>> 	- patches set v6 include a new patch because of using
-> >>> 	- genalloc to manage QE MURAM, patch 0001 is the new
-> >>> 	- patch, adding bytes alignment for allocation for use.
-> >>>
-> >>>    include/linux/genalloc.h | 23 +++++++++++++++----
-> >>>    lib/genalloc.c           | 58
-> >> +++++++++++++++++++++++++++++++++++++++++++-----
-> >>>    2 files changed, 72 insertions(+), 9 deletions(-)
-> >>>
-> >>> diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
-> >>> index 1ccaab4..55da07e 100644
-> >>> --- a/include/linux/genalloc.h
-> >>> +++ b/include/linux/genalloc.h
-> >>> @@ -34,6 +34,7 @@
-> >>>
-> >>>    struct device;
-> >>>    struct device_node;
-> >>> +struct gen_pool;
-> >>>
-> >>>    /**
-> >>>     * Allocation callback function type definition @@ -47,7 +48,7 @@
-> >>> typedef unsigned long (*genpool_algo_t)(unsigned long *map,
-> >>>    			unsigned long size,
-> >>>    			unsigned long start,
-> >>>    			unsigned int nr,
-> >>> -			void *data);
-> >>> +			void *data, struct gen_pool *pool);
-> >>>
-> >>>    /*
-> >>>     *  General purpose special memory pool descriptor.
-> >>> @@ -73,6 +74,13 @@ struct gen_pool_chunk {
-> >>>    	unsigned long bits[0];		/* bitmap for allocating memory
-> chunk
-> >> */
-> >>>    };
-> >>>
-> >>> +/*
-> >>> + *  gen_pool data descriptor for gen_pool_first_fit_align.
-> >>> + */
-> >>> +struct genpool_data_align {
-> >>> +	int align;		/* alignment by bytes for starting address */
-> >>> +};
-> >>> +
-> >>
-> >> (sorry for chiming in late, I've been traveling)
-> >>
-> >> Is there an advantage here to wrapping this in a structure instead of
-> >> just passing a pointer to an align integer?
-> >
-> >
-> > Please look at the commit message for
-> > ca279cf1065fb689abea1dc7d8c11787729bb185 which adds "data":
-> >
-> > "As I can't predict all the possible requirements/needs for all
-> > allocation uses cases, I add a "free" field 'void *data' to pass any
-> > needed information to the allocation function.  For example 'data'
-> > could be used to handle a structure where you store the alignment, the
-> > expected memory bank, the requester device, or any information that
-> > could influence the allocation algorithm."
-> >
->=20
-> Right, I understand what the purpose is but I'm not sure what you're
-> getting from the structure vs passing a pointer, e.g.
->=20
-> int align;
->=20
-> align =3D 4;
->=20
-> gen_pool_alloc_data(&pool, size, &align);
->=20
-> it just seems to obfuscate what's going on by wrapping a single integer
-> in a structure that's narrowly defined in a generic function right now. I
-> guess it could change later which would necessitate having the structure
-> but again it's so generic I'm not sure what else you would pass that
-> would be applicable to all clients.
+* Kevin Hao <haokexin@gmail.com> wrote:
 
-Scott and me have discussed about this issue in my RFC patch.
-Please review: http://patchwork.ozlabs.org/patch/493297/
+> Hi,
+> 
+> v2:
+> Drop the following two patches as suggested by Ingo and Peter:
+>     jump_label: no need to acquire the jump_label_mutex in jump_lable_init()
+>     jump_label: introduce DEFINE_STATIC_KEY_{TRUE,FALSE}_ARRAY macros
+> 
+> v1:
+> I have tried to change the {cpu,mmu}_has_feature() to use jump label two yeas
+> ago [1]. But that codes seem a bit ugly. This is a reimplementation by moving the
+> jump_label_init() much earlier so the jump label can be used in a very earlier
+> stage. Boot test on p4080ds, t2080rdb and powermac (qemu). This patch series
+> is against linux-next.
+> 
+> [1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2013-September/111026.html
+> 
+> Kevin Hao (6):
+>   jump_label: make it possible for the archs to invoke jump_label_init()
+>     much earlier
+>   powerpc: invoke jump_label_init() in a much earlier stage
+>   powerpc: kill mfvtb()
+>   powerpc: move the cpu_has_feature to a separate file
+>   powerpc: use the jump label for cpu_has_feature
+>   powerpc: use jump label for mmu_has_feature
+> 
+>  arch/powerpc/include/asm/cacheflush.h   |  1 +
+>  arch/powerpc/include/asm/cpufeatures.h  | 34 ++++++++++++++++++++++++++++++
+>  arch/powerpc/include/asm/cputable.h     | 16 +++++++-------
+>  arch/powerpc/include/asm/cputime.h      |  1 +
+>  arch/powerpc/include/asm/dbell.h        |  1 +
+>  arch/powerpc/include/asm/dcr-native.h   |  1 +
+>  arch/powerpc/include/asm/mman.h         |  1 +
+>  arch/powerpc/include/asm/mmu.h          | 29 ++++++++++++++++++++++++++
+>  arch/powerpc/include/asm/reg.h          |  9 --------
+>  arch/powerpc/include/asm/time.h         |  3 ++-
+>  arch/powerpc/include/asm/xor.h          |  1 +
+>  arch/powerpc/kernel/align.c             |  1 +
+>  arch/powerpc/kernel/cputable.c          | 37 +++++++++++++++++++++++++++++++++
+>  arch/powerpc/kernel/irq.c               |  1 +
+>  arch/powerpc/kernel/process.c           |  1 +
+>  arch/powerpc/kernel/setup-common.c      |  1 +
+>  arch/powerpc/kernel/setup_32.c          |  5 +++++
+>  arch/powerpc/kernel/setup_64.c          |  4 ++++
+>  arch/powerpc/kernel/smp.c               |  1 +
+>  arch/powerpc/platforms/cell/pervasive.c |  1 +
+>  arch/powerpc/xmon/ppc-dis.c             |  1 +
+>  kernel/jump_label.c                     |  3 +++
+>  22 files changed, 135 insertions(+), 18 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/cpufeatures.h
 
->=20
-> Thanks,
-> Laura
+Looks good to me!
+
+Thanks,
+
+	Ingo
