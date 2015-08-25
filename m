@@ -1,29 +1,30 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-ig0-f176.google.com (mail-ig0-f176.google.com
- [209.85.213.176])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD2101A1D22
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 22:04:20 +1000 (AEST)
-Received: by igcse8 with SMTP id se8so10220564igc.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 05:04:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F0331A039D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 02:23:10 +1000 (AEST)
+Message-ID: <1440519775.16577.4.camel@freescale.com>
+Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage muram
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: Laura Abbott <labbott@redhat.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "lauraa@codeaurora.org"
+ <lauraa@codeaurora.org>, Xie Xiaobo-R63061 <X.Xie@freescale.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, Li Yang-Leo-R58472
+ <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Date: Tue, 25 Aug 2015 11:22:55 -0500
+In-Reply-To: <SN1PR0301MB1550CE6B922CE64AA4F862759B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
+ <1440408703-6113-3-git-send-email-qiang.zhao@freescale.com>
+ <55DBA98D.1070202@redhat.com>
+ <SN1PR0301MB1550C9087AFB9FEB6CD1B0899B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <55DBEBBE.30702@redhat.com>
+ <SN1PR0301MB1550CE6B922CE64AA4F862759B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1438012638.2993.289.camel@freescale.com>
-References: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
- <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
- <1437791242.2993.268.camel@freescale.com>
- <CAPDyKFp8ZStYVaFm8tjPL190dqV6vCE+oT706M=6wVCckWesLw@mail.gmail.com>
- <1438012638.2993.289.camel@freescale.com>
-Date: Tue, 25 Aug 2015 14:04:17 +0200
-Message-ID: <CAPDyKFoBch9zSq_CwuZnXH9Lo9+AcAbkXqAQevpJuBCErOK1Wg@mail.gmail.com>
-Subject: Re: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240
- incorrect HOSTVER value
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Yangbo Lu <yangbo.lu@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-mmc <linux-mmc@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,50 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27 July 2015 at 17:57, Scott Wood <scottwood@freescale.com> wrote:
-> On Mon, 2015-07-27 at 09:58 +0200, Ulf Hansson wrote:
->> On 25 July 2015 at 04:27, Scott Wood <scottwood@freescale.com> wrote:
->> > On Tue, 2015-07-21 at 15:02 +0200, Ulf Hansson wrote:
->> > > On 21 July 2015 at 11:45, Yangbo Lu <yangbo.lu@freescale.com> wrote:
->> > > > For T4240-R1.0-R2.0, the HOSTVER register has incorrcet vender
->> > > > version value and sdhc spec version value. This will break down
->> > > > the ADMA data transfer. So add workaround to get right value
->> > > > VVN=0x13, SVN = 0x1.
->> > >
->> > > So T4240-R1.0-R2.0 is the version of the controller, right?
->> > >
->> > > If I understand correct you are checking what CPU/SoC you are running
->> > > on, to figure out which controller version you are using, as that
->> > > can't be fetched (trusted) from the registers of the esdhc controller
->> > > itself!?
->> > >
->> > > Instead, you could deal with this directly in the DTS files. I assume
->> > > you have some DTS file for each SoC/board variant, right?
->> >
->> > No, we do not have a separate DTS file for each revision of an SoC -- and
->> > if
->> > we did, we'd constantly have people using the wrong one.
->> >
->> > > In principle, in your DTS file specific for the board/SoC that holds
->> > > the T4240-R1.0-R2.0 version of the controller, should add a specific
->> > > esdhc DT property to indicate this errata.
->> >
->> > No, because (in addition to the above issue about chip revisions) the
->> > device
->> > tree is stable ABI and errata are often discovered after device trees are
->> > deployed.
->>
->> Fair enough. Then what is your suggestion for the solution here?
->
-> As I said in my comment on patch 2/3, read SVR from the device-config/guts
-> MMIO block, which works on both PPC and ARM.
->
+On Tue, 2015-08-25 at 02:19 -0500, Zhao Qiang-B45475 wrote:
+> On 08/25/2015 12:15 PM, Laura Abbott wrote
+> > -----Original Message-----
+> > From: Laura Abbott [mailto:labbott@redhat.com]
+> > Sent: Tuesday, August 25, 2015 12:15 PM
+> > To: Zhao Qiang-B45475; Wood Scott-B07421
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> > Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage
+> > muram
+> > 
+> > On 08/24/2015 08:03 PM, Zhao Qiang wrote:
+> > > 
+> > > > -----Original Message-----
+> > > > From: Laura Abbott [mailto:labbott@redhat.com]
+> > > > Sent: Tuesday, August 25, 2015 7:32 AM
+> > > > To: Zhao Qiang-B45475; Wood Scott-B07421
+> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
+> > > > Li Yang-Leo-R58472; paulus@samba.org
+> > > > Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to
+> > > > manage muram
+> > > > 
+> > > > There doesn't seem to be a check for allocation failure from the
+> > > > gen_alloc.
+> > > 
+> > > gen_pool_alloc will return 0 if there is error, but if the address
+> > > returned is just 0x0, it can't distinguish it is address or error.
+> > > 
+> > 
+> > Yes, that's a bad limitation of gen_pool. Maybe one day that will get
+> > fixed.
+> > In a previous out of tree driver, I worked around this by offsetting the
+> > gen_pool_add by a constant so any return value was non-zero and out of
+> > memory was zero and then subtracting the constant off of the return value.
+> > Not sure if that's better or worse than just fixing gen_alloc.
+> > 
+> 
+> The workaround works for non alignment allocation, but for alignment 
+> allocation,
+> It need to align bytes to addr 0, offsetting the gen_pool_add maybe make 
+> wrong alignment
 
-That's okay, as long as don't have include sections of non generic
-header files in the driver.
+It would work if the offset you add is a multiple of the size of muram.
 
-To be more clear, this is not okay to have:
-#include <mach/*>
-
-Kind regards
-Uffe
+-Scott
