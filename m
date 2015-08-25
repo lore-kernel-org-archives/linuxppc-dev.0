@@ -1,27 +1,34 @@
-Return-Path: <labbott@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 680BD1A0EF6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 14:14:58 +1000 (AEST)
-Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage muram
-To: Zhao Qiang <qiang.zhao@freescale.com>, Scott Wood <scottwood@freescale.com>
-References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
- <1440408703-6113-3-git-send-email-qiang.zhao@freescale.com>
- <55DBA98D.1070202@redhat.com>
- <SN1PR0301MB1550C9087AFB9FEB6CD1B0899B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>,
- Xiaobo Xie <X.Xie@freescale.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-From: Laura Abbott <labbott@redhat.com>
-Message-ID: <55DBEBBE.30702@redhat.com>
-Date: Mon, 24 Aug 2015 21:14:54 -0700
-MIME-Version: 1.0
-In-Reply-To: <SN1PR0301MB1550C9087AFB9FEB6CD1B0899B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4EEE51A0EF6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 15:35:17 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Tue, 25 Aug 2015 11:05:14 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id DE5AC394005B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 11:05:10 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7P5YvKL20250806
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 11:05:00 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7P5YubB003940
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 11:04:57 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: imunsie@au1.ibm.com, Michael Neuling <mikey@neuling.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: [PATCH] cxl: Release irqs if memory allocation fails
+Date: Tue, 25 Aug 2015 11:04:48 +0530
+Message-Id: <1440480888-7885-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,92 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/24/2015 08:03 PM, Zhao Qiang wrote:
->
->> -----Original Message-----
->> From: Laura Abbott [mailto:labbott@redhat.com]
->> Sent: Tuesday, August 25, 2015 7:32 AM
->> To: Zhao Qiang-B45475; Wood Scott-B07421
->> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
->> lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
->> Yang-Leo-R58472; paulus@samba.org
->> Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage
->> muram
->>
->> On 08/24/2015 02:31 AM, Zhao Qiang wrote:
->>
->>
->>> +out:
->>> +	of_node_put(np);
->>> +	return ret;
->>> +}
->>> +
->>> +/**
->>> + * qe_muram_alloc - allocate the requested size worth of multi-user
->>> +ram
->>> + * @size: number of bytes to allocate
->>> + * @align: requested alignment, in bytes
->>> + *
->>> + * This function returns an offset into the muram area.
->>> + * Use qe_dpram_addr() to get the virtual address of the area.
->>> + * Use qe_muram_free() to free the allocation.
->>> + */
->>> +unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
->>> +{
->>> +	unsigned long start;
->>> +	unsigned long flags;
->>> +	struct muram_block *entry;
->>> +
->>> +	spin_lock_irqsave(&qe_muram_lock, flags);
->>> +	muram_pool_data.align = align;
->>> +	start = gen_pool_alloc(muram_pool, size);
->>
->> The advantage of creating gen_pool_alloc_data was so that you could pass
->> in the align automatically without having to modify the structure.
->> Is there a reason you aren't using that?
->>
->>> +	memset(qe_muram_addr(start), 0, size);
->>
->> There doesn't seem to be a check for allocation failure from the
->> gen_alloc.
->
-> gen_pool_alloc will return 0 if there is error, but if the address returned is
-> just 0x0, it can't distinguish it is address or error.
->
+This minor patch plugs a potential irq leak in case of a memory
+allocation failure inside function the afu_allocate_irqs. Presently the
+irqs allocated to the context gets leaked if allocation of either
+one of context irq_bitmap or irq_names fails.
 
-Yes, that's a bad limitation of gen_pool. Maybe one day that will get fixed.
-In a previous out of tree driver, I worked around this by offsetting the
-gen_pool_add by a constant so any return value was non-zero and out of memory
-was zero and then subtracting the constant off of the return value. Not sure
-if that's better or worse than just fixing gen_alloc.
-  
->>
->>> +	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
->>> +	if (!entry)
->>> +		goto out;
->>> +	entry->start = start;
->>> +	entry->size = size;
->>> +	list_add(&entry->head, &muram_block_list);
->>
->> What's the point of keeping the block list anyway? It's used only in this
->> file and it only seems to duplicate what gen_alloc is doing internally.
->> Is there some lookup functionality you still need? Could you use a
->> gen_alloc API to do so?
->
-> I need to record the size when allocation, so when free the block, I can get
-> The right size for the block, and pass the right size to
-> gen_pool_free(struct gen_pool *pool, unsigned long addr, size_t size).
->
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ drivers/misc/cxl/irq.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Yes, I see now what you are doing.
-  
->>
->>
->> Thanks,
->> Laura
-> Thanks
-> Zhao
->
-
-Thanks,
-Laura
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index c8f1f9d..e8b887e 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -421,6 +421,9 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
+ 	int rc, r, i, j = 1;
+ 	struct cxl_irq_name *irq_name;
+ 
++	/* Initialize the list head to hold irq names */
++	INIT_LIST_HEAD(&ctx->irq_names);
++
+ 	if ((rc = cxl_alloc_irq_ranges(&ctx->irqs, ctx->afu->adapter, count)))
+ 		return rc;
+ 
+@@ -432,13 +435,12 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
+ 	ctx->irq_bitmap = kcalloc(BITS_TO_LONGS(count),
+ 				  sizeof(*ctx->irq_bitmap), GFP_KERNEL);
+ 	if (!ctx->irq_bitmap)
+-		return -ENOMEM;
++		goto out;
+ 
+ 	/*
+ 	 * Allocate names first.  If any fail, bail out before allocating
+ 	 * actual hardware IRQs.
+ 	 */
+-	INIT_LIST_HEAD(&ctx->irq_names);
+ 	for (r = 1; r < CXL_IRQ_RANGES; r++) {
+ 		for (i = 0; i < ctx->irqs.range[r]; i++) {
+ 			irq_name = kmalloc(sizeof(struct cxl_irq_name),
+@@ -460,6 +462,7 @@ int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
+ 	return 0;
+ 
+ out:
++	cxl_release_irq_ranges(&ctx->irqs, ctx->afu->adapter);
+ 	afu_irq_name_free(ctx);
+ 	return -ENOMEM;
+ }
+-- 
+2.2.1
