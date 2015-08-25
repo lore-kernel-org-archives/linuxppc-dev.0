@@ -1,23 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BC311A0E5F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 11:57:55 +1000 (AEST)
-Message-ID: <1440467874.16933.1.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 14/17] powerpc/book3e-64/kexec: Enable SMP release
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Tiejun Chen <tiejun.chen@intel.com>,
- kexec@lists.infradead.org
-Date: Tue, 25 Aug 2015 11:57:54 +1000
-In-Reply-To: <1440447948.30043.36.camel@freescale.com>
-References: <1437250134-307-1-git-send-email-scottwood@freescale.com>
- <1437250134-307-15-git-send-email-scottwood@freescale.com>
- <1440046447.13406.15.camel@ellerman.id.au>
- <1440447948.30043.36.camel@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8FA2F1A0138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 12:40:24 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Laura Abbott <labbott@redhat.com>, Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH v6 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Tue, 25 Aug 2015 02:40:09 +0000
+Message-ID: <SN1PR0301MB155021CDD677EFB6D1EAE79F9B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
+ <55DBA477.5020608@redhat.com>
+In-Reply-To: <55DBA477.5020608@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,91 +30,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-08-24 at 15:25 -0500, Scott Wood wrote:
-> On Thu, 2015-08-20 at 14:54 +1000, Michael Ellerman wrote:
-> > Hi Scott,
-> > 
-> > Sorry for the delay. So I'm back to square one on this patch.
-> > 
-> > On Sat, 2015-07-18 at 15:08 -0500, Scott Wood wrote:
-> > > booted_from_exec is similar to __run_at_load, except that it is set for
-> > > regular kexec as well as kdump.
-> > > 
-> > > The flag is needed because the SMP release mechanism for FSL book3e is
-> > > different from when booting with normal hardware.  In theory we could
-> > > simulate the normal spin table mechanism, but not at the addresses
-> > > U-Boot put in the device tree -- so there'd need to be even more
-> > > communication between the kernel and kexec to set that up.  Since
-> > > there's already a similar flag being set (for kdump only), this seemed
-> > > like a reasonable approach.
-> > 
-> > Although this is a reasonable approach, I don't think it's the best 
-> > approach.
-> > 
-> > AFAICS there's no reason why we can't use a device tree property for this, 
-> > so I think we should do that.
-> 
-> OK, I'll look into that.
+On 08/25/2015 07:11 AM, Laura Abbott wrote:
+> -----Original Message-----
+> From: Laura Abbott [mailto:labbott@redhat.com]
+> Sent: Tuesday, August 25, 2015 7:11 AM
+> To: Zhao Qiang-B45475; Wood Scott-B07421
+> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> Yang-Leo-R58472; paulus@samba.org
+> Subject: Re: [PATCH v6 1/3] genalloc:support memory-allocation with
+> bytes-alignment to genalloc
+>=20
+> On 08/24/2015 02:31 AM, Zhao Qiang wrote:
+> > Bytes alignment is required to manage some special RAM, so add
+> > gen_pool_first_fit_align to genalloc, meanwhile add
+> > gen_pool_alloc_data to pass data to gen_pool_first_fit_align(modify
+> > gen_pool_alloc as a wrapper)
+> >
+> > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > ---
+> > Changes for v6:
+> > 	- patches set v6 include a new patch because of using
+> > 	- genalloc to manage QE MURAM, patch 0001 is the new
+> > 	- patch, adding bytes alignment for allocation for use.
+> >
+> >   include/linux/genalloc.h | 23 +++++++++++++++----
+> >   lib/genalloc.c           | 58
+> +++++++++++++++++++++++++++++++++++++++++++-----
+> >   2 files changed, 72 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h index
+> > 1ccaab4..55da07e 100644
+> > --- a/include/linux/genalloc.h
+> > +++ b/include/linux/genalloc.h
+> > @@ -34,6 +34,7 @@
+> >
+> >   struct device;
+> >   struct device_node;
+> > +struct gen_pool;
+> >
+> >   /**
+> >    * Allocation callback function type definition @@ -47,7 +48,7 @@
+> > typedef unsigned long (*genpool_algo_t)(unsigned long *map,
+> >   			unsigned long size,
+> >   			unsigned long start,
+> >   			unsigned int nr,
+> > -			void *data);
+> > +			void *data, struct gen_pool *pool);
+> >
+> >   /*
+> >    *  General purpose special memory pool descriptor.
+> > @@ -73,6 +74,13 @@ struct gen_pool_chunk {
+> >   	unsigned long bits[0];		/* bitmap for allocating memory chunk
+> */
+> >   };
+> >
+> > +/*
+> > + *  gen_pool data descriptor for gen_pool_first_fit_align.
+> > + */
+> > +struct genpool_data_align {
+> > +	int align;		/* alignment by bytes for starting address */
+> > +};
+> > +
+>=20
+> (sorry for chiming in late, I've been traveling)
+>=20
+> Is there an advantage here to wrapping this in a structure instead of
+> just passing a pointer to an align integer?
 
-Thanks.
 
-> > > diff --git a/arch/powerpc/platforms/85xx/smp.c 
-> > > b/arch/powerpc/platforms/85xx/smp.c
-> > > index 5152289..4abda43 100644
-> > > --- a/arch/powerpc/platforms/85xx/smp.c
-> > > +++ b/arch/powerpc/platforms/85xx/smp.c
-> > > @@ -305,10 +310,13 @@ static int smp_85xx_kick_cpu(int nr)
-> > >             __secondary_hold_acknowledge = -1;
-> > >     }
-> > >  #endif
-> > > -   flush_spin_table(spin_table);
-> > > -   out_be32(&spin_table->pir, hw_cpu);
-> > > -   out_be32(&spin_table->addr_l, __pa(__early_start));
-> > > -   flush_spin_table(spin_table);
-> > > +
-> > > +   if (have_spin_table) {
-> > > +           flush_spin_table(spin_table);
-> > > +           out_be32(&spin_table->pir, hw_cpu);
-> > > +           out_be32(&spin_table->addr_l, __pa(__early_start));
-> > > +           flush_spin_table(spin_table);
-> > > +   }
-> > >  
-> > >     /* Wait a bit for the CPU to ack. */
-> > >     if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
-> > 
-> > This looks like it's inside an #ifdef CONFIG_PPC32 block, which doesn't make
-> > sense, so I must be missing a lead-up patch or something? (I looked on the 
-> > list
-> > but didn't find anything immediately)
-> 
-> Thanks for catching this.
-> 
-> This is apparently a mismerge due to the code having been previously worked 
-> on in the context of the SDK tree, which does not have that code inside 
-> #ifdef CONFIG_PPC32.  When I then applied the result to mainline, everything 
-> still appeared to work, because there's no real consequence to writing to the 
-> spin table in this case -- it's just a no-op.  
+Please look at the commit message for
+ca279cf1065fb689abea1dc7d8c11787729bb185 which adds "data":
 
-Aha, that's good, I stared at it for ages thinking I was going mad, but I wasn't!
+"As I can't predict all the possible requirements/needs for all allocation =
+  =20
+uses cases, I add a "free" field 'void *data' to pass any needed    =20
+information to the allocation function.  For example 'data' could be used  =
+  =20
+to handle a structure where you store the alignment, the expected memory   =
+ =20
+bank, the requester device, or any information that could influence the    =
+=20
+allocation algorithm."
 
-> setup_64.c is the part where checking booted_from_kexec (or devicetree
-> equivalent) really matters.
-
-OK. Can we avoid that too?
-
-All smp_release_cpus() does is whack __secondary_hold_spinloop and then spin
-for a while. For the non-kexec case writing to __secondary_hold_spinloop should
-be harmless I think, so the only problem is we'll get stuck for a while in the
-udelay() loop.
-
-But you could avoid that by preemptively setting spinning_secondaries to 0 in
-platform code.
-
-That'd have to be in ppc_md.init_early(), but that's actually not very early,
-the device tree is already unflattened.
-
-I guess it's arguable whether that's more or less horrible than adding an
-#ifdef'ed booted_from_kexec check, but I think I'd prefer the
-spinning_secondaries solution.
-
-cheers
+>=20
+> Thanks,
+> Laura
+-Zhao=20
