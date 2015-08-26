@@ -1,16 +1,16 @@
 Return-Path: <chenhui.zhao@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0101.outbound.protection.outlook.com [65.55.169.101])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0110.outbound.protection.outlook.com [157.56.111.110])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 60F321A077B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:09:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED9941A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:10:00 +1000 (AEST)
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, <Jason.Jin@freescale.com>
-Subject: [PATCH v2,2/5] powerpc/rcpm: add RCPM driver
-Date: Wed, 26 Aug 2015 20:09:45 +0800
-Message-ID: <1440590988-25594-2-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v2,3/5] Powerpc: mpc85xx: refactor the PM operations
+Date: Wed, 26 Aug 2015 20:09:46 +0800
+Message-ID: <1440590988-25594-3-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -24,321 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a RCPM (Run Control/Power Management) in Freescale QorIQ
-series processors. The device performs tasks associated with device
-run control and power management.
-
-The driver implements some features: mask/unmask irq, enter/exit low
-power states, freeze time base, etc.
+Freescale CoreNet-based and Non-CoreNet-based platforms require
+different PM operations. This patch extracted existing PM operations
+on Non-CoreNet-based platforms to a new file which can accommodate
+both platforms.
+In this way, PM operation codes are clearer structurally.
 
 Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Tang Yuantian <Yuantian.Tang@feescale.com>
 ---
 major changes for v2:
-* rcpm_v1_cpu_die() and rcpm_v2_cpu_die() will be executed by the dying cpu.
-  this way, more stable
+* moved mpc85xx_cpu_die()
+* added qoriq_pm_ops->cpu_die() in smp_85xx_mach_cpu_die(). it puts the dying
+  cpu in a low power mode
 
- Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  44 +++
- arch/powerpc/include/asm/fsl_guts.h                | 105 ++++++
- arch/powerpc/include/asm/fsl_pm.h                  |  50 +++
- arch/powerpc/platforms/85xx/Kconfig                |   1 +
- arch/powerpc/platforms/85xx/common.c               |   3 +
- arch/powerpc/sysdev/Kconfig                        |   5 +
- arch/powerpc/sysdev/Makefile                       |   1 +
- arch/powerpc/sysdev/fsl_rcpm.c                     | 390 +++++++++++++++++++++
- 8 files changed, 599 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/rcpm.txt
- create mode 100644 arch/powerpc/include/asm/fsl_pm.h
- create mode 100644 arch/powerpc/sysdev/fsl_rcpm.c
+ arch/powerpc/platforms/85xx/Makefile         |   1 +
+ arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c | 106 +++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/smp.c            |  74 +++++--------------
+ arch/powerpc/platforms/85xx/smp.h            |   1 +
+ 4 files changed, 127 insertions(+), 55 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
 
-diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-new file mode 100644
-index 0000000..dc52f70
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-@@ -0,0 +1,44 @@
-+* Run Control and Power Management
-+
-+The RCPM performs all device-level tasks associated with device run control
-+and power management.
-+
-+Required properites:
-+  - reg : Offset and length of the register set of RCPM block.
-+  - compatible : Sould contain a chip-specific RCPM block compatible string
-+	and (if applicable) may contain a chassis-version RCPM compatible string.
-+	Chip-specific strings are of the form "fsl,<chip>-rcpm", such as:
-+	* "fsl,p2041-rcpm"
-+	* "fsl,p3041-rcpm"
-+	* "fsl,p4080-rcpm"
-+	* "fsl,p5020-rcpm"
-+	* "fsl,p5040-rcpm"
-+	* "fsl,t4240-rcpm"
-+	* "fsl,b4420-rcpm"
-+	* "fsl,b4860-rcpm"
-+
-+	Chassis-version RCPM strings include:
-+	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
-+	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
-+	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
-+
-+All references to "1.0" and "2.0" refer to the QorIQ chassis version to
-+which the chip complies.
-+Chassis Version		Example Chips
-+---------------		-------------------------------
-+1.0					p4080, p5020, p5040, p2041, p3041
-+2.0					t4240, b4860, b4420
-+2.1					t1040
-+
-+Example:
-+The RCPM node for T4240:
-+	rcpm: global-utilities@e2000 {
-+		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
-+		reg = <0xe2000 0x1000>;
-+	};
-+
-+The RCPM node for P4080:
-+	rcpm: global-utilities@e2000 {
-+		compatible = "fsl,qoriq-rcpm-1.0";
-+		reg = <0xe2000 0x1000>;
-+	};
-diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
-index 43b6bb1..a67413c 100644
---- a/arch/powerpc/include/asm/fsl_guts.h
-+++ b/arch/powerpc/include/asm/fsl_guts.h
-@@ -188,5 +188,110 @@ static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 1fe7fb9..7bc86da 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -2,6 +2,7 @@
+ # Makefile for the PowerPC 85xx linux kernel.
+ #
+ obj-$(CONFIG_SMP) += smp.o
++obj-$(CONFIG_FSL_PMC)		  += mpc85xx_pm_ops.o
  
- #endif
+ obj-y += common.o
  
-+struct ccsr_rcpm_v1 {
-+	u8	res0000[4];
-+	__be32	cdozsr;	    /* 0x0004 Core Doze Status Register */
-+	u8	res0008[4];
-+	__be32	cdozcr;	    /* 0x000c Core Doze Control Register */
-+	u8	res0010[4];
-+	__be32	cnapsr;	    /* 0x0014 Core Nap Status Register */
-+	u8	res0018[4];
-+	__be32	cnapcr;	    /* 0x001c Core Nap Control Register */
-+	u8	res0020[4];
-+	__be32	cdozpsr;    /* 0x0024 Core Doze Previous Status Register */
-+	u8	res0028[4];
-+	__be32	cnappsr;    /* 0x002c Core Nap Previous Status Register */
-+	u8	res0030[4];
-+	__be32	cwaitsr;    /* 0x0034 Core Wait Status Register */
-+	u8	res0038[4];
-+	__be32	cwdtdsr;    /* 0x003c Core Watchdog Detect Status Register */
-+	__be32	powmgtcsr;  /* 0x0040 PM Control&Status Register */
-+#define RCPM_POWMGTCSR_SLP	0x00020000
-+	u8	res0044[12];
-+	__be32	ippdexpcr;  /* 0x0050 IP Powerdown Exception Control Register */
-+	u8	res0054[16];
-+	__be32	cpmimr;	    /* 0x0064 Core PM IRQ Mask Register */
-+	u8	res0068[4];
-+	__be32	cpmcimr;    /* 0x006c Core PM Critical IRQ Mask Register */
-+	u8	res0070[4];
-+	__be32	cpmmcmr;    /* 0x0074 Core PM Machine Check Mask Register */
-+	u8	res0078[4];
-+	__be32	cpmnmimr;   /* 0x007c Core PM NMI Mask Register */
-+	u8	res0080[4];
-+	__be32	ctbenr;	    /* 0x0084 Core Time Base Enable Register */
-+	u8	res0088[4];
-+	__be32	ctbckselr;  /* 0x008c Core Time Base Clock Select Register */
-+	u8	res0090[4];
-+	__be32	ctbhltcr;   /* 0x0094 Core Time Base Halt Control Register */
-+	u8	res0098[4];
-+	__be32	cmcpmaskcr; /* 0x00a4 Core Machine Check Mask Register */
-+};
-+
-+struct ccsr_rcpm_v2 {
-+	u8	res_00[12];
-+	__be32	tph10sr0;	/* Thread PH10 Status Register */
-+	u8	res_10[12];
-+	__be32	tph10setr0;	/* Thread PH10 Set Control Register */
-+	u8	res_20[12];
-+	__be32	tph10clrr0;	/* Thread PH10 Clear Control Register */
-+	u8	res_30[12];
-+	__be32	tph10psr0;	/* Thread PH10 Previous Status Register */
-+	u8	res_40[12];
-+	__be32	twaitsr0;	/* Thread Wait Status Register */
-+	u8	res_50[96];
-+	__be32	pcph15sr;	/* Physical Core PH15 Status Register */
-+	__be32	pcph15setr;	/* Physical Core PH15 Set Control Register */
-+	__be32	pcph15clrr;	/* Physical Core PH15 Clear Control Register */
-+	__be32	pcph15psr;	/* Physical Core PH15 Prev Status Register */
-+	u8	res_c0[16];
-+	__be32	pcph20sr;	/* Physical Core PH20 Status Register */
-+	__be32	pcph20setr;	/* Physical Core PH20 Set Control Register */
-+	__be32	pcph20clrr;	/* Physical Core PH20 Clear Control Register */
-+	__be32	pcph20psr;	/* Physical Core PH20 Prev Status Register */
-+	__be32	pcpw20sr;	/* Physical Core PW20 Status Register */
-+	u8	res_e0[12];
-+	__be32	pcph30sr;	/* Physical Core PH30 Status Register */
-+	__be32	pcph30setr;	/* Physical Core PH30 Set Control Register */
-+	__be32	pcph30clrr;	/* Physical Core PH30 Clear Control Register */
-+	__be32	pcph30psr;	/* Physical Core PH30 Prev Status Register */
-+	u8	res_100[32];
-+	__be32	ippwrgatecr;	/* IP Power Gating Control Register */
-+	u8	res_124[12];
-+	__be32	powmgtcsr;	/* Power Management Control & Status Reg */
-+#define RCPM_POWMGTCSR_LPM20_RQ		0x00100000
-+#define RCPM_POWMGTCSR_LPM20_ST		0x00000200
-+#define RCPM_POWMGTCSR_P_LPM20_ST	0x00000100
-+	u8	res_134[12];
-+	__be32	ippdexpcr[4];	/* IP Powerdown Exception Control Reg */
-+	u8	res_150[12];
-+	__be32	tpmimr0;	/* Thread PM Interrupt Mask Reg */
-+	u8	res_160[12];
-+	__be32	tpmcimr0;	/* Thread PM Crit Interrupt Mask Reg */
-+	u8	res_170[12];
-+	__be32	tpmmcmr0;	/* Thread PM Machine Check Interrupt Mask Reg */
-+	u8	res_180[12];
-+	__be32	tpmnmimr0;	/* Thread PM NMI Mask Reg */
-+	u8	res_190[12];
-+	__be32	tmcpmaskcr0;	/* Thread Machine Check Mask Control Reg */
-+	__be32	pctbenr;	/* Physical Core Time Base Enable Reg */
-+	__be32	pctbclkselr;	/* Physical Core Time Base Clock Select */
-+	__be32	tbclkdivr;	/* Time Base Clock Divider Register */
-+	u8	res_1ac[4];
-+	__be32	ttbhltcr[4];	/* Thread Time Base Halt Control Register */
-+	__be32	clpcl10sr;	/* Cluster PCL10 Status Register */
-+	__be32	clpcl10setr;	/* Cluster PCL30 Set Control Register */
-+	__be32	clpcl10clrr;	/* Cluster PCL30 Clear Control Register */
-+	__be32	clpcl10psr;	/* Cluster PCL30 Prev Status Register */
-+	__be32	cddslpsetr;	/* Core Domain Deep Sleep Set Register */
-+	__be32	cddslpclrr;	/* Core Domain Deep Sleep Clear Register */
-+	__be32	cdpwroksetr;	/* Core Domain Power OK Set Register */
-+	__be32	cdpwrokclrr;	/* Core Domain Power OK Clear Register */
-+	__be32	cdpwrensr;	/* Core Domain Power Enable Status Register */
-+	__be32	cddslsr;	/* Core Domain Deep Sleep Status Register */
-+	u8	res_1e8[8];
-+	__be32	dslpcntcr[8];	/* Deep Sleep Counter Cfg Register */
-+	u8	res_300[3568];
-+};
-+
- #endif
- #endif
-diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
 new file mode 100644
-index 0000000..3a36622
+index 0000000..ed356dd
 --- /dev/null
-+++ b/arch/powerpc/include/asm/fsl_pm.h
-@@ -0,0 +1,50 @@
++++ b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
+@@ -0,0 +1,106 @@
 +/*
-+ * Support Power Management
++ * MPC85xx PM operators
 + *
-+ * Copyright 2014-2015 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#ifndef __PPC_FSL_PM_H
-+#define __PPC_FSL_PM_H
-+#ifdef __KERNEL__
-+
-+#define E500_PM_PH10	1
-+#define E500_PM_PH15	2
-+#define E500_PM_PH20	3
-+#define E500_PM_PH30	4
-+#define E500_PM_DOZE	E500_PM_PH10
-+#define E500_PM_NAP	E500_PM_PH15
-+
-+#define PLAT_PM_SLEEP	20
-+#define PLAT_PM_LPM20	30
-+
-+#define FSL_PM_SLEEP		(1 << 0)
-+#define FSL_PM_DEEP_SLEEP	(1 << 1)
-+
-+struct fsl_pm_ops {
-+	/* mask pending interrupts to the RCPM from MPIC */
-+	void (*irq_mask)(int cpu);
-+
-+	/* unmask pending interrupts to the RCPM from MPIC */
-+	void (*irq_unmask)(int cpu);
-+	void (*cpu_enter_state)(int cpu, int state);
-+	void (*cpu_exit_state)(int cpu, int state);
-+	void (*cpu_up_prepare)(int cpu);
-+	void (*cpu_die)(int cpu);
-+	int (*plat_enter_sleep)(void);
-+	void (*freeze_time_base)(bool freeze);
-+
-+	/* keep the power of IP blocks during sleep/deep sleep */
-+	void (*set_ip_power)(bool enable, u32 mask);
-+
-+	/* get platform supported power management modes */
-+	unsigned int (*get_pm_modes)(void);
-+};
-+
-+extern const struct fsl_pm_ops *qoriq_pm_ops;
-+#endif /* __KERNEL__ */
-+#endif /* __PPC_FSL_PM_H */
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 97915fe..e626461 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -8,6 +8,7 @@ menuconfig FSL_SOC_BOOKE
- 	select FSL_PCI if PCI
- 	select SERIAL_8250_EXTENDED if SERIAL_8250
- 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
-+	select FSL_CORENET_RCPM if PPC_E500MC
- 	default y
- 
- if FSL_SOC_BOOKE
-diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
-index 7bfb9b1..91475f5 100644
---- a/arch/powerpc/platforms/85xx/common.c
-+++ b/arch/powerpc/platforms/85xx/common.c
-@@ -10,10 +10,13 @@
- #include <linux/of_platform.h>
- 
- #include <asm/qe.h>
-+#include <asm/fsl_pm.h>
- #include <sysdev/cpm2_pic.h>
- 
- #include "mpc85xx.h"
- 
-+const struct fsl_pm_ops *qoriq_pm_ops;
-+
- static const struct of_device_id mpc85xx_common_ids[] __initconst = {
- 	{ .type = "soc", },
- 	{ .compatible = "soc", },
-diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
-index a19332a..52dc165 100644
---- a/arch/powerpc/sysdev/Kconfig
-+++ b/arch/powerpc/sysdev/Kconfig
-@@ -40,3 +40,8 @@ config SCOM_DEBUGFS
- config GE_FPGA
- 	bool
- 	default n
-+
-+config FSL_CORENET_RCPM
-+	bool
-+	help
-+	  This option enables support for RCPM (Run Control/Power Management).
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 5b492a6..d0e8a43 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
- obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
- obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
-+obj-$(CONFIG_FSL_CORENET_RCPM)	+= fsl_rcpm.o
- obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
- obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
- obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
-diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
-new file mode 100644
-index 0000000..ed59881
---- /dev/null
-+++ b/arch/powerpc/sysdev/fsl_rcpm.c
-@@ -0,0 +1,390 @@
-+/*
-+ * RCPM(Run Control/Power Management) support
-+ *
-+ * Copyright 2012-2015 Freescale Semiconductor Inc.
-+ *
-+ * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
++ * Copyright 2015 Freescale Semiconductor Inc.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -348,380 +76,272 @@ index 0000000..ed59881
 +
 +#define pr_fmt(fmt) "%s: " fmt, __func__
 +
-+#include <linux/types.h>
-+#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
 +#include <linux/of_address.h>
-+#include <linux/export.h>
 +
 +#include <asm/io.h>
 +#include <asm/fsl_guts.h>
-+#include <asm/cputhreads.h>
 +#include <asm/fsl_pm.h>
 +
-+static struct ccsr_rcpm_v1 __iomem *rcpm_v1_regs;
-+static struct ccsr_rcpm_v2 __iomem *rcpm_v2_regs;
-+static unsigned int fsl_supported_pm_modes;
++static struct ccsr_guts __iomem *guts;
 +
-+static void rcpm_v1_irq_mask(int cpu)
++static void mpc85xx_irq_mask(int cpu)
 +{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	unsigned int mask = 1 << hw_cpu;
 +
-+	setbits32(&rcpm_v1_regs->cpmimr, mask);
-+	setbits32(&rcpm_v1_regs->cpmcimr, mask);
-+	setbits32(&rcpm_v1_regs->cpmmcmr, mask);
-+	setbits32(&rcpm_v1_regs->cpmnmimr, mask);
 +}
 +
-+static void rcpm_v2_irq_mask(int cpu)
++static void mpc85xx_irq_unmask(int cpu)
 +{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	unsigned int mask = 1 << hw_cpu;
 +
-+	setbits32(&rcpm_v2_regs->tpmimr0, mask);
-+	setbits32(&rcpm_v2_regs->tpmcimr0, mask);
-+	setbits32(&rcpm_v2_regs->tpmmcmr0, mask);
-+	setbits32(&rcpm_v2_regs->tpmnmimr0, mask);
 +}
 +
-+static void rcpm_v1_irq_unmask(int cpu)
++static void mpc85xx_cpu_die(int cpu)
 +{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	unsigned int mask = 1 << hw_cpu;
++	u32 tmp;
 +
-+	clrbits32(&rcpm_v1_regs->cpmimr, mask);
-+	clrbits32(&rcpm_v1_regs->cpmcimr, mask);
-+	clrbits32(&rcpm_v1_regs->cpmmcmr, mask);
-+	clrbits32(&rcpm_v1_regs->cpmnmimr, mask);
++	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
++	mtspr(SPRN_HID0, tmp);
++
++	/* Enter NAP mode. */
++	tmp = mfmsr();
++	tmp |= MSR_WE;
++	asm volatile(
++		"msync\n"
++		"mtmsr %0\n"
++		"isync\n"
++		:
++		: "r" (tmp));
 +}
 +
-+static void rcpm_v2_irq_unmask(int cpu)
++static void mpc85xx_cpu_up_prepare(int cpu)
 +{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	unsigned int mask = 1 << hw_cpu;
 +
-+	clrbits32(&rcpm_v2_regs->tpmimr0, mask);
-+	clrbits32(&rcpm_v2_regs->tpmcimr0, mask);
-+	clrbits32(&rcpm_v2_regs->tpmmcmr0, mask);
-+	clrbits32(&rcpm_v2_regs->tpmnmimr0, mask);
 +}
 +
-+static void rcpm_v1_set_ip_power(bool enable, u32 mask)
++static void mpc85xx_freeze_time_base(bool freeze)
 +{
-+	if (enable)
-+		setbits32(&rcpm_v1_regs->ippdexpcr, mask);
++	uint32_t mask;
++
++	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
++	if (freeze)
++		setbits32(&guts->devdisr, mask);
 +	else
-+		clrbits32(&rcpm_v1_regs->ippdexpcr, mask);
++		clrbits32(&guts->devdisr, mask);
++
++	in_be32(&guts->devdisr);
 +}
 +
-+static void rcpm_v2_set_ip_power(bool enable, u32 mask)
-+{
-+	if (enable)
-+		setbits32(&rcpm_v2_regs->ippdexpcr[0], mask);
-+	else
-+		clrbits32(&rcpm_v2_regs->ippdexpcr[0], mask);
-+}
-+
-+static void rcpm_v1_cpu_enter_state(int cpu, int state)
-+{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	unsigned int mask = 1 << hw_cpu;
-+
-+	switch (state) {
-+	case E500_PM_PH10:
-+		setbits32(&rcpm_v1_regs->cdozcr, mask);
-+		break;
-+	case E500_PM_PH15:
-+		setbits32(&rcpm_v1_regs->cnapcr, mask);
-+		break;
-+	default:
-+		pr_warn("Unknown cpu PM state (%d)\n", state);
-+		break;
-+	}
-+}
-+
-+static void rcpm_v2_cpu_enter_state(int cpu, int state)
-+{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	u32 mask = 1 << cpu_core_index_of_thread(hw_cpu);
-+
-+	switch (state) {
-+	case E500_PM_PH10:
-+		/* one bit corresponds to one thread for PH10 of 6500 */
-+		setbits32(&rcpm_v2_regs->tph10setr0, 1 << hw_cpu);
-+		break;
-+	case E500_PM_PH15:
-+		setbits32(&rcpm_v2_regs->pcph15setr, mask);
-+		break;
-+	case E500_PM_PH20:
-+		setbits32(&rcpm_v2_regs->pcph20setr, mask);
-+		break;
-+	case E500_PM_PH30:
-+		setbits32(&rcpm_v2_regs->pcph30setr, mask);
-+		break;
-+	default:
-+		pr_warn("Unknown cpu PM state (%d)\n", state);
-+	}
-+}
-+
-+static void rcpm_v1_cpu_die(int cpu)
-+{
-+	rcpm_v1_cpu_enter_state(cpu, E500_PM_PH15);
-+}
-+
-+#ifdef CONFIG_PPC_BOOK3E
-+static void qoriq_disable_thread(int cpu)
-+{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	int thread = cpu_thread_in_core(hw_cpu);
-+
-+	mtspr(SPRN_TENC, TEN_THREAD(thread));
-+}
-+#endif
-+
-+static void rcpm_v2_cpu_die(int cpu)
-+{
-+#ifdef CONFIG_PPC_BOOK3E
-+	int primary;
-+
-+	if (threads_per_core == 2) {
-+		primary = cpu_first_thread_sibling(cpu);
-+		if (cpu_is_offline(primary) && cpu_is_offline(primary + 1)) {
-+			/* if both threads are offline, put the cpu in PH20 */
-+			rcpm_v2_cpu_enter_state(cpu, E500_PM_PH20);
-+		} else {
-+			/* if only one thread is offline, disable the thread */
-+			qoriq_disable_thread(cpu);
-+		}
-+	}
-+#endif
-+
-+	if (threads_per_core == 1) {
-+		rcpm_v2_cpu_enter_state(cpu, E500_PM_PH20);
-+		return;
-+	}
-+}
-+
-+static void rcpm_v1_cpu_exit_state(int cpu, int state)
-+{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	unsigned int mask = 1 << hw_cpu;
-+
-+	switch (state) {
-+	case E500_PM_PH10:
-+		clrbits32(&rcpm_v1_regs->cdozcr, mask);
-+		break;
-+	case E500_PM_PH15:
-+		clrbits32(&rcpm_v1_regs->cnapcr, mask);
-+		break;
-+	default:
-+		pr_warn("Unknown cpu PM state (%d)\n", state);
-+		break;
-+	}
-+}
-+
-+static void rcpm_v1_cpu_up_prepare(int cpu)
-+{
-+	rcpm_v1_cpu_exit_state(cpu, E500_PM_PH15);
-+	rcpm_v1_irq_unmask(cpu);
-+}
-+
-+static void rcpm_v2_cpu_exit_state(int cpu, int state)
-+{
-+	int hw_cpu = get_hard_smp_processor_id(cpu);
-+	u32 mask = 1 << cpu_core_index_of_thread(hw_cpu);
-+
-+	switch (state) {
-+	case E500_PM_PH10:
-+		setbits32(&rcpm_v2_regs->tph10clrr0, 1 << hw_cpu);
-+		break;
-+	case E500_PM_PH15:
-+		setbits32(&rcpm_v2_regs->pcph15clrr, mask);
-+		break;
-+	case E500_PM_PH20:
-+		setbits32(&rcpm_v2_regs->pcph20clrr, mask);
-+		break;
-+	case E500_PM_PH30:
-+		setbits32(&rcpm_v2_regs->pcph30clrr, mask);
-+		break;
-+	default:
-+		pr_warn("Unknown cpu PM state (%d)\n", state);
-+	}
-+}
-+
-+static void rcpm_v2_cpu_up_prepare(int cpu)
-+{
-+	rcpm_v2_cpu_exit_state(cpu, E500_PM_PH20);
-+	rcpm_v2_irq_unmask(cpu);
-+}
-+
-+static int rcpm_v1_plat_enter_state(int state)
-+{
-+	u32 *pmcsr_reg = &rcpm_v1_regs->powmgtcsr;
-+	int ret = 0;
-+	int result;
-+
-+	switch (state) {
-+	case PLAT_PM_SLEEP:
-+		setbits32(pmcsr_reg, RCPM_POWMGTCSR_SLP);
-+
-+		/* Upon resume, wait for RCPM_POWMGTCSR_SLP bit to be clear. */
-+		result = spin_event_timeout(
-+		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_SLP), 10000, 10);
-+		if (!result) {
-+			pr_err("timeout waiting for SLP bit to be cleared\n");
-+			ret = -ETIMEDOUT;
-+		}
-+		break;
-+	default:
-+		pr_warn("Unknown platform PM state (%d)", state);
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static int rcpm_v2_plat_enter_state(int state)
-+{
-+	u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
-+	int ret = 0;
-+	int result;
-+
-+	switch (state) {
-+	case PLAT_PM_LPM20:
-+		/* clear previous LPM20 status */
-+		setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
-+		/* enter LPM20 status */
-+		setbits32(pmcsr_reg, RCPM_POWMGTCSR_LPM20_RQ);
-+
-+		/* At this point, the device is in LPM20 status. */
-+
-+		/* resume ... */
-+		result = spin_event_timeout(
-+		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_LPM20_ST), 10000, 10);
-+		if (!result) {
-+			pr_err("timeout waiting for LPM20 bit to be cleared\n");
-+			ret = -ETIMEDOUT;
-+		}
-+		break;
-+	default:
-+		pr_warn("Unknown platform PM state (%d)\n", state);
-+		ret = -EINVAL;
-+	}
-+
-+	return ret;
-+}
-+
-+static int rcpm_v1_plat_enter_sleep(void)
-+{
-+	return rcpm_v1_plat_enter_state(PLAT_PM_SLEEP);
-+}
-+
-+static int rcpm_v2_plat_enter_sleep(void)
-+{
-+	return rcpm_v2_plat_enter_state(PLAT_PM_LPM20);
-+}
-+
-+static void rcpm_common_freeze_time_base(u32 *tben_reg, int freeze)
-+{
-+	static u32 mask;
-+
-+	if (freeze) {
-+		mask = in_be32(tben_reg);
-+		clrbits32(tben_reg, mask);
-+	} else {
-+		setbits32(tben_reg, mask);
-+	}
-+
-+	/* read back to push the previous write */
-+	in_be32(tben_reg);
-+}
-+
-+static void rcpm_v1_freeze_time_base(bool freeze)
-+{
-+	rcpm_common_freeze_time_base(&rcpm_v1_regs->ctbenr, freeze);
-+}
-+
-+static void rcpm_v2_freeze_time_base(bool freeze)
-+{
-+	rcpm_common_freeze_time_base(&rcpm_v2_regs->pctbenr, freeze);
-+}
-+
-+static unsigned int rcpm_get_pm_modes(void)
-+{
-+	return fsl_supported_pm_modes;
-+}
-+
-+static const struct fsl_pm_ops qoriq_rcpm_v1_ops = {
-+	.irq_mask = rcpm_v1_irq_mask,
-+	.irq_unmask = rcpm_v1_irq_unmask,
-+	.cpu_enter_state = rcpm_v1_cpu_enter_state,
-+	.cpu_exit_state = rcpm_v1_cpu_exit_state,
-+	.cpu_up_prepare = rcpm_v1_cpu_up_prepare,
-+	.cpu_die = rcpm_v1_cpu_die,
-+	.plat_enter_sleep = rcpm_v1_plat_enter_sleep,
-+	.set_ip_power = rcpm_v1_set_ip_power,
-+	.freeze_time_base = rcpm_v1_freeze_time_base,
-+	.get_pm_modes = rcpm_get_pm_modes,
-+};
-+
-+static const struct fsl_pm_ops qoriq_rcpm_v2_ops = {
-+	.irq_mask = rcpm_v2_irq_mask,
-+	.irq_unmask = rcpm_v2_irq_unmask,
-+	.cpu_enter_state = rcpm_v2_cpu_enter_state,
-+	.cpu_exit_state = rcpm_v2_cpu_exit_state,
-+	.cpu_up_prepare = rcpm_v2_cpu_up_prepare,
-+	.cpu_die = rcpm_v2_cpu_die,
-+	.plat_enter_sleep = rcpm_v2_plat_enter_sleep,
-+	.set_ip_power = rcpm_v2_set_ip_power,
-+	.freeze_time_base = rcpm_v2_freeze_time_base,
-+	.get_pm_modes = rcpm_get_pm_modes,
-+};
-+
-+static const struct of_device_id rcpm_matches[] = {
-+	{
-+		.compatible = "fsl,qoriq-rcpm-1.0",
-+		.data = (void *)&qoriq_rcpm_v1_ops,
-+	},
-+	{
-+		.compatible = "fsl,qoriq-rcpm-2.0",
-+		.data = (void *)&qoriq_rcpm_v2_ops,
-+	},
-+	{
-+		.compatible = "fsl,qoriq-rcpm-2.1",
-+		.data = (void *)&qoriq_rcpm_v2_ops,
-+	},
++static const struct of_device_id mpc85xx_smp_guts_ids[] = {
++	{ .compatible = "fsl,mpc8572-guts", },
++	{ .compatible = "fsl,p1020-guts", },
++	{ .compatible = "fsl,p1021-guts", },
++	{ .compatible = "fsl,p1022-guts", },
++	{ .compatible = "fsl,p1023-guts", },
++	{ .compatible = "fsl,p2020-guts", },
++	{ .compatible = "fsl,bsc9132-guts", },
 +	{},
 +};
 +
-+int __init fsl_rcpm_init(void)
++static const struct fsl_pm_ops mpc85xx_pm_ops = {
++	.freeze_time_base = mpc85xx_freeze_time_base,
++	.irq_mask = mpc85xx_irq_mask,
++	.irq_unmask = mpc85xx_irq_unmask,
++	.cpu_die = mpc85xx_cpu_die,
++	.cpu_up_prepare = mpc85xx_cpu_up_prepare,
++};
++
++int __init mpc85xx_setup_pmc(void)
 +{
 +	struct device_node *np;
-+	const struct of_device_id *match;
-+	void __iomem *base;
 +
-+	np = of_find_matching_node_and_match(NULL, rcpm_matches, &match);
-+	if (!np) {
-+		pr_err("can't find the rcpm node.\n");
-+		return -ENODEV;
++	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
++	if (np) {
++		guts = of_iomap(np, 0);
++		of_node_put(np);
++		if (!guts) {
++			pr_err("Could not map guts node address\n");
++			return -ENOMEM;
++		}
 +	}
 +
-+	base = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!base) {
-+		pr_err("of_iomap() error.\n");
-+		return -ENOMEM;
-+	}
-+
-+	rcpm_v1_regs = base;
-+	rcpm_v2_regs = base;
-+
-+	/* support sleep by default */
-+	fsl_supported_pm_modes = FSL_PM_SLEEP;
-+
-+	qoriq_pm_ops = match->data;
++	qoriq_pm_ops = &mpc85xx_pm_ops;
 +
 +	return 0;
 +}
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 0b75e8e..f9552b8 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -2,7 +2,7 @@
+  * Author: Andy Fleming <afleming@freescale.com>
+  * 	   Kumar Gala <galak@kernel.crashing.org>
+  *
+- * Copyright 2006-2008, 2011-2012 Freescale Semiconductor Inc.
++ * Copyright 2006-2008, 2011-2012, 2015 Freescale Semiconductor Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -15,7 +15,6 @@
+ #include <linux/init.h>
+ #include <linux/delay.h>
+ #include <linux/of.h>
+-#include <linux/of_address.h>
+ #include <linux/kexec.h>
+ #include <linux/highmem.h>
+ #include <linux/cpu.h>
+@@ -26,9 +25,9 @@
+ #include <asm/mpic.h>
+ #include <asm/cacheflush.h>
+ #include <asm/dbell.h>
+-#include <asm/fsl_guts.h>
+ #include <asm/code-patching.h>
+ #include <asm/cputhreads.h>
++#include <asm/fsl_pm.h>
+ 
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/mpic.h>
+@@ -43,24 +42,11 @@ struct epapr_spin_table {
+ 	u32	pir;
+ };
+ 
+-static struct ccsr_guts __iomem *guts;
++#ifdef CONFIG_HOTPLUG_CPU
+ static u64 timebase;
+ static int tb_req;
+ static int tb_valid;
+ 
+-static void mpc85xx_timebase_freeze(int freeze)
+-{
+-	uint32_t mask;
+-
+-	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
+-	if (freeze)
+-		setbits32(&guts->devdisr, mask);
+-	else
+-		clrbits32(&guts->devdisr, mask);
+-
+-	in_be32(&guts->devdisr);
+-}
+-
+ static void mpc85xx_give_timebase(void)
+ {
+ 	unsigned long flags;
+@@ -71,7 +57,7 @@ static void mpc85xx_give_timebase(void)
+ 		barrier();
+ 	tb_req = 0;
+ 
+-	mpc85xx_timebase_freeze(1);
++	qoriq_pm_ops->freeze_time_base(true);
+ #ifdef CONFIG_PPC64
+ 	/*
+ 	 * e5500/e6500 have a workaround for erratum A-006958 in place
+@@ -104,7 +90,7 @@ static void mpc85xx_give_timebase(void)
+ 	while (tb_valid)
+ 		barrier();
+ 
+-	mpc85xx_timebase_freeze(0);
++	qoriq_pm_ops->freeze_time_base(false);
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -126,31 +112,25 @@ static void mpc85xx_take_timebase(void)
+ 	local_irq_restore(flags);
+ }
+ 
+-#ifdef CONFIG_HOTPLUG_CPU
+ static void smp_85xx_mach_cpu_die(void)
+ {
+ 	unsigned int cpu = smp_processor_id();
+-	u32 tmp;
+ 
+ 	local_irq_disable();
++	hard_irq_disable();
++	/* mask all irqs to prevent cpu wakeup */
++	qoriq_pm_ops->irq_mask(cpu);
++
+ 	idle_task_exit();
+-	generic_set_cpu_dead(cpu);
+-	mb();
+ 
+ 	mtspr(SPRN_TCR, 0);
++	mtspr(SPRN_TSR, mfspr(SPRN_TSR));
+ 
+-	cur_cpu_spec->cpu_down_flush();
++	generic_set_cpu_dead(cpu);
+ 
+-	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
+-	mtspr(SPRN_HID0, tmp);
+-	isync();
++	cur_cpu_spec->cpu_down_flush();
+ 
+-	/* Enter NAP mode. */
+-	tmp = mfmsr();
+-	tmp |= MSR_WE;
+-	mb();
+-	mtmsr(tmp);
+-	isync();
++	qoriq_pm_ops->cpu_die(cpu);
+ 
+ 	while (1)
+ 		;
+@@ -398,16 +378,6 @@ static void smp_85xx_setup_cpu(int cpu_nr)
+ 	smp_85xx_basic_setup(cpu_nr);
+ }
+ 
+-static const struct of_device_id mpc85xx_smp_guts_ids[] = {
+-	{ .compatible = "fsl,mpc8572-guts", },
+-	{ .compatible = "fsl,p1020-guts", },
+-	{ .compatible = "fsl,p1021-guts", },
+-	{ .compatible = "fsl,p1022-guts", },
+-	{ .compatible = "fsl,p1023-guts", },
+-	{ .compatible = "fsl,p2020-guts", },
+-	{},
+-};
+-
+ void __init mpc85xx_smp_init(void)
+ {
+ 	struct device_node *np;
+@@ -431,22 +401,16 @@ void __init mpc85xx_smp_init(void)
+ 		smp_85xx_ops.probe = NULL;
+ 	}
+ 
+-	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
+-	if (np) {
+-		guts = of_iomap(np, 0);
+-		of_node_put(np);
+-		if (!guts) {
+-			pr_err("%s: Could not map guts node address\n",
+-								__func__);
+-			return;
+-		}
++#ifdef CONFIG_HOTPLUG_CPU
++#ifdef CONFIG_FSL_PMC
++	mpc85xx_setup_pmc();
++#endif
++	if (qoriq_pm_ops) {
+ 		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
+ 		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
+-#ifdef CONFIG_HOTPLUG_CPU
+ 		ppc_md.cpu_die = smp_85xx_mach_cpu_die;
+-#endif
+ 	}
+-
++#endif
+ 	smp_ops = &smp_85xx_ops;
+ 
+ #ifdef CONFIG_KEXEC
+diff --git a/arch/powerpc/platforms/85xx/smp.h b/arch/powerpc/platforms/85xx/smp.h
+index e2b4493..0b20ae3 100644
+--- a/arch/powerpc/platforms/85xx/smp.h
++++ b/arch/powerpc/platforms/85xx/smp.h
+@@ -5,6 +5,7 @@
+ 
+ #ifdef CONFIG_SMP
+ void __init mpc85xx_smp_init(void);
++int __init mpc85xx_setup_pmc(void);
+ #else
+ static inline void mpc85xx_smp_init(void)
+ {
 -- 
 1.9.1
