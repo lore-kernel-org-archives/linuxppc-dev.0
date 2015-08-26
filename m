@@ -1,21 +1,22 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0144.outbound.protection.outlook.com [207.46.100.144])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0118.outbound.protection.outlook.com [157.56.110.118])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 15F111A0D48
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 11:49:51 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4BB81A0D48
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 11:53:13 +1000 (AEST)
+Message-ID: <1440553979.16577.89.camel@freescale.com>
+Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage muram
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
 CC: Laura Abbott <labbott@redhat.com>, "linux-kernel@vger.kernel.org"
  <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
  <linuxppc-dev@lists.ozlabs.org>, "lauraa@codeaurora.org"
- <lauraa@codeaurora.org>, Xiaobo Xie <X.Xie@freescale.com>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, Li Leo
+ <lauraa@codeaurora.org>, Xie Xiaobo-R63061 <X.Xie@freescale.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, Li Yang-Leo-R58472
  <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage muram
-Date: Wed, 26 Aug 2015 01:49:38 +0000
-Message-ID: <SN1PR0301MB15500F5D6D59CB344A8BF9FE9B600@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Date: Tue, 25 Aug 2015 20:52:59 -0500
+In-Reply-To: <SN1PR0301MB15500F5D6D59CB344A8BF9FE9B600@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
  <1440408703-6113-3-git-send-email-qiang.zhao@freescale.com>
  <55DBA98D.1070202@redhat.com>
@@ -23,8 +24,8 @@ References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
  <55DBEBBE.30702@redhat.com>
  <SN1PR0301MB1550CE6B922CE64AA4F862759B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
  <1440519775.16577.4.camel@freescale.com>
-In-Reply-To: <1440519775.16577.4.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <SN1PR0301MB15500F5D6D59CB344A8BF9FE9B600@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,51 +36,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBXZWRuZXNkYXksIEF1Z3VzdCAyNiwgMjAxNSAxMjoyMyBBTQ0KPiBUbzogWmhhbyBR
-aWFuZy1CNDU0NzUNCj4gQ2M6IExhdXJhIEFiYm90dDsgbGludXgta2VybmVsQHZnZXIua2VybmVs
-Lm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBsYXVyYWFAY29kZWF1cm9y
-YS5vcmc7IFhpZSBYaWFvYm8tUjYzMDYxOw0KPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExp
-IFlhbmctTGVvLVI1ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENI
-IHY2IDMvM10gcWVfY29tbW9uOiBhZGQgcWVfbXVyYW1fIGZ1bmN0aW9ucyB0byBtYW5hZ2UNCj4g
-bXVyYW0NCj4gDQo+IE9uIFR1ZSwgMjAxNS0wOC0yNSBhdCAwMjoxOSAtMDUwMCwgWmhhbyBRaWFu
-Zy1CNDU0NzUgd3JvdGU6DQo+ID4gT24gMDgvMjUvMjAxNSAxMjoxNSBQTSwgTGF1cmEgQWJib3R0
-IHdyb3RlDQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogTGF1
-cmEgQWJib3R0IFttYWlsdG86bGFiYm90dEByZWRoYXQuY29tXQ0KPiA+ID4gU2VudDogVHVlc2Rh
-eSwgQXVndXN0IDI1LCAyMDE1IDEyOjE1IFBNDQo+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzU7
-IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-ZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiBsYXVyYWFAY29kZWF1cm9y
-YS5vcmc7IFhpZSBYaWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7DQo+ID4g
-PiBMaSBZYW5nLUxlby1SNTg0NzI7IHBhdWx1c0BzYW1iYS5vcmcNCj4gPiA+IFN1YmplY3Q6IFJl
-OiBbUEFUQ0ggdjYgMy8zXSBxZV9jb21tb246IGFkZCBxZV9tdXJhbV8gZnVuY3Rpb25zIHRvDQo+
-ID4gPiBtYW5hZ2UgbXVyYW0NCj4gPiA+DQo+ID4gPiBPbiAwOC8yNC8yMDE1IDA4OjAzIFBNLCBa
-aGFvIFFpYW5nIHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogTGF1cmEgQWJib3R0IFttYWlsdG86bGFiYm90dEByZWRo
-YXQuY29tXQ0KPiA+ID4gPiA+IFNlbnQ6IFR1ZXNkYXksIEF1Z3VzdCAyNSwgMjAxNSA3OjMyIEFN
-DQo+ID4gPiA+ID4gVG86IFpoYW8gUWlhbmctQjQ1NDc1OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+
-ID4gPiA+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZzsNCj4gPiA+ID4gPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBYaWFv
-Ym8tUjYzMDYxOw0KPiA+ID4gPiA+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkgWWFuZy1M
-ZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRD
-SCB2NiAzLzNdIHFlX2NvbW1vbjogYWRkIHFlX211cmFtXyBmdW5jdGlvbnMNCj4gPiA+ID4gPiB0
-byBtYW5hZ2UgbXVyYW0NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoZXJlIGRvZXNuJ3Qgc2VlbSB0
-byBiZSBhIGNoZWNrIGZvciBhbGxvY2F0aW9uIGZhaWx1cmUgZnJvbSB0aGUNCj4gPiA+ID4gPiBn
-ZW5fYWxsb2MuDQo+ID4gPiA+DQo+ID4gPiA+IGdlbl9wb29sX2FsbG9jIHdpbGwgcmV0dXJuIDAg
-aWYgdGhlcmUgaXMgZXJyb3IsIGJ1dCBpZiB0aGUgYWRkcmVzcw0KPiA+ID4gPiByZXR1cm5lZCBp
-cyBqdXN0IDB4MCwgaXQgY2FuJ3QgZGlzdGluZ3Vpc2ggaXQgaXMgYWRkcmVzcyBvciBlcnJvci4N
-Cj4gPiA+ID4NCj4gPiA+DQo+ID4gPiBZZXMsIHRoYXQncyBhIGJhZCBsaW1pdGF0aW9uIG9mIGdl
-bl9wb29sLiBNYXliZSBvbmUgZGF5IHRoYXQgd2lsbA0KPiA+ID4gZ2V0IGZpeGVkLg0KPiA+ID4g
-SW4gYSBwcmV2aW91cyBvdXQgb2YgdHJlZSBkcml2ZXIsIEkgd29ya2VkIGFyb3VuZCB0aGlzIGJ5
-IG9mZnNldHRpbmcNCj4gPiA+IHRoZSBnZW5fcG9vbF9hZGQgYnkgYSBjb25zdGFudCBzbyBhbnkg
-cmV0dXJuIHZhbHVlIHdhcyBub24temVybyBhbmQNCj4gPiA+IG91dCBvZiBtZW1vcnkgd2FzIHpl
-cm8gYW5kIHRoZW4gc3VidHJhY3RpbmcgdGhlIGNvbnN0YW50IG9mZiBvZiB0aGUNCj4gcmV0dXJu
-IHZhbHVlLg0KPiA+ID4gTm90IHN1cmUgaWYgdGhhdCdzIGJldHRlciBvciB3b3JzZSB0aGFuIGp1
-c3QgZml4aW5nIGdlbl9hbGxvYy4NCj4gPiA+DQo+ID4NCj4gPiBUaGUgd29ya2Fyb3VuZCB3b3Jr
-cyBmb3Igbm9uIGFsaWdubWVudCBhbGxvY2F0aW9uLCBidXQgZm9yIGFsaWdubWVudA0KPiA+IGFs
-bG9jYXRpb24sIEl0IG5lZWQgdG8gYWxpZ24gYnl0ZXMgdG8gYWRkciAwLCBvZmZzZXR0aW5nIHRo
-ZQ0KPiA+IGdlbl9wb29sX2FkZCBtYXliZSBtYWtlIHdyb25nIGFsaWdubWVudA0KPiANCj4gSXQg
-d291bGQgd29yayBpZiB0aGUgb2Zmc2V0IHlvdSBhZGQgaXMgYSBtdWx0aXBsZSBvZiB0aGUgc2l6
-ZSBvZiBtdXJhbS4NCg0KVGhlIFFFIGFwcHMgYXNrIGRpZmZlcmVudCBieXRlcyBhbGlnbm1lbnQg
-Zm9yIGRpZmZlcmVudCB1c2UgZHVlIHRvIGhhcmR3YXJlIHJlc3RyaWN0aW9uLg0KV2h5IGRvbuKA
-mXQgd2UgZGVhbCB3aXRoIGl0IGluIGdlbl9wb29sX2FsbG9jIGZ1bmMgaW5zdGVhZCBvZiBhIHdv
-cmthcm91bmQ/DQpJdCBpcyBtb3JlIHJlYXNvbmFibGUuDQoNCj4gDQo+IC1TY290dA0KDQo=
+On Tue, 2015-08-25 at 20:49 -0500, Zhao Qiang-B45475 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, August 26, 2015 12:23 AM
+> > To: Zhao Qiang-B45475
+> > Cc: Laura Abbott; linux-kernel@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org; lauraa@codeaurora.org; Xie Xiaobo-R63061;
+> > benh@kernel.crashing.org; Li Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage
+> > muram
+> > 
+> > On Tue, 2015-08-25 at 02:19 -0500, Zhao Qiang-B45475 wrote:
+> > > On 08/25/2015 12:15 PM, Laura Abbott wrote
+> > > > -----Original Message-----
+> > > > From: Laura Abbott [mailto:labbott@redhat.com]
+> > > > Sent: Tuesday, August 25, 2015 12:15 PM
+> > > > To: Zhao Qiang-B45475; Wood Scott-B07421
+> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
+> > > > Li Yang-Leo-R58472; paulus@samba.org
+> > > > Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions to
+> > > > manage muram
+> > > > 
+> > > > On 08/24/2015 08:03 PM, Zhao Qiang wrote:
+> > > > > 
+> > > > > > -----Original Message-----
+> > > > > > From: Laura Abbott [mailto:labbott@redhat.com]
+> > > > > > Sent: Tuesday, August 25, 2015 7:32 AM
+> > > > > > To: Zhao Qiang-B45475; Wood Scott-B07421
+> > > > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > > > lauraa@codeaurora.org; Xie Xiaobo-R63061;
+> > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472; paulus@samba.org
+> > > > > > Subject: Re: [PATCH v6 3/3] qe_common: add qe_muram_ functions
+> > > > > > to manage muram
+> > > > > > 
+> > > > > > There doesn't seem to be a check for allocation failure from the
+> > > > > > gen_alloc.
+> > > > > 
+> > > > > gen_pool_alloc will return 0 if there is error, but if the address
+> > > > > returned is just 0x0, it can't distinguish it is address or error.
+> > > > > 
+> > > > 
+> > > > Yes, that's a bad limitation of gen_pool. Maybe one day that will
+> > > > get fixed.
+> > > > In a previous out of tree driver, I worked around this by offsetting
+> > > > the gen_pool_add by a constant so any return value was non-zero and
+> > > > out of memory was zero and then subtracting the constant off of the
+> > return value.
+> > > > Not sure if that's better or worse than just fixing gen_alloc.
+> > > > 
+> > > 
+> > > The workaround works for non alignment allocation, but for alignment
+> > > allocation, It need to align bytes to addr 0, offsetting the
+> > > gen_pool_add maybe make wrong alignment
+> > 
+> > It would work if the offset you add is a multiple of the size of muram.
+> 
+> The QE apps ask different bytes alignment for different use due to hardware 
+> restriction.
+> Why don’t we deal with it in gen_pool_alloc func instead of a workaround?
+> It is more reasonable.
+> 
+
+Sure, fixing gen_pool_alloc would be better if you're willing to do it, and 
+are careful not to break existing users.  I was just pointing out that the 
+workaround isn't totally incompatible with alignment.
+
+-Scott
