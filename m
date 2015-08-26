@@ -1,19 +1,20 @@
 Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
- [IPv6:2a00:1450:400c:c05::22c])
+Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
+ [IPv6:2a00:1450:400c:c05::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C03781A0179
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 03:00:58 +1000 (AEST)
-Received: by wicja10 with SMTP id ja10so21195175wic.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 10:00:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2C80F1A1DE4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 03:02:52 +1000 (AEST)
+Received: by wicja10 with SMTP id ja10so50641656wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 10:02:48 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1440577578-15813-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1440577578-15813-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1440577578-15813-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 26 Aug 2015 20:00:54 +0300
-Message-ID: <CAPAsAGw9xx36H5vKmfsunQRZ2qhuLUUTupVK=_v=eztBzDsqAQ@mail.gmail.com>
-Subject: Re: [PATCH V2 02/10] kasan: MODULE_VADDR is not available on all archs
+ <1440577578-15813-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 26 Aug 2015 20:02:48 +0300
+Message-ID: <CAPAsAGytyWEwd2+TMRCJq4B3e79mKMsq3M2k_Bts17TQbn1z2g@mail.gmail.com>
+Subject: Re: [PATCH V2 03/10] kasan: Rename kasan_enabled to
+ kasan_report_enabled
 From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
@@ -30,35 +31,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 2015-08-26 11:26 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
-> Conditionalize the check using #ifdef
+> The function only disable/enable reporting. In the later patch
+> we will be adding a kasan early enable/disable. Rename kasan_enabled
+> to properly reflect its function.
 >
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  mm/kasan/report.c | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
->
-> diff --git a/mm/kasan/report.c b/mm/kasan/report.c
-> index e07c94fbd0ac..71ce7548d914 100644
-> --- a/mm/kasan/report.c
-> +++ b/mm/kasan/report.c
-> @@ -85,9 +85,14 @@ static void print_error_description(struct kasan_access_info *info)
->
->  static inline bool kernel_or_module_addr(const void *addr)
->  {
-> -       return (addr >= (void *)_stext && addr < (void *)_end)
-> -               || (addr >= (void *)MODULES_VADDR
-> -                       && addr < (void *)MODULES_END);
-> +       if (addr >= (void *)_stext && addr < (void *)_end)
-> +               return true;
-> +#if defined(CONFIG_MODULES) && defined(MODULES_VADDR)
-> +       if (addr >= (void *)MODULES_VADDR
-> +                       && addr < (void *)MODULES_END)
-> +               return true;
-> +#endif
 
-I don't think that this is correct change.
-On ppc64 modules are in VMALLOC, so you should check for this.
-Yes, we don't handle VMALLOC now, but we will at some point.
-
-So I think we should use is_module_address() here.
-It will be slower, but we don't care about performance in error reporting route.
+Reviewed-by: Andrey Ryabinin <ryabinin.a.a@gmail.com>
