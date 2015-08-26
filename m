@@ -1,36 +1,35 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 01FAF1A1D79
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C03C1A1D93
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:56 +1000 (AEST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 26 Aug 2015 00:07:53 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id EA5411FF0049
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:59:00 -0600 (MDT)
+ Wed, 26 Aug 2015 00:07:55 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 853881FF004B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:59:02 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t7Q66olb54198378
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:06:50 -0700
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t7Q67q5344957746
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:07:53 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q67oO6029914
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:51 -0600
+ t7Q67qlc030069
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:52 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v16 10/16] perf, tools,
- jevents: Add support for long descriptions
-Date: Tue, 25 Aug 2015 23:06:00 -0700
-Message-Id: <1440569166-22169-11-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v16 13/16] perf, tools, jevents: Add support for event topics
+Date: Tue, 25 Aug 2015 23:06:03 -0700
+Message-Id: <1440569166-22169-14-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,9 +41,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement support in jevents to parse long descriptions for events
-that may have them in the JSON files. A follow on patch will make this
-long description available to user through the 'perf list' command.
+Allow assigning categories "Topics" field to the PMU events  i.e.
+process the topic field from the JSON file and add a corresponding
+topic field to the generated C events tables.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
@@ -52,132 +51,98 @@ Acked-by: Jiri Olsa <jolsa@redhat.com>
 ---
 
 Changelog[v14]
-	- [Jiri Olsa] Break up independent parts of the patch into
-	  separate patches.
+	[Jiri Olsa] Move this independent code off into a separate patch.
 ---
- tools/perf/pmu-events/jevents.c    |   31 +++++++++++++++++++++++--------
- tools/perf/pmu-events/jevents.h    |    3 ++-
+ tools/perf/pmu-events/jevents.c    |   12 +++++++++---
+ tools/perf/pmu-events/jevents.h    |    2 +-
  tools/perf/pmu-events/pmu-events.h |    1 +
- 3 files changed, 26 insertions(+), 9 deletions(-)
+ 3 files changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
-index 5f7603b..a8507c9 100644
+index a8507c9..ea3474b 100644
 --- a/tools/perf/pmu-events/jevents.c
 +++ b/tools/perf/pmu-events/jevents.c
 @@ -203,7 +203,7 @@ static void print_events_table_prefix(FILE *fp, const char *tblname)
  }
  
  static int print_events_table_entry(void *data, char *name, char *event,
--				    char *desc)
-+				    char *desc, char *long_desc)
+-				    char *desc, char *long_desc)
++				    char *desc, char *long_desc, char *topic)
  {
  	FILE *outfp = data;
  	/*
-@@ -215,6 +215,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
- 	fprintf(outfp, "\t.name = \"%s\",\n", name);
- 	fprintf(outfp, "\t.event = \"%s\",\n", event);
+@@ -217,6 +217,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
  	fprintf(outfp, "\t.desc = \"%s\",\n", desc);
-+	if (long_desc && long_desc[0])
-+		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
+ 	if (long_desc && long_desc[0])
+ 		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
++	if (topic)
++		fprintf(outfp, "\t.topic = \"%s\",\n", topic);
  
  	fprintf(outfp, "},\n");
  
-@@ -235,7 +237,8 @@ static void print_events_table_suffix(FILE *outfp)
- 
+@@ -238,7 +240,7 @@ static void print_events_table_suffix(FILE *outfp)
  /* Call func with each event in the json file */
  int json_events(const char *fn,
--	  int (*func)(void *data, char *name, char *event, char *desc),
-+	  int (*func)(void *data, char *name, char *event, char *desc,
-+		      char *long_desc),
+ 	  int (*func)(void *data, char *name, char *event, char *desc,
+-		      char *long_desc),
++		      char *long_desc, char *topic),
  	  void *data)
  {
  	int err = -EIO;
-@@ -254,6 +257,8 @@ int json_events(const char *fn,
- 	tok = tokens + 1;
- 	for (i = 0; i < tokens->size; i++) {
+@@ -259,6 +261,7 @@ int json_events(const char *fn,
  		char *event = NULL, *desc = NULL, *name = NULL;
-+		char *long_desc = NULL;
-+		char *extra_desc = NULL;
+ 		char *long_desc = NULL;
+ 		char *extra_desc = NULL;
++		char *topic = NULL;
  		struct msrmap *msr = NULL;
  		jsmntok_t *msrval = NULL;
  		jsmntok_t *precise = NULL;
-@@ -279,6 +284,9 @@ int json_events(const char *fn,
- 			} else if (json_streq(map, field, "BriefDescription")) {
- 				addfield(map, &desc, "", "", val);
- 				fixdesc(desc);
-+			} else if (json_streq(map, field, "PublicDescription")) {
-+				addfield(map, &long_desc, "", "", val);
-+				fixdesc(long_desc);
- 			} else if (json_streq(map, field, "PEBS") && nz) {
- 				precise = val;
- 			} else if (json_streq(map, field, "MSRIndex") && nz) {
-@@ -287,10 +295,10 @@ int json_events(const char *fn,
- 				msrval = val;
- 			} else if (json_streq(map, field, "Errata") &&
+@@ -297,6 +300,8 @@ int json_events(const char *fn,
  				   !json_streq(map, val, "null")) {
--				addfield(map, &desc, ". ",
-+				addfield(map, &extra_desc, ". ",
+ 				addfield(map, &extra_desc, ". ",
  					" Spec update: ", val);
++			} else if (json_streq(map, field, "Topic")) {
++				addfield(map, &topic, "", "", val);
  			} else if (json_streq(map, field, "Data_LA") && nz) {
--				addfield(map, &desc, ". ",
-+				addfield(map, &extra_desc, ". ",
+ 				addfield(map, &extra_desc, ". ",
  					" Supports address when precise",
- 					NULL);
- 			}
-@@ -298,19 +306,26 @@ int json_events(const char *fn,
- 		}
- 		if (precise && !strstr(desc, "(Precise Event)")) {
- 			if (json_streq(map, precise, "2"))
--				addfield(map, &desc, " ", "(Must be precise)",
--						NULL);
-+				addfield(map, &extra_desc, " ",
-+						"(Must be precise)", NULL);
- 			else
--				addfield(map, &desc, " ",
-+				addfield(map, &extra_desc, " ",
- 						"(Precise event)", NULL);
- 		}
-+		if (desc && extra_desc)
-+			addfield(map, &desc, " ", extra_desc, NULL);
-+		if (long_desc && extra_desc)
-+			addfield(map, &long_desc, " ", extra_desc, NULL);
- 		if (msr != NULL)
+@@ -320,12 +325,13 @@ int json_events(const char *fn,
  			addfield(map, &event, ",", msr->pname, msrval);
  		fixname(name);
--		err = func(data, name, event, desc);
-+
-+		err = func(data, name, event, desc, long_desc);
+ 
+-		err = func(data, name, event, desc, long_desc);
++		err = func(data, name, event, desc, long_desc, topic);
  		free(event);
  		free(desc);
  		free(name);
-+		free(long_desc);
-+		free(extra_desc);
+ 		free(long_desc);
+ 		free(extra_desc);
++		free(topic);
  		if (err)
  			break;
  		tok += j;
 diff --git a/tools/perf/pmu-events/jevents.h b/tools/perf/pmu-events/jevents.h
-index 996601f..b0eb274 100644
+index b0eb274..9ffcb89 100644
 --- a/tools/perf/pmu-events/jevents.h
 +++ b/tools/perf/pmu-events/jevents.h
-@@ -2,7 +2,8 @@
- #define JEVENTS_H 1
+@@ -3,7 +3,7 @@
  
  int json_events(const char *fn,
--		int (*func)(void *data, char *name, char *event, char *desc),
-+		int (*func)(void *data, char *name, char *event, char *desc,
-+				char *long_desc),
+ 		int (*func)(void *data, char *name, char *event, char *desc,
+-				char *long_desc),
++				char *long_desc, char *topic),
  		void *data);
  char *get_cpu_str(void);
  
 diff --git a/tools/perf/pmu-events/pmu-events.h b/tools/perf/pmu-events/pmu-events.h
-index 39fec04..711f049 100644
+index 711f049..6b69f4b 100644
 --- a/tools/perf/pmu-events/pmu-events.h
 +++ b/tools/perf/pmu-events/pmu-events.h
-@@ -8,6 +8,7 @@ struct pmu_event {
- 	const char *name;
+@@ -9,6 +9,7 @@ struct pmu_event {
  	const char *event;
  	const char *desc;
-+	const char *long_desc;
+ 	const char *long_desc;
++	const char *topic;
  };
  
  /*
