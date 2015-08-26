@@ -1,35 +1,35 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C16D1A1D94
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B4D371A1D90
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:58 +1000 (AEST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 26 Aug 2015 00:07:55 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 58F811FF004F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:59:01 -0600 (MDT)
+ Wed, 26 Aug 2015 00:07:56 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9B1FE19D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:58:49 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t7Q66q6D22610070
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:06:52 -0700
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t7Q67rmv43778258
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:07:53 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q67pZB029969
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:51 -0600
+ t7Q67qiK030100
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:53 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v16 11/16] perf, tools: Add alias support for long descriptions
-Date: Tue, 25 Aug 2015 23:06:01 -0700
-Message-Id: <1440569166-22169-12-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v16 14/16] perf, tools: Add support for event list topics
+Date: Tue, 25 Aug 2015 23:06:04 -0700
+Message-Id: <1440569166-22169-15-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,10 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously we were dropping the useful longer descriptions that some
-events have in the event list completely. Now that jevents provides
-support for longer descriptions (see previous patch), add support for
-parsing the long descriptions
+From: Andi Kleen <ak@linux.intel.com>
+
+Add support to group the output of perf list by the Topic field
+in the JSON file.
+
+Example output:
+
+% perf list
+...
+Cache:
+  l1d.replacement
+       [L1D data line replacements]
+  l1d_pend_miss.pending
+       [L1D miss oustandings duration in cycles]
+  l1d_pend_miss.pending_cycles
+       [Cycles with L1D load Misses outstanding]
+  l2_l1d_wb_rqsts.all
+       [Not rejected writebacks from L1D to L2 cache lines in any state]
+  l2_l1d_wb_rqsts.hit_e
+       [Not rejected writebacks from L1D to L2 cache lines in E state]
+  l2_l1d_wb_rqsts.hit_m
+       [Not rejected writebacks from L1D to L2 cache lines in M state]
+
+...
+Pipeline:
+  arith.fpu_div
+       [Divide operations executed]
+  arith.fpu_div_active
+       [Cycles when divider is busy executing divide operations]
+  baclears.any
+       [Counts the total number when the front end is resteered, mainly
+       when the BPU cannot provide a correct prediction and this is
+       corrected by other branch handling mechanisms at the front end]
+  br_inst_exec.all_branches
+       [Speculative and retired branches]
+  br_inst_exec.all_conditional
+       [Speculative and retired macro-conditional branches]
+  br_inst_exec.all_direct_jmp
+       [Speculative and retired macro-unconditional branches excluding
+       calls and indirects]
+  br_inst_exec.all_direct_near_call
+       [Speculative and retired direct near calls]
+  br_inst_exec.all_indirect_jump_non_call_ret
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
@@ -52,134 +91,145 @@ Acked-by: Jiri Olsa <jolsa@redhat.com>
 ---
 
 Changelog[v14]
-	- [Jiri Olsa] Break up independent parts of the patch into
-	  separate patches.
+	- [Jiri Olsa] Move jevents support for Topic to a separate patch.
 ---
- tools/perf/util/parse-events.c |    5 +++--
- tools/perf/util/parse-events.h |    3 ++-
- tools/perf/util/pmu.c          |   15 ++++++++++-----
- tools/perf/util/pmu.h          |    4 +++-
- 4 files changed, 18 insertions(+), 9 deletions(-)
+ tools/perf/util/pmu.c |   37 +++++++++++++++++++++++++++----------
+ tools/perf/util/pmu.h |    1 +
+ 2 files changed, 28 insertions(+), 10 deletions(-)
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 5a4aed7..e14ceb6 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -1668,7 +1668,8 @@ out_enomem:
- /*
-  * Print the help text for the event symbols:
-  */
--void print_events(const char *event_glob, bool name_only, bool quiet_flag)
-+void print_events(const char *event_glob, bool name_only, bool quiet_flag,
-+			bool long_desc)
- {
- 	print_symbol_events(event_glob, PERF_TYPE_HARDWARE,
- 			    event_symbols_hw, PERF_COUNT_HW_MAX, name_only);
-@@ -1678,7 +1679,7 @@ void print_events(const char *event_glob, bool name_only, bool quiet_flag)
- 
- 	print_hwcache_events(event_glob, name_only);
- 
--	print_pmu_events(event_glob, name_only, quiet_flag);
-+	print_pmu_events(event_glob, name_only, quiet_flag, long_desc);
- 
- 	if (event_glob != NULL)
- 		return;
-diff --git a/tools/perf/util/parse-events.h b/tools/perf/util/parse-events.h
-index c0ee03b..e468931 100644
---- a/tools/perf/util/parse-events.h
-+++ b/tools/perf/util/parse-events.h
-@@ -138,7 +138,8 @@ void parse_events_update_lists(struct list_head *list_event,
- void parse_events_evlist_error(struct parse_events_evlist *data,
- 			       int idx, const char *str);
- 
--void print_events(const char *event_glob, bool name_only, bool quiet);
-+void print_events(const char *event_glob, bool name_only, bool quiet,
-+		  bool long_desc);
- 
- struct event_symbol {
- 	const char	*symbol;
 diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index ca01aea..e608ccc 100644
+index e608ccc..75a53d3 100644
 --- a/tools/perf/util/pmu.c
 +++ b/tools/perf/util/pmu.c
-@@ -210,7 +210,7 @@ static int perf_pmu__parse_snapshot(struct perf_pmu_alias *alias,
+@@ -210,7 +210,8 @@ static int perf_pmu__parse_snapshot(struct perf_pmu_alias *alias,
  }
  
  static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
--				 char *desc, char *val)
-+				 char *desc, char *val, char *long_desc)
+-				 char *desc, char *val, char *long_desc)
++				 char *desc, char *val, char *long_desc,
++				 char *topic)
  {
  	struct perf_pmu_alias *alias;
  	int ret;
-@@ -243,6 +243,8 @@ static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
- 	}
- 
+@@ -245,6 +246,7 @@ static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
  	alias->desc = desc ? strdup(desc) : NULL;
-+	alias->long_desc = long_desc ? strdup(long_desc) :
-+				desc ? strdup(desc) : NULL;
+ 	alias->long_desc = long_desc ? strdup(long_desc) :
+ 				desc ? strdup(desc) : NULL;
++	alias->topic = topic ? strdup(topic) : NULL;
  
  	list_add_tail(&alias->list, list);
  
-@@ -260,7 +262,7 @@ static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FI
+@@ -262,7 +264,7 @@ static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FI
  
  	buf[ret] = 0;
  
--	return __perf_pmu__new_alias(list, dir, name, NULL, buf);
-+	return __perf_pmu__new_alias(list, dir, name, NULL, buf, NULL);
+-	return __perf_pmu__new_alias(list, dir, name, NULL, buf, NULL);
++	return __perf_pmu__new_alias(list, dir, name, NULL, buf, NULL, NULL);
  }
  
  static inline bool pmu_alias_info_file(char *name)
-@@ -508,7 +510,8 @@ static int pmu_add_cpu_aliases(struct list_head *head)
- 
+@@ -511,7 +513,7 @@ static int pmu_add_cpu_aliases(struct list_head *head)
  		/* need type casts to override 'const' */
  		__perf_pmu__new_alias(head, NULL, (char *)pe->name,
--				(char *)pe->desc, (char *)pe->event);
-+				(char *)pe->desc, (char *)pe->event,
-+				(char *)pe->long_desc);
+ 				(char *)pe->desc, (char *)pe->event,
+-				(char *)pe->long_desc);
++				(char *)pe->long_desc, (char *)pe->topic);
  	}
  
  out:
-@@ -1077,7 +1080,8 @@ static void wordwrap(char *s, int start, int max, int corr)
- 	}
+@@ -1042,19 +1044,26 @@ static char *format_alias_or(char *buf, int len, struct perf_pmu *pmu,
+ 	return buf;
  }
  
--void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
-+void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
-+			bool long_desc)
- {
- 	struct perf_pmu *pmu;
- 	struct perf_pmu_alias *alias;
-@@ -1124,7 +1128,8 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
- 			if (!aliases[j].name)
- 				goto out_enomem;
+-struct pair {
++struct sevent {
+ 	char *name;
+ 	char *desc;
++	char *topic;
+ };
  
--			aliases[j].desc = alias->desc;
-+			aliases[j].desc = long_desc ? alias->long_desc :
-+						alias->desc;
+-static int cmp_pair(const void *a, const void *b)
++static int cmp_sevent(const void *a, const void *b)
+ {
+-	const struct pair *as = a;
+-	const struct pair *bs = b;
++	const struct sevent *as = a;
++	const struct sevent *bs = b;
+ 
+ 	/* Put extra events last */
+ 	if (!!as->desc != !!bs->desc)
+ 		return !!as->desc - !!bs->desc;
++	if (as->topic && bs->topic) {
++		int n = strcmp(as->topic, bs->topic);
++
++		if (n)
++			return n;
++	}
+ 	return strcmp(as->name, bs->name);
+ }
+ 
+@@ -1088,9 +1097,10 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
+ 	char buf[1024];
+ 	int printed = 0;
+ 	int len, j;
+-	struct pair *aliases;
++	struct sevent *aliases;
+ 	int numdesc = 0;
+ 	int columns = pager_get_columns();
++	char *topic = NULL;
+ 
+ 	pmu = NULL;
+ 	len = 0;
+@@ -1100,7 +1110,7 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
+ 		if (pmu->selectable)
+ 			len++;
+ 	}
+-	aliases = zalloc(sizeof(struct pair) * len);
++	aliases = zalloc(sizeof(struct sevent) * len);
+ 	if (!aliases)
+ 		goto out_enomem;
+ 	pmu = NULL;
+@@ -1130,6 +1140,7 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
+ 
+ 			aliases[j].desc = long_desc ? alias->long_desc :
+ 						alias->desc;
++			aliases[j].topic = alias->topic;
  			j++;
  		}
  		if (pmu->selectable) {
+@@ -1141,7 +1152,7 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
+ 		}
+ 	}
+ 	len = j;
+-	qsort(aliases, len, sizeof(struct pair), cmp_pair);
++	qsort(aliases, len, sizeof(struct sevent), cmp_sevent);
+ 	for (j = 0; j < len; j++) {
+ 		if (name_only) {
+ 			printf("%s ", aliases[j].name);
+@@ -1150,6 +1161,12 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag,
+ 		if (aliases[j].desc && !quiet_flag) {
+ 			if (numdesc++ == 0)
+ 				printf("\n");
++			if (aliases[j].topic && (!topic ||
++					strcmp(topic, aliases[j].topic))) {
++				printf("%s%s:\n", topic ? "\n" : "",
++						aliases[j].topic);
++				topic = aliases[j].topic;
++			}
+ 			printf("  %-50s\n", aliases[j].name);
+ 			printf("%*s", 8, "[");
+ 			wordwrap(aliases[j].desc, 8, columns, 0);
 diff --git a/tools/perf/util/pmu.h b/tools/perf/util/pmu.h
-index 42999c7..1aa614e 100644
+index 1aa614e..de26919 100644
 --- a/tools/perf/util/pmu.h
 +++ b/tools/perf/util/pmu.h
-@@ -39,6 +39,7 @@ struct perf_pmu_info {
- struct perf_pmu_alias {
+@@ -40,6 +40,7 @@ struct perf_pmu_alias {
  	char *name;
  	char *desc;
-+	char *long_desc;
+ 	char *long_desc;
++	char *topic;
  	struct list_head terms; /* HEAD struct parse_events_term -> list */
  	struct list_head list;  /* ELEM */
  	char unit[UNIT_MAX_LEN+1];
-@@ -70,7 +71,8 @@ int perf_pmu__format_parse(char *dir, struct list_head *head);
- 
- struct perf_pmu *perf_pmu__scan(struct perf_pmu *pmu);
- 
--void print_pmu_events(const char *event_glob, bool name_only, bool quiet);
-+void print_pmu_events(const char *event_glob, bool name_only, bool quiet,
-+		      bool long_desc);
- bool pmu_have_event(const char *pname, const char *name);
- 
- int perf_pmu__scan_file(struct perf_pmu *pmu, const char *name, const char *fmt,
 -- 
 1.7.9.5
