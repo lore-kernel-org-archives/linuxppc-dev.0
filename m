@@ -1,38 +1,25 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F43B1A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 10:26:21 +1000 (AEST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 25 Aug 2015 18:26:19 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A0FAC1FF002D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 18:17:25 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7Q0PHiD39321630
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 17:25:17 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q0QFZc030182
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 18:26:15 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, j.anaszewski@samsung.com,
- linux-leds@vger.kernel.org
-Subject: Re: [PATCH] powerpc/configs: Enable LEDS support
-In-Reply-To: <1440489254-8162-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
-References: <1440489254-8162-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
-Date: Wed, 26 Aug 2015 10:26:12 +1000
-Message-ID: <m3a8teopy3.fsf@oc8180480414.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 360471A077B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 11:13:18 +1000 (AEST)
+Message-ID: <1440551597.20743.1.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 14/17] powerpc/book3e-64/kexec: Enable SMP release
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Tiejun Chen <tiejun.chen@intel.com>,
+ kexec@lists.infradead.org
+Date: Wed, 26 Aug 2015 11:13:17 +1000
+In-Reply-To: <1440546042.16577.74.camel@freescale.com>
+References: <1437250134-307-1-git-send-email-scottwood@freescale.com>
+ <1437250134-307-15-git-send-email-scottwood@freescale.com>
+ <1440046447.13406.15.camel@ellerman.id.au>
+ <1440447948.30043.36.camel@freescale.com>
+ <1440467874.16933.1.camel@ellerman.id.au>
+ <1440546042.16577.74.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,14 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vasant Hegde <hegdevasant@linux.vnet.ibm.com> writes:
-> Presently PowerNV LEDS driver is specific to FSP based PowerNV
-> platform. Hence added it as 'm'. So that we will be loaded only
-> if we have required device tree support.
+On Tue, 2015-08-25 at 18:40 -0500, Scott Wood wrote:
+> On Tue, 2015-08-25 at 11:57 +1000, Michael Ellerman wrote:
+> > I guess it's arguable whether that's more or less horrible than adding an
+> > #ifdef'ed booted_from_kexec check, but I think I'd prefer the
+> > spinning_secondaries solution.
+> 
+> We'd still need the device tree property regardless of whether we keep 
+> use_spinloop() or set spinning_secondaries to zero.
 
-Currently the *firmware* support is FSP specific.
+Yep.
 
-The driver should magically work on any OPAL machine that hooks up the
-OPAL calls and DT. Right?
+> use_spinloop() (with a device tree property rather than booted_from_kexec) 
+> seems cleaner:
+>  - Avoids depending on the fact that some piece of platform code executes 
+> after spinning_secondaries is initialized but before smp_release_cpus().
 
-The A in OPAL is for Abstraction, not P for Passthrough-to-fsp.
+True, that is a bit fragile.
+
+>  - Doesn't put a different requirement on platform code based on 32 versus 64 
+> bit (we have too many 32 versus 64 bit differences as is).
+
+Yeah I didn't think of that.
+
+>  - Doesn't require the change in all relevant platform code files (we have 
+> both corenet_generic and qemu_e500, both of which support both 32 and 64 bit, 
+> and custom boards might not all use corenet_generic), whether the platform 
+> supports kexec or not.
+
+Yep, though they could all call a common implementation of init_early().
+
+So I guess do it with use_spinloop(). I was just hoping to avoid more platform
+specific ifdefs in the "generic" code.
+
+> I doesn't look like there's any non-Freescale book3e-64 left in the kernel[1]
+...
+> [1] If this is true, and won't likely change, can the non-fsl book3e-64 TLB 
+> miss handlers and such come out?
+
+It is true, see fb5a515704d7 ("powerpc: Remove platforms/wsp and associated
+pieces").
+
+It will not change as far as I'm aware, and all the code's in the git history
+anyway, so if there's unused code in there please rip it out.
+
+cheers
