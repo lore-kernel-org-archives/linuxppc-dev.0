@@ -1,25 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ryabinin.a.a@gmail.com>
+Received: from mail-wi0-x236.google.com (mail-wi0-x236.google.com
+ [IPv6:2a00:1450:400c:c05::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0E9F1A0179
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 01:54:44 +1000 (AEST)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0133.outbound.protection.outlook.com [207.46.100.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A98EB140332
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2015 01:54:42 +1000 (AEST)
-Message-ID: <1440598867.16577.112.camel@freescale.com>
-Subject: Re: [PATCH] powerpc: Update defconfigs
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: <linuxppc-dev@ozlabs.org>
-Date: Wed, 26 Aug 2015 09:21:07 -0500
-In-Reply-To: <1440589636-14616-1-git-send-email-mpe@ellerman.id.au>
-References: <1440589636-14616-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F2031A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 02:37:13 +1000 (AEST)
+Received: by wicja10 with SMTP id ja10so20611093wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 09:37:09 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 26 Aug 2015 19:37:09 +0300
+Message-ID: <CAPAsAGyMBnGJyBCoq2n9YSgC73GXr9-w3SjCTVdfz++drzOVGw@mail.gmail.com>
+Subject: Re: [PATCH V2 00/10] KASan ppc64 support
+From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,113 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-08-26 at 21:47 +1000, Michael Ellerman wrote:
-> Mostly uninteresting, though a few worth noting:
-> 
->   CONFIG_BLK_DEV_XIP                  -> CONFIG_BLK_DEV_RAM_DAX
->   CONFIG_CLK_PPC_CORENET              -> CONFIG_CLK_QORIQ
->   CONFIG_CRYPTO_ANSI_CPRNG            -> was default=m, not anymore
->   CONFIG_EXT2_FS_XIP                  -> CONFIG_FS_DAX
->   CONFIG_I2O=y                                -> removed
->   CONFIG_KEYS_DEBUG_PROC_KEYS=y               -> removed
->   CONFIG_NUMA_BALANCING_DEFAULT_ENABLED       -> now default y
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/configs/40x/acadia_defconfig         |  1 -
->  arch/powerpc/configs/40x/ep405_defconfig          |  1 -
->  arch/powerpc/configs/40x/kilauea_defconfig        |  1 -
->  arch/powerpc/configs/40x/makalu_defconfig         |  1 -
->  arch/powerpc/configs/40x/obs600_defconfig         |  1 -
->  arch/powerpc/configs/40x/virtex_defconfig         |  1 -
->  arch/powerpc/configs/40x/walnut_defconfig         |  1 -
->  arch/powerpc/configs/44x/akebono_defconfig        |  1 -
->  arch/powerpc/configs/44x/bamboo_defconfig         |  1 -
->  arch/powerpc/configs/44x/currituck_defconfig      |  1 -
->  arch/powerpc/configs/44x/ebony_defconfig          |  1 -
->  arch/powerpc/configs/44x/eiger_defconfig          |  4 ----
->  arch/powerpc/configs/44x/icon_defconfig           |  1 -
->  arch/powerpc/configs/44x/iss476-smp_defconfig     |  1 -
->  arch/powerpc/configs/44x/katmai_defconfig         |  1 -
->  arch/powerpc/configs/44x/rainier_defconfig        |  1 -
->  arch/powerpc/configs/44x/redwood_defconfig        |  4 ----
->  arch/powerpc/configs/44x/sequoia_defconfig        |  1 -
->  arch/powerpc/configs/44x/taishan_defconfig        |  1 -
->  arch/powerpc/configs/44x/virtex5_defconfig        |  1 -
->  arch/powerpc/configs/44x/warp_defconfig           |  1 -
->  arch/powerpc/configs/52xx/cm5200_defconfig        |  1 -
->  arch/powerpc/configs/52xx/lite5200b_defconfig     |  1 -
->  arch/powerpc/configs/52xx/motionpro_defconfig     |  1 -
->  arch/powerpc/configs/52xx/tqm5200_defconfig       |  1 -
->  arch/powerpc/configs/83xx/asp8347_defconfig       |  1 -
->  arch/powerpc/configs/83xx/mpc8313_rdb_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc8315_rdb_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc832x_mds_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc832x_rdb_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc834x_itx_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc834x_itxgp_defconfig |  1 -
->  arch/powerpc/configs/83xx/mpc834x_mds_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc836x_mds_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc836x_rdk_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc837x_mds_defconfig   |  1 -
->  arch/powerpc/configs/83xx/mpc837x_rdb_defconfig   |  1 -
->  arch/powerpc/configs/83xx/sbc834x_defconfig       |  1 -
->  arch/powerpc/configs/85xx/ge_imp3a_defconfig      |  1 -
->  arch/powerpc/configs/85xx/kmp204x_defconfig       |  3 +--
->  arch/powerpc/configs/85xx/ksi8560_defconfig       |  1 -
->  arch/powerpc/configs/85xx/mpc8540_ads_defconfig   |  1 -
->  arch/powerpc/configs/85xx/mpc8560_ads_defconfig   |  1 -
->  arch/powerpc/configs/85xx/mpc85xx_cds_defconfig   |  1 -
->  arch/powerpc/configs/85xx/sbc8548_defconfig       |  1 -
->  arch/powerpc/configs/85xx/socrates_defconfig      |  1 -
->  arch/powerpc/configs/85xx/stx_gp3_defconfig       |  1 -
->  arch/powerpc/configs/85xx/tqm8540_defconfig       |  1 -
->  arch/powerpc/configs/85xx/tqm8541_defconfig       |  1 -
->  arch/powerpc/configs/85xx/tqm8548_defconfig       |  1 -
->  arch/powerpc/configs/85xx/tqm8555_defconfig       |  1 -
->  arch/powerpc/configs/85xx/tqm8560_defconfig       |  1 -
->  arch/powerpc/configs/85xx/xes_mpc85xx_defconfig   |  3 +--
->  arch/powerpc/configs/86xx/gef_ppc9a_defconfig     |  1 -
->  arch/powerpc/configs/86xx/gef_sbc310_defconfig    |  1 -
->  arch/powerpc/configs/86xx/gef_sbc610_defconfig    |  2 --
->  arch/powerpc/configs/86xx/mpc8610_hpcd_defconfig  |  1 -
->  arch/powerpc/configs/86xx/mpc8641_hpcn_defconfig  |  1 -
->  arch/powerpc/configs/86xx/sbc8641d_defconfig      |  2 --
->  arch/powerpc/configs/amigaone_defconfig           |  1 -
->  arch/powerpc/configs/c2k_defconfig                |  3 ---
->  arch/powerpc/configs/cell_defconfig               |  2 --
->  arch/powerpc/configs/chrp32_defconfig             |  1 -
->  arch/powerpc/configs/corenet32_smp_defconfig      |  5 ++---
->  arch/powerpc/configs/corenet64_smp_defconfig      |  3 +--
->  arch/powerpc/configs/ep8248e_defconfig            |  1 -
->  arch/powerpc/configs/g5_defconfig                 |  4 +---
->  arch/powerpc/configs/linkstation_defconfig        |  1 -
->  arch/powerpc/configs/maple_defconfig              |  3 +--
->  arch/powerpc/configs/mgcoge_defconfig             |  1 -
->  arch/powerpc/configs/mpc512x_defconfig            |  5 ++---
->  arch/powerpc/configs/mpc5200_defconfig            |  1 -
->  arch/powerpc/configs/mpc7448_hpc2_defconfig       |  1 -
->  arch/powerpc/configs/mpc8272_ads_defconfig        |  1 -
->  arch/powerpc/configs/mpc83xx_defconfig            |  1 -
->  arch/powerpc/configs/mpc85xx_defconfig            |  1 -
->  arch/powerpc/configs/mpc85xx_smp_defconfig        |  1 -
->  arch/powerpc/configs/mpc866_ads_defconfig         |  1 -
->  arch/powerpc/configs/mpc86xx_defconfig            |  1 -
->  arch/powerpc/configs/mvme5100_defconfig           |  1 -
->  arch/powerpc/configs/pasemi_defconfig             |  1 -
->  arch/powerpc/configs/pmac32_defconfig             |  2 --
->  arch/powerpc/configs/ppc40x_defconfig             |  1 -
->  arch/powerpc/configs/ppc44x_defconfig             |  1 -
->  arch/powerpc/configs/ppc64_defconfig              |  8 +++-----
->  arch/powerpc/configs/ppc64e_defconfig             |  3 +--
->  arch/powerpc/configs/ppc6xx_defconfig             |  7 ++-----
->  arch/powerpc/configs/pq2fads_defconfig            |  1 -
->  arch/powerpc/configs/ps3_defconfig                |  2 --
->  arch/powerpc/configs/pseries_defconfig            | 10 ++++------
->  arch/powerpc/configs/wii_defconfig                |  1 -
->  91 files changed, 19 insertions(+), 128 deletions(-)
+2015-08-26 11:26 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
+> Hi,
+>
+> This patchset implements kernel address sanitizer for ppc64.
+> Since ppc64 virtual address range is divided into different regions,
+> we can't have one contigous area for the kasan shadow range. Hence
+> we don't support the INLINE kasan instrumentation. With Outline
+> instrumentation, we override the shadow_to_mem and mem_to_shadow
+> callbacks, so that we map only the kernel linear range (ie,
+> region with ID 0xc). For region with ID 0xd and 0xf (vmalloc
+> and vmemmap ) we return the address of the zero page. This
+> works because kasan doesn't track both vmemmap and vmalloc address.
+>
+> Known issues:
+> * Kasan is not yet enabled for arch/powerpc/kvm
+> * kexec hang
+> * outline stack and global support
+>
 
-This conflicts with the 85xx config fragment patches that I've already sent 
-you a pull request for...
-
--Scott
+Is there any problem with globals or you just didn't try it yet?
+I think it should just work. You need only to add  --param
+asan-globals=0 to KBUILD_CFLAGS_MODULE
+to disable it for modules.
