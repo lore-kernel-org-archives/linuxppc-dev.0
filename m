@@ -1,25 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0144.outbound.protection.outlook.com [207.46.100.144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 360471A077B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 11:13:18 +1000 (AEST)
-Message-ID: <1440551597.20743.1.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 14/17] powerpc/book3e-64/kexec: Enable SMP release
-From: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15F111A0D48
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 11:49:51 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Tiejun Chen <tiejun.chen@intel.com>,
- kexec@lists.infradead.org
-Date: Wed, 26 Aug 2015 11:13:17 +1000
-In-Reply-To: <1440546042.16577.74.camel@freescale.com>
-References: <1437250134-307-1-git-send-email-scottwood@freescale.com>
- <1437250134-307-15-git-send-email-scottwood@freescale.com>
- <1440046447.13406.15.camel@ellerman.id.au>
- <1440447948.30043.36.camel@freescale.com>
- <1440467874.16933.1.camel@ellerman.id.au>
- <1440546042.16577.74.camel@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+CC: Laura Abbott <labbott@redhat.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "lauraa@codeaurora.org"
+ <lauraa@codeaurora.org>, Xiaobo Xie <X.Xie@freescale.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>, Li Leo
+ <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH v6 3/3] qe_common: add qe_muram_ functions to manage muram
+Date: Wed, 26 Aug 2015 01:49:38 +0000
+Message-ID: <SN1PR0301MB15500F5D6D59CB344A8BF9FE9B600@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1440408703-6113-1-git-send-email-qiang.zhao@freescale.com>
+ <1440408703-6113-3-git-send-email-qiang.zhao@freescale.com>
+ <55DBA98D.1070202@redhat.com>
+ <SN1PR0301MB1550C9087AFB9FEB6CD1B0899B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <55DBEBBE.30702@redhat.com>
+ <SN1PR0301MB1550CE6B922CE64AA4F862759B610@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1440519775.16577.4.camel@freescale.com>
+In-Reply-To: <1440519775.16577.4.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +35,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-08-25 at 18:40 -0500, Scott Wood wrote:
-> On Tue, 2015-08-25 at 11:57 +1000, Michael Ellerman wrote:
-> > I guess it's arguable whether that's more or less horrible than adding an
-> > #ifdef'ed booted_from_kexec check, but I think I'd prefer the
-> > spinning_secondaries solution.
-> 
-> We'd still need the device tree property regardless of whether we keep 
-> use_spinloop() or set spinning_secondaries to zero.
-
-Yep.
-
-> use_spinloop() (with a device tree property rather than booted_from_kexec) 
-> seems cleaner:
->  - Avoids depending on the fact that some piece of platform code executes 
-> after spinning_secondaries is initialized but before smp_release_cpus().
-
-True, that is a bit fragile.
-
->  - Doesn't put a different requirement on platform code based on 32 versus 64 
-> bit (we have too many 32 versus 64 bit differences as is).
-
-Yeah I didn't think of that.
-
->  - Doesn't require the change in all relevant platform code files (we have 
-> both corenet_generic and qemu_e500, both of which support both 32 and 64 bit, 
-> and custom boards might not all use corenet_generic), whether the platform 
-> supports kexec or not.
-
-Yep, though they could all call a common implementation of init_early().
-
-So I guess do it with use_spinloop(). I was just hoping to avoid more platform
-specific ifdefs in the "generic" code.
-
-> I doesn't look like there's any non-Freescale book3e-64 left in the kernel[1]
-...
-> [1] If this is true, and won't likely change, can the non-fsl book3e-64 TLB 
-> miss handlers and such come out?
-
-It is true, see fb5a515704d7 ("powerpc: Remove platforms/wsp and associated
-pieces").
-
-It will not change as far as I'm aware, and all the code's in the git history
-anyway, so if there's unused code in there please rip it out.
-
-cheers
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBXZWRuZXNkYXksIEF1Z3VzdCAyNiwgMjAxNSAxMjoyMyBBTQ0KPiBUbzogWmhhbyBR
+aWFuZy1CNDU0NzUNCj4gQ2M6IExhdXJhIEFiYm90dDsgbGludXgta2VybmVsQHZnZXIua2VybmVs
+Lm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBsYXVyYWFAY29kZWF1cm9y
+YS5vcmc7IFhpZSBYaWFvYm8tUjYzMDYxOw0KPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExp
+IFlhbmctTGVvLVI1ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENI
+IHY2IDMvM10gcWVfY29tbW9uOiBhZGQgcWVfbXVyYW1fIGZ1bmN0aW9ucyB0byBtYW5hZ2UNCj4g
+bXVyYW0NCj4gDQo+IE9uIFR1ZSwgMjAxNS0wOC0yNSBhdCAwMjoxOSAtMDUwMCwgWmhhbyBRaWFu
+Zy1CNDU0NzUgd3JvdGU6DQo+ID4gT24gMDgvMjUvMjAxNSAxMjoxNSBQTSwgTGF1cmEgQWJib3R0
+IHdyb3RlDQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogTGF1
+cmEgQWJib3R0IFttYWlsdG86bGFiYm90dEByZWRoYXQuY29tXQ0KPiA+ID4gU2VudDogVHVlc2Rh
+eSwgQXVndXN0IDI1LCAyMDE1IDEyOjE1IFBNDQo+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzU7
+IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
+ZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiBsYXVyYWFAY29kZWF1cm9y
+YS5vcmc7IFhpZSBYaWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7DQo+ID4g
+PiBMaSBZYW5nLUxlby1SNTg0NzI7IHBhdWx1c0BzYW1iYS5vcmcNCj4gPiA+IFN1YmplY3Q6IFJl
+OiBbUEFUQ0ggdjYgMy8zXSBxZV9jb21tb246IGFkZCBxZV9tdXJhbV8gZnVuY3Rpb25zIHRvDQo+
+ID4gPiBtYW5hZ2UgbXVyYW0NCj4gPiA+DQo+ID4gPiBPbiAwOC8yNC8yMDE1IDA4OjAzIFBNLCBa
+aGFvIFFpYW5nIHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogTGF1cmEgQWJib3R0IFttYWlsdG86bGFiYm90dEByZWRo
+YXQuY29tXQ0KPiA+ID4gPiA+IFNlbnQ6IFR1ZXNkYXksIEF1Z3VzdCAyNSwgMjAxNSA3OjMyIEFN
+DQo+ID4gPiA+ID4gVG86IFpoYW8gUWlhbmctQjQ1NDc1OyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+
+ID4gPiA+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlz
+dHMub3psYWJzLm9yZzsNCj4gPiA+ID4gPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBYaWFv
+Ym8tUjYzMDYxOw0KPiA+ID4gPiA+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkgWWFuZy1M
+ZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRD
+SCB2NiAzLzNdIHFlX2NvbW1vbjogYWRkIHFlX211cmFtXyBmdW5jdGlvbnMNCj4gPiA+ID4gPiB0
+byBtYW5hZ2UgbXVyYW0NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoZXJlIGRvZXNuJ3Qgc2VlbSB0
+byBiZSBhIGNoZWNrIGZvciBhbGxvY2F0aW9uIGZhaWx1cmUgZnJvbSB0aGUNCj4gPiA+ID4gPiBn
+ZW5fYWxsb2MuDQo+ID4gPiA+DQo+ID4gPiA+IGdlbl9wb29sX2FsbG9jIHdpbGwgcmV0dXJuIDAg
+aWYgdGhlcmUgaXMgZXJyb3IsIGJ1dCBpZiB0aGUgYWRkcmVzcw0KPiA+ID4gPiByZXR1cm5lZCBp
+cyBqdXN0IDB4MCwgaXQgY2FuJ3QgZGlzdGluZ3Vpc2ggaXQgaXMgYWRkcmVzcyBvciBlcnJvci4N
+Cj4gPiA+ID4NCj4gPiA+DQo+ID4gPiBZZXMsIHRoYXQncyBhIGJhZCBsaW1pdGF0aW9uIG9mIGdl
+bl9wb29sLiBNYXliZSBvbmUgZGF5IHRoYXQgd2lsbA0KPiA+ID4gZ2V0IGZpeGVkLg0KPiA+ID4g
+SW4gYSBwcmV2aW91cyBvdXQgb2YgdHJlZSBkcml2ZXIsIEkgd29ya2VkIGFyb3VuZCB0aGlzIGJ5
+IG9mZnNldHRpbmcNCj4gPiA+IHRoZSBnZW5fcG9vbF9hZGQgYnkgYSBjb25zdGFudCBzbyBhbnkg
+cmV0dXJuIHZhbHVlIHdhcyBub24temVybyBhbmQNCj4gPiA+IG91dCBvZiBtZW1vcnkgd2FzIHpl
+cm8gYW5kIHRoZW4gc3VidHJhY3RpbmcgdGhlIGNvbnN0YW50IG9mZiBvZiB0aGUNCj4gcmV0dXJu
+IHZhbHVlLg0KPiA+ID4gTm90IHN1cmUgaWYgdGhhdCdzIGJldHRlciBvciB3b3JzZSB0aGFuIGp1
+c3QgZml4aW5nIGdlbl9hbGxvYy4NCj4gPiA+DQo+ID4NCj4gPiBUaGUgd29ya2Fyb3VuZCB3b3Jr
+cyBmb3Igbm9uIGFsaWdubWVudCBhbGxvY2F0aW9uLCBidXQgZm9yIGFsaWdubWVudA0KPiA+IGFs
+bG9jYXRpb24sIEl0IG5lZWQgdG8gYWxpZ24gYnl0ZXMgdG8gYWRkciAwLCBvZmZzZXR0aW5nIHRo
+ZQ0KPiA+IGdlbl9wb29sX2FkZCBtYXliZSBtYWtlIHdyb25nIGFsaWdubWVudA0KPiANCj4gSXQg
+d291bGQgd29yayBpZiB0aGUgb2Zmc2V0IHlvdSBhZGQgaXMgYSBtdWx0aXBsZSBvZiB0aGUgc2l6
+ZSBvZiBtdXJhbS4NCg0KVGhlIFFFIGFwcHMgYXNrIGRpZmZlcmVudCBieXRlcyBhbGlnbm1lbnQg
+Zm9yIGRpZmZlcmVudCB1c2UgZHVlIHRvIGhhcmR3YXJlIHJlc3RyaWN0aW9uLg0KV2h5IGRvbuKA
+mXQgd2UgZGVhbCB3aXRoIGl0IGluIGdlbl9wb29sX2FsbG9jIGZ1bmMgaW5zdGVhZCBvZiBhIHdv
+cmthcm91bmQ/DQpJdCBpcyBtb3JlIHJlYXNvbmFibGUuDQoNCj4gDQo+IC1TY290dA0KDQo=
