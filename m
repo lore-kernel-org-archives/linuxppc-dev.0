@@ -1,25 +1,25 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C03C1A1D93
+ by lists.ozlabs.org (Postfix) with ESMTPS id 555AF1A1D92
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:56 +1000 (AEST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
  Wed, 26 Aug 2015 00:07:55 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 853881FF004B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:59:02 -0600 (MDT)
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 634F919D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:58:48 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t7Q67q5344957746
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:07:53 -0700
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t7Q67qgW44630048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:07:52 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q67qlc030069
+ t7Q67pks030023
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:52 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
@@ -27,9 +27,10 @@ To: mingo@redhat.com, ak@linux.intel.com,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v16 13/16] perf, tools, jevents: Add support for event topics
-Date: Tue, 25 Aug 2015 23:06:03 -0700
-Message-Id: <1440569166-22169-14-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v16 12/16] perf,
+ tools: Support long descriptions with perf list
+Date: Tue, 25 Aug 2015 23:06:02 -0700
+Message-Id: <1440569166-22169-13-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,110 +42,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allow assigning categories "Topics" field to the PMU events  i.e.
-process the topic field from the JSON file and add a corresponding
-topic field to the generated C events tables.
+Previously we were dropping the useful longer descriptions that some
+events have in the event list completely. This patch makes them appear with
+perf list.
+
+Old perf list:
+
+baclears:
+  baclears.all
+       [Counts the number of baclears]
+
+vs new:
+
+perf list -v:
+...
+baclears:
+  baclears.all
+       [The BACLEARS event counts the number of times the front end is
+        resteered, mainly when the Branch Prediction Unit cannot provide
+	a correct prediction and this is corrected by the Branch Address
+	Calculator at the front end. The BACLEARS.ANY event counts the
+        number of baclears for any type of branch]
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Jiri Olsa <jolsa@redhat.com>
 ---
 
-Changelog[v14]
-	[Jiri Olsa] Move this independent code off into a separate patch.
----
- tools/perf/pmu-events/jevents.c    |   12 +++++++++---
- tools/perf/pmu-events/jevents.h    |    2 +-
- tools/perf/pmu-events/pmu-events.h |    1 +
- 3 files changed, 11 insertions(+), 4 deletions(-)
+Changelog[v15]
+	- [Jir Olsa, Andi Kleen] Fix usage strings; update man page.
 
-diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
-index a8507c9..ea3474b 100644
---- a/tools/perf/pmu-events/jevents.c
-+++ b/tools/perf/pmu-events/jevents.c
-@@ -203,7 +203,7 @@ static void print_events_table_prefix(FILE *fp, const char *tblname)
- }
+Changelog[v14]
+	- [Jiri Olsa] Break up independent parts of the patch into
+	  separate patches.
+---
+ tools/perf/Documentation/perf-list.txt |    6 +++++-
+ tools/perf/builtin-list.c              |   13 +++++++++----
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/Documentation/perf-list.txt b/tools/perf/Documentation/perf-list.txt
+index 9507552..48202f2 100644
+--- a/tools/perf/Documentation/perf-list.txt
++++ b/tools/perf/Documentation/perf-list.txt
+@@ -8,7 +8,7 @@ perf-list - List all symbolic event types
+ SYNOPSIS
+ --------
+ [verse]
+-'perf list' [--no-desc] [hw|sw|cache|tracepoint|pmu|event_glob]
++'perf list' [--no-desc] [--long-desc] [hw|sw|cache|tracepoint|pmu|event_glob]
  
- static int print_events_table_entry(void *data, char *name, char *event,
--				    char *desc, char *long_desc)
-+				    char *desc, char *long_desc, char *topic)
+ DESCRIPTION
+ -----------
+@@ -20,6 +20,10 @@ OPTIONS
+ --no-desc::
+ Don't print descriptions.
+ 
++-v::
++--long-desc::
++Print longer event descriptions.
++
+ 
+ [[EVENT_MODIFIERS]]
+ EVENT MODIFIERS
+diff --git a/tools/perf/builtin-list.c b/tools/perf/builtin-list.c
+index 3f058f7..f800927 100644
+--- a/tools/perf/builtin-list.c
++++ b/tools/perf/builtin-list.c
+@@ -22,14 +22,17 @@ int cmd_list(int argc, const char **argv, const char *prefix __maybe_unused)
  {
- 	FILE *outfp = data;
- 	/*
-@@ -217,6 +217,8 @@ static int print_events_table_entry(void *data, char *name, char *event,
- 	fprintf(outfp, "\t.desc = \"%s\",\n", desc);
- 	if (long_desc && long_desc[0])
- 		fprintf(outfp, "\t.long_desc = \"%s\",\n", long_desc);
-+	if (topic)
-+		fprintf(outfp, "\t.topic = \"%s\",\n", topic);
+ 	int i;
+ 	bool raw_dump = false;
++	bool long_desc_flag = false;
+ 	struct option list_options[] = {
+ 		OPT_BOOLEAN(0, "raw-dump", &raw_dump, "Dump raw events"),
+ 		OPT_BOOLEAN('d', "desc", &desc_flag,
+ 			    "Print extra event descriptions. --no-desc to not print."),
++		OPT_BOOLEAN('v', "long-desc", &long_desc_flag,
++			    "Print longer event descriptions."),
+ 		OPT_END()
+ 	};
+ 	const char * const list_usage[] = {
+-		"perf list [--no-desc] [hw|sw|cache|tracepoint|pmu|event_glob]",
++		"perf list [<options>] [hw|sw|cache|tracepoint|pmu|event_glob]",
+ 		NULL
+ 	};
  
- 	fprintf(outfp, "},\n");
+@@ -44,7 +47,7 @@ int cmd_list(int argc, const char **argv, const char *prefix __maybe_unused)
+ 		printf("\nList of pre-defined events (to be used in -e):\n\n");
  
-@@ -238,7 +240,7 @@ static void print_events_table_suffix(FILE *outfp)
- /* Call func with each event in the json file */
- int json_events(const char *fn,
- 	  int (*func)(void *data, char *name, char *event, char *desc,
--		      char *long_desc),
-+		      char *long_desc, char *topic),
- 	  void *data)
- {
- 	int err = -EIO;
-@@ -259,6 +261,7 @@ int json_events(const char *fn,
- 		char *event = NULL, *desc = NULL, *name = NULL;
- 		char *long_desc = NULL;
- 		char *extra_desc = NULL;
-+		char *topic = NULL;
- 		struct msrmap *msr = NULL;
- 		jsmntok_t *msrval = NULL;
- 		jsmntok_t *precise = NULL;
-@@ -297,6 +300,8 @@ int json_events(const char *fn,
- 				   !json_streq(map, val, "null")) {
- 				addfield(map, &extra_desc, ". ",
- 					" Spec update: ", val);
-+			} else if (json_streq(map, field, "Topic")) {
-+				addfield(map, &topic, "", "", val);
- 			} else if (json_streq(map, field, "Data_LA") && nz) {
- 				addfield(map, &extra_desc, ". ",
- 					" Supports address when precise",
-@@ -320,12 +325,13 @@ int json_events(const char *fn,
- 			addfield(map, &event, ",", msr->pname, msrval);
- 		fixname(name);
+ 	if (argc == 0) {
+-		print_events(NULL, raw_dump, !desc_flag);
++		print_events(NULL, raw_dump, !desc_flag, long_desc_flag);
+ 		return 0;
+ 	}
  
--		err = func(data, name, event, desc, long_desc);
-+		err = func(data, name, event, desc, long_desc, topic);
- 		free(event);
- 		free(desc);
- 		free(name);
- 		free(long_desc);
- 		free(extra_desc);
-+		free(topic);
- 		if (err)
- 			break;
- 		tok += j;
-diff --git a/tools/perf/pmu-events/jevents.h b/tools/perf/pmu-events/jevents.h
-index b0eb274..9ffcb89 100644
---- a/tools/perf/pmu-events/jevents.h
-+++ b/tools/perf/pmu-events/jevents.h
-@@ -3,7 +3,7 @@
+@@ -63,13 +66,15 @@ int cmd_list(int argc, const char **argv, const char *prefix __maybe_unused)
+ 			 strcmp(argv[i], "hwcache") == 0)
+ 			print_hwcache_events(NULL, raw_dump);
+ 		else if (strcmp(argv[i], "pmu") == 0)
+-			print_pmu_events(NULL, raw_dump, !desc_flag);
++			print_pmu_events(NULL, raw_dump, !desc_flag,
++						long_desc_flag);
+ 		else {
+ 			char *sep = strchr(argv[i], ':'), *s;
+ 			int sep_idx;
  
- int json_events(const char *fn,
- 		int (*func)(void *data, char *name, char *event, char *desc,
--				char *long_desc),
-+				char *long_desc, char *topic),
- 		void *data);
- char *get_cpu_str(void);
- 
-diff --git a/tools/perf/pmu-events/pmu-events.h b/tools/perf/pmu-events/pmu-events.h
-index 711f049..6b69f4b 100644
---- a/tools/perf/pmu-events/pmu-events.h
-+++ b/tools/perf/pmu-events/pmu-events.h
-@@ -9,6 +9,7 @@ struct pmu_event {
- 	const char *event;
- 	const char *desc;
- 	const char *long_desc;
-+	const char *topic;
- };
- 
- /*
+ 			if (sep == NULL) {
+-				print_events(argv[i], raw_dump, !desc_flag);
++				print_events(argv[i], raw_dump, !desc_flag,
++							long_desc_flag);
+ 				continue;
+ 			}
+ 			sep_idx = sep - argv[i];
 -- 
 1.7.9.5
