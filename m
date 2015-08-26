@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E4ED1A1D9F
+ by lists.ozlabs.org (Postfix) with ESMTPS id 406501A1DA0
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:26:59 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 26 Aug 2015 13:56:56 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 962AA394005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:50 +0530 (IST)
+ Wed, 26 Aug 2015 13:56:55 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 820AB125806C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:12 +0530 (IST)
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7Q8QhSN52232424
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:44 +0530
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7Q8Qgvl27001078
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:43 +0530
 Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q8QfGF025342
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:42 +0530
+ t7Q8QeIF025262
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:41 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  ryabinin.a.a@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 08/10] kasan: Update feature support file
-Date: Wed, 26 Aug 2015 13:56:16 +0530
-Message-Id: <1440577578-15813-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 07/10] kasan: Make INLINE KASan support arch selectable
+Date: Wed, 26 Aug 2015 13:56:15 +0530
+Message-Id: <1440577578-15813-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,66 +39,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have two features KASAN and KASAN_INLINE, add new feature
-support file for the same.
+Some of the archs, may find it difficult to support inline KASan
+mode. Add HAVE_ARCH_KASAN_INLINE so that we can disable inline
+support at config time.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- .../debug/KASAN/KASAN_INLINE/arch-support.txt      | 40 ++++++++++++++++++++++
- .../KASAN/{ => KASAN_OUTLINE}/arch-support.txt     |  0
- 2 files changed, 40 insertions(+)
- create mode 100644 Documentation/features/debug/KASAN/KASAN_INLINE/arch-support.txt
- rename Documentation/features/debug/KASAN/{ => KASAN_OUTLINE}/arch-support.txt (100%)
+ arch/x86/Kconfig       |  1 +
+ lib/Kconfig.kasan      |  2 ++
+ scripts/Makefile.kasan | 28 ++++++++++++++--------------
+ 3 files changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/features/debug/KASAN/KASAN_INLINE/arch-support.txt b/Documentation/features/debug/KASAN/KASAN_INLINE/arch-support.txt
-new file mode 100644
-index 000000000000..834818fba910
---- /dev/null
-+++ b/Documentation/features/debug/KASAN/KASAN_INLINE/arch-support.txt
-@@ -0,0 +1,40 @@
-+#
-+# Feature name:          KASAN
-+#         Kconfig:       HAVE_ARCH_KASAN_INLINE
-+#         description:   arch supports the KASAN runtime memory checker
-+#
-+    -----------------------
-+    |         arch |status|
-+    -----------------------
-+    |       alpha: | TODO |
-+    |         arc: | TODO |
-+    |         arm: | TODO |
-+    |       arm64: | TODO |
-+    |       avr32: | TODO |
-+    |    blackfin: | TODO |
-+    |         c6x: | TODO |
-+    |        cris: | TODO |
-+    |         frv: | TODO |
-+    |       h8300: | TODO |
-+    |     hexagon: | TODO |
-+    |        ia64: | TODO |
-+    |        m32r: | TODO |
-+    |        m68k: | TODO |
-+    |       metag: | TODO |
-+    |  microblaze: | TODO |
-+    |        mips: | TODO |
-+    |     mn10300: | TODO |
-+    |       nios2: | TODO |
-+    |    openrisc: | TODO |
-+    |      parisc: | TODO |
-+    |     powerpc: | TODO |
-+    |        s390: | TODO |
-+    |       score: | TODO |
-+    |          sh: | TODO |
-+    |       sparc: | TODO |
-+    |        tile: | TODO |
-+    |          um: | TODO |
-+    |   unicore32: | TODO |
-+    |         x86: |  ok  |
-+    |      xtensa: | TODO |
-+    -----------------------
-diff --git a/Documentation/features/debug/KASAN/arch-support.txt b/Documentation/features/debug/KASAN/KASAN_OUTLINE/arch-support.txt
-similarity index 100%
-rename from Documentation/features/debug/KASAN/arch-support.txt
-rename to Documentation/features/debug/KASAN/KASAN_OUTLINE/arch-support.txt
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index b3a1a5d77d92..4416f80580fb 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -78,6 +78,7 @@ config X86
+ 	select HAVE_ARCH_HUGE_VMAP		if X86_64 || X86_PAE
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select HAVE_ARCH_KASAN			if X86_64 && SPARSEMEM_VMEMMAP
++	select HAVE_ARCH_KASAN_INLINE			if X86_64 && SPARSEMEM_VMEMMAP
+ 	select HAVE_ARCH_KGDB
+ 	select HAVE_ARCH_KMEMCHECK
+ 	select HAVE_ARCH_SECCOMP_FILTER
+diff --git a/lib/Kconfig.kasan b/lib/Kconfig.kasan
+index 39f24d6721e5..e9d1bb1175b8 100644
+--- a/lib/Kconfig.kasan
++++ b/lib/Kconfig.kasan
+@@ -32,6 +32,7 @@ config KASAN_OUTLINE
+ 	  however it doesn't bloat size of kernel's .text section so
+ 	  much as inline does.
+ 
++if HAVE_ARCH_KASAN_INLINE
+ config KASAN_INLINE
+ 	bool "Inline instrumentation"
+ 	help
+@@ -40,6 +41,7 @@ config KASAN_INLINE
+ 	  it gives about x2 boost over outline instrumentation), but
+ 	  make kernel's .text size much bigger.
+ 	  This requires a gcc version of 5.0 or later.
++endif
+ 
+ endchoice
+ 
+diff --git a/scripts/Makefile.kasan b/scripts/Makefile.kasan
+index 3f874d24234f..c1c06e9e107a 100644
+--- a/scripts/Makefile.kasan
++++ b/scripts/Makefile.kasan
+@@ -1,29 +1,29 @@
+ ifdef CONFIG_KASAN
+-ifdef CONFIG_KASAN_INLINE
+-	call_threshold := 10000
+-else
+-	call_threshold := 0
+-endif
+-
+-CFLAGS_KASAN_MINIMAL := -fsanitize=kernel-address
+ 
+ CFLAGS_KASAN := $(call cc-option, -fsanitize=kernel-address \
+-		-fasan-shadow-offset=$(CONFIG_KASAN_SHADOW_OFFSET) \
+-		--param asan-stack=1 --param asan-globals=1 \
+-		--param asan-instrumentation-with-call-threshold=$(call_threshold))
+-
+-ifeq ($(call cc-option, $(CFLAGS_KASAN_MINIMAL) -Werror),)
++                   --param asan-instrumentation-with-call-threshold=0)
++ifeq ($(CFLAGS_KASAN),)
+    ifneq ($(CONFIG_COMPILE_TEST),y)
+         $(warning Cannot use CONFIG_KASAN: \
+             -fsanitize=kernel-address is not supported by compiler)
+    endif
+ else
+-    ifeq ($(CFLAGS_KASAN),)
++
++   ifdef CONFIG_KASAN_INLINE
++   CFLAGS_KASAN_INLINE := $(call cc-option, -fsanitize=kernel-address \
++                        -fasan-shadow-offset=$(CONFIG_KASAN_SHADOW_OFFSET) \
++                        --param asan-stack=1 --param asan-globals=1 \
++                        --param asan-instrumentation-with-call-threshold=10000)
++
++    ifeq ($(CFLAGS_KASAN_INLINE),)
+         ifneq ($(CONFIG_COMPILE_TEST),y)
+             $(warning CONFIG_KASAN: compiler does not support all options.\
+                 Trying minimal configuration)
+         endif
+-        CFLAGS_KASAN := $(CFLAGS_KASAN_MINIMAL)
++    else
++        CFLAGS_KASAN := $(CFLAGS_KASAN_INLINE)
+     endif
++    endif
++
+ endif
+ endif
 -- 
 2.5.0
