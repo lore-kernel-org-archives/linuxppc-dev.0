@@ -1,20 +1,18 @@
-Return-Path: <chenhui.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA8801A1D8C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:10:03 +1000 (AEST)
-From: Chenhui Zhao <chenhui.zhao@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-CC: <linux-kernel@vger.kernel.org>, <Jason.Jin@freescale.com>
-Subject: [PATCH v2,5/5] PowerPC/mpc85xx: Add CPU hotplug support for E6500
-Date: Wed, 26 Aug 2015 20:09:48 +0800
-Message-ID: <1440590988-25594-5-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
-References: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3012C1A0CBA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:23:13 +1000 (AEST)
+In-Reply-To: <1440420167-8879-1-git-send-email-mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, mst@redhat.com,
+ gpiccoli@linux.vnet.ibm.com
+Subject: Re: [1/2] PCI: Make pci_msi_setup_pci_dev() non-static for use by
+ arch code
+Message-Id: <20150826122313.0568114028E@ozlabs.org>
+Date: Wed, 26 Aug 2015 22:23:12 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,266 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Support Freescale E6500 core-based platforms, like t4240.
-Support disabling/enabling individual CPU thread dynamically.
+On Mon, 2015-24-08 at 12:42:46 UTC, Michael Ellerman wrote:
+> From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+> 
+> Commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+> doesn't support MSI") changed the location of the code that initialises
+> dev->msi_cap/msix_cap and then disables MSI/MSI-X interrupts at PCI
+> probe time in devices that have this flag set. It moved the code from
+> pci_msi_init_pci_dev() to a new function named pci_msi_setup_pci_dev(),
+> called by pci_setup_device().
+> 
+> The pseries PCI probing code does not call pci_setup_device(), so since
+> the aforementioned commit the function pci_msi_setup_pci_dev() is not
+> called and MSI/MSI-X interrupts are left enabled. Additionally because
+> dev->msi_cap/msix_cap are not initialised no driver can ever enable
+> MSI/MSI-X.
+> 
+> To fix this, the pseries PCI probe should manually call
+> pci_msi_setup_pci_dev(), so this patch makes it non-static.
+> 
+> Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel doesn't support MSI")
+> [mpe: Update change log to mention dev->msi_cap/msix_cap]
+> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
----
-major changes for v2:
-* start Thread1 by Thread0 when we want to boot Thread1 only replacing
-  the method of changing cpu physical id
+Applied to powerpc fixes.
 
- arch/powerpc/include/asm/cputhreads.h |  9 +++++
- arch/powerpc/include/asm/smp.h        |  1 +
- arch/powerpc/kernel/head_64.S         | 69 ++++++++++++++++++++++++++++++++++-
- arch/powerpc/platforms/85xx/smp.c     | 53 ++++++++++++++-------------
- arch/powerpc/sysdev/fsl_rcpm.c        |  2 +-
- 5 files changed, 106 insertions(+), 28 deletions(-)
+https://git.kernel.org/powerpc/c/22b6839b914bbe5d94de11bb
 
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index ba42e46..9920f61 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -1,6 +1,7 @@
- #ifndef _ASM_POWERPC_CPUTHREADS_H
- #define _ASM_POWERPC_CPUTHREADS_H
- 
-+#ifndef __ASSEMBLY__
- #include <linux/cpumask.h>
- 
- /*
-@@ -95,6 +96,14 @@ static inline int cpu_last_thread_sibling(int cpu)
- }
- 
- 
-+#ifdef CONFIG_PPC_BOOK3E
-+void book3e_start_thread(int thread, unsigned long addr);
-+void book3e_stop_thread(int thread);
-+#endif
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#define INVALID_THREAD_HWID	0x0fff
- 
- #endif /* _ASM_POWERPC_CPUTHREADS_H */
- 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 4ff5b71..a1faa4c 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -200,6 +200,7 @@ extern void generic_secondary_thread_init(void);
- extern unsigned long __secondary_hold_spinloop;
- extern unsigned long __secondary_hold_acknowledge;
- extern char __secondary_hold;
-+extern unsigned int booting_thread_hwid;
- 
- extern void __early_start(void);
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index d48125d..6df2aa4 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -40,6 +40,7 @@
- #include <asm/kvm_book3s_asm.h>
- #include <asm/ptrace.h>
- #include <asm/hw_irq.h>
-+#include <asm/cputhreads.h>
- 
- /* The physical memory is laid out such that the secondary processor
-  * spin code sits at 0x0000...0x00ff. On server, the vectors follow
-@@ -181,6 +182,44 @@ exception_marker:
- #endif
- 
- #ifdef CONFIG_PPC_BOOK3E
-+	.globl	booting_thread_hwid
-+booting_thread_hwid:
-+	.long  INVALID_THREAD_HWID
-+	.align 3
-+/*
-+ * start threads in the same cpu
-+ * input parameters:
-+ * r3 = the thread physical id
-+ * r4 = the entry point where thread starts
-+ */
-+_GLOBAL(book3e_start_thread)
-+	LOAD_REG_IMMEDIATE(r5, MSR_KERNEL)
-+	cmpi	0, r3, 0
-+	bne	10f
-+	mttmr	TMRN_IMSR0, r5
-+	mttmr	TMRN_INIA0, r4
-+	b	11f
-+10:
-+	mttmr	TMRN_IMSR1, r5
-+	mttmr	TMRN_INIA1, r4
-+11:
-+	isync
-+	li	r6, 1
-+	sld	r6, r6, r3
-+	mtspr	SPRN_TENS, r6
-+	isync
-+	blr
-+
-+/*
-+ * r3 = the thread physical id
-+ */
-+_GLOBAL(book3e_stop_thread)
-+	li	r4, 1
-+	sld	r4, r4, r3
-+	mtspr	SPRN_TENC, r4
-+	isync
-+	blr
-+
- _GLOBAL(fsl_secondary_thread_init)
- 	/* Enable branch prediction */
- 	lis     r3,BUCSR_INIT@h
-@@ -197,8 +236,10 @@ _GLOBAL(fsl_secondary_thread_init)
- 	 * but the low bit right by two bits so that the cpu numbering is
- 	 * continuous.
- 	 */
--	mfspr	r3, SPRN_PIR
--	rlwimi	r3, r3, 30, 2, 30
-+	bl	10f
-+10:	mflr	r5
-+	addi	r5,r5,(booting_thread_hwid - 10b)
-+	lwz	r3,0(r5)
- 	mtspr	SPRN_PIR, r3
- #endif
- 
-@@ -245,6 +286,30 @@ _GLOBAL(generic_secondary_smp_init)
- 	mr	r3,r24
- 	mr	r4,r25
- 	bl	book3e_secondary_core_init
-+
-+/*
-+ * If we want to boot Thread1, start Thread1 and stop Thread0.
-+ * Note that only Thread0 will run the piece of code.
-+ */
-+	LOAD_REG_ADDR(r3, booting_thread_hwid)
-+	lwz     r4, 0(r3)
-+	cmpwi	r4, INVALID_THREAD_HWID
-+	beq	20f
-+	cmpw	r4, r24
-+	beq	20f
-+
-+	/* start Thread1 */
-+	LOAD_REG_ADDR(r5, fsl_secondary_thread_init)
-+	ld	r4, 0(r5)
-+	li	r3, 1
-+	bl	book3e_start_thread
-+
-+	/* stop Thread0 */
-+	li	r3, 0
-+	bl	book3e_stop_thread
-+10:
-+	b	10b
-+20:
- #endif
- 
- generic_secondary_common_init:
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 73eb994..61f68ad 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -181,17 +181,11 @@ static inline u32 read_spin_table_addr_l(void *spin_table)
- static void wake_hw_thread(void *info)
- {
- 	void fsl_secondary_thread_init(void);
--	unsigned long imsr1, inia1;
--	int nr = *(const int *)info;
-+	unsigned long inia;
-+	int hw_cpu = get_hard_smp_processor_id(*(const int *)info);
- 
--	imsr1 = MSR_KERNEL;
--	inia1 = *(unsigned long *)fsl_secondary_thread_init;
--
--	mttmr(TMRN_IMSR1, imsr1);
--	mttmr(TMRN_INIA1, inia1);
--	mtspr(SPRN_TENS, TEN_THREAD(1));
--
--	smp_generic_kick_cpu(nr);
-+	inia = *(unsigned long *)fsl_secondary_thread_init;
-+	book3e_start_thread(cpu_thread_in_core(hw_cpu), inia);
- }
- #endif
- 
-@@ -279,7 +273,6 @@ static int smp_85xx_kick_cpu(int nr)
- 	int ret = 0;
- #ifdef CONFIG_PPC64
- 	int primary = nr;
--	int primary_hw = get_hard_smp_processor_id(primary);
- #endif
- 
- 	WARN_ON(nr < 0 || nr >= num_possible_cpus());
-@@ -287,33 +280,43 @@ static int smp_85xx_kick_cpu(int nr)
- 	pr_debug("kick CPU #%d\n", nr);
- 
- #ifdef CONFIG_PPC64
-+	booting_thread_hwid = INVALID_THREAD_HWID;
- 	/* Threads don't use the spin table */
--	if (cpu_thread_in_core(nr) != 0) {
--		int primary = cpu_first_thread_sibling(nr);
-+	if (threads_per_core == 2) {
-+		booting_thread_hwid = get_hard_smp_processor_id(nr);
-+		primary = cpu_first_thread_sibling(nr);
- 
- 		if (WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_SMT)))
- 			return -ENOENT;
- 
--		if (cpu_thread_in_core(nr) != 1) {
--			pr_err("%s: cpu %d: invalid hw thread %d\n",
--			       __func__, nr, cpu_thread_in_core(nr));
--			return -ENOENT;
--		}
--
--		if (!cpu_online(primary)) {
--			pr_err("%s: cpu %d: primary %d not online\n",
--			       __func__, nr, primary);
--			return -ENOENT;
-+		/*
-+		 * If either one of threads in the same core is online,
-+		 * use the online one to start the other.
-+		 */
-+		if (qoriq_pm_ops)
-+			qoriq_pm_ops->cpu_up_prepare(nr);
-+
-+		if (cpu_online(primary)) {
-+			smp_call_function_single(primary,
-+					wake_hw_thread, &nr, 1);
-+			goto done;
-+		} else if (cpu_online(primary + 1)) {
-+			smp_call_function_single(primary + 1,
-+					wake_hw_thread, &nr, 1);
-+			goto done;
- 		}
- 
--		smp_call_function_single(primary, wake_hw_thread, &nr, 0);
--		return 0;
-+		/* If both threads are offline, continue to star primary cpu */
-+	} else if (threads_per_core > 2) {
-+		pr_err("Do not support more than 2 threads per CPU.");
-+		return -EINVAL;
- 	}
- 
- 	ret = smp_85xx_start_cpu(primary);
- 	if (ret)
- 		return ret;
- 
-+done:
- 	paca[nr].cpu_start = 1;
- 	generic_set_cpu_up(nr);
- 
-diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
-index ed59881..f52d02a 100644
---- a/arch/powerpc/sysdev/fsl_rcpm.c
-+++ b/arch/powerpc/sysdev/fsl_rcpm.c
-@@ -140,7 +140,7 @@ static void qoriq_disable_thread(int cpu)
- 	int hw_cpu = get_hard_smp_processor_id(cpu);
- 	int thread = cpu_thread_in_core(hw_cpu);
- 
--	mtspr(SPRN_TENC, TEN_THREAD(thread));
-+	book3e_stop_thread(thread);
- }
- #endif
- 
--- 
-1.9.1
+cheers
