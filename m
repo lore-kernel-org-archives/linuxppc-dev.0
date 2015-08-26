@@ -2,7 +2,7 @@ Return-Path: <sukadev@linux.vnet.ibm.com>
 Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6960B1A0066
+ by lists.ozlabs.org (Postfix) with ESMTPS id C31C81A0179
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:53 +1000 (AEST)
 Received: from /spool/local
  by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -11,26 +11,26 @@ Received: from /spool/local
  Wed, 26 Aug 2015 00:07:51 -0600
 Received: from b03cxnp07028.gho.boulder.ibm.com
  (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id A3CAE3E40047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:49 -0600 (MDT)
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7895419D804A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:58:46 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
  by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t7Q64wRe45678642
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:04:58 -0700
+ ESMTP id t7Q64xpZ45678652
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:04:59 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q67miJ029749
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:49 -0600
+ t7Q67nXw029856
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:50 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v16 07/16] perf,
- tools: Query terminal width and use in perf list
-Date: Tue, 25 Aug 2015 23:05:57 -0700
-Message-Id: <1440569166-22169-8-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v16 09/16] perf,
+ tools: Add override support for event list CPUID
+Date: Tue, 25 Aug 2015 23:05:59 -0700
+Message-Id: <1440569166-22169-10-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,100 +44,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Andi Kleen <ak@linux.intel.com>
 
-Automatically adapt the now wider and word wrapped perf list
-output to wider terminals. This requires querying the terminal
-before the auto pager takes over, and exporting this
-information from the pager subsystem.
+Add a PERF_CPUID variable to override the CPUID of the current CPU (within
+the current architecture). This is useful for testing, so that all event
+lists can be tested on a single system.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Namhyung Kim <namhyung@kernel.org>
 Acked-by: Jiri Olsa <jolsa@redhat.com>
 ---
- tools/perf/util/cache.h |    1 +
- tools/perf/util/pager.c |   15 +++++++++++++++
- tools/perf/util/pmu.c   |    3 ++-
- 3 files changed, 18 insertions(+), 1 deletion(-)
 
-diff --git a/tools/perf/util/cache.h b/tools/perf/util/cache.h
-index c861373..8e0d4b8 100644
---- a/tools/perf/util/cache.h
-+++ b/tools/perf/util/cache.h
-@@ -32,6 +32,7 @@ extern const char *perf_config_dirname(const char *, const char *);
- extern void setup_pager(void);
- extern int pager_in_use(void);
- extern int pager_use_color;
-+int pager_get_columns(void);
- 
- char *alias_lookup(const char *alias);
- int split_cmdline(char *cmdline, const char ***argv);
-diff --git a/tools/perf/util/pager.c b/tools/perf/util/pager.c
-index 53ef006..1770c88 100644
---- a/tools/perf/util/pager.c
-+++ b/tools/perf/util/pager.c
-@@ -1,6 +1,7 @@
- #include "cache.h"
- #include "run-command.h"
- #include "sigchain.h"
-+#include <sys/ioctl.h>
- 
- /*
-  * This is split up from the rest of git so that we can do
-@@ -8,6 +9,7 @@
-  */
- 
- static int spawned_pager;
-+static int pager_columns;
- 
- static void pager_preexec(void)
- {
-@@ -47,9 +49,12 @@ static void wait_for_pager_signal(int signo)
- void setup_pager(void)
- {
- 	const char *pager = getenv("PERF_PAGER");
-+	struct winsize sz;
- 
- 	if (!isatty(1))
- 		return;
-+	if (ioctl(1, TIOCGWINSZ, &sz) == 0)
-+		pager_columns = sz.ws_col;
- 	if (!pager)
- 		pager = getenv("PAGER");
- 	if (!(pager || access("/usr/bin/pager", X_OK)))
-@@ -93,3 +98,13 @@ int pager_in_use(void)
- 	env = getenv("PERF_PAGER_IN_USE");
- 	return env ? perf_config_bool("PERF_PAGER_IN_USE", env) : 0;
- }
-+
-+int pager_get_columns(void)
-+{
-+	char *s;
-+
-+	s = getenv("COLUMNS");
-+	if (s)
-+		return atoi(s);
-+	return (pager_columns ? pager_columns : 80) - 2;
-+}
+v2: Fix double free in earlier version.
+    Print actual CPUID being used with verbose option.
+---
+ tools/perf/util/pmu.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
 diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index cb0396e..0f10fa3 100644
+index e4cb21e..ca01aea 100644
 --- a/tools/perf/util/pmu.c
 +++ b/tools/perf/util/pmu.c
-@@ -14,6 +14,7 @@
- #include "cpumap.h"
- #include "header.h"
- #include "pmu-events/pmu-events.h"
-+#include "cache.h"
+@@ -477,10 +477,16 @@ static int pmu_add_cpu_aliases(struct list_head *head)
+ 	struct pmu_event *pe;
+ 	char *cpuid;
  
- struct perf_pmu_format {
- 	char *name;
-@@ -1079,7 +1080,7 @@ void print_pmu_events(const char *event_glob, bool name_only)
- 	int len, j;
- 	struct pair *aliases;
- 	int numdesc = 0;
--	int columns = 78;
-+	int columns = pager_get_columns();
+-	cpuid = get_cpuid_str();
++	cpuid = getenv("PERF_CPUID");
++	if (cpuid)
++		cpuid = strdup(cpuid);
++	if (!cpuid)
++		cpuid = get_cpuid_str();
+ 	if (!cpuid)
+ 		return 0;
  
- 	pmu = NULL;
- 	len = 0;
++	pr_debug("Using CPUID %s\n", cpuid);
++
+ 	i = 0;
+ 	while (1) {
+ 		map = &pmu_events_map[i++];
 -- 
 1.7.9.5
