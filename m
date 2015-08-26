@@ -1,30 +1,22 @@
-Return-Path: <rth7680@gmail.com>
-Received: from mail-qk0-x22f.google.com (mail-qk0-x22f.google.com
- [IPv6:2607:f8b0:400d:c09::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0129.outbound.protection.outlook.com [207.46.100.129])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DEF1F1A0036
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 05:48:41 +1000 (AEST)
-Received: by qkch123 with SMTP id h123so120312228qkc.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 12:48:39 -0700 (PDT)
-Sender: Richard Henderson <rth7680@gmail.com>
-Subject: Re: Ping Re: [PATCH 0/8] math-emu: Update kernel math-emu code from
- current glibc soft-fp
-To: Joseph Myers <joseph@codesourcery.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
- <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
- <1440026806.13406.2.camel@ellerman.id.au>
- <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-From: Richard Henderson <rth@twiddle.net>
-Message-ID: <55DE1813.7030901@twiddle.net>
-Date: Wed, 26 Aug 2015 12:48:35 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 348DB1A01ED
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 06:36:00 +1000 (AEST)
+Date: Wed, 26 Aug 2015 15:35:39 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Chenhui Zhao <chenhui.zhao@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <Jason.Jin@freescale.com>
+Subject: Re: [PATCH v2,2/5] powerpc/rcpm: add RCPM driver
+Message-ID: <20150826203539.GA10582@home.buserror.net>
+References: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
+ <1440590988-25594-2-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1440590988-25594-2-git-send-email-chenhui.zhao@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,59 +26,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/26/2015 07:44 AM, Joseph Myers wrote:
-> On Thu, 20 Aug 2015, Michael Ellerman wrote:
->
->> On Wed, 2015-08-19 at 14:39 +0000, Joseph Myers wrote:
->>> I'd like to ping this patch series, not having seen any comments on it.
->>>
->>> [PATCH 0/8] math-emu: Update kernel math-emu code from current glibc soft-fp
->>> https://lkml.org/lkml/2015/7/2/394
->>>
->>> [PATCH 1/8] math-emu: Move math-emu to math-emu-old
->>> https://lkml.org/lkml/2015/7/2/395
->>>
->>> [PATCH 2/8] math-emu: Import current glibc soft-fp as include/math-emu
->>> https://lkml.org/lkml/2015/7/2/398
->>>
->>> [PATCH 3/8] alpha/math-emu: Move alpha from math-emu-old to math-emu
->>> https://lkml.org/lkml/2015/7/2/399
->>>
->>> [PATCH 4/8] powerpc/math-emu: Move powerpc from math-emu-old to math-emu
->>> https://lkml.org/lkml/2015/7/2/400
->>>
->>> [PATCH 5/8] s390/math-emu: Move s390 from math-emu-old to math-emu
->>> https://lkml.org/lkml/2015/7/2/401
->>>
->>> [PATCH 6/8] sh/math-emu: Move sh from math-emu-old to math-emu
->>> https://lkml.org/lkml/2015/7/2/402
->>>
->>> [PATCH 7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
->>> https://lkml.org/lkml/2015/7/2/404
->>>
->>> [PATCH 8/8] math-emu: Remove math-emu-old
->>> https://lkml.org/lkml/2015/7/2/405
->>>
->>> As noted in patch 0, the dependencies are as follows: patch 2 depends on
->>> patch 1, patches 3-7 depend on patches 1 and 2 but are independent of each
->>> other, patch 8 depends on all the other patches.
->>
->> Hi Joseph,
->>
->> I have done some testing on powerpc, and it seems good.
->>
->> I'm reluctant to proceed with merging them though until we've heard at least
->> *something* from the other maintainers.
->
-> Ping again for the other-architecture maintainers (alpha, s390, sh,
-> sparc)....
->
+On Wed, Aug 26, 2015 at 08:09:45PM +0800, Chenhui Zhao wrote:
+> +#ifdef CONFIG_PPC_BOOK3E
+> +static void qoriq_disable_thread(int cpu)
+> +{
+> +	int hw_cpu = get_hard_smp_processor_id(cpu);
+> +	int thread = cpu_thread_in_core(hw_cpu);
+> +
+> +	mtspr(SPRN_TENC, TEN_THREAD(thread));
+> +}
+> +#endif
 
-I thought I already gave an
+This file is always used on book3e.  If the intent is to only build this
+on 64-bit, use CONFIG_PPC64 rather than relying on the fact that this one
+of the confusing mess of BOOKE/BOOK3E symbols is 64-bit-only.
 
-Acked-by: Richard Henderson <rth@twiddle.net>
+> +static void rcpm_v2_cpu_die(int cpu)
+> +{
+> +#ifdef CONFIG_PPC_BOOK3E
+> +	int primary;
+> +
+> +	if (threads_per_core == 2) {
+> +		primary = cpu_first_thread_sibling(cpu);
+> +		if (cpu_is_offline(primary) && cpu_is_offline(primary + 1)) {
+> +			/* if both threads are offline, put the cpu in PH20 */
+> +			rcpm_v2_cpu_enter_state(cpu, E500_PM_PH20);
+> +		} else {
+> +			/* if only one thread is offline, disable the thread */
+> +			qoriq_disable_thread(cpu);
+> +		}
+> +	}
+> +#endif
+> +
+> +	if (threads_per_core == 1) {
+> +		rcpm_v2_cpu_enter_state(cpu, E500_PM_PH20);
+> +		return;
+> +	}
+> +}
 
-for the alpha patches.
+That "return;" adds nothing, and it's even more awkward having it on the
+one-thread case but not the two-thread case.
 
+> +static void rcpm_v1_cpu_up_prepare(int cpu)
+> +{
+> +	rcpm_v1_cpu_exit_state(cpu, E500_PM_PH15);
+> +	rcpm_v1_irq_unmask(cpu);
+> +}
+> +
+> +static void rcpm_v2_cpu_exit_state(int cpu, int state)
+> +{
+> +	int hw_cpu = get_hard_smp_processor_id(cpu);
+> +	u32 mask = 1 << cpu_core_index_of_thread(hw_cpu);
 
-r~
+Are you sure cpu_core_index_of_thread() is supposed to take a hardware
+cpu id?  The only current user, pseries_energy.c, has the comment
+"Convert logical cpu number to core number".
+
+> +static const struct of_device_id rcpm_matches[] = {
+> +	{
+> +		.compatible = "fsl,qoriq-rcpm-1.0",
+> +		.data = (void *)&qoriq_rcpm_v1_ops,
+> +	},
+> +	{
+> +		.compatible = "fsl,qoriq-rcpm-2.0",
+> +		.data = (void *)&qoriq_rcpm_v2_ops,
+> +	},
+> +	{
+> +		.compatible = "fsl,qoriq-rcpm-2.1",
+> +		.data = (void *)&qoriq_rcpm_v2_ops,
+> +	},
+> +	{},
+> +};
+
+Unnecessary (and const-unsafe) casts.
+
+> +
+> +int __init fsl_rcpm_init(void)
+> +{
+> +	struct device_node *np;
+> +	const struct of_device_id *match;
+> +	void __iomem *base;
+> +
+> +	np = of_find_matching_node_and_match(NULL, rcpm_matches, &match);
+> +	if (!np) {
+> +		pr_err("can't find the rcpm node.\n");
+> +		return -ENODEV;
+> +	}
+
+It's not an error for the device tree node to not have this.
+
+-Scott
