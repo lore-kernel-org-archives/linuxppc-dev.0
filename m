@@ -1,24 +1,38 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
- [209.85.220.49])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 448801A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:52:32 +1000 (AEST)
-Received: by pacti10 with SMTP id ti10so81489380pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 01:52:30 -0700 (PDT)
-Subject: Re: [PATCH 2/3] powerpc/iommu: Cleanup setting of DMA base/offset
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <1435123527.3996.30.camel@kernel.crashing.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Wei Yang <weiyang@linux.vnet.ibm.com>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55DD7E49.6010709@ozlabs.ru>
-Date: Wed, 26 Aug 2015 18:52:25 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id EED591A077B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:48 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 26 Aug 2015 18:55:37 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 982452BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:34 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7Q8tQUY44957740
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:34 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7Q8t2NX027209
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:02 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ryabinin.a.a@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2 04/10] kasan: Don't use kasan shadow pointer in generic
+ functions
+In-Reply-To: <1440577578-15813-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1440577578-15813-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 26 Aug 2015 14:24:42 +0530
+Message-ID: <87mvxectv1.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1435123527.3996.30.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,114 +42,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2015 03:25 PM, Benjamin Herrenschmidt wrote:
-> Now that the table and the offset can co-exist, we no longer need
-> to flip/flop, we can just establish both once at boot time.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->   arch/powerpc/platforms/powernv/pci-ioda.c |  3 +--
->   arch/powerpc/platforms/pseries/iommu.c    |  3 +--
->   arch/powerpc/sysdev/dart_iommu.c          | 16 +++-------------
->   3 files changed, 5 insertions(+), 17 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 5738d31..2c286b57 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1620,11 +1620,9 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
->   	if (bypass) {
->   		dev_info(&pdev->dev, "Using 64-bit DMA iommu bypass\n");
->   		set_dma_ops(&pdev->dev, &dma_direct_ops);
-> -		set_dma_offset(&pdev->dev, pe->tce_bypass_base);
 
+Missed to cherry-pick the updated version of this patch, before sending
+the series out.
 
-This particular change breaks SRIOV. So some SRIOV code relies on that but 
-I could not spot this place quickly.
+commit aeb324e09d95c189eda4ce03790da94b535d1dfc
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Fri Aug 14 12:28:58 2015 +0530
 
+    kasan: Don't use kasan shadow pointer in generic functions
+    
+    We can't use generic functions like print_hex_dump to access kasan
+    shadow region. This require us to setup another kasan shadow region
+    for the address passed (kasan shadow address). Most architecture won't
+    be able to do that. Hence make a copy of the shadow region row and
+    pass that to generic functions.
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Also, this specific patch in powerpc/next tree just does not compile 
-because of "powerpc/iommu: Remove dma_data union" but this is another story :)
-
-
-
-
->   	} else {
->   		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
->   		set_dma_ops(&pdev->dev, &dma_iommu_ops);
-> -		set_iommu_table_base(&pdev->dev, pe->table_group.tables[0]);
->   	}
->   	*pdev->dev.dma_mask = dma_mask;
->   	return 0;
-> @@ -1659,6 +1657,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
->
->   	list_for_each_entry(dev, &bus->devices, bus_list) {
->   		set_iommu_table_base(&dev->dev, pe->table_group.tables[0]);
-> +		set_dma_offset(&dev->dev, pe->tce_bypass_base);
->   		iommu_add_device(&dev->dev);
->
->   		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 10510de..0946b98 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -1253,11 +1253,10 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
->   		}
->   	}
->
-> -	/* fall back on iommu ops, restore table pointer with ops */
-> +	/* fall back on iommu ops */
->   	if (!ddw_enabled && get_dma_ops(dev) != &dma_iommu_ops) {
->   		dev_info(dev, "Restoring 32-bit DMA via iommu\n");
->   		set_dma_ops(dev, &dma_iommu_ops);
-> -		pci_dma_dev_setup_pSeriesLP(pdev);
->   	}
->
->   check_mask:
-> diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-> index 90bcdfe..b734863 100644
-> --- a/arch/powerpc/sysdev/dart_iommu.c
-> +++ b/arch/powerpc/sysdev/dart_iommu.c
-> @@ -313,20 +313,11 @@ static void iommu_table_dart_setup(void)
->   	set_bit(iommu_table_dart.it_size - 1, iommu_table_dart.it_map);
->   }
->
-> -static void dma_dev_setup_dart(struct device *dev)
-> -{
-> -	/* We only have one iommu table on the mac for now, which makes
-> -	 * things simple. Setup all PCI devices to point to this table
-> -	 */
-> -	if (get_dma_ops(dev) == &dma_direct_ops)
-> -		set_dma_offset(dev, DART_U4_BYPASS_BASE);
-> -	else
-> -		set_iommu_table_base(dev, &iommu_table_dart);
-> -}
-> -
->   static void pci_dma_dev_setup_dart(struct pci_dev *dev)
->   {
-> -	dma_dev_setup_dart(&dev->dev);
-> +	if (dart_is_u4)
-> +		set_dma_offset(&dev->dev, DART_U4_BYPASS_BASE);
-> +	set_iommu_table_base(&dev->dev, &iommu_table_dart);
->   }
->
->   static void pci_dma_bus_setup_dart(struct pci_bus *bus)
-> @@ -370,7 +361,6 @@ static int dart_dma_set_mask(struct device *dev, u64 dma_mask)
->   		dev_info(dev, "Using 32-bit DMA via iommu\n");
->   		set_dma_ops(dev, &dma_iommu_ops);
->   	}
-> -	dma_dev_setup_dart(dev);
->
->   	*dev->dma_mask = dma_mask;
->   	return 0;
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
-
-
--- 
-Alexey
+diff --git a/mm/kasan/report.c b/mm/kasan/report.c
+index d19d01823a68..60fdb0413f3b 100644
+--- a/mm/kasan/report.c
++++ b/mm/kasan/report.c
+@@ -166,14 +166,20 @@ static void print_shadow_for_address(const void *addr)
+ 	for (i = -SHADOW_ROWS_AROUND_ADDR; i <= SHADOW_ROWS_AROUND_ADDR; i++) {
+ 		const void *kaddr = kasan_shadow_to_mem(shadow_row);
+ 		char buffer[4 + (BITS_PER_LONG/8)*2];
++		char shadow_buf[SHADOW_BYTES_PER_ROW];
+ 
+ 		snprintf(buffer, sizeof(buffer),
+ 			(i == 0) ? ">%p: " : " %p: ", kaddr);
+-
++		/*
++		 * We should not pass a shadow pointer to generic
++		 * function, because generic functions may try to
++		 * kasan mapping for the passed address.
++		 */
++		memcpy(shadow_buf, shadow_row, SHADOW_BYTES_PER_ROW);
+ 		kasan_disable_current();
+ 		print_hex_dump(KERN_ERR, buffer,
+ 			DUMP_PREFIX_NONE, SHADOW_BYTES_PER_ROW, 1,
+-			shadow_row, SHADOW_BYTES_PER_ROW, 0);
++			shadow_buf, SHADOW_BYTES_PER_ROW, 0);
+ 		kasan_enable_current();
+ 
+ 		if (row_is_guilty(shadow_row, shadow))
