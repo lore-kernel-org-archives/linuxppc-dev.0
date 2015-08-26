@@ -1,38 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EED591A077B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:48 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 26 Aug 2015 18:55:37 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 982452BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:34 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7Q8tQUY44957740
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:34 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q8t2NX027209
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:55:02 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ryabinin.a.a@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 04/10] kasan: Don't use kasan shadow pointer in generic
- functions
-In-Reply-To: <1440577578-15813-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1440577578-15813-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 26 Aug 2015 14:24:42 +0530
-Message-ID: <87mvxectv1.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21CBE1A0066
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 19:03:07 +1000 (AEST)
+Subject: Re: Build regressions/improvements in v4.2-rc8
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <1440405251-9184-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdVomabvJOLLJ-tJs6KjL05YpH3zLkyrPbyEghe=WvOVkA@mail.gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ kvm-ppc@vger.kernel.org
+From: Alexander Graf <agraf@suse.de>
+Message-ID: <55DD80C6.7030400@suse.de>
+Date: Wed, 26 Aug 2015 11:03:02 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <CAMuHMdVomabvJOLLJ-tJs6KjL05YpH3zLkyrPbyEghe=WvOVkA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,47 +27,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Missed to cherry-pick the updated version of this patch, before sending
-the series out.
 
-commit aeb324e09d95c189eda4ce03790da94b535d1dfc
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Fri Aug 14 12:28:58 2015 +0530
+On 24.08.15 10:36, Geert Uytterhoeven wrote:
+> On Mon, Aug 24, 2015 at 10:34 AM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> JFYI, when comparing v4.2-rc8[1] to v4.2-rc7[3], the summaries are:
+>>   - build errors: +4/-7
+> 
+> 4 regressions:
+>   + /home/kisskb/slave/src/include/linux/kvm_host.h: error: array
+> subscript is above array bounds [-Werror=array-bounds]:  => 430:19
+>     (arch/powerpc/kvm/book3s_64_mmu.c: In function 'kvmppc_mmu
+> _book3s_64_tlbie':)
+> 
+> powerpc-randconfig (seen before in a v3.15-rc1 build?)
 
-    kasan: Don't use kasan shadow pointer in generic functions
-    
-    We can't use generic functions like print_hex_dump to access kasan
-    shadow region. This require us to setup another kasan shadow region
-    for the address passed (kasan shadow address). Most architecture won't
-    be able to do that. Hence make a copy of the shadow region row and
-    pass that to generic functions.
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+I'm not quite sure what's going wrong here. The code in question does
 
-diff --git a/mm/kasan/report.c b/mm/kasan/report.c
-index d19d01823a68..60fdb0413f3b 100644
---- a/mm/kasan/report.c
-+++ b/mm/kasan/report.c
-@@ -166,14 +166,20 @@ static void print_shadow_for_address(const void *addr)
- 	for (i = -SHADOW_ROWS_AROUND_ADDR; i <= SHADOW_ROWS_AROUND_ADDR; i++) {
- 		const void *kaddr = kasan_shadow_to_mem(shadow_row);
- 		char buffer[4 + (BITS_PER_LONG/8)*2];
-+		char shadow_buf[SHADOW_BYTES_PER_ROW];
- 
- 		snprintf(buffer, sizeof(buffer),
- 			(i == 0) ? ">%p: " : " %p: ", kaddr);
--
-+		/*
-+		 * We should not pass a shadow pointer to generic
-+		 * function, because generic functions may try to
-+		 * kasan mapping for the passed address.
-+		 */
-+		memcpy(shadow_buf, shadow_row, SHADOW_BYTES_PER_ROW);
- 		kasan_disable_current();
- 		print_hex_dump(KERN_ERR, buffer,
- 			DUMP_PREFIX_NONE, SHADOW_BYTES_PER_ROW, 1,
--			shadow_row, SHADOW_BYTES_PER_ROW, 0);
-+			shadow_buf, SHADOW_BYTES_PER_ROW, 0);
- 		kasan_enable_current();
- 
- 		if (row_is_guilty(shadow_row, shadow))
+  kvm_for_each_vcpu(i, v, vcpu->kvm)
+    kvmppc_mmu_pte_vflush(v, va >> 12, mask);
+
+and IIUC the thing we're potentially running over on would be
+kvm->vcpus[i]. But that one is bound by the kvm_for_each_vcpu loop, no?
+
+
+Alex
