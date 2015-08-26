@@ -1,17 +1,18 @@
 Return-Path: <chenhui.zhao@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
+ (mail-bl2on0101.outbound.protection.outlook.com [65.55.169.101])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3A4A81A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:09:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 60F321A077B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:09:58 +1000 (AEST)
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, <Jason.Jin@freescale.com>
-Subject: [PATCH v2,
- 1/5] powerpc/cache: add cache flush operation for various e500
-Date: Wed, 26 Aug 2015 20:09:44 +0800
-Message-ID: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v2,2/5] powerpc/rcpm: add RCPM driver
+Date: Wed, 26 Aug 2015 20:09:45 +0800
+Message-ID: <1440590988-25594-2-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
+References: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,355 +24,704 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Various e500 core have different cache architecture, so they
-need different cache flush operations. Therefore, add a callback
-function cpu_flush_caches to the struct cpu_spec. The cache flush
-operation for the specific kind of e500 is selected at init time.
-The callback function will flush all caches inside the current cpu.
+There is a RCPM (Run Control/Power Management) in Freescale QorIQ
+series processors. The device performs tasks associated with device
+run control and power management.
+
+The driver implements some features: mask/unmask irq, enter/exit low
+power states, freeze time base, etc.
 
 Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@feescale.com>
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
 ---
- arch/powerpc/include/asm/cacheflush.h     |   2 -
- arch/powerpc/include/asm/cputable.h       |  11 +++
- arch/powerpc/kernel/asm-offsets.c         |   3 +
- arch/powerpc/kernel/cpu_setup_fsl_booke.S | 112 ++++++++++++++++++++++++++++++
- arch/powerpc/kernel/cputable.c            |   4 ++
- arch/powerpc/kernel/head_fsl_booke.S      |  74 --------------------
- arch/powerpc/platforms/85xx/smp.c         |   5 +-
- 7 files changed, 133 insertions(+), 78 deletions(-)
+major changes for v2:
+* rcpm_v1_cpu_die() and rcpm_v2_cpu_die() will be executed by the dying cpu.
+  this way, more stable
 
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index 30b35ff..729fde4 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -30,8 +30,6 @@ extern void flush_dcache_page(struct page *page);
- #define flush_dcache_mmap_lock(mapping)		do { } while (0)
- #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+ Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  44 +++
+ arch/powerpc/include/asm/fsl_guts.h                | 105 ++++++
+ arch/powerpc/include/asm/fsl_pm.h                  |  50 +++
+ arch/powerpc/platforms/85xx/Kconfig                |   1 +
+ arch/powerpc/platforms/85xx/common.c               |   3 +
+ arch/powerpc/sysdev/Kconfig                        |   5 +
+ arch/powerpc/sysdev/Makefile                       |   1 +
+ arch/powerpc/sysdev/fsl_rcpm.c                     | 390 +++++++++++++++++++++
+ 8 files changed, 599 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+ create mode 100644 arch/powerpc/include/asm/fsl_pm.h
+ create mode 100644 arch/powerpc/sysdev/fsl_rcpm.c
+
+diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+new file mode 100644
+index 0000000..dc52f70
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+@@ -0,0 +1,44 @@
++* Run Control and Power Management
++
++The RCPM performs all device-level tasks associated with device run control
++and power management.
++
++Required properites:
++  - reg : Offset and length of the register set of RCPM block.
++  - compatible : Sould contain a chip-specific RCPM block compatible string
++	and (if applicable) may contain a chassis-version RCPM compatible string.
++	Chip-specific strings are of the form "fsl,<chip>-rcpm", such as:
++	* "fsl,p2041-rcpm"
++	* "fsl,p3041-rcpm"
++	* "fsl,p4080-rcpm"
++	* "fsl,p5020-rcpm"
++	* "fsl,p5040-rcpm"
++	* "fsl,t4240-rcpm"
++	* "fsl,b4420-rcpm"
++	* "fsl,b4860-rcpm"
++
++	Chassis-version RCPM strings include:
++	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
++	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
++	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
++
++All references to "1.0" and "2.0" refer to the QorIQ chassis version to
++which the chip complies.
++Chassis Version		Example Chips
++---------------		-------------------------------
++1.0					p4080, p5020, p5040, p2041, p3041
++2.0					t4240, b4860, b4420
++2.1					t1040
++
++Example:
++The RCPM node for T4240:
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
++		reg = <0xe2000 0x1000>;
++	};
++
++The RCPM node for P4080:
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,qoriq-rcpm-1.0";
++		reg = <0xe2000 0x1000>;
++	};
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index 43b6bb1..a67413c 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -188,5 +188,110 @@ static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
  
--extern void __flush_disable_L1(void);
--
- extern void flush_icache_range(unsigned long, unsigned long);
- extern void flush_icache_user_range(struct vm_area_struct *vma,
- 				    struct page *page, unsigned long addr,
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index b118072..d89b04a 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -43,6 +43,13 @@ extern int machine_check_e500(struct pt_regs *regs);
- extern int machine_check_e200(struct pt_regs *regs);
- extern int machine_check_47x(struct pt_regs *regs);
+ #endif
  
-+#if defined(CONFIG_E500)
-+extern void cpu_down_flush_e500v2(void);
-+extern void cpu_down_flush_e500mc(void);
-+extern void cpu_down_flush_e5500(void);
-+extern void cpu_down_flush_e6500(void);
++struct ccsr_rcpm_v1 {
++	u8	res0000[4];
++	__be32	cdozsr;	    /* 0x0004 Core Doze Status Register */
++	u8	res0008[4];
++	__be32	cdozcr;	    /* 0x000c Core Doze Control Register */
++	u8	res0010[4];
++	__be32	cnapsr;	    /* 0x0014 Core Nap Status Register */
++	u8	res0018[4];
++	__be32	cnapcr;	    /* 0x001c Core Nap Control Register */
++	u8	res0020[4];
++	__be32	cdozpsr;    /* 0x0024 Core Doze Previous Status Register */
++	u8	res0028[4];
++	__be32	cnappsr;    /* 0x002c Core Nap Previous Status Register */
++	u8	res0030[4];
++	__be32	cwaitsr;    /* 0x0034 Core Wait Status Register */
++	u8	res0038[4];
++	__be32	cwdtdsr;    /* 0x003c Core Watchdog Detect Status Register */
++	__be32	powmgtcsr;  /* 0x0040 PM Control&Status Register */
++#define RCPM_POWMGTCSR_SLP	0x00020000
++	u8	res0044[12];
++	__be32	ippdexpcr;  /* 0x0050 IP Powerdown Exception Control Register */
++	u8	res0054[16];
++	__be32	cpmimr;	    /* 0x0064 Core PM IRQ Mask Register */
++	u8	res0068[4];
++	__be32	cpmcimr;    /* 0x006c Core PM Critical IRQ Mask Register */
++	u8	res0070[4];
++	__be32	cpmmcmr;    /* 0x0074 Core PM Machine Check Mask Register */
++	u8	res0078[4];
++	__be32	cpmnmimr;   /* 0x007c Core PM NMI Mask Register */
++	u8	res0080[4];
++	__be32	ctbenr;	    /* 0x0084 Core Time Base Enable Register */
++	u8	res0088[4];
++	__be32	ctbckselr;  /* 0x008c Core Time Base Clock Select Register */
++	u8	res0090[4];
++	__be32	ctbhltcr;   /* 0x0094 Core Time Base Halt Control Register */
++	u8	res0098[4];
++	__be32	cmcpmaskcr; /* 0x00a4 Core Machine Check Mask Register */
++};
++
++struct ccsr_rcpm_v2 {
++	u8	res_00[12];
++	__be32	tph10sr0;	/* Thread PH10 Status Register */
++	u8	res_10[12];
++	__be32	tph10setr0;	/* Thread PH10 Set Control Register */
++	u8	res_20[12];
++	__be32	tph10clrr0;	/* Thread PH10 Clear Control Register */
++	u8	res_30[12];
++	__be32	tph10psr0;	/* Thread PH10 Previous Status Register */
++	u8	res_40[12];
++	__be32	twaitsr0;	/* Thread Wait Status Register */
++	u8	res_50[96];
++	__be32	pcph15sr;	/* Physical Core PH15 Status Register */
++	__be32	pcph15setr;	/* Physical Core PH15 Set Control Register */
++	__be32	pcph15clrr;	/* Physical Core PH15 Clear Control Register */
++	__be32	pcph15psr;	/* Physical Core PH15 Prev Status Register */
++	u8	res_c0[16];
++	__be32	pcph20sr;	/* Physical Core PH20 Status Register */
++	__be32	pcph20setr;	/* Physical Core PH20 Set Control Register */
++	__be32	pcph20clrr;	/* Physical Core PH20 Clear Control Register */
++	__be32	pcph20psr;	/* Physical Core PH20 Prev Status Register */
++	__be32	pcpw20sr;	/* Physical Core PW20 Status Register */
++	u8	res_e0[12];
++	__be32	pcph30sr;	/* Physical Core PH30 Status Register */
++	__be32	pcph30setr;	/* Physical Core PH30 Set Control Register */
++	__be32	pcph30clrr;	/* Physical Core PH30 Clear Control Register */
++	__be32	pcph30psr;	/* Physical Core PH30 Prev Status Register */
++	u8	res_100[32];
++	__be32	ippwrgatecr;	/* IP Power Gating Control Register */
++	u8	res_124[12];
++	__be32	powmgtcsr;	/* Power Management Control & Status Reg */
++#define RCPM_POWMGTCSR_LPM20_RQ		0x00100000
++#define RCPM_POWMGTCSR_LPM20_ST		0x00000200
++#define RCPM_POWMGTCSR_P_LPM20_ST	0x00000100
++	u8	res_134[12];
++	__be32	ippdexpcr[4];	/* IP Powerdown Exception Control Reg */
++	u8	res_150[12];
++	__be32	tpmimr0;	/* Thread PM Interrupt Mask Reg */
++	u8	res_160[12];
++	__be32	tpmcimr0;	/* Thread PM Crit Interrupt Mask Reg */
++	u8	res_170[12];
++	__be32	tpmmcmr0;	/* Thread PM Machine Check Interrupt Mask Reg */
++	u8	res_180[12];
++	__be32	tpmnmimr0;	/* Thread PM NMI Mask Reg */
++	u8	res_190[12];
++	__be32	tmcpmaskcr0;	/* Thread Machine Check Mask Control Reg */
++	__be32	pctbenr;	/* Physical Core Time Base Enable Reg */
++	__be32	pctbclkselr;	/* Physical Core Time Base Clock Select */
++	__be32	tbclkdivr;	/* Time Base Clock Divider Register */
++	u8	res_1ac[4];
++	__be32	ttbhltcr[4];	/* Thread Time Base Halt Control Register */
++	__be32	clpcl10sr;	/* Cluster PCL10 Status Register */
++	__be32	clpcl10setr;	/* Cluster PCL30 Set Control Register */
++	__be32	clpcl10clrr;	/* Cluster PCL30 Clear Control Register */
++	__be32	clpcl10psr;	/* Cluster PCL30 Prev Status Register */
++	__be32	cddslpsetr;	/* Core Domain Deep Sleep Set Register */
++	__be32	cddslpclrr;	/* Core Domain Deep Sleep Clear Register */
++	__be32	cdpwroksetr;	/* Core Domain Power OK Set Register */
++	__be32	cdpwrokclrr;	/* Core Domain Power OK Clear Register */
++	__be32	cdpwrensr;	/* Core Domain Power Enable Status Register */
++	__be32	cddslsr;	/* Core Domain Deep Sleep Status Register */
++	u8	res_1e8[8];
++	__be32	dslpcntcr[8];	/* Deep Sleep Counter Cfg Register */
++	u8	res_300[3568];
++};
++
+ #endif
+ #endif
+diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
+new file mode 100644
+index 0000000..3a36622
+--- /dev/null
++++ b/arch/powerpc/include/asm/fsl_pm.h
+@@ -0,0 +1,50 @@
++/*
++ * Support Power Management
++ *
++ * Copyright 2014-2015 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#ifndef __PPC_FSL_PM_H
++#define __PPC_FSL_PM_H
++#ifdef __KERNEL__
++
++#define E500_PM_PH10	1
++#define E500_PM_PH15	2
++#define E500_PM_PH20	3
++#define E500_PM_PH30	4
++#define E500_PM_DOZE	E500_PM_PH10
++#define E500_PM_NAP	E500_PM_PH15
++
++#define PLAT_PM_SLEEP	20
++#define PLAT_PM_LPM20	30
++
++#define FSL_PM_SLEEP		(1 << 0)
++#define FSL_PM_DEEP_SLEEP	(1 << 1)
++
++struct fsl_pm_ops {
++	/* mask pending interrupts to the RCPM from MPIC */
++	void (*irq_mask)(int cpu);
++
++	/* unmask pending interrupts to the RCPM from MPIC */
++	void (*irq_unmask)(int cpu);
++	void (*cpu_enter_state)(int cpu, int state);
++	void (*cpu_exit_state)(int cpu, int state);
++	void (*cpu_up_prepare)(int cpu);
++	void (*cpu_die)(int cpu);
++	int (*plat_enter_sleep)(void);
++	void (*freeze_time_base)(bool freeze);
++
++	/* keep the power of IP blocks during sleep/deep sleep */
++	void (*set_ip_power)(bool enable, u32 mask);
++
++	/* get platform supported power management modes */
++	unsigned int (*get_pm_modes)(void);
++};
++
++extern const struct fsl_pm_ops *qoriq_pm_ops;
++#endif /* __KERNEL__ */
++#endif /* __PPC_FSL_PM_H */
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 97915fe..e626461 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -8,6 +8,7 @@ menuconfig FSL_SOC_BOOKE
+ 	select FSL_PCI if PCI
+ 	select SERIAL_8250_EXTENDED if SERIAL_8250
+ 	select SERIAL_8250_SHARE_IRQ if SERIAL_8250
++	select FSL_CORENET_RCPM if PPC_E500MC
+ 	default y
+ 
+ if FSL_SOC_BOOKE
+diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
+index 7bfb9b1..91475f5 100644
+--- a/arch/powerpc/platforms/85xx/common.c
++++ b/arch/powerpc/platforms/85xx/common.c
+@@ -10,10 +10,13 @@
+ #include <linux/of_platform.h>
+ 
+ #include <asm/qe.h>
++#include <asm/fsl_pm.h>
+ #include <sysdev/cpm2_pic.h>
+ 
+ #include "mpc85xx.h"
+ 
++const struct fsl_pm_ops *qoriq_pm_ops;
++
+ static const struct of_device_id mpc85xx_common_ids[] __initconst = {
+ 	{ .type = "soc", },
+ 	{ .compatible = "soc", },
+diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+index a19332a..52dc165 100644
+--- a/arch/powerpc/sysdev/Kconfig
++++ b/arch/powerpc/sysdev/Kconfig
+@@ -40,3 +40,8 @@ config SCOM_DEBUGFS
+ config GE_FPGA
+ 	bool
+ 	default n
++
++config FSL_CORENET_RCPM
++	bool
++	help
++	  This option enables support for RCPM (Run Control/Power Management).
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 5b492a6..d0e8a43 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
+ obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
++obj-$(CONFIG_FSL_CORENET_RCPM)	+= fsl_rcpm.o
+ obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+ obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+ obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
+diff --git a/arch/powerpc/sysdev/fsl_rcpm.c b/arch/powerpc/sysdev/fsl_rcpm.c
+new file mode 100644
+index 0000000..ed59881
+--- /dev/null
++++ b/arch/powerpc/sysdev/fsl_rcpm.c
+@@ -0,0 +1,390 @@
++/*
++ * RCPM(Run Control/Power Management) support
++ *
++ * Copyright 2012-2015 Freescale Semiconductor Inc.
++ *
++ * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#define pr_fmt(fmt) "%s: " fmt, __func__
++
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/of_address.h>
++#include <linux/export.h>
++
++#include <asm/io.h>
++#include <asm/fsl_guts.h>
++#include <asm/cputhreads.h>
++#include <asm/fsl_pm.h>
++
++static struct ccsr_rcpm_v1 __iomem *rcpm_v1_regs;
++static struct ccsr_rcpm_v2 __iomem *rcpm_v2_regs;
++static unsigned int fsl_supported_pm_modes;
++
++static void rcpm_v1_irq_mask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	setbits32(&rcpm_v1_regs->cpmimr, mask);
++	setbits32(&rcpm_v1_regs->cpmcimr, mask);
++	setbits32(&rcpm_v1_regs->cpmmcmr, mask);
++	setbits32(&rcpm_v1_regs->cpmnmimr, mask);
++}
++
++static void rcpm_v2_irq_mask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	setbits32(&rcpm_v2_regs->tpmimr0, mask);
++	setbits32(&rcpm_v2_regs->tpmcimr0, mask);
++	setbits32(&rcpm_v2_regs->tpmmcmr0, mask);
++	setbits32(&rcpm_v2_regs->tpmnmimr0, mask);
++}
++
++static void rcpm_v1_irq_unmask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	clrbits32(&rcpm_v1_regs->cpmimr, mask);
++	clrbits32(&rcpm_v1_regs->cpmcimr, mask);
++	clrbits32(&rcpm_v1_regs->cpmmcmr, mask);
++	clrbits32(&rcpm_v1_regs->cpmnmimr, mask);
++}
++
++static void rcpm_v2_irq_unmask(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	clrbits32(&rcpm_v2_regs->tpmimr0, mask);
++	clrbits32(&rcpm_v2_regs->tpmcimr0, mask);
++	clrbits32(&rcpm_v2_regs->tpmmcmr0, mask);
++	clrbits32(&rcpm_v2_regs->tpmnmimr0, mask);
++}
++
++static void rcpm_v1_set_ip_power(bool enable, u32 mask)
++{
++	if (enable)
++		setbits32(&rcpm_v1_regs->ippdexpcr, mask);
++	else
++		clrbits32(&rcpm_v1_regs->ippdexpcr, mask);
++}
++
++static void rcpm_v2_set_ip_power(bool enable, u32 mask)
++{
++	if (enable)
++		setbits32(&rcpm_v2_regs->ippdexpcr[0], mask);
++	else
++		clrbits32(&rcpm_v2_regs->ippdexpcr[0], mask);
++}
++
++static void rcpm_v1_cpu_enter_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
++
++	switch (state) {
++	case E500_PM_PH10:
++		setbits32(&rcpm_v1_regs->cdozcr, mask);
++		break;
++	case E500_PM_PH15:
++		setbits32(&rcpm_v1_regs->cnapcr, mask);
++		break;
++	default:
++		pr_warn("Unknown cpu PM state (%d)\n", state);
++		break;
++	}
++}
++
++static void rcpm_v2_cpu_enter_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	u32 mask = 1 << cpu_core_index_of_thread(hw_cpu);
++
++	switch (state) {
++	case E500_PM_PH10:
++		/* one bit corresponds to one thread for PH10 of 6500 */
++		setbits32(&rcpm_v2_regs->tph10setr0, 1 << hw_cpu);
++		break;
++	case E500_PM_PH15:
++		setbits32(&rcpm_v2_regs->pcph15setr, mask);
++		break;
++	case E500_PM_PH20:
++		setbits32(&rcpm_v2_regs->pcph20setr, mask);
++		break;
++	case E500_PM_PH30:
++		setbits32(&rcpm_v2_regs->pcph30setr, mask);
++		break;
++	default:
++		pr_warn("Unknown cpu PM state (%d)\n", state);
++	}
++}
++
++static void rcpm_v1_cpu_die(int cpu)
++{
++	rcpm_v1_cpu_enter_state(cpu, E500_PM_PH15);
++}
++
++#ifdef CONFIG_PPC_BOOK3E
++static void qoriq_disable_thread(int cpu)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	int thread = cpu_thread_in_core(hw_cpu);
++
++	mtspr(SPRN_TENC, TEN_THREAD(thread));
++}
 +#endif
 +
- /* NOTE WELL: Update identify_cpu() if fields are added or removed! */
- struct cpu_spec {
- 	/* CPU is matched via (PVR & pvr_mask) == pvr_value */
-@@ -59,6 +66,10 @@ struct cpu_spec {
- 	unsigned int	icache_bsize;
- 	unsigned int	dcache_bsize;
- 
-+#if defined(CONFIG_E500)
-+	/* flush caches inside the current cpu */
-+	void (*cpu_down_flush)(void);
++static void rcpm_v2_cpu_die(int cpu)
++{
++#ifdef CONFIG_PPC_BOOK3E
++	int primary;
++
++	if (threads_per_core == 2) {
++		primary = cpu_first_thread_sibling(cpu);
++		if (cpu_is_offline(primary) && cpu_is_offline(primary + 1)) {
++			/* if both threads are offline, put the cpu in PH20 */
++			rcpm_v2_cpu_enter_state(cpu, E500_PM_PH20);
++		} else {
++			/* if only one thread is offline, disable the thread */
++			qoriq_disable_thread(cpu);
++		}
++	}
 +#endif
- 	/* number of performance monitor counters */
- 	unsigned int	num_pmcs;
- 	enum powerpc_pmc_type pmc_type;
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 9823057..17b672d 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -373,6 +373,9 @@ int main(void)
- 	DEFINE(CPU_SPEC_FEATURES, offsetof(struct cpu_spec, cpu_features));
- 	DEFINE(CPU_SPEC_SETUP, offsetof(struct cpu_spec, cpu_setup));
- 	DEFINE(CPU_SPEC_RESTORE, offsetof(struct cpu_spec, cpu_restore));
-+#if defined(CONFIG_E500)
-+	DEFINE(CPU_DOWN_FLUSH, offsetof(struct cpu_spec, cpu_down_flush));
-+#endif
- 
- 	DEFINE(pbe_address, offsetof(struct pbe, address));
- 	DEFINE(pbe_orig_address, offsetof(struct pbe, orig_address));
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index dddba3e..462aed9 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -13,11 +13,13 @@
-  *
-  */
- 
-+#include <asm/page.h>
- #include <asm/processor.h>
- #include <asm/cputable.h>
- #include <asm/ppc_asm.h>
- #include <asm/mmu-book3e.h>
- #include <asm/asm-offsets.h>
-+#include <asm/mpc85xx.h>
- 
- _GLOBAL(__e500_icache_setup)
- 	mfspr	r0, SPRN_L1CSR1
-@@ -233,3 +235,113 @@ _GLOBAL(__setup_cpu_e5500)
- 	mtlr	r5
- 	blr
- #endif
 +
-+/* flush L1 date cache, it can apply to e500v2, e500mc and e5500 */
-+_GLOBAL(flush_dcache_L1)
-+	mfmsr	r10
-+	wrteei	0
++	if (threads_per_core == 1) {
++		rcpm_v2_cpu_enter_state(cpu, E500_PM_PH20);
++		return;
++	}
++}
 +
-+	mfspr	r3,SPRN_L1CFG0
-+	rlwinm	r5,r3,9,3	/* Extract cache block size */
-+	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
-+				 * are currently defined.
-+				 */
-+	li	r4,32
-+	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
-+				 *      log2(number of ways)
-+				 */
-+	slw	r5,r4,r5	/* r5 = cache block size */
++static void rcpm_v1_cpu_exit_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	unsigned int mask = 1 << hw_cpu;
 +
-+	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
-+	mulli	r7,r7,13	/* An 8-way cache will require 13
-+				 * loads per set.
-+				 */
-+	slw	r7,r7,r6
++	switch (state) {
++	case E500_PM_PH10:
++		clrbits32(&rcpm_v1_regs->cdozcr, mask);
++		break;
++	case E500_PM_PH15:
++		clrbits32(&rcpm_v1_regs->cnapcr, mask);
++		break;
++	default:
++		pr_warn("Unknown cpu PM state (%d)\n", state);
++		break;
++	}
++}
 +
-+	/* save off HID0 and set DCFA */
-+	mfspr	r8,SPRN_HID0
-+	ori	r9,r8,HID0_DCFA@l
-+	mtspr	SPRN_HID0,r9
-+	isync
++static void rcpm_v1_cpu_up_prepare(int cpu)
++{
++	rcpm_v1_cpu_exit_state(cpu, E500_PM_PH15);
++	rcpm_v1_irq_unmask(cpu);
++}
 +
-+	LOAD_REG_IMMEDIATE(r6, KERNELBASE)
-+	mr	r4, r6
-+	mtctr	r7
++static void rcpm_v2_cpu_exit_state(int cpu, int state)
++{
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	u32 mask = 1 << cpu_core_index_of_thread(hw_cpu);
 +
-+1:	lwz	r3,0(r4)	/* Load... */
-+	add	r4,r4,r5
-+	bdnz	1b
++	switch (state) {
++	case E500_PM_PH10:
++		setbits32(&rcpm_v2_regs->tph10clrr0, 1 << hw_cpu);
++		break;
++	case E500_PM_PH15:
++		setbits32(&rcpm_v2_regs->pcph15clrr, mask);
++		break;
++	case E500_PM_PH20:
++		setbits32(&rcpm_v2_regs->pcph20clrr, mask);
++		break;
++	case E500_PM_PH30:
++		setbits32(&rcpm_v2_regs->pcph30clrr, mask);
++		break;
++	default:
++		pr_warn("Unknown cpu PM state (%d)\n", state);
++	}
++}
 +
-+	msync
-+	mr	r4, r6
-+	mtctr	r7
++static void rcpm_v2_cpu_up_prepare(int cpu)
++{
++	rcpm_v2_cpu_exit_state(cpu, E500_PM_PH20);
++	rcpm_v2_irq_unmask(cpu);
++}
 +
-+1:	dcbf	0,r4		/* ...and flush. */
-+	add	r4,r4,r5
-+	bdnz	1b
++static int rcpm_v1_plat_enter_state(int state)
++{
++	u32 *pmcsr_reg = &rcpm_v1_regs->powmgtcsr;
++	int ret = 0;
++	int result;
 +
-+	/* restore HID0 */
-+	mtspr	SPRN_HID0,r8
-+	isync
++	switch (state) {
++	case PLAT_PM_SLEEP:
++		setbits32(pmcsr_reg, RCPM_POWMGTCSR_SLP);
 +
-+	wrtee r10
++		/* Upon resume, wait for RCPM_POWMGTCSR_SLP bit to be clear. */
++		result = spin_event_timeout(
++		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_SLP), 10000, 10);
++		if (!result) {
++			pr_err("timeout waiting for SLP bit to be cleared\n");
++			ret = -ETIMEDOUT;
++		}
++		break;
++	default:
++		pr_warn("Unknown platform PM state (%d)", state);
++		ret = -EINVAL;
++	}
 +
-+	blr
++	return ret;
++}
 +
-+has_L2_cache:
-+	/* skip L2 cache on P2040/P2040E as they have no L2 cache */
-+	mfspr	r3, SPRN_SVR
-+	/* shift right by 8 bits and clear E bit of SVR */
-+	rlwinm	r4, r3, 24, ~0x800
++static int rcpm_v2_plat_enter_state(int state)
++{
++	u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
++	int ret = 0;
++	int result;
 +
-+	lis	r3, SVR_P2040@h
-+	ori	r3, r3, SVR_P2040@l
-+	cmpw	r4, r3
-+	beq	1f
++	switch (state) {
++	case PLAT_PM_LPM20:
++		/* clear previous LPM20 status */
++		setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
++		/* enter LPM20 status */
++		setbits32(pmcsr_reg, RCPM_POWMGTCSR_LPM20_RQ);
 +
-+	li	r3, 1
-+	blr
-+1:
-+	li	r3, 0
-+	blr
++		/* At this point, the device is in LPM20 status. */
 +
-+/* flush backside L2 cache */
-+flush_backside_L2_cache:
-+	mflr	r10
-+	bl	has_L2_cache
-+	mtlr	r10
-+	cmpwi	r3, 0
-+	beq	2f
++		/* resume ... */
++		result = spin_event_timeout(
++		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_LPM20_ST), 10000, 10);
++		if (!result) {
++			pr_err("timeout waiting for LPM20 bit to be cleared\n");
++			ret = -ETIMEDOUT;
++		}
++		break;
++	default:
++		pr_warn("Unknown platform PM state (%d)\n", state);
++		ret = -EINVAL;
++	}
 +
-+	/* Flush the L2 cache */
-+	mfspr	r3, SPRN_L2CSR0
-+	ori	r3, r3, L2CSR0_L2FL@l
-+	msync
-+	isync
-+	mtspr	SPRN_L2CSR0,r3
-+	isync
++	return ret;
++}
 +
-+	/* check if it is complete */
-+1:	mfspr	r3,SPRN_L2CSR0
-+	andi.	r3, r3, L2CSR0_L2FL@l
-+	bne	1b
-+2:
-+	blr
++static int rcpm_v1_plat_enter_sleep(void)
++{
++	return rcpm_v1_plat_enter_state(PLAT_PM_SLEEP);
++}
 +
-+_GLOBAL(cpu_down_flush_e500v2)
-+	mflr r0
-+	bl	flush_dcache_L1
-+	mtlr r0
-+	blr
++static int rcpm_v2_plat_enter_sleep(void)
++{
++	return rcpm_v2_plat_enter_state(PLAT_PM_LPM20);
++}
 +
-+_GLOBAL(cpu_down_flush_e500mc)
-+_GLOBAL(cpu_down_flush_e5500)
-+	mflr r0
-+	bl	flush_dcache_L1
-+	bl	flush_backside_L2_cache
-+	mtlr r0
-+	blr
++static void rcpm_common_freeze_time_base(u32 *tben_reg, int freeze)
++{
++	static u32 mask;
 +
-+/* L1 Data Cache of e6500 contains no modified data, no flush is required */
-+_GLOBAL(cpu_down_flush_e6500)
-+	blr
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 7d80bfd..d65b45a 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -2023,6 +2023,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_e500v2,
- 		.machine_check		= machine_check_e500,
- 		.platform		= "ppc8548",
-+		.cpu_down_flush		= cpu_down_flush_e500v2,
- 	},
- #else
- 	{	/* e500mc */
-@@ -2042,6 +2043,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_setup		= __setup_cpu_e500mc,
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce500mc",
-+		.cpu_down_flush		= cpu_down_flush_e500mc,
- 	},
- #endif /* CONFIG_PPC_E500MC */
- #endif /* CONFIG_PPC32 */
-@@ -2066,6 +2068,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce5500",
-+		.cpu_down_flush		= cpu_down_flush_e5500,
- 	},
- 	{	/* e6500 */
- 		.pvr_mask		= 0xffff0000,
-@@ -2088,6 +2091,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif
- 		.machine_check		= machine_check_e500mc,
- 		.platform		= "ppce6500",
-+		.cpu_down_flush		= cpu_down_flush_e6500,
- 	},
- #endif /* CONFIG_PPC_E500MC */
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index fffd1f9..709bc50 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -1075,80 +1075,6 @@ _GLOBAL(set_context)
- 	isync			/* Force context change */
- 	blr
- 
--_GLOBAL(flush_dcache_L1)
--	mfspr	r3,SPRN_L1CFG0
--
--	rlwinm	r5,r3,9,3	/* Extract cache block size */
--	twlgti	r5,1		/* Only 32 and 64 byte cache blocks
--				 * are currently defined.
--				 */
--	li	r4,32
--	subfic	r6,r5,2		/* r6 = log2(1KiB / cache block size) -
--				 *      log2(number of ways)
--				 */
--	slw	r5,r4,r5	/* r5 = cache block size */
--
--	rlwinm	r7,r3,0,0xff	/* Extract number of KiB in the cache */
--	mulli	r7,r7,13	/* An 8-way cache will require 13
--				 * loads per set.
--				 */
--	slw	r7,r7,r6
--
--	/* save off HID0 and set DCFA */
--	mfspr	r8,SPRN_HID0
--	ori	r9,r8,HID0_DCFA@l
--	mtspr	SPRN_HID0,r9
--	isync
--
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	lwz	r3,0(r4)	/* Load... */
--	add	r4,r4,r5
--	bdnz	1b
--
--	msync
--	lis	r4,KERNELBASE@h
--	mtctr	r7
--
--1:	dcbf	0,r4		/* ...and flush. */
--	add	r4,r4,r5
--	bdnz	1b
--	
--	/* restore HID0 */
--	mtspr	SPRN_HID0,r8
--	isync
--
--	blr
--
--/* Flush L1 d-cache, invalidate and disable d-cache and i-cache */
--_GLOBAL(__flush_disable_L1)
--	mflr	r10
--	bl	flush_dcache_L1	/* Flush L1 d-cache */
--	mtlr	r10
--
--	mfspr	r4, SPRN_L1CSR0	/* Invalidate and disable d-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	msync
--	isync
--	mtspr	SPRN_L1CSR0, r4
--	isync
--
--1:	mfspr	r4, SPRN_L1CSR0	/* Wait for the invalidate to finish */
--	andi.	r4, r4, 2
--	bne	1b
--
--	mfspr	r4, SPRN_L1CSR1	/* Invalidate and disable i-cache */
--	li	r5, 2
--	rlwimi	r4, r5, 0, 3
--
--	mtspr	SPRN_L1CSR1, r4
--	isync
--
--	blr
--
- #ifdef CONFIG_SMP
- /* When we get here, r24 needs to hold the CPU # */
- 	.globl __secondary_start
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index b8b8216..0b75e8e 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -139,7 +139,8 @@ static void smp_85xx_mach_cpu_die(void)
- 
- 	mtspr(SPRN_TCR, 0);
- 
--	__flush_disable_L1();
-+	cur_cpu_spec->cpu_down_flush();
++	if (freeze) {
++		mask = in_be32(tben_reg);
++		clrbits32(tben_reg, mask);
++	} else {
++		setbits32(tben_reg, mask);
++	}
 +
- 	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
- 	mtspr(SPRN_HID0, tmp);
- 	isync();
-@@ -345,7 +346,7 @@ void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
- 	local_irq_disable();
- 
- 	if (secondary) {
--		__flush_disable_L1();
-+		cur_cpu_spec->cpu_down_flush();
- 		atomic_inc(&kexec_down_cpus);
- 		/* loop forever */
- 		while (1);
++	/* read back to push the previous write */
++	in_be32(tben_reg);
++}
++
++static void rcpm_v1_freeze_time_base(bool freeze)
++{
++	rcpm_common_freeze_time_base(&rcpm_v1_regs->ctbenr, freeze);
++}
++
++static void rcpm_v2_freeze_time_base(bool freeze)
++{
++	rcpm_common_freeze_time_base(&rcpm_v2_regs->pctbenr, freeze);
++}
++
++static unsigned int rcpm_get_pm_modes(void)
++{
++	return fsl_supported_pm_modes;
++}
++
++static const struct fsl_pm_ops qoriq_rcpm_v1_ops = {
++	.irq_mask = rcpm_v1_irq_mask,
++	.irq_unmask = rcpm_v1_irq_unmask,
++	.cpu_enter_state = rcpm_v1_cpu_enter_state,
++	.cpu_exit_state = rcpm_v1_cpu_exit_state,
++	.cpu_up_prepare = rcpm_v1_cpu_up_prepare,
++	.cpu_die = rcpm_v1_cpu_die,
++	.plat_enter_sleep = rcpm_v1_plat_enter_sleep,
++	.set_ip_power = rcpm_v1_set_ip_power,
++	.freeze_time_base = rcpm_v1_freeze_time_base,
++	.get_pm_modes = rcpm_get_pm_modes,
++};
++
++static const struct fsl_pm_ops qoriq_rcpm_v2_ops = {
++	.irq_mask = rcpm_v2_irq_mask,
++	.irq_unmask = rcpm_v2_irq_unmask,
++	.cpu_enter_state = rcpm_v2_cpu_enter_state,
++	.cpu_exit_state = rcpm_v2_cpu_exit_state,
++	.cpu_up_prepare = rcpm_v2_cpu_up_prepare,
++	.cpu_die = rcpm_v2_cpu_die,
++	.plat_enter_sleep = rcpm_v2_plat_enter_sleep,
++	.set_ip_power = rcpm_v2_set_ip_power,
++	.freeze_time_base = rcpm_v2_freeze_time_base,
++	.get_pm_modes = rcpm_get_pm_modes,
++};
++
++static const struct of_device_id rcpm_matches[] = {
++	{
++		.compatible = "fsl,qoriq-rcpm-1.0",
++		.data = (void *)&qoriq_rcpm_v1_ops,
++	},
++	{
++		.compatible = "fsl,qoriq-rcpm-2.0",
++		.data = (void *)&qoriq_rcpm_v2_ops,
++	},
++	{
++		.compatible = "fsl,qoriq-rcpm-2.1",
++		.data = (void *)&qoriq_rcpm_v2_ops,
++	},
++	{},
++};
++
++int __init fsl_rcpm_init(void)
++{
++	struct device_node *np;
++	const struct of_device_id *match;
++	void __iomem *base;
++
++	np = of_find_matching_node_and_match(NULL, rcpm_matches, &match);
++	if (!np) {
++		pr_err("can't find the rcpm node.\n");
++		return -ENODEV;
++	}
++
++	base = of_iomap(np, 0);
++	of_node_put(np);
++	if (!base) {
++		pr_err("of_iomap() error.\n");
++		return -ENOMEM;
++	}
++
++	rcpm_v1_regs = base;
++	rcpm_v2_regs = base;
++
++	/* support sleep by default */
++	fsl_supported_pm_modes = FSL_PM_SLEEP;
++
++	qoriq_pm_ops = match->data;
++
++	return 0;
++}
 -- 
 1.9.1
