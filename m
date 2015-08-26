@@ -1,36 +1,37 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3A5A91A0066
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 105871A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 16:07:52 +1000 (AEST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 26 Aug 2015 00:07:48 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4F19719D8026
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:58:41 -0600 (MDT)
+ Wed, 26 Aug 2015 00:07:50 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id DB39819D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:58:44 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t7Q672fP49348646
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:07:02 -0700
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t7Q64wJE44695806
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Aug 2015 23:04:58 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7Q67iLl029540
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:45 -0600
+ t7Q67mCZ029712
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 00:07:48 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v16 00/16] perf,
- tools: Add support for PMU events in JSON format
-Date: Tue, 25 Aug 2015 23:05:50 -0700
-Message-Id: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v16 06/16] perf, tools: Support alias descriptions
+Date: Tue, 25 Aug 2015 23:05:56 -0700
+Message-Id: <1440569166-22169-7-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,155 +41,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CPUs support a large number of performance monitoring events (PMU events)
-and often these events are very specific to an architecture/model of the
-CPU. To use most of these PMU events with perf, we currently have to identify
-them by their raw codes:
+From: Andi Kleen <ak@linux.intel.com>
 
-	perf stat -e r100f2 sleep 1
+Add support to print alias descriptions in perf list, which
+are taken from the generated event files.
 
-This patchset allows architectures to specify these PMU events in JSON
-files located in 'tools/perf/pmu-events/arch/' of the mainline tree.
-The events from the JSON files for the architecture are then built into
-the perf binary.
+The sorting code is changed to put the events with descriptions
+at the end. The descriptions are printed as possibly multiple word
+wrapped lines.
 
-At run time, perf identifies the specific set of events for the CPU and
-creates "event aliases". These aliases allow users to specify events by
-"name" as:
+Example output:
 
-	perf stat -e pm_1plus_ppc_cmpl sleep 1
+% perf list
+...
+  arith.fpu_div
+       [Divide operations executed]
+  arith.fpu_div_active
+       [Cycles when divider is busy executing divide operations]
 
-The file, 'tools/perf/pmu-events/README' in [PATCH 16/16] gives more
-details.
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Jiri Olsa <jolsa@redhat.com>
+---
 
-Note:
-	- All known events tables for the architecture are included in the
-	  perf binary.
-
-	- For architectures that don't have any JSON files, an empty mapping
-	  table is created and they should continue to build.
-
-Thanks to input from Andi Kleen, Jiri Olsa, Namhyung Kim and Ingo Molnar.
-
-These patches are available from:
-
-	https://github.com:sukadev/linux.git 
-	
-	Branch			Description
-	------------------------------------------------------
-	json-v16		Source Code only 
-	json-files-6		x86 and Powerpc datafiles only
-	json-v16-with-data	Both code and data (for build/test)
-	
-NOTE: 	Only "source code" patches (i.e those in json-v16) are being emailed.
-	Please pull the "data files" from the json-files-6 branch.
-
-Changelog[v16]
-	Rebase to recent perf/core; fix minor merge conflicts; drop 3 patches
-	that were merged into perf/core.
-
-Changelog[v15]
-	Code changes:
-	- Fix 'perf list' usage string and update man page.
-	- Remove a redundant __maybe_unused tag.
-	- Rebase to recent perf/core branch.
-
-	Data files updates: json-files-5 branch
-	- Rebase to perf/intel-json-files-5 from Andi Kleen
-	- Add patch from Madhavan Srinivasan for couple more Powerpc models
+Changelog
+	- Delete a redundant free()
 
 Changelog[v14]
-	Comments from Jiri Olsa:
-	- Change parameter name/type for pmu_add_cpu_aliases (from void *data
-	  to list_head *head)
-	- Use asprintf() in file_name_to_tablename() and simplify/reorg code.
-	- Use __weak definition from <linux/compile.h>
-	- Use fopen() with mode "w" and eliminate unlink()
-	- Remove minor TODO.
-	- Add error check for return value from strdup() in print_pmu_events().
-	- Move independent changes from patches 3,11,12 .. to separate patches
-	  for easier review/backport.
-	- Clarify mapfile's "header line support" in patch description.
-	- Fix build failure with DEBUG=1
+	- [Jiri Olsa] Fail, rather than continue if strdup() returns NULL;
+	  remove unnecessary __maybe_unused.
+---
+ tools/perf/util/pmu.c |   82 +++++++++++++++++++++++++++++++++++++++----------
+ tools/perf/util/pmu.h |    1 +
+ 2 files changed, 67 insertions(+), 16 deletions(-)
 
-	Comment from Andi Kleen:
-	- In tools/perf/pmu-events/Build, check for 'mapfile.csv' rather than
-	  'mapfile*'
-
-	Misc:
-	- Minor changes/clarifications to tools/perf/pmu-events/README.
-
-
-Changelog[v13]
-	Version: Individual patches have their own history :-) that I am
-	preserving. Patchset version (v13) is for overall patchset and is
-	somewhat arbitrary.
-
-	- Added support for "categories" of events to perf
-	- Add mapfile, jevents build dependency on pmu-events.c
-	- Silence jevents when parsing JSON files unless V=1 is specified
-	- Cleanup error messages
-	- Fix memory leak with ->cpuid
-	- Rebase to Arnaldo's tree
-	- Allow overriding CPUID via environment variable
-	- Support long descriptions for events
-	- Handle header line in mapfile.csv
-	- Cleanup JSON files (trim PublicDescription if identical to/prefix of
-	  BriefDescription field)
-
-
-
-Andi Kleen (9):
-  perf, tools: Add jsmn `jasmine' JSON parser
-  perf, tools, jevents: Program to convert JSON file to C style file
-  perf, tools: Support CPU id matching for x86 v2
-  perf, tools: Support alias descriptions
-  perf, tools: Query terminal width and use in perf list
-  perf, tools: Add a --no-desc flag to perf list
-  perf, tools: Add override support for event list CPUID
-  perf, tools: Add support for event list topics
-  perf, tools: Handle header line in mapfile
-
-Sukadev Bhattiprolu (7):
-  perf, tools: Use pmu_events table to create aliases
-  perf, tools: Support CPU ID matching for Powerpc
-  perf, tools, jevents: Add support for long descriptions
-  perf, tools: Add alias support for long descriptions
-  perf, tools: Support long descriptions with perf list
-  perf, tools, jevents: Add support for event topics
-  perf, tools: Add README for info on parsing JSON/map files
-
- tools/perf/Documentation/perf-list.txt |   12 +-
- tools/perf/Makefile.perf               |   26 +-
- tools/perf/arch/powerpc/util/header.c  |   11 +
- tools/perf/arch/x86/util/header.c      |   24 +-
- tools/perf/builtin-list.c              |   17 +-
- tools/perf/pmu-events/Build            |   11 +
- tools/perf/pmu-events/README           |  122 ++++++
- tools/perf/pmu-events/jevents.c        |  712 ++++++++++++++++++++++++++++++++
- tools/perf/pmu-events/jevents.h        |   18 +
- tools/perf/pmu-events/jsmn.c           |  313 ++++++++++++++
- tools/perf/pmu-events/jsmn.h           |   67 +++
- tools/perf/pmu-events/json.c           |  162 ++++++++
- tools/perf/pmu-events/json.h           |   39 ++
- tools/perf/pmu-events/pmu-events.h     |   37 ++
- tools/perf/util/cache.h                |    1 +
- tools/perf/util/header.h               |    1 +
- tools/perf/util/pager.c                |   15 +
- tools/perf/util/parse-events.c         |    5 +-
- tools/perf/util/parse-events.h         |    3 +-
- tools/perf/util/pmu.c                  |  176 +++++++-
- tools/perf/util/pmu.h                  |    6 +-
- 21 files changed, 1744 insertions(+), 34 deletions(-)
- create mode 100644 tools/perf/pmu-events/Build
- create mode 100644 tools/perf/pmu-events/README
- create mode 100644 tools/perf/pmu-events/jevents.c
- create mode 100644 tools/perf/pmu-events/jevents.h
- create mode 100644 tools/perf/pmu-events/jsmn.c
- create mode 100644 tools/perf/pmu-events/jsmn.h
- create mode 100644 tools/perf/pmu-events/json.c
- create mode 100644 tools/perf/pmu-events/json.h
- create mode 100644 tools/perf/pmu-events/pmu-events.h
-
+diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
+index b8f7627..cb0396e 100644
+--- a/tools/perf/util/pmu.c
++++ b/tools/perf/util/pmu.c
+@@ -209,7 +209,7 @@ static int perf_pmu__parse_snapshot(struct perf_pmu_alias *alias,
+ }
+ 
+ static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
+-				 char *desc __maybe_unused, char *val)
++				 char *desc, char *val)
+ {
+ 	struct perf_pmu_alias *alias;
+ 	int ret;
+@@ -241,6 +241,8 @@ static int __perf_pmu__new_alias(struct list_head *list, char *dir, char *name,
+ 		perf_pmu__parse_snapshot(alias, dir, name);
+ 	}
+ 
++	alias->desc = desc ? strdup(desc) : NULL;
++
+ 	list_add_tail(&alias->list, list);
+ 
+ 	return 0;
+@@ -1030,11 +1032,42 @@ static char *format_alias_or(char *buf, int len, struct perf_pmu *pmu,
+ 	return buf;
+ }
+ 
+-static int cmp_string(const void *a, const void *b)
++struct pair {
++	char *name;
++	char *desc;
++};
++
++static int cmp_pair(const void *a, const void *b)
++{
++	const struct pair *as = a;
++	const struct pair *bs = b;
++
++	/* Put extra events last */
++	if (!!as->desc != !!bs->desc)
++		return !!as->desc - !!bs->desc;
++	return strcmp(as->name, bs->name);
++}
++
++static void wordwrap(char *s, int start, int max, int corr)
+ {
+-	const char * const *as = a;
+-	const char * const *bs = b;
+-	return strcmp(*as, *bs);
++	int column = start;
++	int n;
++
++	while (*s) {
++		int wlen = strcspn(s, " \t");
++
++		if (column + wlen >= max && column > start) {
++			printf("\n%*s", start, "");
++			column = start + corr;
++		}
++		n = printf("%s%.*s", column > start ? " " : "", wlen, s);
++		if (n <= 0)
++			break;
++		s += wlen;
++		column += n;
++		while (isspace(*s))
++			s++;
++	}
+ }
+ 
+ void print_pmu_events(const char *event_glob, bool name_only)
+@@ -1044,7 +1077,9 @@ void print_pmu_events(const char *event_glob, bool name_only)
+ 	char buf[1024];
+ 	int printed = 0;
+ 	int len, j;
+-	char **aliases;
++	struct pair *aliases;
++	int numdesc = 0;
++	int columns = 78;
+ 
+ 	pmu = NULL;
+ 	len = 0;
+@@ -1054,14 +1089,15 @@ void print_pmu_events(const char *event_glob, bool name_only)
+ 		if (pmu->selectable)
+ 			len++;
+ 	}
+-	aliases = zalloc(sizeof(char *) * len);
++	aliases = zalloc(sizeof(struct pair) * len);
+ 	if (!aliases)
+ 		goto out_enomem;
+ 	pmu = NULL;
+ 	j = 0;
+ 	while ((pmu = perf_pmu__scan(pmu)) != NULL) {
+ 		list_for_each_entry(alias, &pmu->aliases, list) {
+-			char *name = format_alias(buf, sizeof(buf), pmu, alias);
++			char *name = alias->desc ? alias->name :
++				format_alias(buf, sizeof(buf), pmu, alias);
+ 			bool is_cpu = !strcmp(pmu->name, "cpu");
+ 
+ 			if (event_glob != NULL &&
+@@ -1070,37 +1106,51 @@ void print_pmu_events(const char *event_glob, bool name_only)
+ 						       event_glob))))
+ 				continue;
+ 
+-			if (is_cpu && !name_only)
++			if (is_cpu && !name_only && !alias->desc)
+ 				name = format_alias_or(buf, sizeof(buf), pmu, alias);
+ 
+-			aliases[j] = strdup(name);
+-			if (aliases[j] == NULL)
++			aliases[j].name = name;
++			if (is_cpu && !name_only && !alias->desc)
++				aliases[j].name = format_alias_or(buf, sizeof(buf),
++								  pmu, alias);
++			aliases[j].name = strdup(aliases[j].name);
++			if (!aliases[j].name)
+ 				goto out_enomem;
++
++			aliases[j].desc = alias->desc;
+ 			j++;
+ 		}
+ 		if (pmu->selectable) {
+ 			char *s;
+ 			if (asprintf(&s, "%s//", pmu->name) < 0)
+ 				goto out_enomem;
+-			aliases[j] = s;
++			aliases[j].name = s;
+ 			j++;
+ 		}
+ 	}
+ 	len = j;
+-	qsort(aliases, len, sizeof(char *), cmp_string);
++	qsort(aliases, len, sizeof(struct pair), cmp_pair);
+ 	for (j = 0; j < len; j++) {
+ 		if (name_only) {
+-			printf("%s ", aliases[j]);
++			printf("%s ", aliases[j].name);
+ 			continue;
+ 		}
+-		printf("  %-50s [Kernel PMU event]\n", aliases[j]);
++		if (aliases[j].desc) {
++			if (numdesc++ == 0)
++				printf("\n");
++			printf("  %-50s\n", aliases[j].name);
++			printf("%*s", 8, "[");
++			wordwrap(aliases[j].desc, 8, columns, 0);
++			printf("]\n");
++		} else
++			printf("  %-50s [Kernel PMU event]\n", aliases[j].name);
+ 		printed++;
+ 	}
+ 	if (printed)
+ 		printf("\n");
+ out_free:
+ 	for (j = 0; j < len; j++)
+-		zfree(&aliases[j]);
++		zfree(&aliases[j].name);
+ 	zfree(&aliases);
+ 	return;
+ 
+diff --git a/tools/perf/util/pmu.h b/tools/perf/util/pmu.h
+index 5d7e844..11bda57 100644
+--- a/tools/perf/util/pmu.h
++++ b/tools/perf/util/pmu.h
+@@ -38,6 +38,7 @@ struct perf_pmu_info {
+ 
+ struct perf_pmu_alias {
+ 	char *name;
++	char *desc;
+ 	struct list_head terms; /* HEAD struct parse_events_term -> list */
+ 	struct list_head list;  /* ELEM */
+ 	char unit[UNIT_MAX_LEN+1];
 -- 
 1.7.9.5
