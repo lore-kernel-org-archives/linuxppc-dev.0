@@ -1,16 +1,17 @@
 Return-Path: <chenhui.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0110.outbound.protection.outlook.com [157.56.111.110])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0148.outbound.protection.outlook.com [65.55.169.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED9941A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:10:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B9121A0FFD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 22:10:02 +1000 (AEST)
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, <Jason.Jin@freescale.com>
-Subject: [PATCH v2,3/5] Powerpc: mpc85xx: refactor the PM operations
-Date: Wed, 26 Aug 2015 20:09:46 +0800
-Message-ID: <1440590988-25594-3-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v2,
+ 4/5] PowerPC/mpc85xx: Add hotplug support on E5500 and E500MC cores
+Date: Wed, 26 Aug 2015 20:09:47 +0800
+Message-ID: <1440590988-25594-4-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -24,322 +25,376 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Freescale CoreNet-based and Non-CoreNet-based platforms require
-different PM operations. This patch extracted existing PM operations
-on Non-CoreNet-based platforms to a new file which can accommodate
-both platforms.
-In this way, PM operation codes are clearer structurally.
+Freescale E500MC and E5500 core-based platforms, like P4080, T1040,
+support disabling/enabling CPU dynamically.
+This patch adds this feature on those platforms.
 
 Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
 Signed-off-by: Tang Yuantian <Yuantian.Tang@feescale.com>
 ---
 major changes for v2:
-* moved mpc85xx_cpu_die()
-* added qoriq_pm_ops->cpu_die() in smp_85xx_mach_cpu_die(). it puts the dying
-  cpu in a low power mode
+* factor out smp_85xx_start_cpu()
+* move fsl_rcpm_init() into mpc85xx_smp_init() due to the init sequence
+* add hard_irq_disable() after local_irq_save(). for platforms that
+  implement lazy enabling/disabling of interrupts, call hard_irq_disable()
+  to ensure interrupts are disabled physically.
 
- arch/powerpc/platforms/85xx/Makefile         |   1 +
- arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c | 106 +++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/smp.c            |  74 +++++--------------
- arch/powerpc/platforms/85xx/smp.h            |   1 +
- 4 files changed, 127 insertions(+), 55 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
+ arch/powerpc/Kconfig              |   2 +-
+ arch/powerpc/include/asm/smp.h    |   3 +
+ arch/powerpc/kernel/smp.c         |   7 +-
+ arch/powerpc/platforms/85xx/smp.c | 193 ++++++++++++++++++++++----------------
+ arch/powerpc/platforms/85xx/smp.h |   1 +
+ 5 files changed, 122 insertions(+), 84 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 1fe7fb9..7bc86da 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -2,6 +2,7 @@
- # Makefile for the PowerPC 85xx linux kernel.
- #
- obj-$(CONFIG_SMP) += smp.o
-+obj-$(CONFIG_FSL_PMC)		  += mpc85xx_pm_ops.o
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 5ef2711..dd9e252 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -386,7 +386,7 @@ config SWIOTLB
+ config HOTPLUG_CPU
+ 	bool "Support for enabling/disabling CPUs"
+ 	depends on SMP && (PPC_PSERIES || \
+-	PPC_PMAC || PPC_POWERNV || (PPC_85xx && !PPC_E500MC))
++	PPC_PMAC || PPC_POWERNV || FSL_SOC_BOOKE)
+ 	---help---
+ 	  Say Y here to be able to disable and re-enable individual
+ 	  CPUs at runtime on SMP machines.
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index 825663c..4ff5b71 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -67,6 +67,9 @@ void generic_cpu_die(unsigned int cpu);
+ void generic_set_cpu_dead(unsigned int cpu);
+ void generic_set_cpu_up(unsigned int cpu);
+ int generic_check_cpu_restart(unsigned int cpu);
++int check_cpu_dead(unsigned int cpu);
++#else
++#define generic_set_cpu_up(i)	do { } while (0)
+ #endif
  
- obj-y += common.o
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index ec9ec20..95111f2 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -427,7 +427,7 @@ void generic_cpu_die(unsigned int cpu)
  
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-new file mode 100644
-index 0000000..ed356dd
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_pm_ops.c
-@@ -0,0 +1,106 @@
-+/*
-+ * MPC85xx PM operators
-+ *
-+ * Copyright 2015 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#define pr_fmt(fmt) "%s: " fmt, __func__
-+
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+
-+#include <asm/io.h>
-+#include <asm/fsl_guts.h>
-+#include <asm/fsl_pm.h>
-+
-+static struct ccsr_guts __iomem *guts;
-+
-+static void mpc85xx_irq_mask(int cpu)
+ 	for (i = 0; i < 100; i++) {
+ 		smp_rmb();
+-		if (per_cpu(cpu_state, cpu) == CPU_DEAD)
++		if (check_cpu_dead(cpu))
+ 			return;
+ 		msleep(100);
+ 	}
+@@ -454,6 +454,11 @@ int generic_check_cpu_restart(unsigned int cpu)
+ 	return per_cpu(cpu_state, cpu) == CPU_UP_PREPARE;
+ }
+ 
++int check_cpu_dead(unsigned int cpu)
 +{
-+
++	return per_cpu(cpu_state, cpu) == CPU_DEAD;
 +}
 +
-+static void mpc85xx_irq_unmask(int cpu)
-+{
-+
-+}
-+
-+static void mpc85xx_cpu_die(int cpu)
-+{
-+	u32 tmp;
-+
-+	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
-+	mtspr(SPRN_HID0, tmp);
-+
-+	/* Enter NAP mode. */
-+	tmp = mfmsr();
-+	tmp |= MSR_WE;
-+	asm volatile(
-+		"msync\n"
-+		"mtmsr %0\n"
-+		"isync\n"
-+		:
-+		: "r" (tmp));
-+}
-+
-+static void mpc85xx_cpu_up_prepare(int cpu)
-+{
-+
-+}
-+
-+static void mpc85xx_freeze_time_base(bool freeze)
-+{
-+	uint32_t mask;
-+
-+	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
-+	if (freeze)
-+		setbits32(&guts->devdisr, mask);
-+	else
-+		clrbits32(&guts->devdisr, mask);
-+
-+	in_be32(&guts->devdisr);
-+}
-+
-+static const struct of_device_id mpc85xx_smp_guts_ids[] = {
-+	{ .compatible = "fsl,mpc8572-guts", },
-+	{ .compatible = "fsl,p1020-guts", },
-+	{ .compatible = "fsl,p1021-guts", },
-+	{ .compatible = "fsl,p1022-guts", },
-+	{ .compatible = "fsl,p1023-guts", },
-+	{ .compatible = "fsl,p2020-guts", },
-+	{ .compatible = "fsl,bsc9132-guts", },
-+	{},
-+};
-+
-+static const struct fsl_pm_ops mpc85xx_pm_ops = {
-+	.freeze_time_base = mpc85xx_freeze_time_base,
-+	.irq_mask = mpc85xx_irq_mask,
-+	.irq_unmask = mpc85xx_irq_unmask,
-+	.cpu_die = mpc85xx_cpu_die,
-+	.cpu_up_prepare = mpc85xx_cpu_up_prepare,
-+};
-+
-+int __init mpc85xx_setup_pmc(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
-+	if (np) {
-+		guts = of_iomap(np, 0);
-+		of_node_put(np);
-+		if (!guts) {
-+			pr_err("Could not map guts node address\n");
-+			return -ENOMEM;
-+		}
-+	}
-+
-+	qoriq_pm_ops = &mpc85xx_pm_ops;
-+
-+	return 0;
-+}
+ static bool secondaries_inhibited(void)
+ {
+ 	return kvm_hv_mode_active();
 diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 0b75e8e..f9552b8 100644
+index f9552b8..73eb994 100644
 --- a/arch/powerpc/platforms/85xx/smp.c
 +++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -2,7 +2,7 @@
-  * Author: Andy Fleming <afleming@freescale.com>
-  * 	   Kumar Gala <galak@kernel.crashing.org>
-  *
-- * Copyright 2006-2008, 2011-2012 Freescale Semiconductor Inc.
-+ * Copyright 2006-2008, 2011-2012, 2015 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -15,7 +15,6 @@
- #include <linux/init.h>
- #include <linux/delay.h>
- #include <linux/of.h>
--#include <linux/of_address.h>
- #include <linux/kexec.h>
- #include <linux/highmem.h>
- #include <linux/cpu.h>
-@@ -26,9 +25,9 @@
- #include <asm/mpic.h>
- #include <asm/cacheflush.h>
- #include <asm/dbell.h>
--#include <asm/fsl_guts.h>
- #include <asm/code-patching.h>
- #include <asm/cputhreads.h>
-+#include <asm/fsl_pm.h>
+@@ -10,6 +10,8 @@
+  * option) any later version.
+  */
  
- #include <sysdev/fsl_soc.h>
- #include <sysdev/mpic.h>
-@@ -43,24 +42,11 @@ struct epapr_spin_table {
- 	u32	pir;
- };
- 
--static struct ccsr_guts __iomem *guts;
-+#ifdef CONFIG_HOTPLUG_CPU
- static u64 timebase;
- static int tb_req;
- static int tb_valid;
- 
--static void mpc85xx_timebase_freeze(int freeze)
--{
--	uint32_t mask;
--
--	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
--	if (freeze)
--		setbits32(&guts->devdisr, mask);
--	else
--		clrbits32(&guts->devdisr, mask);
--
--	in_be32(&guts->devdisr);
--}
--
- static void mpc85xx_give_timebase(void)
- {
- 	unsigned long flags;
-@@ -71,7 +57,7 @@ static void mpc85xx_give_timebase(void)
- 		barrier();
- 	tb_req = 0;
- 
--	mpc85xx_timebase_freeze(1);
-+	qoriq_pm_ops->freeze_time_base(true);
- #ifdef CONFIG_PPC64
- 	/*
- 	 * e5500/e6500 have a workaround for erratum A-006958 in place
-@@ -104,7 +90,7 @@ static void mpc85xx_give_timebase(void)
- 	while (tb_valid)
- 		barrier();
- 
--	mpc85xx_timebase_freeze(0);
-+	qoriq_pm_ops->freeze_time_base(false);
- 
- 	local_irq_restore(flags);
- }
-@@ -126,31 +112,25 @@ static void mpc85xx_take_timebase(void)
- 	local_irq_restore(flags);
- }
- 
--#ifdef CONFIG_HOTPLUG_CPU
- static void smp_85xx_mach_cpu_die(void)
- {
- 	unsigned int cpu = smp_processor_id();
--	u32 tmp;
- 
- 	local_irq_disable();
-+	hard_irq_disable();
-+	/* mask all irqs to prevent cpu wakeup */
-+	qoriq_pm_ops->irq_mask(cpu);
++#define pr_fmt(fmt) "smp: %s: " fmt, __func__
 +
- 	idle_task_exit();
--	generic_set_cpu_dead(cpu);
--	mb();
+ #include <linux/stddef.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+@@ -52,6 +54,7 @@ static void mpc85xx_give_timebase(void)
+ 	unsigned long flags;
  
- 	mtspr(SPRN_TCR, 0);
-+	mtspr(SPRN_TSR, mfspr(SPRN_TSR));
+ 	local_irq_save(flags);
++	hard_irq_disable();
  
--	cur_cpu_spec->cpu_down_flush();
-+	generic_set_cpu_dead(cpu);
+ 	while (!tb_req)
+ 		barrier();
+@@ -100,6 +103,7 @@ static void mpc85xx_take_timebase(void)
+ 	unsigned long flags;
  
--	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
--	mtspr(SPRN_HID0, tmp);
--	isync();
-+	cur_cpu_spec->cpu_down_flush();
+ 	local_irq_save(flags);
++	hard_irq_disable();
  
--	/* Enter NAP mode. */
--	tmp = mfmsr();
--	tmp |= MSR_WE;
--	mb();
--	mtmsr(tmp);
--	isync();
-+	qoriq_pm_ops->cpu_die(cpu);
- 
+ 	tb_req = 1;
+ 	while (!tb_valid)
+@@ -135,8 +139,31 @@ static void smp_85xx_mach_cpu_die(void)
  	while (1)
  		;
-@@ -398,16 +378,6 @@ static void smp_85xx_setup_cpu(int cpu_nr)
- 	smp_85xx_basic_setup(cpu_nr);
+ }
++
++static void qoriq_cpu_kill(unsigned int cpu)
++{
++	int i;
++
++	for (i = 0; i < 500; i++) {
++		if (check_cpu_dead(cpu)) {
++#ifdef CONFIG_PPC64
++			paca[cpu].cpu_start = 0;
++#endif
++			return;
++		}
++		msleep(20);
++	}
++	pr_err("CPU%d didn't die...\n", cpu);
++}
+ #endif
+ 
++/*
++ * To keep it compatible with old boot program which uses
++ * cache-inhibit spin table, we need to flush the cache
++ * before accessing spin table to invalidate any staled data.
++ * We also need to flush the cache after writing to spin
++ * table to push data out.
++ */
+ static inline void flush_spin_table(void *spin_table)
+ {
+ 	flush_dcache_range((ulong)spin_table,
+@@ -168,51 +195,20 @@ static void wake_hw_thread(void *info)
+ }
+ #endif
+ 
+-static int smp_85xx_kick_cpu(int nr)
++static int smp_85xx_start_cpu(int cpu)
+ {
+-	unsigned long flags;
+-	const u64 *cpu_rel_addr;
+-	__iomem struct epapr_spin_table *spin_table;
++	int ret = 0;
+ 	struct device_node *np;
+-	int hw_cpu = get_hard_smp_processor_id(nr);
++	const u64 *cpu_rel_addr;
++	unsigned long flags;
+ 	int ioremappable;
+-	int ret = 0;
+-
+-	WARN_ON(nr < 0 || nr >= NR_CPUS);
+-	WARN_ON(hw_cpu < 0 || hw_cpu >= NR_CPUS);
+-
+-	pr_debug("smp_85xx_kick_cpu: kick CPU #%d\n", nr);
+-
+-#ifdef CONFIG_PPC64
+-	/* Threads don't use the spin table */
+-	if (cpu_thread_in_core(nr) != 0) {
+-		int primary = cpu_first_thread_sibling(nr);
+-
+-		if (WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_SMT)))
+-			return -ENOENT;
+-
+-		if (cpu_thread_in_core(nr) != 1) {
+-			pr_err("%s: cpu %d: invalid hw thread %d\n",
+-			       __func__, nr, cpu_thread_in_core(nr));
+-			return -ENOENT;
+-		}
++	int hw_cpu = get_hard_smp_processor_id(cpu);
++	struct epapr_spin_table __iomem *spin_table;
+ 
+-		if (!cpu_online(primary)) {
+-			pr_err("%s: cpu %d: primary %d not online\n",
+-			       __func__, nr, primary);
+-			return -ENOENT;
+-		}
+-
+-		smp_call_function_single(primary, wake_hw_thread, &nr, 0);
+-		return 0;
+-	}
+-#endif
+-
+-	np = of_get_cpu_node(nr, NULL);
++	np = of_get_cpu_node(cpu, NULL);
+ 	cpu_rel_addr = of_get_property(np, "cpu-release-addr", NULL);
+-
+-	if (cpu_rel_addr == NULL) {
+-		printk(KERN_ERR "No cpu-release-addr for cpu %d\n", nr);
++	if (!cpu_rel_addr) {
++		pr_err("No cpu-release-addr for cpu %d\n", cpu);
+ 		return -ENOENT;
+ 	}
+ 
+@@ -232,28 +228,18 @@ static int smp_85xx_kick_cpu(int nr)
+ 		spin_table = phys_to_virt(*cpu_rel_addr);
+ 
+ 	local_irq_save(flags);
+-#ifdef CONFIG_PPC32
+-#ifdef CONFIG_HOTPLUG_CPU
+-	/* Corresponding to generic_set_cpu_dead() */
+-	generic_set_cpu_up(nr);
++	hard_irq_disable();
+ 
+-	if (system_state == SYSTEM_RUNNING) {
+-		/*
+-		 * To keep it compatible with old boot program which uses
+-		 * cache-inhibit spin table, we need to flush the cache
+-		 * before accessing spin table to invalidate any staled data.
+-		 * We also need to flush the cache after writing to spin
+-		 * table to push data out.
+-		 */
+-		flush_spin_table(spin_table);
+-		out_be32(&spin_table->addr_l, 0);
+-		flush_spin_table(spin_table);
++	if (qoriq_pm_ops)
++		qoriq_pm_ops->cpu_up_prepare(cpu);
+ 
++	/* if cpu is not spinning, reset it */
++	if (read_spin_table_addr_l(spin_table) != 1) {
+ 		/*
+ 		 * We don't set the BPTR register here since it already points
+ 		 * to the boot page properly.
+ 		 */
+-		mpic_reset_core(nr);
++		mpic_reset_core(cpu);
+ 
+ 		/*
+ 		 * wait until core is ready...
+@@ -263,40 +249,23 @@ static int smp_85xx_kick_cpu(int nr)
+ 		if (!spin_event_timeout(
+ 				read_spin_table_addr_l(spin_table) == 1,
+ 				10000, 100)) {
+-			pr_err("%s: timeout waiting for core %d to reset\n",
+-							__func__, hw_cpu);
+-			ret = -ENOENT;
+-			goto out;
++			pr_err("timeout waiting for cpu %d to reset\n",
++				hw_cpu);
++			ret = -EAGAIN;
++			goto err;
+ 		}
+-
+-		/*  clear the acknowledge status */
+-		__secondary_hold_acknowledge = -1;
+ 	}
+-#endif
+-	flush_spin_table(spin_table);
+-	out_be32(&spin_table->pir, hw_cpu);
+-	out_be32(&spin_table->addr_l, __pa(__early_start));
+-	flush_spin_table(spin_table);
+-
+-	/* Wait a bit for the CPU to ack. */
+-	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
+-					10000, 100)) {
+-		pr_err("%s: timeout waiting for core %d to ack\n",
+-						__func__, hw_cpu);
+-		ret = -ENOENT;
+-		goto out;
+-	}
+-out:
+-#else
+-	smp_generic_kick_cpu(nr);
+ 
+ 	flush_spin_table(spin_table);
+ 	out_be32(&spin_table->pir, hw_cpu);
++#ifdef CONFIG_PPC64
+ 	out_be64((u64 *)(&spin_table->addr_h),
+ 		__pa(ppc_function_entry(generic_secondary_smp_init)));
+-	flush_spin_table(spin_table);
++#else
++	out_be32(&spin_table->addr_l, __pa(__early_start));
+ #endif
+-
++	flush_spin_table(spin_table);
++err:
+ 	local_irq_restore(flags);
+ 
+ 	if (ioremappable)
+@@ -305,6 +274,61 @@ out:
+ 	return ret;
  }
  
--static const struct of_device_id mpc85xx_smp_guts_ids[] = {
--	{ .compatible = "fsl,mpc8572-guts", },
--	{ .compatible = "fsl,p1020-guts", },
--	{ .compatible = "fsl,p1021-guts", },
--	{ .compatible = "fsl,p1022-guts", },
--	{ .compatible = "fsl,p1023-guts", },
--	{ .compatible = "fsl,p2020-guts", },
--	{},
--};
--
- void __init mpc85xx_smp_init(void)
- {
- 	struct device_node *np;
-@@ -431,22 +401,16 @@ void __init mpc85xx_smp_init(void)
- 		smp_85xx_ops.probe = NULL;
++static int smp_85xx_kick_cpu(int nr)
++{
++	int ret = 0;
++#ifdef CONFIG_PPC64
++	int primary = nr;
++	int primary_hw = get_hard_smp_processor_id(primary);
++#endif
++
++	WARN_ON(nr < 0 || nr >= num_possible_cpus());
++
++	pr_debug("kick CPU #%d\n", nr);
++
++#ifdef CONFIG_PPC64
++	/* Threads don't use the spin table */
++	if (cpu_thread_in_core(nr) != 0) {
++		int primary = cpu_first_thread_sibling(nr);
++
++		if (WARN_ON_ONCE(!cpu_has_feature(CPU_FTR_SMT)))
++			return -ENOENT;
++
++		if (cpu_thread_in_core(nr) != 1) {
++			pr_err("%s: cpu %d: invalid hw thread %d\n",
++			       __func__, nr, cpu_thread_in_core(nr));
++			return -ENOENT;
++		}
++
++		if (!cpu_online(primary)) {
++			pr_err("%s: cpu %d: primary %d not online\n",
++			       __func__, nr, primary);
++			return -ENOENT;
++		}
++
++		smp_call_function_single(primary, wake_hw_thread, &nr, 0);
++		return 0;
++	}
++
++	ret = smp_85xx_start_cpu(primary);
++	if (ret)
++		return ret;
++
++	paca[nr].cpu_start = 1;
++	generic_set_cpu_up(nr);
++
++	return ret;
++#else
++	ret = smp_85xx_start_cpu(nr);
++	if (ret)
++		return ret;
++
++	generic_set_cpu_up(nr);
++
++	return ret;
++#endif
++}
++
+ struct smp_ops_t smp_85xx_ops = {
+ 	.kick_cpu = smp_85xx_kick_cpu,
+ 	.cpu_bootable = smp_generic_cpu_bootable,
+@@ -402,6 +426,10 @@ void __init mpc85xx_smp_init(void)
  	}
  
--	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
--	if (np) {
--		guts = of_iomap(np, 0);
--		of_node_put(np);
--		if (!guts) {
--			pr_err("%s: Could not map guts node address\n",
--								__func__);
--			return;
--		}
-+#ifdef CONFIG_HOTPLUG_CPU
-+#ifdef CONFIG_FSL_PMC
-+	mpc85xx_setup_pmc();
+ #ifdef CONFIG_HOTPLUG_CPU
++#ifdef CONFIG_FSL_CORENET_RCPM
++	fsl_rcpm_init();
 +#endif
-+	if (qoriq_pm_ops) {
++
+ #ifdef CONFIG_FSL_PMC
+ 	mpc85xx_setup_pmc();
+ #endif
+@@ -409,6 +437,7 @@ void __init mpc85xx_smp_init(void)
  		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
  		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
--#ifdef CONFIG_HOTPLUG_CPU
  		ppc_md.cpu_die = smp_85xx_mach_cpu_die;
--#endif
++		smp_85xx_ops.cpu_die = qoriq_cpu_kill;
  	}
--
-+#endif
+ #endif
  	smp_ops = &smp_85xx_ops;
- 
- #ifdef CONFIG_KEXEC
 diff --git a/arch/powerpc/platforms/85xx/smp.h b/arch/powerpc/platforms/85xx/smp.h
-index e2b4493..0b20ae3 100644
+index 0b20ae3..8ee19a3 100644
 --- a/arch/powerpc/platforms/85xx/smp.h
 +++ b/arch/powerpc/platforms/85xx/smp.h
-@@ -5,6 +5,7 @@
- 
+@@ -6,6 +6,7 @@
  #ifdef CONFIG_SMP
  void __init mpc85xx_smp_init(void);
-+int __init mpc85xx_setup_pmc(void);
+ int __init mpc85xx_setup_pmc(void);
++int __init fsl_rcpm_init(void);
  #else
  static inline void mpc85xx_smp_init(void)
  {
