@@ -1,29 +1,35 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EB901A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:06:41 +1000 (AEST)
-Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
- [209.85.220.52])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F04051401DA
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2015 18:06:40 +1000 (AEST)
-Received: by pacti10 with SMTP id ti10so80190608pac.0
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2015 01:06:38 -0700 (PDT)
-Subject: Re: [PATCH V4 0/6] Redesign SR-IOV on PowerNV
-To: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- benh@kernel.crashing.org
-References: <1439949704-8023-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <55DD4A80.8030102@ozlabs.ru>
-Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <55DD7388.4080802@ozlabs.ru>
-Date: Wed, 26 Aug 2015 18:06:32 +1000
-MIME-Version: 1.0
-In-Reply-To: <55DD4A80.8030102@ozlabs.ru>
-Content-Type: text/plain; charset=koi8-r; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21AAE1A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:26:50 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 26 Aug 2015 13:56:47 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5BD90125806D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:07 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7Q8QfHm63045868
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:42 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7Q8QdZb025139
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 13:56:40 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ryabinin.a.a@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 02/10] kasan: MODULE_VADDR is not available on all archs
+Date: Wed, 26 Aug 2015 13:56:10 +0530
+Message-Id: <1440577578-15813-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,36 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/26/2015 03:11 PM, Alexey Kardashevskiy wrote:
-> On 08/19/2015 12:01 PM, Wei Yang wrote:
->> In original design, it tries to group VFs to enable more number of VFs in
->> the
->> system, when VF BAR is bigger than 64MB. This design has a flaw in which one
->> error on a VF will interfere other VFs in the same group.
->>
->> This patch series change this design by using M64 BAR in Single PE mode to
->> cover only one VF BAR. By doing so, it gives absolute isolation between VFs.
->
-> With or without this patchset, this fails with a horrible loop of EEHs:
-> rmmod mlx4_en mlx4_ib mlx4_core
-> modprobe mlx4_core num_vfs=4 probe_vf=4 port_type_array=2,2 debug_level=1
->
-> No guest is needed, just boot and do these commands. The EEH error is
-> pointing to a broken DMA address. iommu=nobypass fixed it for 4 VFs case
-> but when I try 16 VFs, none is created.
->
-> What is the correct base tree and what hardware did you use for the testing
-> _exactly_?
->
-> Mine is "Ethernet controller: Mellanox Technologies MT27520 Family
-> [ConnectX-3 Pro]" with 128MB BARs and that works (just double checked - can
-> create all 16 VFs) with PowerKVM 3.1 so it is not a hardware issue.
+Conditionalize the check using #ifdef
 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ mm/kasan/report.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-This turned out to be the powerpc/next tree problem, not this patch or 
-anything related to SRIOV. Debugging now...
-
-
-
+diff --git a/mm/kasan/report.c b/mm/kasan/report.c
+index e07c94fbd0ac..71ce7548d914 100644
+--- a/mm/kasan/report.c
++++ b/mm/kasan/report.c
+@@ -85,9 +85,14 @@ static void print_error_description(struct kasan_access_info *info)
+ 
+ static inline bool kernel_or_module_addr(const void *addr)
+ {
+-	return (addr >= (void *)_stext && addr < (void *)_end)
+-		|| (addr >= (void *)MODULES_VADDR
+-			&& addr < (void *)MODULES_END);
++	if (addr >= (void *)_stext && addr < (void *)_end)
++		return true;
++#if defined(CONFIG_MODULES) && defined(MODULES_VADDR)
++	if (addr >= (void *)MODULES_VADDR
++			&& addr < (void *)MODULES_END)
++		return true;
++#endif
++	return false;
+ }
+ 
+ static inline bool init_task_stack_addr(const void *addr)
 -- 
-Alexey
+2.5.0
