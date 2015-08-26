@@ -1,26 +1,29 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0118.outbound.protection.outlook.com [157.56.111.118])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 79C191A0179
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:04:08 +1000 (AEST)
-From: Lu Y.B. <yangbo.lu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, linux-mmc
- <linux-mmc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Subject: RE: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240
- incorrect HOSTVER value
-Date: Wed, 26 Aug 2015 07:49:52 +0000
-Message-ID: <BY1PR0301MB119219D4C4E53A73216BCF53F2600@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
- <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
- <1437791242.2993.268.camel@freescale.com>
- <CAPDyKFp8ZStYVaFm8tjPL190dqV6vCE+oT706M=6wVCckWesLw@mail.gmail.com>
- <1438012638.2993.289.camel@freescale.com>
-In-Reply-To: <1438012638.2993.289.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EB901A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Aug 2015 18:06:41 +1000 (AEST)
+Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
+ [209.85.220.52])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id F04051401DA
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2015 18:06:40 +1000 (AEST)
+Received: by pacti10 with SMTP id ti10so80190608pac.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Aug 2015 01:06:38 -0700 (PDT)
+Subject: Re: [PATCH V4 0/6] Redesign SR-IOV on PowerNV
+To: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
+ benh@kernel.crashing.org
+References: <1439949704-8023-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <55DD4A80.8030102@ozlabs.ru>
+Cc: linuxppc-dev@ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55DD7388.4080802@ozlabs.ru>
+Date: Wed, 26 Aug 2015 18:06:32 +1000
 MIME-Version: 1.0
+In-Reply-To: <55DD4A80.8030102@ozlabs.ru>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +33,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+ID4gPiA+IEZvciBUNDI0MC1SMS4wLVIyLjAsIHRoZSBIT1NUVkVSIHJlZ2lzdGVyIGhhcyBp
-bmNvcnJjZXQgdmVuZGVyDQo+ID4gPiA+ID4gdmVyc2lvbiB2YWx1ZSBhbmQgc2RoYyBzcGVjIHZl
-cnNpb24gdmFsdWUuIFRoaXMgd2lsbCBicmVhayBkb3duDQo+ID4gPiA+ID4gdGhlIEFETUEgZGF0
-YSB0cmFuc2Zlci4gU28gYWRkIHdvcmthcm91bmQgdG8gZ2V0IHJpZ2h0IHZhbHVlDQo+ID4gPiA+
-ID4gVlZOPTB4MTMsIFNWTiA9IDB4MS4NCj4gPiA+ID4NCj4gPiA+ID4gU28gVDQyNDAtUjEuMC1S
-Mi4wIGlzIHRoZSB2ZXJzaW9uIG9mIHRoZSBjb250cm9sbGVyLCByaWdodD8NCj4gPiA+ID4NCj4g
-PiA+ID4gSWYgSSB1bmRlcnN0YW5kIGNvcnJlY3QgeW91IGFyZSBjaGVja2luZyB3aGF0IENQVS9T
-b0MgeW91IGFyZQ0KPiA+ID4gPiBydW5uaW5nIG9uLCB0byBmaWd1cmUgb3V0IHdoaWNoIGNvbnRy
-b2xsZXIgdmVyc2lvbiB5b3UgYXJlIHVzaW5nLA0KPiA+ID4gPiBhcyB0aGF0IGNhbid0IGJlIGZl
-dGNoZWQgKHRydXN0ZWQpIGZyb20gdGhlIHJlZ2lzdGVycyBvZiB0aGUgZXNkaGMNCj4gPiA+ID4g
-Y29udHJvbGxlciBpdHNlbGYhPw0KPiA+ID4gPg0KPiA+ID4gPiBJbnN0ZWFkLCB5b3UgY291bGQg
-ZGVhbCB3aXRoIHRoaXMgZGlyZWN0bHkgaW4gdGhlIERUUyBmaWxlcy4gSQ0KPiA+ID4gPiBhc3N1
-bWUgeW91IGhhdmUgc29tZSBEVFMgZmlsZSBmb3IgZWFjaCBTb0MvYm9hcmQgdmFyaWFudCwgcmln
-aHQ/DQo+ID4gPg0KPiA+ID4gTm8sIHdlIGRvIG5vdCBoYXZlIGEgc2VwYXJhdGUgRFRTIGZpbGUg
-Zm9yIGVhY2ggcmV2aXNpb24gb2YgYW4gU29DDQo+ID4gPiAtLSBhbmQgaWYgd2UgZGlkLCB3ZSdk
-IGNvbnN0YW50bHkgaGF2ZSBwZW9wbGUgdXNpbmcgdGhlIHdyb25nIG9uZS4NCj4gPiA+DQo+ID4g
-PiA+IEluIHByaW5jaXBsZSwgaW4geW91ciBEVFMgZmlsZSBzcGVjaWZpYyBmb3IgdGhlIGJvYXJk
-L1NvQyB0aGF0DQo+ID4gPiA+IGhvbGRzIHRoZSBUNDI0MC1SMS4wLVIyLjAgdmVyc2lvbiBvZiB0
-aGUgY29udHJvbGxlciwgc2hvdWxkIGFkZCBhDQo+ID4gPiA+IHNwZWNpZmljIGVzZGhjIERUIHBy
-b3BlcnR5IHRvIGluZGljYXRlIHRoaXMgZXJyYXRhLg0KPiA+ID4NCj4gPiA+IE5vLCBiZWNhdXNl
-IChpbiBhZGRpdGlvbiB0byB0aGUgYWJvdmUgaXNzdWUgYWJvdXQgY2hpcCByZXZpc2lvbnMpDQo+
-ID4gPiB0aGUgZGV2aWNlIHRyZWUgaXMgc3RhYmxlIEFCSSBhbmQgZXJyYXRhIGFyZSBvZnRlbiBk
-aXNjb3ZlcmVkIGFmdGVyDQo+ID4gPiBkZXZpY2UgdHJlZXMgYXJlIGRlcGxveWVkLg0KPiA+DQo+
-ID4gRmFpciBlbm91Z2guIFRoZW4gd2hhdCBpcyB5b3VyIHN1Z2dlc3Rpb24gZm9yIHRoZSBzb2x1
-dGlvbiBoZXJlPw0KPiANCj4gQXMgSSBzYWlkIGluIG15IGNvbW1lbnQgb24gcGF0Y2ggMi8zLCBy
-ZWFkIFNWUiBmcm9tIHRoZSBkZXZpY2UtDQo+IGNvbmZpZy9ndXRzIE1NSU8gYmxvY2ssIHdoaWNo
-IHdvcmtzIG9uIGJvdGggUFBDIGFuZCBBUk0uDQo+IA0KPiAtU2NvdHQNCg0KVGhhbmtzLCBTY290
-dC4NCkkgY2hlY2tlZCB0aGUgZGV2aWNlIG5vZGVzIG9mIGRldmljZS1jb25maWcvZ3V0cywgZmlu
-ZGluZyBhbGwgdGhlIHBsYXRmb3JtcyBoYXMgbm90IGEgdW5pZm9ybSBjb21wYXRpYmxlIG5hbWUu
-DQpDb3VsZCBJIGFkZCBhIGNvbXBhdGlibGUgbmFtZSBjYWxsZWQgImZzbCwgZGNmZyIoImZzbCwg
-Z3V0cyIgaWYgdXNpbmcgZ3V0cykgZm9yIFBvd2VyUEMgUCBzZXJpZXMsIFQgc2VyaWVzLCBCIHNl
-cmllcyBib2FyZHMsIHNvIHRoYXQgSSBjb3VsZCBnZXQgdGhpcyBkZXZpY2Ugbm9kZSBieSBjb21w
-YXRpYmxlIHdpdGhvdXQga25vd2luZyBwbGF0Zm9ybT8gDQoNCk9yIERvIHlvdSBrbm93IHRoZXJl
-IGlzIGFub3RoZXIgbWV0aG9kIHRvIGdldCB0aGlzIGRldmljZSBub2RlIGluIGNvZGUgZWFzaWx5
-IHdpdGhvdXQga25vd2luZyBwbGF0Zm9ybT8NCg0KQmVzdCByZWdhcmRzLA0KWWFuZ2JvIEx1DQoN
-Cg0KDQoNCg0KDQoNCg==
+On 08/26/2015 03:11 PM, Alexey Kardashevskiy wrote:
+> On 08/19/2015 12:01 PM, Wei Yang wrote:
+>> In original design, it tries to group VFs to enable more number of VFs in
+>> the
+>> system, when VF BAR is bigger than 64MB. This design has a flaw in which one
+>> error on a VF will interfere other VFs in the same group.
+>>
+>> This patch series change this design by using M64 BAR in Single PE mode to
+>> cover only one VF BAR. By doing so, it gives absolute isolation between VFs.
+>
+> With or without this patchset, this fails with a horrible loop of EEHs:
+> rmmod mlx4_en mlx4_ib mlx4_core
+> modprobe mlx4_core num_vfs=4 probe_vf=4 port_type_array=2,2 debug_level=1
+>
+> No guest is needed, just boot and do these commands. The EEH error is
+> pointing to a broken DMA address. iommu=nobypass fixed it for 4 VFs case
+> but when I try 16 VFs, none is created.
+>
+> What is the correct base tree and what hardware did you use for the testing
+> _exactly_?
+>
+> Mine is "Ethernet controller: Mellanox Technologies MT27520 Family
+> [ConnectX-3 Pro]" with 128MB BARs and that works (just double checked - can
+> create all 16 VFs) with PowerKVM 3.1 so it is not a hardware issue.
+
+
+This turned out to be the powerpc/next tree problem, not this patch or 
+anything related to SRIOV. Debugging now...
+
+
+
+-- 
+Alexey
