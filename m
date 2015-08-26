@@ -1,27 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <joseph_myers@mentor.com>
+Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5AD081A0E5F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 00:16:34 +1000 (AEST)
-Message-ID: <1440598582.16577.109.camel@freescale.com>
-Subject: Re: [PATCH 3/3] mmc: sdhci-of-esdhc: add workaround for T4240
- incorrect HOSTVER value
-From: Scott Wood <scottwood@freescale.com>
-To: Lu Yangbo-B47093 <yangbo.lu@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, linux-mmc
- <linux-mmc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Date: Wed, 26 Aug 2015 09:16:22 -0500
-In-Reply-To: <BY1PR0301MB119219D4C4E53A73216BCF53F2600@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1437471937-34218-1-git-send-email-yangbo.lu@freescale.com>
- <CAPDyKFpf6Ayw28dmbHhLJ8HSOSie60sUjaAnK7qqONHsRN4BDA@mail.gmail.com>
- <1437791242.2993.268.camel@freescale.com>
- <CAPDyKFp8ZStYVaFm8tjPL190dqV6vCE+oT706M=6wVCckWesLw@mail.gmail.com>
- <1438012638.2993.289.camel@freescale.com>
- <BY1PR0301MB119219D4C4E53A73216BCF53F2600@BY1PR0301MB1192.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 185181A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 00:45:05 +1000 (AEST)
+Date: Wed, 26 Aug 2015 14:44:57 +0000
+From: Joseph Myers <joseph@codesourcery.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+CC: <linux-kernel@vger.kernel.org>, <linux-alpha@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-s390@vger.kernel.org>,
+ <linux-sh@vger.kernel.org>, <sparclinux@vger.kernel.org>
+Subject: Re: Ping Re: [PATCH 0/8] math-emu: Update kernel math-emu code from
+ current glibc soft-fp
+In-Reply-To: <1440026806.13406.2.camel@ellerman.id.au>
+Message-ID: <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
+References: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
+ <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
+ <1440026806.13406.2.camel@ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-08-26 at 02:49 -0500, Lu Yangbo-B47093 wrote:
-> > > > > > For T4240-R1.0-R2.0, the HOSTVER register has incorrcet vender
-> > > > > > version value and sdhc spec version value. This will break down
-> > > > > > the ADMA data transfer. So add workaround to get right value
-> > > > > > VVN=0x13, SVN = 0x1.
-> > > > > 
-> > > > > So T4240-R1.0-R2.0 is the version of the controller, right?
-> > > > > 
-> > > > > If I understand correct you are checking what CPU/SoC you are
-> > > > > running on, to figure out which controller version you are using,
-> > > > > as that can't be fetched (trusted) from the registers of the esdhc
-> > > > > controller itself!?
-> > > > > 
-> > > > > Instead, you could deal with this directly in the DTS files. I
-> > > > > assume you have some DTS file for each SoC/board variant, right?
-> > > > 
-> > > > No, we do not have a separate DTS file for each revision of an SoC
-> > > > -- and if we did, we'd constantly have people using the wrong one.
-> > > > 
-> > > > > In principle, in your DTS file specific for the board/SoC that
-> > > > > holds the T4240-R1.0-R2.0 version of the controller, should add a
-> > > > > specific esdhc DT property to indicate this errata.
-> > > > 
-> > > > No, because (in addition to the above issue about chip revisions)
-> > > > the device tree is stable ABI and errata are often discovered after
-> > > > device trees are deployed.
-> > > 
-> > > Fair enough. Then what is your suggestion for the solution here?
+On Thu, 20 Aug 2015, Michael Ellerman wrote:
+
+> On Wed, 2015-08-19 at 14:39 +0000, Joseph Myers wrote:
+> > I'd like to ping this patch series, not having seen any comments on it.
 > > 
-> > As I said in my comment on patch 2/3, read SVR from the device-
-> > config/guts MMIO block, which works on both PPC and ARM.
+> > [PATCH 0/8] math-emu: Update kernel math-emu code from current glibc soft-fp
+> > https://lkml.org/lkml/2015/7/2/394
 > > 
-> > -Scott
+> > [PATCH 1/8] math-emu: Move math-emu to math-emu-old
+> > https://lkml.org/lkml/2015/7/2/395
+> > 
+> > [PATCH 2/8] math-emu: Import current glibc soft-fp as include/math-emu
+> > https://lkml.org/lkml/2015/7/2/398
+> > 
+> > [PATCH 3/8] alpha/math-emu: Move alpha from math-emu-old to math-emu
+> > https://lkml.org/lkml/2015/7/2/399
+> > 
+> > [PATCH 4/8] powerpc/math-emu: Move powerpc from math-emu-old to math-emu
+> > https://lkml.org/lkml/2015/7/2/400
+> > 
+> > [PATCH 5/8] s390/math-emu: Move s390 from math-emu-old to math-emu
+> > https://lkml.org/lkml/2015/7/2/401
+> > 
+> > [PATCH 6/8] sh/math-emu: Move sh from math-emu-old to math-emu
+> > https://lkml.org/lkml/2015/7/2/402
+> > 
+> > [PATCH 7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
+> > https://lkml.org/lkml/2015/7/2/404
+> > 
+> > [PATCH 8/8] math-emu: Remove math-emu-old
+> > https://lkml.org/lkml/2015/7/2/405
+> > 
+> > As noted in patch 0, the dependencies are as follows: patch 2 depends on 
+> > patch 1, patches 3-7 depend on patches 1 and 2 but are independent of each 
+> > other, patch 8 depends on all the other patches.
 > 
-> Thanks, Scott.
-> I checked the device nodes of device-config/guts, finding all the platforms 
-> has not a uniform compatible name.
-> Could I add a compatible name called "fsl, dcfg"("fsl, guts" if using guts) 
-> for PowerPC P series, T series, B series boards, so that I could get this 
-> device node by compatible without knowing platform? 
+> Hi Joseph,
+> 
+> I have done some testing on powerpc, and it seems good.
+> 
+> I'm reluctant to proceed with merging them though until we've heard at least
+> *something* from the other maintainers.
 
-No.  It's too vague.  Linux should keep a list of all the nodes it can match 
-against for this.  Centralize it in one place rather than having each driver 
-that cares about SVR do it.
+Ping again for the other-architecture maintainers (alpha, s390, sh, 
+sparc)....
 
--Scott
+-- 
+Joseph S. Myers
+joseph@codesourcery.com
