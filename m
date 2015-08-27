@@ -1,20 +1,22 @@
-Return-Path: <ibmirkin@gmail.com>
-Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
- [IPv6:2607:f8b0:4003:c01::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mathieu.desnoyers@efficios.com>
+Received: from mail.efficios.com (mail.efficios.com [78.47.125.74])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BEE001A0036
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 01:31:37 +1000 (AEST)
-Received: by obbwr7 with SMTP id wr7so19188785obb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 08:31:35 -0700 (PDT)
-MIME-Version: 1.0
-Sender: ibmirkin@gmail.com
-Date: Thu, 27 Aug 2015 11:31:35 -0400
-Message-ID: <CAKb7Uvi5xTpU=XniQgVbtb8C7ac_6m0L96ZWD8ovg+vCpbXa5g@mail.gmail.com>
-Subject: Kernel access of bad area on kernel 4.1.6
-From: Ilia Mirkin <imirkin@alum.mit.edu>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id F10EA1A0545
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 04:02:51 +1000 (AEST)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-api@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 1/9] powerpc: allocate sys_membarrier system call number
+Date: Thu, 27 Aug 2015 13:56:47 -0400
+Message-Id: <1440698215-8355-2-git-send-email-mathieu.desnoyers@efficios.com>
+In-Reply-To: <1440698215-8355-1-git-send-email-mathieu.desnoyers@efficios.com>
+References: <1440698215-8355-1-git-send-email-mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've recently come into the possession of a PowerMac7,3 and have been
-cross-compiling a chroot for it on my (x86_64) desktop. However
-elfutils doesn't cross-compile for ppc64 due to its biarch m4 script
-which tries to execute a built program, so I kicked off a build
-locally and left for a few minutes. When I came back, I saw the below
-through netconsole, the fans were going full blast, and the machine
-was unresponsive.
+Allow it to be used from SPU, since it should not have unwanted
+side-effects.
 
-Is this a kernel issue? Hardware issue? What do I need to do in order
-for the instruction dump to not be XXX's and have a call trace? (Is
-this the annoying security stuff in action? I started with the
-g5_defconfig, perhaps that was a mistake.) Sorry for the newbie
-questions, but I'm very new to ppc.
+[ Untested on this architecture. To try it out: fetch linux-next/akpm,
+  apply this patch, build/run a membarrier-enabled kernel, and do make
+  kselftest. ]
 
-In case it matters, it's booted on an nfsroot, no swap.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-api@vger.kernel.org
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-Thanks for any help,
-
-  -ilia
-
-[ 8419.415061] Oops: Kernel access of bad area, sig: 11 [#1]
-[ 8419.416338] SMP NR_CPUS=4 PowerMac
-[ 8419.417623] Modules linked in: snd_aoa_codec_tas snd_aoa snd
-nouveau soundcore btusb btbcm btintel ttm bluetooth drm_kms_helper drm
-uninorth_agp agpgart
-[ 8419.419138] CPU: 0 PID: 12927 Comm: as Not tainted 4.1.6 #4
-[ 8419.420539] task: c0000000573f3520 ti: c000000057698000 task.ti:
-c000000057698000
-[ 8419.421963] NIP: c00000005769bca8 LR: c00000005769bca8 CTR: c00000000008a710
-[ 8419.423400] REGS: c00000005769b7e0 TRAP: 0400   Not tainted  (4.1.6)
-[ 8419.424850] MSR: 9000000010001032 <SF,HV,ME,IR,DR,RI>  CR: 001048fc
- XER: 00000000
-[ 8419.426407] SOFTE: 0
-GPR00: 00000000ffffffff c00000005769ba60 c000000000b9ac00 c0000000590bb520
-GPR04: c0000000573f3ab0 c0000000573f3588 c0000000001048fc c00000005769bca8
-GPR08: c00000005769b890 c000000050000000 0000000000000001 c00000005ee0a290
-GPR12: 0000000024044048 c00000000ffff000 c00000005769ba20 0000000000000600
-GPR16: 0000000000000001 0000000000000000 c00000005bbd8e00 c000000058ccbcb0
-GPR20: c00000005769ba50 0000000000000000 c000000000103d60 c00000005bbd8e00
-GPR24: c00000005769ba40 0000000000000000 0000000000000001 0000000000000001
-GPR28: 000000001007d630 0000000010049d08 c00000005769bc80 c000000058ccbcb0
-[ 8419.440558] NIP [c00000005769bca8] 0xc00000005769bca8
-[ 8419.442170] LR [c00000005769bca8] 0xc00000005769bca8
-[ 8419.443774] Call Trace:
-[ 8419.445351] Instruction dump:
-[ 8419.446946] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX
-[ 8419.448659] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX
-[ 8419.456445] ---[ end trace ad7c77d8920840ff ]---
-[ 8419.456511]
-[ 8419.456565] Fixing recursive fault but reboot is needed!
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 4d65499..126d0c4 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -369,3 +369,4 @@ SYSCALL_SPU(bpf)
+ COMPAT_SYS(execveat)
+ PPC64ONLY(switch_endian)
+ SYSCALL_SPU(userfaultfd)
++SYSCALL_SPU(membarrier)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 4a055b6..13411be 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
+ 
+ 
+-#define __NR_syscalls		365
++#define __NR_syscalls		366
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 6ad58d4..6337738 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -387,5 +387,6 @@
+ #define __NR_execveat		362
+ #define __NR_switch_endian	363
+ #define __NR_userfaultfd	364
++#define __NR_membarrier		365
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+-- 
+1.9.1
