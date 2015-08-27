@@ -1,26 +1,38 @@
-Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-wi0-x230.google.com (mail-wi0-x230.google.com
- [IPv6:2a00:1450:400c:c05::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7AB551A0C66
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 19:48:07 +1000 (AEST)
-Received: by widdq5 with SMTP id dq5so39273613wid.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 02:48:04 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1440577578-15813-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1440577578-15813-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 27 Aug 2015 12:48:04 +0300
-Message-ID: <CAPAsAGwU7+uB6xqtUYNyKFBnDp3a+_-b9KM6XtXvNJTjHGqqMg@mail.gmail.com>
-Subject: Re: [PATCH V2 06/10] kasan: Allow arch to overrride kasan shadow
- offsets
-From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id A69F51A05BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 19:51:46 +1000 (AEST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7E1D614010F
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2015 19:51:46 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Thu, 27 Aug 2015 19:51:45 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6EC5E3578057
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2015 19:51:43 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7R9pYOo59113508
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2015 19:51:43 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7R9pAbq022091
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2015 19:51:10 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: mpe <mpe@ellerman.id.au>
+Cc: mikey <mikey@neuling.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Matt Ochs <mrochs@us.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>
+Subject: [PATCH 1/2] cxl: Fix + cleanup error paths in cxl_dev_context_init
+Date: Thu, 27 Aug 2015 19:50:18 +1000
+Message-Id: <1440669019-23800-1-git-send-email-imunsie@au.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +42,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-08-26 11:26 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
-> Some archs may want to provide kasan shadow memory as a constant
-> offset from the address. Such arch even though cannot use inline kasan
-> support, they can work with outofline kasan support.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  include/linux/kasan.h | 3 +++
->  mm/kasan/kasan.h      | 3 +++
->  2 files changed, 6 insertions(+)
->
-> diff --git a/include/linux/kasan.h b/include/linux/kasan.h
-> index 5486d777b706..e458ca64cdaf 100644
-> --- a/include/linux/kasan.h
-> +++ b/include/linux/kasan.h
-> @@ -15,11 +15,14 @@ struct vm_struct;
->  #include <asm/kasan.h>
->  #include <linux/sched.h>
->
-> +#ifndef kasan_mem_to_shadow
->  static inline void *kasan_mem_to_shadow(const void *addr)
->  {
->         return (void *)((unsigned long)addr >> KASAN_SHADOW_SCALE_SHIFT)
->                 + KASAN_SHADOW_OFFSET;
->  }
-> +#define kasan_mem_to_shadow kasan_mem_to_shadow
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-Again, why we need this define here? I think it should be safe to remove it.
+If the cxl_context_alloc() call fails, we return immediately without
+releasing the reference on the AFU device, allowing it to leak.
 
-> +#endif
->
->  /* Enable reporting bugs after kasan_disable_current() */
->  static inline void kasan_enable_current(void)
-> diff --git a/mm/kasan/kasan.h b/mm/kasan/kasan.h
-> index deb547d5a916..c0686f2b1224 100644
-> --- a/mm/kasan/kasan.h
-> +++ b/mm/kasan/kasan.h
-> @@ -57,11 +57,14 @@ struct kasan_global {
->  void kasan_report_error(struct kasan_access_info *info);
->  void kasan_report_user_access(struct kasan_access_info *info);
->
-> +#ifndef kasan_shadow_to_mem
->  static inline const void *kasan_shadow_to_mem(const void *shadow_addr)
->  {
->         return (void *)(((unsigned long)shadow_addr - KASAN_SHADOW_OFFSET)
->                 << KASAN_SHADOW_SCALE_SHIFT);
->  }
-> +#define kasan_shadow_to_mem kasan_shadow_to_mem
+This patch switches to using goto style error handling so that the
+device is released in common code for both error paths, and will also
+simplify things if we add additional initialisation in this function in
+the future.
 
-ditto
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ drivers/misc/cxl/api.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-> +#endif
->
->  static inline bool kasan_report_enabled(void)
->  {
-> --
-> 2.5.0
->
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index f49e3e5..005adc7 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -25,19 +25,24 @@ struct cxl_context *cxl_dev_context_init(struct pci_dev *dev)
+ 
+ 	get_device(&afu->dev);
+ 	ctx = cxl_context_alloc();
+-	if (IS_ERR(ctx))
+-		return ctx;
++	if (IS_ERR(ctx)) {
++		rc = PTR_ERR(ctx);
++		goto err_dev;
++	}
+ 
+ 	/* Make it a slave context.  We can promote it later? */
+ 	rc = cxl_context_init(ctx, afu, false, NULL);
+-	if (rc) {
+-		kfree(ctx);
+-		put_device(&afu->dev);
+-		return ERR_PTR(-ENOMEM);
+-	}
++	if (rc)
++		goto err_ctx;
+ 	cxl_assign_psn_space(ctx);
+ 
+ 	return ctx;
++
++err_ctx:
++	kfree(ctx);
++err_dev:
++	put_device(&afu->dev);
++	return ERR_PTR(rc);
+ }
+ EXPORT_SYMBOL_GPL(cxl_dev_context_init);
+ 
+-- 
+2.1.4
