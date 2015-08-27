@@ -1,25 +1,29 @@
-Return-Path: <ryabinin.a.a@gmail.com>
-Received: from mail-wi0-x235.google.com (mail-wi0-x235.google.com
- [IPv6:2a00:1450:400c:c05::235])
+Return-Path: <viresh.kumar@linaro.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CEF131A05BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 22:29:47 +1000 (AEST)
+Received: from mail-pa0-f46.google.com (mail-pa0-f46.google.com
+ [209.85.220.46])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2BB3F1A05BE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 22:16:32 +1000 (AEST)
-Received: by wicgk12 with SMTP id gk12so7426001wic.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 05:16:28 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 559A014012C
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2015 22:29:46 +1000 (AEST)
+Received: by pacdd16 with SMTP id dd16so24430512pac.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Aug 2015 05:29:44 -0700 (PDT)
+Date: Thu, 27 Aug 2015 17:59:40 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, stewart@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: powernv: Increase the verbosity of OCC console
+ messages
+Message-ID: <20150827122940.GW8784@linux>
+References: <1440666704-10666-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1440577578-15813-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1440577578-15813-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 27 Aug 2015 15:16:28 +0300
-Message-ID: <CAPAsAGz0ccS49MgVm0D9kG3YkmFv-re5h50uBG6R=AmMU1invQ@mail.gmail.com>
-Subject: Re: [PATCH V2 10/10] powerpc/mm: kasan: Add kasan support for ppc64
-From: Andrey Ryabinin <ryabinin.a.a@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1440666704-10666-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-08-26 11:26 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
-> +               k_start = (unsigned long)kasan_mem_to_shadow(start);
-> +               k_end = (unsigned long)kasan_mem_to_shadow(end);
-> +               for (; k_start < k_end; k_start += page_size) {
-> +                       p = vmemmap_alloc_block(page_size, node);
-> +                       if (!p) {
-> +                               pr_info("Disabled Kasan, for lack of free mem\n");
-> +                               /* Free the stuff or panic ? */
+On 27-08-15, 14:41, Shilpasri G Bhat wrote:
+> Modify the OCC reset/load/active event message to make it clearer for
+> the user to understand the event and effect of the event.
+> 
+> Suggested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> ---
+> This patch is based on top of linux-next/master
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 546e056..64994e1 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -465,6 +465,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>  	switch (omsg.type) {
+>  	case OCC_RESET:
+>  		occ_reset = true;
+> +		pr_info("OCC (On Chip Controller - enforces hard thermal/power limits) Resetting\n");
+>  		/*
+>  		 * powernv_cpufreq_throttle_check() is called in
+>  		 * target() callback which can detect the throttle state
+> @@ -474,12 +475,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>  		 */
+>  		if (!throttled) {
+>  			throttled = true;
+> -			pr_crit("CPU Frequency is throttled\n");
+> +			pr_crit("CPU frequency is throttled for duration\n");
+>  		}
+> -		pr_info("OCC: Reset\n");
+> +
+>  		break;
+>  	case OCC_LOAD:
+> -		pr_info("OCC: Loaded\n");
+> +		pr_info("OCC Loading, CPU frequency is throttled until OCC is started\n");
+>  		break;
+>  	case OCC_THROTTLE:
+>  		omsg.chip = be64_to_cpu(msg->params[1]);
+> @@ -488,7 +489,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>  		if (occ_reset) {
+>  			occ_reset = false;
+>  			throttled = false;
+> -			pr_info("OCC: Active\n");
+> +			pr_info("OCC Active, CPU frequency is no longer throttled\n");
+>  
+>  			for (i = 0; i < nr_chips; i++) {
+>  				chips[i].restore = true;
 
-vmemmap_alloc_block() panics on allocation failure, so you don't need
-this if block.
-You could replace this with memblock_virt_alloc_try_nid_nopanic(), but
-note that if/when
-we will have working asan-stack=1 there will be no way for fallback.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-> +                               return;
-> +                       }
-> +                       htab_bolt_mapping(k_start, k_start + page_size,
-> +                                         __pa(p), pgprot_val(PAGE_KERNEL),
-> +                                         mmu_vmemmap_psize, mmu_kernel_ssize);
-> +               }
-> +       }
-> +       /*
-> +        * At this point kasan is fully initialized. Enable error messages
-> +        */
-> +       init_task.kasan_depth = 0;
-> +       __kasan_enabled = true;
-> +       pr_info("Kernel address sanitizer initialized\n");
-> +}
-> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-> index 736d18b3cefd..154bd8a0b437 100644
-> --- a/arch/powerpc/mm/slb_low.S
-> +++ b/arch/powerpc/mm/slb_low.S
-> @@ -80,11 +80,15 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
->         /* Check virtual memmap region. To be patches at kernel boot */
->         cmpldi  cr0,r9,0xf
->         bne     1f
-> +2:
->  .globl slb_miss_kernel_load_vmemmap
->  slb_miss_kernel_load_vmemmap:
->         li      r11,0
->         b       6f
->  1:
-> +       /* Kasan region same as vmemmap mapping */
-> +       cmpldi  cr0,r9,0xe
-> +       beq     2b
->  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
->
->         /* vmalloc mapping gets the encoding from the PACA as the mapping
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index c140e94c7c72..7a7c9d54f80e 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -75,6 +75,7 @@ config PPC_BOOK3S_64
->         select HAVE_ARCH_TRANSPARENT_HUGEPAGE if PPC_64K_PAGES
->         select ARCH_SUPPORTS_NUMA_BALANCING
->         select IRQ_WORK
-> +       select HAVE_ARCH_KASAN if SPARSEMEM_VMEMMAP
->
->  config PPC_BOOK3E_64
->         bool "Embedded processors"
-> --
-> 2.5.0
->
+-- 
+viresh
