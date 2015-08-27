@@ -2,17 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD19F1A1E1D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 11:14:21 +1000 (AEST)
-Message-ID: <1440638061.23182.8.camel@ellerman.id.au>
-Subject: Re: Pull request: scottwood/linux.git next
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE04E1A0541
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 13:12:05 +1000 (AEST)
+Message-ID: <1440645125.23182.11.camel@ellerman.id.au>
+Subject: Re: Ping Re: [PATCH 0/8] math-emu: Update kernel math-emu code from
+ current glibc soft-fp
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Cc: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 27 Aug 2015 11:14:21 +1000
-In-Reply-To: <1440598476.16577.107.camel@freescale.com>
-References: <20150818043004.GA29954@home.buserror.net>
- <1440598476.16577.107.camel@freescale.com>
+To: Joseph Myers <joseph@codesourcery.com>, schwidefsky@de.ibm.com, "David
+ S.Miller" <davem@davemloft.net>, heiko.carstens@de.ibm.com
+Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+Date: Thu, 27 Aug 2015 13:12:05 +1000
+In-Reply-To: <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
+References: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
+ <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
+ <1440026806.13406.2.camel@ellerman.id.au>
+ <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,30 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-08-26 at 09:14 -0500, Scott Wood wrote:
-> On Mon, 2015-08-17 at 23:30 -0500, Scott Wood wrote:
-> > Highlights include 32-bit memcpy/memset optimizations, checksum
-> > optimizations, 85xx config fragments and updates, device tree updates,
-> > e6500 fixes for non-SMP, and misc cleanup and minor fixes.
-> > 
-> > The following changes since commit 79cd95200035fb4b39b089dd01c13302eee6ee03:
-> > 
-> >   powerpc/eeh: Dump PHB diag-data for non-existing PE (2015-07-21 11:38:47 
-> > +1000)
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-> > 
-> > for you to fetch changes up to 4524cd093fa8f03b198e095ebbb679c30839559c:
-> > 
-> >   powerpc/t1023rdb/dts: set ifc nand chip select from 2 to 1 (2015-08-17 
-> > 19:41:16 -0500)
+On Wed, 2015-08-26 at 14:44 +0000, Joseph Myers wrote:
+> On Thu, 20 Aug 2015, Michael Ellerman wrote:
 > 
-> ping
+> > On Wed, 2015-08-19 at 14:39 +0000, Joseph Myers wrote:
+> > > I'd like to ping this patch series, not having seen any comments on it.
+> > > 
+> > > [PATCH 0/8] math-emu: Update kernel math-emu code from current glibc soft-fp
+> > > https://lkml.org/lkml/2015/7/2/394
+> > > 
+> > > [PATCH 1/8] math-emu: Move math-emu to math-emu-old
+> > > https://lkml.org/lkml/2015/7/2/395
+> > > 
+> > > [PATCH 2/8] math-emu: Import current glibc soft-fp as include/math-emu
+> > > https://lkml.org/lkml/2015/7/2/398
+> > > 
+> > > [PATCH 3/8] alpha/math-emu: Move alpha from math-emu-old to math-emu
+> > > https://lkml.org/lkml/2015/7/2/399
+> > > 
+> > > [PATCH 4/8] powerpc/math-emu: Move powerpc from math-emu-old to math-emu
+> > > https://lkml.org/lkml/2015/7/2/400
+> > > 
+> > > [PATCH 5/8] s390/math-emu: Move s390 from math-emu-old to math-emu
+> > > https://lkml.org/lkml/2015/7/2/401
+> > > 
+> > > [PATCH 6/8] sh/math-emu: Move sh from math-emu-old to math-emu
+> > > https://lkml.org/lkml/2015/7/2/402
+> > > 
+> > > [PATCH 7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
+> > > https://lkml.org/lkml/2015/7/2/404
+> > > 
+> > > [PATCH 8/8] math-emu: Remove math-emu-old
+> > > https://lkml.org/lkml/2015/7/2/405
+> > > 
+> > > As noted in patch 0, the dependencies are as follows: patch 2 depends on 
+> > > patch 1, patches 3-7 depend on patches 1 and 2 but are independent of each 
+> > > other, patch 8 depends on all the other patches.
+> > 
+> > Hi Joseph,
+> > 
+> > I have done some testing on powerpc, and it seems good.
+> > 
+> > I'm reluctant to proceed with merging them though until we've heard at least
+> > *something* from the other maintainers.
+> 
+> Ping again for the other-architecture maintainers (alpha, s390, sh, 
+> sparc)....
 
-Yeah sorry, I did see it, I was just waiting to see if we were getting an rc8.
 
-I'll pull it in today and then do the defconfig update on top of it.
+OK I've put this whole series in a branch with the acks we have so far.
 
-cheer
+I'll ask Stephen to put it in linux-next once 4.3-rc1 is out, and I'll ask
+Linus to pull it for 4.4
+
+I haven't published the branch yet, so if the s390 and sparc maintainers want
+to send me acks I'll rebase and add them.
+
+cheers
