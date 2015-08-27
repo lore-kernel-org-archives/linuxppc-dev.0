@@ -1,46 +1,36 @@
-Return-Path: <schwidefsky@de.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ADE021A05BE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 21:32:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E5341A05BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 21:43:25 +1000 (AEST)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
- Thu, 27 Aug 2015 12:32:02 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5E65217D8066
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 12:33:05 +0100 (BST)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7RBVMTF37224512
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 11:31:25 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7RBVCR0018788
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 05:31:13 -0600
-Date: Thu, 27 Aug 2015 13:31:02 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Joseph Myers <joseph@codesourcery.com>, "David	S.Miller"
- <davem@davemloft.net>, heiko.carstens@de.ibm.com,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: Ping Re: [PATCH 0/8] math-emu: Update kernel math-emu code from
- current glibc soft-fp
-Message-ID: <20150827133102.77026410@mschwide>
-In-Reply-To: <1440645125.23182.11.camel@ellerman.id.au>
-References: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
- <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
- <1440026806.13406.2.camel@ellerman.id.au>
- <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
- <1440645125.23182.11.camel@ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Thu, 27 Aug 2015 21:43:23 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3F61C2CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 21:43:21 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7RBh5bk065846
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 21:43:14 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7RBgmaY028600
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 21:42:48 +1000
+Message-ID: <55DEF7A5.6070407@linux.vnet.ibm.com>
+Date: Thu, 27 Aug 2015 17:12:29 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+CC: j.anaszewski@samsung.com, linux-leds@vger.kernel.org,
+ Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [v2] powerpc/configs: Enable LEDS support
+References: <20150827102619.BEB9214018C@ozlabs.org>
+In-Reply-To: <20150827102619.BEB9214018C@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,72 +40,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 27 Aug 2015 13:12:05 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> On Wed, 2015-08-26 at 14:44 +0000, Joseph Myers wrote:
-> > On Thu, 20 Aug 2015, Michael Ellerman wrote:
-> > 
-> > > On Wed, 2015-08-19 at 14:39 +0000, Joseph Myers wrote:
-> > > > I'd like to ping this patch series, not having seen any comments on it.
-> > > > 
-> > > > [PATCH 0/8] math-emu: Update kernel math-emu code from current glibc soft-fp
-> > > > https://lkml.org/lkml/2015/7/2/394
-> > > > 
-> > > > [PATCH 1/8] math-emu: Move math-emu to math-emu-old
-> > > > https://lkml.org/lkml/2015/7/2/395
-> > > > 
-> > > > [PATCH 2/8] math-emu: Import current glibc soft-fp as include/math-emu
-> > > > https://lkml.org/lkml/2015/7/2/398
-> > > > 
-> > > > [PATCH 3/8] alpha/math-emu: Move alpha from math-emu-old to math-emu
-> > > > https://lkml.org/lkml/2015/7/2/399
-> > > > 
-> > > > [PATCH 4/8] powerpc/math-emu: Move powerpc from math-emu-old to math-emu
-> > > > https://lkml.org/lkml/2015/7/2/400
-> > > > 
-> > > > [PATCH 5/8] s390/math-emu: Move s390 from math-emu-old to math-emu
-> > > > https://lkml.org/lkml/2015/7/2/401
-> > > > 
-> > > > [PATCH 6/8] sh/math-emu: Move sh from math-emu-old to math-emu
-> > > > https://lkml.org/lkml/2015/7/2/402
-> > > > 
-> > > > [PATCH 7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
-> > > > https://lkml.org/lkml/2015/7/2/404
-> > > > 
-> > > > [PATCH 8/8] math-emu: Remove math-emu-old
-> > > > https://lkml.org/lkml/2015/7/2/405
-> > > > 
-> > > > As noted in patch 0, the dependencies are as follows: patch 2 depends on 
-> > > > patch 1, patches 3-7 depend on patches 1 and 2 but are independent of each 
-> > > > other, patch 8 depends on all the other patches.
-> > > 
-> > > Hi Joseph,
-> > > 
-> > > I have done some testing on powerpc, and it seems good.
-> > > 
-> > > I'm reluctant to proceed with merging them though until we've heard at least
-> > > *something* from the other maintainers.
-> > 
-> > Ping again for the other-architecture maintainers (alpha, s390, sh, 
-> > sparc)....
+On 08/27/2015 03:56 PM, Michael Ellerman wrote:
+> On Thu, 2015-27-08 at 06:04:10 UTC, Vasant Hegde wrote:
+>> Commit 84ad6e5c added LEDS support for PowerNV platform. Lets
+>> update ppc64_defconfig to pick LEDS driver.
+>>
+>> PowerNV LEDS driver looks for "/ibm,opal/leds" node in device
+>> tree and loads if this node exists. Hence added it as 'm'.
+>>
+>> Also note that powernv LEDS driver needs NEW_LEDS and LEDS_CLASS
+>> as well. Hence added them to config file.
+>>
+>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+>> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+>> Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
+>> ---
+>> Changes in v2:
+>>   - As suggested by Stewart updated patch description
+>>
+>> Michael,
+>>   This is PowerNV specific config. Hence I've not updated pseries_defconfig.
+>>   Let me know if you want me to update pseries_defconfig config as well.
 > 
-> 
-> OK I've put this whole series in a branch with the acks we have so far.
-> 
-> I'll ask Stephen to put it in linux-next once 4.3-rc1 is out, and I'll ask
-> Linus to pull it for 4.4
-> 
-> I haven't published the branch yet, so if the s390 and sparc maintainers want
-> to send me acks I'll rebase and add them.
-> 
+> I've added it to pseries_defconfig also, no need to resend.
 
-For the s390 parts:
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com> 
+Thanks!
 
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+-Vasant
