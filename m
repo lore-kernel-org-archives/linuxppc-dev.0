@@ -1,15 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id F29441A05BE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 23:59:02 +1000 (AEST)
-To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-From: leroy christophe <christophe.leroy@c-s.fr>
-Subject: Strange reports of perf events on powerpc 83xx
-Message-ID: <55DF17A3.7070009@c-s.fr>
-Date: Thu, 27 Aug 2015 15:58:59 +0200
+Return-Path: <ibmirkin@gmail.com>
+Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
+ [IPv6:2607:f8b0:4003:c01::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BEE001A0036
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 01:31:37 +1000 (AEST)
+Received: by obbwr7 with SMTP id wr7so19188785obb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 08:31:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: ibmirkin@gmail.com
+Date: Thu, 27 Aug 2015 11:31:35 -0400
+Message-ID: <CAKb7Uvi5xTpU=XniQgVbtb8C7ac_6m0L96ZWD8ovg+vCpbXa5g@mail.gmail.com>
+Subject: Kernel access of bad area on kernel 4.1.6
+From: Ilia Mirkin <imirkin@alum.mit.edu>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,55 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+I've recently come into the possession of a PowerMac7,3 and have been
+cross-compiling a chroot for it on my (x86_64) desktop. However
+elfutils doesn't cross-compile for ppc64 due to its biarch m4 script
+which tries to execute a built program, so I kicked off a build
+locally and left for a few minutes. When I came back, I saw the below
+through netconsole, the fans were going full blast, and the machine
+was unresponsive.
 
-Has anybody already used 'perf' tool on powerpc MPC83xx ?
+Is this a kernel issue? Hardware issue? What do I need to do in order
+for the instruction dump to not be XXX's and have a call trace? (Is
+this the annoying security stuff in action? I started with the
+g5_defconfig, perhaps that was a mistake.) Sorry for the newbie
+questions, but I'm very new to ppc.
 
-I have been succesfully using perf on MPC8xx, but on MPC83xx I get 
-something strange.
+In case it matters, it's booted on an nfsroot, no swap.
 
-perf record/report reports addresses on user stack, as if it was mixing 
-up D accesses and I accesses.
+Thanks for any help,
 
-Any idea of what the problem can be ?
+  -ilia
 
-# Samples: 8K of event 'cpu-clock'
-# Event count (approx.): 2196000000
-#
-# Overhead  Command       Shared Object       Symbol
-# ........  ............  .................. 
-............................................
-#
-      2.62%  perf_reseau4  libpthread-2.18.so  [.] __libc_send
-      2.56%  perf_reseau4  [kernel.kallsyms]   [k] __ip_make_skb
-      1.62%  perf_reseau4  [kernel.kallsyms]   [k] __ip_append_data.isra.39
-      1.55%  perf_reseau4  [kernel.kallsyms]   [k] ip_finish_output
-      1.33%  perf_reseau4  [unknown]           [k] 0x7ffffd94
-      1.33%  perf_reseau4  [unknown]           [k] 0x7ffffd95
-      1.28%  perf_reseau4  [unknown]           [k] 0x7ffffd97
-      1.26%  perf_reseau4  [unknown]           [k] 0x7ffffda3
-      1.24%  perf_reseau4  [unknown]           [k] 0x7ffffd98
-      1.22%  perf_reseau4  [unknown]           [k] 0x7ffffd92
-      1.22%  perf_reseau4  [unknown]           [k] 0x7ffffd9b
-      1.22%  perf_reseau4  [unknown]           [k] 0x7ffffdaa
-      1.21%  perf_reseau4  [unknown]           [k] 0x7ffffd96
-      1.18%  perf_reseau4  [unknown]           [k] 0x7ffffda7
-      1.17%  perf_reseau4  [unknown]           [k] 0x7ffffd8d
-      1.17%  perf_reseau4  [unknown]           [k] 0x7ffffd99
-      1.13%  perf_reseau4  [unknown]           [k] 0x7ffffd90
-      1.13%  perf_reseau4  [unknown]           [k] 0x7ffffda2
-      1.12%  perf_reseau4  [kernel.kallsyms]   [k] __local_bh_enable_ip
-      1.12%  perf_reseau4  [unknown]           [k] 0x7ffffd9c
-      1.12%  perf_reseau4  [unknown]           [k] 0x7ffffd9e
-      1.10%  perf_reseau4  [unknown]           [k] 0x7ffffda0
-      1.08%  perf_reseau4  [unknown]           [k] 0x7ffffd9f
-      1.08%  perf_reseau4  [unknown]           [k] 0x7ffffda6
-      1.05%  perf_reseau4  [unknown]           [k] 0x7ffffda8
-      1.02%  perf_reseau4  [unknown]           [k] 0x7ffffd9a
-      1.01%  perf_reseau4  [unknown]           [k] 0x7ffffdb0
-      1.00%  perf_reseau4  [unknown]           [k] 0x7ffffd89
-      1.00%  perf_reseau4  [unknown]           [k] 0x7ffffd8b
-      1.00%  perf_reseau4  [unknown]           [k] 0x7ffffdac
-
-
-Christophe
+[ 8419.415061] Oops: Kernel access of bad area, sig: 11 [#1]
+[ 8419.416338] SMP NR_CPUS=4 PowerMac
+[ 8419.417623] Modules linked in: snd_aoa_codec_tas snd_aoa snd
+nouveau soundcore btusb btbcm btintel ttm bluetooth drm_kms_helper drm
+uninorth_agp agpgart
+[ 8419.419138] CPU: 0 PID: 12927 Comm: as Not tainted 4.1.6 #4
+[ 8419.420539] task: c0000000573f3520 ti: c000000057698000 task.ti:
+c000000057698000
+[ 8419.421963] NIP: c00000005769bca8 LR: c00000005769bca8 CTR: c00000000008a710
+[ 8419.423400] REGS: c00000005769b7e0 TRAP: 0400   Not tainted  (4.1.6)
+[ 8419.424850] MSR: 9000000010001032 <SF,HV,ME,IR,DR,RI>  CR: 001048fc
+ XER: 00000000
+[ 8419.426407] SOFTE: 0
+GPR00: 00000000ffffffff c00000005769ba60 c000000000b9ac00 c0000000590bb520
+GPR04: c0000000573f3ab0 c0000000573f3588 c0000000001048fc c00000005769bca8
+GPR08: c00000005769b890 c000000050000000 0000000000000001 c00000005ee0a290
+GPR12: 0000000024044048 c00000000ffff000 c00000005769ba20 0000000000000600
+GPR16: 0000000000000001 0000000000000000 c00000005bbd8e00 c000000058ccbcb0
+GPR20: c00000005769ba50 0000000000000000 c000000000103d60 c00000005bbd8e00
+GPR24: c00000005769ba40 0000000000000000 0000000000000001 0000000000000001
+GPR28: 000000001007d630 0000000010049d08 c00000005769bc80 c000000058ccbcb0
+[ 8419.440558] NIP [c00000005769bca8] 0xc00000005769bca8
+[ 8419.442170] LR [c00000005769bca8] 0xc00000005769bca8
+[ 8419.443774] Call Trace:
+[ 8419.445351] Instruction dump:
+[ 8419.446946] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX
+[ 8419.448659] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX
+[ 8419.456445] ---[ end trace ad7c77d8920840ff ]---
+[ 8419.456511]
+[ 8419.456565] Fixing recursive fault but reboot is needed!
