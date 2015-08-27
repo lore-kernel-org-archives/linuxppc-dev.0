@@ -1,22 +1,17 @@
-Return-Path: <mathieu.desnoyers@efficios.com>
-Received: from mail.efficios.com (mail.efficios.com [78.47.125.74])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F10EA1A0545
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 04:02:51 +1000 (AEST)
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-	linux-api@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 1/9] powerpc: allocate sys_membarrier system call number
-Date: Thu, 27 Aug 2015 13:56:47 -0400
-Message-Id: <1440698215-8355-2-git-send-email-mathieu.desnoyers@efficios.com>
-In-Reply-To: <1440698215-8355-1-git-send-email-mathieu.desnoyers@efficios.com>
-References: <1440698215-8355-1-git-send-email-mathieu.desnoyers@efficios.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BE1631A0748
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 07:58:32 +1000 (AEST)
+In-Reply-To: <1440655276-6596-1-git-send-email-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [kernel] powerpc/iommu: Set default DMA offset in dma_dev_setup
+Message-Id: <20150827215832.9A6A01401AB@ozlabs.org>
+Date: Fri, 28 Aug 2015 07:58:32 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Allow it to be used from SPU, since it should not have unwanted
-side-effects.
+On Thu, 2015-27-08 at 06:01:16 UTC, Alexey Kardashevskiy wrote:
+> "powerpc/iommu: Cleanup setting of DMA base/offset" expects that
+> the default DMA offset is set from pnv_ioda_setup_bus_dma() which
+> is correct unless it is SRIOV where the code flow is different - at
+> the moment when pnv_ioda_setup_bus_dma() is called, there is no PE for
+> the just created VF.
+> 
+> This adds missing set_dma_offset() to pnv_pci_ioda_dma_dev_setup()
+> to cover the case of SRIOV.
+> 
+> Note that we still need set_dma_offset() in pnv_ioda_setup_bus_dma()
+> as at the boot time pnv_pci_ioda_dma_dev_setup() is called when no PE
+> was created yet, this happens at the PHB fixup stage.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-[ Untested on this architecture. To try it out: fetch linux-next/akpm,
-  apply this patch, build/run a membarrier-enabled kernel, and do make
-  kselftest. ]
+Applied to powerpc next, thanks.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-api@vger.kernel.org
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+https://git.kernel.org/powerpc/c/0e1ffef02cf94e46f95957af
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 4d65499..126d0c4 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -369,3 +369,4 @@ SYSCALL_SPU(bpf)
- COMPAT_SYS(execveat)
- PPC64ONLY(switch_endian)
- SYSCALL_SPU(userfaultfd)
-+SYSCALL_SPU(membarrier)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 4a055b6..13411be 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define __NR_syscalls		365
-+#define __NR_syscalls		366
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 6ad58d4..6337738 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -387,5 +387,6 @@
- #define __NR_execveat		362
- #define __NR_switch_endian	363
- #define __NR_userfaultfd	364
-+#define __NR_membarrier		365
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-1.9.1
+cheers
