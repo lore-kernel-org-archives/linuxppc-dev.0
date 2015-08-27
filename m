@@ -1,24 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE04E1A0541
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 13:12:05 +1000 (AEST)
-Message-ID: <1440645125.23182.11.camel@ellerman.id.au>
-Subject: Re: Ping Re: [PATCH 0/8] math-emu: Update kernel math-emu code from
- current glibc soft-fp
+ by lists.ozlabs.org (Postfix) with ESMTPS id A42481A0541
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Aug 2015 13:16:44 +1000 (AEST)
+Message-ID: <1440645404.23182.12.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Update defconfigs
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Joseph Myers <joseph@codesourcery.com>, schwidefsky@de.ibm.com, "David
- S.Miller" <davem@davemloft.net>, heiko.carstens@de.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
-Date: Thu, 27 Aug 2015 13:12:05 +1000
-In-Reply-To: <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
-References: <alpine.DEB.2.10.1507021542380.29415@digraph.polyomino.org.uk>
- <alpine.DEB.2.10.1508191433380.11312@digraph.polyomino.org.uk>
- <1440026806.13406.2.camel@ellerman.id.au>
- <alpine.DEB.2.10.1508261442440.13146@digraph.polyomino.org.uk>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
+Date: Thu, 27 Aug 2015 13:16:44 +1000
+In-Reply-To: <1440598867.16577.112.camel@freescale.com>
+References: <1440589636-14616-1-git-send-email-mpe@ellerman.id.au>
+ <1440598867.16577.112.camel@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,60 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-08-26 at 14:44 +0000, Joseph Myers wrote:
-> On Thu, 20 Aug 2015, Michael Ellerman wrote:
+On Wed, 2015-08-26 at 09:21 -0500, Scott Wood wrote:
+> On Wed, 2015-08-26 at 21:47 +1000, Michael Ellerman wrote:
+> > Mostly uninteresting, though a few worth noting:
+...
+> >  91 files changed, 19 insertions(+), 128 deletions(-)
 > 
-> > On Wed, 2015-08-19 at 14:39 +0000, Joseph Myers wrote:
-> > > I'd like to ping this patch series, not having seen any comments on it.
-> > > 
-> > > [PATCH 0/8] math-emu: Update kernel math-emu code from current glibc soft-fp
-> > > https://lkml.org/lkml/2015/7/2/394
-> > > 
-> > > [PATCH 1/8] math-emu: Move math-emu to math-emu-old
-> > > https://lkml.org/lkml/2015/7/2/395
-> > > 
-> > > [PATCH 2/8] math-emu: Import current glibc soft-fp as include/math-emu
-> > > https://lkml.org/lkml/2015/7/2/398
-> > > 
-> > > [PATCH 3/8] alpha/math-emu: Move alpha from math-emu-old to math-emu
-> > > https://lkml.org/lkml/2015/7/2/399
-> > > 
-> > > [PATCH 4/8] powerpc/math-emu: Move powerpc from math-emu-old to math-emu
-> > > https://lkml.org/lkml/2015/7/2/400
-> > > 
-> > > [PATCH 5/8] s390/math-emu: Move s390 from math-emu-old to math-emu
-> > > https://lkml.org/lkml/2015/7/2/401
-> > > 
-> > > [PATCH 6/8] sh/math-emu: Move sh from math-emu-old to math-emu
-> > > https://lkml.org/lkml/2015/7/2/402
-> > > 
-> > > [PATCH 7/8] sparc/math-emu: Move sparc from math-emu-old to math-emu
-> > > https://lkml.org/lkml/2015/7/2/404
-> > > 
-> > > [PATCH 8/8] math-emu: Remove math-emu-old
-> > > https://lkml.org/lkml/2015/7/2/405
-> > > 
-> > > As noted in patch 0, the dependencies are as follows: patch 2 depends on 
-> > > patch 1, patches 3-7 depend on patches 1 and 2 but are independent of each 
-> > > other, patch 8 depends on all the other patches.
-> > 
-> > Hi Joseph,
-> > 
-> > I have done some testing on powerpc, and it seems good.
-> > 
-> > I'm reluctant to proceed with merging them though until we've heard at least
-> > *something* from the other maintainers.
-> 
-> Ping again for the other-architecture maintainers (alpha, s390, sh, 
-> sparc)....
+> This conflicts with the 85xx config fragment patches that I've already sent 
+> you a pull request for...
 
-
-OK I've put this whole series in a branch with the acks we have so far.
-
-I'll ask Stephen to put it in linux-next once 4.3-rc1 is out, and I'll ask
-Linus to pull it for 4.4
-
-I haven't published the branch yet, so if the s390 and sparc maintainers want
-to send me acks I'll rebase and add them.
+Duh yep. I'll fix it up.
 
 cheers
