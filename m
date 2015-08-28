@@ -1,13 +1,13 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ig0-x233.google.com (mail-ig0-x233.google.com
- [IPv6:2607:f8b0:4001:c05::233])
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E3051A01ED
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 21:50:50 +1000 (AEST)
-Received: by igyq3 with SMTP id q3so10711038igy.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 04:50:48 -0700 (PDT)
-Date: Fri, 28 Aug 2015 19:50:31 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1D101A0036
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 22:06:32 +1000 (AEST)
+Received: by padhm10 with SMTP id hm10so5432663pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 05:06:31 -0700 (PDT)
+Date: Fri, 28 Aug 2015 20:06:14 +0800
 From: Boqun Feng <boqun.feng@gmail.com>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -17,16 +17,16 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Waiman Long <waiman.long@hp.com>
-Subject: Re: [RFC 2/5] atomics: introduce
- arch_atomic_op_{acquire,release,fence} helpers
-Message-ID: <20150828115031.GB29325@fixme-laptop.cn.ibm.com>
+Subject: Re: [RFC 3/5] powerpc: atomic: implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150828120614.GC29325@fixme-laptop.cn.ibm.com>
 References: <1440730099-29133-1-git-send-email-boqun.feng@gmail.com>
- <1440730099-29133-3-git-send-email-boqun.feng@gmail.com>
- <20150828113614.GC16853@twins.programming.kicks-ass.net>
+ <1440730099-29133-4-git-send-email-boqun.feng@gmail.com>
+ <20150828104854.GB16853@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="tsOsTdHNUZQcU9Ye"
-In-Reply-To: <20150828113614.GC16853@twins.programming.kicks-ass.net>
+ protocol="application/pgp-signature"; boundary="FsscpQKzF/jJk6ya"
+In-Reply-To: <20150828104854.GB16853@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,84 +37,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---tsOsTdHNUZQcU9Ye
+--FsscpQKzF/jJk6ya
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Peter,
 
-On Fri, Aug 28, 2015 at 01:36:14PM +0200, Peter Zijlstra wrote:
-> On Fri, Aug 28, 2015 at 10:48:16AM +0800, Boqun Feng wrote:
-> > Some architectures may have their special barriers for acquire, release
-> > and fence semantics, general memory barriers(smp_mb__*_atomic()) in
-> > __atomic_op_*() may be too strong, so arch_atomic_op_*() helpers are
-> > introduced for architectures to provide their own version helpers to
-> > build different variants based on _relaxed variants.
-> >=20
-> > Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-> > ---
-> >  include/linux/atomic.h | 16 ++++++++++++++++
-> >  1 file changed, 16 insertions(+)
-> >=20
-> > diff --git a/include/linux/atomic.h b/include/linux/atomic.h
-> > index 00a5763..622255b 100644
-> > --- a/include/linux/atomic.h
-> > +++ b/include/linux/atomic.h
-> > @@ -34,20 +34,33 @@
-> >   * The idea here is to build acquire/release variants by adding explic=
-it
-> >   * barriers on top of the relaxed variant. In the case where the relax=
-ed
-> >   * variant is already fully ordered, no additional barriers are needed.
-> > + *
-> > + * Besides, if an arch has a special barrier for acquire/release, it c=
-ould
-> > + * implement its own arch_atomic_op_* and use the same framework for b=
-uilding
-> > + * variants
-> >   */
-> > +#ifndef arch_atomic_op_acquire
-> >  #define __atomic_op_acquire(op, args...)				\
-> >  ({									\
-> >  	typeof(op##_relaxed(args)) __ret  =3D op##_relaxed(args);		\
-> >  	smp_mb__after_atomic();						\
-> >  	__ret;								\
-> >  })
+On Fri, Aug 28, 2015 at 12:48:54PM +0200, Peter Zijlstra wrote:
+> On Fri, Aug 28, 2015 at 10:48:17AM +0800, Boqun Feng wrote:
+> > +/*
+> > + * Since {add,sub}_return_relaxed and xchg_relaxed are implemented with
+> > + * a "bne-" instruction at the end, so an isync is enough as a acquire=
+ barrier
+> > + * on the platform without lwsync.
+> > + */
+> > +#ifdef CONFIG_SMP
+> > +#define smp_acquire_barrier__after_atomic() \
+> > +	__asm__ __volatile__(PPC_ACQUIRE_BARRIER : : : "memory")
 > > +#else
-> > +#define __atomic_op_acquire arch_atomic_op_acquire
+> > +#define smp_acquire_barrier__after_atomic() barrier()
 > > +#endif
+> > +#define arch_atomic_op_acquire(op, args...)				\
+> > +({									\
+> > +	typeof(op##_relaxed(args)) __ret  =3D op##_relaxed(args);		\
+> > +	smp_acquire_barrier__after_atomic();				\
+> > +	__ret;								\
+> > +})
+> > +
+> > +#define arch_atomic_op_release(op, args...)				\
+> > +({									\
+> > +	smp_lwsync();							\
+> > +	op##_relaxed(args);						\
+> > +})
 >=20
-> Not really a fan of this, its not consistent with the existing #ifndef
-> guard style.
+> Urgh, so this is RCpc. We were trying to get rid of that if possible.
+> Lets wait until that's settled before introducing more of it.
+>=20
+> lkml.kernel.org/r/20150820155604.GB24100@arm.com
 
-You suggestion is that I should:
+OK, get it. Thanks.
 
-#ifndef __atomic_op_acquire=20
-#define __atomic_op_acquire(op, args...)
-({
-	...
-})
-#endif
-
-=2E.. and define powerpc specific __atomic_op_acquire in asm/atomic.h?
+So I'm not going to introduce these arch specific macros, I think what I
+need to implement are just _relaxed variants and cmpxchg_acquire.
 
 Regards,
 Boqun
 
---tsOsTdHNUZQcU9Ye
+
+--FsscpQKzF/jJk6ya
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJV4EsDAAoJEEl56MO1B/q4vuAH/0iMQ3dqipl5PMwqYea5a3wo
-f2CLTGoQybHpN1J7JBWtR+Dxj9GM0oFtBnbLOldCTfySAsw42nSWkOE26H+xG51t
-I/UsqRWgO6zI06jHLW3Unlck37bFCoBset+XSgObI6RIo9B9d7WRO1fmBL1fuOd8
-xS0YkUj2kJMdlN9nKuHoTH+5CicYe+sN9MMFYFoW3az0asgX9qy9wLar+ej/K+3N
-4YSqqlyYs4u1/hLubewmqKv9GmHSD9NotlGeeKKuMpR3rscKOrY2U+rzEosIJkHU
-8d06YzChFf0tL2sUOo5JBk7fTv9IGj4l+EF4Khe2N9GstrezAEGWTa8VB/VUAUQ=
-=mw5k
+iQEcBAABCAAGBQJV4E6zAAoJEEl56MO1B/q4xZAH/j/Sd7KsfIdGciWCLnoslmpt
+vKQknmN6PoIrAkS4aQqCcG6pXdZB3MNU9IuNRNaziFw/3PrNUzBoGNG+Vr0SRgfd
+teJVrIN0gp23f9+Hise0HRd2aZEJJiHEmSDgeiOZxVZXYLy4AfFXw5KCVRXSQYna
+Cd/BULOyNp0g+cYGgouRl2ycle6qZZRoayjiLG793EbqoLJjkC0gK/nwaHOHCcJm
+51+DKsC+Zh+QgwUKCQ8g2TSUwCMlYNhqSgF54noJ/0eOsMtTYwFVqIm+cDpKXp0E
+fGLZubDXU5lMiyk7J/thhCYXXUQ/cRPcUfAK62AEnmR03SV+glm2GKV6B+cphRg=
+=0K5I
 -----END PGP SIGNATURE-----
 
---tsOsTdHNUZQcU9Ye--
+--FsscpQKzF/jJk6ya--
