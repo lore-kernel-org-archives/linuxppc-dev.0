@@ -1,16 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 735731A01ED
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 10:55:35 +1000 (AEST)
-In-Reply-To: <1440648757-23359-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [1/2] powerpc/pseries: Fix corrupted pdn list
-Message-Id: <20150828005535.5B29814018C@ozlabs.org>
-Date: Fri, 28 Aug 2015 10:55:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 996A11A01ED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 11:02:12 +1000 (AEST)
+Date: Fri, 28 Aug 2015 08:47:27 +0800
+From: Chenhui Zhao <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v2,4/5] PowerPC/mpc85xx: Add hotplug support on E5500
+ and E500MC cores
+To: Scott Wood <scottwood@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <Jason.Jin@freescale.com>
+Message-ID: <1440722847.31670.1@remotesmtp.freescale.net>
+In-Reply-To: <20150826205554.GB10582@home.buserror.net>
+References: <1440590988-25594-1-git-send-email-chenhui.zhao@freescale.com>
+ <1440590988-25594-4-git-send-email-chenhui.zhao@freescale.com>
+ <20150826205554.GB10582@home.buserror.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,24 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-27-08 at 04:12:36 UTC, Gavin Shan wrote:
-> Commit cca87d30 ("powerpc/pci: Refactor pci_dn") introduced pdn
-> list for SRIOV VFs. It means the pdn is be put into the child list
-> of its parent pdn when the pdn is created. When doing PCI hot
-> unplugging on pSeries, the PCI device node as well as its pdn are
-> released through procfs entry "powerpc/ofdt". Some one else grabs
-> the memory chunk of the pdn and update it accordingly. At the same
-> time, the pdn is still tracked in the child list of parent pdn. It
-> leads to corrupted child list in the parent pdn.
-> 
-> This fixes above issue by removing the pdn from the child list of
-> its parent pdn when the device node is detached from the system.
-> Note the pdn is free'd when the device node is released if the
-> device node is dynamic one. Otherwise, the device node as well
-> as the pdn won't be released.
-> 
-> Fixes: cca87d30 ("powerpc/pci: Refactor pci_dn")
 
-That went into 4.1, so this should presumably go to stable?
 
-cheers
+On Thu, Aug 27, 2015 at 4:55 AM, Scott Wood <scottwood@freescale.com> 
+wrote:
+> On Wed, Aug 26, 2015 at 08:09:47PM +0800, Chenhui Zhao wrote:
+>>  +int check_cpu_dead(unsigned int cpu)
+>>  +{
+>>  +	return per_cpu(cpu_state, cpu) == CPU_DEAD;
+>>  +}
+> 
+> I'm not sure this needs to be a function versus open-coded, but if 
+> you do
+> want to make it a function, make it more obvious from the caller side 
+> by
+> changing it to:
+> 
+> bool is_cpu_dead(unsigned int cpu);
+> 
+> Otherwise if I see "if (check_cpu_dead(cpu))" I don't know if the
+> if-block is executed if the CPU is dead or if it isn't.
+
+OK.
+
+> 
+> 
+>>  diff --git a/arch/powerpc/platforms/85xx/smp.h 
+>> b/arch/powerpc/platforms/85xx/smp.h
+>>  index 0b20ae3..8ee19a3 100644
+>>  --- a/arch/powerpc/platforms/85xx/smp.h
+>>  +++ b/arch/powerpc/platforms/85xx/smp.h
+>>  @@ -6,6 +6,7 @@
+>>   #ifdef CONFIG_SMP
+>>   void __init mpc85xx_smp_init(void);
+>>   int __init mpc85xx_setup_pmc(void);
+>>  +int __init fsl_rcpm_init(void);
+>>   #else
+> 
+> Why wasn't this added in the patch that added fsl_rcpm_init()?
+> 
+> -Scott
+
+Will move it to there.
+
+Thanks,
+-Chenhui
