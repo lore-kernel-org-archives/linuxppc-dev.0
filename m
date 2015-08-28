@@ -1,19 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3A96E1A01ED
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 10:46:22 +1000 (AEST)
-Message-ID: <1440722781.29255.2.camel@ellerman.id.au>
-Subject: [git pull] Please pull powerpc/linux.git powerpc-4.2-4 tag
+ by lists.ozlabs.org (Postfix) with ESMTPS id 735731A01ED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 10:55:35 +1000 (AEST)
+In-Reply-To: <1440648757-23359-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: gpiccoli@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com, mst@redhat.com
-Date: Fri, 28 Aug 2015 10:46:21 +1000
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-uvDIPCCU3azg+OX5LIXq"
-Mime-Version: 1.0
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [1/2] powerpc/pseries: Fix corrupted pdn list
+Message-Id: <20150828005535.5B29814018C@ozlabs.org>
+Date: Fri, 28 Aug 2015 10:55:35 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2015-27-08 at 04:12:36 UTC, Gavin Shan wrote:
+> Commit cca87d30 ("powerpc/pci: Refactor pci_dn") introduced pdn
+> list for SRIOV VFs. It means the pdn is be put into the child list
+> of its parent pdn when the pdn is created. When doing PCI hot
+> unplugging on pSeries, the PCI device node as well as its pdn are
+> released through procfs entry "powerpc/ofdt". Some one else grabs
+> the memory chunk of the pdn and update it accordingly. At the same
+> time, the pdn is still tracked in the child list of parent pdn. It
+> leads to corrupted child list in the parent pdn.
+> 
+> This fixes above issue by removing the pdn from the child list of
+> its parent pdn when the device node is detached from the system.
+> Note the pdn is free'd when the device node is released if the
+> device node is dynamic one. Otherwise, the device node as well
+> as the pdn won't be released.
+> 
+> Fixes: cca87d30 ("powerpc/pci: Refactor pci_dn")
 
---=-uvDIPCCU3azg+OX5LIXq
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+That went into 4.1, so this should presumably go to stable?
 
-Hi Linus,
-
-Please pull one fix for powerpc for 4.2:
-
-The following changes since commit c13dcf9f2d6f5f06ef1bf79ec456df614c5e058b=
-:
-
-  Linux 4.2-rc8 (2015-08-23 20:52:59 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powe=
-rpc-4.2-4
-
-for you to fetch changes up to 4d9aac397a5d8f4ee26a4178b5e4a5c474a3a76a:
-
-  powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe time in OF case (2=
-015-08-26 21:40:50 +1000)
-
-----------------------------------------------------------------
-powerpc fixes for 4.2 #3
-
-- Fix MSI/MSI-X on pseries from Guilherme
-
-----------------------------------------------------------------
-Guilherme G. Piccoli (2):
-      PCI: Make pci_msi_setup_pci_dev() non-static for use by arch code
-      powerpc/PCI: Disable MSI/MSI-X interrupts at PCI probe time in OF cas=
-e
-
- arch/powerpc/kernel/pci_of_scan.c | 3 +++
- drivers/pci/probe.c               | 2 +-
- include/linux/pci.h               | 1 +
- 3 files changed, 5 insertions(+), 1 deletion(-)
-
-
-
---=-uvDIPCCU3azg+OX5LIXq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJV369dAAoJEFHr6jzI4aWAxi8QAKJMGJuCUwe3phQsl9DHCDli
-FcA3EUsINAvJr8QjHY+cdhieDujNxwTlZIxgUQUSpGCCejCeeIzcSlejwFNYIv6g
-ZGeO292ZWsZzNIkKlshOStl+pjwO2sXFi+jCgIKwrEah0vrVm3JkWVnPAZEdh5xY
-lCJC4O8+13g4HQ32xDShSr3eWstY5m0/tMpYCy9camZBCu1bHU7qFlf7kuVJu+qg
-pyqNTAI7p37nkgT4FRkuAI4jFY00AHbEL2w9Kp5f6w7MfJ8gbgBwKFmkyVPZ/1aX
-fA1WgwUPDaCdRnf3DJJ3myIc3EEC/gDYYxcdyP3WGNsxcsyfk+U8fAsZeIB02uPB
-X46/uZUjVi25e5yYFfSMm9coCKxWn8Eia0PTJ1t7AjTDOva32K5XtqGZHUJuT55K
-J5DIkYh0v/UXk0YLJr8leR583Jy+wtssa73HVy9+Un5VyIsshcEXQ3Sj3dpLsFWp
-beU0Jp5pNuQNngN4Zem4Rk9awjW1zMDgezEcn9ghfLs9UsaU4ZoBNotZIBKFUx6H
-j3Ks+f9zTjmNRKjMUZGMqcHVRAEsQmO89s2XHxep4YVHuB3iOLZROEEQeqK7wXHC
-XWdaqJsjHW56wrUC7ow/kTzOkfgrMyVuwuGbR+byFfinQghdUtv4DBaIWewhJLxU
-pr80Kq0aoKOX5ErtLBpo
-=RS84
------END PGP SIGNATURE-----
-
---=-uvDIPCCU3azg+OX5LIXq--
+cheers
