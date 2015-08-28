@@ -1,39 +1,19 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 595B41A1E27
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 11:43:35 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 28 Aug 2015 11:43:33 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 432872BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 11:43:32 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7S1hPEv31588576
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 11:43:33 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7S1gxmm001288
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 11:42:59 +1000
-Date: Fri, 28 Aug 2015 11:42:34 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [1/2] powerpc/pseries: Fix corrupted pdn list
-Message-ID: <20150828014234.GA32198@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1440648757-23359-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150828005535.5B29814018C@ozlabs.org>
- <20150828010905.GA21981@gwshan>
- <1440725560.8076.0.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1440725560.8076.0.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E05251A01ED
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Aug 2015 11:56:35 +1000 (AEST)
+Message-ID: <1440726995.8076.3.camel@ellerman.id.au>
+Subject: Re: Kernel access of bad area on kernel 4.1.6
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ilia Mirkin <imirkin@alum.mit.edu>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 28 Aug 2015 11:56:35 +1000
+In-Reply-To: <CAKb7Uvi5xTpU=XniQgVbtb8C7ac_6m0L96ZWD8ovg+vCpbXa5g@mail.gmail.com>
+References: <CAKb7Uvi5xTpU=XniQgVbtb8C7ac_6m0L96ZWD8ovg+vCpbXa5g@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,40 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 28, 2015 at 11:32:40AM +1000, Michael Ellerman wrote:
->On Fri, 2015-08-28 at 11:09 +1000, Gavin Shan wrote:
->> On Fri, Aug 28, 2015 at 10:55:35AM +1000, Michael Ellerman wrote:
->> >On Thu, 2015-27-08 at 04:12:36 UTC, Gavin Shan wrote:
->> >> Commit cca87d30 ("powerpc/pci: Refactor pci_dn") introduced pdn
->> >> list for SRIOV VFs. It means the pdn is be put into the child list
->> >> of its parent pdn when the pdn is created. When doing PCI hot
->> >> unplugging on pSeries, the PCI device node as well as its pdn are
->> >> released through procfs entry "powerpc/ofdt". Some one else grabs
->> >> the memory chunk of the pdn and update it accordingly. At the same
->> >> time, the pdn is still tracked in the child list of parent pdn. It
->> >> leads to corrupted child list in the parent pdn.
->> >> 
->> >> This fixes above issue by removing the pdn from the child list of
->> >> its parent pdn when the device node is detached from the system.
->> >> Note the pdn is free'd when the device node is released if the
->> >> device node is dynamic one. Otherwise, the device node as well
->> >> as the pdn won't be released.
->> >> 
->> >> Fixes: cca87d30 ("powerpc/pci: Refactor pci_dn")
->> >
->> >That went into 4.1, so this should presumably go to stable?
->> 
->> Yeah, This should be put into 4.1 stable.
->
->OK thanks.
->
->I've added:
->
->  Cc: stable@vger.kernel.org # 4.1
->
+On Thu, 2015-08-27 at 11:31 -0400, Ilia Mirkin wrote:
+> I've recently come into the possession of a PowerMac7,3 and have been
+> cross-compiling a chroot for it on my (x86_64) desktop. However
+> elfutils doesn't cross-compile for ppc64 due to its biarch m4 script
+> which tries to execute a built program, so I kicked off a build
+> locally and left for a few minutes.
 
-Thanks, Michael :-)
+OK, cross compiling how? A bunch of the guys here use buildroot, but maybe they
+aren't building elfutils?
 
->cheers
->
->
+> When I came back, I saw the below
+> through netconsole, the fans were going full blast, and the machine
+> was unresponsive.
+
+Fans going full blast is normal when the kernel crashes, it's just a safety
+precaution so your machine doesn't melt.
+
+> Is this a kernel issue?
+
+Probably.
+
+> Hardware issue? 
+
+Unlikely to be a hardware issue.
+
+> What do I need to do in order
+> for the instruction dump to not be XXX's and have a call trace? 
+
+The XXX's mean that we couldn't read the memory where the instructions were in
+order to dump them, which is odd. I can't immediately see why that happened
+here.
+
+That's separate to getting a call trace, but possibly the same issue is causing
+both to not be emitted.
+
+> (Is this the annoying security stuff in action? I started with the
+
+Which stuff? Probably not though.
+
+> g5_defconfig, perhaps that was a mistake.) 
+
+That should be a good config, and it booted originally right.
+
+> Sorry for the newbie questions, but I'm very new to ppc.
+
+No worries, welcome to ppc land! :)
+
+
+> In case it matters, it's booted on an nfsroot, no swap.
+
+OK. I don't test nfsroot so that could be the problem.
+
+What kernel version, 4.1.6 ?
+
+> Thanks for any help,
+> 
+>   -ilia
+> 
+> [ 8419.415061] Oops: Kernel access of bad area, sig: 11 [#1]
+> [ 8419.416338] SMP NR_CPUS=4 PowerMac
+> [ 8419.417623] Modules linked in: snd_aoa_codec_tas snd_aoa snd
+> nouveau soundcore btusb btbcm btintel ttm bluetooth drm_kms_helper drm
+> uninorth_agp agpgart
+> [ 8419.419138] CPU: 0 PID: 12927 Comm: as Not tainted 4.1.6 #4
+> [ 8419.420539] task: c0000000573f3520 ti: c000000057698000 task.ti:
+> c000000057698000
+> [ 8419.421963] NIP: c00000005769bca8 LR: c00000005769bca8 CTR: c00000000008a710
+> [ 8419.423400] REGS: c00000005769b7e0 TRAP: 0400   Not tainted  (4.1.6)
+> [ 8419.424850] MSR: 9000000010001032 <SF,HV,ME,IR,DR,RI>  CR: 001048fc
+>  XER: 00000000
+> [ 8419.426407] SOFTE: 0
+> GPR00: 00000000ffffffff c00000005769ba60 c000000000b9ac00 c0000000590bb520
+> GPR04: c0000000573f3ab0 c0000000573f3588 c0000000001048fc c00000005769bca8
+> GPR08: c00000005769b890 c000000050000000 0000000000000001 c00000005ee0a290
+> GPR12: 0000000024044048 c00000000ffff000 c00000005769ba20 0000000000000600
+> GPR16: 0000000000000001 0000000000000000 c00000005bbd8e00 c000000058ccbcb0
+> GPR20: c00000005769ba50 0000000000000000 c000000000103d60 c00000005bbd8e00
+> GPR24: c00000005769ba40 0000000000000000 0000000000000001 0000000000000001
+> GPR28: 000000001007d630 0000000010049d08 c00000005769bc80 c000000058ccbcb0
+> [ 8419.440558] NIP [c00000005769bca8] 0xc00000005769bca8
+> [ 8419.442170] LR [c00000005769bca8] 0xc00000005769bca8
+> [ 8419.443774] Call Trace:
+> [ 8419.445351] Instruction dump:
+> [ 8419.446946] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> XXXXXXXX XXXXXXXX
+> [ 8419.448659] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> XXXXXXXX XXXXXXXX
+> [ 8419.456445] ---[ end trace ad7c77d8920840ff ]---
+> [ 8419.456511]
+> [ 8419.456565] Fixing recursive fault but reboot is needed!
+
+Is this definitely the first oops?
+
+That looks like a pretty standard null pointer deref, or other bad pointer in
+the kernel. I can't tell exactly without the instruction dump though.
+
+cheers
