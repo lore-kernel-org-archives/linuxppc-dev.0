@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F4C91A0163
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDCFC1A0170
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2015 07:20:42 +1000 (AEST)
-In-Reply-To: <1440669019-23800-2-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>
+In-Reply-To: <1440648757-23359-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Matt Ochs <mrochs@us.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- mikey <mikey@neuling.org>, linux-kernel <linux-kernel@vger.kernel.org>,
- Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: [2/2] cxl: Fix force unmapping mmaps of contexts allocated
- through the kernel api
-Message-Id: <20150830212042.0C2DB140273@ozlabs.org>
-Date: Mon, 31 Aug 2015 07:20:41 +1000 (AEST)
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [1/2] powerpc/pseries: Fix corrupted pdn list
+Message-Id: <20150830212042.B5452140280@ozlabs.org>
+Date: Mon, 31 Aug 2015 07:20:42 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-27-08 at 09:50:19 UTC, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Thu, 2015-27-08 at 04:12:36 UTC, Gavin Shan wrote:
+> Commit cca87d30 ("powerpc/pci: Refactor pci_dn") introduced pdn
+> list for SRIOV VFs. It means the pdn is be put into the child list
+> of its parent pdn when the pdn is created. When doing PCI hot
+> unplugging on pSeries, the PCI device node as well as its pdn are
+> released through procfs entry "powerpc/ofdt". Some one else grabs
+> the memory chunk of the pdn and update it accordingly. At the same
+> time, the pdn is still tracked in the child list of parent pdn. It
+> leads to corrupted child list in the parent pdn.
 > 
-> The cxl user api uses the address_space associated with the file when we
-> need to force unmap all cxl mmap regions (e.g. on eeh, driver detach,
-> etc). Currently, contexts allocated through the kernel api do not do
-> this and instead skip the mmap invalidation, potentially allowing them
-> to poke at the hardware after such an event, which may cause all sorts
-> of trouble.
+> This fixes above issue by removing the pdn from the child list of
+> its parent pdn when the device node is detached from the system.
+> Note the pdn is free'd when the device node is released if the
+> device node is dynamic one. Otherwise, the device node as well
+> as the pdn won't be released.
 > 
-> This patch allocates an address_space for cxl contexts allocated through
-> the kernel api so that the same invalidate path will for these contexts
-> as well. We don't use the anonymous inode's address_space, as doing so
-> could invalidate any mmaps of completely unrelated drivers using
-> anonymous file descriptors.
-> 
-> This patch also introduces a kernelapi flag, so we know when freeing the
-> context if the address_space was allocated by us and needs to be freed.
-> 
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Fixes: cca87d30 ("powerpc/pci: Refactor pci_dn")
+> Reported-by: Santwana Samantray <santwana.samantray@in.ibm.com>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/55e07668fbba9466e6a9ef76
+https://git.kernel.org/powerpc/c/590c7567a2895f939525ead5
 
 cheers
