@@ -1,37 +1,37 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1EBC1A01ED
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 22:33:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C989F1A028B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 22:42:18 +1000 (AEST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 30 Aug 2015 18:03:40 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C5481125801E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 18:02:51 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7UCXaK630933200
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 18:03:37 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7UCXZ0D031498
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 18:03:36 +0530
+ Sun, 30 Aug 2015 22:42:15 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B03C33578047
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 22:42:12 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t7UCg6uO41222174
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 22:42:14 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t7UCfeX7016949
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Aug 2015 22:41:40 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Andrey Ryabinin <ryabinin.a.a@gmail.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
  mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
  LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH V2 02/10] kasan: MODULE_VADDR is not available on all archs
-In-Reply-To: <CAPAsAGw9xx36H5vKmfsunQRZ2qhuLUUTupVK=_v=eztBzDsqAQ@mail.gmail.com>
+Subject: Re: [PATCH V2 05/10] kasan: Enable arch to hook into kasan callbacks.
+In-Reply-To: <CAPAsAGyN-yGEXmVFXSEs=tQ1We6MNS89omm=DOPGogfXWqn_qg@mail.gmail.com>
 References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1440577578-15813-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <CAPAsAGw9xx36H5vKmfsunQRZ2qhuLUUTupVK=_v=eztBzDsqAQ@mail.gmail.com>
-Date: Sun, 30 Aug 2015 18:03:28 +0530
-Message-ID: <87d1y5q7l3.fsf@linux.vnet.ibm.com>
+ <1440577578-15813-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <CAPAsAGyN-yGEXmVFXSEs=tQ1We6MNS89omm=DOPGogfXWqn_qg@mail.gmail.com>
+Date: Sun, 30 Aug 2015 18:11:07 +0530
+Message-ID: <878u8tq78c.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,39 +46,103 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
 
 > 2015-08-26 11:26 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
->> Conditionalize the check using #ifdef
+>> We add enable/disable callbacks in this patch which architecture
+>> can implemement. We will use this in the later patches for architecture
+>> like ppc64, that cannot have early zero page kasan shadow region for the
+>> entire virtual address space. Such architectures also cannot use
+>> inline kasan support.
 >>
 >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 >> ---
->>  mm/kasan/report.c | 11 ++++++++---
->>  1 file changed, 8 insertions(+), 3 deletions(-)
+>>  mm/kasan/kasan.c |  9 +++++++++
+>>  mm/kasan/kasan.h | 15 +++++++++++++++
+>>  2 files changed, 24 insertions(+)
 >>
->> diff --git a/mm/kasan/report.c b/mm/kasan/report.c
->> index e07c94fbd0ac..71ce7548d914 100644
->> --- a/mm/kasan/report.c
->> +++ b/mm/kasan/report.c
->> @@ -85,9 +85,14 @@ static void print_error_description(struct kasan_access_info *info)
->>
->>  static inline bool kernel_or_module_addr(const void *addr)
+>> diff --git a/mm/kasan/kasan.c b/mm/kasan/kasan.c
+>> index 7b28e9cdf1c7..e4d33afd0eaf 100644
+>> --- a/mm/kasan/kasan.c
+>> +++ b/mm/kasan/kasan.c
+>> @@ -43,6 +43,9 @@ static void kasan_poison_shadow(const void *address, size_t size, u8 value)
 >>  {
->> -       return (addr >= (void *)_stext && addr < (void *)_end)
->> -               || (addr >= (void *)MODULES_VADDR
->> -                       && addr < (void *)MODULES_END);
->> +       if (addr >= (void *)_stext && addr < (void *)_end)
->> +               return true;
->> +#if defined(CONFIG_MODULES) && defined(MODULES_VADDR)
->> +       if (addr >= (void *)MODULES_VADDR
->> +                       && addr < (void *)MODULES_END)
->> +               return true;
->> +#endif
+>>         void *shadow_start, *shadow_end;
+>>
+>> +       if (!kasan_enabled())
+>> +               return;
+>> +
 >
-> I don't think that this is correct change.
-> On ppc64 modules are in VMALLOC, so you should check for this.
-> Yes, we don't handle VMALLOC now, but we will at some point.
+> By the time this function called we already should have shadow,
+> so it should be safe to remove this check.
 >
-> So I think we should use is_module_address() here.
-> It will be slower, but we don't care about performance in error reporting route.
 
-Will fix in the next update.
+I remember hitting that call before enabling kasan completely. Will
+check that again. 
+
+>
+>>         shadow_start = kasan_mem_to_shadow(address);
+>>         shadow_end = kasan_mem_to_shadow(address + size);
+>>
+>> @@ -51,6 +54,9 @@ static void kasan_poison_shadow(const void *address, size_t size, u8 value)
+>>
+>>  void kasan_unpoison_shadow(const void *address, size_t size)
+>>  {
+>> +       if (!kasan_enabled())
+>> +               return;
+>> +
+>
+> Ditto.
+>
+>>         kasan_poison_shadow(address, size, 0);
+>>
+>>         if (size & KASAN_SHADOW_MASK) {
+>> @@ -238,6 +244,9 @@ static __always_inline void check_memory_region(unsigned long addr,
+>>  {
+>>         struct kasan_access_info info;
+>>
+>> +       if (!kasan_enabled())
+>> +               return;
+>> +
+>>         if (unlikely(size == 0))
+>>                 return;
+>>
+>> diff --git a/mm/kasan/kasan.h b/mm/kasan/kasan.h
+>> index a6b46cc94907..deb547d5a916 100644
+>> --- a/mm/kasan/kasan.h
+>> +++ b/mm/kasan/kasan.h
+>> @@ -68,6 +68,21 @@ static inline bool kasan_report_enabled(void)
+>>         return !current->kasan_depth;
+>>  }
+>>
+>> +#ifndef kasan_enabled
+>> +/*
+>> + * Some archs may want to disable kasan callbacks.
+>> + */
+>> +static inline bool kasan_enabled(void)
+>> +{
+>> +       return true;
+>> +}
+>> +#define kasan_enabled kasan_enabled
+>
+> Why we need this define?
+
+
+That is to make sure that we don't endup with different definition of
+kasan_enabled due to header include errors. Once we select a
+particular definition of the overloaded function, it is always good to mark
+the function as defined, so that checks like #ifndef kasan_enabled will
+always fail. 
+
+>
+>> +#else
+>> +#ifdef CONFIG_KASAN_INLINE
+>> +#error "Kasan inline support cannot work with KASAN arch hooks"
+>> +#endif
+>> +#endif
+>> +
+>>  void kasan_report(unsigned long addr, size_t size,
+>>                 bool is_write, unsigned long ip);
+>>
+>> --
+>> 2.5.0
+>>
 
 -aneesh
