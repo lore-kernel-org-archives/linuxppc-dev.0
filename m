@@ -1,40 +1,20 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E53E1A0CDB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 05:08:04 +1000 (AEST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 31 Aug 2015 13:08:02 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CE40519D803F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2015 12:58:56 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t7VJ78MA49545222
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2015 12:07:16 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t7VJ7Slg000687
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2015 13:07:28 -0600
-Date: Mon, 31 Aug 2015 12:05:21 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: mingo@redhat.com, ak@linux.intel.com,
- Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v16 00/16] perf, tools: Add support for PMU events in
- JSON format
-Message-ID: <20150831190521.GC31119@us.ibm.com>
-References: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 72F041A0BF9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 06:13:05 +1000 (AEST)
+Date: Mon, 31 Aug 2015 17:13:00 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Hemant Kumar <hemant@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ scottwood@freescale.com, mingo@kernel.org, mpe@ellerman.id.au,
+ sukadev@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com,
+ warrier@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, paulus@samba.org
+Subject: Re: [PATCH v6 1/2] perf,kvm/powerpc: Add kvm_perf.h for powerpc
+Message-ID: <20150831201300.GG4423@kernel.org>
+References: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1440569166-22169-1-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,59 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
-| CPUs support a large number of performance monitoring events (PMU events)
-| and often these events are very specific to an architecture/model of the
-| CPU. To use most of these PMU events with perf, we currently have to identify
-| them by their raw codes:
-| 
-| 	perf stat -e r100f2 sleep 1
-| 
-| This patchset allows architectures to specify these PMU events in JSON
-| files located in 'tools/perf/pmu-events/arch/' of the mainline tree.
-| The events from the JSON files for the architecture are then built into
-| the perf binary.
-| 
-| At run time, perf identifies the specific set of events for the CPU and
-| creates "event aliases". These aliases allow users to specify events by
-| "name" as:
-| 
-| 	perf stat -e pm_1plus_ppc_cmpl sleep 1
-| 
-| The file, 'tools/perf/pmu-events/README' in [PATCH 16/16] gives more
-| details.
-| 
-| Note:
-| 	- All known events tables for the architecture are included in the
-| 	  perf binary.
-| 
-| 	- For architectures that don't have any JSON files, an empty mapping
-| 	  table is created and they should continue to build.
-| 
-| Thanks to input from Andi Kleen, Jiri Olsa, Namhyung Kim and Ingo Molnar.
-| 
-| These patches are available from:
-| 
-| 	https://github.com:sukadev/linux.git 
-| 	
-| 	Branch			Description
-| 	------------------------------------------------------
-| 	json-v16		Source Code only 
-| 	json-files-6		x86 and Powerpc datafiles only
-| 	json-v16-with-data	Both code and data (for build/test)
+Em Mon, Aug 31, 2015 at 12:18:00PM +0530, Hemant Kumar escreveu:
+> To analyze the exit events with perf, we need to export the related
+> tracepoints through kvm_perf.h. kvm_perf.h is to be added in the
+> arch/powerpc directory, where the kvm tracepoints needed to trace the
+> KVM exit events are defined.
+> 
+> To indicate that the tracepoints are book3s_hv specific, suffix _HV has
+> been added to the tracepoint macros. Additionally, we also need to
+> define the generic macros (albeit, with null strings) suffix, because
+> the preprocessor looks for them in the generic code in builtin-kvm.c.
+> 
+> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 
-Arnaldo, Ingo,
+humm, there are two patchkits, this one with two patches, the other with
+3, this one for the kernel, the other one for tools/, but for the tools/
+part to work, does this one needs to be applied first?
 
-I added Andi's patch https://lkml.org/lkml/2015/8/28/521 to 'json-v16' branch.
-and created a new branch, 'json-files-7' with updated to Intel data files.
-Here are the three new branches.
+Should I try to process the 5 together, applying thest two first?
 
- 	https://github.com:sukadev/linux.git 
- 	
- 	Branch			Description
- 	------------------------------------------------------
- 	json-v16		Source Code only 
- 	json-files-7		x86 and Powerpc datafiles only
- 	json-v16.1-with-data	Both code and data (for build/test)
+I see there are no acks from powerpc arch maintainers, how should we
+proceed here? If there are no problems with the arch bits, and if it is
+just to enable the tooling part, again, should I process the 5 as just
+one series?
 
-Sukadev
+- Arnaldo
+
+> ---
+> Changes since v5:
+> - Moved back the tracepoint definitions from kvm_perf_book3s.h to kvm_perf.h
+> 
+>  arch/powerpc/include/uapi/asm/kvm_perf.h | 21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
+>  create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+> 
+> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> new file mode 100644
+> index 0000000..68f105e
+> --- /dev/null
+> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> @@ -0,0 +1,21 @@
+> +#ifndef _ASM_POWERPC_KVM_PERF_H
+> +#define _ASM_POWERPC_KVM_PERF_H
+> +
+> +#include <asm/kvm.h>
+> +
+> +#define DECODE_STR_LEN 40
+> +
+> +#define VCPU_ID "vcpu_id"
+> +
+> +/* For Book3S_HV machines */
+> +#define KVM_ENTRY_TRACE_HV "kvm_hv:kvm_guest_enter"
+> +#define KVM_EXIT_TRACE_HV "kvm_hv:kvm_guest_exit"
+> +#define KVM_EXIT_REASON_HV "trap"
+> +
+> +/* This is to shut the compiler up */
+> +#define KVM_ENTRY_TRACE ""
+> +#define KVM_EXIT_TRACE ""
+> +#define KVM_EXIT_REASON ""
+> +
+> +
+> +#endif /* _ASM_POWERPC_KVM_PERF_H */
+> -- 
+> 1.9.3
