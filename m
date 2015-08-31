@@ -1,16 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AFD631A028B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2015 07:20:44 +1000 (AEST)
-In-Reply-To: <1440648757-23359-2-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A95F1A0170
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Aug 2015 11:46:35 +1000 (AEST)
+Message-ID: <1440985594.5735.3.camel@ellerman.id.au>
+Subject: Re: talitos doesn't build with GCC 4.4.4 (was Re: [PATCH v3 07/17]
+ crypto: talitos - enhanced talitos_desc struct for SEC1)
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [2/2] powerpc/pseries: Cleanup on pci_dn_reconfig_notifier()
-Message-Id: <20150830212044.59E0E140295@ozlabs.org>
-Date: Mon, 31 Aug 2015 07:20:44 +1000 (AEST)
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 31 Aug 2015 11:46:34 +1000
+In-Reply-To: <55E33C50.2000505@c-s.fr>
+References: <20150417143201.7C8B41A242C@localhost.localdomain>
+ <1440930307.907.5.camel@ellerman.id.au> <55E33C50.2000505@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,20 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-27-08 at 04:12:37 UTC, Gavin Shan wrote:
-> This applies cleanup on pci_dn_reconfig_notifier(), no functional
-> changes:
+On Sun, 2015-08-30 at 19:24 +0200, christophe leroy wrote:
+> Hi Michael,
 > 
->    * Rename variable "pci" to "pdn" to indicate its purpose clearly.
->    * The parent node can be released at any time. So it should be
->      hold with of_get_parent() before accessing it.
->    * The device node doesn't have to have parent node in theory.
->      More check on this.
+> This should be fixed by that one:
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/?id=76bea64c4c8d7fa911eb485c4c2b8583e813331e
 
-Applied to powerpc next, thanks.
+Thanks.
 
-https://git.kernel.org/powerpc/c/ea0f8acf4d44727f7d3a3807
+Sorry I should have thought to check linux-next.
 
 cheers
