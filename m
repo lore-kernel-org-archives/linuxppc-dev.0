@@ -1,44 +1,40 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 676381A06F9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 16:42:12 +1000 (AEST)
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A251E14076A
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2015 16:42:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E41C1A06F9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 16:48:59 +1000 (AEST)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
- Tue, 1 Sep 2015 00:42:08 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 1C4013E4003F
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2015 00:42:07 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t816evSe35979512
- for <linuxppc-dev@ozlabs.org>; Mon, 31 Aug 2015 23:41:05 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t816fXq3007579
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2015 00:41:34 -0600
-Date: Tue, 1 Sep 2015 12:11:13 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, ego@linux.vnet.ibm.com,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: powerpc: Add user-return-notifier support
-Message-ID: <20150901064113.GA1196@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20150825054110.GD3815@in.ibm.com>
- <20150831103517.96D1A1401E7@ozlabs.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Tue, 1 Sep 2015 12:18:56 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 267DDE0024
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 12:18:11 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t816mqmM14549102
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2015 12:18:53 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t816mnTO029680
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2015 12:18:52 +0530
+Message-ID: <55E54A4F.6090205@linux.vnet.ibm.com>
+Date: Tue, 01 Sep 2015 12:18:47 +0530
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150831103517.96D1A1401E7@ozlabs.org>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+CC: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, warrier@linux.vnet.ibm.com,
+ paulus@samba.org, scottwood@freescale.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v6 1/2] perf,kvm/powerpc: Add kvm_perf.h for powerpc
+References: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <20150831201300.GG4423@kernel.org>
+In-Reply-To: <20150831201300.GG4423@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,31 +44,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 31, 2015 at 08:35:17PM +1000, Michael Ellerman wrote:
-> On Tue, 2015-25-08 at 05:41:10 UTC, Ananth N Mavinakayanahalli wrote:
-> > Add user return notifier support for powerpc. Similar to x86, this feature
-> > keys off of the KVM Kconfig.
-> 
-> Please flesh this out.
-> 
-> What is it, why do we want it, why is your implementation correct.
+(cc'ing Michael Ellerman with this reply)
 
-The only current in-kernel user of the infrastructure is KVM on x86. It
-is useful for optimizations when MSR values can continue to be used
-between the host and guest. Commit log for 18863bdd60f8 upstream has a
-more complete explanation.
+Hi Arnaldo,
 
-I do not know the inner details of the KVM implementation on Power,
-perhaps Paul/Gautham can comment on if a similar optimization will
-benefit Power systems too?
+On 09/01/2015 01:43 AM, Arnaldo Carvalho de Melo wrote:
+> Em Mon, Aug 31, 2015 at 12:18:00PM +0530, Hemant Kumar escreveu:
+>> To analyze the exit events with perf, we need to export the related
+>> tracepoints through kvm_perf.h. kvm_perf.h is to be added in the
+>> arch/powerpc directory, where the kvm tracepoints needed to trace the
+>> KVM exit events are defined.
+>>
+>> To indicate that the tracepoints are book3s_hv specific, suffix _HV has
+>> been added to the tracepoint macros. Additionally, we also need to
+>> define the generic macros (albeit, with null strings) suffix, because
+>> the preprocessor looks for them in the generic code in builtin-kvm.c.
+>>
+>> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> humm, there are two patchkits, this one with two patches, the other with
+> 3, this one for the kernel, the other one for tools/, but for the tools/
+> part to work, does this one needs to be applied first?
+>
+> Should I try to process the 5 together, applying thest two first?
 
-We could certainly make this a generic config option.. but I am yet to
-see a real usecase outside of the KVM thingy. We do use TIF_UPROBE for
-something very similar, though that needs to fire much before the
-outstanding signals get handled. The user-return notifier is the last
-thing executed before return to userspace -- the two cannot be merged.
+Yes, this patchset needs to be applied before applying the other patchset,
+since there is a direct dependency on these two for the tooling part to
+work.
 
-Ananth
+> I see there are no acks from powerpc arch maintainers, how should we
+> proceed here? If there are no problems with the arch bits, and if it is
+> just to enable the tooling part, again, should I process the 5 as just
+> one series?
 
-PS: I am not sure having an 'ok' against the Documentation/features/ for
-powerpc is a valid enough argument for this :-)
+The reason to split the earlier patchset into two was to separate the
+tooling/perf/ and arch/powerpc/ side patches, as asked by Michael..
+
+Here is the link to that discussion :
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg86916.html
+
+If Michael is ok with the patches, you can process all the 5 patches 
+together. Michael?
+
+
+> - Arnaldo
+>
+>> ---
+>> Changes since v5:
+>> - Moved back the tracepoint definitions from kvm_perf_book3s.h to kvm_perf.h
+>>
+>>   arch/powerpc/include/uapi/asm/kvm_perf.h | 21 +++++++++++++++++++++
+>>   1 file changed, 21 insertions(+)
+>>   create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+>>
+>> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
+>> new file mode 100644
+>> index 0000000..68f105e
+>> --- /dev/null
+>> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+>> @@ -0,0 +1,21 @@
+>> +#ifndef _ASM_POWERPC_KVM_PERF_H
+>> +#define _ASM_POWERPC_KVM_PERF_H
+>> +
+>> +#include <asm/kvm.h>
+>> +
+>> +#define DECODE_STR_LEN 40
+>> +
+>> +#define VCPU_ID "vcpu_id"
+>> +
+>> +/* For Book3S_HV machines */
+>> +#define KVM_ENTRY_TRACE_HV "kvm_hv:kvm_guest_enter"
+>> +#define KVM_EXIT_TRACE_HV "kvm_hv:kvm_guest_exit"
+>> +#define KVM_EXIT_REASON_HV "trap"
+>> +
+>> +/* This is to shut the compiler up */
+>> +#define KVM_ENTRY_TRACE ""
+>> +#define KVM_EXIT_TRACE ""
+>> +#define KVM_EXIT_REASON ""
+>> +
+>> +
+>> +#endif /* _ASM_POWERPC_KVM_PERF_H */
+>> -- 
+>> 1.9.3
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+-- 
+Thanks,
+Hemant Kumar
