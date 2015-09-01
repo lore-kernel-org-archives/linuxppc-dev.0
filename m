@@ -1,38 +1,22 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C49061A1E07
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 08:31:26 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 2 Sep 2015 08:31:25 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id CF2CF2CE802D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 08:31:22 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t81MVEAd47644848
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 08:31:22 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t81MUo9c016505
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 08:30:50 +1000
-Message-ID: <1441146625.2668.53.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A5C751A1E08
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 08:45:24 +1000 (AEST)
+Date: Wed, 2 Sep 2015 08:45:21 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Thomas Huth <thuth@redhat.com>, kvm-ppc@vger.kernel.org,
+ Alexander Graf <agraf@suse.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 Subject: Re: [PATCH] KVM: ppc: Fix size of the PSPB register
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Paul Mackerras <paulus@ozlabs.org>, Thomas Huth <thuth@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Date: Wed, 02 Sep 2015 08:30:25 +1000
-In-Reply-To: <20150901222434.GA23007@fergus.ozlabs.ibm.com>
+Message-ID: <20150901224521.GC23007@fergus.ozlabs.ibm.com>
 References: <1441143678-14295-1-git-send-email-thuth@redhat.com>
- <20150901222434.GA23007@fergus.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1441146305.2668.51.camel@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1441146305.2668.51.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,21 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-02 at 08:24 +1000, Paul Mackerras wrote:
-> On Tue, Sep 01, 2015 at 11:41:18PM +0200, Thomas Huth wrote:
+On Wed, Sep 02, 2015 at 08:25:05AM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-09-01 at 23:41 +0200, Thomas Huth wrote:
 > > The size of the Problem State Priority Boost Register is only
 > > 32 bits, so let's change the type of the corresponding variable
 > > accordingly to avoid future trouble.
 > 
-> Since we're already using lwz/stw in the assembly code in
-> book3s_hv_rmhandlers.S, this is actually a bug fix, isn't it?
-> How did you find it?  Did you observe a failure of some kind, or did
-> you just find it by code inspection?
+> It's not future trouble, it's broken today for LE and this should fix
+> it BUT ....
 
-Won't the fix break migration ? Unless qemu doens't migrate it ...
+No, it's broken today for BE hosts, which will always see 0 for the
+PSPB register value.  LE hosts are fine.
 
-> Paul.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> The asm accesses it using lwz/stw and C accesses it as a ulong. On LE
+> that will mean that userspace will see the value << 32
+
+No, that will happen on BE, and since KVM_REG_PPC_PSPB says it's a
+32-bit register, we'll just pass 0 back to userspace when it reads it.
+
+> Now "fixing" it might break migration if that field is already
+> stored/loaded in its "broken" form. We may have to keep the "broken"
+> behaviour and document that qemu sees a value shifted by 32.
+
+It will be being set to 0 on BE hosts across migration today
+(fortunately 0 is a benign value for PSPB).  If we fix this on both
+the source and destination host, then the value will get migrated
+across correctly.
+
+I think Thomas's patch is fine, it just needs a stronger patch
+description saying that it fixes an actual bug.
+
+Paul.
