@@ -1,27 +1,24 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x232.google.com (mail-ob0-x232.google.com
- [IPv6:2607:f8b0:4003:c01::232])
+Return-Path: <dinarv@gmail.com>
+Received: from mail-la0-x22d.google.com (mail-la0-x22d.google.com
+ [IPv6:2a00:1450:4010:c03::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 196791A0245
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 21:28:23 +1000 (AEST)
-Received: by obcbp4 with SMTP id bp4so44713394obc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2015 04:28:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 204231A06F9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 00:49:02 +1000 (AEST)
+Received: by lamp12 with SMTP id p12so1427383lam.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2015 07:48:57 -0700 (PDT)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <55E5803F.3090704@canonical.com>
-References: <1441102876-26978-1-git-send-email-colin.king@canonical.com>
- <CAMuHMdUm-eRpPmoNARdPVsi9=4Fqxp8crfgOXZkVTdAFhNzngQ@mail.gmail.com>
- <55E5803F.3090704@canonical.com>
-Date: Tue, 1 Sep 2015 13:28:20 +0200
-Message-ID: <CAMuHMdW=zGAPGP8+tys3pkjN3hUuUeb8Q5SSi+U1qyUeUmWiew@mail.gmail.com>
-Subject: Re: [PATCH] ps3-vuart: BUG_ON on null drv before dereferencing it on
- dev_dbg
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Colin Ian King <colin.king@canonical.com>
-Cc: Geoff Levand <geoff@infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Sender: dinarv@gmail.com
+In-Reply-To: <55E5B27A.8020306@redhat.com>
+References: <1432906201-25009-1-git-send-email-k0da@opensuse.org>
+ <55E5B27A.8020306@redhat.com>
+From: Dinar Valeev <k0da@opensuse.org>
+Date: Tue, 1 Sep 2015 16:48:38 +0200
+Message-ID: <CADqALGQ3xnX75XLWkTpSzqVHhWEmULxjCOEee7=jbU2tpnRiPw@mail.gmail.com>
+Subject: Re: [PATCH] Fix function keys sequence on USB
+To: Thomas Huth <thuth@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, Dinar Valeev <dvaleev@suse.com>
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,62 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Colin,
-
-On Tue, Sep 1, 2015 at 12:38 PM, Colin Ian King
-<colin.king@canonical.com> wrote:
-> On 01/09/15 11:35, Geert Uytterhoeven wrote:
->> On Tue, Sep 1, 2015 at 12:21 PM, Colin King <colin.king@canonical.com> wrote:
->>> On the unlikely event that drv is null, the current code will
->>> perform a null pointer dereference with it when printing a dev_dbg
->>> message.  Instead, the BUG_ON check on drv should be performed
->>> before we emit the dev_dbg message.
->>
->> What about just removing the BUG_ON()?
->>
->> The system will crash anyway, providing a backtrace.
+On Tue, Sep 1, 2015 at 4:13 PM, Thomas Huth <thuth@redhat.com> wrote:
 >
-> I personally think a BUG_ON() shows intention to try to catch an
-> unexpected issue in a standard way as opposed to just removing it and
-> then hitting an issue with a null ptr deference.
+>  Hi!
+>
+> May I ask what's the status of this patch? As far as I can see, it has
+> not been included in the repository yet?
+Hi,
+Uhh.. I forgot about this patch, since I run local copy.
 
-I think this BUG_ON() was purely used during development of the ps3_vuart
-framework.
-
-Note that the corresponding platform_drv_probe() also just dereferences its
-driver pointer.
-
->>> Signed-off-by: Colin Ian King <colin.king@canonical.com>
->>> ---
->>>  drivers/ps3/ps3-vuart.c | 3 +--
->>>  1 file changed, 1 insertion(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
->>> index d6db822..632701a 100644
->>> --- a/drivers/ps3/ps3-vuart.c
->>> +++ b/drivers/ps3/ps3-vuart.c
->>> @@ -1000,12 +1000,11 @@ static int ps3_vuart_probe(struct ps3_system_bus_device *dev)
->>>         dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
->>>
->>>         drv = ps3_system_bus_dev_to_vuart_drv(dev);
->>> +       BUG_ON(!drv);
->>>
->>>         dev_dbg(&dev->core, "%s:%d: (%s)\n", __func__, __LINE__,
->>>                 drv->core.core.name);
->>>
->>> -       BUG_ON(!drv);
->>> -
->>>         if (dev->port_number >= PORT_COUNT) {
->>>                 BUG();
->>>                 return -EINVAL;
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+No the patch is not included. For me it is unclear why keys don't work
+for me, but they do for
+Alexey and Nikunj.
+>
+> On 29/05/15 15:30, Dinar valeev wrote:
+>> From: Dinar Valeev <dvaleev@suse.com>
+>>
+>> Original issue is home and end keys are not functional in grub2.
+>> Later I've found other inconsistencies in f1-f12 keys.
+>>
+>> "Correct sequence" was crabbed by pressing key on cat running in
+>> xterm.
+>>
+>> Tested with Home, End, F2, Del and F10 keys in grub2
+>>
+>> Signed-off-by: Dinar Valeev <dvaleev@suse.com>
+>> ---
+>>  lib/libusb/usb-hid.c | 40 +++++++++++++++++-----------------------
+>>  1 file changed, 17 insertions(+), 23 deletions(-)
+>>
+>> diff --git a/lib/libusb/usb-hid.c b/lib/libusb/usb-hid.c
+>> index f0cab8a..ccd5ba9 100644
+>> --- a/lib/libusb/usb-hid.c
+>> +++ b/lib/libusb/usb-hid.c
+> ...
+>> @@ -278,7 +274,7 @@ static void check_key_code(uint8_t *buf)
+>>                               case 0x45:
+>>                                       write_key(0x1b);               /* F12 */
+>>                                       write_key(0x5b);
+>> -                                     write_key(0x31);
+>> +                                     write_key(0x32);
+>>                                       write_key(0x34);
+>>                                       write_key(0x7e);
+>>                                       break;
+>
+> ... I'm especially interested in this hunk here. One of our testers ran
+> into the problem that you can not enter the boot menu when using USB
+> keyboard (and starting QEMU with "-boot menu=on"), and I think this is
+> related to this hunk.
+>
+> Looking at "f12-pressed?" in slof/fs/start-up.fs you can also easily see
+> that the menu code expects a "32" instead of "31" here, and Dinar's
+> patch fixes this issue!
+>
+>  Thomas
+>
