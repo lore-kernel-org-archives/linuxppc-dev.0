@@ -1,21 +1,31 @@
-Return-Path: <geoff@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 606BC1A06F9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 03:20:34 +1000 (AEST)
-Message-ID: <1441128024.29534.32.camel@infradead.org>
-Subject: Re: [PATCH] ps3-vuart: BUG_ON on null drv before dereferencing it
- on dev_dbg
-From: Geoff Levand <geoff@infradead.org>
-To: Colin King <colin.king@canonical.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Tue, 01 Sep 2015 10:20:24 -0700
-In-Reply-To: <1441102876-26978-1-git-send-email-colin.king@canonical.com>
-References: <1441102876-26978-1-git-send-email-colin.king@canonical.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 39D351A1E05
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 05:00:34 +1000 (AEST)
+Date: Tue, 1 Sep 2015 20:00:27 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Boqun Feng <boqun.feng@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC 3/5] powerpc: atomic: implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150901190027.GP1612@arm.com>
+References: <1440730099-29133-1-git-send-email-boqun.feng@gmail.com>
+ <1440730099-29133-4-git-send-email-boqun.feng@gmail.com>
+ <20150828104854.GB16853@twins.programming.kicks-ass.net>
+ <20150828120614.GC29325@fixme-laptop.cn.ibm.com>
+ <20150828141602.GA924@fixme-laptop.cn.ibm.com>
+ <20150828153921.GF19282@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150828153921.GF19282@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-01 at 11:21 +0100, Colin King wrote:
-> On the unlikely event that drv is null, the current code will
-> perform a null pointer dereference with it when printing a dev_dbg
-> message.  Instead, the BUG_ON check on drv should be performed
-> before we emit the dev_dbg message.
+On Fri, Aug 28, 2015 at 04:39:21PM +0100, Peter Zijlstra wrote:
+> On Fri, Aug 28, 2015 at 10:16:02PM +0800, Boqun Feng wrote:
+> > Ah.. just read through the thread you mentioned, I might misunderstand
+> > you, probably because I didn't understand RCpc well..
+> > 
+> > You are saying that in a RELEASE we -might- switch from smp_lwsync() to
+> > smp_mb() semantically, right? I guess this means we -might- switch from
+> > RCpc to RCsc, right?
+> > 
+> > If so, I think I'd better to wait until we have a conclusion for this.
 > 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Yes, the difference between RCpc and RCsc is in the meaning of RELEASE +
+> ACQUIRE. With RCsc that implies a full memory barrier, with RCpc it does
+> not.
 
-I applied this to my ps3-linux repo.  I can update it if you decide to
-do the other fixes Geert mentioned.
+We've discussed this before, but for the sake of completeness, I don't
+think we're fully RCsc either because we don't order the actual RELEASE
+operation again a subsequent ACQUIRE operation:
 
--Geoff
+
+P0
+smp_store_release(&x, 1);
+foo = smp_load_acquire(&y);
+
+P1
+smp_store_release(&y, 1);
+bar = smp_load_acquire(&x);
+
+We allow foo == bar == 0, which is prohibited by SC.
+
+
+However, we *do* enforce ordering on any prior or subsequent accesses
+for the code snippet above (the release and acquire combine to give a
+full barrier), which makes these primitives well suited to things like
+message passing.
+
+Will
