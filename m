@@ -2,19 +2,15 @@ Return-Path: <thuth@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EFAC51A06F9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 00:13:20 +1000 (AEST)
-Subject: Re: [PATCH] Fix function keys sequence on USB
-To: Dinar valeev <k0da@opensuse.org>, linuxppc-dev@lists.ozlabs.org,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-References: <1432906201-25009-1-git-send-email-k0da@opensuse.org>
-Cc: Dinar Valeev <dvaleev@suse.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B7DE1A1E05
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 07:41:23 +1000 (AEST)
 From: Thomas Huth <thuth@redhat.com>
-Message-ID: <55E5B27A.8020306@redhat.com>
-Date: Tue, 1 Sep 2015 16:13:14 +0200
-MIME-Version: 1.0
-In-Reply-To: <1432906201-25009-1-git-send-email-k0da@opensuse.org>
-Content-Type: text/plain; charset=utf-8
+To: kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.com>,
+ Paul Mackerras <paulus@samba.org>
+Cc: kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] KVM: ppc: Fix size of the PSPB register
+Date: Tue,  1 Sep 2015 23:41:18 +0200
+Message-Id: <1441143678-14295-1-git-send-email-thuth@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The size of the Problem State Priority Boost Register is only
+32 bits, so let's change the type of the corresponding variable
+accordingly to avoid future trouble.
 
- Hi!
+Signed-off-by: Thomas Huth <thuth@redhat.com>
+---
+ arch/powerpc/include/asm/kvm_host.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-May I ask what's the status of this patch? As far as I can see, it has
-not been included in the repository yet?
-
-On 29/05/15 15:30, Dinar valeev wrote:
-> From: Dinar Valeev <dvaleev@suse.com>
-> 
-> Original issue is home and end keys are not functional in grub2.
-> Later I've found other inconsistencies in f1-f12 keys.
-> 
-> "Correct sequence" was crabbed by pressing key on cat running in
-> xterm.
-> 
-> Tested with Home, End, F2, Del and F10 keys in grub2
-> 
-> Signed-off-by: Dinar Valeev <dvaleev@suse.com>
-> ---
->  lib/libusb/usb-hid.c | 40 +++++++++++++++++-----------------------
->  1 file changed, 17 insertions(+), 23 deletions(-)
-> 
-> diff --git a/lib/libusb/usb-hid.c b/lib/libusb/usb-hid.c
-> index f0cab8a..ccd5ba9 100644
-> --- a/lib/libusb/usb-hid.c
-> +++ b/lib/libusb/usb-hid.c
-...
-> @@ -278,7 +274,7 @@ static void check_key_code(uint8_t *buf)
->  				case 0x45:
->  					write_key(0x1b);	       /* F12 */
->  					write_key(0x5b);
-> -					write_key(0x31);
-> +					write_key(0x32);
->  					write_key(0x34);
->  					write_key(0x7e);
->  					break;
-
-... I'm especially interested in this hunk here. One of our testers ran
-into the problem that you can not enter the boot menu when using USB
-keyboard (and starting QEMU with "-boot menu=on"), and I think this is
-related to this hunk.
-
-Looking at "f12-pressed?" in slof/fs/start-up.fs you can also easily see
-that the menu code expects a "32" instead of "31" here, and Dinar's
-patch fixes this issue!
-
- Thomas
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index d91f65b..c825f3a 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -473,7 +473,7 @@ struct kvm_vcpu_arch {
+ 	ulong ciabr;
+ 	ulong cfar;
+ 	ulong ppr;
+-	ulong pspb;
++	u32 pspb;
+ 	ulong fscr;
+ 	ulong shadow_fscr;
+ 	ulong ebbhr;
+-- 
+1.8.3.1
