@@ -1,26 +1,24 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-oi0-x22e.google.com (mail-oi0-x22e.google.com
- [IPv6:2607:f8b0:4003:c06::22e])
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C27911A06F9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 20:35:48 +1000 (AEST)
-Received: by oigm66 with SMTP id m66so75390280oig.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Sep 2015 03:35:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D856C1A0066
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 20:39:07 +1000 (AEST)
+Date: Tue, 1 Sep 2015 12:38:59 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org
+Subject: Re: [PATCH v5 1/8] perf: Add a flags parameter to pmu txn interfaces
+Message-ID: <20150901103859.GP19282@twins.programming.kicks-ass.net>
+References: <1439534981-7937-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1439534981-7937-2-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1441102876-26978-1-git-send-email-colin.king@canonical.com>
-References: <1441102876-26978-1-git-send-email-colin.king@canonical.com>
-Date: Tue, 1 Sep 2015 12:35:46 +0200
-Message-ID: <CAMuHMdUm-eRpPmoNARdPVsi9=4Fqxp8crfgOXZkVTdAFhNzngQ@mail.gmail.com>
-Subject: Re: [PATCH] ps3-vuart: BUG_ON on null drv before dereferencing it on
- dev_dbg
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Colin King <colin.king@canonical.com>
-Cc: Geoff Levand <geoff@infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1439534981-7937-2-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +28,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Colin,
+On Thu, Aug 13, 2015 at 11:49:34PM -0700, Sukadev Bhattiprolu wrote:
 
-On Tue, Sep 1, 2015 at 12:21 PM, Colin King <colin.king@canonical.com> wrote:
-> On the unlikely event that drv is null, the current code will
-> perform a null pointer dereference with it when printing a dev_dbg
-> message.  Instead, the BUG_ON check on drv should be performed
-> before we emit the dev_dbg message.
+I'm ever so sorry I keep going on about this, but..
 
-What about just removing the BUG_ON()?
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index d90893b..b18efe4 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -50,6 +50,7 @@ struct cpu_hw_events {
+>  
+>  	unsigned int group_flag;
+>  	int n_txn_start;
+> +	int txn_flags;
+>  
+>  	/* BHRB bits */
+>  	u64				bhrb_filter;	/* BHRB HW branch filter */
+> @@ -1586,11 +1587,19 @@ static void power_pmu_stop(struct perf_event *event, int ef_flags)
+>   * Start group events scheduling transaction
+>   * Set the flag to make pmu::enable() not perform the
+>   * schedulability test, it will be performed at commit time
+> + *
+> + * We only support PERF_PMU_TXN_ADD transactions. Save the
+> + * transaction flags but otherwise ignore non-PERF_PMU_TXN_ADD
+> + * transactions.
+>   */
+> -static void power_pmu_start_txn(struct pmu *pmu)
+> +static void power_pmu_start_txn(struct pmu *pmu, int txn_flags)
+>  {
+>  	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>  
+> +	cpuhw->txn_flags = txn_flags;
+> +	if (txn_flags & ~PERF_PMU_TXN_ADD)
+> +		return;
+> +
+>  	perf_pmu_disable(pmu);
+>  	cpuhw->group_flag |= PERF_EVENT_TXN;
+>  	cpuhw->n_txn_start = cpuhw->n_events;
+> @@ -1604,6 +1613,12 @@ static void power_pmu_start_txn(struct pmu *pmu)
+>  static void power_pmu_cancel_txn(struct pmu *pmu)
+>  {
+>  	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+> +	int txn_flags;
+> +
+> +	txn_flags = cpuhw->txn_flags;
+> +	cpuhw->txn_flags = 0;
+> +	if (txn_flags & ~PERF_PMU_TXN_ADD)
+> +		return;
+>  
+>  	cpuhw->group_flag &= ~PERF_EVENT_TXN;
+>  	perf_pmu_enable(pmu);
+> @@ -1618,10 +1633,18 @@ static int power_pmu_commit_txn(struct pmu *pmu)
+>  {
+>  	struct cpu_hw_events *cpuhw;
+>  	long i, n;
+> +	int txn_flags;
+>  
+>  	if (!ppmu)
+>  		return -EAGAIN;
+> +
+>  	cpuhw = this_cpu_ptr(&cpu_hw_events);
+> +
+> +	txn_flags = cpuhw->txn_flags;
+> +	cpuhw->txn_flags = 0;
+> +	if (cpuhw->txn_flags & ~PERF_PMU_TXN_ADD)
+> +		return 0;
+> +
+>  	n = cpuhw->n_events;
+>  	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n))
+>  		return -EAGAIN;
 
-The system will crash anyway, providing a backtrace.
 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/ps3/ps3-vuart.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
-> index d6db822..632701a 100644
-> --- a/drivers/ps3/ps3-vuart.c
-> +++ b/drivers/ps3/ps3-vuart.c
-> @@ -1000,12 +1000,11 @@ static int ps3_vuart_probe(struct ps3_system_bus_device *dev)
->         dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
->
->         drv = ps3_system_bus_dev_to_vuart_drv(dev);
-> +       BUG_ON(!drv);
->
->         dev_dbg(&dev->core, "%s:%d: (%s)\n", __func__, __LINE__,
->                 drv->core.core.name);
->
-> -       BUG_ON(!drv);
-> -
->         if (dev->port_number >= PORT_COUNT) {
->                 BUG();
->                 return -EINVAL;
+when looking at this (I almost pressed A for apply) it occurred to me
+that we now keep double state, cpuhw->txn_flags and cpuhw->group_flag
+are basically the same thing.
 
+Would not something like the below avoid this duplication?
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -48,9 +48,8 @@ struct cpu_hw_events {
+ 	unsigned long amasks[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+ 	unsigned long avalues[MAX_HWEVENTS][MAX_EVENT_ALTERNATIVES];
+ 
+-	unsigned int group_flag;
++	unsigned int txn_flags;
+ 	int n_txn_start;
+-	int txn_flags;
+ 
+ 	/* BHRB bits */
+ 	u64				bhrb_filter;	/* BHRB HW branch filter */
+@@ -1442,7 +1441,7 @@ static int power_pmu_add(struct perf_eve
+ 	 * skip the schedulability test here, it will be performed
+ 	 * at commit time(->commit_txn) as a whole
+ 	 */
+-	if (cpuhw->group_flag & PERF_EVENT_TXN)
++	if (cpuhw->txn_flags & PERF_PMU_TXN_ADD)
+ 		goto nocheck;
+ 
+ 	if (check_excludes(cpuhw->event, cpuhw->flags, n0, 1))
+@@ -1596,12 +1595,12 @@ static void power_pmu_start_txn(struct p
+ {
+ 	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+ 
++	WARN_ON_ONCE(cpuhw->txn_flags); /* already txn in flight */
+ 	cpuhw->txn_flags = txn_flags;
+ 	if (txn_flags & ~PERF_PMU_TXN_ADD)
+ 		return;
+ 
+ 	perf_pmu_disable(pmu);
+-	cpuhw->group_flag |= PERF_EVENT_TXN;
+ 	cpuhw->n_txn_start = cpuhw->n_events;
+ }
+ 
+@@ -1615,12 +1614,12 @@ static void power_pmu_cancel_txn(struct
+ 	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+ 	int txn_flags;
+ 
++	WARN_ON_ONCE(!cpuhw->txn_flags); /* no txn in flight */
+ 	txn_flags = cpuhw->txn_flags;
+ 	cpuhw->txn_flags = 0;
+ 	if (txn_flags & ~PERF_PMU_TXN_ADD)
+ 		return;
+ 
+-	cpuhw->group_flag &= ~PERF_EVENT_TXN;
+ 	perf_pmu_enable(pmu);
+ }
+ 
+@@ -1633,17 +1632,17 @@ static int power_pmu_commit_txn(struct p
+ {
+ 	struct cpu_hw_events *cpuhw;
+ 	long i, n;
+-	int txn_flags;
+ 
+ 	if (!ppmu)
+ 		return -EAGAIN;
+ 
+ 	cpuhw = this_cpu_ptr(&cpu_hw_events);
+ 
+-	txn_flags = cpuhw->txn_flags;
+-	cpuhw->txn_flags = 0;
+-	if (cpuhw->txn_flags & ~PERF_PMU_TXN_ADD)
++	WARN_ON_ONCE(!cpuhw->txn_flags); /* no txn in flight */
++	if (cpuhw->txn_flags & ~PERF_PMU_TXN_ADD) {
++		cpuhw->txn_flags = 0;
+ 		return 0;
++	}
+ 
+ 	n = cpuhw->n_events;
+ 	if (check_excludes(cpuhw->event, cpuhw->flags, 0, n))
+@@ -1655,7 +1654,7 @@ static int power_pmu_commit_txn(struct p
+ 	for (i = cpuhw->n_txn_start; i < n; ++i)
+ 		cpuhw->event[i]->hw.config = cpuhw->events[i];
+ 
+-	cpuhw->group_flag &= ~PERF_EVENT_TXN;
++	cpuhw->txn_flags = 0;
+ 	perf_pmu_enable(pmu);
+ 	return 0;
+ }
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -199,9 +199,7 @@ struct perf_event;
+ /*
+  * Common implementation detail of pmu::{start,commit,cancel}_txn
+  */
+-#define PERF_EVENT_TXN 0x1
+-
+-#define PERF_PMU_TXN_ADD  0x1		/* txn to add/schedule event on PMU */
++#define PERF_PMU_TXN_ADD	0x1	/* txn to add/schedule event on PMU */
+ 
+ /**
+  * pmu::capabilities flags
