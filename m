@@ -1,27 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0139.outbound.protection.outlook.com [65.55.169.139])
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0112.outbound.protection.outlook.com [207.46.100.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 241971A1EFE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 12:30:49 +1000 (AEST)
-Message-ID: <1441161032.4966.123.camel@freescale.com>
-Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4704D1A2B85
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 12:32:21 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
  <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Tue, 1 Sep 2015 21:30:32 -0500
-In-Reply-To: <SN1PR0301MB1550B83E62EAEB41C4387A0F9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
+Date: Wed, 2 Sep 2015 02:32:14 +0000
+Message-ID: <SN1PR0301MB1550486CECE45995C54272089B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
  <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
  <1441154062.4966.113.camel@freescale.com>
  <SN1PR0301MB1550B83E62EAEB41C4387A0F9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1441161032.4966.123.camel@freescale.com>
+In-Reply-To: <1441161032.4966.123.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,65 +32,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-01 at 21:22 -0500, Zhao Qiang-B45475 wrote:
-> On Wed, 2015-09-02 at 8:34AM +0800, Wood Scott-B07421 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, September 02, 2015 8:34 AM
-> > To: Zhao Qiang-B45475
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
-> > Yang-Leo-R58472; paulus@samba.org
-> > Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage
-> > muram
-> > 
-> > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
-> > 
-> > > -int cpm_muram_init(void)
-> > > -{
-> > > -     struct device_node *np;
-> > > -     struct resource r;
-> > > -     u32 zero[OF_MAX_ADDR_CELLS] = {};
-> > > -     resource_size_t max = 0;
-> > > -     int i = 0;
-> > > -     int ret = 0;
-> > > -
-> > > -     if (muram_pbase)
-> > > -             return 0;
-> > > -
-> > > -     spin_lock_init(&cpm_muram_lock);
-> > > -     /* initialize the info header */
-> > > -     rh_init(&cpm_muram_info, 1,
-> > > -             sizeof(cpm_boot_muram_rh_block) /
-> > > -             sizeof(cpm_boot_muram_rh_block[0]),
-> > > -             cpm_boot_muram_rh_block);
-> > > -
-> > > -     np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
-> > > -     if (!np) {
-> > > -             /* try legacy bindings */
-> > > -             np = of_find_node_by_name(NULL, "data-only");
-> > > -             if (!np) {
-> > > -                     printk(KERN_ERR "Cannot find CPM muram data
-> > node");
-> > > -                     ret = -ENODEV;
-> > > -                     goto out;
-> > > -             }
-> > > -     }
-> > > -
-> > > -     muram_pbase = of_translate_address(np, zero);
-> > > -     if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
-> > > -             printk(KERN_ERR "Cannot translate zero through CPM muram
-> > node");
-> > > -             ret = -ENODEV;
-> > > -             goto out;
-> > > -     }
-> > 
-> > Did you pass -M -C to git format-patch?
-> 
-> 
-> Yes!
-
-Then maybe it's the qe/cpm rename churn, or similar, that prevented it from 
-being identified as a move?
-
--Scott
+T24gV2VkLCAyMDE1LTA5LTAyIGF0IDEwOjMxQU0sIFdvb2QgU2NvdHQtQjA3NDIxIHdyb3RlOg0K
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwMiwgMjAxNSAxMDozMSBBTQ0KPiBUbzogWmhh
+byBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBY
+aWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+IFlhbmctTGVvLVI1
+ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDIvM10gcWVf
+Y29tbW9uOiBhZGQgcWVfbXVyYW1fIGZ1bmN0aW9ucyB0byBtYW5hZ2UNCj4gbXVyYW0NCj4gDQo+
+IE9uIFR1ZSwgMjAxNS0wOS0wMSBhdCAyMToyMiAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3Jv
+dGU6DQo+ID4gT24gV2VkLCAyMDE1LTA5LTAyIGF0IDg6MzRBTSArMDgwMCwgV29vZCBTY290dC1C
+MDc0MjEgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJv
+bTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDAy
+LCAyMDE1IDg6MzQgQU0NCj4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiA+ID4gQ2M6IGxp
+bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
+Ow0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2MTsgYmVuaEBr
+ZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gTGkgWWFuZy1MZW8tUjU4NDcyOyBwYXVsdXNAc2Ft
+YmEub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDIvM10gcWVfY29tbW9uOiBhZGQg
+cWVfbXVyYW1fIGZ1bmN0aW9ucyB0bw0KPiA+ID4gbWFuYWdlIG11cmFtDQo+ID4gPg0KPiA+ID4g
+T24gTW9uLCAyMDE1LTA4LTMxIGF0IDE2OjU4ICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+
+ID4NCj4gPiA+ID4gLWludCBjcG1fbXVyYW1faW5pdCh2b2lkKQ0KPiA+ID4gPiAtew0KPiA+ID4g
+PiAtICAgICBzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wOw0KPiA+ID4gPiAtICAgICBzdHJ1Y3QgcmVz
+b3VyY2UgcjsNCj4gPiA+ID4gLSAgICAgdTMyIHplcm9bT0ZfTUFYX0FERFJfQ0VMTFNdID0ge307
+DQo+ID4gPiA+IC0gICAgIHJlc291cmNlX3NpemVfdCBtYXggPSAwOw0KPiA+ID4gPiAtICAgICBp
+bnQgaSA9IDA7DQo+ID4gPiA+IC0gICAgIGludCByZXQgPSAwOw0KPiA+ID4gPiAtDQo+ID4gPiA+
+IC0gICAgIGlmIChtdXJhbV9wYmFzZSkNCj4gPiA+ID4gLSAgICAgICAgICAgICByZXR1cm4gMDsN
+Cj4gPiA+ID4gLQ0KPiA+ID4gPiAtICAgICBzcGluX2xvY2tfaW5pdCgmY3BtX211cmFtX2xvY2sp
+Ow0KPiA+ID4gPiAtICAgICAvKiBpbml0aWFsaXplIHRoZSBpbmZvIGhlYWRlciAqLw0KPiA+ID4g
+PiAtICAgICByaF9pbml0KCZjcG1fbXVyYW1faW5mbywgMSwNCj4gPiA+ID4gLSAgICAgICAgICAg
+ICBzaXplb2YoY3BtX2Jvb3RfbXVyYW1fcmhfYmxvY2spIC8NCj4gPiA+ID4gLSAgICAgICAgICAg
+ICBzaXplb2YoY3BtX2Jvb3RfbXVyYW1fcmhfYmxvY2tbMF0pLA0KPiA+ID4gPiAtICAgICAgICAg
+ICAgIGNwbV9ib290X211cmFtX3JoX2Jsb2NrKTsNCj4gPiA+ID4gLQ0KPiA+ID4gPiAtICAgICBu
+cCA9IG9mX2ZpbmRfY29tcGF0aWJsZV9ub2RlKE5VTEwsIE5VTEwsICJmc2wsY3BtLW11cmFtLQ0K
+PiBkYXRhIik7DQo+ID4gPiA+IC0gICAgIGlmICghbnApIHsNCj4gPiA+ID4gLSAgICAgICAgICAg
+ICAvKiB0cnkgbGVnYWN5IGJpbmRpbmdzICovDQo+ID4gPiA+IC0gICAgICAgICAgICAgbnAgPSBv
+Zl9maW5kX25vZGVfYnlfbmFtZShOVUxMLCAiZGF0YS1vbmx5Iik7DQo+ID4gPiA+IC0gICAgICAg
+ICAgICAgaWYgKCFucCkgew0KPiA+ID4gPiAtICAgICAgICAgICAgICAgICAgICAgcHJpbnRrKEtF
+Uk5fRVJSICJDYW5ub3QgZmluZCBDUE0gbXVyYW0gZGF0YQ0KPiA+ID4gbm9kZSIpOw0KPiA+ID4g
+PiAtICAgICAgICAgICAgICAgICAgICAgcmV0ID0gLUVOT0RFVjsNCj4gPiA+ID4gLSAgICAgICAg
+ICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+ID4gPiAtICAgICAgICAgICAgIH0NCj4gPiA+ID4g
+LSAgICAgfQ0KPiA+ID4gPiAtDQo+ID4gPiA+IC0gICAgIG11cmFtX3BiYXNlID0gb2ZfdHJhbnNs
+YXRlX2FkZHJlc3MobnAsIHplcm8pOw0KPiA+ID4gPiAtICAgICBpZiAobXVyYW1fcGJhc2UgPT0g
+KHBoeXNfYWRkcl90KU9GX0JBRF9BRERSKSB7DQo+ID4gPiA+IC0gICAgICAgICAgICAgcHJpbnRr
+KEtFUk5fRVJSICJDYW5ub3QgdHJhbnNsYXRlIHplcm8gdGhyb3VnaCBDUE0NCj4gbXVyYW0NCj4g
+PiA+IG5vZGUiKTsNCj4gPiA+ID4gLSAgICAgICAgICAgICByZXQgPSAtRU5PREVWOw0KPiA+ID4g
+PiAtICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+ID4gPiAtICAgICB9DQo+ID4gPg0KPiA+ID4g
+RGlkIHlvdSBwYXNzIC1NIC1DIHRvIGdpdCBmb3JtYXQtcGF0Y2g/DQo+ID4NCj4gPg0KPiA+IFll
+cyENCj4gDQo+IFRoZW4gbWF5YmUgaXQncyB0aGUgcWUvY3BtIHJlbmFtZSBjaHVybiwgb3Igc2lt
+aWxhciwgdGhhdCBwcmV2ZW50ZWQgaXQNCj4gZnJvbSBiZWluZyBpZGVudGlmaWVkIGFzIGEgbW92
+ZT8NCg0KTWF5YmUNCg0KPiANCj4gLVNjb3R0DQotWmhhbw0KDQo=
