@@ -1,46 +1,30 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0108.outbound.protection.outlook.com [157.56.110.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9B1A21A2A7C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 12:38:12 +1000 (AEST)
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CC98F140281
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2015 12:38:11 +1000 (AEST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
- Tue, 1 Sep 2015 20:38:09 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 126363E4003E
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Sep 2015 20:38:07 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t822bwBa35389470
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2015 19:38:07 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t822bXXK013358
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Sep 2015 20:37:34 -0600
-Date: Wed, 2 Sep 2015 08:07:13 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB3DB1A1E5C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 13:05:48 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>,
- "Paul Mackerras" <paulus@samba.org>, <ego@linux.vnet.ibm.com>
-Subject: Re: powerpc: Add user-return-notifier support
-Message-ID: <20150902023713.GB1196@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20150825054110.GD3815@in.ibm.com>
- <20150831103517.96D1A1401E7@ozlabs.org>
- <20150901064113.GA1196@in.ibm.com>
- <1441152192.4966.103.camel@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Wed, 2 Sep 2015 03:05:41 +0000
+Message-ID: <SN1PR0301MB155067ACD55BCDED1768F8E29B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441153816.4966.109.camel@freescale.com>
+ <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441160299.4966.122.camel@freescale.com>
+ <SN1PR0301MB1550A4CF93D8FA91377DD3F09B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441161203.4966.126.camel@freescale.com>
+In-Reply-To: <1441161203.4966.126.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1441152192.4966.103.camel@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,91 +34,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 01, 2015 at 07:03:12PM -0500, Scott Wood wrote:
-> On Tue, 2015-09-01 at 12:11 +0530, Ananth N Mavinakayanahalli wrote:
-> > On Mon, Aug 31, 2015 at 08:35:17PM +1000, Michael Ellerman wrote:
-> > > On Tue, 2015-25-08 at 05:41:10 UTC, Ananth N Mavinakayanahalli wrote:
-> > > > Add user return notifier support for powerpc. Similar to x86, this 
-> > > > feature
-> > > > keys off of the KVM Kconfig.
-> > > 
-> > > Please flesh this out.
-> > > 
-> > > What is it, why do we want it, why is your implementation correct.
-> > 
-> > The only current in-kernel user of the infrastructure is KVM on x86. It
-> > is useful for optimizations when MSR values can continue to be used
-> > between the host and guest. Commit log for 18863bdd60f8 upstream has a
-> > more complete explanation.
-> >
-> > I do not know the inner details of the KVM implementation on Power,
-> > perhaps Paul/Gautham can comment on if a similar optimization will
-> > benefit Power systems too?
-> 
-> "MSR" is x86-specific terminology and is pretty vague.  What specifically is 
-> the functionality being optimized, in terms of things that actually exist on 
-> PPC?
->
-> In any case, that commit log doesn't explain what user-return-notifier is or 
-> how it works, just that it's being used.
-
-User return notifier is a simple mechanism to fire a one-shot custom handler in
-the context of the thread its registered against, just before it returns to
-userspace. It works by setting a TIF flag to indicate that a handler needs to
-run, and on the userspace return path (do_notify_resume()), this flag is checked
-to call any registered handlers.
-
-> > We could certainly make this a generic config option.. but I am yet to
-> > see a real usecase outside of the KVM thingy. We do use TIF_UPROBE for
-> > something very similar, though that needs to fire much before the
-> > outstanding signals get handled. The user-return notifier is the last
-> > thing executed before return to userspace -- the two cannot be merged.
-> > 
-> > Ananth
-> > 
-> > PS: I am not sure having an 'ok' against the Documentation/features/ for
-> > powerpc is a valid enough argument for this :-)
-> 
-> So how did you test this?  What platforms did you test it on?  What hardware 
-> support does it need?
-
-Simple kernel module below... Its fairly evident from the patch that the
-feature is a software only construct and no specific hardware support is
-needed. I've tested this on a P7.
-
-Ananth
-
----
-/* uret test module */
-
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/user-return-notifier.h>
-
-struct user_return_notifier urn;
-static int count;
-
-static void test_on_user_return(struct user_return_notifier *urn)
-{
-	count++;
-}
-
-
-static int init_urn(void)
-{
-	urn.on_user_return = test_on_user_return;
-	user_return_notifier_register(&urn);
-	printk("urn registered\n");
-	return 0;
-}
-	
-static void cleanup_urn(void)
-{
-	user_return_notifier_unregister(&urn);
-	printk("urn unregistered; count = %d\n", count);
-}
-
-module_init(init_urn);
-module_exit(cleanup_urn);
-MODULE_LICENSE("GPL");
+T24gV2VkLCAyMDE1LTA5LTAyIGF0IDEwOjMzQU0gLTA1MDAsIFdvb2QgU2NvdHQtQjA3NDIxIHdy
+b3RlOg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQt
+QjA3NDIxDQo+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDAyLCAyMDE1IDEwOjMzIEFNDQo+
+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
+ZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGxhdXJhYUBjb2RlYXVyb3JhLm9y
+ZzsgWGllIFhpYW9iby1SNjMwNjE7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkNCj4gWWFu
+Zy1MZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcg
+MS8zXSBnZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uIHdpdGgNCj4gYnl0ZXMtYWxp
+Z25tZW50IHRvIGdlbmFsbG9jDQo+IA0KPiBPbiBUdWUsIDIwMTUtMDktMDEgYXQgMjE6MjkgLTA1
+MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+IE9uIFdlZCwgMjAxNS0wOS0wMiBhdCAx
+MDoxOEFNIC0wNTAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2Vu
+dDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMDIsIDIwMTUgMTA6MTggQU0NCj4gPiA+IFRvOiBaaGFv
+IFFpYW5nLUI0NTQ3NQ0KPiA+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3Jn
+OyBYaWUgWGlhb2JvLVI2MzA2MTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gTGkg
+WWFuZy1MZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BB
+VENIIFY3IDEvM10gZ2VuYWxsb2M6c3VwcG9ydCBtZW1vcnktYWxsb2NhdGlvbiB3aXRoDQo+ID4g
+PiBieXRlcy1hbGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+DQo+ID4gPiBPbiBUdWUsIDIwMTUt
+MDktMDEgYXQgMjE6MTAgLTA1MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+ID4gPiBP
+biBXZWQsIDIwMTUtMDktMDIgYXQgMDg6MzhBTSArMDgwMCwgV29vZCBTY290dC1CMDc0MjEgd3Jv
+dGU6DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9t
+OiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVy
+IDAyLCAyMDE1IDg6MzAgQU0NCj4gPiA+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gPiA+
+ID4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7DQo+ID4gPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2Jv
+LVI2MzA2MTsNCj4gPiA+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctTGVv
+LVI1ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
+VjcgMS8zXSBnZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uDQo+ID4gPiA+ID4gd2l0
+aCBieXRlcy1hbGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIE1v
+biwgMjAxNS0wOC0zMSBhdCAxNjo1OCArMDgwMCwgWmhhbyBRaWFuZyB3cm90ZToNCj4gPiA+ID4g
+PiA+IEJ5dGVzIGFsaWdubWVudCBpcyByZXF1aXJlZCB0byBtYW5hZ2Ugc29tZSBzcGVjaWFsIFJB
+TSwgc28gYWRkDQo+ID4gPiA+ID4gPiBnZW5fcG9vbF9maXJzdF9maXRfYWxpZ24gdG8gZ2VuYWxs
+b2MsIG1lYW53aGlsZSBhZGQNCj4gPiA+ID4gPiA+IGdlbl9wb29sX2FsbG9jX2RhdGEgdG8gcGFz
+cyBkYXRhIHRvDQo+ID4gPiA+ID4gPiBnZW5fcG9vbF9maXJzdF9maXRfYWxpZ24obW9kaWZ5IGdl
+bl9wb29sX2FsbG9jIGFzIGEgd3JhcHBlcikNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+
+ID4gPiAtLS0NCj4gPiA+ID4gPiA+IENoYW5nZXMgZm9yIHY2Og0KPiA+ID4gPiA+ID4gICAgICAg
+LSBwYXRjaGVzIHNldCB2NiBpbmNsdWRlIGEgbmV3IHBhdGNoIGJlY2F1c2Ugb2YgdXNpbmcNCj4g
+PiA+ID4gPiA+ICAgICAgIC0gZ2VuYWxsb2MgdG8gbWFuYWdlIFFFIE1VUkFNLCBwYXRjaCAwMDAx
+IGlzIHRoZSBuZXcNCj4gPiA+ID4gPiA+ICAgICAgIC0gcGF0Y2gsIGFkZGluZyBieXRlcyBhbGln
+bm1lbnQgZm9yIGFsbG9jYXRpb24gZm9yIHVzZS4NCj4gPiA+ID4gPiA+IENoYW5nZXMgZm9yIHY3
+Og0KPiA+ID4gPiA+ID4gICAgICAgLSBjcG0gbXVyYW0gYWxzbyBuZWVkIHRvIHVzZSBnZW5hbGxv
+YyB0byBtYW5hZ2UsIGl0IGhhcw0KPiA+ID4gPiA+ID4gICAgICAgICBhIGZ1bmN0aW9uIHRvIHJl
+c2VydmUgYSBzcGVjaWZpYyByZWdpb24gb2YgbXVyYW0sDQo+ID4gPiA+ID4gPiAgICAgICAgIGFk
+ZCBvZmZzZXQgdG8gZ2VucG9vbF9kYXRhIGZvciBzdGFydCBhZGRyIHRvIGJlDQo+IGFsbG9jYXRl
+ZC4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoaXMgc2VlbXMgdG8gYmUgZGVzY3JpYmluZyBtb3Jl
+IHRoYW4ganVzdCB0aGUgY2hhbmdlcyBpbiB0aGlzDQo+IHBhdGNoLg0KPiA+ID4gPiA+IFdoYXQg
+ZG9lcyBhbHNvIGhhbmRsaW5nIGNwbSBoYXZlIHRvIGRvIHdpdGggdGhpcyBwYXRjaD8gIEFyZSB5
+b3UNCj4gPiA+ID4gPiBhZGRpbmcgc3VwcG9ydCBmb3IgcmVzZXJ2aW5nIGEgc3BlY2lmaWMgcmVn
+aW9uIGluIHRoaXMgcGF0Y2g/ICBJDQo+ID4gPiA+ID4gZG9uJ3Qgc2VlIGl0LCBhbmQgaW4gYW55
+IGNhc2UgaXQgc2hvdWxkIGdvIGluIGEgZGlmZmVyZW50IHBhdGNoLg0KPiA+ID4gPg0KPiA+ID4g
+PiBZZXMsIEkgYWRkZWQuIFRoZSBjb2RlIGJlbG93IGNhbiBzdXBwb3J0IHRoZSBmdW5jdGlvbi4N
+Cj4gPiA+ID4gICAgICAgb2Zmc2V0X2JpdCA9IChhbGlnbm1lbnQtPm9mZnNldCArICgxVUwgPDwg
+b3JkZXIpIC0gMSkgPj4NCj4gb3JkZXI7DQo+ID4gPiA+ICAgICAgIHJldHVybiBiaXRtYXBfZmlu
+ZF9uZXh0X3plcm9fYXJlYShtYXAsIHNpemUsIHN0YXJ0ICsNCj4gPiA+ID4gb2Zmc2V0X2JpdCwN
+Cj4gPiA+IG5yLA0KPiA+ID4gPiAgICAgICAgICAgICAgICAgICAgICAgICBhbGlnbl9tYXNrKTsN
+Cj4gPiA+ID4NCj4gPiA+ID4gQ1BNIGhhcyBhbiBmdW5jdGlvbiBjcG1fbXVyYW1fYWxsb2NfZml4
+ZWQsIG5lZWRpbmcgdG8gYWxsb2NhdGUNCj4gPiA+ID4gbXVyYW0gZnJvbSBhIFNwZWNpZmljIG9m
+ZnNldC4gU28gSSBhZGQgdGhlIGNvZGUgYW5kIGFkZCBvZmZzZXQgdG8NCj4gc3RydWN0IGRhdGEu
+DQo+ID4gPg0KPiA+ID4gSSB0aG91Z2h0IHRoZSBvZmZzZXQgd2FzIHJlbGF0ZWQgdG8gdGhlIHBy
+ZXZpb3VzIGRpc2N1c3Npb24gb2YNCj4gPiA+IGNoZWNraW5nIGZvciBhbGxvY2F0aW9uIGZhaWx1
+cmUuICBBcmUgeW91IHVzaW5nIGl0IHRvIGltcGxlbWVudA0KPiA+ID4gYWxsb2NfZml4ZWQoKT8g
+IElmIHNvLCBwbGVhc2UgZG9uJ3QuICBCZXNpZGVzIHRoZSBhd2t3YXJkDQo+ID4gPiBpbXBsZW1l
+bnRhdGlvbiAod2hhdCBkb2VzIGl0IGxvZ2ljYWxseSBoYXZlIHRvIGRvIHdpdGgNCj4gPiA+IGdl
+bl9wb29sX2ZpcnN0X2ZpdF9hbGlnbj8pLCBpdCBkb2VzIG5vdCBhcHBlYXIgdG8gYmUgY29ycmVj
+dCAtDQo+ID4gPiAtIHdoYXQgaGFwcGVucyB3aXRoIG11bHRpcGxlIGNodW5rcz8gIFdoYXQgaGFw
+cGVucyBpZiBwYXJ0IG9mIHRoZQ0KPiA+ID4gcmVnaW9uIHRoZSBjYWxsZXIgaXMgdHJ5aW5nIHRv
+IHJlc2VydmUgaXMgYWxyZWFkeSB0YWtlbj8gIEltcGxlbWVudA0KPiA+ID4gYSBwcm9wZXIgZnVu
+Y3Rpb24gdG8gcmVzZXJ2ZSBhIGZpeGVkIGdlbmFsbG9jIHJlZ2lvbi4NCj4gPg0KPiA+IFRoaXMg
+b2Zmc2V0IGlzIHRvdGFsbHkgZGlmZmVyZW50IHdpdGggdGhlIHdvcmthcm91bmQgT0ZGU0VUIQ0K
+PiANCj4gVGhlcmUncyBhIHJlYXNvbiB3aHkgd2Ugd3JpdGUgY2hhbmdlbG9ncyB0aGF0IGRlc2Ny
+aWJlIHdoYXQgdGhlIHBhdGNoIGlzDQo+IGRvaW5nLCBhbmQgYXZvaWQgY29tYmluaW5nIGxvZ2lj
+YWxseSBkaXN0aW5jdCBjaGFuZ2VzIGluIHRoZSBzYW1lIHBhdGNoLg0KPiANCj4gPiBUaGlzIG9m
+ZnNldCBpcyB0aGUgb2Zmc2V0IG9mIHRoZSBtdXJhbS4NCj4gDQo+IFRoZSBvZmZzZXQgb2YgdGhl
+IG11cmFtIHJlbGF0aXZlIHRvIHdoYXQ/ICBPciBkbyB5b3UgbWVhbiB0aGUgb2Zmc2V0IGludG8N
+Cj4gbXVyYW0/DQoNClllcywgdGhlIG9mZnNldCBpbnRvIG11cmFtLg0KDQo+IA0KPiA+IENQTSBu
+ZWVkIHRvIGFsbG9jYXRlIGJsb2NrIGZyb20gYSBzcGVjaWZpYyBvZmZzZXQgZHVlIHRvIGhhcmR3
+YXJlDQo+ID4gcmVzdHJpY3Rpb24uDQo+ID4gU28gSSBtdXN0IGhhbmRsZSB0aGlzIG9mZnNldCBp
+biBnZW5hbGxvYy4NCj4gDQo+IEFnYWluLCBpZiB5b3UgbmVlZCB0byBiZSBhYmxlIHRvIG1hcmsg
+YSBzcGVjaWZpYyByYW5nZSByZXNlcnZlZCwgYWRkIGENCj4gZnVuY3Rpb24gdGhhdCBkb2VzIHRo
+YXQgcHJvcGVybHkuICBEb24ndCB0cnkgdG8gaGFjayBpdCBpbiB0aGUgd2F5IHlvdQ0KPiBkaWQu
+DQoNCkFkZCBhIGZ1bmN0aW9uPyBEbyB5b3UgbWVhbiBhZGQgYSBuZXcgYWxsb2MgZnVuY3Rpb24g
+b3IgbmV3IGFsZ28/DQpJZiB5b3UgbWVhbiBuZXcgYWxnbywgQ1BNIHVzZSBib3RoIGFsaWduIGFs
+Z28gYW5kIG5ldyBhbGdvLCBzZXQgDQpEaWZmZXJlbnQgYWxnb3MgaW4gZGlmZmVyZW50IG11cmFt
+X2FsbG9jIGZ1bmM/IA0KDQo+IA0KPiAtU2NvdHQNCg0K
