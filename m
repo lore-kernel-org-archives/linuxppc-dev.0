@@ -1,44 +1,20 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E38531A1E3C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 01:39:38 +1000 (AEST)
-Received: from /spool/local
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 2 Sep 2015 11:39:35 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DAC9BC90041
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 11:30:35 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t82FdVdt62914770
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 15:39:31 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t82FdU4e012217
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 11:39:31 -0400
-Date: Wed, 2 Sep 2015 08:39:28 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Ben Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/powernv/pci-ioda: fix 32-bit TCE table init in
- kdump kernel
-Message-ID: <20150902153928.GB47557@linux.vnet.ibm.com>
-References: <20150902011123.GA47557@linux.vnet.ibm.com>
- <55E6BAAF.9090502@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8DE8E1A1E3E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 02:53:17 +1000 (AEST)
+Message-ID: <1441212781.4966.166.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/85xx: Add support for Varisys Cyrus board
+From: Scott Wood <scottwood@freescale.com>
+To: Andy Fleming <afleming@gmail.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Date: Wed, 2 Sep 2015 11:53:01 -0500
+In-Reply-To: <1441175814-14940-1-git-send-email-afleming@gmail.com>
+References: <1441175814-14940-1-git-send-email-afleming@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55E6BAAF.9090502@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,136 +24,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02.09.2015 [19:00:31 +1000], Alexey Kardashevskiy wrote:
-> On 09/02/2015 11:11 AM, Nishanth Aravamudan wrote:
-> >When attempting to kdump with the 4.2 kernel, we see for each PCI
-> >device:
-> >
-> >  pci 0003:01     : [PE# 000] Assign DMA32 space
-> >  pci 0003:01     : [PE# 000] Setting up 32-bit TCE table at 0..80000000
-> >  pci 0003:01     : [PE# 000] Failed to create 32-bit TCE table, err -22
-> >  PCI: Domain 0004 has 8 available 32-bit DMA segments
-> >  PCI: 4 PE# for a total weight of 70
-> >  pci 0004:01     : [PE# 002] Assign DMA32 space
-> >  pci 0004:01     : [PE# 002] Setting up 32-bit TCE table at 0..80000000
-> >  pci 0004:01     : [PE# 002] Failed to create 32-bit TCE table, err -22
-> >  pci 0004:0d     : [PE# 005] Assign DMA32 space
-> >  pci 0004:0d     : [PE# 005] Setting up 32-bit TCE table at 0..80000000
-> >  pci 0004:0d     : [PE# 005] Failed to create 32-bit TCE table, err -22
-> >  pci 0004:0e     : [PE# 006] Assign DMA32 space
-> >  pci 0004:0e     : [PE# 006] Setting up 32-bit TCE table at 0..80000000
-> >  pci 0004:0e     : [PE# 006] Failed to create 32-bit TCE table, err -22
-> >  pci 0004:10     : [PE# 008] Assign DMA32 space
-> >  pci 0004:10     : [PE# 008] Setting up 32-bit TCE table at 0..80000000
-> >  pci 0004:10     : [PE# 008] Failed to create 32-bit TCE table, err -22
-> >
-> >and eventually the kdump kernel fails to boot as none of the PCI devices
-> >(including the disk controller) are successfully initialized.
-> >
-> >The EINVAL response is because the DMA window (the 2GB base window) is
-> >larger than the kdump kernel's reserved memory (crashkernel=, in this
-> >case specified to be 1024M). The check in question,
-> >
-> >  if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
-> >
-> >is a valid sanity check for pnv_pci_ioda2_table_alloc_pages(), so adjust
-> >the caller to pass in a smaller window size if our maximum memory value
-> >is smaller than the DMA window.
-> >
-> >After this change, the PCI devices successfully set up the 32-bit TCE
-> >table and kdump succeeds.
-> >
-> >The problem was seen on a Firestone machine originally.
-> >
-> >Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
-> >Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> >
-> >diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >index 85cbc96eff6c..0d7967e31169 100644
-> >--- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >@@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
-> >  {
-> >  	struct iommu_table *tbl = NULL;
-> >  	long rc;
-> >+	/*
-> >+	 * In memory constrained environments, e.g. kdump kernel, the
-> >+	 * DMA window can be larger than available memory, which will
-> >+	 * cause errors later.
-> >+	 */
-> >+	__u64 window_size =
+On Wed, 2015-09-02 at 01:36 -0500, Andy Fleming wrote:
+> This board uses a P5020 or P5040 chip, and boots just fine using
+> the corenet_generic code. The device tree is very similar to the
+> P5020DS, except that there is no Flash memory. The environment is,
+> instead, stored on an MMC card on the motherboard.
 > 
-> I asked for "const __u64" ;)
+> Signed-off-by: Andy Fleming <afleming@gmail.com>
+> ---
+>  arch/powerpc/boot/dts/cyrus.dts               | 175 
+> ++++++++++++++++++++++++++
+>  arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
+>  2 files changed, 176 insertions(+)
+>  create mode 100644 arch/powerpc/boot/dts/cyrus.dts
+> 
+> diff --git a/arch/powerpc/boot/dts/cyrus.dts 
+> b/arch/powerpc/boot/dts/cyrus.dts
+> new file mode 100644
+> index 0000000..07fe509
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/cyrus.dts
+> @@ -0,0 +1,175 @@
+> +/*
+> + * P5020DS Device Tree Source
+> + *
+> + * Copyright 2010 - 2014 Freescale Semiconductor Inc.
+> + *
+> + * Redistribution and use in source and binary forms, with or without
+> + * modification, are permitted provided that the following conditions are 
+> met:
+> + *     * Redistributions of source code must retain the above copyright
+> + *       notice, this list of conditions and the following disclaimer.
+> + *     * Redistributions in binary form must reproduce the above copyright
+> + *       notice, this list of conditions and the following disclaimer in 
+> the
+> + *       documentation and/or other materials provided with the 
+> distribution.
+> + *     * Neither the name of Freescale Semiconductor nor the
+> + *       names of its contributors may be used to endorse or promote 
+> products
+> + *       derived from this software without specific prior written 
+> permission.
+> + *
+> + *
+> + * ALTERNATIVELY, this software may be distributed under the terms of the
+> + * GNU General Public License ("GPL") as published by the Free Software
+> + * Foundation, either version 2 of that License or (at your option) any
+> + * later version.
+> + *
+> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
+> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+> IMPLIED
+> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
+> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+> DAMAGES
+> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
+> SERVICES;
+> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED 
+> AND
+> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
+> TORT
+> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+> OF THIS
+> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+> + */
+> +
+> +/include/ "fsl/p5020si-pre.dtsi"
 
-I knew I'd forget something!
+What happens when the board has a p5040?
 
-When attempting to kdump with the 4.2 kernel, we see for each PCI
-device:
+> +
+> +/ {
+> +     model = "fsl,P5020DS";
+> +     compatible = "fsl,P5020DS";
 
- pci 0003:01     : [PE# 000] Assign DMA32 space
- pci 0003:01     : [PE# 000] Setting up 32-bit TCE table at 0..80000000
- pci 0003:01     : [PE# 000] Failed to create 32-bit TCE table, err -22
- PCI: Domain 0004 has 8 available 32-bit DMA segments
- PCI: 4 PE# for a total weight of 70
- pci 0004:01     : [PE# 002] Assign DMA32 space
- pci 0004:01     : [PE# 002] Setting up 32-bit TCE table at 0..80000000
- pci 0004:01     : [PE# 002] Failed to create 32-bit TCE table, err -22
- pci 0004:0d     : [PE# 005] Assign DMA32 space
- pci 0004:0d     : [PE# 005] Setting up 32-bit TCE table at 0..80000000
- pci 0004:0d     : [PE# 005] Failed to create 32-bit TCE table, err -22
- pci 0004:0e     : [PE# 006] Assign DMA32 space
- pci 0004:0e     : [PE# 006] Setting up 32-bit TCE table at 0..80000000
- pci 0004:0e     : [PE# 006] Failed to create 32-bit TCE table, err -22
- pci 0004:10     : [PE# 008] Assign DMA32 space
- pci 0004:10     : [PE# 008] Setting up 32-bit TCE table at 0..80000000
- pci 0004:10     : [PE# 008] Failed to create 32-bit TCE table, err -22
+This is not a P5020DS.
 
-and eventually the kdump kernel fails to boot as none of the PCI devices
-(including the disk controller) are successfully initialized.
+> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c 
+> b/arch/powerpc/platforms/85xx/corenet_generic.c
+> index b395571..76e521e 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> @@ -161,6 +161,7 @@ static const char * const boards[] __initconst = {
+>       "fsl,T1042RDB",
+>       "fsl,T1042RDB_PI",
+>       "keymile,kmcoge4",
+> +     "varisys,CYRUS",
+>       NULL
 
-The EINVAL response is because the DMA window (the 2GB base window) is
-larger than the kdump kernel's reserved memory (crashkernel=, in this
-case specified to be 1024M). The check in question,
+I don't see this compatible in the dts.  Why allcaps?
 
- if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
-
-is a valid sanity check for pnv_pci_ioda2_table_alloc_pages(), so adjust
-the caller to pass in a smaller window size if our maximum memory value
-is smaller than the DMA window.
-
-After this change, the PCI devices successfully set up the 32-bit TCE
-table and kdump succeeds.
-
-The problem was seen on a Firestone machine originally.
-    
-Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
-
----
-v1 -> v2:
-  Mark window_size as const.
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 85cbc96eff6c..e51aff01a218 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
- {
- 	struct iommu_table *tbl = NULL;
- 	long rc;
-+	/*
-+	 * In memory constrained environments, e.g. kdump kernel, the
-+	 * DMA window can be larger than available memory, which will
-+	 * cause errors later.
-+	 */
-+	const __u64 window_size =
-+		min((u64)pe->table_group.tce32_size, memory_hotplug_max());
- 
- 	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
- 			IOMMU_PAGE_SHIFT_4K,
--			pe->table_group.tce32_size,
-+			window_size,
- 			POWERNV_IOMMU_DEFAULT_LEVELS, &tbl);
- 	if (rc) {
- 		pe_err(pe, "Failed to create 32-bit TCE table, err %ld",
+-Scott
