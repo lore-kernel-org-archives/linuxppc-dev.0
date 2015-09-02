@@ -1,41 +1,19 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD24C1A1E14
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 11:11:31 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 1 Sep 2015 21:11:28 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D3EC3C90042
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 21:02:29 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t821BPLp53346500
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 01:11:25 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t821BOas005974
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2015 21:11:25 -0400
-Date: Tue, 1 Sep 2015 18:11:23 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Ben Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv/pci-ioda: fix 32-bit TCE table init in kdump
- kernel
-Message-ID: <20150902011123.GA47557@linux.vnet.ibm.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1A6D51A1E15
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 11:11:56 +1000 (AEST)
+Date: Wed, 2 Sep 2015 10:02:51 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+Cc: kexec@lists.infradead.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] purgatory/arch/ppc64: Reset primary cpu endian to
+ big-endian
+Message-ID: <20150902010251.GC30886@verge.net.au>
+References: <1440125476-9420-1-git-send-email-sam.mj@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1440125476-9420-1-git-send-email-sam.mj@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,68 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When attempting to kdump with the 4.2 kernel, we see for each PCI
-device:
+[CC linuxppc-dev]
 
- pci 0003:01     : [PE# 000] Assign DMA32 space
- pci 0003:01     : [PE# 000] Setting up 32-bit TCE table at 0..80000000
- pci 0003:01     : [PE# 000] Failed to create 32-bit TCE table, err -22
- PCI: Domain 0004 has 8 available 32-bit DMA segments
- PCI: 4 PE# for a total weight of 70
- pci 0004:01     : [PE# 002] Assign DMA32 space
- pci 0004:01     : [PE# 002] Setting up 32-bit TCE table at 0..80000000
- pci 0004:01     : [PE# 002] Failed to create 32-bit TCE table, err -22
- pci 0004:0d     : [PE# 005] Assign DMA32 space
- pci 0004:0d     : [PE# 005] Setting up 32-bit TCE table at 0..80000000
- pci 0004:0d     : [PE# 005] Failed to create 32-bit TCE table, err -22
- pci 0004:0e     : [PE# 006] Assign DMA32 space
- pci 0004:0e     : [PE# 006] Setting up 32-bit TCE table at 0..80000000
- pci 0004:0e     : [PE# 006] Failed to create 32-bit TCE table, err -22
- pci 0004:10     : [PE# 008] Assign DMA32 space
- pci 0004:10     : [PE# 008] Setting up 32-bit TCE table at 0..80000000
- pci 0004:10     : [PE# 008] Failed to create 32-bit TCE table, err -22
+On Fri, Aug 21, 2015 at 12:51:16PM +1000, Samuel Mendoza-Jonas wrote:
+> Older big-endian ppc64 kernels don't include the FIXUP_ENDIAN check,
+> meaning if we kexec from a little-endian kernel the target kernel will
+> fail to boot.
+> Returning to big-endian before we enter the target kernel ensures that
+> the target kernel can boot whether or not it includes FIXUP_ENDIAN.
+> 
+> This mirrors commit 150b14e7 in kexec-lite.
+> 
+> Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
 
-and eventually the kdump kernel fails to boot as none of the PCI devices
-(including the disk controller) are successfully initialized.
+I would value a review from one of the PPC folks.
 
-The EINVAL response is because the DMA window (the 2GB base window) is
-larger than the kdump kernel's reserved memory (crashkernel=, in this
-case specified to be 1024M). The check in question,
-
- if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
-
-is a valid sanity check for pnv_pci_ioda2_table_alloc_pages(), so adjust
-the caller to pass in a smaller window size if our maximum memory value
-is smaller than the DMA window.
-
-After this change, the PCI devices successfully set up the 32-bit TCE
-table and kdump succeeds.
-
-The problem was seen on a Firestone machine originally.
-
-Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 85cbc96eff6c..0d7967e31169 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
- {
- 	struct iommu_table *tbl = NULL;
- 	long rc;
-+	/*
-+	 * In memory constrained environments, e.g. kdump kernel, the
-+	 * DMA window can be larger than available memory, which will
-+	 * cause errors later.
-+	 */
-+	__u64 window_size =
-+		min((u64)pe->table_group.tce32_size, memory_hotplug_max());
- 
- 	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
- 			IOMMU_PAGE_SHIFT_4K,
--			pe->table_group.tce32_size,
-+			window_size,
- 			POWERNV_IOMMU_DEFAULT_LEVELS, &tbl);
- 	if (rc) {
- 		pe_err(pe, "Failed to create 32-bit TCE table, err %ld",
+> ---
+>  purgatory/arch/ppc64/v2wrap.S | 12 +++++++++---
+>  1 file changed, 9 insertions(+), 3 deletions(-)
+> 
+> diff --git a/purgatory/arch/ppc64/v2wrap.S b/purgatory/arch/ppc64/v2wrap.S
+> index dc5034f..179ade9 100644
+> --- a/purgatory/arch/ppc64/v2wrap.S
+> +++ b/purgatory/arch/ppc64/v2wrap.S
+> @@ -114,10 +114,16 @@ master:
+>  	LOADADDR(6,run_at_load) # the load flag
+>  	lwz	7,0(6)		# possibly patched by kexec-elf-ppc64
+>  	stw	7,0x5c(4)	# and patch it into the kernel
+> -	li	5,0		# r5 will be 0 for kernel
+> -	mtctr	4		# prepare branch too
+>  	mr      3,16            # restore dt address
+>  
+> +	mtsrr0	4		# prepare branch to
+> +
+> +	mfmsr	5
+> +	clrrdi	5,5,1		# clear MSR_LE
+> +	mtsrr1	5
+> +
+> +	li	5,0		# r5 will be 0 for kernel
+> +
+>  				# skip cache flush, do we care?
+>  
+> -	bctr			# start kernel
+> +	rfid			# update MSR and start kernel
+> -- 
+> 2.5.0
+> 
