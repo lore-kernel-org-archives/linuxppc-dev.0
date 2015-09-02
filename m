@@ -1,34 +1,48 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0138.outbound.protection.outlook.com [207.46.100.138])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ananth@in.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BA751A1E25
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 14:51:46 +1000 (AEST)
-Message-ID: <1441169492.4966.157.camel@freescale.com>
-Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
- bytes-alignment to genalloc
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Tue, 1 Sep 2015 23:51:32 -0500
-In-Reply-To: <SN1PR0301MB1550D5493D01F6F723EE8C529B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441153816.4966.109.camel@freescale.com>
- <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441160299.4966.122.camel@freescale.com>
- <SN1PR0301MB1550A4CF93D8FA91377DD3F09B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441161203.4966.126.camel@freescale.com>
- <SN1PR0301MB155067ACD55BCDED1768F8E29B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441163312.4966.145.camel@freescale.com>
- <SN1PR0301MB1550D5493D01F6F723EE8C529B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 751C31A1E05
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 15:10:15 +1000 (AEST)
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id F2CB51401F0
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2015 15:10:13 +1000 (AEST)
+Received: from /spool/local
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
+ Wed, 2 Sep 2015 01:10:11 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9962B6E804F
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2015 01:01:53 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t825A9vp61472994
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2015 05:10:09 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t825A6uf006374
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Sep 2015 01:10:08 -0400
+Date: Wed, 2 Sep 2015 10:39:58 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>,
+ "Paul Mackerras" <paulus@samba.org>, <ego@linux.vnet.ibm.com>
+Subject: Re: powerpc: Add user-return-notifier support
+Message-ID: <20150902050958.GC1196@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20150825054110.GD3815@in.ibm.com>
+ <20150831103517.96D1A1401E7@ozlabs.org>
+ <20150901064113.GA1196@in.ibm.com>
+ <1441152192.4966.103.camel@freescale.com>
+ <20150902023713.GB1196@in.ibm.com>
+ <1441164552.4966.153.camel@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1441164552.4966.153.camel@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,152 +52,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-01 at 22:57 -0500, Zhao Qiang-B45475 wrote:
-> On Wed, 2015-09-02 at 10:33AM -0500, Wood Scott-B07421 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, September 02, 2015 11:09 AM
-> > To: Zhao Qiang-B45475
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
-> > Yang-Leo-R58472; paulus@samba.org
-> > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
-> > bytes-alignment to genalloc
+On Tue, Sep 01, 2015 at 10:29:12PM -0500, Scott Wood wrote:
+> On Wed, 2015-09-02 at 08:07 +0530, Ananth N Mavinakayanahalli wrote:
+> > On Tue, Sep 01, 2015 at 07:03:12PM -0500, Scott Wood wrote:
+> > > On Tue, 2015-09-01 at 12:11 +0530, Ananth N Mavinakayanahalli wrote:
+> > > > On Mon, Aug 31, 2015 at 08:35:17PM +1000, Michael Ellerman wrote:
+> > > > > On Tue, 2015-25-08 at 05:41:10 UTC, Ananth N Mavinakayanahalli wrote:
+
+...
+
+> > > > We could certainly make this a generic config option.. but I am yet to
+> > > > see a real usecase outside of the KVM thingy. We do use TIF_UPROBE for
+> > > > something very similar, though that needs to fire much before the
+> > > > outstanding signals get handled. The user-return notifier is the last
+> > > > thing executed before return to userspace -- the two cannot be merged.
+> > > > 
+> > > > Ananth
+> > > > 
+> > > > PS: I am not sure having an 'ok' against the Documentation/features/ for
+> > > > powerpc is a valid enough argument for this :-)
+> > > 
+> > > So how did you test this?  What platforms did you test it on?  What 
+> > > hardware 
+> > > support does it need?
 > > 
-> > On Tue, 2015-09-01 at 22:05 -0500, Zhao Qiang-B45475 wrote:
-> > > On Wed, 2015-09-02 at 10:33AM -0500, Wood Scott-B07421 wrote:
-> > > 
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Wednesday, September 02, 2015 10:33 AM
-> > > > To: Zhao Qiang-B45475
-> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
-> > > > Li Yang-Leo-R58472; paulus@samba.org
-> > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
-> > > > bytes-alignment to genalloc
-> > > > 
-> > > > On Tue, 2015-09-01 at 21:29 -0500, Zhao Qiang-B45475 wrote:
-> > > > > On Wed, 2015-09-02 at 10:18AM -0500, Wood Scott-B07421 wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: Wood Scott-B07421
-> > > > > > Sent: Wednesday, September 02, 2015 10:18 AM
-> > > > > > To: Zhao Qiang-B45475
-> > > > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > > > lauraa@codeaurora.org; Xie Xiaobo-R63061;
-> > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472; paulus@samba.org
-> > > > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation
-> > > > > > with bytes-alignment to genalloc
-> > > > > > 
-> > > > > > On Tue, 2015-09-01 at 21:10 -0500, Zhao Qiang-B45475 wrote:
-> > > > > > > On Wed, 2015-09-02 at 08:38AM +0800, Wood Scott-B07421 wrote:
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: Wood Scott-B07421
-> > > > > > > > Sent: Wednesday, September 02, 2015 8:30 AM
-> > > > > > > > To: Zhao Qiang-B45475
-> > > > > > > > Cc: linux-kernel@vger.kernel.org;
-> > > > > > > > linuxppc-dev@lists.ozlabs.org; lauraa@codeaurora.org; Xie
-> > > > > > > > Xiaobo-R63061; benh@kernel.crashing.org; Li Yang-Leo-R58472;
-> > > > > > > > paulus@samba.org
-> > > > > > > > Subject: Re: [PATCH V7 1/3] genalloc:support
-> > > > > > > > memory-allocation with bytes-alignment to genalloc
-> > > > > > > > 
-> > > > > > > > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
-> > > > > > > > > Bytes alignment is required to manage some special RAM, so
-> > > > > > > > > add gen_pool_first_fit_align to genalloc, meanwhile add
-> > > > > > > > > gen_pool_alloc_data to pass data to
-> > > > > > > > > gen_pool_first_fit_align(modify gen_pool_alloc as a
-> > > > > > > > > wrapper)
-> > > > > > > > > 
-> > > > > > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> > > > > > > > > ---
-> > > > > > > > > Changes for v6:
-> > > > > > > > >       - patches set v6 include a new patch because of using
-> > > > > > > > >       - genalloc to manage QE MURAM, patch 0001 is the new
-> > > > > > > > >       - patch, adding bytes alignment for allocation for
-> > use.
-> > > > > > > > > Changes for v7:
-> > > > > > > > >       - cpm muram also need to use genalloc to manage, it
-> > has
-> > > > > > > > >         a function to reserve a specific region of muram,
-> > > > > > > > >         add offset to genpool_data for start addr to be
-> > > > allocated.
-> > > > > > > > 
-> > > > > > > > This seems to be describing more than just the changes in
-> > > > > > > > this
-> > > > patch.
-> > > > > > > > What does also handling cpm have to do with this patch?  Are
-> > > > > > > > you adding support for reserving a specific region in this
-> > > > > > > > patch?  I don't see it, and in any case it should go in a
-> > different patch.
-> > > > > > > 
-> > > > > > > Yes, I added. The code below can support the function.
-> > > > > > >       offset_bit = (alignment->offset + (1UL << order) - 1) >>
-> > > > order;
-> > > > > > >       return bitmap_find_next_zero_area(map, size, start +
-> > > > > > > offset_bit,
-> > > > > > nr,
-> > > > > > >                         align_mask);
-> > > > > > > 
-> > > > > > > CPM has an function cpm_muram_alloc_fixed, needing to allocate
-> > > > > > > muram from a Specific offset. So I add the code and add offset
-> > > > > > > to
-> > > > struct data.
-> > > > > > 
-> > > > > > I thought the offset was related to the previous discussion of
-> > > > > > checking for allocation failure.  Are you using it to implement
-> > > > > > alloc_fixed()?  If so, please don't.  Besides the awkward
-> > > > > > implementation (what does it logically have to do with
-> > > > > > gen_pool_first_fit_align?), it does not appear to be correct -
-> > > > > > - what happens with multiple chunks?  What happens if part of
-> > > > > > the region the caller is trying to reserve is already taken?
-> > > > > > Implement a proper function to reserve a fixed genalloc region.
-> > > > > 
-> > > > > This offset is totally different with the workaround OFFSET!
-> > > > 
-> > > > There's a reason why we write changelogs that describe what the
-> > > > patch is doing, and avoid combining logically distinct changes in the
-> > same patch.
-> > > > 
-> > > > > This offset is the offset of the muram.
-> > > > 
-> > > > The offset of the muram relative to what?  Or do you mean the offset
-> > > > into muram?
-> > > 
-> > > Yes, the offset into muram.
-> > > 
-> > > > 
-> > > > > CPM need to allocate block from a specific offset due to hardware
-> > > > > restriction.
-> > > > > So I must handle this offset in genalloc.
-> > > > 
-> > > > Again, if you need to be able to mark a specific range reserved, add
-> > > > a function that does that properly.  Don't try to hack it in the way
-> > > > you did.
-> > > 
-> > > Add a function? Do you mean add a new alloc function or new algo?
-> > > If you mean new algo, CPM use both align algo and new algo, set
-> > > Different algos in different muram_alloc func?
-> > 
-> > I was thinking that it was a sufficiently different operation that it
-> > warranted its own independent function, but I suppose you could do it as
-> > an algorithm that only accepts the requested range and returns failure
-> > for all other chunks (as well as if the range is unavailable).  It would
-> > not be related at all to the aligned-alloc algorithm.
+> > Simple kernel module below... Its fairly evident from the patch that the
+> > feature is a software only construct and no specific hardware support is
+> > needed.
 > 
-> If do so, I need set algo in different muram_alloc function, it is 
-> redundancy.
+> It's evident now that I'm aware of what the purpose is... It wasn't 100% 
+> 
+> clear before, at least from a quick glance, given that the explanation was 
+> 
+> "look at this hardware-specific KVM patch", whether there was an assumption 
+> of something else going on -- and even things that are implemented in 
+> software often work differently on book3s versus book3e, ppc32 versus ppc64, 
+> etc.
 
-If you do it as a separate top-level function there would be no algorithm.
+I meant the infrastructure is agnostic of the underlying Power platform.
+Sorry if I wasn't clear.
 
-Using an algorithm would be simpler to implement, but a bit more awkward in 
-the caller due to the need to swap out the algorithm (unless we change 
-gen_pool_alloc_data to gen_pool_alloc_algo_data or similar...).
+> Why is this selected by KVM on PPC if KVM on PPC doesn't use it?  What is the 
+> user you're trying to enable?
 
-> The algos has start para, but it set start_bit = 0 in gen_pool_alloc_data, 
-> can We pass a start addr para to gen_pool_alloc_data?
+I copied Paul and Gautham to get their thoughts on whether it is
+something they could use on Power. At this time, apart from enabling the
+feature, I do not have a specific usecase for it. We can park this patch
+pending a real user on powerpc.
 
-No.  Again, setting that "start" variable is not equivalent to what you're 
-trying to accomplish, even if it happens to work in your test case.
+> Where is the "profiler" that Documentation/features/debug/user-ret-
+> profiler/arch-support.txt hints at?
 
--Scott
+I guess profiler is a misnomer. Not sure why it was named that and not a
+notifier.
+
+Ananth
