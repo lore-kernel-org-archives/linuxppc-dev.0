@@ -1,26 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A8D871A1E16
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 11:37:33 +1000 (AEST)
+Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0140.outbound.protection.outlook.com [157.56.111.140])
+ (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6D6B9140281
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2015 11:37:31 +1000 (AEST)
-Message-ID: <1441152192.4966.103.camel@freescale.com>
-Subject: Re: powerpc: Add user-return-notifier support
-From: Scott Wood <scottwood@freescale.com>
-To: <ananth@in.ibm.com>
-CC: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>, "Paul
- Mackerras" <paulus@samba.org>, <ego@linux.vnet.ibm.com>
-Date: Tue, 1 Sep 2015 19:03:12 -0500
-In-Reply-To: <20150901064113.GA1196@in.ibm.com>
-References: <20150825054110.GD3815@in.ibm.com>
- <20150831103517.96D1A1401E7@ozlabs.org> <20150901064113.GA1196@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 105AA1A1E07
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 12:10:27 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Wed, 2 Sep 2015 02:10:18 +0000
+Message-ID: <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441153816.4966.109.camel@freescale.com>
+In-Reply-To: <1441153816.4966.109.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,45 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-01 at 12:11 +0530, Ananth N Mavinakayanahalli wrote:
-> On Mon, Aug 31, 2015 at 08:35:17PM +1000, Michael Ellerman wrote:
-> > On Tue, 2015-25-08 at 05:41:10 UTC, Ananth N Mavinakayanahalli wrote:
-> > > Add user return notifier support for powerpc. Similar to x86, this 
-> > > feature
-> > > keys off of the KVM Kconfig.
-> > 
-> > Please flesh this out.
-> > 
-> > What is it, why do we want it, why is your implementation correct.
-> 
-> The only current in-kernel user of the infrastructure is KVM on x86. It
-> is useful for optimizations when MSR values can continue to be used
-> between the host and guest. Commit log for 18863bdd60f8 upstream has a
-> more complete explanation.
->
-> I do not know the inner details of the KVM implementation on Power,
-> perhaps Paul/Gautham can comment on if a similar optimization will
-> benefit Power systems too?
-
-"MSR" is x86-specific terminology and is pretty vague.  What specifically is 
-the functionality being optimized, in terms of things that actually exist on 
-PPC?
-
-In any case, that commit log doesn't explain what user-return-notifier is or 
-how it works, just that it's being used.
-
-> We could certainly make this a generic config option.. but I am yet to
-> see a real usecase outside of the KVM thingy. We do use TIF_UPROBE for
-> something very similar, though that needs to fire much before the
-> outstanding signals get handled. The user-return notifier is the last
-> thing executed before return to userspace -- the two cannot be merged.
-> 
-> Ananth
-> 
-> PS: I am not sure having an 'ok' against the Documentation/features/ for
-> powerpc is a valid enough argument for this :-)
-
-So how did you test this?  What platforms did you test it on?  What hardware 
-support does it need?
-
--Scott
+T24gV2VkLCAyMDE1LTA5LTAyIGF0IDA4OjM4QU0gKzA4MDAsIFdvb2QgU2NvdHQtQjA3NDIxIHdy
+b3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIw
+NzQyMQ0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwMiwgMjAxNSA4OjMwIEFNDQo+IFRv
+OiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsg
+bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsg
+WGllIFhpYW9iby1SNjMwNjE7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkNCj4gWWFuZy1M
+ZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMS8z
+XSBnZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uIHdpdGgNCj4gYnl0ZXMtYWxpZ25t
+ZW50IHRvIGdlbmFsbG9jDQo+IA0KPiBPbiBNb24sIDIwMTUtMDgtMzEgYXQgMTY6NTggKzA4MDAs
+IFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4gQnl0ZXMgYWxpZ25tZW50IGlzIHJlcXVpcmVkIHRvIG1h
+bmFnZSBzb21lIHNwZWNpYWwgUkFNLCBzbyBhZGQNCj4gPiBnZW5fcG9vbF9maXJzdF9maXRfYWxp
+Z24gdG8gZ2VuYWxsb2MsIG1lYW53aGlsZSBhZGQNCj4gPiBnZW5fcG9vbF9hbGxvY19kYXRhIHRv
+IHBhc3MgZGF0YSB0byBnZW5fcG9vbF9maXJzdF9maXRfYWxpZ24obW9kaWZ5DQo+ID4gZ2VuX3Bv
+b2xfYWxsb2MgYXMgYSB3cmFwcGVyKQ0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogWmhhbyBRaWFu
+ZyA8cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+IENoYW5nZXMgZm9yIHY2
+Og0KPiA+ICAgICAgIC0gcGF0Y2hlcyBzZXQgdjYgaW5jbHVkZSBhIG5ldyBwYXRjaCBiZWNhdXNl
+IG9mIHVzaW5nDQo+ID4gICAgICAgLSBnZW5hbGxvYyB0byBtYW5hZ2UgUUUgTVVSQU0sIHBhdGNo
+IDAwMDEgaXMgdGhlIG5ldw0KPiA+ICAgICAgIC0gcGF0Y2gsIGFkZGluZyBieXRlcyBhbGlnbm1l
+bnQgZm9yIGFsbG9jYXRpb24gZm9yIHVzZS4NCj4gPiBDaGFuZ2VzIGZvciB2NzoNCj4gPiAgICAg
+ICAtIGNwbSBtdXJhbSBhbHNvIG5lZWQgdG8gdXNlIGdlbmFsbG9jIHRvIG1hbmFnZSwgaXQgaGFz
+DQo+ID4gICAgICAgICBhIGZ1bmN0aW9uIHRvIHJlc2VydmUgYSBzcGVjaWZpYyByZWdpb24gb2Yg
+bXVyYW0sDQo+ID4gICAgICAgICBhZGQgb2Zmc2V0IHRvIGdlbnBvb2xfZGF0YSBmb3Igc3RhcnQg
+YWRkciB0byBiZSBhbGxvY2F0ZWQuDQo+IA0KPiBUaGlzIHNlZW1zIHRvIGJlIGRlc2NyaWJpbmcg
+bW9yZSB0aGFuIGp1c3QgdGhlIGNoYW5nZXMgaW4gdGhpcyBwYXRjaC4NCj4gV2hhdCBkb2VzIGFs
+c28gaGFuZGxpbmcgY3BtIGhhdmUgdG8gZG8gd2l0aCB0aGlzIHBhdGNoPyAgQXJlIHlvdSBhZGRp
+bmcNCj4gc3VwcG9ydCBmb3IgcmVzZXJ2aW5nIGEgc3BlY2lmaWMgcmVnaW9uIGluIHRoaXMgcGF0
+Y2g/ICBJIGRvbid0IHNlZSBpdCwNCj4gYW5kIGluIGFueSBjYXNlIGl0IHNob3VsZCBnbyBpbiBh
+IGRpZmZlcmVudCBwYXRjaC4NCg0KWWVzLCBJIGFkZGVkLiBUaGUgY29kZSBiZWxvdyBjYW4gc3Vw
+cG9ydCB0aGUgZnVuY3Rpb24uDQoJb2Zmc2V0X2JpdCA9IChhbGlnbm1lbnQtPm9mZnNldCArICgx
+VUwgPDwgb3JkZXIpIC0gMSkgPj4gb3JkZXI7DQogICAgICByZXR1cm4gYml0bWFwX2ZpbmRfbmV4
+dF96ZXJvX2FyZWEobWFwLCBzaXplLCBzdGFydCArIG9mZnNldF9iaXQsIG5yLA0KICAgICAgICAg
+ICAgICAgICAgICAgICAgYWxpZ25fbWFzayk7DQpDUE0gaGFzIGFuIGZ1bmN0aW9uIGNwbV9tdXJh
+bV9hbGxvY19maXhlZCwgbmVlZGluZyB0byBhbGxvY2F0ZSBtdXJhbSBmcm9tIGENClNwZWNpZmlj
+IG9mZnNldC4gU28gSSBhZGQgdGhlIGNvZGUgYW5kIGFkZCBvZmZzZXQgdG8gc3RydWN0IGRhdGEu
+DQpUaGlzIHBhdGNoIGlzIHRoZSBmaXJzdCBwYXRjaCBvZiB0aGlzIHBhdGNoIHNldCwgc28gSSBl
+eHBsYWluIHdoYXQgY2hhbmdlcyBhYm91dA0KU2V0IHY3IGFuZCB3aHkgSSBhZGQgc3VwcG9ydCBm
+b3IgcmVzZXJ2aW5nIGEgc3BlY2lmaWMgcmVnaW9uIGluIHRoaXMgcGF0Y2guDQoNCklmIHlvdSBy
+ZWFsbHkgdGhpbmsgYSBkaWZmZXJlbnQgcGF0Y2ggbmVlZGVkLCBJIGNhbiBhZGQgYSBuZXcgcGF0
+Y2ggdG8gaGFuZGxlIGl0Lg0KDQo+IA0KPiA+ICsvKg0KPiA+ICsgKiAgZ2VuX3Bvb2wgZGF0YSBk
+ZXNjcmlwdG9yIGZvciBnZW5fcG9vbF9maXJzdF9maXRfYWxpZ24uDQo+ID4gKyAqLw0KPiA+ICtz
+dHJ1Y3QgZ2VucG9vbF9kYXRhX2FsaWduIHsNCj4gPiArICAgICBpbnQgYWxpZ247ICAgICAgICAg
+ICAgICAvKiBhbGlnbm1lbnQgYnkgYnl0ZXMgZm9yIHN0YXJ0aW5nDQo+IGFkZHJlc3MgKi8NCj4g
+PiArICAgICB1bnNpZ25lZCBsb25nIG9mZnNldDsgICAvKiB0aGUgb2Zmc2V0IG9mIGFsbG9jYXRp
+b24gc3RhcnQgYWRkciovDQo+ID4gK307DQo+IA0KPiBUaGUgb2Zmc2V0IGJlbG9uZ3Mgb24gdGhl
+IGNhbGxlciBzaWRlLCBub3QgaGVyZS4NCg0KU28sIGhvdyBkbyBJIHBhc3Mgb2Zmc2V0IHRvIGdl
+bl9wb29sX2FsbG9jX2RhdGEgb3IgcG9vbC0+YWxnbz8NCg0KPiANCj4gLVNjb3R0DQoNCg==
