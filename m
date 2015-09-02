@@ -1,23 +1,41 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0127.outbound.protection.outlook.com [207.46.100.127])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAE621A1E13
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 10:34:39 +1000 (AEST)
-Message-ID: <1441154062.4966.113.camel@freescale.com>
-Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang <qiang.zhao@freescale.com>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
- <leoli@freescale.com>, <paulus@samba.org>
-Date: Tue, 1 Sep 2015 19:34:22 -0500
-In-Reply-To: <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
-References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id CD24C1A1E14
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 11:11:31 +1000 (AEST)
+Received: from /spool/local
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 1 Sep 2015 21:11:28 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D3EC3C90042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Sep 2015 21:02:29 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t821BPLp53346500
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 01:11:25 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t821BOas005974
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Sep 2015 21:11:25 -0400
+Date: Tue, 1 Sep 2015 18:11:23 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Ben Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv/pci-ioda: fix 32-bit TCE table init in kdump
+ kernel
+Message-ID: <20150902011123.GA47557@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,94 +45,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
+When attempting to kdump with the 4.2 kernel, we see for each PCI
+device:
 
-> @@ -187,12 +190,25 @@ static inline int qe_alive_during_sleep(void)
->  }
->  
->  /* we actually use cpm_muram implementation, define this for convenience */
-> -#define qe_muram_init cpm_muram_init
-> -#define qe_muram_alloc cpm_muram_alloc
-> -#define qe_muram_alloc_fixed cpm_muram_alloc_fixed
-> -#define qe_muram_free cpm_muram_free
-> -#define qe_muram_addr cpm_muram_addr
-> -#define qe_muram_offset cpm_muram_offset
-> +#define cpm_muram_init qe_muram_init
-> +#define cpm_muram_alloc qe_muram_alloc
-> +#define cpm_muram_alloc_fixed qe_muram_alloc_fixed
-> +#define cpm_muram_free qe_muram_free
-> +#define cpm_muram_addr qe_muram_addr
-> +#define cpm_muram_offset qe_muram_offset
+ pci 0003:01     : [PE# 000] Assign DMA32 space
+ pci 0003:01     : [PE# 000] Setting up 32-bit TCE table at 0..80000000
+ pci 0003:01     : [PE# 000] Failed to create 32-bit TCE table, err -22
+ PCI: Domain 0004 has 8 available 32-bit DMA segments
+ PCI: 4 PE# for a total weight of 70
+ pci 0004:01     : [PE# 002] Assign DMA32 space
+ pci 0004:01     : [PE# 002] Setting up 32-bit TCE table at 0..80000000
+ pci 0004:01     : [PE# 002] Failed to create 32-bit TCE table, err -22
+ pci 0004:0d     : [PE# 005] Assign DMA32 space
+ pci 0004:0d     : [PE# 005] Setting up 32-bit TCE table at 0..80000000
+ pci 0004:0d     : [PE# 005] Failed to create 32-bit TCE table, err -22
+ pci 0004:0e     : [PE# 006] Assign DMA32 space
+ pci 0004:0e     : [PE# 006] Setting up 32-bit TCE table at 0..80000000
+ pci 0004:0e     : [PE# 006] Failed to create 32-bit TCE table, err -22
+ pci 0004:10     : [PE# 008] Assign DMA32 space
+ pci 0004:10     : [PE# 008] Setting up 32-bit TCE table at 0..80000000
+ pci 0004:10     : [PE# 008] Failed to create 32-bit TCE table, err -22
 
-Why?  This is unnecessary churn.
+and eventually the kdump kernel fails to boot as none of the PCI devices
+(including the disk controller) are successfully initialized.
 
+The EINVAL response is because the DMA window (the 2GB base window) is
+larger than the kdump kernel's reserved memory (crashkernel=, in this
+case specified to be 1024M). The check in question,
 
-> @@ -266,6 +282,27 @@ struct qe_bd {
->  #define BD_STATUS_MASK       0xffff0000
->  #define BD_LENGTH_MASK       0x0000ffff
->  
-> +/* Buffer descriptor control/status used by serial
-> + */
-> +
-> +#define BD_SC_READY  (0x8000)        /* Transmit is ready */
-> +#define BD_SC_WRAP   (0x2000)        /* Last buffer descriptor */
-> +#define BD_SC_INTRPT (0x1000)        /* Interrupt on change */
-> +#define BD_SC_LAST   (0x0800)        /* Last buffer in frame */
-> +#define BD_SC_TC     (0x0400)        /* Transmit CRC */
-> +#define BD_SC_CM     (0x0200)        /* Continuous mode */
-> +#define BD_SC_ID     (0x0100)        /* Rec'd too many idles */
-> +#define BD_SC_P              (0x0100)        /* xmt preamble */
-> +#define BD_SC_BR     (0x0020)        /* Break received */
-> +#define BD_SC_FR     (0x0010)        /* Framing error */
-> +#define BD_SC_PR     (0x0008)        /* Parity error */
-> +#define BD_SC_NAK    (0x0004)        /* NAK - did not respond */
-> +#define BD_SC_OV     (0x0002)        /* Overrun */
-> +#define BD_SC_UN     (0x0002)        /* Underrun */
-> +#define BD_SC_CD     (0x0001)        /* */
-> +#define BD_SC_CL     (0x0001)        /* Collision */
-> +
+ if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
 
-Why is this being copied rather than moved?
+is a valid sanity check for pnv_pci_ioda2_table_alloc_pages(), so adjust
+the caller to pass in a smaller window size if our maximum memory value
+is smaller than the DMA window.
 
+After this change, the PCI devices successfully set up the 32-bit TCE
+table and kdump succeeds.
 
->  
-> -int cpm_muram_init(void)
-> -{
-> -     struct device_node *np;
-> -     struct resource r;
-> -     u32 zero[OF_MAX_ADDR_CELLS] = {};
-> -     resource_size_t max = 0;
-> -     int i = 0;
-> -     int ret = 0;
-> -
-> -     if (muram_pbase)
-> -             return 0;
-> -
-> -     spin_lock_init(&cpm_muram_lock);
-> -     /* initialize the info header */
-> -     rh_init(&cpm_muram_info, 1,
-> -             sizeof(cpm_boot_muram_rh_block) /
-> -             sizeof(cpm_boot_muram_rh_block[0]),
-> -             cpm_boot_muram_rh_block);
-> -
-> -     np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
-> -     if (!np) {
-> -             /* try legacy bindings */
-> -             np = of_find_node_by_name(NULL, "data-only");
-> -             if (!np) {
-> -                     printk(KERN_ERR "Cannot find CPM muram data node");
-> -                     ret = -ENODEV;
-> -                     goto out;
-> -             }
-> -     }
-> -
-> -     muram_pbase = of_translate_address(np, zero);
-> -     if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
-> -             printk(KERN_ERR "Cannot translate zero through CPM muram node");
-> -             ret = -ENODEV;
-> -             goto out;
-> -     }
+The problem was seen on a Firestone machine originally.
 
-Did you pass -M -C to git format-patch?
+Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
--Scott
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 85cbc96eff6c..0d7967e31169 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+ {
+ 	struct iommu_table *tbl = NULL;
+ 	long rc;
++	/*
++	 * In memory constrained environments, e.g. kdump kernel, the
++	 * DMA window can be larger than available memory, which will
++	 * cause errors later.
++	 */
++	__u64 window_size =
++		min((u64)pe->table_group.tce32_size, memory_hotplug_max());
+ 
+ 	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
+ 			IOMMU_PAGE_SHIFT_4K,
+-			pe->table_group.tce32_size,
++			window_size,
+ 			POWERNV_IOMMU_DEFAULT_LEVELS, &tbl);
+ 	if (rc) {
+ 		pe_err(pe, "Failed to create 32-bit TCE table, err %ld",
