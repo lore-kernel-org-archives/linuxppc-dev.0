@@ -1,21 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0133.outbound.protection.outlook.com [157.56.111.133])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0127.outbound.protection.outlook.com [207.46.100.127])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A0C071A1E13
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 10:30:31 +1000 (AEST)
-Message-ID: <1441153816.4966.109.camel@freescale.com>
-Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
- bytes-alignment to genalloc
+ by lists.ozlabs.org (Postfix) with ESMTPS id CAE621A1E13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 10:34:39 +1000 (AEST)
+Message-ID: <1441154062.4966.113.camel@freescale.com>
+Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
 From: Scott Wood <scottwood@freescale.com>
 To: Zhao Qiang <qiang.zhao@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
  <leoli@freescale.com>, <paulus@samba.org>
-Date: Tue, 1 Sep 2015 19:30:16 -0500
-In-Reply-To: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+Date: Tue, 1 Sep 2015 19:34:22 -0500
+In-Reply-To: <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
 References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,35 +28,93 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
-> Bytes alignment is required to manage some special RAM,
-> so add gen_pool_first_fit_align to genalloc,
-> meanwhile add gen_pool_alloc_data to pass data to
-> gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
-> 
-> Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> ---
-> Changes for v6:
->       - patches set v6 include a new patch because of using 
->       - genalloc to manage QE MURAM, patch 0001 is the new 
->       - patch, adding bytes alignment for allocation for use.
-> Changes for v7:
->       - cpm muram also need to use genalloc to manage, it has 
->         a function to reserve a specific region of muram,
->         add offset to genpool_data for start addr to be allocated.
 
-This seems to be describing more than just the changes in this patch.  What 
-does also handling cpm have to do with this patch?  Are you adding support 
-for reserving a specific region in this patch?  I don't see it, and in any 
-case it should go in a different patch.
+> @@ -187,12 +190,25 @@ static inline int qe_alive_during_sleep(void)
+>  }
+>  
+>  /* we actually use cpm_muram implementation, define this for convenience */
+> -#define qe_muram_init cpm_muram_init
+> -#define qe_muram_alloc cpm_muram_alloc
+> -#define qe_muram_alloc_fixed cpm_muram_alloc_fixed
+> -#define qe_muram_free cpm_muram_free
+> -#define qe_muram_addr cpm_muram_addr
+> -#define qe_muram_offset cpm_muram_offset
+> +#define cpm_muram_init qe_muram_init
+> +#define cpm_muram_alloc qe_muram_alloc
+> +#define cpm_muram_alloc_fixed qe_muram_alloc_fixed
+> +#define cpm_muram_free qe_muram_free
+> +#define cpm_muram_addr qe_muram_addr
+> +#define cpm_muram_offset qe_muram_offset
 
-> +/*
-> + *  gen_pool data descriptor for gen_pool_first_fit_align.
+Why?  This is unnecessary churn.
+
+
+> @@ -266,6 +282,27 @@ struct qe_bd {
+>  #define BD_STATUS_MASK       0xffff0000
+>  #define BD_LENGTH_MASK       0x0000ffff
+>  
+> +/* Buffer descriptor control/status used by serial
 > + */
-> +struct genpool_data_align {
-> +     int align;              /* alignment by bytes for starting address */
-> +     unsigned long offset;   /* the offset of allocation start addr*/
-> +};
+> +
+> +#define BD_SC_READY  (0x8000)        /* Transmit is ready */
+> +#define BD_SC_WRAP   (0x2000)        /* Last buffer descriptor */
+> +#define BD_SC_INTRPT (0x1000)        /* Interrupt on change */
+> +#define BD_SC_LAST   (0x0800)        /* Last buffer in frame */
+> +#define BD_SC_TC     (0x0400)        /* Transmit CRC */
+> +#define BD_SC_CM     (0x0200)        /* Continuous mode */
+> +#define BD_SC_ID     (0x0100)        /* Rec'd too many idles */
+> +#define BD_SC_P              (0x0100)        /* xmt preamble */
+> +#define BD_SC_BR     (0x0020)        /* Break received */
+> +#define BD_SC_FR     (0x0010)        /* Framing error */
+> +#define BD_SC_PR     (0x0008)        /* Parity error */
+> +#define BD_SC_NAK    (0x0004)        /* NAK - did not respond */
+> +#define BD_SC_OV     (0x0002)        /* Overrun */
+> +#define BD_SC_UN     (0x0002)        /* Underrun */
+> +#define BD_SC_CD     (0x0001)        /* */
+> +#define BD_SC_CL     (0x0001)        /* Collision */
+> +
 
-The offset belongs on the caller side, not here.
+Why is this being copied rather than moved?
+
+
+>  
+> -int cpm_muram_init(void)
+> -{
+> -     struct device_node *np;
+> -     struct resource r;
+> -     u32 zero[OF_MAX_ADDR_CELLS] = {};
+> -     resource_size_t max = 0;
+> -     int i = 0;
+> -     int ret = 0;
+> -
+> -     if (muram_pbase)
+> -             return 0;
+> -
+> -     spin_lock_init(&cpm_muram_lock);
+> -     /* initialize the info header */
+> -     rh_init(&cpm_muram_info, 1,
+> -             sizeof(cpm_boot_muram_rh_block) /
+> -             sizeof(cpm_boot_muram_rh_block[0]),
+> -             cpm_boot_muram_rh_block);
+> -
+> -     np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
+> -     if (!np) {
+> -             /* try legacy bindings */
+> -             np = of_find_node_by_name(NULL, "data-only");
+> -             if (!np) {
+> -                     printk(KERN_ERR "Cannot find CPM muram data node");
+> -                     ret = -ENODEV;
+> -                     goto out;
+> -             }
+> -     }
+> -
+> -     muram_pbase = of_translate_address(np, zero);
+> -     if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
+> -             printk(KERN_ERR "Cannot translate zero through CPM muram node");
+> -             ret = -ENODEV;
+> -             goto out;
+> -     }
+
+Did you pass -M -C to git format-patch?
 
 -Scott
