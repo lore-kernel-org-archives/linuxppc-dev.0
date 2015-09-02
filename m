@@ -1,28 +1,29 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
+ [209.85.220.47])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4544A1A1E25
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 18:35:32 +1000 (AEST)
-Subject: Re: [PATCH] KVM: ppc: Fix size of the PSPB register
-To: Alexander Graf <agraf@suse.de>
-References: <1441143678-14295-1-git-send-email-thuth@redhat.com>
- <1441146305.2668.51.camel@au1.ibm.com>
- <20150901224521.GC23007@fergus.ozlabs.ibm.com>
- <1441148107.2668.57.camel@au1.ibm.com> <55E6A48D.5070800@redhat.com>
- <334DA903-4793-45C4-9FCB-D9B022DE74A2@suse.de>
-Cc: "benh@au1.ibm.com" <benh@au1.ibm.com>, Paul Mackerras <paulus@ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Alexander Graf <agraf@suse.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- Andrew Jones <drjones@redhat.com>
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <55E6B4CC.3040502@redhat.com>
-Date: Wed, 2 Sep 2015 10:35:24 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 589451A1E2B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 19:00:39 +1000 (AEST)
+Received: by pacwi10 with SMTP id wi10so4863876pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2015 02:00:38 -0700 (PDT)
+Subject: Re: [PATCH] powerpc/powernv/pci-ioda: fix 32-bit TCE table init in
+ kdump kernel
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <20150902011123.GA47557@linux.vnet.ibm.com>
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Ben Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Gibson
+ <david@gibson.dropbear.id.au>, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55E6BAAF.9090502@ozlabs.ru>
+Date: Wed, 2 Sep 2015 19:00:31 +1000
 MIME-Version: 1.0
-In-Reply-To: <334DA903-4793-45C4-9FCB-D9B022DE74A2@suse.de>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20150902011123.GA47557@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +33,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/09/15 10:26, Alexander Graf wrote:
-> 
->> Am 02.09.2015 um 09:26 schrieb Thomas Huth <thuth@redhat.com>:
->>
->>> On 02/09/15 00:55, Benjamin Herrenschmidt wrote:
->>>> On Wed, 2015-09-02 at 08:45 +1000, Paul Mackerras wrote:
->>>> On Wed, Sep 02, 2015 at 08:25:05AM +1000, Benjamin Herrenschmidt
->>>> wrote:
->>>>> On Tue, 2015-09-01 at 23:41 +0200, Thomas Huth wrote:
->>>>>> The size of the Problem State Priority Boost Register is only
->>>>>> 32 bits, so let's change the type of the corresponding variable
->>>>>> accordingly to avoid future trouble.
->>>>>
->>>>> It's not future trouble, it's broken today for LE and this should
->>>>> fix
->>>>> it BUT ....
->>>>
->>>> No, it's broken today for BE hosts, which will always see 0 for the
->>>> PSPB register value.  LE hosts are fine.
->>
->> Right ... I just meant that nobody really experienced trouble with this
->> today yet, but the bug is already present now already of course.
-> 
-> Sounds like a great candidate for kvm-unit-tests then, no? ;)
+On 09/02/2015 11:11 AM, Nishanth Aravamudan wrote:
+> When attempting to kdump with the 4.2 kernel, we see for each PCI
+> device:
+>
+>   pci 0003:01     : [PE# 000] Assign DMA32 space
+>   pci 0003:01     : [PE# 000] Setting up 32-bit TCE table at 0..80000000
+>   pci 0003:01     : [PE# 000] Failed to create 32-bit TCE table, err -22
+>   PCI: Domain 0004 has 8 available 32-bit DMA segments
+>   PCI: 4 PE# for a total weight of 70
+>   pci 0004:01     : [PE# 002] Assign DMA32 space
+>   pci 0004:01     : [PE# 002] Setting up 32-bit TCE table at 0..80000000
+>   pci 0004:01     : [PE# 002] Failed to create 32-bit TCE table, err -22
+>   pci 0004:0d     : [PE# 005] Assign DMA32 space
+>   pci 0004:0d     : [PE# 005] Setting up 32-bit TCE table at 0..80000000
+>   pci 0004:0d     : [PE# 005] Failed to create 32-bit TCE table, err -22
+>   pci 0004:0e     : [PE# 006] Assign DMA32 space
+>   pci 0004:0e     : [PE# 006] Setting up 32-bit TCE table at 0..80000000
+>   pci 0004:0e     : [PE# 006] Failed to create 32-bit TCE table, err -22
+>   pci 0004:10     : [PE# 008] Assign DMA32 space
+>   pci 0004:10     : [PE# 008] Setting up 32-bit TCE table at 0..80000000
+>   pci 0004:10     : [PE# 008] Failed to create 32-bit TCE table, err -22
+>
+> and eventually the kdump kernel fails to boot as none of the PCI devices
+> (including the disk controller) are successfully initialized.
+>
+> The EINVAL response is because the DMA window (the 2GB base window) is
+> larger than the kdump kernel's reserved memory (crashkernel=, in this
+> case specified to be 1024M). The check in question,
+>
+>   if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
+>
+> is a valid sanity check for pnv_pci_ioda2_table_alloc_pages(), so adjust
+> the caller to pass in a smaller window size if our maximum memory value
+> is smaller than the DMA window.
+>
+> After this change, the PCI devices successfully set up the 32-bit TCE
+> table and kdump succeeds.
+>
+> The problem was seen on a Firestone machine originally.
+>
+> Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 85cbc96eff6c..0d7967e31169 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+>   {
+>   	struct iommu_table *tbl = NULL;
+>   	long rc;
+> +	/*
+> +	 * In memory constrained environments, e.g. kdump kernel, the
+> +	 * DMA window can be larger than available memory, which will
+> +	 * cause errors later.
+> +	 */
+> +	__u64 window_size =
 
-I'm certainly looking forward to seeing powerpc support in there :-)
+I asked for "const __u64" ;)
 
- Thomas
+Anyway,
+
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>	
+
+
+> +		min((u64)pe->table_group.tce32_size, memory_hotplug_max());
+>
+>   	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
+>   			IOMMU_PAGE_SHIFT_4K,
+> -			pe->table_group.tce32_size,
+> +			window_size,
+>   			POWERNV_IOMMU_DEFAULT_LEVELS, &tbl);
+>   	if (rc) {
+>   		pe_err(pe, "Failed to create 32-bit TCE table, err %ld",
+>
+
+
+-- 
+Alexey
