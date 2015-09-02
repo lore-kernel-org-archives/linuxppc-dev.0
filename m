@@ -1,19 +1,27 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by lists.ozlabs.org (Postfix) with ESMTP id 1A6D51A1E15
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 11:11:56 +1000 (AEST)
-Date: Wed, 2 Sep 2015 10:02:51 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-Cc: kexec@lists.infradead.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] purgatory/arch/ppc64: Reset primary cpu endian to
- big-endian
-Message-ID: <20150902010251.GC30886@verge.net.au>
-References: <1440125476-9420-1-git-send-email-sam.mj@au1.ibm.com>
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8D871A1E16
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 11:37:33 +1000 (AEST)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0140.outbound.protection.outlook.com [157.56.111.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6D6B9140281
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Sep 2015 11:37:31 +1000 (AEST)
+Message-ID: <1441152192.4966.103.camel@freescale.com>
+Subject: Re: powerpc: Add user-return-notifier support
+From: Scott Wood <scottwood@freescale.com>
+To: <ananth@in.ibm.com>
+CC: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>, "Paul
+ Mackerras" <paulus@samba.org>, <ego@linux.vnet.ibm.com>
+Date: Tue, 1 Sep 2015 19:03:12 -0500
+In-Reply-To: <20150901064113.GA1196@in.ibm.com>
+References: <20150825054110.GD3815@in.ibm.com>
+ <20150831103517.96D1A1401E7@ozlabs.org> <20150901064113.GA1196@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1440125476-9420-1-git-send-email-sam.mj@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[CC linuxppc-dev]
+On Tue, 2015-09-01 at 12:11 +0530, Ananth N Mavinakayanahalli wrote:
+> On Mon, Aug 31, 2015 at 08:35:17PM +1000, Michael Ellerman wrote:
+> > On Tue, 2015-25-08 at 05:41:10 UTC, Ananth N Mavinakayanahalli wrote:
+> > > Add user return notifier support for powerpc. Similar to x86, this 
+> > > feature
+> > > keys off of the KVM Kconfig.
+> > 
+> > Please flesh this out.
+> > 
+> > What is it, why do we want it, why is your implementation correct.
+> 
+> The only current in-kernel user of the infrastructure is KVM on x86. It
+> is useful for optimizations when MSR values can continue to be used
+> between the host and guest. Commit log for 18863bdd60f8 upstream has a
+> more complete explanation.
+>
+> I do not know the inner details of the KVM implementation on Power,
+> perhaps Paul/Gautham can comment on if a similar optimization will
+> benefit Power systems too?
 
-On Fri, Aug 21, 2015 at 12:51:16PM +1000, Samuel Mendoza-Jonas wrote:
-> Older big-endian ppc64 kernels don't include the FIXUP_ENDIAN check,
-> meaning if we kexec from a little-endian kernel the target kernel will
-> fail to boot.
-> Returning to big-endian before we enter the target kernel ensures that
-> the target kernel can boot whether or not it includes FIXUP_ENDIAN.
-> 
-> This mirrors commit 150b14e7 in kexec-lite.
-> 
-> Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+"MSR" is x86-specific terminology and is pretty vague.  What specifically is 
+the functionality being optimized, in terms of things that actually exist on 
+PPC?
 
-I would value a review from one of the PPC folks.
+In any case, that commit log doesn't explain what user-return-notifier is or 
+how it works, just that it's being used.
 
-> ---
->  purgatory/arch/ppc64/v2wrap.S | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
+> We could certainly make this a generic config option.. but I am yet to
+> see a real usecase outside of the KVM thingy. We do use TIF_UPROBE for
+> something very similar, though that needs to fire much before the
+> outstanding signals get handled. The user-return notifier is the last
+> thing executed before return to userspace -- the two cannot be merged.
 > 
-> diff --git a/purgatory/arch/ppc64/v2wrap.S b/purgatory/arch/ppc64/v2wrap.S
-> index dc5034f..179ade9 100644
-> --- a/purgatory/arch/ppc64/v2wrap.S
-> +++ b/purgatory/arch/ppc64/v2wrap.S
-> @@ -114,10 +114,16 @@ master:
->  	LOADADDR(6,run_at_load) # the load flag
->  	lwz	7,0(6)		# possibly patched by kexec-elf-ppc64
->  	stw	7,0x5c(4)	# and patch it into the kernel
-> -	li	5,0		# r5 will be 0 for kernel
-> -	mtctr	4		# prepare branch too
->  	mr      3,16            # restore dt address
->  
-> +	mtsrr0	4		# prepare branch to
-> +
-> +	mfmsr	5
-> +	clrrdi	5,5,1		# clear MSR_LE
-> +	mtsrr1	5
-> +
-> +	li	5,0		# r5 will be 0 for kernel
-> +
->  				# skip cache flush, do we care?
->  
-> -	bctr			# start kernel
-> +	rfid			# update MSR and start kernel
-> -- 
-> 2.5.0
+> Ananth
 > 
+> PS: I am not sure having an 'ok' against the Documentation/features/ for
+> powerpc is a valid enough argument for this :-)
+
+So how did you test this?  What platforms did you test it on?  What hardware 
+support does it need?
+
+-Scott
