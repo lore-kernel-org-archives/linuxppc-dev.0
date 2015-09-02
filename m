@@ -1,27 +1,29 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0112.outbound.protection.outlook.com [207.46.100.112])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0117.outbound.protection.outlook.com [157.56.110.117])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4704D1A2B85
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 12:32:21 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A7A4F1A2B22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 12:33:35 +1000 (AEST)
+Message-ID: <1441161203.4966.126.camel@freescale.com>
+Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
  <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
-Date: Wed, 2 Sep 2015 02:32:14 +0000
-Message-ID: <SN1PR0301MB1550486CECE45995C54272089B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Tue, 1 Sep 2015 21:33:23 -0500
+In-Reply-To: <SN1PR0301MB1550A4CF93D8FA91377DD3F09B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
- <1441154062.4966.113.camel@freescale.com>
- <SN1PR0301MB1550B83E62EAEB41C4387A0F9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441161032.4966.123.camel@freescale.com>
-In-Reply-To: <1441161032.4966.123.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <1441153816.4966.109.camel@freescale.com>
+ <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441160299.4966.122.camel@freescale.com>
+ <SN1PR0301MB1550A4CF93D8FA91377DD3F09B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,52 +34,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gV2VkLCAyMDE1LTA5LTAyIGF0IDEwOjMxQU0sIFdvb2QgU2NvdHQtQjA3NDIxIHdyb3RlOg0K
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwMiwgMjAxNSAxMDozMSBBTQ0KPiBUbzogWmhh
-byBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBY
-aWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+IFlhbmctTGVvLVI1
-ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDIvM10gcWVf
-Y29tbW9uOiBhZGQgcWVfbXVyYW1fIGZ1bmN0aW9ucyB0byBtYW5hZ2UNCj4gbXVyYW0NCj4gDQo+
-IE9uIFR1ZSwgMjAxNS0wOS0wMSBhdCAyMToyMiAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3Jv
-dGU6DQo+ID4gT24gV2VkLCAyMDE1LTA5LTAyIGF0IDg6MzRBTSArMDgwMCwgV29vZCBTY290dC1C
-MDc0MjEgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJv
-bTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDAy
-LCAyMDE1IDg6MzQgQU0NCj4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiA+ID4gQ2M6IGxp
-bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3Jn
-Ow0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2MTsgYmVuaEBr
-ZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gTGkgWWFuZy1MZW8tUjU4NDcyOyBwYXVsdXNAc2Ft
-YmEub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDIvM10gcWVfY29tbW9uOiBhZGQg
-cWVfbXVyYW1fIGZ1bmN0aW9ucyB0bw0KPiA+ID4gbWFuYWdlIG11cmFtDQo+ID4gPg0KPiA+ID4g
-T24gTW9uLCAyMDE1LTA4LTMxIGF0IDE2OjU4ICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+
-ID4NCj4gPiA+ID4gLWludCBjcG1fbXVyYW1faW5pdCh2b2lkKQ0KPiA+ID4gPiAtew0KPiA+ID4g
-PiAtICAgICBzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wOw0KPiA+ID4gPiAtICAgICBzdHJ1Y3QgcmVz
-b3VyY2UgcjsNCj4gPiA+ID4gLSAgICAgdTMyIHplcm9bT0ZfTUFYX0FERFJfQ0VMTFNdID0ge307
-DQo+ID4gPiA+IC0gICAgIHJlc291cmNlX3NpemVfdCBtYXggPSAwOw0KPiA+ID4gPiAtICAgICBp
-bnQgaSA9IDA7DQo+ID4gPiA+IC0gICAgIGludCByZXQgPSAwOw0KPiA+ID4gPiAtDQo+ID4gPiA+
-IC0gICAgIGlmIChtdXJhbV9wYmFzZSkNCj4gPiA+ID4gLSAgICAgICAgICAgICByZXR1cm4gMDsN
-Cj4gPiA+ID4gLQ0KPiA+ID4gPiAtICAgICBzcGluX2xvY2tfaW5pdCgmY3BtX211cmFtX2xvY2sp
-Ow0KPiA+ID4gPiAtICAgICAvKiBpbml0aWFsaXplIHRoZSBpbmZvIGhlYWRlciAqLw0KPiA+ID4g
-PiAtICAgICByaF9pbml0KCZjcG1fbXVyYW1faW5mbywgMSwNCj4gPiA+ID4gLSAgICAgICAgICAg
-ICBzaXplb2YoY3BtX2Jvb3RfbXVyYW1fcmhfYmxvY2spIC8NCj4gPiA+ID4gLSAgICAgICAgICAg
-ICBzaXplb2YoY3BtX2Jvb3RfbXVyYW1fcmhfYmxvY2tbMF0pLA0KPiA+ID4gPiAtICAgICAgICAg
-ICAgIGNwbV9ib290X211cmFtX3JoX2Jsb2NrKTsNCj4gPiA+ID4gLQ0KPiA+ID4gPiAtICAgICBu
-cCA9IG9mX2ZpbmRfY29tcGF0aWJsZV9ub2RlKE5VTEwsIE5VTEwsICJmc2wsY3BtLW11cmFtLQ0K
-PiBkYXRhIik7DQo+ID4gPiA+IC0gICAgIGlmICghbnApIHsNCj4gPiA+ID4gLSAgICAgICAgICAg
-ICAvKiB0cnkgbGVnYWN5IGJpbmRpbmdzICovDQo+ID4gPiA+IC0gICAgICAgICAgICAgbnAgPSBv
-Zl9maW5kX25vZGVfYnlfbmFtZShOVUxMLCAiZGF0YS1vbmx5Iik7DQo+ID4gPiA+IC0gICAgICAg
-ICAgICAgaWYgKCFucCkgew0KPiA+ID4gPiAtICAgICAgICAgICAgICAgICAgICAgcHJpbnRrKEtF
-Uk5fRVJSICJDYW5ub3QgZmluZCBDUE0gbXVyYW0gZGF0YQ0KPiA+ID4gbm9kZSIpOw0KPiA+ID4g
-PiAtICAgICAgICAgICAgICAgICAgICAgcmV0ID0gLUVOT0RFVjsNCj4gPiA+ID4gLSAgICAgICAg
-ICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+ID4gPiAtICAgICAgICAgICAgIH0NCj4gPiA+ID4g
-LSAgICAgfQ0KPiA+ID4gPiAtDQo+ID4gPiA+IC0gICAgIG11cmFtX3BiYXNlID0gb2ZfdHJhbnNs
-YXRlX2FkZHJlc3MobnAsIHplcm8pOw0KPiA+ID4gPiAtICAgICBpZiAobXVyYW1fcGJhc2UgPT0g
-KHBoeXNfYWRkcl90KU9GX0JBRF9BRERSKSB7DQo+ID4gPiA+IC0gICAgICAgICAgICAgcHJpbnRr
-KEtFUk5fRVJSICJDYW5ub3QgdHJhbnNsYXRlIHplcm8gdGhyb3VnaCBDUE0NCj4gbXVyYW0NCj4g
-PiA+IG5vZGUiKTsNCj4gPiA+ID4gLSAgICAgICAgICAgICByZXQgPSAtRU5PREVWOw0KPiA+ID4g
-PiAtICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+ID4gPiAtICAgICB9DQo+ID4gPg0KPiA+ID4g
-RGlkIHlvdSBwYXNzIC1NIC1DIHRvIGdpdCBmb3JtYXQtcGF0Y2g/DQo+ID4NCj4gPg0KPiA+IFll
-cyENCj4gDQo+IFRoZW4gbWF5YmUgaXQncyB0aGUgcWUvY3BtIHJlbmFtZSBjaHVybiwgb3Igc2lt
-aWxhciwgdGhhdCBwcmV2ZW50ZWQgaXQNCj4gZnJvbSBiZWluZyBpZGVudGlmaWVkIGFzIGEgbW92
-ZT8NCg0KTWF5YmUNCg0KPiANCj4gLVNjb3R0DQotWmhhbw0KDQo=
+On Tue, 2015-09-01 at 21:29 -0500, Zhao Qiang-B45475 wrote:
+> On Wed, 2015-09-02 at 10:18AM -0500, Wood Scott-B07421 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, September 02, 2015 10:18 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> > Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > bytes-alignment to genalloc
+> > 
+> > On Tue, 2015-09-01 at 21:10 -0500, Zhao Qiang-B45475 wrote:
+> > > On Wed, 2015-09-02 at 08:38AM +0800, Wood Scott-B07421 wrote:
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Wednesday, September 02, 2015 8:30 AM
+> > > > To: Zhao Qiang-B45475
+> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
+> > > > Li Yang-Leo-R58472; paulus@samba.org
+> > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > > > bytes-alignment to genalloc
+> > > > 
+> > > > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
+> > > > > Bytes alignment is required to manage some special RAM, so add
+> > > > > gen_pool_first_fit_align to genalloc, meanwhile add
+> > > > > gen_pool_alloc_data to pass data to
+> > > > > gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
+> > > > > 
+> > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > > > > ---
+> > > > > Changes for v6:
+> > > > >       - patches set v6 include a new patch because of using
+> > > > >       - genalloc to manage QE MURAM, patch 0001 is the new
+> > > > >       - patch, adding bytes alignment for allocation for use.
+> > > > > Changes for v7:
+> > > > >       - cpm muram also need to use genalloc to manage, it has
+> > > > >         a function to reserve a specific region of muram,
+> > > > >         add offset to genpool_data for start addr to be allocated.
+> > > > 
+> > > > This seems to be describing more than just the changes in this patch.
+> > > > What does also handling cpm have to do with this patch?  Are you
+> > > > adding support for reserving a specific region in this patch?  I
+> > > > don't see it, and in any case it should go in a different patch.
+> > > 
+> > > Yes, I added. The code below can support the function.
+> > >       offset_bit = (alignment->offset + (1UL << order) - 1) >> order;
+> > >       return bitmap_find_next_zero_area(map, size, start + offset_bit,
+> > nr,
+> > >                         align_mask);
+> > > 
+> > > CPM has an function cpm_muram_alloc_fixed, needing to allocate muram
+> > > from a Specific offset. So I add the code and add offset to struct data.
+> > 
+> > I thought the offset was related to the previous discussion of checking
+> > for allocation failure.  Are you using it to implement alloc_fixed()?  If
+> > so, please don't.  Besides the awkward implementation (what does it
+> > logically have to do with gen_pool_first_fit_align?), it does not appear
+> > to be correct -
+> > - what happens with multiple chunks?  What happens if part of the region
+> > the caller is trying to reserve is already taken?  Implement a proper
+> > function to reserve a fixed genalloc region.
+> 
+> This offset is totally different with the workaround OFFSET!
+
+There's a reason why we write changelogs that describe what the patch is 
+doing, and avoid combining logically distinct changes in the same patch.
+
+> This offset is the offset of the muram.
+
+The offset of the muram relative to what?  Or do you mean the offset into 
+muram?
+
+> CPM need to allocate block from a specific offset due to hardware 
+> restriction.
+> So I must handle this offset in genalloc. 
+
+Again, if you need to be able to mark a specific range reserved, add a 
+function that does that properly.  Don't try to hack it in the way you did.
+
+-Scott
