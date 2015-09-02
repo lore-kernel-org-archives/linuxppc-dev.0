@@ -1,39 +1,23 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0133.outbound.protection.outlook.com [157.56.111.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438FF1A1E06
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 08:56:09 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 2 Sep 2015 08:56:07 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 766EE2BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 08:56:04 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t81MtmJN1769838
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 08:55:56 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t81MtWYZ023435
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Sep 2015 08:55:32 +1000
-Message-ID: <1441148107.2668.57.camel@au1.ibm.com>
-Subject: Re: [PATCH] KVM: ppc: Fix size of the PSPB register
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: Thomas Huth <thuth@redhat.com>, kvm-ppc@vger.kernel.org, Alexander Graf
- <agraf@suse.com>, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
-Date: Wed, 02 Sep 2015 08:55:07 +1000
-In-Reply-To: <20150901224521.GC23007@fergus.ozlabs.ibm.com>
-References: <1441143678-14295-1-git-send-email-thuth@redhat.com>
- <1441146305.2668.51.camel@au1.ibm.com>
- <20150901224521.GC23007@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0C071A1E13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Sep 2015 10:30:31 +1000 (AEST)
+Message-ID: <1441153816.4966.109.camel@freescale.com>
+Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang <qiang.zhao@freescale.com>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
+ <leoli@freescale.com>, <paulus@samba.org>
+Date: Tue, 1 Sep 2015 19:30:16 -0500
+In-Reply-To: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,50 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-02 at 08:45 +1000, Paul Mackerras wrote:
-> On Wed, Sep 02, 2015 at 08:25:05AM +1000, Benjamin Herrenschmidt
-> wrote:
-> > On Tue, 2015-09-01 at 23:41 +0200, Thomas Huth wrote:
-> > > The size of the Problem State Priority Boost Register is only
-> > > 32 bits, so let's change the type of the corresponding variable
-> > > accordingly to avoid future trouble.
-> > 
-> > It's not future trouble, it's broken today for LE and this should
-> > fix
-> > it BUT ....
+On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
+> Bytes alignment is required to manage some special RAM,
+> so add gen_pool_first_fit_align to genalloc,
+> meanwhile add gen_pool_alloc_data to pass data to
+> gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
 > 
-> No, it's broken today for BE hosts, which will always see 0 for the
-> PSPB register value.  LE hosts are fine.
+> Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> ---
+> Changes for v6:
+>       - patches set v6 include a new patch because of using 
+>       - genalloc to manage QE MURAM, patch 0001 is the new 
+>       - patch, adding bytes alignment for allocation for use.
+> Changes for v7:
+>       - cpm muram also need to use genalloc to manage, it has 
+>         a function to reserve a specific region of muram,
+>         add offset to genpool_data for start addr to be allocated.
 
-0 or PSPB << 32 ?
+This seems to be describing more than just the changes in this patch.  What 
+does also handling cpm have to do with this patch?  Are you adding support 
+for reserving a specific region in this patch?  I don't see it, and in any 
+case it should go in a different patch.
 
-> > The asm accesses it using lwz/stw and C accesses it as a ulong. On
-> > LE
-> > that will mean that userspace will see the value << 32
-> 
-> No, that will happen on BE, and since KVM_REG_PPC_PSPB says it's a
-> 32-bit register, we'll just pass 0 back to userspace when it reads
-> it.
+> +/*
+> + *  gen_pool data descriptor for gen_pool_first_fit_align.
+> + */
+> +struct genpool_data_align {
+> +     int align;              /* alignment by bytes for starting address */
+> +     unsigned long offset;   /* the offset of allocation start addr*/
+> +};
 
-Ah ok, I missed that bit about KVM_REG_PPC_PSPB
+The offset belongs on the caller side, not here.
 
-> > Now "fixing" it might break migration if that field is already
-> > stored/loaded in its "broken" form. We may have to keep the
-> > "broken"
-> > behaviour and document that qemu sees a value shifted by 32.
-> 
-> It will be being set to 0 on BE hosts across migration today
-> (fortunately 0 is a benign value for PSPB).  If we fix this on both
-> the source and destination host, then the value will get migrated
-> across correctly.
-
-Ok, I missed the part where KVM_REG_PPC_PSPB passed it down as a 32
--bit. That means Thomas patch should work indeed.
-
-> I think Thomas's patch is fine, it just needs a stronger patch
-> description saying that it fixes an actual bug.
-
-Right.
-
-Cheers,
-Ben.
+-Scott
