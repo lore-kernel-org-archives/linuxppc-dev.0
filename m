@@ -1,18 +1,36 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id 9F7DE1A1E3A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 00:20:46 +1000 (AEST)
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>,
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-yk0-x231.google.com (mail-yk0-x231.google.com
+ [IPv6:2607:f8b0:4002:c07::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E71D1A1E34
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 01:22:52 +1000 (AEST)
+Received: by ykcf206 with SMTP id f206so13162454ykc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2015 08:22:50 -0700 (PDT)
+Subject: Re: [RFC 3/5] powerpc: atomic: implement
+ atomic{,64}_{add,sub}_return_* variants
+To: Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+References: <1440730099-29133-1-git-send-email-boqun.feng@gmail.com>
+ <1440730099-29133-4-git-send-email-boqun.feng@gmail.com>
+ <20150828104854.GB16853@twins.programming.kicks-ass.net>
+ <20150828120614.GC29325@fixme-laptop.cn.ibm.com>
+ <20150828141602.GA924@fixme-laptop.cn.ibm.com>
+ <20150828153921.GF19282@twins.programming.kicks-ass.net>
+ <20150901190027.GP1612@arm.com> <20150901214540.GI4029@linux.vnet.ibm.com>
+ <20150902095906.GC25720@arm.com>
+Cc: Waiman Long <waiman.long@hp.com>, Peter Zijlstra <peterz@infradead.org>,
+ Boqun Feng <boqun.feng@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Strange reports of perf events on powerpc 83xx
-Date: Wed, 2 Sep 2015 14:20:38 +0000
-Message-ID: <1441203638.3349.203.camel@transmode.se>
-References: <55DF17A3.7070009@c-s.fr>
-In-Reply-To: <55DF17A3.7070009@c-s.fr>
-Content-Type: text/plain; charset="iso-8859-15"
+ Ingo Molnar <mingo@kernel.org>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Message-ID: <55E7145C.7050505@gmail.com>
+Date: Wed, 2 Sep 2015 11:23:08 -0400
 MIME-Version: 1.0
+In-Reply-To: <20150902095906.GC25720@arm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,60 +40,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-08-27 at 15:58 +0200, leroy christophe wrote:
-> Hi,
->=20
-> Has anybody already used 'perf' tool on powerpc MPC83xx ?
->=20
-> I have been succesfully using perf on MPC8xx, but on MPC83xx I get=20
-> something strange.
->=20
-> perf record/report reports addresses on user stack, as if it was mixing=20
-> up D accesses and I accesses.
->=20
-> Any idea of what the problem can be ?
+Hi Will,
 
-We are also experiencing strange addresses on 83xx, did find the cause
-of this problem?
+On 09/02/2015 05:59 AM, Will Deacon wrote:
+> I just thought it was worth making this point, because it is prohibited
+> in SC and I don't want people to think that our RELEASE/ACQUIRE operations
+> are SC (even though they happen to be on arm64).
 
-We are using Linux 4.1.0
+This is interesting information. Does that mean that the following patch
+should work? (I am not proposing to use it, just trying to understand if 
+REL+ACQ will act as a full barrier on ARM64, which you say it does).
 
->=20
-> # Samples: 8K of event 'cpu-clock'
-> # Event count (approx.): 2196000000
-> #
-> # Overhead  Command       Shared Object       Symbol
-> # ........  ............  ..................=20
-> ............................................
-> #
->       2.62%  perf_reseau4  libpthread-2.18.so  [.] __libc_send
->       2.56%  perf_reseau4  [kernel.kallsyms]   [k] __ip_make_skb
->       1.62%  perf_reseau4  [kernel.kallsyms]   [k] __ip_append_data.isra.=
-39
->       1.55%  perf_reseau4  [kernel.kallsyms]   [k] ip_finish_output
->       1.33%  perf_reseau4  [unknown]           [k] 0x7ffffd94
->       1.33%  perf_reseau4  [unknown]           [k] 0x7ffffd95
->       1.28%  perf_reseau4  [unknown]           [k] 0x7ffffd97
->       1.26%  perf_reseau4  [unknown]           [k] 0x7ffffda3
->       1.24%  perf_reseau4  [unknown]           [k] 0x7ffffd98
->       1.22%  perf_reseau4  [unknown]           [k] 0x7ffffd92
->       1.22%  perf_reseau4  [unknown]           [k] 0x7ffffd9b
->       1.22%  perf_reseau4  [unknown]           [k] 0x7ffffdaa
->       1.21%  perf_reseau4  [unknown]           [k] 0x7ffffd96
->       1.18%  perf_reseau4  [unknown]           [k] 0x7ffffda7
->       1.17%  perf_reseau4  [unknown]           [k] 0x7ffffd8d
->       1.17%  perf_reseau4  [unknown]           [k] 0x7ffffd99
->       1.13%  perf_reseau4  [unknown]           [k] 0x7ffffd90
->       1.13%  perf_reseau4  [unknown]           [k] 0x7ffffda2
->       1.12%  perf_reseau4  [kernel.kallsyms]   [k] __local_bh_enable_ip
->       1.12%  perf_reseau4  [unknown]           [k] 0x7ffffd9c
->       1.12%  perf_reseau4  [unknown]           [k] 0x7ffffd9e
->       1.10%  perf_reseau4  [unknown]           [k] 0x7ffffda0
->       1.08%  perf_reseau4  [unknown]           [k] 0x7ffffd9f
->       1.08%  perf_reseau4  [unknown]           [k] 0x7ffffda6
->       1.05%  perf_reseau4  [unknown]           [k] 0x7ffffda8
->       1.02%  perf_reseau4  [unknown]           [k] 0x7ffffd9a
->       1.01%  perf_reseau4  [unknown]           [k] 0x7ffffdb0
->       1.00%  perf_reseau4  [unknown]           [k] 0x7ffffd89
->       1.00%  perf_reseau4  [unknown]           [k] 0x7ffffd8b
->       1.00%  perf_reseau4  [unknown]           [k] 0x7ffffdac
+Thanks,
+Pranith.
+
+diff --git a/arch/arm64/include/asm/cmpxchg.h b/arch/arm64/include/asm/cmpxchg.h
+index d8c25b7..14a1b35 100644
+--- a/arch/arm64/include/asm/cmpxchg.h
++++ b/arch/arm64/include/asm/cmpxchg.h
+@@ -68,8 +68,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
+                BUILD_BUG();
+        }
+ 
+-       smp_mb();
+-       return ret;
++       return smp_load_acquire(ret);
+ }
+ 
+ #define xchg(ptr,x) \
