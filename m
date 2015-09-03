@@ -1,25 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B5D4A1A1F47
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 19:58:54 +1000 (AEST)
-Message-ID: <1441274333.26379.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/powernv/pci-ioda: fix 32-bit TCE table init
- in kdump kernel
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Hari Bathini
- <hbathini@linux.vnet.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>, Ben
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>, Wei Yang
- <weiyang@linux.vnet.ibm.com>,  linuxppc-dev@lists.ozlabs.org
-Date: Thu, 03 Sep 2015 19:58:53 +1000
-In-Reply-To: <20150902153928.GB47557@linux.vnet.ibm.com>
-References: <20150902011123.GA47557@linux.vnet.ibm.com>
- <55E6BAAF.9090502@ozlabs.ru> <20150902153928.GB47557@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 273CD1A1F58
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 20:31:27 +1000 (AEST)
+Date: Thu, 3 Sep 2015 11:31:23 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>, Peter Zijlstra <peterz@infradead.org>,
+ Boqun Feng <boqun.feng@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RFC 3/5] powerpc: atomic: implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150903103123.GD877@arm.com>
+References: <1440730099-29133-4-git-send-email-boqun.feng@gmail.com>
+ <20150828104854.GB16853@twins.programming.kicks-ass.net>
+ <20150828120614.GC29325@fixme-laptop.cn.ibm.com>
+ <20150828141602.GA924@fixme-laptop.cn.ibm.com>
+ <20150828153921.GF19282@twins.programming.kicks-ass.net>
+ <20150901190027.GP1612@arm.com>
+ <20150901214540.GI4029@linux.vnet.ibm.com>
+ <20150902095906.GC25720@arm.com> <55E7145C.7050505@gmail.com>
+ <CAJhHMCAVUzxQLyOnntd75LP4xvLGREBOx38BYFVqLLU-pNH5bQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAJhHMCAVUzxQLyOnntd75LP4xvLGREBOx38BYFVqLLU-pNH5bQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,99 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-02 at 08:39 -0700, Nishanth Aravamudan wrote:
-> On 02.09.2015 [19:00:31 +1000], Alexey Kardashevskiy wrote:
-> > On 09/02/2015 11:11 AM, Nishanth Aravamudan wrote:
-> > >diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > >index 85cbc96eff6c..0d7967e31169 100644
-> > >--- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > >+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > >@@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
-> > >  {
-> > >  	struct iommu_table *tbl = NULL;
-> > >  	long rc;
-> > >+	/*
-> > >+	 * In memory constrained environments, e.g. kdump kernel, the
-> > >+	 * DMA window can be larger than available memory, which will
-> > >+	 * cause errors later.
-> > >+	 */
-> > >+	__u64 window_size =
-> > 
-> > I asked for "const __u64" ;)
+On Wed, Sep 02, 2015 at 04:36:09PM +0100, Pranith Kumar wrote:
+> On Wed, Sep 2, 2015 at 11:23 AM, Pranith Kumar <bobby.prani@gmail.com> wrote:
+> > On 09/02/2015 05:59 AM, Will Deacon wrote:
+> >> I just thought it was worth making this point, because it is prohibited
+> >> in SC and I don't want people to think that our RELEASE/ACQUIRE operations
+> >> are SC (even though they happen to be on arm64).
+> >
+> > This is interesting information. Does that mean that the following patch
+> > should work? (I am not proposing to use it, just trying to understand if
+> > REL+ACQ will act as a full barrier on ARM64, which you say it does).
+> >
+> > Thanks,
+> > Pranith.
+> >
+> > diff --git a/arch/arm64/include/asm/cmpxchg.h b/arch/arm64/include/asm/cmpxchg.h
+> > index d8c25b7..14a1b35 100644
+> > --- a/arch/arm64/include/asm/cmpxchg.h
+> > +++ b/arch/arm64/include/asm/cmpxchg.h
+> > @@ -68,8 +68,7 @@ static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size
+> >                 BUILD_BUG();
+> >         }
+> >
+> > -       smp_mb();
+> > -       return ret;
+> > +       return smp_load_acquire(ret);
 > 
-> I knew I'd forget something!
+> I meant 'smp_load_acquire(&ret);'
 
-Nish! In future please send a reply with the above comment, and then the v2 as
-a separate mail, otherwise I have to manually edit out your comment when
-applying.
+Yes, I think that would work on arm64, but it's not portable between
+architectures.
 
-> When attempting to kdump with the 4.2 kernel, we see for each PCI
-> device:
-> 
->  pci 0003:01     : [PE# 000] Assign DMA32 space
->  pci 0003:01     : [PE# 000] Setting up 32-bit TCE table at 0..80000000
->  pci 0003:01     : [PE# 000] Failed to create 32-bit TCE table, err -22
->  PCI: Domain 0004 has 8 available 32-bit DMA segments
->  PCI: 4 PE# for a total weight of 70
->  pci 0004:01     : [PE# 002] Assign DMA32 space
->  pci 0004:01     : [PE# 002] Setting up 32-bit TCE table at 0..80000000
->  pci 0004:01     : [PE# 002] Failed to create 32-bit TCE table, err -22
->  pci 0004:0d     : [PE# 005] Assign DMA32 space
->  pci 0004:0d     : [PE# 005] Setting up 32-bit TCE table at 0..80000000
->  pci 0004:0d     : [PE# 005] Failed to create 32-bit TCE table, err -22
->  pci 0004:0e     : [PE# 006] Assign DMA32 space
->  pci 0004:0e     : [PE# 006] Setting up 32-bit TCE table at 0..80000000
->  pci 0004:0e     : [PE# 006] Failed to create 32-bit TCE table, err -22
->  pci 0004:10     : [PE# 008] Assign DMA32 space
->  pci 0004:10     : [PE# 008] Setting up 32-bit TCE table at 0..80000000
->  pci 0004:10     : [PE# 008] Failed to create 32-bit TCE table, err -22
-> 
-> and eventually the kdump kernel fails to boot as none of the PCI devices
-> (including the disk controller) are successfully initialized.
-> 
-> The EINVAL response is because the DMA window (the 2GB base window) is
-> larger than the kdump kernel's reserved memory (crashkernel=, in this
-> case specified to be 1024M). The check in question,
-> 
->  if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
-> 
-> is a valid sanity check for pnv_pci_ioda2_table_alloc_pages(), so adjust
-> the caller to pass in a smaller window size if our maximum memory value
-> is smaller than the DMA window.
-> 
-> After this change, the PCI devices successfully set up the 32-bit TCE
-> table and kdump succeeds.
-> 
-> The problem was seen on a Firestone machine originally.
->     
-> Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
-
-That went into 4.2, so should this have a:
-
-Cc: stable@vger.kernel.org # 4.2
-
-?
-
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 85cbc96eff6c..e51aff01a218 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
->  {
->  	struct iommu_table *tbl = NULL;
->  	long rc;
-> +	/*
-> +	 * In memory constrained environments, e.g. kdump kernel, the
-> +	 * DMA window can be larger than available memory, which will
-> +	 * cause errors later.
-> +	 */
-> +	const __u64 window_size =
-
-Why is this using __u64 and not u64, it's not exported to userspace.
-
-It looks like pnv_pci_ioda2_create_table() uses __u64, but there's no reason
-for that AFAICS either. And yes I did commit it so it's my fault :)
-
-I'll fix this up to use u64.
-
-cheers
+Will
