@@ -1,6 +1,6 @@
 Return-Path: <marc.zyngier@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 7C38E1A1E13
+ by lists.ozlabs.org (Postfix) with ESMTP id 7B8B31A0066
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 22:16:38 +1000 (AEST)
 From: Marc Zyngier <marc.zyngier@arm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -12,12 +12,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  linux-pci@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH v3 1/4] of/pci: Add of_pci_check_probe_only to parse "linux,
- pci-probe-only"
-Date: Thu,  3 Sep 2015 13:16:13 +0100
-Message-Id: <1441282576-7304-2-git-send-email-marc.zyngier@arm.com>
-In-Reply-To: <1441282576-7304-1-git-send-email-marc.zyngier@arm.com>
-References: <1441282576-7304-1-git-send-email-marc.zyngier@arm.com>
+Subject: [PATCH v3 0/4] PCI: arm64/powerpc: Fix parsing of linux,
+ pci-probe-only
+Date: Thu,  3 Sep 2015 13:16:12 +0100
+Message-Id: <1441282576-7304-1-git-send-email-marc.zyngier@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,80 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Both pci-host-generic and Pseries parse the "linux,pci-probe-only"
-property to engage the PCI_PROBE_ONLY mode, and both have a subtle
-bug that can be triggered if the property has no parameter.
+The pci-host-generic driver parses the linux,pci-probe-only property,
+and assumes that it will have a boolean parameter.
 
-Provide a generic, safe implementation that can be used by both.
+Turns out that the Seattle DTS file has a naked "linux,pci-probe-only"
+property, which leads to the driver dereferencing some unsuspecting
+memory location. Nothing really bad happens (we end up reading some
+other bit of DT, fortunately), but that not a reason to keep it this
+way. Turns out that the Pseries code (where this code was lifted from)
+may suffer from the same issue.
 
-Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
----
- drivers/of/of_pci.c    | 31 +++++++++++++++++++++++++++++++
- include/linux/of_pci.h |  3 +++
- 2 files changed, 34 insertions(+)
+The first patch introduces a common (and fixed) version of that check
+that can be used by drivers and architectures that require it. The two
+following patches change the pci-host-generic driver and the powerpc
+code to use it.
 
-diff --git a/drivers/of/of_pci.c b/drivers/of/of_pci.c
-index 5751dc5..7876343 100644
---- a/drivers/of/of_pci.c
-+++ b/drivers/of/of_pci.c
-@@ -118,6 +118,37 @@ int of_get_pci_domain_nr(struct device_node *node)
- EXPORT_SYMBOL_GPL(of_get_pci_domain_nr);
- 
- /**
-+ * of_pci_check_probe_only - Setup probe only mode if linux,pci-probe-only
-+ *                           is present and valid
-+ *
-+ * @node: device tree node that may contain the property (usually "chosen")
-+ *
-+ */
-+void of_pci_check_probe_only(struct device_node *node)
-+{
-+	u32 val;
-+	int ret;
-+
-+	if (!node)
-+		return;
-+
-+	ret = of_property_read_u32(node, "linux,pci-probe-only", &val);
-+	if (ret) {
-+		if (ret == -ENODATA || ret == -EOVERFLOW)
-+			pr_warn("linux,pci-probe-only without valid value, ignoring\n");
-+		return;
-+	}
-+
-+	if (val)
-+		pci_add_flags(PCI_PROBE_ONLY);
-+	else
-+		pci_clear_flags(PCI_PROBE_ONLY);
-+
-+	pr_info("PCI: PROBE_ONLY %sabled\n", val ? "en" : "dis");
-+}
-+EXPORT_SYMBOL_GPL(of_pci_check_probe_only);
-+
-+/**
-  * of_pci_dma_configure - Setup DMA configuration
-  * @dev: ptr to pci_dev struct of the PCI device
-  *
-diff --git a/include/linux/of_pci.h b/include/linux/of_pci.h
-index 29fd3fe..4c0a617 100644
---- a/include/linux/of_pci.h
-+++ b/include/linux/of_pci.h
-@@ -17,6 +17,7 @@ int of_irq_parse_and_map_pci(const struct pci_dev *dev, u8 slot, u8 pin);
- int of_pci_parse_bus_range(struct device_node *node, struct resource *res);
- int of_get_pci_domain_nr(struct device_node *node);
- void of_pci_dma_configure(struct pci_dev *pci_dev);
-+void of_pci_check_probe_only(struct device_node *node);
- #else
- static inline int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *out_irq)
- {
-@@ -53,6 +54,8 @@ of_get_pci_domain_nr(struct device_node *node)
- }
- 
- static inline void of_pci_dma_configure(struct pci_dev *pci_dev) { }
-+
-+static inline void of_pci_check_probe_only(struct device_node *node) { }
- #endif
- 
- #if defined(CONFIG_OF_ADDRESS)
+Finally, the bad property is removed from the Seatle DTS, because it
+is simply not necessary (it actually prevents me from using SR-IOV,
+which otherwise runs fine without the probe-only thing).
+
+This has been tested on the offending Seattle board.
+
+* From v2:
+  - Use of_property_read_u32 to safely read the property (Rob)
+  - Add a log message to indicate when we enable probe-only
+    (probably quite useful for debugging)
+
+* From v1:
+  - Consolidate the parsing in of_pci.c (Bjorn)
+
+Marc Zyngier (4):
+  of/pci: Add of_pci_check_probe_only to parse "linux,pci-probe-only"
+  PCI: pci-host-generic: Fix lookup of linux,pci-probe-only property
+  powerpc: PCI: Fix lookup of linux,pci-probe-only property
+  arm64: dts: Drop linux,pci-probe-only from the Seattle DTS
+
+ arch/arm64/boot/dts/amd/amd-overdrive.dts |  1 -
+ arch/powerpc/platforms/pseries/setup.c    | 14 ++------------
+ drivers/of/of_pci.c                       | 31 +++++++++++++++++++++++++++++++
+ drivers/pci/host/pci-host-generic.c       |  9 +--------
+ include/linux/of_pci.h                    |  3 +++
+ 5 files changed, 37 insertions(+), 21 deletions(-)
+
 -- 
 2.1.4
