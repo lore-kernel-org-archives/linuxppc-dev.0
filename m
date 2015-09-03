@@ -1,31 +1,29 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-io0-x22d.google.com (mail-io0-x22d.google.com
- [IPv6:2607:f8b0:4001:c06::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Suravee.Suthikulpanit@amd.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0095.outbound.protection.outlook.com [157.56.110.95])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C3871A1E1F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 03:56:30 +1000 (AEST)
-Received: by iofh134 with SMTP id h134so67618539iof.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2015 10:56:28 -0700 (PDT)
-Date: Thu, 3 Sep 2015 12:56:24 -0500
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- benh@kernel.crashing.org, paulus@samba.org, mst@redhat.com,
- Fam Zheng <famz@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
- Yijing Wang <wangyijing@huawei.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH v2 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
- probe time in OF case
-Message-ID: <20150903175624.GI829@google.com>
-References: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57DBF1A240C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 00:53:15 +1000 (AEST)
+Subject: Re: [PATCH v3 4/4] arm64: dts: Drop linux,pci-probe-only from the
+ Seattle DTS
+To: Marc Zyngier <marc.zyngier@arm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Will Deacon <will.deacon@arm.com>, "Bjorn
+ Helgaas" <bhelgaas@google.com>, Lorenzo Pieralisi
+ <lorenzo.pieralisi@arm.com>, Grant Likely <grant.likely@linaro.org>, "Rob
+ Herring" <robh+dt@kernel.org>
+References: <1441282576-7304-1-git-send-email-marc.zyngier@arm.com>
+ <1441282576-7304-5-git-send-email-marc.zyngier@arm.com>
+CC: Alexander Graf <agraf@suse.de>, <linux-kernel@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-pci@vger.kernel.org>, <devicetree@vger.kernel.org>
+From: "Suthikulpanit, Suravee" <suravee.suthikulpanit@amd.com>
+Message-ID: <55E856FC.4040006@amd.com>
+Date: Thu, 3 Sep 2015 21:19:40 +0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+In-Reply-To: <1441282576-7304-5-git-send-email-marc.zyngier@arm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,74 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[+cc Fam, Yinghai, Yijing, Eric (reviewers of MST's original series), Dave]
+Hi Marc
 
-Hi Guilherme,
-
-On Wed, Aug 19, 2015 at 03:54:10PM -0300, Guilherme G. Piccoli wrote:
-> Changes since v2:
->  * Added "Fixes" line
->  * Improved commit reference by using 12 first chars of SHA
-> 
-> >8----------8<
-> 
-> Since the commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even
-> if kernel doesn't support MSI"), MSI/MSI-X interrupts aren't being
-> disabled at PCI probe time, as the logic responsible for this was moved
-> in the aforementioned commit from pci_device_add() to pci_setup_device().
-> The latter function is not reachable on PowerPC pSeries platform during
-> Open Firmware PCI probing time.
-> 
-> This patch calls pci_msi_setup_pci_dev() explicitly to disable MSI/MSI-X
-> during PCI probe time on pSeries platform.
-> 
-> Fixes: 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
-> doesn't support MSI")
-> 
-> Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+On 9/3/2015 7:16 PM, Marc Zyngier wrote:
+> The linux,pci-probe-only property mandates an argument to indicate
+> whether or not to engage the "probe-only" mode, but the Seattle
+> DTS just provides a naked property, which is illegal.
+>
+> Also, it turns out that the board is perfectly happy without
+> probe-only, so let's drop this altogether.
+>
+> Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
 > ---
->  arch/powerpc/kernel/pci_of_scan.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-> index 42e02a2..0e920f3 100644
-> --- a/arch/powerpc/kernel/pci_of_scan.c
-> +++ b/arch/powerpc/kernel/pci_of_scan.c
-> @@ -191,6 +191,9 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
->  
->  	pci_device_add(dev, bus);
->  
-> +	/* Disable MSI/MSI-X here to avoid bogus interrupts */
-> +	pci_msi_setup_pci_dev(dev);
+>   arch/arm64/boot/dts/amd/amd-overdrive.dts | 1 -
+>   1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/arm64/boot/dts/amd/amd-overdrive.dts b/arch/arm64/boot/dts/amd/amd-overdrive.dts
+> index 564a3f7..128fa94 100644
+> --- a/arch/arm64/boot/dts/amd/amd-overdrive.dts
+> +++ b/arch/arm64/boot/dts/amd/amd-overdrive.dts
+> @@ -14,7 +14,6 @@
+>
+>   	chosen {
+>   		stdout-path = &serial0;
+> -		linux,pci-probe-only;
+>   	};
+>   };
+>
+>
 
-of_create_pci_dev() already has a lot of code that duplicates
-pci_setup_device(), and it's a shame to add more.  There's also a sparc
-version of of_create_pci_dev() that presumably has the same problem you're
-fixing for powerpc.
+Thanks, I was planning to do this as well. The embedded DT in the UEFI 
+FW will soon remove this property.
 
-Michael originally called pci_msi_setup_pci_dev() from
-pci_init_capabilities() [1].  A subsequent patch moved the call
-to pci_setup_device() [2] because an early quirk (called from
-pci_setup_device()) used pci_msi_off(), which depended on
-pci_msi_setup_pci_dev().  
+Acked-by: Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>
 
-But we later removed pci_msi_off() completely, so I think we probably
-*could* call pci_msi_setup_pci_dev() from pci_init_capabilities().
-
-That would be much nicer because it makes more sense there, and it
-would do the right thing for powerpc and sparc because they both
-already use that path.
-
-Can you look into moving the call?
-
-Bjorn
-
-[1] http://lkml.kernel.org/r/1427641227-7574-3-git-send-email-mst@redhat.com
-[2] http://lkml.kernel.org/r/1427641227-7574-4-git-send-email-mst@redhat.com
-
->  	return dev;
->  }
->  EXPORT_SYMBOL(of_create_pci_dev);
-> -- 
-> 2.1.0
-> 
+Suravee
