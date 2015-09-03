@@ -1,32 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 317A81A1F42
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 17:51:59 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 3 Sep 2015 17:51:58 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B659C2CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 17:51:55 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t837plef46858456
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 17:51:55 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t837pNva011639
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 17:51:23 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: Add virt_to_pfn and use this instead of opencoding
-Date: Thu,  3 Sep 2015 13:20:56 +0530
-Message-Id: <1441266656-4789-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 01F2B1A1F44
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 18:18:51 +1000 (AEST)
+Message-ID: <55E80265.3050701@arm.com>
+Date: Thu, 03 Sep 2015 09:18:45 +0100
+From: Marc Zyngier <marc.zyngier@arm.com>
+MIME-Version: 1.0
+To: Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robherring2@gmail.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Will Deacon <will.deacon@arm.com>,
+ Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Rob Herring <robh+dt@kernel.org>, Alexander Graf <agraf@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Subject: Re: [PATCH v2 1/4] of/pci: Add of_pci_check_probe_only to parse
+ "linux, pci-probe-only"
+References: <1439569159-10051-1-git-send-email-marc.zyngier@arm.com>
+ <1439569159-10051-2-git-send-email-marc.zyngier@arm.com>
+ <CAL_JsqL7VPB6nc-zRYm_73ZSgYVq_+a6sW_XZZ_LRaUXf4jTng@mail.gmail.com>
+ <20150902222325.GD829@google.com>
+In-Reply-To: <20150902222325.GD829@google.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,30 +36,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This add helper virt_to_pfn and remove the opencoded usage of the
-same.
+On 02/09/15 23:23, Bjorn Helgaas wrote:
+> On Fri, Aug 14, 2015 at 04:08:10PM -0500, Rob Herring wrote:
+>> On Fri, Aug 14, 2015 at 11:19 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+>>> Both pci-host-generic and Pseries parse the "linux,pci-probe-only"
+>>> to engage the PCI_PROBE_ONLY mode, and both have a subtle bug that
+>>> can be triggered if the property has no parameter.
+>>
+>> Humm, I bet we could break a lot of machines if we fixed the core code
+>> to properly make pp->value NULL when there is no value.
+>>
+>>> Provide a generic implementation that can be used by both.
+>>>
+>>> Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+>>> ---
+>>>  drivers/of/of_pci.c    | 30 ++++++++++++++++++++++++++++++
+>>>  include/linux/of_pci.h |  3 +++
+>>>  2 files changed, 33 insertions(+)
+>>>
+>>> diff --git a/drivers/of/of_pci.c b/drivers/of/of_pci.c
+>>> index 5751dc5..a4e29ff 100644
+>>> --- a/drivers/of/of_pci.c
+>>> +++ b/drivers/of/of_pci.c
+>>> @@ -118,6 +118,36 @@ int of_get_pci_domain_nr(struct device_node *node)
+>>>  EXPORT_SYMBOL_GPL(of_get_pci_domain_nr);
+>>>
+>>>  /**
+>>> + * of_pci_check_probe_only - Setup probe only mode if linux,pci-probe-only
+>>> + *                           is present and valid
+>>> + *
+>>> + * @node: device tree node that may contain the property (usually "chosen")
+>>> + *
+>>> + */
+>>> +void of_pci_check_probe_only(struct device_node *node)
+>>> +{
+>>> +       const int *prop;
+>>> +       int len;
+>>> +
+>>> +       if (!node)
+>>> +               return;
+>>> +
+>>> +       prop = of_get_property(node, "linux,pci-probe-only", &len);
+>>
+>> It is preferred to use of_property_read_u32 to avoid just these types
+>> of problems.
+> 
+> I don't know enough OF to really understand this, but I infer that
+> this is a suggestion for improving the patch.  Should I be waiting for
+> a v3 series?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/page.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Yes, I'll post an update very shortly. Thanks for reminding me!
 
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 71294a6e976e..168ca67e39b3 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -127,9 +127,10 @@ extern long long virt_phys_offset;
- #define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
- #endif
- 
--#define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-+#define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
-+#define virt_to_page(kaddr)	pfn_to_page(virt_to_pfn(kaddr))
- #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
--#define virt_addr_valid(kaddr)	pfn_valid(__pa(kaddr) >> PAGE_SHIFT)
-+#define virt_addr_valid(kaddr)	pfn_valid(virt_to_pfn(kaddr))
- 
- /*
-  * On Book-E parts we need __va to parse the device tree and we can't
+	M.
 -- 
-2.5.0
+Jazz is not dead. It just smells funny...
