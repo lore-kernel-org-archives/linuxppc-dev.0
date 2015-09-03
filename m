@@ -1,37 +1,32 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-io0-x22c.google.com (mail-io0-x22c.google.com
- [IPv6:2607:f8b0:4001:c06::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AC77A1A1E3D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 08:23:32 +1000 (AEST)
-Received: by iofh134 with SMTP id h134so37785206iof.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Sep 2015 15:23:29 -0700 (PDT)
-Date: Wed, 2 Sep 2015 17:23:25 -0500
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Rob Herring <robherring2@gmail.com>
-Cc: Marc Zyngier <marc.zyngier@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Will Deacon <will.deacon@arm.com>,
- Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Grant Likely <grant.likely@linaro.org>,
- Rob Herring <robh+dt@kernel.org>, Alexander Graf <agraf@suse.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Subject: Re: [PATCH v2 1/4] of/pci: Add of_pci_check_probe_only to parse
- "linux,pci-probe-only"
-Message-ID: <20150902222325.GD829@google.com>
-References: <1439569159-10051-1-git-send-email-marc.zyngier@arm.com>
- <1439569159-10051-2-git-send-email-marc.zyngier@arm.com>
- <CAL_JsqL7VPB6nc-zRYm_73ZSgYVq_+a6sW_XZZ_LRaUXf4jTng@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_JsqL7VPB6nc-zRYm_73ZSgYVq_+a6sW_XZZ_LRaUXf4jTng@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D55C1A1E3D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 11:30:11 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Thu, 3 Sep 2015 07:00:06 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 34B71E0054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 06:59:20 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t831U0Nd35127424
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 07:00:00 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t831Txeg009234
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 06:59:59 +0530
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: aik@ozlabs.ru, gwshan@linux.vnet.ibm.com, mpe@ellerman.id.au,
+ benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.ozlabs.org, Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V5 0/6] Redesign SR-IOV on PowerNV
+Date: Thu,  3 Sep 2015 09:29:46 +0800
+Message-Id: <1441243792-2074-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,52 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 14, 2015 at 04:08:10PM -0500, Rob Herring wrote:
-> On Fri, Aug 14, 2015 at 11:19 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
-> > Both pci-host-generic and Pseries parse the "linux,pci-probe-only"
-> > to engage the PCI_PROBE_ONLY mode, and both have a subtle bug that
-> > can be triggered if the property has no parameter.
-> 
-> Humm, I bet we could break a lot of machines if we fixed the core code
-> to properly make pp->value NULL when there is no value.
-> 
-> > Provide a generic implementation that can be used by both.
-> >
-> > Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
-> > ---
-> >  drivers/of/of_pci.c    | 30 ++++++++++++++++++++++++++++++
-> >  include/linux/of_pci.h |  3 +++
-> >  2 files changed, 33 insertions(+)
-> >
-> > diff --git a/drivers/of/of_pci.c b/drivers/of/of_pci.c
-> > index 5751dc5..a4e29ff 100644
-> > --- a/drivers/of/of_pci.c
-> > +++ b/drivers/of/of_pci.c
-> > @@ -118,6 +118,36 @@ int of_get_pci_domain_nr(struct device_node *node)
-> >  EXPORT_SYMBOL_GPL(of_get_pci_domain_nr);
-> >
-> >  /**
-> > + * of_pci_check_probe_only - Setup probe only mode if linux,pci-probe-only
-> > + *                           is present and valid
-> > + *
-> > + * @node: device tree node that may contain the property (usually "chosen")
-> > + *
-> > + */
-> > +void of_pci_check_probe_only(struct device_node *node)
-> > +{
-> > +       const int *prop;
-> > +       int len;
-> > +
-> > +       if (!node)
-> > +               return;
-> > +
-> > +       prop = of_get_property(node, "linux,pci-probe-only", &len);
-> 
-> It is preferred to use of_property_read_u32 to avoid just these types
-> of problems.
+In original design, it tries to group VFs to enable more number of VFs in the
+system, when VF BAR is bigger than 64MB. This design has a flaw in which one
+error on a VF will interfere other VFs in the same group.
 
-I don't know enough OF to really understand this, but I infer that
-this is a suggestion for improving the patch.  Should I be waiting for
-a v3 series?
+This patch series change this design by using M64 BAR in Single PE mode to
+cover only one VF BAR. By doing so, it gives absolute isolation between VFs.
 
-Bjorn
+v5:
+   * rebase on top of v4.2, with commit 68230242cdb "net/mlx4_core: Add port
+     attribute when tracking counters" reverted
+   * test ssh from guest to host via VF passed and then shutdown the guest
+   * no code change
+v4:
+   * rebase the code on top of v4.2-rc7
+   * switch back to use the dynamic version of pe_num_map and m64_map
+   * split the memory allocation and PE assignment of pe_num_map to make it
+     more easy to read
+   * check pe_num_map value before free PE.
+   * add the rename reason for pe_num_map and m64_map in change log
+v3:
+   * return -ENOSPC when a VF has non-64bit prefetchable BAR
+   * rename offset to pe_num_map and define it staticly
+   * change commit log based on comments
+   * define m64_map staticly
+v2:
+   * clean up iov bar alignment calculation
+   * change m64s to m64_bars
+   * add a field to represent M64 Single PE mode will be used
+   * change m64_wins to m64_map
+   * calculate the gate instead of hard coded
+   * dynamically allocate m64_map
+   * dynamically allocate PE#
+   * add a case to calculate iov bar alignment when M64 Single PE is used
+   * when M64 Single PE is used, compare num_vfs with M64 BAR available number 
+     in system at first
+
+Wei Yang (6):
+  powerpc/powernv: don't enable SRIOV when VF BAR has non
+    64bit-prefetchable BAR
+  powerpc/powernv: simplify the calculation of iov resource alignment
+  powerpc/powernv: use one M64 BAR in Single PE mode for one VF BAR
+  powerpc/powernv: replace the hard coded boundary with gate
+  powerpc/powernv: boundary the total VF BAR size instead of the
+    individual one
+  powerpc/powernv: allocate sparse PE# when using M64 BAR in Single PE
+    mode
+
+ arch/powerpc/include/asm/pci-bridge.h     |   7 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c | 328 ++++++++++++++++--------------
+ 2 files changed, 175 insertions(+), 160 deletions(-)
+
+-- 
+2.5.0
