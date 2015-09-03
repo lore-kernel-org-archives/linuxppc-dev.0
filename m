@@ -1,7 +1,7 @@
 Return-Path: <marc.zyngier@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id E3A6C1A2753
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 22:16:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id A7F981A2A7D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 22:16:46 +1000 (AEST)
 From: Marc Zyngier <marc.zyngier@arm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -12,10 +12,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  linux-pci@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH v3 3/4] powerpc: PCI: Fix lookup of linux,
- pci-probe-only property
-Date: Thu,  3 Sep 2015 13:16:15 +0100
-Message-Id: <1441282576-7304-4-git-send-email-marc.zyngier@arm.com>
+Subject: [PATCH v3 4/4] arm64: dts: Drop linux,
+ pci-probe-only from the Seattle DTS
+Date: Thu,  3 Sep 2015 13:16:16 +0100
+Message-Id: <1441282576-7304-5-git-send-email-marc.zyngier@arm.com>
 In-Reply-To: <1441282576-7304-1-git-send-email-marc.zyngier@arm.com>
 References: <1441282576-7304-1-git-send-email-marc.zyngier@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,56 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When find_and_init_phbs() looks for the probe-only property, it seems
-to trust the firmware to be correctly written, and assumes that there
-is a parameter to the property.
+The linux,pci-probe-only property mandates an argument to indicate
+whether or not to engage the "probe-only" mode, but the Seattle
+DTS just provides a naked property, which is illegal.
 
-It is conceivable that the firmware could not be that perfect, and it
-could expose this property naked (at least one arm64 platform seems to
-exhibit this exact behaviour). The setup code the ends up making
-a decision based on whatever the property pointer points to, which
-is likely to be junk.
-
-Instead, switch to the common of_pci.c implementation that doesn't
-suffer from this problem and ignore the property if the firmware
-couldn't make up its mind.
+Also, it turns out that the board is perfectly happy without
+probe-only, so let's drop this altogether.
 
 Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
 ---
- arch/powerpc/platforms/pseries/setup.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ arch/arm64/boot/dts/amd/amd-overdrive.dts | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 39a74fa..412531f 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -40,6 +40,7 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/of.h>
-+#include <linux/of_pci.h>
- #include <linux/kexec.h>
+diff --git a/arch/arm64/boot/dts/amd/amd-overdrive.dts b/arch/arm64/boot/dts/amd/amd-overdrive.dts
+index 564a3f7..128fa94 100644
+--- a/arch/arm64/boot/dts/amd/amd-overdrive.dts
++++ b/arch/arm64/boot/dts/amd/amd-overdrive.dts
+@@ -14,7 +14,6 @@
  
- #include <asm/mmu.h>
-@@ -495,18 +496,7 @@ static void __init find_and_init_phbs(void)
- 	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
- 	 * in chosen.
- 	 */
--	if (of_chosen) {
--		const int *prop;
--
--		prop = of_get_property(of_chosen,
--				"linux,pci-probe-only", NULL);
--		if (prop) {
--			if (*prop)
--				pci_add_flags(PCI_PROBE_ONLY);
--			else
--				pci_clear_flags(PCI_PROBE_ONLY);
--		}
--	}
-+	of_pci_check_probe_only(of_chosen);
- }
+ 	chosen {
+ 		stdout-path = &serial0;
+-		linux,pci-probe-only;
+ 	};
+ };
  
- static void __init pSeries_setup_arch(void)
 -- 
 2.1.4
