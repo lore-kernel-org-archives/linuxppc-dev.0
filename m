@@ -1,29 +1,37 @@
-Return-Path: <Suravee.Suthikulpanit@amd.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0095.outbound.protection.outlook.com [157.56.110.95])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 57DBF1A240C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 00:53:15 +1000 (AEST)
-Subject: Re: [PATCH v3 4/4] arm64: dts: Drop linux,pci-probe-only from the
- Seattle DTS
-To: Marc Zyngier <marc.zyngier@arm.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, Will Deacon <will.deacon@arm.com>, "Bjorn
- Helgaas" <bhelgaas@google.com>, Lorenzo Pieralisi
- <lorenzo.pieralisi@arm.com>, Grant Likely <grant.likely@linaro.org>, "Rob
- Herring" <robh+dt@kernel.org>
-References: <1441282576-7304-1-git-send-email-marc.zyngier@arm.com>
- <1441282576-7304-5-git-send-email-marc.zyngier@arm.com>
-CC: Alexander Graf <agraf@suse.de>, <linux-kernel@vger.kernel.org>,
- <linux-arm-kernel@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-pci@vger.kernel.org>, <devicetree@vger.kernel.org>
-From: "Suthikulpanit, Suravee" <suravee.suthikulpanit@amd.com>
-Message-ID: <55E856FC.4040006@amd.com>
-Date: Thu, 3 Sep 2015 21:19:40 +0700
-MIME-Version: 1.0
-In-Reply-To: <1441282576-7304-5-git-send-email-marc.zyngier@arm.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 819AD1A0725
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 13:09:43 +1000 (AEST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 3 Sep 2015 21:09:41 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9B73119D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 21:00:34 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8436ice44630244
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 20:06:44 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8439dJR004956
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 21:09:39 -0600
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: [[PATCH v6 01/10] sparc/perf: Remove unnecessary assignment
+Date: Thu,  3 Sep 2015 20:07:44 -0700
+Message-Id: <1441336073-22750-2-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,38 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Marc
+In ->commit_txn() 'cpuc' is already initialized when it is
+declared, so we can remove the duplicate assignment.
 
-On 9/3/2015 7:16 PM, Marc Zyngier wrote:
-> The linux,pci-probe-only property mandates an argument to indicate
-> whether or not to engage the "probe-only" mode, but the Seattle
-> DTS just provides a naked property, which is illegal.
->
-> Also, it turns out that the board is perfectly happy without
-> probe-only, so let's drop this altogether.
->
-> Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
-> ---
->   arch/arm64/boot/dts/amd/amd-overdrive.dts | 1 -
->   1 file changed, 1 deletion(-)
->
-> diff --git a/arch/arm64/boot/dts/amd/amd-overdrive.dts b/arch/arm64/boot/dts/amd/amd-overdrive.dts
-> index 564a3f7..128fa94 100644
-> --- a/arch/arm64/boot/dts/amd/amd-overdrive.dts
-> +++ b/arch/arm64/boot/dts/amd/amd-overdrive.dts
-> @@ -14,7 +14,6 @@
->
->   	chosen {
->   		stdout-path = &serial0;
-> -		linux,pci-probe-only;
->   	};
->   };
->
->
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/sparc/kernel/perf_event.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Thanks, I was planning to do this as well. The embedded DT in the UEFI 
-FW will soon remove this property.
-
-Acked-by: Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>
-
-Suravee
+diff --git a/arch/sparc/kernel/perf_event.c b/arch/sparc/kernel/perf_event.c
+index 689db65..e3f89c7 100644
+--- a/arch/sparc/kernel/perf_event.c
++++ b/arch/sparc/kernel/perf_event.c
+@@ -1528,7 +1528,6 @@ static int sparc_pmu_commit_txn(struct pmu *pmu)
+ 	if (!sparc_pmu)
+ 		return -EINVAL;
+ 
+-	cpuc = this_cpu_ptr(&cpu_hw_events);
+ 	n = cpuc->n_events;
+ 	if (check_excludes(cpuc->event, 0, n))
+ 		return -EINVAL;
+-- 
+1.7.9.5
