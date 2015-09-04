@@ -1,18 +1,43 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 329971A027B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 04:10:20 +1000 (AEST)
-Subject: Re: memcpy regression
-To: Michal Sojka <sojkam1@fel.cvut.cz>
-References: <871teeux4w.fsf@steelpick.2x.cz> <55E9A354.6070600@c-s.fr>
- <87si6utfpf.fsf@steelpick.2x.cz>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <55E9DE87.4070805@c-s.fr>
-Date: Fri, 4 Sep 2015 20:10:15 +0200
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D7E01A027B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 04:18:14 +1000 (AEST)
+Received: from /spool/local
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 4 Sep 2015 14:18:12 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 51B88C90048
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 14:09:13 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t84II9g452822084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 18:18:09 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t84II70l030425
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 14:18:08 -0400
+Date: Fri, 4 Sep 2015 11:18:06 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Jan Stancek <jstancek@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@in.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: powerpc/powernv/pci-ioda: fix kdump with non-power-of-2
+ crashkernel=
+Message-ID: <20150904181805.GM47557@linux.vnet.ibm.com>
+References: <20150904165938.GL47557@linux.vnet.ibm.com>
+ <20150904180108.GA30660@dustball.brq.redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <87si6utfpf.fsf@steelpick.2x.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150904180108.GA30660@dustball.brq.redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +47,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04.09.2015 [20:01:22 +0200], Jan Stancek wrote:
+> On Fri, Sep 04, 2015 at 09:59:38AM -0700, Nishanth Aravamudan wrote:
+> > The 32-bit TCE table initialization relies on the DMA window having a
+> > size equal to a power of 2 (and checks for it explicitly). But
+> > crashkernel= has no constraint that requires a power-of-2 be specified.
+> > This causes the kdump kernel to fail to boot as none of the PCI devices
+> > (including the disk controller) are successfully initialized.
+> > 
+> > After this change, the PCI devices successfully set up the 32-bit TCE
+> > table and kdump succeeds.
+> > 
+> > Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
+> > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> > Cc: stable@vger.kernel.org # 4.2
+> > ---
+> > 
+> > Michael, I did this as a follow-on patch to my previous one. If you'd
+> > rather I made a v3 of that patch with the two fixes combined, I can
+> > resend.
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index f1c74c28e564..73914f4bd1ab 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -2084,6 +2084,12 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+> >  	 */
+> >  	const u64 window_size =
+> >  		min((u64)pe->table_group.tce32_size, memory_hotplug_max());
+> > +	/*
+> > +	 * crashkernel= specifies the kdump kernel's maximum memory at
+> > +	 * some offset and there is no guaranteed the result is a power
+> > +	 * of 2, which will cause errors later.
+> > +	 */
+> > +	window_size = __rounddown_pow_of_two(window_size);
+> 
+> Hi,
+> 
+> Just wondering if this won't hide potential alignment issues of
+> "table_group.tce32_size", that now trigger EINVAL down the road
+> and if it wouldn't be safer to round only "memory_hotplug_max()?
+> 
+>   const __u64 hotplug_max_p2 = __rounddown_pow_of_two(memory_hotplug_max());
+>   const __u64 window_size =
+>             min((u64)pe->table_group.tce32_size, hotplug_max_p2);
 
-
-Le 04/09/2015 16:35, Michal Sojka a écrit :
-> On Fri, Sep 04 2015, Christophe LEROY wrote:
->> Le 04/09/2015 15:33, Michal Sojka a écrit :
->>> Dear Christophe,
->>>
->>> my MPC5200-based system stopped booting recently. I bisected the problem
->>> to your commit below. If I revert that commit (on top of
->>> 807249d3ada1ff28a47c4054ca4edd479421b671 = v4.2-6663-g807249d), my
->>> system boots again.
->>>
->>>
->> Do you use mainline code only, or do you have home-made code ?
-> I use mainline only sources with non-mainline device-tree.
->
->> memcpy() is not supposed to be used on non-cacheable memory.
->> memcpy_toio() is the function to use when copying to non-cacheble area.
->>
->> When I submitted the patch, I looked for erroneous use of memcpy() and
->> memset().
->> I found one wrong use of memset() that I changed to memset_io() but I
->> didn't find any misuse of memcpy().
->> But I may have missed one.
-> I attach my .config, if it helps. I have there
->
-> CONFIG_PPC_MPC52xx=y
-> CONFIG_PPC_MPC5200_SIMPLE=y
->
-> so arch/powerpc/platforms/52xx is probably the directory to look. Do you
-> see any mempcy misuse there?
-I only found one suspect use of memcpy() in arch/powerpc/platforms/52xx/
-It is in mpc52xx_pm.c but it's linked to CONFIG_PM which is not selected 
-by your .config
-I'll check in the drivers selected by your .config
-
-In parallele, are you able to try with CONFIG_PPC_EARLY_DEBUG in order 
-to try and locate the blocking point ?
-
-Christophe
-
-
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+Fair point, v2 on its way.
