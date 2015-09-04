@@ -1,23 +1,45 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 8961C1A1E32
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 06:51:51 +1000 (AEST)
-Date: Fri, 4 Sep 2015 17:51:45 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Hemant Kumar <hemant@linux.vnet.ibm.com>, maddy@linux.vnet.ibm.com,
- srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- warrier@linux.vnet.ibm.com, paulus@samba.org,
- scottwood@freescale.com, sukadev@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
-Subject: Re: [PATCH v6 1/2] perf,kvm/powerpc: Add kvm_perf.h for powerpc
-Message-ID: <20150904205145.GB3475@kernel.org>
-References: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
- <20150831201300.GG4423@kernel.org>
- <55E54A4F.6090205@linux.vnet.ibm.com>
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 581E21A0796
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 09:17:25 +1000 (AEST)
+Received: from /spool/local
+ by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Fri, 4 Sep 2015 20:17:20 -0300
+Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id 3590A1DC0071
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 19:16:12 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t84NFRN213959646
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 20:15:27 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t84NHCIS000927
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 20:17:13 -0300
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
+ probe time in OF case
+To: Bjorn Helgaas <bhelgaas@google.com>
+References: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
+ <20150903175624.GI829@google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
+ benh@kernel.crashing.org, paulus@samba.org, mst@redhat.com,
+ Fam Zheng <famz@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
+ Yijing Wang <wangyijing@huawei.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ "David S. Miller" <davem@davemloft.net>
+Message-ID: <55EA2678.5030801@linux.vnet.ibm.com>
+Date: Fri, 4 Sep 2015 20:17:12 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55E54A4F.6090205@linux.vnet.ibm.com>
+In-Reply-To: <20150903175624.GI829@google.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +49,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Tue, Sep 01, 2015 at 12:18:47PM +0530, Hemant Kumar escreveu:
-> >Should I try to process the 5 together, applying thest two first?
- 
-> Yes, this patchset needs to be applied before applying the other patchset,
-> since there is a direct dependency on these two for the tooling part to
-> work.
- 
-> >I see there are no acks from powerpc arch maintainers, how should we
-> >proceed here? If there are no problems with the arch bits, and if it is
-> >just to enable the tooling part, again, should I process the 5 as just
-> >one series?
- 
-> The reason to split the earlier patchset into two was to separate the
-> tooling/perf/ and arch/powerpc/ side patches, as asked by Michael..
- 
-> Here is the link to that discussion :
-> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg86916.html
- 
-> If Michael is ok with the patches, you can process all the 5 patches
-> together. Michael?
+Hello Bjorn,
 
-Michael?
+> of_create_pci_dev() already has a lot of code that duplicates
+> pci_setup_device(), and it's a shame to add more.  There's also a sparc
+> version of of_create_pci_dev() that presumably has the same problem you're
+> fixing for powerpc.
 
-- Arnaldo
+Thanks for the information!
+
+> Michael originally called pci_msi_setup_pci_dev() from
+> pci_init_capabilities() [1].  A subsequent patch moved the call
+> to pci_setup_device() [2] because an early quirk (called from
+> pci_setup_device()) used pci_msi_off(), which depended on
+> pci_msi_setup_pci_dev().
+>
+> But we later removed pci_msi_off() completely, so I think we probably
+> *could* call pci_msi_setup_pci_dev() from pci_init_capabilities().
+>
+> That would be much nicer because it makes more sense there, and it
+> would do the right thing for powerpc and sparc because they both
+> already use that path.
+>
+> Can you look into moving the call?
+
+I might have misunderstood something here (sorry if it's the case), but 
+moving the call to pci_init_capabilities() has the same practical 
+implications than reverting my 2 commmits [1] [2] and Michael Tsirkin's 
+commit [3], except when CONFIG_PCI_MSI is not set - in this case, moving 
+the call would initialize MSI capabilities anyway, since 
+pci_init_capabilities() executes even if CONFIG_PCI_MSI isn't set.
+
+My question is: is necessary to initialize MSI capabilities even with 
+CONFIG_PCI_MSI not set? In negative case, would be "cleaner" revert the 
+3 commits, right?
+
+On the other hand, if it's necessary to initialize MSI capabilities on 
+devices anyway, we can change the call place.
+
+Let me know your opinion, and I'm sorry if I misunderstood something here.
+
+Cheers,
+
+
+Guilherme Piccoli
+
+
+
+[1] commit 22b6839b914b ("PCI: Make pci_msi_setup_pci_dev() non-static 
+for use by arch code")
+
+[2] commit 4d9aac397a5d ("powerpc/PCI: Disable MSI/MSI-X interrupts at 
+PCI probe time in OF case")
+
+[3] commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if 
+kernel doesn't support MSI")
