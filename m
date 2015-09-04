@@ -1,21 +1,23 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8CF551A240C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 05:51:24 +1000 (AEST)
-Date: Fri, 4 Sep 2015 14:51:11 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Scott Wood <scottwood@freescale.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/book3s32: Only select PPC_HAVE_PMU on e600
-Message-ID: <20150904195110.GA14092@gate.crashing.org>
-References: <20150903092704.2F4881A241D@localhost.localdomain>
- <20150904164349.GA10337@home.buserror.net> <55E9DC5B.4090506@c-s.fr>
-Mime-Version: 1.0
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8961C1A1E32
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 06:51:51 +1000 (AEST)
+Date: Fri, 4 Sep 2015 17:51:45 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hemant Kumar <hemant@linux.vnet.ibm.com>, maddy@linux.vnet.ibm.com,
+ srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ warrier@linux.vnet.ibm.com, paulus@samba.org,
+ scottwood@freescale.com, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Subject: Re: [PATCH v6 1/2] perf,kvm/powerpc: Add kvm_perf.h for powerpc
+Message-ID: <20150904205145.GB3475@kernel.org>
+References: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <20150831201300.GG4423@kernel.org>
+ <55E54A4F.6090205@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55E9DC5B.4090506@c-s.fr>
+In-Reply-To: <55E54A4F.6090205@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ it seems my previous mail disappeared down the void ]
+Em Tue, Sep 01, 2015 at 12:18:47PM +0530, Hemant Kumar escreveu:
+> >Should I try to process the 5 together, applying thest two first?
+ 
+> Yes, this patchset needs to be applied before applying the other patchset,
+> since there is a direct dependency on these two for the tooling part to
+> work.
+ 
+> >I see there are no acks from powerpc arch maintainers, how should we
+> >proceed here? If there are no problems with the arch bits, and if it is
+> >just to enable the tooling part, again, should I process the 5 as just
+> >one series?
+ 
+> The reason to split the earlier patchset into two was to separate the
+> tooling/perf/ and arch/powerpc/ side patches, as asked by Michael..
+ 
+> Here is the link to that discussion :
+> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg86916.html
+ 
+> If Michael is ok with the patches, you can process all the 5 patches
+> together. Michael?
 
-On Fri, Sep 04, 2015 at 08:00:59PM +0200, christophe leroy wrote:
-> >Plus, it's e300, not e600, that is the exception among 6xx-style cores.
-> Is it ? I've been looking for special register SIAR (spr 955) in several 
-> 6xx reference manuals.
-> 82xx doesn't have it, 52xx and 512x don't have it.
-> I found it only in the 86xx
-> Which other family has it ?
+Michael?
 
-All 7xx and 7xxx have it.  No 603 or 604 does afaik.
-
-
-Segher
+- Arnaldo
