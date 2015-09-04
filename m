@@ -1,37 +1,31 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f44.google.com (mail-pa0-f44.google.com
+ [209.85.220.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420AE1A1E33
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 13:09:49 +1000 (AEST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 3 Sep 2015 21:09:47 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id EE9EB19D801C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 21:00:39 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8438wEg40239252
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 20:08:58 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8439hJk005167
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 21:09:44 -0600
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [[PATCH v6 09/10] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
-Date: Thu,  3 Sep 2015 20:07:52 -0700
-Message-Id: <1441336073-22750-10-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47BBA1A2AC4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 13:41:30 +1000 (AEST)
+Received: by pacwi10 with SMTP id wi10so10571370pac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Sep 2015 20:41:28 -0700 (PDT)
+Subject: Re: [PATCH v2] powerpc/powernv/pci-ioda: fix 32-bit TCE table init in
+ kdump kernel
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+References: <20150902011123.GA47557@linux.vnet.ibm.com>
+ <55E6BAAF.9090502@ozlabs.ru> <20150902153928.GB47557@linux.vnet.ibm.com>
+ <1441274333.26379.4.camel@ellerman.id.au>
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Ben Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, David Gibson
+ <david@gibson.dropbear.id.au>, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55E912E0.1000602@ozlabs.ru>
+Date: Fri, 4 Sep 2015 13:41:20 +1000
+MIME-Version: 1.0
+In-Reply-To: <1441274333.26379.4.camel@ellerman.id.au>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,239 +35,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 24x7 counters in Powerpc allow monitoring a large number of counters
-simultaneously. They also allow reading several counters in a single
-HCALL so we can get a more consistent snapshot of the system.
+On 09/03/2015 07:58 PM, Michael Ellerman wrote:
+> On Wed, 2015-09-02 at 08:39 -0700, Nishanth Aravamudan wrote:
+>> On 02.09.2015 [19:00:31 +1000], Alexey Kardashevskiy wrote:
+>>> On 09/02/2015 11:11 AM, Nishanth Aravamudan wrote:
+>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> index 85cbc96eff6c..0d7967e31169 100644
+>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> @@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+>>>>   {
+>>>>   	struct iommu_table *tbl = NULL;
+>>>>   	long rc;
+>>>> +	/*
+>>>> +	 * In memory constrained environments, e.g. kdump kernel, the
+>>>> +	 * DMA window can be larger than available memory, which will
+>>>> +	 * cause errors later.
+>>>> +	 */
+>>>> +	__u64 window_size =
+>>>
+>>> I asked for "const __u64" ;)
+>>
+>> I knew I'd forget something!
+>
+> Nish! In future please send a reply with the above comment, and then the v2 as
+> a separate mail, otherwise I have to manually edit out your comment when
+> applying.
+>
+>> When attempting to kdump with the 4.2 kernel, we see for each PCI
+>> device:
+>>
+>>   pci 0003:01     : [PE# 000] Assign DMA32 space
+>>   pci 0003:01     : [PE# 000] Setting up 32-bit TCE table at 0..80000000
+>>   pci 0003:01     : [PE# 000] Failed to create 32-bit TCE table, err -22
+>>   PCI: Domain 0004 has 8 available 32-bit DMA segments
+>>   PCI: 4 PE# for a total weight of 70
+>>   pci 0004:01     : [PE# 002] Assign DMA32 space
+>>   pci 0004:01     : [PE# 002] Setting up 32-bit TCE table at 0..80000000
+>>   pci 0004:01     : [PE# 002] Failed to create 32-bit TCE table, err -22
+>>   pci 0004:0d     : [PE# 005] Assign DMA32 space
+>>   pci 0004:0d     : [PE# 005] Setting up 32-bit TCE table at 0..80000000
+>>   pci 0004:0d     : [PE# 005] Failed to create 32-bit TCE table, err -22
+>>   pci 0004:0e     : [PE# 006] Assign DMA32 space
+>>   pci 0004:0e     : [PE# 006] Setting up 32-bit TCE table at 0..80000000
+>>   pci 0004:0e     : [PE# 006] Failed to create 32-bit TCE table, err -22
+>>   pci 0004:10     : [PE# 008] Assign DMA32 space
+>>   pci 0004:10     : [PE# 008] Setting up 32-bit TCE table at 0..80000000
+>>   pci 0004:10     : [PE# 008] Failed to create 32-bit TCE table, err -22
+>>
+>> and eventually the kdump kernel fails to boot as none of the PCI devices
+>> (including the disk controller) are successfully initialized.
+>>
+>> The EINVAL response is because the DMA window (the 2GB base window) is
+>> larger than the kdump kernel's reserved memory (crashkernel=, in this
+>> case specified to be 1024M). The check in question,
+>>
+>>   if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
+>>
+>> is a valid sanity check for pnv_pci_ioda2_table_alloc_pages(), so adjust
+>> the caller to pass in a smaller window size if our maximum memory value
+>> is smaller than the DMA window.
+>>
+>> After this change, the PCI devices successfully set up the 32-bit TCE
+>> table and kdump succeeds.
+>>
+>> The problem was seen on a Firestone machine originally.
+>>
+>> Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
+>
+> That went into 4.2, so should this have a:
+>
+> Cc: stable@vger.kernel.org # 4.2
+>
+> ?
+>
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 85cbc96eff6c..e51aff01a218 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -2077,10 +2077,17 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+>>   {
+>>   	struct iommu_table *tbl = NULL;
+>>   	long rc;
+>> +	/*
+>> +	 * In memory constrained environments, e.g. kdump kernel, the
+>> +	 * DMA window can be larger than available memory, which will
+>> +	 * cause errors later.
+>> +	 */
+>> +	const __u64 window_size =
+>
+> Why is this using __u64 and not u64, it's not exported to userspace.
+>
+> It looks like pnv_pci_ioda2_create_table() uses __u64, but there's no reason
+> for that AFAICS either. And yes I did commit it so it's my fault :)
 
-Use the PMU's transaction interface to monitor and read several event
-counters at once. The idea is that users can group several 24x7 events
-into a single group of events. We use the following logic to submit
-the group of events to the PMU and read the values:
 
-	pmu->start_txn()		// Initialize before first event
+There is VFIO_IOMMU_SPAPR_TCE_CREATE ioctl which receives 
+vfio_iommu_spapr_tce_create struct from the user space and there is "__u64 
+window_size" which is passed across:
+tce_iommu_create_window()
+tce_iommu_create_table()
+pnv_pci_ioda2_create_table (via table_group->ops->create_table())
 
-	for each event in group
-		pmu->read(event);	// Queue each event to be read
+At what point should __u64 have become u64?
 
-	pmu->commit_txn()		// Read/update all queuedcounters
+Thanks.
 
-The ->commit_txn() also updates the event counts in the respective
-perf_event objects.  The perf subsystem can then directly get the
-event counts from the perf_event and can avoid submitting a new
-->read() request to the PMU.
+>
+> I'll fix this up to use u64.
+>
+> cheers
+>
+>
+>
 
-Thanks to input from Peter Zijlstra.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
-Changelog[v6]
-	[Peter Zijlstra] Change txn_flags to 'unsigned int'
-
-Changelog[v3]
-	- [Peter Zijlstra] Save the transaction state in ->start_txn() and
-	  remove the flags parameter from ->commit_txn() and ->cancel_txn().
----
- arch/powerpc/perf/hv-24x7.c |  166 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 164 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index df95629..c268f9e 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -142,6 +142,15 @@ static struct attribute_group event_long_desc_group = {
- 
- static struct kmem_cache *hv_page_cache;
- 
-+DEFINE_PER_CPU(int, hv_24x7_txn_flags);
-+DEFINE_PER_CPU(int, hv_24x7_txn_err);
-+
-+struct hv_24x7_hw {
-+	struct perf_event *events[255];
-+};
-+
-+DEFINE_PER_CPU(struct hv_24x7_hw, hv_24x7_hw);
-+
- /*
-  * request_buffer and result_buffer are not required to be 4k aligned,
-  * but are not allowed to cross any 4k boundary. Aligning them to 4k is
-@@ -1233,9 +1242,48 @@ static void update_event_count(struct perf_event *event, u64 now)
- static void h_24x7_event_read(struct perf_event *event)
- {
- 	u64 now;
-+	struct hv_24x7_request_buffer *request_buffer;
-+	struct hv_24x7_hw *h24x7hw;
-+	int txn_flags;
-+
-+	txn_flags = __this_cpu_read(hv_24x7_txn_flags);
-+
-+	/*
-+	 * If in a READ transaction, add this counter to the list of
-+	 * counters to read during the next HCALL (i.e commit_txn()).
-+	 * If not in a READ transaction, go ahead and make the HCALL
-+	 * to read this counter by itself.
-+	 */
-+
-+	if (txn_flags & PERF_PMU_TXN_READ) {
-+		int i;
-+		int ret;
- 
--	now = h_24x7_get_value(event);
--	update_event_count(event, now);
-+		if (__this_cpu_read(hv_24x7_txn_err))
-+			return;
-+
-+		request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
-+
-+		ret = add_event_to_24x7_request(event, request_buffer);
-+		if (ret) {
-+			__this_cpu_write(hv_24x7_txn_err, ret);
-+		} else {
-+			/*
-+			 * Assoicate the event with the HCALL request index,
-+			 * so ->commit_txn() can quickly find/update count.
-+			 */
-+			i = request_buffer->num_requests - 1;
-+
-+			h24x7hw = &get_cpu_var(hv_24x7_hw);
-+			h24x7hw->events[i] = event;
-+			put_cpu_var(h24x7hw);
-+		}
-+
-+		put_cpu_var(hv_24x7_reqb);
-+	} else {
-+		now = h_24x7_get_value(event);
-+		update_event_count(event, now);
-+	}
- }
- 
- static void h_24x7_event_start(struct perf_event *event, int flags)
-@@ -1257,6 +1305,117 @@ static int h_24x7_event_add(struct perf_event *event, int flags)
- 	return 0;
- }
- 
-+/*
-+ * 24x7 counters only support READ transactions. They are
-+ * always counting and dont need/support ADD transactions.
-+ * Cache the flags, but otherwise ignore transactions that
-+ * are not PERF_PMU_TXN_READ.
-+ */
-+static void h_24x7_event_start_txn(struct pmu *pmu, unsigned int flags)
-+{
-+	struct hv_24x7_request_buffer *request_buffer;
-+	struct hv_24x7_data_result_buffer *result_buffer;
-+
-+	/* We should not be called if we are already in a txn */
-+	WARN_ON_ONCE(__this_cpu_read(hv_24x7_txn_flags));
-+
-+	__this_cpu_write(hv_24x7_txn_flags, flags);
-+	if (flags & ~PERF_PMU_TXN_READ)
-+		return;
-+
-+	request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
-+	result_buffer = (void *)get_cpu_var(hv_24x7_resb);
-+
-+	init_24x7_request(request_buffer, result_buffer);
-+
-+	put_cpu_var(hv_24x7_resb);
-+	put_cpu_var(hv_24x7_reqb);
-+}
-+
-+/*
-+ * Clean up transaction state.
-+ *
-+ * NOTE: Ignore state of request and result buffers for now.
-+ *	 We will initialize them during the next read/txn.
-+ */
-+static void reset_txn(void)
-+{
-+	__this_cpu_write(hv_24x7_txn_flags, 0);
-+	__this_cpu_write(hv_24x7_txn_err, 0);
-+}
-+
-+/*
-+ * 24x7 counters only support READ transactions. They are always counting
-+ * and dont need/support ADD transactions. Clear ->txn_flags but otherwise
-+ * ignore transactions that are not of type PERF_PMU_TXN_READ.
-+ *
-+ * For READ transactions, submit all pending 24x7 requests (i.e requests
-+ * that were queued by h_24x7_event_read()), to the hypervisor and update
-+ * the event counts.
-+ */
-+static int h_24x7_event_commit_txn(struct pmu *pmu)
-+{
-+	struct hv_24x7_request_buffer *request_buffer;
-+	struct hv_24x7_data_result_buffer *result_buffer;
-+	struct hv_24x7_result *resb;
-+	struct perf_event *event;
-+	u64 count;
-+	int i, ret, txn_flags;
-+	struct hv_24x7_hw *h24x7hw;
-+
-+	txn_flags = __this_cpu_read(hv_24x7_txn_flags);
-+	WARN_ON_ONCE(!txn_flags);
-+
-+	ret = 0;
-+	if (txn_flags & ~PERF_PMU_TXN_READ)
-+		goto out;
-+
-+	ret = __this_cpu_read(hv_24x7_txn_err);
-+	if (ret)
-+		goto out;
-+
-+	request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
-+	result_buffer = (void *)get_cpu_var(hv_24x7_resb);
-+
-+	ret = make_24x7_request(request_buffer, result_buffer);
-+	if (ret) {
-+		log_24x7_hcall(request_buffer, result_buffer, ret);
-+		goto put_reqb;
-+	}
-+
-+	h24x7hw = &get_cpu_var(hv_24x7_hw);
-+
-+	/* Update event counts from hcall */
-+	for (i = 0; i < request_buffer->num_requests; i++) {
-+		resb = &result_buffer->results[i];
-+		count = be64_to_cpu(resb->elements[0].element_data[0]);
-+		event = h24x7hw->events[i];
-+		h24x7hw->events[i] = NULL;
-+		update_event_count(event, count);
-+	}
-+
-+	put_cpu_var(hv_24x7_hw);
-+
-+put_reqb:
-+	put_cpu_var(hv_24x7_resb);
-+	put_cpu_var(hv_24x7_reqb);
-+out:
-+	reset_txn();
-+	return ret;
-+}
-+
-+/*
-+ * 24x7 counters only support READ transactions. They are always counting
-+ * and dont need/support ADD transactions. However, regardless of type
-+ * of transaction, all we need to do is cleanup, so we don't have to check
-+ * the type of transaction.
-+ */
-+static void h_24x7_event_cancel_txn(struct pmu *pmu)
-+{
-+	WARN_ON_ONCE(!__this_cpu_read(hv_24x7_txn_flags));
-+	reset_txn();
-+}
-+
- static struct pmu h_24x7_pmu = {
- 	.task_ctx_nr = perf_invalid_context,
- 
-@@ -1268,6 +1427,9 @@ static struct pmu h_24x7_pmu = {
- 	.start       = h_24x7_event_start,
- 	.stop        = h_24x7_event_stop,
- 	.read        = h_24x7_event_read,
-+	.start_txn   = h_24x7_event_start_txn,
-+	.commit_txn  = h_24x7_event_commit_txn,
-+	.cancel_txn  = h_24x7_event_cancel_txn,
- };
- 
- static int hv_24x7_init(void)
 -- 
-1.7.9.5
+Alexey
