@@ -1,24 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A6AF91A17B4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 20:07:30 +1000 (AEST)
-Message-ID: <1441361249.3777.3.camel@ellerman.id.au>
-Subject: Re: [[PATCH v6 02/10] perf: Add a flags parameter to pmu txn
- interfaces
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,  linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
-Date: Fri, 04 Sep 2015 20:07:29 +1000
-In-Reply-To: <1441336073-22750-3-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1441336073-22750-3-git-send-email-sukadev@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id B31861A0725
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 23:57:46 +1000 (AEST)
+Subject: Re: memcpy regression
+To: Michal Sojka <sojkam1@fel.cvut.cz>
+References: <871teeux4w.fsf@steelpick.2x.cz>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <55E9A354.6070600@c-s.fr>
+Date: Fri, 4 Sep 2015 15:57:40 +0200
+MIME-Version: 1.0
+In-Reply-To: <871teeux4w.fsf@steelpick.2x.cz>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-03 at 20:07 -0700, Sukadev Bhattiprolu wrote:
-> Currently, the PMU interface allows reading only one counter at a time.
-> But some PMUs like the 24x7 counters in Power, support reading several
-> counters at once. To leveage this functionality, extend the transaction
-> interface to support a "transaction type".
-> 
-> The first type, PERF_PMU_TXN_ADD, refers to the existing transactions,
-> i.e. used to _schedule_ all the events on the PMU as a group. A second
-> transaction type, PERF_PMU_TXN_READ, will be used in a follow-on patch,
-> by the 24x7 counters to read several counters at once.
-> 
-> Extend the transaction interfaces to the PMU to accept a 'txn_flags'
-> parameter and use this parameter to ignore any transactions that are
-> not of type PERF_PMU_TXN_ADD.
-> 
-> Thanks to Peter Zijlstra for his input.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> 
-> ---
->  arch/powerpc/perf/core-book3s.c  |   30 +++++++++++++++++++++++++++++-
 
-These powerpc changes look OK to me.
-
-So for those you can have an:
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-
-Having said that, we do end up repeating a lot of boiler plate for each arch,
-which is a pity. eg:
-
-> +static void power_pmu_start_txn(struct pmu *pmu, unsigned int txn_flags)
->  {
->  	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+Le 04/09/2015 15:33, Michal Sojka a écrit :
+> Dear Christophe,
 >
-> +	WARN_ON_ONCE(cpuhw->txn_flags);		/* txn already in flight */
-> +
-> +	cpuhw->txn_flags = txn_flags;
-> +	if (txn_flags & ~PERF_PMU_TXN_ADD)
-> +		return;
-> +
+> my MPC5200-based system stopped booting recently. I bisected the problem
+> to your commit below. If I revert that commit (on top of
+> 807249d3ada1ff28a47c4054ca4edd479421b671 = v4.2-6663-g807249d), my
+> system boots again.
+>
+>
 
-And so on.
+Do you use mainline code only, or do you have home-made code ?
 
-But I can't think of an easy way to avoid that, so it's not a blocker, but
-maybe someone can think of a nice solution to avoid it?
+memcpy() is not supposed to be used on non-cacheable memory.
+memcpy_toio() is the function to use when copying to non-cacheble area.
 
-cheers
+When I submitted the patch, I looked for erroneous use of memcpy() and 
+memset().
+I found one wrong use of memset() that I changed to memset_io() but I 
+didn't find any misuse of memcpy().
+But I may have missed one.
+
+Christophe
