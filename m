@@ -1,41 +1,35 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
+ [IPv6:2607:f8b0:4002:c07::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 74AE61A027B
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 04:23:00 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 4 Sep 2015 14:22:57 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id CA8CD38C8039
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 14:22:55 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t84IMtTe59375864
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 18:22:55 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t84IMsPD005282
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 14:22:55 -0400
-Date: Fri, 4 Sep 2015 11:22:52 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Hari Bathini <hbathini@in.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Ben Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Jan Stancek <jstancek@redhat.com>
-Subject: [PATCH v2] powerpc/powernv/pci-ioda: fix kdump with non-power-of-2
- crashkernel=
-Message-ID: <20150904182252.GN47557@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BFD5C1A1E32
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 04:53:21 +1000 (AEST)
+Received: by ykei199 with SMTP id i199so29848662yke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2015 11:53:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
+References: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
+From: Rob Herring <robherring2@gmail.com>
+Date: Fri, 4 Sep 2015 13:52:59 -0500
+Message-ID: <CAL_JsqJeZ3HJLvoyyz-WiPZOAXsmP9Q4yhrNeYjvDf8k+p0_9Q@mail.gmail.com>
+Subject: Re: [PATCH v4 0/4] PCI: arm64/powerpc: Fix parsing of linux,
+ pci-probe-only
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Will Deacon <will.deacon@arm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Rob Herring <robh+dt@kernel.org>, Alexander Graf <agraf@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,48 +39,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 32-bit TCE table initialization relies on the DMA window having a
-size equal to a power of 2 (and checks for it explicitly). But
-crashkernel= has no constraint that requires a power-of-2 be specified.
-This causes the kdump kernel to fail to boot as none of the PCI devices
-(including the disk controller) are successfully initialized.
+On Fri, Sep 4, 2015 at 11:50 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> The pci-host-generic driver parses the linux,pci-probe-only property,
+> and assumes that it will have a boolean parameter.
+>
+> Turns out that the Seattle DTS file has a naked "linux,pci-probe-only"
+> property, which leads to the driver dereferencing some unsuspecting
+> memory location. Nothing really bad happens (we end up reading some
+> other bit of DT, fortunately), but that not a reason to keep it this
+> way. Turns out that the Pseries code (where this code was lifted from)
+> may suffer from the same issue.
+>
+> The first patch introduces a common (and fixed) version of that check
+> that can be used by drivers and architectures that require it. The two
+> following patches change the pci-host-generic driver and the powerpc
+> code to use it.
+>
+> Finally, the bad property is removed from the Seatle DTS, because it
+> is simply not necessary (it actually prevents me from using SR-IOV,
+> which otherwise runs fine without the probe-only thing).
+>
+> This has been tested on the offending Seattle board.
+>
+> * From v3:
+>   - Restrict the property lookup to /chosen (Rob)
+>   - Acked-by on patch #4 from Suravee
+>   - I swear this is the last time I rework these patches! ;-)
+>
+> * From v2:
+>   - Use of_property_read_u32 to safely read the property (Rob)
+>   - Add a log message to indicate when we enable probe-only
+>     (probably quite useful for debugging)
+>
+> * From v1:
+>   - Consolidate the parsing in of_pci.c (Bjorn)
+>
+> Marc Zyngier (4):
+>   of/pci: Add of_pci_check_probe_only to parse "linux,pci-probe-only"
+>   PCI: pci-host-generic: Fix lookup of linux,pci-probe-only property
+>   powerpc: PCI: Fix lookup of linux,pci-probe-only property
+>   arm64: dts: Drop linux,pci-probe-only from the Seattle DTS
+>
+>  arch/arm64/boot/dts/amd/amd-overdrive.dts |  1 -
+>  arch/powerpc/platforms/pseries/setup.c    | 14 ++------------
+>  drivers/of/of_pci.c                       | 28 ++++++++++++++++++++++++++++
+>  drivers/pci/host/pci-host-generic.c       |  9 +--------
+>  include/linux/of_pci.h                    |  3 +++
+>  5 files changed, 34 insertions(+), 21 deletions(-)
 
-After this change, the PCI devices successfully set up the 32-bit TCE
-table and kdump succeeds.
+For the series:
 
-Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: stable@vger.kernel.org # 4.2
+Reviewed-by: Rob Herring <robh@kernel.org>
 
----
-
-Michael, I kept this as a follow-on patch to my previous one. If you'd
-rather I made a v3 of that patch with the two fixes combined, I can
-resend. Also, I fixed up the context on my end to be u64, but not sure
-if that will match your tree (next doesn't have my prior patch applied
-yet, that I can see).
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index f1c74c28e564..d5e635f2c3aa 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2078,12 +2078,18 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
- 	struct iommu_table *tbl = NULL;
- 	long rc;
- 	/*
-+	 * crashkernel= specifies the kdump kernel's maximum memory at
-+	 * some offset and there is no guaranteed the result is a power
-+	 * of 2, which will cause errors later.
-+	 */
-+	const u64 max_memory = __rounddown_pow_of_two(memory_hotplug_max());
-+	/*
- 	 * In memory constrained environments, e.g. kdump kernel, the
- 	 * DMA window can be larger than available memory, which will
- 	 * cause errors later.
- 	 */
- 	const u64 window_size =
--		min((u64)pe->table_group.tce32_size, memory_hotplug_max());
-+		min((u64)pe->table_group.tce32_size, max_memory);
- 
- 	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
- 			iommu_page_shift_4k,
+Rob
