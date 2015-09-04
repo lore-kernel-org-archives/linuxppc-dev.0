@@ -1,7 +1,7 @@
 Return-Path: <marc.zyngier@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id DFD251A1E25
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 02:50:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id C61E11A1E1D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 02:50:32 +1000 (AEST)
 From: Marc Zyngier <marc.zyngier@arm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -12,10 +12,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  linux-pci@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH v4 3/4] powerpc: PCI: Fix lookup of linux,
- pci-probe-only property
-Date: Fri,  4 Sep 2015 17:50:10 +0100
-Message-Id: <1441385411-7624-4-git-send-email-marc.zyngier@arm.com>
+Subject: [PATCH v4 4/4] arm64: dts: Drop linux,
+ pci-probe-only from the Seattle DTS
+Date: Fri,  4 Sep 2015 17:50:11 +0100
+Message-Id: <1441385411-7624-5-git-send-email-marc.zyngier@arm.com>
 In-Reply-To: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
 References: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,56 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When find_and_init_phbs() looks for the probe-only property, it seems
-to trust the firmware to be correctly written, and assumes that there
-is a parameter to the property.
+The linux,pci-probe-only property mandates an argument to indicate
+whether or not to engage the "probe-only" mode, but the Seattle
+DTS just provides a naked property, which is illegal.
 
-It is conceivable that the firmware could not be that perfect, and it
-could expose this property naked (at least one arm64 platform seems to
-exhibit this exact behaviour). The setup code the ends up making
-a decision based on whatever the property pointer points to, which
-is likely to be junk.
+Also, it turns out that the board is perfectly happy without
+probe-only, so let's drop this altogether.
 
-Instead, switch to the common of_pci.c implementation that doesn't
-suffer from this problem and ignore the property if the firmware
-couldn't make up its mind.
-
+Acked-by: Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>
 Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
 ---
- arch/powerpc/platforms/pseries/setup.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ arch/arm64/boot/dts/amd/amd-overdrive.dts | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 39a74fa..6016709 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -40,6 +40,7 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/of.h>
-+#include <linux/of_pci.h>
- #include <linux/kexec.h>
+diff --git a/arch/arm64/boot/dts/amd/amd-overdrive.dts b/arch/arm64/boot/dts/amd/amd-overdrive.dts
+index 564a3f7..128fa94 100644
+--- a/arch/arm64/boot/dts/amd/amd-overdrive.dts
++++ b/arch/arm64/boot/dts/amd/amd-overdrive.dts
+@@ -14,7 +14,6 @@
  
- #include <asm/mmu.h>
-@@ -495,18 +496,7 @@ static void __init find_and_init_phbs(void)
- 	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
- 	 * in chosen.
- 	 */
--	if (of_chosen) {
--		const int *prop;
--
--		prop = of_get_property(of_chosen,
--				"linux,pci-probe-only", NULL);
--		if (prop) {
--			if (*prop)
--				pci_add_flags(PCI_PROBE_ONLY);
--			else
--				pci_clear_flags(PCI_PROBE_ONLY);
--		}
--	}
-+	of_pci_check_probe_only();
- }
+ 	chosen {
+ 		stdout-path = &serial0;
+-		linux,pci-probe-only;
+ 	};
+ };
  
- static void __init pSeries_setup_arch(void)
 -- 
 2.1.4
