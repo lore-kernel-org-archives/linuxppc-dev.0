@@ -1,43 +1,21 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DEE781A0725
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 16:21:12 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A8A2B1402A3
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Sep 2015 16:21:12 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 4 Sep 2015 16:21:11 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 29A062CE8055
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Sep 2015 16:21:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t846L0r01901042
- for <linuxppc-dev@ozlabs.org>; Fri, 4 Sep 2015 16:21:09 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t846Kaf7018052
- for <linuxppc-dev@ozlabs.org>; Fri, 4 Sep 2015 16:20:36 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t846KaDE017495
- for <linuxppc-dev@ozlabs.org>; Fri, 4 Sep 2015 16:20:36 +1000
-Received: from ajd.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
- by ozlabs.au.ibm.com (Postfix) with ESMTP id 380C2A01DB
- for <linuxppc-dev@ozlabs.org>; Fri,  4 Sep 2015 16:20:12 +1000 (AEST)
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] cxl: abort cxl_pci_enable_device_hook() if PCI channel is
- offline
-Date: Fri,  4 Sep 2015 16:20:24 +1000
-Message-Id: <1441347624-9787-1-git-send-email-andrew.donnellan@au1.ibm.com>
+Return-Path: <horms@verge.net.au>
+Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2E08A1A0725
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 19:47:42 +1000 (AEST)
+Date: Fri, 4 Sep 2015 18:47:35 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>, kexec@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] purgatory/arch/ppc64: Reset primary cpu endian to
+ big-endian
+Message-ID: <20150904094735.GB30724@verge.net.au>
+References: <1440125476-9420-1-git-send-email-sam.mj@au1.ibm.com>
+ <20150902010251.GC30886@verge.net.au>
+ <1441257482.29016.6.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1441257482.29016.6.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,38 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cxl_pci_enable_device_hook() is called when attempting to enable an AFU
-sitting on a vPHB. At present, the state of the underlying CXL card's PCI
-channel is only checked when it calls cxl_afu_check_and_enable() at the
-very end, after it has already set DMA options and initialised a default
-context.
+On Thu, Sep 03, 2015 at 03:18:02PM +1000, Michael Ellerman wrote:
+> On Wed, 2015-09-02 at 10:02 +0900, Simon Horman wrote:
+> > [CC linuxppc-dev]
+> > 
+> > On Fri, Aug 21, 2015 at 12:51:16PM +1000, Samuel Mendoza-Jonas wrote:
+> > > Older big-endian ppc64 kernels don't include the FIXUP_ENDIAN check,
+> > > meaning if we kexec from a little-endian kernel the target kernel will
+> > > fail to boot.
+> > > Returning to big-endian before we enter the target kernel ensures that
+> > > the target kernel can boot whether or not it includes FIXUP_ENDIAN.
+> > > 
+> > > This mirrors commit 150b14e7 in kexec-lite.
+> > > 
+> > > Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
+> > 
+> > I would value a review from one of the PPC folks.
+> 
+> The diff looks good to me, and I've also tested it, so take your pick:
+> 
+> Tested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Check the CXL card's link status before setting DMA options or initialising
-a default context. If the link is down, print a warning and return
-immediately.
-
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- drivers/misc/cxl/vphb.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-index 6dd16a6..1972fb6 100644
---- a/drivers/misc/cxl/vphb.c
-+++ b/drivers/misc/cxl/vphb.c
-@@ -48,6 +48,11 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
- 
- 	phb = pci_bus_to_host(dev->bus);
- 	afu = (struct cxl_afu *)phb->private_data;
-+
-+	if (!cxl_adapter_link_ok(afu->adapter))
-+		dev_warn(&dev->dev, "%s: Device link is down, refusing to enable AFU\n", __func__);
-+		return false;
-+
- 	set_dma_ops(&dev->dev, &dma_direct_ops);
- 	set_dma_offset(&dev->dev, PAGE_OFFSET);
- 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+Thanks, I took the latter.
