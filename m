@@ -1,37 +1,36 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 819AD1A0725
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 13:09:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B2B61A17B4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 13:09:44 +1000 (AEST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 3 Sep 2015 21:09:41 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9B73119D8040
+ Thu, 3 Sep 2015 21:09:42 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2988219D801C
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Sep 2015 21:00:34 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8436ice44630244
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 20:06:44 -0700
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8439d7q40632348
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 20:09:39 -0700
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8439dJR004956
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 21:09:39 -0600
+ t8439cIJ004940
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Sep 2015 21:09:38 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
  Michael Ellerman <mpe@ellerman.id.au>
 Cc: <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: [[PATCH v6 01/10] sparc/perf: Remove unnecessary assignment
-Date: Thu,  3 Sep 2015 20:07:44 -0700
-Message-Id: <1441336073-22750-2-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v6 0/10] perf: Implement group-read of events using txn
+ interface
+Date: Thu,  3 Sep 2015 20:07:43 -0700
+Message-Id: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,25 +40,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In ->commit_txn() 'cpuc' is already initialized when it is
-declared, so we can remove the duplicate assignment.
+Unlike normal hardware PMCs, the 24x7 counters in Power8 are stored in
+memory and accessed via a hypervisor call (HCALL).  A major aspect of the
+HCALL is that it allows retireving _several_ counters at once (unlike
+regular PMCs, which are read one at a time). By reading several counters
+at once, we can get a more consistent snapshot of the system.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/sparc/kernel/perf_event.c |    1 -
- 1 file changed, 1 deletion(-)
+This patchset extends the transaction interface to accomplish submitting
+several events to the PMU and have the PMU read them all at once. User is
+expected to submit the set of events they want to read as an "event group".
 
-diff --git a/arch/sparc/kernel/perf_event.c b/arch/sparc/kernel/perf_event.c
-index 689db65..e3f89c7 100644
---- a/arch/sparc/kernel/perf_event.c
-+++ b/arch/sparc/kernel/perf_event.c
-@@ -1528,7 +1528,6 @@ static int sparc_pmu_commit_txn(struct pmu *pmu)
- 	if (!sparc_pmu)
- 		return -EINVAL;
- 
--	cpuc = this_cpu_ptr(&cpu_hw_events);
- 	n = cpuc->n_events;
- 	if (check_excludes(cpuc->event, 0, n))
- 		return -EINVAL;
+In the kernel, we submit each event to the PMU using the following logic
+(from Peter Zijlstra).
+
+        pmu->start_txn(pmu, PMU_TXN_READ);
+
+        leader->read();
+        for_each_sibling()
+                sibling->read();
+        pmu->commit_txn();
+
+where:
+        - the ->read()s queue events to be submitted to the hypervisor, and,
+        - the ->commit_txn() issues the HCALL, retrieves the result and
+          updates the event count.
+
+Architectures/PMUs that don't need/implement PMU_TXN_READ type of transactions,
+simply ignore the ->start_txn() and ->commit_txn() and continue to read the
+counters one at a time in the ->read() call.
+
+Compile/touch tested on x86. Need help testing on s390 and Sparc.
+
+Thanks to Peter Zijlstra for his input/code.
+
+Changelog[v6]
+	- [Peter Zijlstra] Use the new ->txn_flags to determine if we are in a
+	  transaction and to skip the schedulability tests. This results in
+	  PERF_EVENT_TXN flag being unused and can be dropped. Once PERF_EVENT_TXN
+	  is not used, several architectures no longer need the cpuhw->group_flag
+	  so drop that as well.
+	- [Peter Zijlstra] Change the type of txn_flags from 'int' to 'unsigned int'.
+	- [Peter Zijlstra] Add a WARN_ON_ONCE() if the state of txn_flags is not what
+	  we expect.
+	- Rebase to 4.2.0.
+
+Changelog[v5]
+	- Invert the sibling-child loop nesting in perf-read-group (re-org
+	  code and drop the patch that defined perf_event_aggregate()).
+
+Changelog[v4]
+	- Ensure all the transactions operations happen on the same CPU so PMUs
+	  can use per-CPU buffers for the transaction.
+	- Add lockdep assert and fix a locking issue in perf_read_group().
+
+Changelog [v3]
+	- Simple changes/reorg of patchset to split/rename functions
+	- [Peter Zijlstra] Save the transaction flags in ->start_txn() and
+	  drop the flags parameter from ->commit_txn() and ->cancel_txn().
+	- [Peter Zijlstra] The nop txn interfaces don't need to disable/enable
+	  PMU for PERF_PMU_TXN_READ transactions.
+
+Changelog [v2]
+        - Use the transaction interface unconditionally to avoid special-case
+          code. Architectures/PMUs that don't need the READ transaction types
+          simply ignore the ->start_txn() and ->commit_txn() calls.
+
+
+Peter Zijlstra (2):
+  perf: Add group reads to perf_event_read()
+  perf: Invert perf_read_group() loops
+
+Peter Zijlstra (Intel) (1):
+  perf: Rename perf_event_read_{one,group}, perf_read_hw
+
+Sukadev Bhattiprolu (7):
+  perf/sparc: Remove unnecessary assignment
+  perf: Add a flags parameter to pmu txn interfaces
+  perf: Split perf_event_read() and perf_event_count()
+  perf: Add return value for perf_event_read().
+  Define PERF_PMU_TXN_READ interface
+  powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
+  perf: Drop PERF_EVENT_TXN
+
+ arch/powerpc/perf/core-book3s.c  |   36 +++++--
+ arch/powerpc/perf/hv-24x7.c      |  166 +++++++++++++++++++++++++++++-
+ arch/s390/kernel/perf_cpum_cf.c  |   35 ++++++-
+ arch/sparc/kernel/perf_event.c   |   32 ++++--
+ arch/x86/kernel/cpu/perf_event.c |   39 +++++--
+ arch/x86/kernel/cpu/perf_event.h |    2 +-
+ include/linux/perf_event.h       |   15 ++-
+ kernel/events/core.c             |  210 +++++++++++++++++++++++++++++---------
+ 8 files changed, 456 insertions(+), 79 deletions(-)
+
 -- 
 1.7.9.5
