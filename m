@@ -1,23 +1,40 @@
-Return-Path: <marc.zyngier@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id C61E11A1E1D
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 02:50:32 +1000 (AEST)
-From: Marc Zyngier <marc.zyngier@arm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Will Deacon <will.deacon@arm.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>
-Cc: Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH v4 4/4] arm64: dts: Drop linux,
- pci-probe-only from the Seattle DTS
-Date: Fri,  4 Sep 2015 17:50:11 +0100
-Message-Id: <1441385411-7624-5-git-send-email-marc.zyngier@arm.com>
-In-Reply-To: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
-References: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4603F1A1E15
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 02:59:45 +1000 (AEST)
+Received: from /spool/local
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 4 Sep 2015 12:59:42 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A3C40C90041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 12:50:44 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t84Gxevk46071914
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 16:59:40 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t84GxdsM026562
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 12:59:40 -0400
+Date: Fri, 4 Sep 2015 09:59:38 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hari Bathini <hbathini@in.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Ben Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv/pci-ioda: fix kdump with non-power-of-2
+ crashkernel=
+Message-ID: <20150904165938.GL47557@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +44,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The linux,pci-probe-only property mandates an argument to indicate
-whether or not to engage the "probe-only" mode, but the Seattle
-DTS just provides a naked property, which is illegal.
+The 32-bit TCE table initialization relies on the DMA window having a
+size equal to a power of 2 (and checks for it explicitly). But
+crashkernel= has no constraint that requires a power-of-2 be specified.
+This causes the kdump kernel to fail to boot as none of the PCI devices
+(including the disk controller) are successfully initialized.
 
-Also, it turns out that the board is perfectly happy without
-probe-only, so let's drop this altogether.
+After this change, the PCI devices successfully set up the 32-bit TCE
+table and kdump succeeds.
 
-Acked-by: Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>
-Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: stable@vger.kernel.org # 4.2
+
 ---
- arch/arm64/boot/dts/amd/amd-overdrive.dts | 1 -
- 1 file changed, 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/amd/amd-overdrive.dts b/arch/arm64/boot/dts/amd/amd-overdrive.dts
-index 564a3f7..128fa94 100644
---- a/arch/arm64/boot/dts/amd/amd-overdrive.dts
-+++ b/arch/arm64/boot/dts/amd/amd-overdrive.dts
-@@ -14,7 +14,6 @@
+Michael, I did this as a follow-on patch to my previous one. If you'd
+rather I made a v3 of that patch with the two fixes combined, I can
+resend.
+
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index f1c74c28e564..73914f4bd1ab 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2084,6 +2084,12 @@ static long pnv_pci_ioda2_setup_default_config(struct pnv_ioda_pe *pe)
+ 	 */
+ 	const u64 window_size =
+ 		min((u64)pe->table_group.tce32_size, memory_hotplug_max());
++	/*
++	 * crashkernel= specifies the kdump kernel's maximum memory at
++	 * some offset and there is no guaranteed the result is a power
++	 * of 2, which will cause errors later.
++	 */
++	window_size = __rounddown_pow_of_two(window_size);
  
- 	chosen {
- 		stdout-path = &serial0;
--		linux,pci-probe-only;
- 	};
- };
- 
--- 
-2.1.4
+ 	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
+ 			IOMMU_PAGE_SHIFT_4K,
