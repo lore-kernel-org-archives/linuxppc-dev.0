@@ -1,20 +1,24 @@
-Return-Path: <bharata.rao@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1B671A2AC8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 20:04:41 +1000 (AEST)
-Received: by pacwi10 with SMTP id wi10so20192910pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Sep 2015 03:04:39 -0700 (PDT)
-From: Bharata B Rao <bharata.rao@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Subject: [PATCH FIX] powerpc/pseries: Release DRC when configure_connector
- fails
-Date: Fri,  4 Sep 2015 15:34:12 +0530
-Message-Id: <1441361052-3319-1-git-send-email-bharata.rao@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6AF91A17B4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 20:07:30 +1000 (AEST)
+Message-ID: <1441361249.3777.3.camel@ellerman.id.au>
+Subject: Re: [[PATCH v6 02/10] perf: Add a flags parameter to pmu txn
+ interfaces
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,  linux-s390@vger.kernel.org,
+ sparclinux@vger.kernel.org
+Date: Fri, 04 Sep 2015 20:07:29 +1000
+In-Reply-To: <1441336073-22750-3-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1441336073-22750-3-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+On Thu, 2015-09-03 at 20:07 -0700, Sukadev Bhattiprolu wrote:
+> Currently, the PMU interface allows reading only one counter at a time.
+> But some PMUs like the 24x7 counters in Power, support reading several
+> counters at once. To leveage this functionality, extend the transaction
+> interface to support a "transaction type".
+> 
+> The first type, PERF_PMU_TXN_ADD, refers to the existing transactions,
+> i.e. used to _schedule_ all the events on the PMU as a group. A second
+> transaction type, PERF_PMU_TXN_READ, will be used in a follow-on patch,
+> by the 24x7 counters to read several counters at once.
+> 
+> Extend the transaction interfaces to the PMU to accept a 'txn_flags'
+> parameter and use this parameter to ignore any transactions that are
+> not of type PERF_PMU_TXN_ADD.
+> 
+> Thanks to Peter Zijlstra for his input.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> 
+> ---
+>  arch/powerpc/perf/core-book3s.c  |   30 +++++++++++++++++++++++++++++-
 
-dlpar_cpu_probe() should release the acquired DRC if configure_connector
-call fails.
+These powerpc changes look OK to me.
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+So for those you can have an:
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 47d9cebe..db17827 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -422,8 +422,10 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
- 
- 	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
- 	of_node_put(parent);
--	if (!dn)
-+	if (!dn) {
-+		dlpar_release_drc(drc_index);
- 		return -EINVAL;
-+	}
- 
- 	rc = dlpar_attach_node(dn);
- 	if (rc) {
--- 
-1.8.3.1
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+
+Having said that, we do end up repeating a lot of boiler plate for each arch,
+which is a pity. eg:
+
+> +static void power_pmu_start_txn(struct pmu *pmu, unsigned int txn_flags)
+>  {
+>  	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+>
+> +	WARN_ON_ONCE(cpuhw->txn_flags);		/* txn already in flight */
+> +
+> +	cpuhw->txn_flags = txn_flags;
+> +	if (txn_flags & ~PERF_PMU_TXN_ADD)
+> +		return;
+> +
+
+And so on.
+
+But I can't think of an easy way to avoid that, so it's not a blocker, but
+maybe someone can think of a nice solution to avoid it?
+
+cheers
