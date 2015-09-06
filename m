@@ -1,30 +1,20 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 59C131A1E4B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 00:44:41 +1000 (AEST)
-Date: Sun, 6 Sep 2015 17:44:32 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- mpe@ellerman.id.au, linux-pci@vger.kernel.org,
- gwshan@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org,
- Fam Zheng <famz@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
- Yijing Wang <wangyijing@huawei.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH v2 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
- probe time in OF case
-Message-ID: <20150906173838-mutt-send-email-mst@redhat.com>
-References: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20150903175624.GI829@google.com>
- <55EA2678.5030801@linux.vnet.ibm.com>
+Return-Path: <sojkam1@fel.cvut.cz>
+Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
+ by lists.ozlabs.org (Postfix) with ESMTP id 329EA1A1F3A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 05:05:26 +1000 (AEST)
+From: Michal Sojka <sojkam1@fel.cvut.cz>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: memcpy regression
+In-Reply-To: <55EBF6CD.5010001@c-s.fr>
+References: <871teeux4w.fsf@steelpick.2x.cz> <55E9A354.6070600@c-s.fr>
+ <87si6utfpf.fsf@steelpick.2x.cz> <55E9DE87.4070805@c-s.fr>
+ <55E9F5CE.6050904@fel.cvut.cz> <55EA3281.3000806@fel.cvut.cz>
+ <55EBF6CD.5010001@c-s.fr>
+Date: Sun, 06 Sep 2015 21:05:15 +0200
+Message-ID: <87twr74bdg.fsf@steelpick.2x.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <55EA2678.5030801@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 04, 2015 at 08:17:12PM -0300, Guilherme G. Piccoli wrote:
-> Hello Bjorn,
-> 
-> >of_create_pci_dev() already has a lot of code that duplicates
-> >pci_setup_device(), and it's a shame to add more.  There's also a sparc
-> >version of of_create_pci_dev() that presumably has the same problem you're
-> >fixing for powerpc.
-> 
-> Thanks for the information!
-> 
-> >Michael originally called pci_msi_setup_pci_dev() from
-> >pci_init_capabilities() [1].  A subsequent patch moved the call
-> >to pci_setup_device() [2] because an early quirk (called from
-> >pci_setup_device()) used pci_msi_off(), which depended on
-> >pci_msi_setup_pci_dev().
-> >
-> >But we later removed pci_msi_off() completely, so I think we probably
-> >*could* call pci_msi_setup_pci_dev() from pci_init_capabilities().
-> >
-> >That would be much nicer because it makes more sense there, and it
-> >would do the right thing for powerpc and sparc because they both
-> >already use that path.
-> >
-> >Can you look into moving the call?
-> 
-> I might have misunderstood something here (sorry if it's the case), but
-> moving the call to pci_init_capabilities() has the same practical
-> implications than reverting my 2 commmits [1] [2] and Michael Tsirkin's
-> commit [3], except when CONFIG_PCI_MSI is not set - in this case, moving the
-> call would initialize MSI capabilities anyway, since pci_init_capabilities()
-> executes even if CONFIG_PCI_MSI isn't set.
-> 
-> My question is: is necessary to initialize MSI capabilities even with
-> CONFIG_PCI_MSI not set? In negative case, would be "cleaner" revert the 3
-> commits, right?
-> 
-> On the other hand, if it's necessary to initialize MSI capabilities on
-> devices anyway, we can change the call place.
+On Sun, Sep 06 2015, christophe leroy wrote:
+> Le 05/09/2015 02:08, Michal Sojka a =C3=A9crit :
+>> On 4.9.2015 21:49, Michal Sojka wrote:
+>>> On 4.9.2015 20:10, christophe leroy wrote:
+>>>>
+>>>>
+>>>> Le 04/09/2015 16:35, Michal Sojka a =C3=A9crit :
+>>>>> On Fri, Sep 04 2015, Christophe LEROY wrote:
+>>>>>> Le 04/09/2015 15:33, Michal Sojka a =C3=A9crit :
+>>>>>>> Dear Christophe,
+>>>>>>>
+>>>>>>> my MPC5200-based system stopped booting recently. I bisected the=20
+>>>>>>> problem
+>>>>>>> to your commit below. If I revert that commit (on top of
+>>>>>>> 807249d3ada1ff28a47c4054ca4edd479421b671 =3D v4.2-6663-g807249d), my
+>>>>>>> system boots again.
+>>>>>>>
+>>>>>>>
+>>>>>> Do you use mainline code only, or do you have home-made code ?
+>>>>> I use mainline only sources with non-mainline device-tree.
+>>>>>
+>>>>>> memcpy() is not supposed to be used on non-cacheable memory.
+>>>>>> memcpy_toio() is the function to use when copying to non-cacheble=20
+>>>>>> area.
+>>>>>>
+>>>>>> When I submitted the patch, I looked for erroneous use of memcpy()=20
+>>>>>> and
+>>>>>> memset().
+>>>>>> I found one wrong use of memset() that I changed to memset_io() but I
+>>>>>> didn't find any misuse of memcpy().
+>>>>>> But I may have missed one.
+>>>>> I attach my .config, if it helps. I have there
+>>>>>
+>>>>> CONFIG_PPC_MPC52xx=3Dy
+>>>>> CONFIG_PPC_MPC5200_SIMPLE=3Dy
+>>>>>
+>>>>> so arch/powerpc/platforms/52xx is probably the directory to look.=20
+>>>>> Do you
+>>>>> see any mempcy misuse there?
+>>>> I only found one suspect use of memcpy() in=20
+>>>> arch/powerpc/platforms/52xx/
+>>>> It is in mpc52xx_pm.c but it's linked to CONFIG_PM which is not=20
+>>>> selected by your .config
+>>>> I'll check in the drivers selected by your .config
+>>>>
+>>>> In parallele, are you able to try with CONFIG_PPC_EARLY_DEBUG in=20
+>>>> order to try and locate the blocking point ?
+>>> I don't get any output from the system even with CONFIG_PPC_EARLY_DEBUG.
+>>
+>> Hmm, there is no udbg console for MPC5200. I hacked something up and=20
+>> the earliest place I was able to initialize it is after=20
+>> early_init_devtree() in setup_32.c. Even with this console, I got no=20
+>> output when the problematic patch was applied. So the problem is=20
+>> somewhere earlier.
+>>
+>
+> In early_init() in setup_32.c, there is the following comment:
+> /* First zero the BSS -- use memset_io, some platforms don't have caches=
+=20
+> on yet */
+>
+> In that case, when does cache get activated ?
+>
+> In move_device_tree(), called from early_init_devtree(), there is a call=
+=20
+> to memcpy().
+> Can you try replacing it by memcpy_io() ?
 
-I think the reason why it's necessary is explained in
-commit log for commit 1851617cd2da9cc53cdc1738f4148f4f042c0e56 (that's
-[3] below).
+I tried replacing it by memcpy_toio(), memcpy_fromio() and by
+generic_memcpy(). Nothing helped :(
 
-
-> Let me know your opinion, and I'm sorry if I misunderstood something here.
-> 
-> Cheers,
-> 
-> 
-> Guilherme Piccoli
-> 
-> 
-> 
-> [1] commit 22b6839b914b ("PCI: Make pci_msi_setup_pci_dev() non-static for
-> use by arch code")
-> 
-> [2] commit 4d9aac397a5d ("powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
-> probe time in OF case")
-> 
-> [3] commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
-> doesn't support MSI")
+-Michal
