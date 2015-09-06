@@ -1,26 +1,19 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 614DF1A1761
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Sep 2015 16:37:11 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
-Date: Sun, 6 Sep 2015 06:37:02 +0000
-Message-ID: <SN1PR0301MB1550873B24F8F9F4760F67049B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
- <1441154062.4966.113.camel@freescale.com>
-In-Reply-To: <1441154062.4966.113.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0A3DA1A1E46
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Sep 2015 18:18:29 +1000 (AEST)
+Subject: Re: memcpy regression
+To: Michal Sojka <sojkam1@fel.cvut.cz>
+References: <871teeux4w.fsf@steelpick.2x.cz> <55E9A354.6070600@c-s.fr>
+ <87si6utfpf.fsf@steelpick.2x.cz> <55E9DE87.4070805@c-s.fr>
+ <55E9F5CE.6050904@fel.cvut.cz> <55EA3281.3000806@fel.cvut.cz>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <55EBF6CD.5010001@c-s.fr>
+Date: Sun, 6 Sep 2015 10:18:21 +0200
 MIME-Version: 1.0
+In-Reply-To: <55EA3281.3000806@fel.cvut.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,53 +23,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gTW9uLCAyMDE1LTA5LTIgYXQgODozNCArMDgwMCwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDAyLCAyMDE1IDg6MzQgQU0NCj4gVG86IFpo
-YW8gUWlhbmctQjQ1NDc1DQo+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51
-eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUg
-WGlhb2JvLVI2MzA2MTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBMaQ0KPiBZYW5nLUxlby1S
-NTg0NzI7IHBhdWx1c0BzYW1iYS5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCBWNyAyLzNdIHFl
-X2NvbW1vbjogYWRkIHFlX211cmFtXyBmdW5jdGlvbnMgdG8gbWFuYWdlDQo+IG11cmFtDQo+IA0K
-PiBPbiBNb24sIDIwMTUtMDgtMzEgYXQgMTY6NTggKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+
-IA0KPiA+IEBAIC0xODcsMTIgKzE5MCwyNSBAQCBzdGF0aWMgaW5saW5lIGludCBxZV9hbGl2ZV9k
-dXJpbmdfc2xlZXAodm9pZCkgIH0NCj4gPg0KPiA+ICAvKiB3ZSBhY3R1YWxseSB1c2UgY3BtX211
-cmFtIGltcGxlbWVudGF0aW9uLCBkZWZpbmUgdGhpcyBmb3INCj4gPiBjb252ZW5pZW5jZSAqLyAt
-I2RlZmluZSBxZV9tdXJhbV9pbml0IGNwbV9tdXJhbV9pbml0IC0jZGVmaW5lDQo+ID4gcWVfbXVy
-YW1fYWxsb2MgY3BtX211cmFtX2FsbG9jIC0jZGVmaW5lIHFlX211cmFtX2FsbG9jX2ZpeGVkDQo+
-ID4gY3BtX211cmFtX2FsbG9jX2ZpeGVkIC0jZGVmaW5lIHFlX211cmFtX2ZyZWUgY3BtX211cmFt
-X2ZyZWUgLSNkZWZpbmUNCj4gPiBxZV9tdXJhbV9hZGRyIGNwbV9tdXJhbV9hZGRyIC0jZGVmaW5l
-IHFlX211cmFtX29mZnNldCBjcG1fbXVyYW1fb2Zmc2V0DQo+ID4gKyNkZWZpbmUgY3BtX211cmFt
-X2luaXQgcWVfbXVyYW1faW5pdA0KPiA+ICsjZGVmaW5lIGNwbV9tdXJhbV9hbGxvYyBxZV9tdXJh
-bV9hbGxvYyAjZGVmaW5lIGNwbV9tdXJhbV9hbGxvY19maXhlZA0KPiA+ICtxZV9tdXJhbV9hbGxv
-Y19maXhlZCAjZGVmaW5lIGNwbV9tdXJhbV9mcmVlIHFlX211cmFtX2ZyZWUgI2RlZmluZQ0KPiA+
-ICtjcG1fbXVyYW1fYWRkciBxZV9tdXJhbV9hZGRyICNkZWZpbmUgY3BtX211cmFtX29mZnNldCBx
-ZV9tdXJhbV9vZmZzZXQNCj4gDQo+IFdoeT8gIFRoaXMgaXMgdW5uZWNlc3NhcnkgY2h1cm4uDQo+
-IA0KVGhpcyBpcyBuZWNlc3NhcnkuIFFFIGlzIG9uIGJvdGggQVJNIGFuZCBQb3dlclBDLCBpdHMg
-Y29kZSBpcyB1bmRlciBwdWJsaWMgY29kZS4NCkJ1dCBDUE0gaXMgb25seSBvbiBQb3dlclBDIGFu
-ZCBpdHMgY29kZSBpcyB1bmRlciBQb3dlclBDLg0KU28gd2hlbiBidWlsZCBBUk0sIFFFIHdpbGwg
-bm90IGZpbmQgY3BtX211cmFtXyogZnVuY3Rpb24uDQo+IA0KPiANCj4gPg0KPiA+IC1pbnQgY3Bt
-X211cmFtX2luaXQodm9pZCkNCj4gPiAtew0KPiA+IC0gICAgIHN0cnVjdCBkZXZpY2Vfbm9kZSAq
-bnA7DQo+ID4gLSAgICAgc3RydWN0IHJlc291cmNlIHI7DQo+ID4gLSAgICAgdTMyIHplcm9bT0Zf
-TUFYX0FERFJfQ0VMTFNdID0ge307DQo+ID4gLSAgICAgcmVzb3VyY2Vfc2l6ZV90IG1heCA9IDA7
-DQo+ID4gLSAgICAgaW50IGkgPSAwOw0KPiA+IC0gICAgIGludCByZXQgPSAwOw0KPiA+IC0NCj4g
-PiAtICAgICBpZiAobXVyYW1fcGJhc2UpDQo+ID4gLSAgICAgICAgICAgICByZXR1cm4gMDsNCj4g
-PiAtDQo+ID4gLSAgICAgc3Bpbl9sb2NrX2luaXQoJmNwbV9tdXJhbV9sb2NrKTsNCj4gPiAtICAg
-ICAvKiBpbml0aWFsaXplIHRoZSBpbmZvIGhlYWRlciAqLw0KPiA+IC0gICAgIHJoX2luaXQoJmNw
-bV9tdXJhbV9pbmZvLCAxLA0KPiA+IC0gICAgICAgICAgICAgc2l6ZW9mKGNwbV9ib290X211cmFt
-X3JoX2Jsb2NrKSAvDQo+ID4gLSAgICAgICAgICAgICBzaXplb2YoY3BtX2Jvb3RfbXVyYW1fcmhf
-YmxvY2tbMF0pLA0KPiA+IC0gICAgICAgICAgICAgY3BtX2Jvb3RfbXVyYW1fcmhfYmxvY2spOw0K
-PiA+IC0NCj4gPiAtICAgICBucCA9IG9mX2ZpbmRfY29tcGF0aWJsZV9ub2RlKE5VTEwsIE5VTEws
-ICJmc2wsY3BtLW11cmFtLWRhdGEiKTsNCj4gPiAtICAgICBpZiAoIW5wKSB7DQo+ID4gLSAgICAg
-ICAgICAgICAvKiB0cnkgbGVnYWN5IGJpbmRpbmdzICovDQo+ID4gLSAgICAgICAgICAgICBucCA9
-IG9mX2ZpbmRfbm9kZV9ieV9uYW1lKE5VTEwsICJkYXRhLW9ubHkiKTsNCj4gPiAtICAgICAgICAg
-ICAgIGlmICghbnApIHsNCj4gPiAtICAgICAgICAgICAgICAgICAgICAgcHJpbnRrKEtFUk5fRVJS
-ICJDYW5ub3QgZmluZCBDUE0gbXVyYW0gZGF0YQ0KPiBub2RlIik7DQo+ID4gLSAgICAgICAgICAg
-ICAgICAgICAgIHJldCA9IC1FTk9ERVY7DQo+ID4gLSAgICAgICAgICAgICAgICAgICAgIGdvdG8g
-b3V0Ow0KPiA+IC0gICAgICAgICAgICAgfQ0KPiA+IC0gICAgIH0NCj4gPiAtDQo+ID4gLSAgICAg
-bXVyYW1fcGJhc2UgPSBvZl90cmFuc2xhdGVfYWRkcmVzcyhucCwgemVybyk7DQo+ID4gLSAgICAg
-aWYgKG11cmFtX3BiYXNlID09IChwaHlzX2FkZHJfdClPRl9CQURfQUREUikgew0KPiA+IC0gICAg
-ICAgICAgICAgcHJpbnRrKEtFUk5fRVJSICJDYW5ub3QgdHJhbnNsYXRlIHplcm8gdGhyb3VnaCBD
-UE0gbXVyYW0NCj4gbm9kZSIpOw0KPiA+IC0gICAgICAgICAgICAgcmV0ID0gLUVOT0RFVjsNCj4g
-PiAtICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+IC0gICAgIH0NCj4gPiANCj4gLVNjb3R0DQoN
-Cg==
+
+
+Le 05/09/2015 02:08, Michal Sojka a écrit :
+> On 4.9.2015 21:49, Michal Sojka wrote:
+>> On 4.9.2015 20:10, christophe leroy wrote:
+>>>
+>>>
+>>> Le 04/09/2015 16:35, Michal Sojka a écrit :
+>>>> On Fri, Sep 04 2015, Christophe LEROY wrote:
+>>>>> Le 04/09/2015 15:33, Michal Sojka a écrit :
+>>>>>> Dear Christophe,
+>>>>>>
+>>>>>> my MPC5200-based system stopped booting recently. I bisected the 
+>>>>>> problem
+>>>>>> to your commit below. If I revert that commit (on top of
+>>>>>> 807249d3ada1ff28a47c4054ca4edd479421b671 = v4.2-6663-g807249d), my
+>>>>>> system boots again.
+>>>>>>
+>>>>>>
+>>>>> Do you use mainline code only, or do you have home-made code ?
+>>>> I use mainline only sources with non-mainline device-tree.
+>>>>
+>>>>> memcpy() is not supposed to be used on non-cacheable memory.
+>>>>> memcpy_toio() is the function to use when copying to non-cacheble 
+>>>>> area.
+>>>>>
+>>>>> When I submitted the patch, I looked for erroneous use of memcpy() 
+>>>>> and
+>>>>> memset().
+>>>>> I found one wrong use of memset() that I changed to memset_io() but I
+>>>>> didn't find any misuse of memcpy().
+>>>>> But I may have missed one.
+>>>> I attach my .config, if it helps. I have there
+>>>>
+>>>> CONFIG_PPC_MPC52xx=y
+>>>> CONFIG_PPC_MPC5200_SIMPLE=y
+>>>>
+>>>> so arch/powerpc/platforms/52xx is probably the directory to look. 
+>>>> Do you
+>>>> see any mempcy misuse there?
+>>> I only found one suspect use of memcpy() in 
+>>> arch/powerpc/platforms/52xx/
+>>> It is in mpc52xx_pm.c but it's linked to CONFIG_PM which is not 
+>>> selected by your .config
+>>> I'll check in the drivers selected by your .config
+>>>
+>>> In parallele, are you able to try with CONFIG_PPC_EARLY_DEBUG in 
+>>> order to try and locate the blocking point ?
+>> I don't get any output from the system even with CONFIG_PPC_EARLY_DEBUG.
+>
+> Hmm, there is no udbg console for MPC5200. I hacked something up and 
+> the earliest place I was able to initialize it is after 
+> early_init_devtree() in setup_32.c. Even with this console, I got no 
+> output when the problematic patch was applied. So the problem is 
+> somewhere earlier.
+>
+
+In early_init() in setup_32.c, there is the following comment:
+/* First zero the BSS -- use memset_io, some platforms don't have caches 
+on yet */
+
+In that case, when does cache get activated ?
+
+In move_device_tree(), called from early_init_devtree(), there is a call 
+to memcpy().
+Can you try replacing it by memcpy_io() ?
+
+Christophe
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
