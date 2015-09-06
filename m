@@ -1,45 +1,28 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0121.outbound.protection.outlook.com [65.55.169.121])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 581E21A0796
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 09:17:25 +1000 (AEST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Fri, 4 Sep 2015 20:17:20 -0300
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 3590A1DC0071
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Sep 2015 19:16:12 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t84NFRN213959646
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 20:15:27 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t84NHCIS000927
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Sep 2015 20:17:13 -0300
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
- probe time in OF case
-To: Bjorn Helgaas <bhelgaas@google.com>
-References: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20150903175624.GI829@google.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- benh@kernel.crashing.org, paulus@samba.org, mst@redhat.com,
- Fam Zheng <famz@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
- Yijing Wang <wangyijing@huawei.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- "David S. Miller" <davem@davemloft.net>
-Message-ID: <55EA2678.5030801@linux.vnet.ibm.com>
-Date: Fri, 4 Sep 2015 20:17:12 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id C6ED91A0795
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Sep 2015 13:13:14 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Sun, 6 Sep 2015 03:13:04 +0000
+Message-ID: <SN1PR0301MB1550C782E61600D8268C91B79B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441153816.4966.109.camel@freescale.com>
+ <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441160299.4966.122.camel@freescale.com>
+In-Reply-To: <1441160299.4966.122.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <20150903175624.GI829@google.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,58 +32,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Bjorn,
-
-> of_create_pci_dev() already has a lot of code that duplicates
-> pci_setup_device(), and it's a shame to add more.  There's also a sparc
-> version of of_create_pci_dev() that presumably has the same problem you're
-> fixing for powerpc.
-
-Thanks for the information!
-
-> Michael originally called pci_msi_setup_pci_dev() from
-> pci_init_capabilities() [1].  A subsequent patch moved the call
-> to pci_setup_device() [2] because an early quirk (called from
-> pci_setup_device()) used pci_msi_off(), which depended on
-> pci_msi_setup_pci_dev().
->
-> But we later removed pci_msi_off() completely, so I think we probably
-> *could* call pci_msi_setup_pci_dev() from pci_init_capabilities().
->
-> That would be much nicer because it makes more sense there, and it
-> would do the right thing for powerpc and sparc because they both
-> already use that path.
->
-> Can you look into moving the call?
-
-I might have misunderstood something here (sorry if it's the case), but 
-moving the call to pci_init_capabilities() has the same practical 
-implications than reverting my 2 commmits [1] [2] and Michael Tsirkin's 
-commit [3], except when CONFIG_PCI_MSI is not set - in this case, moving 
-the call would initialize MSI capabilities anyway, since 
-pci_init_capabilities() executes even if CONFIG_PCI_MSI isn't set.
-
-My question is: is necessary to initialize MSI capabilities even with 
-CONFIG_PCI_MSI not set? In negative case, would be "cleaner" revert the 
-3 commits, right?
-
-On the other hand, if it's necessary to initialize MSI capabilities on 
-devices anyway, we can change the call place.
-
-Let me know your opinion, and I'm sorry if I misunderstood something here.
-
-Cheers,
-
-
-Guilherme Piccoli
-
-
-
-[1] commit 22b6839b914b ("PCI: Make pci_msi_setup_pci_dev() non-static 
-for use by arch code")
-
-[2] commit 4d9aac397a5d ("powerpc/PCI: Disable MSI/MSI-X interrupts at 
-PCI probe time in OF case")
-
-[3] commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if 
-kernel doesn't support MSI")
+T24gV2VkLCAyMDE1LTA5LTAyIGF0IDEwOjE4QU0gKzA4MDAsIFdvb2QgU2NvdHQtQjA3NDIxIHdy
+b3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIw
+NzQyMQ0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwMiwgMjAxNSAxMDoxOCBBTQ0KPiBU
+bzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7
+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7
+IFhpZSBYaWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+IFlhbmct
+TGVvLVI1ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDEv
+M10gZ2VuYWxsb2M6c3VwcG9ydCBtZW1vcnktYWxsb2NhdGlvbiB3aXRoDQo+IGJ5dGVzLWFsaWdu
+bWVudCB0byBnZW5hbGxvYw0KPiANCj4gT24gVHVlLCAyMDE1LTA5LTAxIGF0IDIxOjEwIC0wNTAw
+LCBaaGFvIFFpYW5nLUI0NTQ3NSB3cm90ZToNCj4gPiBPbiBXZWQsIDIwMTUtMDktMDIgYXQgMDg6
+MzhBTSArMDgwMCwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFs
+IE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6
+IFdlZG5lc2RheSwgU2VwdGVtYmVyIDAyLCAyMDE1IDg6MzAgQU0NCj4gPiA+IFRvOiBaaGFvIFFp
+YW5nLUI0NTQ3NQ0KPiA+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBY
+aWUgWGlhb2JvLVI2MzA2MTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gTGkgWWFu
+Zy1MZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENI
+IFY3IDEvM10gZ2VuYWxsb2M6c3VwcG9ydCBtZW1vcnktYWxsb2NhdGlvbiB3aXRoDQo+ID4gPiBi
+eXRlcy1hbGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+DQo+ID4gPiBPbiBNb24sIDIwMTUtMDgt
+MzEgYXQgMTY6NTggKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4gPiA+IEJ5dGVzIGFsaWdu
+bWVudCBpcyByZXF1aXJlZCB0byBtYW5hZ2Ugc29tZSBzcGVjaWFsIFJBTSwgc28gYWRkDQo+ID4g
+PiA+IGdlbl9wb29sX2ZpcnN0X2ZpdF9hbGlnbiB0byBnZW5hbGxvYywgbWVhbndoaWxlIGFkZA0K
+PiA+ID4gPiBnZW5fcG9vbF9hbGxvY19kYXRhIHRvIHBhc3MgZGF0YSB0bw0KPiA+ID4gPiBnZW5f
+cG9vbF9maXJzdF9maXRfYWxpZ24obW9kaWZ5IGdlbl9wb29sX2FsbG9jIGFzIGEgd3JhcHBlcikN
+Cj4gPiA+ID4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogWmhhbyBRaWFuZyA8cWlhbmcuemhhb0Bm
+cmVlc2NhbGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gQ2hhbmdlcyBmb3IgdjY6DQo+ID4g
+PiA+ICAgICAgIC0gcGF0Y2hlcyBzZXQgdjYgaW5jbHVkZSBhIG5ldyBwYXRjaCBiZWNhdXNlIG9m
+IHVzaW5nDQo+ID4gPiA+ICAgICAgIC0gZ2VuYWxsb2MgdG8gbWFuYWdlIFFFIE1VUkFNLCBwYXRj
+aCAwMDAxIGlzIHRoZSBuZXcNCj4gPiA+ID4gICAgICAgLSBwYXRjaCwgYWRkaW5nIGJ5dGVzIGFs
+aWdubWVudCBmb3IgYWxsb2NhdGlvbiBmb3IgdXNlLg0KPiA+ID4gPiBDaGFuZ2VzIGZvciB2NzoN
+Cj4gPiA+ID4gICAgICAgLSBjcG0gbXVyYW0gYWxzbyBuZWVkIHRvIHVzZSBnZW5hbGxvYyB0byBt
+YW5hZ2UsIGl0IGhhcw0KPiA+ID4gPiAgICAgICAgIGEgZnVuY3Rpb24gdG8gcmVzZXJ2ZSBhIHNw
+ZWNpZmljIHJlZ2lvbiBvZiBtdXJhbSwNCj4gPiA+ID4gICAgICAgICBhZGQgb2Zmc2V0IHRvIGdl
+bnBvb2xfZGF0YSBmb3Igc3RhcnQgYWRkciB0byBiZSBhbGxvY2F0ZWQuDQo+ID4gPg0KPiA+ID4g
+VGhpcyBzZWVtcyB0byBiZSBkZXNjcmliaW5nIG1vcmUgdGhhbiBqdXN0IHRoZSBjaGFuZ2VzIGlu
+IHRoaXMgcGF0Y2guDQo+ID4gPiBXaGF0IGRvZXMgYWxzbyBoYW5kbGluZyBjcG0gaGF2ZSB0byBk
+byB3aXRoIHRoaXMgcGF0Y2g/ICBBcmUgeW91DQo+ID4gPiBhZGRpbmcgc3VwcG9ydCBmb3IgcmVz
+ZXJ2aW5nIGEgc3BlY2lmaWMgcmVnaW9uIGluIHRoaXMgcGF0Y2g/ICBJDQo+ID4gPiBkb24ndCBz
+ZWUgaXQsIGFuZCBpbiBhbnkgY2FzZSBpdCBzaG91bGQgZ28gaW4gYSBkaWZmZXJlbnQgcGF0Y2gu
+DQo+ID4NCj4gPiBZZXMsIEkgYWRkZWQuIFRoZSBjb2RlIGJlbG93IGNhbiBzdXBwb3J0IHRoZSBm
+dW5jdGlvbi4NCj4gPiAgICAgICBvZmZzZXRfYml0ID0gKGFsaWdubWVudC0+b2Zmc2V0ICsgKDFV
+TCA8PCBvcmRlcikgLSAxKSA+PiBvcmRlcjsNCj4gPiAgICAgICByZXR1cm4gYml0bWFwX2ZpbmRf
+bmV4dF96ZXJvX2FyZWEobWFwLCBzaXplLCBzdGFydCArIG9mZnNldF9iaXQsDQo+IG5yLA0KPiA+
+ICAgICAgICAgICAgICAgICAgICAgICAgIGFsaWduX21hc2spOw0KPiA+DQo+ID4gQ1BNIGhhcyBh
+biBmdW5jdGlvbiBjcG1fbXVyYW1fYWxsb2NfZml4ZWQsIG5lZWRpbmcgdG8gYWxsb2NhdGUgbXVy
+YW0NCj4gPiBmcm9tIGEgU3BlY2lmaWMgb2Zmc2V0LiBTbyBJIGFkZCB0aGUgY29kZSBhbmQgYWRk
+IG9mZnNldCB0byBzdHJ1Y3QgZGF0YS4NCj4gDQo+IEkgdGhvdWdodCB0aGUgb2Zmc2V0IHdhcyBy
+ZWxhdGVkIHRvIHRoZSBwcmV2aW91cyBkaXNjdXNzaW9uIG9mIGNoZWNraW5nDQo+IGZvciBhbGxv
+Y2F0aW9uIGZhaWx1cmUuICBBcmUgeW91IHVzaW5nIGl0IHRvIGltcGxlbWVudCBhbGxvY19maXhl
+ZCgpPyAgSWYNCj4gc28sIHBsZWFzZSBkb24ndC4gIEJlc2lkZXMgdGhlIGF3a3dhcmQgaW1wbGVt
+ZW50YXRpb24gKHdoYXQgZG9lcyBpdA0KPiBsb2dpY2FsbHkgaGF2ZSB0byBkbyB3aXRoIGdlbl9w
+b29sX2ZpcnN0X2ZpdF9hbGlnbj8pLCBpdCBkb2VzIG5vdCBhcHBlYXINCj4gdG8gYmUgY29ycmVj
+dCAtDQo+IC0gd2hhdCBoYXBwZW5zIHdpdGggbXVsdGlwbGUgY2h1bmtzPyAgV2hhdCBoYXBwZW5z
+IGlmIHBhcnQgb2YgdGhlIHJlZ2lvbg0KPiB0aGUgY2FsbGVyIGlzIHRyeWluZyB0byByZXNlcnZl
+IGlzIGFscmVhZHkgdGFrZW4/ICBJbXBsZW1lbnQgYSBwcm9wZXINCj4gZnVuY3Rpb24gdG8gcmVz
+ZXJ2ZSBhIGZpeGVkIGdlbmFsbG9jIHJlZ2lvbi4NCj4gDQpUaGUgb2Zmc2V0IGlzIHdoaWNoIGFs
+bG9jYXRpb24gYmxvY2sgYWRkcmVzcyBuZWVkIHRvIGJlIGxhcmdlciB0aGFuLCANCk5vdCBlcXVh
+bCB0bywgaXQgcmVhbGx5IGxpa2UgdGhlIHBhcmFtZXRlciBzdGFydCBvZiB0aGUgYWxnbyh0aGUg
+Yml0bnVtYmVyDQpUbyBzdGFydCBzZWFyY2hpbmcgYXQpLg0KDQo+IA0KPiA+ID4gPiArLyoNCj4g
+PiA+ID4gKyAqICBnZW5fcG9vbCBkYXRhIGRlc2NyaXB0b3IgZm9yIGdlbl9wb29sX2ZpcnN0X2Zp
+dF9hbGlnbi4NCj4gPiA+ID4gKyAqLw0KPiA+ID4gPiArc3RydWN0IGdlbnBvb2xfZGF0YV9hbGln
+biB7DQo+ID4gPiA+ICsgICAgIGludCBhbGlnbjsgICAgICAgICAgICAgIC8qIGFsaWdubWVudCBi
+eSBieXRlcyBmb3Igc3RhcnRpbmcNCj4gPiA+IGFkZHJlc3MgKi8NCj4gPiA+ID4gKyAgICAgdW5z
+aWduZWQgbG9uZyBvZmZzZXQ7ICAgLyogdGhlIG9mZnNldCBvZiBhbGxvY2F0aW9uIHN0YXJ0DQo+
+IGFkZHIqLw0KPiA+ID4gPiArfTsNCj4gPiA+DQo+IA0KPiAtU2NvdHQNCj4gDQotWmhhbw0K
