@@ -1,24 +1,23 @@
-Return-Path: <prvs=685db9857=julien.grall@citrix.com>
-Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <mathieu.desnoyers@efficios.com>
+Received: from mail.efficios.com (mail.efficios.com [78.47.125.74])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 87BD81A2A84
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 01:38:46 +1000 (AEST)
-From: Julien Grall <julien.grall@citrix.com>
-To: <xen-devel@lists.xenproject.org>
-CC: <linux-arm-kernel@lists.infradead.org>, <ian.campbell@citrix.com>,
- <stefano.stabellini@eu.citrix.com>, <linux-kernel@vger.kernel.org>, "Julien
- Grall" <julien.grall@citrix.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, David Vrabel
- <david.vrabel@citrix.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4 11/20] tty/hvc: xen: Use xen page definition
-Date: Mon, 7 Sep 2015 16:33:49 +0100
-Message-ID: <1441640038-23615-12-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1441640038-23615-1-git-send-email-julien.grall@citrix.com>
-References: <1441640038-23615-1-git-send-email-julien.grall@citrix.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id D05961A2A91
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 02:16:35 +1000 (AEST)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-api@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 1/9] [picked] powerpc: allocate sys_membarrier system call
+ number
+Date: Mon,  7 Sep 2015 12:15:48 -0400
+Message-Id: <1441642556-30972-2-git-send-email-mathieu.desnoyers@efficios.com>
+In-Reply-To: <1441642556-30972-1-git-send-email-mathieu.desnoyers@efficios.com>
+References: <1441642556-30972-1-git-send-email-mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The console ring is always based on the page granularity of Xen.
+Allow it to be used from SPU, since it should not have unwanted
+side-effects.
 
-Signed-off-by: Julien Grall <julien.grall@citrix.com>
-Reviewed-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+[ Picked-by: Michael Ellerman <mpe@ellerman.id.au> ]
 
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-api@vger.kernel.org
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@lists.ozlabs.org
 ---
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>
-Cc: David Vrabel <david.vrabel@citrix.com>
-Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-    Changes in v4:
-        - The ring is always 4K (i.e XEN_PAGE_SIZE), so no need to
-        map with PAGE_SIZE. This was correctly done in v2 but lost with
-        the rebase to the "s/mfn/gfn/" series
-
-    Changes in v3:
-        - Some changes has been moved in the series "Use correctly the
-        Xen memory terminologies in Linux".
-        - Add Stefano's reviewed-by
----
- drivers/tty/hvc/hvc_xen.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index 10beb15..fa816b7 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
- 	if (r < 0 || v == 0)
- 		goto err;
- 	gfn = v;
--	info->intf = xen_remap(gfn << PAGE_SHIFT, PAGE_SIZE);
-+	info->intf = xen_remap(gfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
- 	if (info->intf == NULL)
- 		goto err;
- 	info->vtermno = HVC_COOKIE;
-@@ -472,7 +472,7 @@ static int xencons_resume(struct xenbus_device *dev)
- 	struct xencons_info *info = dev_get_drvdata(&dev->dev);
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 4d65499..126d0c4 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -369,3 +369,4 @@ SYSCALL_SPU(bpf)
+ COMPAT_SYS(execveat)
+ PPC64ONLY(switch_endian)
+ SYSCALL_SPU(userfaultfd)
++SYSCALL_SPU(membarrier)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 4a055b6..13411be 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
  
- 	xencons_disconnect_backend(info);
--	memset(info->intf, 0, PAGE_SIZE);
-+	memset(info->intf, 0, XEN_PAGE_SIZE);
- 	return xencons_connect_backend(dev, info);
- }
  
+-#define __NR_syscalls		365
++#define __NR_syscalls		366
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 6ad58d4..6337738 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -387,5 +387,6 @@
+ #define __NR_execveat		362
+ #define __NR_switch_endian	363
+ #define __NR_userfaultfd	364
++#define __NR_membarrier		365
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
 -- 
-2.1.4
+1.9.1
