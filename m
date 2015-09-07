@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C40391A0790
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 19:22:04 +1000 (AEST)
-In-Reply-To: <1441361052-3319-1-git-send-email-bharata.rao@gmail.com>
-To: Bharata B Rao <bharata.rao@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 34C711A1FB8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 19:29:42 +1000 (AEST)
+In-Reply-To: <1440415228-8006-4-git-send-email-haokexin@gmail.com>
+To: Kevin Hao <haokexin@gmail.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [FIX] powerpc/pseries: Release DRC when configure_connector fails
-Message-Id: <20150907092204.AF166140281@ozlabs.org>
-Date: Mon,  7 Sep 2015 19:22:04 +1000 (AEST)
+Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [v2,3/6] powerpc: kill mfvtb()
+Message-Id: <20150907092942.1EF38140281@ozlabs.org>
+Date: Mon,  7 Sep 2015 19:29:42 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,20 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-04-09 at 10:04:12 UTC, Bharata B Rao wrote:
-> From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> 
-> dlpar_cpu_probe() should release the acquired DRC if configure_connector
-> call fails.
-> 
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+On Mon, 2015-24-08 at 11:20:25 UTC, Kevin Hao wrote:
+> This function is only used by get_vtb(). They are almost the same
+> except the reading from the real register. Move the mfspr() to
+> get_vtb() and kill the function mfvtb(). With this, we can eliminate
+> the use of cpu_has_feature() in very core header file like reg.h.
+> This is a preparation for the use of jump label for cpu_has_feature().
 
-Which commit caused this to be a bug? Or has it always been there?
+I don't mind this change. But can you elaborate a bit on the issue with using
+cpu_has_feature() in reg.h? Just so I can understand the problem.
 
-What is the symptom, is it catastrophic, or just cosmetic?
-
-Should the fix go to stable?
+I assume you ended up in a big mess of includes when you tried to include
+jump_label.h from reg.h?
 
 cheers
