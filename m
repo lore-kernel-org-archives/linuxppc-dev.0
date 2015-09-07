@@ -1,30 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 98C4A1A2350
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 13:17:03 +1000 (AEST)
-Message-ID: <1441595823.12945.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
- probe time in OF case
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>, Bjorn Helgaas
- <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org,  gwshan@linux.vnet.ibm.com,
- benh@kernel.crashing.org, paulus@samba.org, Fam Zheng <famz@redhat.com>,
- Yinghai Lu <yinghai@kernel.org>, Yijing Wang <wangyijing@huawei.com>, "Eric
- W. Biederman" <ebiederm@xmission.com>, "David S. Miller"
- <davem@davemloft.net>
-Date: Mon, 07 Sep 2015 13:17:03 +1000
-In-Reply-To: <20150906173838-mutt-send-email-mst@redhat.com>
-References: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20150903175624.GI829@google.com> <55EA2678.5030801@linux.vnet.ibm.com>
- <20150906173838-mutt-send-email-mst@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id CDC041A2350
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 14:00:53 +1000 (AEST)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 91F2B14056B
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2015 14:00:53 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 7 Sep 2015 14:00:52 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AB5342BB004D
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2015 14:00:48 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8740WAE46792830
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Sep 2015 14:00:40 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8740FtT016540
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Sep 2015 14:00:16 +1000
+Message-ID: <55ED0BC5.3000908@au1.ibm.com>
+Date: Mon, 07 Sep 2015 14:00:05 +1000
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au1.ibm.com,
+ dja@axtens.net
+Subject: Re: [PATCH v2] cxl: abort cxl_pci_enable_device_hook() if PCI channel
+ is offline
+References: <1441347624-9787-1-git-send-email-andrew.donnellan@au1.ibm.com>	
+ <1441587178-5581-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ <1441594391.12945.2.camel@ellerman.id.au>
+In-Reply-To: <1441594391.12945.2.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,58 +48,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-09-06 at 17:44 +0300, Michael S. Tsirkin wrote:
-> On Fri, Sep 04, 2015 at 08:17:12PM -0300, Guilherme G. Piccoli wrote:
-> > Hello Bjorn,
-> > 
-> > >of_create_pci_dev() already has a lot of code that duplicates
-> > >pci_setup_device(), and it's a shame to add more.  There's also a sparc
-> > >version of of_create_pci_dev() that presumably has the same problem you're
-> > >fixing for powerpc.
-> > 
-> > Thanks for the information!
-> > 
-> > >Michael originally called pci_msi_setup_pci_dev() from
-> > >pci_init_capabilities() [1].  A subsequent patch moved the call
-> > >to pci_setup_device() [2] because an early quirk (called from
-> > >pci_setup_device()) used pci_msi_off(), which depended on
-> > >pci_msi_setup_pci_dev().
-> > >
-> > >But we later removed pci_msi_off() completely, so I think we probably
-> > >*could* call pci_msi_setup_pci_dev() from pci_init_capabilities().
-> > >
-> > >That would be much nicer because it makes more sense there, and it
-> > >would do the right thing for powerpc and sparc because they both
-> > >already use that path.
-> > >
-> > >Can you look into moving the call?
-> > 
-> > I might have misunderstood something here (sorry if it's the case), but
-> > moving the call to pci_init_capabilities() has the same practical
-> > implications than reverting my 2 commmits [1] [2] and Michael Tsirkin's
-> > commit [3], except when CONFIG_PCI_MSI is not set - in this case, moving the
-> > call would initialize MSI capabilities anyway, since pci_init_capabilities()
-> > executes even if CONFIG_PCI_MSI isn't set.
-> > 
-> > My question is: is necessary to initialize MSI capabilities even with
-> > CONFIG_PCI_MSI not set? In negative case, would be "cleaner" revert the 3
-> > commits, right?
-> > 
-> > On the other hand, if it's necessary to initialize MSI capabilities on
-> > devices anyway, we can change the call place.
-> 
-> I think the reason why it's necessary is explained in
-> commit log for commit 1851617cd2da9cc53cdc1738f4148f4f042c0e56 (that's
-> [3] below).
+On 07/09/15 12:53, Michael Ellerman wrote:
+> Is this a fix targetting 4.3 (current release) and/or stable, or something for
+> next?
 
-Well yes and no.
+4.3 - this fix is related to cxl's EEH support which has been merged for 
+4.3.
 
-What we want to do when CONFIG_PCI_MSI=n is disable MSI on the device. In order
-to do that the code first initialises dev->msi[x]_cap.
+For the record, since I neglected to add this earlier:
 
-But arguably that's wrong, ie. when CONFIG_PCI_MSI=n dev->msi[x]_cap *should*
-be zero so that any code which erroneously tries to use them will fail.
+---
+Changes from v1:
+- Insert braces so that "return false" is within if block
 
-But perhaps that's being too pedantic :)
 
-cheers
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
