@@ -1,19 +1,30 @@
-Return-Path: <sojkam1@fel.cvut.cz>
-Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
- by lists.ozlabs.org (Postfix) with ESMTP id 935791A0075
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Sep 2015 10:08:46 +1000 (AEST)
-Message-ID: <55EA3281.3000806@fel.cvut.cz>
-Date: Sat, 05 Sep 2015 02:08:33 +0200
-From: Michal Sojka <sojkam1@fel.cvut.cz>
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E31F01A275B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 21:30:03 +1000 (AEST)
+Received: from [192.168.1.106] (ppp-93-104-80-87.dynamic.mnet-online.de
+ [93.104.80.87]) by smtp.strato.de (RZmta 37.11 DYNA|AUTH)
+ with ESMTPSA id i00781r87B5m6De
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (curve secp521r1 with 521 ECDH
+ bits, eq. 15360 bits RSA)) (Client did not present a certificate)
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Mon, 7 Sep 2015 13:05:48 +0200 (CEST)
+Subject: FYI: iceweasel 40.X.X PowerPC isn't available for Debian PPC32
+To: linuxppc-dev@lists.ozlabs.org
+References: <55E5DF60.2060205@xenosoft.de>
+ <20150901180228.GS15616@csclub.uwaterloo.ca> <55E68B55.1000003@xenosoft.de>
+ <55ED4508.4010608@xenosoft.de>
+ <CAK90Sjm5JnDrtVLpUQ2=GJ2zXaX0HGMkdx46ACcHPFP0bxsUmA@mail.gmail.com>
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Message-ID: <55ED6F8C.7050003@xenosoft.de>
+Date: Mon, 7 Sep 2015 13:05:48 +0200
 MIME-Version: 1.0
-To: christophe leroy <christophe.leroy@c-s.fr>
-CC: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: memcpy regression
-References: <871teeux4w.fsf@steelpick.2x.cz> <55E9A354.6070600@c-s.fr>
- <87si6utfpf.fsf@steelpick.2x.cz> <55E9DE87.4070805@c-s.fr>
- <55E9F5CE.6050904@fel.cvut.cz>
-In-Reply-To: <55E9F5CE.6050904@fel.cvut.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <CAK90Sjm5JnDrtVLpUQ2=GJ2zXaX0HGMkdx46ACcHPFP0bxsUmA@mail.gmail.com>
+Content-Type: multipart/alternative;
+ boundary="------------000100030503040002080608"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,54 +34,266 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 4.9.2015 21:49, Michal Sojka wrote:
-> On 4.9.2015 20:10, christophe leroy wrote:
->>
->>
->> Le 04/09/2015 16:35, Michal Sojka a écrit :
->>> On Fri, Sep 04 2015, Christophe LEROY wrote:
->>>> Le 04/09/2015 15:33, Michal Sojka a écrit :
->>>>> Dear Christophe,
->>>>>
->>>>> my MPC5200-based system stopped booting recently. I bisected the 
->>>>> problem
->>>>> to your commit below. If I revert that commit (on top of
->>>>> 807249d3ada1ff28a47c4054ca4edd479421b671 = v4.2-6663-g807249d), my
->>>>> system boots again.
->>>>>
->>>>>
->>>> Do you use mainline code only, or do you have home-made code ?
->>> I use mainline only sources with non-mainline device-tree.
->>>
->>>> memcpy() is not supposed to be used on non-cacheable memory.
->>>> memcpy_toio() is the function to use when copying to non-cacheble 
->>>> area.
->>>>
->>>> When I submitted the patch, I looked for erroneous use of memcpy() and
->>>> memset().
->>>> I found one wrong use of memset() that I changed to memset_io() but I
->>>> didn't find any misuse of memcpy().
->>>> But I may have missed one.
->>> I attach my .config, if it helps. I have there
->>>
->>> CONFIG_PPC_MPC52xx=y
->>> CONFIG_PPC_MPC5200_SIMPLE=y
->>>
->>> so arch/powerpc/platforms/52xx is probably the directory to look. Do 
->>> you
->>> see any mempcy misuse there?
->> I only found one suspect use of memcpy() in arch/powerpc/platforms/52xx/
->> It is in mpc52xx_pm.c but it's linked to CONFIG_PM which is not 
->> selected by your .config
->> I'll check in the drivers selected by your .config
->>
->> In parallele, are you able to try with CONFIG_PPC_EARLY_DEBUG in 
->> order to try and locate the blocking point ?
-> I don't get any output from the system even with CONFIG_PPC_EARLY_DEBUG.
+This is a multi-part message in MIME format.
+--------------000100030503040002080608
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hmm, there is no udbg console for MPC5200. I hacked something up and the 
-earliest place I was able to initialize it is after early_init_devtree() 
-in setup_32.c. Even with this console, I got no output when the 
-problematic patch was applied. So the problem is somewhere earlier.
+FYI:
 
--Michal
+On 07 September 2015 at 11:07 AM, Boris Reinhard 
+[debian-powerpc@lists.debian.org] wrote:
+>
+>
+> Off-list reply, please don't quote/ forward
+>
+> Hi,
+>
+> wrong list, please use this one if you want to reach ppl that do 
+> active work on ppc:
+>
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+> Come to think of it, it might be interesting/ helpful contacting 
+> Cameron Kaiser (tenfourfox) and Tobias Netzel (webkit for leopard) 
+> additionally, asking about how or if their ppc osx work could 
+> potentially/ at all benefit linux ppc!?
+>
+> Grüße
+> Boris Reinhard
+>
+> Hi All,
+>
+> Iceweasel was updated to version 40.0.3-3 for the unofficial Debian 
+> PPC64 port. I installed it inside my Debian PPC64 chroot. 
+> Unfortunately it doesn't start either.
+>
+> Note: Iceweasel and Firefox 40.X.X PowerPC aren't available for all 
+> Ubuntu flavours and for Debian with 32-bit userland currently.
+>
+> Cheers,
+>
+> Christian
+>
+> On 02 September 2015 at 07:38 AM, Christian Zigotzky wrote:
+>
+>     Hi Lennart,
+>
+>     Thank you for your answer.
+>
+>     Unfortunately the increasing of the stack spaces wasn't successfully.
+>
+>     I tried the following stack sizes:
+>
+>     ulimit -s 16384
+>     ulimit -s 32768
+>     ulimit -s 65536
+>     ulimit -s 131072
+>
+>     iceweasel Debian PPC64 in a chroot:
+>
+>     too much recursion
+>     Segmentation fault
+>
+>     Rgds,
+>
+>     Christian
+>
+>
+>     On 01 September 2015 at 8:02 PM, Lennart Sorensen
+>     [debian-powerpc@lists.debian.org] wrote:
+>
+>         On Tue, Sep 01, 2015 at 07:24:48PM +0200, Christian Zigotzky
+>         wrote:
+>
+>             Hi All,
+>
+>             Iceweasel and Firefox 40.X.X PowerPC aren't available for
+>             all Ubuntu
+>             flavours and for Debian with 32-bit userland currently.
+>
+>             There are build problems:
+>
+>             Iceweasel 40 build status:
+>             https://packages.debian.org/de/experimental/iceweasel
+>
+>             Firefox 40 build status:
+>             https://launchpad.net/ubuntu/+source/firefox/
+>
+>             But iceweasel 40.0.3-1 was released for the unofficial
+>             Debian PPC64 port. I
+>             installed it inside my Debian PPC64 chroot. Unfortunately
+>             it doesn't start.
+>
+>             Error messages:
+>
+>             too much recursion
+>             Segmentation fault
+>
+>             Is anyone working on resolving this issue?
+>
+>         Could you try what happens if you change the stack size limit?
+>
+>         ulimit -s 16384 (I believe the current default that you can
+>         check with
+>         ulimit -a is 8192).  Could even try something even bigger like
+>         65536.
+>         Then run firefox from that terminal where you changed the limit
+>         temporarily.
+>
+>         Certainly with 64 bit pointers and 64 bit registers, ppc64
+>         could be using
+>         quite a bit of stack space in the javascript engine, which
+>         appears to
+>         be the thing that always causes this error in firefox (seems
+>         to happen
+>         everytime they change the engine in a major way, and then
+>         things get
+>         tweaked until it works again, then it gets broken again).
+>
+>
+>
+
+
+--------------000100030503040002080608
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+  </head>
+  <body bgcolor="#FFFFFF" text="#000000">
+    <div class="moz-cite-prefix">FYI:<br>
+      <br>
+      On 07 September 2015 at 11:07 AM, Boris Reinhard
+      [<a class="moz-txt-link-abbreviated" href="mailto:debian-powerpc@lists.debian.org">debian-powerpc@lists.debian.org</a>] wrote:<br>
+    </div>
+    <blockquote
+cite="mid:CAK90Sjm5JnDrtVLpUQ2=GJ2zXaX0HGMkdx46ACcHPFP0bxsUmA@mail.gmail.com"
+      type="cite">
+      <p dir="ltr"><br>
+        Off-list reply, please don't quote/ forward</p>
+      <p dir="ltr">Hi, </p>
+      <p dir="ltr">wrong list, please use this one if you want to reach
+        ppl that do active work on ppc: </p>
+      <p dir="ltr"><a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
+      </p>
+      <p dir="ltr">Come to think of it, it might be interesting/ helpful
+        contacting Cameron Kaiser (tenfourfox) and Tobias Netzel (webkit
+        for leopard) additionally, asking about how or if their ppc osx
+        work could potentially/ at all benefit linux ppc!?</p>
+      <p dir="ltr">Grüße<br>
+        Boris Reinhard<br>
+      </p>
+      <div class="gmail_quot&lt;blockquote class=" style="margin:0 0 0
+        .8ex;border-left:1px #ccc solid;padding-left:1ex">Hi All,<br>
+        <br>
+        Iceweasel was updated to version 40.0.3-3 for the unofficial
+        Debian PPC64 port. I installed it inside my Debian PPC64 chroot.
+        Unfortunately it doesn't start either.<br>
+        <br>
+        Note: Iceweasel and Firefox 40.X.X PowerPC aren't available for
+        all Ubuntu flavours and for Debian with 32-bit userland
+        currently.<br>
+        <br>
+        Cheers,<br>
+        <br>
+        Christian<br>
+        <br>
+        On 02 September 2015 at 07:38 AM, Christian Zigotzky wrote:<br>
+        <blockquote class="gmail_quote" style="margin:0 0 0
+          .8ex;border-left:1px #ccc solid;padding-left:1ex">
+          Hi Lennart,<br>
+          <br>
+          Thank you for your answer.<br>
+          <br>
+          Unfortunately the increasing of the stack spaces wasn't
+          successfully.<br>
+          <br>
+          I tried the following stack sizes:<br>
+          <br>
+          ulimit -s 16384<br>
+          ulimit -s 32768<br>
+          ulimit -s 65536<br>
+          ulimit -s 131072<br>
+          <br>
+          iceweasel Debian PPC64 in a chroot:<br>
+          <br>
+          too much recursion<br>
+          Segmentation fault<br>
+          <br>
+          Rgds,<br>
+          <br>
+          Christian<br>
+          <br>
+          <br>
+          On 01 September 2015 at 8:02 PM, Lennart Sorensen
+          [<a class="moz-txt-link-abbreviated" href="mailto:debian-powerpc@lists.debian.org">debian-powerpc@lists.debian.org</a>] wrote:<br>
+          <blockquote class="gmail_quote" style="margin:0 0 0
+            .8ex;border-left:1px #ccc solid;padding-left:1ex">
+            On Tue, Sep 01, 2015 at 07:24:48PM +0200, Christian Zigotzky
+            wrote:<br>
+            <blockquote class="gmail_quote" style="margin:0 0 0
+              .8ex;border-left:1px #ccc solid;padding-left:1ex">
+              Hi All,<br>
+              <br>
+              Iceweasel and Firefox 40.X.X PowerPC aren't available for
+              all Ubuntu<br>
+              flavours and for Debian with 32-bit userland currently.<br>
+              <br>
+              There are build problems:<br>
+              <br>
+              Iceweasel 40 build status:<br>
+              <a moz-do-not-send="true"
+                href="https://packages.debian.org/de/experimental/iceweasel"
+                rel="noreferrer" target="_blank">https://packages.debian.org/de/experimental/iceweasel</a><br>
+              <br>
+              Firefox 40 build status: <a moz-do-not-send="true"
+                href="https://launchpad.net/ubuntu/+source/firefox/"
+                rel="noreferrer" target="_blank">https://launchpad.net/ubuntu/+source/firefox/</a><br>
+              <br>
+              But iceweasel 40.0.3-1 was released for the unofficial
+              Debian PPC64 port. I<br>
+              installed it inside my Debian PPC64 chroot. Unfortunately
+              it doesn't start.<br>
+              <br>
+              Error messages:<br>
+              <br>
+              too much recursion<br>
+              Segmentation fault<br>
+              <br>
+              Is anyone working on resolving this issue?<br>
+            </blockquote>
+            Could you try what happens if you change the stack size
+            limit?<br>
+            <br>
+            ulimit -s 16384 (I believe the current default that you can
+            check with<br>
+            ulimit -a is 8192).  Could even try something even bigger
+            like 65536.<br>
+            Then run firefox from that terminal where you changed the
+            limit<br>
+            temporarily.<br>
+            <br>
+            Certainly with 64 bit pointers and 64 bit registers, ppc64
+            could be using<br>
+            quite a bit of stack space in the javascript engine, which
+            appears to<br>
+            be the thing that always causes this error in firefox (seems
+            to happen<br>
+            everytime they change the engine in a major way, and then
+            things get<br>
+            tweaked until it works again, then it gets broken again).<br>
+            <br>
+          </blockquote>
+          <br>
+        </blockquote>
+        <br>
+      </div>
+    </blockquote>
+    <br>
+  </body>
+</html>
+
+--------------000100030503040002080608--
