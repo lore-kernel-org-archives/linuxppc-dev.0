@@ -1,21 +1,22 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0148.outbound.protection.outlook.com [157.56.111.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A9ABF1A1F45
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 16:57:14 +1000 (AEST)
-From: Lu Y.B. <yangbo.lu@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH v3] powerpc/dts: Add and fix 1588 timer node for eTSEC
-Date: Mon, 7 Sep 2015 06:57:06 +0000
-Message-ID: <BY1PR0301MB1192C89856016BF12FB9765AF2540@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1438153958-1400-1-git-send-email-yangbo.lu@freescale.com>
-In-Reply-To: <1438153958-1400-1-git-send-email-yangbo.lu@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id C59461A234F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 17:08:05 +1000 (AEST)
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: Re: memcpy regression
+To: Michael Ellerman <mpe@ellerman.id.au>, Michal Sojka <sojkam1@fel.cvut.cz>
+References: <871teeux4w.fsf@steelpick.2x.cz> <55E9A354.6070600@c-s.fr>
+ <87si6utfpf.fsf@steelpick.2x.cz> <55E9DE87.4070805@c-s.fr>
+ <55E9F5CE.6050904@fel.cvut.cz> <55EA3281.3000806@fel.cvut.cz>
+ <55EBF6CD.5010001@c-s.fr> <87twr74bdg.fsf@steelpick.2x.cz>
+ <87r3mb4603.fsf@steelpick.2x.cz> <1441588450.12945.1.camel@ellerman.id.au>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
+Message-ID: <55ED37D1.3080503@c-s.fr>
+Date: Mon, 7 Sep 2015 09:08:01 +0200
 MIME-Version: 1.0
+In-Reply-To: <1441588450.12945.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,241 +26,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Any comments?
+Hi Michael
 
--Yangbo Lu
+Le 07/09/2015 03:14, Michael Ellerman a écrit :
+> Hi Michal,
+>
+> Thanks for finding the problem.
+>
+> On Sun, 2015-09-06 at 23:01 +0200, Michal Sojka wrote:
+>> I found the problem. The compiler replaces an assignment with a call to
+>> memcpy. The following patch fixes the problem for me. However, I'm not
+>> sure whether this is the real solution. I guess the compiler is free to
+>> generate a call to memcpy wherever it wants so other compilers or other
+>> optimization levels may need fixes at other places. What do others
+>> think?
+> I think you're right that it's not a good solution, the compiler could generate
+> other calls to memcpy depending on various factors, and people will add new
+> code that causes memcpy to get called and it will break your platform.
+>
+> Christophe, am I right that the problem here is that your new memcpy() doesn't
+> work until later in boot when caches are enabled?
+>
+>
 
-> -----Original Message-----
-> From: Yangbo Lu [mailto:yangbo.lu@freescale.com]
-> Sent: Wednesday, July 29, 2015 3:13 PM
-> To: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood
-> Scott-B07421
-> Cc: Lu Yangbo-B47093
-> Subject: [PATCH v3] powerpc/dts: Add and fix 1588 timer node for eTSEC
->=20
-> Add 1588 timer node in files:
-> arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> arch/powerpc/boot/dts/bsc9132qds.dtsi
-> arch/powerpc/boot/dts/p1010rdb.dtsi
-> arch/powerpc/boot/dts/p1020rdb-pd.dts
-> arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> arch/powerpc/boot/dts/p1022ds.dtsi
-> arch/powerpc/boot/dts/p1025twr.dtsi
-> For P2020RDB-PC, registers' values should be calculated based on default
-> 1588 reference clock(300MHz) not 250MHz, and fix this in file:
-> arch/powerpc/boot/dts/p2020rdb-pc.dtsi
->=20
-> Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
-> ---
-> Changes for v3:
-> 	- Changed 'tmr-add' to hex value
-> 	- Modified commit message
-> Changes for v2:
-> 	- Changed hex value to decimal value in dts
-> 	- Modified commit message
-> 	- Modified 1588 node in p2020rdb-pc.dtsi
-> ---
->  arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++
-> arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++
-> arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
->  arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
->  arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 12 ++++++------
->  8 files changed, 90 insertions(+), 6 deletions(-)
->=20
-> diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> index 45efcba..f4d96d2 100644
-> --- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> +++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> @@ -80,6 +80,18 @@
->  		status =3D "disabled";
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <0xcccccccd>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <249999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> index af8e888..7a13bf2 100644
-> --- a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> +++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> @@ -87,6 +87,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <0xcccccccd>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <249999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		tbi-handle =3D <&tbi0>;
-> diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi
-> b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> index ea534ef..0f0ced6 100644
-> --- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-> +++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> @@ -186,6 +186,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <10>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <0x80000016>;
-> +		fsl,tmr-fiper1	=3D <999999990>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <199999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> index 987017e..c7c6416 100644
-> --- a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> +++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> @@ -225,6 +225,18 @@
->  			};
->  		};
->=20
-> +		ptp_clock@b0e00 {
-> +			compatible =3D "fsl,etsec-ptp";
-> +			reg =3D <0xb0e00 0xb0>;
-> +			interrupts =3D <68 2 0 0 69 2 0 0>;
-> +			fsl,tclk-period	=3D <10>;
-> +			fsl,tmr-prsc	=3D <2>;
-> +			fsl,tmr-add	=3D <0x80000016>;
-> +			fsl,tmr-fiper1	=3D <999999990>;
-> +			fsl,tmr-fiper2	=3D <99990>;
-> +			fsl,max-adj	=3D <199999999>;
-> +		};
-> +
->  		enet0: ethernet@b0000 {
->  			fixed-link =3D <1 1 1000 0 0>;
->  			phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> index d6274c5..e8a0f95 100644
-> --- a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> +++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> @@ -224,6 +224,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <10>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <0x80000016>;
-> +		fsl,tmr-fiper1	=3D <999999990>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <199999999>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		fixed-link =3D <1 1 1000 0 0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi
-> b/arch/powerpc/boot/dts/p1022ds.dtsi
-> index 957e0dc..149da0f 100644
-> --- a/arch/powerpc/boot/dts/p1022ds.dtsi
-> +++ b/arch/powerpc/boot/dts/p1022ds.dtsi
-> @@ -215,6 +215,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <0xc01ebd3d>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <266499999>;
-> +	};
-> +
->  	ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi
-> b/arch/powerpc/boot/dts/p1025twr.dtsi
-> index 8453501..08816fb 100644
-> --- a/arch/powerpc/boot/dts/p1025twr.dtsi
-> +++ b/arch/powerpc/boot/dts/p1025twr.dtsi
-> @@ -138,6 +138,18 @@
->  		};
->  	};
->=20
-> +	ptp_clock@b0e00 {
-> +		compatible =3D "fsl,etsec-ptp";
-> +		reg =3D <0xb0e00 0xb0>;
-> +		interrupts =3D <68 2 0 0 69 2 0 0>;
-> +		fsl,tclk-period	=3D <10>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <0xc0000021>;
-> +		fsl,tmr-fiper1	=3D <999999990>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <133333332>;
-> +	};
-> +
->  	enet0: ethernet@b0000 {
->  		phy-handle =3D <&phy0>;
->  		phy-connection-type =3D "rgmii-id";
-> diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> index c21d1c7..ad2e242 100644
-> --- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> +++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> @@ -215,12 +215,12 @@
->  	};
->=20
->  	ptp_clock@24e00 {
-> -		fsl,tclk-period =3D <5>;
-> -		fsl,tmr-prsc =3D <200>;
-> -		fsl,tmr-add =3D <0xCCCCCCCD>;
-> -		fsl,tmr-fiper1 =3D <0x3B9AC9FB>;
-> -		fsl,tmr-fiper2 =3D <0x0001869B>;
-> -		fsl,max-adj =3D <249999999>;
-> +		fsl,tclk-period	=3D <5>;
-> +		fsl,tmr-prsc	=3D <2>;
-> +		fsl,tmr-add	=3D <0xaaaaaaab>;
-> +		fsl,tmr-fiper1	=3D <999999995>;
-> +		fsl,tmr-fiper2	=3D <99990>;
-> +		fsl,max-adj	=3D <299999999>;
->  	};
->=20
->  	enet0: ethernet@24000 {
-> --
-> 2.1.0.27.g96db324
+That's right, memset() and memcpy() are for setting/copying data into 
+cacheable RAM.
+They are using dczb instruction in order to avoid wasting time loading 
+the cacheline with data that will be overwritten.
+
+memset_io() and memcpy_toio() are the functions to use when using not 
+cacheable memory.
+
+The issue identified by Michal is in function setup_cpu_spec() which is 
+called by identify_cpu(). identify_cpu() is called from early_init().
+In the begining of early_init(), there is (code from Paul in 2005)
+
+	/* First zero the BSS -- use memset_io, some platforms don't have
+	 * caches on yet */
+	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
+			__bss_stop - __bss_start);
+
+It shows that it is already expected that the cache is not active yet 
+and standard memset() shall not be used yet. That's the same with memcpy().
+
+I think GCC uses memcpy() in well known situations like initialising 
+structures or copying structures.
+Shouldn't we just avoid this kind of actions in the very few early init 
+functions ?
+
+Christophe
