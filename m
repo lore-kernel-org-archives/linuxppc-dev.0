@@ -1,24 +1,26 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f179.google.com (mail-yk0-f179.google.com
- [209.85.160.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F53C1A240C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 17:30:51 +1000 (AEST)
-Received: by ykei199 with SMTP id i199so73263165yke.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2015 00:30:49 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1434676130.3678.124.camel@kernel.crashing.org>
-References: <1434092231-4155-1-git-send-email-kda@linux-powerpc.org>
- <CAOJe8K0UrsVQraHrxKUptOB9sVr_U9LEB3Ji6j4nMenHKNt2dg@mail.gmail.com>
- <1434676130.3678.124.camel@kernel.crashing.org>
-Date: Mon, 7 Sep 2015 10:30:48 +0300
-Message-ID: <CAOJe8K13odLN__uQCc=zXoFYMyjwzEd10eDKG_ZEq5oZf1376A@mail.gmail.com>
-Subject: Re: [PATCH] agp/uninorth: fix a memleak in create_gatt_table
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, airlied@gmail.com
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 06DD21A2354
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 18:40:50 +1000 (AEST)
+Message-ID: <1441615249.8979.1.camel@ellerman.id.au>
+Subject: Re: memcpy regression
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Michal Sojka <sojkam1@fel.cvut.cz>, Scott Wood
+ <scottwood@freescale.com>,  linuxppc-dev@lists.ozlabs.org, Paul Mackerras
+ <paulus@samba.org>
+Date: Mon, 07 Sep 2015 18:40:49 +1000
+In-Reply-To: <55ED37D1.3080503@c-s.fr>
+References: <871teeux4w.fsf@steelpick.2x.cz> <55E9A354.6070600@c-s.fr>
+ <87si6utfpf.fsf@steelpick.2x.cz> <55E9DE87.4070805@c-s.fr>
+ <55E9F5CE.6050904@fel.cvut.cz> <55EA3281.3000806@fel.cvut.cz>
+ <55EBF6CD.5010001@c-s.fr> <87twr74bdg.fsf@steelpick.2x.cz>
+ <87r3mb4603.fsf@steelpick.2x.cz> <1441588450.12945.1.camel@ellerman.id.au>
+ <55ED37D1.3080503@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,117 +30,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/19/15, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Thu, 2015-06-18 at 17:34 +0300, Denis Kirjanov wrote:
->> On 6/12/15, Denis Kirjanov <kda@linux-powerpc.org> wrote:
->> > Fix the memory leak in create_gatt_table:
->> > we've lost a kfree on the exit path for the pages array allocated
->> > in uninorth_create_gatt_table
->> >
->> > Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
->>
->> Hi Ben, Michael
->>
->> Will you take the patch through your trees or do I need to send it to
->> Dave Airlie?
->
-> I haven't had a chance to review yet...
+On Mon, 2015-09-07 at 09:08 +0200, Christophe LEROY wrote:
+> Hi Michael
+> 
+> Le 07/09/2015 03:14, Michael Ellerman a écrit :
+> > On Sun, 2015-09-06 at 23:01 +0200, Michal Sojka wrote:
+> >> I found the problem. The compiler replaces an assignment with a call to
+> >> memcpy. The following patch fixes the problem for me. However, I'm not
+> >> sure whether this is the real solution. I guess the compiler is free to
+> >> generate a call to memcpy wherever it wants so other compilers or other
+> >> optimization levels may need fixes at other places. What do others
+> >> think?
+> > I think you're right that it's not a good solution, the compiler could generate
+> > other calls to memcpy depending on various factors, and people will add new
+> > code that causes memcpy to get called and it will break your platform.
+> >
+> > Christophe, am I right that the problem here is that your new memcpy() doesn't
+> > work until later in boot when caches are enabled?
+> 
+> That's right, memset() and memcpy() are for setting/copying data into 
+> cacheable RAM.
+> They are using dczb instruction in order to avoid wasting time loading 
+> the cacheline with data that will be overwritten.
+> 
+> memset_io() and memcpy_toio() are the functions to use when using not 
+> cacheable memory.
+> 
+> The issue identified by Michal is in function setup_cpu_spec() which is 
+> called by identify_cpu(). identify_cpu() is called from early_init().
+> In the begining of early_init(), there is (code from Paul in 2005)
+> 
+> 	/* First zero the BSS -- use memset_io, some platforms don't have
+> 	 * caches on yet */
+> 	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
+> 			__bss_stop - __bss_start);
+> 
+> It shows that it is already expected that the cache is not active yet 
+> and standard memset() shall not be used yet. That's the same with memcpy().
 
-Ping...
+Thanks for the explanation.
 
->
-> Ben.
->
->> Thanks
->> > ---
->> >  drivers/char/agp/uninorth-agp.c | 16 ++++++++++------
->> >  1 file changed, 10 insertions(+), 6 deletions(-)
->> >
->> > diff --git a/drivers/char/agp/uninorth-agp.c
->> > b/drivers/char/agp/uninorth-agp.c
->> > index a56ee9b..0575544 100644
->> > --- a/drivers/char/agp/uninorth-agp.c
->> > +++ b/drivers/char/agp/uninorth-agp.c
->> > @@ -361,6 +361,10 @@ static int agp_uninorth_resume(struct pci_dev
->> > *pdev)
->> >  }
->> >  #endif /* CONFIG_PM */
->> >
->> > +static struct {
->> > +	struct page **pages_arr;
->> > +} uninorth_priv;
->> > +
->> >  static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
->> >  {
->> >  	char *table;
->> > @@ -371,7 +375,6 @@ static int uninorth_create_gatt_table(struct
->> > agp_bridge_data *bridge)
->> >  	int i;
->> >  	void *temp;
->> >  	struct page *page;
->> > -	struct page **pages;
->> >
->> >  	/* We can't handle 2 level gatt's */
->> >  	if (bridge->driver->size_type == LVL2_APER_SIZE)
->> > @@ -400,8 +403,8 @@ static int uninorth_create_gatt_table(struct
->> > agp_bridge_data *bridge)
->> >  	if (table == NULL)
->> >  		return -ENOMEM;
->> >
->> > -	pages = kmalloc((1 << page_order) * sizeof(struct page*),
->> > GFP_KERNEL);
->> > -	if (pages == NULL)
->> > +	uninorth_priv.pages_arr = kmalloc((1 << page_order) * sizeof(struct
->> > page*), GFP_KERNEL);
->> > +	if (uninorth_priv.pages_arr == NULL)
->> >  		goto enomem;
->> >
->> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
->> > @@ -409,14 +412,14 @@ static int uninorth_create_gatt_table(struct
->> > agp_bridge_data *bridge)
->> >  	for (page = virt_to_page(table), i = 0; page <=
->> > virt_to_page(table_end);
->> >  	     page++, i++) {
->> >  		SetPageReserved(page);
->> > -		pages[i] = page;
->> > +		uninorth_priv.pages_arr[i] = page;
->> >  	}
->> >
->> >  	bridge->gatt_table_real = (u32 *) table;
->> >  	/* Need to clear out any dirty data still sitting in caches */
->> >  	flush_dcache_range((unsigned long)table,
->> >  			   (unsigned long)table_end + 1);
->> > -	bridge->gatt_table = vmap(pages, (1 << page_order), 0,
->> > PAGE_KERNEL_NCG);
->> > +	bridge->gatt_table = vmap(uninorth_priv.pages_arr, (1 << page_order),
->> > 0,
->> > PAGE_KERNEL_NCG);
->> >
->> >  	if (bridge->gatt_table == NULL)
->> >  		goto enomem;
->> > @@ -434,7 +437,7 @@ static int uninorth_create_gatt_table(struct
->> > agp_bridge_data *bridge)
->> >  	return 0;
->> >
->> >  enomem:
->> > -	kfree(pages);
->> > +	kfree(uninorth_priv.pages_arr);
->> >  	if (table)
->> >  		free_pages((unsigned long)table, page_order);
->> >  	return -ENOMEM;
->> > @@ -456,6 +459,7 @@ static int uninorth_free_gatt_table(struct
->> > agp_bridge_data *bridge)
->> >  	 */
->> >
->> >  	vunmap(bridge->gatt_table);
->> > +	kfree(uninorth_priv.pages_arr);
->> >  	table = (char *) bridge->gatt_table_real;
->> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
->> >
->> > --
->> > 2.4.0
->> >
->> >
->
->
->
+> I think GCC uses memcpy() in well known situations like initialising 
+> structures or copying structures.
+> Shouldn't we just avoid this kind of actions in the very few early init 
+> functions ?
+
+Which are the "very few" early init functions? Can you make a list, for 32-bit
+and 64-bit? And can we keep it updated over time and not introduce regressions?
+
+cheers
