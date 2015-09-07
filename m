@@ -1,32 +1,24 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-f179.google.com (mail-yk0-f179.google.com
+ [209.85.160.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D5E941A2352
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 17:25:02 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 7 Sep 2015 17:25:00 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7CDA22BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 17:24:58 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t877Oof041418780
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Sep 2015 17:24:58 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t877OO6r021440
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Sep 2015 17:24:26 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/mm: Disable hugepd for 64K page size.
-Date: Mon,  7 Sep 2015 12:53:53 +0530
-Message-Id: <1441610633-8077-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F53C1A240C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 17:30:51 +1000 (AEST)
+Received: by ykei199 with SMTP id i199so73263165yke.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Sep 2015 00:30:49 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1434676130.3678.124.camel@kernel.crashing.org>
+References: <1434092231-4155-1-git-send-email-kda@linux-powerpc.org>
+ <CAOJe8K0UrsVQraHrxKUptOB9sVr_U9LEB3Ji6j4nMenHKNt2dg@mail.gmail.com>
+ <1434676130.3678.124.camel@kernel.crashing.org>
+Date: Mon, 7 Sep 2015 10:30:48 +0300
+Message-ID: <CAOJe8K13odLN__uQCc=zXoFYMyjwzEd10eDKG_ZEq5oZf1376A@mail.gmail.com>
+Subject: Re: [PATCH] agp/uninorth: fix a memleak in create_gatt_table
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, airlied@gmail.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,79 +28,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-After commit e2b3d202d1dba8f3546ed28224ce485bc50010be
-("powerpc: Switch 16GB and 16MB explicit hugepages to a
-different page table format"), we don't need to support
-is_hugepd() for 64K page size.
+On 6/19/15, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Thu, 2015-06-18 at 17:34 +0300, Denis Kirjanov wrote:
+>> On 6/12/15, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+>> > Fix the memory leak in create_gatt_table:
+>> > we've lost a kfree on the exit path for the pages array allocated
+>> > in uninorth_create_gatt_table
+>> >
+>> > Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+>>
+>> Hi Ben, Michael
+>>
+>> Will you take the patch through your trees or do I need to send it to
+>> Dave Airlie?
+>
+> I haven't had a chance to review yet...
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/page.h | 15 +++++++++++++++
- arch/powerpc/mm/hugetlbpage.c   | 19 +++++++++++++++++++
- 2 files changed, 34 insertions(+)
+Ping...
 
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 71294a6e976e..d90247b017b3 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -362,6 +362,20 @@ typedef struct { signed long pd; } hugepd_t;
- 
- #ifdef CONFIG_HUGETLB_PAGE
- #ifdef CONFIG_PPC_BOOK3S_64
-+#ifdef CONFIG_PPC_64K_PAGES
-+/*
-+ * With 64k page size, we have hugepage ptes in the pgd and pmd entries. We don't
-+ * need to setup hugepage directory for them. Our pte and page directory format
-+ * enable us to have this enabled. But to avoid errors when implementing new
-+ * features disable hugepd for 64K. We enable a debug version here, So we catch
-+ * wrong usage.
-+ */
-+#ifdef CONFIG_DEBUG_VM
-+extern int hugepd_ok(hugepd_t hpd);
-+#else
-+#define hugepd_ok(x)	(0)
-+#endif
-+#else
- static inline int hugepd_ok(hugepd_t hpd)
- {
- 	/*
-@@ -370,6 +384,7 @@ static inline int hugepd_ok(hugepd_t hpd)
- 	 */
- 	return (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
- }
-+#endif
- #else
- static inline int hugepd_ok(hugepd_t hpd)
- {
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index bb0bd7025cb8..8f4936e6a3db 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -89,6 +89,25 @@ int pgd_huge(pgd_t pgd)
- 	 */
- 	return ((pgd_val(pgd) & 0x3) != 0x0);
- }
-+
-+#if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_DEBUG_VM)
-+/*
-+ * This enables us to catch the wrong page directory format
-+ * Moved here so that we can use WARN() in the call.
-+ */
-+int hugepd_ok(hugepd_t hpd)
-+{
-+	bool is_hugepd;
-+
-+	/*
-+	 * We should not find this format in page directory, warn otherwise.
-+	 */
-+	is_hugepd = (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
-+	WARN(is_hugepd, "Found wrong page directory format\n");
-+	return 0;
-+}
-+#endif
-+
- #else
- int pmd_huge(pmd_t pmd)
- {
--- 
-2.5.0
+>
+> Ben.
+>
+>> Thanks
+>> > ---
+>> >  drivers/char/agp/uninorth-agp.c | 16 ++++++++++------
+>> >  1 file changed, 10 insertions(+), 6 deletions(-)
+>> >
+>> > diff --git a/drivers/char/agp/uninorth-agp.c
+>> > b/drivers/char/agp/uninorth-agp.c
+>> > index a56ee9b..0575544 100644
+>> > --- a/drivers/char/agp/uninorth-agp.c
+>> > +++ b/drivers/char/agp/uninorth-agp.c
+>> > @@ -361,6 +361,10 @@ static int agp_uninorth_resume(struct pci_dev
+>> > *pdev)
+>> >  }
+>> >  #endif /* CONFIG_PM */
+>> >
+>> > +static struct {
+>> > +	struct page **pages_arr;
+>> > +} uninorth_priv;
+>> > +
+>> >  static int uninorth_create_gatt_table(struct agp_bridge_data *bridge)
+>> >  {
+>> >  	char *table;
+>> > @@ -371,7 +375,6 @@ static int uninorth_create_gatt_table(struct
+>> > agp_bridge_data *bridge)
+>> >  	int i;
+>> >  	void *temp;
+>> >  	struct page *page;
+>> > -	struct page **pages;
+>> >
+>> >  	/* We can't handle 2 level gatt's */
+>> >  	if (bridge->driver->size_type == LVL2_APER_SIZE)
+>> > @@ -400,8 +403,8 @@ static int uninorth_create_gatt_table(struct
+>> > agp_bridge_data *bridge)
+>> >  	if (table == NULL)
+>> >  		return -ENOMEM;
+>> >
+>> > -	pages = kmalloc((1 << page_order) * sizeof(struct page*),
+>> > GFP_KERNEL);
+>> > -	if (pages == NULL)
+>> > +	uninorth_priv.pages_arr = kmalloc((1 << page_order) * sizeof(struct
+>> > page*), GFP_KERNEL);
+>> > +	if (uninorth_priv.pages_arr == NULL)
+>> >  		goto enomem;
+>> >
+>> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+>> > @@ -409,14 +412,14 @@ static int uninorth_create_gatt_table(struct
+>> > agp_bridge_data *bridge)
+>> >  	for (page = virt_to_page(table), i = 0; page <=
+>> > virt_to_page(table_end);
+>> >  	     page++, i++) {
+>> >  		SetPageReserved(page);
+>> > -		pages[i] = page;
+>> > +		uninorth_priv.pages_arr[i] = page;
+>> >  	}
+>> >
+>> >  	bridge->gatt_table_real = (u32 *) table;
+>> >  	/* Need to clear out any dirty data still sitting in caches */
+>> >  	flush_dcache_range((unsigned long)table,
+>> >  			   (unsigned long)table_end + 1);
+>> > -	bridge->gatt_table = vmap(pages, (1 << page_order), 0,
+>> > PAGE_KERNEL_NCG);
+>> > +	bridge->gatt_table = vmap(uninorth_priv.pages_arr, (1 << page_order),
+>> > 0,
+>> > PAGE_KERNEL_NCG);
+>> >
+>> >  	if (bridge->gatt_table == NULL)
+>> >  		goto enomem;
+>> > @@ -434,7 +437,7 @@ static int uninorth_create_gatt_table(struct
+>> > agp_bridge_data *bridge)
+>> >  	return 0;
+>> >
+>> >  enomem:
+>> > -	kfree(pages);
+>> > +	kfree(uninorth_priv.pages_arr);
+>> >  	if (table)
+>> >  		free_pages((unsigned long)table, page_order);
+>> >  	return -ENOMEM;
+>> > @@ -456,6 +459,7 @@ static int uninorth_free_gatt_table(struct
+>> > agp_bridge_data *bridge)
+>> >  	 */
+>> >
+>> >  	vunmap(bridge->gatt_table);
+>> > +	kfree(uninorth_priv.pages_arr);
+>> >  	table = (char *) bridge->gatt_table_real;
+>> >  	table_end = table + ((PAGE_SIZE * (1 << page_order)) - 1);
+>> >
+>> > --
+>> > 2.4.0
+>> >
+>> >
+>
+>
+>
