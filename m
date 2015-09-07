@@ -1,42 +1,24 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5BE9B1A1F45
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 11:10:10 +1000 (AEST)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 20EC9140321
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2015 11:10:10 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Mon, 7 Sep 2015 11:10:09 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D92652BB0057
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2015 11:10:07 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8719pgO57016452
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Sep 2015 11:09:59 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8719Y9M012480
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Sep 2015 11:09:35 +1000
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: "andrew.donnellan" <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, mikey <mikey@neuling.org>,
- dja <dja@axtens.net>
-Subject: Re: [PATCH v2] cxl: abort cxl_pci_enable_device_hook() if PCI channel
- is offline
-In-reply-to: <1441587178-5581-1-git-send-email-andrew.donnellan@au1.ibm.com>
-References: <1441347624-9787-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <1441587178-5581-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Mon, 07 Sep 2015 11:09:10 +1000
-Message-Id: <1441588124-sup-1674@delenn.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 61FB21A234F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 11:14:10 +1000 (AEST)
+Message-ID: <1441588450.12945.1.camel@ellerman.id.au>
+Subject: Re: memcpy regression
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michal Sojka <sojkam1@fel.cvut.cz>
+Cc: christophe leroy <christophe.leroy@c-s.fr>, Scott Wood
+ <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 07 Sep 2015 11:14:10 +1000
+In-Reply-To: <87r3mb4603.fsf@steelpick.2x.cz>
+References: <871teeux4w.fsf@steelpick.2x.cz> <55E9A354.6070600@c-s.fr>
+ <87si6utfpf.fsf@steelpick.2x.cz> <55E9DE87.4070805@c-s.fr>
+ <55E9F5CE.6050904@fel.cvut.cz> <55EA3281.3000806@fel.cvut.cz>
+ <55EBF6CD.5010001@c-s.fr> <87twr74bdg.fsf@steelpick.2x.cz>
+ <87r3mb4603.fsf@steelpick.2x.cz>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,4 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+Hi Michal,
+
+Thanks for finding the problem.
+
+On Sun, 2015-09-06 at 23:01 +0200, Michal Sojka wrote:
+> 
+> I found the problem. The compiler replaces an assignment with a call to
+> memcpy. The following patch fixes the problem for me. However, I'm not
+> sure whether this is the real solution. I guess the compiler is free to
+> generate a call to memcpy wherever it wants so other compilers or other
+> optimization levels may need fixes at other places. What do others
+> think?
+
+I think you're right that it's not a good solution, the compiler could generate
+other calls to memcpy depending on various factors, and people will add new
+code that causes memcpy to get called and it will break your platform.
+
+Christophe, am I right that the problem here is that your new memcpy() doesn't
+work until later in boot when caches are enabled?
+
+cheers
