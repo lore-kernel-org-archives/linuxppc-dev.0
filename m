@@ -1,30 +1,25 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id CFC281A24BF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 19:15:43 +1000 (AEST)
-Date: Mon, 7 Sep 2015 10:15:37 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Marc Zyngier <marc.zyngier@arm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Bjorn Helgaas <bhelgaas@google.com>,
- "suravee.suthikulpanit@amd.com" <suravee.suthikulpanit@amd.com>,
- Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- Rob Herring <robh+dt@kernel.org>, "agraf@suse.de" <agraf@suse.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Subject: Re: [PATCH v4 2/4] PCI: pci-host-generic: Fix lookup of
- linux,pci-probe-only property
-Message-ID: <20150907091537.GA14244@arm.com>
-References: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
- <1441385411-7624-3-git-send-email-marc.zyngier@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1441385411-7624-3-git-send-email-marc.zyngier@arm.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA32D1A2513
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 19:19:10 +1000 (AEST)
+Message-ID: <1441617549.8979.5.camel@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc/powernv/pci-ioda: fix kdump with
+ non-power-of-2 crashkernel=
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Hari Bathini <hbathini@in.ibm.com>, Gavin Shan
+ <gwshan@linux.vnet.ibm.com>,  Alexey Kardashevskiy <aik@ozlabs.ru>, Ben
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>, Wei Yang
+ <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, Jan Stancek
+ <jstancek@redhat.com>
+Date: Mon, 07 Sep 2015 19:19:09 +1000
+In-Reply-To: <20150904182252.GN47557@linux.vnet.ibm.com>
+References: <20150904182252.GN47557@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,52 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 04, 2015 at 05:50:09PM +0100, Marc Zyngier wrote:
-> When pci-host-generic looks for the probe-only property, it seems
-> to trust the DT to be correctly written, and assumes that there
-> is a parameter to the property.
+On Fri, 2015-09-04 at 11:22 -0700, Nishanth Aravamudan wrote:
+> The 32-bit TCE table initialization relies on the DMA window having a
+> size equal to a power of 2 (and checks for it explicitly). But
+> crashkernel= has no constraint that requires a power-of-2 be specified.
+> This causes the kdump kernel to fail to boot as none of the PCI devices
+> (including the disk controller) are successfully initialized.
 > 
-> Unfortunately, this is not always the case, and some firmware expose
-> this property naked. The driver ends up making a decision based on
-> whatever the property pointer points to, which is likely to be junk.
+> After this change, the PCI devices successfully set up the 32-bit TCE
+> table and kdump succeeds.
 > 
-> Switch to the common of_pci.c implementation that doesn't suffer
-> from this problem.
+> Fixes: aca6913f5551 ("powerpc/powernv/ioda2: Introduce helpers to allocate TCE pages")
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Cc: stable@vger.kernel.org # 4.2
 > 
-> Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
-> ---
->  drivers/pci/host/pci-host-generic.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
-> 
-> diff --git a/drivers/pci/host/pci-host-generic.c b/drivers/pci/host/pci-host-generic.c
-> index 265dd25..224303d 100644
-> --- a/drivers/pci/host/pci-host-generic.c
-> +++ b/drivers/pci/host/pci-host-generic.c
-> @@ -210,7 +210,6 @@ static int gen_pci_probe(struct platform_device *pdev)
->  	int err;
->  	const char *type;
->  	const struct of_device_id *of_id;
-> -	const int *prop;
->  	struct device *dev = &pdev->dev;
->  	struct device_node *np = dev->of_node;
->  	struct gen_pci *pci = devm_kzalloc(dev, sizeof(*pci), GFP_KERNEL);
-> @@ -225,13 +224,7 @@ static int gen_pci_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  	}
->  
-> -	prop = of_get_property(of_chosen, "linux,pci-probe-only", NULL);
-> -	if (prop) {
-> -		if (*prop)
-> -			pci_add_flags(PCI_PROBE_ONLY);
-> -		else
-> -			pci_clear_flags(PCI_PROBE_ONLY);
-> -	}
-> +	of_pci_check_probe_only();
+> Michael, I kept this as a follow-on patch to my previous one. If you'd
+> rather I made a v3 of that patch with the two fixes combined, I can
+> resend.
 
-Looks good to me:
+No that's fine. I guess they could have been a single fix, but it's not a big deal.
 
-  Acked-by: Will Deacon <will.deacon@arm.com>
+> Also, I fixed up the context on my end to be u64, but not sure
+> if that will match your tree (next doesn't have my prior patch applied
+> yet, that I can see).
 
-Thanks, Marc.
+next isn't open yet, because we're still in the merge window, ie. rc1 hasn't
+come out yet.
 
-Will
+This is a fix so it'll go to my fixes branch. Whether I send that to Linus
+before or after rc1 depends on how urgent the fixes people send me are. Sounds
+like you'd like these two to go in asap?
+
+cheers
