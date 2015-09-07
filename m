@@ -1,44 +1,24 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CDC041A2350
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 14:00:53 +1000 (AEST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91F2B14056B
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2015 14:00:53 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 7 Sep 2015 14:00:52 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id AB5342BB004D
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Sep 2015 14:00:48 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8740WAE46792830
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Sep 2015 14:00:40 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8740FtT016540
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Sep 2015 14:00:16 +1000
-Message-ID: <55ED0BC5.3000908@au1.ibm.com>
-Date: Mon, 07 Sep 2015 14:00:05 +1000
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@ozlabs.org, mikey@neuling.org, imunsie@au1.ibm.com,
- dja@axtens.net
-Subject: Re: [PATCH v2] cxl: abort cxl_pci_enable_device_hook() if PCI channel
- is offline
-References: <1441347624-9787-1-git-send-email-andrew.donnellan@au1.ibm.com>	
- <1441587178-5581-1-git-send-email-andrew.donnellan@au1.ibm.com>
- <1441594391.12945.2.camel@ellerman.id.au>
-In-Reply-To: <1441594391.12945.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99DF11A2351
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Sep 2015 15:10:56 +1000 (AEST)
+Message-ID: <1441602655.12945.5.camel@ellerman.id.au>
+Subject: Re: [PATCH v6 1/2] perf,kvm/powerpc: Add kvm_perf.h for powerpc
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Hemant Kumar <hemant@linux.vnet.ibm.com>, maddy@linux.vnet.ibm.com,
+ srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ warrier@linux.vnet.ibm.com, paulus@samba.org, scottwood@freescale.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Date: Mon, 07 Sep 2015 15:10:55 +1000
+In-Reply-To: <20150904205145.GB3475@kernel.org>
+References: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <20150831201300.GG4423@kernel.org> <55E54A4F.6090205@linux.vnet.ibm.com>
+ <20150904205145.GB3475@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,21 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/15 12:53, Michael Ellerman wrote:
-> Is this a fix targetting 4.3 (current release) and/or stable, or something for
-> next?
+On Fri, 2015-09-04 at 17:51 -0300, Arnaldo Carvalho de Melo wrote:
+> Em Tue, Sep 01, 2015 at 12:18:47PM +0530, Hemant Kumar escreveu:
+> > >Should I try to process the 5 together, applying thest two first?
+>  
+> > Yes, this patchset needs to be applied before applying the other patchset,
+> > since there is a direct dependency on these two for the tooling part to
+> > work.
+>  
+> > >I see there are no acks from powerpc arch maintainers, how should we
+> > >proceed here? If there are no problems with the arch bits, and if it is
+> > >just to enable the tooling part, again, should I process the 5 as just
+> > >one series?
+>  
+> > The reason to split the earlier patchset into two was to separate the
+> > tooling/perf/ and arch/powerpc/ side patches, as asked by Michael..
+>  
+> > Here is the link to that discussion :
+> > http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg86916.html
+>  
+> > If Michael is ok with the patches, you can process all the 5 patches
+> > together. Michael?
+> 
+> Michael?
 
-4.3 - this fix is related to cxl's EEH support which has been merged for 
-4.3.
+I'm not particularly happy with it.
 
-For the record, since I neglected to add this earlier:
+Can we at least remove this hunk from the uapi header:
 
----
-Changes from v1:
-- Insert braces so that "return false" is within if block
++/* This is to shut the compiler up */
++#define KVM_ENTRY_TRACE ""
++#define KVM_EXIT_TRACE ""
++#define KVM_EXIT_REASON ""
 
 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+cheers
