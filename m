@@ -2,9 +2,9 @@ Return-Path: <dgilbert@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 673681A0163
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 22:47:02 +1000 (AEST)
-Date: Tue, 8 Sep 2015 13:46:52 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 749B61A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 00:14:06 +1000 (AEST)
+Date: Tue, 8 Sep 2015 15:13:56 +0100
 From: "Dr. David Alan Gilbert" <dgilbert@redhat.com>
 To: Bharata B Rao <bharata@linux.vnet.ibm.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
@@ -24,18 +24,18 @@ Cc: Michael Ellerman <mpe@ellerman.id.au>,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Peter Feiner <pfeiner@google.com>, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [Qemu-devel] [PATCH 19/23] userfaultfd: activate syscall
-Message-ID: <20150908124652.GK2246@work-vm>
-References: <1431624680-20153-1-git-send-email-aarcange@redhat.com>
- <1431624680-20153-20-git-send-email-aarcange@redhat.com>
+Message-ID: <20150908141356.GM2246@work-vm>
+References: <1431624680-20153-20-git-send-email-aarcange@redhat.com>
  <20150811100728.GB4587@in.ibm.com>
  <20150811134826.GI4520@redhat.com>
  <20150812052346.GC4587@in.ibm.com>
  <1441692486.14597.17.camel@ellerman.id.au>
  <20150908063948.GB678@in.ibm.com> <20150908085946.GC2246@work-vm>
- <20150908095915.GC678@in.ibm.com>
+ <20150908095915.GC678@in.ibm.com> <20150908124652.GK2246@work-vm>
+ <20150908133647.GA17433@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150908095915.GC678@in.ibm.com>
+In-Reply-To: <20150908133647.GA17433@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,49 +46,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 * Bharata B Rao (bharata@linux.vnet.ibm.com) wrote:
-> On Tue, Sep 08, 2015 at 09:59:47AM +0100, Dr. David Alan Gilbert wrote:
+> On Tue, Sep 08, 2015 at 01:46:52PM +0100, Dr. David Alan Gilbert wrote:
 > > * Bharata B Rao (bharata@linux.vnet.ibm.com) wrote:
-> > > In fact I had successfully done postcopy migration of sPAPR guest with
-> > > this setup.
+> > > On Tue, Sep 08, 2015 at 09:59:47AM +0100, Dr. David Alan Gilbert wrote:
+> > > > * Bharata B Rao (bharata@linux.vnet.ibm.com) wrote:
+> > > > > In fact I had successfully done postcopy migration of sPAPR guest with
+> > > > > this setup.
+> > > > 
+> > > > Interesting - I'd not got that far myself on power; I was hitting a problem
+> > > > loading htab ( htab_load() bad index 2113929216 (14848+0 entries) in htab stream (htab_shift=25) )
+> > > > 
+> > > > Did you have to make any changes to the qemu code to get that happy?
+> > > 
+> > > I should have mentioned that I tried only QEMU driven migration within
+> > > the same host using wp3-postcopy branch of your tree. I don't see the
+> > > above issue.
+> > > 
+> > > (qemu) info migrate
+> > > capabilities: xbzrle: off rdma-pin-all: off auto-converge: off zero-blocks: off compress: off x-postcopy-ram: on 
+> > > Migration status: completed
+> > > total time: 39432 milliseconds
+> > > downtime: 162 milliseconds
+> > > setup: 14 milliseconds
+> > > transferred ram: 1297209 kbytes
+> > > throughput: 270.72 mbps
+> > > remaining ram: 0 kbytes
+> > > total ram: 4194560 kbytes
+> > > duplicate: 734015 pages
+> > > skipped: 0 pages
+> > > normal: 318469 pages
+> > > normal bytes: 1273876 kbytes
+> > > dirty sync count: 4
+> > > 
+> > > I will try migration between different hosts soon and check.
 > > 
-> > Interesting - I'd not got that far myself on power; I was hitting a problem
-> > loading htab ( htab_load() bad index 2113929216 (14848+0 entries) in htab stream (htab_shift=25) )
-> > 
-> > Did you have to make any changes to the qemu code to get that happy?
+> > I hit that on the same host; are you sure you've switched into postcopy mode;
+> > i.e. issued a migrate_start_postcopy before the end of migration?
 > 
-> I should have mentioned that I tried only QEMU driven migration within
-> the same host using wp3-postcopy branch of your tree. I don't see the
-> above issue.
+> Sorry I was following your discussion with Li in this thread
 > 
-> (qemu) info migrate
-> capabilities: xbzrle: off rdma-pin-all: off auto-converge: off zero-blocks: off compress: off x-postcopy-ram: on 
-> Migration status: completed
-> total time: 39432 milliseconds
-> downtime: 162 milliseconds
-> setup: 14 milliseconds
-> transferred ram: 1297209 kbytes
-> throughput: 270.72 mbps
-> remaining ram: 0 kbytes
-> total ram: 4194560 kbytes
-> duplicate: 734015 pages
-> skipped: 0 pages
-> normal: 318469 pages
-> normal bytes: 1273876 kbytes
-> dirty sync count: 4
+> https://www.marc.info/?l=qemu-devel&m=143035620026744&w=4
 > 
-> I will try migration between different hosts soon and check.
+> and it wasn't obvious to me that anything apart from turning on the
+> x-postcopy-ram capability was required :(
 
-I hit that on the same host; are you sure you've switched into postcopy mode;
-i.e. issued a migrate_start_postcopy before the end of migration?
+OK.
 
-(My current world I have working on x86-64 and I've also tested reasonably well
-on aarch64, and get to that htab problem on Power).
+> So I do see the problem now.
+> 
+> At the source
+> -------------
+> Error reading data from KVM HTAB fd: Bad file descriptor
+> Segmentation fault
+> 
+> At the target
+> -------------
+> htab_load() bad index 2113929216 (14336+0 entries) in htab stream (htab_shift=25)
+> qemu-system-ppc64: error while loading state section id 56(spapr/htab)
+> qemu-system-ppc64: postcopy_ram_listen_thread: loadvm failed: -22
+> qemu-system-ppc64: VQ 0 size 0x100 Guest index 0x0 inconsistent with Host index 0x1f: delta 0xffe1
+> qemu-system-ppc64: error while loading state for instance 0x0 of device 'pci@800000020000000:00.0/virtio-net'
+> *** Error in `./ppc64-softmmu/qemu-system-ppc64': corrupted double-linked list: 0x00000100241234a0 ***
+> ======= Backtrace: =========
+> /lib64/power8/libc.so.6Segmentation fault
+
+Good - my current world has got rid of the segfaults/corruption in the cleanup on power - but those
+are only after it stumbled over the htab problem.
+
+I don't know the innards of power/htab, so if you've got any pointers on what upset it
+I'd be happy for some pointers.
+
+(We should probably trim the cc - since I don't think this is userfault related).
 
 Dave
 
-> 
-> Regards,
-> Bharata.
-> 
 --
 Dr. David Alan Gilbert / dgilbert@redhat.com / Manchester, UK
