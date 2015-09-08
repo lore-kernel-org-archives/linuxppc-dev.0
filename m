@@ -1,29 +1,28 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay05.akamai.com (unknown [23.79.238.179])
- by lists.ozlabs.org (Postfix) with ESMTP id D07651A1F44
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 23:59:05 +1000 (AEST)
-From: Eric B Munson <emunson@akamai.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric B Munson <emunson@akamai.com>, Michal Hocko <mhocko@suse.cz>,
- Vlastimil Babka <vbabka@suse.cz>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Guenter Roeck <linux@roeck-us.net>, linux-alpha@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- adi-buildroot-devel@lists.sourceforge.net, linux-cris-kernel@axis.com,
- linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- linux-am33-list@redhat.com, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH v9 2/6] mm: mlock: Add new mlock system call
-Date: Tue,  8 Sep 2015 09:58:58 -0400
-Message-Id: <1441720742-7803-3-git-send-email-emunson@akamai.com>
-In-Reply-To: <1441720742-7803-1-git-send-email-emunson@akamai.com>
-References: <1441720742-7803-1-git-send-email-emunson@akamai.com>
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 65A9E1A1F44
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 01:10:34 +1000 (AEST)
+Date: Tue, 8 Sep 2015 12:10:27 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Hemant Kumar <hemant@linux.vnet.ibm.com>,
+ Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
+ maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org, warrier@linux.vnet.ibm.com,
+ paulus@samba.org, scottwood@freescale.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Subject: Re: [PATCH v6 1/2] perf,kvm/powerpc: Add kvm_perf.h for powerpc
+Message-ID: <20150908151027.GM3475@kernel.org>
+References: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <20150831201300.GG4423@kernel.org>
+ <55E54A4F.6090205@linux.vnet.ibm.com>
+ <20150904205145.GB3475@kernel.org>
+ <1441602655.12945.5.camel@ellerman.id.au>
+ <55EE6A61.3010301@linux.vnet.ibm.com>
+ <1441701225.7601.1.camel@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1441701225.7601.1.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,129 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With the refactored mlock code, introduce a new system call for mlock.
-The new call will allow the user to specify what lock states are being
-added.  mlock2 is trivial at the moment, but a follow on patch will add
-a new mlock state making it useful.
+Em Tue, Sep 08, 2015 at 06:33:45PM +1000, Michael Ellerman escreveu:
+> On Tue, 2015-09-08 at 10:26 +0530, Hemant Kumar wrote:
+> > 
+> > On 09/07/2015 10:40 AM, Michael Ellerman wrote:
+> > > On Fri, 2015-09-04 at 17:51 -0300, Arnaldo Carvalho de Melo wrote:
+> > >> Em Tue, Sep 01, 2015 at 12:18:47PM +0530, Hemant Kumar escreveu:
+> > >>>> Should I try to process the 5 together, applying thest two first?
+> > >>   
+> > >>> Yes, this patchset needs to be applied before applying the other patchset,
+> > >>> since there is a direct dependency on these two for the tooling part to
+> > >>> work.
+> > >>   
+> > >>>> I see there are no acks from powerpc arch maintainers, how should we
+> > >>>> proceed here? If there are no problems with the arch bits, and if it is
+> > >>>> just to enable the tooling part, again, should I process the 5 as just
+> > >>>> one series?
+> > >>   
+> > >>> The reason to split the earlier patchset into two was to separate the
+> > >>> tooling/perf/ and arch/powerpc/ side patches, as asked by Michael..
+> > >>   
+> > >>> Here is the link to that discussion :
+> > >>> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg86916.html
+> > >>   
+> > >>> If Michael is ok with the patches, you can process all the 5 patches
+> > >>> together. Michael?
+> > >> Michael?
+> > > I'm not particularly happy with it.
+> > >
+> > > Can we at least remove this hunk from the uapi header:
+> > >
+> > > +/* This is to shut the compiler up */
+> > > +#define KVM_ENTRY_TRACE ""
+> > > +#define KVM_EXIT_TRACE ""
+> > > +#define KVM_EXIT_REASON ""
+> > >
+> > 
+> > Agreed, I didn't like this too, but I kept this because of the generic
+> > perf userspace code that looks for KVM_{ENTRY,EXIT}_TRACE and
+> > KVM_EXIT_REASON. We can remove this and put this hunk in the
+> > userspace side.
+> 
+> Yes please.
+> 
+> > Arnaldo,
+> > Can we remove the dependency on uapi altogether (also suggested
+> > by Scott) because it doesn't seem to fulfill much purpose? Rather,
+> > hardcode the events in the userspace completely (since, tracepoint
+> > event names are unlikely to change) ? Some of what is being done
+> > by x86 already in kvm-stat.c where its defining kvm_events_tp[] and
+> > its not using the macros, rather, the tracepoints directly. Macros are
+> > only being used in builtin-kvm.c where the tracepoint names are
+> > matched with KVM_{ENTRY,EXIT}_TRACE and when we are looking
+> > for the key KVM_EXIT_REASON.
+> 
+> That would certainly make me a lot happier with it.
+> 
+> Also think about what would happen if the tracepoint names *did* change. The
+> perf code would want to try and work with both the old and new names, so at
+> that point you'd end up hard coding the names in the perf code anyway.
 
-Signed-off-by: Eric B Munson <emunson@akamai.com>
-Acked-by: Vlastimil Babka <vbabka@suse.cz>
-Acked-by: Michal Hocko <mhocko@suse.com>
-Cc: Michal Hocko <mhocko@suse.cz>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: adi-buildroot-devel@lists.sourceforge.net
-Cc: linux-cris-kernel@axis.com
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: linux-am33-list@redhat.com
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-xtensa@linux-xtensa.org
-Cc: linux-api@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-mm@kvack.org
----
-Changes from V8:
-* Update x86[_64] syscall numbers to follow the new userfaultfd syscalls
+Yeah, seems like we have a plan :-)
 
- arch/x86/entry/syscalls/syscall_32.tbl | 1 +
- arch/x86/entry/syscalls/syscall_64.tbl | 1 +
- include/linux/syscalls.h               | 2 ++
- include/uapi/asm-generic/unistd.h      | 4 +++-
- kernel/sys_ni.c                        | 1 +
- mm/mlock.c                             | 8 ++++++++
- 6 files changed, 16 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/entry/syscalls/syscall_32.tbl b/arch/x86/entry/syscalls/syscall_32.tbl
-index 477bfa6..41e72a5 100644
---- a/arch/x86/entry/syscalls/syscall_32.tbl
-+++ b/arch/x86/entry/syscalls/syscall_32.tbl
-@@ -381,3 +381,4 @@
- 372	i386	recvmsg			sys_recvmsg			compat_sys_recvmsg
- 373	i386	shutdown		sys_shutdown
- 374	i386	userfaultfd		sys_userfaultfd
-+375	i386	mlock2			sys_mlock2
-diff --git a/arch/x86/entry/syscalls/syscall_64.tbl b/arch/x86/entry/syscalls/syscall_64.tbl
-index 81c4906..2366900 100644
---- a/arch/x86/entry/syscalls/syscall_64.tbl
-+++ b/arch/x86/entry/syscalls/syscall_64.tbl
-@@ -330,6 +330,7 @@
- 321	common	bpf			sys_bpf
- 322	64	execveat		stub_execveat
- 323	common	userfaultfd		sys_userfaultfd
-+324	common	mlock2			sys_mlock2
- 
- #
- # x32-specific system call numbers start at 512 to avoid cache impact
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 0800131..890632c 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -885,4 +885,6 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
- 			const char __user *const __user *argv,
- 			const char __user *const __user *envp, int flags);
- 
-+asmlinkage long sys_mlock2(unsigned long start, size_t len, int flags);
-+
- #endif
-diff --git a/include/uapi/asm-generic/unistd.h b/include/uapi/asm-generic/unistd.h
-index e016bd9..14a6013 100644
---- a/include/uapi/asm-generic/unistd.h
-+++ b/include/uapi/asm-generic/unistd.h
-@@ -709,9 +709,11 @@ __SYSCALL(__NR_memfd_create, sys_memfd_create)
- __SYSCALL(__NR_bpf, sys_bpf)
- #define __NR_execveat 281
- __SC_COMP(__NR_execveat, sys_execveat, compat_sys_execveat)
-+#define __NR_mlock2 282
-+__SYSCALL(__NR_mlock2, sys_mlock2)
- 
- #undef __NR_syscalls
--#define __NR_syscalls 282
-+#define __NR_syscalls 283
- 
- /*
-  * All syscalls below here should go away really,
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index 03c3875..8de5b26 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -194,6 +194,7 @@ cond_syscall(sys_mlock);
- cond_syscall(sys_munlock);
- cond_syscall(sys_mlockall);
- cond_syscall(sys_munlockall);
-+cond_syscall(sys_mlock2);
- cond_syscall(sys_mincore);
- cond_syscall(sys_madvise);
- cond_syscall(sys_mremap);
-diff --git a/mm/mlock.c b/mm/mlock.c
-index c32ad8f..a23a533 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -644,6 +644,14 @@ SYSCALL_DEFINE2(mlock, unsigned long, start, size_t, len)
- 	return do_mlock(start, len, VM_LOCKED);
- }
- 
-+SYSCALL_DEFINE3(mlock2, unsigned long, start, size_t, len, int, flags)
-+{
-+	if (flags)
-+		return -EINVAL;
-+
-+	return do_mlock(start, len, VM_LOCKED);
-+}
-+
- SYSCALL_DEFINE2(munlock, unsigned long, start, size_t, len)
- {
- 	int ret;
--- 
-1.9.1
+- Arnaldo
