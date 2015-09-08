@@ -1,34 +1,25 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF8721A0163
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 17:14:26 +1000 (AEST)
-Message-ID: <1441696463.4689.1.camel@ellerman.id.au>
-Subject: Re: [Qemu-devel] [PATCH 19/23] userfaultfd: activate syscall
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53A951A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 18:33:46 +1000 (AEST)
+Message-ID: <1441701225.7601.1.camel@ellerman.id.au>
+Subject: Re: [PATCH v6 1/2] perf,kvm/powerpc: Add kvm_perf.h for powerpc
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: bharata@linux.vnet.ibm.com
-Cc: Andrea Arcangeli <aarcange@redhat.com>, Andrew Morton
- <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org,  qemu-devel@nongnu.org, kvm@vger.kernel.org,
- linux-api@vger.kernel.org,  zhang.zhanghailiang@huawei.com, Pavel Emelyanov
- <xemul@parallels.com>,  Johannes Weiner <hannes@cmpxchg.org>, Hugh Dickins
- <hughd@google.com>, "Dr. David Alan Gilbert" <dgilbert@redhat.com>,
- Sanidhya Kashyap <sanidhya.gatech@gmail.com>, Dave Hansen
- <dave.hansen@intel.com>, Andres Lagar-Cavilla <andreslc@google.com>, Mel
- Gorman <mgorman@suse.de>, Paolo Bonzini <pbonzini@redhat.com>, "Kirill A.
- Shutemov" <kirill@shutemov.name>, "Huangpeng (Peter)"
- <peter.huangpeng@huawei.com>,  Andy Lutomirski <luto@amacapital.net>, Linus
- Torvalds <torvalds@linux-foundation.org>, Peter Feiner
- <pfeiner@google.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 08 Sep 2015 17:14:23 +1000
-In-Reply-To: <20150908063948.GB678@in.ibm.com>
-References: <1431624680-20153-1-git-send-email-aarcange@redhat.com>
- <1431624680-20153-20-git-send-email-aarcange@redhat.com>
- <20150811100728.GB4587@in.ibm.com> <20150811134826.GI4520@redhat.com>
- <20150812052346.GC4587@in.ibm.com>
- <1441692486.14597.17.camel@ellerman.id.au>
- <20150908063948.GB678@in.ibm.com>
+To: Hemant Kumar <hemant@linux.vnet.ibm.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>, Alexander Yarygin
+ <yarygin@linux.vnet.ibm.com>, maddy@linux.vnet.ibm.com,
+ srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ warrier@linux.vnet.ibm.com, paulus@samba.org, scottwood@freescale.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Date: Tue, 08 Sep 2015 18:33:45 +1000
+In-Reply-To: <55EE6A61.3010301@linux.vnet.ibm.com>
+References: <1441003681-10259-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <20150831201300.GG4423@kernel.org> <55E54A4F.6090205@linux.vnet.ibm.com>
+ <20150904205145.GB3475@kernel.org>
+ <1441602655.12945.5.camel@ellerman.id.au>
+ <55EE6A61.3010301@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,81 +31,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-08 at 12:09 +0530, Bharata B Rao wrote:
-> On Tue, Sep 08, 2015 at 04:08:06PM +1000, Michael Ellerman wrote:
-> > On Wed, 2015-08-12 at 10:53 +0530, Bharata B Rao wrote:
-> > > On Tue, Aug 11, 2015 at 03:48:26PM +0200, Andrea Arcangeli wrote:
-> > > > Hello Bharata,
-> > > > 
-> > > > On Tue, Aug 11, 2015 at 03:37:29PM +0530, Bharata B Rao wrote:
-> > > > > May be it is a bit late to bring this up, but I needed the following fix
-> > > > > to userfault21 branch of your git tree to compile on powerpc.
-> > > > 
-> > > > Not late, just in time. I increased the number of syscalls in earlier
-> > > > versions, it must have gotten lost during a rejecting rebase, sorry.
-> > > > 
-> > > > I applied it to my tree and it can be applied to -mm and linux-next,
-> > > > thanks!
-> > > > 
-> > > > The syscall for arm32 are also ready and on their way to the arm tree,
-> > > > the testsuite worked fine there. ppc also should work fine if you
-> > > > could confirm it'd be interesting, just beware that I got a typo in
-> > > > the testcase:
-> > > 
-> > > The testsuite passes on powerpc.
-> > > 
-> > > --------------------
-> > > running userfaultfd
-> > > --------------------
-> > > nr_pages: 2040, nr_pages_per_cpu: 170
-> > > bounces: 31, mode: rnd racing ver poll, userfaults: 80 43 23 23 15 16 12 1 2 96 13 128
-> > > bounces: 30, mode: racing ver poll, userfaults: 35 54 62 49 47 48 2 8 0 78 1 0
-> > > bounces: 29, mode: rnd ver poll, userfaults: 114 153 70 106 78 57 143 92 114 96 1 0
-> > > bounces: 28, mode: ver poll, userfaults: 96 81 5 45 83 19 98 28 1 145 23 2
-> > > bounces: 27, mode: rnd racing poll, userfaults: 54 65 60 54 45 49 1 2 1 2 71 20
-> > > bounces: 26, mode: racing poll, userfaults: 90 83 35 29 37 35 30 42 3 4 49 6
-> > > bounces: 25, mode: rnd poll, userfaults: 52 50 178 112 51 41 23 42 18 99 59 0
-> > > bounces: 24, mode: poll, userfaults: 136 101 83 260 84 29 16 88 1 6 160 57
-> > > bounces: 23, mode: rnd racing ver, userfaults: 141 197 158 183 39 49 3 52 8 3 6 0
-> > > bounces: 22, mode: racing ver, userfaults: 242 266 244 180 162 32 87 43 31 40 34 0
-> > > bounces: 21, mode: rnd ver, userfaults: 636 158 175 24 253 104 48 8 0 0 0 0
-> > > bounces: 20, mode: ver, userfaults: 531 204 225 117 129 107 11 143 76 31 1 0
-> > > bounces: 19, mode: rnd racing, userfaults: 303 169 225 145 59 219 37 0 0 0 0 0
-> > > bounces: 18, mode: racing, userfaults: 374 372 37 144 126 90 25 12 15 17 0 0
-> > > bounces: 17, mode: rnd, userfaults: 313 412 134 108 80 99 7 56 85 0 0 0
-> > > bounces: 16, mode:, userfaults: 431 58 87 167 120 113 98 60 14 8 48 0
-> > > bounces: 15, mode: rnd racing ver poll, userfaults: 41 40 25 28 37 24 0 0 0 0 180 75
-> > > bounces: 14, mode: racing ver poll, userfaults: 43 53 30 28 25 15 19 0 0 0 0 30
-> > > bounces: 13, mode: rnd ver poll, userfaults: 136 91 114 91 92 79 114 77 75 68 1 2
-> > > bounces: 12, mode: ver poll, userfaults: 92 120 114 76 153 75 132 157 83 81 10 1
-> > > bounces: 11, mode: rnd racing poll, userfaults: 50 72 69 52 53 48 46 59 57 51 37 1
-> > > bounces: 10, mode: racing poll, userfaults: 33 49 38 68 35 63 57 49 49 47 25 10
-> > > bounces: 9, mode: rnd poll, userfaults: 167 150 67 123 39 75 1 2 9 125 1 1
-> > > bounces: 8, mode: poll, userfaults: 147 102 20 87 5 27 118 14 104 40 21 28
-> > > bounces: 7, mode: rnd racing ver, userfaults: 305 254 208 74 59 96 36 14 11 7 4 5
-> > > bounces: 6, mode: racing ver, userfaults: 290 114 191 94 162 114 34 6 6 32 23 2
-> > > bounces: 5, mode: rnd ver, userfaults: 370 381 22 273 21 106 17 55 0 0 0 0
-> > > bounces: 4, mode: ver, userfaults: 328 279 179 191 74 86 95 15 13 10 0 0
-> > > bounces: 3, mode: rnd racing, userfaults: 222 215 164 70 5 20 179 0 34 3 0 0
-> > > bounces: 2, mode: racing, userfaults: 316 385 112 160 225 5 30 49 42 2 4 0
-> > > bounces: 1, mode: rnd, userfaults: 273 139 253 176 163 71 85 2 0 0 0 0
-> > > bounces: 0, mode:, userfaults: 165 212 633 13 24 66 24 27 15 0 10 1
-> > > [PASS]
-> > 
-> > Hmm, not for me. See below.
-> > 
-> > What setup were you testing on Bharata?
+On Tue, 2015-09-08 at 10:26 +0530, Hemant Kumar wrote:
 > 
-> I was on commit a94572f5799dd of userfault21 branch in Andrea's tree
-> git://git.kernel.org/pub/scm/linux/kernel/git/andrea/aa.git
+> On 09/07/2015 10:40 AM, Michael Ellerman wrote:
+> > On Fri, 2015-09-04 at 17:51 -0300, Arnaldo Carvalho de Melo wrote:
+> >> Em Tue, Sep 01, 2015 at 12:18:47PM +0530, Hemant Kumar escreveu:
+> >>>> Should I try to process the 5 together, applying thest two first?
+> >>   
+> >>> Yes, this patchset needs to be applied before applying the other patchset,
+> >>> since there is a direct dependency on these two for the tooling part to
+> >>> work.
+> >>   
+> >>>> I see there are no acks from powerpc arch maintainers, how should we
+> >>>> proceed here? If there are no problems with the arch bits, and if it is
+> >>>> just to enable the tooling part, again, should I process the 5 as just
+> >>>> one series?
+> >>   
+> >>> The reason to split the earlier patchset into two was to separate the
+> >>> tooling/perf/ and arch/powerpc/ side patches, as asked by Michael..
+> >>   
+> >>> Here is the link to that discussion :
+> >>> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg86916.html
+> >>   
+> >>> If Michael is ok with the patches, you can process all the 5 patches
+> >>> together. Michael?
+> >> Michael?
+> > I'm not particularly happy with it.
+> >
+> > Can we at least remove this hunk from the uapi header:
+> >
+> > +/* This is to shut the compiler up */
+> > +#define KVM_ENTRY_TRACE ""
+> > +#define KVM_EXIT_TRACE ""
+> > +#define KVM_EXIT_REASON ""
+> >
 > 
-> #uname -a
-> Linux 4.1.0-rc8+ #1 SMP Tue Aug 11 11:33:50 IST 2015 ppc64le ppc64le ppc64le GNU/Linux
-> 
-> In fact I had successfully done postcopy migration of sPAPR guest with
-> this setup.
+> Agreed, I didn't like this too, but I kept this because of the generic
+> perf userspace code that looks for KVM_{ENTRY,EXIT}_TRACE and
+> KVM_EXIT_REASON. We can remove this and put this hunk in the
+> userspace side.
 
-OK, do you mind testing mainline with the same setup to see if the selftest
-passes.
+Yes please.
+
+> Arnaldo,
+> Can we remove the dependency on uapi altogether (also suggested
+> by Scott) because it doesn't seem to fulfill much purpose? Rather,
+> hardcode the events in the userspace completely (since, tracepoint
+> event names are unlikely to change) ? Some of what is being done
+> by x86 already in kvm-stat.c where its defining kvm_events_tp[] and
+> its not using the macros, rather, the tracepoints directly. Macros are
+> only being used in builtin-kvm.c where the tracepoint names are
+> matched with KVM_{ENTRY,EXIT}_TRACE and when we are looking
+> for the key KVM_EXIT_REASON.
+
+That would certainly make me a lot happier with it.
+
+Also think about what would happen if the tracepoint names *did* change. The
+perf code would want to try and work with both the old and new names, so at
+that point you'd end up hard coding the names in the perf code anyway.
 
 cheers
