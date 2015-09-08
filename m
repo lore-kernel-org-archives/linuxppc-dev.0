@@ -1,25 +1,17 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA21E1A0138
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 21:29:11 +1000 (AEST)
-Date: Tue, 8 Sep 2015 13:29:00 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: [[PATCH v6 09/10] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
-Message-ID: <20150908112900.GF3644@twins.programming.kicks-ass.net>
-References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1441336073-22750-10-git-send-email-sukadev@linux.vnet.ibm.com>
- <1441703275.7601.5.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1441703275.7601.5.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 942DD1A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 22:05:00 +1000 (AEST)
+In-Reply-To: <1441587178-5581-1-git-send-email-andrew.donnellan@au1.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: mikey@neuling.org, imunsie@au1.ibm.com, dja@axtens.net
+Subject: Re: [v2] cxl: abort cxl_pci_enable_device_hook() if PCI channel is
+ offline
+Message-Id: <20150908120500.75BD3140187@ozlabs.org>
+Date: Tue,  8 Sep 2015 22:05:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 08, 2015 at 07:07:55PM +1000, Michael Ellerman wrote:
-> On Thu, 2015-09-03 at 20:07 -0700, Sukadev Bhattiprolu wrote:
-> > The 24x7 counters in Powerpc allow monitoring a large number of counters
-> > simultaneously. They also allow reading several counters in a single
-> > HCALL so we can get a more consistent snapshot of the system.
-> > 
-> > Use the PMU's transaction interface to monitor and read several event
-> > counters at once. The idea is that users can group several 24x7 events
-> > into a single group of events. We use the following logic to submit
-> > the group of events to the PMU and read the values:
-> > 
-> > 	pmu->start_txn()		// Initialize before first event
-> > 
-> > 	for each event in group
-> > 		pmu->read(event);	// Queue each event to be read
-> > 
-> > 	pmu->commit_txn()		// Read/update all queuedcounters
-> > 
-> > The ->commit_txn() also updates the event counts in the respective
-> > perf_event objects.  The perf subsystem can then directly get the
-> > event counts from the perf_event and can avoid submitting a new
-> > ->read() request to the PMU.
-> > 
-> > Thanks to input from Peter Zijlstra.
-> > 
-> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/perf/hv-24x7.c |  166 ++++++++++++++++++++++++++++++++++++++++++-
+On Mon, 2015-07-09 at 00:52:58 UTC, Andrew Donnellan wrote:
+> cxl_pci_enable_device_hook() is called when attempting to enable an AFU
+> sitting on a vPHB. At present, the state of the underlying CXL card's PCI
+> channel is only checked when it calls cxl_afu_check_and_enable() at the
+> very end, after it has already set DMA options and initialised a default
+> context.
 > 
-> This looks fine to me from an arch perspective. I assume the whole series can
-> go via tip-something?
+> Check the CXL card's link status before setting DMA options or initialising
+> a default context. If the link is down, print a warning and return
+> immediately.
+> 
+> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 
-Yeah, I've had it queued for a few days, there was one s390 compile
-fail reported by the build-bot, which I've just fixed. So if nothing
-weird happens, it should hit tip somewhere this week.
+Applied to powerpc fixes, thanks.
 
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+https://git.kernel.org/powerpc/c/7d1647dc4ba0a61fec5381c1
 
-Thanks!
+cheers
