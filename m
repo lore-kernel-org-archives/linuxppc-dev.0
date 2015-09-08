@@ -1,23 +1,37 @@
-Return-Path: <tim.gardner@canonical.com>
-Received: from mail-pa0-f46.google.com (mail-pa0-f46.google.com
- [209.85.220.46])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E65B21A1F43
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 04:13:31 +1000 (AEST)
-Received: by pacfv12 with SMTP id fv12so133541156pac.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2015 11:13:29 -0700 (PDT)
-From: tim.gardner@canonical.com
-To: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Tim Gardner <tim.gardner@canonical.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Leonidas Da Silva Barbosa <leosilva@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH] powerpc: define empty enable_kernel_vsx() when CONFIG_VSX=n
-Date: Tue,  8 Sep 2015 12:13:11 -0600
-Message-Id: <1441735991-29199-1-git-send-email-tim.gardner@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C34641A1F44
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 04:30:14 +1000 (AEST)
+Received: from /spool/local
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
+ Tue, 8 Sep 2015 14:30:11 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DB0B1C90046
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 14:21:13 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t88IU9Yn32899150
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Sep 2015 18:30:09 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t88IU8S7009420
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Sep 2015 14:30:09 -0400
+From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <anton@samba.org>, <akpm@linux-foundation.org>
+Cc: <nacc@linux.vnet.ibm.com>, <gkurz@linux.vnet.ibm.com>,
+ <zhong@linux.vnet.ibm.com>, <grant.likely@linaro.org>,
+ <nikunj@linux.vnet.ibm.com>, <vdavydov@parallels.com>,
+ <raghavendra.kt@linux.vnet.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>
+Subject: [PATCH  0/2] Replace nr_node_ids for loop with for_each_node 
+Date: Wed,  9 Sep 2015 00:01:45 +0530
+Message-Id: <1441737107-23103-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +41,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tim Gardner <tim.gardner@canonical.com>
+Many places in the kernel use 'for' loop with nr_node_ids. For the architectures
+which supports sparse numa ids, this will result in some unnecessary allocations
+for non existing nodes.
+(for e.g., numa node numbers such as 0,1,16,17 is common in powerpc.)
 
-commit 72cd7b44bc99 ("powerpc: Uncomment and make enable_kernel_vsx()
-routine available") neglected to define an empty inline replacement for
-enable_kernel_vsx() when CONFIG_VSX=n.
+So replace the for loop with for_each_node so that allocations happen only for
+existing numa nodes.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Leonidas Da Silva Barbosa <leosilva@linux.vnet.ibm.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
----
- arch/powerpc/include/asm/switch_to.h | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Please note that, though there are many places where nr_node_ids is used,
+current patchset uses for_each_node only for slowpath to avoid find_next_bit
+traversal.
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 15cca17..dea61a0 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -29,7 +29,6 @@ static inline void save_early_sprs(struct thread_struct *prev) {}
- 
- extern void enable_kernel_fp(void);
- extern void enable_kernel_altivec(void);
--extern void enable_kernel_vsx(void);
- extern int emulate_altivec(struct pt_regs *);
- extern void __giveup_vsx(struct task_struct *);
- extern void giveup_vsx(struct task_struct *);
-@@ -69,10 +68,14 @@ static inline void giveup_altivec(struct task_struct *t)
- 
- #ifdef CONFIG_VSX
- extern void flush_vsx_to_thread(struct task_struct *);
-+extern void enable_kernel_vsx(void);
- #else
- static inline void flush_vsx_to_thread(struct task_struct *t)
- {
- }
-+static inline void enable_kernel_vsx(void)
-+{
-+}
- #endif
- 
- #ifdef CONFIG_SPE
+Raghavendra K T (2):
+  mm: Replace nr_node_ids for loop with for_each_node in list lru
+  powerpc:numa Do not allocate bootmem memory for non existing nodes
+
+ arch/powerpc/mm/numa.c |  2 +-
+ mm/list_lru.c          | 23 +++++++++++++++--------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
+
 -- 
-1.9.1
+1.7.11.7
