@@ -1,50 +1,25 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 897541A0163
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 20:51:37 +1000 (AEST)
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AB5D71401AF
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Sep 2015 20:51:36 +1000 (AEST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ananth@in.ibm.com>;
- Tue, 8 Sep 2015 04:51:34 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 2BA373E4003F
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Sep 2015 04:51:32 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t88AoiUS41549848
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Sep 2015 03:50:44 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t88ApV6N005910
- for <linuxppc-dev@ozlabs.org>; Tue, 8 Sep 2015 04:51:31 -0600
-Date: Tue, 8 Sep 2015 16:21:27 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA21E1A0138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 21:29:11 +1000 (AEST)
+Date: Tue, 8 Sep 2015 13:29:00 +0200
+From: Peter Zijlstra <peterz@infradead.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>, ego@linux.vnet.ibm.com, mingo@kernel.org
-Subject: Re: powerpc: Add user-return-notifier support
-Message-ID: <20150908105127.GB12028@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20150825054110.GD3815@in.ibm.com>
- <20150831103517.96D1A1401E7@ozlabs.org>
- <20150901064113.GA1196@in.ibm.com>
- <1441152192.4966.103.camel@freescale.com>
- <20150902023713.GB1196@in.ibm.com>
- <1441164552.4966.153.camel@freescale.com>
- <20150902050958.GC1196@in.ibm.com>
- <1441704279.7601.6.camel@ellerman.id.au>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [[PATCH v6 09/10] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
+Message-ID: <20150908112900.GF3644@twins.programming.kicks-ass.net>
+References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1441336073-22750-10-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1441703275.7601.5.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1441704279.7601.6.camel@ellerman.id.au>
+In-Reply-To: <1441703275.7601.5.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,54 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 08, 2015 at 07:24:39PM +1000, Michael Ellerman wrote:
-> On Wed, 2015-09-02 at 10:39 +0530, Ananth N Mavinakayanahalli wrote:
-> > On Tue, Sep 01, 2015 at 10:29:12PM -0500, Scott Wood wrote:
+On Tue, Sep 08, 2015 at 07:07:55PM +1000, Michael Ellerman wrote:
+> On Thu, 2015-09-03 at 20:07 -0700, Sukadev Bhattiprolu wrote:
+> > The 24x7 counters in Powerpc allow monitoring a large number of counters
+> > simultaneously. They also allow reading several counters in a single
+> > HCALL so we can get a more consistent snapshot of the system.
 > > 
-> > > Why is this selected by KVM on PPC if KVM on PPC doesn't use it?  What is the 
-> > > user you're trying to enable?
+> > Use the PMU's transaction interface to monitor and read several event
+> > counters at once. The idea is that users can group several 24x7 events
+> > into a single group of events. We use the following logic to submit
+> > the group of events to the PMU and read the values:
 > > 
-> > I copied Paul and Gautham to get their thoughts on whether it is
-> > something they could use on Power. At this time, apart from enabling the
-> > feature, I do not have a specific usecase for it. We can park this patch
-> > pending a real user on powerpc.
+> > 	pmu->start_txn()		// Initialize before first event
+> > 
+> > 	for each event in group
+> > 		pmu->read(event);	// Queue each event to be read
+> > 
+> > 	pmu->commit_txn()		// Read/update all queuedcounters
+> > 
+> > The ->commit_txn() also updates the event counts in the respective
+> > perf_event objects.  The perf subsystem can then directly get the
+> > event counts from the perf_event and can avoid submitting a new
+> > ->read() request to the PMU.
+> > 
+> > Thanks to input from Peter Zijlstra.
+> > 
+> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/perf/hv-24x7.c |  166 ++++++++++++++++++++++++++++++++++++++++++-
 > 
-> OK, thanks for hashing that out guys. I think parking it is the best solution
-> for now, we could merge it and disable it somehow, but that would be ugly and
-> prone to breaking.
-> 
-> Do we want to do something like this?
+> This looks fine to me from an arch perspective. I assume the whole series can
+> go via tip-something?
 
-Yes. This looks fine -- folks who want it down the line know where to look.
+Yeah, I've had it queued for a few days, there was one s390 compile
+fail reported by the build-bot, which I've just fixed. So if nothing
+weird happens, it should hit tip somewhere this week.
 
-Thanks,
-Ananth
+> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-> 
-> cheers
-> 
-> diff --git a/Documentation/features/arch-support.txt b/Documentation/features/arch-support.txt
-> index d22a1095e661..3e2cf6161cf4 100644
-> --- a/Documentation/features/arch-support.txt
-> +++ b/Documentation/features/arch-support.txt
-> @@ -8,4 +8,5 @@ The meaning of entries in the tables is:
->      | ok |  # feature supported by the architecture
->      |TODO|  # feature not yet supported by the architecture
->      | .. |  # feature cannot be supported by the hardware
-> +    |n/a |  # feature is not needed/wanted/meaningful for the architecture
-> 
-> diff --git a/Documentation/features/debug/user-ret-profiler/arch-support.txt b/Documentation/features/debug/user-ret-profiler/arch-support.txt
-> index 44cc1ff3f603..669813180dc5 100644
-> --- a/Documentation/features/debug/user-ret-profiler/arch-support.txt
-> +++ b/Documentation/features/debug/user-ret-profiler/arch-support.txt
-> @@ -27,7 +27,7 @@
->      |       nios2: | TODO |
->      |    openrisc: | TODO |
->      |      parisc: | TODO |
-> -    |     powerpc: | TODO |
-> +    |     powerpc: | n/a  |    # http://lkml.kernel.org/r/20150825054110.GD3815@in.ibm.com
->      |        s390: | TODO |
->      |       score: | TODO |
->      |          sh: | TODO |
-> 
-> 
+Thanks!
