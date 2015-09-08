@@ -1,58 +1,21 @@
-Return-Path: <bharata@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 792141A0163
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 23:37:38 +1000 (AEST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bharata@linux.vnet.ibm.com>;
- Tue, 8 Sep 2015 19:07:36 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C5DBB125801D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 19:06:53 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t88DbTiK21233768
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Sep 2015 19:07:30 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t88DbReS012819
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Sep 2015 19:07:28 +0530
-Date: Tue, 8 Sep 2015 19:07:15 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: "Dr. David Alan Gilbert" <dgilbert@redhat.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- qemu-devel@nongnu.org, kvm@vger.kernel.org, linux-api@vger.kernel.org,
- zhang.zhanghailiang@huawei.com, Pavel Emelyanov <xemul@parallels.com>,
- Johannes Weiner <hannes@cmpxchg.org>, Hugh Dickins <hughd@google.com>,
- Sanidhya Kashyap <sanidhya.gatech@gmail.com>,
- Dave Hansen <dave.hansen@intel.com>,
- Andres Lagar-Cavilla <andreslc@google.com>,
- Mel Gorman <mgorman@suse.de>, Paolo Bonzini <pbonzini@redhat.com>,
- "Kirill A. Shutemov" <kirill@shutemov.name>,
- "Huangpeng (Peter)" <peter.huangpeng@huawei.com>,
- Andy Lutomirski <luto@amacapital.net>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Peter Feiner <pfeiner@google.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [Qemu-devel] [PATCH 19/23] userfaultfd: activate syscall
-Message-ID: <20150908133647.GA17433@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <1431624680-20153-1-git-send-email-aarcange@redhat.com>
- <1431624680-20153-20-git-send-email-aarcange@redhat.com>
- <20150811100728.GB4587@in.ibm.com>
- <20150811134826.GI4520@redhat.com>
- <20150812052346.GC4587@in.ibm.com>
- <1441692486.14597.17.camel@ellerman.id.au>
- <20150908063948.GB678@in.ibm.com> <20150908085946.GC2246@work-vm>
- <20150908095915.GC678@in.ibm.com> <20150908124652.GK2246@work-vm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150908124652.GK2246@work-vm>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay05.akamai.com (unknown [23.79.238.179])
+ by lists.ozlabs.org (Postfix) with ESMTP id CA7211A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 23:59:05 +1000 (AEST)
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric B Munson <emunson@akamai.com>, Shuah Khan <shuahkh@osg.samsung.com>,
+ Michal Hocko <mhocko@suse.cz>, Michael Kerrisk <mtk.manpages@gmail.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Jonathan Corbet <corbet@lwn.net>,
+ Ralf Baechle <ralf@linux-mips.org>, Andrea Arcangeli <aarcange@redhat.com>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: [PATCH v9 0/6] Allow user to request memory to be locked on page fault
+Date: Tue,  8 Sep 2015 09:58:56 -0400
+Message-Id: <1441720742-7803-1-git-send-email-emunson@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -62,64 +25,231 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 08, 2015 at 01:46:52PM +0100, Dr. David Alan Gilbert wrote:
-> * Bharata B Rao (bharata@linux.vnet.ibm.com) wrote:
-> > On Tue, Sep 08, 2015 at 09:59:47AM +0100, Dr. David Alan Gilbert wrote:
-> > > * Bharata B Rao (bharata@linux.vnet.ibm.com) wrote:
-> > > > In fact I had successfully done postcopy migration of sPAPR guest with
-> > > > this setup.
-> > > 
-> > > Interesting - I'd not got that far myself on power; I was hitting a problem
-> > > loading htab ( htab_load() bad index 2113929216 (14848+0 entries) in htab stream (htab_shift=25) )
-> > > 
-> > > Did you have to make any changes to the qemu code to get that happy?
-> > 
-> > I should have mentioned that I tried only QEMU driven migration within
-> > the same host using wp3-postcopy branch of your tree. I don't see the
-> > above issue.
-> > 
-> > (qemu) info migrate
-> > capabilities: xbzrle: off rdma-pin-all: off auto-converge: off zero-blocks: off compress: off x-postcopy-ram: on 
-> > Migration status: completed
-> > total time: 39432 milliseconds
-> > downtime: 162 milliseconds
-> > setup: 14 milliseconds
-> > transferred ram: 1297209 kbytes
-> > throughput: 270.72 mbps
-> > remaining ram: 0 kbytes
-> > total ram: 4194560 kbytes
-> > duplicate: 734015 pages
-> > skipped: 0 pages
-> > normal: 318469 pages
-> > normal bytes: 1273876 kbytes
-> > dirty sync count: 4
-> > 
-> > I will try migration between different hosts soon and check.
-> 
-> I hit that on the same host; are you sure you've switched into postcopy mode;
-> i.e. issued a migrate_start_postcopy before the end of migration?
+Since this set has not been merge yet, here is a respin that drops the
+export of VM_LOCKONFAULT to the rmap code.
 
-Sorry I was following your discussion with Li in this thread
+---
 
-https://www.marc.info/?l=qemu-devel&m=143035620026744&w=4
+mlock() allows a user to control page out of program memory, but this
+comes at the cost of faulting in the entire mapping when it is
+allocated.  For large mappings where the entire area is not necessary
+this is not ideal.  Instead of forcing all locked pages to be present
+when they are allocated, this set creates a middle ground.  Pages are
+marked to be placed on the unevictable LRU (locked) when they are first
+used, but they are not faulted in by the mlock call.
 
-and it wasn't obvious to me that anything apart from turning on the
-x-postcopy-ram capability was required :(
+This series introduces a new mlock() system call that takes a flags
+argument along with the start address and size.  This flags argument
+gives the caller the ability to request memory be locked in the
+traditional way, or to be locked after the page is faulted in.  A new
+MCL flag is added to mirror the lock on fault behavior from mlock() in
+mlockall().
 
-So I do see the problem now.
+There are two main use cases that this set covers.  The first is the
+security focussed mlock case.  A buffer is needed that cannot be written
+to swap.  The maximum size is known, but on average the memory used is
+significantly less than this maximum.  With lock on fault, the buffer
+is guaranteed to never be paged out without consuming the maximum size
+every time such a buffer is created.
 
-At the source
--------------
-Error reading data from KVM HTAB fd: Bad file descriptor
-Segmentation fault
+The second use case is focussed on performance.  Portions of a large
+file are needed and we want to keep the used portions in memory once
+accessed.  This is the case for large graphical models where the path
+through the graph is not known until run time.  The entire graph is
+unlikely to be used in a given invocation, but once a node has been
+used it needs to stay resident for further processing.  Given these
+constraints we have a number of options.  We can potentially waste a
+large amount of memory by mlocking the entire region (this can also
+cause a significant stall at startup as the entire file is read in).
+We can mlock every page as we access them without tracking if the page
+is already resident but this introduces large overhead for each access.
+The third option is mapping the entire region with PROT_NONE and using
+a signal handler for SIGSEGV to mprotect(PROT_READ) and mlock() the
+needed page.  Doing this page at a time adds a significant performance
+penalty.  Batching can be used to mitigate this overhead, but in order
+to safely avoid trying to mprotect pages outside of the mapping, the
+boundaries of each mapping to be used in this way must be tracked and
+available to the signal handler.  This is precisely what the mm system
+in the kernel should already be doing.
 
-At the target
--------------
-htab_load() bad index 2113929216 (14336+0 entries) in htab stream (htab_shift=25)
-qemu-system-ppc64: error while loading state section id 56(spapr/htab)
-qemu-system-ppc64: postcopy_ram_listen_thread: loadvm failed: -22
-qemu-system-ppc64: VQ 0 size 0x100 Guest index 0x0 inconsistent with Host index 0x1f: delta 0xffe1
-qemu-system-ppc64: error while loading state for instance 0x0 of device 'pci@800000020000000:00.0/virtio-net'
-*** Error in `./ppc64-softmmu/qemu-system-ppc64': corrupted double-linked list: 0x00000100241234a0 ***
-======= Backtrace: =========
-/lib64/power8/libc.so.6Segmentation fault
+For mlock(MLOCK_ONFAULT) the user is charged against RLIMIT_MEMLOCK as
+if mlock(MLOCK_LOCKED) or mmap(MAP_LOCKED) was used, so when the VMA is
+created not when the pages are faulted in.  For mlockall(MCL_ONFAULT)
+the user is charged as if MCL_FUTURE was used.  This decision was made
+to keep the accounting checks out of the page fault path.
+
+To illustrate the benefit of this set I wrote a test program that mmaps
+a 5 GB file filled with random data and then makes 15,000,000 accesses
+to random addresses in that mapping.  The test program was run 20 times
+for each setup.  Results are reported for two program portions, setup
+and execution.  The setup phase is calling mmap and optionally mlock on
+the entire region.  For most experiments this is trivial, but it
+highlights the cost of faulting in the entire region.  Results are
+averages across the 20 runs in milliseconds.
+
+mmap with mlock(MLOCK_LOCKED) on entire range:
+Setup avg:      8228.666
+Processing avg: 8274.257
+
+mmap with mlock(MLOCK_LOCKED) before each access:
+Setup avg:      0.113
+Processing avg: 90993.552
+
+mmap with PROT_NONE and signal handler and batch size of 1 page:
+With the default value in max_map_count, this gets ENOMEM as I attempt
+to change the permissions, after upping the sysctl significantly I get:
+Setup avg:      0.058
+Processing avg: 69488.073
+mmap with PROT_NONE and signal handler and batch size of 8 pages:
+Setup avg:      0.068
+Processing avg: 38204.116
+
+mmap with PROT_NONE and signal handler and batch size of 16 pages:
+Setup avg:      0.044
+Processing avg: 29671.180
+
+mmap with mlock(MLOCK_ONFAULT) on entire range:
+Setup avg:      0.189
+Processing avg: 17904.899
+
+The signal handler in the batch cases faulted in memory in two steps to
+avoid having to know the start and end of the faulting mapping.  The
+first step covers the page that caused the fault as we know that it will
+be possible to lock.  The second step speculatively tries to mlock and
+mprotect the batch size - 1 pages that follow.  There may be a clever
+way to avoid this without having the program track each mapping to be
+covered by this handeler in a globally accessible structure, but I could
+not find it.  It should be noted that with a large enough batch size
+this two step fault handler can still cause the program to crash if it
+reaches far beyond the end of the mapping.
+
+These results show that if the developer knows that a majority of the
+mapping will be used, it is better to try and fault it in at once,
+otherwise mlock(MLOCK_ONFAULT) is significantly faster.
+
+The performance cost of these patches are minimal on the two benchmarks
+I have tested (stream and kernbench).  The following are the average
+values across 20 runs of stream and 10 runs of kernbench after a warmup
+run whose results were discarded.
+
+Avg throughput in MB/s from stream using 1000000 element arrays
+Test     4.2-rc1      4.2-rc1+lock-on-fault
+Copy:    10,566.5     10,421
+Scale:   10,685       10,503.5
+Add:     12,044.1     11,814.2
+Triad:   12,064.8     11,846.3
+
+Kernbench optimal load
+                 4.2-rc1  4.2-rc1+lock-on-fault
+Elapsed Time     78.453   78.991
+User Time        64.2395  65.2355
+System Time      9.7335   9.7085
+Context Switches 22211.5  22412.1
+Sleeps           14965.3  14956.1
+
+---
+Changes from V8:
+* Do not expose VM_LOCKONFAULT flag to rmap code
+* Rebase on top of userfaultfd code
+
+Changes from V7:
+* Do not expose the VM_LOCKONFAULT flag to userspace via proc
+* Fix mlock2 self tests
+
+Changes from V6:
+* Bump the x86 system call number to avoid collision with userfaultfd
+* Fix FOLL_POPULATE and FOLL_MLOCK usage when mmap is called with
+ MAP_POPULATE
+* Add documentation for the proc smaps change
+* checkpatch fixes
+
+Changes from V5:
+Drop MLOCK_LOCKED flag
+* MLOCK_ONFAULT and MCL_ONFAULT are treated as a modifier to other locking
+ operations, mirroring the relationship between VM_LOCKED and
+ VM_LOCKONFAULT
+* Drop mmap flag and related tests
+* Fix clearing of MCL_CURRENT when mlockall is called with MCL_FUTURE,
+ mlockall behavoir now matches the old behavior WRT to ordering
+
+Changes from V4:
+Drop all architectures for new sys call entries except x86[_64] and MIPS
+Drop munlock2 and munlockall2
+Make VM_LOCKONFAULT a modifier to VM_LOCKED only to simplify book keeping
+Adjust tests to match
+
+Changes from V3:
+Ensure that pages present when mlock2(MLOCK_ONFAULT) is called are locked
+Ensure that VM_LOCKONFAULT is handled in cases that used to only check VM_LOCKED
+Add tests for new system calls
+Add missing syscall entries, fix NR_syscalls on multiple arch's
+Add missing MAP_LOCKONFAULT for tile
+
+Changes from V2:
+Added new system calls for mlock, munlock, and munlockall with added
+flags arguments for controlling how memory is locked or unlocked.
+
+
+Eric B Munson (6):
+  mm: mlock: Refactor mlock, munlock, and munlockall code
+  mm: mlock: Add new mlock system call
+  mm: Introduce VM_LOCKONFAULT
+  mm: mlock: Add mlock flags to enable VM_LOCKONFAULT usage
+  selftests: vm: Add tests for lock on fault
+  mips: Add entry for new mlock2 syscall
+
+ arch/alpha/include/uapi/asm/mman.h          |   3 +
+ arch/mips/include/uapi/asm/mman.h           |   6 +
+ arch/mips/include/uapi/asm/unistd.h         |  15 +-
+ arch/mips/kernel/scall32-o32.S              |   1 +
+ arch/mips/kernel/scall64-64.S               |   1 +
+ arch/mips/kernel/scall64-n32.S              |   1 +
+ arch/mips/kernel/scall64-o32.S              |   1 +
+ arch/parisc/include/uapi/asm/mman.h         |   3 +
+ arch/powerpc/include/uapi/asm/mman.h        |   1 +
+ arch/sparc/include/uapi/asm/mman.h          |   1 +
+ arch/tile/include/uapi/asm/mman.h           |   1 +
+ arch/x86/entry/syscalls/syscall_32.tbl      |   1 +
+ arch/x86/entry/syscalls/syscall_64.tbl      |   1 +
+ arch/xtensa/include/uapi/asm/mman.h         |   6 +
+ include/linux/mm.h                          |   5 +
+ include/linux/syscalls.h                    |   2 +
+ include/uapi/asm-generic/mman-common.h      |   5 +
+ include/uapi/asm-generic/mman.h             |   1 +
+ include/uapi/asm-generic/unistd.h           |   4 +-
+ kernel/fork.c                               |   3 +-
+ kernel/sys_ni.c                             |   1 +
+ mm/debug.c                                  |   1 +
+ mm/gup.c                                    |  10 +-
+ mm/huge_memory.c                            |   2 +-
+ mm/hugetlb.c                                |   4 +-
+ mm/mlock.c                                  |  86 +++-
+ mm/mmap.c                                   |   2 +-
+ tools/testing/selftests/vm/Makefile         |   2 +
+ tools/testing/selftests/vm/mlock2-tests.c   | 737 ++++++++++++++++++++++++++++
+ tools/testing/selftests/vm/on-fault-limit.c |  47 ++
+ tools/testing/selftests/vm/run_vmtests      |  22 +
+ 31 files changed, 938 insertions(+), 38 deletions(-)
+ create mode 100644 tools/testing/selftests/vm/mlock2-tests.c
+ create mode 100644 tools/testing/selftests/vm/on-fault-limit.c
+
+Cc: Shuah Khan <shuahkh@osg.samsung.com>
+Cc: Michal Hocko <mhocko@suse.cz>
+Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-xtensa@linux-xtensa.org
+Cc: linux-mm@kvack.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-api@vger.kernel.org
+
+-- 
+1.9.1
