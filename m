@@ -1,21 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A5A751A0163
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 19:07:56 +1000 (AEST)
-Message-ID: <1441703275.7601.5.camel@ellerman.id.au>
-Subject: Re: [[PATCH v6 09/10] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87C771A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Sep 2015 19:24:40 +1000 (AEST)
+Message-ID: <1441704279.7601.6.camel@ellerman.id.au>
+Subject: Re: powerpc: Add user-return-notifier support
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,  linux-s390@vger.kernel.org,
- sparclinux@vger.kernel.org
-Date: Tue, 08 Sep 2015 19:07:55 +1000
-In-Reply-To: <1441336073-22750-10-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1441336073-22750-10-git-send-email-sukadev@linux.vnet.ibm.com>
+To: ananth@in.ibm.com
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org, Paul
+ Mackerras <paulus@samba.org>, ego@linux.vnet.ibm.com, mingo@kernel.org
+Date: Tue, 08 Sep 2015 19:24:39 +1000
+In-Reply-To: <20150902050958.GC1196@in.ibm.com>
+References: <20150825054110.GD3815@in.ibm.com>
+ <20150831103517.96D1A1401E7@ozlabs.org> <20150901064113.GA1196@in.ibm.com>
+ <1441152192.4966.103.camel@freescale.com>
+ <20150902023713.GB1196@in.ibm.com>
+ <1441164552.4966.153.camel@freescale.com>
+ <20150902050958.GC1196@in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,37 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-03 at 20:07 -0700, Sukadev Bhattiprolu wrote:
-> The 24x7 counters in Powerpc allow monitoring a large number of counters
-> simultaneously. They also allow reading several counters in a single
-> HCALL so we can get a more consistent snapshot of the system.
+On Wed, 2015-09-02 at 10:39 +0530, Ananth N Mavinakayanahalli wrote:
+> On Tue, Sep 01, 2015 at 10:29:12PM -0500, Scott Wood wrote:
 > 
-> Use the PMU's transaction interface to monitor and read several event
-> counters at once. The idea is that users can group several 24x7 events
-> into a single group of events. We use the following logic to submit
-> the group of events to the PMU and read the values:
+> > Why is this selected by KVM on PPC if KVM on PPC doesn't use it?  What is the 
+> > user you're trying to enable?
 > 
-> 	pmu->start_txn()		// Initialize before first event
-> 
-> 	for each event in group
-> 		pmu->read(event);	// Queue each event to be read
-> 
-> 	pmu->commit_txn()		// Read/update all queuedcounters
-> 
-> The ->commit_txn() also updates the event counts in the respective
-> perf_event objects.  The perf subsystem can then directly get the
-> event counts from the perf_event and can avoid submitting a new
-> ->read() request to the PMU.
-> 
-> Thanks to input from Peter Zijlstra.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/hv-24x7.c |  166 ++++++++++++++++++++++++++++++++++++++++++-
+> I copied Paul and Gautham to get their thoughts on whether it is
+> something they could use on Power. At this time, apart from enabling the
+> feature, I do not have a specific usecase for it. We can park this patch
+> pending a real user on powerpc.
 
-This looks fine to me from an arch perspective. I assume the whole series can
-go via tip-something?
+OK, thanks for hashing that out guys. I think parking it is the best solution
+for now, we could merge it and disable it somehow, but that would be ugly and
+prone to breaking.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Do we want to do something like this?
 
 cheers
+
+diff --git a/Documentation/features/arch-support.txt b/Documentation/features/arch-support.txt
+index d22a1095e661..3e2cf6161cf4 100644
+--- a/Documentation/features/arch-support.txt
++++ b/Documentation/features/arch-support.txt
+@@ -8,4 +8,5 @@ The meaning of entries in the tables is:
+     | ok |  # feature supported by the architecture
+     |TODO|  # feature not yet supported by the architecture
+     | .. |  # feature cannot be supported by the hardware
++    |n/a |  # feature is not needed/wanted/meaningful for the architecture
+ 
+diff --git a/Documentation/features/debug/user-ret-profiler/arch-support.txt b/Documentation/features/debug/user-ret-profiler/arch-support.txt
+index 44cc1ff3f603..669813180dc5 100644
+--- a/Documentation/features/debug/user-ret-profiler/arch-support.txt
++++ b/Documentation/features/debug/user-ret-profiler/arch-support.txt
+@@ -27,7 +27,7 @@
+     |       nios2: | TODO |
+     |    openrisc: | TODO |
+     |      parisc: | TODO |
+-    |     powerpc: | TODO |
++    |     powerpc: | n/a  |    # http://lkml.kernel.org/r/20150825054110.GD3815@in.ibm.com
+     |        s390: | TODO |
+     |       score: | TODO |
+     |          sh: | TODO |
