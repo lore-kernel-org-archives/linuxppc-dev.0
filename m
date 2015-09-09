@@ -1,25 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 85E801A2513
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 15:48:01 +1000 (AEST)
-Message-ID: <1441777680.23373.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Kconfig: remove BE-only platforms from LE
- kernel build
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd
- Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof
- Johansson <olof@lixom.net>, Geoff Levand <geoff@infradead.org>
-Date: Wed, 09 Sep 2015 15:48:00 +1000
-In-Reply-To: <20150909032548.GA18626@fixme-laptop.cn.ibm.com>
-References: <1441583880-17824-1-git-send-email-boqun.feng@gmail.com>
- <1441765604.7854.6.camel@ellerman.id.au>
- <20150909032548.GA18626@fixme-laptop.cn.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9FA9F1A2750
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 15:53:37 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 9 Sep 2015 11:23:34 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id CABD23940060
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 11:23:31 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t895rV2C40501364
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Sep 2015 11:23:31 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t895rUT0020515
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Sep 2015 11:23:31 +0530
+Date: Wed, 9 Sep 2015 13:53:29 +0800
+From: Richard Yang <weiyang@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Richard Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ linux-pci@vger.kernel.org, bhelgaas@google.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V9 11/11] powerpc/powernv: compound PE for VFs
+Message-ID: <20150909055329.GA7684@Richards-MacBook-Pro.local>
+Reply-To: Richard Yang <weiyang@linux.vnet.ibm.com>
+References: <1437112961-17275-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1437112961-17275-12-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150729031718.GA18069@richard> <20150909024820.GA6808@gwshan>
+ <20150909033616.GA5148@richards-mbp.cn.ibm.com>
+ <1441774751.2767.20.camel@au1.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1441774751.2767.20.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +47,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-09 at 11:25 +0800, Boqun Feng wrote:
-> Hi Michael,
-> 
-> On Wed, Sep 09, 2015 at 12:26:44PM +1000, Michael Ellerman wrote:
-> > On Mon, 2015-09-07 at 07:58 +0800, Boqun Feng wrote:
-> > > diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
-> > > index 2f23133..808a904 100644
-> > > --- a/arch/powerpc/platforms/cell/Kconfig
-> > > +++ b/arch/powerpc/platforms/cell/Kconfig
-> > > @@ -25,7 +25,7 @@ config PPC_CELL_NATIVE
-> > >  
-> > >  config PPC_IBM_CELL_BLADE
-> > >  	bool "IBM Cell Blade"
-> > > -	depends on PPC64 && PPC_BOOK3S
-> > > +	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
-> > 
-> > We end up saying this five times.
-> > 
-> > We already have PPC_BOOK3S_64 which captures the first two conditions, should
-> > we add a PPC_BOOK3S_64_BE which expresses it all?
-> 
-> I'm not sure whether this is worth.. IMO, we add a config option only if
-> 
-> 1.	we can use this config somewhere in the code, for example,
-> 	"#ifdef CONFIG_XXX"
-> or
-> 
-> 2.	we want to offer a option for users to choose.
+On Wed, Sep 09, 2015 at 02:59:11PM +1000, Benjamin Herrenschmidt wrote:
+>On Wed, 2015-09-09 at 11:36 +0800, Richard Yang wrote:
+>> The VF EEH is hung since we re-designed the SRIOV. After the re
+>> -design, we
+>> don't have VF groups.
+>> 
+>> My plan is to push the VF EEH patch set after the SRIOV Redesign is
+>> accepted.
 >
-> PPC_BOOK3S_64_BE satisfies neither condition. Further more,
-> CONFIG_PPC64, CONFIG_PPC_BOOK3S and CONFIG_CPU_BIG_ENDIAN all are used
-> in some #ifdefs in current code. As a newbie of kernel, I'm happy to get
-> some knowledge like: "If I'm hacking PS3, then #ifndef CONFIG_PPC64 is
-> guaranteed to be false, so I can just ignore the code guarded by them".
-> But if we add a PPC_BOOK3S_64_BE, it will take a little more effort to
-> see this.
+>What do you mean taht we don't have VF groups ?
+>
 
-Yeah those are good points, so I'll take it as is. Thanks for thinking about it :)
+Before we redesign the SRIOV, several VFs may share one M64 segment. This
+introduced the compound PE for VFs. The VF group in previous mail means the
+compound PE composed of a master VF PE will have several slave VF PEs.
 
-cheers
+>If we don't have IOMMU groups per VF that means we can't assign them to
+>KVM partitions -> they are completely useless.
+
+Yes, I don't mean for the IOMMU group.
+
+>
+>Ben.
+
+-- 
+Richard Yang
+Help you, Help me
