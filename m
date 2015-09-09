@@ -1,24 +1,17 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0102.outbound.protection.outlook.com [157.56.110.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7849B1A2C62
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 17:04:12 +1000 (AEST)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>
-CC: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <jason.jin@freescale.com>, <chenhui.zhao@freescale.com>,
- <yuantian.tang@freescale.com>, <alison.wang@freescale.com>,
- <robh+dt@kernel.org>, <linux-arm-kernel@lists.infradead.org>, Wang Dongsheng
- <dongsheng.wang@freescale.com>
-Subject: [PATCH 2/2] arm/layerscape: add RCPM device tree support for ls1021a.
-Date: Wed, 9 Sep 2015 14:42:47 +0800
-Message-ID: <1441780967-30879-2-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1441780967-30879-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1441780967-30879-1-git-send-email-dongsheng.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 528581A2A7C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 18:22:38 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: leosilva@linux.vnet.ibm.com, herbert@gondor.apana.org.au,
+ Paul Mackerras <paulus@samba.org>, tim.gardner@canonical.com,
+ linux-crypto@vger.kernel.org
+Subject: [PATCH v2] crypto: vmx - VMX crypto should depend on CONFIG_VSX
+Date: Wed,  9 Sep 2015 18:22:35 +1000
+Message-Id: <1441786955-6249-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+This code uses FP (floating point), Altivec and VSX (Vector-Scalar
+Extension). It can just depend on CONFIG_VSX though, because that
+already depends on FP and Altivec.
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+Otherwise we get lots of link errors such as:
 
-diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
-index 973a496..deb1271 100644
---- a/arch/arm/boot/dts/ls1021a.dtsi
-+++ b/arch/arm/boot/dts/ls1021a.dtsi
-@@ -139,6 +139,7 @@
- 			sdhci,auto-cmd12;
- 			big-endian;
- 			bus-width = <4>;
-+			rcpm-wakeup = <&rcpm 0x00000080 0x0>;
- 			status = "disabled";
- 		};
+  drivers/built-in.o: In function `.p8_aes_setkey':
+  aes.c:(.text+0x2d325c): undefined reference to `.enable_kernel_altivec'
+  aes.c:(.text+0x2d326c): undefined reference to `.enable_kernel_vsx'
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+
+v2: Spell out VSX, and CC linux-crypto.
+
+ drivers/crypto/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 07bc7aa6b224..d234719065a5 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -461,7 +461,7 @@ config CRYPTO_DEV_QCE
  
-@@ -186,6 +187,11 @@
- 			};
- 		};
- 
-+		rcpm: rcpm@1ee2000 {
-+			compatible = "fsl,ls1021a-rcpm", "fsl,qoriq-rcpm-2.1";
-+			reg = <0x0 0x1ee2000 0x0 0x10000>;
-+		};
-+
- 		dspi0: dspi@2100000 {
- 			compatible = "fsl,ls1021a-v1.0-dspi";
- 			#address-cells = <1>;
-@@ -287,6 +293,7 @@
- 			interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
- 			clocks = <&sysclk>;
- 			clock-names = "ipg";
-+			rcpm-wakeup = <&rcpm 0x0 0x40000000>;
- 			status = "disabled";
- 		};
+ config CRYPTO_DEV_VMX
+ 	bool "Support for VMX cryptographic acceleration instructions"
+-	depends on PPC64
++	depends on PPC64 && VSX
+ 	help
+ 	  Support for VMX cryptographic acceleration instructions.
  
 -- 
-2.1.0.27.g96db324
+2.1.4
