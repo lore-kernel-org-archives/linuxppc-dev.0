@@ -1,20 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0147.outbound.protection.outlook.com [65.55.169.147])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0118.outbound.protection.outlook.com [207.46.100.118])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 824DB1A2757
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 07:25:57 +1000 (AEST)
-Message-ID: <1441833937.29081.45.camel@freescale.com>
-Subject: Re: [PATCH v3] powerpc/dts: Add and fix 1588 timer node for eTSEC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 063E71A2757
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 08:24:56 +1000 (AEST)
+Message-ID: <1441837481.2623.6.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/book3s32: Only select PPC_HAVE_PMU on e600
 From: Scott Wood <scottwood@freescale.com>
-To: Lu Yangbo-B47093 <yangbo.lu@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Wed, 9 Sep 2015 16:25:37 -0500
-In-Reply-To: <BY1PR0301MB1192C89856016BF12FB9765AF2540@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1438153958-1400-1-git-send-email-yangbo.lu@freescale.com>
- <BY1PR0301MB1192C89856016BF12FB9765AF2540@BY1PR0301MB1192.namprd03.prod.outlook.com>
+To: christophe leroy <christophe.leroy@c-s.fr>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, "Joakim
+ Tjernlund" <joakim.tjernlund@transmode.se>
+Date: Wed, 9 Sep 2015 17:24:41 -0500
+In-Reply-To: <55E9DC5B.4090506@c-s.fr>
+References: <20150903092704.2F4881A241D@localhost.localdomain>
+ <20150904164349.GA10337@home.buserror.net> <55E9DC5B.4090506@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,250 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-07 at 01:57 -0500, Lu Yangbo-B47093 wrote:
-> Any comments?
-> 
-> -Yangbo Lu
+On Fri, 2015-09-04 at 20:00 +0200, christophe leroy wrote:
+> Le 04/09/2015 18:43, Scott Wood a écrit :
+> > On Thu, Sep 03, 2015 at 11:27:03AM +0200, Christophe Leroy wrote:
+> > > On PPC832x, perf record/report reports martian addresses
+> > > 
+> > >       2.62%  perf_reseau4  libpthread-2.18.so  [.] __libc_send
+> > >       2.56%  perf_reseau4  [kernel.kallsyms]   [k] __ip_make_skb
+> > >       1.62%  perf_reseau4  [kernel.kallsyms]   [k] 
+> > > __ip_append_data.isra.39
+> > >       1.55%  perf_reseau4  [kernel.kallsyms]   [k] ip_finish_output
+> > >       1.33%  perf_reseau4  [unknown]           [k] 0x7ffffd94
+> > >       1.33%  perf_reseau4  [unknown]           [k] 0x7ffffd95
+> > >       1.28%  perf_reseau4  [unknown]           [k] 0x7ffffd97
+> > >       1.26%  perf_reseau4  [unknown]           [k] 0x7ffffda3
+> > >       1.24%  perf_reseau4  [unknown]           [k] 0x7ffffd98
+> > >       1.22%  perf_reseau4  [unknown]           [k] 0x7ffffd92
+> > >       1.22%  perf_reseau4  [unknown]           [k] 0x7ffffd9b
+> > >       [.....]
+> > > 
+> > > This is due to function perf_instruction_pointer() reading SPR SIAR
+> > > which doesn't exist on e300 core. The perf_instruction_pointer() is
+> > > redefined in arch/powerpc/perf/core-book3s.c when CONFIG_PPC_PERF_CTRS
+> > > is selected.
+> > > 
+> > > This patch moves the selection of CONFIG_PPC_HAVE_PMU in 86xx section
+> > > so that CONFIG_PPC_PERF_CTRS won't be selected for other 6xx powerpc
+> > > 
+> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > So, what happens when a kernel is built that supports both 83xx and 86xx?
+> Right, so should we define a processor feature for it ?
 
-Sorry, this somehow got marked as Awaiting Upstream in patchwork but not 
-applied to my tree.  I'll take it next time.
+There aren't many CPU feature flags left (without changing the mechanism to 
+make more available), and runtime patching shouldn't be necessary.  Instead, 
+use the existing oprofile_type field.  BTW, I don't know why we have pmc_type 
+in addition to that -- the hardware only needs to be described once, 
+regardless of how many subsystems care about it.
+
+Note that this will only address the case of failing gracefully when the 
+running hardware doesn't support the compiled-in perf mechanism.  Actually 
+supporting both mechanisms in the same kernel (some e300 cores support fsl-
+emb) would require a new indirection layer.
 
 -Scott
-
-
-> 
-> > -----Original Message-----
-> > From: Yangbo Lu [mailto:yangbo.lu@freescale.com]
-> > Sent: Wednesday, July 29, 2015 3:13 PM
-> > To: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood
-> > Scott-B07421
-> > Cc: Lu Yangbo-B47093
-> > Subject: [PATCH v3] powerpc/dts: Add and fix 1588 timer node for eTSEC
-> > 
-> > Add 1588 timer node in files:
-> > arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > arch/powerpc/boot/dts/bsc9132qds.dtsi
-> > arch/powerpc/boot/dts/p1010rdb.dtsi
-> > arch/powerpc/boot/dts/p1020rdb-pd.dts
-> > arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> > arch/powerpc/boot/dts/p1022ds.dtsi
-> > arch/powerpc/boot/dts/p1025twr.dtsi
-> > For P2020RDB-PC, registers' values should be calculated based on default
-> > 1588 reference clock(300MHz) not 250MHz, and fix this in file:
-> > arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> > 
-> > Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
-> > ---
-> > Changes for v3:
-> >     - Changed 'tmr-add' to hex value
-> >     - Modified commit message
-> > Changes for v2:
-> >     - Changed hex value to decimal value in dts
-> >     - Modified commit message
-> >     - Modified 1588 node in p2020rdb-pc.dtsi
-> > ---
-> >  arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++
-> > arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++
-> > arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 12 ++++++------
-> >  8 files changed, 90 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > index 45efcba..f4d96d2 100644
-> > --- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > +++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > @@ -80,6 +80,18 @@
-> >             status = "disabled";
-> >     };
-> > 
-> > +    ptp_clock@b0e00{
-> > +           compatible = "fsl,etsec-ptp";
-> > +           reg = <0xb0e00 0xb0>;
-> > +           interrupts = <68 2 0 0 69 2 0 0>;
-> > +           fsl,tclk-period = <5>;
-> > +           fsl,tmr-prsc    = <2>;
-> > +           fsl,tmr-add     = <0xcccccccd>;
-> > +           fsl,tmr-fiper1  = <999999995>;
-> > +           fsl,tmr-fiper2  = <99990>;
-> > +           fsl,max-adj     = <249999999>;
-> > +   };
-> > +
-> >     enet0:  ethernet@b0000{
-> >             phy-handle = <&phy0>;
-> >             phy-connection-type = "rgmii-id";
-> > diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> > b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> > index af8e888..7a13bf2 100644
-> > --- a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> > +++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-> > @@ -87,6 +87,18 @@
-> >             };
-> >     };
-> > 
-> > +    ptp_clock@b0e00{
-> > +           compatible = "fsl,etsec-ptp";
-> > +           reg = <0xb0e00 0xb0>;
-> > +           interrupts = <68 2 0 0 69 2 0 0>;
-> > +           fsl,tclk-period = <5>;
-> > +           fsl,tmr-prsc    = <2>;
-> > +           fsl,tmr-add     = <0xcccccccd>;
-> > +           fsl,tmr-fiper1  = <999999995>;
-> > +           fsl,tmr-fiper2  = <99990>;
-> > +           fsl,max-adj     = <249999999>;
-> > +   };
-> > +
-> >     enet0:  ethernet@b0000{
-> >             phy-handle = <&phy0>;
-> >             tbi-handle = <&tbi0>;
-> > diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi
-> > b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> > index ea534ef..0f0ced6 100644
-> > --- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-> > +++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-> > @@ -186,6 +186,18 @@
-> >             };
-> >     };
-> > 
-> > +    ptp_clock@b0e00{
-> > +           compatible = "fsl,etsec-ptp";
-> > +           reg = <0xb0e00 0xb0>;
-> > +           interrupts = <68 2 0 0 69 2 0 0>;
-> > +           fsl,tclk-period = <10>;
-> > +           fsl,tmr-prsc    = <2>;
-> > +           fsl,tmr-add     = <0x80000016>;
-> > +           fsl,tmr-fiper1  = <999999990>;
-> > +           fsl,tmr-fiper2  = <99990>;
-> > +           fsl,max-adj     = <199999999>;
-> > +   };
-> > +
-> >     enet0:  ethernet@b0000{
-> >             phy-handle = <&phy0>;
-> >             phy-connection-type = "rgmii-id";
-> > diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> > b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> > index 987017e..c7c6416 100644
-> > --- a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> > +++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-> > @@ -225,6 +225,18 @@
-> >                     };
-> >             };
-> > 
-> > +            ptp_clock@b0e00{
-> > +                   compatible = "fsl,etsec-ptp";
-> > +                   reg = <0xb0e00 0xb0>;
-> > +                   interrupts = <68 2 0 0 69 2 0 0>;
-> > +                   fsl,tclk-period = <10>;
-> > +                   fsl,tmr-prsc    = <2>;
-> > +                   fsl,tmr-add     = <0x80000016>;
-> > +                   fsl,tmr-fiper1  = <999999990>;
-> > +                   fsl,tmr-fiper2  = <99990>;
-> > +                   fsl,max-adj     = <199999999>;
-> > +           };
-> > +
-> >             enet0:  ethernet@b0000{
-> >                     fixed-link = <1 1 1000 0 0>;
-> >                     phy-connection-type = "rgmii-id";
-> > diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> > b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> > index d6274c5..e8a0f95 100644
-> > --- a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> > +++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> > @@ -224,6 +224,18 @@
-> >             };
-> >     };
-> > 
-> > +    ptp_clock@b0e00{
-> > +           compatible = "fsl,etsec-ptp";
-> > +           reg = <0xb0e00 0xb0>;
-> > +           interrupts = <68 2 0 0 69 2 0 0>;
-> > +           fsl,tclk-period = <10>;
-> > +           fsl,tmr-prsc    = <2>;
-> > +           fsl,tmr-add     = <0x80000016>;
-> > +           fsl,tmr-fiper1  = <999999990>;
-> > +           fsl,tmr-fiper2  = <99990>;
-> > +           fsl,max-adj     = <199999999>;
-> > +   };
-> > +
-> >     enet0:  ethernet@b0000{
-> >             fixed-link = <1 1 1000 0 0>;
-> >             phy-connection-type = "rgmii-id";
-> > diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi
-> > b/arch/powerpc/boot/dts/p1022ds.dtsi
-> > index 957e0dc..149da0f 100644
-> > --- a/arch/powerpc/boot/dts/p1022ds.dtsi
-> > +++ b/arch/powerpc/boot/dts/p1022ds.dtsi
-> > @@ -215,6 +215,18 @@
-> >             };
-> >     };
-> > 
-> > +    ptp_clock@b0e00{
-> > +           compatible = "fsl,etsec-ptp";
-> > +           reg = <0xb0e00 0xb0>;
-> > +           interrupts = <68 2 0 0 69 2 0 0>;
-> > +           fsl,tclk-period = <5>;
-> > +           fsl,tmr-prsc    = <2>;
-> > +           fsl,tmr-add     = <0xc01ebd3d>;
-> > +           fsl,tmr-fiper1  = <999999995>;
-> > +           fsl,tmr-fiper2  = <99990>;
-> > +           fsl,max-adj     = <266499999>;
-> > +   };
-> > +
-> >      ethernet@b0000{
-> >             phy-handle = <&phy0>;
-> >             phy-connection-type = "rgmii-id";
-> > diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi
-> > b/arch/powerpc/boot/dts/p1025twr.dtsi
-> > index 8453501..08816fb 100644
-> > --- a/arch/powerpc/boot/dts/p1025twr.dtsi
-> > +++ b/arch/powerpc/boot/dts/p1025twr.dtsi
-> > @@ -138,6 +138,18 @@
-> >             };
-> >     };
-> > 
-> > +    ptp_clock@b0e00{
-> > +           compatible = "fsl,etsec-ptp";
-> > +           reg = <0xb0e00 0xb0>;
-> > +           interrupts = <68 2 0 0 69 2 0 0>;
-> > +           fsl,tclk-period = <10>;
-> > +           fsl,tmr-prsc    = <2>;
-> > +           fsl,tmr-add     = <0xc0000021>;
-> > +           fsl,tmr-fiper1  = <999999990>;
-> > +           fsl,tmr-fiper2  = <99990>;
-> > +           fsl,max-adj     = <133333332>;
-> > +   };
-> > +
-> >     enet0:  ethernet@b0000{
-> >             phy-handle = <&phy0>;
-> >             phy-connection-type = "rgmii-id";
-> > diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> > b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> > index c21d1c7..ad2e242 100644
-> > --- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> > +++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> > @@ -215,12 +215,12 @@
-> >     };
-> > 
-> >      ptp_clock@24e00{
-> > -           fsl,tclk-period = <5>;
-> > -           fsl,tmr-prsc = <200>;
-> > -           fsl,tmr-add = <0xCCCCCCCD>;
-> > -           fsl,tmr-fiper1 = <0x3B9AC9FB>;
-> > -           fsl,tmr-fiper2 = <0x0001869B>;
-> > -           fsl,max-adj = <249999999>;
-> > +           fsl,tclk-period = <5>;
-> > +           fsl,tmr-prsc    = <2>;
-> > +           fsl,tmr-add     = <0xaaaaaaab>;
-> > +           fsl,tmr-fiper1  = <999999995>;
-> > +           fsl,tmr-fiper2  = <99990>;
-> > +           fsl,max-adj     = <299999999>;
-> >     };
-> > 
-> >     enet0:  ethernet@24000{
-> > --
-> > 2.1.0.27.g96db324
-> 
