@@ -1,25 +1,27 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 020581A2354
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 15:20:37 +1000 (AEST)
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
+ [209.85.220.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B99C7140663
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Sep 2015 15:20:35 +1000 (AEST)
-Received: by padhk3 with SMTP id hk3so61075522pad.3
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Sep 2015 22:20:33 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
- imunsie@au.ibm.com, andrew.donnellan@au1.ibm.com,
- Daniel Axtens <dja@axtens.net>
-Subject: [PATCH] cxl: Fix unbalanced pci_dev_get in cxl_probe
-Date: Wed,  9 Sep 2015 15:17:25 +1000
-Message-Id: <1441775845-25870-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7275F1A2B0A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 15:22:16 +1000 (AEST)
+Received: by pacfv12 with SMTP id fv12so149351268pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Sep 2015 22:22:14 -0700 (PDT)
+Subject: Re: [PATCH V9 11/11] powerpc/powernv: compound PE for VFs
+To: Richard Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1437112961-17275-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1437112961-17275-12-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150729031718.GA18069@richard> <20150909024820.GA6808@gwshan>
+ <20150909033616.GA5148@richards-mbp.cn.ibm.com>
+Cc: bhelgaas@google.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <55EFC200.10209@ozlabs.ru>
+Date: Wed, 9 Sep 2015 15:22:08 +1000
+MIME-Version: 1.0
+In-Reply-To: <20150909033616.GA5148@richards-mbp.cn.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +31,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the first thing we do in cxl_probe is to grab a reference
-on the pci device. Later on, we call device_register on our adapter,
-which also holds the PCI device.
+On 09/09/2015 01:36 PM, Richard Yang wrote:
+> On Wed, Sep 09, 2015 at 12:48:21PM +1000, Gavin Shan wrote:
+>> On Wed, Jul 29, 2015 at 11:17:18AM +0800, Wei Yang wrote:
+>>> Hi, Michael
+>>>
+>>> Hope you didn't take this yet. We may change this patch a little.
+>>>
+>>
+>> [Cc Alexey who might concern the SRIOV status]
+>>
+>> Richard, do you have plan to get it upstream? It seems it's hanged
+>> over here for long time.
+>>
+>
+> The VF EEH is hung since we re-designed the SRIOV. After the re-design, we
+> don't have VF groups.
+>
+> My plan is to push the VF EEH patch set after the SRIOV Redesign is accepted.
 
-In our remove path, we call device_unregister, but we never call
-pci_dev_put. We therefore leak the device every time we do a
-reflash.
 
-device_register/unregister is sufficient to hold the reference.
-Drop the call to pci_dev_get.
+Can you please rebase on v4.2 (or v4.2 + sriov rework) and repost VF EEH 
+patchset just to me? Or share the tree somewhere where I can pull it from? 
+Thanks.
 
-Fixes: f204e0b8cedd ("cxl: Driver code for powernv PCIe based cards for userspace access")
-Cc: stable@vger.kernel.org
-Signed-off-by: Daniel Axtens <dja@axtens.net>
+As for now, I cannot tell what difference your SRIOV patchset actually makes.
 
----
-
-This is the cxl bug that caused me to catch this a few weeks back:
-e642d11bdbfe ("powerpc/eeh: Probe after unbalanced kref check")
-
-I put an printk in the unbalanced kref path and confirmed that it
-was printed with the pci_dev_get in and went away with the
-pci_dev_get out.
----
- drivers/misc/cxl/pci.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 02c85160bfe9..a5e977192b61 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1249,8 +1249,6 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	int slice;
- 	int rc;
- 
--	pci_dev_get(dev);
--
- 	if (cxl_verbose)
- 		dump_cxl_config_space(dev);
- 
 -- 
-2.5.0
+Alexey
