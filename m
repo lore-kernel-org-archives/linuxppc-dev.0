@@ -1,41 +1,25 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F2241A1F44
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 15:00:15 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 9 Sep 2015 15:00:13 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 19FE32BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 15:00:09 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t89500po61145218
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Sep 2015 15:00:09 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t894xZvP014326
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Sep 2015 14:59:36 +1000
-Message-ID: <1441774751.2767.20.camel@au1.ibm.com>
-Subject: Re: [PATCH V9 11/11] powerpc/powernv: compound PE for VFs
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Richard Yang <weiyang@linux.vnet.ibm.com>, Gavin Shan
- <gwshan@linux.vnet.ibm.com>
-Cc: aik@ozlabs.ru, linux-pci@vger.kernel.org, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 09 Sep 2015 14:59:11 +1000
-In-Reply-To: <20150909033616.GA5148@richards-mbp.cn.ibm.com>
-References: <1437112961-17275-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1437112961-17275-12-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150729031718.GA18069@richard> <20150909024820.GA6808@gwshan>
- <20150909033616.GA5148@richards-mbp.cn.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 020581A2354
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 15:20:37 +1000 (AEST)
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B99C7140663
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 Sep 2015 15:20:35 +1000 (AEST)
+Received: by padhk3 with SMTP id hk3so61075522pad.3
+ for <linuxppc-dev@ozlabs.org>; Tue, 08 Sep 2015 22:20:33 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
+ imunsie@au.ibm.com, andrew.donnellan@au1.ibm.com,
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] cxl: Fix unbalanced pci_dev_get in cxl_probe
+Date: Wed,  9 Sep 2015 15:17:25 +1000
+Message-Id: <1441775845-25870-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,17 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-09 at 11:36 +0800, Richard Yang wrote:
-> The VF EEH is hung since we re-designed the SRIOV. After the re
-> -design, we
-> don't have VF groups.
-> 
-> My plan is to push the VF EEH patch set after the SRIOV Redesign is
-> accepted.
+Currently the first thing we do in cxl_probe is to grab a reference
+on the pci device. Later on, we call device_register on our adapter,
+which also holds the PCI device.
 
-What do you mean taht we don't have VF groups ?
+In our remove path, we call device_unregister, but we never call
+pci_dev_put. We therefore leak the device every time we do a
+reflash.
 
-If we don't have IOMMU groups per VF that means we can't assign them to
-KVM partitions -> they are completely useless.
+device_register/unregister is sufficient to hold the reference.
+Drop the call to pci_dev_get.
 
-Ben.
+Fixes: f204e0b8cedd ("cxl: Driver code for powernv PCIe based cards for userspace access")
+Cc: stable@vger.kernel.org
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+
+---
+
+This is the cxl bug that caused me to catch this a few weeks back:
+e642d11bdbfe ("powerpc/eeh: Probe after unbalanced kref check")
+
+I put an printk in the unbalanced kref path and confirmed that it
+was printed with the pci_dev_get in and went away with the
+pci_dev_get out.
+---
+ drivers/misc/cxl/pci.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 02c85160bfe9..a5e977192b61 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1249,8 +1249,6 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	int slice;
+ 	int rc;
+ 
+-	pci_dev_get(dev);
+-
+ 	if (cxl_verbose)
+ 		dump_cxl_config_space(dev);
+ 
+-- 
+2.5.0
