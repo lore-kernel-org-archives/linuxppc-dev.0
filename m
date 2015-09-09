@@ -2,22 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0A6EF1A2BE4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 12:15:06 +1000 (AEST)
-Message-ID: <1441764905.7854.5.camel@ellerman.id.au>
-Subject: Re: [[PATCH v6 09/10] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F8011A0075
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 12:26:45 +1000 (AEST)
+Message-ID: <1441765604.7854.6.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Kconfig: remove BE-only platforms from LE
+ kernel build
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Ingo Molnar
- <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
-Date: Wed, 09 Sep 2015 12:15:05 +1000
-In-Reply-To: <20150908112900.GF3644@twins.programming.kicks-ass.net>
-References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1441336073-22750-10-git-send-email-sukadev@linux.vnet.ibm.com>
- <1441703275.7601.5.camel@ellerman.id.au>
- <20150908112900.GF3644@twins.programming.kicks-ass.net>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd
+ Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof
+ Johansson <olof@lixom.net>, Geoff Levand <geoff@infradead.org>
+Date: Wed, 09 Sep 2015 12:26:44 +1000
+In-Reply-To: <1441583880-17824-1-git-send-email-boqun.feng@gmail.com>
+References: <1441583880-17824-1-git-send-email-boqun.feng@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,46 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-08 at 13:29 +0200, Peter Zijlstra wrote:
-> On Tue, Sep 08, 2015 at 07:07:55PM +1000, Michael Ellerman wrote:
-> > On Thu, 2015-09-03 at 20:07 -0700, Sukadev Bhattiprolu wrote:
-> > > The 24x7 counters in Powerpc allow monitoring a large number of counters
-> > > simultaneously. They also allow reading several counters in a single
-> > > HCALL so we can get a more consistent snapshot of the system.
-> > > 
-> > > Use the PMU's transaction interface to monitor and read several event
-> > > counters at once. The idea is that users can group several 24x7 events
-> > > into a single group of events. We use the following logic to submit
-> > > the group of events to the PMU and read the values:
-> > > 
-> > > 	pmu->start_txn()		// Initialize before first event
-> > > 
-> > > 	for each event in group
-> > > 		pmu->read(event);	// Queue each event to be read
-> > > 
-> > > 	pmu->commit_txn()		// Read/update all queuedcounters
-> > > 
-> > > The ->commit_txn() also updates the event counts in the respective
-> > > perf_event objects.  The perf subsystem can then directly get the
-> > > event counts from the perf_event and can avoid submitting a new
-> > > ->read() request to the PMU.
-> > > 
-> > > Thanks to input from Peter Zijlstra.
-> > > 
-> > > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> > > ---
-> > >  arch/powerpc/perf/hv-24x7.c |  166 ++++++++++++++++++++++++++++++++++++++++++-
-> > 
-> > This looks fine to me from an arch perspective. I assume the whole series can
-> > go via tip-something?
-> 
-> Yeah, I've had it queued for a few days, there was one s390 compile
-> fail reported by the build-bot, which I've just fixed. So if nothing
-> weird happens, it should hit tip somewhere this week.
+On Mon, 2015-09-07 at 07:58 +0800, Boqun Feng wrote:
+> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+> index 2f23133..808a904 100644
+> --- a/arch/powerpc/platforms/cell/Kconfig
+> +++ b/arch/powerpc/platforms/cell/Kconfig
+> @@ -25,7 +25,7 @@ config PPC_CELL_NATIVE
+>  
+>  config PPC_IBM_CELL_BLADE
+>  	bool "IBM Cell Blade"
+> -	depends on PPC64 && PPC_BOOK3S
+> +	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
 
-Great, thanks.
+We end up saying this five times.
 
-Now Sukadev can focus on getting the JSON events support merged, hopefully it
-won't require another 16 versions.
+We already have PPC_BOOK3S_64 which captures the first two conditions, should
+we add a PPC_BOOK3S_64_BE which expresses it all?
 
 cheers
