@@ -1,26 +1,30 @@
-Return-Path: <tim.gardner@canonical.com>
-Received: from mail.tpi.com (mail.tpi.com [74.45.170.26])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0111.outbound.protection.outlook.com [65.55.169.111])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC8F01A2ADA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 23:31:22 +1000 (AEST)
-Subject: Re: [PATCH] powerpc: define empty enable_kernel_vsx() when
- CONFIG_VSX=n
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <1441735991-29199-1-git-send-email-tim.gardner@canonical.com>
- <20150908224735.GA12791@fergus.ozlabs.ibm.com>
- <55EF6D17.6050809@canonical.com> <1441764830.7854.4.camel@ellerman.id.au>
-Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Leonidas Da Silva Barbosa <leosilva@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>
-From: Tim Gardner <tim.gardner@canonical.com>
-Message-ID: <55F034A6.9010905@canonical.com>
-Date: Wed, 9 Sep 2015 07:31:18 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57DE01A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 02:37:55 +1000 (AEST)
+Message-ID: <1441816660.29081.7.camel@freescale.com>
+Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Wed, 9 Sep 2015 11:37:40 -0500
+In-Reply-To: <SN1PR0301MB1550C782E61600D8268C91B79B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441153816.4966.109.camel@freescale.com>
+ <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441160299.4966.122.camel@freescale.com>
+ <SN1PR0301MB1550C782E61600D8268C91B79B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1441764830.7854.4.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,66 +34,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/08/2015 08:13 PM, Michael Ellerman wrote:
-> On Tue, 2015-09-08 at 17:19 -0600, Tim Gardner wrote:
->> On 09/08/2015 04:47 PM, Paul Mackerras wrote:
->>> On Tue, Sep 08, 2015 at 12:13:11PM -0600, tim.gardner@canonical.com wrote:
->>>> From: Tim Gardner <tim.gardner@canonical.com>
->>>>
->>>> commit 72cd7b44bc99 ("powerpc: Uncomment and make enable_kernel_vsx()
->>>> routine available") neglected to define an empty inline replacement for
->>>> enable_kernel_vsx() when CONFIG_VSX=n.
->>>
->>> If code that wants to call enable_kernel_vsx() is getting compiled in
->>> when CONFIG_VSX=n, that's a worry.  Is this patch motivated by an
->>> actual compile failure?  If so what was the failure?
->>
->> I was having link failures after backporting 'crypto: nx' patches to a
->> 4.2 based kernel. You may have a point in that the upstream Kconfig will
->> not allow those files to be compiled if CONFIG_VSX=n. I will check in my
->> morning if to see if I can reproduce the same link error in mainline.
->
-> I suspect the problem is the "vmx" crypto actually.
->
-> $ git grep enable_kernel_vsx drivers/
-> drivers/crypto/vmx/aes.c:       enable_kernel_vsx();
-> drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
-> drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
-> drivers/crypto/vmx/aes_cbc.c:   enable_kernel_vsx();
-> drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
-> drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
-> drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
-> drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
-> drivers/crypto/vmx/aes_ctr.c:                   enable_kernel_vsx();
-> drivers/crypto/vmx/ghash.c:     enable_kernel_vsx();
-> drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-> drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-> drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
->
->
-> That appears to all be controlled by CONFIG_CRYPTO_DEV_VMX_ENCRYPT, which
-> depends on CONFIG_CRYPTO_DEV_VMX, which depends on PPC64.
->
-> So that looks like it will break terribly if VSX is turned off.
->
-> We do have an automated test build with VSX turned off, but it doesn't have
-> CONFIG_CRYPTO_DEV_VMX enabled :/
->
->
-> Having said all that, why are you building a ppc64 kernel with VSX turned off?
->
-> cheers
->
->
+On Sat, 2015-09-05 at 22:13 -0500, Zhao Qiang-B45475 wrote:
+> On Wed, 2015-09-02 at 10:18AM +0800, Wood Scott-B07421 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, September 02, 2015 10:18 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> > Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > bytes-alignment to genalloc
+> > 
+> > On Tue, 2015-09-01 at 21:10 -0500, Zhao Qiang-B45475 wrote:
+> > > On Wed, 2015-09-02 at 08:38AM +0800, Wood Scott-B07421 wrote:
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Wednesday, September 02, 2015 8:30 AM
+> > > > To: Zhao Qiang-B45475
+> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
+> > > > Li Yang-Leo-R58472; paulus@samba.org
+> > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > > > bytes-alignment to genalloc
+> > > > 
+> > > > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
+> > > > > Bytes alignment is required to manage some special RAM, so add
+> > > > > gen_pool_first_fit_align to genalloc, meanwhile add
+> > > > > gen_pool_alloc_data to pass data to
+> > > > > gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
+> > > > > 
+> > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > > > > ---
+> > > > > Changes for v6:
+> > > > >       - patches set v6 include a new patch because of using
+> > > > >       - genalloc to manage QE MURAM, patch 0001 is the new
+> > > > >       - patch, adding bytes alignment for allocation for use.
+> > > > > Changes for v7:
+> > > > >       - cpm muram also need to use genalloc to manage, it has
+> > > > >         a function to reserve a specific region of muram,
+> > > > >         add offset to genpool_data for start addr to be allocated.
+> > > > 
+> > > > This seems to be describing more than just the changes in this patch.
+> > > > What does also handling cpm have to do with this patch?  Are you
+> > > > adding support for reserving a specific region in this patch?  I
+> > > > don't see it, and in any case it should go in a different patch.
+> > > 
+> > > Yes, I added. The code below can support the function.
+> > >       offset_bit = (alignment->offset + (1UL << order) - 1) >> order;
+> > >       return bitmap_find_next_zero_area(map, size, start + offset_bit,
+> > nr,
+> > >                         align_mask);
+> > > 
+> > > CPM has an function cpm_muram_alloc_fixed, needing to allocate muram
+> > > from a Specific offset. So I add the code and add offset to struct data.
+> > 
+> > I thought the offset was related to the previous discussion of checking
+> > for allocation failure.  Are you using it to implement alloc_fixed()?  If
+> > so, please don't.  Besides the awkward implementation (what does it
+> > logically have to do with gen_pool_first_fit_align?), it does not appear
+> > to be correct -
+> > - what happens with multiple chunks?  What happens if part of the region
+> > the caller is trying to reserve is already taken?  Implement a proper
+> > function to reserve a fixed genalloc region.
+> > 
+> The offset is which allocation block address need to be larger than, 
+> Not equal to, it really like the parameter start of the algo(the bitnumber
+> To start searching at).
 
-I'm pretty sure my problem is that I'm building a 32bit powerpc with 
-CONFIG_CRYPTO_DEV_VMX_ENCRYPT=y, though it is hard to tell for sure with 
-the interleaved build output from 4 parallel builds (powerpc-smp 
-powerpc64-smp powerpc-e500mc powerpc64-emb). Your proposed patch 
-("[PATCH v2] crypto: vmx - VMX crypto should depend on CONFIG_VSX") 
-fixes my problems (and makes more sense then my patch), so I suddenly 
-don't care as much.
+cpm_muram_alloc_fixed() is not "search starting at this offset".  It is 
+"reserve this exact range or fail".
 
-rtg
--- 
-Tim Gardner tim.gardner@canonical.com
+-Scott
