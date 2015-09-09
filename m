@@ -1,22 +1,26 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tim.gardner@canonical.com>
+Received: from mail.tpi.com (mail.tpi.com [74.45.170.26])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 624C21A2B02
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 21:07:40 +1000 (AEST)
-Date: Wed, 9 Sep 2015 21:07:39 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Simon Horman <horms@verge.net.au>
-Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>, kexec@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] purgatory/arch/ppc64: Reset primary cpu endian to
- big-endian
-Message-ID: <20150909210739.419a4f72@kryten>
-In-Reply-To: <20150902010251.GC30886@verge.net.au>
-References: <1440125476-9420-1-git-send-email-sam.mj@au1.ibm.com>
- <20150902010251.GC30886@verge.net.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC8F01A2ADA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 23:31:22 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: define empty enable_kernel_vsx() when
+ CONFIG_VSX=n
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1441735991-29199-1-git-send-email-tim.gardner@canonical.com>
+ <20150908224735.GA12791@fergus.ozlabs.ibm.com>
+ <55EF6D17.6050809@canonical.com> <1441764830.7854.4.camel@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Leonidas Da Silva Barbosa <leosilva@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>
+From: Tim Gardner <tim.gardner@canonical.com>
+Message-ID: <55F034A6.9010905@canonical.com>
+Date: Wed, 9 Sep 2015 07:31:18 -0600
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1441764830.7854.4.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,60 +30,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Horms,
+On 09/08/2015 08:13 PM, Michael Ellerman wrote:
+> On Tue, 2015-09-08 at 17:19 -0600, Tim Gardner wrote:
+>> On 09/08/2015 04:47 PM, Paul Mackerras wrote:
+>>> On Tue, Sep 08, 2015 at 12:13:11PM -0600, tim.gardner@canonical.com wrote:
+>>>> From: Tim Gardner <tim.gardner@canonical.com>
+>>>>
+>>>> commit 72cd7b44bc99 ("powerpc: Uncomment and make enable_kernel_vsx()
+>>>> routine available") neglected to define an empty inline replacement for
+>>>> enable_kernel_vsx() when CONFIG_VSX=n.
+>>>
+>>> If code that wants to call enable_kernel_vsx() is getting compiled in
+>>> when CONFIG_VSX=n, that's a worry.  Is this patch motivated by an
+>>> actual compile failure?  If so what was the failure?
+>>
+>> I was having link failures after backporting 'crypto: nx' patches to a
+>> 4.2 based kernel. You may have a point in that the upstream Kconfig will
+>> not allow those files to be compiled if CONFIG_VSX=n. I will check in my
+>> morning if to see if I can reproduce the same link error in mainline.
+>
+> I suspect the problem is the "vmx" crypto actually.
+>
+> $ git grep enable_kernel_vsx drivers/
+> drivers/crypto/vmx/aes.c:       enable_kernel_vsx();
+> drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
+> drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
+> drivers/crypto/vmx/aes_cbc.c:   enable_kernel_vsx();
+> drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
+> drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
+> drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
+> drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
+> drivers/crypto/vmx/aes_ctr.c:                   enable_kernel_vsx();
+> drivers/crypto/vmx/ghash.c:     enable_kernel_vsx();
+> drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
+> drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
+> drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
+>
+>
+> That appears to all be controlled by CONFIG_CRYPTO_DEV_VMX_ENCRYPT, which
+> depends on CONFIG_CRYPTO_DEV_VMX, which depends on PPC64.
+>
+> So that looks like it will break terribly if VSX is turned off.
+>
+> We do have an automated test build with VSX turned off, but it doesn't have
+> CONFIG_CRYPTO_DEV_VMX enabled :/
+>
+>
+> Having said all that, why are you building a ppc64 kernel with VSX turned off?
+>
+> cheers
+>
+>
 
-> > Older big-endian ppc64 kernels don't include the FIXUP_ENDIAN check,
-> > meaning if we kexec from a little-endian kernel the target kernel
-> > will fail to boot.
-> > Returning to big-endian before we enter the target kernel ensures
-> > that the target kernel can boot whether or not it includes
-> > FIXUP_ENDIAN.
-> > 
-> > This mirrors commit 150b14e7 in kexec-lite.
-> > 
-> > Signed-off-by: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
-> 
-> I would value a review from one of the PPC folks.
+I'm pretty sure my problem is that I'm building a 32bit powerpc with 
+CONFIG_CRYPTO_DEV_VMX_ENCRYPT=y, though it is hard to tell for sure with 
+the interleaved build output from 4 parallel builds (powerpc-smp 
+powerpc64-smp powerpc-e500mc powerpc64-emb). Your proposed patch 
+("[PATCH v2] crypto: vmx - VMX crypto should depend on CONFIG_VSX") 
+fixes my problems (and makes more sense then my patch), so I suddenly 
+don't care as much.
 
-Looks good to me. You can add:
-
-Acked-by: Anton Blanchard <anton@samba.org>
-
-Anton
-
-> > ---
-> >  purgatory/arch/ppc64/v2wrap.S | 12 +++++++++---
-> >  1 file changed, 9 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/purgatory/arch/ppc64/v2wrap.S
-> > b/purgatory/arch/ppc64/v2wrap.S index dc5034f..179ade9 100644
-> > --- a/purgatory/arch/ppc64/v2wrap.S
-> > +++ b/purgatory/arch/ppc64/v2wrap.S
-> > @@ -114,10 +114,16 @@ master:
-> >  	LOADADDR(6,run_at_load) # the load flag
-> >  	lwz	7,0(6)		# possibly patched by
-> > kexec-elf-ppc64 stw	7,0x5c(4)	# and patch it into the
-> > kernel
-> > -	li	5,0		# r5 will be 0 for kernel
-> > -	mtctr	4		# prepare branch too
-> >  	mr      3,16            # restore dt address
-> >  
-> > +	mtsrr0	4		# prepare branch to
-> > +
-> > +	mfmsr	5
-> > +	clrrdi	5,5,1		# clear MSR_LE
-> > +	mtsrr1	5
-> > +
-> > +	li	5,0		# r5 will be 0 for kernel
-> > +
-> >  				# skip cache flush, do we care?
-> >  
-> > -	bctr			# start kernel
-> > +	rfid			# update MSR and start kernel
-> > -- 
-> > 2.5.0
-> > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+rtg
+-- 
+Tim Gardner tim.gardner@canonical.com
