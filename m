@@ -1,26 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0103.outbound.protection.outlook.com [65.55.169.103])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0139.outbound.protection.outlook.com [157.56.110.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 158571A2753
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 02:38:50 +1000 (AEST)
-Message-ID: <1441816715.29081.8.camel@freescale.com>
-Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36D1A1A2757
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 05:56:54 +1000 (AEST)
+Message-ID: <1441828599.29081.36.camel@freescale.com>
+Subject: Re: [PATCH 1/2] fsl: Add binding for RCPM
 From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Wed, 9 Sep 2015 11:38:35 -0500
-In-Reply-To: <SN1PR0301MB1550873B24F8F9F4760F67049B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
- <1441154062.4966.113.camel@freescale.com>
- <SN1PR0301MB1550873B24F8F9F4760F67049B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+CC: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <jason.jin@freescale.com>, <chenhui.zhao@freescale.com>,
+ <yuantian.tang@freescale.com>, <alison.wang@freescale.com>,
+ <robh+dt@kernel.org>, <linux-arm-kernel@lists.infradead.org>
+Date: Wed, 9 Sep 2015 14:56:39 -0500
+In-Reply-To: <1441780967-30879-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1441780967-30879-1-git-send-email-dongsheng.wang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,40 +27,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-09-06 at 01:37 -0500, Zhao Qiang-B45475 wrote:
-> On Mon, 2015-09-2 at 8:34 +0800, Wood Scott-B07421 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, September 02, 2015 8:34 AM
-> > To: Zhao Qiang-B45475
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
-> > Yang-Leo-R58472; paulus@samba.org
-> > Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage
-> > muram
-> > 
-> > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
-> > 
-> > > @@ -187,12 +190,25 @@ static inline int qe_alive_during_sleep(void)  }
-> > > 
-> > >  /* we actually use cpm_muram implementation, define this for
-> > > convenience */ -#define qe_muram_init cpm_muram_init -#define
-> > > qe_muram_alloc cpm_muram_alloc -#define qe_muram_alloc_fixed
-> > > cpm_muram_alloc_fixed -#define qe_muram_free cpm_muram_free -#define
-> > > qe_muram_addr cpm_muram_addr -#define qe_muram_offset cpm_muram_offset
-> > > +#define cpm_muram_init qe_muram_init
-> > > +#define cpm_muram_alloc qe_muram_alloc #define cpm_muram_alloc_fixed
-> > > +qe_muram_alloc_fixed #define cpm_muram_free qe_muram_free #define
-> > > +cpm_muram_addr qe_muram_addr #define cpm_muram_offset qe_muram_offset
-> > 
-> > Why?  This is unnecessary churn.
-> > 
-> This is necessary. QE is on both ARM and PowerPC, its code is under public 
-> code.
-> But CPM is only on PowerPC and its code is under PowerPC.
-> So when build ARM, QE will not find cpm_muram_* function.
+On Wed, 2015-09-09 at 14:42 +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> RCPM is the Run Control and Power Management module performs all
+> device-level tasks associated with device run control and power
+> management.
+> 
+> Add this for freescale powerpc platform and layerscape platform.
+> 
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt 
+> b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> new file mode 100644
+> index 0000000..284070c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> @@ -0,0 +1,64 @@
+> +* Run Control and Power Management
+> +-------------------------------------------
+> +The RCPM performs all device-level tasks associated with device run control
+> +and power management.
+> +
+> +Required properites:
+> +  - reg : Offset and length of the register set of RCPM block.
+> +  - compatible : Sould contain a chip-specific RCPM block compatible string
+> +     and (if applicable) may contain a chassis-version RCPM compatible string.
+> +     Chip-specific strings are of the form "fsl,<chip>-rcpm", such as:
+> +     * "fsl,p2041-rcpm"
+> +     * "fsl,p3041-rcpm"
+> +     * "fsl,p4080-rcpm"
+> +     * "fsl,p5020-rcpm"
+> +     * "fsl,p5040-rcpm"
+> +     * "fsl,t4240-rcpm"
+> +     * "fsl,b4420-rcpm"
+> +     * "fsl,b4860-rcpm"
+> +
+> +     Chassis-version strings are of the form "fsl,qoriq-rcpm-<version>",
+> +     such as:
+> +     * "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
+> +     * "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
+> +     * "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
+> +
+> +All references to "1.0" and "2.0" refer to the QorIQ chassis version to
+> +which the chip complies.
+> +Chassis Version              Example Chips
+> +---------------              -------------------------------
+> +1.0                          p4080, p5020, p5040, p2041, p3041
+> +2.0                          t4240, b4860, b4420
+> +2.1                          t1040, ls1021
+> +
+> +Example:
+> +The RCPM node for T4240:
+> +     rcpm:  global-utilities@e2000{
+> +             compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
+> +             reg = <0xe2000 0x1000>;
+> +     };
+> +
+> +The RCPM node for P4080:
+> +     rcpm:  global-utilities@e2000{
+> +             compatible = "fsl,qoriq-rcpm-1.0";
+> +             reg = <0xe2000 0x1000>;
+> +     };
 
-If you move the cpm_muram functions to drivers/soc, then ARM will find them.  
-There is no need to rename them.
+I would avoid putting the p4080 example in the binding, as we don't want to 
+make it look like it's OK to leave out the specific chip compatible.
+
+> +* Freescale RCPM Wakeup Source Device Tree Bindings
+> +-------------------------------------------
+> +Required rcpm-wakeup property should be added to a device node if the 
+> device
+> +can be used as a wakeup source.
+> +
+> +  - rcpm-wakeup: should contain a pointer to the rcpm node and the
+> +     corresponding bit of device in the register.
+
+The corresponding bit in *what* register?
 
 -Scott
