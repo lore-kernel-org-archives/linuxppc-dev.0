@@ -2,22 +2,22 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 50DC31A0075
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 12:13:51 +1000 (AEST)
-Message-ID: <1441764830.7854.4.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: define empty enable_kernel_vsx() when
- CONFIG_VSX=n
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A6EF1A2BE4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Sep 2015 12:15:06 +1000 (AEST)
+Message-ID: <1441764905.7854.5.camel@ellerman.id.au>
+Subject: Re: [[PATCH v6 09/10] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tim Gardner <tim.gardner@canonical.com>
-Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,  Leonidas Da Silva Barbosa
- <leosilva@linux.vnet.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>
-Date: Wed, 09 Sep 2015 12:13:50 +1000
-In-Reply-To: <55EF6D17.6050809@canonical.com>
-References: <1441735991-29199-1-git-send-email-tim.gardner@canonical.com>
- <20150908224735.GA12791@fergus.ozlabs.ibm.com>
- <55EF6D17.6050809@canonical.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Ingo Molnar
+ <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, sparclinux@vger.kernel.org
+Date: Wed, 09 Sep 2015 12:15:05 +1000
+In-Reply-To: <20150908112900.GF3644@twins.programming.kicks-ass.net>
+References: <1441336073-22750-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1441336073-22750-10-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1441703275.7601.5.camel@ellerman.id.au>
+ <20150908112900.GF3644@twins.programming.kicks-ass.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,51 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-08 at 17:19 -0600, Tim Gardner wrote:
-> On 09/08/2015 04:47 PM, Paul Mackerras wrote:
-> > On Tue, Sep 08, 2015 at 12:13:11PM -0600, tim.gardner@canonical.com wrote:
-> >> From: Tim Gardner <tim.gardner@canonical.com>
-> >>
-> >> commit 72cd7b44bc99 ("powerpc: Uncomment and make enable_kernel_vsx()
-> >> routine available") neglected to define an empty inline replacement for
-> >> enable_kernel_vsx() when CONFIG_VSX=n.
+On Tue, 2015-09-08 at 13:29 +0200, Peter Zijlstra wrote:
+> On Tue, Sep 08, 2015 at 07:07:55PM +1000, Michael Ellerman wrote:
+> > On Thu, 2015-09-03 at 20:07 -0700, Sukadev Bhattiprolu wrote:
+> > > The 24x7 counters in Powerpc allow monitoring a large number of counters
+> > > simultaneously. They also allow reading several counters in a single
+> > > HCALL so we can get a more consistent snapshot of the system.
+> > > 
+> > > Use the PMU's transaction interface to monitor and read several event
+> > > counters at once. The idea is that users can group several 24x7 events
+> > > into a single group of events. We use the following logic to submit
+> > > the group of events to the PMU and read the values:
+> > > 
+> > > 	pmu->start_txn()		// Initialize before first event
+> > > 
+> > > 	for each event in group
+> > > 		pmu->read(event);	// Queue each event to be read
+> > > 
+> > > 	pmu->commit_txn()		// Read/update all queuedcounters
+> > > 
+> > > The ->commit_txn() also updates the event counts in the respective
+> > > perf_event objects.  The perf subsystem can then directly get the
+> > > event counts from the perf_event and can avoid submitting a new
+> > > ->read() request to the PMU.
+> > > 
+> > > Thanks to input from Peter Zijlstra.
+> > > 
+> > > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/perf/hv-24x7.c |  166 ++++++++++++++++++++++++++++++++++++++++++-
 > > 
-> > If code that wants to call enable_kernel_vsx() is getting compiled in
-> > when CONFIG_VSX=n, that's a worry.  Is this patch motivated by an
-> > actual compile failure?  If so what was the failure?
+> > This looks fine to me from an arch perspective. I assume the whole series can
+> > go via tip-something?
 > 
-> I was having link failures after backporting 'crypto: nx' patches to a
-> 4.2 based kernel. You may have a point in that the upstream Kconfig will
-> not allow those files to be compiled if CONFIG_VSX=n. I will check in my
-> morning if to see if I can reproduce the same link error in mainline.
+> Yeah, I've had it queued for a few days, there was one s390 compile
+> fail reported by the build-bot, which I've just fixed. So if nothing
+> weird happens, it should hit tip somewhere this week.
 
-I suspect the problem is the "vmx" crypto actually.
+Great, thanks.
 
-$ git grep enable_kernel_vsx drivers/
-drivers/crypto/vmx/aes.c:       enable_kernel_vsx();
-drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
-drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
-drivers/crypto/vmx/aes_cbc.c:   enable_kernel_vsx();
-drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
-drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
-drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
-drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
-drivers/crypto/vmx/aes_ctr.c:                   enable_kernel_vsx();
-drivers/crypto/vmx/ghash.c:     enable_kernel_vsx();
-drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-
-
-That appears to all be controlled by CONFIG_CRYPTO_DEV_VMX_ENCRYPT, which
-depends on CONFIG_CRYPTO_DEV_VMX, which depends on PPC64.
-
-So that looks like it will break terribly if VSX is turned off.
-
-We do have an automated test build with VSX turned off, but it doesn't have
-CONFIG_CRYPTO_DEV_VMX enabled :/
-
-
-Having said all that, why are you building a ppc64 kernel with VSX turned off?
+Now Sukadev can focus on getting the JSON events support merged, hopefully it
+won't require another 16 versions.
 
 cheers
