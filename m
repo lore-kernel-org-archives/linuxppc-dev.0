@@ -1,22 +1,30 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0103.outbound.protection.outlook.com [65.55.169.103])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 62B081A2AE7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 08:05:57 +1000 (AEST)
-Message-ID: <1441922743.2909.8.camel@freescale.com>
-Subject: Re: [PATCH v2] powerpc32: memcpy/memset: only use dcbz once cache
- is enabled
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5EB311A2AF3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 08:07:13 +1000 (AEST)
+Message-ID: <1441922820.2909.10.camel@freescale.com>
+Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
 From: Scott Wood <scottwood@freescale.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- <sojkam1@fel.cvut.cz>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 10 Sep 2015 17:05:43 -0500
-In-Reply-To: <20150910064112.7B7791A241C@localhost.localdomain>
-References: <20150910064112.7B7791A241C@localhost.localdomain>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Thu, 10 Sep 2015 17:07:00 -0500
+In-Reply-To: <SN1PR0301MB155031D53C79CC382734FE2C9B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441153816.4966.109.camel@freescale.com>
+ <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441160299.4966.122.camel@freescale.com>
+ <SN1PR0301MB1550C782E61600D8268C91B79B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441816660.29081.7.camel@freescale.com>
+ <SN1PR0301MB155031D53C79CC382734FE2C9B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,41 +36,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-10 at 08:41 +0200, Christophe Leroy wrote:
->  
-> +/* Cache related sections */
-> +#define BEGIN_CACHE_SECTION_NESTED(label)    START_FTR_SECTION(label)
-> +#define BEGIN_CACHE_SECTION                  START_FTR_SECTION(97)
-> +
-> +#define END_CACHE_SECTION_NESTED(msk, val, label)            \
-> +     FTR_SECTION_ELSE_NESTED(label)                          \
-> +     MAKE_FTR_SECTION_ENTRY(msk, val, label, __cache_fixup)
-> +
-> +#define END_CACHE_SECTION(msk, val)          \
-> +     END_CACHE_SECTION_NESTED(msk, val, 97)
-> +
-> +#define END_CACHE_SECTION_IFSET(msk) END_CACHE_SECTION((msk), (msk))
-> +#define END_CACHE_SECTION_IFCLR(msk) END_CACHE_SECTION((msk), 0)
-> +
-> +/* CACHE feature sections with alternatives, use BEGIN_FTR_SECTION to 
-> start */
-> +#define CACHE_SECTION_ELSE_NESTED(label)     FTR_SECTION_ELSE_NESTED(label)
-> +#define CACHE_SECTION_ELSE   CACHE_SECTION_ELSE_NESTED(97)
-> +#define ALT_CACHE_SECTION_END_NESTED(msk, val, label)        \
-> +     MAKE_FTR_SECTION_ENTRY(msk, val, label, __cache_fixup)
-> +#define ALT_CACHE_SECTION_END_NESTED_IFSET(msk, label)       \
-> +     ALT_CACHE_SECTION_END_NESTED(msk, msk, label)
-> +#define ALT_CACHE_SECTION_END_NESTED_IFCLR(msk, label)       \
-> +     ALT_CACHE_SECTION_END_NESTED(msk, 0, label)
-> +#define ALT_CACHE_SECTION_END(msk, val)      \
-> +     ALT_CACHE_SECTION_END_NESTED(msk, val, 97)
-> +#define ALT_CACHE_SECTION_END_IFSET(msk)     \
-> +     ALT_CACHE_SECTION_END_NESTED_IFSET(msk, 97)
-> +#define ALT_CACHE_SECTION_END_IFCLR(msk)     \
-> +     ALT_CACHE_SECTION_END_NESTED_IFCLR(msk, 97)
+On Wed, 2015-09-09 at 21:26 -0500, Zhao Qiang-B45475 wrote:
+> On Wed, 2015-09-10 at 12:38AM -0500, Wood Scott-B07421 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, September 10, 2015 12:38 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> > Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > bytes-alignment to genalloc
+> > 
+> > On Sat, 2015-09-05 at 22:13 -0500, Zhao Qiang-B45475 wrote:
+> > > On Wed, 2015-09-02 at 10:18AM +0800, Wood Scott-B07421 wrote:
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Wednesday, September 02, 2015 10:18 AM
+> > > > To: Zhao Qiang-B45475
+> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
+> > > > Li Yang-Leo-R58472; paulus@samba.org
+> > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > > > bytes-alignment to genalloc
+> > > > 
+> > > > On Tue, 2015-09-01 at 21:10 -0500, Zhao Qiang-B45475 wrote:
+> > > > > On Wed, 2015-09-02 at 08:38AM +0800, Wood Scott-B07421 wrote:
+> > > > > > -----Original Message-----
+> > > > > > From: Wood Scott-B07421
+> > > > > > Sent: Wednesday, September 02, 2015 8:30 AM
+> > > > > > To: Zhao Qiang-B45475
+> > > > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > > > lauraa@codeaurora.org; Xie Xiaobo-R63061;
+> > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472; paulus@samba.org
+> > > > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation
+> > > > > > with bytes-alignment to genalloc
+> > > > > > 
+> > > > > > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
+> > > > > > > Bytes alignment is required to manage some special RAM, so add
+> > > > > > > gen_pool_first_fit_align to genalloc, meanwhile add
+> > > > > > > gen_pool_alloc_data to pass data to
+> > > > > > > gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
+> > > > > > > 
+> > > > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > > > > > > ---
+> > > > > > > Changes for v6:
+> > > > > > >       - patches set v6 include a new patch because of using
+> > > > > > >       - genalloc to manage QE MURAM, patch 0001 is the new
+> > > > > > >       - patch, adding bytes alignment for allocation for use.
+> > > > > > > Changes for v7:
+> > > > > > >       - cpm muram also need to use genalloc to manage, it has
+> > > > > > >         a function to reserve a specific region of muram,
+> > > > > > >         add offset to genpool_data for start addr to be
+> > allocated.
+> > > > > > 
+> > > > > > This seems to be describing more than just the changes in this
+> > patch.
+> > > > > > What does also handling cpm have to do with this patch?  Are you
+> > > > > > adding support for reserving a specific region in this patch?  I
+> > > > > > don't see it, and in any case it should go in a different patch.
+> > > > > 
+> > > > > Yes, I added. The code below can support the function.
+> > > > >       offset_bit = (alignment->offset + (1UL << order) - 1) >>
+> > order;
+> > > > >       return bitmap_find_next_zero_area(map, size, start +
+> > > > > offset_bit,
+> > > > nr,
+> > > > >                         align_mask);
+> > > > > 
+> > > > > CPM has an function cpm_muram_alloc_fixed, needing to allocate
+> > > > > muram from a Specific offset. So I add the code and add offset to
+> > struct data.
+> > > > 
+> > > > I thought the offset was related to the previous discussion of
+> > > > checking for allocation failure.  Are you using it to implement
+> > > > alloc_fixed()?  If so, please don't.  Besides the awkward
+> > > > implementation (what does it logically have to do with
+> > > > gen_pool_first_fit_align?), it does not appear to be correct -
+> > > > - what happens with multiple chunks?  What happens if part of the
+> > > > region the caller is trying to reserve is already taken?  Implement
+> > > > a proper function to reserve a fixed genalloc region.
+> > > > 
+> > > The offset is which allocation block address need to be larger than,
+> > > Not equal to, it really like the parameter start of the algo(the
+> > > bitnumber To start searching at).
+> > 
+> > cpm_muram_alloc_fixed() is not "search starting at this offset".  It is
+> > "reserve this exact range or fail".
+> 
+> Yes, you are right! How about to add a new algo into genalloc to search 
+> At offset, then handle it in muram layer, if the address return from 
+> genalloc
+> Is not equal to offset, return negative number?
 
-I don't think this duplication is what Michael meant by "the normal cpu 
-feature sections".  What else is going to use this very specific 
-infrastructure?
+If you're adding a new algorithm, why not make it actually do what you want 
+rather than adding something different and fixing it up in the caller?
 
 -Scott
