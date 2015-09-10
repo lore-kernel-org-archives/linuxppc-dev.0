@@ -1,19 +1,30 @@
-Return-Path: <Poonam.Aggrwal@freescale.com>
+Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
+ (mail-bn1bon0133.outbound.protection.outlook.com [157.56.111.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B97901A0796
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 12:14:06 +1000 (AEST)
-From: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-CC: <scottwood@freescale.com>, Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Varun Sethi <Varun.Sethi@freescale.com>
-Subject: [PATCH] fsl/powerpc/b4860: Removed LIODN register from sRIO node
-Date: Thu, 10 Sep 2015 07:31:20 +0530
-Message-ID: <1441850480-17813-1-git-send-email-poonam.aggrwal@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B5D51A1F42
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 12:26:46 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Thu, 10 Sep 2015 02:26:36 +0000
+Message-ID: <SN1PR0301MB155031D53C79CC382734FE2C9B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441153816.4966.109.camel@freescale.com>
+ <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441160299.4966.122.camel@freescale.com>
+ <SN1PR0301MB1550C782E61600D8268C91B79B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441816660.29081.7.camel@freescale.com>
+In-Reply-To: <1441816660.29081.7.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +34,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In case of B4860 LIODN register for sRIO is not in GUTs block but in the sRIO
-register space.
-
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
----
-- based of: git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-  branch master 
-
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-index 9ba904b..d1e26a7 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-@@ -51,14 +51,12 @@
- 		#address-cells = <2>;
- 		#size-cells = <2>;
- 		cell-index = <1>;
--		fsl,liodn-reg = <&guts 0x510>; /* RIO1LIODNR */
- 	};
- 
- 	port2 {
- 		#address-cells = <2>;
- 		#size-cells = <2>;
- 		cell-index = <2>;
--		fsl,liodn-reg = <&guts 0x514>; /* RIO2LIODNR */
- 	};
- };
- 
--- 
-1.9.1
+T24gV2VkLCAyMDE1LTA5LTEwIGF0IDEyOjM4QU0gLTA1MDAsIFdvb2QgU2NvdHQtQjA3NDIxIHdy
+b3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIw
+NzQyMQ0KPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEwLCAyMDE1IDEyOjM4IEFNDQo+IFRv
+OiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsg
+bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsg
+WGllIFhpYW9iby1SNjMwNjE7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkNCj4gWWFuZy1M
+ZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMS8z
+XSBnZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uIHdpdGgNCj4gYnl0ZXMtYWxpZ25t
+ZW50IHRvIGdlbmFsbG9jDQo+IA0KPiBPbiBTYXQsIDIwMTUtMDktMDUgYXQgMjI6MTMgLTA1MDAs
+IFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+IE9uIFdlZCwgMjAxNS0wOS0wMiBhdCAxMDox
+OEFNICswODAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDog
+V2VkbmVzZGF5LCBTZXB0ZW1iZXIgMDIsIDIwMTUgMTA6MTggQU0NCj4gPiA+IFRvOiBaaGFvIFFp
+YW5nLUI0NTQ3NQ0KPiA+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBY
+aWUgWGlhb2JvLVI2MzA2MTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gTGkgWWFu
+Zy1MZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENI
+IFY3IDEvM10gZ2VuYWxsb2M6c3VwcG9ydCBtZW1vcnktYWxsb2NhdGlvbiB3aXRoDQo+ID4gPiBi
+eXRlcy1hbGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+DQo+ID4gPiBPbiBUdWUsIDIwMTUtMDkt
+MDEgYXQgMjE6MTAgLTA1MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+ID4gPiBPbiBX
+ZWQsIDIwMTUtMDktMDIgYXQgMDg6MzhBTSArMDgwMCwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6
+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBX
+b29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDAy
+LCAyMDE1IDg6MzAgQU0NCj4gPiA+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gPiA+ID4g
+PiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7DQo+ID4gPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2
+MzA2MTsNCj4gPiA+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctTGVvLVI1
+ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcg
+MS8zXSBnZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uDQo+ID4gPiA+ID4gd2l0aCBi
+eXRlcy1hbGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIE1vbiwg
+MjAxNS0wOC0zMSBhdCAxNjo1OCArMDgwMCwgWmhhbyBRaWFuZyB3cm90ZToNCj4gPiA+ID4gPiA+
+IEJ5dGVzIGFsaWdubWVudCBpcyByZXF1aXJlZCB0byBtYW5hZ2Ugc29tZSBzcGVjaWFsIFJBTSwg
+c28gYWRkDQo+ID4gPiA+ID4gPiBnZW5fcG9vbF9maXJzdF9maXRfYWxpZ24gdG8gZ2VuYWxsb2Ms
+IG1lYW53aGlsZSBhZGQNCj4gPiA+ID4gPiA+IGdlbl9wb29sX2FsbG9jX2RhdGEgdG8gcGFzcyBk
+YXRhIHRvDQo+ID4gPiA+ID4gPiBnZW5fcG9vbF9maXJzdF9maXRfYWxpZ24obW9kaWZ5IGdlbl9w
+b29sX2FsbG9jIGFzIGEgd3JhcHBlcikNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBTaWduZWQt
+b2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFuZy56aGFvQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+ID4g
+PiAtLS0NCj4gPiA+ID4gPiA+IENoYW5nZXMgZm9yIHY2Og0KPiA+ID4gPiA+ID4gICAgICAgLSBw
+YXRjaGVzIHNldCB2NiBpbmNsdWRlIGEgbmV3IHBhdGNoIGJlY2F1c2Ugb2YgdXNpbmcNCj4gPiA+
+ID4gPiA+ICAgICAgIC0gZ2VuYWxsb2MgdG8gbWFuYWdlIFFFIE1VUkFNLCBwYXRjaCAwMDAxIGlz
+IHRoZSBuZXcNCj4gPiA+ID4gPiA+ICAgICAgIC0gcGF0Y2gsIGFkZGluZyBieXRlcyBhbGlnbm1l
+bnQgZm9yIGFsbG9jYXRpb24gZm9yIHVzZS4NCj4gPiA+ID4gPiA+IENoYW5nZXMgZm9yIHY3Og0K
+PiA+ID4gPiA+ID4gICAgICAgLSBjcG0gbXVyYW0gYWxzbyBuZWVkIHRvIHVzZSBnZW5hbGxvYyB0
+byBtYW5hZ2UsIGl0IGhhcw0KPiA+ID4gPiA+ID4gICAgICAgICBhIGZ1bmN0aW9uIHRvIHJlc2Vy
+dmUgYSBzcGVjaWZpYyByZWdpb24gb2YgbXVyYW0sDQo+ID4gPiA+ID4gPiAgICAgICAgIGFkZCBv
+ZmZzZXQgdG8gZ2VucG9vbF9kYXRhIGZvciBzdGFydCBhZGRyIHRvIGJlDQo+IGFsbG9jYXRlZC4N
+Cj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoaXMgc2VlbXMgdG8gYmUgZGVzY3JpYmluZyBtb3JlIHRo
+YW4ganVzdCB0aGUgY2hhbmdlcyBpbiB0aGlzDQo+IHBhdGNoLg0KPiA+ID4gPiA+IFdoYXQgZG9l
+cyBhbHNvIGhhbmRsaW5nIGNwbSBoYXZlIHRvIGRvIHdpdGggdGhpcyBwYXRjaD8gIEFyZSB5b3UN
+Cj4gPiA+ID4gPiBhZGRpbmcgc3VwcG9ydCBmb3IgcmVzZXJ2aW5nIGEgc3BlY2lmaWMgcmVnaW9u
+IGluIHRoaXMgcGF0Y2g/ICBJDQo+ID4gPiA+ID4gZG9uJ3Qgc2VlIGl0LCBhbmQgaW4gYW55IGNh
+c2UgaXQgc2hvdWxkIGdvIGluIGEgZGlmZmVyZW50IHBhdGNoLg0KPiA+ID4gPg0KPiA+ID4gPiBZ
+ZXMsIEkgYWRkZWQuIFRoZSBjb2RlIGJlbG93IGNhbiBzdXBwb3J0IHRoZSBmdW5jdGlvbi4NCj4g
+PiA+ID4gICAgICAgb2Zmc2V0X2JpdCA9IChhbGlnbm1lbnQtPm9mZnNldCArICgxVUwgPDwgb3Jk
+ZXIpIC0gMSkgPj4NCj4gb3JkZXI7DQo+ID4gPiA+ICAgICAgIHJldHVybiBiaXRtYXBfZmluZF9u
+ZXh0X3plcm9fYXJlYShtYXAsIHNpemUsIHN0YXJ0ICsNCj4gPiA+ID4gb2Zmc2V0X2JpdCwNCj4g
+PiA+IG5yLA0KPiA+ID4gPiAgICAgICAgICAgICAgICAgICAgICAgICBhbGlnbl9tYXNrKTsNCj4g
+PiA+ID4NCj4gPiA+ID4gQ1BNIGhhcyBhbiBmdW5jdGlvbiBjcG1fbXVyYW1fYWxsb2NfZml4ZWQs
+IG5lZWRpbmcgdG8gYWxsb2NhdGUNCj4gPiA+ID4gbXVyYW0gZnJvbSBhIFNwZWNpZmljIG9mZnNl
+dC4gU28gSSBhZGQgdGhlIGNvZGUgYW5kIGFkZCBvZmZzZXQgdG8NCj4gc3RydWN0IGRhdGEuDQo+
+ID4gPg0KPiA+ID4gSSB0aG91Z2h0IHRoZSBvZmZzZXQgd2FzIHJlbGF0ZWQgdG8gdGhlIHByZXZp
+b3VzIGRpc2N1c3Npb24gb2YNCj4gPiA+IGNoZWNraW5nIGZvciBhbGxvY2F0aW9uIGZhaWx1cmUu
+ICBBcmUgeW91IHVzaW5nIGl0IHRvIGltcGxlbWVudA0KPiA+ID4gYWxsb2NfZml4ZWQoKT8gIElm
+IHNvLCBwbGVhc2UgZG9uJ3QuICBCZXNpZGVzIHRoZSBhd2t3YXJkDQo+ID4gPiBpbXBsZW1lbnRh
+dGlvbiAod2hhdCBkb2VzIGl0IGxvZ2ljYWxseSBoYXZlIHRvIGRvIHdpdGgNCj4gPiA+IGdlbl9w
+b29sX2ZpcnN0X2ZpdF9hbGlnbj8pLCBpdCBkb2VzIG5vdCBhcHBlYXIgdG8gYmUgY29ycmVjdCAt
+DQo+ID4gPiAtIHdoYXQgaGFwcGVucyB3aXRoIG11bHRpcGxlIGNodW5rcz8gIFdoYXQgaGFwcGVu
+cyBpZiBwYXJ0IG9mIHRoZQ0KPiA+ID4gcmVnaW9uIHRoZSBjYWxsZXIgaXMgdHJ5aW5nIHRvIHJl
+c2VydmUgaXMgYWxyZWFkeSB0YWtlbj8gIEltcGxlbWVudA0KPiA+ID4gYSBwcm9wZXIgZnVuY3Rp
+b24gdG8gcmVzZXJ2ZSBhIGZpeGVkIGdlbmFsbG9jIHJlZ2lvbi4NCj4gPiA+DQo+ID4gVGhlIG9m
+ZnNldCBpcyB3aGljaCBhbGxvY2F0aW9uIGJsb2NrIGFkZHJlc3MgbmVlZCB0byBiZSBsYXJnZXIg
+dGhhbiwNCj4gPiBOb3QgZXF1YWwgdG8sIGl0IHJlYWxseSBsaWtlIHRoZSBwYXJhbWV0ZXIgc3Rh
+cnQgb2YgdGhlIGFsZ28odGhlDQo+ID4gYml0bnVtYmVyIFRvIHN0YXJ0IHNlYXJjaGluZyBhdCku
+DQo+IA0KPiBjcG1fbXVyYW1fYWxsb2NfZml4ZWQoKSBpcyBub3QgInNlYXJjaCBzdGFydGluZyBh
+dCB0aGlzIG9mZnNldCIuICBJdCBpcw0KPiAicmVzZXJ2ZSB0aGlzIGV4YWN0IHJhbmdlIG9yIGZh
+aWwiLg0KDQpZZXMsIHlvdSBhcmUgcmlnaHQhIEhvdyBhYm91dCB0byBhZGQgYSBuZXcgYWxnbyBp
+bnRvIGdlbmFsbG9jIHRvIHNlYXJjaCANCkF0IG9mZnNldCwgdGhlbiBoYW5kbGUgaXQgaW4gbXVy
+YW0gbGF5ZXIsIGlmIHRoZSBhZGRyZXNzIHJldHVybiBmcm9tIGdlbmFsbG9jDQpJcyBub3QgZXF1
+YWwgdG8gb2Zmc2V0LCByZXR1cm4gbmVnYXRpdmUgbnVtYmVyPw0KDQo+IA0KPiAtU2NvdHQNCg0K
