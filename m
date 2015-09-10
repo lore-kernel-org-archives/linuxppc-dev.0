@@ -1,28 +1,18 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D2041A1F42
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 12:35:01 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
-Date: Thu, 10 Sep 2015 02:34:54 +0000
-Message-ID: <SN1PR0301MB1550D133A4FE7FE3DB8870D19B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
- <1441154062.4966.113.camel@freescale.com>
- <SN1PR0301MB1550873B24F8F9F4760F67049B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441816715.29081.8.camel@freescale.com>
-In-Reply-To: <1441816715.29081.8.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE6841A0796
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 14:36:29 +1000 (AEST)
+Date: Thu, 10 Sep 2015 14:36:21 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: linuxppc-dev@ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: [PATCH] powerpc: MSI: Fix race condition in tearing down MSI
+ interrupts
+Message-ID: <20150910043621.GA21735@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +22,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gTW9uLCAyMDE1LTA5LTEwIGF0IDEyOjM5IC0wNTAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90
-ZToNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIw
-NzQyMQ0KPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEwLCAyMDE1IDEyOjM5IEFNDQo+IFRv
-OiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsg
-bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsg
-WGllIFhpYW9iby1SNjMwNjE7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkNCj4gWWFuZy1M
-ZW8tUjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMi8z
-XSBxZV9jb21tb246IGFkZCBxZV9tdXJhbV8gZnVuY3Rpb25zIHRvIG1hbmFnZQ0KPiBtdXJhbQ0K
-PiANCj4gT24gU3VuLCAyMDE1LTA5LTA2IGF0IDAxOjM3IC0wNTAwLCBaaGFvIFFpYW5nLUI0NTQ3
-NSB3cm90ZToNCj4gPiBPbiBNb24sIDIwMTUtMDktMiBhdCA4OjM0ICswODAwLCBXb29kIFNjb3R0
-LUIwNzQyMSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBG
-cm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIg
-MDIsIDIwMTUgODozNCBBTQ0KPiA+ID4gVG86IFpoYW8gUWlhbmctQjQ1NDc1DQo+ID4gPiBDYzog
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
-cmc7DQo+ID4gPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBYaWFvYm8tUjYzMDYxOyBiZW5o
-QGtlcm5lbC5jcmFzaGluZy5vcmc7DQo+ID4gPiBMaSBZYW5nLUxlby1SNTg0NzI7IHBhdWx1c0Bz
-YW1iYS5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMi8zXSBxZV9jb21tb246IGFk
-ZCBxZV9tdXJhbV8gZnVuY3Rpb25zIHRvDQo+ID4gPiBtYW5hZ2UgbXVyYW0NCj4gPiA+DQo+ID4g
-PiBPbiBNb24sIDIwMTUtMDgtMzEgYXQgMTY6NTggKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+
-ID4gPg0KPiA+ID4gPiBAQCAtMTg3LDEyICsxOTAsMjUgQEAgc3RhdGljIGlubGluZSBpbnQNCj4g
-PiA+ID4gcWVfYWxpdmVfZHVyaW5nX3NsZWVwKHZvaWQpICB9DQo+ID4gPiA+DQo+ID4gPiA+ICAv
-KiB3ZSBhY3R1YWxseSB1c2UgY3BtX211cmFtIGltcGxlbWVudGF0aW9uLCBkZWZpbmUgdGhpcyBm
-b3INCj4gPiA+ID4gY29udmVuaWVuY2UgKi8gLSNkZWZpbmUgcWVfbXVyYW1faW5pdCBjcG1fbXVy
-YW1faW5pdCAtI2RlZmluZQ0KPiA+ID4gPiBxZV9tdXJhbV9hbGxvYyBjcG1fbXVyYW1fYWxsb2Mg
-LSNkZWZpbmUgcWVfbXVyYW1fYWxsb2NfZml4ZWQNCj4gPiA+ID4gY3BtX211cmFtX2FsbG9jX2Zp
-eGVkIC0jZGVmaW5lIHFlX211cmFtX2ZyZWUgY3BtX211cmFtX2ZyZWUNCj4gPiA+ID4gLSNkZWZp
-bmUgcWVfbXVyYW1fYWRkciBjcG1fbXVyYW1fYWRkciAtI2RlZmluZSBxZV9tdXJhbV9vZmZzZXQN
-Cj4gPiA+ID4gY3BtX211cmFtX29mZnNldA0KPiA+ID4gPiArI2RlZmluZSBjcG1fbXVyYW1faW5p
-dCBxZV9tdXJhbV9pbml0ICNkZWZpbmUgY3BtX211cmFtX2FsbG9jDQo+ID4gPiA+ICtxZV9tdXJh
-bV9hbGxvYyAjZGVmaW5lIGNwbV9tdXJhbV9hbGxvY19maXhlZCBxZV9tdXJhbV9hbGxvY19maXhl
-ZA0KPiA+ID4gPiArI2RlZmluZSBjcG1fbXVyYW1fZnJlZSBxZV9tdXJhbV9mcmVlICNkZWZpbmUg
-Y3BtX211cmFtX2FkZHINCj4gPiA+ID4gK3FlX211cmFtX2FkZHIgI2RlZmluZSBjcG1fbXVyYW1f
-b2Zmc2V0IHFlX211cmFtX29mZnNldA0KPiA+ID4NCj4gPiA+IFdoeT8gIFRoaXMgaXMgdW5uZWNl
-c3NhcnkgY2h1cm4uDQo+ID4gPg0KPiA+IFRoaXMgaXMgbmVjZXNzYXJ5LiBRRSBpcyBvbiBib3Ro
-IEFSTSBhbmQgUG93ZXJQQywgaXRzIGNvZGUgaXMgdW5kZXINCj4gPiBwdWJsaWMgY29kZS4NCj4g
-PiBCdXQgQ1BNIGlzIG9ubHkgb24gUG93ZXJQQyBhbmQgaXRzIGNvZGUgaXMgdW5kZXIgUG93ZXJQ
-Qy4NCj4gPiBTbyB3aGVuIGJ1aWxkIEFSTSwgUUUgd2lsbCBub3QgZmluZCBjcG1fbXVyYW1fKiBm
-dW5jdGlvbi4NCj4gDQo+IElmIHlvdSBtb3ZlIHRoZSBjcG1fbXVyYW0gZnVuY3Rpb25zIHRvIGRy
-aXZlcnMvc29jLCB0aGVuIEFSTSB3aWxsIGZpbmQNCj4gdGhlbS4NCj4gVGhlcmUgaXMgbm8gbmVl
-ZCB0byByZW5hbWUgdGhlbS4NCg0KWWVzLCBtb3ZpbmcgY3BtX211cmFtIGNhbiBoYW5kbGUgdGhp
-cyBpc3N1ZS4gSG93ZXZlciwgY3BtIGlzIG5vdCBuZWNlc3NhcnkNClRvIG1vdmUgdG8gcHVibGlj
-IGNvZGUsIGFuZCBhIGNodXJuIGlzIHNpbXBsZXIgdGhhbiBtb3ZpbmcgY3BtX211cmFtLg0KUGxl
-YXNlIGNvbnNpZGVyIG15IHN1Z2dlc3Rpb24sIFRoYW5rIHlvdSENCg0KPiANCj4gLVNjb3R0DQoN
-Cg==
+This fixes a race which can result in the same virtual IRQ number
+being assigned to two different MSI interrupts.  The most visible
+consequence of that is usually a warning and stack trace from the
+sysfs code about an attempt to create a duplicate entry in sysfs.
+
+The race happens when one CPU (say CPU 0) is disposing of an MSI
+while another CPU (say CPU 1) is setting up an MSI.  CPU 0 calls
+(for example) pnv_teardown_msi_irqs(), which calls
+msi_bitmap_free_hwirqs() to indicate that the MSI (i.e. its
+hardware IRQ number) is no longer in use.  Then, before CPU 0 gets
+to calling irq_dispose_mapping() to free up the virtal IRQ number,
+CPU 1 comes in and calls msi_bitmap_alloc_hwirqs() to allocate an
+MSI, and gets the same hardware IRQ number that CPU 0 just freed.
+CPU 1 then calls irq_create_mapping() to get a virtual IRQ number,
+which sees that there is currently a mapping for that hardware IRQ
+number and returns the corresponding virtual IRQ number (which is
+the same virtual IRQ number that CPU 0 was using).  CPU 0 then
+calls irq_dispose_mapping() and frees that virtual IRQ number.
+Now, if another CPU comes along and calls irq_create_mapping(), it
+is likely to get the virtual IRQ number that was just freed,
+resulting in the same virtual IRQ number apparently being used for
+two different hardware interrupts.
+
+To fix this race, we just move the call to msi_bitmap_free_hwirqs()
+to after the call to irq_dispose_mapping().  Since virq_to_hw()
+doesn't work for the virtual IRQ number after irq_dispose_mapping()
+has been called, we need to call it before irq_dispose_mapping() and
+remember the result for the msi_bitmap_free_hwirqs() call.
+
+The pattern of calling msi_bitmap_free_hwirqs() before
+irq_dispose_mapping() appears in 5 places under arch/powerpc, and
+appears to have originated in commit 05af7bd2d75e ("[POWERPC] MPIC
+U3/U4 MSI backend") from 2007.
+
+Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/platforms/pasemi/msi.c  | 5 +++--
+ arch/powerpc/platforms/powernv/pci.c | 5 +++--
+ arch/powerpc/sysdev/fsl_msi.c        | 5 +++--
+ arch/powerpc/sysdev/mpic_u3msi.c     | 5 +++--
+ arch/powerpc/sysdev/ppc4xx_msi.c     | 5 +++--
+ 5 files changed, 15 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pasemi/msi.c b/arch/powerpc/platforms/pasemi/msi.c
+index e66ef19..b304a9f 100644
+--- a/arch/powerpc/platforms/pasemi/msi.c
++++ b/arch/powerpc/platforms/pasemi/msi.c
+@@ -63,6 +63,7 @@ static struct irq_chip mpic_pasemi_msi_chip = {
+ static void pasemi_msi_teardown_msi_irqs(struct pci_dev *pdev)
+ {
+ 	struct msi_desc *entry;
++	irq_hw_number_t hwirq;
+ 
+ 	pr_debug("pasemi_msi_teardown_msi_irqs, pdev %p\n", pdev);
+ 
+@@ -70,10 +71,10 @@ static void pasemi_msi_teardown_msi_irqs(struct pci_dev *pdev)
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
+ 
++		hwirq = virq_to_hw(entry->irq);
+ 		irq_set_msi_desc(entry->irq, NULL);
+-		msi_bitmap_free_hwirqs(&msi_mpic->msi_bitmap,
+-				       virq_to_hw(entry->irq), ALLOC_CHUNK);
+ 		irq_dispose_mapping(entry->irq);
++		msi_bitmap_free_hwirqs(&msi_mpic->msi_bitmap, hwirq, ALLOC_CHUNK);
+ 	}
+ 
+ 	return;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 9b2480b..f2dd772 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -99,6 +99,7 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+ 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+ 	struct pnv_phb *phb = hose->private_data;
+ 	struct msi_desc *entry;
++	irq_hw_number_t hwirq;
+ 
+ 	if (WARN_ON(!phb))
+ 		return;
+@@ -106,10 +107,10 @@ void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+ 	for_each_pci_msi_entry(entry, pdev) {
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
++		hwirq = virq_to_hw(entry->irq);
+ 		irq_set_msi_desc(entry->irq, NULL);
+-		msi_bitmap_free_hwirqs(&phb->msi_bmp,
+-			virq_to_hw(entry->irq) - phb->msi_base, 1);
+ 		irq_dispose_mapping(entry->irq);
++		msi_bitmap_free_hwirqs(&phb->msi_bmp, hwirq - phb->msi_base, 1);
+ 	}
+ }
+ #endif /* CONFIG_PCI_MSI */
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 5916da1..48a576a 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -128,15 +128,16 @@ static void fsl_teardown_msi_irqs(struct pci_dev *pdev)
+ {
+ 	struct msi_desc *entry;
+ 	struct fsl_msi *msi_data;
++	irq_hw_number_t hwirq;
+ 
+ 	for_each_pci_msi_entry(entry, pdev) {
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
++		hwirq = virq_to_hw(entry->irq);
+ 		msi_data = irq_get_chip_data(entry->irq);
+ 		irq_set_msi_desc(entry->irq, NULL);
+-		msi_bitmap_free_hwirqs(&msi_data->bitmap,
+-				       virq_to_hw(entry->irq), 1);
+ 		irq_dispose_mapping(entry->irq);
++		msi_bitmap_free_hwirqs(&msi_data->bitmap, hwirq, 1);
+ 	}
+ 
+ 	return;
+diff --git a/arch/powerpc/sysdev/mpic_u3msi.c b/arch/powerpc/sysdev/mpic_u3msi.c
+index 70fbd56..2cbc7e2 100644
+--- a/arch/powerpc/sysdev/mpic_u3msi.c
++++ b/arch/powerpc/sysdev/mpic_u3msi.c
+@@ -107,15 +107,16 @@ static u64 find_u4_magic_addr(struct pci_dev *pdev, unsigned int hwirq)
+ static void u3msi_teardown_msi_irqs(struct pci_dev *pdev)
+ {
+ 	struct msi_desc *entry;
++	irq_hw_number_t hwirq;
+ 
+ 	for_each_pci_msi_entry(entry, pdev) {
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
+ 
++		hwirq = virq_to_hw(entry->irq);
+ 		irq_set_msi_desc(entry->irq, NULL);
+-		msi_bitmap_free_hwirqs(&msi_mpic->msi_bitmap,
+-				       virq_to_hw(entry->irq), 1);
+ 		irq_dispose_mapping(entry->irq);
++		msi_bitmap_free_hwirqs(&msi_mpic->msi_bitmap, hwirq, 1);
+ 	}
+ 
+ 	return;
+diff --git a/arch/powerpc/sysdev/ppc4xx_msi.c b/arch/powerpc/sysdev/ppc4xx_msi.c
+index 24d0470..8fb8061 100644
+--- a/arch/powerpc/sysdev/ppc4xx_msi.c
++++ b/arch/powerpc/sysdev/ppc4xx_msi.c
+@@ -124,16 +124,17 @@ void ppc4xx_teardown_msi_irqs(struct pci_dev *dev)
+ {
+ 	struct msi_desc *entry;
+ 	struct ppc4xx_msi *msi_data = &ppc4xx_msi;
++	irq_hw_number_t hwirq;
+ 
+ 	dev_dbg(&dev->dev, "PCIE-MSI: tearing down msi irqs\n");
+ 
+ 	for_each_pci_msi_entry(entry, dev) {
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
++		hwirq = virq_to_hw(entry->irq);
+ 		irq_set_msi_desc(entry->irq, NULL);
+-		msi_bitmap_free_hwirqs(&msi_data->bitmap,
+-				virq_to_hw(entry->irq), 1);
+ 		irq_dispose_mapping(entry->irq);
++		msi_bitmap_free_hwirqs(&msi_data->bitmap, hwirq, 1);
+ 	}
+ }
+ 
+-- 
+2.5.1
