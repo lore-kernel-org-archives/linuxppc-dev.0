@@ -1,26 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2298F1A0795
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 10:52:40 +1000 (AEST)
-Message-ID: <1441846359.31931.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: define empty enable_kernel_vsx() when
- CONFIG_VSX=n
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tim Gardner <tim.gardner@canonical.com>
-Cc: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>,  Leonidas Da Silva Barbosa
- <leosilva@linux.vnet.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>
-Date: Thu, 10 Sep 2015 10:52:39 +1000
-In-Reply-To: <55F034A6.9010905@canonical.com>
-References: <1441735991-29199-1-git-send-email-tim.gardner@canonical.com>
- <20150908224735.GA12791@fergus.ozlabs.ibm.com>
- <55EF6D17.6050809@canonical.com> <1441764830.7854.4.camel@ellerman.id.au>
- <55F034A6.9010905@canonical.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 984211A0796
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 12:03:18 +1000 (AEST)
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Jin Jason
+ <Jason.Jin@freescale.com>, Zhao C.H. <chenhui.zhao@freescale.com>, "Yuantian
+ Tang" <Yuantian.Tang@freescale.com>, Huan Wang <alison.wang@freescale.com>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH 1/2] fsl: Add binding for RCPM
+Date: Thu, 10 Sep 2015 02:03:09 +0000
+Message-ID: <SN1PR0301MB16165F9EE9B7CE08A3BA68299D510@SN1PR0301MB1616.namprd03.prod.outlook.com>
+References: <1441780967-30879-1-git-send-email-dongsheng.wang@freescale.com>
+ <1441828599.29081.36.camel@freescale.com>
+In-Reply-To: <1441828599.29081.36.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-09 at 07:31 -0600, Tim Gardner wrote:
-> On 09/08/2015 08:13 PM, Michael Ellerman wrote:
-> > On Tue, 2015-09-08 at 17:19 -0600, Tim Gardner wrote:
-> >> On 09/08/2015 04:47 PM, Paul Mackerras wrote:
-> >>> On Tue, Sep 08, 2015 at 12:13:11PM -0600, tim.gardner@canonical.com wrote:
-> >>>> From: Tim Gardner <tim.gardner@canonical.com>
-> >>>>
-> >>>> commit 72cd7b44bc99 ("powerpc: Uncomment and make enable_kernel_vsx()
-> >>>> routine available") neglected to define an empty inline replacement for
-> >>>> enable_kernel_vsx() when CONFIG_VSX=n.
-> >>>
-> >>> If code that wants to call enable_kernel_vsx() is getting compiled in
-> >>> when CONFIG_VSX=n, that's a worry.  Is this patch motivated by an
-> >>> actual compile failure?  If so what was the failure?
-> >>
-> >> I was having link failures after backporting 'crypto: nx' patches to a
-> >> 4.2 based kernel. You may have a point in that the upstream Kconfig will
-> >> not allow those files to be compiled if CONFIG_VSX=n. I will check in my
-> >> morning if to see if I can reproduce the same link error in mainline.
-> >
-> > I suspect the problem is the "vmx" crypto actually.
-> >
-> > $ git grep enable_kernel_vsx drivers/
-> > drivers/crypto/vmx/aes.c:       enable_kernel_vsx();
-> > drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
-> > drivers/crypto/vmx/aes.c:               enable_kernel_vsx();
-> > drivers/crypto/vmx/aes_cbc.c:   enable_kernel_vsx();
-> > drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
-> > drivers/crypto/vmx/aes_cbc.c:           enable_kernel_vsx();
-> > drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
-> > drivers/crypto/vmx/aes_ctr.c:   enable_kernel_vsx();
-> > drivers/crypto/vmx/aes_ctr.c:                   enable_kernel_vsx();
-> > drivers/crypto/vmx/ghash.c:     enable_kernel_vsx();
-> > drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-> > drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-> > drivers/crypto/vmx/ghash.c:                     enable_kernel_vsx();
-> >
-> >
-> > That appears to all be controlled by CONFIG_CRYPTO_DEV_VMX_ENCRYPT, which
-> > depends on CONFIG_CRYPTO_DEV_VMX, which depends on PPC64.
-> >
-> > So that looks like it will break terribly if VSX is turned off.
-> >
-> > We do have an automated test build with VSX turned off, but it doesn't have
-> > CONFIG_CRYPTO_DEV_VMX enabled :/
-> >
-> >
-> > Having said all that, why are you building a ppc64 kernel with VSX turned off?
-> 
-> I'm pretty sure my problem is that I'm building a 32bit powerpc with 
-> CONFIG_CRYPTO_DEV_VMX_ENCRYPT=y, though it is hard to tell for sure with 
-> the interleaved build output from 4 parallel builds (powerpc-smp 
-> powerpc64-smp powerpc-e500mc powerpc64-emb). 
-
-OK. It shouldn't be possible to have CONFIG_CRYPTO_DEV_VMX_ENCRYPT=y for a
-32-bit kernel.
-
-I didn't know you guys were building a powerpc64-emb kernel, which by the looks
-is ~= CONFIG_PPC_BOOK3E_64.
-
-I'm fairly certain that will be the problem, as it's a 64-bit kernel, but does
-not have VSX.
-
-> Your proposed patch ("[PATCH v2] crypto: vmx - VMX crypto should depend on
-> CONFIG_VSX") fixes my problems (and makes more sense then my patch), so I
-> suddenly don't care as much.
-
-OK great. Sorry for the screw up, I'll try and keep a better eye on what's
-going in via the crypto tree in future.
-
-cheers
+SGkgU2NvdHQsDQoNClRoYW5rcyBmb3IgeW91ciByZXZpZXcuDQoNCj4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogVGh1cnNkYXks
+IFNlcHRlbWJlciAxMCwgMjAxNSAzOjU3IEFNDQo+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQN
+Cj4gQ2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZzsgSmluIFpoZW5neGlvbmctDQo+IFI2NDE4ODsgWmhhbyBDaGVuaHVpLUIzNTMzNjsg
+VGFuZyBZdWFudGlhbi1CMjk5ODM7IFdhbmcgSHVhbi1CMTg5NjU7DQo+IHJvYmgrZHRAa2VybmVs
+Lm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnDQo+IFN1YmplY3Q6IFJl
+OiBbUEFUQ0ggMS8yXSBmc2w6IEFkZCBiaW5kaW5nIGZvciBSQ1BNDQo+IA0KPiBPbiBXZWQsIDIw
+MTUtMDktMDkgYXQgMTQ6NDIgKzA4MDAsIERvbmdzaGVuZyBXYW5nIHdyb3RlOg0KPiA+IEZyb206
+IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4g
+UkNQTSBpcyB0aGUgUnVuIENvbnRyb2wgYW5kIFBvd2VyIE1hbmFnZW1lbnQgbW9kdWxlIHBlcmZv
+cm1zIGFsbA0KPiA+IGRldmljZS1sZXZlbCB0YXNrcyBhc3NvY2lhdGVkIHdpdGggZGV2aWNlIHJ1
+biBjb250cm9sIGFuZCBwb3dlcg0KPiA+IG1hbmFnZW1lbnQuDQo+ID4NCj4gPiBBZGQgdGhpcyBm
+b3IgZnJlZXNjYWxlIHBvd2VycGMgcGxhdGZvcm0gYW5kIGxheWVyc2NhcGUgcGxhdGZvcm0uDQo+
+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuaHVpIFpoYW8gPGNoZW5odWkuemhhb0BmcmVlc2Nh
+bGUuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFRhbmcgWXVhbnRpYW4gPFl1YW50aWFuLlRhbmdA
+ZnJlZXNjYWxlLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3No
+ZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvc29jL2ZzbC9yY3BtLnR4dA0KPiA+IGIvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcmNwbS50eHQNCj4gPiBuZXcgZmlsZSBt
+b2RlIDEwMDY0NA0KPiA+IGluZGV4IDAwMDAwMDAuLjI4NDA3MGMNCj4gPiAtLS0gL2Rldi9udWxs
+DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcmNw
+bS50eHQNCj4gPiBAQCAtMCwwICsxLDY0IEBADQo+ID4gKyogUnVuIENvbnRyb2wgYW5kIFBvd2Vy
+IE1hbmFnZW1lbnQNCj4gPiArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLQ0KPiA+ICtUaGUgUkNQTSBwZXJmb3JtcyBhbGwgZGV2aWNlLWxldmVsIHRhc2tzIGFzc29j
+aWF0ZWQgd2l0aCBkZXZpY2UgcnVuIGNvbnRyb2wNCj4gPiArYW5kIHBvd2VyIG1hbmFnZW1lbnQu
+DQo+ID4gKw0KPiA+ICtSZXF1aXJlZCBwcm9wZXJpdGVzOg0KPiA+ICsgIC0gcmVnIDogT2Zmc2V0
+IGFuZCBsZW5ndGggb2YgdGhlIHJlZ2lzdGVyIHNldCBvZiBSQ1BNIGJsb2NrLg0KPiA+ICsgIC0g
+Y29tcGF0aWJsZSA6IFNvdWxkIGNvbnRhaW4gYSBjaGlwLXNwZWNpZmljIFJDUE0gYmxvY2sgY29t
+cGF0aWJsZSBzdHJpbmcNCj4gPiArICAgICBhbmQgKGlmIGFwcGxpY2FibGUpIG1heSBjb250YWlu
+IGEgY2hhc3Npcy12ZXJzaW9uIFJDUE0gY29tcGF0aWJsZSBzdHJpbmcuDQo+ID4gKyAgICAgQ2hp
+cC1zcGVjaWZpYyBzdHJpbmdzIGFyZSBvZiB0aGUgZm9ybSAiZnNsLDxjaGlwPi1yY3BtIiwgc3Vj
+aCBhczoNCj4gPiArICAgICAqICJmc2wscDIwNDEtcmNwbSINCj4gPiArICAgICAqICJmc2wscDMw
+NDEtcmNwbSINCj4gPiArICAgICAqICJmc2wscDQwODAtcmNwbSINCj4gPiArICAgICAqICJmc2ws
+cDUwMjAtcmNwbSINCj4gPiArICAgICAqICJmc2wscDUwNDAtcmNwbSINCj4gPiArICAgICAqICJm
+c2wsdDQyNDAtcmNwbSINCj4gPiArICAgICAqICJmc2wsYjQ0MjAtcmNwbSINCj4gPiArICAgICAq
+ICJmc2wsYjQ4NjAtcmNwbSINCj4gPiArDQo+ID4gKyAgICAgQ2hhc3Npcy12ZXJzaW9uIHN0cmlu
+Z3MgYXJlIG9mIHRoZSBmb3JtICJmc2wscW9yaXEtcmNwbS08dmVyc2lvbj4iLA0KPiA+ICsgICAg
+IHN1Y2ggYXM6DQo+ID4gKyAgICAgKiAiZnNsLHFvcmlxLXJjcG0tMS4wIjogZm9yIGNoYXNzaXMg
+MS4wIHJjcG0NCj4gPiArICAgICAqICJmc2wscW9yaXEtcmNwbS0yLjAiOiBmb3IgY2hhc3NpcyAy
+LjAgcmNwbQ0KPiA+ICsgICAgICogImZzbCxxb3JpcS1yY3BtLTIuMSI6IGZvciBjaGFzc2lzIDIu
+MSByY3BtDQo+ID4gKw0KPiA+ICtBbGwgcmVmZXJlbmNlcyB0byAiMS4wIiBhbmQgIjIuMCIgcmVm
+ZXIgdG8gdGhlIFFvcklRIGNoYXNzaXMgdmVyc2lvbiB0bw0KPiA+ICt3aGljaCB0aGUgY2hpcCBj
+b21wbGllcy4NCj4gPiArQ2hhc3NpcyBWZXJzaW9uICAgICAgICAgICAgICBFeGFtcGxlIENoaXBz
+DQo+ID4gKy0tLS0tLS0tLS0tLS0tLSAgICAgICAgICAgICAgLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLQ0KPiA+ICsxLjAgICAgICAgICAgICAgICAgICAgICAgICAgIHA0MDgwLCBwNTAy
+MCwgcDUwNDAsIHAyMDQxLCBwMzA0MQ0KPiA+ICsyLjAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHQ0MjQwLCBiNDg2MCwgYjQ0MjANCj4gPiArMi4xICAgICAgICAgICAgICAgICAgICAgICAgICB0
+MTA0MCwgbHMxMDIxDQo+ID4gKw0KPiA+ICtFeGFtcGxlOg0KPiA+ICtUaGUgUkNQTSBub2RlIGZv
+ciBUNDI0MDoNCj4gPiArICAgICByY3BtOiAgZ2xvYmFsLXV0aWxpdGllc0BlMjAwMHsNCj4gPiAr
+ICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLHQ0MjQwLXJjcG0iLCAiZnNsLHFvcmlxLXJj
+cG0tMi4wIjsNCj4gPiArICAgICAgICAgICAgIHJlZyA9IDwweGUyMDAwIDB4MTAwMD47DQo+ID4g
+KyAgICAgfTsNCj4gPiArDQo+ID4gK1RoZSBSQ1BNIG5vZGUgZm9yIFA0MDgwOg0KPiA+ICsgICAg
+IHJjcG06ICBnbG9iYWwtdXRpbGl0aWVzQGUyMDAwew0KPiA+ICsgICAgICAgICAgICAgY29tcGF0
+aWJsZSA9ICJmc2wscW9yaXEtcmNwbS0xLjAiOw0KPiA+ICsgICAgICAgICAgICAgcmVnID0gPDB4
+ZTIwMDAgMHgxMDAwPjsNCj4gPiArICAgICB9Ow0KPiANCj4gSSB3b3VsZCBhdm9pZCBwdXR0aW5n
+IHRoZSBwNDA4MCBleGFtcGxlIGluIHRoZSBiaW5kaW5nLCBhcyB3ZSBkb24ndCB3YW50IHRvDQo+
+IG1ha2UgaXQgbG9vayBsaWtlIGl0J3MgT0sgdG8gbGVhdmUgb3V0IHRoZSBzcGVjaWZpYyBjaGlw
+IGNvbXBhdGlibGUuDQo+IA0KDQpGaW5lLCBJIHdpbGwgYWRkIHRoZSBzcGVjaWZpYyBjaGlwIGNv
+bXBhdGlibGUgaW4gdGhpcyBleGFtcGxlLg0KY29tcGF0aWJsZSA9ICJmc2wscDQwODAtcmNwbSIs
+ICJmc2wscW9yaXEtcmNwbS0xLjAiOw0KDQo+ID4gKyogRnJlZXNjYWxlIFJDUE0gV2FrZXVwIFNv
+dXJjZSBEZXZpY2UgVHJlZSBCaW5kaW5ncw0KPiA+ICstLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gK1JlcXVpcmVkIHJjcG0td2FrZXVwIHByb3BlcnR5IHNo
+b3VsZCBiZSBhZGRlZCB0byBhIGRldmljZSBub2RlIGlmIHRoZQ0KPiA+IGRldmljZQ0KPiA+ICtj
+YW4gYmUgdXNlZCBhcyBhIHdha2V1cCBzb3VyY2UuDQo+ID4gKw0KPiA+ICsgIC0gcmNwbS13YWtl
+dXA6IHNob3VsZCBjb250YWluIGEgcG9pbnRlciB0byB0aGUgcmNwbSBub2RlIGFuZCB0aGUNCj4g
+PiArICAgICBjb3JyZXNwb25kaW5nIGJpdCBvZiBkZXZpY2UgaW4gdGhlIHJlZ2lzdGVyLg0KPiAN
+Cj4gVGhlIGNvcnJlc3BvbmRpbmcgYml0IGluICp3aGF0KiByZWdpc3Rlcj8NCj4gDQoNClJDUE1f
+SVBQREVYUENSeCByZWdpc3RlciwgSSB3aWxsIGFkZCBhIGV4cGxhaW4gdG8gdGhpcy4NCg0KUmVn
+YXJkcywNCi1Eb25nc2hlbmcNCg==
