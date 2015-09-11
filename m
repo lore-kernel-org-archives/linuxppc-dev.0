@@ -1,30 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0145.outbound.protection.outlook.com [207.46.100.145])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64DD61A2AE7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 08:09:18 +1000 (AEST)
-Message-ID: <1441922945.2909.12.camel@freescale.com>
-Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Thu, 10 Sep 2015 17:09:05 -0500
-In-Reply-To: <SN1PR0301MB1550D133A4FE7FE3DB8870D19B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
- <1441154062.4966.113.camel@freescale.com>
- <SN1PR0301MB1550873B24F8F9F4760F67049B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441816715.29081.8.camel@freescale.com>
- <SN1PR0301MB1550D133A4FE7FE3DB8870D19B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BBBE1A2AF3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 10:47:08 +1000 (AEST)
+Message-ID: <1441932427.23806.2.camel@ellerman.id.au>
+Subject: Re: [PATCH v2] crypto: vmx - VMX crypto should depend on CONFIG_VSX
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linuxppc-dev@ozlabs.org, leosilva@linux.vnet.ibm.com, Paul Mackerras
+ <paulus@samba.org>, tim.gardner@canonical.com, linux-crypto@vger.kernel.org
+Date: Fri, 11 Sep 2015 10:47:07 +1000
+In-Reply-To: <20150910092642.GA28753@gondor.apana.org.au>
+References: <1441786955-6249-1-git-send-email-mpe@ellerman.id.au>
+ <20150910092642.GA28753@gondor.apana.org.au>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,65 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-09 at 21:34 -0500, Zhao Qiang-B45475 wrote:
-> On Mon, 2015-09-10 at 12:39 -0500, Wood Scott-B07421 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, September 10, 2015 12:39 AM
-> > To: Zhao Qiang-B45475
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
-> > Yang-Leo-R58472; paulus@samba.org
-> > Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage
-> > muram
+On Thu, 2015-09-10 at 17:26 +0800, Herbert Xu wrote:
+> On Wed, Sep 09, 2015 at 06:22:35PM +1000, Michael Ellerman wrote:
+> > This code uses FP (floating point), Altivec and VSX (Vector-Scalar
+> > Extension). It can just depend on CONFIG_VSX though, because that
+> > already depends on FP and Altivec.
 > > 
-> > On Sun, 2015-09-06 at 01:37 -0500, Zhao Qiang-B45475 wrote:
-> > > On Mon, 2015-09-2 at 8:34 +0800, Wood Scott-B07421 wrote:
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Wednesday, September 02, 2015 8:34 AM
-> > > > To: Zhao Qiang-B45475
-> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
-> > > > Li Yang-Leo-R58472; paulus@samba.org
-> > > > Subject: Re: [PATCH V7 2/3] qe_common: add qe_muram_ functions to
-> > > > manage muram
-> > > > 
-> > > > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
-> > > > 
-> > > > > @@ -187,12 +190,25 @@ static inline int
-> > > > > qe_alive_during_sleep(void)  }
-> > > > > 
-> > > > >  /* we actually use cpm_muram implementation, define this for
-> > > > > convenience */ -#define qe_muram_init cpm_muram_init -#define
-> > > > > qe_muram_alloc cpm_muram_alloc -#define qe_muram_alloc_fixed
-> > > > > cpm_muram_alloc_fixed -#define qe_muram_free cpm_muram_free
-> > > > > -#define qe_muram_addr cpm_muram_addr -#define qe_muram_offset
-> > > > > cpm_muram_offset
-> > > > > +#define cpm_muram_init qe_muram_init #define cpm_muram_alloc
-> > > > > +qe_muram_alloc #define cpm_muram_alloc_fixed qe_muram_alloc_fixed
-> > > > > +#define cpm_muram_free qe_muram_free #define cpm_muram_addr
-> > > > > +qe_muram_addr #define cpm_muram_offset qe_muram_offset
-> > > > 
-> > > > Why?  This is unnecessary churn.
-> > > > 
-> > > This is necessary. QE is on both ARM and PowerPC, its code is under
-> > > public code.
-> > > But CPM is only on PowerPC and its code is under PowerPC.
-> > > So when build ARM, QE will not find cpm_muram_* function.
+> > Otherwise we get lots of link errors such as:
 > > 
-> > If you move the cpm_muram functions to drivers/soc, then ARM will find
-> > them.
-> > There is no need to rename them.
+> >   drivers/built-in.o: In function `.p8_aes_setkey':
+> >   aes.c:(.text+0x2d325c): undefined reference to `.enable_kernel_altivec'
+> >   aes.c:(.text+0x2d326c): undefined reference to `.enable_kernel_vsx'
+> > 
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > 
-> Yes, moving cpm_muram can handle this issue. However, cpm is not necessary
-> To move to public code, and a churn is simpler than moving cpm_muram.
-> Please consider my suggestion, Thank you!
+> Applied.
 
-What do you mean by "public code"?  You're already moving cpm_muram.  I'm 
-just asking that you not rename it while you do so.  If it absolutely must be 
-renamed, do it in a different patch from the one that moves the code, though I
-don't see why the rename is helpful.
+Thanks.
 
--Scott
+Is that targeted for 4.3 ?
+
+cheers
