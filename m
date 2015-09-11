@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0116.outbound.protection.outlook.com [157.56.111.116])
+ (mail-bn1bon0148.outbound.protection.outlook.com [157.56.111.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B67B1A2B09
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 12:15:14 +1000 (AEST)
-Message-ID: <1441937700.2909.44.camel@freescale.com>
-Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
- bytes-alignment to genalloc
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C95C1A2BBE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 12:24:16 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
  <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Thu, 10 Sep 2015 21:15:00 -0500
-In-Reply-To: <SN1PR0301MB15508FE927A6868049A9E74C9B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Fri, 11 Sep 2015 02:09:29 +0000
+Message-ID: <SN1PR0301MB15508FE927A6868049A9E74C9B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
  <1441153816.4966.109.camel@freescale.com>
  <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
@@ -26,8 +24,8 @@ References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
  <1441816660.29081.7.camel@freescale.com>
  <SN1PR0301MB155031D53C79CC382734FE2C9B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
  <1441922820.2909.10.camel@freescale.com>
- <SN1PR0301MB15508FE927A6868049A9E74C9B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1441922820.2909.10.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,126 +36,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-10 at 21:09 -0500, Zhao Qiang-B45475 wrote:
-> On Fri, 2015-09-11 at 06:07AM -0500, Wood Scott-B07421 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, September 11, 2015 6:07 AM
-> > To: Zhao Qiang-B45475
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
-> > Yang-Leo-R58472; paulus@samba.org
-> > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
-> > bytes-alignment to genalloc
-> > 
-> > On Wed, 2015-09-09 at 21:26 -0500, Zhao Qiang-B45475 wrote:
-> > > On Wed, 2015-09-10 at 12:38AM -0500, Wood Scott-B07421 wrote:
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Thursday, September 10, 2015 12:38 AM
-> > > > To: Zhao Qiang-B45475
-> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
-> > > > Li Yang-Leo-R58472; paulus@samba.org
-> > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
-> > > > bytes-alignment to genalloc
-> > > > 
-> > > > On Sat, 2015-09-05 at 22:13 -0500, Zhao Qiang-B45475 wrote:
-> > > > > On Wed, 2015-09-02 at 10:18AM +0800, Wood Scott-B07421 wrote:
-> > > > > > -----Original Message-----
-> > > > > > From: Wood Scott-B07421
-> > > > > > Sent: Wednesday, September 02, 2015 10:18 AM
-> > > > > > To: Zhao Qiang-B45475
-> > > > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > > > > > lauraa@codeaurora.org; Xie Xiaobo-R63061;
-> > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472; paulus@samba.org
-> > > > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation
-> > > > > > with bytes-alignment to genalloc
-> > > > > > 
-> > > > > > On Tue, 2015-09-01 at 21:10 -0500, Zhao Qiang-B45475 wrote:
-> > > > > > > On Wed, 2015-09-02 at 08:38AM +0800, Wood Scott-B07421 wrote:
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: Wood Scott-B07421
-> > > > > > > > Sent: Wednesday, September 02, 2015 8:30 AM
-> > > > > > > > To: Zhao Qiang-B45475
-> > > > > > > > Cc: linux-kernel@vger.kernel.org;
-> > > > > > > > linuxppc-dev@lists.ozlabs.org; lauraa@codeaurora.org; Xie
-> > > > > > > > Xiaobo-R63061; benh@kernel.crashing.org; Li Yang-Leo-R58472;
-> > > > > > > > paulus@samba.org
-> > > > > > > > Subject: Re: [PATCH V7 1/3] genalloc:support
-> > > > > > > > memory-allocation with bytes-alignment to genalloc
-> > > > > > > > 
-> > > > > > > > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
-> > > > > > > > > Bytes alignment is required to manage some special RAM, so
-> > > > > > > > > add gen_pool_first_fit_align to genalloc, meanwhile add
-> > > > > > > > > gen_pool_alloc_data to pass data to
-> > > > > > > > > gen_pool_first_fit_align(modify gen_pool_alloc as a
-> > > > > > > > > wrapper)
-> > > > > > > > > 
-> > > > > > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> > > > > > > > > ---
-> > > > > > > > > Changes for v6:
-> > > > > > > > >       - patches set v6 include a new patch because of using
-> > > > > > > > >       - genalloc to manage QE MURAM, patch 0001 is the new
-> > > > > > > > >       - patch, adding bytes alignment for allocation for
-> > use.
-> > > > > > > > > Changes for v7:
-> > > > > > > > >       - cpm muram also need to use genalloc to manage, it
-> > has
-> > > > > > > > >         a function to reserve a specific region of muram,
-> > > > > > > > >         add offset to genpool_data for start addr to be
-> > > > allocated.
-> > > > > > > > 
-> > > > > > > > This seems to be describing more than just the changes in
-> > > > > > > > this
-> > > > patch.
-> > > > > > > > What does also handling cpm have to do with this patch?  Are
-> > > > > > > > you adding support for reserving a specific region in this
-> > > > > > > > patch?  I don't see it, and in any case it should go in a
-> > different patch.
-> > > > > > > 
-> > > > > > > Yes, I added. The code below can support the function.
-> > > > > > >       offset_bit = (alignment->offset + (1UL << order) - 1) >>
-> > > > order;
-> > > > > > >       return bitmap_find_next_zero_area(map, size, start +
-> > > > > > > offset_bit,
-> > > > > > nr,
-> > > > > > >                         align_mask);
-> > > > > > > 
-> > > > > > > CPM has an function cpm_muram_alloc_fixed, needing to allocate
-> > > > > > > muram from a Specific offset. So I add the code and add offset
-> > > > > > > to
-> > > > struct data.
-> > > > > > 
-> > > > > > I thought the offset was related to the previous discussion of
-> > > > > > checking for allocation failure.  Are you using it to implement
-> > > > > > alloc_fixed()?  If so, please don't.  Besides the awkward
-> > > > > > implementation (what does it logically have to do with
-> > > > > > gen_pool_first_fit_align?), it does not appear to be correct -
-> > > > > > - what happens with multiple chunks?  What happens if part of
-> > > > > > the region the caller is trying to reserve is already taken?
-> > > > > > Implement a proper function to reserve a fixed genalloc region.
-> > > > > > 
-> > > > > The offset is which allocation block address need to be larger
-> > > > > than, Not equal to, it really like the parameter start of the
-> > > > > algo(the bitnumber To start searching at).
-> > > > 
-> > > > cpm_muram_alloc_fixed() is not "search starting at this offset".  It
-> > > > is "reserve this exact range or fail".
-> > > 
-> > > Yes, you are right! How about to add a new algo into genalloc to
-> > > search At offset, then handle it in muram layer, if the address return
-> > > from genalloc Is not equal to offset, return negative number?
-> > 
-> > If you're adding a new algorithm, why not make it actually do what you
-> > want rather than adding something different and fixing it up in the
-> > caller?
-> 
-> Because I'm not sure whether it is proper to add a "offset searching at" 
-> algo. 
-
-Again, "offset searching at" is not what we want anyway.  What we want is 
-"allocate this range or fail".  Why would it be improper to have such an 
-algorithm?
-
--Scott
+T24gRnJpLCAyMDE1LTA5LTExIGF0IDA2OjA3QU0gLTA1MDAsIFdvb2QgU2NvdHQtQjA3NDIxIHdy
+b3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIw
+NzQyMQ0KPiBTZW50OiBGcmlkYXksIFNlcHRlbWJlciAxMSwgMjAxNSA2OjA3IEFNDQo+IFRvOiBa
+aGFvIFFpYW5nLUI0NTQ3NQ0KPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsgWGll
+IFhpYW9iby1SNjMwNjE7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkNCj4gWWFuZy1MZW8t
+UjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMS8zXSBn
+ZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uIHdpdGgNCj4gYnl0ZXMtYWxpZ25tZW50
+IHRvIGdlbmFsbG9jDQo+IA0KPiBPbiBXZWQsIDIwMTUtMDktMDkgYXQgMjE6MjYgLTA1MDAsIFpo
+YW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+IE9uIFdlZCwgMjAxNS0wOS0xMCBhdCAxMjozOEFN
+IC0wNTAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVz
+c2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVGh1
+cnNkYXksIFNlcHRlbWJlciAxMCwgMjAxNSAxMjozOCBBTQ0KPiA+ID4gVG86IFpoYW8gUWlhbmct
+QjQ1NDc1DQo+ID4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBY
+aWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7DQo+ID4gPiBMaSBZYW5nLUxl
+by1SNTg0NzI7IHBhdWx1c0BzYW1iYS5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcg
+MS8zXSBnZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uIHdpdGgNCj4gPiA+IGJ5dGVz
+LWFsaWdubWVudCB0byBnZW5hbGxvYw0KPiA+ID4NCj4gPiA+IE9uIFNhdCwgMjAxNS0wOS0wNSBh
+dCAyMjoxMyAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3JvdGU6DQo+ID4gPiA+IE9uIFdlZCwg
+MjAxNS0wOS0wMiBhdCAxMDoxOEFNICswODAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90ZToNCj4g
+PiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IFdvb2Qg
+U2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMDIsIDIw
+MTUgMTA6MTggQU0NCj4gPiA+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gPiA+ID4gPiBD
+YzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmc7DQo+ID4gPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2
+MTsNCj4gPiA+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctTGVvLVI1ODQ3
+MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMS8z
+XSBnZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uDQo+ID4gPiA+ID4gd2l0aCBieXRl
+cy1hbGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIFR1ZSwgMjAx
+NS0wOS0wMSBhdCAyMToxMCAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3JvdGU6DQo+ID4gPiA+
+ID4gPiBPbiBXZWQsIDIwMTUtMDktMDIgYXQgMDg6MzhBTSArMDgwMCwgV29vZCBTY290dC1CMDc0
+MjEgd3JvdGU6DQo+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4g
+PiA+ID4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gPiA+IFNlbnQ6IFdl
+ZG5lc2RheSwgU2VwdGVtYmVyIDAyLCAyMDE1IDg6MzAgQU0NCj4gPiA+ID4gPiA+ID4gVG86IFpo
+YW8gUWlhbmctQjQ1NDc1DQo+ID4gPiA+ID4gPiA+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJu
+ZWwub3JnOw0KPiA+ID4gPiA+ID4gPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGF1
+cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUNCj4gPiA+ID4gPiA+ID4gWGlhb2JvLVI2MzA2MTsgYmVu
+aEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBMaSBZYW5nLUxlby1SNTg0NzI7DQo+ID4gPiA+ID4gPiA+
+IHBhdWx1c0BzYW1iYS5vcmcNCj4gPiA+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCBWNyAx
+LzNdIGdlbmFsbG9jOnN1cHBvcnQNCj4gPiA+ID4gPiA+ID4gbWVtb3J5LWFsbG9jYXRpb24gd2l0
+aCBieXRlcy1hbGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+
+ID4gT24gTW9uLCAyMDE1LTA4LTMxIGF0IDE2OjU4ICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0K
+PiA+ID4gPiA+ID4gPiA+IEJ5dGVzIGFsaWdubWVudCBpcyByZXF1aXJlZCB0byBtYW5hZ2Ugc29t
+ZSBzcGVjaWFsIFJBTSwgc28NCj4gPiA+ID4gPiA+ID4gPiBhZGQgZ2VuX3Bvb2xfZmlyc3RfZml0
+X2FsaWduIHRvIGdlbmFsbG9jLCBtZWFud2hpbGUgYWRkDQo+ID4gPiA+ID4gPiA+ID4gZ2VuX3Bv
+b2xfYWxsb2NfZGF0YSB0byBwYXNzIGRhdGEgdG8NCj4gPiA+ID4gPiA+ID4gPiBnZW5fcG9vbF9m
+aXJzdF9maXRfYWxpZ24obW9kaWZ5IGdlbl9wb29sX2FsbG9jIGFzIGENCj4gPiA+ID4gPiA+ID4g
+PiB3cmFwcGVyKQ0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1i
+eTogWmhhbyBRaWFuZyA8cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+ID4gPiA+
+IC0tLQ0KPiA+ID4gPiA+ID4gPiA+IENoYW5nZXMgZm9yIHY2Og0KPiA+ID4gPiA+ID4gPiA+ICAg
+ICAgIC0gcGF0Y2hlcyBzZXQgdjYgaW5jbHVkZSBhIG5ldyBwYXRjaCBiZWNhdXNlIG9mIHVzaW5n
+DQo+ID4gPiA+ID4gPiA+ID4gICAgICAgLSBnZW5hbGxvYyB0byBtYW5hZ2UgUUUgTVVSQU0sIHBh
+dGNoIDAwMDEgaXMgdGhlIG5ldw0KPiA+ID4gPiA+ID4gPiA+ICAgICAgIC0gcGF0Y2gsIGFkZGlu
+ZyBieXRlcyBhbGlnbm1lbnQgZm9yIGFsbG9jYXRpb24gZm9yDQo+IHVzZS4NCj4gPiA+ID4gPiA+
+ID4gPiBDaGFuZ2VzIGZvciB2NzoNCj4gPiA+ID4gPiA+ID4gPiAgICAgICAtIGNwbSBtdXJhbSBh
+bHNvIG5lZWQgdG8gdXNlIGdlbmFsbG9jIHRvIG1hbmFnZSwgaXQNCj4gaGFzDQo+ID4gPiA+ID4g
+PiA+ID4gICAgICAgICBhIGZ1bmN0aW9uIHRvIHJlc2VydmUgYSBzcGVjaWZpYyByZWdpb24gb2Yg
+bXVyYW0sDQo+ID4gPiA+ID4gPiA+ID4gICAgICAgICBhZGQgb2Zmc2V0IHRvIGdlbnBvb2xfZGF0
+YSBmb3Igc3RhcnQgYWRkciB0byBiZQ0KPiA+ID4gYWxsb2NhdGVkLg0KPiA+ID4gPiA+ID4gPg0K
+PiA+ID4gPiA+ID4gPiBUaGlzIHNlZW1zIHRvIGJlIGRlc2NyaWJpbmcgbW9yZSB0aGFuIGp1c3Qg
+dGhlIGNoYW5nZXMgaW4NCj4gPiA+ID4gPiA+ID4gdGhpcw0KPiA+ID4gcGF0Y2guDQo+ID4gPiA+
+ID4gPiA+IFdoYXQgZG9lcyBhbHNvIGhhbmRsaW5nIGNwbSBoYXZlIHRvIGRvIHdpdGggdGhpcyBw
+YXRjaD8gIEFyZQ0KPiA+ID4gPiA+ID4gPiB5b3UgYWRkaW5nIHN1cHBvcnQgZm9yIHJlc2Vydmlu
+ZyBhIHNwZWNpZmljIHJlZ2lvbiBpbiB0aGlzDQo+ID4gPiA+ID4gPiA+IHBhdGNoPyAgSSBkb24n
+dCBzZWUgaXQsIGFuZCBpbiBhbnkgY2FzZSBpdCBzaG91bGQgZ28gaW4gYQ0KPiBkaWZmZXJlbnQg
+cGF0Y2guDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gWWVzLCBJIGFkZGVkLiBUaGUgY29kZSBi
+ZWxvdyBjYW4gc3VwcG9ydCB0aGUgZnVuY3Rpb24uDQo+ID4gPiA+ID4gPiAgICAgICBvZmZzZXRf
+Yml0ID0gKGFsaWdubWVudC0+b2Zmc2V0ICsgKDFVTCA8PCBvcmRlcikgLSAxKSA+Pg0KPiA+ID4g
+b3JkZXI7DQo+ID4gPiA+ID4gPiAgICAgICByZXR1cm4gYml0bWFwX2ZpbmRfbmV4dF96ZXJvX2Fy
+ZWEobWFwLCBzaXplLCBzdGFydCArDQo+ID4gPiA+ID4gPiBvZmZzZXRfYml0LA0KPiA+ID4gPiA+
+IG5yLA0KPiA+ID4gPiA+ID4gICAgICAgICAgICAgICAgICAgICAgICAgYWxpZ25fbWFzayk7DQo+
+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gQ1BNIGhhcyBhbiBmdW5jdGlvbiBjcG1fbXVyYW1fYWxs
+b2NfZml4ZWQsIG5lZWRpbmcgdG8gYWxsb2NhdGUNCj4gPiA+ID4gPiA+IG11cmFtIGZyb20gYSBT
+cGVjaWZpYyBvZmZzZXQuIFNvIEkgYWRkIHRoZSBjb2RlIGFuZCBhZGQgb2Zmc2V0DQo+ID4gPiA+
+ID4gPiB0bw0KPiA+ID4gc3RydWN0IGRhdGEuDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBJIHRob3Vn
+aHQgdGhlIG9mZnNldCB3YXMgcmVsYXRlZCB0byB0aGUgcHJldmlvdXMgZGlzY3Vzc2lvbiBvZg0K
+PiA+ID4gPiA+IGNoZWNraW5nIGZvciBhbGxvY2F0aW9uIGZhaWx1cmUuICBBcmUgeW91IHVzaW5n
+IGl0IHRvIGltcGxlbWVudA0KPiA+ID4gPiA+IGFsbG9jX2ZpeGVkKCk/ICBJZiBzbywgcGxlYXNl
+IGRvbid0LiAgQmVzaWRlcyB0aGUgYXdrd2FyZA0KPiA+ID4gPiA+IGltcGxlbWVudGF0aW9uICh3
+aGF0IGRvZXMgaXQgbG9naWNhbGx5IGhhdmUgdG8gZG8gd2l0aA0KPiA+ID4gPiA+IGdlbl9wb29s
+X2ZpcnN0X2ZpdF9hbGlnbj8pLCBpdCBkb2VzIG5vdCBhcHBlYXIgdG8gYmUgY29ycmVjdCAtDQo+
+ID4gPiA+ID4gLSB3aGF0IGhhcHBlbnMgd2l0aCBtdWx0aXBsZSBjaHVua3M/ICBXaGF0IGhhcHBl
+bnMgaWYgcGFydCBvZg0KPiA+ID4gPiA+IHRoZSByZWdpb24gdGhlIGNhbGxlciBpcyB0cnlpbmcg
+dG8gcmVzZXJ2ZSBpcyBhbHJlYWR5IHRha2VuPw0KPiA+ID4gPiA+IEltcGxlbWVudCBhIHByb3Bl
+ciBmdW5jdGlvbiB0byByZXNlcnZlIGEgZml4ZWQgZ2VuYWxsb2MgcmVnaW9uLg0KPiA+ID4gPiA+
+DQo+ID4gPiA+IFRoZSBvZmZzZXQgaXMgd2hpY2ggYWxsb2NhdGlvbiBibG9jayBhZGRyZXNzIG5l
+ZWQgdG8gYmUgbGFyZ2VyDQo+ID4gPiA+IHRoYW4sIE5vdCBlcXVhbCB0bywgaXQgcmVhbGx5IGxp
+a2UgdGhlIHBhcmFtZXRlciBzdGFydCBvZiB0aGUNCj4gPiA+ID4gYWxnbyh0aGUgYml0bnVtYmVy
+IFRvIHN0YXJ0IHNlYXJjaGluZyBhdCkuDQo+ID4gPg0KPiA+ID4gY3BtX211cmFtX2FsbG9jX2Zp
+eGVkKCkgaXMgbm90ICJzZWFyY2ggc3RhcnRpbmcgYXQgdGhpcyBvZmZzZXQiLiAgSXQNCj4gPiA+
+IGlzICJyZXNlcnZlIHRoaXMgZXhhY3QgcmFuZ2Ugb3IgZmFpbCIuDQo+ID4NCj4gPiBZZXMsIHlv
+dSBhcmUgcmlnaHQhIEhvdyBhYm91dCB0byBhZGQgYSBuZXcgYWxnbyBpbnRvIGdlbmFsbG9jIHRv
+DQo+ID4gc2VhcmNoIEF0IG9mZnNldCwgdGhlbiBoYW5kbGUgaXQgaW4gbXVyYW0gbGF5ZXIsIGlm
+IHRoZSBhZGRyZXNzIHJldHVybg0KPiA+IGZyb20gZ2VuYWxsb2MgSXMgbm90IGVxdWFsIHRvIG9m
+ZnNldCwgcmV0dXJuIG5lZ2F0aXZlIG51bWJlcj8NCj4gDQo+IElmIHlvdSdyZSBhZGRpbmcgYSBu
+ZXcgYWxnb3JpdGhtLCB3aHkgbm90IG1ha2UgaXQgYWN0dWFsbHkgZG8gd2hhdCB5b3UNCj4gd2Fu
+dCByYXRoZXIgdGhhbiBhZGRpbmcgc29tZXRoaW5nIGRpZmZlcmVudCBhbmQgZml4aW5nIGl0IHVw
+IGluIHRoZQ0KPiBjYWxsZXI/DQoNCkJlY2F1c2UgSSdtIG5vdCBzdXJlIHdoZXRoZXIgaXQgaXMg
+cHJvcGVyIHRvIGFkZCBhICJvZmZzZXQgc2VhcmNoaW5nIGF0IiBhbGdvLiANCg0KPiANCj4gLVNj
+b3R0DQoNCg==
