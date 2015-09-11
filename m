@@ -1,28 +1,28 @@
-Return-Path: <afleming@gmail.com>
-Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
- [IPv6:2607:f8b0:4001:c06::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0110.outbound.protection.outlook.com [207.46.100.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43C441A0066
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 12:39:00 +1000 (AEST)
-Received: by iofh134 with SMTP id h134so83652855iof.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 19:38:58 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1441937624.2909.42.camel@freescale.com>
-References: <1441175814-14940-1-git-send-email-afleming@gmail.com>
- <1441217278-21618-1-git-send-email-afleming@gmail.com>
- <CAKWjMd45zYZefWWxsdOO2BE2CYOTpdbXzXz6caN9Sr8XUF6PgA@mail.gmail.com>
- <1441936384.2909.29.camel@freescale.com>
- <CAKWjMd4YqAA1f0QzGxT1Hr+e_ceft2RHEUH649R5cfZ293t4eQ@mail.gmail.com>
- <1441937624.2909.42.camel@freescale.com>
-Date: Thu, 10 Sep 2015 21:38:57 -0500
-Message-ID: <CAKWjMd6ddeefYr7nkYTr=ePA1i_jmSQF4m+M7F7SfBsSHQ8H3A@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc/85xx: Add support for Varisys Cyrus board
-From: Andy Fleming <afleming@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E7861A0790
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 13:19:24 +1000 (AEST)
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Kumar Gala <galak@kernel.crashing.org>, Alex Perez <aperez@alexperez.com>
-Content-Type: text/plain; charset=UTF-8
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Jin Jason
+ <Jason.Jin@freescale.com>, Zhao C.H. <chenhui.zhao@freescale.com>, "Yuantian
+ Tang" <Yuantian.Tang@freescale.com>, Huan Wang <alison.wang@freescale.com>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH 1/2] fsl: Add binding for RCPM
+Date: Fri, 11 Sep 2015 03:19:14 +0000
+Message-ID: <SN1PR0301MB1616D50C94CADBFC6DE626509D500@SN1PR0301MB1616.namprd03.prod.outlook.com>
+References: <1441780967-30879-1-git-send-email-dongsheng.wang@freescale.com>
+ <1441828599.29081.36.camel@freescale.com>
+ <SN1PR0301MB16165F9EE9B7CE08A3BA68299D510@SN1PR0301MB1616.namprd03.prod.outlook.com>
+ <1441903615.2909.0.camel@freescale.com>
+In-Reply-To: <1441903615.2909.0.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +32,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 10, 2015 at 9:13 PM, Scott Wood <scottwood@freescale.com> wrote:
-> On Thu, 2015-09-10 at 21:06 -0500, Andy Fleming wrote:
->> On Thu, Sep 10, 2015 at 8:53 PM, Scott Wood <scottwood@freescale.com> wrote:
->> > On Thu, 2015-09-10 at 20:51 -0500, Andy Fleming wrote:
->> > > ping? I'd love if this could go in for 4.3
->> >
->> > It's way too late for 4.3.
->> >
->> > -Scott
->>
->> Argh. I was hoping that, as it's a one-line change to existing code it
->> might be able to sneak in.
->
-> It's hard to call it "sneaking in" when a new pull request chain has to be
-> created just for one patch. :-P
->
-> Non-bugfixes need to be in my pull request to Michael before the merge window
-> opens (and thus submitted long enough before that for me to have a chance to
-> do a review/apply/build-test session), not a couple days before the merge
-> window closes.  Why does it matter if this is in 4.3 versus 4.4?
->
-> -Scott
->
-
-I definitely understand. To be fair, I submitted the patch 3 days
-after the window opened (not a couple before it closes), but that is
-still after the deadline. The only issue with it going into 4.4 is
-that the support isn't in mainline till 4.3 is tagged. It just creates
-a bigger lag between the hardware availability and upstream software
-availability. Bad timing on our part, I was just hoping. :)
-
-Andy
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMTEsIDIwMTUgMTI6NDcgQU0NCj4gVG86IFdh
+bmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBKaW4gWmhlbmd4aW9uZy0NCj4gUjY0MTg4OyBa
+aGFvIENoZW5odWktQjM1MzM2OyBUYW5nIFl1YW50aWFuLUIyOTk4MzsgV2FuZyBIdWFuLUIxODk2
+NTsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVh
+ZC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIGZzbDogQWRkIGJpbmRpbmcgZm9yIFJD
+UE0NCj4gDQo+IE9uIFdlZCwgMjAxNS0wOS0wOSBhdCAyMTowMyAtMDUwMCwgV2FuZyBEb25nc2hl
+bmctQjQwNTM0IHdyb3RlOg0KPiA+IEhpIFNjb3R0LA0KPiA+DQo+ID4gVGhhbmtzIGZvciB5b3Vy
+IHJldmlldy4NCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZy
+b206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEw
+LCAyMDE1IDM6NTcgQU0NCj4gPiA+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+IENj
+OiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
+cmc7IEppbg0KPiA+ID4gWmhlbmd4aW9uZy0NCj4gPiA+IFI2NDE4ODsgWmhhbyBDaGVuaHVpLUIz
+NTMzNjsgVGFuZyBZdWFudGlhbi1CMjk5ODM7IFdhbmcgSHVhbi1CMTg5NjU7DQo+ID4gPiByb2Jo
+K2R0QGtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPiA+
+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzJdIGZzbDogQWRkIGJpbmRpbmcgZm9yIFJDUE0NCj4g
+PiA+DQo+ID4gPiBPbiBXZWQsIDIwMTUtMDktMDkgYXQgMTQ6NDIgKzA4MDAsIERvbmdzaGVuZyBX
+YW5nIHdyb3RlOg0KPiA+ID4gPiBGcm9tOiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdA
+ZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4NCj4gPiA+ID4gUkNQTSBpcyB0aGUgUnVuIENvbnRyb2wg
+YW5kIFBvd2VyIE1hbmFnZW1lbnQgbW9kdWxlIHBlcmZvcm1zIGFsbA0KPiA+ID4gPiBkZXZpY2Ut
+bGV2ZWwgdGFza3MgYXNzb2NpYXRlZCB3aXRoIGRldmljZSBydW4gY29udHJvbCBhbmQgcG93ZXIN
+Cj4gPiA+ID4gbWFuYWdlbWVudC4NCj4gPiA+ID4NCj4gPiA+ID4gQWRkIHRoaXMgZm9yIGZyZWVz
+Y2FsZSBwb3dlcnBjIHBsYXRmb3JtIGFuZCBsYXllcnNjYXBlIHBsYXRmb3JtLg0KPiA+ID4gPg0K
+PiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuaHVpIFpoYW8gPGNoZW5odWkuemhhb0BmcmVlc2Nh
+bGUuY29tPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBUYW5nIFl1YW50aWFuIDxZdWFudGlhbi5U
+YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFdhbmcgRG9uZ3NoZW5n
+IDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ID4gPg0KPiA+ID4gPiBkaWZmIC0t
+Z2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcmNwbS50eHQN
+Cj4gPiA+ID4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvc29jL2ZzbC9yY3Bt
+LnR4dA0KPiA+ID4gPiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiA+ID4gPiBpbmRleCAwMDAwMDAw
+Li4yODQwNzBjDQo+ID4gPiA+IC0tLSAvZGV2L251bGwNCj4gPiA+ID4gKysrIGIvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcmNwbS50eHQNCj4gPiA+ID4gQEAgLTAs
+MCArMSw2NCBAQA0KPiA+ID4gPiArKiBSdW4gQ29udHJvbCBhbmQgUG93ZXIgTWFuYWdlbWVudA0K
+PiA+ID4gPiArLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiA+
+ID4gPiArVGhlIFJDUE0gcGVyZm9ybXMgYWxsIGRldmljZS1sZXZlbCB0YXNrcyBhc3NvY2lhdGVk
+IHdpdGggZGV2aWNlDQo+ID4gPiA+ICtydW4NCj4gPiA+ID4gY29udHJvbA0KPiA+ID4gPiArYW5k
+IHBvd2VyIG1hbmFnZW1lbnQuDQo+ID4gPiA+ICsNCj4gPiA+ID4gK1JlcXVpcmVkIHByb3Blcml0
+ZXM6DQo+ID4gPiA+ICsgIC0gcmVnIDogT2Zmc2V0IGFuZCBsZW5ndGggb2YgdGhlIHJlZ2lzdGVy
+IHNldCBvZiBSQ1BNIGJsb2NrLg0KPiA+ID4gPiArICAtIGNvbXBhdGlibGUgOiBTb3VsZCBjb250
+YWluIGEgY2hpcC1zcGVjaWZpYyBSQ1BNIGJsb2NrDQo+ID4gPiA+ICtjb21wYXRpYmxlDQo+ID4g
+PiA+IHN0cmluZw0KPiA+ID4gPiArICAgICBhbmQgKGlmIGFwcGxpY2FibGUpIG1heSBjb250YWlu
+IGEgY2hhc3Npcy12ZXJzaW9uIFJDUE0NCj4gPiA+ID4gKyBjb21wYXRpYmxlDQo+ID4gPiA+IHN0
+cmluZy4NCj4gPiA+ID4gKyAgICAgQ2hpcC1zcGVjaWZpYyBzdHJpbmdzIGFyZSBvZiB0aGUgZm9y
+bSAiZnNsLDxjaGlwPi1yY3BtIiwgc3VjaCBhczoNCj4gPiA+ID4gKyAgICAgKiAiZnNsLHAyMDQx
+LXJjcG0iDQo+ID4gPiA+ICsgICAgICogImZzbCxwMzA0MS1yY3BtIg0KPiA+ID4gPiArICAgICAq
+ICJmc2wscDQwODAtcmNwbSINCj4gPiA+ID4gKyAgICAgKiAiZnNsLHA1MDIwLXJjcG0iDQo+ID4g
+PiA+ICsgICAgICogImZzbCxwNTA0MC1yY3BtIg0KPiA+ID4gPiArICAgICAqICJmc2wsdDQyNDAt
+cmNwbSINCj4gPiA+ID4gKyAgICAgKiAiZnNsLGI0NDIwLXJjcG0iDQo+ID4gPiA+ICsgICAgICog
+ImZzbCxiNDg2MC1yY3BtIg0KPiA+ID4gPiArDQo+ID4gPiA+ICsgICAgIENoYXNzaXMtdmVyc2lv
+biBzdHJpbmdzIGFyZSBvZiB0aGUgZm9ybSAiZnNsLHFvcmlxLXJjcG0tDQo+ID4gPiA+IDx2ZXJz
+aW9uPiIsDQo+ID4gPiA+ICsgICAgIHN1Y2ggYXM6DQo+ID4gPiA+ICsgICAgICogImZzbCxxb3Jp
+cS1yY3BtLTEuMCI6IGZvciBjaGFzc2lzIDEuMCByY3BtDQo+ID4gPiA+ICsgICAgICogImZzbCxx
+b3JpcS1yY3BtLTIuMCI6IGZvciBjaGFzc2lzIDIuMCByY3BtDQo+ID4gPiA+ICsgICAgICogImZz
+bCxxb3JpcS1yY3BtLTIuMSI6IGZvciBjaGFzc2lzIDIuMSByY3BtDQo+ID4gPiA+ICsNCj4gPiA+
+ID4gK0FsbCByZWZlcmVuY2VzIHRvICIxLjAiIGFuZCAiMi4wIiByZWZlciB0byB0aGUgUW9ySVEg
+Y2hhc3Npcw0KPiA+ID4gPiArdmVyc2lvbiB0byB3aGljaCB0aGUgY2hpcCBjb21wbGllcy4NCj4g
+PiA+ID4gK0NoYXNzaXMgVmVyc2lvbiAgICAgICAgICAgICAgRXhhbXBsZSBDaGlwcw0KPiA+ID4g
+PiArLS0tLS0tLS0tLS0tLS0tICAgICAgICAgICAgICAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tDQo+ID4gPiA+ICsxLjAgICAgICAgICAgICAgICAgICAgICAgICAgIHA0MDgwLCBwNTAy
+MCwgcDUwNDAsIHAyMDQxLCBwMzA0MQ0KPiA+ID4gPiArMi4wICAgICAgICAgICAgICAgICAgICAg
+ICAgICB0NDI0MCwgYjQ4NjAsIGI0NDIwDQo+ID4gPiA+ICsyLjEgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHQxMDQwLCBsczEwMjENCj4gPiA+ID4gKw0KPiA+ID4gPiArRXhhbXBsZToNCj4gPiA+
+ID4gK1RoZSBSQ1BNIG5vZGUgZm9yIFQ0MjQwOg0KPiA+ID4gPiArICAgICByY3BtOiAgZ2xvYmFs
+LXV0aWxpdGllc0BlMjAwMHsNCj4gPiA+ID4gKyAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZz
+bCx0NDI0MC1yY3BtIiwgImZzbCxxb3JpcS1yY3BtLTIuMCI7DQo+ID4gPiA+ICsgICAgICAgICAg
+ICAgcmVnID0gPDB4ZTIwMDAgMHgxMDAwPjsNCj4gPiA+ID4gKyAgICAgfTsNCj4gPiA+ID4gKw0K
+PiA+ID4gPiArVGhlIFJDUE0gbm9kZSBmb3IgUDQwODA6DQo+ID4gPiA+ICsgICAgIHJjcG06ICBn
+bG9iYWwtdXRpbGl0aWVzQGUyMDAwew0KPiA+ID4gPiArICAgICAgICAgICAgIGNvbXBhdGlibGUg
+PSAiZnNsLHFvcmlxLXJjcG0tMS4wIjsNCj4gPiA+ID4gKyAgICAgICAgICAgICByZWcgPSA8MHhl
+MjAwMCAweDEwMDA+Ow0KPiA+ID4gPiArICAgICB9Ow0KPiA+ID4NCj4gPiA+IEkgd291bGQgYXZv
+aWQgcHV0dGluZyB0aGUgcDQwODAgZXhhbXBsZSBpbiB0aGUgYmluZGluZywgYXMgd2UgZG9uJ3QN
+Cj4gPiA+IHdhbnQgdG8gbWFrZSBpdCBsb29rIGxpa2UgaXQncyBPSyB0byBsZWF2ZSBvdXQgdGhl
+IHNwZWNpZmljIGNoaXANCj4gPiA+IGNvbXBhdGlibGUuDQo+ID4gPg0KPiA+DQo+ID4gRmluZSwg
+SSB3aWxsIGFkZCB0aGUgc3BlY2lmaWMgY2hpcCBjb21wYXRpYmxlIGluIHRoaXMgZXhhbXBsZS4N
+Cj4gPiBjb21wYXRpYmxlID0gImZzbCxwNDA4MC1yY3BtIiwgImZzbCxxb3JpcS1yY3BtLTEuMCI7
+DQo+IA0KPiBKdXN0IGRyb3AgdGhhdCBleGFtcGxlLg0KPiANCg0KVGhhbmtzLg0KDQo+ID4gPiA+
+ICsqIEZyZWVzY2FsZSBSQ1BNIFdha2V1cCBTb3VyY2UgRGV2aWNlIFRyZWUgQmluZGluZ3MNCj4g
+PiA+ID4gKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiA+
+ID4gK1JlcXVpcmVkIHJjcG0td2FrZXVwIHByb3BlcnR5IHNob3VsZCBiZSBhZGRlZCB0byBhIGRl
+dmljZSBub2RlIGlmDQo+ID4gPiA+ICt0aGUNCj4gPiA+ID4gZGV2aWNlDQo+ID4gPiA+ICtjYW4g
+YmUgdXNlZCBhcyBhIHdha2V1cCBzb3VyY2UuDQo+ID4gPiA+ICsNCj4gPiA+ID4gKyAgLSByY3Bt
+LXdha2V1cDogc2hvdWxkIGNvbnRhaW4gYSBwb2ludGVyIHRvIHRoZSByY3BtIG5vZGUgYW5kIHRo
+ZQ0KPiA+ID4gPiArICAgICBjb3JyZXNwb25kaW5nIGJpdCBvZiBkZXZpY2UgaW4gdGhlIHJlZ2lz
+dGVyLg0KPiA+ID4NCj4gPiA+IFRoZSBjb3JyZXNwb25kaW5nIGJpdCBpbiAqd2hhdCogcmVnaXN0
+ZXI/DQo+ID4gPg0KPiA+DQo+ID4gUkNQTV9JUFBERVhQQ1J4IHJlZ2lzdGVyLCBJIHdpbGwgYWRk
+IGEgZXhwbGFpbiB0byB0aGlzLg0KPiANCj4gSG93IGRvIHlvdSBlbmNvZGUgd2hpY2ggIngiIGl0
+IGlzPw0KDQpKdXN0IG1lYW5zIElQUERFWFBDUjAgSVBQREVYUENSMS4NCg0KIiZyY3BtIElQUERF
+WFBDUjAgSVBQREVYUENSMSIgd2lsbCBleHBsYWluICJ3aGF0IHJlZ2lzdGVyIiBpbiB0aGlzIHBy
+b3BlcnR5Lg0KDQpSZWdhcmRzLA0KLURvbmdzaGVuZw0K
