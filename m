@@ -1,34 +1,28 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <afleming@gmail.com>
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5346A1A2CEA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 12:25:25 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH V7 1/3] genalloc:support memory-allocation with
- bytes-alignment to genalloc
-Date: Fri, 11 Sep 2015 02:25:17 +0000
-Message-ID: <SN1PR0301MB1550B50280B245F7CDE8BB069B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
- <1441153816.4966.109.camel@freescale.com>
- <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441160299.4966.122.camel@freescale.com>
- <SN1PR0301MB1550C782E61600D8268C91B79B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441816660.29081.7.camel@freescale.com>
- <SN1PR0301MB155031D53C79CC382734FE2C9B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441922820.2909.10.camel@freescale.com>
- <SN1PR0301MB15508FE927A6868049A9E74C9B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1441937700.2909.44.camel@freescale.com>
-In-Reply-To: <1441937700.2909.44.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43C441A0066
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 12:39:00 +1000 (AEST)
+Received: by iofh134 with SMTP id h134so83652855iof.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Sep 2015 19:38:58 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1441937624.2909.42.camel@freescale.com>
+References: <1441175814-14940-1-git-send-email-afleming@gmail.com>
+ <1441217278-21618-1-git-send-email-afleming@gmail.com>
+ <CAKWjMd45zYZefWWxsdOO2BE2CYOTpdbXzXz6caN9Sr8XUF6PgA@mail.gmail.com>
+ <1441936384.2909.29.camel@freescale.com>
+ <CAKWjMd4YqAA1f0QzGxT1Hr+e_ceft2RHEUH649R5cfZ293t4eQ@mail.gmail.com>
+ <1441937624.2909.42.camel@freescale.com>
+Date: Thu, 10 Sep 2015 21:38:57 -0500
+Message-ID: <CAKWjMd6ddeefYr7nkYTr=ePA1i_jmSQF4m+M7F7SfBsSHQ8H3A@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc/85xx: Add support for Varisys Cyrus board
+From: Andy Fleming <afleming@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Kumar Gala <galak@kernel.crashing.org>, Alex Perez <aperez@alexperez.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,129 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gRnJpLCAyMDE1LTA5LTExIGF0IDEwOjE1QU0gLTA1MDAsIFdvb2QgU2NvdHQtQjA3NDIxIHdy
-b3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIw
-NzQyMQ0KPiBTZW50OiBGcmlkYXksIFNlcHRlbWJlciAxMSwgMjAxNSAxMDoxNSBBTQ0KPiBUbzog
-WmhhbyBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhp
-ZSBYaWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+IFlhbmctTGVv
-LVI1ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDEvM10g
-Z2VuYWxsb2M6c3VwcG9ydCBtZW1vcnktYWxsb2NhdGlvbiB3aXRoDQo+IGJ5dGVzLWFsaWdubWVu
-dCB0byBnZW5hbGxvYw0KPiANCj4gT24gVGh1LCAyMDE1LTA5LTEwIGF0IDIxOjA5IC0wNTAwLCBa
-aGFvIFFpYW5nLUI0NTQ3NSB3cm90ZToNCj4gPiBPbiBGcmksIDIwMTUtMDktMTEgYXQgMDY6MDdB
-TSAtMDUwMCwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IEZy
-aWRheSwgU2VwdGVtYmVyIDExLCAyMDE1IDY6MDcgQU0NCj4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0
-NTQ3NQ0KPiA+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlh
-b2JvLVI2MzA2MTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiA+ID4gTGkgWWFuZy1MZW8t
-UjU4NDcyOyBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDEv
-M10gZ2VuYWxsb2M6c3VwcG9ydCBtZW1vcnktYWxsb2NhdGlvbiB3aXRoDQo+ID4gPiBieXRlcy1h
-bGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+DQo+ID4gPiBPbiBXZWQsIDIwMTUtMDktMDkgYXQg
-MjE6MjYgLTA1MDAsIFpoYW8gUWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+ID4gPiBPbiBXZWQsIDIw
-MTUtMDktMTAgYXQgMTI6MzhBTSAtMDUwMCwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6DQo+ID4g
-PiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBXb29kIFNj
-b3R0LUIwNzQyMQ0KPiA+ID4gPiA+IFNlbnQ6IFRodXJzZGF5LCBTZXB0ZW1iZXIgMTAsIDIwMTUg
-MTI6MzggQU0NCj4gPiA+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gPiA+ID4gPiBDYzog
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
-cmc7DQo+ID4gPiA+ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2MTsN
-Cj4gPiA+ID4gPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctTGVvLVI1ODQ3Mjsg
-cGF1bHVzQHNhbWJhLm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMS8zXSBn
-ZW5hbGxvYzpzdXBwb3J0IG1lbW9yeS1hbGxvY2F0aW9uDQo+ID4gPiA+ID4gd2l0aCBieXRlcy1h
-bGlnbm1lbnQgdG8gZ2VuYWxsb2MNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIFNhdCwgMjAxNS0w
-OS0wNSBhdCAyMjoxMyAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3JvdGU6DQo+ID4gPiA+ID4g
-PiBPbiBXZWQsIDIwMTUtMDktMDIgYXQgMTA6MThBTSArMDgwMCwgV29vZCBTY290dC1CMDc0MjEg
-d3JvdGU6DQo+ID4gPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+
-ID4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gPiA+IFNlbnQ6IFdlZG5l
-c2RheSwgU2VwdGVtYmVyIDAyLCAyMDE1IDEwOjE4IEFNDQo+ID4gPiA+ID4gPiA+IFRvOiBaaGFv
-IFFpYW5nLUI0NTQ3NQ0KPiA+ID4gPiA+ID4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVs
-Lm9yZzsNCj4gPiA+ID4gPiA+ID4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxhdXJh
-YUBjb2RlYXVyb3JhLm9yZzsgWGllDQo+ID4gPiA+ID4gPiA+IFhpYW9iby1SNjMwNjE7IGJlbmhA
-a2VybmVsLmNyYXNoaW5nLm9yZzsgTGkgWWFuZy1MZW8tUjU4NDcyOw0KPiA+ID4gPiA+ID4gPiBw
-YXVsdXNAc2FtYmEub3JnDQo+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMS8z
-XSBnZW5hbGxvYzpzdXBwb3J0DQo+ID4gPiA+ID4gPiA+IG1lbW9yeS1hbGxvY2F0aW9uIHdpdGgg
-Ynl0ZXMtYWxpZ25tZW50IHRvIGdlbmFsbG9jDQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+
-IE9uIFR1ZSwgMjAxNS0wOS0wMSBhdCAyMToxMCAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3Jv
-dGU6DQo+ID4gPiA+ID4gPiA+ID4gT24gV2VkLCAyMDE1LTA5LTAyIGF0IDA4OjM4QU0gKzA4MDAs
-IFdvb2QgU2NvdHQtQjA3NDIxDQo+IHdyb3RlOg0KPiA+ID4gPiA+ID4gPiA+ID4gLS0tLS1Pcmln
-aW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+ID4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3
-NDIxDQo+ID4gPiA+ID4gPiA+ID4gPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAwMiwgMjAx
-NSA4OjMwIEFNDQo+ID4gPiA+ID4gPiA+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gPiA+
-ID4gPiA+ID4gPiA+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+
-ID4gPiA+ID4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxhdXJhYUBjb2RlYXVyb3Jh
-Lm9yZzsNCj4gPiA+ID4gPiA+ID4gPiA+IFhpZSBYaWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5j
-cmFzaGluZy5vcmc7IExpDQo+ID4gPiA+ID4gPiA+ID4gPiBZYW5nLUxlby1SNTg0NzI7IHBhdWx1
-c0BzYW1iYS5vcmcNCj4gPiA+ID4gPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjcgMS8z
-XSBnZW5hbGxvYzpzdXBwb3J0DQo+ID4gPiA+ID4gPiA+ID4gPiBtZW1vcnktYWxsb2NhdGlvbiB3
-aXRoIGJ5dGVzLWFsaWdubWVudCB0byBnZW5hbGxvYw0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+
-ID4gPiA+ID4gPiA+IE9uIE1vbiwgMjAxNS0wOC0zMSBhdCAxNjo1OCArMDgwMCwgWmhhbyBRaWFu
-ZyB3cm90ZToNCj4gPiA+ID4gPiA+ID4gPiA+ID4gQnl0ZXMgYWxpZ25tZW50IGlzIHJlcXVpcmVk
-IHRvIG1hbmFnZSBzb21lIHNwZWNpYWwNCj4gPiA+ID4gPiA+ID4gPiA+ID4gUkFNLCBzbyBhZGQg
-Z2VuX3Bvb2xfZmlyc3RfZml0X2FsaWduIHRvIGdlbmFsbG9jLA0KPiA+ID4gPiA+ID4gPiA+ID4g
-PiBtZWFud2hpbGUgYWRkIGdlbl9wb29sX2FsbG9jX2RhdGEgdG8gcGFzcyBkYXRhIHRvDQo+ID4g
-PiA+ID4gPiA+ID4gPiA+IGdlbl9wb29sX2ZpcnN0X2ZpdF9hbGlnbihtb2RpZnkgZ2VuX3Bvb2xf
-YWxsb2MgYXMgYQ0KPiA+ID4gPiA+ID4gPiA+ID4gPiB3cmFwcGVyKQ0KPiA+ID4gPiA+ID4gPiA+
-ID4gPg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxxaWFu
-Zy56aGFvQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+ID4gPiA+ID4gPiA+IC0tLQ0KPiA+ID4gPiA+
-ID4gPiA+ID4gPiBDaGFuZ2VzIGZvciB2NjoNCj4gPiA+ID4gPiA+ID4gPiA+ID4gICAgICAgLSBw
-YXRjaGVzIHNldCB2NiBpbmNsdWRlIGEgbmV3IHBhdGNoIGJlY2F1c2Ugb2YNCj4gdXNpbmcNCj4g
-PiA+ID4gPiA+ID4gPiA+ID4gICAgICAgLSBnZW5hbGxvYyB0byBtYW5hZ2UgUUUgTVVSQU0sIHBh
-dGNoIDAwMDEgaXMgdGhlDQo+IG5ldw0KPiA+ID4gPiA+ID4gPiA+ID4gPiAgICAgICAtIHBhdGNo
-LCBhZGRpbmcgYnl0ZXMgYWxpZ25tZW50IGZvciBhbGxvY2F0aW9uDQo+ID4gPiA+ID4gPiA+ID4g
-PiA+IGZvcg0KPiA+ID4gdXNlLg0KPiA+ID4gPiA+ID4gPiA+ID4gPiBDaGFuZ2VzIGZvciB2NzoN
-Cj4gPiA+ID4gPiA+ID4gPiA+ID4gICAgICAgLSBjcG0gbXVyYW0gYWxzbyBuZWVkIHRvIHVzZSBn
-ZW5hbGxvYyB0byBtYW5hZ2UsDQo+ID4gPiA+ID4gPiA+ID4gPiA+IGl0DQo+ID4gPiBoYXMNCj4g
-PiA+ID4gPiA+ID4gPiA+ID4gICAgICAgICBhIGZ1bmN0aW9uIHRvIHJlc2VydmUgYSBzcGVjaWZp
-YyByZWdpb24gb2YNCj4gbXVyYW0sDQo+ID4gPiA+ID4gPiA+ID4gPiA+ICAgICAgICAgYWRkIG9m
-ZnNldCB0byBnZW5wb29sX2RhdGEgZm9yIHN0YXJ0IGFkZHIgdG8NCj4gPiA+ID4gPiA+ID4gPiA+
-ID4gYmUNCj4gPiA+ID4gPiBhbGxvY2F0ZWQuDQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
-ID4gPiA+ID4gVGhpcyBzZWVtcyB0byBiZSBkZXNjcmliaW5nIG1vcmUgdGhhbiBqdXN0IHRoZSBj
-aGFuZ2VzDQo+ID4gPiA+ID4gPiA+ID4gPiBpbiB0aGlzDQo+ID4gPiA+ID4gcGF0Y2guDQo+ID4g
-PiA+ID4gPiA+ID4gPiBXaGF0IGRvZXMgYWxzbyBoYW5kbGluZyBjcG0gaGF2ZSB0byBkbyB3aXRo
-IHRoaXMgcGF0Y2g/DQo+ID4gPiA+ID4gPiA+ID4gPiBBcmUgeW91IGFkZGluZyBzdXBwb3J0IGZv
-ciByZXNlcnZpbmcgYSBzcGVjaWZpYyByZWdpb24NCj4gPiA+ID4gPiA+ID4gPiA+IGluIHRoaXMg
-cGF0Y2g/ICBJIGRvbid0IHNlZSBpdCwgYW5kIGluIGFueSBjYXNlIGl0DQo+ID4gPiA+ID4gPiA+
-ID4gPiBzaG91bGQgZ28gaW4gYQ0KPiA+ID4gZGlmZmVyZW50IHBhdGNoLg0KPiA+ID4gPiA+ID4g
-PiA+DQo+ID4gPiA+ID4gPiA+ID4gWWVzLCBJIGFkZGVkLiBUaGUgY29kZSBiZWxvdyBjYW4gc3Vw
-cG9ydCB0aGUgZnVuY3Rpb24uDQo+ID4gPiA+ID4gPiA+ID4gICAgICAgb2Zmc2V0X2JpdCA9IChh
-bGlnbm1lbnQtPm9mZnNldCArICgxVUwgPDwgb3JkZXIpIC0NCj4gPiA+ID4gPiA+ID4gPiAxKSA+
-Pg0KPiA+ID4gPiA+IG9yZGVyOw0KPiA+ID4gPiA+ID4gPiA+ICAgICAgIHJldHVybiBiaXRtYXBf
-ZmluZF9uZXh0X3plcm9fYXJlYShtYXAsIHNpemUsIHN0YXJ0ICsNCj4gPiA+ID4gPiA+ID4gPiBv
-ZmZzZXRfYml0LA0KPiA+ID4gPiA+ID4gPiBuciwNCj4gPiA+ID4gPiA+ID4gPiAgICAgICAgICAg
-ICAgICAgICAgICAgICBhbGlnbl9tYXNrKTsNCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4g
-PiA+IENQTSBoYXMgYW4gZnVuY3Rpb24gY3BtX211cmFtX2FsbG9jX2ZpeGVkLCBuZWVkaW5nIHRv
-DQo+ID4gPiA+ID4gPiA+ID4gYWxsb2NhdGUgbXVyYW0gZnJvbSBhIFNwZWNpZmljIG9mZnNldC4g
-U28gSSBhZGQgdGhlIGNvZGUNCj4gPiA+ID4gPiA+ID4gPiBhbmQgYWRkIG9mZnNldCB0bw0KPiA+
-ID4gPiA+IHN0cnVjdCBkYXRhLg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBJIHRob3Vn
-aHQgdGhlIG9mZnNldCB3YXMgcmVsYXRlZCB0byB0aGUgcHJldmlvdXMgZGlzY3Vzc2lvbg0KPiA+
-ID4gPiA+ID4gPiBvZiBjaGVja2luZyBmb3IgYWxsb2NhdGlvbiBmYWlsdXJlLiAgQXJlIHlvdSB1
-c2luZyBpdCB0bw0KPiA+ID4gPiA+ID4gPiBpbXBsZW1lbnQgYWxsb2NfZml4ZWQoKT8gIElmIHNv
-LCBwbGVhc2UgZG9uJ3QuICBCZXNpZGVzIHRoZQ0KPiA+ID4gPiA+ID4gPiBhd2t3YXJkIGltcGxl
-bWVudGF0aW9uICh3aGF0IGRvZXMgaXQgbG9naWNhbGx5IGhhdmUgdG8gZG8NCj4gPiA+ID4gPiA+
-ID4gd2l0aCBnZW5fcG9vbF9maXJzdF9maXRfYWxpZ24/KSwgaXQgZG9lcyBub3QgYXBwZWFyIHRv
-IGJlDQo+ID4gPiA+ID4gPiA+IGNvcnJlY3QgLQ0KPiA+ID4gPiA+ID4gPiAtIHdoYXQgaGFwcGVu
-cyB3aXRoIG11bHRpcGxlIGNodW5rcz8gIFdoYXQgaGFwcGVucyBpZiBwYXJ0DQo+ID4gPiA+ID4g
-PiA+IG9mIHRoZSByZWdpb24gdGhlIGNhbGxlciBpcyB0cnlpbmcgdG8gcmVzZXJ2ZSBpcyBhbHJl
-YWR5DQo+IHRha2VuPw0KPiA+ID4gPiA+ID4gPiBJbXBsZW1lbnQgYSBwcm9wZXIgZnVuY3Rpb24g
-dG8gcmVzZXJ2ZSBhIGZpeGVkIGdlbmFsbG9jDQo+IHJlZ2lvbi4NCj4gPiA+ID4gPiA+ID4NCj4g
-PiA+ID4gPiA+IFRoZSBvZmZzZXQgaXMgd2hpY2ggYWxsb2NhdGlvbiBibG9jayBhZGRyZXNzIG5l
-ZWQgdG8gYmUgbGFyZ2VyDQo+ID4gPiA+ID4gPiB0aGFuLCBOb3QgZXF1YWwgdG8sIGl0IHJlYWxs
-eSBsaWtlIHRoZSBwYXJhbWV0ZXIgc3RhcnQgb2YgdGhlDQo+ID4gPiA+ID4gPiBhbGdvKHRoZSBi
-aXRudW1iZXIgVG8gc3RhcnQgc2VhcmNoaW5nIGF0KS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IGNw
-bV9tdXJhbV9hbGxvY19maXhlZCgpIGlzIG5vdCAic2VhcmNoIHN0YXJ0aW5nIGF0IHRoaXMgb2Zm
-c2V0Ii4NCj4gPiA+ID4gPiBJdCBpcyAicmVzZXJ2ZSB0aGlzIGV4YWN0IHJhbmdlIG9yIGZhaWwi
-Lg0KPiA+ID4gPg0KPiA+ID4gPiBZZXMsIHlvdSBhcmUgcmlnaHQhIEhvdyBhYm91dCB0byBhZGQg
-YSBuZXcgYWxnbyBpbnRvIGdlbmFsbG9jIHRvDQo+ID4gPiA+IHNlYXJjaCBBdCBvZmZzZXQsIHRo
-ZW4gaGFuZGxlIGl0IGluIG11cmFtIGxheWVyLCBpZiB0aGUgYWRkcmVzcw0KPiA+ID4gPiByZXR1
-cm4gZnJvbSBnZW5hbGxvYyBJcyBub3QgZXF1YWwgdG8gb2Zmc2V0LCByZXR1cm4gbmVnYXRpdmUg
-bnVtYmVyPw0KPiA+ID4NCj4gPiA+IElmIHlvdSdyZSBhZGRpbmcgYSBuZXcgYWxnb3JpdGhtLCB3
-aHkgbm90IG1ha2UgaXQgYWN0dWFsbHkgZG8gd2hhdA0KPiA+ID4geW91IHdhbnQgcmF0aGVyIHRo
-YW4gYWRkaW5nIHNvbWV0aGluZyBkaWZmZXJlbnQgYW5kIGZpeGluZyBpdCB1cCBpbg0KPiA+ID4g
-dGhlIGNhbGxlcj8NCj4gPg0KPiA+IEJlY2F1c2UgSSdtIG5vdCBzdXJlIHdoZXRoZXIgaXQgaXMg
-cHJvcGVyIHRvIGFkZCBhICJvZmZzZXQgc2VhcmNoaW5nDQo+IGF0Ig0KPiA+IGFsZ28uDQo+IA0K
-PiBBZ2FpbiwgIm9mZnNldCBzZWFyY2hpbmcgYXQiIGlzIG5vdCB3aGF0IHdlIHdhbnQgYW55d2F5
-LiAgV2hhdCB3ZSB3YW50IGlzDQo+ICJhbGxvY2F0ZSB0aGlzIHJhbmdlIG9yIGZhaWwiLiAgV2h5
-IHdvdWxkIGl0IGJlIGltcHJvcGVyIHRvIGhhdmUgc3VjaCBhbg0KPiBhbGdvcml0aG0/DQoNClll
-cywgSSBtZWFuICJhbGxvY2F0ZSB0aGlzIHJhbmdlIG9yIGZhaWwiLCBqdXN0IHR5cGUgd3Jvbmcu
-DQpJIHdpbGwgcHVzaCBhbm90aGVyIHZlcnNpb24gYW5kIG1vZGlmeSBpdC4NCg0KPiANCj4gLVNj
-b3R0DQoNCg==
+On Thu, Sep 10, 2015 at 9:13 PM, Scott Wood <scottwood@freescale.com> wrote:
+> On Thu, 2015-09-10 at 21:06 -0500, Andy Fleming wrote:
+>> On Thu, Sep 10, 2015 at 8:53 PM, Scott Wood <scottwood@freescale.com> wrote:
+>> > On Thu, 2015-09-10 at 20:51 -0500, Andy Fleming wrote:
+>> > > ping? I'd love if this could go in for 4.3
+>> >
+>> > It's way too late for 4.3.
+>> >
+>> > -Scott
+>>
+>> Argh. I was hoping that, as it's a one-line change to existing code it
+>> might be able to sneak in.
+>
+> It's hard to call it "sneaking in" when a new pull request chain has to be
+> created just for one patch. :-P
+>
+> Non-bugfixes need to be in my pull request to Michael before the merge window
+> opens (and thus submitted long enough before that for me to have a chance to
+> do a review/apply/build-test session), not a couple days before the merge
+> window closes.  Why does it matter if this is in 4.3 versus 4.4?
+>
+> -Scott
+>
+
+I definitely understand. To be fair, I submitted the patch 3 days
+after the window opened (not a couple before it closes), but that is
+still after the deadline. The only issue with it going into 4.4 is
+that the support isn't in mainline till 4.3 is tagged. It just creates
+a bigger lag between the hardware availability and upstream software
+availability. Bad timing on our part, I was just hoping. :)
+
+Andy
