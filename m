@@ -1,24 +1,32 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 346B71A1F40
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 16:47:56 +1000 (AEST)
-Received: from [192.168.1.106] (ppp-93-104-66-186.dynamic.mnet-online.de
- [93.104.66.186]) by smtp.strato.de (RZmta 37.12 DYNA|AUTH)
- with ESMTPSA id V010e8r8B5mphMt
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (curve secp521r1 with 521 ECDH
- bits, eq. 15360 bits RSA)) (Client did not present a certificate)
- for <linuxppc-dev@lists.ozlabs.org>;
- Fri, 11 Sep 2015 07:48:51 +0200 (CEST)
-To: linuxppc-dev@lists.ozlabs.org
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Subject: [Nemo, Chitra, and Electra] Linux kernel 4.3 testing
-Message-ID: <55F26B43.7080906@xenosoft.de>
-Date: Fri, 11 Sep 2015 07:48:51 +0200
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 7790D1A1F40
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 22:45:09 +1000 (AEST)
+Date: Fri, 11 Sep 2015 13:45:07 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC 3/5] powerpc: atomic: implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150911124507.GB16833@arm.com>
+References: <1440730099-29133-1-git-send-email-boqun.feng@gmail.com>
+ <1440730099-29133-4-git-send-email-boqun.feng@gmail.com>
+ <20150828104854.GB16853@twins.programming.kicks-ass.net>
+ <20150828120614.GC29325@fixme-laptop.cn.ibm.com>
+ <20150828141602.GA924@fixme-laptop.cn.ibm.com>
+ <20150828153921.GF19282@twins.programming.kicks-ass.net>
+ <20150901190027.GP1612@arm.com>
+ <20150901214540.GI4029@linux.vnet.ibm.com>
+ <20150902095906.GC25720@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150902095906.GC25720@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +36,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi All,
+[left the context in the hope that we can make some progress]
 
-We compiled some kernels from the Linux git for our motherboards with 
-P.A. Semi PA6T-1682M microprocessors for testing.
+On Wed, Sep 02, 2015 at 10:59:06AM +0100, Will Deacon wrote:
+> On Tue, Sep 01, 2015 at 10:45:40PM +0100, Paul E. McKenney wrote:
+> > On Tue, Sep 01, 2015 at 08:00:27PM +0100, Will Deacon wrote:
+> > > On Fri, Aug 28, 2015 at 04:39:21PM +0100, Peter Zijlstra wrote:
+> > > > Yes, the difference between RCpc and RCsc is in the meaning of RELEASE +
+> > > > ACQUIRE. With RCsc that implies a full memory barrier, with RCpc it does
+> > > > not.
+> > > 
+> > > We've discussed this before, but for the sake of completeness, I don't
+> > > think we're fully RCsc either because we don't order the actual RELEASE
+> > > operation again a subsequent ACQUIRE operation:
+> > > 
+> > > P0
+> > > smp_store_release(&x, 1);
+> > > foo = smp_load_acquire(&y);
+> > > 
+> > > P1
+> > > smp_store_release(&y, 1);
+> > > bar = smp_load_acquire(&x);
+> > > 
+> > > We allow foo == bar == 0, which is prohibited by SC.
+> > 
+> > I certainly hope that no one expects foo == bar == 0 to be prohibited!!!
+> 
+> I just thought it was worth making this point, because it is prohibited
+> in SC and I don't want people to think that our RELEASE/ACQUIRE operations
+> are SC (even though they happen to be on arm64).
+> 
+> > On the other hand, in this case, foo == bar == 1 will be prohibited:
+> > 
+> > P0
+> > foo = smp_load_acquire(&y);
+> > smp_store_release(&x, 1);
+> > 
+> > P1
+> > bar = smp_load_acquire(&x);
+> > smp_store_release(&y, 1);
+> 
+> Agreed.
+> 
+> > > However, we *do* enforce ordering on any prior or subsequent accesses
+> > > for the code snippet above (the release and acquire combine to give a
+> > > full barrier), which makes these primitives well suited to things like
+> > > message passing.
+> > 
+> > If I understand your example correctly, neither x86 nor Power implement
+> > a full barrier in this case.  For example:
+> > 
+> > 	P0
+> > 	WRITE_ONCE(a, 1);
+> > 	smp_store_release(b, 1);
+> > 	r1 = smp_load_acquire(c);
+> > 	r2 = READ_ONCE(d);
+> > 
+> > 	P1
+> > 	WRITE_ONCE(d, 1);
+> > 	smp_mb();
+> > 	r3 = READ_ONCE(a);
+> > 
+> > Both x86 and Power can reorder P0 as follows:
+> > 
+> > 	P0
+> > 	r1 = smp_load_acquire(c);
+> > 	r2 = READ_ONCE(d);
+> > 	WRITE_ONCE(a, 1);
+> > 	smp_store_release(b, 1);
+> > 
+> > Which clearly shows that the non-SC outcome r2 == 0 && r3 == 0 is allowed.
+> > 
+> > Or am I missing your point here?
+> 
+> I think this example is slightly different. Having the RELEASE/ACQUIRE
+> operations being reordered with respect to each other is one thing, but
+> I thought we were heading in a direction where they combined to give a
+> full barrier with respect to other accesses. In that case, the reordering
+> above would be forbidden.
+> 
+> Peter -- if the above reordering can happen on x86, then moving away
+> from RCpc is going to be less popular than I hoped...
 
-Downloads:
+Peter, any thoughts? I'm not au fait with the x86 memory model, but what
+Paul's saying is worrying.
 
-http://www.xenosoft.de/vmlinux-4.3-alpha6-AMIGA_one_X1000.tar.bz2 (Build 
-date: 07. September 2015)
-
-http://www.xenosoft.de/vmlinux-4.3-alpha7-AMIGA_one_X1000.tar.bz2 (Build 
-date: 09. September 2015)
-
-Maybe someone would like to test these kernels.
-
-Further information about motherboards with P.A. Semi PA6T-1682M 
-microprocessors:
-
-* Electra: First development/eval board. Funky USB on localbus, plenty
-of PCI-e. Two GigE, one 10GigE XAUI. CompactFlash and IDE on localbus
-too. Usually shipped with a PCI-e SATA card and a USB card.
-
-* Chitra: Second edition dev/eval board. Moved SATA and USB on-board,
-and removed some of the localbus hardware. Might have routed three
-GigE out instead of 2.
-
-* Athena: Never released board with a smaller package chip, there's
-only a few of these around. It's similar to Chitra, and the silicon is 
-the same.
-
-* Nemo: Released as AmigaONE X1000. With co-processor: "Xena" 500 MHz 
-XCore XS1-L2 124 SDS
-and SB600 southbridge. AMD/ATI’s SB600 provides the following I/O features:
-
-- PCIe x4 link to CPU
-- SATA-II AHCI controller with 4 ports
-- PATA (IDE) controller (single channel)
-- multiple USB ports (5 OHCI and 1 EHCI host controllers. All ports are 
-fully USB 1.1 and USB 2.0 compliant)
-- UAA compatible HD Audio controller
-- PCIe-PCI bridge supporting multiple PCI slots with 5V signalling support
-- 8259 compatible interrupt controller
-- Real Time Clock
-
-CompactFlash and Xena on localbus.
-
-Cheers,
-
-Christian
+Will
