@@ -1,22 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 619191A2C4A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 11:53:17 +1000 (AEST)
-Message-ID: <1441936384.2909.29.camel@freescale.com>
-Subject: Re: [PATCH v2] powerpc/85xx: Add support for Varisys Cyrus board
-From: Scott Wood <scottwood@freescale.com>
-To: Andy Fleming <afleming@gmail.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Kumar
- Gala" <galak@kernel.crashing.org>, Alex Perez <aperez@alexperez.com>
-Date: Thu, 10 Sep 2015 20:53:04 -0500
-In-Reply-To: <CAKWjMd45zYZefWWxsdOO2BE2CYOTpdbXzXz6caN9Sr8XUF6PgA@mail.gmail.com>
-References: <1441175814-14940-1-git-send-email-afleming@gmail.com>
- <1441217278-21618-1-git-send-email-afleming@gmail.com>
- <CAKWjMd45zYZefWWxsdOO2BE2CYOTpdbXzXz6caN9Sr8XUF6PgA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 572EB1A0066
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 11:59:18 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH V7 2/3] qe_common: add qe_muram_ functions to manage muram
+Date: Fri, 11 Sep 2015 01:59:10 +0000
+Message-ID: <SN1PR0301MB1550DA987B6F8F249BF255679B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441011520-15424-2-git-send-email-qiang.zhao@freescale.com>
+ <1441154062.4966.113.camel@freescale.com>
+ <SN1PR0301MB1550873B24F8F9F4760F67049B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441816715.29081.8.camel@freescale.com>
+ <SN1PR0301MB1550D133A4FE7FE3DB8870D19B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441922945.2909.12.camel@freescale.com>
+In-Reply-To: <1441922945.2909.12.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,217 +34,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-10 at 20:51 -0500, Andy Fleming wrote:
-> ping? I'd love if this could go in for 4.3
-
-It's way too late for 4.3.
-
--Scott
-
-> 
-> On Wed, Sep 2, 2015 at 1:07 PM, Andy Fleming <afleming@gmail.com> wrote:
-> > This board uses a P5020 chip, and boots just fine using
-> > the corenet_generic code. The device tree is very similar to the
-> > P5020DS, except that there is no Flash memory. The environment is,
-> > instead, stored on an MMC card on the motherboard.
-> > 
-> > Signed-off-by: Andy Fleming <afleming@gmail.com>
-> > ---
-> > v2: Moved dts to cyrus_p5020.dts so we can add a p5040 version later
-> >     Corrected the model/compatible to varisys,CYRUS
-> > 
-> >  arch/powerpc/boot/dts/cyrus_p5020.dts         | 155 
-> > ++++++++++++++++++++++++++
-> >  arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
-> >  2 files changed, 156 insertions(+)
-> >  create mode 100644 arch/powerpc/boot/dts/cyrus_p5020.dts
-> > 
-> > diff --git a/arch/powerpc/boot/dts/cyrus_p5020.dts 
-> > b/arch/powerpc/boot/dts/cyrus_p5020.dts
-> > new file mode 100644
-> > index 0000000..493c6d6
-> > --- /dev/null
-> > +++ b/arch/powerpc/boot/dts/cyrus_p5020.dts
-> > @@ -0,0 +1,155 @@
-> > +/*
-> > + * Cyrus 5020 Device Tree Source, based on p5020ds.dts
-> > + *
-> > + * Copyright 2015 Andy Fleming
-> > + *
-> > + * p5020ds.dts copyright:
-> > + * Copyright 2010 - 2014 Freescale Semiconductor Inc.
-> > + *
-> > + * This program is free software; you can redistribute  it and/or modify 
-> > it
-> > + * under  the terms of  the GNU General  Public License as published by 
-> > the
-> > + * Free Software Foundation;  either version 2 of the  License, or (at 
-> > your
-> > + * option) any later version.
-> > + */
-> > +
-> > +/include/ "fsl/p5020si-pre.dtsi"
-> > +
-> > +/ {
-> > +       model = "varisys,CYRUS";
-> > +       compatible = "varisys,CYRUS";
-> > +       #address-cells = <2>;
-> > +       #size-cells = <2>;
-> > +       interrupt-parent = <&mpic>;
-> > +
-> > +       memory {
-> > +               device_type = "memory";
-> > +       };
-> > +
-> > +       reserved-memory {
-> > +               #address-cells = <2>;
-> > +               #size-cells = <2>;
-> > +               ranges;
-> > +
-> > +               bman_fbpr: bman-fbpr {
-> > +                       size = <0 0x1000000>;
-> > +                       alignment = <0 0x1000000>;
-> > +               };
-> > +               qman_fqd: qman-fqd {
-> > +                       size = <0 0x400000>;
-> > +                       alignment = <0 0x400000>;
-> > +               };
-> > +               qman_pfdr: qman-pfdr {
-> > +                       size = <0 0x2000000>;
-> > +                       alignment = <0 0x2000000>;
-> > +               };
-> > +       };
-> > +
-> > +       dcsr:  dcsr@f00000000{
-> > +               ranges = <0x00000000 0xf 0x00000000 0x01008000>;
-> > +       };
-> > +
-> > +       bportals:  bman-portals@ff4000000{
-> > +               ranges = <0x0 0xf 0xf4000000 0x200000>;
-> > +       };
-> > +
-> > +       qportals:  qman-portals@ff4200000{
-> > +               ranges = <0x0 0xf 0xf4200000 0x200000>;
-> > +       };
-> > +
-> > +       soc:  soc@ffe000000{
-> > +               ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-> > +               reg = <0xf 0xfe000000 0 0x00001000>;
-> > +                spi@110000{
-> > +               };
-> > +
-> > +                i2c@118100{
-> > +               };
-> > +
-> > +                i2c@119100{
-> > +                        rtc@6f{
-> > +                               compatible = "microchip,mcp7941x";
-> > +                               reg = <0x6f>;
-> > +                       };
-> > +               };
-> > +       };
-> > +
-> > +       rio:  rapidio@ffe0c0000{
-> > +               reg = <0xf 0xfe0c0000 0 0x11000>;
-> > +
-> > +               port1 {
-> > +                       ranges = <0 0 0xc 0x20000000 0 0x10000000>;
-> > +               };
-> > +               port2 {
-> > +                       ranges = <0 0 0xc 0x30000000 0 0x10000000>;
-> > +               };
-> > +       };
-> > +
-> > +       lbc:  localbus@ffe124000{
-> > +               reg = <0xf 0xfe124000 0 0x1000>;
-> > +               ranges = <0 0 0xf 0xe8000000 0x08000000
-> > +                         2 0 0xf 0xffa00000 0x00040000
-> > +                         3 0 0xf 0xffdf0000 0x00008000>;
-> > +       };
-> > +
-> > +       pci0:  pcie@ffe200000{
-> > +               reg = <0xf 0xfe200000 0 0x1000>;
-> > +               ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 
-> > 0x20000000
-> > +                         0x01000000 0 0x00000000 0xf 0xf8000000 0x0 
-> > 0x00010000>;
-> > +                pcie@0{
-> > +                       ranges = <0x02000000 0 0xe0000000
-> > +                                 0x02000000 0 0xe0000000
-> > +                                 0 0x20000000
-> > +
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0 0x00010000>;
-> > +               };
-> > +       };
-> > +
-> > +       pci1:  pcie@ffe201000{
-> > +               reg = <0xf 0xfe201000 0 0x1000>;
-> > +               ranges = <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 
-> > 0x20000000
-> > +                         0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 
-> > 0x00010000>;
-> > +                pcie@0{
-> > +                       ranges = <0x02000000 0 0xe0000000
-> > +                                 0x02000000 0 0xe0000000
-> > +                                 0 0x20000000
-> > +
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0 0x00010000>;
-> > +               };
-> > +       };
-> > +
-> > +       pci2:  pcie@ffe202000{
-> > +               reg = <0xf 0xfe202000 0 0x1000>;
-> > +               ranges = <0x02000000 0 0xe0000000 0xc 0x40000000 0 
-> > 0x20000000
-> > +                         0x01000000 0 0x00000000 0xf 0xf8020000 0 
-> > 0x00010000>;
-> > +                pcie@0{
-> > +                       ranges = <0x02000000 0 0xe0000000
-> > +                                 0x02000000 0 0xe0000000
-> > +                                 0 0x20000000
-> > +
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0 0x00010000>;
-> > +               };
-> > +       };
-> > +
-> > +       pci3:  pcie@ffe203000{
-> > +               reg = <0xf 0xfe203000 0 0x1000>;
-> > +               ranges = <0x02000000 0 0xe0000000 0xc 0x60000000 0 
-> > 0x20000000
-> > +                         0x01000000 0 0x00000000 0xf 0xf8030000 0 
-> > 0x00010000>;
-> > +                pcie@0{
-> > +                       ranges = <0x02000000 0 0xe0000000
-> > +                                 0x02000000 0 0xe0000000
-> > +                                 0 0x20000000
-> > +
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0x01000000 0 0x00000000
-> > +                                 0 0x00010000>;
-> > +               };
-> > +       };
-> > +};
-> > +
-> > +/include/ "fsl/p5020si-post.dtsi"
-> > diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c 
-> > b/arch/powerpc/platforms/85xx/corenet_generic.c
-> > index b395571..76e521e 100644
-> > --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> > +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> > @@ -161,6 +161,7 @@ static const char * const boards[] __initconst = {
-> >         "fsl,T1042RDB",
-> >         "fsl,T1042RDB_PI",
-> >         "keymile,kmcoge4",
-> > +       "varisys,CYRUS",
-> >         NULL
-> >  };
-> > 
-> > --
-> > 1.9.1
-> > 
+T24gTW9uLCAyMDE1LTA5LTExIGF0IDA2OjA5IC0wNTAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90
+ZToNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMTEsIDIwMTUgNjowOSBBTQ0KPiBUbzogWmhh
+byBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBY
+aWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+IFlhbmctTGVvLVI1
+ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDIvM10gcWVf
+Y29tbW9uOiBhZGQgcWVfbXVyYW1fIGZ1bmN0aW9ucyB0byBtYW5hZ2UNCj4gbXVyYW0NCj4gDQo+
+IE9uIFdlZCwgMjAxNS0wOS0wOSBhdCAyMTozNCAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUgd3Jv
+dGU6DQo+ID4gT24gTW9uLCAyMDE1LTA5LTEwIGF0IDEyOjM5IC0wNTAwLCBXb29kIFNjb3R0LUIw
+NzQyMSB3cm90ZToNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+
+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVy
+IDEwLCAyMDE1IDEyOjM5IEFNDQo+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gPiA+IENj
+OiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZzsNCj4gPiA+IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsgWGllIFhpYW9iby1SNjMwNjE7IGJl
+bmhAa2VybmVsLmNyYXNoaW5nLm9yZzsNCj4gPiA+IExpIFlhbmctTGVvLVI1ODQ3MjsgcGF1bHVz
+QHNhbWJhLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCBWNyAyLzNdIHFlX2NvbW1vbjog
+YWRkIHFlX211cmFtXyBmdW5jdGlvbnMgdG8NCj4gPiA+IG1hbmFnZSBtdXJhbQ0KPiA+ID4NCj4g
+PiA+IE9uIFN1biwgMjAxNS0wOS0wNiBhdCAwMTozNyAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUg
+d3JvdGU6DQo+ID4gPiA+IE9uIE1vbiwgMjAxNS0wOS0yIGF0IDg6MzQgKzA4MDAsIFdvb2QgU2Nv
+dHQtQjA3NDIxIHdyb3RlOg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
+ID4gPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50OiBXZWRuZXNk
+YXksIFNlcHRlbWJlciAwMiwgMjAxNSA4OjM0IEFNDQo+ID4gPiA+ID4gVG86IFpoYW8gUWlhbmct
+QjQ1NDc1DQo+ID4gPiA+ID4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gPiA+IGxhdXJhYUBjb2RlYXVyb3JhLm9y
+ZzsgWGllIFhpYW9iby1SNjMwNjE7DQo+ID4gPiA+ID4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3Jn
+OyBMaSBZYW5nLUxlby1SNTg0NzI7IHBhdWx1c0BzYW1iYS5vcmcNCj4gPiA+ID4gPiBTdWJqZWN0
+OiBSZTogW1BBVENIIFY3IDIvM10gcWVfY29tbW9uOiBhZGQgcWVfbXVyYW1fIGZ1bmN0aW9ucw0K
+PiA+ID4gPiA+IHRvIG1hbmFnZSBtdXJhbQ0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gT24gTW9uLCAy
+MDE1LTA4LTMxIGF0IDE2OjU4ICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+ID4gPiA+DQo+
+ID4gPiA+ID4gPiBAQCAtMTg3LDEyICsxOTAsMjUgQEAgc3RhdGljIGlubGluZSBpbnQNCj4gPiA+
+ID4gPiA+IHFlX2FsaXZlX2R1cmluZ19zbGVlcCh2b2lkKSAgfQ0KPiA+ID4gPiA+ID4NCj4gPiA+
+ID4gPiA+ICAvKiB3ZSBhY3R1YWxseSB1c2UgY3BtX211cmFtIGltcGxlbWVudGF0aW9uLCBkZWZp
+bmUgdGhpcyBmb3INCj4gPiA+ID4gPiA+IGNvbnZlbmllbmNlICovIC0jZGVmaW5lIHFlX211cmFt
+X2luaXQgY3BtX211cmFtX2luaXQgLSNkZWZpbmUNCj4gPiA+ID4gPiA+IHFlX211cmFtX2FsbG9j
+IGNwbV9tdXJhbV9hbGxvYyAtI2RlZmluZSBxZV9tdXJhbV9hbGxvY19maXhlZA0KPiA+ID4gPiA+
+ID4gY3BtX211cmFtX2FsbG9jX2ZpeGVkIC0jZGVmaW5lIHFlX211cmFtX2ZyZWUgY3BtX211cmFt
+X2ZyZWUNCj4gPiA+ID4gPiA+IC0jZGVmaW5lIHFlX211cmFtX2FkZHIgY3BtX211cmFtX2FkZHIg
+LSNkZWZpbmUgcWVfbXVyYW1fb2Zmc2V0DQo+ID4gPiA+ID4gPiBjcG1fbXVyYW1fb2Zmc2V0DQo+
+ID4gPiA+ID4gPiArI2RlZmluZSBjcG1fbXVyYW1faW5pdCBxZV9tdXJhbV9pbml0ICNkZWZpbmUg
+Y3BtX211cmFtX2FsbG9jDQo+ID4gPiA+ID4gPiArcWVfbXVyYW1fYWxsb2MgI2RlZmluZSBjcG1f
+bXVyYW1fYWxsb2NfZml4ZWQNCj4gPiA+ID4gPiA+ICtxZV9tdXJhbV9hbGxvY19maXhlZCAjZGVm
+aW5lIGNwbV9tdXJhbV9mcmVlIHFlX211cmFtX2ZyZWUNCj4gPiA+ID4gPiA+ICsjZGVmaW5lIGNw
+bV9tdXJhbV9hZGRyIHFlX211cmFtX2FkZHIgI2RlZmluZSBjcG1fbXVyYW1fb2Zmc2V0DQo+ID4g
+PiA+ID4gPiArcWVfbXVyYW1fb2Zmc2V0DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBXaHk/ICBUaGlz
+IGlzIHVubmVjZXNzYXJ5IGNodXJuLg0KPiA+ID4gPiA+DQo+ID4gPiA+IFRoaXMgaXMgbmVjZXNz
+YXJ5LiBRRSBpcyBvbiBib3RoIEFSTSBhbmQgUG93ZXJQQywgaXRzIGNvZGUgaXMNCj4gPiA+ID4g
+dW5kZXIgcHVibGljIGNvZGUuDQo+ID4gPiA+IEJ1dCBDUE0gaXMgb25seSBvbiBQb3dlclBDIGFu
+ZCBpdHMgY29kZSBpcyB1bmRlciBQb3dlclBDLg0KPiA+ID4gPiBTbyB3aGVuIGJ1aWxkIEFSTSwg
+UUUgd2lsbCBub3QgZmluZCBjcG1fbXVyYW1fKiBmdW5jdGlvbi4NCj4gPiA+DQo+ID4gPiBJZiB5
+b3UgbW92ZSB0aGUgY3BtX211cmFtIGZ1bmN0aW9ucyB0byBkcml2ZXJzL3NvYywgdGhlbiBBUk0g
+d2lsbA0KPiA+ID4gZmluZCB0aGVtLg0KPiA+ID4gVGhlcmUgaXMgbm8gbmVlZCB0byByZW5hbWUg
+dGhlbS4NCj4gPg0KPiA+IFllcywgbW92aW5nIGNwbV9tdXJhbSBjYW4gaGFuZGxlIHRoaXMgaXNz
+dWUuIEhvd2V2ZXIsIGNwbSBpcyBub3QNCj4gPiBuZWNlc3NhcnkgVG8gbW92ZSB0byBwdWJsaWMg
+Y29kZSwgYW5kIGEgY2h1cm4gaXMgc2ltcGxlciB0aGFuIG1vdmluZw0KPiBjcG1fbXVyYW0uDQo+
+ID4gUGxlYXNlIGNvbnNpZGVyIG15IHN1Z2dlc3Rpb24sIFRoYW5rIHlvdSENCj4gDQo+IFdoYXQg
+ZG8geW91IG1lYW4gYnkgInB1YmxpYyBjb2RlIj8gIFlvdSdyZSBhbHJlYWR5IG1vdmluZyBjcG1f
+bXVyYW0uICBJJ20NCj4ganVzdCBhc2tpbmcgdGhhdCB5b3Ugbm90IHJlbmFtZSBpdCB3aGlsZSB5
+b3UgZG8gc28uICBJZiBpdCBhYnNvbHV0ZWx5DQo+IG11c3QgYmUgcmVuYW1lZCwgZG8gaXQgaW4g
+YSBkaWZmZXJlbnQgcGF0Y2ggZnJvbSB0aGUgb25lIHRoYXQgbW92ZXMgdGhlDQo+IGNvZGUsIHRo
+b3VnaCBJIGRvbid0IHNlZSB3aHkgdGhlIHJlbmFtZSBpcyBoZWxwZnVsLg0KDQoiUHVibGljIGNv
+ZGUiIGlzICJkcml2ZXIvc29jIiBoZXJlLiBJIG1vdmVkIHRoZSBxZV9tdXJhbSBpbnRvIGRyaXZl
+ci9zb2MsIG5vdCBjcG1fbXVyYW0sDQpBbmQgdGhlIGZ1bmN0aW9ucyBhcmUgbmFtZWQgcWVfbXVy
+YW1fKiwgYW5kIHJlbW92ZWQgY3BtX211cmFtXyosIGxldCBjcG1fbXVyYW0NClVzZSB0aGUgc2Ft
+ZSBmdW5jdGlvbnMgY29kZSB3aXRoIHFlX211cmFtLCBhbmQgZGVmaW5lIGNwbV9tdXJhbV8qIHFl
+X211cmFtXyouIA0KDQpQcmV2aW91c2x5LCBjcG0vcWUtbXVyYW0gZnVuY3Rpb25zIGFyZSBuYW1l
+ZCBjcG1fbXVyYW1fKiBiZWNhdXNlIENQTSBpcyB0aGUgcHJlZGVjZXNzb3INCk9mIFFFLCBhbmQg
+ImRlZmluZSBxZV9tdXJhbV8qIGNwbV9tdXJhbV8qIi4gTm93LCBiZWNhdXNlIFFFIHN1cHBvcnQg
+Ym90aCBBUk0gYW5kIFBvd2VyUEMsDQptb3ZlIHFlIHRvIGRyaXZlci9zb2MsIGFuZCBtb3ZlIHRo
+ZSBjcG0vcWUtbXVyYW0gZnVuY3Rpb25zIHRvIGRydmVyL3NvYyB0b28uIFNvIG5hbWUgdGhlIA0K
+ZnVuY3Rpb25zIHFlX211cmFtXyosIGFuZCAiZGVmaW5lIGNwbV9tdXJhbV8qIHFlX211cmFtXyoi
+DQoNCj4gDQo+IC1TY290dA0KPiANCg0K
