@@ -1,23 +1,32 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0132.outbound.protection.outlook.com [157.56.110.132])
+ (mail-bn1bon0116.outbound.protection.outlook.com [157.56.111.116])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 24B381A0066
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 12:13:57 +1000 (AEST)
-Message-ID: <1441937624.2909.42.camel@freescale.com>
-Subject: Re: [PATCH v2] powerpc/85xx: Add support for Varisys Cyrus board
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8B67B1A2B09
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Sep 2015 12:15:14 +1000 (AEST)
+Message-ID: <1441937700.2909.44.camel@freescale.com>
+Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
 From: Scott Wood <scottwood@freescale.com>
-To: Andy Fleming <afleming@gmail.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Kumar
- Gala" <galak@kernel.crashing.org>, Alex Perez <aperez@alexperez.com>
-Date: Thu, 10 Sep 2015 21:13:44 -0500
-In-Reply-To: <CAKWjMd4YqAA1f0QzGxT1Hr+e_ceft2RHEUH649R5cfZ293t4eQ@mail.gmail.com>
-References: <1441175814-14940-1-git-send-email-afleming@gmail.com>
- <1441217278-21618-1-git-send-email-afleming@gmail.com>
- <CAKWjMd45zYZefWWxsdOO2BE2CYOTpdbXzXz6caN9Sr8XUF6PgA@mail.gmail.com>
- <1441936384.2909.29.camel@freescale.com>
- <CAKWjMd4YqAA1f0QzGxT1Hr+e_ceft2RHEUH649R5cfZ293t4eQ@mail.gmail.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Thu, 10 Sep 2015 21:15:00 -0500
+In-Reply-To: <SN1PR0301MB15508FE927A6868049A9E74C9B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1441011520-15424-1-git-send-email-qiang.zhao@freescale.com>
+ <1441153816.4966.109.camel@freescale.com>
+ <SN1PR0301MB1550752EBCD1B8DECF06483A9B690@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441160299.4966.122.camel@freescale.com>
+ <SN1PR0301MB1550C782E61600D8268C91B79B550@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441816660.29081.7.camel@freescale.com>
+ <SN1PR0301MB155031D53C79CC382734FE2C9B510@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ <1441922820.2909.10.camel@freescale.com>
+ <SN1PR0301MB15508FE927A6868049A9E74C9B500@SN1PR0301MB1550.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,24 +38,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-10 at 21:06 -0500, Andy Fleming wrote:
-> On Thu, Sep 10, 2015 at 8:53 PM, Scott Wood <scottwood@freescale.com> wrote:
-> > On Thu, 2015-09-10 at 20:51 -0500, Andy Fleming wrote:
-> > > ping? I'd love if this could go in for 4.3
+On Thu, 2015-09-10 at 21:09 -0500, Zhao Qiang-B45475 wrote:
+> On Fri, 2015-09-11 at 06:07AM -0500, Wood Scott-B07421 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, September 11, 2015 6:07 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> > Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > bytes-alignment to genalloc
 > > 
-> > It's way too late for 4.3.
+> > On Wed, 2015-09-09 at 21:26 -0500, Zhao Qiang-B45475 wrote:
+> > > On Wed, 2015-09-10 at 12:38AM -0500, Wood Scott-B07421 wrote:
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Thursday, September 10, 2015 12:38 AM
+> > > > To: Zhao Qiang-B45475
+> > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org;
+> > > > Li Yang-Leo-R58472; paulus@samba.org
+> > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation with
+> > > > bytes-alignment to genalloc
+> > > > 
+> > > > On Sat, 2015-09-05 at 22:13 -0500, Zhao Qiang-B45475 wrote:
+> > > > > On Wed, 2015-09-02 at 10:18AM +0800, Wood Scott-B07421 wrote:
+> > > > > > -----Original Message-----
+> > > > > > From: Wood Scott-B07421
+> > > > > > Sent: Wednesday, September 02, 2015 10:18 AM
+> > > > > > To: Zhao Qiang-B45475
+> > > > > > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > > > > > lauraa@codeaurora.org; Xie Xiaobo-R63061;
+> > > > > > benh@kernel.crashing.org; Li Yang-Leo-R58472; paulus@samba.org
+> > > > > > Subject: Re: [PATCH V7 1/3] genalloc:support memory-allocation
+> > > > > > with bytes-alignment to genalloc
+> > > > > > 
+> > > > > > On Tue, 2015-09-01 at 21:10 -0500, Zhao Qiang-B45475 wrote:
+> > > > > > > On Wed, 2015-09-02 at 08:38AM +0800, Wood Scott-B07421 wrote:
+> > > > > > > > -----Original Message-----
+> > > > > > > > From: Wood Scott-B07421
+> > > > > > > > Sent: Wednesday, September 02, 2015 8:30 AM
+> > > > > > > > To: Zhao Qiang-B45475
+> > > > > > > > Cc: linux-kernel@vger.kernel.org;
+> > > > > > > > linuxppc-dev@lists.ozlabs.org; lauraa@codeaurora.org; Xie
+> > > > > > > > Xiaobo-R63061; benh@kernel.crashing.org; Li Yang-Leo-R58472;
+> > > > > > > > paulus@samba.org
+> > > > > > > > Subject: Re: [PATCH V7 1/3] genalloc:support
+> > > > > > > > memory-allocation with bytes-alignment to genalloc
+> > > > > > > > 
+> > > > > > > > On Mon, 2015-08-31 at 16:58 +0800, Zhao Qiang wrote:
+> > > > > > > > > Bytes alignment is required to manage some special RAM, so
+> > > > > > > > > add gen_pool_first_fit_align to genalloc, meanwhile add
+> > > > > > > > > gen_pool_alloc_data to pass data to
+> > > > > > > > > gen_pool_first_fit_align(modify gen_pool_alloc as a
+> > > > > > > > > wrapper)
+> > > > > > > > > 
+> > > > > > > > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > > > > > > > > ---
+> > > > > > > > > Changes for v6:
+> > > > > > > > >       - patches set v6 include a new patch because of using
+> > > > > > > > >       - genalloc to manage QE MURAM, patch 0001 is the new
+> > > > > > > > >       - patch, adding bytes alignment for allocation for
+> > use.
+> > > > > > > > > Changes for v7:
+> > > > > > > > >       - cpm muram also need to use genalloc to manage, it
+> > has
+> > > > > > > > >         a function to reserve a specific region of muram,
+> > > > > > > > >         add offset to genpool_data for start addr to be
+> > > > allocated.
+> > > > > > > > 
+> > > > > > > > This seems to be describing more than just the changes in
+> > > > > > > > this
+> > > > patch.
+> > > > > > > > What does also handling cpm have to do with this patch?  Are
+> > > > > > > > you adding support for reserving a specific region in this
+> > > > > > > > patch?  I don't see it, and in any case it should go in a
+> > different patch.
+> > > > > > > 
+> > > > > > > Yes, I added. The code below can support the function.
+> > > > > > >       offset_bit = (alignment->offset + (1UL << order) - 1) >>
+> > > > order;
+> > > > > > >       return bitmap_find_next_zero_area(map, size, start +
+> > > > > > > offset_bit,
+> > > > > > nr,
+> > > > > > >                         align_mask);
+> > > > > > > 
+> > > > > > > CPM has an function cpm_muram_alloc_fixed, needing to allocate
+> > > > > > > muram from a Specific offset. So I add the code and add offset
+> > > > > > > to
+> > > > struct data.
+> > > > > > 
+> > > > > > I thought the offset was related to the previous discussion of
+> > > > > > checking for allocation failure.  Are you using it to implement
+> > > > > > alloc_fixed()?  If so, please don't.  Besides the awkward
+> > > > > > implementation (what does it logically have to do with
+> > > > > > gen_pool_first_fit_align?), it does not appear to be correct -
+> > > > > > - what happens with multiple chunks?  What happens if part of
+> > > > > > the region the caller is trying to reserve is already taken?
+> > > > > > Implement a proper function to reserve a fixed genalloc region.
+> > > > > > 
+> > > > > The offset is which allocation block address need to be larger
+> > > > > than, Not equal to, it really like the parameter start of the
+> > > > > algo(the bitnumber To start searching at).
+> > > > 
+> > > > cpm_muram_alloc_fixed() is not "search starting at this offset".  It
+> > > > is "reserve this exact range or fail".
+> > > 
+> > > Yes, you are right! How about to add a new algo into genalloc to
+> > > search At offset, then handle it in muram layer, if the address return
+> > > from genalloc Is not equal to offset, return negative number?
 > > 
-> > -Scott
+> > If you're adding a new algorithm, why not make it actually do what you
+> > want rather than adding something different and fixing it up in the
+> > caller?
 > 
-> Argh. I was hoping that, as it's a one-line change to existing code it
-> might be able to sneak in.
+> Because I'm not sure whether it is proper to add a "offset searching at" 
+> algo. 
 
-It's hard to call it "sneaking in" when a new pull request chain has to be 
-created just for one patch. :-P
-
-Non-bugfixes need to be in my pull request to Michael before the merge window 
-opens (and thus submitted long enough before that for me to have a chance to 
-do a review/apply/build-test session), not a couple days before the merge 
-window closes.  Why does it matter if this is in 4.3 versus 4.4?
+Again, "offset searching at" is not what we want anyway.  What we want is 
+"allocate this range or fail".  Why would it be improper to have such an 
+algorithm?
 
 -Scott
