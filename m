@@ -1,19 +1,21 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 05C411A2BD7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2015 18:06:30 +1000 (AEST)
-Subject: Re: [PATCH v3] powerpc32: memcpy: only use dcbz once cache is enabled
-To: Scott Wood <scottwood@freescale.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <20150911143348.F1D9F1A2420@localhost.localdomain>
- <1442007315.2909.49.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTP id 32D021A2BD7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2015 19:57:26 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc32: memcpy/memset: only use dcbz once cache is
+ enabled
+To: Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>
+References: <20150910064112.7B7791A241C@localhost.localdomain>
+ <1441922743.2909.8.camel@freescale.com>
+ <1441934656.23806.3.camel@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, sojkam1@fel.cvut.cz,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <55F3DD01.9020507@c-s.fr>
-Date: Sat, 12 Sep 2015 10:06:25 +0200
+Message-ID: <55F3F701.5030303@c-s.fr>
+Date: Sat, 12 Sep 2015 11:57:21 +0200
 MIME-Version: 1.0
-In-Reply-To: <1442007315.2909.49.camel@freescale.com>
+In-Reply-To: <1441934656.23806.3.camel@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,50 +27,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Le 11/09/2015 23:35, Scott Wood a écrit :
-> On Fri, 2015-09-11 at 16:33 +0200, Christophe Leroy wrote:
->> memcpy() uses instruction dcbz to speed up copy by not wasting time
->> loading cache line with data that will be overwritten.
->> Some platform like mpc52xx do no have cache active at startup and
->> can therefore not use memcpy(). Allthough no part of the code
->> explicitly uses memcpy(), GCC makes calls to it.
+
+Le 11/09/2015 03:24, Michael Ellerman a écrit :
+> On Thu, 2015-09-10 at 17:05 -0500, Scott Wood wrote:
 >>
->> This patch modifies memcpy() such that at startup, memcpy()
->> unconditionally jumps to generic_memcpy() which doesn't use
->> the dcbz instruction.
->>
->> Once the initial MMU is set up, in machine_init() we patch memcpy()
->> by replacing this inconditional jump by a NOP
->>
->> Reported-by: Michal Sojka <sojkam1@fel.cvut.cz>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->> changes in v2:
->>    Using feature-fixups instead of hardcoded call to patch_instruction()
->>    Handling of memset() added
->> changes in v3:
->>    Not using anymore feature-fixups
->>    Handling of memset() removed
-> Why was handling of memset() removed?
+>> I don't think this duplication is what Michael meant by "the normal cpu
+>> feature sections".  What else is going to use this very specific
+>> infrastructure?
+> Yeah, sorry, I was hoping you could do it with the existing cpu feature
+> mechanism.
+>
+> It looks like the timing doesn't work, ie. you need to patch this stuff in
+> machine_init(), which is later than the regular patching which gets done in
+> early_init().
+>
+> This is one of the festering differences we have between the 32 and 64-bit
+> initialisation code, ie. on 64-bit we do the patching much later.
 >
 >
 
-Initially, the issue was reported for memcpy() only. v1 was only 
-handling memcpy()
-When it came to using fixups with v2, it took the opportunity to also 
-handle memset() just in case, as it was quite simple.
-Now with v3, we are back to using simple solution with 
-patch_instruction() as recommended by Michael, having to point to the 
-instruction to be replaced by a NOP.
-For memcpy() it is quite easy, we just put a jump to generic_memcpy() as 
-first instruction of memcpy().
-For memset() we don't have a generic_memset() to jump to in the begining 
-of memset(). We have to skip the handling of complete cache lines (block 
-starting with "clrlwi    r7,r6,32-LG_CACHELINE_BYTES"). This means we 
-have to add a global symbol for that to use with patch_instruction()
+I've just thought about maybe another alternative.
+Is there any issue with calling do_feature_fixups() twice for the same 
+features ?
+If not, we could define a MMU_CACHE_NOW_ON dummy MMU feature, then
+call again do_feature_fixups() in machine_init() to patch memcpy/memset 
+stuff, something like:
 
-memset() doesn't seem to be an issue for the time being. Should we do it 
-anyway ?
+In arch/powerpc/include/asm/mmu.h:
++#define MMU_CACHE_NOW_ON                ASM_CONST(0x00008000)
+
+In arch/powerpc/kernel/setup_32.c: @machine_init()
+
+         udbg_early_init();
+
++        spec = identify_cpu(0, mfspr(SPRN_PVR));
++        do_feature_fixups(spec->mmu_features | MMU_CACHE_NOW_ON,
++                          &__start___mmu_ftr_fixup,
++                          &__stop___mmu_ftr_fixup);
+
+         /* Do some early initialization based on the flat device tree */
+         early_init_devtree(__va(dt_ptr));
+
 
 Christophe
 
