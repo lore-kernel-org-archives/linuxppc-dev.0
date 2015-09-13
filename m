@@ -1,22 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 32D021A2BD7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Sep 2015 19:57:26 +1000 (AEST)
-Subject: Re: [PATCH v2] powerpc32: memcpy/memset: only use dcbz once cache is
- enabled
-To: Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>
-References: <20150910064112.7B7791A241C@localhost.localdomain>
- <1441922743.2909.8.camel@freescale.com>
- <1441934656.23806.3.camel@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, sojkam1@fel.cvut.cz,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <55F3F701.5030303@c-s.fr>
-Date: Sat, 12 Sep 2015 11:57:21 +0200
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-oi0-x236.google.com (mail-oi0-x236.google.com
+ [IPv6:2607:f8b0:4003:c06::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 18D241A2BD6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Sep 2015 19:03:54 +1000 (AEST)
+Received: by oiev17 with SMTP id v17so62936675oie.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Sep 2015 02:03:52 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1441934656.23806.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1442134868-17607-1-git-send-email-geert@linux-m68k.org>
+References: <1442134868-17607-1-git-send-email-geert@linux-m68k.org>
+Date: Sun, 13 Sep 2015 11:03:51 +0200
+Message-ID: <CAMuHMdV31w=aDD-=uUPOqW71xLpOnH1jWeQpH=6x=vxNSo94FQ@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.3-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 11/09/2015 03:24, Michael Ellerman a écrit :
-> On Thu, 2015-09-10 at 17:05 -0500, Scott Wood wrote:
->>
->> I don't think this duplication is what Michael meant by "the normal cpu
->> feature sections".  What else is going to use this very specific
->> infrastructure?
-> Yeah, sorry, I was hoping you could do it with the existing cpu feature
-> mechanism.
+On Sun, Sep 13, 2015 at 11:01 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Below is the list of build error/warning regressions/improvements in
+> v4.3-rc1[1] compared to v4.2[2].
 >
-> It looks like the timing doesn't work, ie. you need to patch this stuff in
-> machine_init(), which is later than the regular patching which gets done in
-> early_init().
->
-> This is one of the festering differences we have between the 32 and 64-bit
-> initialisation code, ie. on 64-bit we do the patching much later.
->
->
+> Summarized:
+>   - build errors: +15/-6
 
-I've just thought about maybe another alternative.
-Is there any issue with calling do_feature_fixups() twice for the same 
-features ?
-If not, we could define a MMU_CACHE_NOW_ON dummy MMU feature, then
-call again do_feature_fixups() in machine_init() to patch memcpy/memset 
-stuff, something like:
+> [1] http://kisskb.ellerman.id.au/kisskb/head/9353/ (all 254 configs)
+> [2] http://kisskb.ellerman.id.au/kisskb/head/9309/ (all 254 configs)
 
-In arch/powerpc/include/asm/mmu.h:
-+#define MMU_CACHE_NOW_ON                ASM_CONST(0x00008000)
+>   + /home/kisskb/slave/src/arch/arm/kernel/devtree.c: error: implicit declaration of function 'early_init_dt_scan_nodes' [-Werror=implicit-function-declaration]:  => 244:2
+>   + /home/kisskb/slave/src/arch/arm/kernel/devtree.c: error: implicit declaration of function 'early_init_dt_verify' [-Werror=implicit-function-declaration]:  => 215:2
+>   + /home/kisskb/slave/src/arch/arm/kernel/devtree.c: error: implicit declaration of function 'of_flat_dt_match_machine' [-Werror=implicit-function-declaration]:  => 218:2
+>   + /home/kisskb/slave/src/arch/arm/kernel/devtree.c: error: implicit declaration of function 'of_get_flat_dt_prop' [-Werror=implicit-function-declaration]:  => 229:3
+>   + /home/kisskb/slave/src/arch/arm/kernel/devtree.c: error: implicit declaration of function 'of_get_flat_dt_root' [-Werror=implicit-function-declaration]:  => 228:3
+>   + /home/kisskb/slave/src/arch/arm/kernel/patch.c: error: 'L_PTE_DIRTY' undeclared (first use in this function):  => 39:2
+>   + /home/kisskb/slave/src/arch/arm/kernel/patch.c: error: 'L_PTE_MT_WRITEBACK' undeclared (first use in this function):  => 39:2
+>   + /home/kisskb/slave/src/arch/arm/kernel/patch.c: error: 'L_PTE_PRESENT' undeclared (first use in this function):  => 39:2
+>   + /home/kisskb/slave/src/arch/arm/kernel/patch.c: error: 'L_PTE_XN' undeclared (first use in this function):  => 39:2
+>   + /home/kisskb/slave/src/arch/arm/kernel/patch.c: error: 'L_PTE_YOUNG' undeclared (first use in this function):  => 39:2
 
-In arch/powerpc/kernel/setup_32.c: @machine_init()
+arm-randconfig
 
-         udbg_early_init();
+>   + /home/kisskb/slave/src/arch/powerpc/kvm/book3s_pr.c: error: 'last_sc' may be used uninitialized in this function [-Werror=uninitialized]:  => 1094:31
 
-+        spec = identify_cpu(0, mfspr(SPRN_PVR));
-+        do_feature_fixups(spec->mmu_features | MMU_CACHE_NOW_ON,
-+                          &__start___mmu_ftr_fixup,
-+                          &__stop___mmu_ftr_fixup);
+powerpc-allyesconfig, powerpc-randconfig, powerpc-allmodconfig
 
-         /* Do some early initialization based on the flat device tree */
-         early_init_devtree(__va(dt_ptr));
+Gr{oetje,eeting}s,
 
+                        Geert
 
-Christophe
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
