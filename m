@@ -1,41 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C8E71A2BD5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 23:32:31 +1000 (AEST)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 93E2714076E
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 23:32:30 +1000 (AEST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 14 Sep 2015 18:59:51 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 45741125801B
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 18:59:09 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8EDTWSI51249338
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 18:59:33 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8EDTV96010363
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 18:59:32 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, mikey@neuling.org
-Subject: Re: [RFC] powerpc/hugetlb: Add warning message when gpage allocation
- request fails
-In-Reply-To: <1442212051-15235-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1442212051-15235-1-git-send-email-khandual@linux.vnet.ibm.com>
-Date: Mon, 14 Sep 2015 18:59:25 +0530
-Message-ID: <87egi1f7t6.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54D741A2BFD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 01:21:08 +1000 (AEST)
+Message-ID: <1442244054.2909.66.camel@freescale.com>
+Subject: Re: [PATCH v3] powerpc32: memset: only use dcbz once cache is enabled
+From: Scott Wood <scottwood@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <sojkam1@fel.cvut.cz>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 14 Sep 2015 10:20:54 -0500
+In-Reply-To: <20150914062159.353701A2413@localhost.localdomain>
+References: <20150914062159.353701A2413@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,29 +27,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
+On Mon, 2015-09-14 at 08:21 +0200, Christophe Leroy wrote:
+> memset() uses instruction dcbz to speed up clearing by not wasting time
+> loading cache line with data that will be overwritten.
+> Some platform like mpc52xx do no have cache active at startup and
+> can therefore not use memset(). Allthough no part of the code
+> explicitly uses memset(), GCC may makes calls to it.
+> 
+> This patch modifies memset() such that at startup, memset()
+> unconditionally jumps to simple_memset() which doesn't use
+> the dcbz instruction.
+> 
+> Once the initial MMU is set up, in machine_init() we patch memset()
+> by replacing this inconditional jump by a NOP
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+> This patch goes on to of [v3] powerpc32: memcpy: only use dcbz once cache 
+> is enabled
+> 
+> Changes in v2:
+>    was part of [v2] powerpc32: memcpy/memset: only use dcbz once cache is 
+> enabled
+> changes in v3:
+>   Not using anymore feature-fixups
+>   Handling of memcpy() and memset() split in two patches
+>   
+>  arch/powerpc/kernel/setup_32.c |  1 +
+>  arch/powerpc/lib/copy_32.S     | 15 +++++++++++++++
+>  2 files changed, 16 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+> index 362495f..345ec3a 100644
+> --- a/arch/powerpc/kernel/setup_32.c
+> +++ b/arch/powerpc/kernel/setup_32.c
+> @@ -124,6 +124,7 @@ notrace void __init machine_init(u64 dt_ptr)
+>       udbg_early_init();
+>  
+>       patch_instruction((unsigned int *)&memcpy, PPC_INST_NOP);
+> +     patch_instruction((unsigned int *)&memset, PPC_INST_NOP);
+>  
+>       /* Do some early initialization based on the flat device tree */
+>       early_init_devtree(__va(dt_ptr));
+> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+> index da5847d..68a59d4 100644
+> --- a/arch/powerpc/lib/copy_32.S
+> +++ b/arch/powerpc/lib/copy_32.S
+> @@ -73,8 +73,13 @@ CACHELINE_MASK = (L1_CACHE_BYTES-1)
+>   * Use dcbz on the complete cache lines in the destination
+>   * to set them to zero.  This requires that the destination
+>   * area is cacheable.  -- paulus
+> + *
+> + * During early init, cache might not be active yet, so dcbz cannot be 
+> used.
+> + * We therefore jump to simple_memset which doesn't use dcbz. This jump is
+> + * replaced by a nop once cache is active. This is done in machine_init()
+>   */
+>  _GLOBAL(memset)
+> +     b       simple_memset
+>       rlwimi  r4,r4,8,16,23
+>       rlwimi  r4,r4,16,0,15
+>  
+> @@ -122,6 +127,16 @@ _GLOBAL(memset)
+>       bdnz    8b
+>       blr
+>  
+> +/* Simple version of memset used during early boot until cache is enabled 
+> */
+> +simple_memset:
+> +     cmplwi  cr0,r5,0
+> +     addi    r6,r3,-1
+> +     beqlr
+> +     mtctr   r5
+> +1:   stbu    r4,1(r6)
+> +     bdnz    1b
+> +     blr
 
-> When a 16GB huge page is requested on POWER platform through kernel command
-> line interface, it silently fails because of the lack of any gigantic pages
-> on the system which the platform should have communicated through 16GB memory
-> blocks in the device tree during boot time. For example
->
-> [    0.480940] HugeTLB registered 16 GB page size, pre-allocated 0 pages
-> [    0.480945] HugeTLB registered 16 MB page size, pre-allocated 16 pages
->
-> This adds a warning message during alloc_bootmem_huge_page request both on
-> book3e and book3s powerpc platforms. After this change
->
-> [    0.000000] Gigantic HugeTLB page not available
-> [    0.473417] HugeTLB registered 16 GB page size, pre-allocated 0 pages
-> [    0.473423] HugeTLB registered 16 MB page size, pre-allocated 16 pages
+Instead couldn't you use the generic memset at label 2: and patch the "bne 
+2f"?
 
-
-That info is already part of the second line isn't it ? ie
-
-[    0.473417] HugeTLB registered 16 GB page size, pre-allocated 0 pages
-
-pre-allocated 0 pages indicate we didn't allocate anything. So why do we
-need to add more details fo kernel output ?
-
--aneesh
+-Scott
