@@ -1,15 +1,37 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 3ACB21A2BD5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 16:22:03 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3] powerpc32: memset: only use dcbz once cache is enabled
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com, sojkam1@fel.cvut.cz
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20150914062159.353701A2413@localhost.localdomain>
-Date: Mon, 14 Sep 2015 08:21:59 +0200 (CEST)
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF97A1A2BD5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 16:28:27 +1000 (AEST)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8D375140D17
+ for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 16:28:27 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 14 Sep 2015 16:28:25 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 896442CE8054
+ for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 16:28:22 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8E6SAqS31785024
+ for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 16:28:19 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8E6RmsP027745
+ for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 16:27:49 +1000
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com, mikey@neuling.org
+Subject: [RFC] powerpc/hugetlb: Add warning message when gpage allocation
+ request fails
+Date: Mon, 14 Sep 2015 11:57:31 +0530
+Message-Id: <1442212051-15235-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,79 +41,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-memset() uses instruction dcbz to speed up clearing by not wasting time
-loading cache line with data that will be overwritten.
-Some platform like mpc52xx do no have cache active at startup and
-can therefore not use memset(). Allthough no part of the code
-explicitly uses memset(), GCC may makes calls to it.
+When a 16GB huge page is requested on POWER platform through kernel command
+line interface, it silently fails because of the lack of any gigantic pages
+on the system which the platform should have communicated through 16GB memory
+blocks in the device tree during boot time. For example
 
-This patch modifies memset() such that at startup, memset()
-unconditionally jumps to simple_memset() which doesn't use
-the dcbz instruction.
+[    0.480940] HugeTLB registered 16 GB page size, pre-allocated 0 pages
+[    0.480945] HugeTLB registered 16 MB page size, pre-allocated 16 pages
 
-Once the initial MMU is set up, in machine_init() we patch memset()
-by replacing this inconditional jump by a NOP
+This adds a warning message during alloc_bootmem_huge_page request both on
+book3e and book3s powerpc platforms. After this change
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+[    0.000000] Gigantic HugeTLB page not available
+[    0.473417] HugeTLB registered 16 GB page size, pre-allocated 0 pages
+[    0.473423] HugeTLB registered 16 MB page size, pre-allocated 16 pages
+
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
-This patch goes on to of [v3] powerpc32: memcpy: only use dcbz once cache is enabled
+ arch/powerpc/mm/hugetlbpage.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-Changes in v2:
-   was part of [v2] powerpc32: memcpy/memset: only use dcbz once cache is enabled
-changes in v3:
-  Not using anymore feature-fixups
-  Handling of memcpy() and memset() split in two patches
-  
- arch/powerpc/kernel/setup_32.c |  1 +
- arch/powerpc/lib/copy_32.S     | 15 +++++++++++++++
- 2 files changed, 16 insertions(+)
-
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 362495f..345ec3a 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -124,6 +124,7 @@ notrace void __init machine_init(u64 dt_ptr)
- 	udbg_early_init();
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 06c1452..54f3e42 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -307,8 +307,10 @@ int alloc_bootmem_huge_page(struct hstate *hstate)
+ 	int idx = shift_to_mmu_psize(huge_page_shift(hstate));
+ 	int nr_gpages = gpage_freearray[idx].nr_gpages;
  
- 	patch_instruction((unsigned int *)&memcpy, PPC_INST_NOP);
-+	patch_instruction((unsigned int *)&memset, PPC_INST_NOP);
+-	if (nr_gpages == 0)
++	if (nr_gpages == 0) {
++		printk(KERN_WARNING "Gigantic HugeTLB page not available\n");
+ 		return 0;
++	}
  
- 	/* Do some early initialization based on the flat device tree */
- 	early_init_devtree(__va(dt_ptr));
-diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-index da5847d..68a59d4 100644
---- a/arch/powerpc/lib/copy_32.S
-+++ b/arch/powerpc/lib/copy_32.S
-@@ -73,8 +73,13 @@ CACHELINE_MASK = (L1_CACHE_BYTES-1)
-  * Use dcbz on the complete cache lines in the destination
-  * to set them to zero.  This requires that the destination
-  * area is cacheable.  -- paulus
-+ *
-+ * During early init, cache might not be active yet, so dcbz cannot be used.
-+ * We therefore jump to simple_memset which doesn't use dcbz. This jump is
-+ * replaced by a nop once cache is active. This is done in machine_init()
-  */
- _GLOBAL(memset)
-+	b	simple_memset
- 	rlwimi	r4,r4,8,16,23
- 	rlwimi	r4,r4,16,0,15
- 
-@@ -122,6 +127,16 @@ _GLOBAL(memset)
- 	bdnz	8b
- 	blr
- 
-+/* Simple version of memset used during early boot until cache is enabled */
-+simple_memset:
-+	cmplwi	cr0,r5,0
-+	addi	r6,r3,-1
-+	beqlr
-+	mtctr	r5
-+1:	stbu	r4,1(r6)
-+	bdnz	1b
-+	blr
-+
- /*
-  * This version uses dcbz on the complete cache lines in the
-  * destination area to reduce memory traffic.  This requires that
+ #ifdef CONFIG_HIGHMEM
+ 	/*
+@@ -429,8 +431,10 @@ void add_gpage(u64 addr, u64 page_size, unsigned long number_of_pages)
+ int alloc_bootmem_huge_page(struct hstate *hstate)
+ {
+ 	struct huge_bootmem_page *m;
+-	if (nr_gpages == 0)
++	if (nr_gpages == 0) {
++		printk(KERN_WARNING "Gigantic HugeTLB page not available\n");
+ 		return 0;
++	}
+ 	m = phys_to_virt(gpage_freearray[--nr_gpages]);
+ 	gpage_freearray[nr_gpages] = 0;
+ 	list_add(&m->list, &huge_boot_pages);
 -- 
 2.1.0
