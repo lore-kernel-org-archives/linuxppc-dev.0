@@ -1,12 +1,12 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <465f0dccd656edb00f00f45cb8034f9a8825f19e.1442259101.git.geoff@infradead.org>
+Message-Id: <497c718e763173b28ffe4e50258cb257c362d404.1442259101.git.geoff@infradead.org>
 In-Reply-To: <cover.1442259101.git.geoff@infradead.org>
 References: <cover.1442259101.git.geoff@infradead.org>
-From: Rudhresh Kumar J <rudhresh.jk@gmail.com>
-Subject: [PATCH 1/3] drivers/ps3: Fix ps3-lpm white space
+From: Colin Ian King <colin.king@canonical.com>
+Subject: [PATCH 2/3] drivers/ps3: Fix ps3-vuart null dereference
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- cbe-oss-dev@lists.ozlabs.org, Rudhresh Kumar J <rudhresh.jk@gmail.com>
+ cbe-oss-dev@lists.ozlabs.org, Colin Ian King <colin.king@canonical.com>
 Sender: Geoff Levand <geoff@infradead.org>
 Date: Mon, 14 Sep 2015 19:35:04 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,26 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fixed a coding style issue.
+On the unlikely event that drv is null, the current code will
+perform a null pointer dereference with it when printing a dev_dbg
+message.  Instead, the BUG_ON check on drv should be performed
+before we emit the dev_dbg message.
 
-Signed-off-by: Rudhresh Kumar J <rudhresh.jk@gmail.com>
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- drivers/ps3/ps3-lpm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/ps3/ps3-vuart.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
-index cb7d3a6..e34de9a 100644
---- a/drivers/ps3/ps3-lpm.c
-+++ b/drivers/ps3/ps3-lpm.c
-@@ -901,7 +901,7 @@ void ps3_disable_pm(u32 cpu)
- 	result = lv1_stop_lpm(lpm_priv->lpm_id, &tmp);
+diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
+index d6db822..632701a 100644
+--- a/drivers/ps3/ps3-vuart.c
++++ b/drivers/ps3/ps3-vuart.c
+@@ -1000,12 +1000,11 @@ static int ps3_vuart_probe(struct ps3_system_bus_device *dev)
+ 	dev_dbg(&dev->core, "%s:%d\n", __func__, __LINE__);
  
- 	if (result) {
--		if(result != LV1_WRONG_STATE)
-+		if (result != LV1_WRONG_STATE)
- 			dev_err(sbd_core(), "%s:%u: lv1_stop_lpm failed: %s\n",
- 				__func__, __LINE__, ps3_result(result));
- 		return;
+ 	drv = ps3_system_bus_dev_to_vuart_drv(dev);
++	BUG_ON(!drv);
+ 
+ 	dev_dbg(&dev->core, "%s:%d: (%s)\n", __func__, __LINE__,
+ 		drv->core.core.name);
+ 
+-	BUG_ON(!drv);
+-
+ 	if (dev->port_number >= PORT_COUNT) {
+ 		BUG();
+ 		return -EINVAL;
 -- 
 2.1.0
