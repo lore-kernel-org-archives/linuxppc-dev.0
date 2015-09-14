@@ -1,25 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <catalin.marinas@arm.com>
+Received: from eu-smtp-delivery-143.mimecast.com
+ (eu-smtp-delivery-143.mimecast.com [207.82.80.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E98151A2BE4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 19:59:10 +1000 (AEST)
-Message-ID: <1442224750.21802.2.camel@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc32: memcpy/memset: only use dcbz once cache
- is enabled
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Scott Wood <scottwood@freescale.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- sojkam1@fel.cvut.cz, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Mon, 14 Sep 2015 19:59:10 +1000
-In-Reply-To: <55F3F701.5030303@c-s.fr>
-References: <20150910064112.7B7791A241C@localhost.localdomain>
- <1441922743.2909.8.camel@freescale.com>
- <1441934656.23806.3.camel@ellerman.id.au> <55F3F701.5030303@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id F378B1A2BD6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 20:07:12 +1000 (AEST)
+Date: Mon, 14 Sep 2015 11:00:35 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: msi: mark bitmap with kmemleak_not_leak()
+Message-ID: <20150914100034.GD22991@e104818-lin.cambridge.arm.com>
+References: <1442169397-4271-1-git-send-email-kda@linux-powerpc.org>
+ <1442210677.8149.1.camel@ellerman.id.au>
+ <20150914091529.GC22991@e104818-lin.cambridge.arm.com>
+ <1442223409.21802.1.camel@ellerman.id.au>
+MIME-Version: 1.0
+In-Reply-To: <1442223409.21802.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=WINDOWS-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-09-12 at 11:57 +0200, christophe leroy wrote:
-> 
-> Le 11/09/2015 03:24, Michael Ellerman a écrit :
-> > On Thu, 2015-09-10 at 17:05 -0500, Scott Wood wrote:
-> >>
-> >> I don't think this duplication is what Michael meant by "the normal cpu
-> >> feature sections".  What else is going to use this very specific
-> >> infrastructure?
-> > Yeah, sorry, I was hoping you could do it with the existing cpu feature
-> > mechanism.
-> >
-> > It looks like the timing doesn't work, ie. you need to patch this stuff in
-> > machine_init(), which is later than the regular patching which gets done in
-> > early_init().
-> >
-> > This is one of the festering differences we have between the 32 and 64-bit
-> > initialisation code, ie. on 64-bit we do the patching much later.
->
-> I've just thought about maybe another alternative.
-> Is there any issue with calling do_feature_fixups() twice for the same
-> features ?
+On Mon, Sep 14, 2015 at 07:36:49PM +1000, Michael Ellerman wrote:
+> On Mon, 2015-09-14 at 10:15 +0100, Catalin Marinas wrote:
+> > You could add some flag to struct msi_bitmap based on mem_init_done to
+> > be able to reclaim some slab memory later. If the bitmap is small and
+> > such allocation doesn't happen outside boot, it may not be worth the
+> > effort.
+>=20
+> Right, I think that's the only solution, and it's not quite worth the tro=
+uble
+> because it's generally not freed at all, except via error paths.
+>=20
+> Still I think it would be better to move the kmemleak annotation into the=
+ msi
+> bitmap test code, or maybe a wrapper that's called by the test code.
 
-Not that I can think of, but you never know.
+Other kmemleak annotations throughout the kernel are usually added
+immediately after the allocation place (since that's what kmemleak
+reports as a leak).
 
-> If not, we could define a MMU_CACHE_NOW_ON dummy MMU feature, then
-> call again do_feature_fixups() in machine_init() to patch memcpy/memset 
-> stuff, something like:
-> 
-> In arch/powerpc/include/asm/mmu.h:
-> +#define MMU_CACHE_NOW_ON                ASM_CONST(0x00008000)
-> 
-> In arch/powerpc/kernel/setup_32.c: @machine_init()
-> 
->          udbg_early_init();
-> 
-> +        spec = identify_cpu(0, mfspr(SPRN_PVR));
-> +        do_feature_fixups(spec->mmu_features | MMU_CACHE_NOW_ON,
-> +                          &__start___mmu_ftr_fixup,
-> +                          &__stop___mmu_ftr_fixup);
+> That way if someone starts calling alloc/free from a hotplug path for exa=
+mple,
+> kmemleak will still notice that free isn't really freeing.
 
+Kmemleak would only notice the moment you clear the last reference to
+the allocated memory block (like bmp->bitmap =3D NULL), so this patch
+should work as along as "freeing" is done via msi_bitmap_free().
 
-Did you try that? It would be cleaner, especially now that you have to do memset as well.
+BTW, you can even use kmemleak_ignore(). The difference is that the
+bitmap won't be scanned by kmemleak and that's fine since it doesn't
+contain any pointers.
 
-cheers
+--=20
+Catalin
