@@ -1,12 +1,13 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <f9c28dfbef66b7f23f1e542397bd6a77d1258ddd.1442259101.git.geoff@infradead.org>
+Message-Id: <465f0dccd656edb00f00f45cb8034f9a8825f19e.1442259101.git.geoff@infradead.org>
 In-Reply-To: <cover.1442259101.git.geoff@infradead.org>
 References: <cover.1442259101.git.geoff@infradead.org>
-From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 3/3] powerpc/ps3: Refresh ps3_defconfig
+From: Rudhresh Kumar J <rudhresh.jk@gmail.com>
+Subject: [PATCH 1/3] drivers/ps3: Fix ps3-lpm white space
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- cbe-oss-dev@lists.ozlabs.org
+ cbe-oss-dev@lists.ozlabs.org, Rudhresh Kumar J <rudhresh.jk@gmail.com>
+Sender: Geoff Levand <geoff@infradead.org>
 Date: Mon, 14 Sep 2015 19:35:04 +0000
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -17,40 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fixed a coding style issue.
+
+Signed-off-by: Rudhresh Kumar J <rudhresh.jk@gmail.com>
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/configs/ps3_defconfig | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/ps3/ps3-lpm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/ps3_defconfig b/arch/powerpc/configs/ps3_defconfig
-index adc14e8..09f117e 100644
---- a/arch/powerpc/configs/ps3_defconfig
-+++ b/arch/powerpc/configs/ps3_defconfig
-@@ -53,7 +53,6 @@ CONFIG_IP_PNP_DHCP=y
- # CONFIG_INET_XFRM_MODE_BEET is not set
- # CONFIG_INET_LRO is not set
- # CONFIG_INET_DIAG is not set
--CONFIG_IPV6=y
- CONFIG_BT=m
- CONFIG_BT_RFCOMM=m
- CONFIG_BT_RFCOMM_TTY=y
-@@ -142,7 +141,6 @@ CONFIG_RTC_DRV_PS3=y
- # CONFIG_IOMMU_SUPPORT is not set
- CONFIG_EXT2_FS=m
- CONFIG_EXT3_FS=m
--# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
- CONFIG_EXT4_FS=y
- CONFIG_QUOTA=y
- CONFIG_QFMT_V2=y
-@@ -175,9 +173,7 @@ CONFIG_DEBUG_LOCKDEP=y
- CONFIG_DEBUG_LIST=y
- CONFIG_RCU_CPU_STALL_TIMEOUT=60
- # CONFIG_FTRACE is not set
--CONFIG_CRYPTO_GCM=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SALSA20=m
- CONFIG_CRYPTO_LZO=m
--# CONFIG_CRYPTO_ANSI_CPRNG is not set
+diff --git a/drivers/ps3/ps3-lpm.c b/drivers/ps3/ps3-lpm.c
+index cb7d3a6..e34de9a 100644
+--- a/drivers/ps3/ps3-lpm.c
++++ b/drivers/ps3/ps3-lpm.c
+@@ -901,7 +901,7 @@ void ps3_disable_pm(u32 cpu)
+ 	result = lv1_stop_lpm(lpm_priv->lpm_id, &tmp);
+ 
+ 	if (result) {
+-		if(result != LV1_WRONG_STATE)
++		if (result != LV1_WRONG_STATE)
+ 			dev_err(sbd_core(), "%s:%u: lv1_stop_lpm failed: %s\n",
+ 				__func__, __LINE__, ps3_result(result));
+ 		return;
 -- 
 2.1.0
