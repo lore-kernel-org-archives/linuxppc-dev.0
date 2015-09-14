@@ -1,39 +1,26 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D1AB1A2BD5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 15:18:15 +1000 (AEST)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C1F5A140779
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 15:18:14 +1000 (AEST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Mon, 14 Sep 2015 10:48:12 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2B7BA3940053
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 10:48:09 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8E5I5mq27984086
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 10:48:05 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8E5I4Fh031772
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 10:48:05 +0530
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq : powernv: Report Pmax throttling if capped below
- nominal frequency
-Date: Mon, 14 Sep 2015 10:47:54 +0530
-Message-Id: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4EDA21A2BFA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 15:19:48 +1000 (AEST)
+Message-ID: <1442207986.8149.0.camel@ellerman.id.au>
+Subject: Re: Build regressions/improvements in v4.3-rc1
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, Stephen Rothwell
+ <sfr@canb.auug.org.au>,  "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 14 Sep 2015 15:19:46 +1000
+In-Reply-To: <CAMuHMdVGEDKFxD7wf6ZOAGiOByM5c0Awx-anLsYGLQHV1yJW+w@mail.gmail.com>
+References: <1442134868-17607-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdV31w=aDD-=uUPOqW71xLpOnH1jWeQpH=6x=vxNSo94FQ@mail.gmail.com>
+ <20150913151926.GA19850@roeck-us.net>
+ <CAMuHMdVGEDKFxD7wf6ZOAGiOByM5c0Awx-anLsYGLQHV1yJW+w@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,37 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Log a 'critical' message if the max frequency is reduced below nominal
-frequency. We already log 'info' message if the max frequency is
-capped below turbo frequency. CPU should guarantee atleast nominal
-frequency, but not turbo frequency in all system configurations and
-environments. So report the pmax throttling with severity when Pmax is
-dipped below nominal frequency.
+On Sun, 2015-09-13 at 22:23 +0200, Geert Uytterhoeven wrote:
+> On Sun, Sep 13, 2015 at 5:19 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> > arm64:allmodconfig:
+> >
+> > drivers/firmware/qcom_scm-32.c:196:4: error: expected string literal before ‘__asmeq’
+> > drivers/firmware/qcom_scm-32.c:221:2: error: implicit declaration of function ‘secure_flush_area’
+> > drivers/firmware/qcom_scm-32.c:239:2: error: implicit declaration of function ‘outer_inv_range’
+> > drivers/firmware/qcom_scm-32.c:331:4: error: expected string literal before ‘__asmeq’
+> > drivers/firmware/qcom_scm-32.c:361:4: error: expected string literal before ‘__asmeq’
+> 
+> Time for kisskb to gain arm64 support?
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Yes. I'll add it to my TODO list.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 64994e1..2d9ed42 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -327,8 +327,13 @@ static void powernv_cpufreq_throttle_check(void *data)
- 		if (chips[i].throttled)
- 			goto next;
- 		chips[i].throttled = true;
--		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
--			chips[i].id, pmsr_pmax);
-+		if (pmsr_pmax < powernv_pstate_info.nominal)
-+			pr_crit("CPU %d on Chip %u has Pmax reduced to %d\n",
-+				cpu, chips[i].id, pmsr_pmax);
-+		else
-+			pr_info("CPU %d on Chip %u has Pmax reduced to %d\n",
-+				cpu, chips[i].id, pmsr_pmax);
-+
- 	} else if (chips[i].throttled) {
- 		chips[i].throttled = false;
- 		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
--- 
-1.9.3
+cheers
