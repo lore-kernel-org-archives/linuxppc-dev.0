@@ -1,30 +1,26 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26C151A2BD6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 20:28:16 +1000 (AEST)
-Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
- [209.85.220.48])
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-f178.google.com (mail-yk0-f178.google.com
+ [209.85.160.178])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A80B91401AD
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 20:28:15 +1000 (AEST)
-Received: by pacex6 with SMTP id ex6so141089946pac.0
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 03:28:13 -0700 (PDT)
-Date: Mon, 14 Sep 2015 15:58:09 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2] cpufreq : powernv: Report Pmax throttling if capped
- below nominal frequency
-Message-ID: <20150914102809.GD32551@linux>
-References: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1442219507-6499-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CECED1A2BD6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 20:42:18 +1000 (AEST)
+Received: by ykdt18 with SMTP id t18so128054399ykd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 03:42:16 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442219507-6499-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <20150914100034.GD22991@e104818-lin.cambridge.arm.com>
+References: <1442169397-4271-1-git-send-email-kda@linux-powerpc.org>
+ <1442210677.8149.1.camel@ellerman.id.au>
+ <20150914091529.GC22991@e104818-lin.cambridge.arm.com>
+ <1442223409.21802.1.camel@ellerman.id.au>
+ <20150914100034.GD22991@e104818-lin.cambridge.arm.com>
+Date: Mon, 14 Sep 2015 13:42:15 +0300
+Message-ID: <CAOJe8K3a9VZq1U=P8icNUgBoo3qj_s7+vg5kf+NnPmSTXD-zLQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: msi: mark bitmap with kmemleak_not_leak()
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,44 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14-09-15, 14:01, Shilpasri G Bhat wrote:
-> Log a 'critical' message if the max frequency is reduced below nominal
-> frequency. We already log 'info' message if the max frequency is
-> capped below turbo frequency. CPU should guarantee atleast nominal
-> frequency, but not turbo frequency in all system configurations and
-> environments. So report the pmax throttling with severity when Pmax is
-> dipped below nominal frequency.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
-> Changes from v1:
-> - Modified the printk messages as per Viresh's suggestion.
-> 
->  drivers/cpufreq/powernv-cpufreq.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 64994e1..cb50138 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -327,8 +327,14 @@ static void powernv_cpufreq_throttle_check(void *data)
->  		if (chips[i].throttled)
->  			goto next;
->  		chips[i].throttled = true;
-> -		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
-> -			chips[i].id, pmsr_pmax);
-> +		if (pmsr_pmax < powernv_pstate_info.nominal)
-> +			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
-> +				cpu, chips[i].id, pmsr_pmax,
-> +				powernv_pstate_info.nominal);
-> +		else
-> +			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
-> +				cpu, chips[i].id, pmsr_pmax,
-> +				powernv_pstate_info.max);
->  	} else if (chips[i].throttled) {
->  		chips[i].throttled = false;
->  		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+On 9/14/15, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> On Mon, Sep 14, 2015 at 07:36:49PM +1000, Michael Ellerman wrote:
+>> On Mon, 2015-09-14 at 10:15 +0100, Catalin Marinas wrote:
+>> > You could add some flag to struct msi_bitmap based on mem_init_done to
+>> > be able to reclaim some slab memory later. If the bitmap is small and
+>> > such allocation doesn't happen outside boot, it may not be worth the
+>> > effort.
+>>
+>> Right, I think that's the only solution, and it's not quite worth the
+>> trouble
+>> because it's generally not freed at all, except via error paths.
+>>
+>> Still I think it would be better to move the kmemleak annotation into the
+>> msi
+>> bitmap test code, or maybe a wrapper that's called by the test code.
+>
+> Other kmemleak annotations throughout the kernel are usually added
+> immediately after the allocation place (since that's what kmemleak
+> reports as a leak).
+>
+>> That way if someone starts calling alloc/free from a hotplug path for
+>> example,
+>> kmemleak will still notice that free isn't really freeing.
+>
+> Kmemleak would only notice the moment you clear the last reference to
+> the allocated memory block (like bmp->bitmap = NULL), so this patch
+> should work as along as "freeing" is done via msi_bitmap_free().
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
--- 
-viresh
+Ok, I'll move kmemleak annotaion for the bitmap inside the test_basics()
+plus add a flag into msi_bitmap to test for the type of allocation
+though the slab_is_available()
+
+Thank you.
+
+>
+> BTW, you can even use kmemleak_ignore(). The difference is that the
+> bitmap won't be scanned by kmemleak and that's fine since it doesn't
+> contain any pointers.
+>
+> --
+> Catalin
+>
+>
