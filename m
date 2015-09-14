@@ -1,26 +1,25 @@
-Return-Path: <VDavydov@odin.com>
-Received: from relay.parallels.com (relay.parallels.com [195.214.232.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 227D71A2BD6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 19:12:25 +1000 (AEST)
-Date: Mon, 14 Sep 2015 12:00:10 +0300
-From: Vladimir Davydov <vdavydov@parallels.com>
-To: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-CC: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
- <anton@samba.org>, <akpm@linux-foundation.org>, <nacc@linux.vnet.ibm.com>,
- <gkurz@linux.vnet.ibm.com>, <zhong@linux.vnet.ibm.com>,
- <grant.likely@linaro.org>, <nikunj@linux.vnet.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/2] mm: Replace nr_node_ids for loop with for_each_node
- in list lru
-Message-ID: <20150914090010.GB30743@esperanza>
-References: <1441737107-23103-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
- <1441737107-23103-2-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1441737107-23103-2-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E98151A2BE4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 19:59:10 +1000 (AEST)
+Message-ID: <1442224750.21802.2.camel@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc32: memcpy/memset: only use dcbz once cache
+ is enabled
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Scott Wood <scottwood@freescale.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ sojkam1@fel.cvut.cz, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Date: Mon, 14 Sep 2015 19:59:10 +1000
+In-Reply-To: <55F3F701.5030303@c-s.fr>
+References: <20150910064112.7B7791A241C@localhost.localdomain>
+ <1441922743.2909.8.camel@freescale.com>
+ <1441934656.23806.3.camel@ellerman.id.au> <55F3F701.5030303@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,59 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Wed, Sep 09, 2015 at 12:01:46AM +0530, Raghavendra K T wrote:
-> The functions used in the patch are in slowpath, which gets called
-> whenever alloc_super is called during mounts.
+On Sat, 2015-09-12 at 11:57 +0200, christophe leroy wrote:
 > 
-> Though this should not make difference for the architectures with
-> sequential numa node ids, for the powerpc which can potentially have
-> sparse node ids (for e.g., 4 node system having numa ids, 0,1,16,17
-> is common), this patch saves some unnecessary allocations for
-> non existing numa nodes.
+> Le 11/09/2015 03:24, Michael Ellerman a écrit :
+> > On Thu, 2015-09-10 at 17:05 -0500, Scott Wood wrote:
+> >>
+> >> I don't think this duplication is what Michael meant by "the normal cpu
+> >> feature sections".  What else is going to use this very specific
+> >> infrastructure?
+> > Yeah, sorry, I was hoping you could do it with the existing cpu feature
+> > mechanism.
+> >
+> > It looks like the timing doesn't work, ie. you need to patch this stuff in
+> > machine_init(), which is later than the regular patching which gets done in
+> > early_init().
+> >
+> > This is one of the festering differences we have between the 32 and 64-bit
+> > initialisation code, ie. on 64-bit we do the patching much later.
+>
+> I've just thought about maybe another alternative.
+> Is there any issue with calling do_feature_fixups() twice for the same
+> features ?
+
+Not that I can think of, but you never know.
+
+> If not, we could define a MMU_CACHE_NOW_ON dummy MMU feature, then
+> call again do_feature_fixups() in machine_init() to patch memcpy/memset 
+> stuff, something like:
 > 
-> Even without that saving, perhaps patch makes code more readable.
-
-Do I understand correctly that node 0 must always be in
-node_possible_map? I ask, because we currently test
-lru->node[0].memcg_lrus to determine if the list is memcg aware.
-
+> In arch/powerpc/include/asm/mmu.h:
+> +#define MMU_CACHE_NOW_ON                ASM_CONST(0x00008000)
 > 
-> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-> ---
->  mm/list_lru.c | 23 +++++++++++++++--------
->  1 file changed, 15 insertions(+), 8 deletions(-)
+> In arch/powerpc/kernel/setup_32.c: @machine_init()
 > 
-> diff --git a/mm/list_lru.c b/mm/list_lru.c
-> index 909eca2..5a97f83 100644
-> --- a/mm/list_lru.c
-> +++ b/mm/list_lru.c
-> @@ -377,7 +377,7 @@ static int memcg_init_list_lru(struct list_lru *lru, bool memcg_aware)
->  {
->  	int i;
->  
-> -	for (i = 0; i < nr_node_ids; i++) {
-> +	for_each_node(i) {
->  		if (!memcg_aware)
->  			lru->node[i].memcg_lrus = NULL;
+>          udbg_early_init();
+> 
+> +        spec = identify_cpu(0, mfspr(SPRN_PVR));
+> +        do_feature_fixups(spec->mmu_features | MMU_CACHE_NOW_ON,
+> +                          &__start___mmu_ftr_fixup,
+> +                          &__stop___mmu_ftr_fixup);
 
-So, we don't explicitly initialize memcg_lrus for nodes that are not in
-node_possible_map. That's OK, because we allocate lru->node using
-kzalloc. However, this partial nullifying in case !memcg_aware looks
-confusing IMO. Let's drop it, I mean something like this:
 
-static int memcg_init_list_lru(struct list_lru *lru, bool memcg_aware)
-{
-	int i;
+Did you try that? It would be cleaner, especially now that you have to do memset as well.
 
-	if (!memcg_aware)
-		return 0;
-
-	for_each_node(i) {
-		if (memcg_init_list_lru_node(&lru->node[i]))
-			goto fail;
-	}
-
-Thanks,
-Vladimir
+cheers
