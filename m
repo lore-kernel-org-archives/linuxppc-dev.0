@@ -1,29 +1,20 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45FE81A2BD6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 17:06:20 +1000 (AEST)
-Received: from mail-pa0-f44.google.com (mail-pa0-f44.google.com
- [209.85.220.44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CF5E51401AD
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 17:06:19 +1000 (AEST)
-Received: by pacfv12 with SMTP id fv12so138364432pac.2
- for <linuxppc-dev@ozlabs.org>; Mon, 14 Sep 2015 00:06:17 -0700 (PDT)
-Date: Mon, 14 Sep 2015 12:36:13 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] cpufreq : powernv: Report Pmax throttling if capped
- below nominal frequency
-Message-ID: <20150914070613.GA32551@linux>
-References: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-Path: <sojkam1@fel.cvut.cz>
+Received: from max.feld.cvut.cz (max.feld.cvut.cz [147.32.192.36])
+ by lists.ozlabs.org (Postfix) with ESMTP id 5D41C1A2BD6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 17:15:08 +1000 (AEST)
+From: Michal Sojka <sojkam1@fel.cvut.cz>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3] powerpc32: memset: only use dcbz once cache is enabled
+In-Reply-To: <20150914062159.353701A2413@localhost.localdomain>
+References: <20150914062159.353701A2413@localhost.localdomain>
+Date: Mon, 14 Sep 2015 09:15:00 +0200
+Message-ID: <87bnd5xyiz.fsf@steelpick.2x.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,43 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14-09-15, 10:47, Shilpasri G Bhat wrote:
-> Log a 'critical' message if the max frequency is reduced below nominal
-> frequency. We already log 'info' message if the max frequency is
-> capped below turbo frequency. CPU should guarantee atleast nominal
-> frequency, but not turbo frequency in all system configurations and
-> environments. So report the pmax throttling with severity when Pmax is
-> dipped below nominal frequency.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 64994e1..2d9ed42 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -327,8 +327,13 @@ static void powernv_cpufreq_throttle_check(void *data)
->  		if (chips[i].throttled)
->  			goto next;
->  		chips[i].throttled = true;
-> -		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
-> -			chips[i].id, pmsr_pmax);
-> +		if (pmsr_pmax < powernv_pstate_info.nominal)
-> +			pr_crit("CPU %d on Chip %u has Pmax reduced to %d\n",
-> +				cpu, chips[i].id, pmsr_pmax);
-> +		else
-> +			pr_info("CPU %d on Chip %u has Pmax reduced to %d\n",
-> +				cpu, chips[i].id, pmsr_pmax);
+On Mon, Sep 14 2015, Christophe Leroy wrote:
+> memset() uses instruction dcbz to speed up clearing by not wasting time
+> loading cache line with data that will be overwritten.
+> Some platform like mpc52xx do no have cache active at startup and
+> can therefore not use memset(). Allthough no part of the code
+> explicitly uses memset(), GCC may makes calls to it.
+>
+> This patch modifies memset() such that at startup, memset()
+> unconditionally jumps to simple_memset() which doesn't use
+> the dcbz instruction.
 
-I think the messages here can be improved a bit here to something
-like:
+I tested both v3 patches (memcpy and memset) and they work for me.
 
-			pr_warn("CPU %d on Chip %u has Pmax reduced below nominal freq (%d < %d)\n",
-                                 cpu, chips[i].id, pmsr_pmax, powernv_pstate_info.nominal);
-
-And similarly for the pr_info case as well.
-
--- 
-viresh
+Thanks
+-Michal
