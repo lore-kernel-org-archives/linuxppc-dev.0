@@ -1,26 +1,36 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f178.google.com (mail-yk0-f178.google.com
- [209.85.160.178])
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CECED1A2BD6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 20:42:18 +1000 (AEST)
-Received: by ykdt18 with SMTP id t18so128054399ykd.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 03:42:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1468F1A2BD6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 21:35:37 +1000 (AEST)
+Date: Mon, 14 Sep 2015 13:35:20 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Will Deacon <will.deacon@arm.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Boqun Feng <boqun.feng@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC 3/5] powerpc: atomic: implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150914113520.GP18489@twins.programming.kicks-ass.net>
+References: <1440730099-29133-1-git-send-email-boqun.feng@gmail.com>
+ <1440730099-29133-4-git-send-email-boqun.feng@gmail.com>
+ <20150828104854.GB16853@twins.programming.kicks-ass.net>
+ <20150828120614.GC29325@fixme-laptop.cn.ibm.com>
+ <20150828141602.GA924@fixme-laptop.cn.ibm.com>
+ <20150828153921.GF19282@twins.programming.kicks-ass.net>
+ <20150901190027.GP1612@arm.com>
+ <20150901214540.GI4029@linux.vnet.ibm.com>
+ <20150902095906.GC25720@arm.com> <20150911124507.GB16833@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <20150914100034.GD22991@e104818-lin.cambridge.arm.com>
-References: <1442169397-4271-1-git-send-email-kda@linux-powerpc.org>
- <1442210677.8149.1.camel@ellerman.id.au>
- <20150914091529.GC22991@e104818-lin.cambridge.arm.com>
- <1442223409.21802.1.camel@ellerman.id.au>
- <20150914100034.GD22991@e104818-lin.cambridge.arm.com>
-Date: Mon, 14 Sep 2015 13:42:15 +0300
-Message-ID: <CAOJe8K3a9VZq1U=P8icNUgBoo3qj_s7+vg5kf+NnPmSTXD-zLQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: msi: mark bitmap with kmemleak_not_leak()
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150911124507.GB16833@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +40,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/14/15, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> On Mon, Sep 14, 2015 at 07:36:49PM +1000, Michael Ellerman wrote:
->> On Mon, 2015-09-14 at 10:15 +0100, Catalin Marinas wrote:
->> > You could add some flag to struct msi_bitmap based on mem_init_done to
->> > be able to reclaim some slab memory later. If the bitmap is small and
->> > such allocation doesn't happen outside boot, it may not be worth the
->> > effort.
->>
->> Right, I think that's the only solution, and it's not quite worth the
->> trouble
->> because it's generally not freed at all, except via error paths.
->>
->> Still I think it would be better to move the kmemleak annotation into the
->> msi
->> bitmap test code, or maybe a wrapper that's called by the test code.
->
-> Other kmemleak annotations throughout the kernel are usually added
-> immediately after the allocation place (since that's what kmemleak
-> reports as a leak).
->
->> That way if someone starts calling alloc/free from a hotplug path for
->> example,
->> kmemleak will still notice that free isn't really freeing.
->
-> Kmemleak would only notice the moment you clear the last reference to
-> the allocated memory block (like bmp->bitmap = NULL), so this patch
-> should work as along as "freeing" is done via msi_bitmap_free().
 
-Ok, I'll move kmemleak annotaion for the bitmap inside the test_basics()
-plus add a flag into msi_bitmap to test for the type of allocation
-though the slab_is_available()
+Sorry for being tardy, I had a wee spell of feeling horrible and then I
+procrastinated longer than I should have.
 
-Thank you.
+On Fri, Sep 11, 2015 at 01:45:07PM +0100, Will Deacon wrote:
 
->
-> BTW, you can even use kmemleak_ignore(). The difference is that the
-> bitmap won't be scanned by kmemleak and that's fine since it doesn't
-> contain any pointers.
->
-> --
-> Catalin
->
->
+> Peter, any thoughts? I'm not au fait with the x86 memory model, but what
+> Paul's saying is worrying.
+
+Right, so Paul is right -- and I completely forgot (I used to know about
+that).
+
+So all the TSO archs (SPARC-TSO, x86 (!OOSTORE) and s390) can do
+smp_load_acquire()/smp_store_release() with just barrier(), and while:
+
+	smp_store_release(&x);
+	smp_load_acquire(&x);
+
+will provide full order by means of the address dependency,
+
+	smp_store_release(&x);
+	smp_load_acquire(&y);
+
+will not. Because the one reorder TSO allows is exactly that one.
+
+> Peter -- if the above reordering can happen on x86, then moving away
+> from RCpc is going to be less popular than I hoped...
+
+Sadly yes.. We could of course try and split LOCK from ACQUIRE again,
+but I'm not sure that's going to help anything except confusion.
