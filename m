@@ -1,22 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAF411A2C25
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 09:52:15 +1000 (AEST)
-Message-ID: <1442274735.6342.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v3] powerpc32: memset: only use dcbz once cache is enabled
+ by lists.ozlabs.org (Postfix) with ESMTPS id 569A01A2BD6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 09:55:38 +1000 (AEST)
+Message-ID: <1442274938.6342.3.camel@ellerman.id.au>
+Subject: Re: [RFC] powerpc/hugetlb: Add warning message when gpage
+ allocation request fails
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- sojkam1@fel.cvut.cz, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 15 Sep 2015 09:52:15 +1000
-In-Reply-To: <1442247213.2909.71.camel@freescale.com>
-References: <20150914062159.353701A2413@localhost.localdomain>
- <1442244054.2909.66.camel@freescale.com> <55F6EB5F.1070203@c-s.fr>
- <1442247213.2909.71.camel@freescale.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, mikey@neuling.org, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>
+Date: Tue, 15 Sep 2015 09:55:38 +1000
+In-Reply-To: <20150914162426.GA54362@linux.vnet.ibm.com>
+References: <1442212051-15235-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <87egi1f7t6.fsf@linux.vnet.ibm.com>
+ <20150914162426.GA54362@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,48 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-14 at 11:13 -0500, Scott Wood wrote:
-> On Mon, 2015-09-14 at 17:44 +0200, Christophe LEROY wrote:
-> > Le 14/09/2015 17:20, Scott Wood a écrit :
-> > > On Mon, 2015-09-14 at 08:21 +0200, Christophe Leroy wrote:
-> > > > diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-> > > > index da5847d..68a59d4 100644
-> > > > --- a/arch/powerpc/lib/copy_32.S
-> > > > +++ b/arch/powerpc/lib/copy_32.S
-> > > > @@ -73,8 +73,13 @@ CACHELINE_MASK = (L1_CACHE_BYTES-1)
-> > > > @@ -122,6 +127,16 @@ _GLOBAL(memset)
-> > > >        bdnz    8b
-> > > >        blr
-> > > >   
-> > > > +/* Simple version of memset used during early boot until cache is 
-> > > > enabled
-> > > > */
-> > > > +simple_memset:
-> > > > +     cmplwi  cr0,r5,0
-> > > > +     addi    r6,r3,-1
-> > > > +     beqlr
-> > > > +     mtctr   r5
-> > > > +1:   stbu    r4,1(r6)
-> > > > +     bdnz    1b
-> > > > +     blr
-> > > Instead couldn't you use the generic memset at label 2: and patch the "bne
-> > > 2f"?
+On Mon, 2015-09-14 at 09:24 -0700, Nishanth Aravamudan wrote:
+> On 14.09.2015 [18:59:25 +0530], Aneesh Kumar K.V wrote:
+> > Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 > > 
-> > Yes I could but it means adding a global symbol there at the "bne 2f". I 
-> > thought it was what Michael didn't like in my v1 of memcpy().
-> > What name could I give to that symbol ? Something like 
-> > memcpy_nocache_patch: ?
-> > What would be the best ? Having b 2f, and replacing it with bne 2f ? Or 
-> > have b 2f just above and replace it by nop once cache is up ?
+> > > When a 16GB huge page is requested on POWER platform through kernel command
+> > > line interface, it silently fails because of the lack of any gigantic pages
+> > > on the system which the platform should have communicated through 16GB memory
+> > > blocks in the device tree during boot time. For example
+> > >
+> > > [    0.480940] HugeTLB registered 16 GB page size, pre-allocated 0 pages
+> > > [    0.480945] HugeTLB registered 16 MB page size, pre-allocated 16 pages
+> > >
+> > > This adds a warning message during alloc_bootmem_huge_page request both on
+> > > book3e and book3s powerpc platforms. After this change
+> > >
+> > > [    0.000000] Gigantic HugeTLB page not available
+> > > [    0.473417] HugeTLB registered 16 GB page size, pre-allocated 0 pages
+> > > [    0.473423] HugeTLB registered 16 MB page size, pre-allocated 16 pages
+> > 
+> > That info is already part of the second line isn't it ? ie
+> > 
+> > [    0.473417] HugeTLB registered 16 GB page size, pre-allocated 0 pages
+> > 
+> > pre-allocated 0 pages indicate we didn't allocate anything. So why do we
+> > need to add more details fo kernel output ?
 > 
-> I'm not sure why a global symbol for an instruction to be patched would be a 
-> big deal (similar to kvm_emul.S)...  I thought Michael just wanted existing 
-> infrastructure to be used if it's practical to do so.
+> Agreed, the '0 pages' message indicates we failed to pre-allocate any
+> pages. The 'pre-allocate' messages are specifically about the kernel
+> command-line requests for hugepages.
 
-Yeah, I don't mind adding a global if you need it.
+Yeah, that's sufficient. We don't need more boot-time log spam.
 
-I'm not wedded to either approach, I'm just trying to find the least intrusive
-option that uses the most existing code, and is the most maintainable into the
-future.
+All the info you need should be in /sys/kernel/mm anyway. If it's not, then
+that is something we should fix.
 
 cheers
