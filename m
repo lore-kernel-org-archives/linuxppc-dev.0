@@ -1,19 +1,15 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B75591A2BF9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 16:04:38 +1000 (AEST)
-Message-ID: <1442210677.8149.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: msi: mark bitmap with kmemleak_not_leak()
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Catalin Marinas <catalin.marinas@arm.com>
-Date: Mon, 14 Sep 2015 16:04:37 +1000
-In-Reply-To: <1442169397-4271-1-git-send-email-kda@linux-powerpc.org>
-References: <1442169397-4271-1-git-send-email-kda@linux-powerpc.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3ACB21A2BD5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Sep 2015 16:22:03 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3] powerpc32: memset: only use dcbz once cache is enabled
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com, sojkam1@fel.cvut.cz
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20150914062159.353701A2413@localhost.localdomain>
+Date: Mon, 14 Sep 2015 08:21:59 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +19,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-09-13 at 21:36 +0300, Denis Kirjanov wrote:
-> During the MSI bitmap test on boot kmemleak spews the following trace:
-> 
-> unreferenced object 0xc00000016e86c900 (size 64):
->     comm "swapper/0", pid 1, jiffies 4294893173 (age 518.024s)
->     hex dump (first 32 bytes):
-> 	00 00 01 ff 7f ff 7f 37 00 00 00 00 00 00 00 00
-> 	.......7........
-> 	ff ff ff ff ff ff ff ff 01 ff ff ff ff ff ff ff
-> 	................
-> 	backtrace:
-> 	[<c00000000003eebc>] .zalloc_maybe_bootmem+0x3c/0x380
-> 	[<c000000000042d6c>] .msi_bitmap_alloc+0x3c/0xb0
-> 	[<c000000000a9aff8>]
-> 	.msi_bitmap_selftest+0x30/0x2b4
-> 	[<c0000000000090f4>]
-> 	.do_one_initcall+0xd4/0x270
-> 	[<c000000000a8e250>]
-> 	.kernel_init_freeable+0x1a0/0x280
-> 	[<c000000000009b5c>]
-> 	.kernel_init+0x1c/0x120
-> 	[<c000000000007fbc>]
-> 	.ret_from_kernel_thread+0x58/0x9c
-> 
-> The comment in msi_bitmap_free() states that we can't free
-> the bitmap so mark it with the kmemleak_not_leak().
+memset() uses instruction dcbz to speed up clearing by not wasting time
+loading cache line with data that will be overwritten.
+Some platform like mpc52xx do no have cache active at startup and
+can therefore not use memset(). Allthough no part of the code
+explicitly uses memset(), GCC may makes calls to it.
 
-Yeah, and I've always hated that comment :)
+This patch modifies memset() such that at startup, memset()
+unconditionally jumps to simple_memset() which doesn't use
+the dcbz instruction.
 
-I assume it's still true now that we don't use bootmem?
+Once the initial MMU is set up, in machine_init() we patch memset()
+by replacing this inconditional jump by a NOP
 
-cheers
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+This patch goes on to of [v3] powerpc32: memcpy: only use dcbz once cache is enabled
+
+Changes in v2:
+   was part of [v2] powerpc32: memcpy/memset: only use dcbz once cache is enabled
+changes in v3:
+  Not using anymore feature-fixups
+  Handling of memcpy() and memset() split in two patches
+  
+ arch/powerpc/kernel/setup_32.c |  1 +
+ arch/powerpc/lib/copy_32.S     | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+)
+
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 362495f..345ec3a 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -124,6 +124,7 @@ notrace void __init machine_init(u64 dt_ptr)
+ 	udbg_early_init();
+ 
+ 	patch_instruction((unsigned int *)&memcpy, PPC_INST_NOP);
++	patch_instruction((unsigned int *)&memset, PPC_INST_NOP);
+ 
+ 	/* Do some early initialization based on the flat device tree */
+ 	early_init_devtree(__va(dt_ptr));
+diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+index da5847d..68a59d4 100644
+--- a/arch/powerpc/lib/copy_32.S
++++ b/arch/powerpc/lib/copy_32.S
+@@ -73,8 +73,13 @@ CACHELINE_MASK = (L1_CACHE_BYTES-1)
+  * Use dcbz on the complete cache lines in the destination
+  * to set them to zero.  This requires that the destination
+  * area is cacheable.  -- paulus
++ *
++ * During early init, cache might not be active yet, so dcbz cannot be used.
++ * We therefore jump to simple_memset which doesn't use dcbz. This jump is
++ * replaced by a nop once cache is active. This is done in machine_init()
+  */
+ _GLOBAL(memset)
++	b	simple_memset
+ 	rlwimi	r4,r4,8,16,23
+ 	rlwimi	r4,r4,16,0,15
+ 
+@@ -122,6 +127,16 @@ _GLOBAL(memset)
+ 	bdnz	8b
+ 	blr
+ 
++/* Simple version of memset used during early boot until cache is enabled */
++simple_memset:
++	cmplwi	cr0,r5,0
++	addi	r6,r3,-1
++	beqlr
++	mtctr	r5
++1:	stbu	r4,1(r6)
++	bdnz	1b
++	blr
++
+ /*
+  * This version uses dcbz on the complete cache lines in the
+  * destination area to reduce memory traffic.  This requires that
+-- 
+2.1.0
