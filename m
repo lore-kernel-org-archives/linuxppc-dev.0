@@ -2,23 +2,23 @@ Return-Path: <aik@ozlabs.ru>
 Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA61A1A2C76
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA47F1A2C5E
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 20:51:05 +1000 (AEST)
 Received: from /spool/local
  by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 15 Sep 2015 20:51:05 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 07CA62BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 20:51:03 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8FAos7j62062836
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 20:51:02 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8FAoUbR007798
+ Tue, 15 Sep 2015 20:51:04 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id ACD1C2CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 20:51:02 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8FAoub552297778
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 20:51:04 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8FAoUF8021296
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 20:50:30 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
@@ -26,9 +26,9 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
  Alexander Graf <agraf@suse.com>,
  David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
-Subject: [PATCH kernel 8/9] KVM: Fix KVM_SMI chapter number
-Date: Tue, 15 Sep 2015 20:49:38 +1000
-Message-Id: <1442314179-9706-9-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel 9/9] KVM: PPC: Add support for multiple-TCE hcalls
+Date: Tue, 15 Sep 2015 20:49:39 +1000
+Message-Id: <1442314179-9706-10-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1442314179-9706-1-git-send-email-aik@ozlabs.ru>
 References: <1442314179-9706-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,26 +40,559 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The KVM_SMI capability is following the KVM_S390_SET_IRQ_STATE capability
-which is "4.95", this changes the number of the KVM_SMI chapter to 4.96.
+This adds real and virtual mode handlers for the H_PUT_TCE_INDIRECT and
+H_STUFF_TCE hypercalls for user space emulated devices such as IBMVIO
+devices or emulated PCI.  These calls allow adding multiple entries
+(up to 512) into the TCE table in one call which saves time on
+transition between kernel and user space.
+
+This implements the KVM_CAP_PPC_MULTITCE capability. When present,
+the kernel will try handling H_PUT_TCE_INDIRECT and H_STUFF_TCE.
+If they can not be handled by the kernel, they are passed on to
+the user space. The user space still has to have an implementation
+for these.
+
+Both HV and PR-syle KVM are supported.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- Documentation/virtual/kvm/api.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/virtual/kvm/api.txt       |  25 ++++++
+ arch/powerpc/include/asm/kvm_ppc.h      |  12 +++
+ arch/powerpc/kvm/book3s_64_vio.c        | 111 +++++++++++++++++++++++-
+ arch/powerpc/kvm/book3s_64_vio_hv.c     | 145 ++++++++++++++++++++++++++++++--
+ arch/powerpc/kvm/book3s_hv.c            |  26 +++++-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |   6 +-
+ arch/powerpc/kvm/book3s_pr_papr.c       |  35 ++++++++
+ arch/powerpc/kvm/powerpc.c              |   3 +
+ 8 files changed, 350 insertions(+), 13 deletions(-)
 
 diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index d9eccee..d86d831 100644
+index d86d831..593c62a 100644
 --- a/Documentation/virtual/kvm/api.txt
 +++ b/Documentation/virtual/kvm/api.txt
-@@ -3009,7 +3009,7 @@ len must be a multiple of sizeof(struct kvm_s390_irq). It must be > 0
- and it must not exceed (max_vcpus + 32) * sizeof(struct kvm_s390_irq),
- which is the maximum number of possibly pending cpu-local interrupts.
+@@ -3019,6 +3019,31 @@ Returns: 0 on success, -1 on error
  
--4.90 KVM_SMI
-+4.96 KVM_SMI
+ Queues an SMI on the thread's vcpu.
  
- Capability: KVM_CAP_X86_SMM
- Architectures: x86
++4.97 KVM_CAP_PPC_MULTITCE
++
++Capability: KVM_CAP_PPC_MULTITCE
++Architectures: ppc
++Type: vm
++
++This capability means the kernel is capable of handling hypercalls
++H_PUT_TCE_INDIRECT and H_STUFF_TCE without passing those into the user
++space. This significantly accelerates DMA operations for PPC KVM guests.
++User space should expect that its handlers for these hypercalls
++are not going to be called if user space previously registered LIOBN
++in KVM (via KVM_CREATE_SPAPR_TCE or similar calls).
++
++In order to enable H_PUT_TCE_INDIRECT and H_STUFF_TCE use in the guest,
++user space might have to advertise it for the guest. For example,
++IBM pSeries (sPAPR) guest starts using them if "hcall-multi-tce" is
++present in the "ibm,hypertas-functions" device-tree property.
++
++The hypercalls mentioned above may or may not be processed successfully
++in the kernel based fast path. If they can not be handled by the kernel,
++they will get passed on to user space. So user space still has to have
++an implementation for these despite the in kernel acceleration.
++
++This capability is always enabled.
++
+ 5. The kvm_run structure
+ ------------------------
+ 
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index fcde896..e5b968e 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -166,12 +166,24 @@ extern int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu);
+ 
+ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce *args);
++extern struct kvmppc_spapr_tce_table *kvmppc_find_table(
++		struct kvm_vcpu *vcpu, unsigned long liobn);
+ extern long kvmppc_ioba_validate(struct kvmppc_spapr_tce_table *stt,
+ 		unsigned long ioba, unsigned long npages);
+ extern long kvmppc_tce_validate(struct kvmppc_spapr_tce_table *tt,
+ 		unsigned long tce);
++extern long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
++		unsigned long *ua, unsigned long **prmap);
++extern void kvmppc_tce_put(struct kvmppc_spapr_tce_table *tt,
++		unsigned long idx, unsigned long tce);
+ extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			     unsigned long ioba, unsigned long tce);
++extern long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce_list, unsigned long npages);
++extern long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce_value, unsigned long npages);
+ extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			     unsigned long ioba);
+ extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index e347856..d3fc732 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -14,6 +14,7 @@
+  *
+  * Copyright 2010 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
+  * Copyright 2011 David Gibson, IBM Corporation <dwg@au1.ibm.com>
++ * Copyright 2013 Alexey Kardashevskiy, IBM Corporation <aik@au1.ibm.com>
+  */
+ 
+ #include <linux/types.h>
+@@ -37,8 +38,7 @@
+ #include <asm/kvm_host.h>
+ #include <asm/udbg.h>
+ #include <asm/iommu.h>
+-
+-#define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
++#include <asm/tce.h>
+ 
+ static long kvmppc_stt_npages(unsigned long window_size)
+ {
+@@ -200,3 +200,110 @@ fail:
+ 	}
+ 	return ret;
+ }
++
++long kvmppc_h_put_tce(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce)
++{
++	long ret;
++	struct kvmppc_spapr_tce_table *stt;
++
++	stt = kvmppc_find_table(vcpu, liobn);
++	if (!stt)
++		return H_TOO_HARD;
++
++	ret = kvmppc_ioba_validate(stt, ioba, 1);
++	if (ret)
++		return ret;
++
++	ret = kvmppc_tce_validate(stt, tce);
++	if (ret)
++		return ret;
++
++	kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce);
++
++	return H_SUCCESS;
++}
++EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
++
++long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce_list, unsigned long npages)
++{
++	struct kvmppc_spapr_tce_table *stt;
++	long i, ret = H_SUCCESS, idx;
++	unsigned long entry, ua = 0;
++	u64 __user *tces, tce;
++
++	stt = kvmppc_find_table(vcpu, liobn);
++	if (!stt)
++		return H_TOO_HARD;
++
++	entry = ioba >> IOMMU_PAGE_SHIFT_4K;
++	/*
++	 * SPAPR spec says that the maximum size of the list is 512 TCEs
++	 * so the whole table fits in 4K page
++	 */
++	if (npages > 512)
++		return H_PARAMETER;
++
++	if (tce_list & ~IOMMU_PAGE_MASK_4K)
++		return H_PARAMETER;
++
++	ret = kvmppc_ioba_validate(stt, ioba, npages);
++	if (ret)
++		return ret;
++
++	idx = srcu_read_lock(&vcpu->kvm->srcu);
++	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, NULL)) {
++		ret = H_TOO_HARD;
++		goto unlock_exit;
++	}
++	tces = (u64 *) ua;
++
++	for (i = 0; i < npages; ++i) {
++		if (get_user(tce, tces + i)) {
++			ret = H_PARAMETER;
++			goto unlock_exit;
++		}
++		tce = be64_to_cpu(tce);
++
++		ret = kvmppc_tce_validate(stt, tce);
++		if (ret)
++			goto unlock_exit;
++
++		kvmppc_tce_put(stt, entry + i, tce);
++	}
++
++unlock_exit:
++	srcu_read_unlock(&vcpu->kvm->srcu, idx);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(kvmppc_h_put_tce_indirect);
++
++long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce_value, unsigned long npages)
++{
++	struct kvmppc_spapr_tce_table *stt;
++	long i, ret;
++
++	stt = kvmppc_find_table(vcpu, liobn);
++	if (!stt)
++		return H_TOO_HARD;
++
++	ret = kvmppc_ioba_validate(stt, ioba, npages);
++	if (ret)
++		return ret;
++
++	ret = kvmppc_tce_validate(stt, tce_value);
++	if (ret || (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ)))
++		return H_PARAMETER;
++
++	for (i = 0; i < npages; ++i, ioba += IOMMU_PAGE_SIZE_4K)
++		kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce_value);
++
++	return H_SUCCESS;
++}
++EXPORT_SYMBOL_GPL(kvmppc_h_stuff_tce);
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index f0fd84c..bca7b12 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -14,6 +14,7 @@
+  *
+  * Copyright 2010 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
+  * Copyright 2011 David Gibson, IBM Corporation <dwg@au1.ibm.com>
++ * Copyright 2013 Alexey Kardashevskiy, IBM Corporation <aik@au1.ibm.com>
+  */
+ 
+ #include <linux/types.h>
+@@ -30,6 +31,7 @@
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/mmu-hash64.h>
++#include <asm/mmu_context.h>
+ #include <asm/hvcall.h>
+ #include <asm/synch.h>
+ #include <asm/ppc-opcode.h>
+@@ -37,6 +39,7 @@
+ #include <asm/udbg.h>
+ #include <asm/iommu.h>
+ #include <asm/tce.h>
++#include <asm/iommu.h>
+ 
+ #define TCES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
+ 
+@@ -46,7 +49,7 @@
+  * WARNING: This will be called in real or virtual mode on HV KVM and virtual
+  *          mode on PR KVM
+  */
+-static struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
++struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
+ 		unsigned long liobn)
+ {
+ 	struct kvm *kvm = vcpu->kvm;
+@@ -58,6 +61,7 @@ static struct kvmppc_spapr_tce_table *kvmppc_find_table(struct kvm_vcpu *vcpu,
+ 
+ 	return NULL;
+ }
++EXPORT_SYMBOL_GPL(kvmppc_find_table);
+ 
+ /*
+  * Validates IO address.
+@@ -151,11 +155,32 @@ void kvmppc_tce_put(struct kvmppc_spapr_tce_table *stt,
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_tce_put);
+ 
+-/* WARNING: This will be called in real-mode on HV KVM and virtual
+- *          mode on PR KVM
+- */
+-long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+-		      unsigned long ioba, unsigned long tce)
++long kvmppc_gpa_to_ua(struct kvm *kvm, unsigned long gpa,
++		unsigned long *ua, unsigned long **prmap)
++{
++	unsigned long gfn = gpa >> PAGE_SHIFT;
++	struct kvm_memory_slot *memslot;
++
++	memslot = search_memslots(kvm_memslots(kvm), gfn);
++	if (!memslot)
++		return -EINVAL;
++
++	*ua = __gfn_to_hva_memslot(memslot, gfn) |
++		(gpa & ~(PAGE_MASK | TCE_PCI_READ | TCE_PCI_WRITE));
++
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++	if (prmap)
++		*prmap = real_vmalloc_addr(&memslot->arch.rmap[
++				gfn - memslot->base_gfn]);
++#endif
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(kvmppc_gpa_to_ua);
++
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
++		unsigned long ioba, unsigned long tce)
+ {
+ 	struct kvmppc_spapr_tce_table *stt = kvmppc_find_table(vcpu, liobn);
+ 	long ret = H_TOO_HARD;
+@@ -178,7 +203,111 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
++
++static long kvmppc_rm_ua_to_hpa(struct kvm_vcpu *vcpu,
++		unsigned long ua, unsigned long *phpa)
++{
++	pte_t *ptep, pte;
++	unsigned shift = 0;
++
++	ptep = __find_linux_pte_or_hugepte(vcpu->arch.pgdir, ua, &shift);
++	if (!ptep || !pte_present(*ptep))
++		return -ENXIO;
++	pte = *ptep;
++
++	if (!shift)
++		shift = PAGE_SHIFT;
++
++	/* Avoid handling anything potentially complicated in realmode */
++	if (shift > PAGE_SHIFT)
++		return -EAGAIN;
++
++	if (!pte_young(pte))
++		return -EAGAIN;
++
++	*phpa = (pte_pfn(pte) << PAGE_SHIFT) | (ua & ((1ULL << shift) - 1)) |
++			(ua & ~PAGE_MASK);
++
++	return 0;
++}
++
++long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce_list,	unsigned long npages)
++{
++	struct kvmppc_spapr_tce_table *stt;
++	long i, ret = H_SUCCESS;
++	unsigned long tces, entry, ua = 0;
++	unsigned long *rmap = NULL;
++
++	stt = kvmppc_find_table(vcpu, liobn);
++	if (!stt)
++		return H_TOO_HARD;
++
++	entry = ioba >> IOMMU_PAGE_SHIFT_4K;
++	/*
++	 * The spec says that the maximum size of the list is 512 TCEs
++	 * so the whole table addressed resides in 4K page
++	 */
++	if (npages > 512)
++		return H_PARAMETER;
++
++	if (tce_list & ~IOMMU_PAGE_MASK_4K)
++		return H_PARAMETER;
++
++	ret = kvmppc_ioba_validate(stt, ioba, npages);
++	if (ret)
++		return ret;
++
++	if (kvmppc_gpa_to_ua(vcpu->kvm, tce_list, &ua, &rmap))
++		return H_TOO_HARD;
++
++	lock_rmap(rmap);
++	if (kvmppc_rm_ua_to_hpa(vcpu, ua, &tces)) {
++		ret = H_TOO_HARD;
++		goto unlock_exit;
++	}
++
++	for (i = 0; i < npages; ++i) {
++		unsigned long tce = be64_to_cpu(((u64 *)tces)[i]);
++
++		ret = kvmppc_tce_validate(stt, tce);
++		if (ret)
++			goto unlock_exit;
++
++		kvmppc_tce_put(stt, entry + i, tce);
++	}
++
++unlock_exit:
++	unlock_rmap(rmap);
++
++	return ret;
++}
++
++long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
++		unsigned long liobn, unsigned long ioba,
++		unsigned long tce_value, unsigned long npages)
++{
++	struct kvmppc_spapr_tce_table *stt;
++	long i, ret;
++
++	stt = kvmppc_find_table(vcpu, liobn);
++	if (!stt)
++		return H_TOO_HARD;
++
++	ret = kvmppc_ioba_validate(stt, ioba, npages);
++	if (ret)
++		return ret;
++
++	ret = kvmppc_tce_validate(stt, tce_value);
++	if (ret || (tce_value & (TCE_PCI_WRITE | TCE_PCI_READ)))
++		return H_PARAMETER;
++
++	for (i = 0; i < npages; ++i, ioba += IOMMU_PAGE_SIZE_4K)
++		kvmppc_tce_put(stt, ioba >> IOMMU_PAGE_SHIFT_4K, tce_value);
++
++	return H_SUCCESS;
++}
+ 
+ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 		      unsigned long ioba)
+@@ -202,3 +331,5 @@ long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_h_get_tce);
++
++#endif /* KVM_BOOK3S_HV_POSSIBLE */
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index c5edf17..408b1b1 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -775,7 +775,31 @@ int kvmppc_pseries_do_hcall(struct kvm_vcpu *vcpu)
+ 		if (kvmppc_xics_enabled(vcpu)) {
+ 			ret = kvmppc_xics_hcall(vcpu, req);
+ 			break;
+-		} /* fallthrough */
++		}
++		return RESUME_HOST;
++	case H_PUT_TCE:
++		ret = kvmppc_h_put_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
++						kvmppc_get_gpr(vcpu, 5),
++						kvmppc_get_gpr(vcpu, 6));
++		if (ret == H_TOO_HARD)
++			return RESUME_HOST;
++		break;
++	case H_PUT_TCE_INDIRECT:
++		ret = kvmppc_h_put_tce_indirect(vcpu, kvmppc_get_gpr(vcpu, 4),
++						kvmppc_get_gpr(vcpu, 5),
++						kvmppc_get_gpr(vcpu, 6),
++						kvmppc_get_gpr(vcpu, 7));
++		if (ret == H_TOO_HARD)
++			return RESUME_HOST;
++		break;
++	case H_STUFF_TCE:
++		ret = kvmppc_h_stuff_tce(vcpu, kvmppc_get_gpr(vcpu, 4),
++						kvmppc_get_gpr(vcpu, 5),
++						kvmppc_get_gpr(vcpu, 6),
++						kvmppc_get_gpr(vcpu, 7));
++		if (ret == H_TOO_HARD)
++			return RESUME_HOST;
++		break;
+ 	default:
+ 		return RESUME_HOST;
+ 	}
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 2273dca..fd1997c 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1917,7 +1917,7 @@ hcall_real_table:
+ 	.long	DOTSYM(kvmppc_h_clear_ref) - hcall_real_table
+ 	.long	DOTSYM(kvmppc_h_protect) - hcall_real_table
+ 	.long	DOTSYM(kvmppc_h_get_tce) - hcall_real_table
+-	.long	DOTSYM(kvmppc_h_put_tce) - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_put_tce) - hcall_real_table
+ 	.long	0		/* 0x24 - H_SET_SPRG0 */
+ 	.long	DOTSYM(kvmppc_h_set_dabr) - hcall_real_table
+ 	.long	0		/* 0x2c */
+@@ -1995,8 +1995,8 @@ hcall_real_table:
+ 	.long	0		/* 0x12c */
+ 	.long	0		/* 0x130 */
+ 	.long	DOTSYM(kvmppc_h_set_xdabr) - hcall_real_table
+-	.long	0		/* 0x138 */
+-	.long	0		/* 0x13c */
++	.long	DOTSYM(kvmppc_rm_h_stuff_tce) - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_put_tce_indirect) - hcall_real_table
+ 	.long	0		/* 0x140 */
+ 	.long	0		/* 0x144 */
+ 	.long	0		/* 0x148 */
+diff --git a/arch/powerpc/kvm/book3s_pr_papr.c b/arch/powerpc/kvm/book3s_pr_papr.c
+index f2c75a1..02176fd 100644
+--- a/arch/powerpc/kvm/book3s_pr_papr.c
++++ b/arch/powerpc/kvm/book3s_pr_papr.c
+@@ -280,6 +280,37 @@ static int kvmppc_h_pr_logical_ci_store(struct kvm_vcpu *vcpu)
+ 	return EMULATE_DONE;
+ }
+ 
++static int kvmppc_h_pr_put_tce_indirect(struct kvm_vcpu *vcpu)
++{
++	unsigned long liobn = kvmppc_get_gpr(vcpu, 4);
++	unsigned long ioba = kvmppc_get_gpr(vcpu, 5);
++	unsigned long tce = kvmppc_get_gpr(vcpu, 6);
++	unsigned long npages = kvmppc_get_gpr(vcpu, 7);
++	long rc;
++
++	rc = kvmppc_h_put_tce_indirect(vcpu, liobn, ioba,
++			tce, npages);
++	if (rc == H_TOO_HARD)
++		return EMULATE_FAIL;
++	kvmppc_set_gpr(vcpu, 3, rc);
++	return EMULATE_DONE;
++}
++
++static int kvmppc_h_pr_stuff_tce(struct kvm_vcpu *vcpu)
++{
++	unsigned long liobn = kvmppc_get_gpr(vcpu, 4);
++	unsigned long ioba = kvmppc_get_gpr(vcpu, 5);
++	unsigned long tce_value = kvmppc_get_gpr(vcpu, 6);
++	unsigned long npages = kvmppc_get_gpr(vcpu, 7);
++	long rc;
++
++	rc = kvmppc_h_stuff_tce(vcpu, liobn, ioba, tce_value, npages);
++	if (rc == H_TOO_HARD)
++		return EMULATE_FAIL;
++	kvmppc_set_gpr(vcpu, 3, rc);
++	return EMULATE_DONE;
++}
++
+ static int kvmppc_h_pr_xics_hcall(struct kvm_vcpu *vcpu, u32 cmd)
+ {
+ 	long rc = kvmppc_xics_hcall(vcpu, cmd);
+@@ -306,6 +337,10 @@ int kvmppc_h_pr(struct kvm_vcpu *vcpu, unsigned long cmd)
+ 		return kvmppc_h_pr_bulk_remove(vcpu);
+ 	case H_PUT_TCE:
+ 		return kvmppc_h_pr_put_tce(vcpu);
++	case H_PUT_TCE_INDIRECT:
++		return kvmppc_h_pr_put_tce_indirect(vcpu);
++	case H_STUFF_TCE:
++		return kvmppc_h_pr_stuff_tce(vcpu);
+ 	case H_CEDE:
+ 		kvmppc_set_msr_fast(vcpu, kvmppc_get_msr(vcpu) | MSR_EE);
+ 		kvm_vcpu_block(vcpu);
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 2e51289..c7c2802 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -566,6 +566,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_PPC_GET_SMMU_INFO:
+ 		r = 1;
+ 		break;
++	case KVM_CAP_SPAPR_MULTITCE:
++		r = 1;
++		break;
+ #endif
+ 	default:
+ 		r = 0;
 -- 
 2.4.0.rc3.8.gfb3e7d5
