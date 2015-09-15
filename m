@@ -1,44 +1,38 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
+Return-Path: <dja@axtens.net>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF7AB1A2C20
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 13:44:32 +1000 (AEST)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 311E61A2C5D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Sep 2015 15:08:23 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 17F4F140291
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 13:44:31 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 0AA961401CD
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 15:08:23 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 15 Sep 2015 13:44:28 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 353552BB0057
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 13:44:26 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8F3iIcb55836840
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 13:44:26 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8F3hrAR008307
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 13:43:54 +1000
-Message-ID: <55F793E8.7050909@linux.vnet.ibm.com>
-Date: Tue, 15 Sep 2015 09:13:36 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-CC: linuxppc-dev@ozlabs.org, mikey@neuling.org
-Subject: Re: [RFC] powerpc/hugetlb: Add warning message when gpage allocation
- request fails
-References: <1442212051-15235-1-git-send-email-khandual@linux.vnet.ibm.com>
- <87egi1f7t6.fsf@linux.vnet.ibm.com>
- <20150914162426.GA54362@linux.vnet.ibm.com>
-In-Reply-To: <20150914162426.GA54362@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ for <linuxppc-dev@ozlabs.org> from <dja@axtens.net>;
+ Tue, 15 Sep 2015 15:08:21 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DFB092BB0051
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 15:08:17 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8F589Dw64028742
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 15:08:17 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8F57iQk011399
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Sep 2015 15:07:45 +1000
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
+ imunsie@au1.ibm.com, andrew.donnellan@au1.ibm.com,
+ Daniel Axtens <dja@axtens.net>
+Subject: [PATCH v2] cxl: Fix unbalanced pci_dev_get in cxl_probe
+Date: Tue, 15 Sep 2015 15:04:07 +1000
+Message-Id: <1442293447-1843-1-git-send-email-dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,38 +42,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/14/2015 09:54 PM, Nishanth Aravamudan wrote:
-> On 14.09.2015 [18:59:25 +0530], Aneesh Kumar K.V wrote:
->> > Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
->> > 
->>> > > When a 16GB huge page is requested on POWER platform through kernel command
->>> > > line interface, it silently fails because of the lack of any gigantic pages
->>> > > on the system which the platform should have communicated through 16GB memory
->>> > > blocks in the device tree during boot time. For example
->>> > >
->>> > > [    0.480940] HugeTLB registered 16 GB page size, pre-allocated 0 pages
->>> > > [    0.480945] HugeTLB registered 16 MB page size, pre-allocated 16 pages
->>> > >
->>> > > This adds a warning message during alloc_bootmem_huge_page request both on
->>> > > book3e and book3s powerpc platforms. After this change
->>> > >
->>> > > [    0.000000] Gigantic HugeTLB page not available
->>> > > [    0.473417] HugeTLB registered 16 GB page size, pre-allocated 0 pages
->>> > > [    0.473423] HugeTLB registered 16 MB page size, pre-allocated 16 pages
->> > 
->> > 
->> > That info is already part of the second line isn't it ? ie
->> > 
->> > [    0.473417] HugeTLB registered 16 GB page size, pre-allocated 0 pages
->> > 
->> > pre-allocated 0 pages indicate we didn't allocate anything. So why do we
->> > need to add more details fo kernel output ?
-> Agreed, the '0 pages' message indicates we failed to pre-allocate any
-> pages. The 'pre-allocate' messages are specifically about the kernel
-> command-line requests for hugepages.
-> 
-> Not sure I understand the motivation for this?
+Currently the first thing we do in cxl_probe is to grab a reference
+on the pci device. Later on, we call device_register on our adapter.
+In our remove path, we call device_unregister, but we never call
+pci_dev_put. We therefore leak the device every time we do a
+reflash.
 
-The motivation was just to add a cause to the failure of allocation
-of requested 16G huge pages. I think "pre-allocated 0 pages" does
-not hint about the cause of the failure.
+device_register/unregister is sufficient to hold the reference.
+Therefore, drop the call to pci_dev_get.
+
+Here's why this is safe.
+The proposed cxl_probe(pdev) calls cxl_adapter_init:
+    a) init calls cxl_adapter_alloc, which creates a struct cxl,
+       conventionally called adapter. This struct contains a
+       device entry, adapter->dev.
+
+    b) init calls cxl_configure_adapter, where we set
+       adapter->dev.parent = &dev->dev (here dev is the pci dev)
+
+So at this point, the cxl adapter's device's parent is the PCI
+device that I want to be refcounted properly.
+
+    c) init calls cxl_register_adapter
+       *) cxl_register_adapter calls device_register(&adapter->dev)
+
+So now we're in device_register, where dev is the adapter device, and
+we want to know if the PCI device is safe after we return.
+
+device_register(&adapter->dev) calls device_initialize() and then
+device_add().
+
+device_add() does a get_device(). device_add() also explicitly grabs
+the device's parent, and calls get_device() on it:
+
+         parent = get_device(dev->parent);
+
+So therefore, device_register() takes a lock on the parent PCI dev,
+which is what pci_dev_get() was guarding. pci_dev_get() can therefore
+be safely removed.
+
+Fixes: f204e0b8cedd ("cxl: Driver code for powernv PCIe based cards for userspace access")
+Cc: stable@vger.kernel.org
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+
+---
+
+This is the cxl bug that caused me to catch this a few weeks back:
+e642d11bdbfe ("powerpc/eeh: Probe after unbalanced kref check")
+
+I put an printk in the unbalanced kref path and confirmed that it
+was printed with the pci_dev_get in and went away with the
+pci_dev_get out.
+---
+ drivers/misc/cxl/pci.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 02c85160bfe9..a5e977192b61 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1249,8 +1249,6 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	int slice;
+ 	int rc;
+ 
+-	pci_dev_get(dev);
+-
+ 	if (cxl_verbose)
+ 		dump_cxl_config_space(dev);
+ 
+-- 
+2.5.0
