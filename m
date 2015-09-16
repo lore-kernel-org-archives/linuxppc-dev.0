@@ -1,17 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id BE42A1A04B3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 20:05:20 +1000 (AEST)
-Message-Id: <ca5390a60d9249e4a02ebf0b83009f3ceceba806.1442335197.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1442335197.git.christophe.leroy@c-s.fr>
-References: <cover.1442335197.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 2/2] powerpc32: memset: only use dcbz once cache is enabled
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com, sojkam1@fel.cvut.cz
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 16 Sep 2015 12:04:53 +0200 (CEST)
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 883DF1A04B3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 20:16:06 +1000 (AEST)
+Subject: Re: suspicious RCU usage with kvm_pr
+To: Denis Kirjanov <kda@linux-powerpc.org>, kvm-ppc@vger.kernel.org
+References: <CAOJe8K3mu6M48wGAMMQNXPDrkzk+z4j5yzcJ7eRfex0FWcZsQA@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <55F94161.7000405@redhat.com>
+Date: Wed, 16 Sep 2015 12:16:01 +0200
+MIME-Version: 1.0
+In-Reply-To: <CAOJe8K3mu6M48wGAMMQNXPDrkzk+z4j5yzcJ7eRfex0FWcZsQA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,77 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-memset() uses instruction dcbz to speed up clearing by not wasting time
-loading cache line with data that will be overwritten.
-Some platform like mpc52xx do no have cache active at startup and
-can therefore not use memset(). Allthough no part of the code
-explicitly uses memset(), GCC may make calls to it.
+On 16/09/15 10:51, Denis Kirjanov wrote:
+> Hi,
+> 
+> I see the following trace on qemu startup (ps700 blade):
+> 
+> v4.2-11169-g64d1def
+> 
+> 
+> [  143.369638] ===============================
+> [  143.369640] [ INFO: suspicious RCU usage. ]
+> [  143.369643] 4.2.0-11169-g64d1def #10 Tainted: G S
+> [  143.369645] -------------------------------
+> [  143.369647] arch/powerpc/kvm/../../../virt/kvm/kvm_main.c:3310
+> suspicious rcu_dereference_check() usage!
+> [  143.369649]
+> other info that might help us debug this:
+> 
+> [  143.369652]
+> rcu_scheduler_active = 1, debug_locks = 1
+> [  143.369655] 1 lock held by qemu-system-ppc/2292:
+> [  143.369656]  #0:  (&vcpu->mutex){+.+.+.}, at: [<d000000004225bac>]
+> .vcpu_load+0x2c/0xb0 [kvm]
+> [  143.369672]
+> stack backtrace:
+> [  143.369675] CPU: 12 PID: 2292 Comm: qemu-system-ppc Tainted: G S
+>           4.2.0-11169-g64d1def #10
+> [  143.369677] Call Trace:
+> [  143.369682] [c0000001d08bf200] [c000000000816dd0]
+> .dump_stack+0x98/0xd4 (unreliable)
+> [  143.369687] [c0000001d08bf280] [c0000000000f7058]
+> .lockdep_rcu_suspicious+0x108/0x170
+> [  143.369696] [c0000001d08bf310] [d0000000042296d8]
+> .kvm_io_bus_read+0x1d8/0x220 [kvm]
+> [  143.369705] [c0000001d08bf3c0] [d00000000422f980]
+> .kvmppc_h_logical_ci_load+0x60/0xe0 [kvm]
 
-This patch modifies memset() such that at startup, memset()
-unconditionally skip the optimised bloc that uses dcbz instruction.
+Could it be that we need to srcu_read_lock(&vcpu->kvm->srcu) before
+calling the kvm_io_bus_read/write() function in the
+kvmppc_h_logical_ci_load/store() function?
 
-Once the initial MMU is set up, in machine_init() we patch memset()
-by replacing this inconditional jump by a NOP
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-Changes in v2:
-   was part of [v2] powerpc32: memcpy/memset: only use dcbz once cache is enabled
-changes in v3:
-  Not using anymore feature-fixups
-  Handling of memcpy() and memset() split in two patches
-changes in v4:
-  Skipping the optimised bloc in the middle of memset() instead of
-    branching to a newly implemented simple_memset()
-
- arch/powerpc/kernel/setup_32.c | 3 +++
- arch/powerpc/lib/copy_32.S     | 6 ++++++
- 2 files changed, 9 insertions(+)
-
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 362495f..cdb8221 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -116,6 +116,8 @@ notrace unsigned long __init early_init(unsigned long dt_ptr)
-  * This is called very early on the boot process, after a minimal
-  * MMU environment has been set up but before MMU_init is called.
-  */
-+extern unsigned int memset_nocache_branch; /* Insn to be replaced by NOP */
-+
- notrace void __init machine_init(u64 dt_ptr)
- {
- 	lockdep_init();
-@@ -124,6 +126,7 @@ notrace void __init machine_init(u64 dt_ptr)
- 	udbg_early_init();
- 
- 	patch_instruction((unsigned int *)&memcpy, PPC_INST_NOP);
-+	patch_instruction(&memset_nocache_branch, PPC_INST_NOP);
- 
- 	/* Do some early initialization based on the flat device tree */
- 	early_init_devtree(__va(dt_ptr));
-diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
-index da5847d..c44df2d 100644
---- a/arch/powerpc/lib/copy_32.S
-+++ b/arch/powerpc/lib/copy_32.S
-@@ -73,6 +73,10 @@ CACHELINE_MASK = (L1_CACHE_BYTES-1)
-  * Use dcbz on the complete cache lines in the destination
-  * to set them to zero.  This requires that the destination
-  * area is cacheable.  -- paulus
-+ *
-+ * During early init, cache might not be active yet, so dcbz cannot be used.
-+ * We therefore skip the optimised bloc that uses dcbz. This jump is
-+ * replaced by a nop once cache is active. This is done in machine_init()
-  */
- _GLOBAL(memset)
- 	rlwimi	r4,r4,8,16,23
-@@ -88,6 +92,8 @@ _GLOBAL(memset)
- 	subf	r6,r0,r6
- 	cmplwi	0,r4,0
- 	bne	2f	/* Use normal procedure if r4 is not zero */
-+_GLOBAL(memset_nocache_branch)
-+	b	2f	/* Skip optimised bloc until cache is enabled */
- 
- 	clrlwi	r7,r6,32-LG_CACHELINE_BYTES
- 	add	r8,r7,r5
--- 
-2.1.0
+ Thomas
