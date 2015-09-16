@@ -1,20 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F5E01A035C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 14:49:10 +1000 (AEST)
-Message-ID: <1442378949.21531.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/mm: Recompute hash value after a failed update
-From: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0CD431A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 15:02:00 +1000 (AEST)
+Date: Wed, 16 Sep 2015 14:56:15 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 16 Sep 2015 14:49:09 +1000
-In-Reply-To: <87vbbbdp3g.fsf@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: Recompute hash value after a failed update
+Message-ID: <20150916045615.GA7276@iris.ozlabs.ibm.com>
 References: <1442300408-26490-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87vbbbdp3g.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1442300408-26490-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,18 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-16 at 08:53 +0530, Aneesh Kumar K.V wrote:
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On Tue, Sep 15, 2015 at 12:30:08PM +0530, Aneesh Kumar K.V wrote:
+> If we had secondary hash flag set, we ended up modifying hash value in
+> the updatepp code path. Hence with a failed updatepp we will be using
+> a wrong hash value for the following hash insert. Fix this by
+> recomputing hash before insert.
 > 
-> > If we had secondary hash flag set, we ended up modifying hash value in
-> > the updatepp code path. Hence with a failed updatepp we will be using
-> > a wrong hash value for the following hash insert. Fix this by
-> > recomputing hash before insert.
-> 
-> Without this patch we can end up with using wrong slot number in linux
-> pte. That can result in us missing an hash pte update or invalidate
-> which can cause memory corruption or even machine check ?
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-Thanks. When did this break? Always? If so this should go to stable?
-
-cheers
+Reviewed-by: Paul Mackerras <paulus@samba.org>
