@@ -1,12 +1,12 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B1851A0620
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 01:50:26 +1000 (AEST)
-Received: by padhk3 with SMTP id hk3so212553371pad.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 08:50:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A76F1A0561
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 01:50:35 +1000 (AEST)
+Received: by pacfv12 with SMTP id fv12so216944608pac.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 08:50:33 -0700 (PDT)
 From: Boqun Feng <boqun.feng@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -16,10 +16,10 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Waiman Long <waiman.long@hp.com>, Boqun Feng <boqun.feng@gmail.com>
-Subject: [RFC v2 4/7] powerpc: atomic: Implement xchg_* and atomic{,
- 64}_xchg_* variants
-Date: Wed, 16 Sep 2015 23:49:32 +0800
-Message-Id: <1442418575-12297-5-git-send-email-boqun.feng@gmail.com>
+Subject: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{, 64}_* and atomic{,
+ 64}_cmpxchg_* variants
+Date: Wed, 16 Sep 2015 23:49:33 +0800
+Message-Id: <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
 In-Reply-To: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
 References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,133 +31,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement xchg_relaxed and define atomic{,64}_xchg_* as xchg_relaxed,
-based on these _relaxed variants, release/acquire variants can be built.
+Unlike other atomic operation variants, cmpxchg{,64}_acquire and
+atomic{,64}_cmpxchg_acquire don't have acquire semantics if the cmp part
+fails, so we need to implement these using assembly.
 
-Note that xchg_relaxed and atomic_{,64}_xchg_relaxed are not compiler
-barriers.
+Note cmpxchg{,64}_relaxed and atomic{,64}_cmpxchg_relaxed are not
+compiler barriers.
 
 Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
 ---
- arch/powerpc/include/asm/atomic.h  |  2 ++
- arch/powerpc/include/asm/cmpxchg.h | 64 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+)
+ arch/powerpc/include/asm/atomic.h  |  10 +++
+ arch/powerpc/include/asm/cmpxchg.h | 141 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 150 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index d1dcdcf..d9f570b 100644
+index d9f570b..0608e39 100644
 --- a/arch/powerpc/include/asm/atomic.h
 +++ b/arch/powerpc/include/asm/atomic.h
-@@ -193,6 +193,7 @@ static __inline__ int atomic_dec_return(atomic_t *v)
+@@ -192,6 +192,11 @@ static __inline__ int atomic_dec_return(atomic_t *v)
+ }
  
  #define atomic_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
++#define atomic_cmpxchg_relaxed(v, o, n) \
++	cmpxchg_relaxed(&((v)->counter), (o), (n))
++#define atomic_cmpxchg_acquire(v, o, n) \
++	cmpxchg_acquire(&((v)->counter), (o), (n))
++
  #define atomic_xchg(v, new) (xchg(&((v)->counter), new))
-+#define atomic_xchg_relaxed(v, new) xchg_relaxed(&((v)->counter), (new))
+ #define atomic_xchg_relaxed(v, new) xchg_relaxed(&((v)->counter), (new))
  
- /**
-  * __atomic_add_unless - add unless the number is a given value
-@@ -461,6 +462,7 @@ static __inline__ long atomic64_dec_if_positive(atomic64_t *v)
+@@ -461,6 +466,11 @@ static __inline__ long atomic64_dec_if_positive(atomic64_t *v)
+ }
  
  #define atomic64_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
++#define atomic64_cmpxchg_relaxed(v, o, n) \
++	cmpxchg_relaxed(&((v)->counter), (o), (n))
++#define atomic64_cmpxchg_acquire(v, o, n) \
++	cmpxchg_acquire(&((v)->counter), (o), (n))
++
  #define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
-+#define atomic64_xchg_relaxed(v, new) xchg_relaxed(&((v)->counter), (new))
+ #define atomic64_xchg_relaxed(v, new) xchg_relaxed(&((v)->counter), (new))
  
- /**
-  * atomic64_add_unless - add unless the number is a given value
 diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index ad6263c..66374f4 100644
+index 66374f4..f40f295 100644
 --- a/arch/powerpc/include/asm/cmpxchg.h
 +++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -54,6 +54,32 @@ __xchg_u32_local(volatile void *p, unsigned long val)
+@@ -254,6 +254,48 @@ __cmpxchg_u32_local(volatile unsigned int *p, unsigned long old,
  	return prev;
  }
  
-+/*
-+ * Atomic exchange relaxed
-+ *
-+ * Changes the memory location '*p' to be val and returns
-+ * the previous value stored there.
-+ *
-+ * Note that this is not a compiler barrier, there is no order
-+ * guarantee around.
-+ */
 +static __always_inline unsigned long
-+__xchg_u32_relaxed(u32 *p, unsigned long val)
++__cmpxchg_u32_relaxed(u32 *p, unsigned long old, unsigned long new)
 +{
 +	unsigned long prev;
 +
-+	__asm__ __volatile__(
-+"1:	lwarx	%0,0,%2\n"
++	__asm__ __volatile__ (
++"1:	lwarx	%0,0,%2		# __cmpxchg_u32_relaxed\n"
++"	cmpw	0,%0,%3\n"
++"	bne-	2f\n"
 +	PPC405_ERR77(0, %2)
-+"	stwcx.	%3,0,%2\n"
-+"	bne-	1b"
++"	stwcx.	%4,0,%2\n"
++"	bne-	1b\n"
++"2:"
 +	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (val)
++	: "r" (p), "r" (old), "r" (new)
 +	: "cc");
++
++	return prev;
++}
++
++static __always_inline unsigned long
++__cmpxchg_u32_acquire(u32 *p, unsigned long old, unsigned long new)
++{
++	unsigned long prev;
++
++	__asm__ __volatile__ (
++"1:	lwarx	%0,0,%2		# __cmpxchg_u32_acquire\n"
++"	cmpw	0,%0,%3\n"
++"	bne-	2f\n"
++	PPC405_ERR77(0, %2)
++"	stwcx.	%4,0,%2\n"
++"	bne-	1b\n"
++	PPC_ACQUIRE_BARRIER
++	"\n"
++"2:"
++	: "=&r" (prev), "+m" (*p)
++	: "r" (p), "r" (old), "r" (new)
++	: "cc", "memory");
 +
 +	return prev;
 +}
 +
  #ifdef CONFIG_PPC64
  static __always_inline unsigned long
- __xchg_u64(volatile void *p, unsigned long val)
-@@ -90,6 +116,23 @@ __xchg_u64_local(volatile void *p, unsigned long val)
+ __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
+@@ -297,6 +339,46 @@ __cmpxchg_u64_local(volatile unsigned long *p, unsigned long old,
  
  	return prev;
  }
 +
 +static __always_inline unsigned long
-+__xchg_u64_relaxed(u64 *p, unsigned long val)
++__cmpxchg_u64_relaxed(u64 *p, unsigned long old, unsigned long new)
 +{
 +	unsigned long prev;
 +
-+	__asm__ __volatile__(
-+"1:	ldarx	%0,0,%2\n"
-+	PPC405_ERR77(0, %2)
-+"	stdcx.	%3,0,%2\n"
-+"	bne-	1b"
++	__asm__ __volatile__ (
++"1:	ldarx	%0,0,%2		# __cmpxchg_u64_relaxed\n"
++"	cmpd	0,%0,%3\n"
++"	bne-	2f\n"
++"	stdcx.	%4,0,%2\n"
++"	bne-	1b\n"
++"2:"
 +	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (val)
++	: "r" (p), "r" (old), "r" (new)
 +	: "cc");
++
++	return prev;
++}
++
++static __always_inline unsigned long
++__cmpxchg_u64_acquire(u64 *p, unsigned long old, unsigned long new)
++{
++	unsigned long prev;
++
++	__asm__ __volatile__ (
++"1:	ldarx	%0,0,%2		# __cmpxchg_u64_acquire\n"
++"	cmpd	0,%0,%3\n"
++"	bne-	2f\n"
++"	stdcx.	%4,0,%2\n"
++"	bne-	1b\n"
++	PPC_ACQUIRE_BARRIER
++	"\n"
++"2:"
++	: "=&r" (prev), "+m" (*p)
++	: "r" (p), "r" (old), "r" (new)
++	: "cc", "memory");
 +
 +	return prev;
 +}
  #endif
  
- /*
-@@ -127,6 +170,21 @@ __xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
- 	__xchg_called_with_bad_pointer();
- 	return x;
+ /* This function doesn't exist, so you'll get a linker error
+@@ -335,6 +417,37 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
+ 	return old;
  }
-+
+ 
 +static __always_inline unsigned long
-+__xchg_relaxed(void *ptr, unsigned long x, unsigned int size)
++__cmpxchg_relaxed(void *ptr, unsigned long old, unsigned long new,
++		  unsigned int size)
 +{
 +	switch (size) {
 +	case 4:
-+		return __xchg_u32_relaxed(ptr, x);
++		return __cmpxchg_u32_relaxed(ptr, old, new);
 +#ifdef CONFIG_PPC64
 +	case 8:
-+		return __xchg_u64_relaxed(ptr, x);
++		return __cmpxchg_u64_relaxed(ptr, old, new);
 +#endif
 +	}
-+	__xchg_called_with_bad_pointer();
-+	return x;
++	__cmpxchg_called_with_bad_pointer();
++	return old;
 +}
- #define xchg(ptr,x)							     \
-   ({									     \
-      __typeof__(*(ptr)) _x_ = (x);					     \
-@@ -140,6 +198,12 @@ __xchg_local(volatile void *ptr, unsigned long x, unsigned int size)
-      		(unsigned long)_x_, sizeof(*(ptr))); 			     \
++
++static __always_inline unsigned long
++__cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
++		  unsigned int size)
++{
++	switch (size) {
++	case 4:
++		return __cmpxchg_u32_acquire(ptr, old, new);
++#ifdef CONFIG_PPC64
++	case 8:
++		return __cmpxchg_u64_acquire(ptr, old, new);
++#endif
++	}
++	__cmpxchg_called_with_bad_pointer();
++	return old;
++}
+ #define cmpxchg(ptr, o, n)						 \
+   ({									 \
+      __typeof__(*(ptr)) _o_ = (o);					 \
+@@ -352,6 +465,23 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
+ 				    (unsigned long)_n_, sizeof(*(ptr))); \
    })
  
-+#define xchg_relaxed(ptr, x)						\
++#define cmpxchg_relaxed(ptr, o, n)					\
 +({									\
-+	__typeof__(*(ptr)) _x_ = (x);					\
-+	(__typeof__(*(ptr))) __xchg_relaxed((ptr),			\
-+			(unsigned long)_x_, sizeof(*(ptr)));		\
++	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _n_ = (n);					\
++	(__typeof__(*(ptr))) __cmpxchg_relaxed((ptr),			\
++			(unsigned long)_o_, (unsigned long)_n_,		\
++			sizeof(*(ptr)));				\
 +})
- /*
-  * Compare and exchange - if *p == old, set it to new,
-  * and return the old value of *p.
++
++#define cmpxchg_acquire(ptr, o, n)					\
++({									\
++	__typeof__(*(ptr)) _o_ = (o);					\
++	__typeof__(*(ptr)) _n_ = (n);					\
++	(__typeof__(*(ptr))) __cmpxchg_acquire((ptr),			\
++			(unsigned long)_o_, (unsigned long)_n_,		\
++			sizeof(*(ptr)));				\
++})
+ #ifdef CONFIG_PPC64
+ #define cmpxchg64(ptr, o, n)						\
+   ({									\
+@@ -363,7 +493,16 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
+ 	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
+ 	cmpxchg_local((ptr), (o), (n));					\
+   })
+-#define cmpxchg64_relaxed	cmpxchg64_local
++#define cmpxchg64_relaxed(ptr, o, n)					\
++({									\
++	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
++	cmpxchg_relaxed((ptr), (o), (n));				\
++})
++#define cmpxchg64_acquire(ptr, o, n)					\
++({									\
++	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
++	cmpxchg_acquire((ptr), (o), (n));				\
++})
+ #else
+ #include <asm-generic/cmpxchg-local.h>
+ #define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
 -- 
 2.5.1
