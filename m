@@ -1,23 +1,20 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
+ [209.85.217.173])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AFA2D1A2E34
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 06:01:45 +1000 (AEST)
-Date: Wed, 16 Sep 2015 22:01:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Scott Wood <scottwood@freescale.com>
-cc: Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org,
- Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
- memcpy'
-In-Reply-To: <1442420984.2909.179.camel@freescale.com>
-Message-ID: <alpine.DEB.2.11.1509162159110.3951@nanos>
-References: <alpine.DEB.2.11.1509161816310.3951@nanos>
- <1442420984.2909.179.camel@freescale.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0409D1A035C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 06:04:57 +1000 (AEST)
+Received: by lbbvu2 with SMTP id vu2so37823460lbb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 13:04:53 -0700 (PDT)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH v3] powerpc: msi: mark bitmap with kmemleak_not_leak()
+Date: Wed, 16 Sep 2015 22:26:14 +0300
+Message-Id: <1442431574-4575-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 16 Sep 2015, Scott Wood wrote:
+During the MSI bitmap test on boot kmemleak spews the following trace:
 
-> On Wed, 2015-09-16 at 18:23 +0200, Thomas Gleixner wrote:
-> > With this commit applied, my MPC5200 board fails to boot 4.3-rc1. The
-> > boot failure is silent.
-> > 
-> > Bisection pointed straight to this commit. Reverting it on top of
-> > 4.3-rc1 works like a charm.
-> 
-> Yes, we've been iterating on a fix for this, and I think the patches posted 
-> earlier today are ready to go in:
-> 
-> http://patchwork.ozlabs.org/patch/518321/
-> http://patchwork.ozlabs.org/patch/518323/
+unreferenced object 0xc00000016e86c900 (size 64):
+    comm "swapper/0", pid 1, jiffies 4294893173 (age 518.024s)
+    hex dump (first 32 bytes):
+	00 00 01 ff 7f ff 7f 37 00 00 00 00 00 00 00 00
+	.......7........
+	ff ff ff ff ff ff ff ff 01 ff ff ff ff
+	ff ff ff
+	................
+	backtrace:
+	[<c00000000003eebc>] .zalloc_maybe_bootmem+0x3c/0x380
+	[<c000000000042d6c>] .msi_bitmap_alloc+0x3c/0xb0
+	[<c000000000a9aff8>] .msi_bitmap_selftest+0x30/0x2b4
+	[<c0000000000090f4>] .do_one_initcall+0xd4/0x270
+	[<c000000000a8e250>] .kernel_init_freeable+0x1a0/0x280
+	[<c000000000009b5c>] .kernel_init+0x1c/0x120
+	[<c000000000007fbc>] .ret_from_kernel_thread+0x58/0x9c
 
-Tested-by: Thomas Gleixner <tglx@linutronix.de>
+Added a flag to msi_bitmap for tracking allocations
+from slab and memblock so we can properly free/handle
+memory in msi_bitmap_free().
 
-So now I have to chase down that one:
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 
-[    0.230210] ftrace: allocating 16560 entries in 49 pages
-[    0.273313] ------------[ cut here ]------------
-[    0.278048] WARNING: at /home/tglx/work/kernel/tip/tip/kernel/trace/ftrace.c:1974
-[    0.285653] Modules linked in:
-[    0.288781] CPU: 0 PID: 0 Comm: swapper Not tainted 4.2.0-50528-gfac33bf-dirty #29
-[    0.296485] task: c06563e0 ti: c06a2000 task.ti: c06a2000
-[    0.301976] NIP: c008df9c LR: c008e440 CTR: 00000000
-[    0.307027] REGS: c06a3e80 TRAP: 0700   Not tainted  (4.2.0-50528-gfac33bf-dirty)
-[    0.314631] MSR: 00021032 <ME,IR,DR,RI>  CR: 22028022  XER: 00000000
-[    0.321126]
-GPR00: 00000001 c06a3f30 c06563e0 ffffffea c3888c88 00000004 c06a3ef8 764d9364
-GPR08: 00407584 c069df92 00000000 00000001 22022028 ffffffff 03fb9000 007fff00
-GPR16: c065debc 00009032 c06b8aa0 c0011184 00000000 c06a711c 00000bb6 c38021a0
-GPR24: 00000000 00008c88 00000bb6 c06a7120 c3888c88 101d6120 c3888c88 c00e1f2c
-[    0.351444] NIP [c008df9c] ftrace_bug+0xbc/0x2d4
-[    0.356160] LR [c008e440] ftrace_process_locs+0x28c/0x6cc
-[    0.361652] Call Trace:
-[    0.364169] [c06a3f30] [c00971a0] buffer_ftrace_now.isra.50+0x28/0x64 (unreliable)
-[    0.371888] [c06a3f60] [c008e440] ftrace_process_locs+0x28c/0x6cc
-[    0.378119] [c06a3fb0] [c0610848] ftrace_init+0xac/0x14c
-[    0.383559] [c06a3fc0] [c06051fc] start_kernel+0x390/0x3a8
-[    0.389147] [c06a3ff0] [00003438] 0x3438
-[    0.393136] Instruction dump:
-[    0.396154] 483f9951 3c60c059 7fe4fb78 3863b768 7fe5fb78 483f993d 41b20214 48000144
-[    0.404060] 3d20c06a 3929df92 88090002 68000001 <0f000000> 2f800000 409e01b4 3d20c06a
-[    0.412203] ---[ end trace dc8fa200cb88537f ]---
-[    0.416912] ftrace failed to modify [<c00e1f2c>] change_protection+0x8/0x2c
-[    0.424015]  actual: 74:66:74:70
-[    0.427324] ftrace record flags: 0
-[    0.430785]  (0)   expected tramp: c0011198
+Changes vor v2:
+ - added a flag to msi_bitmap
+ - kmemleak annotaion moved under CONFIG_MSI_BITMAP_SELFTEST
 
-Happens somewhere between the powerpc merge and rc1. System boots up
-to userspace and then locks hard ....
+Changes vor v3:
+ - correctly initialize bitmap_from_slab
+ - put kmemleak_not_leak annotation right after the allocation
+---
+ arch/powerpc/include/asm/msi_bitmap.h |  1 +
+ arch/powerpc/sysdev/msi_bitmap.c      | 17 +++++++++++++----
+ 2 files changed, 14 insertions(+), 4 deletions(-)
 
-Thanks,
-
-	tglx
+diff --git a/arch/powerpc/include/asm/msi_bitmap.h b/arch/powerpc/include/asm/msi_bitmap.h
+index 97ac3f4..47a8ebc 100644
+--- a/arch/powerpc/include/asm/msi_bitmap.h
++++ b/arch/powerpc/include/asm/msi_bitmap.h
+@@ -19,6 +19,7 @@ struct msi_bitmap {
+ 	unsigned long		*bitmap;
+ 	spinlock_t		lock;
+ 	unsigned int		irq_count;
++	bool		 	    bitmap_from_slab;
+ };
+ 
+ int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num);
+diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
+index 73b64c7..6f2f3d6 100644
+--- a/arch/powerpc/sysdev/msi_bitmap.c
++++ b/arch/powerpc/sysdev/msi_bitmap.c
+@@ -11,6 +11,7 @@
+ #include <linux/slab.h>
+ #include <linux/kernel.h>
+ #include <linux/bitmap.h>
++#include <linux/bootmem.h>
+ #include <asm/msi_bitmap.h>
+ #include <asm/setup.h>
+ 
+@@ -122,7 +123,16 @@ int msi_bitmap_alloc(struct msi_bitmap *bmp, unsigned int irq_count,
+ 	size = BITS_TO_LONGS(irq_count) * sizeof(long);
+ 	pr_debug("msi_bitmap: allocator bitmap size is 0x%x bytes\n", size);
+ 
+-	bmp->bitmap = zalloc_maybe_bootmem(size, GFP_KERNEL);
++	if (slab_is_available()) {
++		bmp->bitmap = kzalloc(size, GFP_KERNEL);
++		bmp->bitmap_from_slab = true;
++	} else {
++		bmp->bitmap = memblock_virt_alloc(size, 0);
++		bmp->bitmap_from_slab = false;
++		/* the bitmap won't be freed from memblock allocator */
++		kmemleak_not_leak(bmp->bitmap);
++	}
++
+ 	if (!bmp->bitmap) {
+ 		pr_debug("msi_bitmap: ENOMEM allocating allocator bitmap!\n");
+ 		return -ENOMEM;
+@@ -138,7 +148,8 @@ int msi_bitmap_alloc(struct msi_bitmap *bmp, unsigned int irq_count,
+ 
+ void msi_bitmap_free(struct msi_bitmap *bmp)
+ {
+-	/* we can't free the bitmap we don't know if it's bootmem etc. */
++	if (bmp->bitmap_from_slab)
++		kfree(bmp->bitmap);
+ 	of_node_put(bmp->of_node);
+ 	bmp->bitmap = NULL;
+ }
+@@ -203,8 +214,6 @@ static void __init test_basics(void)
+ 
+ 	/* Clients may WARN_ON bitmap == NULL for "not-allocated" */
+ 	WARN_ON(bmp.bitmap != NULL);
+-
+-	kfree(bmp.bitmap);
+ }
+ 
+ static void __init test_of_node(void)
+-- 
+2.4.0
