@@ -1,19 +1,20 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <catalin.marinas@arm.com>
+Received: from eu-smtp-delivery-143.mimecast.com
+ (eu-smtp-delivery-143.mimecast.com [207.82.80.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 883DF1A04B3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 20:16:06 +1000 (AEST)
-Subject: Re: suspicious RCU usage with kvm_pr
-To: Denis Kirjanov <kda@linux-powerpc.org>, kvm-ppc@vger.kernel.org
-References: <CAOJe8K3mu6M48wGAMMQNXPDrkzk+z4j5yzcJ7eRfex0FWcZsQA@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <55F94161.7000405@redhat.com>
-Date: Wed, 16 Sep 2015 12:16:01 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420E21A0272
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 20:46:22 +1000 (AEST)
+Date: Wed, 16 Sep 2015 11:46:17 +0100
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc: msi: mark bitmap with kmemleak_not_leak()
+Message-ID: <20150916104616.GD25444@e104818-lin.cambridge.arm.com>
+References: <1442337248-4295-1-git-send-email-kda@linux-powerpc.org>
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K3mu6M48wGAMMQNXPDrkzk+z4j5yzcJ7eRfex0FWcZsQA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1442337248-4295-1-git-send-email-kda@linux-powerpc.org>
+Content-Type: text/plain; charset=WINDOWS-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/09/15 10:51, Denis Kirjanov wrote:
-> Hi,
-> 
-> I see the following trace on qemu startup (ps700 blade):
-> 
-> v4.2-11169-g64d1def
-> 
-> 
-> [  143.369638] ===============================
-> [  143.369640] [ INFO: suspicious RCU usage. ]
-> [  143.369643] 4.2.0-11169-g64d1def #10 Tainted: G S
-> [  143.369645] -------------------------------
-> [  143.369647] arch/powerpc/kvm/../../../virt/kvm/kvm_main.c:3310
-> suspicious rcu_dereference_check() usage!
-> [  143.369649]
-> other info that might help us debug this:
-> 
-> [  143.369652]
-> rcu_scheduler_active = 1, debug_locks = 1
-> [  143.369655] 1 lock held by qemu-system-ppc/2292:
-> [  143.369656]  #0:  (&vcpu->mutex){+.+.+.}, at: [<d000000004225bac>]
-> .vcpu_load+0x2c/0xb0 [kvm]
-> [  143.369672]
-> stack backtrace:
-> [  143.369675] CPU: 12 PID: 2292 Comm: qemu-system-ppc Tainted: G S
->           4.2.0-11169-g64d1def #10
-> [  143.369677] Call Trace:
-> [  143.369682] [c0000001d08bf200] [c000000000816dd0]
-> .dump_stack+0x98/0xd4 (unreliable)
-> [  143.369687] [c0000001d08bf280] [c0000000000f7058]
-> .lockdep_rcu_suspicious+0x108/0x170
-> [  143.369696] [c0000001d08bf310] [d0000000042296d8]
-> .kvm_io_bus_read+0x1d8/0x220 [kvm]
-> [  143.369705] [c0000001d08bf3c0] [d00000000422f980]
-> .kvmppc_h_logical_ci_load+0x60/0xe0 [kvm]
+On Tue, Sep 15, 2015 at 08:14:08PM +0300, Denis Kirjanov wrote:
+> diff --git a/arch/powerpc/include/asm/msi_bitmap.h b/arch/powerpc/include=
+/asm/msi_bitmap.h
+> index 97ac3f4..9a1d2fb 100644
+> --- a/arch/powerpc/include/asm/msi_bitmap.h
+> +++ b/arch/powerpc/include/asm/msi_bitmap.h
+> @@ -19,6 +19,7 @@ struct msi_bitmap {
+>  =09unsigned long=09=09*bitmap;
+>  =09spinlock_t=09=09lock;
+>  =09unsigned int=09=09irq_count;
+> +=09bool=09=09bitmap_from_slab;
 
-Could it be that we need to srcu_read_lock(&vcpu->kvm->srcu) before
-calling the kvm_io_bus_read/write() function in the
-kvmppc_h_logical_ci_load/store() function?
+Nitpick: same alignment for bitmap_from_slab with irq_count etc. (unless
+it's just my mail client).
 
- Thomas
+>  };
+> =20
+>  int msi_bitmap_alloc_hwirqs(struct msi_bitmap *bmp, int num);
+> diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_b=
+itmap.c
+> index 73b64c7..305ebe3 100644
+> --- a/arch/powerpc/sysdev/msi_bitmap.c
+> +++ b/arch/powerpc/sysdev/msi_bitmap.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/kernel.h>
+>  #include <linux/bitmap.h>
+> +#include <linux/bootmem.h>
+>  #include <asm/msi_bitmap.h>
+>  #include <asm/setup.h>
+> =20
+> @@ -122,7 +123,12 @@ int msi_bitmap_alloc(struct msi_bitmap *bmp, unsigne=
+d int irq_count,
+>  =09size =3D BITS_TO_LONGS(irq_count) * sizeof(long);
+>  =09pr_debug("msi_bitmap: allocator bitmap size is 0x%x bytes\n", size);
+> =20
+> -=09bmp->bitmap =3D zalloc_maybe_bootmem(size, GFP_KERNEL);
+> +=09if (slab_is_available()) {
+> +=09=09bmp->bitmap =3D kzalloc(size, GFP_KERNEL);
+> +=09=09bmp->bitmap_from_slab =3D true;
+> +=09} else
+> +=09=09bmp->bitmap =3D memblock_virt_alloc(size, 0);
+
+I don't think bmp->bitmap_from_slab is always initialised, so you need
+to explicitly set it to false here.
+
+> +
+>  =09if (!bmp->bitmap) {
+>  =09=09pr_debug("msi_bitmap: ENOMEM allocating allocator bitmap!\n");
+>  =09=09return -ENOMEM;
+> @@ -138,7 +144,8 @@ int msi_bitmap_alloc(struct msi_bitmap *bmp, unsigned=
+ int irq_count,
+> =20
+>  void msi_bitmap_free(struct msi_bitmap *bmp)
+>  {
+> -=09/* we can't free the bitmap we don't know if it's bootmem etc. */
+> +=09if (bmp->bitmap_from_slab)
+> +=09=09kfree(bmp->bitmap);
+>  =09of_node_put(bmp->of_node);
+>  =09bmp->bitmap =3D NULL;
+>  }
+> @@ -200,11 +207,11 @@ static void __init test_basics(void)
+>  =09WARN_ON(rc < 0 && rc % 128 !=3D 0);
+> =20
+>  =09msi_bitmap_free(&bmp);
+> +=09if (!bmp.bitmap_from_slab)
+> +=09=09kmemleak_not_leak(bmp.bitmap);
+
+As I mentioned in the other thread, I think you can call
+kmemleak_not_leak() immediately after memblock_virt_alloc() (together
+with a comment that this is never going to be freed). That would match
+the other kmemleak API uses throughout the kernel.
+
+--=20
+Catalin
