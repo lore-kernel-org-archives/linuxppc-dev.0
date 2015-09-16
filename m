@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F4CF1A2F89
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 07:33:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C8641A2E21
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 07:33:53 +1000 (AEST)
 Received: from /spool/local
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 16 Sep 2015 17:33:33 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 10CCF6E8048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 17:25:14 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8GLXMXW32702702
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 21:33:30 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8GLWvKV013916
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 17:32:57 -0400
+ Wed, 16 Sep 2015 15:33:50 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id B74501FF004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 15:24:57 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8GLWf5q54919322
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 14:32:41 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8GLXlh8025302
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 15:33:48 -0600
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -30,9 +30,9 @@ To: linux-scsi@vger.kernel.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v2 28/30] cxlflash: Fix to prevent stale AFU RRQ
-Date: Wed, 16 Sep 2015 16:32:10 -0500
-Message-Id: <1442439130-50414-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v2 30/30] MAINTAINERS: Add cxlflash driver
+Date: Wed, 16 Sep 2015 16:33:23 -0500
+Message-Id: <1442439203-50539-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,32 +44,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Following an adapter reset, the AFU RRQ that resides in host memory
-holds stale data. This can lead to a condition where the RRQ interrupt
-handler tries to process stale entries and/or endlessly loops due to an
-out of sync generation bit.
-
-To fix, the AFU RRQ in host memory needs to be cleared after each reset.
+Add stanza for cxlflash SCSI driver.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 3 +++
- 1 file changed, 3 insertions(+)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index a5b45ed..0487fac 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -1609,6 +1609,9 @@ static int start_afu(struct cxlflash_cfg *cfg)
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 310da42..b0b2c3f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3153,6 +3153,15 @@ F:	Documentation/powerpc/cxl.txt
+ F:	Documentation/powerpc/cxl.txt
+ F:	Documentation/ABI/testing/sysfs-class-cxl
  
- 	init_pcr(cfg);
- 
-+	/* After an AFU reset, RRQ entries are stale, clear them */
-+	memset(&afu->rrq_entry, 0, sizeof(afu->rrq_entry));
++CXLFLASH (IBM Coherent Accelerator Processor Interface CAPI Flash) SCSI DRIVER
++M:	Manoj N. Kumar <manoj@linux.vnet.ibm.com>
++M:	Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
++L:	linux-scsi@vger.kernel.org
++S:	Supported
++F:	drivers/scsi/cxlflash/
++F:	include/uapi/scsi/cxlflash_ioctls.h
++F:	Documentation/powerpc/cxlflash.txt
 +
- 	/* Initialize RRQ pointers */
- 	afu->hrrq_start = &afu->rrq_entry[0];
- 	afu->hrrq_end = &afu->rrq_entry[NUM_RRQ_ENTRY - 1];
+ STMMAC ETHERNET DRIVER
+ M:	Giuseppe Cavallaro <peppe.cavallaro@st.com>
+ L:	netdev@vger.kernel.org
 -- 
 2.1.0
