@@ -1,23 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 28BFF1A041B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 09:56:51 +1000 (AEST)
-Message-ID: <1442361398.2909.164.camel@freescale.com>
-Subject: Re: [PATCH v2 1/2] fsl: Add binding for RCPM
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-CC: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <robh+dt@kernel.org>, <linux-arm-kernel@lists.infradead.org>,
- <alison.wang@freescale.com>, <jason.jin@freescale.com>, Chenhui Zhao
- <chenhui.zhao@freescale.com>, Tang Yuantian <Yuantian.Tang@freescale.com>
-Date: Tue, 15 Sep 2015 18:56:38 -0500
-In-Reply-To: <1442307339-15225-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1442307339-15225-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C09B1A041B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 11:34:19 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: stable@vger.kernel.org
+Cc: <linuxppc-dev@ozlabs.org>, linux-crypto@vger.kernel.org,
+ Leonidas Da Silva Barbosa <leosilva@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH stable 1/2] powerpc: Uncomment and make enable_kernel_vsx()
+ routine available
+Date: Wed, 16 Sep 2015 11:34:07 +1000
+Message-Id: <1442367251-9319-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +22,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-15 at 16:55 +0800, Dongsheng Wang wrote:
-> +* Freescale RCPM Wakeup Source Device Tree Bindings
-> +-------------------------------------------
-> +Required rcpm-wakeup property should be added to a device node if the 
-> device
-> +can be used as a wakeup source.
-> +
-> +  - rcpm-wakeup: The value of the property consists of 3 cells. The first 
-> cell
-> +     is a pointer to the rcpm node, the second cell is the bit mask that
-> +     should be set in IPPDEXPCR0, and the last cell is for IPPDEXPCR1.
-> +     Note: If the platform has no IPPDEXPCR1 register, put a zero here.
+From: Leonidas Da Silva Barbosa <leosilva@linux.vnet.ibm.com>
 
-What if a future platform has more than two of these registers?
+commit 72cd7b44bc99376b3f3c93cedcd052663fcdf705 upstream.
 
--Scott
+enable_kernel_vsx() function was commented since anything was using
+it. However, vmx-crypto driver uses VSX instructions which are
+only available if VSX is enable. Otherwise it rises an exception oops.
+
+This patch uncomment enable_kernel_vsx() routine and makes it available.
+
+Signed-off-by: Leonidas S. Barbosa <leosilva@linux.vnet.ibm.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: stable@vger.kernel.org # 4.2
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/switch_to.h | 1 +
+ arch/powerpc/kernel/process.c        | 3 ---
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 58abeda64cb7..15cca17cba4b 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -29,6 +29,7 @@ static inline void save_early_sprs(struct thread_struct *prev) {}
+ 
+ extern void enable_kernel_fp(void);
+ extern void enable_kernel_altivec(void);
++extern void enable_kernel_vsx(void);
+ extern int emulate_altivec(struct pt_regs *);
+ extern void __giveup_vsx(struct task_struct *);
+ extern void giveup_vsx(struct task_struct *);
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 8005e18d1b40..64e6e9d9e656 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -204,8 +204,6 @@ EXPORT_SYMBOL_GPL(flush_altivec_to_thread);
+ #endif /* CONFIG_ALTIVEC */
+ 
+ #ifdef CONFIG_VSX
+-#if 0
+-/* not currently used, but some crazy RAID module might want to later */
+ void enable_kernel_vsx(void)
+ {
+ 	WARN_ON(preemptible());
+@@ -220,7 +218,6 @@ void enable_kernel_vsx(void)
+ #endif /* CONFIG_SMP */
+ }
+ EXPORT_SYMBOL(enable_kernel_vsx);
+-#endif
+ 
+ void giveup_vsx(struct task_struct *tsk)
+ {
+-- 
+2.1.4
