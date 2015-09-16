@@ -1,36 +1,32 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0144.outbound.protection.outlook.com [157.56.110.144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E47B31A0343
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 15:58:04 +1000 (AEST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 16 Sep 2015 11:28:01 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id CC3C2E0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 11:27:28 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8G5vu0149348612
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 11:27:56 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8G5vtuX004513
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 11:27:55 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: Recompute hash value after a failed update
-In-Reply-To: <1442378949.21531.1.camel@ellerman.id.au>
-References: <1442300408-26490-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <87vbbbdp3g.fsf@linux.vnet.ibm.com> <1442378949.21531.1.camel@ellerman.id.au>
-Date: Wed, 16 Sep 2015 11:27:54 +0530
-Message-ID: <87r3lyewil.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EBFCD1A034F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 16:08:10 +1000 (AEST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Wang Dongsheng
+ <Dongsheng.Wang@freescale.com>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Huan Wang
+ <alison.wang@freescale.com>, Jin Jason <Jason.Jin@freescale.com>, Zhao C.H.
+ <chenhui.zhao@freescale.com>
+Subject: RE: [PATCH v2 1/2] fsl: Add binding for RCPM
+Date: Wed, 16 Sep 2015 02:35:10 +0000
+Message-ID: <DM2PR03MB574196E1A0D55C185CE1B4BFA5B0@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1442307339-15225-1-git-send-email-dongsheng.wang@freescale.com>
+ <1442361398.2909.164.camel@freescale.com>
+ <SN1PR0301MB1616C48FB3D990BCA45289AB9D5B0@SN1PR0301MB1616.namprd03.prod.outlook.com>
+ <1442369955.2909.166.camel@freescale.com>
+ <SN1PR0301MB161688E3AF527ADC76AB2B8F9D5B0@SN1PR0301MB1616.namprd03.prod.outlook.com>
+ <1442370701.2909.167.camel@freescale.com>
+In-Reply-To: <1442370701.2909.167.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,25 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-
-> On Wed, 2015-09-16 at 08:53 +0530, Aneesh Kumar K.V wrote:
->> "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
->> 
->> > If we had secondary hash flag set, we ended up modifying hash value in
->> > the updatepp code path. Hence with a failed updatepp we will be using
->> > a wrong hash value for the following hash insert. Fix this by
->> > recomputing hash before insert.
->> 
->> Without this patch we can end up with using wrong slot number in linux
->> pte. That can result in us missing an hash pte update or invalidate
->> which can cause memory corruption or even machine check ?
->
-> Thanks. When did this break? Always? If so this should go to stable?
->
-
-IIUC we have this issue with initial support for THP (6d492ecc6489113968ec269be1cf88942d4a5d29)
-" powerpc/THP: Add code to handle HPTE faults for hugepages". So yes
-this should got to stable.
-
--aneesh
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMTYsIDIwMTUgMTA6MzIgQU0NCj4gVG86
+IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNCA8RG9uZ3NoZW5nLldhbmdAZnJlZXNjYWxlLmNvbT4NCj4g
+Q2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZzsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJh
+ZGVhZC5vcmc7IFdhbmcgSHVhbi0NCj4gQjE4OTY1IDxhbGlzb24ud2FuZ0BmcmVlc2NhbGUuY29t
+PjsgSmluIFpoZW5neGlvbmctUjY0MTg4DQo+IDxKYXNvbi5KaW5AZnJlZXNjYWxlLmNvbT47IFpo
+YW8gQ2hlbmh1aS1CMzUzMzYNCj4gPGNoZW5odWkuemhhb0BmcmVlc2NhbGUuY29tPjsgVGFuZyBZ
+dWFudGlhbi1CMjk5ODMNCj4gPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxlLmNvbT4NCj4gU3ViamVj
+dDogUmU6IFtQQVRDSCB2MiAxLzJdIGZzbDogQWRkIGJpbmRpbmcgZm9yIFJDUE0NCj4gDQo+IE9u
+IFR1ZSwgMjAxNS0wOS0xNSBhdCAyMTozMCAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdy
+b3RlOg0KPiA+IEhpIFNjb3R0LA0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFdlZG5lc2RheSwg
+U2VwdGVtYmVyIDE2LCAyMDE1IDEwOjE5IEFNDQo+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQw
+NTM0DQo+ID4gPiBDYzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBs
+aXN0cy5vemxhYnMub3JnOw0KPiA+ID4gcm9iaCtkdEBrZXJuZWwub3JnOyBsaW51eC1hcm0ta2Vy
+bmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IFdhbmcgSHVhbi0NCj4gPiA+IEIxODk2NTsgSmluDQo+
+ID4gPiBaaGVuZ3hpb25nLVI2NDE4ODsgWmhhbyBDaGVuaHVpLUIzNTMzNjsgVGFuZyBZdWFudGlh
+bi1CMjk5ODMNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMS8yXSBmc2w6IEFkZCBiaW5k
+aW5nIGZvciBSQ1BNDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE1LTA5LTE1IGF0IDIxOjE1IC0w
+NTAwLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4gPiA+IEhpIFNjb3R0LA0KPiA+
+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJv
+bTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+ID4gPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJl
+ciAxNiwgMjAxNSA3OjU3IEFNDQo+ID4gPiA+ID4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0K
+PiA+ID4gPiA+IENjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmc7DQo+ID4gPiA+ID4gcm9iaCtkdEBrZXJuZWwub3JnOyBsaW51eC1hcm0t
+a2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IFdhbmcNCj4gPiA+ID4gPiByb2JoK0h1YW4tDQo+
+ID4gPiA+ID4gQjE4OTY1OyBKaW4NCj4gPiA+ID4gPiBaaGVuZ3hpb25nLVI2NDE4ODsgWmhhbyBD
+aGVuaHVpLUIzNTMzNjsgVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gPiA+ID4gPiBTdWJqZWN0OiBS
+ZTogW1BBVENIIHYyIDEvMl0gZnNsOiBBZGQgYmluZGluZyBmb3IgUkNQTQ0KPiA+ID4gPiA+DQo+
+ID4gPiA+ID4gT24gVHVlLCAyMDE1LTA5LTE1IGF0IDE2OjU1ICswODAwLCBEb25nc2hlbmcgV2Fu
+ZyB3cm90ZToNCj4gPiA+ID4gPiA+ICsqIEZyZWVzY2FsZSBSQ1BNIFdha2V1cCBTb3VyY2UgRGV2
+aWNlIFRyZWUgQmluZGluZ3MNCj4gPiA+ID4gPiA+ICstLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gPiA+ID4gPiArUmVxdWlyZWQgcmNwbS13YWtldXAgcHJv
+cGVydHkgc2hvdWxkIGJlIGFkZGVkIHRvIGEgZGV2aWNlDQo+ID4gPiA+ID4gPiArbm9kZSBpZiB0
+aGUNCj4gPiA+ID4gPiA+IGRldmljZQ0KPiA+ID4gPiA+ID4gK2NhbiBiZSB1c2VkIGFzIGEgd2Fr
+ZXVwIHNvdXJjZS4NCj4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ICsgIC0gcmNwbS13YWtldXA6
+IFRoZSB2YWx1ZSBvZiB0aGUgcHJvcGVydHkgY29uc2lzdHMgb2YgMyBjZWxscy4NCj4gPiA+ID4g
+PiA+ICsgVGhlDQo+ID4gPiA+ID4gPiBmaXJzdA0KPiA+ID4gPiA+ID4gY2VsbA0KPiA+ID4gPiA+
+ID4gKyAgICAgaXMgYSBwb2ludGVyIHRvIHRoZSByY3BtIG5vZGUsIHRoZSBzZWNvbmQgY2VsbCBp
+cyB0aGUNCj4gPiA+ID4gPiA+ICsgYml0IG1hc2sNCj4gPiA+ID4gPiA+IHRoYXQNCj4gPiA+ID4g
+PiA+ICsgICAgIHNob3VsZCBiZSBzZXQgaW4gSVBQREVYUENSMCwgYW5kIHRoZSBsYXN0IGNlbGwg
+aXMgZm9yDQo+ID4gPiA+ID4gPiBJUFBERVhQQ1IxLg0KPiA+ID4gPiA+ID4gKyAgICAgTm90ZTog
+SWYgdGhlIHBsYXRmb3JtIGhhcyBubyBJUFBERVhQQ1IxIHJlZ2lzdGVyLCBwdXQgYQ0KPiA+ID4g
+PiA+ID4gKyB6ZXJvDQo+ID4gPiA+ID4gPiBoZXJlLg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gV2hh
+dCBpZiBhIGZ1dHVyZSBwbGF0Zm9ybSBoYXMgbW9yZSB0aGFuIHR3byBvZiB0aGVzZSByZWdpc3Rl
+cnM/DQo+ID4gPiA+DQo+ID4gPiA+IFRob3NlIHJlZ2lzdGVycyBhcmUgb25seSB1c2VkIGZvciB3
+YWtldXAgZGV2aWNlLCB3ZSBoYXZlIGEgbG90IG9mDQo+ID4gPiA+IGF2YWlsYWJsZSBiaXQgZm9y
+IGZlYXR1cmUuIEZvciBleGFtcGxlLCBJbiBMUzEwMjFhIHBsYXRmb3JtIG9ubHkNCj4gPiA+ID4g
+N2JpdHMgaGFzIHVzZWQgaW4gdGhlIHJlZ2lzdGVycywgYW5kIDU3Yml0cyBpcyByZXNlcnZlZC4N
+Cj4gPiA+DQo+ID4gPiBTdGlsbCwgaXQnZCBiZSBiZXR0ZXIgdG8gZm9yIHRoZSByY3BtIG5vZGUg
+dG8gYWR2ZXJ0aXNlIHRoZSBudW1iZXINCj4gPiA+IG9mIGNlbGxzIGl0IGV4cGVjdHMuDQo+ID4N
+Cj4gPiBGb3IgdGhlIGZvcmVzZWVhYmxlIGZ1dHVyZSBpdCBzaG91bGQgYmUgZW5vdWdoIHRvIHVz
+ZSwgZXZlbiBpZiBub3QNCj4gPiBlbm91Z2ggdG8gdXNlIGluIHRoZSBmdXR1cmUgYXQgdGhhdCB0
+aW1lIHdlIGNhbiB1cGRhdGUgdGhlIGJpbmRpbmcuDQo+IA0KPiBUaGF0J3MgdGhlIHdob2xlIHBv
+aW50LiAgRGV2aWNlIHRyZWUgaXMgc3RhYmxlIEFCSS4gIFVwZGF0aW5nIGl0IGxhdGVyIHRvIG5v
+dCBiZQ0KPiBmaXhlZCB0byB0d28gY2VsbHMgd291bGQgYmUgYSBsb3QgaGFyZGVyIHRoYW4gZ2V0
+dGluZyBpdCByaWdodCBmcm9tIHRoZQ0KPiBiZWdpbm5pbmcuICBQdXR0aW5nIHRoZSBudW1iZXIg
+b2YgY2VsbHMgaW4gdGhlIHBoYW5kbGUgdGFyZ2V0IGlzIGEgc3RhbmRhcmQNCj4gZGV2aWNlIHRy
+ZWUgaWRpb20uDQo+IA0KSSBhZ3JlZSB3aXRoIHlvdS4gQnV0IHdoYXQncyB0aGUgcG9pbnQgYSBT
+T0MgaGFzIG1vcmUgdGhhbiA2NCB3YWtldXAgc291cmNlPw0KDQpSZWdhcmRzLA0KWXVhbnRpYW4N
+Cg0KPiAtU2NvdHQNCg0K
