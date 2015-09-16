@@ -1,34 +1,42 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0104.outbound.protection.outlook.com [157.56.110.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6058D1A0417
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 12:44:02 +1000 (AEST)
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Yuantian Tang
- <Yuantian.Tang@freescale.com>
-CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, Huan Wang
- <alison.wang@freescale.com>, Jin Jason <Jason.Jin@freescale.com>, Zhao C.H.
- <chenhui.zhao@freescale.com>
-Subject: RE: [PATCH v2 1/2] fsl: Add binding for RCPM
-Date: Wed, 16 Sep 2015 02:43:56 +0000
-Message-ID: <SN1PR0301MB1616AF7E6C36D58B03592DDB9D5B0@SN1PR0301MB1616.namprd03.prod.outlook.com>
-References: <1442307339-15225-1-git-send-email-dongsheng.wang@freescale.com>
- <1442361398.2909.164.camel@freescale.com>
- <SN1PR0301MB1616C48FB3D990BCA45289AB9D5B0@SN1PR0301MB1616.namprd03.prod.outlook.com>
- <1442369955.2909.166.camel@freescale.com>
- <SN1PR0301MB161688E3AF527ADC76AB2B8F9D5B0@SN1PR0301MB1616.namprd03.prod.outlook.com>
- <1442370701.2909.167.camel@freescale.com>
- <DM2PR03MB574196E1A0D55C185CE1B4BFA5B0@DM2PR03MB574.namprd03.prod.outlook.com>
- <1442371076.2909.171.camel@freescale.com>
-In-Reply-To: <1442371076.2909.171.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C16C31A0417
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 12:51:31 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 16 Sep 2015 12:51:29 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2E4B03578054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 12:51:26 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8G2p9S159965482
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 12:51:17 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8G2orDW022741
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Sep 2015 12:50:53 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+Cc: "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ "James.Bottomley" <James.Bottomley@HansenPartnership.com>,
+ nab <nab@linux-iscsi.org>, brking <brking@linux.vnet.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ "andrew.donnellan" <andrew.donnellan@au1.ibm.com>,
+ mikey <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 00/29] cxlflash: Miscellaneous bug fixes and corrections
+In-reply-to: <8867AAC7-E67D-48B6-93DD-454B96F5979A@linux.vnet.ibm.com>
+References: <1442006012-46803-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442188796-sup-7396@delenn.ozlabs.ibm.com>
+ <8867AAC7-E67D-48B6-93DD-454B96F5979A@linux.vnet.ibm.com>
+Date: Wed, 16 Sep 2015 12:50:22 +1000
+Message-Id: <1442371641-sup-310@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,87 +46,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMTYsIDIwMTUgMTA6MzggQU0NCj4gVG86
-IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IENjOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQ7IGRldmlj
-ZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmc7
-IHJvYmgrZHRAa2VybmVsLm9yZzsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3Jn
-Ow0KPiBXYW5nIEh1YW4tQjE4OTY1OyBKaW4gWmhlbmd4aW9uZy1SNjQxODg7IFpoYW8gQ2hlbmh1
-aS1CMzUzMzYNCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiAxLzJdIGZzbDogQWRkIGJpbmRpbmcg
-Zm9yIFJDUE0NCj4gDQo+IE9uIFR1ZSwgMjAxNS0wOS0xNSBhdCAyMTozNSAtMDUwMCwgVGFuZyBZ
-dWFudGlhbi1CMjk5ODMgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5
-LCBTZXB0ZW1iZXIgMTYsIDIwMTUgMTA6MzIgQU0NCj4gPiA+IFRvOiBXYW5nIERvbmdzaGVuZy1C
-NDA1MzQgPERvbmdzaGVuZy5XYW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiBDYzogZGV2aWNldHJl
-ZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4g
-cm9iaCtkdEBrZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7
-IFdhbmcgSHVhbi0NCj4gPiA+IEIxODk2NSA8YWxpc29uLndhbmdAZnJlZXNjYWxlLmNvbT47IEpp
-biBaaGVuZ3hpb25nLVI2NDE4OA0KPiA+ID4gPEphc29uLkppbkBmcmVlc2NhbGUuY29tPjsgWmhh
-byBDaGVuaHVpLUIzNTMzNg0KPiA+ID4gPGNoZW5odWkuemhhb0BmcmVlc2NhbGUuY29tPjsgVGFu
-ZyBZdWFudGlhbi1CMjk5ODMNCj4gPiA+IDxZdWFudGlhbi5UYW5nQGZyZWVzY2FsZS5jb20+DQo+
-ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDEvMl0gZnNsOiBBZGQgYmluZGluZyBmb3IgUkNQ
-TQ0KPiA+ID4NCj4gPiA+IE9uIFR1ZSwgMjAxNS0wOS0xNSBhdCAyMTozMCAtMDUwMCwgV2FuZyBE
-b25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+ID4gPiBIaSBTY290dCwNCj4gPiA+ID4NCj4gPiA+
-ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IFdvb2QgU2Nv
-dHQtQjA3NDIxDQo+ID4gPiA+ID4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMTYsIDIwMTUg
-MTA6MTkgQU0NCj4gPiA+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiA+ID4g
-Q2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
-Lm9yZzsNCj4gPiA+ID4gPiByb2JoK2R0QGtlcm5lbC5vcmc7IGxpbnV4LWFybS1rZXJuZWxAbGlz
-dHMuaW5mcmFkZWFkLm9yZzsgV2FuZyBIdWFuLQ0KPiA+ID4gPiA+IEIxODk2NTsgSmluDQo+ID4g
-PiA+ID4gWmhlbmd4aW9uZy1SNjQxODg7IFpoYW8gQ2hlbmh1aS1CMzUzMzY7IFRhbmcgWXVhbnRp
-YW4tQjI5OTgzDQo+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiAxLzJdIGZzbDogQWRk
-IGJpbmRpbmcgZm9yIFJDUE0NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIFR1ZSwgMjAxNS0wOS0x
-NSBhdCAyMToxNSAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+ID4gPiA+
-ID4gSGkgU2NvdHQsDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4g
-PiA+ID4gPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAxNiwgMjAxNSA3OjU3IEFNDQo+ID4g
-PiA+ID4gPiA+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+ID4gPiA+ID4gQ2M6IGRl
-dmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsN
-Cj4gPiA+ID4gPiA+ID4gcm9iaCtkdEBrZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3Rz
-LmluZnJhZGVhZC5vcmc7IFdhbmcNCj4gPiA+ID4gPiA+ID4gcm9iaCtIdWFuLQ0KPiA+ID4gPiA+
-ID4gPiBCMTg5NjU7IEppbg0KPiA+ID4gPiA+ID4gPiBaaGVuZ3hpb25nLVI2NDE4ODsgWmhhbyBD
-aGVuaHVpLUIzNTMzNjsgVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gPiA+ID4gPiA+ID4gU3ViamVj
-dDogUmU6IFtQQVRDSCB2MiAxLzJdIGZzbDogQWRkIGJpbmRpbmcgZm9yIFJDUE0NCj4gPiA+ID4g
-PiA+ID4NCj4gPiA+ID4gPiA+ID4gT24gVHVlLCAyMDE1LTA5LTE1IGF0IDE2OjU1ICswODAwLCBE
-b25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiA+ID4gPiA+ID4gPiArKiBGcmVlc2NhbGUgUkNQTSBX
-YWtldXAgU291cmNlIERldmljZSBUcmVlIEJpbmRpbmdzDQo+ID4gPiA+ID4gPiA+ID4gKy0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiA+ID4gPiA+ID4gPiAr
-UmVxdWlyZWQgcmNwbS13YWtldXAgcHJvcGVydHkgc2hvdWxkIGJlIGFkZGVkIHRvIGEgZGV2aWNl
-DQo+ID4gPiA+ID4gPiA+ID4gK25vZGUgaWYgdGhlDQo+ID4gPiA+ID4gPiA+ID4gZGV2aWNlDQo+
-ID4gPiA+ID4gPiA+ID4gK2NhbiBiZSB1c2VkIGFzIGEgd2FrZXVwIHNvdXJjZS4NCj4gPiA+ID4g
-PiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+ID4gKyAgLSByY3BtLXdha2V1cDogVGhlIHZhbHVlIG9m
-IHRoZSBwcm9wZXJ0eSBjb25zaXN0cyBvZiAzIGNlbGxzLg0KPiA+ID4gPiA+ID4gPiA+ICsgVGhl
-DQo+ID4gPiA+ID4gPiA+ID4gZmlyc3QNCj4gPiA+ID4gPiA+ID4gPiBjZWxsDQo+ID4gPiA+ID4g
-PiA+ID4gKyAgICAgaXMgYSBwb2ludGVyIHRvIHRoZSByY3BtIG5vZGUsIHRoZSBzZWNvbmQgY2Vs
-bCBpcyB0aGUNCj4gPiA+ID4gPiA+ID4gPiArIGJpdCBtYXNrDQo+ID4gPiA+ID4gPiA+ID4gdGhh
-dA0KPiA+ID4gPiA+ID4gPiA+ICsgICAgIHNob3VsZCBiZSBzZXQgaW4gSVBQREVYUENSMCwgYW5k
-IHRoZSBsYXN0IGNlbGwgaXMgZm9yDQo+ID4gPiA+ID4gPiA+ID4gSVBQREVYUENSMS4NCj4gPiA+
-ID4gPiA+ID4gPiArICAgICBOb3RlOiBJZiB0aGUgcGxhdGZvcm0gaGFzIG5vIElQUERFWFBDUjEg
-cmVnaXN0ZXIsIHB1dCBhDQo+ID4gPiA+ID4gPiA+ID4gKyB6ZXJvDQo+ID4gPiA+ID4gPiA+ID4g
-aGVyZS4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gV2hhdCBpZiBhIGZ1dHVyZSBwbGF0
-Zm9ybSBoYXMgbW9yZSB0aGFuIHR3byBvZiB0aGVzZSByZWdpc3RlcnM/DQo+ID4gPiA+ID4gPg0K
-PiA+ID4gPiA+ID4gVGhvc2UgcmVnaXN0ZXJzIGFyZSBvbmx5IHVzZWQgZm9yIHdha2V1cCBkZXZp
-Y2UsIHdlIGhhdmUgYSBsb3Qgb2YNCj4gPiA+ID4gPiA+IGF2YWlsYWJsZSBiaXQgZm9yIGZlYXR1
-cmUuIEZvciBleGFtcGxlLCBJbiBMUzEwMjFhIHBsYXRmb3JtIG9ubHkNCj4gPiA+ID4gPiA+IDdi
-aXRzIGhhcyB1c2VkIGluIHRoZSByZWdpc3RlcnMsIGFuZCA1N2JpdHMgaXMgcmVzZXJ2ZWQuDQo+
-ID4gPiA+ID4NCj4gPiA+ID4gPiBTdGlsbCwgaXQnZCBiZSBiZXR0ZXIgdG8gZm9yIHRoZSByY3Bt
-IG5vZGUgdG8gYWR2ZXJ0aXNlIHRoZSBudW1iZXINCj4gPiA+ID4gPiBvZiBjZWxscyBpdCBleHBl
-Y3RzLg0KPiA+ID4gPg0KPiA+ID4gPiBGb3IgdGhlIGZvcmVzZWVhYmxlIGZ1dHVyZSBpdCBzaG91
-bGQgYmUgZW5vdWdoIHRvIHVzZSwgZXZlbiBpZiBub3QNCj4gPiA+ID4gZW5vdWdoIHRvIHVzZSBp
-biB0aGUgZnV0dXJlIGF0IHRoYXQgdGltZSB3ZSBjYW4gdXBkYXRlIHRoZSBiaW5kaW5nLg0KPiA+
-ID4NCj4gPiA+IFRoYXQncyB0aGUgd2hvbGUgcG9pbnQuICBEZXZpY2UgdHJlZSBpcyBzdGFibGUg
-QUJJLiAgVXBkYXRpbmcgaXQgbGF0ZXIgdG8NCj4gPiA+IG5vdCBiZQ0KPiA+ID4gZml4ZWQgdG8g
-dHdvIGNlbGxzIHdvdWxkIGJlIGEgbG90IGhhcmRlciB0aGFuIGdldHRpbmcgaXQgcmlnaHQgZnJv
-bSB0aGUNCj4gPiA+IGJlZ2lubmluZy4gIFB1dHRpbmcgdGhlIG51bWJlciBvZiBjZWxscyBpbiB0
-aGUgcGhhbmRsZSB0YXJnZXQgaXMgYQ0KPiA+ID4gc3RhbmRhcmQNCj4gPiA+IGRldmljZSB0cmVl
-IGlkaW9tLg0KPiA+ID4NCj4gPiBJIGFncmVlIHdpdGggeW91LiBCdXQgd2hhdCdzIHRoZSBwb2lu
-dCBhIFNPQyBoYXMgbW9yZSB0aGFuIDY0IHdha2V1cCBzb3VyY2U/DQo+IA0KPiBJIGRvbid0IGtu
-b3cuICBIYXJkd2FyZSBwZW9wbGUgZG8gc3RyYW5nZSB0aGluZ3Mgc29tZXRpbWVzLiAgVGhleSBt
-aWdodCBub3QNCj4gd2FudCB0byByZXVzZSBiaXRzIHRoZXkgb25jZSB1c2VkIGZvciBzb21ldGhp
-bmcgb24gc29tZSBvdGhlciBjaGlwLCBvciB0aGV5DQo+IG1pZ2h0IGhhdmUgc29tZSBlbmNvZGlu
-ZyBzY2hlbWUgaW4gbWluZCB0aGF0IHJlc3VsdHMgaW4gdGhlIGJpdHMgbm90IGJlaW5nDQo+IHBh
-Y2tlZCBhcyB0aWdodGx5IGFzIHBvc3NpYmxlLCBvciB0aGVyZSBtYXkgYmUgc29tZSBiaWcgYXJy
-YXkgb2Ygc2ltaWxhcg0KPiBkZXZpY2VzLi4uDQo+IA0KPiBXaGF0J3MgdGhlIHBvaW50IG9mIHNr
-aXBwaW5nIHRoaXMgcGFydCBvZiB0aGUgcGhhbmRsZS1wbHVzLWFyZ3VtZW50cyBpZGlvbT8NCg0K
-RmluZSwgSSB3aWxsIGFkZCBhIHByb3BlcnR5IGluIHJjcG0gbm9kZSB0byBkZXNjcmliZSB0aGUg
-bnVtYmVyIG9mIHJlZ2lzdGVyLg0KDQpSZWdhcmRzLA0KLURvbmdzaGVuZw0K
+Hi Matt & Manoj,
+
+Can you also add linuxppc-dev@lists.ozlabs.org to the Cc list for
+version 2?
+
+Cheers,
+-Ian
+
+Excerpts from Matthew R. Ochs's message of 2015-09-15 06:12:29 +1000:
+> > On Sep 13, 2015, at 8:12 PM, Ian Munsie <imunsie@au1.ibm.com> wrote:
+> > 
+> > Hi Matt & Manoj,
+> > 
+> > Just a general comment about this series - I'd like to see more detailed
+> > commit messages for almost all these patches. Of course James is the
+> > scsi maintainer and it's up to him whether to take these as is or not,
+> > but generally when you write a commit message for a bug fix you want to
+> > explain:
+> > 
+> > - What problem can occur, possibly including an example
+> > - Why it occurs
+> > - How this patch addresses it
+> > 
+> > You don't necessarily need to go overboard because at some point people
+> > can just read the code, but some of these patches don't have any detail
+> > beyond a single subject line, which is too little.
+> > 
+> > Speaking of the subject line - if the patch is fixing a bug there should
+> > be some indication of that in the subject (it should probably include
+> > the word "fix" somewhere). If the subject just states what you are
+> > changing then it's not immediately obvious that it is a bug fix.
+> 
+> This is a reasonable request. Will incorporate your suggestions
+> and send out in a v2 series. Thanks for the examples of what you
+> would like to see.
+> 
+> 
+> -matt
