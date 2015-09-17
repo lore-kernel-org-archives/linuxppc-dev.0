@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0621E1A04E5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:13:29 +1000 (AEST)
-In-Reply-To: <1442293447-1843-1-git-send-email-dja@axtens.net>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9B711A04D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:13:28 +1000 (AEST)
+In-Reply-To: <1442296114-16796-1-git-send-email-imunsie@au.ibm.com>
+To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <michaele@au1.ibm.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, imunsie@au1.ibm.com, andrew.donnellan@au1.ibm.com,
- Daniel Axtens <dja@axtens.net>
-Subject: Re: [v2] cxl: Fix unbalanced pci_dev_get in cxl_probe
-Message-Id: <20150917051328.A67EA140291@ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling <mikey@neuling.org>,
+ Anton Blanchard <anton@au1.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: cxl: Fix build failure due to -Wunused-variable behaviour change
+Message-Id: <20150917051328.787D2140281@ozlabs.org>
 Date: Thu, 17 Sep 2015 15:13:28 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,53 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-15-09 at 05:04:07 UTC, Daniel Axtens wrote:
-> Currently the first thing we do in cxl_probe is to grab a reference
-> on the pci device. Later on, we call device_register on our adapter.
-> In our remove path, we call device_unregister, but we never call
-> pci_dev_put. We therefore leak the device every time we do a
-> reflash.
+On Tue, 2015-15-09 at 05:48:34 UTC, Ian Munsie wrote:
+> From: Ian Munsie <imunsie@au1.ibm.com>
 > 
-> device_register/unregister is sufficient to hold the reference.
-> Therefore, drop the call to pci_dev_get.
+> A recent change in gcc caused this build failure:
 > 
-> Here's why this is safe.
-> The proposed cxl_probe(pdev) calls cxl_adapter_init:
->     a) init calls cxl_adapter_alloc, which creates a struct cxl,
->        conventionally called adapter. This struct contains a
->        device entry, adapter->dev.
+> /var/lib/jenkins/workspace/gcc_kernel_build/linux/drivers/misc/cxl/cxl.h:72:27:
+> error: ‘CXL_PSL_DLCNTL’ defined but not used [-Werror=unused-const-variable]
+>  static const cxl_p1_reg_t CXL_PSL_DLCNTL  = {0x0060};
 > 
->     b) init calls cxl_configure_adapter, where we set
->        adapter->dev.parent = &dev->dev (here dev is the pci dev)
+> Because of this gcc commit:
 > 
-> So at this point, the cxl adapter's device's parent is the PCI
-> device that I want to be refcounted properly.
+> Commit 1bca8cbd0c68366f07277f98ce6963e10c2aa617 by mark
+> PR28901 -Wunused-variable ignores unused const initialised variables in C
+> 12 years ago it was decided that -Wunused-variable shouldn't warn about
+> static const variables because some code used const static char rcsid[]
+> strings which were never used but wanted in the code anyway. But as the
+> bug points out this hides some real bugs. These days the usage of
+> rcsids is not very popular anymore. So this patch changes the default
+> to warn about unused static const variables in C with
+> -Wunused-variable. And it adds a new option -Wno-unused-const-variable
+> to turn this warning off. For C++ this new warning is off by default,
+> since const variables can be used as #defines in C++. New testcases for
+> the new defaults in C and C++ are included testing the new warning and
+> suppressing it with an unused attribute or using
+> -Wno-unused-const-variable. gcc/ChangeLog
 > 
->     c) init calls cxl_register_adapter
->        *) cxl_register_adapter calls device_register(&adapter->dev)
+> The cxl driver uses static consts in place of #defines in some cases
+> for type safety, so this change causes the driver to fail to build on
+> new copilers as these constants are not all used in every file that
+> imports the header. Suppress the warning for this driver to return to
+> the old behaviour of -Wunused-variable.
 > 
-> So now we're in device_register, where dev is the adapter device, and
-> we want to know if the PCI device is safe after we return.
-> 
-> device_register(&adapter->dev) calls device_initialize() and then
-> device_add().
-> 
-> device_add() does a get_device(). device_add() also explicitly grabs
-> the device's parent, and calls get_device() on it:
-> 
->          parent = get_device(dev->parent);
-> 
-> So therefore, device_register() takes a lock on the parent PCI dev,
-> which is what pci_dev_get() was guarding. pci_dev_get() can therefore
-> be safely removed.
-> 
-> Fixes: f204e0b8cedd ("cxl: Driver code for powernv PCIe based cards for userspace access")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Reported-by: Anton Blanchard <anton@au1.ibm.com>
+> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/2925c2fdf1e0eb642482f5b3
+https://git.kernel.org/powerpc/c/2cd55c68c0a49a75433b15c7
 
 cheers
