@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9B711A04D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:13:28 +1000 (AEST)
-In-Reply-To: <1442296114-16796-1-git-send-email-imunsie@au.ibm.com>
-To: Ian Munsie <imunsie@au1.ibm.com>, Michael Ellerman <michaele@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0910D1A04EA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:13:29 +1000 (AEST)
+In-Reply-To: <1442300408-26490-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Neuling <mikey@neuling.org>,
- Anton Blanchard <anton@au1.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>
-Subject: Re: cxl: Fix build failure due to -Wunused-variable behaviour change
-Message-Id: <20150917051328.787D2140281@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm: Recompute hash value after a failed update
+Message-Id: <20150917051328.BF189140293@ozlabs.org>
 Date: Thu, 17 Sep 2015 15:13:28 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,43 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-15-09 at 05:48:34 UTC, Ian Munsie wrote:
-> From: Ian Munsie <imunsie@au1.ibm.com>
+On Tue, 2015-15-09 at 07:00:08 UTC, "Aneesh Kumar K.V" wrote:
+> If we had secondary hash flag set, we ended up modifying hash value in
+> the updatepp code path. Hence with a failed updatepp we will be using
+> a wrong hash value for the following hash insert. Fix this by
+> recomputing hash before insert.
 > 
-> A recent change in gcc caused this build failure:
-> 
-> /var/lib/jenkins/workspace/gcc_kernel_build/linux/drivers/misc/cxl/cxl.h:72:27:
-> error: ‘CXL_PSL_DLCNTL’ defined but not used [-Werror=unused-const-variable]
->  static const cxl_p1_reg_t CXL_PSL_DLCNTL  = {0x0060};
-> 
-> Because of this gcc commit:
-> 
-> Commit 1bca8cbd0c68366f07277f98ce6963e10c2aa617 by mark
-> PR28901 -Wunused-variable ignores unused const initialised variables in C
-> 12 years ago it was decided that -Wunused-variable shouldn't warn about
-> static const variables because some code used const static char rcsid[]
-> strings which were never used but wanted in the code anyway. But as the
-> bug points out this hides some real bugs. These days the usage of
-> rcsids is not very popular anymore. So this patch changes the default
-> to warn about unused static const variables in C with
-> -Wunused-variable. And it adds a new option -Wno-unused-const-variable
-> to turn this warning off. For C++ this new warning is off by default,
-> since const variables can be used as #defines in C++. New testcases for
-> the new defaults in C and C++ are included testing the new warning and
-> suppressing it with an unused attribute or using
-> -Wno-unused-const-variable. gcc/ChangeLog
-> 
-> The cxl driver uses static consts in place of #defines in some cases
-> for type safety, so this change causes the driver to fail to build on
-> new copilers as these constants are not all used in every file that
-> imports the header. Suppress the warning for this driver to return to
-> the old behaviour of -Wunused-variable.
-> 
-> Reported-by: Anton Blanchard <anton@au1.ibm.com>
-> Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Reviewed-by: Paul Mackerras <paulus@samba.org>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/2cd55c68c0a49a75433b15c7
+https://git.kernel.org/powerpc/c/36b35d5d807b7e57aff7d08e
 
 cheers
