@@ -1,47 +1,41 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E9651A04D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 02:55:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2AA011A04D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 03:16:55 +1000 (AEST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 17 Sep 2015 10:55:31 -0600
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BF5D238C8056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 12:55:29 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8HGtT6g66977928
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 16:55:29 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8HGtRMn002403
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 12:55:29 -0400
-Content-Type: text/plain; charset=us-ascii
+ Thu, 17 Sep 2015 11:16:54 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 51B891FF0050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 11:07:59 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8HHGn5D64356532
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:16:50 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8HHGleP017208
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 11:16:49 -0600
+Content-Type: text/plain; charset=windows-1252
 Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
 Subject: Re: [PATCH v2 09/30] cxlflash: Fix to stop interrupt processing on
  remove
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CB98C57@AcuExch.aculab.com>
-Date: Thu, 17 Sep 2015 11:55:25 -0500
-Cc: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Michael Neuling <mikey@neuling.org>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Message-Id: <F82115EC-8D08-40D7-B4BD-DE1796A865B5@linux.vnet.ibm.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442438881-49507-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6D1CB98C57@AcuExch.aculab.com>
-To: David Laight <David.Laight@ACULAB.COM>
+In-Reply-To: <55FAB43B.8050306@redhat.com>
+Date: Thu, 17 Sep 2015 12:16:45 -0500
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+ nab@linux-iscsi.org, brking@linux.vnet.ibm.com, imunsie@au1.ibm.com,
+ dja@ozlabs.au.ibm.com, andrew.donnellan@au1.ibm.com, mikey@neuling.org,
+ linuxppc-dev@lists.ozlabs.org, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Message-Id: <97A059A7-2054-4DBD-B993-BBF47AC105E0@linux.vnet.ibm.com>
+References: <1442422399-41262-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <55FAB43B.8050306@redhat.com>
+To: Tomas Henzl <thenzl@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,11 +45,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Sep 17, 2015, at 6:58 AM, David Laight <David.Laight@ACULAB.COM> =
-wrote:
+> On Sep 17, 2015, at 7:38 AM, Tomas Henzl <thenzl@redhat.com> wrote:
 >=20
-> From: Linuxppc-dev Matthew R. Ochs
->> Sent: 16 September 2015 22:28
+> On 16.9.2015 18:53, Matthew R. Ochs wrote:
 >> Interrupt processing can run in parallel to a remove operation. This
 >> can lead to a condition where the interrupt handler is processing =
 with
@@ -65,25 +57,63 @@ with
 for
 >> removal while in the interrupt handler. Bail when removal is =
 imminent.
+>>=20
+>> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+>> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+>> ---
+>> drivers/scsi/cxlflash/common.h |  2 ++
+>> drivers/scsi/cxlflash/main.c   | 21 +++++++++++++++------
+>> 2 files changed, 17 insertions(+), 6 deletions(-)
+>>=20
+>> diff --git a/drivers/scsi/cxlflash/common.h =
+b/drivers/scsi/cxlflash/common.h
+>> index 1abe4e0..03d2cc6 100644
+>> --- a/drivers/scsi/cxlflash/common.h
+>> +++ b/drivers/scsi/cxlflash/common.h
+>> @@ -103,6 +103,8 @@ struct cxlflash_cfg {
+>> 	enum cxlflash_lr_state lr_state;
+>> 	int lr_port;
+>>=20
+>> +	atomic_t remove_active;
+>> +
+>> 	struct cxl_afu *cxl_afu;
+>>=20
+>> 	struct pci_pool *cxlflash_cmd_pool;
+>> diff --git a/drivers/scsi/cxlflash/main.c =
+b/drivers/scsi/cxlflash/main.c
+>> index 6e85c77..89ee648 100644
+>> --- a/drivers/scsi/cxlflash/main.c
+>> +++ b/drivers/scsi/cxlflash/main.c
+>> @@ -892,6 +892,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
+>> 	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
+>>=20
+>> 	cfg->state =3D STATE_FAILTERM;
+>> +	atomic_inc(&cfg->remove_active);
 >=20
-> On the face of it this just reduces the size of the window somewhat.
+> Hi Matthew,
+> you could just call term_afu at this point, this way you don't
+> need an additional check in all irq functions.
+> Cheers,
+> Tomas
 
-Agreed.
+Hi Tomas,
 
->=20
-> What happens if the interrupt routine reads the flag just before it is =
-set
-> (so is processing the entry that is being removed) and is then (say)
-> interrupted by a higher priority interrupt that takes longer to =
-execute than
-> the remove code?
+We actually do call term_afu() a few lines down from here. I don't =
+follow
+how moving it here would help things.
 
-Understood. To completely close we'd need to either introduce a lock or =
-a
-reciprocal flag/count such that the remove doesn't make forward progress
-until after interrupt processing has completed. I can look at =
-introducing such
-a mechanism in a later patch to fully remove the exposure.
+The reason for the atomic was to provide something lightweight that we
+could check _inside_ the processing loop for the read-response queue
+handler. A check outside that loop doesn't really provide much in terms
+of closing or narrowing down the window of when freed memory can be
+accessed.
+
+As David Laight correctly pointed out, this approach does not completely
+close the window. We'd need something heavier to fully protect (e.g. a =
+lock
+to wrap around the entire loop). I will look into adding this in a =
+future cycle
+when I can adequately test.
 
 
 -matt
