@@ -1,25 +1,20 @@
-Return-Path: <peter.senna@gmail.com>
-Received: from mail-wi0-x236.google.com (mail-wi0-x236.google.com
- [IPv6:2a00:1450:400c:c05::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 844FC1A0274
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 19:58:58 +1000 (AEST)
-Received: by wiclk2 with SMTP id lk2so16443677wic.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 02:58:55 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1442483254.26748.5.camel@ellerman.id.au>
-References: <1442481536-11088-1-git-send-email-peter.senna@gmail.com>
- <1442483254.26748.5.camel@ellerman.id.au>
-Date: Thu, 17 Sep 2015 11:58:54 +0200
-Message-ID: <CA+MoWDraY5XjJu7V+LL4L4OgovyNPEJiuvzZb2C-xZtF8UEUnw@mail.gmail.com>
-Subject: Re: [PATCH] arch-powerpc: Return false instead of -EFAULT
-From: Peter Senna Tschudin <peter.senna@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9E221A0274
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 20:05:25 +1000 (AEST)
+Message-ID: <1442484325.26748.7.camel@ellerman.id.au>
+Subject: Re: Time to remove platforms/cell?
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>
+Date: Thu, 17 Sep 2015 20:05:25 +1000
+In-Reply-To: <7144823.dIR0EDXkmx@wuerfel>
+References: <1442467727.25483.0.camel@ellerman.id.au>
+ <2023345.Irprl084gX@fb07-iapwap2> <7144823.dIR0EDXkmx@wuerfel>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 17, 2015 at 11:47 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Thu, 2015-09-17 at 11:18 +0200, Peter Senna Tschudin wrote:
->> Returning a negative value for a boolean function seem to have the
->> undesired effect of returning true. Replace -EINVAL by false in a
->> bool-returning function.
->>
->> The diff of the .s file before and after the change (using cross
->> compilation) starts with:
->>
->> 440,441c440,441
->> < .L43:
->> <     li 3,1   # D.25775,
->> ---
->> > .L42:
->> >     li 3,0   # D.25775,
->> ...
->>
->> while if -EFAULT is replaced by true, the diff is empty.
->
-> Ah, that's rather unfortunate.
->
-> Can you post the full asm listing, for all three cases?
-Sure, but it would be 3 files of 70kb each. You can download them form:
+On Thu, 2015-09-17 at 11:31 +0200, Arnd Bergmann wrote:
+> On Thursday 17 September 2015 10:43:39 Marc Dietrich wrote:
+> > Am Donnerstag, 17. September 2015, 15:28:47 schrieb Michael Ellerman:
+> > > Discuss ...
+> > 
+> > as long as Geoff still maintains the ps3 port - why?
+> > 
+> We already removed celleb a while ago, which was arguably the least
+> commonly used one.
 
-http://petersenna.com/files/module_64.s.tar.xz
+Hi Arnd,
 
-Let me know if this download method doesn't work for you.
+Thanks for the input, I probably should have CC'ed you, sorry!
 
-module_64.s: Original file.
-module_64-patched.s: With my patch
-module_64-true.s: Changing -EFAULT by true
+> Within platforms/cell, we have three separate portions that we need
+> to look at:
+> 
+> a) Common ps3/ibm parts: spufs, oprofile
+>    We should not remove them before we plan to also remove platforms/ps3
+>    support, which doesn't seem likely in the near term. We can move them
+>    to platforms/ps3 if we decide to remove the rest.
 
-files were made with:
-$ make arch/powerpc/kernel/module_64.s
+Right. I wouldn't bet money that the oprofile code still works, but spufs
+definitely would have to stay.
 
-using:
-gcc-powerpc64-linux-gnu-4.9.2-5.fc21.x86_64
+> b) Support for IBM blades:
+>    It is unlikely that there are QS20 blades still around and being used
+>    at all, but there is very little code specific to them.
 
->
-> cheers
->
->
+Wasn't spider QS20 only? So that would be a bit of code that could go,
+including (some of) the io-workarounds code (I think).
+
+>    For QS21/QS22, there are probably still a few in existence, but
+>    I have no idea whether anybody would consider running a 4.x kernel
+>    on them. There are also some customer-specific Cell machines that
+>    are vaguely related to QS22 and that are in a similar state.
+>    I don't mind removing the code, but if anybody is still using it
+>    on new kernels, we should be prepared to put it back.
+
+Yeah, that's my impression. We obviously still have a QS22, but really we're
+only keeping it alive for testing purposes.
+
+Hopefully this email will bring some more folks out of the woodwork.
+
+> c) QPACE. We know who the three users were, and they have upgraded to
+>    QPACE2 (based on Intel Xeon Phi) this year. Removing this would be
+>    appreciated as it lets us clean up one of the ugly corners of the
+>    8250 uart driver.
+
+Ah excellent info.
+
+I had done some googling on QPACE and from the web site there is no suggestion
+that it's been shutdown, but I guess that's the nature of web pages, they tend
+not to get updated:
+
+  http://www.fz-juelich.de/ias/jsc/EN/Expertise/Supercomputers/QPACE/QPACE_node.html
 
 
+So we can probably remove the QPACE code sooner rather than later, unless
+someone yells.
 
--- 
-Peter
+cheers
