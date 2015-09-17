@@ -1,22 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0117.outbound.protection.outlook.com [65.55.169.117])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3A3231A0663
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 06:25:21 +1000 (AEST)
-Message-ID: <1442521509.19102.72.camel@freescale.com>
-Subject: Re: [PATCH v9 2/5] genalloc:support allocating specific region
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE84B1A05F9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 06:28:39 +1000 (AEST)
+Message-ID: <1442521702.19102.75.camel@freescale.com>
+Subject: Re: [PATCH v9 3/5] qe_common: add qe_muram_ functions to manage muram
 From: Scott Wood <scottwood@freescale.com>
 To: Zhao Qiang <qiang.zhao@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
  <leoli@freescale.com>, <paulus@samba.org>
-Date: Thu, 17 Sep 2015 15:25:09 -0500
-In-Reply-To: <1442521184.19102.69.camel@freescale.com>
+Date: Thu, 17 Sep 2015 15:28:22 -0500
+In-Reply-To: <1442194700-6194-3-git-send-email-qiang.zhao@freescale.com>
 References: <1442194700-6194-1-git-send-email-qiang.zhao@freescale.com>
- <1442194700-6194-2-git-send-email-qiang.zhao@freescale.com>
- <1442521184.19102.69.camel@freescale.com>
+ <1442194700-6194-3-git-send-email-qiang.zhao@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,89 +27,264 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-17 at 15:19 -0500, Scott Wood wrote:
-> On Mon, 2015-09-14 at 09:38 +0800, Zhao Qiang wrote:
-> > Add new algo for genalloc, it reserve a specific region of
-> > memory matching the size requirement (no alignment constraint)
-> > 
-> > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> > ---
-> > Changes for v9:
-> >       - reserve a specific region, if the return region
-> >       - is not during the specific region, return fail.
-> > 
-> >  include/linux/genalloc.h | 11 +++++++++++
-> >  lib/genalloc.c           | 30 ++++++++++++++++++++++++++++++
-> >  2 files changed, 41 insertions(+)
-> > 
-> > diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
-> > index aaf3dc2..85e3b2f 100644
-> > --- a/include/linux/genalloc.h
-> > +++ b/include/linux/genalloc.h
-> > @@ -82,6 +82,13 @@ struct genpool_data_align {
-> >       int align;              /* alignment by bytes for starting address 
-> > */
-> >  };
-> >  
-> > +/*
-> > + *  gen_pool data descriptor for gen_pool_fixed_fit.
-> > + */
-> > +struct genpool_data_fixed {
-> > +     unsigned long offset;           /* The offset of the specific 
-> > region */
-> > +};
-> > +
-> >  extern struct gen_pool *gen_pool_create(int, int);
-> >  extern phys_addr_t gen_pool_virt_to_phys(struct gen_pool *pool, unsigned 
-> > long);
-> >  extern int gen_pool_add_virt(struct gen_pool *, unsigned long, 
-> > phys_addr_t,
-> > @@ -121,6 +128,10 @@ extern unsigned long gen_pool_first_fit(unsigned 
-> > long 
-> > *map, unsigned long size,
-> >               unsigned long start, unsigned int nr, void *data,
-> >               struct gen_pool *pool);
-> >  
-> > +extern unsigned long gen_pool_fixed_fit(unsigned long *map,
-> > +             unsigned long size, unsigned long start, unsigned int nr,
-> > +             void *data, struct gen_pool *pool);
-> > +
-> 
-> "fixed fit" doesn't make much sense...  How about "fixed_alloc"?
-> 
->  /**
-> > + * gen_pool_fixed_fit - reserve a specific region of
-> > + * matching the size requirement (no alignment constraint)
-> > + * @map: The address to base the search on
-> > + * @size: The bitmap size in bits
-> > + * @start: The bitnumber to start searching at
-> > + * @nr: The number of zeroed bits we're looking for
-> > + * @data: data for alignment
-> > + * @pool: pool to get order from
-> > + */
-> > +unsigned long gen_pool_fixed_fit(unsigned long *map, unsigned long size,
-> > +             unsigned long start, unsigned int nr, void *data,
-> > +             struct gen_pool *pool)
-> > +{
-> > +     struct genpool_data_fixed *fixed_data;
-> > +     int order;
-> > +     unsigned long offset_bit;
-> > +     unsigned long start_bit;
-> > +
-> > +     fixed_data = data;
-> > +     order = pool->min_alloc_order;
-> > +     offset_bit = fixed_data->offset >> order;
-> > +     start_bit = bitmap_find_next_zero_area(map, size,
-> > +                     start + offset_bit, nr, 0);
-> > +     if (start_bit != offset_bit)
-> > +             start_bit = size;
-> > +     return start_bit;
-> > +}
-> > +EXPORT_SYMBOL(gen_pool_fixed_fit);
-> 
-> This would be simpler with bitmap_allocate_region().
+On Mon, 2015-09-14 at 09:38 +0800, Zhao Qiang wrote:
+> diff --git a/arch/powerpc/sysdev/qe_lib/qe_common.c 
+> b/arch/powerpc/sysdev/qe_lib/qe_common.c
+> new file mode 100644
+> index 0000000..1213458
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/qe_lib/qe_common.c
+> @@ -0,0 +1,242 @@
+> +/*
+> + * Freescale QE common code
+> + *
+> + * Author: Zhao Qiang  <qiang.zhao@freescale.com>
+> + *
+> + * Copyright 2015 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#include <linux/genalloc.h>
+> +#include <linux/list.h>
+> +#include <linux/init.h>
+> +#include <linux/of_device.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/export.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/slab.h>
+> +
+> +#include <linux/io.h>
+> +#include <asm/qe.h>
+> +
+> +static struct gen_pool *muram_pool;
+> +static struct genpool_data_align muram_pool_data;
+> +static struct genpool_data_fixed muram_pool_data_fixed;
+> +static spinlock_t qe_muram_lock;
+> +static u8 __iomem *muram_vbase;
+> +static phys_addr_t muram_pbase;
+> +
+> +struct muram_block {
+> +     struct list_head head;
+> +     unsigned long start;
+> +     int size;
+> +};
+> +
+> +static LIST_HEAD(muram_block_list);
+> +
+> +/* max address size we deal with */
+> +#define OF_MAX_ADDR_CELLS    4
+> +#define GENPOOL_OFFSET               4096
+> +
+> +int qe_muram_init(void)
+> +{
+> +     struct device_node *np;
+> +     struct resource r;
+> +     u32 zero[OF_MAX_ADDR_CELLS] = {};
+> +     resource_size_t max = 0;
+> +     int i = 0;
+> +     int ret = 0;
+> +
+> +     if (muram_pbase)
+> +             return 0;
+> +
+> +     np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
+> +     if (!np) {
+> +             /* try legacy bindings */
+> +             np = of_find_node_by_name(NULL, "data-only");
+> +             if (!np) {
+> +                     pr_err("Cannot find CPM muram data node");
+> +                     ret = -ENODEV;
+> +                     goto out;
+> +             }
+> +     }
+> +
+> +     muram_pool = gen_pool_create(1, -1);
+> +     muram_pbase = of_translate_address(np, zero);
+> +     if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
+> +             pr_err("Cannot translate zero through CPM muram node");
+> +             ret = -ENODEV;
+> +             goto err;
+> +     }
+> +
+> +     while (of_address_to_resource(np, i++, &r) == 0) {
+> +             if (r.end > max)
+> +                     max = r.end;
+> +             ret = gen_pool_add(muram_pool, r.start - muram_pbase +
+> +                                GENPOOL_OFFSET, resource_size(&r), -1);
+> +             if (ret) {
+> +                             pr_err("QE: couldn't add muram to pool!\n");
+> +                             goto err;
+> +                     }
+> +
+> +     }
+> +
+> +     muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
+> +     if (!muram_vbase) {
+> +             pr_err("Cannot map QE muram");
+> +             ret = -ENOMEM;
+> +             goto err;
+> +     }
+> +     goto out;
+> +err:
+> +     gen_pool_destroy(muram_pool);
+> +out:
+> +     of_node_put(np);
+> +     return ret;
+> +}
+> +
+> +/*
+> + * qe_muram_alloc - allocate the requested size worth of multi-user ram
+> + * @size: number of bytes to allocate
+> + * @align: requested alignment, in bytes
+> + *
+> + * This function returns an offset into the muram area.
+> + */
+> +unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
+> +{
+> +     unsigned long start;
+> +     unsigned long flags;
+> +     struct muram_block *entry;
+> +
+> +     spin_lock_irqsave(&qe_muram_lock, flags);
+> +     muram_pool_data.align = align;
+> +     gen_pool_set_algo(muram_pool, gen_pool_first_fit_align,
+> +                       &muram_pool_data);
+> +     start = gen_pool_alloc(muram_pool, size);
+> +     if (!start)
+> +             goto out2;
+> +     start = start - GENPOOL_OFFSET;
+> +     memset(qe_muram_addr(start), 0, size);
+> +     entry = kmalloc(sizeof(*entry), GFP_KERNEL);
+> +     if (!entry)
+> +             goto out1;
+> +     entry->start = start;
+> +     entry->size = size;
+> +     list_add(&entry->head, &muram_block_list);
+> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> +
+> +     return start;
+> +out1:
+> +     gen_pool_free(muram_pool, start, size);
+> +out2:
+> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> +     return (unsigned long) -ENOMEM;
+> +}
+> +EXPORT_SYMBOL(qe_muram_alloc);
+> +
+> +/*
+> + * qe_muram_alloc_fixed - reserve a specific region of multi-user ram
+> + * @size: number of bytes to allocate
+> + * @offset: offset of allocation start address
+> + *
+> + * This function returns an offset into the muram area.
+> + */
+> +unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long 
+> size)
+> +{
+> +
+> +     unsigned long start;
+> +     unsigned long flags;
+> +     unsigned long size_alloc = size;
+> +     struct muram_block *entry;
+> +     int end_bit;
+> +     int order = muram_pool -> min_alloc_order;
+> +
+> +     spin_lock_irqsave(&qe_muram_lock, flags);
+> +     end_bit = (offset >> order) + ((size + (1UL << order) - 1) >> order);
+> +     if ((offset + size) > (end_bit << order))
+> +             size_alloc = size + (1UL << order);
+> +
+> +     muram_pool_data_fixed.offset = offset + GENPOOL_OFFSET;
+> +     gen_pool_set_algo(muram_pool, gen_pool_fixed_fit,
+> +                       &muram_pool_data_fixed);
+> +     start = gen_pool_alloc(muram_pool, size_alloc);
+> +     if (!start)
+> +             goto out2;
+> +     start = start - GENPOOL_OFFSET;
+> +     memset(qe_muram_addr(start), 0, size_alloc);
+> +     entry = kmalloc(sizeof(*entry), GFP_KERNEL);
+> +     if (!entry)
+> +             goto out1;
+> +     entry->start = start;
+> +     entry->size = size_alloc;
+> +     list_add(&entry->head, &muram_block_list);
+> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> +
+> +     return start;
+> +out1:
+> +     gen_pool_free(muram_pool, start, size_alloc);
+> +out2:
+> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> +     return (unsigned long) -ENOMEM;
+> +
+> +
+> +}
+> +EXPORT_SYMBOL(qe_muram_alloc_fixed);
+> +
+> +/**
+> + * qe_muram_free - free a chunk of multi-user ram
+> + * @offset: The beginning of the chunk as returned by qe_muram_alloc().
+> + */
+> +int qe_muram_free(unsigned long offset)
+> +{
+> +     unsigned long flags;
+> +     int size;
+> +     struct muram_block *tmp;
+> +
+> +     size = 0;
+> +     spin_lock_irqsave(&qe_muram_lock, flags);
+> +     list_for_each_entry(tmp, &muram_block_list, head) {
+> +             if (tmp->start == offset) {
+> +                     size = tmp->size;
+> +                     list_del(&tmp->head);
+> +                     kfree(tmp);
+> +                     break;
+> +             }
+> +     }
+> +     gen_pool_free(muram_pool, offset + GENPOOL_OFFSET, size);
+> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> +
+> +     return size;
+> +}
+> +EXPORT_SYMBOL(qe_muram_free);
+> +
+> +/**
+> + * qe_muram_addr - turn a muram offset into a virtual address
+> + * @offset: muram offset to convert
+> + */
+> +void __iomem *qe_muram_addr(unsigned long offset)
+> +{
+> +     return muram_vbase + offset;
+> +}
+> +EXPORT_SYMBOL(qe_muram_addr);
+> +
+> +unsigned long qe_muram_offset(void __iomem *addr)
+> +{
+> +     return addr - (void __iomem *)muram_vbase;
+> +}
+> +EXPORT_SYMBOL(qe_muram_offset);
+> +
+> +/**
+> + * qe_muram_dma - turn a muram virtual address into a DMA address
+> + * @offset: virtual address from qe_muram_addr() to convert
+> + */
+> +dma_addr_t qe_muram_dma(void __iomem *addr)
+> +{
+> +     return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
+> +}
+> +EXPORT_SYMBOL(qe_muram_dma);
 
-Never mind, that doesn't fit with how the algorithm is used by the caller, 
-and unlike genalloc isn't atomic.
+Why are you adding new functions rather than replacing the implementation of 
+the old ones?
+
+Again, I don't want to see a big addition in one place and a big deletion 
+elsewhere.  I want to see the actual code changes as a diff.  Any moving 
+around of code must be a separate patch from making changes to it that are 
+significant enough that git format-patch doesn't detect it as a move.
 
 -Scott
