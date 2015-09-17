@@ -1,22 +1,22 @@
-Return-Path: <bethencourt@gmail.com>
-Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
- [IPv6:2a00:1450:400c:c05::22f])
+Return-Path: <geoff@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 34FDB1A0052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 03:25:01 +1000 (AEST)
-Received: by wiclk2 with SMTP id lk2so33431057wic.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:24:58 -0700 (PDT)
-Sender: Luis de Bethencourt <bethencourt@gmail.com>
-From: Luis de Bethencourt <luis@debethencourt.com>
-Date: Thu, 17 Sep 2015 19:24:56 +0200
-To: linux-kernel@vger.kernel.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: rackmeter: Fix module autoload for OF platform driver
-Message-ID: <20150917172456.GA28503@goodgumbo.baconseed.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D09D1A03AA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 03:50:57 +1000 (AEST)
+Message-ID: <1442512248.3837.61.camel@infradead.org>
+Subject: Re: Time to remove platforms/cell?
+From: Geoff Levand <geoff@infradead.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 17 Sep 2015 10:50:48 -0700
+In-Reply-To: <1442484325.26748.7.camel@ellerman.id.au>
+References: <1442467727.25483.0.camel@ellerman.id.au>
+ <2023345.Irprl084gX@fb07-iapwap2> <7144823.dIR0EDXkmx@wuerfel>
+ <1442484325.26748.7.camel@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This platform driver has a OF device ID table but the OF module
-alias information is not created so module autoloading won't work.
+On Thu, 2015-09-17 at 20:05 +1000, Michael Ellerman wrote:
 
-Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
----
+> Right. I wouldn't bet money that the oprofile code still works, but spufs
+> definitely would have to stay.
 
-Hello,
+oprofile on PS3 needed additional patches [1] that I never
+merged upstream, and no longer plan to, so oprofile support
+should be removed.
 
-This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
-that information so modules have the correct aliases built-in and
-autoloading works correctly.
+If someone in the future needs oprofile it wouldn't be too
+hard to get what is there now working again. 
 
-A longer explanation by Javier Canillas can be found here:
-https://lkml.org/lkml/2015/7/30/519
+[1] http://git.kernel.org/cgit/linux/kernel/git/geoff/ps3-linux.git/log/?h=ps3-queue-v3.7
 
-Thanks,
-Luis
-
- drivers/macintosh/rack-meter.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
-index 048901a..caaec65 100644
---- a/drivers/macintosh/rack-meter.c
-+++ b/drivers/macintosh/rack-meter.c
-@@ -582,6 +582,7 @@ static struct of_device_id rackmeter_match[] = {
- 	{ .name = "i2s" },
- 	{ }
- };
-+MODULE_DEVICE_TABLE(of, rackmeter_match);
- 
- static struct macio_driver rackmeter_driver = {
- 	.driver = {
--- 
-2.4.6
+-Geoff
