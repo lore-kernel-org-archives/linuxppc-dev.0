@@ -1,41 +1,28 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2AA011A04D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 03:16:55 +1000 (AEST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 17 Sep 2015 11:16:54 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 51B891FF0050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 11:07:59 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8HHGn5D64356532
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:16:50 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8HHGleP017208
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 11:16:49 -0600
+Return-Path: <marc.zyngier@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 986241A0F12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 03:17:43 +1000 (AEST)
+Message-ID: <55FAF5B1.1030401@arm.com>
+Date: Thu, 17 Sep 2015 18:17:37 +0100
+From: Marc Zyngier <marc.zyngier@arm.com>
+MIME-Version: 1.0
+To: Bjorn Helgaas <bhelgaas@google.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Will Deacon <will.deacon@arm.com>,
+ Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Rob Herring <robh+dt@kernel.org>, Alexander Graf <agraf@suse.de>,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ devicetree@vger.kernel.org
+Subject: Re: [PATCH v4 0/4] PCI: arm64/powerpc: Fix parsing of linux,
+ pci-probe-only
+References: <1441385411-7624-1-git-send-email-marc.zyngier@arm.com>
+ <20150917153009.GH25767@google.com>
+In-Reply-To: <20150917153009.GH25767@google.com>
 Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
-Subject: Re: [PATCH v2 09/30] cxlflash: Fix to stop interrupt processing on
- remove
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <55FAB43B.8050306@redhat.com>
-Date: Thu, 17 Sep 2015 12:16:45 -0500
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
- nab@linux-iscsi.org, brking@linux.vnet.ibm.com, imunsie@au1.ibm.com,
- dja@ozlabs.au.ibm.com, andrew.donnellan@au1.ibm.com, mikey@neuling.org,
- linuxppc-dev@lists.ozlabs.org, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Message-Id: <97A059A7-2054-4DBD-B993-BBF47AC105E0@linux.vnet.ibm.com>
-References: <1442422399-41262-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <55FAB43B.8050306@redhat.com>
-To: Tomas Henzl <thenzl@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,75 +32,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Sep 17, 2015, at 7:38 AM, Tomas Henzl <thenzl@redhat.com> wrote:
->=20
-> On 16.9.2015 18:53, Matthew R. Ochs wrote:
->> Interrupt processing can run in parallel to a remove operation. This
->> can lead to a condition where the interrupt handler is processing =
-with
->> memory that has been freed.
->>=20
->> To avoid processing an interrupt while memory may be yanked, check =
-for
->> removal while in the interrupt handler. Bail when removal is =
-imminent.
->>=20
->> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
->> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
->> ---
->> drivers/scsi/cxlflash/common.h |  2 ++
->> drivers/scsi/cxlflash/main.c   | 21 +++++++++++++++------
->> 2 files changed, 17 insertions(+), 6 deletions(-)
->>=20
->> diff --git a/drivers/scsi/cxlflash/common.h =
-b/drivers/scsi/cxlflash/common.h
->> index 1abe4e0..03d2cc6 100644
->> --- a/drivers/scsi/cxlflash/common.h
->> +++ b/drivers/scsi/cxlflash/common.h
->> @@ -103,6 +103,8 @@ struct cxlflash_cfg {
->> 	enum cxlflash_lr_state lr_state;
->> 	int lr_port;
->>=20
->> +	atomic_t remove_active;
->> +
->> 	struct cxl_afu *cxl_afu;
->>=20
->> 	struct pci_pool *cxlflash_cmd_pool;
->> diff --git a/drivers/scsi/cxlflash/main.c =
-b/drivers/scsi/cxlflash/main.c
->> index 6e85c77..89ee648 100644
->> --- a/drivers/scsi/cxlflash/main.c
->> +++ b/drivers/scsi/cxlflash/main.c
->> @@ -892,6 +892,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
->> 	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
->>=20
->> 	cfg->state =3D STATE_FAILTERM;
->> +	atomic_inc(&cfg->remove_active);
->=20
-> Hi Matthew,
-> you could just call term_afu at this point, this way you don't
-> need an additional check in all irq functions.
-> Cheers,
-> Tomas
+On 17/09/15 16:30, Bjorn Helgaas wrote:
+> On Fri, Sep 04, 2015 at 05:50:07PM +0100, Marc Zyngier wrote:
+>> The pci-host-generic driver parses the linux,pci-probe-only property,
+>> and assumes that it will have a boolean parameter.
+>>
+>> Turns out that the Seattle DTS file has a naked "linux,pci-probe-only"
+>> property, which leads to the driver dereferencing some unsuspecting
+>> memory location. Nothing really bad happens (we end up reading some
+>> other bit of DT, fortunately), but that not a reason to keep it this
+>> way. Turns out that the Pseries code (where this code was lifted from)
+>> may suffer from the same issue.
+>>
+>> The first patch introduces a common (and fixed) version of that check
+>> that can be used by drivers and architectures that require it. The two
+>> following patches change the pci-host-generic driver and the powerpc
+>> code to use it.
+>>
+>> Finally, the bad property is removed from the Seatle DTS, because it
+>> is simply not necessary (it actually prevents me from using SR-IOV,
+>> which otherwise runs fine without the probe-only thing).
+>>
+>> This has been tested on the offending Seattle board.
+>>
+>> * From v3:
+>>   - Restrict the property lookup to /chosen (Rob)
+>>   - Acked-by on patch #4 from Suravee
+>>   - I swear this is the last time I rework these patches! ;-)
+>>
+>> * From v2:
+>>   - Use of_property_read_u32 to safely read the property (Rob)
+>>   - Add a log message to indicate when we enable probe-only
+>>     (probably quite useful for debugging)
+>>
+>> * From v1:
+>>   - Consolidate the parsing in of_pci.c (Bjorn)
+>>
+>> Marc Zyngier (4):
+>>   of/pci: Add of_pci_check_probe_only to parse "linux,pci-probe-only"
+>>   PCI: pci-host-generic: Fix lookup of linux,pci-probe-only property
+>>   powerpc: PCI: Fix lookup of linux,pci-probe-only property
+>>   arm64: dts: Drop linux,pci-probe-only from the Seattle DTS
+>>
+>>  arch/arm64/boot/dts/amd/amd-overdrive.dts |  1 -
+>>  arch/powerpc/platforms/pseries/setup.c    | 14 ++------------
+>>  drivers/of/of_pci.c                       | 28 ++++++++++++++++++++++++++++
+>>  drivers/pci/host/pci-host-generic.c       |  9 +--------
+>>  include/linux/of_pci.h                    |  3 +++
+>>  5 files changed, 34 insertions(+), 21 deletions(-)
+> 
+> Applied with the comment tweak and acks to pci/host-generic for v4.4,
+> thanks!
 
-Hi Tomas,
+Turns out that the 01.org infrastructure has picked up on a compilation
+bug with randconfig. The following patch seems to fix it and should be
+applied on the first patch:
 
-We actually do call term_afu() a few lines down from here. I don't =
-follow
-how moving it here would help things.
+diff --git a/drivers/of/of_pci.c b/drivers/of/of_pci.c
+index 485d625..2da5abc 100644
+--- a/drivers/of/of_pci.c
++++ b/drivers/of/of_pci.c
+@@ -6,6 +6,8 @@
+ #include <linux/of_pci.h>
+ #include <linux/slab.h>
+ 
++#include <asm-generic/pci-bridge.h>
++
+ static inline int __of_pci_pci_compare(struct device_node *node,
+ 				       unsigned int data)
+ {
 
-The reason for the atomic was to provide something lightweight that we
-could check _inside_ the processing loop for the read-response queue
-handler. A check outside that loop doesn't really provide much in terms
-of closing or narrowing down the window of when freed memory can be
-accessed.
+Sorry for the annoyance.
 
-As David Laight correctly pointed out, this approach does not completely
-close the window. We'd need something heavier to fully protect (e.g. a =
-lock
-to wrap around the entire loop). I will look into adding this in a =
-future cycle
-when I can adequately test.
-
-
--matt
+	M.
+-- 
+Jazz is not dead. It just smells funny...
