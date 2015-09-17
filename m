@@ -1,21 +1,29 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.184])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 307881A0024
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 21:15:14 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Marc Dietrich <marvin24@gmx.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Geoff Levand <geoff@infradead.org>
-Subject: Re: Time to remove platforms/cell?
-Date: Thu, 17 Sep 2015 13:15:06 +0200
-Message-ID: <6872814.PfbzHq6PSL@wuerfel>
-In-Reply-To: <2785247.ZjG8XMQlJP@fb07-iapwap2>
-References: <1442467727.25483.0.camel@ellerman.id.au>
- <1442483138.26748.4.camel@ellerman.id.au> <2785247.ZjG8XMQlJP@fb07-iapwap2>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C651A1A03D4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 21:59:08 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: "'Matthew R. Ochs'" <mrochs@linux.vnet.ibm.com>,
+ "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, James Bottomley
+ <James.Bottomley@HansenPartnership.com>, "Nicholas A. Bellinger"
+ <nab@linux-iscsi.org>, Brian King <brking@linux.vnet.ibm.com>, Ian Munsie
+ <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>, "Andrew
+ Donnellan" <andrew.donnellan@au1.ibm.com>
+CC: Michael Neuling <mikey@neuling.org>, "Manoj N. Kumar"
+ <manoj@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v2 09/30] cxlflash: Fix to stop interrupt processing on
+ remove
+Date: Thu, 17 Sep 2015 11:58:19 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB98C57@AcuExch.aculab.com>
+References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442438881-49507-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1442438881-49507-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +33,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 17 September 2015 12:28:13 Marc Dietrich wrote:
-> Am Donnerstag, 17. September 2015, 19:45:38 schrieb Michael Ellerman:
-> > On Thu, 2015-09-17 at 10:43 +0200, Marc Dietrich wrote:
-> > > Am Donnerstag, 17. September 2015, 15:28:47 schrieb Michael Ellerman:
-> >
-> > [...]
-> >
-> > Having said all that, this email was mainly a fishing expedition to see if
-> > anyone still cares about Cell support at all. It sounds like you at least
-> > are running mainline kernels on PS3?
-> 
-> well, I like to but I couldn't get the kernel booting for some reason. Still 
-> trying. Beside this, I have nothing against dropping the other cell systems, 
-> but I'm only a "fun user", so my vote probably isn't counting 
-
-No, your vote counts at least as much as a commercial user, because
-"fun users" are more likely to contribute back patches when something
-breaks.
-
-	Arnd
+RnJvbTogTGludXhwcGMtZGV2IE1hdHRoZXcgUi4gT2Nocw0KPiBTZW50OiAxNiBTZXB0ZW1iZXIg
+MjAxNSAyMjoyOA0KPiBJbnRlcnJ1cHQgcHJvY2Vzc2luZyBjYW4gcnVuIGluIHBhcmFsbGVsIHRv
+IGEgcmVtb3ZlIG9wZXJhdGlvbi4gVGhpcw0KPiBjYW4gbGVhZCB0byBhIGNvbmRpdGlvbiB3aGVy
+ZSB0aGUgaW50ZXJydXB0IGhhbmRsZXIgaXMgcHJvY2Vzc2luZyB3aXRoDQo+IG1lbW9yeSB0aGF0
+IGhhcyBiZWVuIGZyZWVkLg0KPiANCj4gVG8gYXZvaWQgcHJvY2Vzc2luZyBhbiBpbnRlcnJ1cHQg
+d2hpbGUgbWVtb3J5IG1heSBiZSB5YW5rZWQsIGNoZWNrIGZvcg0KPiByZW1vdmFsIHdoaWxlIGlu
+IHRoZSBpbnRlcnJ1cHQgaGFuZGxlci4gQmFpbCB3aGVuIHJlbW92YWwgaXMgaW1taW5lbnQuDQoN
+Ck9uIHRoZSBmYWNlIG9mIGl0IHRoaXMganVzdCByZWR1Y2VzIHRoZSBzaXplIG9mIHRoZSB3aW5k
+b3cgc29tZXdoYXQuDQoNCldoYXQgaGFwcGVucyBpZiB0aGUgaW50ZXJydXB0IHJvdXRpbmUgcmVh
+ZHMgdGhlIGZsYWcganVzdCBiZWZvcmUgaXQgaXMgc2V0DQooc28gaXMgcHJvY2Vzc2luZyB0aGUg
+ZW50cnkgdGhhdCBpcyBiZWluZyByZW1vdmVkKSBhbmQgaXMgdGhlbiAoc2F5KQ0KaW50ZXJydXB0
+ZWQgYnkgYSBoaWdoZXIgcHJpb3JpdHkgaW50ZXJydXB0IHRoYXQgdGFrZXMgbG9uZ2VyIHRvIGV4
+ZWN1dGUgdGhhbg0KdGhlIHJlbW92ZSBjb2RlPw0KDQpZb3UndmUgc3RpbGwgZ290IGFuIGludGVy
+cnVwdCByb3V0aW5lIGFjY2Vzc2luZyBmcmVlZCBtZW1vcnkuDQoNCglEYXZpZA0KDQo=
