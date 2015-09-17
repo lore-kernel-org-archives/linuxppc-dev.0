@@ -1,25 +1,19 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEC6F1A04D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 13:19:20 +1000 (AEST)
-Date: Wed, 16 Sep 2015 22:18:54 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Scott Wood <scottwood@freescale.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
- memcpy'
-Message-ID: <20150917031854.GA31437@gate.crashing.org>
-References: <alpine.DEB.2.11.1509161816310.3951@nanos>
- <1442420984.2909.179.camel@freescale.com>
- <alpine.DEB.2.11.1509162159110.3951@nanos>
- <20150916215435.48bee4d3@grimm.local.home>
- <1442458212.8456.2.camel@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442458212.8456.2.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 120F11A04D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:13:28 +1000 (AEST)
+In-Reply-To: <a7cc8a844159fdb7edb97089ba376f525aa7842e.1442335197.git.christophe.leroy@c-s.fr>
+To: LEROY Christophe <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, scottwood@freescale.com,
+ sojkam1@fel.cvut.cz
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v4,1/2] powerpc32: memcpy: only use dcbz once cache is enabled
+Message-Id: <20150917051327.C91901401EF@ozlabs.org>
+Date: Thu, 17 Sep 2015 15:13:27 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 17, 2015 at 12:50:12PM +1000, Michael Ellerman wrote:
-> On Wed, 2015-09-16 at 21:54 -0400, Steven Rostedt wrote:
-> > This could be a symptom and not the problem. What the above shows is
-> > that ftrace tried to convert the mcount at change_protection but what
-> > it expected was there wasn't. Unfortunately, it doesn't state exactly
-> > what it wants (that would take a arch specific function to do that, and
-> > this is in generic code). But what it found was "74 66 74 70", which I
-> > have no idea what type of command that is.
+On Wed, 2015-16-09 at 10:04:51 UTC, LEROY Christophe wrote:
+> memcpy() uses instruction dcbz to speed up copy by not wasting time
+> loading cache line with data that will be overwritten.
+> Some platform like mpc52xx do no have cache active at startup and
+> can therefore not use memcpy(). Allthough no part of the code
+> explicitly uses memcpy(), GCC makes calls to it.
 > 
-> This is big endian, so I think that's:
+> This patch modifies memcpy() such that at startup, memcpy()
+> unconditionally jumps to generic_memcpy() which doesn't use
+> the dcbz instruction.
 > 
->   andis.  r6,r3,29808
+> Once the initial MMU is set up, in machine_init() we patch memcpy()
+> by replacing this inconditional jump by a NOP
 > 
-> Which is feasible.
+> Reported-by: Michal Sojka <sojkam1@fel.cvut.cz>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-It also says "tftp", which is intriguing if nothing else :-)
+Applied to powerpc fixes, thanks.
 
+https://git.kernel.org/powerpc/c/1cd03890ea64795e53f17a94
 
-Segher
+cheers
