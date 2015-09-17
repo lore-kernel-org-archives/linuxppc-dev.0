@@ -1,25 +1,21 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <marvin24@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 093521A04F3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 20:13:54 +1000 (AEST)
-Date: Thu, 17 Sep 2015 12:13:15 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Scott Wood <scottwood@freescale.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
- memcpy'
-In-Reply-To: <20150916215435.48bee4d3@grimm.local.home>
-Message-ID: <alpine.DEB.2.11.1509170911120.3951@nanos>
-References: <alpine.DEB.2.11.1509161816310.3951@nanos>
- <1442420984.2909.179.camel@freescale.com>
- <alpine.DEB.2.11.1509162159110.3951@nanos>
- <20150916215435.48bee4d3@grimm.local.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 18A251A0586
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 20:28:33 +1000 (AEST)
+From: Marc Dietrich <marvin24@gmx.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>
+Subject: Re: Time to remove platforms/cell?
+Date: Thu, 17 Sep 2015 12:28:13 +0200
+Message-ID: <2785247.ZjG8XMQlJP@fb07-iapwap2>
+In-Reply-To: <1442483138.26748.4.camel@ellerman.id.au>
+References: <1442467727.25483.0.camel@ellerman.id.au>
+ <2023345.Irprl084gX@fb07-iapwap2> <1442483138.26748.4.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; boundary="nextPart12659275.IN8peWhUnr";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 16 Sep 2015, Steven Rostedt wrote:
-> On Wed, 16 Sep 2015 22:01:06 +0200 (CEST)
-> Thomas Gleixner <tglx@linutronix.de> wrote:
-> > So now I have to chase down that one:
-> > 
-> > [    0.230210] ftrace: allocating 16560 entries in 49 pages
-> > [    0.273313] ------------[ cut here ]------------
-> > [    0.278048] WARNING: at /home/tglx/work/kernel/tip/tip/kernel/trace/ftrace.c:1974
-> 
-> OK, so this is where ftrace converts the mcount to nops.
-> 
-> Just to be clear, there's nothing in the command line that enables any
-> function tracing, is there?
+--nextPart12659275.IN8peWhUnr
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Nothing on the command line.
+Am Donnerstag, 17. September 2015, 19:45:38 schrieb Michael Ellerman:
+> On Thu, 2015-09-17 at 10:43 +0200, Marc Dietrich wrote:
+> > Am Donnerstag, 17. September 2015, 15:28:47 schrieb Michael Ellerman:
+>
+> [...]
+>
+> Having said all that, this email was mainly a fishing expedition to see if
+> anyone still cares about Cell support at all. It sounds like you at least
+> are running mainline kernels on PS3?
 
-> > Happens somewhere between the powerpc merge and rc1. System boots up
-> > to userspace and then locks hard ....
+well, I like to but I couldn't get the kernel booting for some reason. Still 
+trying. Beside this, I have nothing against dropping the other cell systems, 
+but I'm only a "fun user", so my vote probably isn't counting :-)
 
-Digging deeper. My assumption that it's a post powerpc merge failure
-turned out to be wrong.
+Marc
 
-Some more data points. I see the above splat with
+--nextPart12659275.IN8peWhUnr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
 
-CONFIG_FUNCTION_TRACER=y
-CONFIG_FUNCTION_GRAPH_TRACER=y
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-It goes away with 
+iQEcBAABCAAGBQJV+pW9AAoJEKyeR39HFBtoJcUH/ixAbG0myXt61y3rcn5xLPZH
+g+PzMXJ4/prIieYWRxf1oMQWhFd6IGq/jcPgYZd1Zd00PQVDGB3C7kc6uHtquRWV
+ChMChupfDpBfpHFreMpmTZxD4AkLwO5Wct9j5Id8Ue8kxQbhn7o0DQlhDGt+dSRd
+DWKkrp+xCH1NI1plhq6ETt9YnvkxdIVLf8jKMMM/jGSuy5LF7uBAfhSm/szuzfLr
+fVi7MDuo/MTTyqGoq3P+l5ZFitNSjf7RvRwF0wcSI1D74RwaVel/cKwk1G58VmN1
+CT9xWPLmCLfEpMCxFNMxh1iri6zjoicCg3h2sGPJZ07VLkWRh/mskWDJ96kbxfA=
+=+YXr
+-----END PGP SIGNATURE-----
 
-CONFIG_FUNCTION_TRACER=y
-CONFIG_FUNCTION_GRAPH_TRACER=n
-
-But the box still does not get to the login prompt.
-
-CONFIG_FUNCTION_TRACER=n
-
-makes it work again.
-
-It's not observable before the ppc merge, but I can't identify the
-culprit by bisection. bisection led into lala land.
-
-Thanks,
-
-	tglx
+--nextPart12659275.IN8peWhUnr--
