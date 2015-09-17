@@ -1,20 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9E221A0274
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 20:05:25 +1000 (AEST)
-Message-ID: <1442484325.26748.7.camel@ellerman.id.au>
-Subject: Re: Time to remove platforms/cell?
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>
-Date: Thu, 17 Sep 2015 20:05:25 +1000
-In-Reply-To: <7144823.dIR0EDXkmx@wuerfel>
-References: <1442467727.25483.0.camel@ellerman.id.au>
- <2023345.Irprl084gX@fb07-iapwap2> <7144823.dIR0EDXkmx@wuerfel>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 093521A04F3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 20:13:54 +1000 (AEST)
+Date: Thu, 17 Sep 2015 12:13:15 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+cc: Scott Wood <scottwood@freescale.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
+ memcpy'
+In-Reply-To: <20150916215435.48bee4d3@grimm.local.home>
+Message-ID: <alpine.DEB.2.11.1509170911120.3951@nanos>
+References: <alpine.DEB.2.11.1509161816310.3951@nanos>
+ <1442420984.2909.179.camel@freescale.com>
+ <alpine.DEB.2.11.1509162159110.3951@nanos>
+ <20150916215435.48bee4d3@grimm.local.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,65 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-17 at 11:31 +0200, Arnd Bergmann wrote:
-> On Thursday 17 September 2015 10:43:39 Marc Dietrich wrote:
-> > Am Donnerstag, 17. September 2015, 15:28:47 schrieb Michael Ellerman:
-> > > Discuss ...
+On Wed, 16 Sep 2015, Steven Rostedt wrote:
+> On Wed, 16 Sep 2015 22:01:06 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> > So now I have to chase down that one:
 > > 
-> > as long as Geoff still maintains the ps3 port - why?
-> > 
-> We already removed celleb a while ago, which was arguably the least
-> commonly used one.
-
-Hi Arnd,
-
-Thanks for the input, I probably should have CC'ed you, sorry!
-
-> Within platforms/cell, we have three separate portions that we need
-> to look at:
+> > [    0.230210] ftrace: allocating 16560 entries in 49 pages
+> > [    0.273313] ------------[ cut here ]------------
+> > [    0.278048] WARNING: at /home/tglx/work/kernel/tip/tip/kernel/trace/ftrace.c:1974
 > 
-> a) Common ps3/ibm parts: spufs, oprofile
->    We should not remove them before we plan to also remove platforms/ps3
->    support, which doesn't seem likely in the near term. We can move them
->    to platforms/ps3 if we decide to remove the rest.
+> OK, so this is where ftrace converts the mcount to nops.
+> 
+> Just to be clear, there's nothing in the command line that enables any
+> function tracing, is there?
 
-Right. I wouldn't bet money that the oprofile code still works, but spufs
-definitely would have to stay.
+Nothing on the command line.
 
-> b) Support for IBM blades:
->    It is unlikely that there are QS20 blades still around and being used
->    at all, but there is very little code specific to them.
+> > Happens somewhere between the powerpc merge and rc1. System boots up
+> > to userspace and then locks hard ....
 
-Wasn't spider QS20 only? So that would be a bit of code that could go,
-including (some of) the io-workarounds code (I think).
+Digging deeper. My assumption that it's a post powerpc merge failure
+turned out to be wrong.
 
->    For QS21/QS22, there are probably still a few in existence, but
->    I have no idea whether anybody would consider running a 4.x kernel
->    on them. There are also some customer-specific Cell machines that
->    are vaguely related to QS22 and that are in a similar state.
->    I don't mind removing the code, but if anybody is still using it
->    on new kernels, we should be prepared to put it back.
+Some more data points. I see the above splat with
 
-Yeah, that's my impression. We obviously still have a QS22, but really we're
-only keeping it alive for testing purposes.
+CONFIG_FUNCTION_TRACER=y
+CONFIG_FUNCTION_GRAPH_TRACER=y
 
-Hopefully this email will bring some more folks out of the woodwork.
+It goes away with 
 
-> c) QPACE. We know who the three users were, and they have upgraded to
->    QPACE2 (based on Intel Xeon Phi) this year. Removing this would be
->    appreciated as it lets us clean up one of the ugly corners of the
->    8250 uart driver.
+CONFIG_FUNCTION_TRACER=y
+CONFIG_FUNCTION_GRAPH_TRACER=n
 
-Ah excellent info.
+But the box still does not get to the login prompt.
 
-I had done some googling on QPACE and from the web site there is no suggestion
-that it's been shutdown, but I guess that's the nature of web pages, they tend
-not to get updated:
+CONFIG_FUNCTION_TRACER=n
 
-  http://www.fz-juelich.de/ias/jsc/EN/Expertise/Supercomputers/QPACE/QPACE_node.html
+makes it work again.
 
+It's not observable before the ppc merge, but I can't identify the
+culprit by bisection. bisection led into lala land.
 
-So we can probably remove the QPACE code sooner rather than later, unless
-someone yells.
+Thanks,
 
-cheers
+	tglx
