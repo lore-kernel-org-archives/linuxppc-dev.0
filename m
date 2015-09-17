@@ -1,22 +1,27 @@
-Return-Path: <geoff@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D09D1A03AA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 03:50:57 +1000 (AEST)
-Message-ID: <1442512248.3837.61.camel@infradead.org>
-Subject: Re: Time to remove platforms/cell?
-From: Geoff Levand <geoff@infradead.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 17 Sep 2015 10:50:48 -0700
-In-Reply-To: <1442484325.26748.7.camel@ellerman.id.au>
-References: <1442467727.25483.0.camel@ellerman.id.au>
- <2023345.Irprl084gX@fb07-iapwap2> <7144823.dIR0EDXkmx@wuerfel>
- <1442484325.26748.7.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E65A1A05F9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 05:11:00 +1000 (AEST)
+Date: Thu, 17 Sep 2015 10:38:10 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
+ memcpy'
+Message-ID: <20150917153806.GC2613@gate.crashing.org>
+References: <alpine.DEB.2.11.1509161816310.3951@nanos>
+ <1442420984.2909.179.camel@freescale.com>
+ <alpine.DEB.2.11.1509162159110.3951@nanos>
+ <20150916215435.48bee4d3@grimm.local.home>
+ <alpine.DEB.2.11.1509170911120.3951@nanos>
+ <20150917092931.56475b7d@gandalf.local.home>
+ <alpine.DEB.2.11.1509171630130.3951@nanos>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.11.1509171630130.3951@nanos>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-17 at 20:05 +1000, Michael Ellerman wrote:
+On Thu, Sep 17, 2015 at 04:38:52PM +0200, Thomas Gleixner wrote:
+> [    2.398263] Instruction dump:
+> [    2.401297] 01000000 00037000 00000000 00000000 f0000000 00000001 0a641e09 acde4823 
+> [    2.409237] 000f0000 179a7b00 07de2900 03ef1480 <01f78a40> 0001c200 60000000 9421fff0 
 
-> Right. I wouldn't bet money that the oprofile code still works, but spufs
-> definitely would have to stay.
+Those are not instructions (until the nop).
 
-oprofile on PS3 needed additional patches [1] that I never
-merged upstream, and no longer plan to, so oprofile support
-should be removed.
+Starting three back from the failing instruction, those are
 
-If someone in the future needs oprofile it wouldn't be too
-hard to get what is there now working again. 
+	396000000 132000000 66000000 <33000000> 115200
 
-[1] http://git.kernel.org/cgit/linux/kernel/git/geoff/ps3-linux.git/log/?h=ps3-queue-v3.7
+so something has been scribbling what looks like clock frequencies
+over your code.  Judging from the register contents this has happened
+some time before.
 
--Geoff
+Some device trees have similar numbers, e.g. media5200.dts does.
+
+
+Segher
