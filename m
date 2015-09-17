@@ -1,15 +1,21 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6A08B1A04D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:13:29 +1000 (AEST)
-In-Reply-To: <1442280257.9229.28.camel@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id CB1441A0561
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:28:47 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 64DC6140273
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 15:28:47 +1000 (AEST)
+Message-ID: <1442467727.25483.0.camel@ellerman.id.au>
+Subject: Time to remove platforms/cell?
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc/boot: Specify ABI v2 when building an LE boot wrapper
-Message-Id: <20150917051328.EE02414029E@ozlabs.org>
-Date: Thu, 17 Sep 2015 15:13:28 +1000 (AEST)
+To: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 17 Sep 2015 15:28:47 +1000
+Content-Type: text/plain
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,15 +25,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-15-09 at 01:24:17 UTC, Benjamin Herrenschmidt wrote:
-> The kernel does it, not the boot wrapper, which breaks with some
-> cross compilers that still default to ABI v1.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: stable@vger.kernel.org
-
-Applied to powerpc fixes, thanks.
-
-https://git.kernel.org/powerpc/c/655471f54c2e395ba29ae415
+Discuss ...
 
 cheers
