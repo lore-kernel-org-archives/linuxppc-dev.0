@@ -1,44 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B7A1F1A0484
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:29:35 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 17 Sep 2015 10:29:34 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 428342BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:29:30 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8H0TCS559965688
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:29:20 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8H0Sv2a013528
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:28:57 +1000
-Date: Thu, 17 Sep 2015 10:28:33 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Richard Yang <weiyang@linux.vnet.ibm.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, bhelgaas@google.com,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH V9 11/11] powerpc/powernv: compound PE for VFs
-Message-ID: <20150917002832.GA2034@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1437112961-17275-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1437112961-17275-12-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150729031718.GA18069@richard> <20150909024820.GA6808@gwshan>
- <20150909033616.GA5148@richards-mbp.cn.ibm.com>
- <55EFC200.10209@ozlabs.ru>
- <20150909060129.GC7684@Richards-MacBook-Pro.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150909060129.GC7684@Richards-MacBook-Pro.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49D9F1A0484
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 10:38:11 +1000 (AEST)
+Message-ID: <1442450291.8456.1.camel@ellerman.id.au>
+Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
+ memcpy'
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 17 Sep 2015 10:38:11 +1000
+In-Reply-To: <1442420984.2909.179.camel@freescale.com>
+References: <alpine.DEB.2.11.1509161816310.3951@nanos>
+ <1442420984.2909.179.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,45 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 09, 2015 at 02:01:29PM +0800, Richard Yang wrote:
->On Wed, Sep 09, 2015 at 03:22:08PM +1000, Alexey Kardashevskiy wrote:
->>On 09/09/2015 01:36 PM, Richard Yang wrote:
->>>On Wed, Sep 09, 2015 at 12:48:21PM +1000, Gavin Shan wrote:
->>>>On Wed, Jul 29, 2015 at 11:17:18AM +0800, Wei Yang wrote:
->>>>>Hi, Michael
->>>>>
->>>>>Hope you didn't take this yet. We may change this patch a little.
->>>>>
->>>>
->>>>[Cc Alexey who might concern the SRIOV status]
->>>>
->>>>Richard, do you have plan to get it upstream? It seems it's hanged
->>>>over here for long time.
->>>>
->>>
->>>The VF EEH is hung since we re-designed the SRIOV. After the re-design, we
->>>don't have VF groups.
->>>
->>>My plan is to push the VF EEH patch set after the SRIOV Redesign is accepted.
->>
->>
->>Can you please rebase on v4.2 (or v4.2 + sriov rework) and repost VF EEH
->>patchset just to me? Or share the tree somewhere where I can pull it from?
->>Thanks.
->>
->
->Yep, this is what I am planning to do.
->
+On Wed, 2015-09-16 at 11:29 -0500, Scott Wood wrote:
+> On Wed, 2015-09-16 at 18:23 +0200, Thomas Gleixner wrote:
+> > With this commit applied, my MPC5200 board fails to boot 4.3-rc1. The
+> > boot failure is silent.
+> > 
+> > Bisection pointed straight to this commit. Reverting it on top of
+> > 4.3-rc1 works like a charm.
+> 
+> Yes, we've been iterating on a fix for this, and I think the patches posted 
+> earlier today are ready to go in:
+> 
+> http://patchwork.ozlabs.org/patch/518321/
+> http://patchwork.ozlabs.org/patch/518323/
 
-Can you rebase your patchset on v4.3.rc1+sriov rework and then repost to
-linux-ppc-dev maillist?
+Yeah, sorry it took a few iterations, maybe we should have reverted first.
 
+Anyway I'll take that as an ack from you Scott and put these in my fixes branch
+with Thomas' Tested-by.
 
->>As for now, I cannot tell what difference your SRIOV patchset actually makes.
->>
->>-- 
->>Alexey
->
->-- 
->Richard Yang
->Help you, Help me
+cheers
