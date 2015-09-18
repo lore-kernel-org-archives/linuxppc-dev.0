@@ -1,33 +1,42 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A170A1A0484
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 01:21:13 +1000 (AEST)
-Date: Fri, 18 Sep 2015 16:20:51 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Florian Fainelli <f.fainelli@gmail.com>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- devicetree@vger.kernel.org, Sunil Goutham <sgoutham@cavium.com>,
- Robert Richter <rric@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>,
- Michal Simek <michal.simek@xilinx.com>, netdev@vger.kernel.org,
- Iyappan Subramanian <isubramanian@apm.com>,
- Grant Likely <grant.likely@linaro.org>,
- Li Yang <leoli@freescale.com>, Keyur Chudgar <kchudgar@apm.com>,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 0/7] Phy and mdiobus fixes
-Message-ID: <20150918152050.GI21084@n2100.arm.linux.org.uk>
-References: <20150918094625.GB21084@n2100.arm.linux.org.uk>
- <20150918095600.GC21084@n2100.arm.linux.org.uk>
- <20150918150128.GV2722@xsjsorenbubuntu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AFDB71A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 01:29:40 +1000 (AEST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Fri, 18 Sep 2015 09:29:38 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2F09E1FF0041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 09:20:45 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8IFSaGP3146056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 08:28:44 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8IFT2JW030821
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 09:29:03 -0600
+Subject: Re: [PATCH v2 10/30] cxlflash: Correct naming of limbo state and waitq
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442438884-49545-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Message-ID: <55FC2DA4.7080200@linux.vnet.ibm.com>
+Date: Fri, 18 Sep 2015 10:28:36 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20150918150128.GV2722@xsjsorenbubuntu>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+In-Reply-To: <1442438884-49545-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,35 +46,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 18, 2015 at 08:01:28AM -0700, Sören Brinkmann wrote:
-> Hi Russell,
-> 
-> On Fri, 2015-09-18 at 10:56AM +0100, Russell King - ARM Linux wrote:
-> > Sorry guys, some of you will get the patches twice, as Sören's name
-> > in the header caused vger to reject all the patches.
-> 
-> That is the first time I hear about an issue like that. I've been
-> receiving patches fine thus far and nobody reported any rejections (by
-> vger) to me. Is it some bounce on Xilinx/my side or is vger suddenly
-> rejecting non-ascii chars or is something in the mail processing chain
-> not properly encoding those chars?
-> Please, let me know if I can help with the problem.
-
-It's to do with how I generate the patch set and submit it to my MTA.
-The result is that the header fields contain an ö.  Almost all MTAs
-accept this despite it being questionable, but zmailer is extra fussy
-and rejects this - and rejected the messages to lkml, netdev, etc.
-
-Normally, the MUA would encode "Sören Brinkmann" in a header into a
-7-bit ascii representation as "=?utf-8?B?U8O2cmVu?= Brinkmann".
-
-It's one of the many issues of not using a MUA to send out patches.
-
-It's also worth noting that git-send-email misses out mime headers
-(or used to - which is why I have my own scripts for doing this)
-which technically makes the bodies it mails out in violation of the
-RFCs.
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 
 -- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
