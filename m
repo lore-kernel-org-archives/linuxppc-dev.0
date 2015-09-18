@@ -1,23 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-oi0-x22c.google.com (mail-oi0-x22c.google.com
+ [IPv6:2607:f8b0:4003:c06::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE84B1A05F9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 06:28:39 +1000 (AEST)
-Message-ID: <1442521702.19102.75.camel@freescale.com>
-Subject: Re: [PATCH v9 3/5] qe_common: add qe_muram_ functions to manage muram
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang <qiang.zhao@freescale.com>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
- <leoli@freescale.com>, <paulus@samba.org>
-Date: Thu, 17 Sep 2015 15:28:22 -0500
-In-Reply-To: <1442194700-6194-3-git-send-email-qiang.zhao@freescale.com>
-References: <1442194700-6194-1-git-send-email-qiang.zhao@freescale.com>
- <1442194700-6194-3-git-send-email-qiang.zhao@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id DA5271A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 10:22:32 +1000 (AEST)
+Received: by oixx17 with SMTP id x17so18810767oix.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Sep 2015 17:22:30 -0700 (PDT)
+Date: Fri, 18 Sep 2015 08:22:08 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Olof Johansson <olof@lixom.net>, Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH] powerpc: Kconfig: remove BE-only platforms from LE
+ kernel build
+Message-ID: <20150918002208.GB1300@fixme-laptop.cn.ibm.com>
+References: <1441583880-17824-1-git-send-email-boqun.feng@gmail.com>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Fba/0zbH8Xs+Fj9o"
+In-Reply-To: <1441583880-17824-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,264 +31,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-14 at 09:38 +0800, Zhao Qiang wrote:
-> diff --git a/arch/powerpc/sysdev/qe_lib/qe_common.c 
-> b/arch/powerpc/sysdev/qe_lib/qe_common.c
-> new file mode 100644
-> index 0000000..1213458
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/qe_lib/qe_common.c
-> @@ -0,0 +1,242 @@
-> +/*
-> + * Freescale QE common code
-> + *
-> + * Author: Zhao Qiang  <qiang.zhao@freescale.com>
-> + *
-> + * Copyright 2015 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#include <linux/genalloc.h>
-> +#include <linux/list.h>
-> +#include <linux/init.h>
-> +#include <linux/of_device.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/export.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/slab.h>
-> +
-> +#include <linux/io.h>
-> +#include <asm/qe.h>
-> +
-> +static struct gen_pool *muram_pool;
-> +static struct genpool_data_align muram_pool_data;
-> +static struct genpool_data_fixed muram_pool_data_fixed;
-> +static spinlock_t qe_muram_lock;
-> +static u8 __iomem *muram_vbase;
-> +static phys_addr_t muram_pbase;
-> +
-> +struct muram_block {
-> +     struct list_head head;
-> +     unsigned long start;
-> +     int size;
-> +};
-> +
-> +static LIST_HEAD(muram_block_list);
-> +
-> +/* max address size we deal with */
-> +#define OF_MAX_ADDR_CELLS    4
-> +#define GENPOOL_OFFSET               4096
-> +
-> +int qe_muram_init(void)
-> +{
-> +     struct device_node *np;
-> +     struct resource r;
-> +     u32 zero[OF_MAX_ADDR_CELLS] = {};
-> +     resource_size_t max = 0;
-> +     int i = 0;
-> +     int ret = 0;
-> +
-> +     if (muram_pbase)
-> +             return 0;
-> +
-> +     np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
-> +     if (!np) {
-> +             /* try legacy bindings */
-> +             np = of_find_node_by_name(NULL, "data-only");
-> +             if (!np) {
-> +                     pr_err("Cannot find CPM muram data node");
-> +                     ret = -ENODEV;
-> +                     goto out;
-> +             }
-> +     }
-> +
-> +     muram_pool = gen_pool_create(1, -1);
-> +     muram_pbase = of_translate_address(np, zero);
-> +     if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
-> +             pr_err("Cannot translate zero through CPM muram node");
-> +             ret = -ENODEV;
-> +             goto err;
-> +     }
-> +
-> +     while (of_address_to_resource(np, i++, &r) == 0) {
-> +             if (r.end > max)
-> +                     max = r.end;
-> +             ret = gen_pool_add(muram_pool, r.start - muram_pbase +
-> +                                GENPOOL_OFFSET, resource_size(&r), -1);
-> +             if (ret) {
-> +                             pr_err("QE: couldn't add muram to pool!\n");
-> +                             goto err;
-> +                     }
-> +
-> +     }
-> +
-> +     muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
-> +     if (!muram_vbase) {
-> +             pr_err("Cannot map QE muram");
-> +             ret = -ENOMEM;
-> +             goto err;
-> +     }
-> +     goto out;
-> +err:
-> +     gen_pool_destroy(muram_pool);
-> +out:
-> +     of_node_put(np);
-> +     return ret;
-> +}
-> +
-> +/*
-> + * qe_muram_alloc - allocate the requested size worth of multi-user ram
-> + * @size: number of bytes to allocate
-> + * @align: requested alignment, in bytes
-> + *
-> + * This function returns an offset into the muram area.
-> + */
-> +unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
-> +{
-> +     unsigned long start;
-> +     unsigned long flags;
-> +     struct muram_block *entry;
-> +
-> +     spin_lock_irqsave(&qe_muram_lock, flags);
-> +     muram_pool_data.align = align;
-> +     gen_pool_set_algo(muram_pool, gen_pool_first_fit_align,
-> +                       &muram_pool_data);
-> +     start = gen_pool_alloc(muram_pool, size);
-> +     if (!start)
-> +             goto out2;
-> +     start = start - GENPOOL_OFFSET;
-> +     memset(qe_muram_addr(start), 0, size);
-> +     entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-> +     if (!entry)
-> +             goto out1;
-> +     entry->start = start;
-> +     entry->size = size;
-> +     list_add(&entry->head, &muram_block_list);
-> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
-> +
-> +     return start;
-> +out1:
-> +     gen_pool_free(muram_pool, start, size);
-> +out2:
-> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
-> +     return (unsigned long) -ENOMEM;
-> +}
-> +EXPORT_SYMBOL(qe_muram_alloc);
-> +
-> +/*
-> + * qe_muram_alloc_fixed - reserve a specific region of multi-user ram
-> + * @size: number of bytes to allocate
-> + * @offset: offset of allocation start address
-> + *
-> + * This function returns an offset into the muram area.
-> + */
-> +unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long 
-> size)
-> +{
-> +
-> +     unsigned long start;
-> +     unsigned long flags;
-> +     unsigned long size_alloc = size;
-> +     struct muram_block *entry;
-> +     int end_bit;
-> +     int order = muram_pool -> min_alloc_order;
-> +
-> +     spin_lock_irqsave(&qe_muram_lock, flags);
-> +     end_bit = (offset >> order) + ((size + (1UL << order) - 1) >> order);
-> +     if ((offset + size) > (end_bit << order))
-> +             size_alloc = size + (1UL << order);
-> +
-> +     muram_pool_data_fixed.offset = offset + GENPOOL_OFFSET;
-> +     gen_pool_set_algo(muram_pool, gen_pool_fixed_fit,
-> +                       &muram_pool_data_fixed);
-> +     start = gen_pool_alloc(muram_pool, size_alloc);
-> +     if (!start)
-> +             goto out2;
-> +     start = start - GENPOOL_OFFSET;
-> +     memset(qe_muram_addr(start), 0, size_alloc);
-> +     entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-> +     if (!entry)
-> +             goto out1;
-> +     entry->start = start;
-> +     entry->size = size_alloc;
-> +     list_add(&entry->head, &muram_block_list);
-> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
-> +
-> +     return start;
-> +out1:
-> +     gen_pool_free(muram_pool, start, size_alloc);
-> +out2:
-> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
-> +     return (unsigned long) -ENOMEM;
-> +
-> +
-> +}
-> +EXPORT_SYMBOL(qe_muram_alloc_fixed);
-> +
-> +/**
-> + * qe_muram_free - free a chunk of multi-user ram
-> + * @offset: The beginning of the chunk as returned by qe_muram_alloc().
-> + */
-> +int qe_muram_free(unsigned long offset)
-> +{
-> +     unsigned long flags;
-> +     int size;
-> +     struct muram_block *tmp;
-> +
-> +     size = 0;
-> +     spin_lock_irqsave(&qe_muram_lock, flags);
-> +     list_for_each_entry(tmp, &muram_block_list, head) {
-> +             if (tmp->start == offset) {
-> +                     size = tmp->size;
-> +                     list_del(&tmp->head);
-> +                     kfree(tmp);
-> +                     break;
-> +             }
-> +     }
-> +     gen_pool_free(muram_pool, offset + GENPOOL_OFFSET, size);
-> +     spin_unlock_irqrestore(&qe_muram_lock, flags);
-> +
-> +     return size;
-> +}
-> +EXPORT_SYMBOL(qe_muram_free);
-> +
-> +/**
-> + * qe_muram_addr - turn a muram offset into a virtual address
-> + * @offset: muram offset to convert
-> + */
-> +void __iomem *qe_muram_addr(unsigned long offset)
-> +{
-> +     return muram_vbase + offset;
-> +}
-> +EXPORT_SYMBOL(qe_muram_addr);
-> +
-> +unsigned long qe_muram_offset(void __iomem *addr)
-> +{
-> +     return addr - (void __iomem *)muram_vbase;
-> +}
-> +EXPORT_SYMBOL(qe_muram_offset);
-> +
-> +/**
-> + * qe_muram_dma - turn a muram virtual address into a DMA address
-> + * @offset: virtual address from qe_muram_addr() to convert
-> + */
-> +dma_addr_t qe_muram_dma(void __iomem *addr)
-> +{
-> +     return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
-> +}
-> +EXPORT_SYMBOL(qe_muram_dma);
 
-Why are you adding new functions rather than replacing the implementation of 
-the old ones?
+--Fba/0zbH8Xs+Fj9o
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Again, I don't want to see a big addition in one place and a big deletion 
-elsewhere.  I want to see the actual code changes as a diff.  Any moving 
-around of code must be a separate patch from making changes to it that are 
-significant enough that git format-patch doesn't detect it as a move.
+Ping ;-)
 
--Scott
+Regards,
+Boqun
+
+On Mon, Sep 07, 2015 at 07:58:00AM +0800, Boqun Feng wrote:
+> Currently, little endian is only supported on powernv and pseries,
+> however, Kconfigs still allow us to include other platforms in a LE
+> kernel, this may result in space wasting or even build error if some
+> BE-only platforms always assume they are built for a BE kernel. So just
+> modify the Kconfigs of BE-only platforms to remove them from being built
+> for a LE kernel.
+>=20
+> For 32bit only platforms, nothing needs to be done, because
+> CPU_LITTLE_ENDIAN depends on PPC64. For 64bit supported platforms, add
+> CPU_BIG_ENDIAN to dependencies explicitly, so that these platforms will
+> be disabled for LE [Suggested-by: C=E9dric Le Goater <clg@fr.ibm.com>].
+>=20
+> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> ---
+>  arch/powerpc/platforms/cell/Kconfig     | 4 ++--
+>  arch/powerpc/platforms/maple/Kconfig    | 2 +-
+>  arch/powerpc/platforms/pasemi/Kconfig   | 2 +-
+>  arch/powerpc/platforms/powermac/Kconfig | 2 +-
+>  arch/powerpc/platforms/ps3/Kconfig      | 2 +-
+>  5 files changed, 6 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms=
+/cell/Kconfig
+> index 2f23133..808a904 100644
+> --- a/arch/powerpc/platforms/cell/Kconfig
+> +++ b/arch/powerpc/platforms/cell/Kconfig
+> @@ -25,7 +25,7 @@ config PPC_CELL_NATIVE
+> =20
+>  config PPC_IBM_CELL_BLADE
+>  	bool "IBM Cell Blade"
+> -	depends on PPC64 && PPC_BOOK3S
+> +	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
+>  	select PPC_CELL_NATIVE
+>  	select PPC_OF_PLATFORM_PCI
+>  	select PCI
+> @@ -35,7 +35,7 @@ config PPC_IBM_CELL_BLADE
+> =20
+>  config PPC_CELL_QPACE
+>  	bool "IBM Cell - QPACE"
+> -	depends on PPC64 && PPC_BOOK3S
+> +	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
+>  	select PPC_CELL_COMMON
+> =20
+>  config AXON_MSI
+> diff --git a/arch/powerpc/platforms/maple/Kconfig b/arch/powerpc/platform=
+s/maple/Kconfig
+> index 1ea621a..e359d0d 100644
+> --- a/arch/powerpc/platforms/maple/Kconfig
+> +++ b/arch/powerpc/platforms/maple/Kconfig
+> @@ -1,5 +1,5 @@
+>  config PPC_MAPLE
+> -	depends on PPC64 && PPC_BOOK3S
+> +	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
+>  	bool "Maple 970FX Evaluation Board"
+>  	select PCI
+>  	select MPIC
+> diff --git a/arch/powerpc/platforms/pasemi/Kconfig b/arch/powerpc/platfor=
+ms/pasemi/Kconfig
+> index a2aeb32..00d4b28 100644
+> --- a/arch/powerpc/platforms/pasemi/Kconfig
+> +++ b/arch/powerpc/platforms/pasemi/Kconfig
+> @@ -1,5 +1,5 @@
+>  config PPC_PASEMI
+> -	depends on PPC64 && PPC_BOOK3S
+> +	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
+>  	bool "PA Semi SoC-based platforms"
+>  	default n
+>  	select MPIC
+> diff --git a/arch/powerpc/platforms/powermac/Kconfig b/arch/powerpc/platf=
+orms/powermac/Kconfig
+> index 607124b..43c6062 100644
+> --- a/arch/powerpc/platforms/powermac/Kconfig
+> +++ b/arch/powerpc/platforms/powermac/Kconfig
+> @@ -1,6 +1,6 @@
+>  config PPC_PMAC
+>  	bool "Apple PowerMac based machines"
+> -	depends on PPC_BOOK3S
+> +	depends on PPC_BOOK3S && CPU_BIG_ENDIAN
+>  	select MPIC
+>  	select PCI
+>  	select PPC_INDIRECT_PCI if PPC32
+> diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/=
+ps3/Kconfig
+> index 56f2740..b27f40f 100644
+> --- a/arch/powerpc/platforms/ps3/Kconfig
+> +++ b/arch/powerpc/platforms/ps3/Kconfig
+> @@ -1,6 +1,6 @@
+>  config PPC_PS3
+>  	bool "Sony PS3"
+> -	depends on PPC64 && PPC_BOOK3S
+> +	depends on PPC64 && PPC_BOOK3S && CPU_BIG_ENDIAN
+>  	select PPC_CELL
+>  	select USB_OHCI_LITTLE_ENDIAN
+>  	select USB_OHCI_BIG_ENDIAN_MMIO
+> --=20
+> 2.5.1
+>=20
+
+--Fba/0zbH8Xs+Fj9o
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJV+1kmAAoJEEl56MO1B/q4zrMIAK1vRRCYXSUDS63rs/qO9FfD
+BAzew3xmmxrG87d5eYnxG2KUA+se2N5NR25uDj+88zGUo34mEosUQDGtHVHPlpnJ
+dusRDWnSY1ydFsUsLXgJ1+xYBk2q59cXE10/Dq/65atdQ6fG25hlS31NeIb04AFp
+RAWRtTWuSr3XP5pd9QMVD5Pi7lg9FDy/dvwPgcAgeSoUakiMALtBxT94OlQrgky5
+LzXFwxe8hw5u0ArEWLOgZHnyxbbQ/RN+k6FJS1pWBym1g1E02QPtDuGjdxGYBmgJ
+F/O8jFK+vROpgDFX4FV/7KPkuK0lWB1PqTSTscyXsFvY32VcsGIXLnbrMaPEZxI=
+=XUCo
+-----END PGP SIGNATURE-----
+
+--Fba/0zbH8Xs+Fj9o--
