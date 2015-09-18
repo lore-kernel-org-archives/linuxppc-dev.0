@@ -1,21 +1,42 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D4F701A2C01
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 23:14:02 +1000 (AEST)
-Subject: Re: suspicious RCU usage with kvm_pr
-To: Denis Kirjanov <kda@linux-powerpc.org>
-References: <CAOJe8K3mu6M48wGAMMQNXPDrkzk+z4j5yzcJ7eRfex0FWcZsQA@mail.gmail.com>
- <55F94161.7000405@redhat.com>
- <CAOJe8K0yPshff4c+e8DG7OdsT3PoSDsu=_0Gx2Noc2p-ua+c9g@mail.gmail.com>
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <55FC0E15.6040105@redhat.com>
-Date: Fri, 18 Sep 2015 15:13:57 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 403211A2C01
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 23:38:45 +1000 (AEST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Fri, 18 Sep 2015 07:38:43 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1087319D8048
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 07:29:34 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8IDbMZr65994754
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 06:37:31 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8IDc7wX028410
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 07:38:08 -0600
+Subject: Re: [PATCH v2 08/30] cxlflash: Fix to avoid CXL services during EEH
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442438877-49469-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Message-ID: <55FC13A5.1080301@linux.vnet.ibm.com>
+Date: Fri, 18 Sep 2015 08:37:41 -0500
 MIME-Version: 1.0
-In-Reply-To: <CAOJe8K0yPshff4c+e8DG7OdsT3PoSDsu=_0Gx2Noc2p-ua+c9g@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1442438877-49469-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +46,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16/09/15 12:59, Denis Kirjanov wrote:
-> On 9/16/15, Thomas Huth <thuth@redhat.com> wrote:
->> On 16/09/15 10:51, Denis Kirjanov wrote:
->>> Hi,
->>>
->>> I see the following trace on qemu startup (ps700 blade):
->>>
->>> v4.2-11169-g64d1def
->>>
->>>
->>> [  143.369638] ===============================
->>> [  143.369640] [ INFO: suspicious RCU usage. ]
->>> [  143.369643] 4.2.0-11169-g64d1def #10 Tainted: G S
->>> [  143.369645] -------------------------------
->>> [  143.369647] arch/powerpc/kvm/../../../virt/kvm/kvm_main.c:3310
->>> suspicious rcu_dereference_check() usage!
->>> [  143.369649]
->>> other info that might help us debug this:
->>>
->>> [  143.369652]
->>> rcu_scheduler_active = 1, debug_locks = 1
->>> [  143.369655] 1 lock held by qemu-system-ppc/2292:
->>> [  143.369656]  #0:  (&vcpu->mutex){+.+.+.}, at: [<d000000004225bac>]
->>> .vcpu_load+0x2c/0xb0 [kvm]
->>> [  143.369672]
->>> stack backtrace:
->>> [  143.369675] CPU: 12 PID: 2292 Comm: qemu-system-ppc Tainted: G S
->>>           4.2.0-11169-g64d1def #10
->>> [  143.369677] Call Trace:
->>> [  143.369682] [c0000001d08bf200] [c000000000816dd0]
->>> .dump_stack+0x98/0xd4 (unreliable)
->>> [  143.369687] [c0000001d08bf280] [c0000000000f7058]
->>> .lockdep_rcu_suspicious+0x108/0x170
->>> [  143.369696] [c0000001d08bf310] [d0000000042296d8]
->>> .kvm_io_bus_read+0x1d8/0x220 [kvm]
->>> [  143.369705] [c0000001d08bf3c0] [d00000000422f980]
->>> .kvmppc_h_logical_ci_load+0x60/0xe0 [kvm]
->>
->> Could it be that we need to srcu_read_lock(&vcpu->kvm->srcu) before
->> calling the kvm_io_bus_read/write() function in the
->> kvmppc_h_logical_ci_load/store() function?
+On 09/16/2015 04:27 PM, Matthew R. Ochs wrote:
+> --- a/drivers/scsi/cxlflash/main.c
+> +++ b/drivers/scsi/cxlflash/main.c
+> @@ -2311,6 +2311,7 @@ static int cxlflash_probe(struct pci_dev *pdev,
+>  	cfg->lr_port = -1;
+>  	mutex_init(&cfg->ctx_tbl_list_mutex);
+>  	mutex_init(&cfg->ctx_recovery_mutex);
+> +	init_rwsem(&cfg->ioctl_rwsem);
+>  	INIT_LIST_HEAD(&cfg->ctx_err_recovery);
+>  	INIT_LIST_HEAD(&cfg->lluns);
 > 
-> I haven't had time to dig into this. I'll try it.
+> @@ -2365,6 +2366,19 @@ out_remove:
+>  }
+> 
+>  /**
+> + * drain_ioctls() - wait until all currently executing ioctls have completed
+> + * @cfg:	Internal structure associated with the host.
+> + *
+> + * Obtain write access to read/write semaphore that wraps ioctl
+> + * handling to 'drain' ioctls currently executing.
+> + */
+> +static void drain_ioctls(struct cxlflash_cfg *cfg)
+> +{
+> +	down_write(&cfg->ioctl_rwsem);
+> +	up_write(&cfg->ioctl_rwsem);
+> +}
+> +
+> +/**
+>   * cxlflash_pci_error_detected() - called when a PCI error is detected
+>   * @pdev:	PCI device struct.
+>   * @state:	PCI channel state.
+> @@ -2383,16 +2397,14 @@ static pci_ers_result_t cxlflash_pci_error_detected(struct pci_dev *pdev,
+>  	switch (state) {
+>  	case pci_channel_io_frozen:
+>  		cfg->state = STATE_LIMBO;
+> -
+> -		/* Turn off legacy I/O */
+>  		scsi_block_requests(cfg->host);
+> +		drain_ioctls(cfg);
 
-FYI, I had the same problem with kvm_hv, so I tried to come up with a patch:
+So, what kicks any outstanding ioctls back? Let's assume you are in the middle of disk_attach
+and you've sent the READ_CAP16 to the device. It appears as if what would happen here is we'd
+sit here in cxlflash_pci_error_detected. Eventually, the READ_CAP16 would timeout. This would
+wake the SCSI error handler, and end up calling your eh_device_reset handler, which would see that
+we are in STATE_LIMBO, where it would then do a wait_event, waiting for us to get out of STATE_LIMBO,
+and we would end up in a deadlock.
 
-	https://patchwork.ozlabs.org/patch/519143/
+Rather than implementing a rw semaphore, would it be better to simply make the ioctls check the
+state we are in and either wait to get out of EEH state or fail themselves?
 
-Sorry, forgot to CC: you there, but it would be great if you could give
-it a try!
+>  		rc = cxlflash_mark_contexts_error(cfg);
+>  		if (unlikely(rc))
+>  			dev_err(dev, "%s: Failed to mark user contexts!(%d)\n",
+>  				__func__, rc);
+>  		term_mc(cfg, UNDO_START);
+>  		stop_afu(cfg);
+> -
+>  		return PCI_ERS_RESULT_NEED_RESET;
+>  	case pci_channel_io_perm_failure:
+>  		cfg->state = STATE_FAILTERM;
+> diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
+> index cf2a85d..8a18230 100644
+> --- a/drivers/scsi/cxlflash/superpipe.c
+> +++ b/drivers/scsi/cxlflash/superpipe.c
+> @@ -1214,6 +1214,48 @@ static const struct file_operations null_fops = {
+>  };
+> 
+>  /**
+> + * check_state() - checks and responds to the current adapter state
+> + * @cfg:	Internal structure associated with the host.
+> + * @ioctl:	Indicates if on an ioctl thread.
+> + *
+> + * This routine can block and should only be used on process context.
+> + * When blocking on an ioctl thread, the ioctl read semaphore should be
+> + * let up to allow for draining actively running ioctls. Also note that
+> + * when waking up from waiting in reset, the state is unknown and must
+> + * be checked again before proceeding.
+> + *
+> + * Return: 0 on success, -errno on failure
+> + */
+> +static int check_state(struct cxlflash_cfg *cfg, bool ioctl)
 
- Thomas
+All your callers appear to set the second parameter to true, so why bother having it?
+
+> +{
+> +	struct device *dev = &cfg->dev->dev;
+> +	int rc = 0;
+> +
+> +retry:
+> +	switch (cfg->state) {
+> +	case STATE_LIMBO:
+> +		dev_dbg(dev, "%s: Limbo state, going to wait...\n", __func__);
+> +		if (ioctl)
+> +			up_read(&cfg->ioctl_rwsem);
+> +		rc = wait_event_interruptible(cfg->limbo_waitq,
+> +					      cfg->state != STATE_LIMBO);
+> +		if (ioctl)
+> +			down_read(&cfg->ioctl_rwsem);
+> +		if (unlikely(rc))
+> +			break;
+> +		goto retry;
+> +	case STATE_FAILTERM:
+> +		dev_dbg(dev, "%s: Failed/Terminating!\n", __func__);
+> +		rc = -ENODEV;
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+> +/**
+>   * cxlflash_disk_attach() - attach a LUN to a context
+>   * @sdev:	SCSI device associated with LUN.
+>   * @attach:	Attach ioctl data structure.
+
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
