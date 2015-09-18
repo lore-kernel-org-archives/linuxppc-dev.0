@@ -1,16 +1,26 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB3791A2C01
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 00:17:06 +1000 (AEST)
-From: Thomas Huth <thuth@redhat.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, boqun.feng@gmail.com
-Subject: [PATCH] powerpc: Kconfig.cputype: Disallow TUNE_CELL on LE systems
-Date: Fri, 18 Sep 2015 16:17:00 +0200
-Message-Id: <1442585820-18623-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 174AC1A2C01
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 00:32:34 +1000 (AEST)
+Date: Fri, 18 Sep 2015 09:32:04 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
+ memcpy'
+Message-ID: <20150918143204.GE29692@gate.crashing.org>
+References: <alpine.DEB.2.11.1509161816310.3951@nanos>
+ <1442420984.2909.179.camel@freescale.com>
+ <alpine.DEB.2.11.1509162159110.3951@nanos>
+ <20150916215435.48bee4d3@grimm.local.home>
+ <alpine.DEB.2.11.1509170911120.3951@nanos>
+ <1442570517.5528.3.camel@ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1442570517.5528.3.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It looks somewhat weird that you can enable TUNE_CELL on little
-endian systems, so let's disable this option with CPU_LITTLE_ENDIAN.
+On Fri, Sep 18, 2015 at 08:01:57PM +1000, Michael Ellerman wrote:
+> Weird.
+> 
+> Can you try:
+> 
+>   d690740f22f6 ("powerpc/powernv: Enable LEDS support")
+> 
+> That is the commit before my merge of Scott's tree, which had all the Freescale
+> & 32-bit stuff.
+> 
+> If that works, it would isolate it to only about 30 commits from Scott's tree.
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- I first thought that it might be better to make this option depend
- on PPC_CELL instead ... but I guess it's a bad idea to depend a
- CPU option on a platform option? Alternatively, would it make
- sense to make it depend on (GENERIC_CPU || CELL_CPU) instead?
+My theory is it is not a kernel problem at all; instead, uboot overwrites
+some little part of the kernel image.
 
- arch/powerpc/platforms/Kconfig.cputype | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index c140e94..d93e131 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -149,7 +149,7 @@ config 6xx
- 
- config TUNE_CELL
- 	bool "Optimize for Cell Broadband Engine"
--	depends on PPC64 && PPC_BOOK3S
-+	depends on PPC64 && PPC_BOOK3S && !CPU_LITTLE_ENDIAN
- 	help
- 	  Cause the compiler to optimize for the PPE of the Cell Broadband
- 	  Engine. This will make the code run considerably faster on Cell
--- 
-1.8.3.1
+Segher
