@@ -1,25 +1,21 @@
-Return-Path: <thenzl@redhat.com>
+Return-Path: <thuth@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AD201A2C01
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 21:59:14 +1000 (AEST)
-Subject: Re: [PATCH v2 09/30] cxlflash: Fix to stop interrupt processing on
- remove
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-References: <1442422399-41262-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <55FAB43B.8050306@redhat.com>
- <97A059A7-2054-4DBD-B993-BBF47AC105E0@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
- nab@linux-iscsi.org, brking@linux.vnet.ibm.com, imunsie@au1.ibm.com,
- dja@ozlabs.au.ibm.com, andrew.donnellan@au1.ibm.com, mikey@neuling.org,
- linuxppc-dev@lists.ozlabs.org, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-From: Tomas Henzl <thenzl@redhat.com>
-Message-ID: <55FBFC8B.9060305@redhat.com>
-Date: Fri, 18 Sep 2015 13:59:07 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id D4F701A2C01
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 23:14:02 +1000 (AEST)
+Subject: Re: suspicious RCU usage with kvm_pr
+To: Denis Kirjanov <kda@linux-powerpc.org>
+References: <CAOJe8K3mu6M48wGAMMQNXPDrkzk+z4j5yzcJ7eRfex0FWcZsQA@mail.gmail.com>
+ <55F94161.7000405@redhat.com>
+ <CAOJe8K0yPshff4c+e8DG7OdsT3PoSDsu=_0Gx2Noc2p-ua+c9g@mail.gmail.com>
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <55FC0E15.6040105@redhat.com>
+Date: Fri, 18 Sep 2015 15:13:57 +0200
 MIME-Version: 1.0
-In-Reply-To: <97A059A7-2054-4DBD-B993-BBF47AC105E0@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <CAOJe8K0yPshff4c+e8DG7OdsT3PoSDsu=_0Gx2Noc2p-ua+c9g@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,84 +25,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17.9.2015 19:16, Matthew R. Ochs wrote:
->> On Sep 17, 2015, at 7:38 AM, Tomas Henzl <thenzl@redhat.com> wrote:
+On 16/09/15 12:59, Denis Kirjanov wrote:
+> On 9/16/15, Thomas Huth <thuth@redhat.com> wrote:
+>> On 16/09/15 10:51, Denis Kirjanov wrote:
+>>> Hi,
+>>>
+>>> I see the following trace on qemu startup (ps700 blade):
+>>>
+>>> v4.2-11169-g64d1def
+>>>
+>>>
+>>> [  143.369638] ===============================
+>>> [  143.369640] [ INFO: suspicious RCU usage. ]
+>>> [  143.369643] 4.2.0-11169-g64d1def #10 Tainted: G S
+>>> [  143.369645] -------------------------------
+>>> [  143.369647] arch/powerpc/kvm/../../../virt/kvm/kvm_main.c:3310
+>>> suspicious rcu_dereference_check() usage!
+>>> [  143.369649]
+>>> other info that might help us debug this:
+>>>
+>>> [  143.369652]
+>>> rcu_scheduler_active = 1, debug_locks = 1
+>>> [  143.369655] 1 lock held by qemu-system-ppc/2292:
+>>> [  143.369656]  #0:  (&vcpu->mutex){+.+.+.}, at: [<d000000004225bac>]
+>>> .vcpu_load+0x2c/0xb0 [kvm]
+>>> [  143.369672]
+>>> stack backtrace:
+>>> [  143.369675] CPU: 12 PID: 2292 Comm: qemu-system-ppc Tainted: G S
+>>>           4.2.0-11169-g64d1def #10
+>>> [  143.369677] Call Trace:
+>>> [  143.369682] [c0000001d08bf200] [c000000000816dd0]
+>>> .dump_stack+0x98/0xd4 (unreliable)
+>>> [  143.369687] [c0000001d08bf280] [c0000000000f7058]
+>>> .lockdep_rcu_suspicious+0x108/0x170
+>>> [  143.369696] [c0000001d08bf310] [d0000000042296d8]
+>>> .kvm_io_bus_read+0x1d8/0x220 [kvm]
+>>> [  143.369705] [c0000001d08bf3c0] [d00000000422f980]
+>>> .kvmppc_h_logical_ci_load+0x60/0xe0 [kvm]
 >>
->> On 16.9.2015 18:53, Matthew R. Ochs wrote:
->>> Interrupt processing can run in parallel to a remove operation. This
->>> can lead to a condition where the interrupt handler is processing with
->>> memory that has been freed.
->>>
->>> To avoid processing an interrupt while memory may be yanked, check for
->>> removal while in the interrupt handler. Bail when removal is imminent.
->>>
->>> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
->>> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
->>> ---
->>> drivers/scsi/cxlflash/common.h |  2 ++
->>> drivers/scsi/cxlflash/main.c   | 21 +++++++++++++++------
->>> 2 files changed, 17 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
->>> index 1abe4e0..03d2cc6 100644
->>> --- a/drivers/scsi/cxlflash/common.h
->>> +++ b/drivers/scsi/cxlflash/common.h
->>> @@ -103,6 +103,8 @@ struct cxlflash_cfg {
->>> 	enum cxlflash_lr_state lr_state;
->>> 	int lr_port;
->>>
->>> +	atomic_t remove_active;
->>> +
->>> 	struct cxl_afu *cxl_afu;
->>>
->>> 	struct pci_pool *cxlflash_cmd_pool;
->>> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
->>> index 6e85c77..89ee648 100644
->>> --- a/drivers/scsi/cxlflash/main.c
->>> +++ b/drivers/scsi/cxlflash/main.c
->>> @@ -892,6 +892,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
->>> 	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
->>>
->>> 	cfg->state = STATE_FAILTERM;
->>> +	atomic_inc(&cfg->remove_active);
->> Hi Matthew,
->> you could just call term_afu at this point, this way you don't
->> need an additional check in all irq functions.
->> Cheers,
->> Tomas
-> Hi Tomas,
->
-> We actually do call term_afu() a few lines down from here. I don't follow
-> how moving it here would help things.
+>> Could it be that we need to srcu_read_lock(&vcpu->kvm->srcu) before
+>> calling the kvm_io_bus_read/write() function in the
+>> kvmppc_h_logical_ci_load/store() function?
+> 
+> I haven't had time to dig into this. I'll try it.
 
-When you disable ints sooner (that is what term_afu does ?) you'll get no
-more ints later isn't this what you want?
+FYI, I had the same problem with kvm_hv, so I tried to come up with a patch:
 
->
-> The reason for the atomic was to provide something lightweight that we
-> could check _inside_ the processing loop for the read-response queue
-> handler. A check outside that loop doesn't really provide much in terms
-> of closing or narrowing down the window of when freed memory can be
-> accessed.
->
-> As David Laight correctly pointed out, this approach does not completely
-> close the window. We'd need something heavier to fully protect (e.g. a lock
-> to wrap around the entire loop). I will look into adding this in a future cycle
-> when I can adequately test.
+	https://patchwork.ozlabs.org/patch/519143/
 
-term_afu calls free_irq and this function
-does not return until any executing interrupts for have completed.
-This is the sync mechanism you need, it's lightweight
-(does not add an additional check to your irq functions)
-and closes the race window completely.
+Sorry, forgot to CC: you there, but it would be great if you could give
+it a try!
 
---tm
-
->
->
-> -matt
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ Thomas
