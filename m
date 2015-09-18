@@ -1,29 +1,33 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E9611A0274
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 00:45:50 +1000 (AEST)
-Date: Fri, 18 Sep 2015 16:45:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-cc: Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
- memcpy'
-In-Reply-To: <20150918143204.GE29692@gate.crashing.org>
-Message-ID: <alpine.DEB.2.11.1509181643550.3951@nanos>
-References: <alpine.DEB.2.11.1509161816310.3951@nanos>
- <1442420984.2909.179.camel@freescale.com>
- <alpine.DEB.2.11.1509162159110.3951@nanos>
- <20150916215435.48bee4d3@grimm.local.home>
- <alpine.DEB.2.11.1509170911120.3951@nanos>
- <1442570517.5528.3.camel@ellerman.id.au>
- <20150918143204.GE29692@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A170A1A0484
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 01:21:13 +1000 (AEST)
+Date: Fri, 18 Sep 2015 16:20:51 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ devicetree@vger.kernel.org, Sunil Goutham <sgoutham@cavium.com>,
+ Robert Richter <rric@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>,
+ Michal Simek <michal.simek@xilinx.com>, netdev@vger.kernel.org,
+ Iyappan Subramanian <isubramanian@apm.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Li Yang <leoli@freescale.com>, Keyur Chudgar <kchudgar@apm.com>,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 0/7] Phy and mdiobus fixes
+Message-ID: <20150918152050.GI21084@n2100.arm.linux.org.uk>
+References: <20150918094625.GB21084@n2100.arm.linux.org.uk>
+ <20150918095600.GC21084@n2100.arm.linux.org.uk>
+ <20150918150128.GV2722@xsjsorenbubuntu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20150918150128.GV2722@xsjsorenbubuntu>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,27 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 18 Sep 2015, Segher Boessenkool wrote:
-
-> On Fri, Sep 18, 2015 at 08:01:57PM +1000, Michael Ellerman wrote:
-> > Weird.
-> > 
-> > Can you try:
-> > 
-> >   d690740f22f6 ("powerpc/powernv: Enable LEDS support")
-> > 
-> > That is the commit before my merge of Scott's tree, which had all the Freescale
-> > & 32-bit stuff.
-> > 
-> > If that works, it would isolate it to only about 30 commits from Scott's tree.
+On Fri, Sep 18, 2015 at 08:01:28AM -0700, Sören Brinkmann wrote:
+> Hi Russell,
 > 
-> My theory is it is not a kernel problem at all; instead, uboot overwrites
-> some little part of the kernel image.
+> On Fri, 2015-09-18 at 10:56AM +0100, Russell King - ARM Linux wrote:
+> > Sorry guys, some of you will get the patches twice, as Sören's name
+> > in the header caused vger to reject all the patches.
+> 
+> That is the first time I hear about an issue like that. I've been
+> receiving patches fine thus far and nobody reported any rejections (by
+> vger) to me. Is it some bounce on Xilinx/my side or is vger suddenly
+> rejecting non-ascii chars or is something in the mail processing chain
+> not properly encoding those chars?
+> Please, let me know if I can help with the problem.
 
-u-boot is just loading a cuImage which is a kernel with appended
-device tree. So u-boot is out of the picture, still investigating
-(when time allows)
+It's to do with how I generate the patch set and submit it to my MTA.
+The result is that the header fields contain an ö.  Almost all MTAs
+accept this despite it being questionable, but zmailer is extra fussy
+and rejects this - and rejected the messages to lkml, netdev, etc.
 
-Thanks,
+Normally, the MUA would encode "Sören Brinkmann" in a header into a
+7-bit ascii representation as "=?utf-8?B?U8O2cmVu?= Brinkmann".
 
-	tglx
+It's one of the many issues of not using a MUA to send out patches.
+
+It's also worth noting that git-send-email misses out mime headers
+(or used to - which is why I have my own scripts for doing this)
+which technically makes the bodies it mails out in violation of the
+RFCs.
+
+-- 
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
