@@ -1,42 +1,20 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5EC8D1A0026
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 01:35:23 +1000 (AEST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Fri, 18 Sep 2015 09:35:21 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 2F7C63E40047
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 09:35:19 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8IFY1Ki9175474
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 08:34:09 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8IFYk9Y032035
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 09:34:46 -0600
-Subject: Re: [PATCH v2 11/30] cxlflash: Make functions static
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442438888-49583-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Message-ID: <55FC2EFC.2090401@linux.vnet.ibm.com>
-Date: Fri, 18 Sep 2015 10:34:20 -0500
-MIME-Version: 1.0
-In-Reply-To: <1442438888-49583-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 308721A0038
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 01:47:35 +1000 (AEST)
+Message-ID: <1442591252.23936.254.camel@redhat.com>
+Subject: Re: [PATCH 0/2] VFIO: Accept IOMMU group (PE) ID
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, david@gibson.dropbear.id.au
+Date: Fri, 18 Sep 2015 09:47:32 -0600
+In-Reply-To: <1442557469-22185-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1442557469-22185-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,9 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+On Fri, 2015-09-18 at 16:24 +1000, Gavin Shan wrote:
+> This allows to accept IOMMU group (PE) ID from the parameter from userland
+> when handling EEH operation so that the operation only affects the target
+> IOMMU group (PE). If the IOMMU group (PE) ID in the parameter from userland
+> is invalid, all IOMMU groups (PEs) attached to the specified container are
+> affected as before.
+> 
+> Gavin Shan (2):
+>   drivers/vfio: Support EEH API revision
+>   drivers/vfio: Support IOMMU group for EEH operations
+> 
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 50 ++++++++++++++++++++++++++++++++++---
+>  drivers/vfio/vfio_spapr_eeh.c       | 46 ++++++++++++++++++++++------------
+>  include/linux/vfio.h                | 13 +++++++---
+>  include/uapi/linux/vfio.h           |  6 +++++
+>  4 files changed, 93 insertions(+), 22 deletions(-)
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+This interface is terrible.  A function named foo_enabled() should
+return a bool, yes or no, don't try to overload it to also return a
+version.  AFAICT, patch 2/2 breaks current users by changing the offset
+of the union in struct vfio_eeh_pe_err.  Also, we generally pass group
+file descriptors rather than a group ID because we can prove the
+ownership of the group through the file descriptor and we don't need to
+worry about races with the group because we can hold a reference to it.
