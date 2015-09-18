@@ -1,24 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E7571A2CEB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 19:49:58 +1000 (AEST)
-Message-ID: <1442569796.5528.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Kconfig: remove BE-only platforms from LE
- kernel build
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Arnd
- Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof
- Johansson <olof@lixom.net>, Geoff Levand <geoff@infradead.org>
-Date: Fri, 18 Sep 2015 19:49:56 +1000
-In-Reply-To: <20150918002208.GB1300@fixme-laptop.cn.ibm.com>
-References: <1441583880-17824-1-git-send-email-boqun.feng@gmail.com>
- <20150918002208.GB1300@fixme-laptop.cn.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB7BB1A2D8C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 19:55:12 +1000 (AEST)
+In-Reply-To: <20150918094625.GB21084@n2100.arm.linux.org.uk>
+References: <20150918094625.GB21084@n2100.arm.linux.org.uk>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Iyappan Subramanian <isubramanian@apm.com>, Keyur Chudgar <kchudgar@apm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Li Yang <leoli@freescale.com>, Michal Simek <michal.simek@xilinx.com>,
+ netdev@vger.kernel.org, Robert Richter <rric@kernel.org>,
+ Rob Herring <robh+dt@kernel.org>,
+ "Soren Brinkmann" <soren.brinkmann@xilinx.com>,
+ Sunil Goutham <sgoutham@cavium.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 1/7] phy: fix of_mdio_find_bus() device refcount leak
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <E1ZcsNb-0001Bf-U5@rmk-PC.arm.linux.org.uk>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Date: Fri, 18 Sep 2015 10:54:55 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +35,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-09-18 at 08:22 +0800, Boqun Feng wrote:
-> Ping ;-)
+of_mdio_find_bus() leaks a struct device refcount, caused by using
+class_find_device() and not realising that the device reference has
+its refcount incremented:
 
-Hi Boqun,
+ * Note, you will need to drop the reference with put_device() after use.
+...
+        while ((dev = class_dev_iter_next(&iter))) {
+                if (match(dev, data)) {
+                        get_device(dev);
+                        break;
+                }
 
-We keep track of patches in patchwork:
+Update the comment, and arrange for the only user of this function
+to drop this refcount when disposing of a reference to it.
 
-  http://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=67102
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/net/phy/mdio-mux.c | 19 +++++++++++++------
+ drivers/net/phy/mdio_bus.c |  4 +++-
+ 2 files changed, 16 insertions(+), 7 deletions(-)
 
-So your patch won't be forgotten.
-
-I tend to start taking patches for next after rc2, which should come out on
-Sunday. So I'll probably merge this patch next week, when I do you'll get an
-email.
-
-cheers
+diff --git a/drivers/net/phy/mdio-mux.c b/drivers/net/phy/mdio-mux.c
+index 4d4d25efc1e1..280c7c311f72 100644
+--- a/drivers/net/phy/mdio-mux.c
++++ b/drivers/net/phy/mdio-mux.c
+@@ -113,18 +113,18 @@ int mdio_mux_init(struct device *dev,
+ 	if (!parent_bus_node)
+ 		return -ENODEV;
+ 
+-	parent_bus = of_mdio_find_bus(parent_bus_node);
+-	if (parent_bus == NULL) {
+-		ret_val = -EPROBE_DEFER;
+-		goto err_parent_bus;
+-	}
+-
+ 	pb = devm_kzalloc(dev, sizeof(*pb), GFP_KERNEL);
+ 	if (pb == NULL) {
+ 		ret_val = -ENOMEM;
+ 		goto err_parent_bus;
+ 	}
+ 
++	parent_bus = of_mdio_find_bus(parent_bus_node);
++	if (parent_bus == NULL) {
++		ret_val = -EPROBE_DEFER;
++		goto err_parent_bus;
++	}
++
+ 	pb->switch_data = data;
+ 	pb->switch_fn = switch_fn;
+ 	pb->current_child = -1;
+@@ -173,6 +173,10 @@ int mdio_mux_init(struct device *dev,
+ 		dev_info(dev, "Version " DRV_VERSION "\n");
+ 		return 0;
+ 	}
++
++	/* balance the reference of_mdio_find_bus() took */
++	put_device(&pb->mii_bus->dev);
++
+ err_parent_bus:
+ 	of_node_put(parent_bus_node);
+ 	return ret_val;
+@@ -189,6 +193,9 @@ void mdio_mux_uninit(void *mux_handle)
+ 		mdiobus_free(cb->mii_bus);
+ 		cb = cb->next;
+ 	}
++
++	/* balance the reference of_mdio_find_bus() in mdio_mux_init() took */
++	put_device(&pb->mii_bus->dev);
+ }
+ EXPORT_SYMBOL_GPL(mdio_mux_uninit);
+ 
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index 02a4615b65f8..67553e13bd36 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -167,7 +167,9 @@ static int of_mdio_bus_match(struct device *dev, const void *mdio_bus_np)
+  * of_mdio_find_bus - Given an mii_bus node, find the mii_bus.
+  * @mdio_bus_np: Pointer to the mii_bus.
+  *
+- * Returns a pointer to the mii_bus, or NULL if none found.
++ * Returns a reference to the mii_bus, or NULL if none found.  The
++ * embedded struct device will have its reference count incremented,
++ * and this must be put once the bus is finished with.
+  *
+  * Because the association of a device_node and mii_bus is made via
+  * of_mdiobus_register(), the mii_bus cannot be found before it is
+-- 
+2.1.0
