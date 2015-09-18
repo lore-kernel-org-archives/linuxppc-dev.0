@@ -1,21 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0110.outbound.protection.outlook.com [157.56.111.110])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 54ADE1A0274
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 14:48:32 +1000 (AEST)
-Message-ID: <1442551699.19102.99.camel@freescale.com>
-Subject: Re: [PATCH] PowerPC: Move Freescale device tree files into fsl folder
-From: Scott Wood <scottwood@freescale.com>
-To: Jia Hongtao <hongtao.jia@freescale.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <robh+dt@kernel.org>
-Date: Thu, 17 Sep 2015 23:48:19 -0500
-In-Reply-To: <1442548824-45849-1-git-send-email-hongtao.jia@freescale.com>
-References: <1442548824-45849-1-git-send-email-hongtao.jia@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6C161A2C01
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 16:25:31 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 18 Sep 2015 16:25:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5BF3A2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 16:25:27 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8I6PJ5e61931662
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 16:25:27 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8I6OsDu003828
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 16:24:55 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, david@gibson.dropbear.id.au,
+ alex.williamson@redhat.com, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] drivers/vfio: Support EEH API revision
+Date: Fri, 18 Sep 2015 16:24:28 +1000
+Message-Id: <1442557469-22185-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1442557469-22185-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1442557469-22185-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +38,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-09-18 at 12:00 +0800, Jia Hongtao wrote:
-> It makes no sense that some Freescale device tree files are in fsl
-> directory while some others not. This patch move Freescale device tree
-> files into fsl folder. To do that the following two steps are made:
-> - Move Freescale device tree files into fsl folder.
-> - Update the include path in these files from "fsl/*.dtsi" to "*.dtsi".
-> 
-> Please add "fsl/" prefix when you make dtb using Makefile.
+This extends the return value from container's IOCTL command
+(VFIO_CHECK_EXTENSION + VFIO_EEH) to EEH API revision. Also,
+extra check is applied to return -ENOTTY if EEH functionality
+is disabled in vfio_spapr_iommu_eeh_ioctl().
 
-The existing arrangement is indeed a bit odd, but the real reason for this is 
-the interaction with the preprocessor.  If a dtsi uses preprocessor 
-directives, it needs to be included with #include rather than /include/, or 
-else the dtsi won't be preprocessed.  However, if a dtsi is included with 
-#include, and that dtsi is in fsl/ but the including dts isn't, any 
-/include/s within the dtsi will not search that fsl/ because dtc doesn't 
-realize that's the directory the content came from.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 5 +++++
+ drivers/vfio/vfio_spapr_eeh.c       | 9 ++++++++-
+ include/linux/vfio.h                | 6 ++++++
+ include/uapi/linux/vfio.h           | 3 +++
+ 4 files changed, 22 insertions(+), 1 deletion(-)
 
-There was a desire to include <dt-bindings/thermal/thermal.h> from 
-fsl/t1040si-post.dtsi.  In order to make everything work, we need to either 
-move all relevant files to the same directory, or convert all /include/s in 
-affected files to #include.
-
--Scott
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 0582b72..812b43b 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -954,6 +954,11 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 
+ 	case VFIO_EEH_PE_OP: {
+ 		struct tce_iommu_group *tcegrp;
++		int eeh_enabled;
++
++		eeh_enabled = vfio_spapr_pci_eeh_enabled();
++		if (eeh_enabled == VFIO_EEH_DISABLED)
++			return -ENOTTY;
+ 
+ 		ret = 0;
+ 		list_for_each_entry(tcegrp, &container->group_list, next) {
+diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
+index 38edeb4..d208d77 100644
+--- a/drivers/vfio/vfio_spapr_eeh.c
++++ b/drivers/vfio/vfio_spapr_eeh.c
+@@ -18,6 +18,12 @@
+ #define DRIVER_AUTHOR	"Gavin Shan, IBM Corporation"
+ #define DRIVER_DESC	"VFIO IOMMU SPAPR EEH"
+ 
++int vfio_spapr_pci_eeh_enabled(void)
++{
++	return VFIO_EEH_ENABLED_V1;
++}
++EXPORT_SYMBOL_GPL(vfio_spapr_pci_eeh_enabled);
++
+ /* We might build address mapping here for "fast" path later */
+ void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+ {
+@@ -42,7 +48,8 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+ 	switch (cmd) {
+ 	case VFIO_CHECK_EXTENSION:
+ 		if (arg == VFIO_EEH)
+-			ret = eeh_enabled() ? 1 : 0;
++			ret = eeh_enabled() ? vfio_spapr_pci_eeh_enabled() :
++					      VFIO_EEH_DISABLED;
+ 		else
+ 			ret = 0;
+ 		break;
+diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+index ddb4409..ff036ca 100644
+--- a/include/linux/vfio.h
++++ b/include/linux/vfio.h
+@@ -91,12 +91,18 @@ extern long vfio_external_check_extension(struct vfio_group *group,
+ 
+ struct pci_dev;
+ #ifdef CONFIG_EEH
++extern int vfio_spapr_pci_eeh_enabled(void);
+ extern void vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
+ extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
+ extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+ 				       unsigned int cmd,
+ 				       unsigned long arg);
+ #else
++static inline int vfio_spapr_pci_eeh_enabled(void)
++{
++	return VFIO_EEH_DISABLED;
++}
++
+ static inline void vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
+ {
+ }
+diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+index 9fd7b5d..74f5b8b 100644
+--- a/include/uapi/linux/vfio.h
++++ b/include/uapi/linux/vfio.h
+@@ -495,6 +495,9 @@ struct vfio_iommu_spapr_tce_info {
+  * - configure PE;
+  * - inject EEH error.
+  */
++#define VFIO_EEH_DISABLED	0
++#define VFIO_EEH_ENABLED_V1	1
++
+ struct vfio_eeh_pe_err {
+ 	__u32 type;
+ 	__u32 func;
+-- 
+2.1.0
