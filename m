@@ -1,19 +1,19 @@
 Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0101.outbound.protection.outlook.com [157.56.111.101])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0139.outbound.protection.outlook.com [65.55.169.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DB6B1A2C01
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 17:21:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D3F01A2C21
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 17:21:50 +1000 (AEST)
 From: Zhao Qiang <qiang.zhao@freescale.com>
 To: <scottwood@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
  <leoli@freescale.com>, <paulus@samba.org>, Zhao Qiang
  <qiang.zhao@freescale.com>
-Subject: [PATCH v10 4/5] QE/CPM: move muram management functions to qe_common
-Date: Fri, 18 Sep 2015 15:15:20 +0800
-Message-ID: <1442560521-19354-4-git-send-email-qiang.zhao@freescale.com>
+Subject: [PATCH v10 5/5] QE: Move QE from arch/powerpc to drivers/soc
+Date: Fri, 18 Sep 2015 15:15:21 +0800
+Message-ID: <1442560521-19354-5-git-send-email-qiang.zhao@freescale.com>
 In-Reply-To: <1442560521-19354-1-git-send-email-qiang.zhao@freescale.com>
 References: <1442560521-19354-1-git-send-email-qiang.zhao@freescale.com>
 MIME-Version: 1.0
@@ -27,807 +27,874 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-QE and CPM have the same muram, they use the same management
-functions. Now QE support both ARM and PowerPC, it is necessary
-to move QE to "driver/soc", so move the muram management functions
-from cpm_common to qe_common for preparing to move QE code to "driver/soc"
+ls1 has qe and ls1 has arm cpu.
+move qe from arch/powerpc to drivers/soc/fsl
+to adapt to powerpc and arm
 
 Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
 ---
 Changes for v2:
-	- no changes
+	- move code to driver/soc
 Changes for v3:
-	- no changes
+	- change drivers/soc/qe to drivers/soc/fsl-qe
 Changes for v4:
-	- no changes
+	- move drivers/soc/fsl-qe to drivers/soc/fsl/qe
+	- move head files for qe from include/linux/fsl to include/soc/fsl
+	- move qe_ic.c to drivers/irqchip/
 Changes for v5:
-	- no changes
+	- update MAINTAINERS
 Changes for v6:
-	- using genalloc instead rheap to manage QE MURAM
-	- remove qe_reset from platform file, using 
-	- subsys_initcall to call qe_init function.
+	- rebase
 Changes for v7:
-	- move this patch from 3/3 to 2/3
-	- convert cpm with genalloc
-	- check for gen_pool allocation failure
+	- move this patch from 2/3 to 3/3
 Changes for v8:
-	- rebase
-	- move BD_SC_* macro instead of copy
+	- Nil 
 Changes for v9:
-	- doesn't modify CPM, add a new patch to modify.
-	- rebase
+	- Nil 
 Changes for v10:
-	- rebase
+	- Nil 
 
- arch/powerpc/include/asm/cpm.h            |  59 --------
- arch/powerpc/include/asm/qe.h             |  51 ++++++-
- arch/powerpc/platforms/83xx/km83xx.c      |   2 -
- arch/powerpc/platforms/83xx/mpc832x_mds.c |   2 -
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |   2 -
- arch/powerpc/platforms/83xx/mpc836x_mds.c |   2 -
- arch/powerpc/platforms/83xx/mpc836x_rdk.c |   3 -
- arch/powerpc/platforms/85xx/common.c      |   1 -
- arch/powerpc/sysdev/cpm_common.c          | 206 +------------------------
- arch/powerpc/sysdev/qe_lib/Makefile       |   2 +-
- arch/powerpc/sysdev/qe_lib/qe.c           |  15 ++
- arch/powerpc/sysdev/qe_lib/qe_common.c    | 242 ++++++++++++++++++++++++++++++
- 12 files changed, 302 insertions(+), 285 deletions(-)
- create mode 100644 arch/powerpc/sysdev/qe_lib/qe_common.c
+ MAINTAINERS                                        |  5 ++--
+ arch/powerpc/platforms/83xx/km83xx.c               |  4 +--
+ arch/powerpc/platforms/83xx/misc.c                 |  2 +-
+ arch/powerpc/platforms/83xx/mpc832x_mds.c          |  4 +--
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c          |  4 +--
+ arch/powerpc/platforms/83xx/mpc836x_mds.c          |  4 +--
+ arch/powerpc/platforms/83xx/mpc836x_rdk.c          |  4 +--
+ arch/powerpc/platforms/85xx/common.c               |  2 +-
+ arch/powerpc/platforms/85xx/corenet_generic.c      |  2 +-
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c          |  4 +--
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  4 +--
+ arch/powerpc/platforms/85xx/twr_p102x.c            |  4 +--
+ arch/powerpc/platforms/Kconfig                     | 20 -------------
+ arch/powerpc/sysdev/cpm_common.c                   |  2 +-
+ arch/powerpc/sysdev/qe_lib/Kconfig                 | 22 ++++-----------
+ arch/powerpc/sysdev/qe_lib/Makefile                |  6 +---
+ arch/powerpc/sysdev/qe_lib/gpio.c                  |  2 +-
+ arch/powerpc/sysdev/qe_lib/qe_io.c                 |  2 +-
+ arch/powerpc/sysdev/qe_lib/usb.c                   |  4 +--
+ drivers/irqchip/Makefile                           |  1 +
+ .../sysdev/qe_lib => drivers/irqchip}/qe_ic.c      |  2 +-
+ .../sysdev/qe_lib => drivers/irqchip}/qe_ic.h      |  4 +--
+ drivers/net/ethernet/freescale/fsl_pq_mdio.c       |  2 +-
+ drivers/net/ethernet/freescale/ucc_geth.c          |  8 +++---
+ drivers/net/ethernet/freescale/ucc_geth.h          |  8 +++---
+ drivers/soc/Kconfig                                |  1 +
+ drivers/soc/Makefile                               |  1 +
+ drivers/soc/fsl/Makefile                           |  5 ++++
+ drivers/soc/fsl/qe/Kconfig                         | 33 ++++++++++++++++++++++
+ drivers/soc/fsl/qe/Makefile                        |  9 ++++++
+ .../sysdev/qe_lib => drivers/soc/fsl/qe}/qe.c      |  4 +--
+ .../qe_lib => drivers/soc/fsl/qe}/qe_common.c      |  2 +-
+ .../sysdev/qe_lib => drivers/soc/fsl/qe}/ucc.c     |  6 ++--
+ .../qe_lib => drivers/soc/fsl/qe}/ucc_fast.c       |  8 +++---
+ .../qe_lib => drivers/soc/fsl/qe}/ucc_slow.c       |  8 +++---
+ drivers/spi/spi-fsl-cpm.c                          |  2 +-
+ drivers/tty/serial/ucc_uart.c                      |  2 +-
+ drivers/usb/gadget/udc/fsl_qe_udc.c                |  2 +-
+ drivers/usb/host/fhci-hcd.c                        |  2 +-
+ drivers/usb/host/fhci-hub.c                        |  2 +-
+ drivers/usb/host/fhci-sched.c                      |  2 +-
+ drivers/usb/host/fhci.h                            |  4 +--
+ .../include/asm => include/linux/fsl/qe}/qe_ic.h   |  0
+ .../include/asm => include/soc/fsl/qe}/immap_qe.h  |  0
+ .../include/asm => include/soc/fsl/qe}/qe.h        |  2 +-
+ .../include/asm => include/soc/fsl/qe}/ucc.h       |  4 +--
+ .../include/asm => include/soc/fsl/qe}/ucc_fast.h  |  6 ++--
+ .../include/asm => include/soc/fsl/qe}/ucc_slow.h  |  6 ++--
+ 48 files changed, 127 insertions(+), 110 deletions(-)
+ rename {arch/powerpc/sysdev/qe_lib => drivers/irqchip}/qe_ic.c (99%)
+ rename {arch/powerpc/sysdev/qe_lib => drivers/irqchip}/qe_ic.h (97%)
+ create mode 100644 drivers/soc/fsl/Makefile
+ create mode 100644 drivers/soc/fsl/qe/Kconfig
+ create mode 100644 drivers/soc/fsl/qe/Makefile
+ rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/qe.c (99%)
+ rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/qe_common.c (99%)
+ rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/ucc.c (98%)
+ rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/ucc_fast.c (98%)
+ rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/ucc_slow.c (98%)
+ rename {arch/powerpc/include/asm => include/linux/fsl/qe}/qe_ic.h (100%)
+ rename {arch/powerpc/include/asm => include/soc/fsl/qe}/immap_qe.h (100%)
+ rename {arch/powerpc/include/asm => include/soc/fsl/qe}/qe.h (99%)
+ rename {arch/powerpc/include/asm => include/soc/fsl/qe}/ucc.h (96%)
+ rename {arch/powerpc/include/asm => include/soc/fsl/qe}/ucc_fast.h (98%)
+ rename {arch/powerpc/include/asm => include/soc/fsl/qe}/ucc_slow.h (99%)
 
-diff --git a/arch/powerpc/include/asm/cpm.h b/arch/powerpc/include/asm/cpm.h
-index 4398a6c..003a736 100644
---- a/arch/powerpc/include/asm/cpm.h
-+++ b/arch/powerpc/include/asm/cpm.h
-@@ -93,22 +93,6 @@ typedef struct cpm_buf_desc {
-  */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 562ae4e..c688e61 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4155,8 +4155,9 @@ F:	include/linux/fs_enet_pd.h
+ FREESCALE QUICC ENGINE LIBRARY
+ L:	linuxppc-dev@lists.ozlabs.org
+ S:	Orphan
+-F:	arch/powerpc/sysdev/qe_lib/
+-F:	arch/powerpc/include/asm/*qe.h
++F:	drivers/soc/fsl/qe/
++F:	include/soc/fsl/*qe*.h
++F:	include/soc/fsl/*ucc*.h
  
- #define BD_SC_EMPTY	(0x8000)	/* Receive is empty */
--#define BD_SC_READY	(0x8000)	/* Transmit is ready */
--#define BD_SC_WRAP	(0x2000)	/* Last buffer descriptor */
--#define BD_SC_INTRPT	(0x1000)	/* Interrupt on change */
--#define BD_SC_LAST	(0x0800)	/* Last buffer in frame */
--#define BD_SC_TC	(0x0400)	/* Transmit CRC */
--#define BD_SC_CM	(0x0200)	/* Continuous mode */
--#define BD_SC_ID	(0x0100)	/* Rec'd too many idles */
--#define BD_SC_P		(0x0100)	/* xmt preamble */
--#define BD_SC_BR	(0x0020)	/* Break received */
--#define BD_SC_FR	(0x0010)	/* Framing error */
--#define BD_SC_PR	(0x0008)	/* Parity error */
--#define BD_SC_NAK	(0x0004)	/* NAK - did not respond */
--#define BD_SC_OV	(0x0002)	/* Overrun */
--#define BD_SC_UN	(0x0002)	/* Underrun */
--#define BD_SC_CD	(0x0001)	/* */
--#define BD_SC_CL	(0x0001)	/* Collision */
- 
- /* Buffer descriptor control/status used by Ethernet receive.
-  * Common to SCC and FCC.
-@@ -155,49 +139,6 @@ typedef struct cpm_buf_desc {
-  */
- #define BD_I2C_START		(0x0400)
- 
--int cpm_muram_init(void);
--
--#if defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE)
--unsigned long cpm_muram_alloc(unsigned long size, unsigned long align);
--int cpm_muram_free(unsigned long offset);
--unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size);
--void __iomem *cpm_muram_addr(unsigned long offset);
--unsigned long cpm_muram_offset(void __iomem *addr);
--dma_addr_t cpm_muram_dma(void __iomem *addr);
--#else
--static inline unsigned long cpm_muram_alloc(unsigned long size,
--					    unsigned long align)
--{
--	return -ENOSYS;
--}
--
--static inline int cpm_muram_free(unsigned long offset)
--{
--	return -ENOSYS;
--}
--
--static inline unsigned long cpm_muram_alloc_fixed(unsigned long offset,
--						  unsigned long size)
--{
--	return -ENOSYS;
--}
--
--static inline void __iomem *cpm_muram_addr(unsigned long offset)
--{
--	return NULL;
--}
--
--static inline unsigned long cpm_muram_offset(void __iomem *addr)
--{
--	return -ENOSYS;
--}
--
--static inline dma_addr_t cpm_muram_dma(void __iomem *addr)
--{
--	return 0;
--}
--#endif /* defined(CONFIG_CPM) || defined(CONFIG_QUICC_ENGINE) */
--
- #ifdef CONFIG_CPM
- int cpm_command(u32 command, u8 opcode);
- #else
-diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index 32b9bfa..aee968f 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/arch/powerpc/include/asm/qe.h
-@@ -16,10 +16,13 @@
- #define _ASM_POWERPC_QE_H
- #ifdef __KERNEL__
- 
-+#include <linux/compiler.h>
- #include <linux/spinlock.h>
- #include <linux/errno.h>
- #include <linux/err.h>
--#include <asm/cpm.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/types.h>
- #include <asm/immap_qe.h>
- 
- #define QE_NUM_OF_SNUM	256	/* There are 256 serial number in QE */
-@@ -186,13 +189,24 @@ static inline int qe_alive_during_sleep(void)
- #endif
- }
- 
--/* we actually use cpm_muram implementation, define this for convenience */
--#define qe_muram_init cpm_muram_init
--#define qe_muram_alloc cpm_muram_alloc
--#define qe_muram_alloc_fixed cpm_muram_alloc_fixed
--#define qe_muram_free cpm_muram_free
--#define qe_muram_addr cpm_muram_addr
--#define qe_muram_offset cpm_muram_offset
-+/* we actually use qe_muram implementation, define this for convenience */
-+#define cpm_muram_init qe_muram_init
-+#define cpm_muram_alloc qe_muram_alloc
-+#define cpm_muram_alloc_fixed qe_muram_alloc_fixed
-+#define cpm_muram_free qe_muram_free
-+#define cpm_muram_addr qe_muram_addr
-+#define cpm_muram_offset qe_muram_offset
-+
-+int qe_muram_init(void);
-+
-+#if defined(CONFIG_QUICC_ENGINE)
-+unsigned long qe_muram_alloc(unsigned long size, unsigned long align);
-+unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long size);
-+int qe_muram_free(unsigned long offset);
-+void __iomem *qe_muram_addr(unsigned long offset);
-+unsigned long qe_muram_offset(void __iomem *addr);
-+dma_addr_t qe_muram_dma(void __iomem *addr);
-+#endif /* defined(CONFIG_QUICC_ENGINE) */
- 
- /* Structure that defines QE firmware binary files.
-  *
-@@ -266,6 +280,27 @@ struct qe_bd {
- #define BD_STATUS_MASK	0xffff0000
- #define BD_LENGTH_MASK	0x0000ffff
- 
-+/* Buffer descriptor control/status used by serial
-+ */
-+
-+#define BD_SC_EMPTY	(0x8000)	/* Receive is empty */
-+#define BD_SC_READY	(0x8000)	/* Transmit is ready */
-+#define BD_SC_WRAP	(0x2000)	/* Last buffer descriptor */
-+#define BD_SC_INTRPT	(0x1000)	/* Interrupt on change */
-+#define BD_SC_LAST	(0x0800)	/* Last buffer in frame */
-+#define BD_SC_TC	(0x0400)	/* Transmit CRC */
-+#define BD_SC_CM	(0x0200)	/* Continuous mode */
-+#define BD_SC_ID	(0x0100)	/* Rec'd too many idles */
-+#define BD_SC_P		(0x0100)	/* xmt preamble */
-+#define BD_SC_BR	(0x0020)	/* Break received */
-+#define BD_SC_FR	(0x0010)	/* Framing error */
-+#define BD_SC_PR	(0x0008)	/* Parity error */
-+#define BD_SC_NAK	(0x0004)	/* NAK - did not respond */
-+#define BD_SC_OV	(0x0002)	/* Overrun */
-+#define BD_SC_UN	(0x0002)	/* Underrun */
-+#define BD_SC_CD	(0x0001)	/* */
-+#define BD_SC_CL	(0x0001)	/* Collision */
-+
- /* Alignment */
- #define QE_INTR_TABLE_ALIGN	16	/* ??? */
- #define QE_ALIGNMENT_OF_BD	8
+ FREESCALE USB PERIPHERAL DRIVERS
+ M:	Li Yang <leoli@freescale.com>
 diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
-index bf4c447..ae111581 100644
+index ae111581..7ecd758 100644
 --- a/arch/powerpc/platforms/83xx/km83xx.c
 +++ b/arch/powerpc/platforms/83xx/km83xx.c
-@@ -136,8 +136,6 @@ static void __init mpc83xx_km_setup_arch(void)
- 	mpc83xx_setup_pci();
+@@ -37,8 +37,8 @@
+ #include <asm/udbg.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
  
- #ifdef CONFIG_QUICC_ENGINE
--	qe_reset();
--
- 	np = of_find_node_by_name(NULL, "par_io");
- 	if (np != NULL) {
- 		par_io_init(np);
+ #include "mpc83xx.h"
+ 
+diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
+index ef9d01a..eacf34b 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -17,7 +17,7 @@
+ #include <asm/io.h>
+ #include <asm/hw_irq.h>
+ #include <asm/ipic.h>
+-#include <asm/qe_ic.h>
++#include <linux/fsl/qe/qe_ic.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ 
 diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 8d76220..aacc43f 100644
+index aacc43f..20dce79 100644
 --- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
 +++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -74,8 +74,6 @@ static void __init mpc832x_sys_setup_arch(void)
- 	mpc83xx_setup_pci();
+@@ -36,8 +36,8 @@
+ #include <asm/udbg.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
  
- #ifdef CONFIG_QUICC_ENGINE
--	qe_reset();
--
- 	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
- 		par_io_init(np);
- 		of_node_put(np);
+ #include "mpc83xx.h"
+ 
 diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index eff5baa..0c7a43e 100644
+index 0c7a43e..2e6a6a4 100644
 --- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
 +++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -203,8 +203,6 @@ static void __init mpc832x_rdb_setup_arch(void)
- 	mpc83xx_setup_pci();
+@@ -25,8 +25,8 @@
+ #include <asm/time.h>
+ #include <asm/ipic.h>
+ #include <asm/udbg.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
  
- #ifdef CONFIG_QUICC_ENGINE
--	qe_reset();
--
- 	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
- 		par_io_init(np);
- 		of_node_put(np);
 diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 1a26d2f..eb24abd 100644
+index eb24abd..b1b8ab8 100644
 --- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
 +++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -82,8 +82,6 @@ static void __init mpc836x_mds_setup_arch(void)
- 	mpc83xx_setup_pci();
+@@ -44,8 +44,8 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/simple_gpio.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
  
- #ifdef CONFIG_QUICC_ENGINE
--	qe_reset();
--
- 	if ((np = of_find_node_by_name(NULL, "par_io")) != NULL) {
- 		par_io_init(np);
- 		of_node_put(np);
+ #include "mpc83xx.h"
+ 
 diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-index b63b42d..823e370 100644
+index 823e370..9a5a00d 100644
 --- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
 +++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-@@ -35,9 +35,6 @@ static void __init mpc836x_rdk_setup_arch(void)
- 		ppc_md.progress("mpc836x_rdk_setup_arch()", 0);
+@@ -20,8 +20,8 @@
+ #include <asm/time.h>
+ #include <asm/ipic.h>
+ #include <asm/udbg.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
  
- 	mpc83xx_setup_pci();
--#ifdef CONFIG_QUICC_ENGINE
--	qe_reset();
--#endif
- }
- 
- /*
 diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
-index 7bfb9b1..0f91edc 100644
+index 0f91edc..d81ea0c 100644
 --- a/arch/powerpc/platforms/85xx/common.c
 +++ b/arch/powerpc/platforms/85xx/common.c
-@@ -105,7 +105,6 @@ void __init mpc85xx_qe_init(void)
- 		return;
- 	}
+@@ -9,7 +9,7 @@
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
  
--	qe_reset();
- 	of_node_put(np);
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include <sysdev/cpm2_pic.h>
  
- }
+ #include "mpc85xx.h"
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index bd839dc..1ecbf7f 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -27,7 +27,7 @@
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
+ #include <asm/ehv_pic.h>
+-#include <asm/qe_ic.h>
++#include <linux/fsl/qe/qe_ic.h>
+ 
+ #include <linux/of_platform.h>
+ #include <sysdev/fsl_soc.h>
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index a392e94..ea4d4f3 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -47,8 +47,8 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ #include <sysdev/simple_gpio.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
+ #include <asm/fsl_guts.h>
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index e358bed..0c5e313 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -25,8 +25,8 @@
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
+ #include <asm/fsl_guts.h>
+ 
+ #include <sysdev/fsl_soc.h>
+diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
+index 30e002f..a47654e 100644
+--- a/arch/powerpc/platforms/85xx/twr_p102x.c
++++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+@@ -21,8 +21,8 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
+-#include <asm/qe.h>
+-#include <asm/qe_ic.h>
++#include <soc/fsl/qe/qe.h>
++#include <linux/fsl/qe/qe_ic.h>
+ #include <asm/fsl_guts.h>
+ 
+ #include <sysdev/fsl_soc.h>
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 01f98a2..c9541a5 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -272,26 +272,6 @@ config TAU_AVERAGE
+ 
+ 	  If in doubt, say N here.
+ 
+-config QUICC_ENGINE
+-	bool "Freescale QUICC Engine (QE) Support"
+-	depends on FSL_SOC && PPC32
+-	select PPC_LIB_RHEAP
+-	select GENERIC_ALLOCATOR
+-	select CRC32
+-	help
+-	  The QUICC Engine (QE) is a new generation of communications
+-	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+-	  Selecting this option means that you wish to build a kernel
+-	  for a machine with a QE coprocessor.
+-
+-config QE_GPIO
+-	bool "QE GPIO support"
+-	depends on QUICC_ENGINE
+-	select ARCH_REQUIRE_GPIOLIB
+-	help
+-	  Say Y here if you're going to use hardware that connects to the
+-	  QE GPIOs.
+-
+ config CPM2
+ 	bool "Enable support for the CPM2 (Communications Processor Module)"
+ 	depends on (FSL_SOC_BOOKE && PPC32) || 8260
 diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 453d18c..22a50ac 100644
+index 22a50ac..1809ffd 100644
 --- a/arch/powerpc/sysdev/cpm_common.c
 +++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -17,7 +17,6 @@
-  * published by the Free Software Foundation.
-  */
- 
--#include <linux/genalloc.h>
- #include <linux/init.h>
- #include <linux/of_device.h>
- #include <linux/spinlock.h>
-@@ -29,6 +28,7 @@
+@@ -28,7 +28,7 @@
  #include <asm/udbg.h>
  #include <asm/io.h>
  #include <asm/cpm.h>
-+#include <asm/qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
  
  #include <mm/mmu_decl.h>
  
-@@ -65,213 +65,9 @@ void __init udbg_init_cpm(void)
- }
- #endif
+diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/arch/powerpc/sysdev/qe_lib/Kconfig
+index 3c25199..2f80075 100644
+--- a/arch/powerpc/sysdev/qe_lib/Kconfig
++++ b/arch/powerpc/sysdev/qe_lib/Kconfig
+@@ -1,24 +1,14 @@
+ #
+ # QE Communication options
+ #
+-
+-config UCC_SLOW
+-	bool
+-	default y if SERIAL_QE
+-	help
+-	  This option provides qe_lib support to UCC slow
+-	  protocols: UART, BISYNC, QMC
+-
+-config UCC_FAST
+-	bool
+-	default y if UCC_GETH
++config QE_GPIO
++	bool "QE GPIO support"
++	depends on QUICC_ENGINE
++	select ARCH_REQUIRE_GPIOLIB
+ 	help
+-	  This option provides qe_lib support to UCC fast
+-	  protocols: HDLC, Ethernet, ATM, transparent
++	  Say Y here if you're going to use hardware that connects to the
++	  QE GPIOs.
  
--static struct gen_pool *muram_pool;
--static struct genpool_data_align muram_pool_data;
--static struct genpool_data_fixed muram_pool_data_fixed;
--static spinlock_t cpm_muram_lock;
- static u8 __iomem *muram_vbase;
- static phys_addr_t muram_pbase;
+-config UCC
+-	bool
+-	default y if UCC_FAST || UCC_SLOW
  
--struct muram_block {
--	struct list_head head;
--	unsigned long start;
--	int size;
--};
--
--static LIST_HEAD(muram_block_list);
--
--/* max address size we deal with */
--#define OF_MAX_ADDR_CELLS	4
--#define GENPOOL_OFFSET		4096
--
--int cpm_muram_init(void)
--{
--	struct device_node *np;
--	struct resource r;
--	u32 zero[OF_MAX_ADDR_CELLS] = {};
--	resource_size_t max = 0;
--	int i = 0;
--	int ret = 0;
--
--	if (muram_pbase)
--		return 0;
--
--	np = of_find_compatible_node(NULL, NULL, "fsl,cpm-muram-data");
--	if (!np) {
--		/* try legacy bindings */
--		np = of_find_node_by_name(NULL, "data-only");
--		if (!np) {
--			pr_err("Cannot find CPM muram data node");
--			ret = -ENODEV;
--			goto out;
--		}
--	}
--
--	muram_pool = gen_pool_create(1, -1);
--	muram_pbase = of_translate_address(np, zero);
--	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
--		pr_err("Cannot translate zero through CPM muram node");
--		ret = -ENODEV;
--		goto err;
--	}
--
--	while (of_address_to_resource(np, i++, &r) == 0) {
--		if (r.end > max)
--			max = r.end;
--		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
--				   GENPOOL_OFFSET, resource_size(&r), -1);
--		if (ret) {
--				pr_err("QE: couldn't add muram to pool!\n");
--				goto err;
--			}
--
--	}
--
--	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
--	if (!muram_vbase) {
--		pr_err("Cannot map QE muram");
--		ret = -ENOMEM;
--		goto err;
--	}
--	goto out;
--err:
--	gen_pool_destroy(muram_pool);
--out:
--	of_node_put(np);
--	return ret;
--}
--
--/*
-- * cpm_muram_alloc - allocate the requested size worth of multi-user ram
-- * @size: number of bytes to allocate
-- * @align: requested alignment, in bytes
-- *
-- * This function returns an offset into the muram area.
-- */
--unsigned long cpm_muram_alloc(unsigned long size, unsigned long align)
--{
--	unsigned long start;
--	unsigned long flags;
--	struct muram_block *entry;
--
--	spin_lock_irqsave(&cpm_muram_lock, flags);
--	muram_pool_data.align = align;
--	gen_pool_set_algo(muram_pool, gen_pool_first_fit_align,
--			  &muram_pool_data);
--	start = gen_pool_alloc(muram_pool, size);
--	if (!start)
--		goto out2;
--	start = start - GENPOOL_OFFSET;
--	memset(cpm_muram_addr(start), 0, size);
--	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
--	if (!entry)
--		goto out1;
--	entry->start = start;
--	entry->size = size;
--	list_add(&entry->head, &muram_block_list);
--	spin_unlock_irqrestore(&cpm_muram_lock, flags);
--
--	return start;
--out1:
--	gen_pool_free(muram_pool, start, size);
--out2:
--	spin_unlock_irqrestore(&cpm_muram_lock, flags);
--	return (unsigned long) -ENOMEM;
--}
--EXPORT_SYMBOL(cpm_muram_alloc);
--
--/*
-- * cpm_muram_alloc_fixed - reserve a specific region of multi-user ram
-- * @size: number of bytes to allocate
-- * @offset: offset of allocation start address
-- *
-- * This function returns an offset into the muram area.
-- */
--unsigned long cpm_muram_alloc_fixed(unsigned long offset, unsigned long size)
--{
--
--	unsigned long start;
--	unsigned long flags;
--	unsigned long size_alloc = size;
--	struct muram_block *entry;
--	int end_bit;
--	int order = muram_pool->min_alloc_order;
--
--	spin_lock_irqsave(&cpm_muram_lock, flags);
--	end_bit = (offset >> order) + ((size + (1UL << order) - 1) >> order);
--	if ((offset + size) > (end_bit << order))
--		size_alloc = size + (1UL << order);
--
--	muram_pool_data_fixed.offset = offset + GENPOOL_OFFSET;
--	gen_pool_set_algo(muram_pool, gen_pool_fixed_alloc,
--			  &muram_pool_data_fixed);
--	start = gen_pool_alloc(muram_pool, size_alloc);
--	if (!start)
--		goto out2;
--	start = start - GENPOOL_OFFSET;
--	memset(cpm_muram_addr(start), 0, size_alloc);
--	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
--	if (!entry)
--		goto out1;
--	entry->start = start;
--	entry->size = size_alloc;
--	list_add(&entry->head, &muram_block_list);
--	spin_unlock_irqrestore(&cpm_muram_lock, flags);
--
--	return start;
--out1:
--	gen_pool_free(muram_pool, start, size_alloc);
--out2:
--	spin_unlock_irqrestore(&cpm_muram_lock, flags);
--	return (unsigned long) -ENOMEM;
--
--
--}
--EXPORT_SYMBOL(cpm_muram_alloc_fixed);
--
--/**
-- * cpm_muram_free - free a chunk of multi-user ram
-- * @offset: The beginning of the chunk as returned by cpm_muram_alloc().
-- */
--int cpm_muram_free(unsigned long offset)
--{
--	unsigned long flags;
--	int size;
--	struct muram_block *tmp;
--
--	size = 0;
--	spin_lock_irqsave(&cpm_muram_lock, flags);
--	list_for_each_entry(tmp, &muram_block_list, head) {
--		if (tmp->start == offset) {
--			size = tmp->size;
--			list_del(&tmp->head);
--			kfree(tmp);
--			break;
--		}
--	}
--	gen_pool_free(muram_pool, offset + GENPOOL_OFFSET, size);
--	spin_unlock_irqrestore(&cpm_muram_lock, flags);
--
--	return size;
--}
--EXPORT_SYMBOL(cpm_muram_free);
--
--/**
-- * cpm_muram_addr - turn a muram offset into a virtual address
-- * @offset: muram offset to convert
-- */
--void __iomem *cpm_muram_addr(unsigned long offset)
--{
--	return muram_vbase + offset;
--}
--EXPORT_SYMBOL(cpm_muram_addr);
--
--unsigned long cpm_muram_offset(void __iomem *addr)
--{
--	return addr - (void __iomem *)muram_vbase;
--}
--EXPORT_SYMBOL(cpm_muram_offset);
--
- /**
-  * cpm_muram_dma - turn a muram virtual address into a DMA address
-  * @offset: virtual address from cpm_muram_addr() to convert
+ config QE_USB
+ 	bool
 diff --git a/arch/powerpc/sysdev/qe_lib/Makefile b/arch/powerpc/sysdev/qe_lib/Makefile
-index f1855c1..9507a27 100644
+index 9507a27..1b123df 100644
 --- a/arch/powerpc/sysdev/qe_lib/Makefile
 +++ b/arch/powerpc/sysdev/qe_lib/Makefile
-@@ -1,7 +1,7 @@
+@@ -1,10 +1,6 @@
  #
  # Makefile for the linux ppc-specific parts of QE
  #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_ic.o qe_io.o
-+obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
+-obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o qe_ic.o qe_io.o
+-
+-obj-$(CONFIG_UCC)	+= ucc.o
+-obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+-obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
++obj-$(CONFIG_QUICC_ENGINE)+= qe_io.o
+ obj-$(CONFIG_QE_USB)	+= usb.o
+ obj-$(CONFIG_QE_GPIO)	+= gpio.o
+diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
+index 521e67a..aa5c11ac 100644
+--- a/arch/powerpc/sysdev/qe_lib/gpio.c
++++ b/arch/powerpc/sysdev/qe_lib/gpio.c
+@@ -21,7 +21,7 @@
+ #include <linux/gpio.h>
+ #include <linux/slab.h>
+ #include <linux/export.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
  
- obj-$(CONFIG_UCC)	+= ucc.o
- obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index c2518cd..3f9f596 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -671,6 +671,21 @@ unsigned int qe_get_num_of_snums(void)
- }
- EXPORT_SYMBOL(qe_get_num_of_snums);
+ struct qe_gpio_chip {
+ 	struct of_mm_gpio_chip mm_gc;
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
+index 7ea0174..7ae59ab 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_io.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
+@@ -21,7 +21,7 @@
+ #include <linux/ioport.h>
  
-+static int __init qe_init(void)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+	if (!np) {
-+		pr_err("%s: Could not find Quicc Engine node\n", __func__);
-+		return -ENODEV;
-+	}
-+	qe_reset();
-+	of_node_put(np);
-+	return 0;
-+}
-+subsys_initcall(qe_init);
-+
- #if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC_85xx)
- static int qe_resume(struct platform_device *ofdev)
+ #include <asm/io.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include <asm/prom.h>
+ #include <sysdev/fsl_soc.h>
+ 
+diff --git a/arch/powerpc/sysdev/qe_lib/usb.c b/arch/powerpc/sysdev/qe_lib/usb.c
+index 27f23bd..111f7ab 100644
+--- a/arch/powerpc/sysdev/qe_lib/usb.c
++++ b/arch/powerpc/sysdev/qe_lib/usb.c
+@@ -17,8 +17,8 @@
+ #include <linux/errno.h>
+ #include <linux/export.h>
+ #include <linux/io.h>
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+ int qe_usb_clock_set(enum qe_clock clk, int rate)
  {
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_common.c b/arch/powerpc/sysdev/qe_lib/qe_common.c
+diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+index dda4927..9ff5932 100644
+--- a/drivers/irqchip/Makefile
++++ b/drivers/irqchip/Makefile
+@@ -47,3 +47,4 @@ obj-$(CONFIG_KEYSTONE_IRQ)		+= irq-keystone.o
+ obj-$(CONFIG_MIPS_GIC)			+= irq-mips-gic.o
+ obj-$(CONFIG_ARCH_MEDIATEK)		+= irq-mtk-sysirq.o
+ obj-$(CONFIG_ARCH_DIGICOLOR)		+= irq-digicolor.o
++obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/drivers/irqchip/qe_ic.c
+similarity index 99%
+rename from arch/powerpc/sysdev/qe_lib/qe_ic.c
+rename to drivers/irqchip/qe_ic.c
+index 6512cd8..e31d95b 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
++++ b/drivers/irqchip/qe_ic.c
+@@ -27,7 +27,7 @@
+ #include <asm/irq.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+-#include <asm/qe_ic.h>
++#include <linux/fsl/qe/qe_ic.h>
+ 
+ #include "qe_ic.h"
+ 
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.h b/drivers/irqchip/qe_ic.h
+similarity index 97%
+rename from arch/powerpc/sysdev/qe_lib/qe_ic.h
+rename to drivers/irqchip/qe_ic.h
+index efef7ab..9f15cc4 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_ic.h
++++ b/drivers/irqchip/qe_ic.h
+@@ -1,5 +1,5 @@
+ /*
+- * arch/powerpc/sysdev/qe_lib/qe_ic.h
++ * drivers/irqchip/qe_ic.h
+  *
+  * QUICC ENGINE Interrupt Controller Header
+  *
+@@ -16,7 +16,7 @@
+ #ifndef _POWERPC_SYSDEV_QE_IC_H
+ #define _POWERPC_SYSDEV_QE_IC_H
+ 
+-#include <asm/qe_ic.h>
++#include <linux/fsl/qe/qe_ic.h>
+ 
+ #define NR_QE_IC_INTS		64
+ 
+diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+index 3c40f6b..21bdf55 100644
+--- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
++++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+@@ -29,7 +29,7 @@
+ 
+ #include <asm/io.h>
+ #if IS_ENABLED(CONFIG_UCC_GETH)
+-#include <asm/ucc.h>	/* for ucc_set_qe_mux_mii_mng() */
++#include <soc/fsl/qe/ucc.h>
+ #endif
+ 
+ #include "gianfar.h"
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 4dd40e0..7d24664 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -40,10 +40,10 @@
+ #include <asm/uaccess.h>
+ #include <asm/irq.h>
+ #include <asm/io.h>
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
+-#include <asm/ucc.h>
+-#include <asm/ucc_fast.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
++#include <soc/fsl/qe/ucc.h>
++#include <soc/fsl/qe/ucc_fast.h>
+ #include <asm/machdep.h>
+ 
+ #include "ucc_geth.h"
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.h b/drivers/net/ethernet/freescale/ucc_geth.h
+index 75f3371..5da19b4 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.h
++++ b/drivers/net/ethernet/freescale/ucc_geth.h
+@@ -22,11 +22,11 @@
+ #include <linux/list.h>
+ #include <linux/if_ether.h>
+ 
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+-#include <asm/ucc.h>
+-#include <asm/ucc_fast.h>
++#include <soc/fsl/qe/ucc.h>
++#include <soc/fsl/qe/ucc_fast.h>
+ 
+ #define DRV_DESC "QE UCC Gigabit Ethernet Controller"
+ #define DRV_NAME "ucc_geth"
+diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
+index d8bde82..676737a 100644
+--- a/drivers/soc/Kconfig
++++ b/drivers/soc/Kconfig
+@@ -1,5 +1,6 @@
+ menu "SOC (System On Chip) specific Drivers"
+ 
++source "drivers/soc/fsl/qe/Kconfig"
+ source "drivers/soc/mediatek/Kconfig"
+ source "drivers/soc/qcom/Kconfig"
+ source "drivers/soc/ti/Kconfig"
+diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
+index 70042b2..0259e23 100644
+--- a/drivers/soc/Makefile
++++ b/drivers/soc/Makefile
+@@ -2,6 +2,7 @@
+ # Makefile for the Linux Kernel SOC specific device drivers.
+ #
+ 
++obj-y				+= fsl/
+ obj-$(CONFIG_ARCH_MEDIATEK)	+= mediatek/
+ obj-$(CONFIG_ARCH_QCOM)		+= qcom/
+ obj-$(CONFIG_ARCH_TEGRA)	+= tegra/
+diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
 new file mode 100644
-index 0000000..a0b229f
+index 0000000..7c7d045
 --- /dev/null
-+++ b/arch/powerpc/sysdev/qe_lib/qe_common.c
-@@ -0,0 +1,242 @@
-+/*
-+ * Freescale QE common code
-+ *
-+ * Author: Zhao Qiang  <qiang.zhao@freescale.com>
-+ *
-+ * Copyright 2015 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
++++ b/drivers/soc/fsl/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for the Linux Kernel SOC fsl specific device drivers
++#
 +
-+#include <linux/genalloc.h>
-+#include <linux/list.h>
-+#include <linux/init.h>
-+#include <linux/of_device.h>
-+#include <linux/spinlock.h>
-+#include <linux/export.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/slab.h>
++obj-$(CONFIG_QUICC_ENGINE)		+= qe/
+diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
+new file mode 100644
+index 0000000..3012571
+--- /dev/null
++++ b/drivers/soc/fsl/qe/Kconfig
+@@ -0,0 +1,33 @@
++#
++# QE Communication options
++#
 +
-+#include <linux/io.h>
-+#include <asm/qe.h>
++config QUICC_ENGINE
++	bool "Freescale QUICC Engine (QE) Support"
++	depends on FSL_SOC && PPC32
++	select PPC_LIB_RHEAP
++	select GENERIC_ALLOCATOR
++	select CRC32
++	help
++	  The QUICC Engine (QE) is a new generation of communications
++	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
++	  Selecting this option means that you wish to build a kernel
++	  for a machine with a QE coprocessor.
 +
-+static struct gen_pool *muram_pool;
-+static struct genpool_data_align muram_pool_data;
-+static struct genpool_data_fixed muram_pool_data_fixed;
-+static spinlock_t qe_muram_lock;
-+static u8 __iomem *muram_vbase;
-+static phys_addr_t muram_pbase;
++config UCC_SLOW
++	bool
++	default y if SERIAL_QE
++	help
++	  This option provides qe_lib support to UCC slow
++	  protocols: UART, BISYNC, QMC
 +
-+struct muram_block {
-+	struct list_head head;
-+	unsigned long start;
-+	int size;
-+};
++config UCC_FAST
++	bool
++	default y if UCC_GETH
++	help
++	  This option provides qe_lib support to UCC fast
++	  protocols: HDLC, Ethernet, ATM, transparent
 +
-+static LIST_HEAD(muram_block_list);
-+
-+/* max address size we deal with */
-+#define OF_MAX_ADDR_CELLS	4
-+#define GENPOOL_OFFSET		4096
-+
-+int qe_muram_init(void)
-+{
-+	struct device_node *np;
-+	struct resource r;
-+	u32 zero[OF_MAX_ADDR_CELLS] = {};
-+	resource_size_t max = 0;
-+	int i = 0;
-+	int ret = 0;
-+
-+	if (muram_pbase)
-+		return 0;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
-+	if (!np) {
-+		/* try legacy bindings */
-+		np = of_find_node_by_name(NULL, "data-only");
-+		if (!np) {
-+			pr_err("Cannot find CPM muram data node");
-+			ret = -ENODEV;
-+			goto out;
-+		}
-+	}
-+
-+	muram_pool = gen_pool_create(1, -1);
-+	muram_pbase = of_translate_address(np, zero);
-+	if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
-+		pr_err("Cannot translate zero through CPM muram node");
-+		ret = -ENODEV;
-+		goto err;
-+	}
-+
-+	while (of_address_to_resource(np, i++, &r) == 0) {
-+		if (r.end > max)
-+			max = r.end;
-+		ret = gen_pool_add(muram_pool, r.start - muram_pbase +
-+				   GENPOOL_OFFSET, resource_size(&r), -1);
-+		if (ret) {
-+				pr_err("QE: couldn't add muram to pool!\n");
-+				goto err;
-+			}
-+
-+	}
-+
-+	muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
-+	if (!muram_vbase) {
-+		pr_err("Cannot map QE muram");
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+	goto out;
-+err:
-+	gen_pool_destroy(muram_pool);
-+out:
-+	of_node_put(np);
-+	return ret;
-+}
-+
-+/*
-+ * qe_muram_alloc - allocate the requested size worth of multi-user ram
-+ * @size: number of bytes to allocate
-+ * @align: requested alignment, in bytes
-+ *
-+ * This function returns an offset into the muram area.
-+ */
-+unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
-+{
-+	unsigned long start;
-+	unsigned long flags;
-+	struct muram_block *entry;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	muram_pool_data.align = align;
-+	gen_pool_set_algo(muram_pool, gen_pool_first_fit_align,
-+			  &muram_pool_data);
-+	start = gen_pool_alloc(muram_pool, size);
-+	if (!start)
-+		goto out2;
-+	start = start - GENPOOL_OFFSET;
-+	memset(qe_muram_addr(start), 0, size);
-+	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		goto out1;
-+	entry->start = start;
-+	entry->size = size;
-+	list_add(&entry->head, &muram_block_list);
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return start;
-+out1:
-+	gen_pool_free(muram_pool, start, size);
-+out2:
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+	return (unsigned long) -ENOMEM;
-+}
-+EXPORT_SYMBOL(qe_muram_alloc);
-+
-+/*
-+ * qe_muram_alloc_fixed - reserve a specific region of multi-user ram
-+ * @size: number of bytes to allocate
-+ * @offset: offset of allocation start address
-+ *
-+ * This function returns an offset into the muram area.
-+ */
-+unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned long size)
-+{
-+
-+	unsigned long start;
-+	unsigned long flags;
-+	unsigned long size_alloc = size;
-+	struct muram_block *entry;
-+	int end_bit;
-+	int order = muram_pool->min_alloc_order;
-+
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	end_bit = (offset >> order) + ((size + (1UL << order) - 1) >> order);
-+	if ((offset + size) > (end_bit << order))
-+		size_alloc = size + (1UL << order);
-+
-+	muram_pool_data_fixed.offset = offset + GENPOOL_OFFSET;
-+	gen_pool_set_algo(muram_pool, gen_pool_fixed_alloc,
-+			  &muram_pool_data_fixed);
-+	start = gen_pool_alloc(muram_pool, size_alloc);
-+	if (!start)
-+		goto out2;
-+	start = start - GENPOOL_OFFSET;
-+	memset(qe_muram_addr(start), 0, size_alloc);
-+	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
-+	if (!entry)
-+		goto out1;
-+	entry->start = start;
-+	entry->size = size_alloc;
-+	list_add(&entry->head, &muram_block_list);
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return start;
-+out1:
-+	gen_pool_free(muram_pool, start, size_alloc);
-+out2:
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+	return (unsigned long) -ENOMEM;
++config UCC
++	bool
++	default y if UCC_FAST || UCC_SLOW
+diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
+new file mode 100644
+index 0000000..51c9dce
+--- /dev/null
++++ b/drivers/soc/fsl/qe/Makefile
+@@ -0,0 +1,9 @@
++#
++#Makefile for the Linux fsl parts of QE
++#
 +
 +
-+}
-+EXPORT_SYMBOL(qe_muram_alloc_fixed);
-+
-+/**
-+ * qe_muram_free - free a chunk of multi-user ram
-+ * @offset: The beginning of the chunk as returned by qe_muram_alloc().
-+ */
-+int qe_muram_free(unsigned long offset)
-+{
-+	unsigned long flags;
-+	int size;
-+	struct muram_block *tmp;
-+
-+	size = 0;
-+	spin_lock_irqsave(&qe_muram_lock, flags);
-+	list_for_each_entry(tmp, &muram_block_list, head) {
-+		if (tmp->start == offset) {
-+			size = tmp->size;
-+			list_del(&tmp->head);
-+			kfree(tmp);
-+			break;
-+		}
-+	}
-+	gen_pool_free(muram_pool, offset + GENPOOL_OFFSET, size);
-+	spin_unlock_irqrestore(&qe_muram_lock, flags);
-+
-+	return size;
-+}
-+EXPORT_SYMBOL(qe_muram_free);
-+
-+/**
-+ * qe_muram_addr - turn a muram offset into a virtual address
-+ * @offset: muram offset to convert
-+ */
-+void __iomem *qe_muram_addr(unsigned long offset)
-+{
-+	return muram_vbase + offset;
-+}
-+EXPORT_SYMBOL(qe_muram_addr);
-+
-+unsigned long qe_muram_offset(void __iomem *addr)
-+{
-+	return addr - (void __iomem *)muram_vbase;
-+}
-+EXPORT_SYMBOL(qe_muram_offset);
-+
-+/**
-+ * qe_muram_dma - turn a muram virtual address into a DMA address
-+ * @offset: virtual address from qe_muram_addr() to convert
-+ */
-+dma_addr_t qe_muram_dma(void __iomem *addr)
-+{
-+	return muram_pbase + ((u8 __iomem *)addr - muram_vbase);
-+}
-+EXPORT_SYMBOL(qe_muram_dma);
++obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_common.o
++obj-$(CONFIG_UCC)	+= ucc.o
++obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
++obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/drivers/soc/fsl/qe/qe.c
+similarity index 99%
+rename from arch/powerpc/sysdev/qe_lib/qe.c
+rename to drivers/soc/fsl/qe/qe.c
+index 3f9f596..d8fd4cd 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -31,8 +31,8 @@
+ #include <asm/irq.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include <asm/prom.h>
+ #include <asm/rheap.h>
+ 
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
+similarity index 99%
+rename from arch/powerpc/sysdev/qe_lib/qe_common.c
+rename to drivers/soc/fsl/qe/qe_common.c
+index a0b229f..b1225cd 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_common.c
++++ b/drivers/soc/fsl/qe/qe_common.c
+@@ -22,7 +22,7 @@
+ #include <linux/slab.h>
+ 
+ #include <linux/io.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+ static struct gen_pool *muram_pool;
+ static struct genpool_data_align muram_pool_data;
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/drivers/soc/fsl/qe/ucc.c
+similarity index 98%
+rename from arch/powerpc/sysdev/qe_lib/ucc.c
+rename to drivers/soc/fsl/qe/ucc.c
+index 621575b..b59d335 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc.c
++++ b/drivers/soc/fsl/qe/ucc.c
+@@ -21,9 +21,9 @@
+ 
+ #include <asm/irq.h>
+ #include <asm/io.h>
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
+-#include <asm/ucc.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
++#include <soc/fsl/qe/ucc.h>
+ 
+ int ucc_set_qe_mux_mii_mng(unsigned int ucc_num)
+ {
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
+similarity index 98%
+rename from arch/powerpc/sysdev/qe_lib/ucc_fast.c
+rename to drivers/soc/fsl/qe/ucc_fast.c
+index 65aaf15..a768931 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
++++ b/drivers/soc/fsl/qe/ucc_fast.c
+@@ -21,11 +21,11 @@
+ #include <linux/export.h>
+ 
+ #include <asm/io.h>
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+-#include <asm/ucc.h>
+-#include <asm/ucc_fast.h>
++#include <soc/fsl/qe/ucc.h>
++#include <soc/fsl/qe/ucc_fast.h>
+ 
+ void ucc_fast_dump_regs(struct ucc_fast_private * uccf)
+ {
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/drivers/soc/fsl/qe/ucc_slow.c
+similarity index 98%
+rename from arch/powerpc/sysdev/qe_lib/ucc_slow.c
+rename to drivers/soc/fsl/qe/ucc_slow.c
+index 5f91628..9334bdb 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
++++ b/drivers/soc/fsl/qe/ucc_slow.c
+@@ -21,11 +21,11 @@
+ #include <linux/export.h>
+ 
+ #include <asm/io.h>
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+-#include <asm/ucc.h>
+-#include <asm/ucc_slow.h>
++#include <soc/fsl/qe/ucc.h>
++#include <soc/fsl/qe/ucc_slow.h>
+ 
+ u32 ucc_slow_get_qe_cr_subblock(int uccs_num)
+ {
+diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
+index 9c46a30..bcb26bb 100644
+--- a/drivers/spi/spi-fsl-cpm.c
++++ b/drivers/spi/spi-fsl-cpm.c
+@@ -16,7 +16,7 @@
+  * option) any later version.
+  */
+ #include <asm/cpm.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/kernel.h>
+diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
+index 7d2532b..0b2cccd 100644
+--- a/drivers/tty/serial/ucc_uart.c
++++ b/drivers/tty/serial/ucc_uart.c
+@@ -31,7 +31,7 @@
+ #include <linux/dma-mapping.h>
+ 
+ #include <linux/fs_uart_pd.h>
+-#include <asm/ucc_slow.h>
++#include <soc/fsl/qe/ucc_slow.h>
+ 
+ #include <linux/firmware.h>
+ #include <asm/reg.h>
+diff --git a/drivers/usb/gadget/udc/fsl_qe_udc.c b/drivers/usb/gadget/udc/fsl_qe_udc.c
+index e0822f1..f44659e 100644
+--- a/drivers/usb/gadget/udc/fsl_qe_udc.c
++++ b/drivers/usb/gadget/udc/fsl_qe_udc.c
+@@ -38,7 +38,7 @@
+ #include <linux/usb/ch9.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/usb/otg.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include <asm/cpm.h>
+ #include <asm/dma.h>
+ #include <asm/reg.h>
+diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
+index c6cebb9..0960f41 100644
+--- a/drivers/usb/host/fhci-hcd.c
++++ b/drivers/usb/host/fhci-hcd.c
+@@ -31,7 +31,7 @@
+ #include <linux/of_platform.h>
+ #include <linux/of_gpio.h>
+ #include <linux/slab.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include <asm/fsl_gtm.h>
+ #include "fhci.h"
+ 
+diff --git a/drivers/usb/host/fhci-hub.c b/drivers/usb/host/fhci-hub.c
+index 3bacdd7..60d55eb 100644
+--- a/drivers/usb/host/fhci-hub.c
++++ b/drivers/usb/host/fhci-hub.c
+@@ -24,7 +24,7 @@
+ #include <linux/usb.h>
+ #include <linux/usb/hcd.h>
+ #include <linux/gpio.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include "fhci.h"
+ 
+ /* virtual root hub specific descriptor */
+diff --git a/drivers/usb/host/fhci-sched.c b/drivers/usb/host/fhci-sched.c
+index 95ca598..a9609a3 100644
+--- a/drivers/usb/host/fhci-sched.c
++++ b/drivers/usb/host/fhci-sched.c
+@@ -25,7 +25,7 @@
+ #include <linux/io.h>
+ #include <linux/usb.h>
+ #include <linux/usb/hcd.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/qe.h>
+ #include <asm/fsl_gtm.h>
+ #include "fhci.h"
+ 
+diff --git a/drivers/usb/host/fhci.h b/drivers/usb/host/fhci.h
+index 154e6a0..3fc82c1 100644
+--- a/drivers/usb/host/fhci.h
++++ b/drivers/usb/host/fhci.h
+@@ -27,8 +27,8 @@
+ #include <linux/io.h>
+ #include <linux/usb.h>
+ #include <linux/usb/hcd.h>
+-#include <asm/qe.h>
+-#include <asm/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
+ 
+ #define USB_CLOCK	48000000
+ 
+diff --git a/arch/powerpc/include/asm/qe_ic.h b/include/linux/fsl/qe/qe_ic.h
+similarity index 100%
+rename from arch/powerpc/include/asm/qe_ic.h
+rename to include/linux/fsl/qe/qe_ic.h
+diff --git a/arch/powerpc/include/asm/immap_qe.h b/include/soc/fsl/qe/immap_qe.h
+similarity index 100%
+rename from arch/powerpc/include/asm/immap_qe.h
+rename to include/soc/fsl/qe/immap_qe.h
+diff --git a/arch/powerpc/include/asm/qe.h b/include/soc/fsl/qe/qe.h
+similarity index 99%
+rename from arch/powerpc/include/asm/qe.h
+rename to include/soc/fsl/qe/qe.h
+index aee968f..7210b2b 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/include/soc/fsl/qe/qe.h
+@@ -23,7 +23,7 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/types.h>
+-#include <asm/immap_qe.h>
++#include <soc/fsl/qe/immap_qe.h>
+ 
+ #define QE_NUM_OF_SNUM	256	/* There are 256 serial number in QE */
+ #define QE_NUM_OF_BRGS	16
+diff --git a/arch/powerpc/include/asm/ucc.h b/include/soc/fsl/qe/ucc.h
+similarity index 96%
+rename from arch/powerpc/include/asm/ucc.h
+rename to include/soc/fsl/qe/ucc.h
+index 6927ac2..894f14c 100644
+--- a/arch/powerpc/include/asm/ucc.h
++++ b/include/soc/fsl/qe/ucc.h
+@@ -15,8 +15,8 @@
+ #ifndef __UCC_H__
+ #define __UCC_H__
+ 
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+ #define STATISTICS
+ 
+diff --git a/arch/powerpc/include/asm/ucc_fast.h b/include/soc/fsl/qe/ucc_fast.h
+similarity index 98%
+rename from arch/powerpc/include/asm/ucc_fast.h
+rename to include/soc/fsl/qe/ucc_fast.h
+index 72ea9ba..df8ea79 100644
+--- a/arch/powerpc/include/asm/ucc_fast.h
++++ b/include/soc/fsl/qe/ucc_fast.h
+@@ -16,10 +16,10 @@
+ 
+ #include <linux/kernel.h>
+ 
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+-#include <asm/ucc.h>
++#include <soc/fsl/qe/ucc.h>
+ 
+ /* Receive BD's status */
+ #define R_E	0x80000000	/* buffer empty */
+diff --git a/arch/powerpc/include/asm/ucc_slow.h b/include/soc/fsl/qe/ucc_slow.h
+similarity index 99%
+rename from arch/powerpc/include/asm/ucc_slow.h
+rename to include/soc/fsl/qe/ucc_slow.h
+index 233ef5f..6c0573a 100644
+--- a/arch/powerpc/include/asm/ucc_slow.h
++++ b/include/soc/fsl/qe/ucc_slow.h
+@@ -17,10 +17,10 @@
+ 
+ #include <linux/kernel.h>
+ 
+-#include <asm/immap_qe.h>
+-#include <asm/qe.h>
++#include <soc/fsl/qe/immap_qe.h>
++#include <soc/fsl/qe/qe.h>
+ 
+-#include <asm/ucc.h>
++#include <soc/fsl/qe/ucc.h>
+ 
+ /* transmit BD's status */
+ #define T_R	0x80000000	/* ready bit */
 -- 
 2.1.0.27.g96db324
