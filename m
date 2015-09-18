@@ -1,31 +1,25 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A1281A2E60
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 20:01:26 +1000 (AEST)
-Date: Fri, 18 Sep 2015 10:56:00 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- devicetree@vger.kernel.org, Sunil Goutham <sgoutham@cavium.com>,
- Robert Richter <rric@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>,
- Michal Simek <michal.simek@xilinx.com>, netdev@vger.kernel.org,
- =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>,
- Iyappan Subramanian <isubramanian@apm.com>,
- Grant Likely <grant.likely@linaro.org>,
- Li Yang <leoli@freescale.com>, Keyur Chudgar <kchudgar@apm.com>,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 0/7] Phy and mdiobus fixes
-Message-ID: <20150918095600.GC21084@n2100.arm.linux.org.uk>
-References: <20150918094625.GB21084@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20150918094625.GB21084@n2100.arm.linux.org.uk>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D92A51A2C84
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 20:01:57 +1000 (AEST)
+Message-ID: <1442570517.5528.3.camel@ellerman.id.au>
+Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
+ memcpy'
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Scott Wood
+ <scottwood@freescale.com>,  linuxppc-dev@lists.ozlabs.org
+Date: Fri, 18 Sep 2015 20:01:57 +1000
+In-Reply-To: <alpine.DEB.2.11.1509170911120.3951@nanos>
+References: <alpine.DEB.2.11.1509161816310.3951@nanos>
+ <1442420984.2909.179.camel@freescale.com>
+ <alpine.DEB.2.11.1509162159110.3951@nanos>
+ <20150916215435.48bee4d3@grimm.local.home>
+ <alpine.DEB.2.11.1509170911120.3951@nanos>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,9 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry guys, some of you will get the patches twice, as Sören's name
-in the header caused vger to reject all the patches.
+On Thu, 2015-09-17 at 12:13 +0200, Thomas Gleixner wrote:
+> On Wed, 16 Sep 2015, Steven Rostedt wrote:
+> > On Wed, 16 Sep 2015 22:01:06 +0200 (CEST)
+> > Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > So now I have to chase down that one:
+> > > 
+> > > [    0.230210] ftrace: allocating 16560 entries in 49 pages
+> > > [    0.273313] ------------[ cut here ]------------
+> > > [    0.278048] WARNING: at /home/tglx/work/kernel/tip/tip/kernel/trace/ftrace.c:1974
+> > 
+> 
+> It's not observable before the ppc merge, but I can't identify the
+> culprit by bisection. bisection led into lala land.
 
--- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+Weird.
+
+Can you try:
+
+  d690740f22f6 ("powerpc/powernv: Enable LEDS support")
+
+That is the commit before my merge of Scott's tree, which had all the Freescale
+& 32-bit stuff.
+
+If that works, it would isolate it to only about 30 commits from Scott's tree.
+
+cheers
