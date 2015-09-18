@@ -1,25 +1,27 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0148.outbound.protection.outlook.com [65.55.169.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 31C991A04B3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 12:35:56 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 613EB1A04B3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 12:39:33 +1000 (AEST)
+Message-ID: <1442543958.19102.91.camel@freescale.com>
+Subject: Re: [PATCH v9 3/5] qe_common: add qe_muram_ functions to manage muram
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
  <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v9 3/5] qe_common: add qe_muram_ functions to manage muram
-Date: Fri, 18 Sep 2015 02:35:48 +0000
-Message-ID: <SN1PR0301MB15505D0C83E1D28D2FE6517F9B590@SN1PR0301MB1550.namprd03.prod.outlook.com>
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Thu, 17 Sep 2015 21:39:18 -0500
+In-Reply-To: <SN1PR0301MB15505D0C83E1D28D2FE6517F9B590@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1442194700-6194-1-git-send-email-qiang.zhao@freescale.com>
  <1442194700-6194-3-git-send-email-qiang.zhao@freescale.com>
  <1442521702.19102.75.camel@freescale.com>
-In-Reply-To: <1442521702.19102.75.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <SN1PR0301MB15505D0C83E1D28D2FE6517F9B590@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,171 +32,282 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gTW9uLCAyMDE1LTA5LTE4IGF0IDA0OjI4ICswODAwLCBXb29kIFNjb3R0LUIwNzQyMSB3cm90
-ZToNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMTgsIDIwMTUgNDoyOCBBTQ0KPiBUbzogWmhh
-byBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBY
-aWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+IFlhbmctTGVvLVI1
-ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY5IDMvNV0gcWVf
-Y29tbW9uOiBhZGQgcWVfbXVyYW1fIGZ1bmN0aW9ucyB0byBtYW5hZ2UNCj4gbXVyYW0NCj4gDQo+
-IE9uIE1vbiwgMjAxNS0wOS0xNCBhdCAwOTozOCArMDgwMCwgWmhhbyBRaWFuZyB3cm90ZToNCj4g
-PiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIvcWVfY29tbW9uLmMNCj4g
-PiBiL2FyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliL3FlX2NvbW1vbi5jDQo+ID4gbmV3IGZpbGUg
-bW9kZSAxMDA2NDQNCj4gPiBpbmRleCAwMDAwMDAwLi4xMjEzNDU4DQo+ID4gLS0tIC9kZXYvbnVs
-bA0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliL3FlX2NvbW1vbi5jDQo+ID4g
-QEAgLTAsMCArMSwyNDIgQEANCj4gPiArLyoNCj4gPiArICogRnJlZXNjYWxlIFFFIGNvbW1vbiBj
-b2RlDQo+ID4gKyAqDQo+ID4gKyAqIEF1dGhvcjogWmhhbyBRaWFuZyAgPHFpYW5nLnpoYW9AZnJl
-ZXNjYWxlLmNvbT4NCj4gPiArICoNCj4gPiArICogQ29weXJpZ2h0IDIwMTUgRnJlZXNjYWxlIFNl
-bWljb25kdWN0b3IsIEluYy4NCj4gPiArICoNCj4gPiArICogVGhpcyBwcm9ncmFtIGlzIGZyZWUg
-c29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vcg0KPiA+ICttb2RpZnkNCj4g
-PiArICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5z
-ZSBhcyBwdWJsaXNoZWQNCj4gPiArYnkNCj4gPiArICogdGhlIEZyZWUgU29mdHdhcmUgRm91bmRh
-dGlvbjsgZWl0aGVyIHZlcnNpb24gMiBvZiB0aGUgTGljZW5zZSwgb3INCj4gPiArICogKGF0IHlv
-dXIgb3B0aW9uKSBhbnkgbGF0ZXIgdmVyc2lvbi4NCj4gPiArICovDQo+ID4gKw0KPiA+ICsjaW5j
-bHVkZSA8bGludXgvZ2VuYWxsb2MuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L2xpc3QuaD4NCj4g
-PiArI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L29mX2Rldmlj
-ZS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvc3BpbmxvY2suaD4NCj4gPiArI2luY2x1ZGUgPGxp
-bnV4L2V4cG9ydC5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gPiArI2luY2x1ZGUg
-PGxpbnV4L29mX2FkZHJlc3MuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4NCj4gPiAr
-DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9pby5oPg0KPiA+ICsjaW5jbHVkZSA8YXNtL3FlLmg+DQo+
-ID4gKw0KPiA+ICtzdGF0aWMgc3RydWN0IGdlbl9wb29sICptdXJhbV9wb29sOw0KPiA+ICtzdGF0
-aWMgc3RydWN0IGdlbnBvb2xfZGF0YV9hbGlnbiBtdXJhbV9wb29sX2RhdGE7IHN0YXRpYyBzdHJ1
-Y3QNCj4gPiArZ2VucG9vbF9kYXRhX2ZpeGVkIG11cmFtX3Bvb2xfZGF0YV9maXhlZDsgc3RhdGlj
-IHNwaW5sb2NrX3QNCj4gPiArcWVfbXVyYW1fbG9jazsgc3RhdGljIHU4IF9faW9tZW0gKm11cmFt
-X3ZiYXNlOyBzdGF0aWMgcGh5c19hZGRyX3QNCj4gPiArbXVyYW1fcGJhc2U7DQo+ID4gKw0KPiA+
-ICtzdHJ1Y3QgbXVyYW1fYmxvY2sgew0KPiA+ICsgICAgIHN0cnVjdCBsaXN0X2hlYWQgaGVhZDsN
-Cj4gPiArICAgICB1bnNpZ25lZCBsb25nIHN0YXJ0Ow0KPiA+ICsgICAgIGludCBzaXplOw0KPiA+
-ICt9Ow0KPiA+ICsNCj4gPiArc3RhdGljIExJU1RfSEVBRChtdXJhbV9ibG9ja19saXN0KTsNCj4g
-PiArDQo+ID4gKy8qIG1heCBhZGRyZXNzIHNpemUgd2UgZGVhbCB3aXRoICovDQo+ID4gKyNkZWZp
-bmUgT0ZfTUFYX0FERFJfQ0VMTFMgICAgNA0KPiA+ICsjZGVmaW5lIEdFTlBPT0xfT0ZGU0VUICAg
-ICAgICAgICAgICAgNDA5Ng0KPiA+ICsNCj4gPiAraW50IHFlX211cmFtX2luaXQodm9pZCkNCj4g
-PiArew0KPiA+ICsgICAgIHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7DQo+ID4gKyAgICAgc3RydWN0
-IHJlc291cmNlIHI7DQo+ID4gKyAgICAgdTMyIHplcm9bT0ZfTUFYX0FERFJfQ0VMTFNdID0ge307
-DQo+ID4gKyAgICAgcmVzb3VyY2Vfc2l6ZV90IG1heCA9IDA7DQo+ID4gKyAgICAgaW50IGkgPSAw
-Ow0KPiA+ICsgICAgIGludCByZXQgPSAwOw0KPiA+ICsNCj4gPiArICAgICBpZiAobXVyYW1fcGJh
-c2UpDQo+ID4gKyAgICAgICAgICAgICByZXR1cm4gMDsNCj4gPiArDQo+ID4gKyAgICAgbnAgPSBv
-Zl9maW5kX2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAiZnNsLHFlLW11cmFtLWRhdGEiKTsN
-Cj4gPiArICAgICBpZiAoIW5wKSB7DQo+ID4gKyAgICAgICAgICAgICAvKiB0cnkgbGVnYWN5IGJp
-bmRpbmdzICovDQo+ID4gKyAgICAgICAgICAgICBucCA9IG9mX2ZpbmRfbm9kZV9ieV9uYW1lKE5V
-TEwsICJkYXRhLW9ubHkiKTsNCj4gPiArICAgICAgICAgICAgIGlmICghbnApIHsNCj4gPiArICAg
-ICAgICAgICAgICAgICAgICAgcHJfZXJyKCJDYW5ub3QgZmluZCBDUE0gbXVyYW0gZGF0YSBub2Rl
-Iik7DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgIHJldCA9IC1FTk9ERVY7DQo+ID4gKyAgICAg
-ICAgICAgICAgICAgICAgIGdvdG8gb3V0Ow0KPiA+ICsgICAgICAgICAgICAgfQ0KPiA+ICsgICAg
-IH0NCj4gPiArDQo+ID4gKyAgICAgbXVyYW1fcG9vbCA9IGdlbl9wb29sX2NyZWF0ZSgxLCAtMSk7
-DQo+ID4gKyAgICAgbXVyYW1fcGJhc2UgPSBvZl90cmFuc2xhdGVfYWRkcmVzcyhucCwgemVybyk7
-DQo+ID4gKyAgICAgaWYgKG11cmFtX3BiYXNlID09IChwaHlzX2FkZHJfdClPRl9CQURfQUREUikg
-ew0KPiA+ICsgICAgICAgICAgICAgcHJfZXJyKCJDYW5ub3QgdHJhbnNsYXRlIHplcm8gdGhyb3Vn
-aCBDUE0gbXVyYW0gbm9kZSIpOw0KPiA+ICsgICAgICAgICAgICAgcmV0ID0gLUVOT0RFVjsNCj4g
-PiArICAgICAgICAgICAgIGdvdG8gZXJyOw0KPiA+ICsgICAgIH0NCj4gPiArDQo+ID4gKyAgICAg
-d2hpbGUgKG9mX2FkZHJlc3NfdG9fcmVzb3VyY2UobnAsIGkrKywgJnIpID09IDApIHsNCj4gPiAr
-ICAgICAgICAgICAgIGlmIChyLmVuZCA+IG1heCkNCj4gPiArICAgICAgICAgICAgICAgICAgICAg
-bWF4ID0gci5lbmQ7DQo+ID4gKyAgICAgICAgICAgICByZXQgPSBnZW5fcG9vbF9hZGQobXVyYW1f
-cG9vbCwgci5zdGFydCAtIG11cmFtX3BiYXNlICsNCj4gPiArICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICBHRU5QT09MX09GRlNFVCwgcmVzb3VyY2Vfc2l6ZSgmciksIC0xKTsNCj4gPiAr
-ICAgICAgICAgICAgIGlmIChyZXQpIHsNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICBwcl9lcnIoIlFFOiBjb3VsZG4ndCBhZGQgbXVyYW0gdG8NCj4gcG9vbCFcbiIpOw0KPiA+ICsg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgIGdvdG8gZXJyOw0KPiA+ICsgICAgICAgICAgICAg
-ICAgICAgICB9DQo+ID4gKw0KPiA+ICsgICAgIH0NCj4gPiArDQo+ID4gKyAgICAgbXVyYW1fdmJh
-c2UgPSBpb3JlbWFwKG11cmFtX3BiYXNlLCBtYXggLSBtdXJhbV9wYmFzZSArIDEpOw0KPiA+ICsg
-ICAgIGlmICghbXVyYW1fdmJhc2UpIHsNCj4gPiArICAgICAgICAgICAgIHByX2VycigiQ2Fubm90
-IG1hcCBRRSBtdXJhbSIpOw0KPiA+ICsgICAgICAgICAgICAgcmV0ID0gLUVOT01FTTsNCj4gPiAr
-ICAgICAgICAgICAgIGdvdG8gZXJyOw0KPiA+ICsgICAgIH0NCj4gPiArICAgICBnb3RvIG91dDsN
-Cj4gPiArZXJyOg0KPiA+ICsgICAgIGdlbl9wb29sX2Rlc3Ryb3kobXVyYW1fcG9vbCk7DQo+ID4g
-K291dDoNCj4gPiArICAgICBvZl9ub2RlX3B1dChucCk7DQo+ID4gKyAgICAgcmV0dXJuIHJldDsN
-Cj4gPiArfQ0KPiA+ICsNCj4gPiArLyoNCj4gPiArICogcWVfbXVyYW1fYWxsb2MgLSBhbGxvY2F0
-ZSB0aGUgcmVxdWVzdGVkIHNpemUgd29ydGggb2YgbXVsdGktdXNlcg0KPiA+ICtyYW0NCj4gPiAr
-ICogQHNpemU6IG51bWJlciBvZiBieXRlcyB0byBhbGxvY2F0ZQ0KPiA+ICsgKiBAYWxpZ246IHJl
-cXVlc3RlZCBhbGlnbm1lbnQsIGluIGJ5dGVzDQo+ID4gKyAqDQo+ID4gKyAqIFRoaXMgZnVuY3Rp
-b24gcmV0dXJucyBhbiBvZmZzZXQgaW50byB0aGUgbXVyYW0gYXJlYS4NCj4gPiArICovDQo+ID4g
-K3Vuc2lnbmVkIGxvbmcgcWVfbXVyYW1fYWxsb2ModW5zaWduZWQgbG9uZyBzaXplLCB1bnNpZ25l
-ZCBsb25nIGFsaWduKQ0KPiA+ICt7DQo+ID4gKyAgICAgdW5zaWduZWQgbG9uZyBzdGFydDsNCj4g
-PiArICAgICB1bnNpZ25lZCBsb25nIGZsYWdzOw0KPiA+ICsgICAgIHN0cnVjdCBtdXJhbV9ibG9j
-ayAqZW50cnk7DQo+ID4gKw0KPiA+ICsgICAgIHNwaW5fbG9ja19pcnFzYXZlKCZxZV9tdXJhbV9s
-b2NrLCBmbGFncyk7DQo+ID4gKyAgICAgbXVyYW1fcG9vbF9kYXRhLmFsaWduID0gYWxpZ247DQo+
-ID4gKyAgICAgZ2VuX3Bvb2xfc2V0X2FsZ28obXVyYW1fcG9vbCwgZ2VuX3Bvb2xfZmlyc3RfZml0
-X2FsaWduLA0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICZtdXJhbV9wb29sX2RhdGEpOw0K
-PiA+ICsgICAgIHN0YXJ0ID0gZ2VuX3Bvb2xfYWxsb2MobXVyYW1fcG9vbCwgc2l6ZSk7DQo+ID4g
-KyAgICAgaWYgKCFzdGFydCkNCj4gPiArICAgICAgICAgICAgIGdvdG8gb3V0MjsNCj4gPiArICAg
-ICBzdGFydCA9IHN0YXJ0IC0gR0VOUE9PTF9PRkZTRVQ7DQo+ID4gKyAgICAgbWVtc2V0KHFlX211
-cmFtX2FkZHIoc3RhcnQpLCAwLCBzaXplKTsNCj4gPiArICAgICBlbnRyeSA9IGttYWxsb2Moc2l6
-ZW9mKCplbnRyeSksIEdGUF9LRVJORUwpOw0KPiA+ICsgICAgIGlmICghZW50cnkpDQo+ID4gKyAg
-ICAgICAgICAgICBnb3RvIG91dDE7DQo+ID4gKyAgICAgZW50cnktPnN0YXJ0ID0gc3RhcnQ7DQo+
-ID4gKyAgICAgZW50cnktPnNpemUgPSBzaXplOw0KPiA+ICsgICAgIGxpc3RfYWRkKCZlbnRyeS0+
-aGVhZCwgJm11cmFtX2Jsb2NrX2xpc3QpOw0KPiA+ICsgICAgIHNwaW5fdW5sb2NrX2lycXJlc3Rv
-cmUoJnFlX211cmFtX2xvY2ssIGZsYWdzKTsNCj4gPiArDQo+ID4gKyAgICAgcmV0dXJuIHN0YXJ0
-Ow0KPiA+ICtvdXQxOg0KPiA+ICsgICAgIGdlbl9wb29sX2ZyZWUobXVyYW1fcG9vbCwgc3RhcnQs
-IHNpemUpOw0KPiA+ICtvdXQyOg0KPiA+ICsgICAgIHNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJnFl
-X211cmFtX2xvY2ssIGZsYWdzKTsNCj4gPiArICAgICByZXR1cm4gKHVuc2lnbmVkIGxvbmcpIC1F
-Tk9NRU07DQo+ID4gK30NCj4gPiArRVhQT1JUX1NZTUJPTChxZV9tdXJhbV9hbGxvYyk7DQo+ID4g
-Kw0KPiA+ICsvKg0KPiA+ICsgKiBxZV9tdXJhbV9hbGxvY19maXhlZCAtIHJlc2VydmUgYSBzcGVj
-aWZpYyByZWdpb24gb2YgbXVsdGktdXNlciByYW0NCj4gPiArICogQHNpemU6IG51bWJlciBvZiBi
-eXRlcyB0byBhbGxvY2F0ZQ0KPiA+ICsgKiBAb2Zmc2V0OiBvZmZzZXQgb2YgYWxsb2NhdGlvbiBz
-dGFydCBhZGRyZXNzDQo+ID4gKyAqDQo+ID4gKyAqIFRoaXMgZnVuY3Rpb24gcmV0dXJucyBhbiBv
-ZmZzZXQgaW50byB0aGUgbXVyYW0gYXJlYS4NCj4gPiArICovDQo+ID4gK3Vuc2lnbmVkIGxvbmcg
-cWVfbXVyYW1fYWxsb2NfZml4ZWQodW5zaWduZWQgbG9uZyBvZmZzZXQsIHVuc2lnbmVkDQo+ID4g
-K2xvbmcNCj4gPiBzaXplKQ0KPiA+ICt7DQo+ID4gKw0KPiA+ICsgICAgIHVuc2lnbmVkIGxvbmcg
-c3RhcnQ7DQo+ID4gKyAgICAgdW5zaWduZWQgbG9uZyBmbGFnczsNCj4gPiArICAgICB1bnNpZ25l
-ZCBsb25nIHNpemVfYWxsb2MgPSBzaXplOw0KPiA+ICsgICAgIHN0cnVjdCBtdXJhbV9ibG9jayAq
-ZW50cnk7DQo+ID4gKyAgICAgaW50IGVuZF9iaXQ7DQo+ID4gKyAgICAgaW50IG9yZGVyID0gbXVy
-YW1fcG9vbCAtPiBtaW5fYWxsb2Nfb3JkZXI7DQo+ID4gKw0KPiA+ICsgICAgIHNwaW5fbG9ja19p
-cnFzYXZlKCZxZV9tdXJhbV9sb2NrLCBmbGFncyk7DQo+ID4gKyAgICAgZW5kX2JpdCA9IChvZmZz
-ZXQgPj4gb3JkZXIpICsgKChzaXplICsgKDFVTCA8PCBvcmRlcikgLSAxKSA+Pg0KPiBvcmRlcik7
-DQo+ID4gKyAgICAgaWYgKChvZmZzZXQgKyBzaXplKSA+IChlbmRfYml0IDw8IG9yZGVyKSkNCj4g
-PiArICAgICAgICAgICAgIHNpemVfYWxsb2MgPSBzaXplICsgKDFVTCA8PCBvcmRlcik7DQo+ID4g
-Kw0KPiA+ICsgICAgIG11cmFtX3Bvb2xfZGF0YV9maXhlZC5vZmZzZXQgPSBvZmZzZXQgKyBHRU5Q
-T09MX09GRlNFVDsNCj4gPiArICAgICBnZW5fcG9vbF9zZXRfYWxnbyhtdXJhbV9wb29sLCBnZW5f
-cG9vbF9maXhlZF9maXQsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgJm11cmFtX3Bvb2xf
-ZGF0YV9maXhlZCk7DQo+ID4gKyAgICAgc3RhcnQgPSBnZW5fcG9vbF9hbGxvYyhtdXJhbV9wb29s
-LCBzaXplX2FsbG9jKTsNCj4gPiArICAgICBpZiAoIXN0YXJ0KQ0KPiA+ICsgICAgICAgICAgICAg
-Z290byBvdXQyOw0KPiA+ICsgICAgIHN0YXJ0ID0gc3RhcnQgLSBHRU5QT09MX09GRlNFVDsNCj4g
-PiArICAgICBtZW1zZXQocWVfbXVyYW1fYWRkcihzdGFydCksIDAsIHNpemVfYWxsb2MpOw0KPiA+
-ICsgICAgIGVudHJ5ID0ga21hbGxvYyhzaXplb2YoKmVudHJ5KSwgR0ZQX0tFUk5FTCk7DQo+ID4g
-KyAgICAgaWYgKCFlbnRyeSkNCj4gPiArICAgICAgICAgICAgIGdvdG8gb3V0MTsNCj4gPiArICAg
-ICBlbnRyeS0+c3RhcnQgPSBzdGFydDsNCj4gPiArICAgICBlbnRyeS0+c2l6ZSA9IHNpemVfYWxs
-b2M7DQo+ID4gKyAgICAgbGlzdF9hZGQoJmVudHJ5LT5oZWFkLCAmbXVyYW1fYmxvY2tfbGlzdCk7
-DQo+ID4gKyAgICAgc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcWVfbXVyYW1fbG9jaywgZmxhZ3Mp
-Ow0KPiA+ICsNCj4gPiArICAgICByZXR1cm4gc3RhcnQ7DQo+ID4gK291dDE6DQo+ID4gKyAgICAg
-Z2VuX3Bvb2xfZnJlZShtdXJhbV9wb29sLCBzdGFydCwgc2l6ZV9hbGxvYyk7DQo+ID4gK291dDI6
-DQo+ID4gKyAgICAgc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcWVfbXVyYW1fbG9jaywgZmxhZ3Mp
-Ow0KPiA+ICsgICAgIHJldHVybiAodW5zaWduZWQgbG9uZykgLUVOT01FTTsNCj4gPiArDQo+ID4g
-Kw0KPiA+ICt9DQo+ID4gK0VYUE9SVF9TWU1CT0wocWVfbXVyYW1fYWxsb2NfZml4ZWQpOw0KPiA+
-ICsNCj4gPiArLyoqDQo+ID4gKyAqIHFlX211cmFtX2ZyZWUgLSBmcmVlIGEgY2h1bmsgb2YgbXVs
-dGktdXNlciByYW0NCj4gPiArICogQG9mZnNldDogVGhlIGJlZ2lubmluZyBvZiB0aGUgY2h1bmsg
-YXMgcmV0dXJuZWQgYnkgcWVfbXVyYW1fYWxsb2MoKS4NCj4gPiArICovDQo+ID4gK2ludCBxZV9t
-dXJhbV9mcmVlKHVuc2lnbmVkIGxvbmcgb2Zmc2V0KSB7DQo+ID4gKyAgICAgdW5zaWduZWQgbG9u
-ZyBmbGFnczsNCj4gPiArICAgICBpbnQgc2l6ZTsNCj4gPiArICAgICBzdHJ1Y3QgbXVyYW1fYmxv
-Y2sgKnRtcDsNCj4gPiArDQo+ID4gKyAgICAgc2l6ZSA9IDA7DQo+ID4gKyAgICAgc3Bpbl9sb2Nr
-X2lycXNhdmUoJnFlX211cmFtX2xvY2ssIGZsYWdzKTsNCj4gPiArICAgICBsaXN0X2Zvcl9lYWNo
-X2VudHJ5KHRtcCwgJm11cmFtX2Jsb2NrX2xpc3QsIGhlYWQpIHsNCj4gPiArICAgICAgICAgICAg
-IGlmICh0bXAtPnN0YXJ0ID09IG9mZnNldCkgew0KPiA+ICsgICAgICAgICAgICAgICAgICAgICBz
-aXplID0gdG1wLT5zaXplOw0KPiA+ICsgICAgICAgICAgICAgICAgICAgICBsaXN0X2RlbCgmdG1w
-LT5oZWFkKTsNCj4gPiArICAgICAgICAgICAgICAgICAgICAga2ZyZWUodG1wKTsNCj4gPiArICAg
-ICAgICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4gKyAgICAgICAgICAgICB9DQo+ID4gKyAgICAg
-fQ0KPiA+ICsgICAgIGdlbl9wb29sX2ZyZWUobXVyYW1fcG9vbCwgb2Zmc2V0ICsgR0VOUE9PTF9P
-RkZTRVQsIHNpemUpOw0KPiA+ICsgICAgIHNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJnFlX211cmFt
-X2xvY2ssIGZsYWdzKTsNCj4gPiArDQo+ID4gKyAgICAgcmV0dXJuIHNpemU7DQo+ID4gK30NCj4g
-PiArRVhQT1JUX1NZTUJPTChxZV9tdXJhbV9mcmVlKTsNCj4gPiArDQo+ID4gKy8qKg0KPiA+ICsg
-KiBxZV9tdXJhbV9hZGRyIC0gdHVybiBhIG11cmFtIG9mZnNldCBpbnRvIGEgdmlydHVhbCBhZGRy
-ZXNzDQo+ID4gKyAqIEBvZmZzZXQ6IG11cmFtIG9mZnNldCB0byBjb252ZXJ0DQo+ID4gKyAqLw0K
-PiA+ICt2b2lkIF9faW9tZW0gKnFlX211cmFtX2FkZHIodW5zaWduZWQgbG9uZyBvZmZzZXQpIHsN
-Cj4gPiArICAgICByZXR1cm4gbXVyYW1fdmJhc2UgKyBvZmZzZXQ7DQo+ID4gK30NCj4gPiArRVhQ
-T1JUX1NZTUJPTChxZV9tdXJhbV9hZGRyKTsNCj4gPiArDQo+ID4gK3Vuc2lnbmVkIGxvbmcgcWVf
-bXVyYW1fb2Zmc2V0KHZvaWQgX19pb21lbSAqYWRkcikgew0KPiA+ICsgICAgIHJldHVybiBhZGRy
-IC0gKHZvaWQgX19pb21lbSAqKW11cmFtX3ZiYXNlOyB9DQo+ID4gK0VYUE9SVF9TWU1CT0wocWVf
-bXVyYW1fb2Zmc2V0KTsNCj4gPiArDQo+ID4gKy8qKg0KPiA+ICsgKiBxZV9tdXJhbV9kbWEgLSB0
-dXJuIGEgbXVyYW0gdmlydHVhbCBhZGRyZXNzIGludG8gYSBETUEgYWRkcmVzcw0KPiA+ICsgKiBA
-b2Zmc2V0OiB2aXJ0dWFsIGFkZHJlc3MgZnJvbSBxZV9tdXJhbV9hZGRyKCkgdG8gY29udmVydCAg
-Ki8NCj4gPiArZG1hX2FkZHJfdCBxZV9tdXJhbV9kbWEodm9pZCBfX2lvbWVtICphZGRyKSB7DQo+
-ID4gKyAgICAgcmV0dXJuIG11cmFtX3BiYXNlICsgKCh1OCBfX2lvbWVtICopYWRkciAtIG11cmFt
-X3ZiYXNlKTsgfQ0KPiA+ICtFWFBPUlRfU1lNQk9MKHFlX211cmFtX2RtYSk7DQo+IA0KPiBXaHkg
-YXJlIHlvdSBhZGRpbmcgbmV3IGZ1bmN0aW9ucyByYXRoZXIgdGhhbiByZXBsYWNpbmcgdGhlIGlt
-cGxlbWVudGF0aW9uDQo+IG9mIHRoZSBvbGQgb25lcz8NCj4gDQo+IEFnYWluLCBJIGRvbid0IHdh
-bnQgdG8gc2VlIGEgYmlnIGFkZGl0aW9uIGluIG9uZSBwbGFjZSBhbmQgYSBiaWcgZGVsZXRpb24N
-Cj4gZWxzZXdoZXJlLiAgSSB3YW50IHRvIHNlZSB0aGUgYWN0dWFsIGNvZGUgY2hhbmdlcyBhcyBh
-IGRpZmYuICBBbnkgbW92aW5nDQo+IGFyb3VuZCBvZiBjb2RlIG11c3QgYmUgYSBzZXBhcmF0ZSBw
-YXRjaCBmcm9tIG1ha2luZyBjaGFuZ2VzIHRvIGl0IHRoYXQNCj4gYXJlIHNpZ25pZmljYW50IGVu
-b3VnaCB0aGF0IGdpdCBmb3JtYXQtcGF0Y2ggZG9lc24ndCBkZXRlY3QgaXQgYXMgYSBtb3ZlLg0K
-DQpNb2RpZnkgY3BtX211cmFtIGZ1bmN0aW9ucyB3aXRoIGdlbmFsbG9jIGZpcnN0LCBUaGVuIG1v
-dmUgaXQgdG8gcWVfbXVyYW0gd2l0aA0KY2h1cm4gb2YgY3BtX211cmFtXyogYW5kIHFlX211cmFf
-Kj8gT3Igb3RoZXIgbWV0aG9kPw0KDQo+IA0KPiAtU2NvdHQNCg0K
+On Thu, 2015-09-17 at 21:35 -0500, Zhao Qiang-B45475 wrote:
+> On Mon, 2015-09-18 at 04:28 +0800, Wood Scott-B07421 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, September 18, 2015 4:28 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> > Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH v9 3/5] qe_common: add qe_muram_ functions to manage
+> > muram
+> > 
+> > On Mon, 2015-09-14 at 09:38 +0800, Zhao Qiang wrote:
+> > > diff --git a/arch/powerpc/sysdev/qe_lib/qe_common.c
+> > > b/arch/powerpc/sysdev/qe_lib/qe_common.c
+> > > new file mode 100644
+> > > index 0000000..1213458
+> > > --- /dev/null
+> > > +++ b/arch/powerpc/sysdev/qe_lib/qe_common.c
+> > > @@ -0,0 +1,242 @@
+> > > +/*
+> > > + * Freescale QE common code
+> > > + *
+> > > + * Author: Zhao Qiang  <qiang.zhao@freescale.com>
+> > > + *
+> > > + * Copyright 2015 Freescale Semiconductor, Inc.
+> > > + *
+> > > + * This program is free software; you can redistribute it and/or
+> > > +modify
+> > > + * it under the terms of the GNU General Public License as published
+> > > +by
+> > > + * the Free Software Foundation; either version 2 of the License, or
+> > > + * (at your option) any later version.
+> > > + */
+> > > +
+> > > +#include <linux/genalloc.h>
+> > > +#include <linux/list.h>
+> > > +#include <linux/init.h>
+> > > +#include <linux/of_device.h>
+> > > +#include <linux/spinlock.h>
+> > > +#include <linux/export.h>
+> > > +#include <linux/of.h>
+> > > +#include <linux/of_address.h>
+> > > +#include <linux/slab.h>
+> > > +
+> > > +#include <linux/io.h>
+> > > +#include <asm/qe.h>
+> > > +
+> > > +static struct gen_pool *muram_pool;
+> > > +static struct genpool_data_align muram_pool_data; static struct
+> > > +genpool_data_fixed muram_pool_data_fixed; static spinlock_t
+> > > +qe_muram_lock; static u8 __iomem *muram_vbase; static phys_addr_t
+> > > +muram_pbase;
+> > > +
+> > > +struct muram_block {
+> > > +     struct list_head head;
+> > > +     unsigned long start;
+> > > +     int size;
+> > > +};
+> > > +
+> > > +static LIST_HEAD(muram_block_list);
+> > > +
+> > > +/* max address size we deal with */
+> > > +#define OF_MAX_ADDR_CELLS    4
+> > > +#define GENPOOL_OFFSET               4096
+> > > +
+> > > +int qe_muram_init(void)
+> > > +{
+> > > +     struct device_node *np;
+> > > +     struct resource r;
+> > > +     u32 zero[OF_MAX_ADDR_CELLS] = {};
+> > > +     resource_size_t max = 0;
+> > > +     int i = 0;
+> > > +     int ret = 0;
+> > > +
+> > > +     if (muram_pbase)
+> > > +             return 0;
+> > > +
+> > > +     np = of_find_compatible_node(NULL, NULL, "fsl,qe-muram-data");
+> > > +     if (!np) {
+> > > +             /* try legacy bindings */
+> > > +             np = of_find_node_by_name(NULL, "data-only");
+> > > +             if (!np) {
+> > > +                     pr_err("Cannot find CPM muram data node");
+> > > +                     ret = -ENODEV;
+> > > +                     goto out;
+> > > +             }
+> > > +     }
+> > > +
+> > > +     muram_pool = gen_pool_create(1, -1);
+> > > +     muram_pbase = of_translate_address(np, zero);
+> > > +     if (muram_pbase == (phys_addr_t)OF_BAD_ADDR) {
+> > > +             pr_err("Cannot translate zero through CPM muram node");
+> > > +             ret = -ENODEV;
+> > > +             goto err;
+> > > +     }
+> > > +
+> > > +     while (of_address_to_resource(np, i++, &r) == 0) {
+> > > +             if (r.end > max)
+> > > +                     max = r.end;
+> > > +             ret = gen_pool_add(muram_pool, r.start - muram_pbase +
+> > > +                                GENPOOL_OFFSET, resource_size(&r), -1);
+> > > +             if (ret) {
+> > > +                             pr_err("QE: couldn't add muram to
+> > pool!\n");
+> > > +                             goto err;
+> > > +                     }
+> > > +
+> > > +     }
+> > > +
+> > > +     muram_vbase = ioremap(muram_pbase, max - muram_pbase + 1);
+> > > +     if (!muram_vbase) {
+> > > +             pr_err("Cannot map QE muram");
+> > > +             ret = -ENOMEM;
+> > > +             goto err;
+> > > +     }
+> > > +     goto out;
+> > > +err:
+> > > +     gen_pool_destroy(muram_pool);
+> > > +out:
+> > > +     of_node_put(np);
+> > > +     return ret;
+> > > +}
+> > > +
+> > > +/*
+> > > + * qe_muram_alloc - allocate the requested size worth of multi-user
+> > > +ram
+> > > + * @size: number of bytes to allocate
+> > > + * @align: requested alignment, in bytes
+> > > + *
+> > > + * This function returns an offset into the muram area.
+> > > + */
+> > > +unsigned long qe_muram_alloc(unsigned long size, unsigned long align)
+> > > +{
+> > > +     unsigned long start;
+> > > +     unsigned long flags;
+> > > +     struct muram_block *entry;
+> > > +
+> > > +     spin_lock_irqsave(&qe_muram_lock, flags);
+> > > +     muram_pool_data.align = align;
+> > > +     gen_pool_set_algo(muram_pool, gen_pool_first_fit_align,
+> > > +                       &muram_pool_data);
+> > > +     start = gen_pool_alloc(muram_pool, size);
+> > > +     if (!start)
+> > > +             goto out2;
+> > > +     start = start - GENPOOL_OFFSET;
+> > > +     memset(qe_muram_addr(start), 0, size);
+> > > +     entry = kmalloc(sizeof(*entry), GFP_KERNEL);
+> > > +     if (!entry)
+> > > +             goto out1;
+> > > +     entry->start = start;
+> > > +     entry->size = size;
+> > > +     list_add(&entry->head, &muram_block_list);
+> > > +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> > > +
+> > > +     return start;
+> > > +out1:
+> > > +     gen_pool_free(muram_pool, start, size);
+> > > +out2:
+> > > +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> > > +     return (unsigned long) -ENOMEM;
+> > > +}
+> > > +EXPORT_SYMBOL(qe_muram_alloc);
+> > > +
+> > > +/*
+> > > + * qe_muram_alloc_fixed - reserve a specific region of multi-user ram
+> > > + * @size: number of bytes to allocate
+> > > + * @offset: offset of allocation start address
+> > > + *
+> > > + * This function returns an offset into the muram area.
+> > > + */
+> > > +unsigned long qe_muram_alloc_fixed(unsigned long offset, unsigned
+> > > +long
+> > > size)
+> > > +{
+> > > +
+> > > +     unsigned long start;
+> > > +     unsigned long flags;
+> > > +     unsigned long size_alloc = size;
+> > > +     struct muram_block *entry;
+> > > +     int end_bit;
+> > > +     int order = muram_pool -> min_alloc_order;
+> > > +
+> > > +     spin_lock_irqsave(&qe_muram_lock, flags);
+> > > +     end_bit = (offset >> order) + ((size + (1UL << order) - 1) >>
+> > order);
+> > > +     if ((offset + size) > (end_bit << order))
+> > > +             size_alloc = size + (1UL << order);
+> > > +
+> > > +     muram_pool_data_fixed.offset = offset + GENPOOL_OFFSET;
+> > > +     gen_pool_set_algo(muram_pool, gen_pool_fixed_fit,
+> > > +                       &muram_pool_data_fixed);
+> > > +     start = gen_pool_alloc(muram_pool, size_alloc);
+> > > +     if (!start)
+> > > +             goto out2;
+> > > +     start = start - GENPOOL_OFFSET;
+> > > +     memset(qe_muram_addr(start), 0, size_alloc);
+> > > +     entry = kmalloc(sizeof(*entry), GFP_KERNEL);
+> > > +     if (!entry)
+> > > +             goto out1;
+> > > +     entry->start = start;
+> > > +     entry->size = size_alloc;
+> > > +     list_add(&entry->head, &muram_block_list);
+> > > +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> > > +
+> > > +     return start;
+> > > +out1:
+> > > +     gen_pool_free(muram_pool, start, size_alloc);
+> > > +out2:
+> > > +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> > > +     return (unsigned long) -ENOMEM;
+> > > +
+> > > +
+> > > +}
+> > > +EXPORT_SYMBOL(qe_muram_alloc_fixed);
+> > > +
+> > > +/**
+> > > + * qe_muram_free - free a chunk of multi-user ram
+> > > + * @offset: The beginning of the chunk as returned by qe_muram_alloc().
+> > > + */
+> > > +int qe_muram_free(unsigned long offset) {
+> > > +     unsigned long flags;
+> > > +     int size;
+> > > +     struct muram_block *tmp;
+> > > +
+> > > +     size = 0;
+> > > +     spin_lock_irqsave(&qe_muram_lock, flags);
+> > > +     list_for_each_entry(tmp, &muram_block_list, head) {
+> > > +             if (tmp->start == offset) {
+> > > +                     size = tmp->size;
+> > > +                     list_del(&tmp->head);
+> > > +                     kfree(tmp);
+> > > +                     break;
+> > > +             }
+> > > +     }
+> > > +     gen_pool_free(muram_pool, offset + GENPOOL_OFFSET, size);
+> > > +     spin_unlock_irqrestore(&qe_muram_lock, flags);
+> > > +
+> > > +     return size;
+> > > +}
+> > > +EXPORT_SYMBOL(qe_muram_free);
+> > > +
+> > > +/**
+> > > + * qe_muram_addr - turn a muram offset into a virtual address
+> > > + * @offset: muram offset to convert
+> > > + */
+> > > +void __iomem *qe_muram_addr(unsigned long offset) {
+> > > +     return muram_vbase + offset;
+> > > +}
+> > > +EXPORT_SYMBOL(qe_muram_addr);
+> > > +
+> > > +unsigned long qe_muram_offset(void __iomem *addr) {
+> > > +     return addr - (void __iomem *)muram_vbase; }
+> > > +EXPORT_SYMBOL(qe_muram_offset);
+> > > +
+> > > +/**
+> > > + * qe_muram_dma - turn a muram virtual address into a DMA address
+> > > + * @offset: virtual address from qe_muram_addr() to convert  */
+> > > +dma_addr_t qe_muram_dma(void __iomem *addr) {
+> > > +     return muram_pbase + ((u8 __iomem *)addr - muram_vbase); }
+> > > +EXPORT_SYMBOL(qe_muram_dma);
+> > 
+> > Why are you adding new functions rather than replacing the implementation
+> > of the old ones?
+> > 
+> > Again, I don't want to see a big addition in one place and a big deletion
+> > elsewhere.  I want to see the actual code changes as a diff.  Any moving
+> > around of code must be a separate patch from making changes to it that
+> > are significant enough that git format-patch doesn't detect it as a move.
+> 
+> Modify cpm_muram functions with genalloc first, Then move it to qe_muram 
+> with
+> churn of cpm_muram_* and qe_mura_*? Or other method?
+
+All modifications first (both genalloc and, if you must, renaming), then 
+move.  Or move, then all modifications.  I don't care which order, just don't 
+make changes in the same patch as moving the code.
+
+-Scott
