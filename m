@@ -1,45 +1,28 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EFCDD1A2C6E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 09:56:30 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Fri, 18 Sep 2015 19:56:28 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 82F50C90041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 19:47:30 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8INuQGn58589188
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 23:56:26 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8INuQqS018660
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Sep 2015 19:56:26 -0400
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
-Subject: Re: [PATCH v2 12/30] cxlflash: Refine host/device attributes
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <55FC8371.5010900@linux.vnet.ibm.com>
-Date: Fri, 18 Sep 2015 18:56:25 -0500
-Cc: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Shane Seymour <shane.seymour@hp.com>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Message-Id: <AA42C2F0-94E8-45D6-8438-7F7BE0C9E046@linux.vnet.ibm.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442438954-49663-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <55FC8371.5010900@linux.vnet.ibm.com>
-To: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <mail@maciej.szmigiero.name>
+Received: from vps-vb.mhejs.net (vi37-28-154-113.vibiznes.pl [37.28.154.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD9751A0484
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Sep 2015 10:00:57 +1000 (AEST)
+Message-ID: <55FCA599.4030309@maciej.szmigiero.name>
+Date: Sat, 19 Sep 2015 02:00:25 +0200
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+MIME-Version: 1.0
+To: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>
+CC: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>,
+ Timur Tabi <timur@tabi.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Xiubo Li <Xiubo.Lee@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH v2] ASoC: fsl-asoc-card: add AC'97 support
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,36 +32,325 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Sep 18, 2015, at 4:34 PM, Brian King <brking@linux.vnet.ibm.com> =
-wrote:
-> On 09/16/2015 04:29 PM, Matthew R. Ochs wrote:
->>=20
->> +	ssize_t bytes =3D 0;
->> +	__be64 __iomem *fc_port;
->> +
->> +	if (port >=3D NUM_FC_PORTS)
->> +		return 0;
->> +
->> +	fc_port =3D &afu->afu_map->global.fc_port[port][0];
->> +
->> +	for (i =3D 0; i < CXLFLASH_NUM_VLUNS; i++, buf +=3D 22)
->=20
-> Rather than this bug prone hard coded 22, how about never incrementing =
-buf and do something
-> similar to this:
->=20
->> +		bytes +=3D scnprintf(buf, PAGE_SIZE, "%03d: %016llX\n",
->> +				   i, readq_be(&fc_port[i]));
->=20
-> 		bytes +=3D scnprintf(&buf[bytes], PAGE_SIZE, "%03d: =
-%016llX\n",
-> 				   i, readq_be(&fc_port[i]));
->=20
->> +	return bytes;
->> +}
->> +
+Add AC'97 support to fsl-asoc-card using generic
+ASoC AC'97 CODEC.
 
-Great suggestion! Will fix in v3.
+The SSI controller will silently enable any TX
+AC'97 slots that have their bits set in SLOTREQ
+received from CODEC and then will redirect some
+of playback samples there.
 
+That's why it is important to make sure that
+any of CODEC playback slots that can pull samples
+are set to slots 3/4 (standard PCM playback slots).
+Currently, this applies to S/PDIF slots as they
+were seen to pull samples sometimes even with
+S/PDIF output being disabled.
 
--matt=
+Signed-off-by: Maciej Szmigiero <mail@maciej.szmigiero.name>
+---
+Changes from v1: don't use of_find_device_by_node() to
+get pointer to I2S/PCM CODEC device as this only matches
+platform bus devices while I2S/PCM CODECs supported by
+this driver sit on I2C bus.
+
+ .../devicetree/bindings/sound/fsl-asoc-card.txt    |  10 +-
+ sound/soc/fsl/fsl-asoc-card.c                      | 140 ++++++++++++++++-----
+ 2 files changed, 116 insertions(+), 34 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
+index a96774c..ce55c0a 100644
+--- a/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
++++ b/Documentation/devicetree/bindings/sound/fsl-asoc-card.txt
+@@ -13,13 +13,15 @@ So having this generic sound card allows all Freescale SoC users to benefit
+ from the simplification of a new card support and the capability of the wide
+ sample rates support through ASRC.
+ 
+-Note: The card is initially designed for those sound cards who use I2S and
+-      PCM DAI formats. However, it'll be also possible to support those non
+-      I2S/PCM type sound cards, such as S/PDIF audio and HDMI audio, as long
+-      as the driver has been properly upgraded.
++Note: The card is initially designed for those sound cards who use AC'97, I2S
++      and PCM DAI formats. However, it'll be also possible to support those non
++      AC'97/I2S/PCM type sound cards, such as S/PDIF audio and HDMI audio, as
++      long as the driver has been properly upgraded.
+ 
+ 
+ The compatible list for this generic sound card currently:
++ "fsl,imx-audio-ac97"
++
+  "fsl,imx-audio-cs42888"
+ 
+  "fsl,imx-audio-wm8962"
+diff --git a/sound/soc/fsl/fsl-asoc-card.c b/sound/soc/fsl/fsl-asoc-card.c
+index 0901d5e..1b05d1c 100644
+--- a/sound/soc/fsl/fsl-asoc-card.c
++++ b/sound/soc/fsl/fsl-asoc-card.c
+@@ -14,6 +14,9 @@
+ #include <linux/i2c.h>
+ #include <linux/module.h>
+ #include <linux/of_platform.h>
++#if IS_ENABLED(CONFIG_SND_AC97_CODEC)
++#include <sound/ac97_codec.h>
++#endif
+ #include <sound/pcm_params.h>
+ #include <sound/soc.h>
+ 
+@@ -115,6 +118,11 @@ static const struct snd_soc_dapm_widget fsl_asoc_card_dapm_widgets[] = {
+ 	SND_SOC_DAPM_MIC("DMIC", NULL),
+ };
+ 
++static bool fsl_asoc_card_is_ac97(struct fsl_asoc_card_priv *priv)
++{
++	return priv->dai_fmt == SND_SOC_DAIFMT_AC97;
++}
++
+ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
+ 				   struct snd_pcm_hw_params *params)
+ {
+@@ -133,7 +141,9 @@ static int fsl_asoc_card_hw_params(struct snd_pcm_substream *substream,
+ 	 * set_bias_level(), bypass the remaining settings in hw_params().
+ 	 * Note: (dai_fmt & CBM_CFM) includes CBM_CFM and CBM_CFS.
+ 	 */
+-	if (priv->card.set_bias_level && priv->dai_fmt & SND_SOC_DAIFMT_CBM_CFM)
++	if ((priv->card.set_bias_level &&
++	     priv->dai_fmt & SND_SOC_DAIFMT_CBM_CFM) ||
++	    fsl_asoc_card_is_ac97(priv))
+ 		return 0;
+ 
+ 	/* Specific configurations of DAIs starts from here */
+@@ -300,7 +310,7 @@ static int fsl_asoc_card_audmux_init(struct device_node *np,
+ 	ext_port--;
+ 
+ 	/*
+-	 * Use asynchronous mode (6 wires) for all cases.
++	 * Use asynchronous mode (6 wires) for all cases except AC97.
+ 	 * If only 4 wires are needed, just set SSI into
+ 	 * synchronous mode and enable 4 PADs in IOMUX.
+ 	 */
+@@ -346,15 +356,30 @@ static int fsl_asoc_card_audmux_init(struct device_node *np,
+ 			   IMX_AUDMUX_V2_PTCR_TCLKDIR;
+ 		break;
+ 	default:
+-		return -EINVAL;
++		if (!fsl_asoc_card_is_ac97(priv))
++			return -EINVAL;
++	}
++
++	if (fsl_asoc_card_is_ac97(priv)) {
++		int_ptcr = IMX_AUDMUX_V2_PTCR_SYN |
++			   IMX_AUDMUX_V2_PTCR_TCSEL(ext_port) |
++			   IMX_AUDMUX_V2_PTCR_TCLKDIR;
++		ext_ptcr = IMX_AUDMUX_V2_PTCR_SYN |
++			   IMX_AUDMUX_V2_PTCR_TFSEL(int_port) |
++			   IMX_AUDMUX_V2_PTCR_TFSDIR;
+ 	}
+ 
+ 	/* Asynchronous mode can not be set along with RCLKDIR */
+-	ret = imx_audmux_v2_configure_port(int_port, 0,
+-					   IMX_AUDMUX_V2_PDCR_RXDSEL(ext_port));
+-	if (ret) {
+-		dev_err(dev, "audmux internal port setup failed\n");
+-		return ret;
++	if (!fsl_asoc_card_is_ac97(priv)) {
++		unsigned int pdcr =
++				IMX_AUDMUX_V2_PDCR_RXDSEL(ext_port);
++
++		ret = imx_audmux_v2_configure_port(int_port, 0,
++						   pdcr);
++		if (ret) {
++			dev_err(dev, "audmux internal port setup failed\n");
++			return ret;
++		}
+ 	}
+ 
+ 	ret = imx_audmux_v2_configure_port(int_port, int_ptcr,
+@@ -364,11 +389,16 @@ static int fsl_asoc_card_audmux_init(struct device_node *np,
+ 		return ret;
+ 	}
+ 
+-	ret = imx_audmux_v2_configure_port(ext_port, 0,
+-					   IMX_AUDMUX_V2_PDCR_RXDSEL(int_port));
+-	if (ret) {
+-		dev_err(dev, "audmux external port setup failed\n");
+-		return ret;
++	if (!fsl_asoc_card_is_ac97(priv)) {
++		unsigned int pdcr =
++				IMX_AUDMUX_V2_PDCR_RXDSEL(int_port);
++
++		ret = imx_audmux_v2_configure_port(ext_port, 0,
++						   pdcr);
++		if (ret) {
++			dev_err(dev, "audmux external port setup failed\n");
++			return ret;
++		}
+ 	}
+ 
+ 	ret = imx_audmux_v2_configure_port(ext_port, ext_ptcr,
+@@ -389,6 +419,23 @@ static int fsl_asoc_card_late_probe(struct snd_soc_card *card)
+ 	struct device *dev = card->dev;
+ 	int ret;
+ 
++	if (fsl_asoc_card_is_ac97(priv)) {
++#if IS_ENABLED(CONFIG_SND_AC97_CODEC)
++		struct snd_soc_codec *codec = card->rtd[0].codec;
++		struct snd_ac97 *ac97 = snd_soc_codec_get_drvdata(codec);
++
++		/*
++		 * Use slots 3/4 for S/PDIF so SSI won't try to enable
++		 * other slots and send some samples there
++		 * due to SLOTREQ bits for S/PDIF received from codec
++		 */
++		snd_ac97_update_bits(ac97, AC97_EXTENDED_STATUS,
++				     AC97_EA_SPSA_SLOT_MASK, AC97_EA_SPSA_3_4);
++#endif
++
++		return 0;
++	}
++
+ 	ret = snd_soc_dai_set_sysclk(codec_dai, codec_priv->mclk_id,
+ 				     codec_priv->mclk_freq, SND_SOC_CLOCK_IN);
+ 	if (ret) {
+@@ -407,7 +454,6 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	struct platform_device *cpu_pdev;
+ 	struct fsl_asoc_card_priv *priv;
+ 	struct i2c_client *codec_dev;
+-	struct clk *codec_clk;
+ 	const char *codec_dai_name;
+ 	u32 width;
+ 	int ret;
+@@ -420,9 +466,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 	/* Give a chance to old DT binding */
+ 	if (!cpu_np)
+ 		cpu_np = of_parse_phandle(np, "ssi-controller", 0);
+-	codec_np = of_parse_phandle(np, "audio-codec", 0);
+-	if (!cpu_np || !codec_np) {
+-		dev_err(&pdev->dev, "phandle missing or invalid\n");
++	if (!cpu_np) {
++		dev_err(&pdev->dev, "CPU phandle missing or invalid\n");
+ 		ret = -EINVAL;
+ 		goto fail;
+ 	}
+@@ -434,22 +479,24 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 		goto fail;
+ 	}
+ 
+-	codec_dev = of_find_i2c_device_by_node(codec_np);
+-	if (!codec_dev) {
+-		dev_err(&pdev->dev, "failed to find codec platform device\n");
+-		ret = -EINVAL;
+-		goto fail;
+-	}
++	codec_np = of_parse_phandle(np, "audio-codec", 0);
++	if (codec_np)
++		codec_dev = of_find_i2c_device_by_node(codec_np);
++	else
++		codec_dev = NULL;
+ 
+ 	asrc_np = of_parse_phandle(np, "audio-asrc", 0);
+ 	if (asrc_np)
+ 		asrc_pdev = of_find_device_by_node(asrc_np);
+ 
+ 	/* Get the MCLK rate only, and leave it controlled by CODEC drivers */
+-	codec_clk = clk_get(&codec_dev->dev, NULL);
+-	if (!IS_ERR(codec_clk)) {
+-		priv->codec_priv.mclk_freq = clk_get_rate(codec_clk);
+-		clk_put(codec_clk);
++	if (codec_dev) {
++		struct clk *codec_clk = clk_get(&codec_dev->dev, NULL);
++
++		if (!IS_ERR(codec_clk)) {
++			priv->codec_priv.mclk_freq = clk_get_rate(codec_clk);
++			clk_put(codec_clk);
++		}
+ 	}
+ 
+ 	/* Default sample rate and format, will be updated in hw_params() */
+@@ -486,12 +533,22 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 		priv->codec_priv.fll_id = WM8960_SYSCLK_AUTO;
+ 		priv->codec_priv.pll_id = WM8960_SYSCLK_AUTO;
+ 		priv->dai_fmt |= SND_SOC_DAIFMT_CBM_CFM;
++	} else if (of_device_is_compatible(np, "fsl,imx-audio-ac97")) {
++		codec_dai_name = "ac97-hifi";
++		priv->card.set_bias_level = NULL;
++		priv->dai_fmt = SND_SOC_DAIFMT_AC97;
+ 	} else {
+ 		dev_err(&pdev->dev, "unknown Device Tree compatible\n");
+ 		ret = -EINVAL;
+ 		goto asrc_fail;
+ 	}
+ 
++	if (!fsl_asoc_card_is_ac97(priv) && !codec_dev) {
++		dev_err(&pdev->dev, "failed to find codec device\n");
++		ret = -EINVAL;
++		goto asrc_fail;
++	}
++
+ 	/* Common settings for corresponding Freescale CPU DAI driver */
+ 	if (strstr(cpu_np->name, "ssi")) {
+ 		/* Only SSI needs to configure AUDMUX */
+@@ -508,7 +565,9 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 		priv->cpu_priv.sysclk_id[0] = FSL_SAI_CLK_MAST1;
+ 	}
+ 
+-	sprintf(priv->name, "%s-audio", codec_dev->name);
++	snprintf(priv->name, sizeof(priv->name), "%s-audio",
++		 fsl_asoc_card_is_ac97(priv) ? "ac97" :
++		 codec_dev->name);
+ 
+ 	/* Initialize sound card */
+ 	priv->pdev = pdev;
+@@ -532,8 +591,26 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 
+ 	/* Normal DAI Link */
+ 	priv->dai_link[0].cpu_of_node = cpu_np;
+-	priv->dai_link[0].codec_of_node = codec_np;
+ 	priv->dai_link[0].codec_dai_name = codec_dai_name;
++
++	if (!fsl_asoc_card_is_ac97(priv))
++		priv->dai_link[0].codec_of_node = codec_np;
++	else {
++		u32 idx;
++
++		ret = of_property_read_u32(cpu_np, "cell-index", &idx);
++		if (ret) {
++			dev_err(&pdev->dev,
++				"cannot get CPU index property\n");
++			goto asrc_fail;
++		}
++
++		priv->dai_link[0].codec_name =
++				devm_kasprintf(&pdev->dev, GFP_KERNEL,
++					       "ac97-codec.%u",
++					       (unsigned int)idx);
++	}
++
+ 	priv->dai_link[0].platform_of_node = cpu_np;
+ 	priv->dai_link[0].dai_fmt = priv->dai_fmt;
+ 	priv->card.num_links = 1;
+@@ -544,6 +621,8 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 		priv->dai_link[1].platform_of_node = asrc_np;
+ 		priv->dai_link[2].codec_dai_name = codec_dai_name;
+ 		priv->dai_link[2].codec_of_node = codec_np;
++		priv->dai_link[2].codec_name =
++				priv->dai_link[0].codec_name;
+ 		priv->dai_link[2].cpu_of_node = cpu_np;
+ 		priv->dai_link[2].dai_fmt = priv->dai_fmt;
+ 		priv->card.num_links = 3;
+@@ -579,14 +658,15 @@ static int fsl_asoc_card_probe(struct platform_device *pdev)
+ 
+ asrc_fail:
+ 	of_node_put(asrc_np);
+-fail:
+ 	of_node_put(codec_np);
++fail:
+ 	of_node_put(cpu_np);
+ 
+ 	return ret;
+ }
+ 
+ static const struct of_device_id fsl_asoc_card_dt_ids[] = {
++	{ .compatible = "fsl,imx-audio-ac97", },
+ 	{ .compatible = "fsl,imx-audio-cs42888", },
+ 	{ .compatible = "fsl,imx-audio-sgtl5000", },
+ 	{ .compatible = "fsl,imx-audio-wm8962", },
