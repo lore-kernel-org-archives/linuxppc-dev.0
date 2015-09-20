@@ -3,8 +3,8 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0F931A0064
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2015 14:30:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 92D431A05F9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2015 14:30:26 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
  <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar
@@ -13,9 +13,9 @@ CC: <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  "Tang Yuantian" <Yuantian.Tang@freescale.com>, Scott Wood
  <scottwood@freescale.com>
-Subject: [PATCH v3 1/5] powerpc/fsl: Move fsl_guts.h out of arch/powerpc
-Date: Sat, 19 Sep 2015 23:29:53 -0500
-Message-ID: <1442723397-26329-2-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v3 2/5] clk: qoriq: Move chip-specific knowledge into driver
+Date: Sat, 19 Sep 2015 23:29:54 -0500
+Message-ID: <1442723397-26329-3-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
 References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -29,634 +29,1577 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Freescale's Layerscape ARM chips use the same structure.
+The device tree should describe the chips (or chip-like subblocks) in
+the system, but it generally does not describe individual registers --
+it should identify, rather than describe, a programming interface.
+
+This has not been the case with the QorIQ clockgen nodes.  The
+knowledge of what each bit setting of CLKCnCSR means is encoded in
+three places (binding, pll node, and mux node), and the last also needs
+to know which options are valid on a particular chip.  All three of
+these locations are considered stable ABI, making it difficult to fix
+mistakes (of which I have found several), much less refactor the
+abstraction to be able to address problems, limitations, or new chips.
+
+Under the current binding, a pll clock specifier of 2 means that the
+PLL is divided by 4 -- and the driver implements this, unless there
+happen to be four clock-output-names rather than 3, in which case it
+interprets it as PLL divided by 3.  This does not appear in the binding
+documentation at all.  That hack is now considered stable ABI.
+
+The current device tree nodes contain errors, such as saying that
+T1040 can set a core clock to PLL/4 when only PLL and PLL/2 are options.
+The current binding also ignores some restrictions on clock selection,
+such as p5020's requirement that if a core uses the "wrong" PLL, that
+PLL must be clocked lower than the "correct" PLL and be at most 80% of
+the rated CPU frequency.
+
+Possibly because of the lack of the ability to express such nuance in
+the binding, some valid options are omitted from the device trees, such
+as the ability on p4080 to run cores 0-3 from PLL3 and cores 4-7 from
+PLL1 (again, only if they are at most 80% of rated CPU frequency).
+This omission, combined with excessive caution in the cpufreq driver
+(addressed in a subsequent patch), means that currently on a 1500 MHz
+p4080 with typical PLL configuration, cpufreq can lower the frequency
+to 1200 MHz on half the CPUs and do nothing on the others.  With this
+patchset, all CPUs can be lowered to 1200 MHz on a rev2 p4080, and on a
+rev3 p4080 half can be lowered to 750 MHz and the other half to 600
+MHz.
+
+The current binding only deals with CPU clocks.  To describe FMan in
+the device tree, we need to describe its clock.  Some chips have
+additional muxes that work like the CPU muxes, but are not described in
+the device tree.  Others require inspecting the Reset Control Word to
+determine which PLL is used.  Rather than continue to extend this mess,
+replace it.  Have the driver bind to the chip-specific clockgen
+compatible, and keep the detailed description of quirky chip variations
+in the driver, where it can be easily fixed, refactored, and extended.
+
+Older device trees will continue to work (including a workaround for
+old ls1021a device trees that are missing compatible and reg in the
+clockgen node, which even the old binding required).  The pll/mux
+details in old device trees will be ignored, but "clocks" properties
+pointing at the old nodes will still work, and be directed at the
+corresponding new clock.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-v3: was patch 2/5
+v2: was patch 3/5
 
- arch/powerpc/include/asm/fsl_guts.h        | 192 -----------------------------
- arch/powerpc/platforms/85xx/mpc85xx_mds.c  |   2 +-
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c  |   2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c     |   2 +-
- arch/powerpc/platforms/85xx/p1022_rdk.c    |   2 +-
- arch/powerpc/platforms/85xx/smp.c          |   2 +-
- arch/powerpc/platforms/85xx/twr_p102x.c    |   2 +-
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c |   2 +-
- drivers/iommu/fsl_pamu.c                   |   2 +-
- include/linux/fsl/guts.h                   | 192 +++++++++++++++++++++++++++++
- sound/soc/fsl/mpc8610_hpcd.c               |   2 +-
- sound/soc/fsl/p1022_ds.c                   |   2 +-
- sound/soc/fsl/p1022_rdk.c                  |   2 +-
- 13 files changed, 203 insertions(+), 203 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/fsl_guts.h
- create mode 100644 include/linux/fsl/guts.h
+Added missing initialization of hwc->cg.
 
-diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
-deleted file mode 100644
-index 43b6bb1..0000000
---- a/arch/powerpc/include/asm/fsl_guts.h
-+++ /dev/null
-@@ -1,192 +0,0 @@
--/**
-- * Freecale 85xx and 86xx Global Utilties register set
-- *
-- * Authors: Jeff Brown
-- *          Timur Tabi <timur@freescale.com>
-- *
-- * Copyright 2004,2007,2012 Freescale Semiconductor, Inc
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--#ifndef __ASM_POWERPC_FSL_GUTS_H__
--#define __ASM_POWERPC_FSL_GUTS_H__
--#ifdef __KERNEL__
--
--/**
-- * Global Utility Registers.
-- *
-- * Not all registers defined in this structure are available on all chips, so
-- * you are expected to know whether a given register actually exists on your
-- * chip before you access it.
-- *
-- * Also, some registers are similar on different chips but have slightly
-- * different names.  In these cases, one name is chosen to avoid extraneous
-- * #ifdefs.
-- */
--struct ccsr_guts {
--	__be32	porpllsr;	/* 0x.0000 - POR PLL Ratio Status Register */
--	__be32	porbmsr;	/* 0x.0004 - POR Boot Mode Status Register */
--	__be32	porimpscr;	/* 0x.0008 - POR I/O Impedance Status and Control Register */
--	__be32	pordevsr;	/* 0x.000c - POR I/O Device Status Register */
--	__be32	pordbgmsr;	/* 0x.0010 - POR Debug Mode Status Register */
--	__be32	pordevsr2;	/* 0x.0014 - POR device status register 2 */
--	u8	res018[0x20 - 0x18];
--	__be32	porcir;		/* 0x.0020 - POR Configuration Information Register */
--	u8	res024[0x30 - 0x24];
--	__be32	gpiocr;		/* 0x.0030 - GPIO Control Register */
--	u8	res034[0x40 - 0x34];
--	__be32	gpoutdr;	/* 0x.0040 - General-Purpose Output Data Register */
--	u8	res044[0x50 - 0x44];
--	__be32	gpindr;		/* 0x.0050 - General-Purpose Input Data Register */
--	u8	res054[0x60 - 0x54];
--	__be32	pmuxcr;		/* 0x.0060 - Alternate Function Signal Multiplex Control */
--        __be32  pmuxcr2;	/* 0x.0064 - Alternate function signal multiplex control 2 */
--        __be32  dmuxcr;		/* 0x.0068 - DMA Mux Control Register */
--        u8	res06c[0x70 - 0x6c];
--	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
--#define CCSR_GUTS_DEVDISR_TB1	0x00001000
--#define CCSR_GUTS_DEVDISR_TB0	0x00004000
--	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
--	u8	res078[0x7c - 0x78];
--	__be32  pmjcr;		/* 0x.007c - 4 Power Management Jog Control Register */
--	__be32	powmgtcsr;	/* 0x.0080 - Power Management Status and Control Register */
--	__be32  pmrccr;		/* 0x.0084 - Power Management Reset Counter Configuration Register */
--	__be32  pmpdccr;	/* 0x.0088 - Power Management Power Down Counter Configuration Register */
--	__be32  pmcdr;		/* 0x.008c - 4Power management clock disable register */
--	__be32	mcpsumr;	/* 0x.0090 - Machine Check Summary Register */
--	__be32	rstrscr;	/* 0x.0094 - Reset Request Status and Control Register */
--	__be32  ectrstcr;	/* 0x.0098 - Exception reset control register */
--	__be32  autorstsr;	/* 0x.009c - Automatic reset status register */
--	__be32	pvr;		/* 0x.00a0 - Processor Version Register */
--	__be32	svr;		/* 0x.00a4 - System Version Register */
--	u8	res0a8[0xb0 - 0xa8];
--	__be32	rstcr;		/* 0x.00b0 - Reset Control Register */
--	u8	res0b4[0xc0 - 0xb4];
--	__be32  iovselsr;	/* 0x.00c0 - I/O voltage select status register
--					     Called 'elbcvselcr' on 86xx SOCs */
--	u8	res0c4[0x100 - 0xc4];
--	__be32	rcwsr[16];	/* 0x.0100 - Reset Control Word Status registers
--					     There are 16 registers */
--	u8	res140[0x224 - 0x140];
--	__be32  iodelay1;	/* 0x.0224 - IO delay control register 1 */
--	__be32  iodelay2;	/* 0x.0228 - IO delay control register 2 */
--	u8	res22c[0x604 - 0x22c];
--	__be32	pamubypenr; 	/* 0x.604 - PAMU bypass enable register */
--	u8	res608[0x800 - 0x608];
--	__be32	clkdvdr;	/* 0x.0800 - Clock Divide Register */
--	u8	res804[0x900 - 0x804];
--	__be32	ircr;		/* 0x.0900 - Infrared Control Register */
--	u8	res904[0x908 - 0x904];
--	__be32	dmacr;		/* 0x.0908 - DMA Control Register */
--	u8	res90c[0x914 - 0x90c];
--	__be32	elbccr;		/* 0x.0914 - eLBC Control Register */
--	u8	res918[0xb20 - 0x918];
--	__be32	ddr1clkdr;	/* 0x.0b20 - DDR1 Clock Disable Register */
--	__be32	ddr2clkdr;	/* 0x.0b24 - DDR2 Clock Disable Register */
--	__be32	ddrclkdr;	/* 0x.0b28 - DDR Clock Disable Register */
--	u8	resb2c[0xe00 - 0xb2c];
--	__be32	clkocr;		/* 0x.0e00 - Clock Out Select Register */
--	u8	rese04[0xe10 - 0xe04];
--	__be32	ddrdllcr;	/* 0x.0e10 - DDR DLL Control Register */
--	u8	rese14[0xe20 - 0xe14];
--	__be32	lbcdllcr;	/* 0x.0e20 - LBC DLL Control Register */
--	__be32  cpfor;		/* 0x.0e24 - L2 charge pump fuse override register */
--	u8	rese28[0xf04 - 0xe28];
--	__be32	srds1cr0;	/* 0x.0f04 - SerDes1 Control Register 0 */
--	__be32	srds1cr1;	/* 0x.0f08 - SerDes1 Control Register 0 */
--	u8	resf0c[0xf2c - 0xf0c];
--	__be32  itcr;		/* 0x.0f2c - Internal transaction control register */
--	u8	resf30[0xf40 - 0xf30];
--	__be32	srds2cr0;	/* 0x.0f40 - SerDes2 Control Register 0 */
--	__be32	srds2cr1;	/* 0x.0f44 - SerDes2 Control Register 0 */
--} __attribute__ ((packed));
--
--
--/* Alternate function signal multiplex control */
--#define MPC85xx_PMUXCR_QE(x) (0x8000 >> (x))
--
--#ifdef CONFIG_PPC_86xx
--
--#define CCSR_GUTS_DMACR_DEV_SSI	0	/* DMA controller/channel set to SSI */
--#define CCSR_GUTS_DMACR_DEV_IR	1	/* DMA controller/channel set to IR */
--
--/*
-- * Set the DMACR register in the GUTS
-- *
-- * The DMACR register determines the source of initiated transfers for each
-- * channel on each DMA controller.  Rather than have a bunch of repetitive
-- * macros for the bit patterns, we just have a function that calculates
-- * them.
-- *
-- * guts: Pointer to GUTS structure
-- * co: The DMA controller (0 or 1)
-- * ch: The channel on the DMA controller (0, 1, 2, or 3)
-- * device: The device to set as the source (CCSR_GUTS_DMACR_DEV_xx)
-- */
--static inline void guts_set_dmacr(struct ccsr_guts __iomem *guts,
--	unsigned int co, unsigned int ch, unsigned int device)
--{
--	unsigned int shift = 16 + (8 * (1 - co) + 2 * (3 - ch));
--
--	clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
--}
--
--#define CCSR_GUTS_PMUXCR_LDPSEL		0x00010000
--#define CCSR_GUTS_PMUXCR_SSI1_MASK	0x0000C000	/* Bitmask for SSI1 */
--#define CCSR_GUTS_PMUXCR_SSI1_LA	0x00000000	/* Latched address */
--#define CCSR_GUTS_PMUXCR_SSI1_HI	0x00004000	/* High impedance */
--#define CCSR_GUTS_PMUXCR_SSI1_SSI	0x00008000	/* Used for SSI1 */
--#define CCSR_GUTS_PMUXCR_SSI2_MASK	0x00003000	/* Bitmask for SSI2 */
--#define CCSR_GUTS_PMUXCR_SSI2_LA	0x00000000	/* Latched address */
--#define CCSR_GUTS_PMUXCR_SSI2_HI	0x00001000	/* High impedance */
--#define CCSR_GUTS_PMUXCR_SSI2_SSI	0x00002000	/* Used for SSI2 */
--#define CCSR_GUTS_PMUXCR_LA_22_25_LA	0x00000000	/* Latched Address */
--#define CCSR_GUTS_PMUXCR_LA_22_25_HI	0x00000400	/* High impedance */
--#define CCSR_GUTS_PMUXCR_DBGDRV		0x00000200	/* Signals not driven */
--#define CCSR_GUTS_PMUXCR_DMA2_0		0x00000008
--#define CCSR_GUTS_PMUXCR_DMA2_3		0x00000004
--#define CCSR_GUTS_PMUXCR_DMA1_0		0x00000002
--#define CCSR_GUTS_PMUXCR_DMA1_3		0x00000001
--
--/*
-- * Set the DMA external control bits in the GUTS
-- *
-- * The DMA external control bits in the PMUXCR are only meaningful for
-- * channels 0 and 3.  Any other channels are ignored.
-- *
-- * guts: Pointer to GUTS structure
-- * co: The DMA controller (0 or 1)
-- * ch: The channel on the DMA controller (0, 1, 2, or 3)
-- * value: the new value for the bit (0 or 1)
-- */
--static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
--	unsigned int co, unsigned int ch, unsigned int value)
--{
--	if ((ch == 0) || (ch == 3)) {
--		unsigned int shift = 2 * (co + 1) - (ch & 1) - 1;
--
--		clrsetbits_be32(&guts->pmuxcr, 1 << shift, value << shift);
--	}
--}
--
--#define CCSR_GUTS_CLKDVDR_PXCKEN	0x80000000
--#define CCSR_GUTS_CLKDVDR_SSICKEN	0x20000000
--#define CCSR_GUTS_CLKDVDR_PXCKINV	0x10000000
--#define CCSR_GUTS_CLKDVDR_PXCKDLY_SHIFT 25
--#define CCSR_GUTS_CLKDVDR_PXCKDLY_MASK	0x06000000
--#define CCSR_GUTS_CLKDVDR_PXCKDLY(x) \
--	(((x) & 3) << CCSR_GUTS_CLKDVDR_PXCKDLY_SHIFT)
--#define CCSR_GUTS_CLKDVDR_PXCLK_SHIFT	16
--#define CCSR_GUTS_CLKDVDR_PXCLK_MASK	0x001F0000
--#define CCSR_GUTS_CLKDVDR_PXCLK(x) (((x) & 31) << CCSR_GUTS_CLKDVDR_PXCLK_SHIFT)
--#define CCSR_GUTS_CLKDVDR_SSICLK_MASK	0x000000FF
--#define CCSR_GUTS_CLKDVDR_SSICLK(x) ((x) & CCSR_GUTS_CLKDVDR_SSICLK_MASK)
--
--#endif
--
--#endif
--#endif
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index a392e94..f0be439 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -34,6 +34,7 @@
- #include <linux/of_device.h>
- #include <linux/phy.h>
- #include <linux/memblock.h>
+ .../devicetree/bindings/clock/qoriq-clock.txt      |   61 +-
+ drivers/clk/clk-qoriq.c                            | 1261 ++++++++++++++++----
+ 2 files changed, 1090 insertions(+), 232 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/clock/qoriq-clock.txt b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+index df4a259..16a3ec4 100644
+--- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
++++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+@@ -1,6 +1,6 @@
+ * Clock Block on Freescale QorIQ Platforms
+ 
+-Freescale qoriq chips take primary clocking input from the external
++Freescale QorIQ chips take primary clocking input from the external
+ SYSCLK signal. The SYSCLK input (frequency) is multiplied using
+ multiple phase locked loops (PLL) to create a variety of frequencies
+ which can then be passed to a variety of internal logic, including
+@@ -13,14 +13,16 @@ which the chip complies.
+ Chassis Version		Example Chips
+ ---------------		-------------
+ 1.0			p4080, p5020, p5040
+-2.0			t4240, b4860, t1040
++2.0			t4240, b4860
+ 
+ 1. Clock Block Binding
+ 
+ Required properties:
+-- compatible: Should contain a specific clock block compatible string
+-	and a single chassis clock compatible string.
+-	Clock block strings include, but not limited to, one of the:
++- compatible: Should contain a chip-specific clock block compatible
++	string and (if applicable) may contain a chassis-version clock
++	compatible string.
++
++	Chip-specific strings are of the form "fsl,<chip>-clockgen", such as:
+ 	* "fsl,p2041-clockgen"
+ 	* "fsl,p3041-clockgen"
+ 	* "fsl,p4080-clockgen"
+@@ -30,15 +32,14 @@ Required properties:
+ 	* "fsl,b4420-clockgen"
+ 	* "fsl,b4860-clockgen"
+ 	* "fsl,ls1021a-clockgen"
+-	Chassis clock strings include:
++	Chassis-version clock strings include:
+ 	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
+ 	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
+ - reg: Describes the address of the device's resources within the
+ 	address space defined by its parent bus, and resource zero
+ 	represents the clock register set
+-- clock-frequency: Input system clock frequency
+ 
+-Recommended properties:
++Optional properties:
+ - ranges: Allows valid translation between child's address space and
+ 	parent's. Must be present if the device has sub-nodes.
+ - #address-cells: Specifies the number of cells used to represent
+@@ -47,8 +48,46 @@ Recommended properties:
+ - #size-cells: Specifies the number of cells used to represent
+ 	the size of an address. Must be present if the device has
+ 	sub-nodes and set to 1 if present
++- clock-frequency: Input system clock frequency (SYSCLK)
++- clocks: If clock-frequency is not specified, sysclk may be provided
++	as an input clock.  Either clock-frequency or clocks must be
++	provided.
++
++2. Clock Provider
++
++The clockgen node should act as a clock provider, though in older device
++trees the children of the clockgen node are the clock providers.
++
++When the clockgen node is a clock provider, #clock-cells = <2>.
++The first cell of the clock specifier is the clock type, and the
++second cell is the clock index for the specified type.
++
++	Type#	Name		Index Cell
++	0	sysclk		must be 0
++	1	cmux		index (n in CLKCnCSR)
++	2	hwaccel		index (n in CLKCGnHWACSR)
++	3	fman		0 for fm1, 1 for fm2
++	4	platform pll	0=pll, 1=pll/2, 2=pll/3, 3=pll/4
++
++3. Example
++
++	clockgen: global-utilities@e1000 {
++		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
++		clock-frequency = <133333333>;
++		reg = <0xe1000 0x1000>;
++		#clock-cells = <2>;
++	};
++
++	fman@400000 {
++		...
++		clocks = <&clockgen 3 0>;
++		...
++	};
++}
++4. Legacy Child Nodes
+ 
+-2. Clock Provider/Consumer Binding
++NOTE: These nodes are deprecated.  Kernels should continue to support
++device trees with these nodes, but new device trees should not use them.
+ 
+ Most of the bindings are from the common clock binding[1].
+  [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
+@@ -82,7 +121,7 @@ Recommended properties:
+ - reg: Should be the offset and length of clock block base address.
+ 	The length should be 4.
+ 
+-Example for clock block and clock provider:
++Legacy Example:
+ / {
+ 	clockgen: global-utilities@e1000 {
+ 		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
+@@ -142,7 +181,7 @@ Example for clock block and clock provider:
+ 	};
+ };
+ 
+-Example for clock consumer:
++Example for legacy clock consumer:
+ 
+ / {
+ 	cpu0: PowerPC,e5500@0 {
+diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
+index cda90a9..06281a3 100644
+--- a/drivers/clk/clk-qoriq.c
++++ b/drivers/clk/clk-qoriq.c
+@@ -10,7 +10,9 @@
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
++#include <linux/clk.h>
+ #include <linux/clk-provider.h>
 +#include <linux/fsl/guts.h>
- 
- #include <linux/atomic.h>
- #include <asm/time.h>
-@@ -51,7 +52,6 @@
- #include <asm/qe_ic.h>
- #include <asm/mpic.h>
- #include <asm/swiotlb.h>
--#include <asm/fsl_guts.h>
- #include "smp.h"
- 
- #include "mpc85xx.h"
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index e358bed..50dcc00 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -17,6 +17,7 @@
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
- #include <linux/of_platform.h>
-+#include <linux/fsl/guts.h>
- 
- #include <asm/time.h>
- #include <asm/machdep.h>
-@@ -27,7 +28,6 @@
- #include <asm/mpic.h>
- #include <asm/qe.h>
- #include <asm/qe_ic.h>
--#include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 6ac986d3..371df82 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -16,6 +16,7 @@
-  * kind, whether express or implied.
-  */
- 
-+#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- #include <asm/div64.h>
-@@ -25,7 +26,6 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
--#include <asm/fsl_guts.h>
- #include <asm/fsl_lbc.h>
- #include "smp.h"
- 
-diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
-index 680232d..5087bec 100644
---- a/arch/powerpc/platforms/85xx/p1022_rdk.c
-+++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
-@@ -12,6 +12,7 @@
-  * kind, whether express or implied.
-  */
- 
-+#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- #include <asm/div64.h>
-@@ -21,7 +22,6 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
--#include <asm/fsl_guts.h>
- #include "smp.h"
- 
- #include "mpc85xx.h"
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index b8b8216..6ac7786 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -19,6 +19,7 @@
- #include <linux/kexec.h>
- #include <linux/highmem.h>
- #include <linux/cpu.h>
-+#include <linux/fsl/guts.h>
- 
- #include <asm/machdep.h>
- #include <asm/pgtable.h>
-@@ -26,7 +27,6 @@
- #include <asm/mpic.h>
- #include <asm/cacheflush.h>
- #include <asm/dbell.h>
--#include <asm/fsl_guts.h>
- #include <asm/code-patching.h>
- #include <asm/cputhreads.h>
- 
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 30e002f..892e613 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -15,6 +15,7 @@
+ #include <linux/io.h>
  #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/errno.h>
-+#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- 
-@@ -23,7 +24,6 @@
- #include <asm/mpic.h>
- #include <asm/qe.h>
- #include <asm/qe_ic.h>
--#include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 55413a5..437a9c3 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -24,6 +24,7 @@
- #include <linux/delay.h>
- #include <linux/seq_file.h>
+ #include <linux/module.h>
+@@ -19,213 +21,934 @@
  #include <linux/of.h>
-+#include <linux/fsl/guts.h>
+ #include <linux/slab.h>
  
- #include <asm/time.h>
- #include <asm/machdep.h>
-@@ -38,7 +39,6 @@
- #include <sysdev/fsl_pci.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/simple_gpio.h>
--#include <asm/fsl_guts.h>
- 
- #include "mpc86xx.h"
- 
-diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
-index 2570f2a2..a34355f 100644
---- a/drivers/iommu/fsl_pamu.c
-+++ b/drivers/iommu/fsl_pamu.c
-@@ -20,11 +20,11 @@
- 
- #include "fsl_pamu.h"
- 
-+#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/genalloc.h>
- 
- #include <asm/mpc85xx.h>
--#include <asm/fsl_guts.h>
- 
- /* define indexes for each operation mapping scenario */
- #define OMI_QMAN        0x00
-diff --git a/include/linux/fsl/guts.h b/include/linux/fsl/guts.h
-new file mode 100644
-index 0000000..84d971f
---- /dev/null
-+++ b/include/linux/fsl/guts.h
-@@ -0,0 +1,192 @@
-+/**
-+ * Freecale 85xx and 86xx Global Utilties register set
-+ *
-+ * Authors: Jeff Brown
-+ *          Timur Tabi <timur@freescale.com>
-+ *
-+ * Copyright 2004,2007,2012 Freescale Semiconductor, Inc
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
+-struct cmux_clk {
++#define PLL_DIV1	0
++#define PLL_DIV2	1
++#define PLL_DIV3	2
++#define PLL_DIV4	3
 +
-+#ifndef __FSL_GUTS_H__
-+#define __FSL_GUTS_H__
++#define PLATFORM_PLL	0
++#define CGA_PLL1	1
++#define CGA_PLL2	2
++#define CGA_PLL3	3
++#define CGA_PLL4	4	/* only on clockgen-1.0, which lacks CGB */
++#define CGB_PLL1	4
++#define CGB_PLL2	5
 +
-+#include <linux/types.h>
++struct clockgen_pll_div {
++	struct clk *clk;
++	char name[32];
++};
 +
-+/**
-+ * Global Utility Registers.
-+ *
-+ * Not all registers defined in this structure are available on all chips, so
-+ * you are expected to know whether a given register actually exists on your
-+ * chip before you access it.
-+ *
-+ * Also, some registers are similar on different chips but have slightly
-+ * different names.  In these cases, one name is chosen to avoid extraneous
-+ * #ifdefs.
-+ */
-+struct ccsr_guts {
-+	__be32	porpllsr;	/* 0x.0000 - POR PLL Ratio Status Register */
-+	__be32	porbmsr;	/* 0x.0004 - POR Boot Mode Status Register */
-+	__be32	porimpscr;	/* 0x.0008 - POR I/O Impedance Status and Control Register */
-+	__be32	pordevsr;	/* 0x.000c - POR I/O Device Status Register */
-+	__be32	pordbgmsr;	/* 0x.0010 - POR Debug Mode Status Register */
-+	__be32	pordevsr2;	/* 0x.0014 - POR device status register 2 */
-+	u8	res018[0x20 - 0x18];
-+	__be32	porcir;		/* 0x.0020 - POR Configuration Information Register */
-+	u8	res024[0x30 - 0x24];
-+	__be32	gpiocr;		/* 0x.0030 - GPIO Control Register */
-+	u8	res034[0x40 - 0x34];
-+	__be32	gpoutdr;	/* 0x.0040 - General-Purpose Output Data Register */
-+	u8	res044[0x50 - 0x44];
-+	__be32	gpindr;		/* 0x.0050 - General-Purpose Input Data Register */
-+	u8	res054[0x60 - 0x54];
-+	__be32	pmuxcr;		/* 0x.0060 - Alternate Function Signal Multiplex Control */
-+        __be32  pmuxcr2;	/* 0x.0064 - Alternate function signal multiplex control 2 */
-+        __be32  dmuxcr;		/* 0x.0068 - DMA Mux Control Register */
-+        u8	res06c[0x70 - 0x6c];
-+	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
-+#define CCSR_GUTS_DEVDISR_TB1	0x00001000
-+#define CCSR_GUTS_DEVDISR_TB0	0x00004000
-+	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
-+	u8	res078[0x7c - 0x78];
-+	__be32  pmjcr;		/* 0x.007c - 4 Power Management Jog Control Register */
-+	__be32	powmgtcsr;	/* 0x.0080 - Power Management Status and Control Register */
-+	__be32  pmrccr;		/* 0x.0084 - Power Management Reset Counter Configuration Register */
-+	__be32  pmpdccr;	/* 0x.0088 - Power Management Power Down Counter Configuration Register */
-+	__be32  pmcdr;		/* 0x.008c - 4Power management clock disable register */
-+	__be32	mcpsumr;	/* 0x.0090 - Machine Check Summary Register */
-+	__be32	rstrscr;	/* 0x.0094 - Reset Request Status and Control Register */
-+	__be32  ectrstcr;	/* 0x.0098 - Exception reset control register */
-+	__be32  autorstsr;	/* 0x.009c - Automatic reset status register */
-+	__be32	pvr;		/* 0x.00a0 - Processor Version Register */
-+	__be32	svr;		/* 0x.00a4 - System Version Register */
-+	u8	res0a8[0xb0 - 0xa8];
-+	__be32	rstcr;		/* 0x.00b0 - Reset Control Register */
-+	u8	res0b4[0xc0 - 0xb4];
-+	__be32  iovselsr;	/* 0x.00c0 - I/O voltage select status register
-+					     Called 'elbcvselcr' on 86xx SOCs */
-+	u8	res0c4[0x100 - 0xc4];
-+	__be32	rcwsr[16];	/* 0x.0100 - Reset Control Word Status registers
-+					     There are 16 registers */
-+	u8	res140[0x224 - 0x140];
-+	__be32  iodelay1;	/* 0x.0224 - IO delay control register 1 */
-+	__be32  iodelay2;	/* 0x.0228 - IO delay control register 2 */
-+	u8	res22c[0x604 - 0x22c];
-+	__be32	pamubypenr; 	/* 0x.604 - PAMU bypass enable register */
-+	u8	res608[0x800 - 0x608];
-+	__be32	clkdvdr;	/* 0x.0800 - Clock Divide Register */
-+	u8	res804[0x900 - 0x804];
-+	__be32	ircr;		/* 0x.0900 - Infrared Control Register */
-+	u8	res904[0x908 - 0x904];
-+	__be32	dmacr;		/* 0x.0908 - DMA Control Register */
-+	u8	res90c[0x914 - 0x90c];
-+	__be32	elbccr;		/* 0x.0914 - eLBC Control Register */
-+	u8	res918[0xb20 - 0x918];
-+	__be32	ddr1clkdr;	/* 0x.0b20 - DDR1 Clock Disable Register */
-+	__be32	ddr2clkdr;	/* 0x.0b24 - DDR2 Clock Disable Register */
-+	__be32	ddrclkdr;	/* 0x.0b28 - DDR Clock Disable Register */
-+	u8	resb2c[0xe00 - 0xb2c];
-+	__be32	clkocr;		/* 0x.0e00 - Clock Out Select Register */
-+	u8	rese04[0xe10 - 0xe04];
-+	__be32	ddrdllcr;	/* 0x.0e10 - DDR DLL Control Register */
-+	u8	rese14[0xe20 - 0xe14];
-+	__be32	lbcdllcr;	/* 0x.0e20 - LBC DLL Control Register */
-+	__be32  cpfor;		/* 0x.0e24 - L2 charge pump fuse override register */
-+	u8	rese28[0xf04 - 0xe28];
-+	__be32	srds1cr0;	/* 0x.0f04 - SerDes1 Control Register 0 */
-+	__be32	srds1cr1;	/* 0x.0f08 - SerDes1 Control Register 0 */
-+	u8	resf0c[0xf2c - 0xf0c];
-+	__be32  itcr;		/* 0x.0f2c - Internal transaction control register */
-+	u8	resf30[0xf40 - 0xf30];
-+	__be32	srds2cr0;	/* 0x.0f40 - SerDes2 Control Register 0 */
-+	__be32	srds2cr1;	/* 0x.0f44 - SerDes2 Control Register 0 */
-+} __attribute__ ((packed));
++struct clockgen_pll {
++	struct clockgen_pll_div div[4];
++};
 +
++#define CLKSEL_VALID	1
++#define CLKSEL_80PCT	2	/* Only allowed if PLL <= 80% of max cpu freq */
 +
-+/* Alternate function signal multiplex control */
-+#define MPC85xx_PMUXCR_QE(x) (0x8000 >> (x))
++struct clockgen_sourceinfo {
++	u32 flags;	/* CLKSEL_xxx */
++	int pll;	/* CGx_PLLn */
++	int div;	/* PLL_DIVn */
++};
 +
-+#ifdef CONFIG_PPC_86xx
++#define NUM_MUX_PARENTS	16
 +
-+#define CCSR_GUTS_DMACR_DEV_SSI	0	/* DMA controller/channel set to SSI */
-+#define CCSR_GUTS_DMACR_DEV_IR	1	/* DMA controller/channel set to IR */
++struct clockgen_muxinfo {
++	struct clockgen_sourceinfo clksel[NUM_MUX_PARENTS];
++};
++
++#define NUM_HWACCEL	5
++#define NUM_CMUX	8
++
++struct clockgen;
 +
 +/*
-+ * Set the DMACR register in the GUTS
-+ *
-+ * The DMACR register determines the source of initiated transfers for each
-+ * channel on each DMA controller.  Rather than have a bunch of repetitive
-+ * macros for the bit patterns, we just have a function that calculates
-+ * them.
-+ *
-+ * guts: Pointer to GUTS structure
-+ * co: The DMA controller (0 or 1)
-+ * ch: The channel on the DMA controller (0, 1, 2, or 3)
-+ * device: The device to set as the source (CCSR_GUTS_DMACR_DEV_xx)
++ * cmux freq must be >= platform pll.
++ * If not set, cmux freq must be >= platform pll/2
 + */
-+static inline void guts_set_dmacr(struct ccsr_guts __iomem *guts,
-+	unsigned int co, unsigned int ch, unsigned int device)
-+{
-+	unsigned int shift = 16 + (8 * (1 - co) + 2 * (3 - ch));
++#define CG_CMUX_GE_PLAT		1
++#define CG_PLL_8BIT		2	/* PLLCnGSR[CFG] is 8 bits, not 6 */
 +
-+	clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
++struct clockgen_chipinfo {
++	const char *compat, *guts_compat;
++	const struct clockgen_muxinfo *cmux_groups[2];
++	const struct clockgen_muxinfo *hwaccel[NUM_HWACCEL];
++	void (*init_periph)(struct clockgen *cg);
++	int cmux_to_group[NUM_CMUX]; /* -1 terminates if fewer than NUM_CMUX */
++	u32 pll_mask;	/* 1 << n bit set if PLL n is valid */
++	u32 flags;	/* CG_xxx */
++};
++
++struct clockgen {
++	struct device_node *node;
++	void __iomem *regs;
++	struct clockgen_chipinfo info; /* mutable copy */
++	struct clk *sysclk;
++	struct clockgen_pll pll[6];
++	struct clk *cmux[NUM_CMUX];
++	struct clk *hwaccel[NUM_HWACCEL];
++	struct clk *fman[2];
++	struct ccsr_guts __iomem *guts;
++};
++
++static struct clockgen clockgen;
++
++static const struct clockgen_muxinfo p2041_cmux_grp1 = {
++	{
++		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++	}
++};
++
++static const struct clockgen_muxinfo p2041_cmux_grp2 = {
++	{
++		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		[4] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++	}
++};
++
++static const struct clockgen_muxinfo p5020_cmux_grp1 = {
++	{
++		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		[4] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL2, PLL_DIV1 },
++	}
++};
++
++static const struct clockgen_muxinfo p5020_cmux_grp2 = {
++	{
++		[0] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV1 },
++		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++	}
++};
++
++static const struct clockgen_muxinfo p5040_cmux_grp1 = {
++	{
++		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		[4] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL2, PLL_DIV1 },
++		[5] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL2, PLL_DIV2 },
++	}
++};
++
++static const struct clockgen_muxinfo p5040_cmux_grp2 = {
++	{
++		[0] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV1 },
++		[1] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV2 },
++		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++	}
++};
++
++static const struct clockgen_muxinfo p4080_cmux_grp1 = {
++	{
++		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++		[8] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL3, PLL_DIV1 },
++	}
++};
++
++static const struct clockgen_muxinfo p4080_cmux_grp2 = {
++	{
++		[0] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV1 },
++		[8] = { CLKSEL_VALID, CGA_PLL3, PLL_DIV1 },
++		[9] = { CLKSEL_VALID, CGA_PLL3, PLL_DIV2 },
++		[12] = { CLKSEL_VALID, CGA_PLL4, PLL_DIV1 },
++		[13] = { CLKSEL_VALID, CGA_PLL4, PLL_DIV2 },
++	}
++};
++
++static const struct clockgen_muxinfo t1023_cmux = {
++	{
++		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++	}
++};
++
++static const struct clockgen_muxinfo t1040_cmux = {
++	{
++		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++	}
++};
++
++
++static const struct clockgen_muxinfo clockgen2_cmux_cga = {
++	{
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
++		{},
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
++		{},
++		{ CLKSEL_VALID, CGA_PLL3, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL3, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL3, PLL_DIV4 },
++	},
++};
++
++static const struct clockgen_muxinfo clockgen2_cmux_cga12 = {
++	{
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
++		{},
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
++	},
++};
++
++static const struct clockgen_muxinfo clockgen2_cmux_cgb = {
++	{
++		{ CLKSEL_VALID, CGB_PLL1, PLL_DIV1 },
++		{ CLKSEL_VALID, CGB_PLL1, PLL_DIV2 },
++		{ CLKSEL_VALID, CGB_PLL1, PLL_DIV4 },
++		{},
++		{ CLKSEL_VALID, CGB_PLL2, PLL_DIV1 },
++		{ CLKSEL_VALID, CGB_PLL2, PLL_DIV2 },
++		{ CLKSEL_VALID, CGB_PLL2, PLL_DIV4 },
++	},
++};
++
++static const struct clockgen_muxinfo t1023_hwa1 = {
++	{
++		{},
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
++	},
++};
++
++static const struct clockgen_muxinfo t1023_hwa2 = {
++	{
++		[6] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++	},
++};
++
++static const struct clockgen_muxinfo t2080_hwa1 = {
++	{
++		{},
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
++		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
++	},
++};
++
++static const struct clockgen_muxinfo t2080_hwa2 = {
++	{
++		{},
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
++		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
++	},
++};
++
++static const struct clockgen_muxinfo t4240_hwa1 = {
++	{
++		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
++		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
++		{},
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
++		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
++	},
++};
++
++static const struct clockgen_muxinfo t4240_hwa4 = {
++	{
++		[2] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV2 },
++		[3] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV3 },
++		[4] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV4 },
++		[5] = { CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
++		[6] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV2 },
++	},
++};
++
++static const struct clockgen_muxinfo t4240_hwa5 = {
++	{
++		[2] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV2 },
++		[3] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV3 },
++		[4] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV4 },
++		[5] = { CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
++		[6] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV2 },
++		[7] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV3 },
++	},
++};
++
++#define RCWSR7_FM1_CLK_SEL	0x40000000
++#define RCWSR7_FM2_CLK_SEL	0x20000000
++#define RCWSR7_HWA_ASYNC_DIV	0x04000000
++
++static void __init p2041_init_periph(struct clockgen *cg)
++{
++	u32 reg;
++
++	reg = ioread32be(&cg->guts->rcwsr[7]);
++
++	if (reg & RCWSR7_FM1_CLK_SEL)
++		cg->fman[0] = cg->pll[CGA_PLL2].div[PLL_DIV2].clk;
++	else
++		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
 +}
 +
-+#define CCSR_GUTS_PMUXCR_LDPSEL		0x00010000
-+#define CCSR_GUTS_PMUXCR_SSI1_MASK	0x0000C000	/* Bitmask for SSI1 */
-+#define CCSR_GUTS_PMUXCR_SSI1_LA	0x00000000	/* Latched address */
-+#define CCSR_GUTS_PMUXCR_SSI1_HI	0x00004000	/* High impedance */
-+#define CCSR_GUTS_PMUXCR_SSI1_SSI	0x00008000	/* Used for SSI1 */
-+#define CCSR_GUTS_PMUXCR_SSI2_MASK	0x00003000	/* Bitmask for SSI2 */
-+#define CCSR_GUTS_PMUXCR_SSI2_LA	0x00000000	/* Latched address */
-+#define CCSR_GUTS_PMUXCR_SSI2_HI	0x00001000	/* High impedance */
-+#define CCSR_GUTS_PMUXCR_SSI2_SSI	0x00002000	/* Used for SSI2 */
-+#define CCSR_GUTS_PMUXCR_LA_22_25_LA	0x00000000	/* Latched Address */
-+#define CCSR_GUTS_PMUXCR_LA_22_25_HI	0x00000400	/* High impedance */
-+#define CCSR_GUTS_PMUXCR_DBGDRV		0x00000200	/* Signals not driven */
-+#define CCSR_GUTS_PMUXCR_DMA2_0		0x00000008
-+#define CCSR_GUTS_PMUXCR_DMA2_3		0x00000004
-+#define CCSR_GUTS_PMUXCR_DMA1_0		0x00000002
-+#define CCSR_GUTS_PMUXCR_DMA1_3		0x00000001
-+
-+/*
-+ * Set the DMA external control bits in the GUTS
-+ *
-+ * The DMA external control bits in the PMUXCR are only meaningful for
-+ * channels 0 and 3.  Any other channels are ignored.
-+ *
-+ * guts: Pointer to GUTS structure
-+ * co: The DMA controller (0 or 1)
-+ * ch: The channel on the DMA controller (0, 1, 2, or 3)
-+ * value: the new value for the bit (0 or 1)
-+ */
-+static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
-+	unsigned int co, unsigned int ch, unsigned int value)
++static void __init p4080_init_periph(struct clockgen *cg)
 +{
-+	if ((ch == 0) || (ch == 3)) {
-+		unsigned int shift = 2 * (co + 1) - (ch & 1) - 1;
++	u32 reg;
 +
-+		clrsetbits_be32(&guts->pmuxcr, 1 << shift, value << shift);
++	reg = ioread32be(&cg->guts->rcwsr[7]);
++
++	if (reg & RCWSR7_FM1_CLK_SEL)
++		cg->fman[0] = cg->pll[CGA_PLL3].div[PLL_DIV2].clk;
++	else
++		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
++
++	if (reg & RCWSR7_FM2_CLK_SEL)
++		cg->fman[1] = cg->pll[CGA_PLL3].div[PLL_DIV2].clk;
++	else
++		cg->fman[1] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
++}
++
++static void __init p5020_init_periph(struct clockgen *cg)
++{
++	u32 reg;
++	int div = PLL_DIV2;
++
++	reg = ioread32be(&cg->guts->rcwsr[7]);
++	if (reg & RCWSR7_HWA_ASYNC_DIV)
++		div = PLL_DIV4;
++
++	if (reg & RCWSR7_FM1_CLK_SEL)
++		cg->fman[0] = cg->pll[CGA_PLL2].div[div].clk;
++	else
++		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
++}
++
++static void __init p5040_init_periph(struct clockgen *cg)
++{
++	u32 reg;
++	int div = PLL_DIV2;
++
++	reg = ioread32be(&cg->guts->rcwsr[7]);
++	if (reg & RCWSR7_HWA_ASYNC_DIV)
++		div = PLL_DIV4;
++
++	if (reg & RCWSR7_FM1_CLK_SEL)
++		cg->fman[0] = cg->pll[CGA_PLL3].div[div].clk;
++	else
++		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
++
++	if (reg & RCWSR7_FM2_CLK_SEL)
++		cg->fman[1] = cg->pll[CGA_PLL3].div[div].clk;
++	else
++		cg->fman[1] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
++}
++
++static void __init t1023_init_periph(struct clockgen *cg)
++{
++	cg->fman[0] = cg->hwaccel[1];
++}
++
++static void __init t1040_init_periph(struct clockgen *cg)
++{
++	cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV1].clk;
++}
++
++static void __init t2080_init_periph(struct clockgen *cg)
++{
++	cg->fman[0] = cg->hwaccel[0];
++}
++
++static void __init t4240_init_periph(struct clockgen *cg)
++{
++	cg->fman[0] = cg->hwaccel[3];
++	cg->fman[1] = cg->hwaccel[4];
++}
++
++static const struct clockgen_chipinfo chipinfo[] = {
++	{
++		.compat = "fsl,b4420-clockgen",
++		.guts_compat = "fsl,b4860-device-config",
++		.init_periph = t2080_init_periph,
++		.cmux_groups = {
++			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
++		},
++		.hwaccel = {
++			&t2080_hwa1
++		},
++		.cmux_to_group = {
++			0, 1, 1, 1, -1
++		},
++		.pll_mask = 0x3f,
++		.flags = CG_PLL_8BIT,
++	},
++	{
++		.compat = "fsl,b4860-clockgen",
++		.guts_compat = "fsl,b4860-device-config",
++		.init_periph = t2080_init_periph,
++		.cmux_groups = {
++			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
++		},
++		.hwaccel = {
++			&t2080_hwa1
++		},
++		.cmux_to_group = {
++			0, 1, 1, 1, -1
++		},
++		.pll_mask = 0x3f,
++		.flags = CG_PLL_8BIT,
++	},
++	{
++		.compat = "fsl,ls1021a-clockgen",
++		.cmux_groups = {
++			&t1023_cmux
++		},
++		.cmux_to_group = {
++			0, -1
++		},
++		.pll_mask = 0x03,
++	},
++	{
++		.compat = "fsl,p2041-clockgen",
++		.guts_compat = "fsl,qoriq-device-config-1.0",
++		.init_periph = p2041_init_periph,
++		.cmux_groups = {
++			&p2041_cmux_grp1, &p2041_cmux_grp2
++		},
++		.cmux_to_group = {
++			0, 0, 1, 1, -1
++		},
++		.pll_mask = 0x07,
++	},
++	{
++		.compat = "fsl,p3041-clockgen",
++		.guts_compat = "fsl,qoriq-device-config-1.0",
++		.init_periph = p2041_init_periph,
++		.cmux_groups = {
++			&p2041_cmux_grp1, &p2041_cmux_grp2
++		},
++		.cmux_to_group = {
++			0, 0, 1, 1, -1
++		},
++		.pll_mask = 0x07,
++	},
++	{
++		.compat = "fsl,p4080-clockgen",
++		.guts_compat = "fsl,qoriq-device-config-1.0",
++		.init_periph = p4080_init_periph,
++		.cmux_groups = {
++			&p4080_cmux_grp1, &p4080_cmux_grp2
++		},
++		.cmux_to_group = {
++			0, 0, 0, 0, 1, 1, 1, 1
++		},
++		.pll_mask = 0x1f,
++	},
++	{
++		.compat = "fsl,p5020-clockgen",
++		.guts_compat = "fsl,qoriq-device-config-1.0",
++		.init_periph = p5020_init_periph,
++		.cmux_groups = {
++			&p2041_cmux_grp1, &p2041_cmux_grp2
++		},
++		.cmux_to_group = {
++			0, 1, -1
++		},
++		.pll_mask = 0x07,
++	},
++	{
++		.compat = "fsl,p5040-clockgen",
++		.guts_compat = "fsl,p5040-device-config",
++		.init_periph = p5040_init_periph,
++		.cmux_groups = {
++			&p5040_cmux_grp1, &p5040_cmux_grp2
++		},
++		.cmux_to_group = {
++			0, 0, 1, 1, -1
++		},
++		.pll_mask = 0x0f,
++	},
++	{
++		.compat = "fsl,t1023-clockgen",
++		.guts_compat = "fsl,t1023-device-config",
++		.init_periph = t1023_init_periph,
++		.cmux_groups = {
++			&t1023_cmux
++		},
++		.hwaccel = {
++			&t1023_hwa1, &t1023_hwa2
++		},
++		.cmux_to_group = {
++			0, 0, -1
++		},
++		.pll_mask = 0x03,
++		.flags = CG_PLL_8BIT,
++	},
++	{
++		.compat = "fsl,t1040-clockgen",
++		.guts_compat = "fsl,t1040-device-config",
++		.init_periph = t1040_init_periph,
++		.cmux_groups = {
++			&t1040_cmux
++		},
++		.cmux_to_group = {
++			0, 0, 0, 0, -1
++		},
++		.pll_mask = 0x07,
++		.flags = CG_PLL_8BIT,
++	},
++	{
++		.compat = "fsl,t2080-clockgen",
++		.guts_compat = "fsl,t2080-device-config",
++		.init_periph = t2080_init_periph,
++		.cmux_groups = {
++			&clockgen2_cmux_cga12
++		},
++		.hwaccel = {
++			&t2080_hwa1, &t2080_hwa2
++		},
++		.cmux_to_group = {
++			0, -1
++		},
++		.pll_mask = 0x07,
++		.flags = CG_PLL_8BIT,
++	},
++	{
++		.compat = "fsl,t4240-clockgen",
++		.guts_compat = "fsl,t4240-device-config",
++		.init_periph = t4240_init_periph,
++		.cmux_groups = {
++			&clockgen2_cmux_cga, &clockgen2_cmux_cgb
++		},
++		.hwaccel = {
++			&t4240_hwa1, NULL, NULL, &t4240_hwa4, &t4240_hwa5
++		},
++		.cmux_to_group = {
++			0, 0, 1, -1
++		},
++		.pll_mask = 0x3f,
++		.flags = CG_PLL_8BIT,
++	},
++	{},
++};
++
++struct mux_hwclock {
+ 	struct clk_hw hw;
+-	void __iomem *reg;
+-	unsigned int clk_per_pll;
+-	u32 flags;
++	struct clockgen *cg;
++	const struct clockgen_muxinfo *info;
++	u32 __iomem *reg;
++	u8 parent_to_clksel[NUM_MUX_PARENTS];
++	s8 clksel_to_parent[NUM_MUX_PARENTS];
++	int num_parents;
+ };
+ 
+-#define PLL_KILL			BIT(31)
++#define to_mux_hwclock(p)	container_of(p, struct mux_hwclock, hw)
++#define CLKSEL_MASK		0x78000000
+ #define	CLKSEL_SHIFT		27
+-#define CLKSEL_ADJUST		BIT(0)
+-#define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
+ 
+-static int cmux_set_parent(struct clk_hw *hw, u8 idx)
++static int mux_set_parent(struct clk_hw *hw, u8 idx)
+ {
+-	struct cmux_clk *clk = to_cmux_clk(hw);
++	struct mux_hwclock *hwc = to_mux_hwclock(hw);
+ 	u32 clksel;
+ 
+-	clksel = ((idx / clk->clk_per_pll) << 2) + idx % clk->clk_per_pll;
+-	if (clk->flags & CLKSEL_ADJUST)
+-		clksel += 8;
+-	clksel = (clksel & 0xf) << CLKSEL_SHIFT;
+-	iowrite32be(clksel, clk->reg);
++	if (idx >= hwc->num_parents)
++		return -EINVAL;
++
++	clksel = hwc->parent_to_clksel[idx];
++	iowrite32be((clksel << CLKSEL_SHIFT) & CLKSEL_MASK, hwc->reg);
+ 
+ 	return 0;
+ }
+ 
+-static u8 cmux_get_parent(struct clk_hw *hw)
++static u8 mux_get_parent(struct clk_hw *hw)
+ {
+-	struct cmux_clk *clk = to_cmux_clk(hw);
++	struct mux_hwclock *hwc = to_mux_hwclock(hw);
+ 	u32 clksel;
++	s8 ret;
+ 
+-	clksel = ioread32be(clk->reg);
+-	clksel = (clksel >> CLKSEL_SHIFT) & 0xf;
+-	if (clk->flags & CLKSEL_ADJUST)
+-		clksel -= 8;
+-	clksel = (clksel >> 2) * clk->clk_per_pll + clksel % 4;
++	clksel = (ioread32be(hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
+ 
+-	return clksel;
++	ret = hwc->clksel_to_parent[clksel];
++	if (ret < 0) {
++		pr_err("%s: mux at %p has bad clksel\n", __func__, hwc->reg);
++		return 0;
++	}
++
++	return ret;
+ }
+ 
+ static const struct clk_ops cmux_ops = {
+-	.get_parent = cmux_get_parent,
+-	.set_parent = cmux_set_parent,
++	.get_parent = mux_get_parent,
++	.set_parent = mux_set_parent,
+ };
+ 
+-static void __init core_mux_init(struct device_node *np)
++/*
++ * Don't allow setting for now, as the clock options haven't been
++ * sanitized for additional restrictions.
++ */
++static const struct clk_ops hwaccel_ops = {
++	.get_parent = mux_get_parent,
++};
++
++static const struct clockgen_pll_div *get_pll_div(struct clockgen *cg,
++						  struct mux_hwclock *hwc,
++						  int idx)
+ {
+-	struct clk *clk;
+-	struct clk_init_data init;
+-	struct cmux_clk *cmux_clk;
+-	struct device_node *node;
+-	int rc, count, i;
+-	u32	offset;
+-	const char *clk_name;
+-	const char **parent_names;
+-	struct of_phandle_args clkspec;
++	int pll, div;
+ 
+-	rc = of_property_read_u32(np, "reg", &offset);
+-	if (rc) {
+-		pr_err("%s: could not get reg property\n", np->name);
+-		return;
+-	}
++	if (!(hwc->info->clksel[idx].flags & CLKSEL_VALID))
++		return NULL;
+ 
+-	/* get the input clock source count */
+-	count = of_property_count_strings(np, "clock-names");
+-	if (count < 0) {
+-		pr_err("%s: get clock count error\n", np->name);
+-		return;
+-	}
+-	parent_names = kcalloc(count, sizeof(char *), GFP_KERNEL);
+-	if (!parent_names)
+-		return;
++	pll = hwc->info->clksel[idx].pll;
++	div = hwc->info->clksel[idx].div;
+ 
+-	for (i = 0; i < count; i++)
+-		parent_names[i] = of_clk_get_parent_name(np, i);
++	return &cg->pll[pll].div[div];
++}
+ 
+-	cmux_clk = kzalloc(sizeof(*cmux_clk), GFP_KERNEL);
+-	if (!cmux_clk)
+-		goto err_name;
++static struct clk * __init create_mux_common(struct clockgen *cg,
++					     struct mux_hwclock *hwc,
++					     const struct clk_ops *ops,
++					     unsigned long min_rate,
++					     unsigned long pct80_rate,
++					     const char *fmt, int idx)
++{
++	struct clk_init_data init = {};
++	struct clk *clk;
++	const struct clockgen_pll_div *div;
++	const char *parent_names[NUM_MUX_PARENTS];
++	char name[32];
++	int i, j;
+ 
+-	cmux_clk->reg = of_iomap(np, 0);
+-	if (!cmux_clk->reg) {
+-		pr_err("%s: could not map register\n", __func__);
+-		goto err_clk;
+-	}
++	snprintf(name, sizeof(name), fmt, idx);
+ 
+-	rc = of_parse_phandle_with_args(np, "clocks", "#clock-cells", 0,
+-					&clkspec);
+-	if (rc) {
+-		pr_err("%s: parse clock node error\n", __func__);
+-		goto err_clk;
+-	}
++	for (i = 0, j = 0; i < NUM_MUX_PARENTS; i++) {
++		unsigned long rate;
+ 
+-	cmux_clk->clk_per_pll = of_property_count_strings(clkspec.np,
+-			"clock-output-names");
+-	of_node_put(clkspec.np);
++		hwc->clksel_to_parent[i] = -1;
+ 
+-	node = of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen");
+-	if (node && (offset >= 0x80))
+-		cmux_clk->flags = CLKSEL_ADJUST;
++		div = get_pll_div(cg, hwc, i);
++		if (!div)
++			continue;
+ 
+-	rc = of_property_read_string_index(np, "clock-output-names",
+-					   0, &clk_name);
+-	if (rc) {
+-		pr_err("%s: read clock names error\n", np->name);
+-		goto err_clk;
++		rate = clk_get_rate(div->clk);
++
++		if (hwc->info->clksel[i].flags & CLKSEL_80PCT &&
++		    rate > pct80_rate)
++			continue;
++		if (rate < min_rate)
++			continue;
++
++		parent_names[j] = div->name;
++		hwc->parent_to_clksel[j] = i;
++		hwc->clksel_to_parent[i] = j;
++		j++;
+ 	}
+ 
+-	init.name = clk_name;
+-	init.ops = &cmux_ops;
++	init.name = name;
++	init.ops = ops;
+ 	init.parent_names = parent_names;
+-	init.num_parents = count;
++	init.num_parents = hwc->num_parents = j;
+ 	init.flags = 0;
+-	cmux_clk->hw.init = &init;
++	hwc->hw.init = &init;
++	hwc->cg = cg;
+ 
+-	clk = clk_register(NULL, &cmux_clk->hw);
++	clk = clk_register(NULL, &hwc->hw);
+ 	if (IS_ERR(clk)) {
+-		pr_err("%s: could not register clock\n", clk_name);
+-		goto err_clk;
++		pr_err("%s: Couldn't register %s: %ld\n", __func__, name,
++		       PTR_ERR(clk));
++		kfree(hwc);
++		return NULL;
++	}
++
++	return clk;
++}
++
++static struct clk * __init create_one_cmux(struct clockgen *cg, int idx)
++{
++	struct mux_hwclock *hwc;
++	const struct clockgen_pll_div *div;
++	unsigned long plat_rate, min_rate;
++	u64 pct80_rate;
++	u32 clksel;
++
++	hwc = kzalloc(sizeof(*hwc), GFP_KERNEL);
++	if (!hwc)
++		return NULL;
++
++	hwc->reg = cg->regs + 0x20 * idx;
++	hwc->info = cg->info.cmux_groups[cg->info.cmux_to_group[idx]];
++
++	/*
++	 * Find the rate for the default clksel, and treat it as the
++	 * maximum rated core frequency.  If this is an incorrect
++	 * assumption, certain clock options (possibly including the
++	 * default clksel) may be inappropriately excluded on certain
++	 * chips.
++	 */
++	clksel = (ioread32be(hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
++	div = get_pll_div(cg, hwc, clksel);
++	if (!div)
++		return NULL;
++
++	pct80_rate = clk_get_rate(div->clk);
++	pct80_rate *= 8;
++	do_div(pct80_rate, 10);
++
++	plat_rate = clk_get_rate(cg->pll[PLATFORM_PLL].div[PLL_DIV1].clk);
++
++	if (cg->info.flags & CG_CMUX_GE_PLAT)
++		min_rate = plat_rate;
++	else
++		min_rate = plat_rate / 2;
++
++	return create_mux_common(cg, hwc, &cmux_ops, min_rate,
++				 pct80_rate, "cg-cmux%d", idx);
++}
++
++static struct clk * __init create_one_hwaccel(struct clockgen *cg, int idx)
++{
++	struct mux_hwclock *hwc;
++
++	hwc = kzalloc(sizeof(*hwc), GFP_KERNEL);
++	if (!hwc)
++		return NULL;
++
++	hwc->reg = cg->regs + 0x20 * idx + 0x10;
++	hwc->info = cg->info.hwaccel[idx];
++
++	return create_mux_common(cg, hwc, &hwaccel_ops, 0, 0,
++				 "cg-hwaccel%d", idx);
++}
++
++static void __init create_muxes(struct clockgen *cg)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(cg->cmux); i++) {
++		if (cg->info.cmux_to_group[i] < 0)
++			break;
++		if (cg->info.cmux_to_group[i] >=
++		    ARRAY_SIZE(cg->info.cmux_groups)) {
++			WARN_ON_ONCE(1);
++			continue;
++		}
++
++		cg->cmux[i] = create_one_cmux(cg, i);
+ 	}
+ 
++	for (i = 0; i < ARRAY_SIZE(cg->hwaccel); i++) {
++		if (!cg->info.hwaccel[i])
++			continue;
++
++		cg->hwaccel[i] = create_one_hwaccel(cg, i);
 +	}
 +}
 +
-+#define CCSR_GUTS_CLKDVDR_PXCKEN	0x80000000
-+#define CCSR_GUTS_CLKDVDR_SSICKEN	0x20000000
-+#define CCSR_GUTS_CLKDVDR_PXCKINV	0x10000000
-+#define CCSR_GUTS_CLKDVDR_PXCKDLY_SHIFT 25
-+#define CCSR_GUTS_CLKDVDR_PXCKDLY_MASK	0x06000000
-+#define CCSR_GUTS_CLKDVDR_PXCKDLY(x) \
-+	(((x) & 3) << CCSR_GUTS_CLKDVDR_PXCKDLY_SHIFT)
-+#define CCSR_GUTS_CLKDVDR_PXCLK_SHIFT	16
-+#define CCSR_GUTS_CLKDVDR_PXCLK_MASK	0x001F0000
-+#define CCSR_GUTS_CLKDVDR_PXCLK(x) (((x) & 31) << CCSR_GUTS_CLKDVDR_PXCLK_SHIFT)
-+#define CCSR_GUTS_CLKDVDR_SSICLK_MASK	0x000000FF
-+#define CCSR_GUTS_CLKDVDR_SSICLK(x) ((x) & CCSR_GUTS_CLKDVDR_SSICLK_MASK)
++static void __init clockgen_init(struct device_node *np);
 +
-+#endif
++/* Legacy nodes may get probed before the parent clockgen node */
++static void __init legacy_init_clockgen(struct device_node *np)
++{
++	if (!clockgen.node)
++		clockgen_init(of_get_parent(np));
++}
 +
++/* Legacy node */
++static void __init core_mux_init(struct device_node *np)
++{
++	struct clk *clk;
++	struct resource res;
++	int idx, rc;
++
++	legacy_init_clockgen(np);
++
++	if (of_address_to_resource(np, 0, &res))
++		return;
++
++	idx = (res.start & 0xf0) >> 5;
++	clk = clockgen.cmux[idx];
++
+ 	rc = of_clk_add_provider(np, of_clk_src_simple_get, clk);
+ 	if (rc) {
+-		pr_err("Could not register clock provider for node:%s\n",
+-		       np->name);
+-		goto err_clk;
++		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
++		       __func__, np->name, rc);
++		return;
+ 	}
+-	goto err_name;
++}
+ 
+-err_clk:
+-	kfree(cmux_clk);
+-err_name:
+-	/* free *_names because they are reallocated when registered */
+-	kfree(parent_names);
++static struct clk *sysclk_from_fixed(struct device_node *node, const char *name)
++{
++	u32 rate;
++
++	if (of_property_read_u32(node, "clock-frequency", &rate))
++		return ERR_PTR(-ENODEV);
++
++	return clk_register_fixed_rate(NULL, name, NULL, CLK_IS_ROOT, rate);
+ }
+ 
+-static void __init core_pll_init(struct device_node *np)
++static struct clk *sysclk_from_parent(const char *name)
++{
++	struct clk *clk;
++	const char *parent_name;
++
++	clk = of_clk_get(clockgen.node, 0);
++	if (IS_ERR(clk))
++		return clk;
++
++	/* Register the input clock under the desired name. */
++	parent_name = __clk_get_name(clk);
++	clk = clk_register_fixed_factor(NULL, name, parent_name,
++					0, 1, 1);
++	if (IS_ERR(clk))
++		pr_err("%s: Couldn't register %s: %ld\n", __func__, name,
++		       PTR_ERR(clk));
++
++	return clk;
++}
++
++static struct clk * __init create_sysclk(const char *name)
++{
++	struct device_node *sysclk;
++	struct clk *clk;
++
++	clk = sysclk_from_fixed(clockgen.node, name);
++	if (!IS_ERR(clk))
++		return clk;
++
++	clk = sysclk_from_parent(name);
++	if (!IS_ERR(clk))
++		return clk;
++
++	sysclk = of_get_child_by_name(clockgen.node, "sysclk");
++	if (sysclk) {
++		clk = sysclk_from_fixed(sysclk, name);
++		if (!IS_ERR(clk))
++			return clk;
++	}
++
++	pr_err("%s: No input clock\n", __func__);
++	return NULL;
++}
++
++/* Legacy node */
++static void __init sysclk_init(struct device_node *node)
++{
++	struct clk *clk;
++
++	legacy_init_clockgen(node);
++
++	clk = clockgen.sysclk;
++	if (clk)
++		of_clk_add_provider(node, of_clk_src_simple_get, clk);
++}
++
++#define PLL_KILL BIT(31)
++
++static void __init create_one_pll(struct clockgen *cg, int idx)
+ {
++	u32 __iomem *reg;
+ 	u32 mult;
+-	int i, rc, count;
+-	const char *clk_name, *parent_name;
+-	struct clk_onecell_data *onecell_data;
+-	struct clk      **subclks;
+-	void __iomem *base;
++	struct clockgen_pll *pll = &cg->pll[idx];
++	int i;
+ 
+-	base = of_iomap(np, 0);
+-	if (!base) {
+-		pr_err("iomap error\n");
++	if (!(cg->info.pll_mask & (1 << idx)))
+ 		return;
+-	}
+ 
+-	/* get the multiple of PLL */
+-	mult = ioread32be(base);
++	if (idx == PLATFORM_PLL)
++		reg = cg->regs + 0xc00;
++	else
++		reg = cg->regs + 0x800 + 0x20 * (idx - 1);
+ 
+-	/* check if this PLL is disabled */
++	/* Get the multiple of PLL */
++	mult = ioread32be(reg);
++
++	/* Check if this PLL is disabled */
+ 	if (mult & PLL_KILL) {
+-		pr_debug("PLL:%s is disabled\n", np->name);
+-		goto err_map;
++		pr_debug("%s(): pll %p disabled\n", __func__, reg);
++		return;
+ 	}
+-	mult = (mult >> 1) & 0x3f;
+ 
+-	parent_name = of_clk_get_parent_name(np, 0);
+-	if (!parent_name) {
+-		pr_err("PLL: %s must have a parent\n", np->name);
+-		goto err_map;
++	if ((cg->info.flags & CG_PLL_8BIT) && idx != PLATFORM_PLL)
++		mult = (mult & GENMASK(8, 1)) >> 1;
++	else
++		mult = (mult & GENMASK(6, 1)) >> 1;
++
++	for (i = 0; i < ARRAY_SIZE(pll->div); i++) {
++		struct clk *clk;
++
++		snprintf(pll->div[i].name, sizeof(pll->div[i].name),
++			 "cg-pll%d-div%d", idx, i + 1);
++
++		clk = clk_register_fixed_factor(NULL,
++				pll->div[i].name, "cg-sysclk", 0, mult, i + 1);
++		if (IS_ERR(clk)) {
++			pr_err("%s: %s: register failed %ld\n",
++			       __func__, pll->div[i].name, PTR_ERR(clk));
++			continue;
++		}
++
++		pll->div[i].clk = clk;
+ 	}
++}
++
++static void __init create_plls(struct clockgen *cg)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(cg->pll); i++)
++		create_one_pll(cg, i);
++}
+ 
++static void __init legacy_pll_init(struct device_node *np, int idx)
++{
++	struct clockgen_pll *pll;
++	struct clk_onecell_data *onecell_data;
++	struct clk **subclks;
++	int count, rc;
++
++	legacy_init_clockgen(np);
++
++	pll = &clockgen.pll[idx];
+ 	count = of_property_count_strings(np, "clock-output-names");
+-	if (count < 0 || count > 4) {
+-		pr_err("%s: clock is not supported\n", np->name);
+-		goto err_map;
+-	}
+ 
+-	subclks = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
++	BUILD_BUG_ON(ARRAY_SIZE(pll->div) < 4);
++	subclks = kcalloc(4, sizeof(struct clk *), GFP_KERNEL);
+ 	if (!subclks)
+-		goto err_map;
++		return;
+ 
+ 	onecell_data = kmalloc(sizeof(*onecell_data), GFP_KERNEL);
+ 	if (!onecell_data)
+ 		goto err_clks;
+ 
+-	for (i = 0; i < count; i++) {
+-		rc = of_property_read_string_index(np, "clock-output-names",
+-						   i, &clk_name);
+-		if (rc) {
+-			pr_err("%s: could not get clock names\n", np->name);
+-			goto err_cell;
+-		}
+-
+-		/*
+-		 * when count == 4, there are 4 output clocks:
+-		 * /1, /2, /3, /4 respectively
+-		 * when count < 4, there are at least 2 output clocks:
+-		 * /1, /2, (/4, if count == 3) respectively.
+-		 */
+-		if (count == 4)
+-			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
+-					parent_name, 0, mult, 1 + i);
+-		else
+-
+-			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
+-					parent_name, 0, mult, 1 << i);
+-
+-		if (IS_ERR(subclks[i])) {
+-			pr_err("%s: could not register clock\n", clk_name);
+-			goto err_cell;
+-		}
++	if (count <= 3) {
++		subclks[0] = pll->div[0].clk;
++		subclks[1] = pll->div[1].clk;
++		subclks[2] = pll->div[3].clk;
++	} else {
++		subclks[0] = pll->div[0].clk;
++		subclks[1] = pll->div[1].clk;
++		subclks[2] = pll->div[2].clk;
++		subclks[3] = pll->div[3].clk;
+ 	}
+ 
+ 	onecell_data->clks = subclks;
+@@ -233,125 +956,221 @@ static void __init core_pll_init(struct device_node *np)
+ 
+ 	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
+ 	if (rc) {
+-		pr_err("Could not register clk provider for node:%s\n",
+-		       np->name);
++		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
++		       __func__, np->name, rc);
+ 		goto err_cell;
+ 	}
+ 
+-	iounmap(base);
+ 	return;
+ err_cell:
+ 	kfree(onecell_data);
+ err_clks:
+ 	kfree(subclks);
+-err_map:
+-	iounmap(base);
+ }
+ 
+-static void __init sysclk_init(struct device_node *node)
++/* Legacy node */
++static void __init pltfrm_pll_init(struct device_node *np)
+ {
+-	struct clk *clk;
+-	const char *clk_name = node->name;
+-	struct device_node *np = of_get_parent(node);
+-	u32 rate;
++	legacy_pll_init(np, PLATFORM_PLL);
++}
+ 
+-	if (!np) {
+-		pr_err("could not get parent node\n");
++/* Legacy node */
++static void __init core_pll_init(struct device_node *np)
++{
++	struct resource res;
++	int idx;
++
++	if (of_address_to_resource(np, 0, &res))
+ 		return;
++
++	if ((res.start & 0xfff) == 0xc00) {
++		/*
++		 * ls1021a devtree labels the platform PLL
++		 * with the core PLL compatible
++		 */
++		pltfrm_pll_init(np);
++	} else {
++		idx = (res.start & 0xf0) >> 5;
++		legacy_pll_init(np, CGA_PLL1 + idx);
+ 	}
++}
+ 
+-	if (of_property_read_u32(np, "clock-frequency", &rate)) {
+-		of_node_put(node);
+-		return;
++static struct clk *clockgen_clk_get(struct of_phandle_args *clkspec, void *data)
++{
++	struct clockgen *cg = data;
++	struct clk *clk;
++	struct clockgen_pll *pll;
++	u32 type, idx;
++
++	if (clkspec->args_count < 2) {
++		pr_err("%s: insufficient phandle args\n", __func__);
++		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	of_property_read_string(np, "clock-output-names", &clk_name);
++	type = clkspec->args[0];
++	idx = clkspec->args[1];
+ 
+-	clk = clk_register_fixed_rate(NULL, clk_name, NULL, CLK_IS_ROOT, rate);
+-	if (!IS_ERR(clk))
+-		of_clk_add_provider(np, of_clk_src_simple_get, clk);
++	switch (type) {
++	case 0:
++		if (idx != 0)
++			goto bad_args;
++		clk = cg->sysclk;
++		break;
++	case 1:
++		if (idx >= ARRAY_SIZE(cg->cmux))
++			goto bad_args;
++		clk = cg->cmux[idx];
++		break;
++	case 2:
++		if (idx >= ARRAY_SIZE(cg->hwaccel))
++			goto bad_args;
++		clk = cg->hwaccel[idx];
++		break;
++	case 3:
++		if (idx >= ARRAY_SIZE(cg->fman))
++			goto bad_args;
++		clk = cg->fman[idx];
++		break;
++	case 4:
++		pll = &cg->pll[PLATFORM_PLL];
++		if (idx >= ARRAY_SIZE(pll->div))
++			goto bad_args;
++		clk = pll->div[idx].clk;
++		break;
++	default:
++		goto bad_args;
++	}
++
++	if (!clk)
++		return ERR_PTR(-ENOENT);
++	return clk;
++
++bad_args:
++	pr_err("%s: Bad phandle args %u %u\n", __func__, type, idx);
++	return ERR_PTR(-EINVAL);
+ }
+ 
+-static void __init pltfrm_pll_init(struct device_node *np)
++#ifdef CONFIG_PPC
++#include <asm/mpc85xx.h>
++
++static const u32 a4510_svrs[] __initconst = {
++	(SVR_P2040 << 8) | 0x10,	/* P2040 1.0 */
++	(SVR_P2040 << 8) | 0x11,	/* P2040 1.1 */
++	(SVR_P2041 << 8) | 0x10,	/* P2041 1.0 */
++	(SVR_P2041 << 8) | 0x11,	/* P2041 1.1 */
++	(SVR_P3041 << 8) | 0x10,	/* P3041 1.0 */
++	(SVR_P3041 << 8) | 0x11,	/* P3041 1.1 */
++	(SVR_P4040 << 8) | 0x20,	/* P4040 2.0 */
++	(SVR_P4080 << 8) | 0x20,	/* P4080 2.0 */
++	(SVR_P5010 << 8) | 0x10,	/* P5010 1.0 */
++	(SVR_P5010 << 8) | 0x20,	/* P5010 2.0 */
++	(SVR_P5020 << 8) | 0x10,	/* P5020 1.0 */
++	(SVR_P5021 << 8) | 0x10,	/* P5021 1.0 */
++	(SVR_P5040 << 8) | 0x10,	/* P5040 1.0 */
++};
++
++#define SVR_SECURITY	0x80000	/* The Security (E) bit */
++
++static bool __init has_erratum_a4510(void)
+ {
+-	void __iomem *base;
+-	uint32_t mult;
+-	const char *parent_name, *clk_name;
+-	int i, _errno;
+-	struct clk_onecell_data *cod;
+-
+-	base = of_iomap(np, 0);
+-	if (!base) {
+-		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
+-		return;
++	u32 svr = mfspr(SPRN_SVR);
++	int i;
++
++	svr &= ~SVR_SECURITY;
++
++	for (i = 0; i < ARRAY_SIZE(a4510_svrs); i++) {
++		if (svr == a4510_svrs[i])
++			return true;
+ 	}
+ 
+-	/* Get the multiple of PLL */
+-	mult = ioread32be(base);
++	return false;
++}
++#else
++static bool __init has_erratum_a4510(void)
++{
++	return false;
++}
 +#endif
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index 9621b91..6f236f1 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -12,11 +12,11 @@
  
- #include <linux/module.h>
- #include <linux/interrupt.h>
-+#include <linux/fsl/guts.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
--#include <asm/fsl_guts.h>
+-	iounmap(base);
++static void __init clockgen_init(struct device_node *np)
++{
++	int i, ret;
++	bool is_old_ls1021a = false;
  
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
-diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
-index 71c1a7d..747aab0 100644
---- a/sound/soc/fsl/p1022_ds.c
-+++ b/sound/soc/fsl/p1022_ds.c
-@@ -11,12 +11,12 @@
-  */
+-	/* Check if this PLL is disabled */
+-	if (mult & PLL_KILL) {
+-		pr_debug("%s(): %s: Disabled\n", __func__, np->name);
++	/* May have already been called by a legacy probe */
++	if (clockgen.node)
+ 		return;
+-	}
+-	mult = (mult & GENMASK(6, 1)) >> 1;
  
- #include <linux/module.h>
-+#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
--#include <asm/fsl_guts.h>
+-	parent_name = of_clk_get_parent_name(np, 0);
+-	if (!parent_name) {
+-		pr_err("%s(): %s: of_clk_get_parent_name() failed\n",
+-		       __func__, np->name);
++	clockgen.node = np;
++	clockgen.regs = of_iomap(np, 0);
++	if (!clockgen.regs &&
++	    of_device_is_compatible(of_root, "fsl,ls1021a")) {
++		/* Compatibility hack for old, broken device trees */
++		clockgen.regs = ioremap(0x1ee1000, 0x1000);
++		is_old_ls1021a = true;
++	}
++	if (!clockgen.regs) {
++		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
+ 		return;
+ 	}
  
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
-diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
-index ee29048..1dd49e5 100644
---- a/sound/soc/fsl/p1022_rdk.c
-+++ b/sound/soc/fsl/p1022_rdk.c
-@@ -18,12 +18,12 @@
-  */
+-	i = of_property_count_strings(np, "clock-output-names");
+-	if (i < 0) {
+-		pr_err("%s(): %s: of_property_count_strings(clock-output-names) = %d\n",
+-		       __func__, np->name, i);
+-		return;
++	for (i = 0; i < ARRAY_SIZE(chipinfo); i++) {
++		if (of_device_is_compatible(np, chipinfo[i].compat))
++			break;
++		if (is_old_ls1021a &&
++		    !strcmp(chipinfo[i].compat, "fsl,ls1021a-clockgen"))
++			break;
+ 	}
  
- #include <linux/module.h>
-+#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
--#include <asm/fsl_guts.h>
+-	cod = kmalloc(sizeof(*cod) + i * sizeof(struct clk *), GFP_KERNEL);
+-	if (!cod)
+-		return;
+-	cod->clks = (struct clk **)(cod + 1);
+-	cod->clk_num = i;
+-
+-	for (i = 0; i < cod->clk_num; i++) {
+-		_errno = of_property_read_string_index(np, "clock-output-names",
+-						       i, &clk_name);
+-		if (_errno < 0) {
+-			pr_err("%s(): %s: of_property_read_string_index(clock-output-names) = %d\n",
+-			       __func__, np->name, _errno);
+-			goto return_clk_unregister;
+-		}
++	if (i == ARRAY_SIZE(chipinfo)) {
++		pr_err("%s: unknown clockgen node %s\n", __func__,
++		       np->full_name);
++		goto err;
++	}
++	clockgen.info = chipinfo[i];
++
++	if (clockgen.info.guts_compat) {
++		struct device_node *guts;
  
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
+-		cod->clks[i] = clk_register_fixed_factor(NULL, clk_name,
+-					       parent_name, 0, mult, 1 + i);
+-		if (IS_ERR(cod->clks[i])) {
+-			pr_err("%s(): %s: clk_register_fixed_factor(%s) = %ld\n",
+-			       __func__, np->name,
+-			       clk_name, PTR_ERR(cod->clks[i]));
+-			goto return_clk_unregister;
++		guts = of_find_compatible_node(NULL, NULL,
++					       clockgen.info.guts_compat);
++		if (guts) {
++			clockgen.guts = of_iomap(guts, 0);
++			if (!clockgen.guts) {
++				pr_err("%s: Couldn't map %s regs\n", __func__,
++				       guts->full_name);
++			}
+ 		}
++
+ 	}
+ 
+-	_errno = of_clk_add_provider(np, of_clk_src_onecell_get, cod);
+-	if (_errno < 0) {
+-		pr_err("%s(): %s: of_clk_add_provider() = %d\n",
+-		       __func__, np->name, _errno);
+-		goto return_clk_unregister;
++	if (has_erratum_a4510())
++		clockgen.info.flags |= CG_CMUX_GE_PLAT;
++
++	clockgen.sysclk = create_sysclk("cg-sysclk");
++	create_plls(&clockgen);
++	create_muxes(&clockgen);
++
++	if (clockgen.info.init_periph)
++		clockgen.info.init_periph(&clockgen);
++
++	ret = of_clk_add_provider(np, clockgen_clk_get, &clockgen);
++	if (ret) {
++		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
++		       __func__, np->name, ret);
+ 	}
+ 
+ 	return;
+-
+-return_clk_unregister:
+-	while (--i >= 0)
+-		clk_unregister(cod->clks[i]);
+-	kfree(cod);
++err:
++	iounmap(clockgen.regs);
++	clockgen.regs = NULL;
+ }
+ 
++CLK_OF_DECLARE(qoriq_clockgen_1, "fsl,qoriq-clockgen-1.0", clockgen_init);
++CLK_OF_DECLARE(qoriq_clockgen_2, "fsl,qoriq-clockgen-2.0", clockgen_init);
++CLK_OF_DECLARE(qoriq_clockgen_ls1021a, "fsl,ls1021a-clockgen", clockgen_init);
++
++/* Legacy nodes */
+ CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0", sysclk_init);
+ CLK_OF_DECLARE(qoriq_sysclk_2, "fsl,qoriq-sysclk-2.0", sysclk_init);
+ CLK_OF_DECLARE(qoriq_core_pll_1, "fsl,qoriq-core-pll-1.0", core_pll_init);
 -- 
 2.1.4
