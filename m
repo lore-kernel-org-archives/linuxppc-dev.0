@@ -3,8 +3,8 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C4A2F1A2C95
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2015 14:30:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 58E8B1A2C95
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2015 14:30:30 +1000 (AEST)
 From: Scott Wood <scottwood@freescale.com>
 To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
  <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar
@@ -13,9 +13,10 @@ CC: <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
  "Tang Yuantian" <Yuantian.Tang@freescale.com>, Scott Wood
  <scottwood@freescale.com>
-Subject: [PATCH v3 3/5] clk: qoriq: Add ls2080a support.
-Date: Sat, 19 Sep 2015 23:29:55 -0500
-Message-ID: <1442723397-26329-4-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v3 4/5] clk: Add consumer APIs for discovering possible parent
+ clocks
+Date: Sat, 19 Sep 2015 23:29:56 -0500
+Message-ID: <1442723397-26329-5-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
 References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -29,177 +30,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LS2080A is the first implementation of the chassis 3 clockgen, which
-has a different register layout than previous chips.  It is also little
-endian, unlike previous chips.
+Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
+__clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
+true provider API versions that operate on struct clk_hw.
+
+qoriq-cpufreq needs these functions in order to determine the options
+it has for calling clk_set_parent() and thus populate the cpufreq
+table, so revive them as legitimate consumer APIs.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
 v3: new patch
 
- drivers/clk/Kconfig     |  2 +-
- drivers/clk/clk-qoriq.c | 77 +++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 69 insertions(+), 10 deletions(-)
+ drivers/clk/clk.c   | 19 +++++++++++++++++++
+ include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+)
 
-diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
-index 42f7120..9f1970c 100644
---- a/drivers/clk/Kconfig
-+++ b/drivers/clk/Kconfig
-@@ -121,7 +121,7 @@ config COMMON_CLK_AXI_CLKGEN
- 
- config CLK_QORIQ
- 	bool "Clock driver for Freescale QorIQ platforms"
--	depends on (PPC_E500MC || ARM) && OF
-+	depends on (PPC_E500MC || ARM || ARM64) && OF
- 	---help---
- 	  This adds the clock driver support for Freescale QorIQ platforms
- 	  using common clock framework.
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 06281a3..8f9c93b 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -68,7 +68,10 @@ struct clockgen;
-  * If not set, cmux freq must be >= platform pll/2
-  */
- #define CG_CMUX_GE_PLAT		1
-+
- #define CG_PLL_8BIT		2	/* PLLCnGSR[CFG] is 8 bits, not 6 */
-+#define CG_VER3			4	/* version 3 cg: reg layout different */
-+#define CG_LITTLE_ENDIAN	8
- 
- struct clockgen_chipinfo {
- 	const char *compat, *guts_compat;
-@@ -94,6 +97,26 @@ struct clockgen {
- 
- static struct clockgen clockgen;
- 
-+static void cg_out(struct clockgen *cg, u32 val, u32 __iomem *reg)
-+{
-+	if (cg->info.flags & CG_LITTLE_ENDIAN)
-+		iowrite32(val, reg);
-+	else
-+		iowrite32be(val, reg);
-+}
-+
-+static u32 cg_in(struct clockgen *cg, u32 __iomem *reg)
-+{
-+	u32 val;
-+
-+	if (cg->info.flags & CG_LITTLE_ENDIAN)
-+		val = ioread32(reg);
-+	else
-+		val = ioread32be(reg);
-+
-+	return val;
-+}
-+
- static const struct clockgen_muxinfo p2041_cmux_grp1 = {
- 	{
- 		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-@@ -429,6 +452,17 @@ static const struct clockgen_chipinfo chipinfo[] = {
- 		.pll_mask = 0x03,
- 	},
- 	{
-+		.compat = "fsl,ls2080a-clockgen",
-+		.cmux_groups = {
-+			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-+		},
-+		.cmux_to_group = {
-+			0, 0, 1, 1, -1
-+		},
-+		.pll_mask = 0x37,
-+		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
-+	},
-+	{
- 		.compat = "fsl,p2041-clockgen",
- 		.guts_compat = "fsl,qoriq-device-config-1.0",
- 		.init_periph = p2041_init_periph,
-@@ -575,7 +609,7 @@ static int mux_set_parent(struct clk_hw *hw, u8 idx)
- 		return -EINVAL;
- 
- 	clksel = hwc->parent_to_clksel[idx];
--	iowrite32be((clksel << CLKSEL_SHIFT) & CLKSEL_MASK, hwc->reg);
-+	cg_out(hwc->cg, (clksel << CLKSEL_SHIFT) & CLKSEL_MASK, hwc->reg);
- 
- 	return 0;
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 43e2c3a..9436356 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)
  }
-@@ -586,7 +620,7 @@ static u8 mux_get_parent(struct clk_hw *hw)
- 	u32 clksel;
- 	s8 ret;
+ EXPORT_SYMBOL_GPL(__clk_get_hw);
  
--	clksel = (ioread32be(hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
-+	clksel = (cg_in(hwc->cg, hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
++unsigned int clk_get_num_parents(struct clk *clk)
++{
++	return !clk ? 0 : clk->core->num_parents;
++}
++EXPORT_SYMBOL_GPL(clk_get_num_parents);
++
+ unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
+ {
+ 	return hw->core->num_parents;
+@@ -359,6 +365,19 @@ static struct clk_core *clk_core_get_parent_by_index(struct clk_core *core,
+ 		return core->parents[index];
+ }
  
- 	ret = hwc->clksel_to_parent[clksel];
- 	if (ret < 0) {
-@@ -705,7 +739,7 @@ static struct clk * __init create_one_cmux(struct clockgen *cg, int idx)
- 	 * default clksel) may be inappropriately excluded on certain
- 	 * chips.
- 	 */
--	clksel = (ioread32be(hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
-+	clksel = (cg_in(cg, hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
- 	div = get_pll_div(cg, hwc, clksel);
- 	if (!div)
- 		return NULL;
-@@ -874,13 +908,36 @@ static void __init create_one_pll(struct clockgen *cg, int idx)
- 	if (!(cg->info.pll_mask & (1 << idx)))
- 		return;
++struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int index)
++{
++	struct clk_core *parent;
++
++	if (!clk)
++		return NULL;
++
++	parent = clk_core_get_parent_by_index(clk->core, index);
++
++	return !parent ? NULL : parent->hw->clk;
++}
++EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
++
+ struct clk_hw *
+ clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
+ {
+diff --git a/include/linux/clk.h b/include/linux/clk.h
+index 0df4a51..937de0e 100644
+--- a/include/linux/clk.h
++++ b/include/linux/clk.h
+@@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk *parent);
+ struct clk *clk_get_parent(struct clk *clk);
  
--	if (idx == PLATFORM_PLL)
--		reg = cg->regs + 0xc00;
--	else
--		reg = cg->regs + 0x800 + 0x20 * (idx - 1);
-+	if (cg->info.flags & CG_VER3) {
-+		switch (idx) {
-+		case PLATFORM_PLL:
-+			reg = cg->regs + 0x60080;
-+			break;
-+		case CGA_PLL1:
-+			reg = cg->regs + 0x80;
-+			break;
-+		case CGA_PLL2:
-+			reg = cg->regs + 0xa0;
-+			break;
-+		case CGB_PLL1:
-+			reg = cg->regs + 0x10080;
-+			break;
-+		case CGB_PLL2:
-+			reg = cg->regs + 0x100a0;
-+			break;
-+		default:
-+			WARN_ONCE(1, "index %d\n", idx);
-+			return;
-+		}
-+	} else {
-+		if (idx == PLATFORM_PLL)
-+			reg = cg->regs + 0xc00;
-+		else
-+			reg = cg->regs + 0x800 + 0x20 * (idx - 1);
-+	}
+ /**
++ * clk_get_parent_by_index - get a possible parent clock by index
++ * @clk: clock source
++ * @index: index into the array of possible parents of this clock
++ *
++ * Returns struct clk corresponding to the requested possible
++ * parent clock source, or NULL.
++ */
++struct clk *clk_get_parent_by_index(struct clk *clk,
++				    unsigned int index);
++
++/**
++ * clk_get_num_parents - get number of possible parents
++ * @clk: clock source
++ *
++ * Returns the number of possible parents of this clock,
++ * which can then be enumerated using clk_get_parent_by_index().
++ */
++unsigned int clk_get_num_parents(struct clk *clk);
++
++/**
+  * clk_get_sys - get a clock based upon the device name
+  * @dev_id: device name
+  * @con_id: connection ID
+@@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk *clk)
+ 	return NULL;
+ }
  
- 	/* Get the multiple of PLL */
--	mult = ioread32be(reg);
-+	mult = cg_in(cg, reg);
++struct clk *clk_get_parent_by_index(struct clk *clk,
++				    unsigned int index)
++{
++	return NULL;
++}
++
++unsigned int clk_get_num_parents(struct clk *clk)
++{
++	return 0;
++}
++
+ #endif
  
- 	/* Check if this PLL is disabled */
- 	if (mult & PLL_KILL) {
-@@ -888,7 +945,8 @@ static void __init create_one_pll(struct clockgen *cg, int idx)
- 		return;
- 	}
- 
--	if ((cg->info.flags & CG_PLL_8BIT) && idx != PLATFORM_PLL)
-+	if ((cg->info.flags & CG_VER3) ||
-+	    ((cg->info.flags & CG_PLL_8BIT) && idx != PLATFORM_PLL))
- 		mult = (mult & GENMASK(8, 1)) >> 1;
- 	else
- 		mult = (mult & GENMASK(6, 1)) >> 1;
-@@ -1169,6 +1227,7 @@ err:
- CLK_OF_DECLARE(qoriq_clockgen_1, "fsl,qoriq-clockgen-1.0", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_2, "fsl,qoriq-clockgen-2.0", clockgen_init);
- CLK_OF_DECLARE(qoriq_clockgen_ls1021a, "fsl,ls1021a-clockgen", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_ls2080a, "fsl,ls2080a-clockgen", clockgen_init);
- 
- /* Legacy nodes */
- CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0", sysclk_init);
+ /* clk_prepare_enable helps cases using clk_enable in non-atomic context. */
 -- 
 2.1.4
