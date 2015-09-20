@@ -1,26 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-ob0-x236.google.com (mail-ob0-x236.google.com
+ [IPv6:2607:f8b0:4003:c01::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A22C11A2CA4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2015 14:30:31 +1000 (AEST)
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar
- <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
-CC: <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
- "Tang Yuantian" <Yuantian.Tang@freescale.com>, Scott Wood
- <scottwood@freescale.com>
-Subject: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation
- details
-Date: Sat, 19 Sep 2015 23:29:57 -0500
-Message-ID: <1442723397-26329-6-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42CD11A0064
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2015 18:23:27 +1000 (AEST)
+Received: by obbbh8 with SMTP id bh8so64045280obb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Sep 2015 01:23:25 -0700 (PDT)
+Date: Sun, 20 Sep 2015 16:23:03 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Will Deacon <will.deacon@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 3/7] powerpc: atomic: Implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150920082303.GA1166@fixme-laptop.cn.ibm.com>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-4-git-send-email-boqun.feng@gmail.com>
+ <20150918165902.GF12837@arm.com>
+ <20150919153310.GB20458@fixme-laptop.cn.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
+In-Reply-To: <20150919153310.GB20458@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,269 +38,197 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Get the CPU clock's potential parent clocks from the clock interface
-itself, rather than manually parsing the clocks property to find a
-phandle, looking at the clock-names property of that, and assuming that
-those are valid parent clocks for the cpu clock.
 
-This is necessary now that the clocks are generated based on the clock
-driver's knowledge of the chip rather than a fragile device-tree
-description of the mux options.
+--Dxnq1zWXvFF0Q93v
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-We can now rely on the clock driver to ensure that the mux only exposes
-options that are valid.  The cpufreq driver was currently being overly
-conservative in some cases -- for example, the "min_cpufreq =
-get_bus_freq()" restriction only applies to chips with erratum
-A-004510, and whether the freq_mask used on p5020 is needed depends on
-the actual frequencies of the PLLs (FWIW, p5040 has a similar
-limitation but its .freq_mask was zero) -- and the frequency mask
-mechanism made assumptions about particular parent clock indices that
-are no longer valid.
+On Sat, Sep 19, 2015 at 11:33:10PM +0800, Boqun Feng wrote:
+> Hi Will,
+>=20
+> On Fri, Sep 18, 2015 at 05:59:02PM +0100, Will Deacon wrote:
+> > On Wed, Sep 16, 2015 at 04:49:31PM +0100, Boqun Feng wrote:
+> > > On powerpc, we don't need a general memory barrier to achieve acquire=
+ and
+> > > release semantics, so __atomic_op_{acquire,release} can be implemented
+> > > using "lwsync" and "isync".
+> >=20
+> > I'm assuming isync+ctrl isn't transitive, so we need to get to the bott=
+om
+>=20
+> Actually the transitivity is still guaranteed here, I think ;-)
+>=20
+> (Before I put my reasoning, I have to admit I just learned about the
+> cumulativity recently, so my reasoning may be wrong. But the good thing
+> is that we have our POWER experts in the CCed. In case I'm wrong, they
+> could correct me.)
+>=20
+> The thing is, on POWER, transitivity is implemented by a similar but
+> slightly different concept, cumulativity, and as said in the link:
+>=20
+> http://www.rdrop.com/users/paulmck/scalability/paper/N2745r.2011.03.04a.h=
+tml
+>=20
+> """
+> The ordering done by a memory barrier is said to be =E2=80=9Ccumulative=
+=E2=80=9D if it
+> also orders storage accesses that are performed by processors and
+> mechanisms other than P1, as follows.
+>=20
+> *	A includes all applicable storage accesses by any such processor
+> 	or mechanism that have been performed with respect to P1 before
+> 	the memory barrier is created.
+>=20
+> *	B includes all applicable storage accesses by any such processor
+> 	or mechanism that are performed after a Load instruction
+> 	executed by that processor or mechanism has returned the value
+> 	stored by a store that is in B.
+> """
+>=20
+> Please note that the set B can be extended indefinitely without any
+> other cumulative barrier.
+>=20
+> So for a RELEASE+ACQUIRE pair to a same variable, as long as the barrier
+> in the RELEASE operation is cumumlative, the transitivity is guaranteed.
+> And lwsync is cumulative, so we are fine here.
+>=20
+>=20
+> I also wrote a herd litmus to test this. Due to the tool's limitation, I
+> use the xchg_release and xchg_acquire to test. And since herd doesn't
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
-to clk api usage
+Hmm.. I think I wanted to say atomic_xchg_release and
+atomic_xchg_acquire here, sorry about that inaccuracy..
 
- drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++----------------------------
- 1 file changed, 40 insertions(+), 97 deletions(-)
+> support backward branching, some tricks are used here to work around:
+>=20
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 358f075..4f53fa2 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -35,53 +35,20 @@ struct cpu_data {
- 	struct cpufreq_frequency_table *table;
- };
- 
-+/*
-+ * Don't use cpufreq on this SoC -- used when the SoC would have otherwise
-+ * matched a more generic compatible.
-+ */
-+#define SOC_BLACKLIST		1
-+
- /**
-  * struct soc_data - SoC specific data
-- * @freq_mask: mask the disallowed frequencies
-- * @flag: unique flags
-+ * @flags: SOC_xxx
-  */
- struct soc_data {
--	u32 freq_mask[4];
--	u32 flag;
--};
--
--#define FREQ_MASK	1
--/* see hardware specification for the allowed frqeuencies */
--static const struct soc_data sdata[] = {
--	{ /* used by p2041 and p3041 */
--		.freq_mask = {0x8, 0x8, 0x2, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p5020 */
--		.freq_mask = {0x8, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p4080, p5040 */
--		.freq_mask = {0},
--		.flag = 0,
--	},
-+	u32 flags;
- };
- 
--/*
-- * the minimum allowed core frequency, in Hz
-- * for chassis v1.0, >= platform frequency
-- * for chassis v2.0, >= platform frequency / 2
-- */
--static u32 min_cpufreq;
--static const u32 *fmask;
--
--#if defined(CONFIG_ARM)
--static int get_cpu_physical_id(int cpu)
--{
--	return topology_core_id(cpu);
--}
--#else
--static int get_cpu_physical_id(int cpu)
--{
--	return get_hard_smp_processor_id(cpu);
--}
--#endif
--
- static u32 get_bus_freq(void)
- {
- 	struct device_node *soc;
-@@ -99,9 +66,10 @@ static u32 get_bus_freq(void)
- 	return sysfreq;
- }
- 
--static struct device_node *cpu_to_clk_node(int cpu)
-+static struct clk *cpu_to_clk(int cpu)
- {
--	struct device_node *np, *clk_np;
-+	struct device_node *np;
-+	struct clk *clk;
- 
- 	if (!cpu_present(cpu))
- 		return NULL;
-@@ -110,37 +78,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
- 	if (!np)
- 		return NULL;
- 
--	clk_np = of_parse_phandle(np, "clocks", 0);
--	if (!clk_np)
--		return NULL;
--
-+	clk = of_clk_get(np, 0);
- 	of_node_put(np);
--
--	return clk_np;
-+	return clk;
- }
- 
- /* traverse cpu nodes to get cpu mask of sharing clock wire */
- static void set_affected_cpus(struct cpufreq_policy *policy)
- {
--	struct device_node *np, *clk_np;
- 	struct cpumask *dstp = policy->cpus;
-+	struct clk *clk;
- 	int i;
- 
--	np = cpu_to_clk_node(policy->cpu);
--	if (!np)
--		return;
--
- 	for_each_present_cpu(i) {
--		clk_np = cpu_to_clk_node(i);
--		if (!clk_np)
-+		clk = cpu_to_clk(i);
-+		if (IS_ERR(clk)) {
-+			pr_err("%s: no clock for cpu %d\n", __func__, i);
- 			continue;
-+		}
- 
--		if (clk_np == np)
-+		if (clk_is_match(policy->clk, clk))
- 			cpumask_set_cpu(i, dstp);
--
--		of_node_put(clk_np);
- 	}
--	of_node_put(np);
- }
- 
- /* reduce the duplicated frequencies in frequency table */
-@@ -198,7 +157,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct device_node *np, *pnode;
- 	int i, count, ret;
--	u32 freq, mask;
-+	u32 freq;
- 	struct clk *clk;
- 	struct cpufreq_frequency_table *table;
- 	struct cpu_data *data;
-@@ -219,17 +178,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_nomem2;
- 	}
- 
--	pnode = of_parse_phandle(np, "clocks", 0);
--	if (!pnode) {
--		pr_err("%s: could not get clock information\n", __func__);
--		goto err_nomem2;
--	}
-+	count = clk_get_num_parents(policy->clk);
- 
--	count = of_property_count_strings(pnode, "clock-names");
- 	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
- 	if (!data->pclk) {
- 		pr_err("%s: no memory\n", __func__);
--		goto err_node;
-+		goto err_nomem2;
- 	}
- 
- 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
-@@ -238,23 +192,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_pclk;
- 	}
- 
--	if (fmask)
--		mask = fmask[get_cpu_physical_id(cpu)];
--	else
--		mask = 0x0;
--
- 	for (i = 0; i < count; i++) {
--		clk = of_clk_get(pnode, i);
-+		clk = clk_get_parent_by_index(policy->clk, i);
- 		data->pclk[i] = clk;
- 		freq = clk_get_rate(clk);
--		/*
--		 * the clock is valid if its frequency is not masked
--		 * and large than minimum allowed frequency.
--		 */
--		if (freq < min_cpufreq || (mask & (1 << i)))
--			table[i].frequency = CPUFREQ_ENTRY_INVALID;
--		else
--			table[i].frequency = freq / 1000;
-+		table[i].frequency = freq / 1000;
- 		table[i].driver_data = i;
- 	}
- 	freq_table_redup(table, count);
-@@ -288,10 +230,7 @@ err_nomem1:
- 	kfree(table);
- err_pclk:
- 	kfree(data->pclk);
--err_node:
--	of_node_put(pnode);
- err_nomem2:
--	policy->driver_data = NULL;
- 	kfree(data);
- err_np:
- 	of_node_put(np);
-@@ -332,12 +271,20 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.attr		= cpufreq_generic_attr,
- };
- 
-+static const struct soc_data blacklist = {
-+	.flags = SOC_BLACKLIST,
-+};
-+
- static const struct of_device_id node_matches[] __initconst = {
--	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
--	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
--	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
-+	/* e6500 cannot use cpufreq due to erratum A-008083 */
-+	{ .compatible = "fsl,b4420-clockgen", &blacklist },
-+	{ .compatible = "fsl,b4860-clockgen", &blacklist },
-+	{ .compatible = "fsl,t2080-clockgen", &blacklist },
-+	{ .compatible = "fsl,t4240-clockgen", &blacklist },
-+
-+	{ .compatible = "fsl,ls1021a-clockgen", },
-+	{ .compatible = "fsl,p4080-clockgen", },
-+	{ .compatible = "fsl,qoriq-clockgen-1.0", },
- 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
- 	{}
- };
-@@ -355,16 +302,12 @@ static int __init qoriq_cpufreq_init(void)
- 
- 	match = of_match_node(node_matches, np);
- 	data = match->data;
--	if (data) {
--		if (data->flag)
--			fmask = data->freq_mask;
--		min_cpufreq = get_bus_freq();
--	} else {
--		min_cpufreq = get_bus_freq() / 2;
--	}
- 
- 	of_node_put(np);
- 
-+	if (data && data->flags & SOC_BLACKLIST)
-+		return -ENODEV;
-+
- 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
- 	if (!ret)
- 		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
--- 
-2.1.4
+And I check again, herd does suppor backward branching, the problem is
+just if we use backward branching, there will be a lot more states the
+tool need to check, but it seems there are not too many in this case, so
+I modify the litmus a little bit as follow:
+
+PPC lwsync+isync-transitivity
+""
+{
+0:r1=3D1; 0:r2=3Dx; 0:r3=3D1; 0:r10=3D0 ; 0:r11=3D0; 0:r12=3Da;
+1:r1=3D9; 1:r2=3Dx; 1:r3=3D1; 1:r10=3D0 ; 1:r11=3D0; 1:r12=3Da;
+2:r1=3D9; 2:r2=3Dx; 2:r3=3D2; 2:r10=3D0 ; 2:r11=3D0; 2:r12=3Da;
+}
+ P0           | P1                  | P2                  ;
+ stw r1,0(r2) | lwz r1,0(r2)        | Fail2:              ;
+              | lwsync              | lwarx r11, r10, r12 ;
+              | Fail1:              | stwcx. r3, r10, r12 ;
+              | lwarx  r11,r10,r12  | bne Fail2           ;
+              | stwcx. r3,r10,r12   | isync               ;
+              | bne Fail1           | lwz r1, 0(r2)       ;=20
+
+exists
+(1:r1=3D1 /\ 1:r11=3D0 /\ 2:r11=3D1 /\ 2:r1 =3D 0)
+
+which is actually:
+
+CPU 0			CPU 1				CPU 2
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D		=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D		=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+{int x =3D 0, atomic_t a =3D ATOMIC_INIT(0)}
+WRITE_ONCE(x,1);	t1 =3D READ_ONCE(x);		t2 =3D atomic_xchg_acquire(&a, 2);
+			atomic_xchg_release(&a, 1);	t3 =3D READ_ONCE(x);
+
+exists
+(t1 =3D=3D 1 && t2 =3D=3D 1 && t3 =3D=3D 0)
+
+
+The result is still(it may take a while to get the result):
+
+Test lwsync+isync-transitivity Allowed
+States 11
+1:r1=3D0; 1:r11=3D0; 2:r1=3D0; 2:r11=3D0;
+1:r1=3D0; 1:r11=3D0; 2:r1=3D0; 2:r11=3D1;
+1:r1=3D0; 1:r11=3D0; 2:r1=3D1; 2:r11=3D0;
+1:r1=3D0; 1:r11=3D0; 2:r1=3D1; 2:r11=3D1;
+1:r1=3D0; 1:r11=3D2; 2:r1=3D0; 2:r11=3D0;
+1:r1=3D0; 1:r11=3D2; 2:r1=3D1; 2:r11=3D0;
+1:r1=3D1; 1:r11=3D0; 2:r1=3D0; 2:r11=3D0;
+1:r1=3D1; 1:r11=3D0; 2:r1=3D1; 2:r11=3D0;
+1:r1=3D1; 1:r11=3D0; 2:r1=3D1; 2:r11=3D1;
+1:r1=3D1; 1:r11=3D2; 2:r1=3D0; 2:r11=3D0;
+1:r1=3D1; 1:r11=3D2; 2:r1=3D1; 2:r11=3D0;
+Loop No
+Witnesses
+Positive: 0 Negative: 198
+Condition exists (1:r1=3D1 /\ 1:r11=3D0 /\ 2:r11=3D1 /\ 2:r1=3D0)
+Observation lwsync+isync-transitivity Never 0 198
+
+, which means transitivity is guaranteed.
+
+
+And I think it deserves more analysis based on cumulativity:
+
+Initially, for the lwsync on P1(CPU 1), we have set A and B of the
+storage accesses on the same processor which lwsync orders:
+
+A includes:
+	on CPU 1:
+		lwz r1, 0(r2) // t1 =3D READ_ONCE(x);=20
+
+B includes:
+	on CPU 1:
+		lwarx  r11,r10,r12 // atomic_xchg_release();
+		stwcx. r3,r10,r12
+
+and as t1 =3D=3D 1, which means before lwsync, P1 perceives the STORE of x
+on CPU 0, which makes another storage access is included in A:
+
+A now includes:
+	on CPU 0:
+		stw r1, 0(r) // WRITE_ONCE(x,1);
+	on CPU 1:
+		lwz r1, 0(r2) // t1 =3D READ_ONCE(x);=20
+
+B now includes:
+	on CPU 1:
+		lwarx  r11,r10,r12 // atomic_xchg_release();
+		stwcx. r3,r10,r12
+
+and as t2 =3D=3D 1, which means on CPU 2, "lwarx  r11,r10,r12" in
+atomic_xchg_acqurie() reads the value stored by "stwcx. r3,r10,r12" in
+atomic_xchg_release() on CPU 1, that makes all storage accesses
+performed after atomic_xchg_acquire() get included in set B:
+
+A now includes:
+	on CPU 0:
+		stw r1, 0(r) // WRITE_ONCE(x,1);
+	on CPU 1:
+		lwz r1, 0(r2) // t1 =3D READ_ONCE(x);=20
+
+B now includes:
+	on CPU 1:
+		lwarx  r11,r10,r12 // atomic_xchg_release();
+		stwcx. r3,r10,r12
+	on CPU 2:
+		lwz r1, 0(r2) // t3 =3D READ_ONCE(x);
+
+Therefore the STORE of x on CPU 0 and the LOAD of x on CPU 2 can not be
+reordered in this case, which means transitivity guaranteed.
+
+Regards,
+Boqun
+
+--Dxnq1zWXvFF0Q93v
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJV/mzgAAoJEEl56MO1B/q42swH+wcORJyQO96WvZ+06ArD8g2U
+zIrmqcFkN96rCWeLXLreyjvogPjL2I+s4tS94JRUzNcDwn0TQw3oz8lmX0vAx7HS
+V9jqvype8vTs3moNMxuTeD7RlQ/0Je1+paFnHe0VEPA/zATWvI4dcQ3UqQeTfxTT
+RhTmedb9UTiaSjZBmTrk13On9sn59egNTGoHHFDXIbQN2U0kg2FRplYpk8DBJ7Jy
+ZBbBL1m7G7ppGjPsfRPKe520S2TkY8B1abUHCj4BUiAUZqlqveR0guhdl2NV2Hmv
+gkfJ/pLx2z52h8O2Jw4jGR+Sbddt4iWxUAc9oRqwbQ2a987PXMuKpvgBB7QJXW8=
+=4m7K
+-----END PGP SIGNATURE-----
+
+--Dxnq1zWXvFF0Q93v--
