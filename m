@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0402A1A0079
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E9D371A00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:43:00 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 21 Sep 2015 16:42:57 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id BC3243578053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:55 +1000 (EST)
+ Mon, 21 Sep 2015 16:43:00 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 94C102BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:57 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8L6glZS27590704
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:55 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8L6goaj62587032
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:58 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8L6gNLH015552
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:23 +1000
+ t8L6gORr015590
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:25 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 28/31] powerpc/mm: Move WIMG update to helper.
-Date: Mon, 21 Sep 2015 12:10:55 +0530
-Message-Id: <1442817658-2588-29-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 29/31] powerpc/mm: Move hugetlb related headers
+Date: Mon, 21 Sep 2015 12:10:56 +0530
+Message-Id: <1442817658-2588-30-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,126 +38,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Only difference here is, we apply the WIMG mapping early, so rflags
-passed to updatepp will also be changed.
+W.r.t hugetlb, we support two format for pmd. With book3s_64 and
+64K linux page size, we can have pte at the pmd level. Hence we
+don't need to support hugepd there. For everything else hugepd
+is supported and pmd_huge is (0).
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash64_4k.c          |  5 -----
- arch/powerpc/mm/hash64_64k.c         | 14 +-------------
- arch/powerpc/mm/hash_utils_64.c      | 13 ++++++++++++-
- arch/powerpc/mm/hugepage-hash64.c    |  7 -------
- arch/powerpc/mm/hugetlbpage-hash64.c |  8 --------
- 5 files changed, 13 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash-4k.h  | 31 ++++++++++++++++
+ arch/powerpc/include/asm/book3s/64/hash-64k.h | 40 ++++++++++++++++++++
+ arch/powerpc/include/asm/booke/pgtable.h      | 25 +++++++++++++
+ arch/powerpc/include/asm/page.h               | 27 ++------------
+ arch/powerpc/mm/hugetlbpage.c                 | 53 ---------------------------
+ 5 files changed, 100 insertions(+), 76 deletions(-)
 
-diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index 7749857f6ced..42af2d3a8b63 100644
---- a/arch/powerpc/mm/hash64_4k.c
-+++ b/arch/powerpc/mm/hash64_4k.c
-@@ -54,11 +54,6 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * need to add in 0x1 if it's a read-only user page
- 	 */
- 	rflags = htab_convert_pte_flags(new_pte);
--	/*
--	 * Add in WIMG bits
--	 */
--	rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
--				_PAGE_COHERENT | _PAGE_GUARDED));
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+index 75e8b9326e4b..b4d25529d179 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
+@@ -93,6 +93,37 @@ extern struct page *pgd_page(pgd_t pgd);
+ #define remap_4k_pfn(vma, addr, pfn, prot)	\
+ 	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE, (prot))
  
- 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index a381d1dbba4e..b1bb94785d84 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -77,14 +77,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 */
- 	subpg_pte = new_pte & ~subpg_prot;
- 	rflags = htab_convert_pte_flags(subpg_pte);
--	/*
--	 * Add in WIMG bits
--	 */
--	rflags |= (subpg_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
--				_PAGE_COHERENT | _PAGE_GUARDED));
--	/*
--	 * FIXME!! check this
--	 */
++#ifdef CONFIG_HUGETLB_PAGE
++/*
++ * For 4k page size, we support explicit hugepage via hugepd
++ */
++static inline int pmd_huge(pmd_t pmd)
++{
++	return 0;
++}
 +
- 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {
- 
-@@ -251,11 +244,6 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 					  old_pte, new_pte));
- 
- 	rflags = htab_convert_pte_flags(new_pte);
--	/*
--	 * Add in WIMG bits
--	 */
--	rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
--				_PAGE_COHERENT | _PAGE_GUARDED));
- 
- 	if (!cpu_has_feature(CPU_FTR_NOEXECUTE) &&
- 	    !cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 444c42eabfdf..b5c24455715e 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -182,7 +182,18 @@ unsigned long htab_convert_pte_flags(unsigned long pteflags)
- 	/*
- 	 * Always add "C" bit for perf. Memory coherence is always enabled
- 	 */
--	return rflags | HPTE_R_C | HPTE_R_M;
-+	rflags |=  HPTE_R_C | HPTE_R_M;
++static inline int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	return 0;
++}
++#define pgd_huge pgd_huge
++
++static inline int hugepd_ok(hugepd_t hpd)
++{
 +	/*
-+	 * Add in WIG bits
++	 * hugepd pointer, bottom two bits == 00 and next 4 bits
++	 * indicate size of table
 +	 */
-+	if (pteflags & _PAGE_WRITETHRU)
-+		rflags |= HPTE_R_W;
-+	if (pteflags & _PAGE_NO_CACHE)
-+		rflags |= HPTE_R_I;
-+	if (pteflags & _PAGE_GUARDED)
-+		rflags |= HPTE_R_G;
++	return (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
++}
++#define is_hugepd(hpd)		(hugepd_ok(hpd))
++#endif
 +
-+	return rflags;
- }
+ #endif /* !__ASSEMBLY__ */
  
- int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
-diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 101a7446550b..1365e6faa2c8 100644
---- a/arch/powerpc/mm/hugepage-hash64.c
-+++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -119,13 +119,6 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 		pa = pmd_pfn(__pmd(old_pmd)) << PAGE_SHIFT;
- 		new_pmd |= _PAGE_HASHPTE;
+ #endif /* _ASM_POWERPC_BOOK3S_64_HASH_4K_H */
+diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+index f46fbd6cd837..0869e5fe5d08 100644
+--- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
++++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
+@@ -119,6 +119,46 @@ static inline bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
+ #define pgd_pte(pgd)	(pud_pte(((pud_t){ pgd })))
+ #define pte_pgd(pte)	((pgd_t)pte_pud(pte))
  
--		/* Add in WIMG bits */
--		rflags |= (new_pmd & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
--				      _PAGE_GUARDED));
--		/*
--		 * enable the memory coherence always
--		 */
--		rflags |= HPTE_R_M;
- repeat:
- 		hpte_group = ((hash & htab_hash_mask) * HPTES_PER_GROUP) & ~0x7UL;
++#ifdef CONFIG_HUGETLB_PAGE
++/*
++ * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
++ * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
++ *
++ * Defined in such a way that we can optimize away code block at build time
++ * if CONFIG_HUGETLB_PAGE=n.
++ */
++static inline int pmd_huge(pmd_t pmd)
++{
++	/*
++	 * leaf pte for huge page, bottom two bits != 00
++	 */
++	return ((pmd_val(pmd) & 0x3) != 0x0);
++}
++
++static inline int pud_huge(pud_t pud)
++{
++	/*
++	 * leaf pte for huge page, bottom two bits != 00
++	 */
++	return ((pud_val(pud) & 0x3) != 0x0);
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	/*
++	 * leaf pte for huge page, bottom two bits != 00
++	 */
++	return ((pgd_val(pgd) & 0x3) != 0x0);
++}
++#define pgd_huge pgd_huge
++
++static inline int hugepd_ok(hugepd_t hpd)
++{
++	return 0;
++}
++#define is_hugepd(pdep)			0
++#endif /* CONFIG_HUGETLB_PAGE */
++
+ #endif	/* __ASSEMBLY__ */
  
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 304c8520506e..0734e4daffef 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -91,14 +91,6 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		/* clear HPTE slot informations in new PTE */
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
+ #endif /* _ASM_POWERPC_BOOK3S_64_HASH_64K_H */
+diff --git a/arch/powerpc/include/asm/booke/pgtable.h b/arch/powerpc/include/asm/booke/pgtable.h
+index 8d2fa3e9c7af..919836300333 100644
+--- a/arch/powerpc/include/asm/booke/pgtable.h
++++ b/arch/powerpc/include/asm/booke/pgtable.h
+@@ -223,5 +223,30 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 				     unsigned long size, pgprot_t vma_prot);
+ #define __HAVE_PHYS_MEM_ACCESS_PROT
  
--		/* Add in WIMG bits */
--		rflags |= (new_pte & (_PAGE_WRITETHRU | _PAGE_NO_CACHE |
--				      _PAGE_COHERENT | _PAGE_GUARDED));
--		/*
--		 * enable the memory coherence always
--		 */
--		rflags |= HPTE_R_M;
++#ifdef CONFIG_HUGETLB_PAGE
++static inline int hugepd_ok(hugepd_t hpd)
++{
++	return (hpd.pd > 0);
++}
++
++static inline int pmd_huge(pmd_t pmd)
++{
++	return 0;
++}
++
++static inline int pud_huge(pud_t pud)
++{
++	return 0;
++}
++
++static inline int pgd_huge(pgd_t pgd)
++{
++	return 0;
++}
++#define pgd_huge		pgd_huge
++
++#define is_hugepd(hpd)		(hugepd_ok(hpd))
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ #endif
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index b30673564a32..e555f273716d 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -384,30 +384,11 @@ typedef unsigned long pgprot_t;
+ 
+ typedef struct { signed long pd; } hugepd_t;
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
+-#ifdef CONFIG_PPC_BOOK3S_64
+-static inline int hugepd_ok(hugepd_t hpd)
+-{
+-	/*
+-	 * hugepd pointer, bottom two bits == 00 and next 4 bits
+-	 * indicate size of table
+-	 */
+-	return (((hpd.pd & 0x3) == 0x0) && ((hpd.pd & HUGEPD_SHIFT_MASK) != 0));
+-}
+-#else
+-static inline int hugepd_ok(hugepd_t hpd)
+-{
+-	return (hpd.pd > 0);
+-}
+-#endif
 -
- 		slot = hpte_insert_repeating(hash, vpn, pa, rflags, 0,
- 					     mmu_psize, ssize);
+-#define is_hugepd(hpd)               (hugepd_ok(hpd))
+-#define pgd_huge pgd_huge
+-int pgd_huge(pgd_t pgd);
+-#else /* CONFIG_HUGETLB_PAGE */
+-#define is_hugepd(pdep)			0
+-#define pgd_huge(pgd)			0
++#ifndef CONFIG_HUGETLB_PAGE
++#define is_hugepd(pdep)		(0)
++#define pgd_huge(pgd)		(0)
+ #endif /* CONFIG_HUGETLB_PAGE */
++
+ #define __hugepd(x) ((hugepd_t) { (x) })
  
+ struct page;
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 06c14523b787..98bb20c9f71d 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -53,59 +53,6 @@ static unsigned nr_gpages;
+ 
+ #define hugepd_none(hpd)	((hpd).pd == 0)
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
+-/*
+- * At this point we do the placement change only for BOOK3S 64. This would
+- * possibly work on other subarchs.
+- */
+-
+-/*
+- * We have PGD_INDEX_SIZ = 12 and PTE_INDEX_SIZE = 8, so that we can have
+- * 16GB hugepage pte in PGD and 16MB hugepage pte at PMD;
+- *
+- * Defined in such a way that we can optimize away code block at build time
+- * if CONFIG_HUGETLB_PAGE=n.
+- */
+-int pmd_huge(pmd_t pmd)
+-{
+-	/*
+-	 * leaf pte for huge page, bottom two bits != 00
+-	 */
+-	return ((pmd_val(pmd) & 0x3) != 0x0);
+-}
+-
+-int pud_huge(pud_t pud)
+-{
+-	/*
+-	 * leaf pte for huge page, bottom two bits != 00
+-	 */
+-	return ((pud_val(pud) & 0x3) != 0x0);
+-}
+-
+-int pgd_huge(pgd_t pgd)
+-{
+-	/*
+-	 * leaf pte for huge page, bottom two bits != 00
+-	 */
+-	return ((pgd_val(pgd) & 0x3) != 0x0);
+-}
+-#else
+-int pmd_huge(pmd_t pmd)
+-{
+-	return 0;
+-}
+-
+-int pud_huge(pud_t pud)
+-{
+-	return 0;
+-}
+-
+-int pgd_huge(pgd_t pgd)
+-{
+-	return 0;
+-}
+-#endif
+-
+ pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+ {
+ 	/* Only called for hugetlbfs pages, hence can ignore THP */
 -- 
 2.5.0
