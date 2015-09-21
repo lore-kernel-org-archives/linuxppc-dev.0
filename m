@@ -1,23 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <thenzl@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB7C01A0048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:06:34 +1000 (AEST)
-Message-ID: <1442833578.11901.2.camel@kernel.crashing.org>
-Subject: Re: [PATCH 18/31] powerpc/mm: Increase the pte frag size.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 21 Sep 2015 21:06:18 +1000
-In-Reply-To: <87mvwgduuj.fsf@linux.vnet.ibm.com>
-References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442817658-2588-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442823285.2819.1.camel@kernel.crashing.org>
- <87mvwgduuj.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 279081A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:34:04 +1000 (AEST)
+Subject: Re: [PATCH v2 09/30] cxlflash: Fix to stop interrupt processing on
+ remove
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+References: <1442422399-41262-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <55FAB43B.8050306@redhat.com>
+ <97A059A7-2054-4DBD-B993-BBF47AC105E0@linux.vnet.ibm.com>
+ <55FBFC8B.9060305@redhat.com>
+ <95497861-11B5-4A04-A35C-D6FE164543C4@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+ nab@linux-iscsi.org, brking@linux.vnet.ibm.com, imunsie@au1.ibm.com,
+ dja@ozlabs.au.ibm.com, andrew.donnellan@au1.ibm.com, mikey@neuling.org,
+ linuxppc-dev@lists.ozlabs.org, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+From: Tomas Henzl <thenzl@redhat.com>
+Message-ID: <55FFEB26.7020901@redhat.com>
+Date: Mon, 21 Sep 2015 13:33:58 +0200
+MIME-Version: 1.0
+In-Reply-To: <95497861-11B5-4A04-A35C-D6FE164543C4@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +31,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-21 at 14:15 +0530, Aneesh Kumar K.V wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
-> > > /*
-> > > - * We use a 2K PTE page fragment and another 2K for storing
-> > > - * real_pte_t hash index
-> > > + * We use a 2K PTE page fragment and another 4K for storing
-> > > + * real_pte_t hash index. Rounding the entire thing to 8K
-> > >   */
-> > 
-> > Isn't this a LOT of memory wasted ? Page tables have a non
-> > -negligible
-> > footprint, we were already wasting half, now we are wasting 3/4 no
-> > ?
-> > 
-> 
-> The actual math is, we used to allocate 16 PTE page from a 64K page
-> before. We now do 8 pte page from a 64K linux page.
+On 19.9.2015 01:26, Matthew R. Ochs wrote:
+>> On Sep 18, 2015, at 6:59 AM, Tomas Henzl <thenzl@redhat.com> wrote:
+>> On 17.9.2015 19:16, Matthew R. Ochs wrote:
+>>>> On Sep 17, 2015, at 7:38 AM, Tomas Henzl <thenzl@redhat.com> wrote:
+>>>>
+>>>> On 16.9.2015 18:53, Matthew R. Ochs wrote:
+>>>>> Interrupt processing can run in parallel to a remove operation. This
+>>>>> can lead to a condition where the interrupt handler is processing with
+>>>>> memory that has been freed.
+>>>>>
+>>>>> To avoid processing an interrupt while memory may be yanked, check for
+>>>>> removal while in the interrupt handler. Bail when removal is imminent.
+>>>>>
+>>>>> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+>>>>> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+>>>>> ---
+>>>>> drivers/scsi/cxlflash/common.h |  2 ++
+>>>>> drivers/scsi/cxlflash/main.c   | 21 +++++++++++++++------
+>>>>> 2 files changed, 17 insertions(+), 6 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
+>>>>> index 1abe4e0..03d2cc6 100644
+>>>>> --- a/drivers/scsi/cxlflash/common.h
+>>>>> +++ b/drivers/scsi/cxlflash/common.h
+>>>>> @@ -103,6 +103,8 @@ struct cxlflash_cfg {
+>>>>> 	enum cxlflash_lr_state lr_state;
+>>>>> 	int lr_port;
+>>>>>
+>>>>> +	atomic_t remove_active;
+>>>>> +
+>>>>> 	struct cxl_afu *cxl_afu;
+>>>>>
+>>>>> 	struct pci_pool *cxlflash_cmd_pool;
+>>>>> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+>>>>> index 6e85c77..89ee648 100644
+>>>>> --- a/drivers/scsi/cxlflash/main.c
+>>>>> +++ b/drivers/scsi/cxlflash/main.c
+>>>>> @@ -892,6 +892,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
+>>>>> 	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
+>>>>>
+>>>>> 	cfg->state = STATE_FAILTERM;
+>>>>> +	atomic_inc(&cfg->remove_active);
+>>>> Hi Matthew,
+>>>> you could just call term_afu at this point, this way you don't
+>>>> need an additional check in all irq functions.
+>>>> Cheers,
+>>>> Tomas
+>>> Hi Tomas,
+>>>
+>>> We actually do call term_afu() a few lines down from here. I don't follow
+>>> how moving it here would help things.
+>> When you disable ints sooner (that is what term_afu does ?) you'll get no
+>> more ints later isn't this what you want?
+> Correct, that's what we want.
+>
+>>> The reason for the atomic was to provide something lightweight that we
+>>> could check _inside_ the processing loop for the read-response queue
+>>> handler. A check outside that loop doesn't really provide much in terms
+>>> of closing or narrowing down the window of when freed memory can be
+>>> accessed.
+>>>
+>>> As David Laight correctly pointed out, this approach does not completely
+>>> close the window. We'd need something heavier to fully protect (e.g. a lock
+>>> to wrap around the entire loop). I will look into adding this in a future cycle
+>>> when I can adequately test.
+>> term_afu calls free_irq and this function
+>> does not return until any executing interrupts for have completed.
+>> This is the sync mechanism you need, it's lightweight
+>> (does not add an additional check to your irq functions)
+>> and closes the race window completely.
+> Thanks for clarifying!
+>
+> I looked at this closer and you are correct, free_irq() guarantees not
+> to return until the interrupt handler has completed. The current location
+> of term_afu() is appropriate as the memory that the handler touches is
+> not freed until the very end [by free_mem() and scsi_host_put()] of the
+> remove. Thus we can simply ignore this patch (I'll remove it in a v3).
 
-Really ? I remember we were allocating exactly twice more, ie a 64K PTE
-page was made of 32K of PTEs and 32K of extensions. I might not be
-properly parsing either your above sentence or your comment, the way
-you spell it it sounds like you are allocating now even more ...
+OK. In some future patch please reorganize the remove function so,
+that it follows the template described in Documentation/PCI/pci.txt :
+	Disable the device from generating IRQs
+	Release the IRQ (free_irq())
+	Stop all DMA activity
+	Release DMA buffers (both streaming and coherent)
+	Unregister from other subsystems (e.g. scsi or netdev)
+	Release MMIO/IOP resources
+	Disable the device
 
-
-> > Ie, in most cases on modern machines we never use the other
-> > "half"...
-> > 
-> 
-> That is true. We will use this only when we use 4K subpage. But I am
-> not sure there is a better solution. Also, we should find this
-> slightly
-> imporve our contention on ptl lock. With SPLIT_PTLOCK we now have
-> less
-> number of pte page using the same spin lock.
-
-You keep talking about "number of pte page" ... not sure what that
-actually means.
-
-In any case, shouldn't we consider something more like what we do for
-subpage protection and just segregate the 4k stuff in a completely
-separate tree which we can allocate on-demand so that we don't allocate
-any of it if there is no demotion ?
-
-Cheers,
-Ben.
-
-> -aneesh
+>
+>
+> -matt
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
