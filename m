@@ -1,16 +1,18 @@
 Return-Path: <bywxiaobai@163.com>
 Received: from m12-18.163.com (m12-18.163.com [220.181.12.18])
- by lists.ozlabs.org (Postfix) with ESMTP id 0D00C1A0048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 00:05:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4E7E81A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 00:09:09 +1000 (AEST)
 From: Yaowei Bai <bywxiaobai@163.com>
 To: perex@perex.cz, tiwai@suse.com, johannes@sipsolutions.net,
  k.kozlowski@samsung.com, elfring@users.sourceforge.net, fabf@skynet.be,
  lars@metafoo.de
 Cc: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 1/4] sound/onyx: remove redundant case entry
-Date: Mon, 21 Sep 2015 21:57:11 +0800
-Message-Id: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
+Subject: [PATCH 2/4] sound/i2sbus/core: make format more appropriate
+Date: Mon, 21 Sep 2015 21:57:12 +0800
+Message-Id: <1442843834-4648-2-git-send-email-bywxiaobai@163.com>
+In-Reply-To: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
+References: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,27 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Case ti->tag == 0 can be included in the last return,
-remove it.
+Make 'return' stay in a singe line.
 
 No functional change.
 
 Signed-off-by: Yaowei Bai <bywxiaobai@163.com>
 ---
- sound/aoa/codecs/onyx.c | 1 -
- 1 file changed, 1 deletion(-)
+ sound/aoa/soundbus/i2sbus/core.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/sound/aoa/codecs/onyx.c b/sound/aoa/codecs/onyx.c
-index a04edff..a407e1f 100644
---- a/sound/aoa/codecs/onyx.c
-+++ b/sound/aoa/codecs/onyx.c
-@@ -683,7 +683,6 @@ static int onyx_usable(struct codec_info_item *cii,
- 	mutex_unlock(&onyx->mutex);
+diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
+index 1cbf210..6f216c0 100644
+--- a/sound/aoa/soundbus/i2sbus/core.c
++++ b/sound/aoa/soundbus/i2sbus/core.c
+@@ -62,7 +62,8 @@ static int alloc_dbdma_descriptor_ring(struct i2sbus_dev *i2sdev,
+ static void free_dbdma_descriptor_ring(struct i2sbus_dev *i2sdev,
+ 				       struct dbdma_command_mem *r)
+ {
+-	if (!r->space) return;
++	if (!r->space)
++		return;
  
- 	switch (ti->tag) {
--	case 0: return 1;
- 	case 1:	return analog_enabled;
- 	case 2: return spdif_enabled;
- 	}
+ 	dma_free_coherent(&macio_get_pci_dev(i2sdev->macio)->dev,
+ 			    r->size, r->space, r->bus_addr);
 -- 
 1.9.1
