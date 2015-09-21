@@ -1,40 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <thenzl@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B5FB1A0048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:55:02 +1000 (AEST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 21 Sep 2015 21:55:00 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A6D8B3578054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:54:56 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8LBsmh341680968
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:54:56 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8LBsO6f022119
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:54:24 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 18/31] powerpc/mm: Increase the pte frag size.
-In-Reply-To: <1442833578.11901.2.camel@kernel.crashing.org>
-References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442817658-2588-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442823285.2819.1.camel@kernel.crashing.org>
- <87mvwgduuj.fsf@linux.vnet.ibm.com>
- <1442833578.11901.2.camel@kernel.crashing.org>
-Date: Mon, 21 Sep 2015 17:23:57 +0530
-Message-ID: <878u80gf8q.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44EAC1A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 22:11:33 +1000 (AEST)
+Subject: Re: [PATCH v2 04/30] cxlflash: Fix potential oops following LUN
+ removal
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442438860-49316-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+From: Tomas Henzl <thenzl@redhat.com>
+Message-ID: <55FFF3EE.9050202@redhat.com>
+Date: Mon, 21 Sep 2015 14:11:26 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1442438860-49316-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,81 +31,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> On Mon, 2015-09-21 at 14:15 +0530, Aneesh Kumar K.V wrote:
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> 
->> > On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
->> > > /*
->> > > - * We use a 2K PTE page fragment and another 2K for storing
->> > > - * real_pte_t hash index
->> > > + * We use a 2K PTE page fragment and another 4K for storing
->> > > + * real_pte_t hash index. Rounding the entire thing to 8K
->> > >   */
->> > 
->> > Isn't this a LOT of memory wasted ? Page tables have a non
->> > -negligible
->> > footprint, we were already wasting half, now we are wasting 3/4 no
->> > ?
->> > 
->> 
->> The actual math is, we used to allocate 16 PTE page from a 64K page
->> before. We now do 8 pte page from a 64K linux page.
+On 16.9.2015 23:27, Matthew R. Ochs wrote:
+> When a LUN is removed, the sdev that is associated with the LUN
+> remains intact until its reference count drops to 0. In order
+> to prevent an sdev from being removed while a context is still
+> associated with it, obtain an additional reference per-context
+> for each LUN attached to the context.
 >
-> Really ? I remember we were allocating exactly twice more, ie a 64K PTE
-> page was made of 32K of PTEs and 32K of extensions. I might not be
-> properly parsing either your above sentence or your comment, the way
-> you spell it it sounds like you are allocating now even more ...
+> This resolves a potential Oops in the release handler when a
+> dealing with a LUN that has already been removed.
 >
-
-That was the case before we did THP. So at that point we had
-#define PTE_INDEX_SIZE  12
-
-We changed that to
-#define PTE_INDEX_SIZE  8
-
-in commit 419df06eea5bfa815e3a78e0aad6cfb320c1654f
-"powerpc: Reduce the PTE_INDEX_SIZE" and also added the concept called
-pte fragments inorder to reduce space wastage in
-5c1f6ee9a31cbdac90bbb8ae1ba4475031ac74b4 "powerpc: Reduce PTE table
-memory wastage "
-
+> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+> Suggested-by: Brian King <brking@linux.vnet.ibm.com>
+> ---
+>  drivers/scsi/cxlflash/superpipe.c | 36 ++++++++++++++++++++++++------------
+>  1 file changed, 24 insertions(+), 12 deletions(-)
 >
->> > Ie, in most cases on modern machines we never use the other
->> > "half"...
->> > 
->> 
->> That is true. We will use this only when we use 4K subpage. But I am
->> not sure there is a better solution. Also, we should find this
->> slightly
->> imporve our contention on ptl lock. With SPLIT_PTLOCK we now have
->> less
->> number of pte page using the same spin lock.
->
-> You keep talking about "number of pte page" ... not sure what that
-> actually means.
+> diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
+> index fa513ba..1fa4af6 100644
+> --- a/drivers/scsi/cxlflash/superpipe.c
+> +++ b/drivers/scsi/cxlflash/superpipe.c
+> @@ -880,6 +880,9 @@ static int _cxlflash_disk_detach(struct scsi_device *sdev,
+>  			sys_close(lfd);
+>  	}
+>  
+> +	/* Release the sdev reference that bound this LUN to the context */
+> +	scsi_device_put(sdev);
+> +
 
-The page that contain pte entries. Or the last level of the linux page
-table. or we could call them pte fragments. We need to allocate one
-full page at lowest level, because we want to use split ptlock. Now
-for keeping the pte_t entries, we will just be using 2K space. Rest of
-the space can be reused. We did that in commit 
-5c1f6ee9a31cbdac90bbb8ae1ba4475031ac74b4 . Now all those pmd entries
-that have pte page (pte fragments) coming from the same 64K page
-will also end up sharing the same ptlock.
+I'm not sure here with the use if scsi_device_get+put, also I don't quite well
+understand what you are going to fix here and how can it happen.
+The scsi_device_get takes an additional module reference, so if used from
+a module it shouldn't be held for a long time.
+Is it possible for a user to rmmod the czlflash module
+after the disk attach function is called?
 
+Cheers,
+--tm
 
->
-> In any case, shouldn't we consider something more like what we do for
-> subpage protection and just segregate the 4k stuff in a completely
-> separate tree which we can allocate on-demand so that we don't allocate
-> any of it if there is no demotion ?
->
-
-We could definitely try that. That would mean another set of memory
-allocation only for 4K and I was not sure we want that. For
-example current subpage protection code path is rarely used and we may
-not really be able to find out if we break it.
-
--aneesh
+>  out:
+>  	if (put_ctx)
+>  		put_context(ctxi);
+> @@ -1287,11 +1290,18 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
+>  			}
+>  	}
+>  
+> +	rc = scsi_device_get(sdev);
+> +	if (unlikely(rc)) {
+> +		dev_err(dev, "%s: Unable to get sdev reference!\n", __func__);
+> +		goto out;
+> +	}
+> +
+>  	lun_access = kzalloc(sizeof(*lun_access), GFP_KERNEL);
+>  	if (unlikely(!lun_access)) {
+>  		dev_err(dev, "%s: Unable to allocate lun_access!\n", __func__);
+> +		scsi_device_put(sdev);
+>  		rc = -ENOMEM;
+> -		goto out;
+> +		goto err0;
+>  	}
+>  
+>  	lun_access->lli = lli;
+> @@ -1311,21 +1321,21 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
+>  		dev_err(dev, "%s: Could not initialize context %p\n",
+>  			__func__, ctx);
+>  		rc = -ENODEV;
+> -		goto err0;
+> +		goto err1;
+>  	}
+>  
+>  	ctxid = cxl_process_element(ctx);
+>  	if (unlikely((ctxid > MAX_CONTEXT) || (ctxid < 0))) {
+>  		dev_err(dev, "%s: ctxid (%d) invalid!\n", __func__, ctxid);
+>  		rc = -EPERM;
+> -		goto err1;
+> +		goto err2;
+>  	}
+>  
+>  	file = cxl_get_fd(ctx, &cfg->cxl_fops, &fd);
+>  	if (unlikely(fd < 0)) {
+>  		rc = -ENODEV;
+>  		dev_err(dev, "%s: Could not get file descriptor\n", __func__);
+> -		goto err1;
+> +		goto err2;
+>  	}
+>  
+>  	/* Translate read/write O_* flags from fcntl.h to AFU permission bits */
+> @@ -1335,7 +1345,7 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
+>  	if (unlikely(!ctxi)) {
+>  		dev_err(dev, "%s: Failed to create context! (%d)\n",
+>  			__func__, ctxid);
+> -		goto err2;
+> +		goto err3;
+>  	}
+>  
+>  	work = &ctxi->work;
+> @@ -1346,13 +1356,13 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
+>  	if (unlikely(rc)) {
+>  		dev_dbg(dev, "%s: Could not start context rc=%d\n",
+>  			__func__, rc);
+> -		goto err3;
+> +		goto err4;
+>  	}
+>  
+>  	rc = afu_attach(cfg, ctxi);
+>  	if (unlikely(rc)) {
+>  		dev_err(dev, "%s: Could not attach AFU rc %d\n", __func__, rc);
+> -		goto err4;
+> +		goto err5;
+>  	}
+>  
+>  	/*
+> @@ -1388,13 +1398,13 @@ out:
+>  		__func__, ctxid, fd, attach->block_size, rc, attach->last_lba);
+>  	return rc;
+>  
+> -err4:
+> +err5:
+>  	cxl_stop_context(ctx);
+> -err3:
+> +err4:
+>  	put_context(ctxi);
+>  	destroy_context(cfg, ctxi);
+>  	ctxi = NULL;
+> -err2:
+> +err3:
+>  	/*
+>  	 * Here, we're overriding the fops with a dummy all-NULL fops because
+>  	 * fput() calls the release fop, which will cause us to mistakenly
+> @@ -1406,10 +1416,12 @@ err2:
+>  	fput(file);
+>  	put_unused_fd(fd);
+>  	fd = -1;
+> -err1:
+> +err2:
+>  	cxl_release_context(ctx);
+> -err0:
+> +err1:
+>  	kfree(lun_access);
+> +err0:
+> +	scsi_device_put(sdev);
+>  	goto out;
+>  }
+>  
