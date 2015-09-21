@@ -1,27 +1,36 @@
-Return-Path: <thenzl@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD4141A0048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:36:37 +1000 (AEST)
-Subject: Re: [PATCH v2 03/30] cxlflash: Fix read capacity timeout
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442438806-49198-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Manoj Kumar <kumarmn@us.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-From: Tomas Henzl <thenzl@redhat.com>
-Message-ID: <55FFEBC0.5020507@redhat.com>
-Date: Mon, 21 Sep 2015 13:36:32 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id E89421A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:50:50 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 21 Sep 2015 21:50:49 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 336652CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:50:47 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8LBoSjq38469868
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:50:37 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8LBoEH4016067
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 21:50:14 +1000
+Date: Mon, 21 Sep 2015 21:49:45 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/eeh: Avoid to handle EEH on a passed Child PE
+Message-ID: <20150921114945.GA17285@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1442827788-10385-1-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1442438806-49198-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1442827788-10385-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +40,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16.9.2015 23:26, Matthew R. Ochs wrote:
-> From: Manoj Kumar <kumarmn@us.ibm.com>
+On Mon, Sep 21, 2015 at 05:29:48PM +0800, Wei Yang wrote:
+>Current EEH infrastructure would avoid to handle EEH when a PE is passed to
+>guest, while if this PE is a Child PE of the one hit EEH, host would handle
+>this. By doing so, this would leads to guest hang. The correct way is
+>avoid to handle it on host and let guest to recover.
 >
-> The timeout value for read capacity is too small. Certain devices
-> may take longer to respond and thus the command may prematurely
-> timeout. Additionally the literal used for the timeout is stale.
+>This patch avoids to handle EEH on a passed Child PE.
 >
-> Update the timeout to 30 seconds (matches the value used in sd.c)
-> and rework the timeout literal to a more appropriate description.
+
+Ok. It's fixing the problem the guest, which owns a VF, when its PF hitting
+EEH error, right? If so, I'm not sure if you really tested this code. Does
+it work for you?
+
+When the parent PE (PF) is stopped for EEH recovery, it sounds impossible
+that the child PE can't be affected and just escape from the error. The
+question is how the guest can continue to work after the EEH recovery on
+parent PE?
+
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>---
+> arch/powerpc/kernel/eeh_pe.c | 5 +++++
+> 1 file changed, 5 insertions(+)
 >
-> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-> Suggested-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
->  drivers/scsi/cxlflash/superpipe.c | 9 ++++-----
->  drivers/scsi/cxlflash/superpipe.h | 2 +-
->  drivers/scsi/cxlflash/vlun.c      | 4 ++--
->  3 files changed, 7 insertions(+), 8 deletions(-)
+>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>index 5cde950..c6d0e9f 100644
+>--- a/arch/powerpc/kernel/eeh_pe.c
+>+++ b/arch/powerpc/kernel/eeh_pe.c
+>@@ -172,6 +172,7 @@ static struct eeh_pe *eeh_pe_next(struct eeh_pe *pe,
+>  * callback returns something other than NULL, or no more PEs
+>  * to be traversed.
+>  */
+>+static void *__eeh_pe_get(void *data, void *flag);
+> void *eeh_pe_traverse(struct eeh_pe *root,
+> 		      eeh_traverse_func fn, void *flag)
+> {
+>@@ -179,6 +180,8 @@ void *eeh_pe_traverse(struct eeh_pe *root,
+> 	void *ret;
 >
-> diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-> index 7df985d..fa513ba 100644
-> --- a/drivers/scsi/cxlflash/superpipe.c
-> +++ b/drivers/scsi/cxlflash/superpipe.c
-> @@ -296,7 +296,7 @@ static int read_cap16(struct scsi_device *sdev, struct llun_info *lli)
->  	int rc = 0;
->  	int result = 0;
->  	int retry_cnt = 0;
-> -	u32 tout = (MC_DISCOVERY_TIMEOUT * HZ);
-> +	u32 to = (CMD_TIMEOUT * HZ);
+> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+>+		if (eeh_pe_passed(pe) && (fn != __eeh_pe_get))
+>+			continue;
 
-In V3 please remove the parenthesis here^ 
+The code change here seems ugly.
 
->  
->  retry:
->  	cmd_buf = kzalloc(CMD_BUFSIZE, GFP_KERNEL);
-...
+The "flag" can be extended to carry the information to skip pass-through
+PEs or not. So the function calling eeh_pe_traverse() decides to skip
+pass-through PEs or not.
 
-> @@ -1376,8 +1375,8 @@ out_attach:
->  	attach->block_size = gli->blk_len;
->  	attach->mmio_size = sizeof(afu->afu_map->hosts[0].harea);
->  	attach->last_lba = gli->max_lba;
-> -	attach->max_xfer = (sdev->host->max_sectors * MAX_SECTOR_UNIT) /
-> -		gli->blk_len;
-> +	attach->max_xfer = (sdev->host->max_sectors * MAX_SECTOR_UNIT);
+> 		ret = fn(pe, flag);
+> 		if (ret) return ret;
+> 	}
+>@@ -210,6 +213,8 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
 
-and here^ too.
-
-Thanks,
-Tomas
+>
+> 	/* Traverse root PE */
+> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+>+		if (eeh_pe_passed(pe))
+>+			continue;
+> 		eeh_pe_for_each_dev(pe, edev, tmp) {
+> 			ret = fn(edev, flag);
+> 			if (ret)
+>-- 
+>2.5.0
+>
