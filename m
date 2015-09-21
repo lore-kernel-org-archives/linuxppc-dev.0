@@ -2,31 +2,31 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA0DF1A0215
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F7E41A014B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:39 +1000 (AEST)
 Received: from /spool/local
  by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 21 Sep 2015 16:42:36 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4039E357804F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:34 +1000 (EST)
+ Mon, 21 Sep 2015 16:42:37 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C39823578053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:35 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8L6gMem21299262
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:30 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8L6gIgZ56492152
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:26 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8L6g1td014922
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:02 +1000
+ t8L6g3pQ014959
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 16:42:03 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 15/31] powerpc/booke: Move booke headers (part 3)
-Date: Mon, 21 Sep 2015 12:10:42 +0530
-Message-Id: <1442817658-2588-16-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 16/31] powerpc/booke: Move booke headers (part 4)
+Date: Mon, 21 Sep 2015 12:10:43 +0530
+Message-Id: <1442817658-2588-17-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,49 +40,91 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- .../include/asm/{pgtable-ppc64-4k.h => booke/64/pgtable-4k.h}  |  0
- .../asm/{pgtable-ppc64-64k.h => booke/64/pgtable-64k.h}        |  0
- arch/powerpc/include/asm/booke/64/pgtable.h                    | 10 +++++-----
- 3 files changed, 5 insertions(+), 5 deletions(-)
- rename arch/powerpc/include/asm/{pgtable-ppc64-4k.h => booke/64/pgtable-4k.h} (100%)
- rename arch/powerpc/include/asm/{pgtable-ppc64-64k.h => booke/64/pgtable-64k.h} (100%)
+ arch/powerpc/include/asm/booke/32/pgtable.h             | 16 ++++++++--------
+ arch/powerpc/include/asm/{ => booke/32}/pte-40x.h       |  0
+ arch/powerpc/include/asm/{ => booke/32}/pte-44x.h       |  0
+ arch/powerpc/include/asm/{ => booke/32}/pte-8xx.h       |  0
+ arch/powerpc/include/asm/{ => booke/32}/pte-fsl-booke.h |  0
+ arch/powerpc/include/asm/booke/64/pgtable.h             |  2 +-
+ arch/powerpc/include/asm/{ => booke}/pte-book3e.h       |  0
+ 7 files changed, 9 insertions(+), 9 deletions(-)
+ rename arch/powerpc/include/asm/{ => booke/32}/pte-40x.h (100%)
+ rename arch/powerpc/include/asm/{ => booke/32}/pte-44x.h (100%)
+ rename arch/powerpc/include/asm/{ => booke/32}/pte-8xx.h (100%)
+ rename arch/powerpc/include/asm/{ => booke/32}/pte-fsl-booke.h (100%)
+ rename arch/powerpc/include/asm/{ => booke}/pte-book3e.h (100%)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-4k.h b/arch/powerpc/include/asm/booke/64/pgtable-4k.h
-similarity index 100%
-rename from arch/powerpc/include/asm/pgtable-ppc64-4k.h
-rename to arch/powerpc/include/asm/booke/64/pgtable-4k.h
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/booke/64/pgtable-64k.h
-similarity index 100%
-rename from arch/powerpc/include/asm/pgtable-ppc64-64k.h
-rename to arch/powerpc/include/asm/booke/64/pgtable-64k.h
-diff --git a/arch/powerpc/include/asm/booke/64/pgtable.h b/arch/powerpc/include/asm/booke/64/pgtable.h
-index 8c851dbc625f..8cabf26babd9 100644
---- a/arch/powerpc/include/asm/booke/64/pgtable.h
-+++ b/arch/powerpc/include/asm/booke/64/pgtable.h
-@@ -1,14 +1,14 @@
--#ifndef _ASM_POWERPC_PGTABLE_PPC64_H_
--#define _ASM_POWERPC_PGTABLE_PPC64_H_
-+#ifndef _ASM_POWERPC_BOOKE_64_PGTABLE_H
-+#define _ASM_POWERPC_BOOKE_64_PGTABLE_H
- /*
-  * This file contains the functions and defines necessary to modify and use
-  * the ppc64 hashed page table.
+diff --git a/arch/powerpc/include/asm/booke/32/pgtable.h b/arch/powerpc/include/asm/booke/32/pgtable.h
+index fbb23c54b998..cab4a4b30ddc 100644
+--- a/arch/powerpc/include/asm/booke/32/pgtable.h
++++ b/arch/powerpc/include/asm/booke/32/pgtable.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PGTABLE_PPC32_H
+-#define _ASM_POWERPC_PGTABLE_PPC32_H
++#ifndef _ASM_POWERPC_BOOKE_32_PGTABLE_H
++#define _ASM_POWERPC_BOOKE_32_PGTABLE_H
+ 
+ #include <asm-generic/pgtable-nopmd.h>
+ 
+@@ -106,15 +106,15 @@ extern int icache_44x_need_flush;
   */
  
- #ifdef CONFIG_PPC_64K_PAGES
--#include <asm/pgtable-ppc64-64k.h>
-+#include <asm/booke/64/pgtable-64k.h>
- #else
--#include <asm/pgtable-ppc64-4k.h>
-+#include <asm/booke/64/pgtable-4k.h>
+ #if defined(CONFIG_40x)
+-#include <asm/pte-40x.h>
++#include <asm/booke/32/pte-40x.h>
+ #elif defined(CONFIG_44x)
+-#include <asm/pte-44x.h>
++#include <asm/booke/32/pte-44x.h>
+ #elif defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
+-#include <asm/pte-book3e.h>
++#include <asm/booke/pte-book3e.h>
+ #elif defined(CONFIG_FSL_BOOKE)
+-#include <asm/pte-fsl-booke.h>
++#include <asm/booke/32/pte-fsl-booke.h>
+ #elif defined(CONFIG_8xx)
+-#include <asm/pte-8xx.h>
++#include <asm/booke/32/pte-8xx.h>
  #endif
- #include <asm/barrier.h>
  
-@@ -629,4 +629,4 @@ static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
- 	return true;
- }
- #endif /* __ASSEMBLY__ */
--#endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
-+#endif /* _ASM_POWERPC_BOOKE_64_PGTABLE_H */
+ /* And here we include common definitions */
+@@ -340,4 +340,4 @@ extern int get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep,
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+-#endif /* _ASM_POWERPC_PGTABLE_PPC32_H */
++#endif /* __ASM_POWERPC_BOOKE_32_PGTABLE_H */
+diff --git a/arch/powerpc/include/asm/pte-40x.h b/arch/powerpc/include/asm/booke/32/pte-40x.h
+similarity index 100%
+rename from arch/powerpc/include/asm/pte-40x.h
+rename to arch/powerpc/include/asm/booke/32/pte-40x.h
+diff --git a/arch/powerpc/include/asm/pte-44x.h b/arch/powerpc/include/asm/booke/32/pte-44x.h
+similarity index 100%
+rename from arch/powerpc/include/asm/pte-44x.h
+rename to arch/powerpc/include/asm/booke/32/pte-44x.h
+diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/booke/32/pte-8xx.h
+similarity index 100%
+rename from arch/powerpc/include/asm/pte-8xx.h
+rename to arch/powerpc/include/asm/booke/32/pte-8xx.h
+diff --git a/arch/powerpc/include/asm/pte-fsl-booke.h b/arch/powerpc/include/asm/booke/32/pte-fsl-booke.h
+similarity index 100%
+rename from arch/powerpc/include/asm/pte-fsl-booke.h
+rename to arch/powerpc/include/asm/booke/32/pte-fsl-booke.h
+diff --git a/arch/powerpc/include/asm/booke/64/pgtable.h b/arch/powerpc/include/asm/booke/64/pgtable.h
+index 8cabf26babd9..9abf7a1720f7 100644
+--- a/arch/powerpc/include/asm/booke/64/pgtable.h
++++ b/arch/powerpc/include/asm/booke/64/pgtable.h
+@@ -97,7 +97,7 @@
+ /*
+  * Include the PTE bits definitions
+  */
+-#include <asm/pte-book3e.h>
++#include <asm/booke/pte-book3e.h>
+ #include <asm/pte-common.h>
+ 
+ #ifdef CONFIG_PPC_MM_SLICES
+diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/booke/pte-book3e.h
+similarity index 100%
+rename from arch/powerpc/include/asm/pte-book3e.h
+rename to arch/powerpc/include/asm/booke/pte-book3e.h
 -- 
 2.5.0
