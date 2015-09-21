@@ -1,21 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.191])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 965711A0048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 19:44:18 +1000 (AEST)
-Message-ID: <1442828657.12401.2.camel@ellerman.id.au>
-Subject: Re: Time to remove platforms/cell?
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Marc Dietrich <marvin24@gmx.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Geoff Levand <geoff@infradead.org>
-Date: Mon, 21 Sep 2015 19:44:17 +1000
-In-Reply-To: <2785247.ZjG8XMQlJP@fb07-iapwap2>
-References: <1442467727.25483.0.camel@ellerman.id.au>
- <2023345.Irprl084gX@fb07-iapwap2> <1442483138.26748.4.camel@ellerman.id.au>
- <2785247.ZjG8XMQlJP@fb07-iapwap2>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2A361A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 19:56:53 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Brian King' <brking@linux.vnet.ibm.com>, "Matthew R. Ochs"
+ <mrochs@linux.vnet.ibm.com>, "linux-scsi@vger.kernel.org"
+ <linux-scsi@vger.kernel.org>, James Bottomley
+ <James.Bottomley@HansenPartnership.com>, "Nicholas A. Bellinger"
+ <nab@linux-iscsi.org>, Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens
+ <dja@ozlabs.au.ibm.com>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Shane Seymour <shane.seymour@hp.com>
+CC: Michael Neuling <mikey@neuling.org>, "Manoj N. Kumar"
+ <manoj@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH v2 12/30] cxlflash: Refine host/device attributes
+Date: Mon, 21 Sep 2015 09:55:56 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB9BE15@AcuExch.aculab.com>
+References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442438954-49663-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <55FC8371.5010900@linux.vnet.ibm.com>
+In-Reply-To: <55FC8371.5010900@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +34,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-17 at 12:28 +0200, Marc Dietrich wrote:
-> Am Donnerstag, 17. September 2015, 19:45:38 schrieb Michael Ellerman:
-> > On Thu, 2015-09-17 at 10:43 +0200, Marc Dietrich wrote:
-> > > Am Donnerstag, 17. September 2015, 15:28:47 schrieb Michael Ellerman:
-> >
-> > [...]
-> >
-> > Having said all that, this email was mainly a fishing expedition to see if
-> > anyone still cares about Cell support at all. It sounds like you at least
-> > are running mainline kernels on PS3?
-> 
-> well, I like to but I couldn't get the kernel booting for some reason. Still 
-> trying.
-
-OK. If you need help feel free to post on here. There's no guarantee anyone
-will have free time to help, but you can always ask :)
-
-cheers
+RnJvbTogQnJpYW4gS2luZw0KPiBTZW50OiAxOCBTZXB0ZW1iZXIgMjAxNSAyMjozNQ0KLi4uDQo+
+ID4gKwlmb3IgKGkgPSAwOyBpIDwgQ1hMRkxBU0hfTlVNX1ZMVU5TOyBpKyssIGJ1ZiArPSAyMikN
+Cj4gDQo+IFJhdGhlciB0aGFuIHRoaXMgYnVnIHByb25lIGhhcmQgY29kZWQgMjIsIGhvdyBhYm91
+dCBuZXZlciBpbmNyZW1lbnRpbmcgYnVmIGFuZCBkbyBzb21ldGhpbmcNCj4gc2ltaWxhciB0byB0
+aGlzOg0KPiANCj4gPiArCQlieXRlcyArPSBzY25wcmludGYoYnVmLCBQQUdFX1NJWkUsICIlMDNk
+OiAlMDE2bGxYXG4iLA0KPiA+ICsJCQkJICAgaSwgcmVhZHFfYmUoJmZjX3BvcnRbaV0pKTsNCj4g
+DQo+IAkJYnl0ZXMgKz0gc2NucHJpbnRmKCZidWZbYnl0ZXNdLCBQQUdFX1NJWkUsICIlMDNkOiAl
+MDE2bGxYXG4iLA0KPiAJCQkJICAgaSwgcmVhZHFfYmUoJmZjX3BvcnRbaV0pKTsNCi4uLg0KDQoJ
+Ynl0ZXMgKz0gc2NucHJpbnRmKGJ1ZiArIGJ5dGVzLCBQQUdFX1NJWkUgLSBieXRlcywgLi4uLg0K
+DQpZb3UgbmVlZCB0byBjaGVjayBzY25wcmludGYoKSdzIHJldHVybiB2YWx1ZSB0aG91Z2guDQpU
+aGUgYWJvdmUgaXMgd3JvbmcgZm9yIGxpYmMncyBzbnByaW50ZigpLg0KDQoJRGF2aWQNCg0K
