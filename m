@@ -1,24 +1,38 @@
-Return-Path: <Poonam.Aggrwal@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0127.outbound.protection.outlook.com [65.55.169.127])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FEB41A007F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 18:36:14 +1000 (AEST)
-From: Aggrwal Poonam <Poonam.Aggrwal@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
-Subject: RE: [PATCH 2/4] powerpc/device-tree: bindings for DSP cores/clusters
- for Freescale SOCs
-Date: Mon, 21 Sep 2015 08:36:06 +0000
-Message-ID: <DM2PR0301MB07016FC9BFCEB4A2C38168AB8C460@DM2PR0301MB0701.namprd03.prod.outlook.com>
-References: <1442686567-14320-1-git-send-email-poonam.aggrwal@freescale.com>
- <1442708128.19102.147.camel@freescale.com>
-In-Reply-To: <1442708128.19102.147.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 942A91A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 18:45:23 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 21 Sep 2015 14:15:19 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id F37A73940053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 14:15:17 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8L8jGfi8388938
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 14:15:16 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8L8jBv8021282
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 14:15:12 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 18/31] powerpc/mm: Increase the pte frag size.
+In-Reply-To: <1442823285.2819.1.camel@kernel.crashing.org>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442817658-2588-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442823285.2819.1.camel@kernel.crashing.org>
+Date: Mon, 21 Sep 2015 14:15:08 +0530
+Message-ID: <87mvwgduuj.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogU3VuZGF5LCBTZXB0ZW1iZXIgMjAsIDIwMTUgNTo0NSBBTQ0KPiBUbzogQWdn
-cndhbCBQb29uYW0tQjEwODEyIDxQb29uYW0uQWdncndhbEBmcmVlc2NhbGUuY29tPg0KPiBDYzog
-bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5v
-cmc7IGRldmljZXRyZWUtDQo+IGRpc2N1c3NAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBS
-ZTogW1BBVENIIDIvNF0gcG93ZXJwYy9kZXZpY2UtdHJlZTogYmluZGluZ3MgZm9yIERTUA0KPiBj
-b3Jlcy9jbHVzdGVycyBmb3IgRnJlZXNjYWxlIFNPQ3MNCj4gDQo+IE9uIFNhdCwgMjAxNS0wOS0x
-OSBhdCAyMzo0NiArMDUzMCwgUG9vbmFtIEFnZ3J3YWwgd3JvdGU6DQo+ID4gRnJvbTogcG9vbmFt
-IGFnZ3J3YWwgPHBvb25hbS5hZ2dyd2FsQGZyZWVzY2FsZS5jb20+DQo+ID4NCj4gPiBEZXZpY2Ug
-VHJlZSBCaW5kaW5ncyBmb3IgRFNQIENQVSBjbHVzdGVycyBhbmQgRFNQIENQVXMgZm9yIEZyZWVz
-Y2FsZQ0KPiA+IFBvd2VyUEMgU09DcyB3aGljaCBoYXZlIERTUCBDUFVzIGluIGFkZGl0aW9uIHRv
-IFBvd2VyUEMgQ1BVcy4NCj4gPiBGb3IgZXhhbXBsZSBCNDg2MCBoYXMgMyBEU1AgY2x1c3RlcnMg
-d2hpY2ggaGF2ZSAyIFNDMzkwMCBjb3JlcyBlYWNoLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTog
-UG9vbmFtIEFnZ3J3YWwgPHBvb25hbS5hZ2dyd2FsQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+
-ID4gLSBiYXNlZCBvZjogZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwv
-Z2l0L3RvcnZhbGRzL2xpbnV4LmdpdA0KPiA+ICAgYnJhbmNoIG1hc3Rlcg0KPiA+DQo+ID4gVGhp
-cyBwYXRjaCB3YXMgc2VudCBlYXJsaWVyIGFuZCBzb21lIGNvbW1lbnRzIHdlcmUgcmVjZWl2ZWQu
-IFNvbWUgaGF2ZQ0KPiA+IGJlZW4gdGFrZW4gY2FyZTsgb3RoZXJzIHdlIGNhbiBmdXJ0aGVyIGRp
-c2N1c3MuICBBcG9sb2dpemUgZm9yIG5vdA0KPiA+IGZvbGxvd2luZyB1cCBvbiB0aGVtIGluIHRp
-bWUuDQo+ID4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNsL2RzcC1jcHVzLnR4
-dCAgIHwgNzgNCj4gPiArKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2Vk
-LCA3OCBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiBEb2N1bWVudGF0
-aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wvZHNwLQ0KPiA+IGNwdXMudHh0DQo+
-ID4NCj4gPiBkaWZmIC0tZ2l0DQo+ID4gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
-Z3MvcG93ZXJwYy9mc2wvZHNwLWNwdXMudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRy
-ZWUvYmluZGluZ3MvcG93ZXJwYy9mc2wvZHNwLWNwdXMudHh0DQo+ID4gbmV3IGZpbGUgbW9kZSAx
-MDA2NDQNCj4gPiBpbmRleCAwMDAwMDAwLi42ZDkwMWVmDQo+ID4gLS0tIC9kZXYvbnVsbA0KPiA+
-ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9kc3At
-Y3B1cy50eHQNCj4gPiBAQCAtMCwwICsxLDc4IEBADQo+ID4NCj4gKz09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KPiA9PT09PT09PT09DQo+
-ID4gK0JpbmRpbmcgZm9yIERTUCBDUFUgY2x1c3RlcnMgYW5kIERTUCBDUFVzIGZvciBGcmVlc2Nh
-bGUgU09DcyB3aGljaA0KPiA+ICtoYXZlIERTUCBDUFVzIGluIGFkZGl0aW9uIHRvIFBvd2VyUEMg
-Y3B1cy4NCj4gPiArQ29weXJpZ2h0IDIwMTMgRnJlZXNjYWxlIFNlbWljb25kdWN0b3IgSW5jLg0K
-PiA+ICsNCj4gPiArUG93ZXIgQXJjaGl0ZWN0dXJlIENQVXMgaW4gRnJlZXNjYWxlIFNPQ3MgYXJl
-IHJlcHJlc2VudGVkIGluIGRldmljZQ0KPiA+ICt0cmVlcw0KPiA+IGFzDQo+ID4gK3BlciB0aGUg
-ZGVmaW5pdGlvbiBpbiBlUEFQUi4NCj4gPiArDQo+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXMgZm9y
-IERTUCBDUFUgY2x1c3RlcjoNCj4gPiArLSBjb21wYXRpYmxlIDogc2hvdWxkIGJlICJmc2wsc2Mz
-OTAwLWNsdXN0ZXIiLg0KPiA+ICstIHJlZyA6IHNob3VsZCBjb250YWluIHRoZSBjbHVzdGVyIGlu
-ZGV4DQo+ID4gKw0KPiA+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzIGZvciBEU1AgQ1BVOg0KPiA+ICst
-IGNvbXBhdGlibGUgOiBzaG91bGQgYmUgImZzbCxzYzM5MDAiLg0KPiA+ICstIHJlZyA6IHNob3Vs
-ZCBjb250YWluIGluZGV4IG9mIERTUCBDUFUgd2l0aGluIHRoZSBEU1AgY2xzdXRlci4NCj4gPiAr
-LSBuZXh0LWxldmVsLWNhY2hlIDogc2hvdWxkIHBvaW50IHRvIHRoZSBwaGFuZGxlIG9mIHRoZSBu
-ZXh0LWxldmVsIEwyDQo+ID4gY2FjaGUuDQo+IA0KPiBXaHkgaXMgdGhlIGRzcC1jbHVzdGVycyBj
-b250YWluZXIgb25seSBzaG93biBpbiB0aGUgZXhhbXBsZSwgbm90IHRoZSBiaW5kaW5nDQo+IGl0
-c2VsZj8NCg0KSSB3aWxsIHRyeSB0byBhZGQgbW9yZSBkZXNjcmlwdGlvbiBpbiB0aGUgYmluZGlu
-ZyBmb3IgY2x1c3RlcjsgQW5kIHRoZSBzdHJ1Y3R1cmUgb2YgZHNwIGNsdXN0ZXIgKGxpa2Ugc3Vi
-IG5vZGUgb2YgRFNQIGNsdXN0ZXIgaXMgY29yZSwgZXRjKS4NCkRpZCBJIGdldCB5b3VyIGZlZWRi
-YWNrIHJpZ2h0Pw0KPiANCj4gLVNjb3R0DQoNCg==
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+> On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
+>> /*
+>> - * We use a 2K PTE page fragment and another 2K for storing
+>> - * real_pte_t hash index
+>> + * We use a 2K PTE page fragment and another 4K for storing
+>> + * real_pte_t hash index. Rounding the entire thing to 8K
+>>   */
+>
+> Isn't this a LOT of memory wasted ? Page tables have a non-negligible
+> footprint, we were already wasting half, now we are wasting 3/4 no ?
+>
+
+The actual math is, we used to allocate 16 PTE page from a 64K page
+before. We now do 8 pte page from a 64K linux page. 
+
+> Ie, in most cases on modern machines we never use the other "half"...
+>
+
+That is true. We will use this only when we use 4K subpage. But I am
+not sure there is a better solution. Also, we should find this slightly
+imporve our contention on ptl lock. With SPLIT_PTLOCK we now have less
+number of pte page using the same spin lock.
+
+-aneesh
