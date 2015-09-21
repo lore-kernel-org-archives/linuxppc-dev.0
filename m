@@ -1,45 +1,22 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0928E1A023F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 07:58:57 +1000 (AEST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Mon, 21 Sep 2015 15:58:56 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A37D119D803F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 15:49:46 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8LLtneK5046652
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 14:55:49 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8LLwqm1014649
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 15:58:53 -0600
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
-Subject: Re: [PATCH v2 09/30] cxlflash: Fix to stop interrupt processing on
- remove
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <55FFEB26.7020901@redhat.com>
-Date: Mon, 21 Sep 2015 16:58:53 -0500
-Cc: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
- nab@linux-iscsi.org, brking@linux.vnet.ibm.com, imunsie@au1.ibm.com,
- dja@ozlabs.au.ibm.com, andrew.donnellan@au1.ibm.com, mikey@neuling.org,
- linuxppc-dev@lists.ozlabs.org, "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Message-Id: <0925B383-EF92-45A6-8411-2E48F24F6BF8@linux.vnet.ibm.com>
-References: <1442422399-41262-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <55FAB43B.8050306@redhat.com>
- <97A059A7-2054-4DBD-B993-BBF47AC105E0@linux.vnet.ibm.com>
- <55FBFC8B.9060305@redhat.com>
- <95497861-11B5-4A04-A35C-D6FE164543C4@linux.vnet.ibm.com>
- <55FFEB26.7020901@redhat.com>
-To: Tomas Henzl <thenzl@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4EDD31A023F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 07:58:59 +1000 (AEST)
+Message-ID: <1442872723.19102.188.camel@freescale.com>
+Subject: Re: [PATCH 03/31] powerpc/mm: make a separate copy for book3s
+From: Scott Wood <scottwood@freescale.com>
+To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+CC: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 21 Sep 2015 16:58:43 -0500
+In-Reply-To: <1442817658-2588-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442817658-2588-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,114 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Sep 21, 2015, at 6:33 AM, Tomas Henzl <thenzl@redhat.com> wrote:
-> On 19.9.2015 01:26, Matthew R. Ochs wrote:
->>> On Sep 18, 2015, at 6:59 AM, Tomas Henzl <thenzl@redhat.com> wrote:
->>> On 17.9.2015 19:16, Matthew R. Ochs wrote:
->>>>> On Sep 17, 2015, at 7:38 AM, Tomas Henzl <thenzl@redhat.com> =
-wrote:
->>>>>=20
->>>>> On 16.9.2015 18:53, Matthew R. Ochs wrote:
->>>>>> Interrupt processing can run in parallel to a remove operation. =
-This
->>>>>> can lead to a condition where the interrupt handler is processing =
-with
->>>>>> memory that has been freed.
->>>>>>=20
->>>>>> To avoid processing an interrupt while memory may be yanked, =
-check for
->>>>>> removal while in the interrupt handler. Bail when removal is =
-imminent.
->>>>>>=20
->>>>>> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
->>>>>> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
->>>>>> ---
->>>>>> drivers/scsi/cxlflash/common.h |  2 ++
->>>>>> drivers/scsi/cxlflash/main.c   | 21 +++++++++++++++------
->>>>>> 2 files changed, 17 insertions(+), 6 deletions(-)
->>>>>>=20
->>>>>> diff --git a/drivers/scsi/cxlflash/common.h =
-b/drivers/scsi/cxlflash/common.h
->>>>>> index 1abe4e0..03d2cc6 100644
->>>>>> --- a/drivers/scsi/cxlflash/common.h
->>>>>> +++ b/drivers/scsi/cxlflash/common.h
->>>>>> @@ -103,6 +103,8 @@ struct cxlflash_cfg {
->>>>>> 	enum cxlflash_lr_state lr_state;
->>>>>> 	int lr_port;
->>>>>>=20
->>>>>> +	atomic_t remove_active;
->>>>>> +
->>>>>> 	struct cxl_afu *cxl_afu;
->>>>>>=20
->>>>>> 	struct pci_pool *cxlflash_cmd_pool;
->>>>>> diff --git a/drivers/scsi/cxlflash/main.c =
-b/drivers/scsi/cxlflash/main.c
->>>>>> index 6e85c77..89ee648 100644
->>>>>> --- a/drivers/scsi/cxlflash/main.c
->>>>>> +++ b/drivers/scsi/cxlflash/main.c
->>>>>> @@ -892,6 +892,7 @@ static void cxlflash_remove(struct pci_dev =
-*pdev)
->>>>>> 	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
->>>>>>=20
->>>>>> 	cfg->state =3D STATE_FAILTERM;
->>>>>> +	atomic_inc(&cfg->remove_active);
->>>>> Hi Matthew,
->>>>> you could just call term_afu at this point, this way you don't
->>>>> need an additional check in all irq functions.
->>>>> Cheers,
->>>>> Tomas
->>>> Hi Tomas,
->>>>=20
->>>> We actually do call term_afu() a few lines down from here. I don't =
-follow
->>>> how moving it here would help things.
->>> When you disable ints sooner (that is what term_afu does ?) you'll =
-get no
->>> more ints later isn't this what you want?
->> Correct, that's what we want.
->>=20
->>>> The reason for the atomic was to provide something lightweight that =
-we
->>>> could check _inside_ the processing loop for the read-response =
-queue
->>>> handler. A check outside that loop doesn't really provide much in =
-terms
->>>> of closing or narrowing down the window of when freed memory can be
->>>> accessed.
->>>>=20
->>>> As David Laight correctly pointed out, this approach does not =
-completely
->>>> close the window. We'd need something heavier to fully protect =
-(e.g. a lock
->>>> to wrap around the entire loop). I will look into adding this in a =
-future cycle
->>>> when I can adequately test.
->>> term_afu calls free_irq and this function
->>> does not return until any executing interrupts for have completed.
->>> This is the sync mechanism you need, it's lightweight
->>> (does not add an additional check to your irq functions)
->>> and closes the race window completely.
->> Thanks for clarifying!
->>=20
->> I looked at this closer and you are correct, free_irq() guarantees =
-not
->> to return until the interrupt handler has completed. The current =
-location
->> of term_afu() is appropriate as the memory that the handler touches =
-is
->> not freed until the very end [by free_mem() and scsi_host_put()] of =
-the
->> remove. Thus we can simply ignore this patch (I'll remove it in a =
-v3).
->=20
-> OK. In some future patch please reorganize the remove function so,
-> that it follows the template described in Documentation/PCI/pci.txt :
-> 	Disable the device from generating IRQs
-> 	Release the IRQ (free_irq())
-> 	Stop all DMA activity
-> 	Release DMA buffers (both streaming and coherent)
-> 	Unregister from other subsystems (e.g. scsi or netdev)
-> 	Release MMIO/IOP resources
-> 	Disable the device
+On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
+> In this patch we do:
+> cp pgtable-ppc32.h book3s/32/pgtable.h
+> cp pgtable-ppc64.h book3s/64/pgtable.h
+> 
+> This enable us to do further changes to hash specific config.
+> We will change the page table format for 64bit hash in later patches.
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/32/pgtable.h | 340 +++++++++++++++
+>  arch/powerpc/include/asm/book3s/64/pgtable.h | 618 
+> +++++++++++++++++++++++++++
+>  arch/powerpc/include/asm/book3s/pgtable.h    |  10 +
+>  arch/powerpc/include/asm/mmu-hash64.h        |   2 +-
+>  arch/powerpc/include/asm/pgtable-ppc32.h     |   2 -
+>  arch/powerpc/include/asm/pgtable-ppc64.h     |   4 -
+>  arch/powerpc/include/asm/pgtable.h           |   4 +
+>  7 files changed, 973 insertions(+), 7 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/book3s/32/pgtable.h
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/pgtable.h
+>  create mode 100644 arch/powerpc/include/asm/book3s/pgtable.h
 
-Will do.
+git format-patch -C?
+
+Do the book3s/hash-specific parts of the copied file get removed from the non-
+hash files at some point?
+
+-Scott
