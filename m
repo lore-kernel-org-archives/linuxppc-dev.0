@@ -1,19 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D92441A3CB6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 17:18:46 +1000 (AEST)
-Message-ID: <1442819926.354.5.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Kconfig.cputype: Disallow TUNE_CELL on LE systems
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thomas Huth <thuth@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- boqun.feng@gmail.com
-Date: Mon, 21 Sep 2015 17:18:46 +1000
-In-Reply-To: <1442585820-18623-1-git-send-email-thuth@redhat.com>
-References: <1442585820-18623-1-git-send-email-thuth@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AEB21A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 18:14:59 +1000 (AEST)
+Message-ID: <1442823285.2819.1.camel@kernel.crashing.org>
+Subject: Re: [PATCH 18/31] powerpc/mm: Increase the pte frag size.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 21 Sep 2015 18:14:45 +1000
+In-Reply-To: <1442817658-2588-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442817658-2588-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,19 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-09-18 at 16:17 +0200, Thomas Huth wrote:
-> It looks somewhat weird that you can enable TUNE_CELL on little
-> endian systems, so let's disable this option with CPU_LITTLE_ENDIAN.
-> 
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
-> ---
->  I first thought that it might be better to make this option depend
->  on PPC_CELL instead ... but I guess it's a bad idea to depend a
->  CPU option on a platform option? Alternatively, would it make
->  sense to make it depend on (GENERIC_CPU || CELL_CPU) instead?
+On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
+> /*
+> - * We use a 2K PTE page fragment and another 2K for storing
+> - * real_pte_t hash index
+> + * We use a 2K PTE page fragment and another 4K for storing
+> + * real_pte_t hash index. Rounding the entire thing to 8K
+>   */
 
-Hmm, it's a little backward, but I think it would be fine, and less confusing
-for users. Both PS3 and Cell select PPC_CELL, so it would work in both those
-cases.
+Isn't this a LOT of memory wasted ? Page tables have a non-negligible
+footprint, we were already wasting half, now we are wasting 3/4 no ?
 
-cheers
+Ie, in most cases on modern machines we never use the other "half"...
+
+Ben.
