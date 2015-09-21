@@ -1,16 +1,17 @@
 Return-Path: <bywxiaobai@163.com>
 Received: from m12-18.163.com (m12-18.163.com [220.181.12.18])
- by lists.ozlabs.org (Postfix) with ESMTP id 4E7E81A0048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 00:09:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4D6791A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 00:16:26 +1000 (AEST)
 From: Yaowei Bai <bywxiaobai@163.com>
 To: perex@perex.cz, tiwai@suse.com, johannes@sipsolutions.net,
  k.kozlowski@samsung.com, elfring@users.sourceforge.net, fabf@skynet.be,
  lars@metafoo.de
 Cc: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] sound/i2sbus/core: make format more appropriate
-Date: Mon, 21 Sep 2015 21:57:12 +0800
-Message-Id: <1442843834-4648-2-git-send-email-bywxiaobai@163.com>
+Subject: [PATCH 3/4] sound/fabrics/layout: make aoa_fabric_layout_init return
+ directly
+Date: Mon, 21 Sep 2015 21:57:13 +0800
+Message-Id: <1442843834-4648-3-git-send-email-bywxiaobai@163.com>
 In-Reply-To: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
 References: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,28 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make 'return' stay in a singe line.
+Catching the return value of soundbus_register_driver in
+aoa_fabric_layout_init is not necessary, let's return it
+directly.
 
 No functional change.
 
 Signed-off-by: Yaowei Bai <bywxiaobai@163.com>
 ---
- sound/aoa/soundbus/i2sbus/core.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ sound/aoa/fabrics/layout.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
-index 1cbf210..6f216c0 100644
---- a/sound/aoa/soundbus/i2sbus/core.c
-+++ b/sound/aoa/soundbus/i2sbus/core.c
-@@ -62,7 +62,8 @@ static int alloc_dbdma_descriptor_ring(struct i2sbus_dev *i2sdev,
- static void free_dbdma_descriptor_ring(struct i2sbus_dev *i2sdev,
- 				       struct dbdma_command_mem *r)
- {
--	if (!r->space) return;
-+	if (!r->space)
-+		return;
+diff --git a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
+index 8f71f7e..b6ba091 100644
+--- a/sound/aoa/fabrics/layout.c
++++ b/sound/aoa/fabrics/layout.c
+@@ -1161,12 +1161,7 @@ static struct soundbus_driver aoa_soundbus_driver = {
  
- 	dma_free_coherent(&macio_get_pci_dev(i2sdev->macio)->dev,
- 			    r->size, r->space, r->bus_addr);
+ static int __init aoa_fabric_layout_init(void)
+ {
+-	int err;
+-
+-	err = soundbus_register_driver(&aoa_soundbus_driver);
+-	if (err)
+-		return err;
+-	return 0;
++	return soundbus_register_driver(&aoa_soundbus_driver);
+ }
+ 
+ static void __exit aoa_fabric_layout_exit(void)
 -- 
 1.9.1
