@@ -1,31 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0143.outbound.protection.outlook.com [207.46.100.143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1874E1A0152
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 06:45:12 +1000 (AEST)
-Message-ID: <1442868301.19102.176.camel@freescale.com>
-Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
- memcpy'
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: Thomas Gleixner <tglx@linutronix.de>, Segher Boessenkool
- <segher@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>, Steven Rostedt
- <rostedt@goodmis.org>
-Date: Mon, 21 Sep 2015 15:45:01 -0500
-In-Reply-To: <1442819428.354.2.camel@ellerman.id.au>
-References: <alpine.DEB.2.11.1509161816310.3951@nanos>
- <1442420984.2909.179.camel@freescale.com>
- <alpine.DEB.2.11.1509162159110.3951@nanos>
- <20150916215435.48bee4d3@grimm.local.home>
- <alpine.DEB.2.11.1509170911120.3951@nanos>
- <1442570517.5528.3.camel@ellerman.id.au>
- <20150918143204.GE29692@gate.crashing.org>
- <alpine.DEB.2.11.1509181643550.3951@nanos>
- <1442819428.354.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Return-Path: <bywxiaobai@163.com>
+Received: from m12-18.163.com (m12-18.163.com [220.181.12.18])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0D00C1A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 00:05:19 +1000 (AEST)
+From: Yaowei Bai <bywxiaobai@163.com>
+To: perex@perex.cz, tiwai@suse.com, johannes@sipsolutions.net,
+ k.kozlowski@samsung.com, elfring@users.sourceforge.net, fabf@skynet.be,
+ lars@metafoo.de
+Cc: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] sound/onyx: remove redundant case entry
+Date: Mon, 21 Sep 2015 21:57:11 +0800
+Message-Id: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-21 at 17:10 +1000, Michael Ellerman wrote:
-> On Fri, 2015-09-18 at 16:45 +0200, Thomas Gleixner wrote:
-> > On Fri, 18 Sep 2015, Segher Boessenkool wrote:
-> > 
-> > > On Fri, Sep 18, 2015 at 08:01:57PM +1000, Michael Ellerman wrote:
-> > > > Weird.
-> > > > 
-> > > > Can you try:
-> > > > 
-> > > >   d690740f22f6 ("powerpc/powernv: Enable LEDS support")
-> > > > 
-> > > > That is the commit before my merge of Scott's tree, which had all the 
-> > > > Freescale
-> > > > & 32-bit stuff.
-> > > > 
-> > > > If that works, it would isolate it to only about 30 commits from 
-> > > > Scott's tree.
-> > > 
-> > > My theory is it is not a kernel problem at all; instead, uboot 
-> > > overwrites
-> > > some little part of the kernel image.
-> > 
-> > u-boot is just loading a cuImage which is a kernel with appended
-> > device tree. So u-boot is out of the picture,
-> 
-> Unless something is still DMA'ing after u-boot has handed over to the 
-> kernel.
-> We had that happen on OF years ago.
->
-> > still investigating (when time allows)
-> 
-> Thanks. I assume no one at Freescale has been able to reproduce this?
+Case ti->tag == 0 can be included in the last return,
+remove it.
 
-I don't have an mpc52xx to test on.  I can boot a p4080 with tracing enabled.
+No functional change.
 
--Scott
+Signed-off-by: Yaowei Bai <bywxiaobai@163.com>
+---
+ sound/aoa/codecs/onyx.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/sound/aoa/codecs/onyx.c b/sound/aoa/codecs/onyx.c
+index a04edff..a407e1f 100644
+--- a/sound/aoa/codecs/onyx.c
++++ b/sound/aoa/codecs/onyx.c
+@@ -683,7 +683,6 @@ static int onyx_usable(struct codec_info_item *cii,
+ 	mutex_unlock(&onyx->mutex);
+ 
+ 	switch (ti->tag) {
+-	case 0: return 1;
+ 	case 1:	return analog_enabled;
+ 	case 2: return spdif_enabled;
+ 	}
+-- 
+1.9.1
