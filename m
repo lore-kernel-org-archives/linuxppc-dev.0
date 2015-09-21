@@ -1,18 +1,22 @@
-Return-Path: <bywxiaobai@163.com>
-Received: from m12-18.163.com (m12-18.163.com [220.181.12.18])
- by lists.ozlabs.org (Postfix) with ESMTP id 2E5FD1A0048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 00:17:29 +1000 (AEST)
-From: Yaowei Bai <bywxiaobai@163.com>
-To: perex@perex.cz, tiwai@suse.com, johannes@sipsolutions.net,
- k.kozlowski@samsung.com, elfring@users.sourceforge.net, fabf@skynet.be,
- lars@metafoo.de
-Cc: linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] sound/core/seq: make prioq_match return bool
-Date: Mon, 21 Sep 2015 21:57:14 +0800
-Message-Id: <1442843834-4648-4-git-send-email-bywxiaobai@163.com>
-In-Reply-To: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
-References: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
+Return-Path: <patrick@stwcx.xyz>
+Received: from sender163-mail.zoho.com (sender1.zohomail.com [74.201.84.157])
+ (using TLSv1 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2C941A0150
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 06:21:36 +1000 (AEST)
+Date: Mon, 21 Sep 2015 15:01:19 -0500
+From: Patrick Williams <patrick@stwcx.xyz>
+To: Daniel Axtens <dja@axtens.net>
+Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ skiboot@lists.ozlabs.org
+Subject: Re: [Skiboot] Skiboot recovery of MCEs during MMIO read of SCOMs:
+ 55672ecfa21f
+Message-ID: <20150921200119.GD8884@asimov.ibm.com>
+References: <1442804568.13852.9.camel@axtens.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="i9LlY+UWpKt15+FH"
+In-Reply-To: <1442804568.13852.9.camel@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch makes prioq_match return bool due to this particular
-function only using either one or zero as its return value.
 
-No functional change.
+--i9LlY+UWpKt15+FH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Yaowei Bai <bywxiaobai@163.com>
----
- sound/core/seq/seq_prioq.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+On Mon, Sep 21, 2015 at 01:02:48PM +1000, Daniel Axtens wrote:
+> Hi,
+>=20
+> This relates to 55672ecfa21f ("powerpc/book3s: Recover from MC in
+> sapphire on SCOM read via MMIO.").
+>=20
+> According to that patch, some SCOM reads via MMIO could lead to a
+> Machine Check Error in skiboot. That patch provided kernel support for a
+> skiboot interface to recover from those MCEs.
+>=20
+> That patch went into the kernel in Dec 2013. However, modern skiboot
+> does not expose the device tree property needed to use this mechanism.
+> As far as I can tell, nothing ever went into Skiboot for this purpose.=20
+>=20
+> Is this something we plan to use in the future? Or is it now redundant?
+>=20
+> --=20
+> Regards,
+> Daniel
+>=20
+> _______________________________________________
+> Skiboot mailing list
+> Skiboot@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/skiboot
 
-diff --git a/sound/core/seq/seq_prioq.c b/sound/core/seq/seq_prioq.c
-index bc1c848..aebae09 100644
---- a/sound/core/seq/seq_prioq.c
-+++ b/sound/core/seq/seq_prioq.c
-@@ -264,26 +264,26 @@ struct snd_seq_event_cell *snd_seq_prioq_cell_peek(struct snd_seq_prioq * f)
- }
- 
- 
--static inline int prioq_match(struct snd_seq_event_cell *cell,
-+static inline bool prioq_match(struct snd_seq_event_cell *cell,
- 			      int client, int timestamp)
- {
- 	if (cell->event.source.client == client ||
- 	    cell->event.dest.client == client)
--		return 1;
-+		return true;
- 	if (!timestamp)
--		return 0;
-+		return false;
- 	switch (cell->event.flags & SNDRV_SEQ_TIME_STAMP_MASK) {
- 	case SNDRV_SEQ_TIME_STAMP_TICK:
- 		if (cell->event.time.tick)
--			return 1;
-+			return true;
- 		break;
- 	case SNDRV_SEQ_TIME_STAMP_REAL:
- 		if (cell->event.time.time.tv_sec ||
- 		    cell->event.time.time.tv_nsec)
--			return 1;
-+			return true;
- 		break;
- 	}
--	return 0;
-+	return false;
- }
- 
- /* remove cells for left client */
--- 
-1.9.1
+XSCOM does not cause a machine check.  Centaur Inband SCOM does cause a
+machine check.  Was this maybe put in place in anticipation of
+supporting Inband SCOM?  Does skiboot support Inband SCOM now?
+
+--=20
+Patrick Williams
+
+--i9LlY+UWpKt15+FH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWAGIPAAoJEKsDR8wtAMEZjcoQAJUzipyT6DDrFhrNhepeJbMe
+pXylrLmU4f8cgonNehS2Z3HngpWM7cEiBZ5jsxGfG4iKjgLw8h7rvKkJHosUvTft
+KTPCRzOXi3+2NMTtH8/Ok+cc/Q4XQiqTd4KIAgKXxPibIRJiYXdX7Ahu+F76u1Et
+41FthoK9PyfuhZtp+4l1AJ/gsbEBnSUlaWI10F9ouge/TFR4/qmoy3cZp1XZ88QJ
+DS291I6I83rbuuQr4QxJ7ef4gDrnOBS9jLvF6wmAy2gVvGFk27OEkBu4R0WVsz95
+bCoz5f6aSZ+sfZBP/WatBKivRSoXiCJ9gajohMWzUFO7Dk0dpkegjhZRp6Pzvwae
+qMii+law+xJIXqWiIbxN0BI85VVDrJvl3QsYgNDcPrdw0GhbyrJEn8ci/IvrSRnw
+0EklZ/xKHjSJOPy26QhXClsXX0cr52Z5puAt73IDj6aDsgczg1KWKVxITcnMDSkZ
+76g012guluX8KNtttbDGh7S6IM3O2KQR+7lcFZymDj7Wh2stBtJdO8vbTRf7Edrb
+ytwK1K5kwcJLSHDe/9Sk3yFdPBqaO8RXofiiDoNVEV0pOybSkx49sdr6gUB5H6ib
+f2Ub0KoGH+RIw9lTr5krPJ/DnnGhebZ7lx9Yi0bTNHW2rG2SJdE12YTIPYYjcyCM
+Ph1G8d44PwK1DA854DUd
+=5taW
+-----END PGP SIGNATURE-----
+
+--i9LlY+UWpKt15+FH--
