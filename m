@@ -1,27 +1,41 @@
-Return-Path: <thenzl@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44EAC1A0048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 22:11:33 +1000 (AEST)
-Subject: Re: [PATCH v2 04/30] cxlflash: Fix potential oops following LUN
- removal
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442438860-49316-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-From: Tomas Henzl <thenzl@redhat.com>
-Message-ID: <55FFF3EE.9050202@redhat.com>
-Date: Mon, 21 Sep 2015 14:11:26 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id B97BD1A03AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 22:12:23 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 21 Sep 2015 22:12:22 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 70B583578053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 22:12:20 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8LCCB9G26804310
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 22:12:20 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8LCBkRH013239
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 22:11:47 +1000
+Date: Mon, 21 Sep 2015 22:11:19 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Alex Williamson <alex.williamson@redhat.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [PATCH 0/2] VFIO: Accept IOMMU group (PE) ID
+Message-ID: <20150921121119.GA19278@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1442557469-22185-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1442591252.23936.254.camel@redhat.com>
+ <20150919062247.GC29031@voom.redhat.com>
+ <20150921014228.GG20331@voom.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <1442438860-49316-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150921014228.GG20331@voom.fritz.box>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,147 +45,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16.9.2015 23:27, Matthew R. Ochs wrote:
-> When a LUN is removed, the sdev that is associated with the LUN
-> remains intact until its reference count drops to 0. In order
-> to prevent an sdev from being removed while a context is still
-> associated with it, obtain an additional reference per-context
-> for each LUN attached to the context.
+On Mon, Sep 21, 2015 at 11:42:28AM +1000, David Gibson wrote:
+>On Sat, Sep 19, 2015 at 04:22:47PM +1000, David Gibson wrote:
+>> On Fri, Sep 18, 2015 at 09:47:32AM -0600, Alex Williamson wrote:
+>> > On Fri, 2015-09-18 at 16:24 +1000, Gavin Shan wrote:
+>> > > This allows to accept IOMMU group (PE) ID from the parameter from userland
+>> > > when handling EEH operation so that the operation only affects the target
+>> > > IOMMU group (PE). If the IOMMU group (PE) ID in the parameter from userland
+>> > > is invalid, all IOMMU groups (PEs) attached to the specified container are
+>> > > affected as before.
+>> > > 
+>> > > Gavin Shan (2):
+>> > >   drivers/vfio: Support EEH API revision
+>> > >   drivers/vfio: Support IOMMU group for EEH operations
+>> > > 
+>> > >  drivers/vfio/vfio_iommu_spapr_tce.c | 50 ++++++++++++++++++++++++++++++++++---
+>> > >  drivers/vfio/vfio_spapr_eeh.c       | 46 ++++++++++++++++++++++------------
+>> > >  include/linux/vfio.h                | 13 +++++++---
+>> > >  include/uapi/linux/vfio.h           |  6 +++++
+>> > >  4 files changed, 93 insertions(+), 22 deletions(-)
+>> > 
+>> > This interface is terrible.  A function named foo_enabled() should
+>> > return a bool, yes or no, don't try to overload it to also return a
+>> > version.
+>> 
+>> Sorry, that one's my fault.  I suggested that approach to Gavin
+>> without really thinking it through.
+>> 
+>> 
+>> > AFAICT, patch 2/2 breaks current users by changing the offset
+>> > of the union in struct vfio_eeh_pe_err.
+>> 
+>> Yeah, this one's ugly.  We have to preserve the offset, but that means
+>> putting the group in a very awkward place.  Especially since I'm not
+>> sure if there even are any existing users of the single extant union
+>> branch.
+>> 
+>> Sigh.
+>> 
+>> > Also, we generally pass group
+>> > file descriptors rather than a group ID because we can prove the
+>> > ownership of the group through the file descriptor and we don't need to
+>> > worry about races with the group because we can hold a reference to it.
 >
-> This resolves a potential Oops in the release handler when a
-> dealing with a LUN that has already been removed.
+>Duh.  I finally realised the better, simpler, obvious solution.
 >
-> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-> Suggested-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
->  drivers/scsi/cxlflash/superpipe.c | 36 ++++++++++++++++++++++++------------
->  1 file changed, 24 insertions(+), 12 deletions(-)
+>Rather than changing the parameter structure, we should move the
+>ioctl()s so they're on the group fd instead of the container fd.
 >
-> diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-> index fa513ba..1fa4af6 100644
-> --- a/drivers/scsi/cxlflash/superpipe.c
-> +++ b/drivers/scsi/cxlflash/superpipe.c
-> @@ -880,6 +880,9 @@ static int _cxlflash_disk_detach(struct scsi_device *sdev,
->  			sys_close(lfd);
->  	}
->  
-> +	/* Release the sdev reference that bound this LUN to the context */
-> +	scsi_device_put(sdev);
-> +
+>Obviously we need to keep it on the container fd for backwards compat,
+>but I think we should just error out if there is more than one group
+>in the container there.
+>
+>We will need a new capability too, obviously.  VFIO_EEH_GROUPFD maybe?
+>
 
-I'm not sure here with the use if scsi_device_get+put, also I don't quite well
-understand what you are going to fix here and how can it happen.
-The scsi_device_get takes an additional module reference, so if used from
-a module it shouldn't be held for a long time.
-Is it possible for a user to rmmod the czlflash module
-after the disk attach function is called?
+Yeah, the patches should be marked as "RFC" actually as they're actually
+prototypes. I agree with David that the EEH ioctl commands should be routed
+through IOMMU group as I proposed long time ago. However, if we're going
+to do it now, we have to maintain two set the interfaces: one handled by
+container's ioctl() and another one is handled by IOMMU group's ioctl().
+Would it be a problem?
 
-Cheers,
---tm
+Actually, the code change is made based on the fact: nobody is using
+the union (struct vfio_eeh_pe_err) yet before the QEMU changes to do
+error injection gets merged by David. So I think it's fine to introduce
+another field in struct vfio_eeh_pe_op though there is gap?
 
->  out:
->  	if (put_ctx)
->  		put_context(ctxi);
-> @@ -1287,11 +1290,18 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
->  			}
->  	}
->  
-> +	rc = scsi_device_get(sdev);
-> +	if (unlikely(rc)) {
-> +		dev_err(dev, "%s: Unable to get sdev reference!\n", __func__);
-> +		goto out;
-> +	}
-> +
->  	lun_access = kzalloc(sizeof(*lun_access), GFP_KERNEL);
->  	if (unlikely(!lun_access)) {
->  		dev_err(dev, "%s: Unable to allocate lun_access!\n", __func__);
-> +		scsi_device_put(sdev);
->  		rc = -ENOMEM;
-> -		goto out;
-> +		goto err0;
->  	}
->  
->  	lun_access->lli = lli;
-> @@ -1311,21 +1321,21 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
->  		dev_err(dev, "%s: Could not initialize context %p\n",
->  			__func__, ctx);
->  		rc = -ENODEV;
-> -		goto err0;
-> +		goto err1;
->  	}
->  
->  	ctxid = cxl_process_element(ctx);
->  	if (unlikely((ctxid > MAX_CONTEXT) || (ctxid < 0))) {
->  		dev_err(dev, "%s: ctxid (%d) invalid!\n", __func__, ctxid);
->  		rc = -EPERM;
-> -		goto err1;
-> +		goto err2;
->  	}
->  
->  	file = cxl_get_fd(ctx, &cfg->cxl_fops, &fd);
->  	if (unlikely(fd < 0)) {
->  		rc = -ENODEV;
->  		dev_err(dev, "%s: Could not get file descriptor\n", __func__);
-> -		goto err1;
-> +		goto err2;
->  	}
->  
->  	/* Translate read/write O_* flags from fcntl.h to AFU permission bits */
-> @@ -1335,7 +1345,7 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
->  	if (unlikely(!ctxi)) {
->  		dev_err(dev, "%s: Failed to create context! (%d)\n",
->  			__func__, ctxid);
-> -		goto err2;
-> +		goto err3;
->  	}
->  
->  	work = &ctxi->work;
-> @@ -1346,13 +1356,13 @@ static int cxlflash_disk_attach(struct scsi_device *sdev,
->  	if (unlikely(rc)) {
->  		dev_dbg(dev, "%s: Could not start context rc=%d\n",
->  			__func__, rc);
-> -		goto err3;
-> +		goto err4;
->  	}
->  
->  	rc = afu_attach(cfg, ctxi);
->  	if (unlikely(rc)) {
->  		dev_err(dev, "%s: Could not attach AFU rc %d\n", __func__, rc);
-> -		goto err4;
-> +		goto err5;
->  	}
->  
->  	/*
-> @@ -1388,13 +1398,13 @@ out:
->  		__func__, ctxid, fd, attach->block_size, rc, attach->last_lba);
->  	return rc;
->  
-> -err4:
-> +err5:
->  	cxl_stop_context(ctx);
-> -err3:
-> +err4:
->  	put_context(ctxi);
->  	destroy_context(cfg, ctxi);
->  	ctxi = NULL;
-> -err2:
-> +err3:
->  	/*
->  	 * Here, we're overriding the fops with a dummy all-NULL fops because
->  	 * fput() calls the release fop, which will cause us to mistakenly
-> @@ -1406,10 +1416,12 @@ err2:
->  	fput(file);
->  	put_unused_fd(fd);
->  	fd = -1;
-> -err1:
-> +err2:
->  	cxl_release_context(ctx);
-> -err0:
-> +err1:
->  	kfree(lun_access);
-> +err0:
-> +	scsi_device_put(sdev);
->  	goto out;
->  }
->  
+Thanks,
+Gavin
