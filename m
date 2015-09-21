@@ -1,27 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 063B31A38AF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 17:10:29 +1000 (AEST)
-Message-ID: <1442819428.354.2.camel@ellerman.id.au>
-Subject: Re: [BUG] Revert 0b05e2d671c4 'powerpc/32: cacheable_memcpy becomes
- memcpy'
+ by lists.ozlabs.org (Postfix) with ESMTPS id D92441A3CB6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 17:18:46 +1000 (AEST)
+Message-ID: <1442819926.354.5.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Kconfig.cputype: Disallow TUNE_CELL on LE systems
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>, Scott Wood
- <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org, Steven Rostedt
- <rostedt@goodmis.org>
-Date: Mon, 21 Sep 2015 17:10:28 +1000
-In-Reply-To: <alpine.DEB.2.11.1509181643550.3951@nanos>
-References: <alpine.DEB.2.11.1509161816310.3951@nanos>
- <1442420984.2909.179.camel@freescale.com>
- <alpine.DEB.2.11.1509162159110.3951@nanos>
- <20150916215435.48bee4d3@grimm.local.home>
- <alpine.DEB.2.11.1509170911120.3951@nanos>
- <1442570517.5528.3.camel@ellerman.id.au>
- <20150918143204.GE29692@gate.crashing.org>
- <alpine.DEB.2.11.1509181643550.3951@nanos>
+To: Thomas Huth <thuth@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ boqun.feng@gmail.com
+Date: Mon, 21 Sep 2015 17:18:46 +1000
+In-Reply-To: <1442585820-18623-1-git-send-email-thuth@redhat.com>
+References: <1442585820-18623-1-git-send-email-thuth@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,32 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-09-18 at 16:45 +0200, Thomas Gleixner wrote:
-> On Fri, 18 Sep 2015, Segher Boessenkool wrote:
+On Fri, 2015-09-18 at 16:17 +0200, Thomas Huth wrote:
+> It looks somewhat weird that you can enable TUNE_CELL on little
+> endian systems, so let's disable this option with CPU_LITTLE_ENDIAN.
 > 
-> > On Fri, Sep 18, 2015 at 08:01:57PM +1000, Michael Ellerman wrote:
-> > > Weird.
-> > > 
-> > > Can you try:
-> > > 
-> > >   d690740f22f6 ("powerpc/powernv: Enable LEDS support")
-> > > 
-> > > That is the commit before my merge of Scott's tree, which had all the Freescale
-> > > & 32-bit stuff.
-> > > 
-> > > If that works, it would isolate it to only about 30 commits from Scott's tree.
-> > 
-> > My theory is it is not a kernel problem at all; instead, uboot overwrites
-> > some little part of the kernel image.
-> 
-> u-boot is just loading a cuImage which is a kernel with appended
-> device tree. So u-boot is out of the picture,
+> Signed-off-by: Thomas Huth <thuth@redhat.com>
+> ---
+>  I first thought that it might be better to make this option depend
+>  on PPC_CELL instead ... but I guess it's a bad idea to depend a
+>  CPU option on a platform option? Alternatively, would it make
+>  sense to make it depend on (GENERIC_CPU || CELL_CPU) instead?
 
-Unless something is still DMA'ing after u-boot has handed over to the kernel.
-We had that happen on OF years ago.
-
-> still investigating (when time allows)
-
-Thanks. I assume no one at Freescale has been able to reproduce this?
+Hmm, it's a little backward, but I think it would be fine, and less confusing
+for users. Both PS3 and Cell select PPC_CELL, so it would work in both those
+cases.
 
 cheers
