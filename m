@@ -1,30 +1,25 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0106.outbound.protection.outlook.com [157.56.111.106])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E5A51A014B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 05:32:35 +1000 (AEST)
-Date: Mon, 21 Sep 2015 20:32:07 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: f.fainelli@gmail.com, devicetree@vger.kernel.org,
- frowand.list@gmail.com, grant.likely@linaro.org,
- isubramanian@apm.com, kchudgar@apm.com,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- leoli@freescale.com, michal.simek@xilinx.com,
- netdev@vger.kernel.org, rric@kernel.org, robh+dt@kernel.org,
- soren.brinkmann@xilinx.com, sgoutham@cavium.com,
- thomas.petazzoni@free-electrons.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] phy: fix of_mdio_find_bus() device refcount leak
-Message-ID: <20150921193206.GU21084@n2100.arm.linux.org.uk>
-References: <20150918094625.GB21084@n2100.arm.linux.org.uk>
- <E1ZcsNb-0001Bf-U5@rmk-PC.arm.linux.org.uk>
- <20150921.120159.326170798236851436.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2EB981A0150
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 06:01:17 +1000 (AEST)
+Message-ID: <1442865662.19102.172.camel@freescale.com>
+Subject: Re: [PATCH 2/4] powerpc/device-tree: bindings for DSP
+ cores/clusters for Freescale SOCs
+From: Scott Wood <scottwood@freescale.com>
+To: Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+Date: Mon, 21 Sep 2015 15:01:02 -0500
+In-Reply-To: <DM2PR0301MB07016FC9BFCEB4A2C38168AB8C460@DM2PR0301MB0701.namprd03.prod.outlook.com>
+References: <1442686567-14320-1-git-send-email-poonam.aggrwal@freescale.com>
+ <1442708128.19102.147.camel@freescale.com>
+ <DM2PR0301MB07016FC9BFCEB4A2C38168AB8C460@DM2PR0301MB0701.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150921.120159.326170798236851436.davem@davemloft.net>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,50 +29,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 21, 2015 at 12:01:59PM -0700, David Miller wrote:
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
-> Date: Fri, 18 Sep 2015 10:54:55 +0100
+On Mon, 2015-09-21 at 03:36 -0500, Aggrwal Poonam-B10812 wrote:
 > 
-> > Update the comment, and arrange for the only user of this function
-> > to drop this refcount when disposing of a reference to it.
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Sunday, September 20, 2015 5:45 AM
+> > To: Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>
+> > Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; 
+> > devicetree-
+> > discuss@lists.ozlabs.org
+> > Subject: Re: [PATCH 2/4] powerpc/device-tree: bindings for DSP
+> > cores/clusters for Freescale SOCs
+> > 
+> > On Sat, 2015-09-19 at 23:46 +0530, Poonam Aggrwal wrote:
+> > > From: poonam aggrwal <poonam.aggrwal@freescale.com>
+> > > 
+> > > Device Tree Bindings for DSP CPU clusters and DSP CPUs for Freescale
+> > > PowerPC SOCs which have DSP CPUs in addition to PowerPC CPUs.
+> > > For example B4860 has 3 DSP clusters which have 2 SC3900 cores each.
+> > > 
+> > > Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> > > ---
+> > > - based of: 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+> > >   branch master
+> > > 
+> > > This patch was sent earlier and some comments were received. Some have
+> > > been taken care; others we can further discuss.  Apologize for not
+> > > following up on them in time.
+> > >  .../devicetree/bindings/powerpc/fsl/dsp-cpus.txt   | 78
+> > > ++++++++++++++++++++++
+> > >  1 file changed, 78 insertions(+)
+> > >  create mode 100644
+> > Documentation/devicetree/bindings/powerpc/fsl/dsp-
+> > > cpus.txt
+> > > 
+> > > diff --git
+> > > a/Documentation/devicetree/bindings/powerpc/fsl/dsp-cpus.txt
+> > > b/Documentation/devicetree/bindings/powerpc/fsl/dsp-cpus.txt
+> > > new file mode 100644
+> > > index 0000000..6d901ef
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/powerpc/fsl/dsp-cpus.txt
+> > > @@ -0,0 +1,78 @@
+> > > 
+> > +=========================================================
+> > ==========
+> > > +Binding for DSP CPU clusters and DSP CPUs for Freescale SOCs which
+> > > +have DSP CPUs in addition to PowerPC cpus.
+> > > +Copyright 2013 Freescale Semiconductor Inc.
+> > > +
+> > > +Power Architecture CPUs in Freescale SOCs are represented in device
+> > > +trees
+> > > as
+> > > +per the definition in ePAPR.
+> > > +
+> > > +Required properties for DSP CPU cluster:
+> > > +- compatible : should be "fsl,sc3900-cluster".
+> > > +- reg : should contain the cluster index
+> > > +
+> > > +Required properties for DSP CPU:
+> > > +- compatible : should be "fsl,sc3900".
+> > > +- reg : should contain index of DSP CPU within the DSP clsuter.
+> > > +- next-level-cache : should point to the phandle of the next-level L2
+> > > cache.
+> > 
+> > Why is the dsp-clusters container only shown in the example, not the 
+> > binding
+> > itself?
 > 
-> mdio_mux is not the only user of of_mdio_find_bus(), DSA uses it as
-> well.
-> 
-> So if anything this commit message is inaccurate.
+> I will try to add more description in the binding for cluster; And the 
+> structure of dsp cluster (like sub node of DSP cluster is core, etc).
+> Did I get your feedback right?
 
-Yes, I missed that as it wasn't under drivers/net.  It doesn't change
-the validity of this patch, the existing code is wrong and I'm not
-introducing anything that makes the code any more wrong than it is.
+No, I was complaining that the example has a "dsp-clusters" container node 
+and the binding itself doesn't mention it at all.
 
-I'll fix the commit message, and I'll fix the DSA code too but in a
-separate patch.  Thanks for pointing it out.
-
-> I also wonder about this refcounting scheme.
-
-It's the standard driver model refcounting rules that we've lived with
-for about a decade, ever since the driver model was introduced by
-Patrick Mochel.
-
-> If you are going to drop the inner device reference, then we take the
-> mdio bus returned from of_mdio_find_bus() what holds onto it and keeps
-> it from disappearing on us?
-> 
-> Don't we have to hold onto some reference count of some kind here?
-
-In the case of the mdio mux code, I'm dropping the reference when
-either (a) we've encountered an error during initialisation and we're
-cleaning up, or (b) when the mdio mux code is being torn down after
-the mdiomux bus has been unregistered and freed.  In both cases, we're
-done with the mdio bus that was returned from of_mdio_find_bus().
-
-In case (a), the devres code will release the kmalloc'd memory when
-mdio_mux_gpio_probe() or mdio_mux_mmioreg_probe() propagates the error
-out of their probe() function.
-
-I'm not sure why you think anything is wrong here - maybe it's the odd
-code structure to the success path at the bottom of mdio_mux_init()?
-
--- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+-Scott
