@@ -1,30 +1,22 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.191])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2A361A006B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 19:56:53 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Brian King' <brking@linux.vnet.ibm.com>, "Matthew R. Ochs"
- <mrochs@linux.vnet.ibm.com>, "linux-scsi@vger.kernel.org"
- <linux-scsi@vger.kernel.org>, James Bottomley
- <James.Bottomley@HansenPartnership.com>, "Nicholas A. Bellinger"
- <nab@linux-iscsi.org>, Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens
- <dja@ozlabs.au.ibm.com>, Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Shane Seymour <shane.seymour@hp.com>
-CC: Michael Neuling <mikey@neuling.org>, "Manoj N. Kumar"
- <manoj@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v2 12/30] cxlflash: Refine host/device attributes
-Date: Mon, 21 Sep 2015 09:55:56 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB9BE15@AcuExch.aculab.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442438954-49663-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <55FC8371.5010900@linux.vnet.ibm.com>
-In-Reply-To: <55FC8371.5010900@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0422C1A006B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 20:07:32 +1000 (AEST)
+Subject: Re: [PATCH] powerpc: Kconfig.cputype: Disallow TUNE_CELL on LE systems
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1442585820-18623-1-git-send-email-thuth@redhat.com>
+ <1442819926.354.5.camel@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, boqun.feng@gmail.com
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <55FFD6DF.2080300@redhat.com>
+Date: Mon, 21 Sep 2015 12:07:27 +0200
 MIME-Version: 1.0
+In-Reply-To: <1442819926.354.5.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQnJpYW4gS2luZw0KPiBTZW50OiAxOCBTZXB0ZW1iZXIgMjAxNSAyMjozNQ0KLi4uDQo+
-ID4gKwlmb3IgKGkgPSAwOyBpIDwgQ1hMRkxBU0hfTlVNX1ZMVU5TOyBpKyssIGJ1ZiArPSAyMikN
-Cj4gDQo+IFJhdGhlciB0aGFuIHRoaXMgYnVnIHByb25lIGhhcmQgY29kZWQgMjIsIGhvdyBhYm91
-dCBuZXZlciBpbmNyZW1lbnRpbmcgYnVmIGFuZCBkbyBzb21ldGhpbmcNCj4gc2ltaWxhciB0byB0
-aGlzOg0KPiANCj4gPiArCQlieXRlcyArPSBzY25wcmludGYoYnVmLCBQQUdFX1NJWkUsICIlMDNk
-OiAlMDE2bGxYXG4iLA0KPiA+ICsJCQkJICAgaSwgcmVhZHFfYmUoJmZjX3BvcnRbaV0pKTsNCj4g
-DQo+IAkJYnl0ZXMgKz0gc2NucHJpbnRmKCZidWZbYnl0ZXNdLCBQQUdFX1NJWkUsICIlMDNkOiAl
-MDE2bGxYXG4iLA0KPiAJCQkJICAgaSwgcmVhZHFfYmUoJmZjX3BvcnRbaV0pKTsNCi4uLg0KDQoJ
-Ynl0ZXMgKz0gc2NucHJpbnRmKGJ1ZiArIGJ5dGVzLCBQQUdFX1NJWkUgLSBieXRlcywgLi4uLg0K
-DQpZb3UgbmVlZCB0byBjaGVjayBzY25wcmludGYoKSdzIHJldHVybiB2YWx1ZSB0aG91Z2guDQpU
-aGUgYWJvdmUgaXMgd3JvbmcgZm9yIGxpYmMncyBzbnByaW50ZigpLg0KDQoJRGF2aWQNCg0K
+On 21/09/15 09:18, Michael Ellerman wrote:
+> On Fri, 2015-09-18 at 16:17 +0200, Thomas Huth wrote:
+>> It looks somewhat weird that you can enable TUNE_CELL on little
+>> endian systems, so let's disable this option with CPU_LITTLE_ENDIAN.
+>>
+>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+>> ---
+>>  I first thought that it might be better to make this option depend
+>>  on PPC_CELL instead ... but I guess it's a bad idea to depend a
+>>  CPU option on a platform option? Alternatively, would it make
+>>  sense to make it depend on (GENERIC_CPU || CELL_CPU) instead?
+> 
+> Hmm, it's a little backward, but I think it would be fine, and less confusing
+> for users. Both PS3 and Cell select PPC_CELL, so it would work in both those
+> cases.
+
+It's just that when you step through the kernel config (e.g. with "make
+menuconfig"), you normally step through the "Processor support" first,
+and then later do the "Platform support". I think most users won't look
+back into "Processor support" again once they already reached the
+"Platform support" section, so this TUNE_CELL option then might appear
+unnoticed when you enable a Cell platform under "Platform support".
+
+That's why thought that CPU_LITTLE_ENDIAN or (GENERIC_CPU || CELL_CPU)
+might be the better option here... but if you think PPC_CELL is the
+better way to go, I'm also fine to change my patch to use this instead
+(in the end, TUNE_CELL is likely hardly used anymore nowadays, so it
+should not be that bad if it does not appear "immediately" to the user).
+
+ Thomas
