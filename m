@@ -1,18 +1,17 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id BEFE21A074C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 02:50:57 +1000 (AEST)
-Message-Id: <94728e239cad2224383db7ddc1c57df7d11561eb.1442939410.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id B1EC31A0635
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 02:50:59 +1000 (AEST)
+Message-Id: <82d78f31950ef7985d8f2bb57c88bb53f88b9e3c.1442939410.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1442939410.git.christophe.leroy@c-s.fr>
 References: <cover.1442939410.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 13/25] powerpc/8xx: also use r3 in the ITLB miss in all
- situations
+Subject: [PATCH v2 14/25] powerpc32: remove ioremap_base
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 22 Sep 2015 18:50:54 +0200 (CEST)
+Date: Tue, 22 Sep 2015 18:50:56 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,65 +21,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are spending between 40 and 160 cycles with a mean of 65 cycles
-in the TLB handling routines (measured with mftbl) so make it more
-simple althought it adds one instruction
+ioremap_base is not initialised and is nowhere used so remove it
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
 No change in v2
 
- arch/powerpc/kernel/head_8xx.S | 15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+ arch/powerpc/mm/mmu_decl.h                  | 1 -
+ arch/powerpc/mm/pgtable_32.c                | 1 -
+ arch/powerpc/platforms/embedded6xx/mpc10x.h | 8 --------
+ 3 files changed, 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 1238fbe..6c991e9 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -352,30 +352,25 @@ SystemCall:
- #endif
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index 99e88bc..6f1e7cd 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -100,7 +100,6 @@ extern void setbat(int index, unsigned long virt, phys_addr_t phys,
  
- InstructionTLBMiss:
--#ifdef CONFIG_8xx_CPU6
- 	mtspr	SPRN_SPRG_SCRATCH2, r3
--#endif
- 	EXCEPTION_PROLOG_0
+ extern int __map_without_bats;
+ extern int __allow_ioremap_reserved;
+-extern unsigned long ioremap_base;
+ extern unsigned int rtas_data, rtas_size;
  
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
- 	 */
-+	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
-+	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
- #ifdef CONFIG_MODULES
- 	/* Only modules will cause ITLB Misses as we always
- 	 * pin the first 8MB of kernel memory */
--	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
--	INVALIDATE_ADJACENT_PAGES_CPU15(r10, r11)
--	mfcr	r10
-+	mfcr	r3
- 	IS_KERNEL(r11, r11)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
- 	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
--	mtcr	r10
--	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
-+	mtcr	r3
- #else
--	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
--	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
- #endif
- 	/* Insert level 1 index */
-@@ -408,9 +403,7 @@ InstructionTLBMiss:
- 	MTSPR_CPU6(SPRN_MI_RPN, r10, r3)	/* Update TLB entry */
+ struct hash_pte;
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 1f2fdbc..dc51ab4 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -37,7 +37,6 @@
  
- 	/* Restore registers */
--#ifdef CONFIG_8xx_CPU6
- 	mfspr	r3, SPRN_SPRG_SCRATCH2
--#endif
- 	EXCEPTION_EPILOG_0
- 	rfi
+ #include "mmu_decl.h"
  
+-unsigned long ioremap_base;
+ unsigned long ioremap_bot;
+ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+ 
+diff --git a/arch/powerpc/platforms/embedded6xx/mpc10x.h b/arch/powerpc/platforms/embedded6xx/mpc10x.h
+index b290b63..8de6104 100644
+--- a/arch/powerpc/platforms/embedded6xx/mpc10x.h
++++ b/arch/powerpc/platforms/embedded6xx/mpc10x.h
+@@ -138,14 +138,6 @@
+ #define MPC10X_EUMB_WP_OFFSET		0x000ff000 /* Data path diagnostic, watchpoint reg offset */
+ #define MPC10X_EUMB_WP_SIZE		0x00001000 /* Data path diagnostic, watchpoint reg size */
+ 
+-/*
+- * Define some recommended places to put the EUMB regs.
+- * For both maps, recommend putting the EUMB from 0xeff00000 to 0xefffffff.
+- */
+-extern unsigned long			ioremap_base;
+-#define	MPC10X_MAPA_EUMB_BASE		(ioremap_base - MPC10X_EUMB_SIZE)
+-#define	MPC10X_MAPB_EUMB_BASE		MPC10X_MAPA_EUMB_BASE
+-
+ enum ppc_sys_devices {
+ 	MPC10X_IIC1,
+ 	MPC10X_DMA0,
 -- 
 2.1.0
