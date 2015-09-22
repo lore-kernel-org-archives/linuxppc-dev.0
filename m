@@ -1,18 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 2C6A81A018A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 00:34:33 +1000 (AEST)
-Message-Id: <0a4e1624642137dc2b16bbb68ea87b1a479dfa34.1442876807.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id E62531A0212
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 00:34:34 +1000 (AEST)
+Message-Id: <321c562c2320371ac39abd64959c160f8e2f5db7.1442876807.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1442876807.git.christophe.leroy@c-s.fr>
 References: <cover.1442876807.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 6/9] powerpc32: optimise a few instructions in csum_partial()
+Subject: [PATCH 7/9] powerpc32: optimise csum_partial() loop
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org
-Date: Tue, 22 Sep 2015 16:34:29 +0200 (CEST)
+Date: Tue, 22 Sep 2015 16:34:32 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,84 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-r5 does contain the value to be updated, so lets use r5 all way long
-for that. It makes the code more readable.
+On the 8xx, load latency is 2 cycles and taking branches also takes
+2 cycles. So let's unroll the loop.
 
-To avoid confusion, it is better to use adde instead of addc
-
-The first addition is useless. Its only purpose is to clear carry.
-As r4 is a signed int that is always positive, this can be done by
-using srawi instead of srwi
-
-Let's also remove the comment about bdnz having no overhead as it
-is not correct on all powerpc, at least on MPC8xx
-
-In the last part, in our situation, the remaining quantity of bytes
-to be proceeded is between 0 and 3. Therefore, we can base that part
-on the value of bit 31 and bit 30 of r4 instead of anding r4 with 3
-then proceding on comparisons and substractions.
+This patch improves csum_partial() speed by around 10% on both:
+* 8xx (single issue processor with parallele execution)
+* 83xx (superscalar 6xx processor with dual instruction fetch
+and parallele execution)
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/lib/checksum_32.S | 37 +++++++++++++++++--------------------
- 1 file changed, 17 insertions(+), 20 deletions(-)
+ arch/powerpc/lib/checksum_32.S | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-index 3472372..9c12602 100644
+index 9c12602..0d34f47 100644
 --- a/arch/powerpc/lib/checksum_32.S
 +++ b/arch/powerpc/lib/checksum_32.S
-@@ -27,35 +27,32 @@
-  * csum_partial(buff, len, sum)
-  */
- _GLOBAL(csum_partial)
--	addic	r0,r5,0
- 	subi	r3,r3,4
--	srwi.	r6,r4,2
-+	srawi.	r6,r4,2		/* Divide len by 4 and also clear carry */
- 	beq	3f		/* if we're doing < 4 bytes */
--	andi.	r5,r3,2		/* Align buffer to longword boundary */
-+	andi.	r0,r3,2		/* Align buffer to longword boundary */
- 	beq+	1f
--	lhz	r5,4(r3)	/* do 2 bytes to get aligned */
--	addi	r3,r3,2
-+	lhz	r0,4(r3)	/* do 2 bytes to get aligned */
- 	subi	r4,r4,2
--	addc	r0,r0,r5
-+	addi	r3,r3,2
+@@ -38,10 +38,24 @@ _GLOBAL(csum_partial)
  	srwi.	r6,r4,2		/* # words to do */
-+	adde	r5,r5,r0
+ 	adde	r5,r5,r0
  	beq	3f
- 1:	mtctr	r6
--2:	lwzu	r5,4(r3)	/* the bdnz has zero overhead, so it should */
--	adde	r0,r0,r5	/* be unnecessary to unroll this loop */
-+2:	lwzu	r0,4(r3)
-+	adde	r5,r5,r0
+-1:	mtctr	r6
++1:	andi.	r6,r6,3		/* Prepare to handle words 4 by 4 */
++	beq	21f
++	mtctr	r6
+ 2:	lwzu	r0,4(r3)
+ 	adde	r5,r5,r0
  	bdnz	2b
--	andi.	r4,r4,3
--3:	cmpwi	0,r4,2
--	blt+	4f
--	lhz	r5,4(r3)
-+3:	andi.	r0,r4,2
-+	beq+	4f
-+	lhz	r0,4(r3)
- 	addi	r3,r3,2
--	subi	r4,r4,2
--	adde	r0,r0,r5
--4:	cmpwi	0,r4,1
--	bne+	5f
--	lbz	r5,4(r3)
--	slwi	r5,r5,8		/* Upper byte of word */
--	adde	r0,r0,r5
--5:	addze	r3,r0		/* add in final carry */
++21:	srwi.	r6,r4,4		/* # blocks of 4 words to do */
++	beq	3f
++	mtctr	r6
++22:	lwz	r0,4(r3)
++	lwz	r6,8(r3)
++	lwz	r7,12(r3)
++	lwzu	r8,16(r3)
 +	adde	r5,r5,r0
-+4:	andi.	r0,r4,1
-+	beq+	5f
-+	lbz	r0,4(r3)
-+	slwi	r0,r0,8		/* Upper byte of word */
-+	adde	r5,r5,r0
-+5:	addze	r3,r5		/* add in final carry */
- 	blr
- 
- /*
++	adde	r5,r5,r6
++	adde	r5,r5,r7
++	adde	r5,r5,r8
++	bdnz	22b
+ 3:	andi.	r0,r4,2
+ 	beq+	4f
+ 	lhz	r0,4(r3)
 -- 
 2.1.0
