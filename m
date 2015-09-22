@@ -1,37 +1,35 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8484A1A01C0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:47:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A36141A0B33
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:48:25 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 22 Sep 2015 16:47:02 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2082E2CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:46:59 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8M6klwB24838318
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:46:55 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8M6kQ0j019887
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:46:26 +1000
+ Tue, 22 Sep 2015 12:18:23 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id CFB76E0063
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:17:57 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8M6mIwh66846724
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:18:18 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8M6mIF8026881
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:18:18 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Scott Wood <scottwood@freescale.com>
 Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 10/31] powerpc/mm: Don't use pmd_val,
- pud_val and pgd_val as lvalue
-In-Reply-To: <20150922022341.GB12728@home.buserror.net>
+Subject: Re: [PATCH 00/31] powerpc/mm: Update page table format for book3s 64
+In-Reply-To: <1442872135.19102.184.camel@freescale.com>
 References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442817658-2588-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20150922022341.GB12728@home.buserror.net>
-Date: Tue, 22 Sep 2015 12:15:58 +0530
-Message-ID: <87a8sf3qah.fsf@linux.vnet.ibm.com>
+ <1442872135.19102.184.camel@freescale.com>
+Date: Tue, 22 Sep 2015 12:18:17 +0530
+Message-ID: <877fnj3q6m.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,38 +43,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Scott Wood <scottwood@freescale.com> writes:
 
-> On Mon, Sep 21, 2015 at 12:10:37PM +0530, Aneesh Kumar K.V wrote:
->>  /* PUD level exusts only on 4k pages */
->>  #ifndef CONFIG_PPC_64K_PAGES
->>  typedef struct { unsigned long pud; } pud_t;
->> -#define pud_val(x)	((x).pud)
->>  #define __pud(x)	((pud_t) { (x) })
->> +static inline unsigned long pud_val(pud_t pud)
->> +{
->> +	return x.pud;
->> +}
->>  #endif /* !CONFIG_PPC_64K_PAGES */
+> On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
+>> Hi All,
+>> 
+>> This patch series attempt to update book3s 64 linux page table format to
+>> make it more flexible. Our current pte format is very restrictive and we
+>> overload multiple pte bits. This is due to the non-availability of free bits
+>> in pte_t. We use pte_t to track the validity of 4K subpages. This patch
+>> series free up pte_t of 11 bits by moving 4K subpage tracking to the
+>> lower half of PTE page. The pte format is updated such that we have a
+>> better method for identifying a pte entry at pmd level. This will also 
+>> enable
+>> us to implement hugetlb migration(not yet done in this series). 
+>> 
+>> Before making the changes to the pte format, I am splitting the
+>> pte header definition such that we now have the below layout for headers
+>> 
+>> book3s
+>>    32
+>>      hash.h pgtable.h 
+>>    64
+>>      hash.h  pgtable.h hash-4k.h hash-64k.h
+>> booke
+>>   32
+>>      pgtable.h pte-40x.h pte-44x.h pte-8xx.h pte-fsl-booke.h
+>>   64
+>>     pgtable-4k.h  pgtable-64k.h  pgtable.h
 >
-> Where does "x" come from in this inline function?
+> 40x and 8xx are not booke.  Is there a better name that can be used for this 
+> directory?  Maybe "nohash", similar to arch/powerpc/mm/tlb_nohash.c?
 >
-> This breaks the build with CONFIG_MM_STRICT_TYPECHECKS.
 
-
-That should be
-
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index e555f273716d..31835988c12a 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -311,7 +311,7 @@ static inline unsigned long pmd_val(pmd_t x)
- #ifndef CONFIG_PPC_64K_PAGES
- typedef struct { unsigned long pud; } pud_t;
- #define __pud(x)	((pud_t) { (x) })
--static inline unsigned long pud_val(pud_t pud)
-+static inline unsigned long pud_val(pud_t x)
- {
- 	return x.pud;
- }
-
+I looked at Documentation/powerpc/cpu_families.txt to name the headers.
+It lists then below booke.
 
 -aneesh
