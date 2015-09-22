@@ -1,18 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id C0A7C1A0570
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 02:50:41 +1000 (AEST)
-Message-Id: <8d187921d6efdad878aa3a5c5195cd6a16fa0b37.1442939410.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 0EAB91A0152
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 02:50:44 +1000 (AEST)
+Message-Id: <a5b89d1db195031679775bfe7c32f903e9403bb3.1442939410.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1442939410.git.christophe.leroy@c-s.fr>
 References: <cover.1442939410.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 04/25] powerpc/8xx: move setup_initial_memory_limit() into
- 8xx_mmu.c
+Subject: [PATCH v2 07/25] powerpc32: refactor x_mapped_by_bats() and
+ x_mapped_by_tlbcam() together
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 22 Sep 2015 18:50:36 +0200 (CEST)
+Date: Tue, 22 Sep 2015 18:50:42 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,68 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we have a 8xx specific .c file for that so put it in there
-as other powerpc variants do
+x_mapped_by_bats() and x_mapped_by_tlbcam() serve the same kind of
+purpose, so lets group them into a single function.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
 No change in v2
 
- arch/powerpc/mm/8xx_mmu.c | 17 +++++++++++++++++
- arch/powerpc/mm/init_32.c | 19 -------------------
- 2 files changed, 17 insertions(+), 19 deletions(-)
+ arch/powerpc/mm/pgtable_32.c | 33 ++++++++++++++++++++++++++-------
+ 1 file changed, 26 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index be6f041..0ddcb37 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -81,3 +81,20 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 03a073a..3fd9083 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -67,6 +67,28 @@ extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
+ #define p_mapped_by_tlbcam(x)	(0UL)
+ #endif /* HAVE_TLBCAM */
  
- 	return mapped;
- }
-+
-+void setup_initial_memory_limit(phys_addr_t first_memblock_base,
-+				phys_addr_t first_memblock_size)
++static inline unsigned long p_mapped_by_other(phys_addr_t pa)
 +{
-+	/* We don't currently support the first MEMBLOCK not mapping 0
-+	 * physical on those processors
-+	 */
-+	BUG_ON(first_memblock_base != 0);
++	unsigned long v;
 +
-+#ifdef CONFIG_PIN_TLB
-+	/* 8xx can only access 24MB at the moment */
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
-+#else
-+	/* 8xx can only access 8MB at the moment */
-+	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
-+#endif
++	v = p_mapped_by_bats(pa);
++	if (v /*&& p_mapped_by_bats(p+size-1)*/)
++		return v;
++
++	return p_mapped_by_tlbcam(pa);
 +}
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index a10be66..1a18e4b 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -193,22 +193,3 @@ void __init MMU_init(void)
- 	/* Shortly after that, the entire linear mapping will be available */
- 	memblock_set_current_limit(lowmem_end_addr);
- }
++
++static inline phys_addr_t v_mapped_by_other(unsigned long va)
++{
++	phys_addr_t p;
++
++	p = v_mapped_by_bats(va);
++	if (p)
++		return p;
++
++	return v_mapped_by_tlbcam(va);
++}
++
+ #define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
+ 
+ #ifndef CONFIG_PPC_4K_PAGES
+@@ -237,10 +259,8 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
+ 	 * same virt address (and this is contiguous).
+ 	 *  -- Cort
+ 	 */
+-	if ((v = p_mapped_by_bats(p)) /*&& p_mapped_by_bats(p+size-1)*/ )
+-		goto out;
 -
--#ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
--void setup_initial_memory_limit(phys_addr_t first_memblock_base,
--				phys_addr_t first_memblock_size)
--{
--	/* We don't currently support the first MEMBLOCK not mapping 0
--	 * physical on those processors
--	 */
--	BUG_ON(first_memblock_base != 0);
--
--#ifdef CONFIG_PIN_TLB
--	/* 8xx can only access 24MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
--#else
--	/* 8xx can only access 8MB at the moment */
--	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
--#endif
--}
--#endif /* CONFIG_8xx */
+-	if ((v = p_mapped_by_tlbcam(p)))
++	v = p_mapped_by_other(p);
++	if (v)
+ 		goto out;
+ 
+ 	if (slab_is_available()) {
+@@ -278,8 +298,7 @@ void iounmap(volatile void __iomem *addr)
+ 	 * If mapped by BATs then there is nothing to do.
+ 	 * Calling vfree() generates a benign warning.
+ 	 */
+-	if (v_mapped_by_bats((unsigned long)addr) ||
+-	    v_mapped_by_tlbcam((unsigned long)addr))
++	if (v_mapped_by_other((unsigned long)addr))
+ 		return;
+ 
+ 	if (addr > high_memory && (unsigned long) addr < ioremap_bot)
+@@ -405,7 +424,7 @@ static int __change_page_attr(struct page *page, pgprot_t prot)
+ 	BUG_ON(PageHighMem(page));
+ 	address = (unsigned long)page_address(page);
+ 
+-	if (v_mapped_by_bats(address) || v_mapped_by_tlbcam(address))
++	if (v_mapped_by_other(address))
+ 		return 0;
+ 	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
+ 		return -EINVAL;
 -- 
 2.1.0
