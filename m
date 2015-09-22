@@ -1,18 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 6DC4B1A05D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 02:51:12 +1000 (AEST)
-Message-Id: <9dcad7b2c05a397a97cc1cab211b6cf0f09a9900.1442939410.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 7FC7F1A0859
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 02:51:14 +1000 (AEST)
+Message-Id: <cceec6246b12b6639e2fbe2ad5d70d93356196b6.1442939410.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1442939410.git.christophe.leroy@c-s.fr>
 References: <cover.1442939410.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 20/25] powerpc32: Remove clear_pages() and define
- clear_page() inline
+Subject: [PATCH v2 21/25] powerpc: add inline functions for cache related
+ instructions
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 22 Sep 2015 18:51:09 +0200 (CEST)
+Date: Tue, 22 Sep 2015 18:51:11 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,95 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-clear_pages() is never used, and PPC32 is the only architecture
-(still) having this function. Neither PPC64 nor any other
-architecture has it.
-
-This patch removes clear_page() and move clear_page() function
-inline (same as PPC64) as it only is a few isns
+This patch adds inline functions to use dcbz, dcbi, dcbf, dcbst
+from C functions
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-No change in v2
+New in v2
 
- arch/powerpc/include/asm/page_32.h | 17 ++++++++++++++---
- arch/powerpc/kernel/misc_32.S      | 16 ----------------
- arch/powerpc/kernel/ppc_ksyms_32.c |  1 -
- 3 files changed, 14 insertions(+), 20 deletions(-)
+ arch/powerpc/include/asm/cache.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-index 68d73b2..6a8e179 100644
---- a/arch/powerpc/include/asm/page_32.h
-+++ b/arch/powerpc/include/asm/page_32.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_POWERPC_PAGE_32_H
- #define _ASM_POWERPC_PAGE_32_H
- 
-+#include <asm/cache.h>
-+
- #if defined(CONFIG_PHYSICAL_ALIGN) && (CONFIG_PHYSICAL_START != 0)
- #if (CONFIG_PHYSICAL_START % CONFIG_PHYSICAL_ALIGN) != 0
- #error "CONFIG_PHYSICAL_START must be a multiple of CONFIG_PHYSICAL_ALIGN"
-@@ -36,9 +38,18 @@ typedef unsigned long long pte_basic_t;
- typedef unsigned long pte_basic_t;
+diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+index 0dc42c5..a2de4f0 100644
+--- a/arch/powerpc/include/asm/cache.h
++++ b/arch/powerpc/include/asm/cache.h
+@@ -76,6 +76,25 @@ extern void _set_L3CR(unsigned long);
+ #define _set_L3CR(val)	do { } while(0)
  #endif
  
--struct page;
--extern void clear_pages(void *page, int order);
--static inline void clear_page(void *page) { clear_pages(page, 0); }
-+/*
-+ * Clear page using the dcbz instruction, which doesn't cause any
-+ * memory traffic (except to write out any cache lines which get
-+ * displaced).  This only works on cacheable memory.
-+ */
-+static inline void clear_page(void *addr)
++static inline void dcbz(void *addr)
 +{
-+	unsigned int i;
-+
-+	for (i = 0; i < PAGE_SIZE / L1_CACHE_BYTES; i++, addr += L1_CACHE_BYTES)
-+		dcbz(addr);
++	__asm__ __volatile__ ("dcbz 0, %0" : : "r"(addr) : "memory");
 +}
- extern void copy_page(void *to, void *from);
- 
- #include <asm-generic/getorder.h>
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 72fd7a7..ce3ca08 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -517,22 +517,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_COHERENT_ICACHE)
- #endif /* CONFIG_BOOKE */
- 
- /*
-- * Clear pages using the dcbz instruction, which doesn't cause any
-- * memory traffic (except to write out any cache lines which get
-- * displaced).  This only works on cacheable memory.
-- *
-- * void clear_pages(void *page, int order) ;
-- */
--_GLOBAL(clear_pages)
--	li	r0,PAGE_SIZE/L1_CACHE_BYTES
--	slw	r0,r0,r4
--	mtctr	r0
--1:	dcbz	0,r3
--	addi	r3,r3,L1_CACHE_BYTES
--	bdnz	1b
--	blr
--
--/*
-  * Copy a whole page.  We use the dcbz instruction on the destination
-  * to reduce memory traffic (it eliminates the unnecessary reads of
-  * the destination into cache).  This requires that the destination
-diff --git a/arch/powerpc/kernel/ppc_ksyms_32.c b/arch/powerpc/kernel/ppc_ksyms_32.c
-index 30ddd8a..2bfaafe 100644
---- a/arch/powerpc/kernel/ppc_ksyms_32.c
-+++ b/arch/powerpc/kernel/ppc_ksyms_32.c
-@@ -10,7 +10,6 @@
- #include <asm/pgtable.h>
- #include <asm/dcr.h>
- 
--EXPORT_SYMBOL(clear_pages);
- EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
- EXPORT_SYMBOL(DMA_MODE_READ);
- EXPORT_SYMBOL(DMA_MODE_WRITE);
++
++static inline void dcbi(void *addr)
++{
++	__asm__ __volatile__ ("dcbi 0, %0" : : "r"(addr) : "memory");
++}
++
++static inline void dcbf(void *addr)
++{
++	__asm__ __volatile__ ("dcbf 0, %0" : : "r"(addr) : "memory");
++}
++
++static inline void dcbst(void *addr)
++{
++	__asm__ __volatile__ ("dcbst 0, %0" : : "r"(addr) : "memory");
++}
+ #endif /* !__ASSEMBLY__ */
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_CACHE_H */
 -- 
 2.1.0
