@@ -1,25 +1,29 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0143.outbound.protection.outlook.com [207.46.100.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD5351A02C4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:25:19 +1000 (AEST)
-Received: by pacex6 with SMTP id ex6so133458162pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Sep 2015 19:25:18 -0700 (PDT)
-Date: Tue, 22 Sep 2015 10:25:09 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc: fsl_pci: cast the regs->nip to void * when
- passing it to probe_kernel_address()
-Message-ID: <20150922022509.GH25724@pek-khao-d1.corp.ad.wrs.com>
-References: <1442827370-26854-1-git-send-email-haokexin@gmail.com>
- <1442888219.19102.213.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB3F41A0B75
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:26:10 +1000 (AEST)
+Message-ID: <1442888756.19102.215.camel@freescale.com>
+Subject: Re: [PATCH v10 4/5] QE/CPM: move muram management functions to
+ qe_common
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Mon, 21 Sep 2015 21:25:56 -0500
+In-Reply-To: <SN1PR0301MB1550904DB13E3FDD7C9930099B450@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1442560521-19354-1-git-send-email-qiang.zhao@freescale.com>
+ <1442560521-19354-4-git-send-email-qiang.zhao@freescale.com>
+ <20150921225405.GB12709@home.buserror.net>
+ <SN1PR0301MB1550904DB13E3FDD7C9930099B450@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="OpLPJvDmhXTZE4Lg"
-In-Reply-To: <1442888219.19102.213.camel@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,56 +33,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---OpLPJvDmhXTZE4Lg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Sep 21, 2015 at 09:16:59PM -0500, Scott Wood wrote:
-> On Mon, 2015-09-21 at 17:22 +0800, Kevin Hao wrote:
-> > With the reimplementation of probe_kernel_address() in commit
-> > ecc83243e1d4 ("uaccess: reimplement probe_kernel_address() using
-> > probe_kernel_read()"), the explication of the cast for the addr
-> > parameter has been dropped. So we have to explicitly cast the
-> > regs->nip to void * when passing it to probe_kernel_address() in
-> > order to fix the following build error:
-> >   arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pci_mcheck_exception':
-> >   arch/powerpc/sysdev/fsl_pci.c:1002:4: error: passing argument 2 of=20
-> > 'probe_kernel_read' makes pointer from integer without a cast [-Werror]
-> >       ret =3D probe_kernel_address(regs->nip, inst);
-> >       ^
-> >=20
-> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
+On Mon, 2015-09-21 at 21:23 -0500, Zhao Qiang-B45475 wrote:
+> On Tue, Sep 22, 2015 at 06:54AM +0800, Wood Scott-B07421 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Tuesday, September 22, 2015 6:54 AM
+> > To: Zhao Qiang-B45475
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061; benh@kernel.crashing.org; Li
+> > Yang-Leo-R58472; paulus@samba.org
+> > Subject: Re: [PATCH v10 4/5] QE/CPM: move muram management functions to
+> > qe_common
+> > 
+> > On Fri, Sep 18, 2015 at 03:15:20PM +0800, Zhao Qiang wrote:
+> > > QE and CPM have the same muram, they use the same management
+> > > functions. Now QE support both ARM and PowerPC, it is necessary to
+> > > move QE to "driver/soc", so move the muram management functions from
+> > > cpm_common to qe_common for preparing to move QE code to "driver/soc"
+> > > 
+> > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > > ---
+> > > Changes for v2:
+> > >   - no changes
+> > > Changes for v3:
+> > >   - no changes
+> > > Changes for v4:
+> > >   - no changes
+> > > Changes for v5:
+> > >   - no changes
+> > > Changes for v6:
+> > >   - using genalloc instead rheap to manage QE MURAM
+> > >   - remove qe_reset from platform file, using
+> > >   - subsys_initcall to call qe_init function.
+> > 
+> > Why is the init change in the same patch as moving the muram code?
+> > 
+> > > Changes for v7:
+> > >   - move this patch from 3/3 to 2/3
+> > >   - convert cpm with genalloc
+> > >   - check for gen_pool allocation failure Changes for v8:
+> > >   - rebase
+> > >   - move BD_SC_* macro instead of copy
+> > > Changes for v9:
+> > >   - doesn't modify CPM, add a new patch to modify.
+> > >   - rebase
+> > > Changes for v10:
+> > >   - rebase
+> > > 
+> > >  arch/powerpc/include/asm/cpm.h            |  59 --------
+> > >  arch/powerpc/include/asm/qe.h             |  51 ++++++-
+> > >  arch/powerpc/platforms/83xx/km83xx.c      |   2 -
+> > >  arch/powerpc/platforms/83xx/mpc832x_mds.c |   2 -
+> > >  arch/powerpc/platforms/83xx/mpc832x_rdb.c |   2 -
+> > >  arch/powerpc/platforms/83xx/mpc836x_mds.c |   2 -
+> > >  arch/powerpc/platforms/83xx/mpc836x_rdk.c |   3 -
+> > >  arch/powerpc/platforms/85xx/common.c      |   1 -
+> > >  arch/powerpc/sysdev/cpm_common.c          | 206 +---------------------
 > > ---
-> >=20
-> > This is against linux-next.
->=20
-> I don't see ecc83243e1d4 in linux-next.  What tree is it in?
+> > >  arch/powerpc/sysdev/qe_lib/Makefile       |   2 +-
+> > >  arch/powerpc/sysdev/qe_lib/qe.c           |  15 ++
+> > >  arch/powerpc/sysdev/qe_lib/qe_common.c    | 242
+> > ++++++++++++++++++++++++++++++
+> > >  12 files changed, 302 insertions(+), 285 deletions(-)  create mode
+> > > 100644 arch/powerpc/sysdev/qe_lib/qe_common.c
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/cpm.h
+> > > b/arch/powerpc/include/asm/cpm.h index 4398a6c..003a736 100644
+> > > --- a/arch/powerpc/include/asm/cpm.h
+> > > +++ b/arch/powerpc/include/asm/cpm.h
+> > > @@ -93,22 +93,6 @@ typedef struct cpm_buf_desc {
+> > >   */
+> > > 
+> > >  #define BD_SC_EMPTY      (0x8000)        /* Receive is empty */
+> > > -#define BD_SC_READY      (0x8000)        /* Transmit is ready */
+> > > -#define BD_SC_WRAP       (0x2000)        /* Last buffer descriptor */
+> > > -#define BD_SC_INTRPT     (0x1000)        /* Interrupt on change */
+> > > -#define BD_SC_LAST       (0x0800)        /* Last buffer in frame */
+> > > -#define BD_SC_TC (0x0400)        /* Transmit CRC */
+> > > -#define BD_SC_CM (0x0200)        /* Continuous mode */
+> > > -#define BD_SC_ID (0x0100)        /* Rec'd too many idles */
+> > > -#define BD_SC_P          (0x0100)        /* xmt preamble */
+> > > -#define BD_SC_BR (0x0020)        /* Break received */
+> > > -#define BD_SC_FR (0x0010)        /* Framing error */
+> > > -#define BD_SC_PR (0x0008)        /* Parity error */
+> > > -#define BD_SC_NAK        (0x0004)        /* NAK - did not respond */
+> > > -#define BD_SC_OV (0x0002)        /* Overrun */
+> > > -#define BD_SC_UN (0x0002)        /* Underrun */
+> > > -#define BD_SC_CD (0x0001)        /* */
+> > > -#define BD_SC_CL (0x0001)        /* Collision */
+> > 
+> > What does this have to do with muram?
+> 
+> BD is Buffer Descriptors, it is in muram.
 
-It's a patch from Andrew Morton. But it seems that the patches commit id
-=66rom Andrew's tree are not constant. Anyway I just fetched the latest
-linux-next tree and found this issue was already fixed by commit 3a5f4236fe=
-c1
-("uaccess-reimplement-probe_kernel_address-using-probe_kernel_read-fix-fix"=
-).
+What does it have to do with the muram *allocator*?
 
-Thanks,
-Kevin
+> > 
+> > I've said many times now that any changes to the code, including renaming
+> > functions, needs to be a separate patch from moving the code.
+> 
+> I have split a patch to two patches, However, Maybe I misunderstand your 
+> means.
 
---OpLPJvDmhXTZE4Lg
-Content-Type: application/pgp-signature
+I didn't say "split it into two patches, however you like".  I said to have 
+all changes in one patch, and the other patch be nothing but a move.  
+Renaming the functions counts as a change.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+> So if the patch just do the renaming and moving cpm_muram function to 
+> qe_muram function,
+> Does it ok?
 
-iQEcBAEBCAAGBQJWALwCAAoJEJNY7TDerrFxiT0H/AniBX6rvWY511smVFMRx2IP
-1yALcLrio1c4P7TMdTq22VFvGi/kdOYuNIZcfYWfCUot84LeXlqZghuULAfIyUa5
-YB8BGilSh7xS0JIDu/MHtI4e6iKtGViqW/1YnMNwZ5sh5yOAdx5JWLCSJ82gRKm1
-BcQN2gRYip/BndX+5S4vJg51akqmacxrWwg/77dxwBrXWeeBEyWgjqA6KxTsGLcP
-KoIgpPrr+6D8LrmUv0jxgy6SwPjPKD1s0CZfMBte1aU6gxGQcpy6iOkBa/xSa+SE
-C3mDiu1GzPjwB+RAIqDhy2TeCe4M1nS6Tb40+yphZ83mE/e9ZGFdcr46fpHn5sM=
-=UtWS
------END PGP SIGNATURE-----
+No.
 
---OpLPJvDmhXTZE4Lg--
+-Scott
