@@ -1,38 +1,28 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0135.outbound.protection.outlook.com [157.56.111.135])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C5991A0030
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:44 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 23 Sep 2015 09:08:42 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 85EEA357804F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:39 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8MN8VSc47317166
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:39 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8MN865w031381
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:07 +1000
-Date: Wed, 23 Sep 2015 09:07:41 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/eeh: Avoid to handle EEH on a passed Child PE
-Message-ID: <20150922230741.GA6721@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1442827788-10385-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150921114945.GA17285@gwshan>
- <20150922044303.GB2072@Richards-MacBook-Pro.local>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 258FA1A0030
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:50:22 +1000 (AEST)
+Message-ID: <1442965805.19102.303.camel@freescale.com>
+Subject: Re: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead
+ of redundant mpic_irq_set_wake
+From: Scott Wood <scottwood@freescale.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+CC: <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>, "Thomas
+ Gleixner" <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Hongtao Jia
+ <hongtao.jia@freescale.com>, Marc Zyngier <marc.zyngier@arm.com>,
+ <linuxppc-dev@lists.ozlabs.org>, Wang Dongsheng
+ <dongsheng.wang@freescale.com>
+Date: Tue, 22 Sep 2015 18:50:05 -0500
+In-Reply-To: <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150922044303.GB2072@Richards-MacBook-Pro.local>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,108 +32,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 22, 2015 at 12:43:03PM +0800, Wei Yang wrote:
->On Mon, Sep 21, 2015 at 09:49:45PM +1000, Gavin Shan wrote:
->>On Mon, Sep 21, 2015 at 05:29:48PM +0800, Wei Yang wrote:
->>>Current EEH infrastructure would avoid to handle EEH when a PE is passed to
->>>guest, while if this PE is a Child PE of the one hit EEH, host would handle
->>>this. By doing so, this would leads to guest hang. The correct way is
->>>avoid to handle it on host and let guest to recover.
->>>
->>>This patch avoids to handle EEH on a passed Child PE.
->>>
->>
->>Ok. It's fixing the problem the guest, which owns a VF, when its PF hitting
->>EEH error, right? If so, I'm not sure if you really tested this code. Does
->>it work for you?
->
->Yes, I inject error on Parent Bus PE.
->
->>
->>When the parent PE (PF) is stopped for EEH recovery, it sounds impossible
->>that the child PE can't be affected and just escape from the error. The
->>question is how the guest can continue to work after the EEH recovery on
->>parent PE?
->
->What I see is the PF is covering and VF in guest is recovering.
->
+On Mon, 2015-09-21 at 16:47 +0100, Sudeep Holla wrote:
+> mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets IRQF_NO_SUSPEND
+> flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
+> is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
+> as it doesn't guarantee wakeup for that interrupt.
+> 
+> This patch removes the redundant mpic_irq_set_wake and sets the
+> IRQCHIP_SKIP_SET_WAKE for only FSL MPIC.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Scott Wood <scottwood@freescale.com>
+> Cc: Hongtao Jia <hongtao.jia@freescale.com>
+> Cc: Marc Zyngier <marc.zyngier@arm.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  arch/powerpc/sysdev/mpic.c | 23 ++++-------------------
+>  1 file changed, 4 insertions(+), 19 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 537e5db85a06..123e43612f0a 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -924,22 +924,6 @@ int mpic_set_irq_type(struct irq_data *d, unsigned int 
+> flow_type)
+>       return IRQ_SET_MASK_OK_NOCOPY;
+>  }
+>  
+> -static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
+> -{
+> -     struct irq_desc *desc = container_of(d, struct irq_desc, irq_data);
+> -     struct mpic *mpic = mpic_from_irq_data(d);
+> -
+> -     if (!(mpic->flags & MPIC_FSL))
+> -             return -ENXIO;
+> -
+> -     if (on)
+> -             desc->action->flags |= IRQF_NO_SUSPEND;
+> -     else
+> -             desc->action->flags &= ~IRQF_NO_SUSPEND;
+> -
+> -     return 0;
+> -}
+> -
+>  void mpic_set_vector(unsigned int virq, unsigned int vector)
+>  {
+>       struct mpic *mpic = mpic_from_irq(virq);
+> @@ -977,7 +961,6 @@ static struct irq_chip mpic_irq_chip = {
+>       .irq_unmask     = mpic_unmask_irq,
+>       .irq_eoi        = mpic_end_irq,
+>       .irq_set_type   = mpic_set_irq_type,
+> -     .irq_set_wake   = mpic_irq_set_wake,
+>  };
+>  
+>  #ifdef CONFIG_SMP
+> @@ -992,7 +975,6 @@ static struct irq_chip mpic_tm_chip = {
+>       .irq_mask       = mpic_mask_tm,
+>       .irq_unmask     = mpic_unmask_tm,
+>       .irq_eoi        = mpic_end_irq,
+> -     .irq_set_wake   = mpic_irq_set_wake,
+>  };
+>  
+>  #ifdef CONFIG_MPIC_U3_HT_IRQS
+> @@ -1283,8 +1265,11 @@ struct mpic * __init mpic_alloc(struct device_node 
+> *node,
+>               flags |= MPIC_NO_RESET;
+>       if (of_get_property(node, "single-cpu-affinity", NULL))
+>               flags |= MPIC_SINGLE_DEST_CPU;
+> -     if (of_device_is_compatible(node, "fsl,mpic"))
+> +     if (of_device_is_compatible(node, "fsl,mpic")) {
+>               flags |= MPIC_FSL | MPIC_LARGE_VECTORS;
+> +             mpic_irq_chip.flags |= IRQCHIP_SKIP_SET_WAKE;
+> +             mpic_tm_chip.flags |= IRQCHIP_SKIP_SET_WAKE;
+> +     }
 
-What do you mean by "covering"? Which PE's error is detected first in your
-testing? There is potentially race here: when the VF PE's error is detected
-first and guest tries to recover it. After the recovery happened on guest
-side, the host detects the PF PE's error and tries to recover it. During
-the recovery, the VF PE is total unusable but guest doesn't know that and
-operate like usual. I'm not sure what kinds of problems it can incur, but
-it would incur issues.
+What difference does IRQCHIP_SKIP_SET_WAKE make in the absence of an 
+.irq_set_wake() callback?
 
-On the other hand, if PF PE's error is detected on host first, and then the
-guest detects the error on VF PE. After that, the host and guest try to do
-recovery at same time. Host issues PE reset to PF PE, which isn't finished
-yet. Then guest issues PE reset to VF PE, which will cause another EEH error.
+This is basically repealing commit 5ff04b7287d87c1db7 ("powerpc/mpic: add 
+irq_set_wake support").  Wang Dongsheng, can you explain why that patch was 
+needed?
 
-So I'm not sure if had this patch fully tested. If so, it seems the result is
-just achieved by luck, I guess.
-
->>
->>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>---
->>> arch/powerpc/kernel/eeh_pe.c | 5 +++++
->>> 1 file changed, 5 insertions(+)
->>>
->>>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
->>>index 5cde950..c6d0e9f 100644
->>>--- a/arch/powerpc/kernel/eeh_pe.c
->>>+++ b/arch/powerpc/kernel/eeh_pe.c
->>>@@ -172,6 +172,7 @@ static struct eeh_pe *eeh_pe_next(struct eeh_pe *pe,
->>>  * callback returns something other than NULL, or no more PEs
->>>  * to be traversed.
->>>  */
->>>+static void *__eeh_pe_get(void *data, void *flag);
->>> void *eeh_pe_traverse(struct eeh_pe *root,
->>> 		      eeh_traverse_func fn, void *flag)
->>> {
->>>@@ -179,6 +180,8 @@ void *eeh_pe_traverse(struct eeh_pe *root,
->>> 	void *ret;
->>>
->>> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
->>>+		if (eeh_pe_passed(pe) && (fn != __eeh_pe_get))
->>>+			continue;
->>
->>The code change here seems ugly.
->>
->>The "flag" can be extended to carry the information to skip pass-through
->>PEs or not. So the function calling eeh_pe_traverse() decides to skip
->>pass-through PEs or not.
->
->I don't get the point, which "flag" you mean? Add a flag in eeh_pe?
->
-
->>> void *eeh_pe_traverse(struct eeh_pe *root,
->>>                   eeh_traverse_func fn, void *flag)
-                                            ^^^^^^^^^^
-                                            This one
-
-The code needn't to be changed in a hurry though. I don't think it's right
-way to fix the issue as discussed as above.
-
->>
->>> 		ret = fn(pe, flag);
->>> 		if (ret) return ret;
->>> 	}
->>>@@ -210,6 +213,8 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
->>
->>>
->>> 	/* Traverse root PE */
->>> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
->>>+		if (eeh_pe_passed(pe))
->>>+			continue;
->>> 		eeh_pe_for_each_dev(pe, edev, tmp) {
->>> 			ret = fn(edev, flag);
->>> 			if (ret)
->>>-- 
->>>2.5.0
->>>
->
->-- 
->Richard Yang
->Help you, Help me
+-Scott
