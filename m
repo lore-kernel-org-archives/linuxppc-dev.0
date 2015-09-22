@@ -1,22 +1,17 @@
-Return-Path: <bywxiaobai@163.com>
-Received: from m12-13.163.com (m12-13.163.com [220.181.12.13])
- by lists.ozlabs.org (Postfix) with ESMTP id B48671A001E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 23:40:35 +1000 (AEST)
-Date: Tue, 22 Sep 2015 21:22:57 +0800
-From: Yaowei Bai <bywxiaobai@163.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: perex@perex.cz, tiwai@suse.com, k.kozlowski@samsung.com,
- elfring@users.sourceforge.net, fabf@skynet.be, lars@metafoo.de,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] sound/core/seq: make prioq_match return bool
-Message-ID: <20150922132257.GB4221@bbox>
-References: <1442843834-4648-1-git-send-email-bywxiaobai@163.com>
- <1442843834-4648-4-git-send-email-bywxiaobai@163.com>
- <1442844660.1876.2.camel@sipsolutions.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442844660.1876.2.camel@sipsolutions.net>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8E50F1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 00:34:23 +1000 (AEST)
+Message-Id: <cover.1442876807.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 0/9] powerpc32: set of optimisation of network checksum
+ functions
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Date: Tue, 22 Sep 2015 16:34:17 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 21, 2015 at 04:11:00PM +0200, Johannes Berg wrote:
-> 
-> > -static inline int prioq_match(struct snd_seq_event_cell *cell,
-> > +static inline bool prioq_match(struct snd_seq_event_cell *cell,
-> >  			      int client, int timestamp)
-> 
-> I think you should fix up the indentation now.
+This patch serie gather patches related to checksum functions on powerpc.
+Some of those patches have already been submitted individually.
 
-Sorry, I'm quite a new guy to linux kernel. I think you mean this patch
-is not appropriate, right?
+Christophe Leroy (9):
+  powerpc: unexport csum_tcpudp_magic
+  powerpc: mark xer clobbered in csum_add()
+  powerpc32: checksum_wrappers_64 becomes checksum_wrappers
+  powerpc: inline ip_fast_csum()
+  powerpc32: rewrite csum_partial_copy_generic() based on
+    copy_tofrom_user()
+  powerpc32: optimise a few instructions in csum_partial()
+  powerpc32: optimise csum_partial() loop
+  powerpc: simplify csum_add(a, b) in case a or b is constant 0
+  powerpc: optimise csum_partial() call when len is constant
 
-> 
-> johannes
+ arch/powerpc/include/asm/checksum.h                | 143 +++++---
+ arch/powerpc/lib/Makefile                          |   3 +-
+ arch/powerpc/lib/checksum_32.S                     | 398 +++++++++++++--------
+ arch/powerpc/lib/checksum_64.S                     |  31 +-
+ ...{checksum_wrappers_64.c => checksum_wrappers.c} |   0
+ arch/powerpc/lib/ppc_ksyms.c                       |   4 +-
+ 6 files changed, 350 insertions(+), 229 deletions(-)
+ rename arch/powerpc/lib/{checksum_wrappers_64.c => checksum_wrappers.c} (100%)
+
+-- 
+2.1.0
