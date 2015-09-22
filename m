@@ -1,33 +1,37 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D05EB1A031B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 14:07:57 +1000 (AEST)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v10 4/5] QE/CPM: move muram management functions to
- qe_common
-Date: Tue, 22 Sep 2015 04:07:47 +0000
-Message-ID: <SN1PR0301MB15501FD4D85768AF4846E9989B450@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1442560521-19354-1-git-send-email-qiang.zhao@freescale.com>
- <1442560521-19354-4-git-send-email-qiang.zhao@freescale.com>
- <20150921225405.GB12709@home.buserror.net>
- <SN1PR0301MB1550904DB13E3FDD7C9930099B450@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1442888756.19102.215.camel@freescale.com>
- <SN1PR0301MB1550D63B8FA0FD97C75F616E9B450@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1442891257.19102.216.camel@freescale.com>
- <SN1PR0301MB1550935F85F15E24A7505E999B450@SN1PR0301MB1550.namprd03.prod.outlook.com>
- <1442892279.19102.218.camel@freescale.com>
-In-Reply-To: <1442892279.19102.218.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B0181A03A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 14:43:13 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 22 Sep 2015 10:13:10 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5C7851258018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 10:12:37 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8M4h6XI63897718
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 10:13:06 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8M4h49M015982
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 10:13:05 +0530
+Date: Tue, 22 Sep 2015 12:43:03 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/eeh: Avoid to handle EEH on a passed Child PE
+Message-ID: <20150922044303.GB2072@Richards-MacBook-Pro.local>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1442827788-10385-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150921114945.GA17285@gwshan>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150921114945.GA17285@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,151 +41,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IFR1ZXNkYXksIFNlcHRlbWJlciAyMiwgMjAxNSAxMToyNSBBTQ0KPiBUbzogWmhh
-byBRaWFuZy1CNDU0NzUNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBsYXVyYWFAY29kZWF1cm9yYS5vcmc7IFhpZSBY
-aWFvYm8tUjYzMDYxOyBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+IFlhbmctTGVvLVI1
-ODQ3MjsgcGF1bHVzQHNhbWJhLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMCA0LzVdIFFF
-L0NQTTogbW92ZSBtdXJhbSBtYW5hZ2VtZW50IGZ1bmN0aW9ucyB0bw0KPiBxZV9jb21tb24NCj4g
-DQo+IE9uIE1vbiwgMjAxNS0wOS0yMSBhdCAyMjoyMiAtMDUwMCwgWmhhbyBRaWFuZy1CNDU0NzUg
-d3JvdGU6DQo+ID4gT24gVHVlLCBTZXAgMjIsIDIwMTUgYXQgMTE6MDhBTSArMDgwMCwgV29vZCBT
-Y290dC1CMDc0MjEgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
-DQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVlc2RheSwgU2Vw
-dGVtYmVyIDIyLCAyMDE1IDExOjA4IEFNDQo+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4g
-PiA+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMu
-b3psYWJzLm9yZzsNCj4gPiA+IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsgWGllIFhpYW9iby1SNjMw
-NjE7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsNCj4gPiA+IExpIFlhbmctTGVvLVI1ODQ3Mjsg
-cGF1bHVzQHNhbWJhLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2MTAgNC81XSBRRS9D
-UE06IG1vdmUgbXVyYW0gbWFuYWdlbWVudCBmdW5jdGlvbnMNCj4gPiA+IHRvIHFlX2NvbW1vbg0K
-PiA+ID4NCj4gPiA+IE9uIE1vbiwgMjAxNS0wOS0yMSBhdCAyMjowNiAtMDUwMCwgWmhhbyBRaWFu
-Zy1CNDU0NzUgd3JvdGU6DQo+ID4gPiA+IE9uIFR1ZSwgU2VwIDIyLCAyMDE1IGF0IDEwOjI2QU0g
-KzA4MDAsIFdvb2QgU2NvdHQtQjA3NDIxIHdyb3RlOg0KPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjEN
-Cj4gPiA+ID4gPiBTZW50OiBUdWVzZGF5LCBTZXB0ZW1iZXIgMjIsIDIwMTUgMTA6MjYgQU0NCj4g
-PiA+ID4gPiBUbzogWmhhbyBRaWFuZy1CNDU0NzUNCj4gPiA+ID4gPiBDYzogbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+
-ID4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2MzA2MTsNCj4gPiA+ID4gPiBi
-ZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctTGVvLVI1ODQ3MjsgcGF1bHVzQHNhbWJh
-Lm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEwIDQvNV0gUUUvQ1BNOiBtb3Zl
-IG11cmFtIG1hbmFnZW1lbnQNCj4gPiA+ID4gPiBmdW5jdGlvbnMgdG8gcWVfY29tbW9uDQo+ID4g
-PiA+ID4NCj4gPiA+ID4gPiBPbiBNb24sIDIwMTUtMDktMjEgYXQgMjE6MjMgLTA1MDAsIFpoYW8g
-UWlhbmctQjQ1NDc1IHdyb3RlOg0KPiA+ID4gPiA+ID4gT24gVHVlLCBTZXAgMjIsIDIwMTUgYXQg
-MDY6NTRBTSArMDgwMCwgV29vZCBTY290dC1CMDc0MjEgd3JvdGU6DQo+ID4gPiA+ID4gPiA+IC0t
-LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+IEZyb206IFdvb2QgU2NvdHQt
-QjA3NDIxDQo+ID4gPiA+ID4gPiA+IFNlbnQ6IFR1ZXNkYXksIFNlcHRlbWJlciAyMiwgMjAxNSA2
-OjU0IEFNDQo+ID4gPiA+ID4gPiA+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0KPiA+ID4gPiA+ID4g
-PiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+ID4gPiA+ID4gbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxhdXJhYUBjb2RlYXVyb3JhLm9yZzsgWGllDQo+ID4g
-PiA+ID4gPiA+IFhpYW9iby1SNjMwNjE7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkgWWFu
-Zy1MZW8tUjU4NDcyOw0KPiA+ID4gPiA+ID4gPiBwYXVsdXNAc2FtYmEub3JnDQo+ID4gPiA+ID4g
-PiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjEwIDQvNV0gUUUvQ1BNOiBtb3ZlIG11cmFtIG1hbmFn
-ZW1lbnQNCj4gPiA+ID4gPiA+ID4gZnVuY3Rpb25zIHRvIHFlX2NvbW1vbg0KPiA+ID4gPiA+ID4g
-Pg0KPiA+ID4gPiA+ID4gPiBPbiBGcmksIFNlcCAxOCwgMjAxNSBhdCAwMzoxNToyMFBNICswODAw
-LCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+ID4gPiA+ID4gPiA+IFFFIGFuZCBDUE0gaGF2ZSB0aGUg
-c2FtZSBtdXJhbSwgdGhleSB1c2UgdGhlIHNhbWUNCj4gPiA+ID4gPiA+ID4gPiBtYW5hZ2VtZW50
-IGZ1bmN0aW9ucy4gTm93IFFFIHN1cHBvcnQgYm90aCBBUk0gYW5kIFBvd2VyUEMsDQo+ID4gPiA+
-ID4gPiA+ID4gaXQgaXMgbmVjZXNzYXJ5IHRvIG1vdmUgUUUgdG8gImRyaXZlci9zb2MiLCBzbyBt
-b3ZlIHRoZQ0KPiA+ID4gPiA+ID4gPiA+IG11cmFtIG1hbmFnZW1lbnQgZnVuY3Rpb25zIGZyb20g
-Y3BtX2NvbW1vbiB0byBxZV9jb21tb24NCj4gPiA+ID4gPiA+ID4gPiBmb3IgcHJlcGFyaW5nIHRv
-IG1vdmUgUUUgY29kZSB0bw0KPiA+ID4gPiA+ICJkcml2ZXIvc29jIg0KPiA+ID4gPiA+ID4gPiA+
-DQo+ID4gPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogWmhhbyBRaWFuZyA8cWlhbmcuemhhb0Bm
-cmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+ID4gPiA+IC0tLQ0KPiA+ID4gPiA+ID4gPiA+IENoYW5n
-ZXMgZm9yIHYyOg0KPiA+ID4gPiA+ID4gPiA+ICAgLSBubyBjaGFuZ2VzDQo+ID4gPiA+ID4gPiA+
-ID4gQ2hhbmdlcyBmb3IgdjM6DQo+ID4gPiA+ID4gPiA+ID4gICAtIG5vIGNoYW5nZXMNCj4gPiA+
-ID4gPiA+ID4gPiBDaGFuZ2VzIGZvciB2NDoNCj4gPiA+ID4gPiA+ID4gPiAgIC0gbm8gY2hhbmdl
-cw0KPiA+ID4gPiA+ID4gPiA+IENoYW5nZXMgZm9yIHY1Og0KPiA+ID4gPiA+ID4gPiA+ICAgLSBu
-byBjaGFuZ2VzDQo+ID4gPiA+ID4gPiA+ID4gQ2hhbmdlcyBmb3IgdjY6DQo+ID4gPiA+ID4gPiA+
-ID4gICAtIHVzaW5nIGdlbmFsbG9jIGluc3RlYWQgcmhlYXAgdG8gbWFuYWdlIFFFIE1VUkFNDQo+
-ID4gPiA+ID4gPiA+ID4gICAtIHJlbW92ZSBxZV9yZXNldCBmcm9tIHBsYXRmb3JtIGZpbGUsIHVz
-aW5nDQo+ID4gPiA+ID4gPiA+ID4gICAtIHN1YnN5c19pbml0Y2FsbCB0byBjYWxsIHFlX2luaXQg
-ZnVuY3Rpb24uDQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IFdoeSBpcyB0aGUgaW5pdCBj
-aGFuZ2UgaW4gdGhlIHNhbWUgcGF0Y2ggYXMgbW92aW5nIHRoZSBtdXJhbQ0KPiBjb2RlPw0KPiA+
-ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+IENoYW5nZXMgZm9yIHY3Og0KPiA+ID4gPiA+ID4g
-PiA+ICAgLSBtb3ZlIHRoaXMgcGF0Y2ggZnJvbSAzLzMgdG8gMi8zDQo+ID4gPiA+ID4gPiA+ID4g
-ICAtIGNvbnZlcnQgY3BtIHdpdGggZ2VuYWxsb2MNCj4gPiA+ID4gPiA+ID4gPiAgIC0gY2hlY2sg
-Zm9yIGdlbl9wb29sIGFsbG9jYXRpb24gZmFpbHVyZSBDaGFuZ2VzIGZvciB2ODoNCj4gPiA+ID4g
-PiA+ID4gPiAgIC0gcmViYXNlDQo+ID4gPiA+ID4gPiA+ID4gICAtIG1vdmUgQkRfU0NfKiBtYWNy
-byBpbnN0ZWFkIG9mIGNvcHkgQ2hhbmdlcyBmb3Igdjk6DQo+ID4gPiA+ID4gPiA+ID4gICAtIGRv
-ZXNuJ3QgbW9kaWZ5IENQTSwgYWRkIGEgbmV3IHBhdGNoIHRvIG1vZGlmeS4NCj4gPiA+ID4gPiA+
-ID4gPiAgIC0gcmViYXNlDQo+ID4gPiA+ID4gPiA+ID4gQ2hhbmdlcyBmb3IgdjEwOg0KPiA+ID4g
-PiA+ID4gPiA+ICAgLSByZWJhc2UNCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+ICBh
-cmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vY3BtLmggICAgICAgICAgICB8ICA1OSAtLS0tLS0tLQ0K
-PiA+ID4gPiA+ID4gPiA+ICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcWUuaCAgICAgICAgICAg
-ICB8ICA1MSArKysrKystDQo+ID4gPiA+ID4gPiA+ID4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMv
-ODN4eC9rbTgzeHguYyAgICAgIHwgICAyIC0NCj4gPiA+ID4gPiA+ID4gPiAgYXJjaC9wb3dlcnBj
-L3BsYXRmb3Jtcy84M3h4L21wYzgzMnhfbWRzLmMgfCAgIDIgLQ0KPiA+ID4gPiA+ID4gPiA+ICBh
-cmNoL3Bvd2VycGMvcGxhdGZvcm1zLzgzeHgvbXBjODMyeF9yZGIuYyB8ICAgMiAtDQo+ID4gPiA+
-ID4gPiA+ID4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODN4eC9tcGM4MzZ4X21kcy5jIHwgICAy
-IC0NCj4gPiA+ID4gPiA+ID4gPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84M3h4L21wYzgzNnhf
-cmRrLmMgfCAgIDMgLQ0KPiA+ID4gPiA+ID4gPiA+ICBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1
-eHgvY29tbW9uLmMgICAgICB8ICAgMSAtDQo+ID4gPiA+ID4gPiA+ID4gIGFyY2gvcG93ZXJwYy9z
-eXNkZXYvY3BtX2NvbW1vbi5jICAgICAgICAgIHwgMjA2ICstLS0tLS0tLS0NCj4gLS0tLQ0KPiA+
-ID4gLS0tLQ0KPiA+ID4gPiA+IC0tLS0NCj4gPiA+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gPiA+
-ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliL01ha2VmaWxlICAgICAgIHwgICAyICstDQo+
-ID4gPiA+ID4gPiA+ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliL3FlLmMgICAgICAgICAg
-IHwgIDE1ICsrDQo+ID4gPiA+ID4gPiA+ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliL3Fl
-X2NvbW1vbi5jICAgIHwgMjQyDQo+ID4gPiA+ID4gPiA+ICsrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKw0KPiA+ID4gPiA+ID4gPiA+ICAxMiBmaWxlcyBjaGFuZ2VkLCAzMDIgaW5zZXJ0aW9u
-cygrKSwgMjg1IGRlbGV0aW9ucygtKQ0KPiA+ID4gPiA+ID4gPiA+IGNyZWF0ZSBtb2RlDQo+ID4g
-PiA+ID4gPiA+ID4gMTAwNjQ0IGFyY2gvcG93ZXJwYy9zeXNkZXYvcWVfbGliL3FlX2NvbW1vbi5j
-DQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dl
-cnBjL2luY2x1ZGUvYXNtL2NwbS5oDQo+ID4gPiA+ID4gPiA+ID4gYi9hcmNoL3Bvd2VycGMvaW5j
-bHVkZS9hc20vY3BtLmggaW5kZXggNDM5OGE2Yy4uMDAzYTczNg0KPiA+ID4gPiA+ID4gPiA+IDEw
-MDY0NA0KPiA+ID4gPiA+ID4gPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9jcG0u
-aA0KPiA+ID4gPiA+ID4gPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9jcG0uaA0K
-PiA+ID4gPiA+ID4gPiA+IEBAIC05MywyMiArOTMsNiBAQCB0eXBlZGVmIHN0cnVjdCBjcG1fYnVm
-X2Rlc2Mgew0KPiA+ID4gPiA+ID4gPiA+ICAgKi8NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
-ID4gPiA+ICAjZGVmaW5lIEJEX1NDX0VNUFRZICAgICAgKDB4ODAwMCkgICAgICAgIC8qIFJlY2Vp
-dmUgaXMNCj4gZW1wdHkNCj4gPiA+ICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZpbmUgQkRfU0Nf
-UkVBRFkgICAgICAoMHg4MDAwKSAgICAgICAgLyogVHJhbnNtaXQgaXMNCj4gcmVhZHkNCj4gPiA+
-ICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZpbmUgQkRfU0NfV1JBUCAgICAgICAoMHgyMDAwKSAg
-ICAgICAgLyogTGFzdCBidWZmZXINCj4gPiA+IGRlc2NyaXB0b3INCj4gPiA+ID4gPiAqLw0KPiA+
-ID4gPiA+ID4gPiA+IC0jZGVmaW5lIEJEX1NDX0lOVFJQVCAgICAgKDB4MTAwMCkgICAgICAgIC8q
-IEludGVycnVwdCBvbg0KPiA+ID4gY2hhbmdlICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZpbmUg
-QkRfU0NfTEFTVCAgICAgICAoMHgwODAwKSAgICAgICAgLyogTGFzdCBidWZmZXIgaW4NCj4gPiA+
-IGZyYW1lDQo+ID4gPiA+ID4gKi8NCj4gPiA+ID4gPiA+ID4gPiAtI2RlZmluZSBCRF9TQ19UQyAo
-MHgwNDAwKSAgICAgICAgLyogVHJhbnNtaXQgQ1JDICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZp
-bmUgQkRfU0NfQ00gKDB4MDIwMCkgICAgICAgIC8qIENvbnRpbnVvdXMgbW9kZSAqLw0KPiA+ID4g
-PiA+ID4gPiA+IC0jZGVmaW5lIEJEX1NDX0lEICgweDAxMDApICAgICAgICAvKiBSZWMnZCB0b28g
-bWFueSBpZGxlcw0KPiAqLw0KPiA+ID4gPiA+ID4gPiA+IC0jZGVmaW5lIEJEX1NDX1AgICAgICAg
-ICAgKDB4MDEwMCkgICAgICAgIC8qIHhtdCBwcmVhbWJsZQ0KPiAqLw0KPiA+ID4gPiA+ID4gPiA+
-IC0jZGVmaW5lIEJEX1NDX0JSICgweDAwMjApICAgICAgICAvKiBCcmVhayByZWNlaXZlZCAqLw0K
-PiA+ID4gPiA+ID4gPiA+IC0jZGVmaW5lIEJEX1NDX0ZSICgweDAwMTApICAgICAgICAvKiBGcmFt
-aW5nIGVycm9yICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZpbmUgQkRfU0NfUFIgKDB4MDAwOCkg
-ICAgICAgIC8qIFBhcml0eSBlcnJvciAqLw0KPiA+ID4gPiA+ID4gPiA+IC0jZGVmaW5lIEJEX1ND
-X05BSyAgICAgICAgKDB4MDAwNCkgICAgICAgIC8qIE5BSyAtIGRpZCBub3QNCj4gPiA+IHJlc3Bv
-bmQNCj4gPiA+ID4gPiAqLw0KPiA+ID4gPiA+ID4gPiA+IC0jZGVmaW5lIEJEX1NDX09WICgweDAw
-MDIpICAgICAgICAvKiBPdmVycnVuICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZpbmUgQkRfU0Nf
-VU4gKDB4MDAwMikgICAgICAgIC8qIFVuZGVycnVuICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZp
-bmUgQkRfU0NfQ0QgKDB4MDAwMSkgICAgICAgIC8qICovDQo+ID4gPiA+ID4gPiA+ID4gLSNkZWZp
-bmUgQkRfU0NfQ0wgKDB4MDAwMSkgICAgICAgIC8qIENvbGxpc2lvbiAqLw0KPiA+ID4gPiA+ID4g
-Pg0KPiA+ID4gPiA+ID4gPiBXaGF0IGRvZXMgdGhpcyBoYXZlIHRvIGRvIHdpdGggbXVyYW0/DQo+
-ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gQkQgaXMgQnVmZmVyIERlc2NyaXB0b3JzLCBpdCBpcyBp
-biBtdXJhbS4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFdoYXQgZG9lcyBpdCBoYXZlIHRvIGRvIHdp
-dGggdGhlIG11cmFtICphbGxvY2F0b3IqPw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+DQo+ID4g
-PiA+ID4gPiA+IEkndmUgc2FpZCBtYW55IHRpbWVzIG5vdyB0aGF0IGFueSBjaGFuZ2VzIHRvIHRo
-ZSBjb2RlLA0KPiA+ID4gPiA+ID4gPiBpbmNsdWRpbmcgcmVuYW1pbmcgZnVuY3Rpb25zLCBuZWVk
-cyB0byBiZSBhIHNlcGFyYXRlIHBhdGNoDQo+ID4gPiA+ID4gPiA+IGZyb20gbW92aW5nIHRoZQ0K
-PiA+ID4gY29kZS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBJIGhhdmUgc3BsaXQgYSBwYXRj
-aCB0byB0d28gcGF0Y2hlcywgSG93ZXZlciwgTWF5YmUgSQ0KPiA+ID4gPiA+ID4gbWlzdW5kZXJz
-dGFuZCB5b3VyIG1lYW5zLg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gSSBkaWRuJ3Qgc2F5ICJzcGxp
-dCBpdCBpbnRvIHR3byBwYXRjaGVzLCBob3dldmVyIHlvdSBsaWtlIi4gIEkNCj4gPiA+ID4gPiBz
-YWlkIHRvIGhhdmUgYWxsIGNoYW5nZXMgaW4gb25lIHBhdGNoLCBhbmQgdGhlIG90aGVyIHBhdGNo
-IGJlDQo+ID4gPiA+ID4gbm90aGluZyBidXQNCj4gPiA+IGEgbW92ZS4NCj4gPiA+ID4gPiBSZW5h
-bWluZyB0aGUgZnVuY3Rpb25zIGNvdW50cyBhcyBhIGNoYW5nZS4NCj4gPiA+ID4gPg0KPiA+ID4g
-PiA+ID4gU28gaWYgdGhlIHBhdGNoIGp1c3QgZG8gdGhlIHJlbmFtaW5nIGFuZCBtb3ZpbmcgY3Bt
-X211cmFtDQo+ID4gPiA+ID4gPiBmdW5jdGlvbiB0byBxZV9tdXJhbSBmdW5jdGlvbiwgRG9lcyBp
-dCBvaz8NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE5vLg0KPiA+ID4gPg0KPiA+ID4gPiBXaHk/DQo+
-ID4gPg0KPiA+ID4gU28gdGhhdCBJIGNhbiBzZWUgdGhlIGNoYW5nZXMgYXMgYSBkaWZmLg0KPiA+
-ID4NCj4gPiA+ID4gTW92aW5nIGNwbS9xZV9tdXJhbSBmdW5jdGlvbnMgYW5kIHJlbmFtaW5nIGNh
-bid0IGJlIHNwbGl0Lg0KPiA+ID4NCj4gPiA+IFdoeSBub3Q/DQo+ID4NCj4gPiBJZiBtb3Zpbmcg
-Y3BtX211cmFtXyogdG8gcWVfbXVyYW1fKiB3aXRob3V0IHJlbmFtaW5nLCBJdCBzdGlsbCBpcw0K
-PiA+ICIjZGVmaW5lIHFlX211cmFtX2luaXQgY3BtX211cmFtX2luaXQiLCBXaGVyZSB0byBmaW5k
-IGNwbV9tdXJhbV8qPw0KPiANCj4gQ291bGQgeW91IGJlIG1vcmUgc3BlY2lmaWMgYWJvdXQgd2hh
-dCB0aGUgYWN0dWFsIHByb2JsZW0gaXM/ICBJZiB5b3UncmUNCj4gdGFsa2luZyBhYm91dCB0aGUg
-ZmFjdCB0aGF0LCBmb3IganVzdCBvbmUgY29tbWl0IGluIHRoZSBoaXN0b3J5LCB0aGVyZQ0KPiB3
-aWxsIGJlIGEgZmlsZSB3aXRoICJxZSIgaW4gdGhlIG5hbWUgdGhhdCBoYXMgZnVuY3Rpb25zIHdp
-dGggImNwbSIgaW4gdGhlDQo+IG5hbWUsIHdobyBjYXJlcz8NCg0KRG9lcyBpdCBsb29rIHN0cmFu
-Z2U/DQpJZiB5b3UgdGhpbmsgaXQgaXMgb2ssIHRoZSBzYW1lIG9rIGZvciBtZS4NCg0KLVpoYW8N
-Cg==
+On Mon, Sep 21, 2015 at 09:49:45PM +1000, Gavin Shan wrote:
+>On Mon, Sep 21, 2015 at 05:29:48PM +0800, Wei Yang wrote:
+>>Current EEH infrastructure would avoid to handle EEH when a PE is passed to
+>>guest, while if this PE is a Child PE of the one hit EEH, host would handle
+>>this. By doing so, this would leads to guest hang. The correct way is
+>>avoid to handle it on host and let guest to recover.
+>>
+>>This patch avoids to handle EEH on a passed Child PE.
+>>
+>
+>Ok. It's fixing the problem the guest, which owns a VF, when its PF hitting
+>EEH error, right? If so, I'm not sure if you really tested this code. Does
+>it work for you?
+
+Yes, I inject error on Parent Bus PE.
+
+>
+>When the parent PE (PF) is stopped for EEH recovery, it sounds impossible
+>that the child PE can't be affected and just escape from the error. The
+>question is how the guest can continue to work after the EEH recovery on
+>parent PE?
+
+What I see is the PF is covering and VF in guest is recovering.
+
+>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>---
+>> arch/powerpc/kernel/eeh_pe.c | 5 +++++
+>> 1 file changed, 5 insertions(+)
+>>
+>>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>>index 5cde950..c6d0e9f 100644
+>>--- a/arch/powerpc/kernel/eeh_pe.c
+>>+++ b/arch/powerpc/kernel/eeh_pe.c
+>>@@ -172,6 +172,7 @@ static struct eeh_pe *eeh_pe_next(struct eeh_pe *pe,
+>>  * callback returns something other than NULL, or no more PEs
+>>  * to be traversed.
+>>  */
+>>+static void *__eeh_pe_get(void *data, void *flag);
+>> void *eeh_pe_traverse(struct eeh_pe *root,
+>> 		      eeh_traverse_func fn, void *flag)
+>> {
+>>@@ -179,6 +180,8 @@ void *eeh_pe_traverse(struct eeh_pe *root,
+>> 	void *ret;
+>>
+>> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+>>+		if (eeh_pe_passed(pe) && (fn != __eeh_pe_get))
+>>+			continue;
+>
+>The code change here seems ugly.
+>
+>The "flag" can be extended to carry the information to skip pass-through
+>PEs or not. So the function calling eeh_pe_traverse() decides to skip
+>pass-through PEs or not.
+
+I don't get the point, which "flag" you mean? Add a flag in eeh_pe?
+
+>
+>> 		ret = fn(pe, flag);
+>> 		if (ret) return ret;
+>> 	}
+>>@@ -210,6 +213,8 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+>
+>>
+>> 	/* Traverse root PE */
+>> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+>>+		if (eeh_pe_passed(pe))
+>>+			continue;
+>> 		eeh_pe_for_each_dev(pe, edev, tmp) {
+>> 			ret = fn(edev, flag);
+>> 			if (ret)
+>>-- 
+>>2.5.0
+>>
+
+-- 
+Richard Yang
+Help you, Help me
