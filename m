@@ -1,26 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 395E51A0419
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 15:29:04 +1000 (AEST)
-Message-ID: <1442899743.18408.5.camel@ellerman.id.au>
-Subject: Re: [PATCH V2  2/2] powerpc:numa Do not allocate bootmem memory for
- non existing nodes
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- akpm@linux-foundation.org, nacc@linux.vnet.ibm.com,
- gkurz@linux.vnet.ibm.com,  grant.likely@linaro.org,
- nikunj@linux.vnet.ibm.com, vdavydov@parallels.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
-Date: Tue, 22 Sep 2015 15:29:03 +1000
-In-Reply-To: <1442282917-16893-3-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
-References: <1442282917-16893-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
- <1442282917-16893-3-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2F7D01A014D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:42:34 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 22 Sep 2015 12:12:31 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id B62D3394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:12:28 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8M6gIpd8782300
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:12:19 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8M6gGgm023151
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:12:18 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 03/31] powerpc/mm: make a separate copy for book3s
+In-Reply-To: <1442872723.19102.188.camel@freescale.com>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442817658-2588-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442872723.19102.188.camel@freescale.com>
+Date: Tue, 22 Sep 2015 12:12:14 +0530
+Message-ID: <87fv273qgp.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-15 at 07:38 +0530, Raghavendra K T wrote:
+Scott Wood <scottwood@freescale.com> writes:
+
+> On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
+>> In this patch we do:
+>> cp pgtable-ppc32.h book3s/32/pgtable.h
+>> cp pgtable-ppc64.h book3s/64/pgtable.h
+>> 
+>> This enable us to do further changes to hash specific config.
+>> We will change the page table format for 64bit hash in later patches.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/book3s/32/pgtable.h | 340 +++++++++++++++
+>>  arch/powerpc/include/asm/book3s/64/pgtable.h | 618 
+>> +++++++++++++++++++++++++++
+>>  arch/powerpc/include/asm/book3s/pgtable.h    |  10 +
+>>  arch/powerpc/include/asm/mmu-hash64.h        |   2 +-
+>>  arch/powerpc/include/asm/pgtable-ppc32.h     |   2 -
+>>  arch/powerpc/include/asm/pgtable-ppc64.h     |   4 -
+>>  arch/powerpc/include/asm/pgtable.h           |   4 +
+>>  7 files changed, 973 insertions(+), 7 deletions(-)
+>>  create mode 100644 arch/powerpc/include/asm/book3s/32/pgtable.h
+>>  create mode 100644 arch/powerpc/include/asm/book3s/64/pgtable.h
+>>  create mode 100644 arch/powerpc/include/asm/book3s/pgtable.h
 >
-> ... nothing
+> git format-patch -C?
 
-Sure this patch looks obvious, but please give me a changelog that proves
-you've thought about it thoroughly.
+Thanks for the hint. Will use that next time.
 
-For example is it OK to use for_each_node() at this point in boot? Is there any
-historical reason why we did it with a hard coded loop? If so what has changed.
-What systems have you tested on? etc. etc.
+>
+> Do the book3s/hash-specific parts of the copied file get removed from the non-
+> hash files at some point?
+>
 
-cheers
+I tried to keep the changes to non-hash code minimal. My guess is that
+we could do more cleanup there. But that can be done as later patches ?
 
-> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 8b9502a..8d8a541 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -80,7 +80,7 @@ static void __init setup_node_to_cpumask_map(void)
->  		setup_nr_node_ids();
->  
->  	/* allocate the map */
-> -	for (node = 0; node < nr_node_ids; node++)
-> +	for_each_node(node)
->  		alloc_bootmem_cpumask_var(&node_to_cpumask_map[node]);
->  
->  	/* cpumask_of_node() will now work */
+-aneesh
