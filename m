@@ -1,31 +1,44 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id 73C7A1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 06:38:09 +1000 (AEST)
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: "scottwood@freescale.com" <scottwood@freescale.com>
-CC: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 22/25] powerpc32: move xxxxx_dcache_range() functions
- inline
-Date: Tue, 22 Sep 2015 20:38:05 +0000
-Message-ID: <1442954285.29498.79.camel@transmode.se>
-References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <c1c88096cb3f6ee71048dbab44ffb9ac260b07a3.1442939410.git.christophe.leroy@c-s.fr>
- <1442945547.29498.50.camel@transmode.se>
- <1442948339.19102.270.camel@freescale.com>
- <1442950473.29498.54.camel@transmode.se>
- <1442950926.19102.280.camel@freescale.com>
- <1442951752.29498.58.camel@transmode.se>
- <1442952852.19102.281.camel@freescale.com>
- <1442953971.29498.76.camel@transmode.se>
- <1442954101.19102.286.camel@freescale.com>
-In-Reply-To: <1442954101.19102.286.camel@freescale.com>
-Content-Type: text/plain; charset="iso-8859-15"
-MIME-Version: 1.0
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 130A51A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 06:44:41 +1000 (AEST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Tue, 22 Sep 2015 14:44:40 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 966651FF0041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 14:35:46 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t8MKhi6n10420544
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 13:43:44 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8MKiauD000345
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 14:44:37 -0600
+Content-Type: text/plain; charset=windows-1252
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
+Subject: Re: [PATCH v2 18/30] cxlflash: Remove dual port online dependency
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <56007E7E.3090804@linux.vnet.ibm.com>
+Date: Tue, 22 Sep 2015 15:44:37 -0500
+Cc: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Message-Id: <7DACBD20-4923-48A3-A773-829A938E34C9@linux.vnet.ibm.com>
+References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442439038-49894-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <56007E7E.3090804@linux.vnet.ibm.com>
+To: Brian King <brking@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,143 +48,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-09-22 at 15:35 -0500, Scott Wood wrote:
-> On Tue, 2015-09-22 at 20:32 +0000, Joakim Tjernlund wrote:
-> > On Tue, 2015-09-22 at 15:14 -0500, Scott Wood wrote:
-> > > On Tue, 2015-09-22 at 19:55 +0000, Joakim Tjernlund wrote:
-> > > > On Tue, 2015-09-22 at 14:42 -0500, Scott Wood wrote:
-> > > > > On Tue, 2015-09-22 at 19:34 +0000, Joakim Tjernlund wrote:
-> > > > > > On Tue, 2015-09-22 at 13:58 -0500, Scott Wood wrote:
-> > > > > > > On Tue, 2015-09-22 at 18:12 +0000, Joakim Tjernlund wrote:
-> > > > > > > > On Tue, 2015-09-22 at 18:51 +0200, Christophe Leroy wrote:
-> > > > > > > > > flush/clean/invalidate _dcache_range() functions are all =
-very
-> > > > > > > > > similar and are quite short. They are mainly used in=20
-> > > > > > > > > __dma_sync()
-> > > > > > > > > perf_event locate them in the top 3 consumming functions=
-=20
-> > > > > > > > > during
-> > > > > > > > > heavy ethernet activity
-> > > > > > > > >=20
-> > > > > > > > > They are good candidate for inlining, as __dma_sync() doe=
-s
-> > > > > > > > > almost nothing but calling them
-> > > > > > > > >=20
-> > > > > > > > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > > > > > > > > ---
-> > > > > > > > > New in v2
-> > > > > > > > >=20
-> > > > > > > > >  arch/powerpc/include/asm/cacheflush.h | 55=20
-> > > > > > > > > +++++++++++++++++++++++++++--
-> > > > > > > > >  arch/powerpc/kernel/misc_32.S         | 65 -------------=
------
-> > > > > > > > > ----
-> > > > > > > > > ----
-> > > > > > > > > ----
-> > > > > > > > > -----
-> > > > > > > > >  arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
-> > > > > > > > >  3 files changed, 54 insertions(+), 68 deletions(-)
-> > > > > > > > >=20
-> > > > > > > > > diff --git a/arch/powerpc/include/asm/cacheflush.h=20
-> > > > > > > > > b/arch/powerpc/include/asm/cacheflush.h
-> > > > > > > > > index 6229e6b..6169604 100644
-> > > > > > > > > --- a/arch/powerpc/include/asm/cacheflush.h
-> > > > > > > > > +++ b/arch/powerpc/include/asm/cacheflush.h
-> > > > > > > > > @@ -47,12 +47,61 @@ static inline void=20
-> > > > > > > > > __flush_dcache_icache_phys(unsigned long physaddr)
-> > > > > > > > >  }
-> > > > > > > > >  #endif
-> > > > > > > > > =20
-> > > > > > > > > -extern void flush_dcache_range(unsigned long start, unsi=
-gned=20
-> > > > > > > > > long=20
-> > > > > > > > > stop);
-> > > > > > > > >  #ifdef CONFIG_PPC32
-> > > > > > > > > -extern void clean_dcache_range(unsigned long start, unsi=
-gned=20
-> > > > > > > > > long=20
-> > > > > > > > > stop);
-> > > > > > > > > -extern void invalidate_dcache_range(unsigned long start,=
-=20
-> > > > > > > > > unsigned=20
-> > > > > > > > > long=20
-> > > > > > > > > stop);
-> > > > > > > > > +/*
-> > > > > > > > > + * Write any modified data cache blocks out to memory an=
-d=20
-> > > > > > > > > invalidate=20
-> > > > > > > > > them.
-> > > > > > > > > + * Does not invalidate the corresponding instruction cac=
-he=20
-> > > > > > > > > blocks.
-> > > > > > > > > + */
-> > > > > > > > > +static inline void flush_dcache_range(unsigned long star=
-t,=20
-> > > > > > > > > unsigned=20
-> > > > > > > > > long=20
-> > > > > > > > > stop)
-> > > > > > > > > +{
-> > > > > > > > > +   void *addr =3D (void *)(start & ~(L1_CACHE_BYTES - 1)=
-);
-> > > > > > > > > +   unsigned int size =3D stop - (unsigned long)addr +=20
-> > > > > > > > > (L1_CACHE_BYTES -
-> > > > > > > > > 1);
-> > > > > > > > > +   unsigned int i;
-> > > > > > > > > +
-> > > > > > > > > +   for (i =3D 0; i < size >> L1_CACHE_SHIFT; i++, addr +=
-=3D=20
-> > > > > > > > > L1_CACHE_BYTES)
-> > > > > > > > > +           dcbf(addr);
-> > > > > > > > > +   if (i)
-> > > > > > > > > +           mb();   /* sync */
-> > > > > > > > > +}
-> > > > > > > >=20
-> > > > > > > > This feels optimized for the uncommon case when there is no=
-=20
-> > > > > > > > invalidation.
-> > > > > > >=20
-> > > > > > > If you mean the "if (i)", yes, that looks odd.
-> > > > > >=20
-> > > > > > Yes.
-> > > > > >=20
-> > > > > > >=20
-> > > > > > > > I THINK it would be better to bail early=20
-> > > > > > >=20
-> > > > > > > Bail under what conditions?
-> > > > > >=20
-> > > > > > test for "i =3D 0" and return.=20
-> > > > >=20
-> > > > > Why bother?
-> > > >=20
-> > > > I usally find it better to dela with special cases upfront s=E5 the=
- rest=20
-> > > > doesn't need to
-> > > > bother. i=3D0 is a NOP and it is clearer to show that upfront.
-> > >=20
-> > > No, I mean why bother special casing this at all?
-> >=20
-> > I just said why?=20
-> > You to found the if(i) mb() a bit odd and it took a little time to see =
-why=20
-> > it was there.
-> > Ahh, you mean just skip the if(i) and have mb() unconditionally?
->=20
-> Yes.
->=20
-> > That changes the semantics a little from the ASM version but perhaps th=
-at=20
-> > doesn't matter?
->=20
-> Adding more barriers than strictly necessary is a performance concern, no=
-t a=20
-> semantic change.
-Semantics :)
+> On Sep 21, 2015, at 5:02 PM, Brian King <brking@linux.vnet.ibm.com> wrote:
+> On 09/16/2015 04:30 PM, Matthew R. Ochs wrote:
+>> At present, both ports must be online for the device to
+>> configure properly. Remove this dependency and the unnecessary
+>> internal LUN override logic as well. Additionally, as a refactoring
+>> measure, change the return code variable name to match that used
+>> throughout the driver.
+> 
+> Doesn't this also change the behavior to no longer fail init_afu even
+> if BOTH ports fail to go offline in the reconfig case. Is that OK?
 
->   How often are we really calling this function over an empty=20
-> range?
-
-Never hopefully, it does not make much sense.
-
->=20
-> Not that it matters much one way or another...
-probably not.
+Correct, there is a change in behavior but it is not an issue.
