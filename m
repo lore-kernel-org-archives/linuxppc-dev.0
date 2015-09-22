@@ -1,36 +1,38 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0128.outbound.protection.outlook.com [207.46.100.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8BE1F1A0024
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 08:52:49 +1000 (AEST)
-Message-ID: <1442962353.19102.296.camel@freescale.com>
-Subject: Re: [PATCH v2 22/25] powerpc32: move xxxxx_dcache_range() functions
- inline
-From: Scott Wood <scottwood@freescale.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-CC: Joakim Tjernlund <joakim.tjernlund@transmode.se>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 22 Sep 2015 17:52:33 -0500
-In-Reply-To: <5601DB07.3000205@c-s.fr>
-References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <c1c88096cb3f6ee71048dbab44ffb9ac260b07a3.1442939410.git.christophe.leroy@c-s.fr>
- <1442945547.29498.50.camel@transmode.se>
- <1442948339.19102.270.camel@freescale.com>
- <1442950473.29498.54.camel@transmode.se>
- <1442950926.19102.280.camel@freescale.com>
- <1442951752.29498.58.camel@transmode.se>
- <1442952852.19102.281.camel@freescale.com>
- <1442953971.29498.76.camel@transmode.se>
- <1442954101.19102.286.camel@freescale.com>
- <1442954285.29498.79.camel@transmode.se> <5601C0CC.6090503@c-s.fr>
- <1442961271.19102.289.camel@freescale.com> <5601DB07.3000205@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C5991A0030
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:44 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 23 Sep 2015 09:08:42 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 85EEA357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:39 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8MN8VSc47317166
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:39 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8MN865w031381
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:08:07 +1000
+Date: Wed, 23 Sep 2015 09:07:41 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/eeh: Avoid to handle EEH on a passed Child PE
+Message-ID: <20150922230741.GA6721@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1442827788-10385-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150921114945.GA17285@gwshan>
+ <20150922044303.GB2072@Richards-MacBook-Pro.local>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150922044303.GB2072@Richards-MacBook-Pro.local>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,21 +42,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-23 at 00:49 +0200, Christophe Leroy wrote:
-> Le 23/09/2015 00:34, Scott Wood a écrit :
-> > On Tue, 2015-09-22 at 22:57 +0200, Christophe Leroy wrote:
-> > > > Here is what I get in asm. First one is with "if (i) mb();". We see 
-> > > > gcc
-> > > > puts a beqlr. This is the form that is closest to what we had in the
-> > > > former misc_32.S
-> > > > Second one if with "mb()". Here we get a branch to sync for a useless 
-> > > > sync
-> > I was more concerned with keeping the code simple than the asm output.
-> > 
-> Right, but is that so complicated to say: if we did nothing in the loop, 
-> no need to sync ?
+On Tue, Sep 22, 2015 at 12:43:03PM +0800, Wei Yang wrote:
+>On Mon, Sep 21, 2015 at 09:49:45PM +1000, Gavin Shan wrote:
+>>On Mon, Sep 21, 2015 at 05:29:48PM +0800, Wei Yang wrote:
+>>>Current EEH infrastructure would avoid to handle EEH when a PE is passed to
+>>>guest, while if this PE is a Child PE of the one hit EEH, host would handle
+>>>this. By doing so, this would leads to guest hang. The correct way is
+>>>avoid to handle it on host and let guest to recover.
+>>>
+>>>This patch avoids to handle EEH on a passed Child PE.
+>>>
+>>
+>>Ok. It's fixing the problem the guest, which owns a VF, when its PF hitting
+>>EEH error, right? If so, I'm not sure if you really tested this code. Does
+>>it work for you?
+>
+>Yes, I inject error on Parent Bus PE.
+>
+>>
+>>When the parent PE (PF) is stopped for EEH recovery, it sounds impossible
+>>that the child PE can't be affected and just escape from the error. The
+>>question is how the guest can continue to work after the EEH recovery on
+>>parent PE?
+>
+>What I see is the PF is covering and VF in guest is recovering.
+>
 
-As I said, it doesn't matter very much.  I wouldn't put it in personally, but 
-it's not worth a long discussion.
+What do you mean by "covering"? Which PE's error is detected first in your
+testing? There is potentially race here: when the VF PE's error is detected
+first and guest tries to recover it. After the recovery happened on guest
+side, the host detects the PF PE's error and tries to recover it. During
+the recovery, the VF PE is total unusable but guest doesn't know that and
+operate like usual. I'm not sure what kinds of problems it can incur, but
+it would incur issues.
 
--Scott
+On the other hand, if PF PE's error is detected on host first, and then the
+guest detects the error on VF PE. After that, the host and guest try to do
+recovery at same time. Host issues PE reset to PF PE, which isn't finished
+yet. Then guest issues PE reset to VF PE, which will cause another EEH error.
+
+So I'm not sure if had this patch fully tested. If so, it seems the result is
+just achieved by luck, I guess.
+
+>>
+>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>---
+>>> arch/powerpc/kernel/eeh_pe.c | 5 +++++
+>>> 1 file changed, 5 insertions(+)
+>>>
+>>>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>>>index 5cde950..c6d0e9f 100644
+>>>--- a/arch/powerpc/kernel/eeh_pe.c
+>>>+++ b/arch/powerpc/kernel/eeh_pe.c
+>>>@@ -172,6 +172,7 @@ static struct eeh_pe *eeh_pe_next(struct eeh_pe *pe,
+>>>  * callback returns something other than NULL, or no more PEs
+>>>  * to be traversed.
+>>>  */
+>>>+static void *__eeh_pe_get(void *data, void *flag);
+>>> void *eeh_pe_traverse(struct eeh_pe *root,
+>>> 		      eeh_traverse_func fn, void *flag)
+>>> {
+>>>@@ -179,6 +180,8 @@ void *eeh_pe_traverse(struct eeh_pe *root,
+>>> 	void *ret;
+>>>
+>>> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+>>>+		if (eeh_pe_passed(pe) && (fn != __eeh_pe_get))
+>>>+			continue;
+>>
+>>The code change here seems ugly.
+>>
+>>The "flag" can be extended to carry the information to skip pass-through
+>>PEs or not. So the function calling eeh_pe_traverse() decides to skip
+>>pass-through PEs or not.
+>
+>I don't get the point, which "flag" you mean? Add a flag in eeh_pe?
+>
+
+>>> void *eeh_pe_traverse(struct eeh_pe *root,
+>>>                   eeh_traverse_func fn, void *flag)
+                                            ^^^^^^^^^^
+                                            This one
+
+The code needn't to be changed in a hurry though. I don't think it's right
+way to fix the issue as discussed as above.
+
+>>
+>>> 		ret = fn(pe, flag);
+>>> 		if (ret) return ret;
+>>> 	}
+>>>@@ -210,6 +213,8 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+>>
+>>>
+>>> 	/* Traverse root PE */
+>>> 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+>>>+		if (eeh_pe_passed(pe))
+>>>+			continue;
+>>> 		eeh_pe_for_each_dev(pe, edev, tmp) {
+>>> 			ret = fn(edev, flag);
+>>> 			if (ret)
+>>>-- 
+>>>2.5.0
+>>>
+>
+>-- 
+>Richard Yang
+>Help you, Help me
