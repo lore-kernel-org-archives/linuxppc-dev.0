@@ -1,42 +1,33 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C24741A0024
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 06:53:13 +1000 (AEST)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Tue, 22 Sep 2015 16:53:11 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 053BA6E8045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:44:52 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8MKr83p63635660
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 20:53:08 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8MKr7cP028843
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 16:53:08 -0400
-Subject: Re: [PATCH v2 20/30] cxlflash: Correct usage of scsi_host_put()
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442439049-49970-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Message-ID: <5601BFB2.4010308@linux.vnet.ibm.com>
-Date: Tue, 22 Sep 2015 15:53:06 -0500
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 409081A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 06:57:53 +1000 (AEST)
+Subject: Re: [PATCH v2 22/25] powerpc32: move xxxxx_dcache_range() functions
+ inline
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
+ "scottwood@freescale.com" <scottwood@freescale.com>
+References: <cover.1442939410.git.christophe.leroy@c-s.fr>
+ <c1c88096cb3f6ee71048dbab44ffb9ac260b07a3.1442939410.git.christophe.leroy@c-s.fr>
+ <1442945547.29498.50.camel@transmode.se>
+ <1442948339.19102.270.camel@freescale.com>
+ <1442950473.29498.54.camel@transmode.se>
+ <1442950926.19102.280.camel@freescale.com>
+ <1442951752.29498.58.camel@transmode.se>
+ <1442952852.19102.281.camel@freescale.com>
+ <1442953971.29498.76.camel@transmode.se>
+ <1442954101.19102.286.camel@freescale.com>
+ <1442954285.29498.79.camel@transmode.se>
+Cc: "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <5601C0CC.6090503@c-s.fr>
+Date: Tue, 22 Sep 2015 22:57:48 +0200
 MIME-Version: 1.0
-In-Reply-To: <1442439049-49970-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+In-Reply-To: <1442954285.29498.79.camel@transmode.se>
+Content-Type: text/plain; charset=iso-8859-15; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,58 +37,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/16/2015 04:30 PM, Matthew R. Ochs wrote:
-> Currently, scsi_host_put() is being called prematurely in the
-> remove path and is missing entirely in an error cleanup path.
-> The former can lead to memory being freed too early with
-> subsequent access potentially corrupting data whilst the former
-> would result in a memory leak.
-> 
-> Move the usage on remove to be the last cleanup action taken
-> and introduce a call to scsi_host_put() in the one initialization
-> error path that does not use remove to cleanup.
-> 
-> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-> ---
->  drivers/scsi/cxlflash/main.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-> index fc77cd4..1856a73 100644
-> --- a/drivers/scsi/cxlflash/main.c
-> +++ b/drivers/scsi/cxlflash/main.c
-> @@ -734,7 +734,6 @@ static void cxlflash_remove(struct pci_dev *pdev)
->  	case INIT_STATE_SCSI:
->  		cxlflash_term_local_luns(cfg);
->  		scsi_remove_host(cfg->host);
-> -		scsi_host_put(cfg->host);
->  		/* Fall through */
->  	case INIT_STATE_AFU:
->  		term_afu(cfg);
-> @@ -744,6 +743,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
->  	case INIT_STATE_NONE:
->  		flush_work(&cfg->work_q);
->  		free_mem(cfg);
-> +		scsi_host_put(cfg->host);
->  		break;
->  	}
-> 
-> @@ -2415,6 +2415,7 @@ static int cxlflash_probe(struct pci_dev *pdev,
->  		dev_err(&pdev->dev, "%s: call to scsi_host_alloc failed!\n",
-
-This message text is wrong. Its the call to alloc_mem that has failed in this
-leg, not the call to scsi_host_alloc.
-
->  			__func__);
->  		rc = -ENOMEM;
-> +		scsi_host_put(cfg->host);
->  		goto out;
->  	}
-> 
 
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+Le 22/09/2015 22:38, Joakim Tjernlund a écrit :
+> On Tue, 2015-09-22 at 15:35 -0500, Scott Wood wrote:
+>> On Tue, 2015-09-22 at 20:32 +0000, Joakim Tjernlund wrote:
+>>> On Tue, 2015-09-22 at 15:14 -0500, Scott Wood wrote:
+>>>> On Tue, 2015-09-22 at 19:55 +0000, Joakim Tjernlund wrote:
+>>>>> On Tue, 2015-09-22 at 14:42 -0500, Scott Wood wrote:
+>>>>>> On Tue, 2015-09-22 at 19:34 +0000, Joakim Tjernlund wrote:
+>>>>>>> On Tue, 2015-09-22 at 13:58 -0500, Scott Wood wrote:
+>>>>>>>> On Tue, 2015-09-22 at 18:12 +0000, Joakim Tjernlund wrote:
+>>>>>>>>> On Tue, 2015-09-22 at 18:51 +0200, Christophe Leroy wrote:
+>>>>>>>>>> flush/clean/invalidate _dcache_range() functions are all very
+>>>>>>>>>> similar and are quite short. They are mainly used in
+>>>>>>>>>> __dma_sync()
+>>>>>>>>>> perf_event locate them in the top 3 consumming functions
+>>>>>>>>>> during
+>>>>>>>>>> heavy ethernet activity
+>>>>>>>>>>
+>>>>>>>>>> They are good candidate for inlining, as __dma_sync() does
+>>>>>>>>>> almost nothing but calling them
+>>>>>>>>>>
+>>>>>>>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>>>>>>>> ---
+>>>>>>>>>> New in v2
+>>>>>>>>>>
+>>>>>>>>>>   arch/powerpc/include/asm/cacheflush.h | 55
+>>>>>>>>>> +++++++++++++++++++++++++++--
+>>>>>>>>>>   arch/powerpc/kernel/misc_32.S         | 65 ------------------
+>>>>>>>>>> ----
+>>>>>>>>>> ----
+>>>>>>>>>> ----
+>>>>>>>>>> -----
+>>>>>>>>>>   arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
+>>>>>>>>>>   3 files changed, 54 insertions(+), 68 deletions(-)
+>>>>>>>>>>
+>>>>>>>>>> diff --git a/arch/powerpc/include/asm/cacheflush.h
+>>>>>>>>>> b/arch/powerpc/include/asm/cacheflush.h
+>>>>>>>>>> index 6229e6b..6169604 100644
+>>>>>>>>>> --- a/arch/powerpc/include/asm/cacheflush.h
+>>>>>>>>>> +++ b/arch/powerpc/include/asm/cacheflush.h
+>>>>>>>>>> @@ -47,12 +47,61 @@ static inline void
+>>>>>>>>>> __flush_dcache_icache_phys(unsigned long physaddr)
+>>>>>>>>>>   }
+>>>>>>>>>>   #endif
+>>>>>>>>>>   
+>>>>>>>>>> -extern void flush_dcache_range(unsigned long start, unsigned
+>>>>>>>>>> long
+>>>>>>>>>> stop);
+>>>>>>>>>>   #ifdef CONFIG_PPC32
+>>>>>>>>>> -extern void clean_dcache_range(unsigned long start, unsigned
+>>>>>>>>>> long
+>>>>>>>>>> stop);
+>>>>>>>>>> -extern void invalidate_dcache_range(unsigned long start,
+>>>>>>>>>> unsigned
+>>>>>>>>>> long
+>>>>>>>>>> stop);
+>>>>>>>>>> +/*
+>>>>>>>>>> + * Write any modified data cache blocks out to memory and
+>>>>>>>>>> invalidate
+>>>>>>>>>> them.
+>>>>>>>>>> + * Does not invalidate the corresponding instruction cache
+>>>>>>>>>> blocks.
+>>>>>>>>>> + */
+>>>>>>>>>> +static inline void flush_dcache_range(unsigned long start,
+>>>>>>>>>> unsigned
+>>>>>>>>>> long
+>>>>>>>>>> stop)
+>>>>>>>>>> +{
+>>>>>>>>>> +   void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
+>>>>>>>>>> +   unsigned int size = stop - (unsigned long)addr +
+>>>>>>>>>> (L1_CACHE_BYTES -
+>>>>>>>>>> 1);
+>>>>>>>>>> +   unsigned int i;
+>>>>>>>>>> +
+>>>>>>>>>> +   for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr +=
+>>>>>>>>>> L1_CACHE_BYTES)
+>>>>>>>>>> +           dcbf(addr);
+>>>>>>>>>> +   if (i)
+>>>>>>>>>> +           mb();   /* sync */
+>>>>>>>>>> +}
+>>>>>>>>> This feels optimized for the uncommon case when there is no
+>>>>>>>>> invalidation.
+>>>>>>>> If you mean the "if (i)", yes, that looks odd.
+>>>>>>> Yes.
+>>>>>>>
+>>>>>>>>> I THINK it would be better to bail early
+>>>>>>>> Bail under what conditions?
+>>>>>>> test for "i = 0" and return.
+>>>>>> Why bother?
+>>>>> I usally find it better to dela with special cases upfront så the rest
+>>>>> doesn't need to
+>>>>> bother. i=0 is a NOP and it is clearer to show that upfront.
+>>>> No, I mean why bother special casing this at all?
+>>> I just said why?
+>>> You to found the if(i) mb() a bit odd and it took a little time to see why
+>>> it was there.
+>>> Ahh, you mean just skip the if(i) and have mb() unconditionally?
+>> Yes.
+>>
+>>> That changes the semantics a little from the ASM version but perhaps that
+>>> doesn't matter?
+>> Adding more barriers than strictly necessary is a performance concern, not a
+>> semantic change.
+> Semantics :)
+>
+>>    How often are we really calling this function over an empty
+>> range?
+> Never hopefully, it does not make much sense.
+>
+>> Not that it matters much one way or another...
+> probably not.
+>
+
+Here is what I get in asm. First one is with "if (i) mb();". We see gcc 
+puts a beqlr. This is the form that is closest to what we had in the 
+former misc_32.S
+Second one if with "mb()". Here we get a branch to sync for a useless sync
+
+c000e0ac <my_flush_dcache_range1>:
+c000e0ac:       54 63 00 36     rlwinm  r3,r3,0,0,27
+c000e0b0:       38 84 00 0f     addi    r4,r4,15
+c000e0b4:       7d 23 20 50     subf    r9,r3,r4
+c000e0b8:       55 29 e1 3f     rlwinm. r9,r9,28,4,31
+c000e0bc:       4d 82 00 20     beqlr
+c000e0c0:       7d 29 03 a6     mtctr   r9
+c000e0c4:       7c 00 18 6c     dcbst   0,r3
+c000e0c8:       38 63 00 10     addi    r3,r3,16
+c000e0cc:       42 00 ff f8     bdnz    c000e0c4 
+<my_flush_dcache_range1+0x18>
+c000e0d0:       7c 00 04 ac     sync
+c000e0d4:       4e 80 00 20     blr
+
+c000e0d8 <my_flush_dcache_range2>:
+c000e0d8:       54 63 00 36     rlwinm  r3,r3,0,0,27
+c000e0dc:       38 84 00 0f     addi    r4,r4,15
+c000e0e0:       7d 23 20 50     subf    r9,r3,r4
+c000e0e4:       55 29 e1 3f     rlwinm. r9,r9,28,4,31
+c000e0e8:       41 82 00 14     beq     c000e0fc 
+<my_flush_dcache_range2+0x24>
+c000e0ec:       7d 29 03 a6     mtctr   r9
+c000e0f0:       7c 00 18 6c     dcbst   0,r3
+c000e0f4:       38 63 00 10     addi    r3,r3,16
+c000e0f8:       42 00 ff f8     bdnz    c000e0f0 
+<my_flush_dcache_range2+0x18>
+c000e0fc:       7c 00 04 ac     sync
+c000e100:       4e 80 00 20     blr
+
+Christophe
