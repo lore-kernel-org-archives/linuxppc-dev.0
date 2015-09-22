@@ -1,51 +1,29 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BEE131A060E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 01:25:55 +1000 (AEST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 22 Sep 2015 09:25:53 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id D96E53E40044
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 09:25:50 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8MFOdXd64815132
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 08:24:39 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8MFPlwg010797
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 09:25:49 -0600
-Date: Tue, 22 Sep 2015 08:25:40 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: Will Deacon <will.deacon@arm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
-Subject: Re: [RFC v2 3/7] powerpc: atomic: Implement
- atomic{,64}_{add,sub}_return_* variants
-Message-ID: <20150922152540.GO4029@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
- <1442418575-12297-4-git-send-email-boqun.feng@gmail.com>
- <20150918165902.GF12837@arm.com>
- <20150919153310.GB20458@fixme-laptop.cn.ibm.com>
- <20150920082303.GA1166@fixme-laptop.cn.ibm.com>
- <20150921222427.GG7356@arm.com>
- <20150921232656.GC970@fixme-laptop.cn.ibm.com>
- <20150921233704.GD970@fixme-laptop.cn.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0BD791A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 02:17:35 +1000 (AEST)
+Date: Tue, 22 Sep 2015 17:17:10 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Florian Fainelli <f.fainelli@gmail.com>, David Miller <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Iyappan Subramanian <isubramanian@apm.com>,
+ Keyur Chudgar <kchudgar@apm.com>,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Li Yang <leoli@freescale.com>,
+ Michal Simek <michal.simek@xilinx.com>, netdev@vger.kernel.org,
+ Robert Richter <rric@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Soren Brinkmann <soren.brinkmann@xilinx.com>,
+ Sunil Goutham <sgoutham@cavium.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: [PATCH v2 0/9] Phy, mdiobus, and netdev struct device fixes
+Message-ID: <20150922161710.GA21084@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150921233704.GD970@fixme-laptop.cn.ibm.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,70 +33,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 22, 2015 at 07:37:04AM +0800, Boqun Feng wrote:
-> On Tue, Sep 22, 2015 at 07:26:56AM +0800, Boqun Feng wrote:
-> > On Mon, Sep 21, 2015 at 11:24:27PM +0100, Will Deacon wrote:
-> > > Hi Boqun,
-> > > 
-> > > On Sun, Sep 20, 2015 at 09:23:03AM +0100, Boqun Feng wrote:
-> > > > On Sat, Sep 19, 2015 at 11:33:10PM +0800, Boqun Feng wrote:
-> > > > > On Fri, Sep 18, 2015 at 05:59:02PM +0100, Will Deacon wrote:
-> > > > > > On Wed, Sep 16, 2015 at 04:49:31PM +0100, Boqun Feng wrote:
-> > > > > > > On powerpc, we don't need a general memory barrier to achieve acquire and
-> > > > > > > release semantics, so __atomic_op_{acquire,release} can be implemented
-> > > > > > > using "lwsync" and "isync".
-> > > > > > 
-> > > > > > I'm assuming isync+ctrl isn't transitive, so we need to get to the bottom
-> > > > > 
-> > > > > Actually the transitivity is still guaranteed here, I think ;-)
-> > > 
-> > > The litmus test I'm thinking of is:
-> > > 
-> > > 
-> > > {
-> > > 0:r2=x;
-> > > 1:r2=x; 1:r5=z;
-> > > 2:r2=z; 2:r4=x;
-> > > }
-> > >  P0           | P1            | P2           ;
-> > >  li r1,1      | lwz r1,0(r2)  | lwz r1,0(r2) ;
-> > >  stw r1,0(r2) | cmpw r1,r1    | cmpw r1,r1   ;
-> > >               | beq LC00      | beq  LC01    ;
-> > >               | LC00:         | LC01:        ;
-> > >               | isync         | isync        ;
-> > >               | li r4,1       | lwz r3,0(r4) ;
-> > >               | stw r4,0(r5)  |              ;
-> > > exists
-> > > (1:r1=1 /\ 2:r1=1 /\ 2:r3=0)
-> > > 
-> > > 
-> > > Which appears to be allowed. I don't think you need to worry about backwards
-> > > branches for the ctrl+isync construction (none of the current example do,
-> > > afaict).
-> > > 
-> > 
-> > Yes.. my care of backwards branches is not quite related to the topic, I
-> > concerned that mostly because my test is using atomic operation, and I
-> > just want to test the exact asm code.
-> > 
-> > > Anyway, all the problematic cases seem to arise when we start mixing
-> > > ACQUIRE/RELEASE accesses with relaxed accesses (i.e. where an access from
-> > > one group reads from an access in the other group). It would be simplest
-> > > to say that this doesn't provide any transitivity guarantees, and that
-> > > an ACQUIRE must always read from a RELEASE if transitivity is required.
-> > > 
-> > 
-> > Agreed. RELEASE alone doesn't provide transitivity and transitivity is
->           ^^^^^^^
-> This should be ACQUIRE...
-> 
-> > guaranteed only if an ACQUIRE read from a RELEASE. That's exactly the
-> > direction which the link (https://lkml.org/lkml/2015/9/15/836) is
-> > heading to. So I think we are fine here to use ctrl+isync here, right?
+This is the second version of the series, with the comments David had
+on the first patch fixed up.  Original series description with updated
+diffstat below.
 
-We are going to have to err on the side of strictness, that is, having
-the documentation place more requirements on the developer than the union
-of the hardware does.  Besides, I haven't heard any recent complaints
-that memory-barriers.txt is too simple.  ;-)
+While looking at the DSA code, I noticed we have a
+of_find_net_device_by_node(), and it looks like users of that are
+similarly buggy - it looks like net/dsa/dsa.c is the only user.  Fix
+that too.
 
-							Thanx, Paul
+Hi,
+
+While looking at the phy code, I identified a number of weaknesses
+where refcounting on device structures was being leaked, where
+modules could be removed while in-use, and where the fixed-phy could
+end up having unintended consequences caused by incorrect calls to
+fixed_phy_update_state().
+
+This patch series resolves those issues, some of which were discovered
+with testing on an Armada 388 board.  Not all patches are fully tested,
+particularly the one which touches several network drivers.
+
+When resolving the struct device refcounting problems, several different
+solutions were considered before settling on the implementation here -
+one of the considerations was to avoid touching many network drivers.
+The solution here is:
+
+	phy_attach*() - takes a refcount
+	phy_detach*() - drops the phy_attach refcount
+
+Provided drivers always attach and detach their phys, which they should
+already be doing, this should change nothing, even if they leak a refcount.
+
+	of_phy_find_device() and of_* functions which use that take
+	a refcount.  Arrange for this refcount to be dropped once
+	the phy is attached.
+
+This is the reason why the previous change is important - we can't drop
+this refcount taken by of_phy_find_device() until something else holds
+a reference on the device.  This resolves the leaked refcount caused by
+using of_phy_connect() or of_phy_attach().
+
+Even without the above changes, these drivers are leaking by calling
+of_phy_find_device().  These drivers are addressed by adding the
+appropriate release of that refcount.
+
+The mdiobus code also suffered from the same kind of leak, but thankfully
+this only happened in one place - the mdio-mux code.
+
+I also found that the try_module_get() in the phy layer code was utterly
+useless: phydev->dev.driver was guaranteed to always be NULL, so
+try_module_get() was always being called with a NULL argument.  I proved
+this with my SFP code, which declares its own MDIO bus - the module use
+count was never incremented irrespective of how I set the MDIO bus up.
+This allowed the MDIO bus code to be removed from the kernel while there
+were still PHYs attached to it.
+
+One other bug was discovered: while using in-band-status with mvneta, it
+was found that if a real phy is attached with in-band-status enabled,
+and another ethernet interface is using the fixed-phy infrastructure, the
+interface using the fixed-phy infrastructure is configured according to
+the other interface using the in-band-status - which is caused by the
+fixed-phy code not verifying that the phy_device passed in is actually
+a fixed-phy device, rather than a real MDIO phy.
+
+Lastly, having mdio_bus reversing phy_device_register() internals seems
+like a layering violation - it's trivial to move that code to the phy
+device layer.
+
+ drivers/net/ethernet/apm/xgene/xgene_enet_hw.c    | 23 ++++++---
+ drivers/net/ethernet/cavium/thunder/thunder_bgx.c | 19 +++++++
+ drivers/net/ethernet/freescale/gianfar.c          |  6 ++-
+ drivers/net/ethernet/freescale/ucc_geth.c         |  8 ++-
+ drivers/net/ethernet/marvell/mvneta.c             |  2 +
+ drivers/net/ethernet/xilinx/xilinx_emaclite.c     |  2 +
+ drivers/net/phy/fixed_phy.c                       |  2 +-
+ drivers/net/phy/mdio-mux.c                        | 19 ++++---
+ drivers/net/phy/mdio_bus.c                        | 24 ++++++---
+ drivers/net/phy/phy_device.c                      | 62 ++++++++++++++++++-----
+ drivers/of/of_mdio.c                              | 27 ++++++++--
+ include/linux/phy.h                               |  6 ++-
+ net/core/net-sysfs.c                              |  9 ++++
+ net/dsa/dsa.c                                     | 41 ++++++++++++---
+ 14 files changed, 199 insertions(+), 51 deletions(-)
+
+-- 
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
