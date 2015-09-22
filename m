@@ -1,30 +1,27 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pa0-f44.google.com (mail-pa0-f44.google.com
- [209.85.220.44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20D701A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 05:47:01 +1000 (AEST)
-Received: by pacex6 with SMTP id ex6so17827434pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:46:58 -0700 (PDT)
-Date: Tue, 22 Sep 2015 12:46:54 -0700
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@codeaurora.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Russell King <linux@arm.linux.org.uk>, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org,
- Tang Yuantian <Yuantian.Tang@freescale.com>
-Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock
- implementation details
-Message-ID: <20150922194654.GJ24314@linux>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
- <1442723397-26329-6-git-send-email-scottwood@freescale.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 48BD31A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 05:55:56 +1000 (AEST)
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+To: "scottwood@freescale.com" <scottwood@freescale.com>
+CC: "christophe.leroy@c-s.fr" <christophe.leroy@c-s.fr>, "paulus@samba.org"
+ <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 22/25] powerpc32: move xxxxx_dcache_range() functions
+ inline
+Date: Tue, 22 Sep 2015 19:55:53 +0000
+Message-ID: <1442951752.29498.58.camel@transmode.se>
+References: <cover.1442939410.git.christophe.leroy@c-s.fr>
+ <c1c88096cb3f6ee71048dbab44ffb9ac260b07a3.1442939410.git.christophe.leroy@c-s.fr>
+ <1442945547.29498.50.camel@transmode.se>
+ <1442948339.19102.270.camel@freescale.com>
+ <1442950473.29498.54.camel@transmode.se>
+ <1442950926.19102.280.camel@freescale.com>
+In-Reply-To: <1442950926.19102.280.camel@freescale.com>
+Content-Type: text/plain; charset="iso-8859-15"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442723397-26329-6-git-send-email-scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +31,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19-09-15, 23:29, Scott Wood wrote:
-> Get the CPU clock's potential parent clocks from the clock interface
-> itself, rather than manually parsing the clocks property to find a
-> phandle, looking at the clock-names property of that, and assuming that
-> those are valid parent clocks for the cpu clock.
-> 
-> This is necessary now that the clocks are generated based on the clock
-> driver's knowledge of the chip rather than a fragile device-tree
-> description of the mux options.
-> 
-> We can now rely on the clock driver to ensure that the mux only exposes
-> options that are valid.  The cpufreq driver was currently being overly
-> conservative in some cases -- for example, the "min_cpufreq =
-> get_bus_freq()" restriction only applies to chips with erratum
-> A-004510, and whether the freq_mask used on p5020 is needed depends on
-> the actual frequencies of the PLLs (FWIW, p5040 has a similar
-> limitation but its .freq_mask was zero) -- and the frequency mask
-> mechanism made assumptions about particular parent clock indices that
-> are no longer valid.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
-> to clk api usage
-> 
->  drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++----------------------------
->  1 file changed, 40 insertions(+), 97 deletions(-)
+On Tue, 2015-09-22 at 14:42 -0500, Scott Wood wrote:
+> On Tue, 2015-09-22 at 19:34 +0000, Joakim Tjernlund wrote:
+> > On Tue, 2015-09-22 at 13:58 -0500, Scott Wood wrote:
+> > > On Tue, 2015-09-22 at 18:12 +0000, Joakim Tjernlund wrote:
+> > > > On Tue, 2015-09-22 at 18:51 +0200, Christophe Leroy wrote:
+> > > > > flush/clean/invalidate _dcache_range() functions are all very
+> > > > > similar and are quite short. They are mainly used in __dma_sync()
+> > > > > perf_event locate them in the top 3 consumming functions during
+> > > > > heavy ethernet activity
+> > > > >=20
+> > > > > They are good candidate for inlining, as __dma_sync() does
+> > > > > almost nothing but calling them
+> > > > >=20
+> > > > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > > > > ---
+> > > > > New in v2
+> > > > >=20
+> > > > >  arch/powerpc/include/asm/cacheflush.h | 55=20
+> > > > > +++++++++++++++++++++++++++--
+> > > > >  arch/powerpc/kernel/misc_32.S         | 65 ---------------------=
+-----
+> > > > > ----
+> > > > > -----
+> > > > >  arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
+> > > > >  3 files changed, 54 insertions(+), 68 deletions(-)
+> > > > >=20
+> > > > > diff --git a/arch/powerpc/include/asm/cacheflush.h=20
+> > > > > b/arch/powerpc/include/asm/cacheflush.h
+> > > > > index 6229e6b..6169604 100644
+> > > > > --- a/arch/powerpc/include/asm/cacheflush.h
+> > > > > +++ b/arch/powerpc/include/asm/cacheflush.h
+> > > > > @@ -47,12 +47,61 @@ static inline void=20
+> > > > > __flush_dcache_icache_phys(unsigned long physaddr)
+> > > > >  }
+> > > > >  #endif
+> > > > > =20
+> > > > > -extern void flush_dcache_range(unsigned long start, unsigned lon=
+g=20
+> > > > > stop);
+> > > > >  #ifdef CONFIG_PPC32
+> > > > > -extern void clean_dcache_range(unsigned long start, unsigned lon=
+g=20
+> > > > > stop);
+> > > > > -extern void invalidate_dcache_range(unsigned long start, unsigne=
+d=20
+> > > > > long=20
+> > > > > stop);
+> > > > > +/*
+> > > > > + * Write any modified data cache blocks out to memory and invali=
+date=20
+> > > > > them.
+> > > > > + * Does not invalidate the corresponding instruction cache block=
+s.
+> > > > > + */
+> > > > > +static inline void flush_dcache_range(unsigned long start, unsig=
+ned=20
+> > > > > long=20
+> > > > > stop)
+> > > > > +{
+> > > > > +   void *addr =3D (void *)(start & ~(L1_CACHE_BYTES - 1));
+> > > > > +   unsigned int size =3D stop - (unsigned long)addr + (L1_CACHE_=
+BYTES -
+> > > > > 1);
+> > > > > +   unsigned int i;
+> > > > > +
+> > > > > +   for (i =3D 0; i < size >> L1_CACHE_SHIFT; i++, addr +=3D=20
+> > > > > L1_CACHE_BYTES)
+> > > > > +           dcbf(addr);
+> > > > > +   if (i)
+> > > > > +           mb();   /* sync */
+> > > > > +}
+> > > >=20
+> > > > This feels optimized for the uncommon case when there is no=20
+> > > > invalidation.
+> > >=20
+> > > If you mean the "if (i)", yes, that looks odd.
+> >=20
+> > Yes.
+> >=20
+> > >=20
+> > > > I THINK it would be better to bail early=20
+> > >=20
+> > > Bail under what conditions?
+> >=20
+> > test for "i =3D 0" and return.=20
+>=20
+> Why bother?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I usally find it better to dela with special cases upfront s=E5 the rest do=
+esn't need to
+bother. i=3D0 is a NOP and it is clearer to show that upfront.
 
--- 
-viresh
+>=20
+> >=20
+> > >=20
+> > > > and use do { .. } while(--i); instead.
+> > >=20
+> > > GCC knows how to optimize loops.  Please don't make them less readabl=
+e.
+> >=20
+> > Been a while since I checked but it used to be bad att transforming pos=
+t=20
+> > inc to pre inc/dec
+> > I remain unconvinced until I have seen it.
+>=20
+> I would expect it to use bdnz for this loop, as the loop variable isn't=20
+> referenced in the loop body.
+>=20
+> And generally the one proposing uglification-for-optimization should prov=
+ide=20
+> the evidence. :-)
+
+When it comes to gcc, past history is my evidence until proven otherwise :)
+Maybe I will check again ...=
