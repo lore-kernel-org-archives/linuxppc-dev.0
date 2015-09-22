@@ -1,21 +1,22 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0113.outbound.protection.outlook.com [65.55.169.113])
+ (mail-bl2on0123.outbound.protection.outlook.com [65.55.169.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 53E531A0152
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:17:10 +1000 (AEST)
-Message-ID: <1442888219.19102.213.camel@freescale.com>
-Subject: Re: [PATCH] powerpc: fsl_pci: cast the regs->nip to void * when
- passing it to probe_kernel_address()
+ by lists.ozlabs.org (Postfix) with ESMTPS id 457EA1A01C0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 12:22:38 +1000 (AEST)
+Date: Mon, 21 Sep 2015 21:22:23 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 21 Sep 2015 21:16:59 -0500
-In-Reply-To: <1442827370-26854-1-git-send-email-haokexin@gmail.com>
-References: <1442827370-26854-1-git-send-email-haokexin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+CC: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 09/31] powerpc/mm: Don't use pte_val as lvalue
+Message-ID: <20150922022223.GA12728@home.buserror.net>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442817658-2588-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1442817658-2588-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-21 at 17:22 +0800, Kevin Hao wrote:
-> With the reimplementation of probe_kernel_address() in commit
-> ecc83243e1d4 ("uaccess: reimplement probe_kernel_address() using
-> probe_kernel_read()"), the explication of the cast for the addr
-> parameter has been dropped. So we have to explicitly cast the
-> regs->nip to void * when passing it to probe_kernel_address() in
-> order to fix the following build error:
->   arch/powerpc/sysdev/fsl_pci.c: In function 'fsl_pci_mcheck_exception':
->   arch/powerpc/sysdev/fsl_pci.c:1002:4: error: passing argument 2 of 
-> 'probe_kernel_read' makes pointer from integer without a cast [-Werror]
->       ret = probe_kernel_address(regs->nip, inst);
->       ^
-> 
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> ---
-> 
-> This is against linux-next.
+On Mon, Sep 21, 2015 at 12:10:36PM +0530, Aneesh Kumar K.V wrote:
+> +static inline pte_t pte_mkwrite(pte_t pte)
+> +{
+> +	pte_basic_t ptev;
+> +
+> +	ptev = pte_val(pte) & ~_PAGE_RO;
+> +	ptev |= _PAGE_RW;
+> +	return __pte(pte);
+> +}
 
-I don't see ecc83243e1d4 in linux-next.  What tree is it in?
+s/__pte(pte)/__pte(ptev)/
+
+...to fix an endless handle_mm_fault() loop.
+
+CONFIG_STRICT_MM_TYPECHECKS would have caught this.
 
 -Scott
