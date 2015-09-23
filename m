@@ -1,18 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-f177.google.com (mail-yk0-f177.google.com
+ [209.85.160.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 855931A0038
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 15:40:37 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: <linux-kernel@vger.kernel.org>, linux-kbuild@vger.kernel.org,
- yann.morin.1998@free.fr, mmarek@suse.com
-Subject: [RFC PATCH 2/2] powerpc: Add ppc64le_defconfig
-Date: Wed, 23 Sep 2015 15:40:35 +1000
-Message-Id: <1442986835-13985-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
-References: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 634661A0038
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 15:43:51 +1000 (AEST)
+Received: by ykdg206 with SMTP id g206so31764927ykd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 22:43:49 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <807dbc9449077e36752c649c09ae1c0d70e45254.1442876807.git.christophe.leroy@c-s.fr>
+References: <cover.1442876807.git.christophe.leroy@c-s.fr>
+ <807dbc9449077e36752c649c09ae1c0d70e45254.1442876807.git.christophe.leroy@c-s.fr>
+Date: Wed, 23 Sep 2015 08:43:49 +0300
+Message-ID: <CAOJe8K0+duRrj19OoPjdoX725Jwh4T=im=_aCp+N8UTNudp=3w@mail.gmail.com>
+Subject: Re: [PATCH 4/9] powerpc: inline ip_fast_csum()
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, scottwood@freescale.com,
+ linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +31,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Based directly on ppc64_defconfig using merge_config.
+On 9/22/15, Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+> In several architectures, ip_fast_csum() is inlined
+> There are functions like ip_send_check() which do nothing
+> much more than calling ip_fast_csum().
+> Inlining ip_fast_csum() allows the compiler to optimise better
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/Makefile | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index b9b4af2af9a5..3704db45a832 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -288,6 +288,10 @@ PHONY += pseries_le_defconfig
- pseries_le_defconfig:
- 	$(call merge_into_defconfig,pseries_defconfig,le)
- 
-+PHONY += ppc64le_defconfig
-+ppc64le_defconfig:
-+	$(call merge_into_defconfig,ppc64_defconfig,le)
-+
- PHONY += mpc85xx_defconfig
- mpc85xx_defconfig:
- 	$(call merge_into_defconfig,mpc85xx_basic_defconfig,\
--- 
-2.1.4
+Hi Christophe,
+I did try it and see no difference on ppc64. Did you test with socklib
+with modified loopback and if so do you have any numbers?
+>
+> Suggested-by: Eric Dumazet <eric.dumazet@gmail.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/include/asm/checksum.h | 46
+> +++++++++++++++++++++++++++++++------
+>  arch/powerpc/lib/checksum_32.S      | 21 -----------------
+>  arch/powerpc/lib/checksum_64.S      | 27 ----------------------
+>  arch/powerpc/lib/ppc_ksyms.c        |  1 -
+>  4 files changed, 39 insertions(+), 56 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/checksum.h
+> b/arch/powerpc/include/asm/checksum.h
+> index afa6722..56deea8 100644
+> --- a/arch/powerpc/include/asm/checksum.h
+> +++ b/arch/powerpc/include/asm/checksum.h
+> @@ -9,16 +9,9 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>
+> -/*
+> - * This is a version of ip_compute_csum() optimized for IP headers,
+> - * which always checksum on 4 octet boundaries.  ihl is the number
+> - * of 32-bit words and is always >= 5.
+> - */
+>  #ifdef CONFIG_GENERIC_CSUM
+>  #include <asm-generic/checksum.h>
+>  #else
+> -extern __sum16 ip_fast_csum(const void *iph, unsigned int ihl);
+> -
+>  /*
+>   * computes the checksum of a memory block at buff, length len,
+>   * and adds in "sum" (32-bit)
+> @@ -137,6 +130,45 @@ static inline __wsum csum_add(__wsum csum, __wsum
+> addend)
+>  #endif
+>  }
+>
+> +/*
+> + * This is a version of ip_compute_csum() optimized for IP headers,
+> + * which always checksum on 4 octet boundaries.  ihl is the number
+> + * of 32-bit words and is always >= 5.
+> + */
+> +static inline __wsum ip_fast_csum_nofold(const void *iph, unsigned int
+> ihl)
+> +{
+> +	u32 *ptr = (u32 *)iph + 1;
+> +#ifdef __powerpc64__
+> +	unsigned int i;
+> +	u64 s = *(__force u32 *)iph;
+> +
+> +	for (i = 0; i < ihl - 1; i++, ptr++)
+> +		s += *ptr;
+> +	s += (s >> 32);
+> +	return (__force __wsum)s;
+> +
+> +#else
+> +	__wsum sum, tmp;
+> +
+> +	asm("mtctr %3;"
+> +	    "addc %0,%4,%5;"
+> +	    "1:lwzu %1, 4(%2);"
+> +	    "adde %0,%0,%1;"
+> +	    "bdnz 1b;"
+> +	    "addze %0,%0;"
+> +	    : "=r"(sum), "=r"(tmp), "+b"(ptr)
+> +	    : "r"(ihl - 2), "r"(*(u32 *)iph), "r"(*ptr)
+> +	    : "ctr", "xer", "memory");
+> +
+> +	return sum;
+> +#endif
+> +}
+> +
+> +static inline __sum16 ip_fast_csum(const void *iph, unsigned int ihl)
+> +{
+> +	return csum_fold(ip_fast_csum_nofold(iph, ihl));
+> +}
+> +
+>  #endif
+>  #endif /* __KERNEL__ */
+>  #endif
+> diff --git a/arch/powerpc/lib/checksum_32.S
+> b/arch/powerpc/lib/checksum_32.S
+> index 6d67e05..0d7eba3 100644
+> --- a/arch/powerpc/lib/checksum_32.S
+> +++ b/arch/powerpc/lib/checksum_32.S
+> @@ -20,27 +20,6 @@
+>  	.text
+>
+>  /*
+> - * ip_fast_csum(buf, len) -- Optimized for IP header
+> - * len is in words and is always >= 5.
+> - */
+> -_GLOBAL(ip_fast_csum)
+> -	lwz	r0,0(r3)
+> -	lwzu	r5,4(r3)
+> -	addic.	r4,r4,-2
+> -	addc	r0,r0,r5
+> -	mtctr	r4
+> -	blelr-
+> -1:	lwzu	r4,4(r3)
+> -	adde	r0,r0,r4
+> -	bdnz	1b
+> -	addze	r0,r0		/* add in final carry */
+> -	rlwinm	r3,r0,16,0,31	/* fold two halves together */
+> -	add	r3,r0,r3
+> -	not	r3,r3
+> -	srwi	r3,r3,16
+> -	blr
+> -
+> -/*
+>   * computes the checksum of a memory block at buff, length len,
+>   * and adds in "sum" (32-bit)
+>   *
+> diff --git a/arch/powerpc/lib/checksum_64.S
+> b/arch/powerpc/lib/checksum_64.S
+> index f3ef354..f53f4ab 100644
+> --- a/arch/powerpc/lib/checksum_64.S
+> +++ b/arch/powerpc/lib/checksum_64.S
+> @@ -18,33 +18,6 @@
+>  #include <asm/ppc_asm.h>
+>
+>  /*
+> - * ip_fast_csum(r3=buf, r4=len) -- Optimized for IP header
+> - * len is in words and is always >= 5.
+> - *
+> - * In practice len == 5, but this is not guaranteed.  So this code does
+> not
+> - * attempt to use doubleword instructions.
+> - */
+> -_GLOBAL(ip_fast_csum)
+> -	lwz	r0,0(r3)
+> -	lwzu	r5,4(r3)
+> -	addic.	r4,r4,-2
+> -	addc	r0,r0,r5
+> -	mtctr	r4
+> -	blelr-
+> -1:	lwzu	r4,4(r3)
+> -	adde	r0,r0,r4
+> -	bdnz	1b
+> -	addze	r0,r0		/* add in final carry */
+> -        rldicl  r4,r0,32,0      /* fold two 32-bit halves together */
+> -        add     r0,r0,r4
+> -        srdi    r0,r0,32
+> -	rlwinm	r3,r0,16,0,31	/* fold two halves together */
+> -	add	r3,r0,r3
+> -	not	r3,r3
+> -	srwi	r3,r3,16
+> -	blr
+> -
+> -/*
+>   * Computes the checksum of a memory block at buff, length len,
+>   * and adds in "sum" (32-bit).
+>   *
+> diff --git a/arch/powerpc/lib/ppc_ksyms.c b/arch/powerpc/lib/ppc_ksyms.c
+> index f5e427e..8cd5c0b 100644
+> --- a/arch/powerpc/lib/ppc_ksyms.c
+> +++ b/arch/powerpc/lib/ppc_ksyms.c
+> @@ -19,7 +19,6 @@ EXPORT_SYMBOL(strncmp);
+>  #ifndef CONFIG_GENERIC_CSUM
+>  EXPORT_SYMBOL(csum_partial);
+>  EXPORT_SYMBOL(csum_partial_copy_generic);
+> -EXPORT_SYMBOL(ip_fast_csum);
+>  #endif
+>
+>  EXPORT_SYMBOL(__copy_tofrom_user);
+> --
+> 2.1.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
