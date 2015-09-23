@@ -1,41 +1,38 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-ob0-x22f.google.com (mail-ob0-x22f.google.com
+ [IPv6:2607:f8b0:4003:c01::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1635F1A0030
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:56:50 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 23 Sep 2015 09:56:48 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E188B2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:56:44 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8MNucAK59048110
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:56:46 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8MNuCjP028719
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:56:12 +1000
-Date: Mon, 21 Sep 2015 15:21:56 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Alex Williamson <alex.williamson@redhat.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [PATCH 0/2] VFIO: Accept IOMMU group (PE) ID
-Message-ID: <20150921052156.GA18163@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1442557469-22185-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1442591252.23936.254.camel@redhat.com>
- <20150919062247.GC29031@voom.redhat.com>
- <20150921014228.GG20331@voom.fritz.box>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B1F191A003D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 10:08:22 +1000 (AEST)
+Received: by obbbh8 with SMTP id bh8so21315155obb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 17:08:19 -0700 (PDT)
+Date: Wed, 23 Sep 2015 08:07:55 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Will Deacon <will.deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 3/7] powerpc: atomic: Implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150923000754.GB27867@fixme-laptop.cn.ibm.com>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-4-git-send-email-boqun.feng@gmail.com>
+ <20150918165902.GF12837@arm.com>
+ <20150919153310.GB20458@fixme-laptop.cn.ibm.com>
+ <20150920082303.GA1166@fixme-laptop.cn.ibm.com>
+ <20150921222427.GG7356@arm.com>
+ <20150921232656.GC970@fixme-laptop.cn.ibm.com>
+ <20150921233704.GD970@fixme-laptop.cn.ibm.com>
+ <20150922152540.GO4029@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150921014228.GG20331@voom.fritz.box>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="rJwd6BRFiFCcLxzm"
+In-Reply-To: <20150922152540.GO4029@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,80 +42,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 21, 2015 at 11:42:28AM +1000, David Gibson wrote:
->On Sat, Sep 19, 2015 at 04:22:47PM +1000, David Gibson wrote:
->> On Fri, Sep 18, 2015 at 09:47:32AM -0600, Alex Williamson wrote:
->> > On Fri, 2015-09-18 at 16:24 +1000, Gavin Shan wrote:
->> > > This allows to accept IOMMU group (PE) ID from the parameter from userland
->> > > when handling EEH operation so that the operation only affects the target
->> > > IOMMU group (PE). If the IOMMU group (PE) ID in the parameter from userland
->> > > is invalid, all IOMMU groups (PEs) attached to the specified container are
->> > > affected as before.
->> > > 
->> > > Gavin Shan (2):
->> > >   drivers/vfio: Support EEH API revision
->> > >   drivers/vfio: Support IOMMU group for EEH operations
->> > > 
->> > >  drivers/vfio/vfio_iommu_spapr_tce.c | 50 ++++++++++++++++++++++++++++++++++---
->> > >  drivers/vfio/vfio_spapr_eeh.c       | 46 ++++++++++++++++++++++------------
->> > >  include/linux/vfio.h                | 13 +++++++---
->> > >  include/uapi/linux/vfio.h           |  6 +++++
->> > >  4 files changed, 93 insertions(+), 22 deletions(-)
->> > 
->> > This interface is terrible.  A function named foo_enabled() should
->> > return a bool, yes or no, don't try to overload it to also return a
->> > version.
->> 
->> Sorry, that one's my fault.  I suggested that approach to Gavin
->> without really thinking it through.
->> 
->> 
->> > AFAICT, patch 2/2 breaks current users by changing the offset
->> > of the union in struct vfio_eeh_pe_err.
->> 
->> Yeah, this one's ugly.  We have to preserve the offset, but that means
->> putting the group in a very awkward place.  Especially since I'm not
->> sure if there even are any existing users of the single extant union
->> branch.
->> 
->> Sigh.
->> 
 
-Yeah, Perhaps, I should have put "RFC" on the subjects because those
-patches are really pre-mature and just intend to bring more discussion
-on it.
+--rJwd6BRFiFCcLxzm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->> > Also, we generally pass group
->> > file descriptors rather than a group ID because we can prove the
->> > ownership of the group through the file descriptor and we don't need to
->> > worry about races with the group because we can hold a reference to it.
->
->Duh.  I finally realised the better, simpler, obvious solution.
->
->Rather than changing the parameter structure, we should move the
->ioctl()s so they're on the group fd instead of the container fd.
->
->Obviously we need to keep it on the container fd for backwards compat,
->but I think we should just error out if there is more than one group
->in the container there.
->
->We will need a new capability too, obviously.  VFIO_EEH_GROUPFD maybe?
->
+On Tue, Sep 22, 2015 at 08:25:40AM -0700, Paul E. McKenney wrote:
+> On Tue, Sep 22, 2015 at 07:37:04AM +0800, Boqun Feng wrote:
+> > On Tue, Sep 22, 2015 at 07:26:56AM +0800, Boqun Feng wrote:
+> > > On Mon, Sep 21, 2015 at 11:24:27PM +0100, Will Deacon wrote:
+> > > > Hi Boqun,
+> > > >=20
+> > > > On Sun, Sep 20, 2015 at 09:23:03AM +0100, Boqun Feng wrote:
+> > > > > On Sat, Sep 19, 2015 at 11:33:10PM +0800, Boqun Feng wrote:
+> > > > > > On Fri, Sep 18, 2015 at 05:59:02PM +0100, Will Deacon wrote:
+> > > > > > > On Wed, Sep 16, 2015 at 04:49:31PM +0100, Boqun Feng wrote:
+> > > > > > > > On powerpc, we don't need a general memory barrier to achie=
+ve acquire and
+> > > > > > > > release semantics, so __atomic_op_{acquire,release} can be =
+implemented
+> > > > > > > > using "lwsync" and "isync".
+> > > > > > >=20
+> > > > > > > I'm assuming isync+ctrl isn't transitive, so we need to get t=
+o the bottom
+> > > > > >=20
+> > > > > > Actually the transitivity is still guaranteed here, I think ;-)
+> > > >=20
+> > > > The litmus test I'm thinking of is:
+> > > >=20
+> > > >=20
+> > > > {
+> > > > 0:r2=3Dx;
+> > > > 1:r2=3Dx; 1:r5=3Dz;
+> > > > 2:r2=3Dz; 2:r4=3Dx;
+> > > > }
+> > > >  P0           | P1            | P2           ;
+> > > >  li r1,1      | lwz r1,0(r2)  | lwz r1,0(r2) ;
+> > > >  stw r1,0(r2) | cmpw r1,r1    | cmpw r1,r1   ;
+> > > >               | beq LC00      | beq  LC01    ;
+> > > >               | LC00:         | LC01:        ;
+> > > >               | isync         | isync        ;
+> > > >               | li r4,1       | lwz r3,0(r4) ;
+> > > >               | stw r4,0(r5)  |              ;
+> > > > exists
+> > > > (1:r1=3D1 /\ 2:r1=3D1 /\ 2:r3=3D0)
+> > > >=20
+> > > >=20
+> > > > Which appears to be allowed. I don't think you need to worry about =
+backwards
+> > > > branches for the ctrl+isync construction (none of the current examp=
+le do,
+> > > > afaict).
+> > > >=20
+> > >=20
+> > > Yes.. my care of backwards branches is not quite related to the topic=
+, I
+> > > concerned that mostly because my test is using atomic operation, and I
+> > > just want to test the exact asm code.
+> > >=20
+> > > > Anyway, all the problematic cases seem to arise when we start mixing
+> > > > ACQUIRE/RELEASE accesses with relaxed accesses (i.e. where an acces=
+s from
+> > > > one group reads from an access in the other group). It would be sim=
+plest
+> > > > to say that this doesn't provide any transitivity guarantees, and t=
+hat
+> > > > an ACQUIRE must always read from a RELEASE if transitivity is requi=
+red.
+> > > >=20
+> > >=20
+> > > Agreed. RELEASE alone doesn't provide transitivity and transitivity is
+> >           ^^^^^^^
+> > This should be ACQUIRE...
+> >=20
+> > > guaranteed only if an ACQUIRE read from a RELEASE. That's exactly the
+> > > direction which the link (https://lkml.org/lkml/2015/9/15/836) is
+> > > heading to. So I think we are fine here to use ctrl+isync here, right?
+>=20
+> We are going to have to err on the side of strictness, that is, having
+> the documentation place more requirements on the developer than the union
+> of the hardware does.  Besides, I haven't heard any recent complaints
+> that memory-barriers.txt is too simple.  ;-)
+>=20
 
-Yes, I agree to route EEH ioctl commands to group fd since EEH ioctl
-commands operate on granularity of PE (IOMMU group). However, it requires
-to extend current code to support that. I'm not sure if it's good idea as
-I explained to David through IRC. Waiting for Alex to judge:
+Agreed ;-)
 
-- Adding a callback to "struct vfio_group": platform_ioctl();
-- When attaching the group to platform, this function is initialized;
-- The EEH ioctl commands are routed to platform_ioctl() in vfio_group_fops_unl_ioctl()
+For atomic operations, using isync in ACQUIRE operations does gaurantee
+that a pure RELEASE/ACQUIRE chain provides transitivity. So, again, I
+think we are fine here to use isync in ACQUIRE atomic operations,
+unless you think we need to be more strict, i.e, making ACQUIRE itself
+provide transitivy?
 
-Thanks,
-Gavin
+Regards,
+Boqun
 
->-- 
->David Gibson			| I'll have my music baroque, and my code
->david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
->				| _way_ _around_!
->http://www.ozlabs.org/~dgibson
+--rJwd6BRFiFCcLxzm
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWAe1PAAoJEEl56MO1B/q4pzsIAIbwTkBihCuuZXHm7rJt05tS
+9ZB35n4mEeIaRK8rqJ+r12GChB4uSKX5XMcshN6Hd/49kXKyK78vxY/7xBmrziK7
+WvgDJoI0CiXuUSGF3Uo6wW6d07G7kuAU4QHmAXNrLc1sGuPv5ky6VmwavC1bmboJ
+TlD34E4MXdTw5wu3p1bqKBeVWafP03pQ0Rze1rTg2FpW+kXmNIhpM4vawaMXbtvH
+cJPe6vr3m63rYNuF0+iG1NsBvDVl1h6KBKaZj2DcLuJdvGyRsBAFfTijc9aOIiH0
+uTpAh/DPmcTFrOeCp4j1KVWlm/HLlEsE0Qs2KSG0931xjie09xktsvFQlg92uxM=
+=nr2I
+-----END PGP SIGNATURE-----
+
+--rJwd6BRFiFCcLxzm--
