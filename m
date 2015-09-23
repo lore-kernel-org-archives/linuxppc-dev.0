@@ -1,26 +1,34 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1273D1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 16:45:41 +1000 (AEST)
-Received: from mail-pa0-x241.google.com (mail-pa0-x241.google.com
- [IPv6:2607:f8b0:400e:c03::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F02D31401AF
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Sep 2015 16:45:39 +1000 (AEST)
-Received: by pacgz1 with SMTP id gz1so3724435pac.2
- for <linuxppc-dev@ozlabs.org>; Tue, 22 Sep 2015 23:45:38 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, benh@kernel.crashing.org, mikey@neuling.org,
- imunsie@au.ibm.com, andrew.donnellan@au1.ibm.com,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- Manoj Kumar <kumarmn@us.ibm.com>, Daniel Axtens <dja@axtens.net>
-Subject: [PATCH] powerpc/powernv: Panic on unhandled Machine Check
-Date: Wed, 23 Sep 2015 16:41:48 +1000
-Message-Id: <1442990508-10199-1-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 033481A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 18:01:17 +1000 (AEST)
+Date: Wed, 23 Sep 2015 10:00:24 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+cc: Scott Wood <scottwood@freescale.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Hongtao Jia <hongtao.jia@freescale.com>,
+ Marc Zyngier <marc.zyngier@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead
+ of redundant mpic_irq_set_wake
+In-Reply-To: <SN1PR0301MB1616CF7415825908030E0C829D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+Message-ID: <alpine.DEB.2.11.1509230958300.4371@nanos>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+ <1442965805.19102.303.camel@freescale.com>
+ <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+ <alpine.DEB.2.11.1509230545580.5606@nanos>
+ <SN1PR0301MB1616CF7415825908030E0C829D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,97 +38,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All unrecovered machine check errors on PowerNV should cause an
-immediate panic. There are 2 reasons that this is the right policy:
-it's not safe to continue, and we're already trying to reboot.
+On Wed, 23 Sep 2015, Wang Dongsheng wrote:
+> > -----Original Message-----
+> > From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+> > owner@vger.kernel.org] On Behalf Of Thomas Gleixner
+> > Sent: Wednesday, September 23, 2015 11:49 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: Wood Scott-B07421; Sudeep Holla; linux-pm@vger.kernel.org; linux-
+> > kernel@vger.kernel.org; Rafael J. Wysocki; Benjamin Herrenschmidt; Paul
+> > Mackerras; Michael Ellerman; Jia Hongtao-B38951; Marc Zyngier; linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead of
+> > redundant mpic_irq_set_wake
 
-Firstly, if we go through the recovery process and do not successfully
-recover, we can't be sure about the state of the machine, and it is
-not safe to recover and proceed.
+Can you please fix you mail client to get rid of that silly copy of
+the mail header?
 
-Linux knows about the following sources of Machine Check Errors:
-- Uncorrectable Errors (UE)
-- Effective - Real Address Translation (ERAT)
-- Segment Lookaside Buffer (SLB)
-- Translation Lookaside Buffer (TLB)
-- Unknown/Unrecognised
+> > On Wed, 23 Sep 2015, Wang Dongsheng wrote:
+> > > > On Mon, 2015-09-21 at 16:47 +0100, Sudeep Holla wrote:
+> > > > > mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets IRQF_NO_SUSPEND
+> > > > > flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
+> > > > > is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
+> > > > > as it doesn't guarantee wakeup for that interrupt.
+> > > > >
+> > >
+> > > Non-freescale return -ENXIO, is there any issue? If non-freescale
+> > > platform does not support it, but IPs still use
+> > > enable/disable_irq_wake, we should return a error number.
+> > 
+> > You can just set IRQCHIP_SKIP_SET_WAKE for FSL chips and not for the
+> > others.
+> > 
+> > > @Scott:
+> > > If set this flag we cannot keep a irq as a wakeup source when system going to
+> > > SUSPEND or MEM.
+> > >
+> > > irq_set_wake() means we can set this irq as a wake source.
+> > > IRQCHIP_SKIP_SET_WAKE is ignore irq_set_wake() feature.
+> > 
+> > Nonsense. IRQCHIP_SKIP_SET_WAKE merily tells the core not to bail on
+> > !chip->irq_set_wake(), but its still marking the interrupt as wakeup
+> > source and therefor not masking it on suspend.
+> > 
+> 
+> Sorry, I just check irq_set_irq_wake() code, right, IRQCHIP_SKIP_SET_WAKE also can
+> going to irqd_set to mask IRQD_WAKEUP_STATE.
+> 
+> Yes, this flag just skip the irq_set_wake() not this feature.
 
-In the SLB, TLB and ERAT cases, we can further categorise these as
-parity errors, multihit errors or unknown/unrecognised.
+And just for completeness. That commit 5ff04b7287d87c 'powerpc/mpic:
+add irq_set_wake support' is another example of trainwreck engineering.
 
-We can handle SLB errors by flushing and reloading the SLB. We can
-handle TLB and ERAT multihit errors by flushing the TLB. (It appears
-we may not handle TLB and ERAT parity errors: I will investigate
-further and send a followup patch if appropriate.)
+    desc->action->flags |= IRQF_NO_SUSPEND;
 
-This leaves us with uncorrectable errors. Uncorrectable errors are
-usually the result of ECC memory detecting an error that it cannot
-correct, but they also crop up in the context of PCI cards failing
-during DMA writes, and during CAPI error events.
+This is not only horribly avoiding any of the existing APIs, it's also
+broken as hell. desc->action can be NULL when that is called.
 
-There are several types of UE, and there are 3 places a UE can occur:
-Skiboot, the kernel, and userspace. For Skiboot errors, we have the
-facility to make some recoverable. For userspace, we can simply kill
-(SIGBUS) the affected process. We have no meaningful way to deal with
-UEs in kernel space or in unrecoverable sections of Skiboot.
+It seems fleascale is hell bent to fiddle with the guts of the core
+code mindlessly. See commit c866cda47f2c
 
-Currently, these unrecovered UEs fall through to
-machine_check_expection() in traps.c, which calls die(), which OOPSes
-and sends SIGBUS to the process. This sometimes allows us to stumble
-onwards. For example we've seen UEs kill the kernel eehd and
-khugepaged. However, the process killed could have held a lock, or it
-could have been a more important process, etc: we can no longer make
-any assertions about the state of the machine. Similarly if we see a
-UE in skiboot (and again we've seen this happen), we're not in a
-position where we can make any assertions about the state of the
-machine.
+Yours grumpy
 
-Likewise, for unknown or unrecognised errors, we're not able to say
-anything about the state of the machine.
-
-Therefore, if we have an unrecovered MCE, the most appropriate thing
-to do is to panic.
-
-The second reason is that since e784b6499d9c ("powerpc/powernv: Invoke
-opal_cec_reboot2() on unrecoverable machine check errors."), we
-attempt a special OPAL reboot on an unhandled MCE. This is so the
-hardware can record error data for later debugging.
-
-The comments in that commit assert that we are heading down the panic
-path anyway. At the moment this is not always true. With UEs in kernel
-space, for instance, they are marked as recoverable by the hardware,
-so if the attempt to reboot failed (e.g. old Skiboot), we wouldn't
-panic() but would simply die() and OOPS. It doesn't make sense to be
-staggering on if we've just tried to reboot: we should panic().
-
-Explicitly panic() on unrecovered MCEs on PowerNV.
-Update the comments appropriately.
-
-This fixes some hangs following EEH events on cxlflash setups.
-
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/platforms/powernv/opal.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 230f3a7cdea4..4296d55e88f3 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -487,9 +487,12 @@ int opal_machine_check(struct pt_regs *regs)
- 	 *    PRD component would have already got notified about this
- 	 *    error through other channels.
- 	 *
--	 * In any case, let us just fall through. We anyway heading
--	 * down to panic path.
-+	 * If hardware marked this as an unrecoverable MCE, we are
-+	 * going to panic anyway. Even if it didn't, it's not safe to
-+	 * continue at this point, so we should explicitly panic.
- 	 */
-+
-+	panic("PowerNV Unrecovered Machine Check");
- 	return 0;
- }
- 
--- 
-2.5.0
+      tglx
