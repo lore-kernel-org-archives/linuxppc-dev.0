@@ -1,19 +1,25 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-f170.google.com (mail-yk0-f170.google.com
+ [209.85.160.170])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EDDBA1A0212
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 01:39:57 +1000 (AEST)
-Message-ID: <5602BFEE.7060708@freescale.com>
-Date: Wed, 23 Sep 2015 18:06:22 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BDEF1A0295
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 04:21:59 +1000 (AEST)
+Received: by ykdt18 with SMTP id t18so50248155ykd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 11:21:57 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-CC: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>, Scott Wood
- <scottwood@freescale.com>, <kvm-ppc@vger.kernel.org>
-Subject: [PATCH] powerpc/e6500: add TMCFG0 register definition
-Content-Type: text/plain; charset="ISO-8859-1"
+In-Reply-To: <1442988302.31273.81.camel@neuling.org>
+References: <1442988302.31273.81.camel@neuling.org>
+Date: Wed, 23 Sep 2015 21:21:57 +0300
+Message-ID: <CAOJe8K3x56V1PNjo=TNMthqbPV1q_tKNBK6QvT=yCofR=qyt3g@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/vdso: Avoid link stack corruption in
+ __get_datapage()
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Michael Neuling <mikey@neuling.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>, benh <benh@kernel.crashing.org>,
+ Aaron Sawdey <sawdey@us.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>, Steve Munroe <sjmunroe@us.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +29,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The register is not currently used in the base kernel
-but will be in a forthcoming kvm patch.
+On 9/23/15, Michael Neuling <mikey@neuling.org> wrote:
+> The 32 and 64 bit variants of __get_datapage() use a "bcl; mflr" to
+> determine the loaded address of the VDSO. The current version of these
+> attempt to use the special bcl variant which avoids pushing to the
+> link stack.
+>
+> Unfortunately it uses bcl+8 rather than the required bcl+4. Hence the
+> current code results in link stack corruption and the resulting
+> performance degradation (due to branch mis-prediction).
+>
+> This patch moves us to bcl+4 by moving __kernel_datapage_offset
+> out of __get_datapage().
+>
+> With this patch, running the below benchmark we get a bump in
+> performance on POWER8 for gettimeofday() (which uses
+> __get_datapage()).
+>
+> 64bit gets ~4% improvement:
+>   Without patch:
+>     # ./tb
+>     time = 0.180321
+>   With patch:
+>     # ./tb
+>     time = 0.187408
+>
+> 32bit gets ~9% improvement:
+>   Without patch:
+>     # ./tb
+>     time = 0.276551
+>   With patch:
+>     # ./tb
+>     time = 0.252767
 
-Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
----
- arch/powerpc/include/asm/reg_booke.h | 6 ++++++
- 1 file changed, 6 insertions(+)
+I've got the following results on POWER7 64bit
+without the patch:
+# ./tb
+time = 0.263337
+# ./tb
+time = 0.251273
+# ./tb
+time = 0.258453
+# ./tb
+time = 0.260189
 
-diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
-index 16547ef..2fef74b 100644
---- a/arch/powerpc/include/asm/reg_booke.h
-+++ b/arch/powerpc/include/asm/reg_booke.h
-@@ -742,6 +742,12 @@
- #define MMUBE1_VBE4		0x00000002
- #define MMUBE1_VBE5		0x00000001
- 
-+#define TMRN_TMCFG0      16	/* Thread Management Configuration Register 0 */
-+#define TMRN_TMCFG0_NPRIBITS       0x003f0000 /* Bits of thread priority */
-+#define TMRN_TMCFG0_NPRIBITS_SHIFT 16
-+#define TMRN_TMCFG0_NATHRD         0x00003f00 /* Number of active threads */
-+#define TMRN_TMCFG0_NATHRD_SHIFT   8
-+#define TMRN_TMCFG0_NTHRD          0x0000003f /* Number of threads */
- #define TMRN_IMSR0	0x120	/* Initial MSR Register 0 (e6500) */
- #define TMRN_IMSR1	0x121	/* Initial MSR Register 1 (e6500) */
- #define TMRN_INIA0	0x140	/* Next Instruction Address Register 0 */
--- 
-1.8.3.1
+with the patch:
+# ./tb
+time = 0.241517
+# ./tb
+time = 0.241973
+# ./tb
+time = 0.239365
+# ./tb
+time = 0.240109
+
+
+
+>
+> Testcase tb.c (stolen from Anton)
+>   /* gcc -O2 tb.c -o tb */
+>   #include <sys/time.h>
+>   #include <stdio.h>
+>
+>   int main()
+>   {
+> 	  int i;
+>
+> 	  struct timeval tv_start, tv_end;
+>
+> 	  gettimeofday(&tv_start, NULL);
+>
+> 	  for(i = 0; i < 10000000; i++) {
+> 		  gettimeofday(&tv_end, NULL);
+> 	  }
+>
+> 	  printf("time = %.6f\n", tv_end.tv_sec - tv_start.tv_sec + (tv_end.tv_usec
+> - tv_start.tv_usec) * 1e-6);
+>
+> 	  return 0;
+>   }
+>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Reported-by: Aaron Sawdey <sawdey@us.ibm.com>
+>
+> diff --git a/arch/powerpc/kernel/vdso32/datapage.S
+> b/arch/powerpc/kernel/vdso32/datapage.S
+> index dc21e89..59cf5f4 100644
+> --- a/arch/powerpc/kernel/vdso32/datapage.S
+> +++ b/arch/powerpc/kernel/vdso32/datapage.S
+> @@ -16,6 +16,10 @@
+>  #include <asm/vdso.h>
+>
+>  	.text
+> +	.global	__kernel_datapage_offset;
+> +__kernel_datapage_offset:
+> +	.long	0
+> +
+>  V_FUNCTION_BEGIN(__get_datapage)
+>    .cfi_startproc
+>  	/* We don't want that exposed or overridable as we want other objects
+> @@ -27,13 +31,11 @@ V_FUNCTION_BEGIN(__get_datapage)
+>  	mflr	r0
+>    .cfi_register lr,r0
+>
+> -	bcl	20,31,1f
+> -	.global	__kernel_datapage_offset;
+> -__kernel_datapage_offset:
+> -	.long	0
+> -1:
+> +	bcl	20,31,data_page_branch
+> +data_page_branch:
+>  	mflr	r3
+>  	mtlr	r0
+> +	addi	r3, r3, __kernel_datapage_offset-data_page_branch
+>  	lwz	r0,0(r3)
+>  	add	r3,r0,r3
+>  	blr
+> diff --git a/arch/powerpc/kernel/vdso64/datapage.S
+> b/arch/powerpc/kernel/vdso64/datapage.S
+> index 79796de..2f01c4a 100644
+> --- a/arch/powerpc/kernel/vdso64/datapage.S
+> +++ b/arch/powerpc/kernel/vdso64/datapage.S
+> @@ -16,6 +16,10 @@
+>  #include <asm/vdso.h>
+>
+>  	.text
+> +.global	__kernel_datapage_offset;
+> +__kernel_datapage_offset:
+> +	.long	0
+> +
+>  V_FUNCTION_BEGIN(__get_datapage)
+>    .cfi_startproc
+>  	/* We don't want that exposed or overridable as we want other objects
+> @@ -27,13 +31,11 @@ V_FUNCTION_BEGIN(__get_datapage)
+>  	mflr	r0
+>    .cfi_register lr,r0
+>
+> -	bcl	20,31,1f
+> -	.global	__kernel_datapage_offset;
+> -__kernel_datapage_offset:
+> -	.long	0
+> -1:
+> +	bcl	20,31,data_page_branch
+> +data_page_branch:
+>  	mflr	r3
+>  	mtlr	r0
+> +	addi	r3, r3, __kernel_datapage_offset-data_page_branch
+>  	lwz	r0,0(r3)
+>  	add	r3,r0,r3
+>  	blr
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
