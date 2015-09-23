@@ -1,25 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 618B51A0210
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 07:38:04 +1000 (AEST)
-Message-ID: <1443044256.3100.51.camel@kernel.crashing.org>
-Subject: Re: [PATCH 18/31] powerpc/mm: Increase the pte frag size.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 24 Sep 2015 07:37:36 +1000
-In-Reply-To: <878u80gf8q.fsf@linux.vnet.ibm.com>
-References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442817658-2588-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442823285.2819.1.camel@kernel.crashing.org>
- <87mvwgduuj.fsf@linux.vnet.ibm.com>
- <1442833578.11901.2.camel@kernel.crashing.org>
- <878u80gf8q.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5694B1A01EE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 08:16:44 +1000 (AEST)
+In-Reply-To: <560275FC.60104@suse.com>
+References: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
+ <560275FC.60104@suse.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=UTF-8
+Subject: Re: [RFC PATCH 1/2] scripts/kconfig/Makefile: Allow KBUILD_DEFCONFIG
+ to be a target
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 24 Sep 2015 08:16:37 +1000
+To: Michal Marek <mmarek@suse.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ yann.morin.1998@free.fr
+Message-ID: <FE248B88-D584-4E66-A59F-B2A2C254000C@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-21 at 17:23 +0530, Aneesh Kumar K.V wrote:
-> The page that contain pte entries. Or the last level of the linux page
-> table. or we could call them pte fragments. We need to allocate one
-> full page at lowest level, because we want to use split ptlock. Now
-> for keeping the pte_t entries, we will just be using 2K space. Rest of
-> the space can be reused. We did that in commit 
-> 5c1f6ee9a31cbdac90bbb8ae1ba4475031ac74b4 . Now all those pmd entries
-> that have pte page (pte fragments) coming from the same 64K page
-> will also end up sharing the same ptlock.
 
-Ok, I'm still a bit confused between what we do today vs. what we do
-after your patch, can you provide a clear description (maybe with
-ASCII art) of what is used, how, an how much is wasted overall when
-not using subpages ?
 
-> >
-> > In any case, shouldn't we consider something more like what we do for
-> > subpage protection and just segregate the 4k stuff in a completely
-> > separate tree which we can allocate on-demand so that we don't allocate
-> > any of it if there is no demotion ?
-> >
-> 
-> We could definitely try that. That would mean another set of memory
-> allocation only for 4K and I was not sure we want that. For
-> example current subpage protection code path is rarely used and we may
-> not really be able to find out if we break it.
+On 23 September 2015 19:50:52 GMT+10:00, Michal Marek <mmarek@suse.com> wrote:
+>On 2015-09-23 07:40, Michael Ellerman wrote:
+>> +else ifneq ($(wildcard
+>arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
+>>  	@$(kecho) "*** Default configuration is based on
+>'$(KBUILD_DEFCONFIG)'"
+>>  	$(Q)$< $(silent)
+>--defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
+>> +else
+>> +	@$(kecho) "*** Default configuration is based on target
+>'$(KBUILD_DEFCONFIG)'"
+>> +	$(Q)$(MAKE) -f $(srctree)/Makefile $(KBUILD_DEFCONFIG)
+>>  endif
+>
+>What is the anticipated usage of this? The patch is not needed to make
+>
+>  make ppc64le_defconfig
+>
+>work with the second patch. If it was, this would create a loop anyway.
 
-That's what test suites are for, we should write a test case :)
+The idea is to make 'make defconfig' work when KBUILD_DEFCONFIG is ppc64le_defconfig (which happens for us when uname returns ppc64le) and additionally when ppc64le_defconfig is not a real file.
 
-Cheers,
-Ben.
+It doesn't work currently, but does with these two patches applied.
+
+cheers
+
+-- 
+Sent from my Android phone with K-9 Mail. Please excuse my brevity.
