@@ -1,24 +1,32 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CD921A001E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 13:24:31 +1000 (AEST)
-Received: by pacbt3 with SMTP id bt3so9036715pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Sep 2015 20:24:29 -0700 (PDT)
-Message-ID: <1442978466.2081.1.camel@axtens.net>
-Subject: Re: [PATCH] cxl: Fix lockdep warning while creating afu_err_buff
- attribute
-From: Daniel Axtens <dja@axtens.net>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- mikey@neuling.org
-Date: Wed, 23 Sep 2015 13:21:06 +1000
-In-Reply-To: <1442977679-4468-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-References: <1442977679-4468-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 521F41A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 13:50:04 +1000 (AEST)
+Date: Wed, 23 Sep 2015 05:49:10 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+cc: Scott Wood <scottwood@freescale.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Hongtao Jia <hongtao.jia@freescale.com>,
+ Marc Zyngier <marc.zyngier@arm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead
+ of redundant mpic_irq_set_wake
+In-Reply-To: <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+Message-ID: <alpine.DEB.2.11.1509230545580.5606@nanos>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+ <1442965805.19102.303.camel@freescale.com>
+ <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+On Wed, 23 Sep 2015, Wang Dongsheng wrote:
+> > On Mon, 2015-09-21 at 16:47 +0100, Sudeep Holla wrote:
+> > > mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets IRQF_NO_SUSPEND
+> > > flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
+> > > is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
+> > > as it doesn't guarantee wakeup for that interrupt.
+> > >
+> 
+> Non-freescale return -ENXIO, is there any issue? If non-freescale
+> platform does not support it, but IPs still use
+> enable/disable_irq_wake, we should return a error number.
 
-Thanks Vaibhav!
+You can just set IRQCHIP_SKIP_SET_WAKE for FSL chips and not for the
+others.
 
-On Wed, 2015-09-23 at 08:37 +0530, Vaibhav Jain wrote:
-> Presently a lockdep warning is reported during creation of afu_err_buff
-> bin_attribute for the afu. This is caused due to the variable attr.key
-> not pointing to a static class key, hence the function lockdep_init_map
-> reports this warning:
+> @Scott:
+> If set this flag we cannot keep a irq as a wakeup source when system going to
+> SUSPEND or MEM.
 > 
->  BUG: key <some-address> not in .data!
-> 
-> The patch fixes this issue by calling sysfs_attr_init on the
-> attr_eb.attr structure before populating it with the afu_err_buff file
-> details. This will populate the attr.key variable with a static class
-> key so that lockdep_init_map stops complaining about the lockdep key not
-> being static.
-> 
-> Reported-by: Daniel Axtens <dja@axtens.net>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-> ---
->  drivers/misc/cxl/sysfs.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-> index 25868c2..02006f7 100644
-> --- a/drivers/misc/cxl/sysfs.c
-> +++ b/drivers/misc/cxl/sysfs.c
-> @@ -592,6 +592,8 @@ int cxl_sysfs_afu_add(struct cxl_afu *afu)
->  
->  	/* conditionally create the add the binary file for error info buffer */
->  	if (afu->eb_len) {
-> +		sysfs_attr_init(&afu->attr_eb.attr);
-> +
->  		afu->attr_eb.attr.name = "afu_err_buff";
->  		afu->attr_eb.attr.mode = S_IRUGO;
->  		afu->attr_eb.size = afu->eb_len;
+> irq_set_wake() means we can set this irq as a wake source.
+> IRQCHIP_SKIP_SET_WAKE is ignore irq_set_wake() feature.
 
--- 
-Regards,
-Daniel
+Nonsense. IRQCHIP_SKIP_SET_WAKE merily tells the core not to bail on
+!chip->irq_set_wake(), but its still marking the interrupt as wakeup
+source and therefor not masking it on suspend.
+
+IRQF_NO_SUSPEND is the wrong tool. End of story.
+
+Thanks,
+
+	tglx
