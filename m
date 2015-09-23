@@ -1,25 +1,42 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f170.google.com (mail-yk0-f170.google.com
- [209.85.160.170])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9BDEF1A0295
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 04:21:59 +1000 (AEST)
-Received: by ykdt18 with SMTP id t18so50248155ykd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 11:21:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 758AA1A01F3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 05:10:08 +1000 (AEST)
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Wed, 23 Sep 2015 15:10:05 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A9BADC90048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 15:01:04 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8NJA0ux52625586
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 19:10:01 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8NJ9xk7013097
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 15:10:00 -0400
+Subject: Re: [PATCH v2 26/30] cxlflash: Fix to prevent EEH recovery failure
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1442439124-50338-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Message-ID: <5602F901.1080508@linux.vnet.ibm.com>
+Date: Wed, 23 Sep 2015 14:09:53 -0500
 MIME-Version: 1.0
-In-Reply-To: <1442988302.31273.81.camel@neuling.org>
-References: <1442988302.31273.81.camel@neuling.org>
-Date: Wed, 23 Sep 2015 21:21:57 +0300
-Message-ID: <CAOJe8K3x56V1PNjo=TNMthqbPV1q_tKNBK6QvT=yCofR=qyt3g@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/vdso: Avoid link stack corruption in
- __get_datapage()
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Michael Ellerman <michael@ellerman.id.au>, benh <benh@kernel.crashing.org>,
- Aaron Sawdey <sawdey@us.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Steve Munroe <sjmunroe@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <1442439124-50338-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,158 +46,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/23/15, Michael Neuling <mikey@neuling.org> wrote:
-> The 32 and 64 bit variants of __get_datapage() use a "bcl; mflr" to
-> determine the loaded address of the VDSO. The current version of these
-> attempt to use the special bcl variant which avoids pushing to the
-> link stack.
->
-> Unfortunately it uses bcl+8 rather than the required bcl+4. Hence the
-> current code results in link stack corruption and the resulting
-> performance degradation (due to branch mis-prediction).
->
-> This patch moves us to bcl+4 by moving __kernel_datapage_offset
-> out of __get_datapage().
->
-> With this patch, running the below benchmark we get a bump in
-> performance on POWER8 for gettimeofday() (which uses
-> __get_datapage()).
->
-> 64bit gets ~4% improvement:
->   Without patch:
->     # ./tb
->     time = 0.180321
->   With patch:
->     # ./tb
->     time = 0.187408
->
-> 32bit gets ~9% improvement:
->   Without patch:
->     # ./tb
->     time = 0.276551
->   With patch:
->     # ./tb
->     time = 0.252767
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 
-I've got the following results on POWER7 64bit
-without the patch:
-# ./tb
-time = 0.263337
-# ./tb
-time = 0.251273
-# ./tb
-time = 0.258453
-# ./tb
-time = 0.260189
-
-with the patch:
-# ./tb
-time = 0.241517
-# ./tb
-time = 0.241973
-# ./tb
-time = 0.239365
-# ./tb
-time = 0.240109
-
-
-
->
-> Testcase tb.c (stolen from Anton)
->   /* gcc -O2 tb.c -o tb */
->   #include <sys/time.h>
->   #include <stdio.h>
->
->   int main()
->   {
-> 	  int i;
->
-> 	  struct timeval tv_start, tv_end;
->
-> 	  gettimeofday(&tv_start, NULL);
->
-> 	  for(i = 0; i < 10000000; i++) {
-> 		  gettimeofday(&tv_end, NULL);
-> 	  }
->
-> 	  printf("time = %.6f\n", tv_end.tv_sec - tv_start.tv_sec + (tv_end.tv_usec
-> - tv_start.tv_usec) * 1e-6);
->
-> 	  return 0;
->   }
->
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Reported-by: Aaron Sawdey <sawdey@us.ibm.com>
->
-> diff --git a/arch/powerpc/kernel/vdso32/datapage.S
-> b/arch/powerpc/kernel/vdso32/datapage.S
-> index dc21e89..59cf5f4 100644
-> --- a/arch/powerpc/kernel/vdso32/datapage.S
-> +++ b/arch/powerpc/kernel/vdso32/datapage.S
-> @@ -16,6 +16,10 @@
->  #include <asm/vdso.h>
->
->  	.text
-> +	.global	__kernel_datapage_offset;
-> +__kernel_datapage_offset:
-> +	.long	0
-> +
->  V_FUNCTION_BEGIN(__get_datapage)
->    .cfi_startproc
->  	/* We don't want that exposed or overridable as we want other objects
-> @@ -27,13 +31,11 @@ V_FUNCTION_BEGIN(__get_datapage)
->  	mflr	r0
->    .cfi_register lr,r0
->
-> -	bcl	20,31,1f
-> -	.global	__kernel_datapage_offset;
-> -__kernel_datapage_offset:
-> -	.long	0
-> -1:
-> +	bcl	20,31,data_page_branch
-> +data_page_branch:
->  	mflr	r3
->  	mtlr	r0
-> +	addi	r3, r3, __kernel_datapage_offset-data_page_branch
->  	lwz	r0,0(r3)
->  	add	r3,r0,r3
->  	blr
-> diff --git a/arch/powerpc/kernel/vdso64/datapage.S
-> b/arch/powerpc/kernel/vdso64/datapage.S
-> index 79796de..2f01c4a 100644
-> --- a/arch/powerpc/kernel/vdso64/datapage.S
-> +++ b/arch/powerpc/kernel/vdso64/datapage.S
-> @@ -16,6 +16,10 @@
->  #include <asm/vdso.h>
->
->  	.text
-> +.global	__kernel_datapage_offset;
-> +__kernel_datapage_offset:
-> +	.long	0
-> +
->  V_FUNCTION_BEGIN(__get_datapage)
->    .cfi_startproc
->  	/* We don't want that exposed or overridable as we want other objects
-> @@ -27,13 +31,11 @@ V_FUNCTION_BEGIN(__get_datapage)
->  	mflr	r0
->    .cfi_register lr,r0
->
-> -	bcl	20,31,1f
-> -	.global	__kernel_datapage_offset;
-> -__kernel_datapage_offset:
-> -	.long	0
-> -1:
-> +	bcl	20,31,data_page_branch
-> +data_page_branch:
->  	mflr	r3
->  	mtlr	r0
-> +	addi	r3, r3, __kernel_datapage_offset-data_page_branch
->  	lwz	r0,0(r3)
->  	add	r3,r0,r3
->  	blr
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
