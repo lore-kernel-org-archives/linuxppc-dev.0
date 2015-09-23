@@ -1,42 +1,19 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Laurentiu.Tudor@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D39271A0205
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 01:05:07 +1000 (AEST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Wed, 23 Sep 2015 09:04:12 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id BCA073E40063
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:04:06 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8NF46rK9634052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 08:04:06 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8NF45xd024002
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Sep 2015 09:04:06 -0600
-Subject: Re: [PATCH v2 25/30] cxlflash: Fix MMIO and endianness errors
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-References: <1442438635-49044-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1442439121-50300-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Message-ID: <5602BF5C.8060106@linux.vnet.ibm.com>
-Date: Wed, 23 Sep 2015 10:03:56 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id EDDBA1A0212
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 01:39:57 +1000 (AEST)
+Message-ID: <5602BFEE.7060708@freescale.com>
+Date: Wed, 23 Sep 2015 18:06:22 +0300
+From: Laurentiu Tudor <b10716@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1442439121-50300-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+CC: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>, Scott Wood
+ <scottwood@freescale.com>, <kvm-ppc@vger.kernel.org>
+Subject: [PATCH] powerpc/e6500: add TMCFG0 register definition
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,9 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+The register is not currently used in the base kernel
+but will be in a forthcoming kvm patch.
 
+Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+---
+ arch/powerpc/include/asm/reg_booke.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 16547ef..2fef74b 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -742,6 +742,12 @@
+ #define MMUBE1_VBE4		0x00000002
+ #define MMUBE1_VBE5		0x00000001
+ 
++#define TMRN_TMCFG0      16	/* Thread Management Configuration Register 0 */
++#define TMRN_TMCFG0_NPRIBITS       0x003f0000 /* Bits of thread priority */
++#define TMRN_TMCFG0_NPRIBITS_SHIFT 16
++#define TMRN_TMCFG0_NATHRD         0x00003f00 /* Number of active threads */
++#define TMRN_TMCFG0_NATHRD_SHIFT   8
++#define TMRN_TMCFG0_NTHRD          0x0000003f /* Number of threads */
+ #define TMRN_IMSR0	0x120	/* Initial MSR Register 0 (e6500) */
+ #define TMRN_IMSR1	0x121	/* Initial MSR Register 1 (e6500) */
+ #define TMRN_INIA0	0x140	/* Next Instruction Address Register 0 */
 -- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+1.8.3.1
