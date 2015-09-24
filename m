@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B3FB1A0A40
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:38:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A142D1A035E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:38:44 +1000 (AEST)
 Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 13:38:36 -0600
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A4D976E804D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:30:16 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8OJcXIw59506728
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 19:38:33 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8OJcV5P023014
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:38:32 -0400
+ Thu, 24 Sep 2015 15:38:41 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 0898B6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:30:21 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8OJcb1556426604
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 19:38:37 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8OJcavt004839
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:38:36 -0400
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,9 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v3 06/32] cxlflash: Fix to avoid sizeof(bool)
-Date: Thu, 24 Sep 2015 14:37:57 -0500
-Message-Id: <1443123477-16732-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v3 07/32] cxlflash: Fix context encode mask width
+Date: Thu, 24 Sep 2015 14:38:01 -0500
+Message-Id: <1443123481-16770-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,42 +45,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Using sizeof(bool) is considered poor form for various reasons and
-sparse warns us of that. Correct by changing type from bool to u8.
+The context encode mask covers more than 32-bits, making it
+a long integer. This should be noted by appending the ULL
+width suffix to the mask.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/superpipe.c | 2 +-
  drivers/scsi/cxlflash/superpipe.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-index ffa68cc..28aa9d9 100644
---- a/drivers/scsi/cxlflash/superpipe.c
-+++ b/drivers/scsi/cxlflash/superpipe.c
-@@ -737,7 +737,7 @@ static struct ctx_info *create_context(struct cxlflash_cfg *cfg,
- 	struct afu *afu = cfg->afu;
- 	struct ctx_info *ctxi = NULL;
- 	struct llun_info **lli = NULL;
--	bool *ws = NULL;
-+	u8 *ws = NULL;
- 	struct sisl_rht_entry *rhte;
- 
- 	ctxi = kzalloc(sizeof(*ctxi), GFP_KERNEL);
 diff --git a/drivers/scsi/cxlflash/superpipe.h b/drivers/scsi/cxlflash/superpipe.h
-index fffb179..72d53cf 100644
+index 72d53cf..7947091 100644
 --- a/drivers/scsi/cxlflash/superpipe.h
 +++ b/drivers/scsi/cxlflash/superpipe.h
-@@ -97,7 +97,7 @@ struct ctx_info {
- 	u32 rht_out;		/* Number of checked out RHT entries */
- 	u32 rht_perms;		/* User-defined permissions for RHT entries */
- 	struct llun_info **rht_lun;       /* Mapping of RHT entries to LUNs */
--	bool *rht_needs_ws;	/* User-desired write-same function per RHTE */
-+	u8 *rht_needs_ws;	/* User-desired write-same function per RHTE */
+@@ -87,7 +87,7 @@ enum ctx_ctrl {
+ 	CTX_CTRL_FILE		= (1 << 5)
+ };
  
- 	struct cxl_ioctl_start_work work;
- 	u64 ctxid;
+-#define ENCODE_CTXID(_ctx, _id)	(((((u64)_ctx) & 0xFFFFFFFF0) << 28) | _id)
++#define ENCODE_CTXID(_ctx, _id)	(((((u64)_ctx) & 0xFFFFFFFF0ULL) << 28) | _id)
+ #define DECODE_CTXID(_val)	(_val & 0xFFFFFFFF)
+ 
+ struct ctx_info {
 -- 
 2.1.0
