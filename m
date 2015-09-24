@@ -1,21 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 480BF1A0380
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 08:10:11 +1000 (AEST)
-Message-ID: <1443132592.32298.56.camel@freescale.com>
-Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
-From: Scott Wood <scottwood@freescale.com>
-To: Jia Hongtao <hongtao.jia@freescale.com>
-CC: <edubezval@gmail.com>, <linux-pm@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 24 Sep 2015 17:09:52 -0500
-In-Reply-To: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
-References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0A26D1A0D2D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 08:15:58 +1000 (AEST)
+Date: Thu, 24 Sep 2015 15:15:54 -0700 (PDT)
+Message-Id: <20150924.151554.619662567057050978.davem@davemloft.net>
+To: andrew@lunn.ch
+Cc: linux@arm.linux.org.uk, f.fainelli@gmail.com,
+ thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org,
+ sgoutham@cavium.com, rric@kernel.org, frowand.list@gmail.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, michal.simek@xilinx.com, netdev@vger.kernel.org,
+ soren.brinkmann@xilinx.com, isubramanian@apm.com, grant.likely@linaro.org,
+ leoli@freescale.com, kchudgar@apm.com, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v3 0/9] Phy, mdiobus, and netdev struct device fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20150924215731.GE20825@lunn.ch>
+References: <20150924191754.GC21513@n2100.arm.linux.org.uk>
+ <20150924215731.GE20825@lunn.ch>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,337 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-23 at 16:28 +0800, Jia Hongtao wrote:
-> This driver add thermal management support by enabling TMU (Thermal
-> Monitoring Unit) on QorIQ platform.
+From: Andrew Lunn <andrew@lunn.ch>
+Date: Thu, 24 Sep 2015 23:57:31 +0200
+
+> I built the FEC driver as a module, and it won't unload:
 > 
-> It's based on thermal of framework:
-> - Trip points defined in device tree.
-> - Cpufreq as cooling device registered in qoriq cpufreq driver.
-
-I don't see any cooling device registered in the qoriq cpufreq driver.  Is 
-this dependent on some other patch?
-
+>  kernel:unregister_netdevice: waiting for eth1 to become free. Usage count = 1
+> unregister_netdevice: waiting for eth1 to become free. Usage count = 1
 > 
-> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> ---
-> V3: Using thermal of framework.
+> i assume because DSA holds a reference. I've not tried a fully module
+> build, DSA has issues with that.
 > 
->  drivers/thermal/Kconfig         |  11 ++
->  drivers/thermal/Makefile        |   1 +
->  drivers/thermal/qoriq_thermal.c | 267 
-> ++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 279 insertions(+)
->  create mode 100644 drivers/thermal/qoriq_thermal.c
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 0390044..c91041b 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -180,6 +180,17 @@ config IMX_THERMAL
->         cpufreq is used as the cooling device to throttle CPUs when the
->         passive trip is crossed.
->  
-> +config QORIQ_THERMAL
-> +     tristate "Freescale QorIQ Thermal Monitoring Unit"
-> +     depends on CPU_THERMAL
-> +     depends on THERMAL_OF
-> +     default n
-> +     help
-> +       Enable thermal management based on Freescale QorIQ Thermal Monitoring
-> +       Unit (TMU). It supports one critical trip point and one passive trip
-> +       point. The cpufreq is used as the cooling device to throttle CPUs when
-> +       the passive trip is crossed.
+> Tested-by: Andrew Lunn <andrew@lunn.ch>
 
-"default n" is unnecessary -- n is already the default.
+So, is this a regression?
 
-Where is the interaction between this driver and cpufreq?
+Please don't provide a "Tested-by: " tag is you encounter a new
+problem which could have been introduced by the changes in question.
+That _REALLY_ screws everything up for me.
 
-> config SPEAR_THERMAL
->       bool "SPEAr thermal sensor driver"
->       depends on PLAT_SPEAR
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 26f1608..e55d703 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -33,6 +33,7 @@ obj-$(CONFIG_DOVE_THERMAL)          += dove_thermal.o
->  obj-$(CONFIG_DB8500_THERMAL) += db8500_thermal.o
->  obj-$(CONFIG_ARMADA_THERMAL) += armada_thermal.o
->  obj-$(CONFIG_IMX_THERMAL)    += imx_thermal.o
-> +obj-$(CONFIG_QORIQ_THERMAL)  += qoriq_thermal.o
->  obj-$(CONFIG_DB8500_CPUFREQ_COOLING) += db8500_cpufreq_cooling.o
->  obj-$(CONFIG_INTEL_POWERCLAMP)       += intel_powerclamp.o
->  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)   += x86_pkg_temp_thermal.o
-> diff --git a/drivers/thermal/qoriq_thermal.c 
-> b/drivers/thermal/qoriq_thermal.c
-> new file mode 100644
-> index 0000000..7c2a3261
-> --- /dev/null
-> +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -0,0 +1,267 @@
-> +/*
-> + * Copyright 2015 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
-> for
-> + * more details.
-> + *
-> + */
-> +
-> +/*
-> + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)
-> + */
-
-What does this comment mean?  This *is* the "Freescale QorIQ Thermal 
-Monitoring Unit" driver.
-
-> +#include <linux/cpufreq.h>
-
-What do you use from this header?
-
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/err.h>
-> +#include <linux/io.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/thermal.h>
-> +
-> +#include "thermal_core.h"
-> +
-> +#define SITES_MAX    16
-> +
-> +/*
-> + * QorIQ TMU Registers
-> + */
-> +struct qoriq_tmu_site_regs {
-> +     __be32 tritsr;          /* Immediate Temperature Site Register */
-> +     __be32 tratsr;          /* Average Temperature Site Register */
-> +     u8 res0[0x8];
-> +} __packed;
-> +
-> +struct qoriq_tmu_regs {
-> +     __be32 tmr;             /* Mode Register */
-> +#define TMR_DISABLE  0x0
-> +#define TMR_ME               0x80000000
-> +#define TMR_ALPF     0x0c000000
-> +#define TMR_MSITE    0x00008000      /* Core temperature site */
-> +#define TMR_ALL              (TMR_ME | TMR_ALPF | TMR_MSITE)
-> +     __be32 tsr;             /* Status Register */
-> +     __be32 tmtmir;          /* Temperature measurement interval Register */
-> +#define TMTMIR_DEFAULT       0x00000007
-> +     u8 res0[0x14];
-> +     __be32 tier;            /* Interrupt Enable Register */
-> +#define TIER_DISABLE 0x0
-> +     __be32 tidr;            /* Interrupt Detect Register */
-> +     __be32 tiscr;           /* Interrupt Site Capture Register */
-> +     __be32 ticscr;          /* Interrupt Critical Site Capture Register */
-> +     u8 res1[0x10];
-> +     __be32 tmhtcrh;         /* High Temperature Capture Register */
-> +     __be32 tmhtcrl;         /* Low Temperature Capture Register */
-> +     u8 res2[0x8];
-> +     __be32 tmhtitr;         /* High Temperature Immediate Threshold */
-> +     __be32 tmhtatr;         /* High Temperature Average Threshold */
-> +     __be32 tmhtactr;        /* High Temperature Average Crit Threshold */
-> +     u8 res3[0x24];
-> +     __be32 ttcfgr;          /* Temperature Configuration Register */
-> +     __be32 tscfgr;          /* Sensor Configuration Register */
-> +     u8 res4[0x78];
-> +     struct qoriq_tmu_site_regs site[SITES_MAX];
-> +     u8 res5[0x9f8];
-> +     __be32 ipbrr0;          /* IP Block Revision Register 0 */
-> +     __be32 ipbrr1;          /* IP Block Revision Register 1 */
-> +     u8 res6[0x310];
-> +     __be32 ttr0cr;          /* Temperature Range 0 Control Register */
-> +     __be32 ttr1cr;          /* Temperature Range 1 Control Register */
-> +     __be32 ttr2cr;          /* Temperature Range 2 Control Register */
-> +     __be32 ttr3cr;          /* Temperature Range 3 Control Register */
-> +};
-> +
-> +/*
-> + * Thermal zone data
-> + */
-> +struct qoriq_tmu_data {
-> +     struct thermal_zone_device *tz;
-> +     struct qoriq_tmu_regs __iomem *regs;
-> +};
-> +
-
-> +static int tmu_get_temp(void *p, int *temp)
-> +{
-> +     u8 val;
-> +     struct qoriq_tmu_data *data = p;
-> +
-> +     val = ioread32be(&data->regs->site[0].tritsr);
-> +     *temp = (int)val * 1000;
-
-Why don't you declare val as int in the first place?
-
-> +     for (i = 0; i < len; i += 8, calibration += 2) {
-> +             val = (int)of_read_number(calibration, 1);
-> +             iowrite32be(val, &data->regs->ttcfgr);
-> +             val = (int)of_read_number(calibration + 1, 1);
-> +             iowrite32be(val, &data->regs->tscfgr);
-
-Unnecessary casts.
-
-> +     }
-> +
-> +     return 0;
-> +}
-> +
-> +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
-> +{
-> +     /* Disable interrupt, using polling instead */
-> +     iowrite32be(TIER_DISABLE, &data->regs->tier);
-> +
-> +     /* Set update_interval */
-> +     iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
-> +
-> +     /* Enable monitoring */
-> +     iowrite32be(TMR_ALL, &data->regs->tmr);
-> +}
-> +
-> +static struct thermal_zone_of_device_ops tmu_tz_ops = {
-> +     .get_temp = tmu_get_temp,
-> +};
-> +
-> +static int qoriq_tmu_probe(struct platform_device *pdev)
-> +{
-> +     int ret;
-> +     const struct thermal_trip *trip;
-> +     struct qoriq_tmu_data *data;
-> +
-> +     if (!pdev->dev.of_node) {
-> +             dev_err(&pdev->dev, "Device OF-Node is NULL");
-> +             return -EFAULT;
-> +     }
-
-EFAULT is for bad user addresses and is not appropriate here.
-
-> +
-> +     data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-> +                         GFP_KERNEL);
-> +     if (!data)
-> +             return -ENOMEM;
-> +
-> +     platform_set_drvdata(pdev, data);
-> +     data->regs = of_iomap(pdev->dev.of_node, 0);
-> +
-> +     if (!data->regs) {
-> +             dev_err(&pdev->dev, "Failed to get memory region\n");
-> +             ret = -ENODEV;
-> +             goto err_iomap;
-> +     }
-> +
-> +     ret = qoriq_tmu_calibration(pdev);      /* TMU calibration */
-> +     if (ret < 0) {
-> +             dev_err(&pdev->dev, "TMU calibration failed.\n");
-> +             ret = -ENODEV;
-> +             goto err_iomap;
-> +     }
-
-That function returns negative when device tree properties are missing, not 
-when a calibration procedure fails.
-
-> +
-> +     qoriq_tmu_init_device(data);    /* TMU initialization */
-> +
-> +     data->tz = thermal_zone_of_sensor_register(&pdev->dev, 0,
-> +                             data, &tmu_tz_ops);
-> +     if (IS_ERR(data->tz)) {
-> +             ret = PTR_ERR(data->tz);
-> +             dev_err(&pdev->dev,
-> +                     "Failed to register thermal zone device %d\n", ret);
-> +             goto err_thermal;
-> +     }
-> +
-> +     trip = of_thermal_get_trip_points(data->tz);
-> +
-> +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_ENABLED);
-
-Doesn't thermal_zone_of_sensor_register() already call ops->set_mode with 
-TERMAL_DEVICE_ENABLED?
-
-> +
-> +     return 0;
-> +
-> +err_thermal:
-> +     iounmap(data->regs);
-> +
-> +err_iomap:
-> +     platform_set_drvdata(pdev, NULL);
-> +     devm_kfree(&pdev->dev, data);
-> +
-> +     return ret;
-> +}
-> +
-> +static int qoriq_tmu_remove(struct platform_device *pdev)
-> +{
-> +     struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-> +
-> +     /* Disable monitoring */
-> +     iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> +
-> +     thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
-> +     iounmap(data->regs);
-> +
-> +     platform_set_drvdata(pdev, NULL);
-> +     devm_kfree(&pdev->dev, data);
-> +
-> +     return 0;
-> +}
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +static int qoriq_tmu_suspend(struct device *dev)
-> +{
-> +     struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-> +
-> +     /* Disable monitoring */
-> +     iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_DISABLED);
-> +
-> +     return 0;
-> +}
-> +
-> +static int qoriq_tmu_resume(struct device *dev)
-> +{
-> +     struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-> +
-> +     /* Enable monitoring */
-> +     iowrite32be(TMR_ALL, &data->regs->tmr);
-> +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_ENABLED);
-> +
-> +     return 0;
-> +}
-> +#endif
-> +
-> +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
-> +                      qoriq_tmu_suspend, qoriq_tmu_resume);
-> +
-
-
-> +static const struct of_device_id qoriq_tmu_match[] = {
-> +     { .compatible = "fsl,qoriq-tmu", },
-> +     {},
-> +};
-
-Binding?
-
-> +
-> +static struct platform_driver qoriq_tmu = {
-> +     .driver = {
-> +             .name           = "qoriq_thermal",
-> +             .pm = &qoriq_tmu_pm_ops,
-> +             .of_match_table = qoriq_tmu_match,
-> +     },
-
-Why the tabs after ".name"?
-
--Scott
+Thank.
