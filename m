@@ -1,26 +1,27 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f195.google.com (mail-yk0-f195.google.com
- [209.85.160.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tomi.valkeinen@ti.com>
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 153E81A0026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 20:10:45 +1000 (AEST)
-Received: by ykdg206 with SMTP id g206so5849569ykd.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 03:10:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 935961A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 20:18:49 +1000 (AEST)
+Subject: Re: [PATCH v2] video: fbdev: fsl: Fix the sleep function for FSL DIU
+ module
+To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+References: <1439531649-46827-1-git-send-email-dongsheng.wang@freescale.com>
+ <55CEB5CB.4060803@tabi.org>
+ <SN1PR0301MB1616D30A83E8A5C6FEE6A44A9D430@SN1PR0301MB1616.namprd03.prod.outlook.com>
+CC: Scott Wood <scottwood@freescale.com>, Jin Jason <Jason.Jin@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Timur Tabi
+ <timur@tabi.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Message-ID: <5603CB53.6070403@ti.com>
+Date: Thu, 24 Sep 2015 13:07:15 +0300
 MIME-Version: 1.0
-In-Reply-To: <8B86AA57-EFAD-4D4E-860A-8F8251DF10AD@ellerman.id.au>
-References: <1442988302.31273.81.camel@neuling.org>
- <8B86AA57-EFAD-4D4E-860A-8F8251DF10AD@ellerman.id.au>
-Date: Thu, 24 Sep 2015 13:10:42 +0300
-Message-ID: <CAOJe8K20scaHxV50KmzsFGA7uTGZdq7MTkeDCdraG0350gvLeQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/vdso: Avoid link stack corruption in
- __get_datapage()
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>, benh <benh@kernel.crashing.org>,
- Aaron Sawdey <sawdey@us.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, Steve Munroe <sjmunroe@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <SN1PR0301MB1616D30A83E8A5C6FEE6A44A9D430@SN1PR0301MB1616.namprd03.prod.outlook.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,79 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/24/15, Michael Ellerman <michael@ellerman.id.au> wrote:
->
->
-> On 23 September 2015 16:05:02 GMT+10:00, Michael Neuling <mikey@neuling.org>
-> wrote:
->>The 32 and 64 bit variants of __get_datapage() use a "bcl; mflr" to
->>determine the loaded address of the VDSO. The current version of these
->>attempt to use the special bcl variant which avoids pushing to the
->>link stack.
->>
->>Unfortunately it uses bcl+8 rather than the required bcl+4. Hence the
->>current code results in link stack corruption and the resulting
->>performance degradation (due to branch mis-prediction).
->>
->>This patch moves us to bcl+4 by moving __kernel_datapage_offset
->>out of __get_datapage().
->>
->>With this patch, running the below benchmark we get a bump in
->>performance on POWER8 for gettimeofday() (which uses
->>__get_datapage()).
->>
->>64bit gets ~4% improvement:
->>  Without patch:
->>    # ./tb
->>    time = 0.180321
->>  With patch:
->>    # ./tb
->>    time = 0.187408
->>
->>32bit gets ~9% improvement:
->>  Without patch:
->>    # ./tb
->>    time = 0.276551
->>  With patch:
->>    # ./tb
->>    time = 0.252767
->>
->>Testcase tb.c (stolen from Anton)
->>  /* gcc -O2 tb.c -o tb */
->>  #include <sys/time.h>
->>  #include <stdio.h>
->>
->>  int main()
->>  {
->>	  int i;
->>
->>	  struct timeval tv_start, tv_end;
->>
->>	  gettimeofday(&tv_start, NULL);
->>
->>	  for(i = 0; i < 10000000; i++) {
->>		  gettimeofday(&tv_end, NULL);
->>	  }
->>
->>	  printf("time = %.6f\n", tv_end.tv_sec - tv_start.tv_sec +
->>(tv_end.tv_usec - tv_start.tv_usec) * 1e-6);
->>
->>	  return 0;
->>  }
->
-> You know where test cases are supposed to go.
->
-> I know it's not a pass/fail test, but it's still useful. If it's in the tree
-> it will get run as part of automated test runs and we will have a record of
-> the result over time.
+--XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-I can send a patch for it.
 
->
-> cheers
-> --
-> Sent from my Android phone with K-9 Mail. Please excuse my brevity.
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+On 24/09/15 13:02, Wang Dongsheng wrote:
+> Hi Tomi,
+>=20
+> Could you apply this patch?
+>=20
+>>> For deep sleep, the diu module will power off, when wake up from the
+>>> deep sleep, the registers need to be reinitialized.
+>>>
+>>> Signed-off-by: Jason Jin<Jason.Jin@freescale.com>
+>>> Signed-off-by: Wang Dongsheng<dongsheng.wang@freescale.com>
+>>
+>> Acked-by: Timur Tabi <timur@tabi.org>
+
+Thanks, queued for 4.3 fixes.
+
+ Tomi
+
+
+--XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJWA8tTAAoJEPo9qoy8lh710kcP/2RtVyXoDsZcRCdvw/W/wXk+
+fwfduxriYyRd4PO8GUmhl9v5m1N2wzjqTUNEus13FexwZyPxZQ/nVYmUx9Ui9nuL
+LncUYtuvpRxJ+QwVbac2qCEZ7EMJnNsmGtdCDz60S8Uej/pXP/SwL6OoSS5Wq+vp
+KwQK3Zk0STxJWceZdUfm/0WyyxglzP4w9oV2Tg3j/dcQLG4KwVmO7d3gKl1We17r
+l+lN61UF0SgBNIKAi2ucVSb5rlARKK/uceoBTiGZ2pHZvObJEPuLJQuwyE9wpJpm
+UcHDedAYQq8unmKLHDScbc/jMQMVoSQsheKAg9G5QI8UIxA8YWfnRwTrj5gxHUDU
+VmRMAHe58WJCFDBTL72D1dSd2XGqs0hg41kqzv27WXysbzQNe/Hx3nATkVpWQ5vy
+bIceWvbg4su5vCTkmD5Enyt2LcJ9eUTIf9Fw3i7mXJmGciU7leysF1XAaJinkmI9
+KJgYzkG2KmkifNadH1vT+iliG/lbkOxJgcQBBNQEjzsDdngej8ZADp6bS+Y+OTVC
+vnXcAm7QvdkH4cJwAYX1vX06LMyK98DwHjQMh5+xWpU80/0G1XEEmgt2x+sOhXCm
+QOfCs/U/vnRwLzkqT9bzEVTZOTwAiH78K7mM4oRStdEB4SndO+lSsu/o/c/MtR9v
+GHe+qZkpZcbbLmWptTQf
+=7LuS
+-----END PGP SIGNATURE-----
+
+--XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA--
