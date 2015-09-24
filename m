@@ -1,21 +1,29 @@
-Return-Path: <shawnguo@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id DEC291A0026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 22:29:25 +1000 (AEST)
-Date: Thu, 24 Sep 2015 05:29:17 -0700
-From: Shawn Guo <shawnguo@kernel.org>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Cc: scottwood@freescale.com, devicetree@vger.kernel.org,
- Chenhui Zhao <chenhui.zhao@freescale.com>,
- alison.wang@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Tang Yuantian <Yuantian.Tang@freescale.com>, robh+dt@kernel.org,
- jason.jin@freescale.com, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 1/2] fsl: Add binding for RCPM
-Message-ID: <20150924122917.GQ3529@tiger>
-References: <1443083354-37369-1-git-send-email-dongsheng.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1443083354-37369-1-git-send-email-dongsheng.wang@freescale.com>
+Return-Path: <a.hajda@samsung.com>
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7FE871A05DA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 00:11:33 +1000 (AEST)
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout4.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0NV6007PAPMBQQ70@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 24 Sep 2015 15:01:23 +0100 (BST)
+From: Andrzej Hajda <a.hajda@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrzej Hajda <a.hajda@samsung.com>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>, Alexander Graf <agraf@suse.com>,
+ Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 15/19] KVM: PPC: e500: fix handling local_sid_lookup result
+Date: Thu, 24 Sep 2015 16:00:23 +0200
+Message-id: <1443103227-25612-16-git-send-email-a.hajda@samsung.com>
+In-reply-to: <1443103227-25612-1-git-send-email-a.hajda@samsung.com>
+References: <1443103227-25612-1-git-send-email-a.hajda@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,111 +33,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 24, 2015 at 04:29:13PM +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> RCPM is the Run Control and Power Management module performs all
-> device-level tasks associated with device run control and power
-> management.
-> 
-> Add this for freescale powerpc platform and layerscape platform.
-> 
-> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
-> *v3*
-> - Add "fsl,#rcpm-wakeup-cells" for rcpm node. The number of cells
->   correspond rcpm-wakeup property.
-> - Modify rcpm-wakeup property description.
-> 
-> *v2*
-> - Remove P4080 example.
-> - Modify rcpm-wakeup property description.
-> 
-> diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> new file mode 100644
-> index 0000000..52110ec
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> @@ -0,0 +1,63 @@
-> +* Run Control and Power Management
-> +-------------------------------------------
-> +The RCPM performs all device-level tasks associated with device run control
-> +and power management.
-> +
-> +Required properites:
-> +  - reg : Offset and length of the register set of RCPM block.
-> +  - fsl,#rcpm-wakeup-cells : The number of cells in rcpm-wakeup property.
-> +  - compatible : Sould contain a chip-specific RCPM block compatible string
-> +	and (if applicable) may contain a chassis-version RCPM compatible
-> +	string. Chip-specific strings are of the form "fsl,<chip>-rcpm",
-> +	such as:
-> +	* "fsl,p2041-rcpm"
-> +	* "fsl,p3041-rcpm"
-> +	* "fsl,p4080-rcpm"
-> +	* "fsl,p5020-rcpm"
-> +	* "fsl,p5040-rcpm"
-> +	* "fsl,t4240-rcpm"
-> +	* "fsl,b4420-rcpm"
-> +	* "fsl,b4860-rcpm"
-> +
-> +	Chassis-version strings are of the form "fsl,qoriq-rcpm-<version>",
-> +	such as:
-> +	* "fsl,qoriq-rcpm-1.0": for chassis 1.0 rcpm
-> +	* "fsl,qoriq-rcpm-2.0": for chassis 2.0 rcpm
-> +	* "fsl,qoriq-rcpm-2.1": for chassis 2.1 rcpm
-> +
-> +All references to "1.0" and "2.0" refer to the QorIQ chassis version to
-> +which the chip complies.
-> +Chassis Version		Example Chips
-> +---------------		-------------------------------
-> +1.0				p4080, p5020, p5040, p2041, p3041
-> +2.0				t4240, b4860, b4420
-> +2.1				t1040, ls1021
-> +
-> +Example:
-> +The RCPM node for T4240:
-> +	rcpm: global-utilities@e2000 {
-> +		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
-> +		reg = <0xe2000 0x1000>;
-> +		fsl,#rcpm-wakeup-cells = <2>;
-> +	};
-> +
-> +* Freescale RCPM Wakeup Source Device Tree Bindings
-> +-------------------------------------------
-> +Required rcpm-wakeup property should be added to a device node if the device
-> +can be used as a wakeup source.
-> +
-> +  - rcpm-wakeup: The value of the property consists of cells, the number of
+The function can return negative value.
 
-Shouldn't this vendor specific property be prefixed with 'fsl,' as well?
+The problem has been detected using proposed semantic patch
+scripts/coccinelle/tests/assign_signed_to_unsigned.cocci [1].
 
-> +	cells defined in "fsl,#rcpm-wakeup-cells". The first cell is a pointer
-> +	to the rcpm node, the second cell is the bit mask that should be set
-> +	in IPPDEXPCR0, and the third cell is for IPPDEXPCR1, and so on.
+[1]: http://permalink.gmane.org/gmane.linux.kernel/2046107
 
-I guess that IPPDEXPCR0 and IPPDEXPCR1 need some documentation too, or a
-pointer to hardware documents containing more detailed info about them.
+Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+---
+Hi,
 
-Shawn
+To avoid problems with too many mail recipients I have sent whole
+patchset only to LKML. Anyway patches have no dependencies.
 
-> +
-> +Example:
-> +	lpuart0: serial@2950000 {
-> +		compatible = "fsl,ls1021a-lpuart";
-> +		reg = <0x0 0x2950000 0x0 0x1000>;
-> +		interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&sysclk>;
-> +		clock-names = "ipg";
-> +		rcpm-wakeup = <&rcpm 0x0 0x40000000>;
-> +		status = "disabled";
-> +	};
-> -- 
-> 2.1.0.27.g96db324
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Regards
+Andrzej
+---
+ arch/powerpc/kvm/e500.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index b29ce75..32fdab5 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -237,7 +237,8 @@ void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
+                            struct kvm_book3e_206_tlb_entry *gtlbe)
+ {
+ 	struct vcpu_id_table *idt = vcpu_e500->idt;
+-	unsigned int pr, tid, ts, pid;
++	unsigned int pr, tid, ts;
++	int pid;
+ 	u32 val, eaddr;
+ 	unsigned long flags;
+ 
+-- 
+1.9.1
