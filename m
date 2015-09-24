@@ -1,10 +1,10 @@
 Return-Path: <madalin.bucur@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0108.outbound.protection.outlook.com [207.46.100.108])
+ (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C71E1A091A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 01:17:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BBBC1A05F0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 01:17:49 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <netdev@vger.kernel.org>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
@@ -12,13 +12,10 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <igal.liberman@freescale.com>, <roy.pledge@freescale.com>,
  <ppc@mindchasers.com>, <joe@perches.com>, <pebolle@tiscali.nl>,
  <joakim.tjernlund@transmode.se>, <f.fainelli@gmail.com>, <stsp@list.ru>,
- Madalin Bucur <madalin.bucur@freescale.com>, Ruxandra Ioana Radulescu
- <ruxandra.radulescu@freescale.com>
-Subject: [v3 8/8] dpaa_eth: add trace points
-Date: Thu, 24 Sep 2015 18:00:19 +0300
-Message-ID: <1443106819-5549-9-git-send-email-madalin.bucur@freescale.com>
-In-Reply-To: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
-References: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
+ Madalin Bucur <madalin.bucur@freescale.com>
+Subject: [v3 0/8] dpaa_eth: Add the Freescale DPAA Ethernet driver
+Date: Thu, 24 Sep 2015 18:00:11 +0300
+Message-ID: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -31,231 +28,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add trace points on the hot processing path.
+This patch series adds the Ethernet driver for the Freescale
+QorIQ Data Path Acceleration Architecture (DPAA).
 
-Signed-off-by: Ruxandra Ioana Radulescu <ruxandra.radulescu@freescale.com>
----
- drivers/net/ethernet/freescale/dpaa/Makefile       |   1 +
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  12 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |   4 +
- .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   | 141 +++++++++++++++++++++
- 4 files changed, 158 insertions(+)
+This version includes changes following the feedback received
+on previous versions from Eric Dumazet, Bob Cochran, Joe Perches,
+Paul Bolle, Joakim Tjernlund, Scott Wood - thank you for your support.
+
+Together with the driver a managed version of alloc_percpu
+is provided that simplifies the release of per-CPU memory.
+
+The Freescale DPAA architecture consists in a series of hardware
+blocks that support the Ethernet connectivity. The Ethernet driver
+depends upon the following drivers that are currently in the Linux
+kernel or in review:
+ - Peripheral Access Memory Unit (PAMU)
+    drivers/iommu/fsl_*
+ - Frame Manager (FMan)
+    drivers/net/ethernet/freescale/fman
+ - Queue Manager (QMan), Buffer Manager (BMan)
+    drivers/soc/fsl/qbman
+
+dpaa_eth interfaces mapping to FMan MACs:
+
+  dpaa_eth       /eth0\     ...       /ethN\
+  driver        |      |             |      |
+  -------------   ----   -----------   ----   -------------
+       -Ports  / Tx  Rx \    ...    / Tx  Rx \
+  FMan        |          |         |          |
+       -MACs  |   MAC0   |         |   MACN   |
+             /   dtsec0   \  ...  /   dtsecN   \ (or tgec)
+            /              \     /              \(or memac)
+  ---------  --------------  ---  --------------  ---------
+      FMan, FMan Port, FMan SP, FMan MURAM drivers
+  ---------------------------------------------------------
+      FMan HW blocks: MURAM, MACs, Ports, SP
+  ---------------------------------------------------------
+
+dpaa_eth relation to QMan, FMan:
+              ________________________________
+  dpaa_eth   /            eth0                \
+  driver    /                                  \
+  ---------   -^-   -^-   -^-   ---    ---------
+  QMan driver / \   / \   / \  \   /  | BMan    |
+             |Rx | |Rx | |Tx | |Tx |  | driver  |
+  ---------  |Dfl| |Err| |Cnf| |FQs|  |         |
+  QMan HW    |FQ | |FQ | |FQ | |   |  |         |
+             /   \ /   \ /   \  \ /   |         |
+  ---------   ---   ---   ---   -v-    ---------
+            |        FMan QMI         |         |
+            | FMan HW       FMan BMI  | BMan HW |
+              -----------------------   --------
+
+where the acronyms used above (and in the code) are:
+DPAA = Data Path Acceleration Architecture
+FMan = DPAA Frame Manager
+QMan = DPAA Queue Manager
+BMan = DPAA Buffers Manager
+QMI = QMan interface in FMan
+BMI = BMan interface in FMan
+FMan SP = FMan Storage Profiles
+MURAM = Multi-user RAM in FMan
+FQ = QMan Frame Queue
+Rx Dfl FQ = default reception FQ
+Rx Err FQ = Rx error frames FQ
+Tx Cnf FQ = Tx confirmation FQ
+Tx FQs = transmission frame queues
+dtsec = datapath three speed Ethernet controller (10/100/1000 Mbps)
+tgec = ten gigabit Ethernet controller (10 Gbps)
+memac = multirate Ethernet MAC (10/100/1000/10000)
+
+The latest FMan driver patches were submitted by Igal Liberman:
+https://patchwork.ozlabs.org/project/netdev/list/?submitter=64715&state=*&q=[v5,
+
+The latest Q/BMan drivers were submitted by Roy Pledge:
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=66331&state=*
+
+Changes from v2:
+ - removed debugfs, moved exports to ethtool statistics
+ - removed congestion groups Kconfig params
+
+Changes from v1:
+ - bpool level Kconfig options removed
+ - print format using pr_fmt, cleaned up prints
+ - __hot/__cold removed
+ - gratuitous unlikely() removed
+ - code style aligned, consistent spacing for declarations
+ - comment formatting
+
+The complete patch set based on the latest net-next/master kernel
+can be found in the public git at:
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git
+under the tag ldup_public_git_20150924:
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git/log/?h=ldup_public_git_20150924
+
+There is one patch that needs to be applied to u-boot to align it
+to the latest device tree binding document specification used by
+the FMan driver. Please make sure your u-boot includes this patch.
+The patch is marked as accepted in u-boot patchwork:
+https://patchwork.ozlabs.org/patch/508374/
+Alternatively you can find it in the Freescale public git under the
+ldup_public_git_20150410 tag at:
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/u-boot.git/log/?h=ldup_public_git_20150410
+
+Madalin Bucur (8):
+  devres: add devm_alloc_percpu()
+  dpaa_eth: add support for DPAA Ethernet
+  dpaa_eth: add support for S/G frames
+  dpaa_eth: add driver's Tx queue selection mechanism
+  dpaa_eth: add ethtool functionality
+  dpaa_eth: add ethtool statistics
+  dpaa_eth: add sysfs exports
+  dpaa_eth: add trace points
+
+ Documentation/driver-model/devres.txt              |    4 +
+ drivers/base/devres.c                              |   64 +
+ drivers/net/ethernet/freescale/Kconfig             |    2 +
+ drivers/net/ethernet/freescale/Makefile            |    1 +
+ drivers/net/ethernet/freescale/dpaa/Kconfig        |   32 +
+ drivers/net/ethernet/freescale/dpaa/Makefile       |   12 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  857 ++++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  478 +++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_common.c  | 1395 ++++++++++++++++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_common.h  |  109 ++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c  |  706 ++++++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  167 +++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   |  141 ++
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |  413 ++++++
+ include/linux/device.h                             |   19 +
+ 15 files changed, 4400 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
  create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/Makefile b/drivers/net/ethernet/freescale/dpaa/Makefile
-index 141ade4..15ed1c4 100644
---- a/drivers/net/ethernet/freescale/dpaa/Makefile
-+++ b/drivers/net/ethernet/freescale/dpaa/Makefile
-@@ -9,3 +9,4 @@ ccflags-y += -I$(FMAN)
- obj-$(CONFIG_FSL_DPAA_ETH) += fsl_dpa.o
- 
- fsl_dpa-objs += dpaa_eth.o dpaa_eth_sg.o dpaa_eth_common.o dpaa_ethtool.o dpaa_eth_sysfs.o
-+CFLAGS_dpaa_eth.o := -I$(src)
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index 6d241a3..2b99428 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -57,6 +57,12 @@
- #include "dpaa_eth.h"
- #include "dpaa_eth_common.h"
- 
-+/* CREATE_TRACE_POINTS only needs to be defined once. Other dpa files
-+ * using trace events only need to #include <trace/events/sched.h>
-+ */
-+#define CREATE_TRACE_POINTS
-+#include "dpaa_eth_trace.h"
-+
- #define DPA_NAPI_WEIGHT		64
- 
- /* Valid checksum indication */
-@@ -229,6 +235,9 @@ priv_rx_default_dqrr(struct qman_portal *portal,
- 	priv = netdev_priv(net_dev);
- 	dpa_bp = priv->dpa_bp;
- 
-+	/* Trace the Rx fd */
-+	trace_dpa_rx_fd(net_dev, fq, &dq->fd);
-+
- 	/* IRQ handler, non-migratable; safe to use raw_cpu_ptr here */
- 	percpu_priv = raw_cpu_ptr(priv->percpu_priv);
- 	count_ptr = raw_cpu_ptr(dpa_bp->percpu_count);
-@@ -285,6 +294,9 @@ priv_tx_conf_default_dqrr(struct qman_portal *portal,
- 	net_dev = ((struct dpa_fq *)fq)->net_dev;
- 	priv = netdev_priv(net_dev);
- 
-+	/* Trace the fd */
-+	trace_dpa_tx_conf_fd(net_dev, fq, &dq->fd);
-+
- 	/* Non-migratable context, safe to use raw_cpu_ptr */
- 	percpu_priv = raw_cpu_ptr(priv->percpu_priv);
- 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-index a16119e..44368c8 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-@@ -36,6 +36,7 @@
- 
- #include "fman.h"
- #include "mac.h"
-+#include "dpaa_eth_trace.h"
- 
- extern int dpa_rx_extra_headroom;
- extern int dpa_max_frm;
-@@ -406,6 +407,9 @@ static inline int dpa_xmit(struct dpa_priv_s *priv,
- 	if (fd->bpid == 0xff)
- 		fd->cmd |= qman_fq_fqid(priv->conf_fqs[queue]);
- 
-+	/* Trace this Tx fd */
-+	trace_dpa_tx_fd(priv->net_dev, egress_fq, fd);
-+
- 	for (i = 0; i < 100000; i++) {
- 		err = qman_enqueue(egress_fq, fd, 0);
- 		if (err != -EBUSY)
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
-new file mode 100644
-index 0000000..3b67477
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
-@@ -0,0 +1,141 @@
-+/* Copyright 2013-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM	dpaa_eth
-+
-+#if !defined(_DPAA_ETH_TRACE_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _DPAA_ETH_TRACE_H
-+
-+#include <linux/skbuff.h>
-+#include <linux/netdevice.h>
-+#include "dpaa_eth.h"
-+#include <linux/tracepoint.h>
-+
-+#define fd_format_name(format)	{ qm_fd_##format, #format }
-+#define fd_format_list	\
-+	fd_format_name(contig),	\
-+	fd_format_name(sg)
-+
-+/* This is used to declare a class of events.
-+ * individual events of this type will be defined below.
-+ */
-+
-+/* Store details about a frame descriptor and the FQ on which it was
-+ * transmitted/received.
-+ */
-+DECLARE_EVENT_CLASS(dpaa_eth_fd,
-+	/* Trace function prototype */
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	/* Repeat argument list here */
-+	TP_ARGS(netdev, fq, fd),
-+
-+	/* A structure containing the relevant information we want to record.
-+	 * Declare name and type for each normal element, name, type and size
-+	 * for arrays. Use __string for variable length strings.
-+	 */
-+	TP_STRUCT__entry(
-+		__field(u32,	fqid)
-+		__field(u64,	fd_addr)
-+		__field(u8,	fd_format)
-+		__field(u16,	fd_offset)
-+		__field(u32,	fd_length)
-+		__field(u32,	fd_status)
-+		__string(name,	netdev->name)
-+	),
-+
-+	/* The function that assigns values to the above declared fields */
-+	TP_fast_assign(
-+		__entry->fqid = fq->fqid;
-+		__entry->fd_addr = qm_fd_addr_get64(fd);
-+		__entry->fd_format = fd->format;
-+		__entry->fd_offset = dpa_fd_offset(fd);
-+		__entry->fd_length = dpa_fd_length(fd);
-+		__entry->fd_status = fd->status;
-+		__assign_str(name, netdev->name);
-+	),
-+
-+	/* This is what gets printed when the trace event is triggered */
-+	TP_printk("[%s] fqid=%d, fd: addr=0x%llx, format=%s, off=%u, len=%u, status=0x%08x",
-+		  __get_str(name), __entry->fqid, __entry->fd_addr,
-+		  __print_symbolic(__entry->fd_format, fd_format_list),
-+		  __entry->fd_offset, __entry->fd_length, __entry->fd_status)
-+);
-+
-+/* Now declare events of the above type. Format is:
-+ * DEFINE_EVENT(class, name, proto, args), with proto and args same as for class
-+ */
-+
-+/* Tx (egress) fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_tx_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* Rx fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_rx_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* Tx confirmation fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_tx_conf_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* If only one event of a certain type needs to be declared, use TRACE_EVENT().
-+ * The syntax is the same as for DECLARE_EVENT_CLASS().
-+ */
-+
-+#endif /* _DPAA_ETH_TRACE_H */
-+
-+/* This must be outside ifdef _DPAA_ETH_TRACE_H */
-+#undef TRACE_INCLUDE_PATH
-+#define TRACE_INCLUDE_PATH .
-+#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_FILE	dpaa_eth_trace
-+#include <trace/define_trace.h>
 -- 
 1.7.11.7
