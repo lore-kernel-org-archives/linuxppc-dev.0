@@ -1,27 +1,28 @@
-Return-Path: <tomi.valkeinen@ti.com>
-Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mjw@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 935961A0026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 20:18:49 +1000 (AEST)
-Subject: Re: [PATCH v2] video: fbdev: fsl: Fix the sleep function for FSL DIU
- module
-To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-References: <1439531649-46827-1-git-send-email-dongsheng.wang@freescale.com>
- <55CEB5CB.4060803@tabi.org>
- <SN1PR0301MB1616D30A83E8A5C6FEE6A44A9D430@SN1PR0301MB1616.namprd03.prod.outlook.com>
-CC: Scott Wood <scottwood@freescale.com>, Jin Jason <Jason.Jin@freescale.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADB621A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 21:23:16 +1000 (AEST)
+Message-ID: <1443093792.3102.42.camel@bordewijk.wildebeest.org>
+Subject: Re: [PATCH] perf/probe: Search both .eh_frame and .debug_frame
+ sections for probe location
+From: Mark Wielaard <mjw@redhat.com>
+To: =?UTF-8?Q?=E5=B9=B3=E6=9D=BE=E9=9B=85=E5=B7=B3?= /
+ =?UTF-8?Q?HIRAMATU=EF=BC=8CMASAMI?= <masami.hiramatsu.pt@hitachi.com>
+Cc: Hemant Kumar <hemant@linux.vnet.ibm.com>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "acme@kernel.org" <acme@kernel.org>,
+ "sukadev@linux.vnet.ibm.com" <sukadev@linux.vnet.ibm.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Timur Tabi
- <timur@tabi.org>
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Message-ID: <5603CB53.6070403@ti.com>
-Date: Thu, 24 Sep 2015 13:07:15 +0300
-MIME-Version: 1.0
-In-Reply-To: <SN1PR0301MB1616D30A83E8A5C6FEE6A44A9D430@SN1PR0301MB1616.namprd03.prod.outlook.com>
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA"
+ "srikar@linux.vnet.ibm.com" <srikar@linux.vnet.ibm.com>,
+ "naveen.n.rao@linux.vnet.ibm.com" <naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 24 Sep 2015 13:23:12 +0200
+In-Reply-To: <50399556C9727B4D88A595C8584AAB37525585E9@GSjpTKYDCembx32.service.hitachi.net>
+References: <1443060990-10313-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <1443088766.3102.19.camel@bordewijk.wildebeest.org>
+ <50399556C9727B4D88A595C8584AAB37525585E9@GSjpTKYDCembx32.service.hitachi.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
-
-
-
-On 24/09/15 13:02, Wang Dongsheng wrote:
-> Hi Tomi,
+On Thu, 2015-09-24 at 10:56 +0000, =E5=B9=B3=E6=9D=BE=E9=9B=85=E5=B7=B3 / H=
+IRAMATU=EF=BC=8CMASAMI wrote:
+> >I am not too familiar with the code so there might be a reason for
+> >setting and reusing the pf->cfi to do the search twice. But might it not
+> >be more clear to just store both pf->cfi_eh and pf->cfi_debug and then
+> >check both in call_probe_finder () with the dwarf_cfi_addrframe () call?
+> >Which is the only place I see actually using the cfi.
 >=20
-> Could you apply this patch?
+> Right, but since call_probe_finder can be called repeatedly on same binar=
+y,
+> we should keep pf->cfi for caching CFI too.
+
+Yes. I was suggesting to rename pf->cfi to pf->cfi_eh and add
+pf->cfi_debug, to make clear why there are two.
+
+> >BTW. Not really related to this patch since the following was already in
+> >the code, and is most likely always correct anyway:
+> >
+> >> +	if (elf_section_by_name(elf, &ehdr, &shdr, ".eh_frame", NULL) &&
+> >> +	    shdr.sh_type =3D=3D SHT_PROGBITS) {
+> >> +		pf->cfi =3D dwarf_getcfi_elf(elf);
+> >
+> >But that SHT_PROGBITS check is only necessary because of a bug in
+> >elfutils < 0.156. For 0.156+ dwarf_getcfi_elf () will properly return
+> >NULL in case you happen to be looking at a separate debug file that
+> >has .eh_frame as NOBITS. In theory this prevents getting the CFI if the
+> >file has stripped away the shdrs. Which is reasonable, there are
+> >probably also other things that rely on the shdrs.
 >=20
->>> For deep sleep, the diu module will power off, when wake up from the
->>> deep sleep, the registers need to be reinitialized.
->>>
->>> Signed-off-by: Jason Jin<Jason.Jin@freescale.com>
->>> Signed-off-by: Wang Dongsheng<dongsheng.wang@freescale.com>
->>
->> Acked-by: Timur Tabi <timur@tabi.org>
+> Ah, I had just wanted to avoid introducing new ifdefs.
 
-Thanks, queued for 4.3 fixes.
+Yes, understandable. It is a weird corner case anyway.
 
- Tomi
+> > But dwarf_getcfi_elf
+> >is able to also get you the CFI with just the phdrs.
+>=20
+> Hmm, how can I make such binary? I can fix it, but we need a
+> testcase for that.
 
+eu-strip --strip-sections can create such binaries. But honestly I
+wouldn't bother. They are basically useless and nobody (should) do that.
+The only reason you might want to support them is for getting a
+backtrace anyway through the CFI. But you won't be able to get any other
+symbol or debug information from them.
 
---XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+I only really mentioned it because I am embarrassed about the bug in
+elfutils. Just glad that it got fixed and the workaround isn't necessary
+anymore. But it probably is not worth it now to try to remove the
+workaround. There is no real benefit in this case.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Cheers,
 
-iQIcBAEBCAAGBQJWA8tTAAoJEPo9qoy8lh710kcP/2RtVyXoDsZcRCdvw/W/wXk+
-fwfduxriYyRd4PO8GUmhl9v5m1N2wzjqTUNEus13FexwZyPxZQ/nVYmUx9Ui9nuL
-LncUYtuvpRxJ+QwVbac2qCEZ7EMJnNsmGtdCDz60S8Uej/pXP/SwL6OoSS5Wq+vp
-KwQK3Zk0STxJWceZdUfm/0WyyxglzP4w9oV2Tg3j/dcQLG4KwVmO7d3gKl1We17r
-l+lN61UF0SgBNIKAi2ucVSb5rlARKK/uceoBTiGZ2pHZvObJEPuLJQuwyE9wpJpm
-UcHDedAYQq8unmKLHDScbc/jMQMVoSQsheKAg9G5QI8UIxA8YWfnRwTrj5gxHUDU
-VmRMAHe58WJCFDBTL72D1dSd2XGqs0hg41kqzv27WXysbzQNe/Hx3nATkVpWQ5vy
-bIceWvbg4su5vCTkmD5Enyt2LcJ9eUTIf9Fw3i7mXJmGciU7leysF1XAaJinkmI9
-KJgYzkG2KmkifNadH1vT+iliG/lbkOxJgcQBBNQEjzsDdngej8ZADp6bS+Y+OTVC
-vnXcAm7QvdkH4cJwAYX1vX06LMyK98DwHjQMh5+xWpU80/0G1XEEmgt2x+sOhXCm
-QOfCs/U/vnRwLzkqT9bzEVTZOTwAiH78K7mM4oRStdEB4SndO+lSsu/o/c/MtR9v
-GHe+qZkpZcbbLmWptTQf
-=7LuS
------END PGP SIGNATURE-----
-
---XMmgglBKvwIfDkudiTBGnDL7DRpGR8pOA--
+Mark
