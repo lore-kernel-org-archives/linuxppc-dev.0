@@ -2,25 +2,25 @@ Return-Path: <mrochs@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1ACDB1A06A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:38:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8B3FB1A0A40
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:38:38 +1000 (AEST)
 Received: from localhost
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 13:38:31 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CACF019D803F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:29:21 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t8OJcTTH6881748
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:38:29 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8OJcRPK025201
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:38:28 -0600
+ Thu, 24 Sep 2015 13:38:36 -0600
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A4D976E804D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:30:16 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8OJcXIw59506728
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 19:38:33 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8OJcV5P023014
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:38:32 -0400
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,10 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v3 05/32] cxlflash: Fix data corruption when vLUN used over
- multiple cards
-Date: Thu, 24 Sep 2015 14:37:52 -0500
-Message-Id: <1443123472-16694-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v3 06/32] cxlflash: Fix to avoid sizeof(bool)
+Date: Thu, 24 Sep 2015 14:37:57 -0500
+Message-Id: <1443123477-16732-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,60 +45,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the same virtual LUN is accessed over multiple cards, only accesses
-made over the first card will be valid. Accesses made over the second
-card will go to the wrong LUN causing data corruption.
-
-This is because the global LUN's mode word was being used to determine
-whether the LUN table for that card needs to be programmed. The mode
-word would be setup by the first card, causing the LUN table for the
-second card to not be programmed.
-
-By unconditionally initializing the LUN table (not depending on the
-mode word), the problem is avoided.
+Using sizeof(bool) is considered poor form for various reasons and
+sparse warns us of that. Correct by changing type from bool to u8.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/vlun.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/scsi/cxlflash/superpipe.c | 2 +-
+ drivers/scsi/cxlflash/superpipe.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/cxlflash/vlun.c b/drivers/scsi/cxlflash/vlun.c
-index 68994c4..96b074f 100644
---- a/drivers/scsi/cxlflash/vlun.c
-+++ b/drivers/scsi/cxlflash/vlun.c
-@@ -915,16 +915,9 @@ int cxlflash_disk_virtual_open(struct scsi_device *sdev, void *arg)
+diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
+index ffa68cc..28aa9d9 100644
+--- a/drivers/scsi/cxlflash/superpipe.c
++++ b/drivers/scsi/cxlflash/superpipe.c
+@@ -737,7 +737,7 @@ static struct ctx_info *create_context(struct cxlflash_cfg *cfg,
+ 	struct afu *afu = cfg->afu;
+ 	struct ctx_info *ctxi = NULL;
+ 	struct llun_info **lli = NULL;
+-	bool *ws = NULL;
++	u8 *ws = NULL;
+ 	struct sisl_rht_entry *rhte;
  
- 	pr_debug("%s: ctxid=%llu ls=0x%llx\n", __func__, ctxid, lun_size);
+ 	ctxi = kzalloc(sizeof(*ctxi), GFP_KERNEL);
+diff --git a/drivers/scsi/cxlflash/superpipe.h b/drivers/scsi/cxlflash/superpipe.h
+index fffb179..72d53cf 100644
+--- a/drivers/scsi/cxlflash/superpipe.h
++++ b/drivers/scsi/cxlflash/superpipe.h
+@@ -97,7 +97,7 @@ struct ctx_info {
+ 	u32 rht_out;		/* Number of checked out RHT entries */
+ 	u32 rht_perms;		/* User-defined permissions for RHT entries */
+ 	struct llun_info **rht_lun;       /* Mapping of RHT entries to LUNs */
+-	bool *rht_needs_ws;	/* User-desired write-same function per RHTE */
++	u8 *rht_needs_ws;	/* User-desired write-same function per RHTE */
  
-+	/* Setup the LUNs block allocator on first call */
- 	mutex_lock(&gli->mutex);
- 	if (gli->mode == MODE_NONE) {
--		/* Setup the LUN table and block allocator on first call */
--		rc = init_luntable(cfg, lli);
--		if (rc) {
--			dev_err(dev, "%s: call to init_luntable failed "
--				"rc=%d!\n", __func__, rc);
--			goto err0;
--		}
--
- 		rc = init_vlun(lli);
- 		if (rc) {
- 			dev_err(dev, "%s: call to init_vlun failed rc=%d!\n",
-@@ -942,6 +935,13 @@ int cxlflash_disk_virtual_open(struct scsi_device *sdev, void *arg)
- 	}
- 	mutex_unlock(&gli->mutex);
- 
-+	rc = init_luntable(cfg, lli);
-+	if (rc) {
-+		dev_err(dev, "%s: call to init_luntable failed rc=%d!\n",
-+			__func__, rc);
-+		goto err1;
-+	}
-+
- 	ctxi = get_context(cfg, rctxid, lli, 0);
- 	if (unlikely(!ctxi)) {
- 		dev_err(dev, "%s: Bad context! (%llu)\n", __func__, ctxid);
+ 	struct cxl_ioctl_start_work work;
+ 	u64 ctxid;
 -- 
 2.1.0
