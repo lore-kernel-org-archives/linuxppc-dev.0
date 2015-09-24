@@ -1,42 +1,31 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 274671A05BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:41:27 +1000 (AEST)
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 15:41:25 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1DE7AC90046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:32:26 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8OJfE3W53674112
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 19:41:22 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8OJenKx001776
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:40:50 -0400
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v3 18/32] cxlflash: Fix AFU version access/storage and add
- check
-Date: Thu, 24 Sep 2015 14:39:50 -0500
-Message-Id: <1443123590-17307-1-git-send-email-mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
-References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE9481A043C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:41:51 +1000 (AEST)
+In-Reply-To: <20150922161710.GA21084@n2100.arm.linux.org.uk>
+References: <20150922161710.GA21084@n2100.arm.linux.org.uk>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+To: Florian Fainelli <f.fainelli@gmail.com>, David Miller <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Iyappan Subramanian <isubramanian@apm.com>, Keyur Chudgar <kchudgar@apm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Li Yang <leoli@freescale.com>, Michal Simek <michal.simek@xilinx.com>,
+ netdev@vger.kernel.org, Robert Richter <rric@kernel.org>,
+ Rob Herring <robh+dt@kernel.org>,
+ "Soren Brinkmann" <soren.brinkmann@xilinx.com>,
+ Sunil Goutham <sgoutham@cavium.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH RESEND v3 9/9] net: fix net_device refcounting
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <E1ZfCJl-0004S9-Qq@rmk-PC.arm.linux.org.uk>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Date: Thu, 24 Sep 2015 20:36:33 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,82 +35,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The AFU version is stored as a non-terminated string of bytes within
-a 64-bit little-endian register. Presently the value is read directly
-(no MMIO accessor) and is stored in a buffer that is not big enough
-to contain a NULL terminator. Additionally the version obtained is not
-evaluated against a known value to prevent usage with unsupported AFUs.
-All of these deficiencies can lead to a variety of problems.
+of_find_net_device_by_node() uses class_find_device() internally to
+lookup the corresponding network device.  class_find_device() returns
+a reference to the embedded struct device, with its refcount
+incremented.
 
-To remedy, use the correct MMIO accessor to read the version value into
-a null-terminated buffer and add a check to prevent an incompatible AFU
-from being used with this driver.
+Add a comment to the definition in net/core/net-sysfs.c indicating the
+need to drop this refcount, and fix the DSA code to drop this refcount
+when the OF-generated platform data is cleaned up and freed.  Also
+arrange for the ref to be dropped when handling errors.
 
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 ---
- drivers/scsi/cxlflash/common.h  |  2 +-
- drivers/scsi/cxlflash/main.c    | 18 ++++++++++++------
- drivers/scsi/cxlflash/sislite.h |  2 +-
- 3 files changed, 14 insertions(+), 8 deletions(-)
+ net/core/net-sysfs.c | 9 +++++++++
+ net/dsa/dsa.c        | 5 ++++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index faf7f56..3be5754 100644
---- a/drivers/scsi/cxlflash/common.h
-+++ b/drivers/scsi/cxlflash/common.h
-@@ -179,7 +179,7 @@ struct afu {
- 	u32 cmd_couts;		/* Number of command checkouts */
- 	u32 internal_lun;	/* User-desired LUN mode for this AFU */
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index b279077c3089..805a95a48107 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -1481,6 +1481,15 @@ static int of_dev_node_match(struct device *dev, const void *data)
+ 	return ret == 0 ? dev->of_node == data : ret;
+ }
  
--	char version[8];
-+	char version[16];
- 	u64 interface_version;
- 
- 	struct cxlflash_cfg *parent; /* Pointer back to parent cxlflash_cfg */
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index d45388f..b6a2584 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -1751,14 +1751,20 @@ static int init_afu(struct cxlflash_cfg *cfg)
- 		goto err1;
++/*
++ * of_find_net_device_by_node - lookup the net device for the device node
++ * @np: OF device node
++ *
++ * Looks up the net_device structure corresponding with the device node.
++ * If successful, returns a pointer to the net_device with the embedded
++ * struct device refcount incremented by one, or NULL on failure. The
++ * refcount must be dropped when done with the net_device.
++ */
+ struct net_device *of_find_net_device_by_node(struct device_node *np)
+ {
+ 	struct device *dev;
+diff --git a/net/dsa/dsa.c b/net/dsa/dsa.c
+index bf4ba15fb780..c59fa5d9c22c 100644
+--- a/net/dsa/dsa.c
++++ b/net/dsa/dsa.c
+@@ -679,7 +679,7 @@ static int dsa_of_probe(struct device *dev)
+ 	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+ 	if (!pd) {
+ 		ret = -ENOMEM;
+-		goto out_put_mdio;
++		goto out_put_ethernet;
  	}
  
--	/* don't byte reverse on reading afu_version, else the string form */
--	/*     will be backwards */
--	reg = afu->afu_map->global.regs.afu_version;
--	memcpy(afu->version, &reg, 8);
-+	/* No byte reverse on reading afu_version or string will be backwards */
-+	reg = readq(&afu->afu_map->global.regs.afu_version);
-+	memcpy(afu->version, &reg, sizeof(reg));
- 	afu->interface_version =
- 	    readq_be(&afu->afu_map->global.regs.interface_version);
--	pr_debug("%s: afu version %s, interface version 0x%llX\n",
--		 __func__, afu->version, afu->interface_version);
-+	if ((afu->interface_version + 1) == 0) {
-+		pr_err("Back level AFU, please upgrade. AFU version %s "
-+		       "interface version 0x%llx\n", afu->version,
-+		       afu->interface_version);
-+		rc = -EINVAL;
-+		goto err1;
-+	} else
-+		pr_debug("%s: afu version %s, interface version 0x%llX\n",
-+			 __func__, afu->version, afu->interface_version);
+ 	dev->platform_data = pd;
+@@ -773,6 +773,8 @@ static int dsa_of_probe(struct device *dev)
+ out_free:
+ 	kfree(pd);
+ 	dev->platform_data = NULL;
++out_put_ethernet:
++	put_device(&ethernet_dev->dev);
+ out_put_mdio:
+ 	put_device(&mdio_bus->dev);
+ 	return ret;
+@@ -786,6 +788,7 @@ static void dsa_of_remove(struct device *dev)
+ 		return;
  
- 	rc = start_afu(cfg);
- 	if (rc) {
-diff --git a/drivers/scsi/cxlflash/sislite.h b/drivers/scsi/cxlflash/sislite.h
-index 63bf394..8425d1a 100644
---- a/drivers/scsi/cxlflash/sislite.h
-+++ b/drivers/scsi/cxlflash/sislite.h
-@@ -340,7 +340,7 @@ struct sisl_global_regs {
- #define SISL_AFUCONF_MBOX_CLR_READ     0x0010ULL
- 	__be64 afu_config;
- 	__be64 rsvd[0xf8];
--	__be64 afu_version;
-+	__le64 afu_version;
- 	__be64 interface_version;
- };
- 
+ 	dsa_of_free_platform_data(pd);
++	put_device(&pd->of_netdev->dev);
+ 	kfree(pd);
+ }
+ #else
 -- 
 2.1.0
