@@ -1,29 +1,27 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
+ [209.85.215.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5233C1A023F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 02:01:28 +1000 (AEST)
-Date: Thu, 24 Sep 2015 17:00:58 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: f.fainelli@gmail.com, devicetree@vger.kernel.org,
- frowand.list@gmail.com, grant.likely@linaro.org,
- isubramanian@apm.com, kchudgar@apm.com,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, leoli@freescale.com,
- michal.simek@xilinx.com, netdev@vger.kernel.org, rric@kernel.org,
- robh+dt@kernel.org, soren.brinkmann@xilinx.com, sgoutham@cavium.com,
- thomas.petazzoni@free-electrons.com
-Subject: Re: [PATCH v2 0/9] Phy, mdiobus, and netdev struct device fixes
-Message-ID: <20150924160058.GA21513@n2100.arm.linux.org.uk>
-References: <20150922161710.GA21084@n2100.arm.linux.org.uk>
- <20150923.162417.814596822188458346.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20150923.162417.814596822188458346.davem@davemloft.net>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFE5E1A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 03:27:53 +1000 (AEST)
+Received: by lacao8 with SMTP id ao8so71640180lac.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 10:27:50 -0700 (PDT)
+From: Alexander Popov <alex.popov@linux.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anatolij Gustschin <agust@denx.de>, Gerhard Sittig <gsi@denx.de>,
+ Rob Herring <robh@kernel.org>, Timur Tabi <timur@tabi.org>,
+ Grant Likely <grant.likely@linaro.org>,
+ Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
+ Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>, Alexander Popov <alex.popov@linux.com>,
+ linuxppc-dev@lists.ozlabs.org, dmaengine@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/3] powerpc/512x: add LocalPlus Bus FIFO device driver
+Date: Thu, 24 Sep 2015 20:28:54 +0300
+Message-Id: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 23, 2015 at 04:24:17PM -0700, David Miller wrote:
-> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> Date: Tue, 22 Sep 2015 17:17:10 +0100
-> 
-> > This is the second version of the series, with the comments David had
-> > on the first patch fixed up.  Original series description with updated
-> > diffstat below.
-> 
-> This needs some build fixes:
-> 
-> drivers/net/ethernet/apm/xgene/xgene_enet_hw.c: In function ‘xgene_enet_phy_connect’:
-> drivers/net/ethernet/apm/xgene/xgene_enet_hw.c:694:20: error: too few arguments to function ‘of_phy_connect’
->    pdata->phy_dev = of_phy_connect(ndev, phy_np,
->                     ^
-> In file included from drivers/net/ethernet/apm/xgene/xgene_enet_main.h:31:0,
->                  from drivers/net/ethernet/apm/xgene/xgene_enet_hw.c:22:
-> include/linux/of_mdio.h:18:27: note: declared here
->  extern struct phy_device *of_phy_connect(struct net_device *dev,
->                            ^
+This driver for Freescale MPC512x LocalPlus Bus FIFO (called SCLPC
+in the Reference Manual) allows Direct Memory Access transfers
+between RAM and peripheral devices on LocalPlus Bus.
 
-Sorry about that, I'll send a new series later this evening.
+Changes in v3:
+ - resource usage in probe() is fixed;
+ - driver methods are made safe against remove();
+ - dma_request_slave_channel() is used to get DMA channel number from
+    the device tree;
+ - chip select number concerned with the DMA transaction is determined
+    from 'localbus' device tree node information;
+ - register set is described as a structure;
+ - symbolic names are given to shift counts to keep magic numbers
+    out of the code;
+ - choosing values for LPBFIFO BPT (bytes per transfer) and DMA maxburst
+    is improved, so DMA transfer size has increased for some cases;
+ - device tree binding for LPBFIFO is documented;
+ - Kconfig and Makefile are improved;
+ - email address "a13xp0p0v88@gmail.com" is changed to a more pleasant
+    alias "alex.popov@linux.com";
 
-Unfortunately, that's also not the only one - Cavium Thunder BGX also
-fails.  Looking again at that driver, the driver structure doesn't lend
-itself well to having the refcount balancing added to it due to the
-multiple different paths which it obtains a phy_device.  I think this is
-best left to the maintainers of this driver to fix, so I'm intending to
-drop the change to that driver.
+Alexander Popov (3):
+  powerpc/512x: add LocalPlus Bus FIFO device driver
+  powerpc/512x: add a device tree binding for LocalPlus Bus FIFO
+  dmaengine: mpc512x: initialize with subsys_initcall()
 
-That's not a problem: the driver is already buggy in this regard today,
-and that's won't be any different as a result of omitting it.  It's just
-a shame to leave one instance unfixed.
+ .../bindings/powerpc/fsl/mpc512x_lpbfifo.txt       |  21 +
+ arch/powerpc/boot/dts/mpc5121.dtsi                 |  11 +-
+ arch/powerpc/boot/dts/mpc5125twr.dts               |  11 +-
+ arch/powerpc/configs/mpc512x_defconfig             |   1 +
+ arch/powerpc/include/asm/mpc5121.h                 |  59 +++
+ arch/powerpc/platforms/512x/Kconfig                |   6 +
+ arch/powerpc/platforms/512x/Makefile               |   1 +
+ arch/powerpc/platforms/512x/mpc512x_lpbfifo.c      | 560 +++++++++++++++++++++
+ drivers/dma/mpc512x_dma.c                          |  12 +-
+ 9 files changed, 678 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpc512x_lpbfifo.txt
+ create mode 100644 arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
 
 -- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+1.9.1
