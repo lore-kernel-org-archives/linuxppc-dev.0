@@ -1,26 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0129.outbound.protection.outlook.com [65.55.169.129])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F7361A0026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 21:42:33 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Christophe Leroy' <christophe.leroy@c-s.fr>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, "scottwood@freescale.com"
- <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH v2 08/25] powerpc/8xx: Map IMMR area with 512k page at a
- fixed address
-Date: Thu, 24 Sep 2015 11:41:25 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CBA15B8@AcuExch.aculab.com>
-References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <bfa8400abd8b5174942616aae5876a55242f5468.1442939410.git.christophe.leroy@c-s.fr>
-In-Reply-To: <bfa8400abd8b5174942616aae5876a55242f5468.1442939410.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 796081A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 23:23:19 +1000 (AEST)
+From: <igal.liberman@freescale.com>
+To: <netdev@vger.kernel.org>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <scottwood@freescale.com>, <madalin.bucur@freescale.com>,
+ <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>, <ppc@mindchasers.com>,
+ <stephen@networkplumber.org>, <davem@davemloft.net>, Igal Liberman
+ <Igal.Liberman@freescale.com>
+Subject: [v5, 1/6] fsl/fman: Add FMan MURAM support
+Date: Thu, 24 Sep 2015 12:10:33 +0300
+Message-ID: <1443085838-7539-2-git-send-email-igal.liberman@freescale.com>
+In-Reply-To: <1443085838-7539-1-git-send-email-igal.liberman@freescale.com>
+References: <1443085838-7539-1-git-send-email-igal.liberman@freescale.com>
+Reply-To: <igal.liberman@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +29,298 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQ2hyaXN0b3BoZSBMZXJveQ0KPiBTZW50OiAyMiBTZXB0ZW1iZXIgMjAxNSAxNzo1MQ0K
-Li4uDQo+IFRyYWRpdGlvbmFseSwgZWFjaCBkcml2ZXIgbWFuYWdlcyBvbmUgY29tcHV0ZXIgYm9h
-cmQgd2hpY2ggaGFzIGl0cw0KPiBvd24gY29tcG9uZW50cyB3aXRoIGl0cyBvd24gbWVtb3J5IG1h
-cHMuDQo+IEJ1dCBvbiBlbWJlZGRlZCBjaGlwcyBsaWtlIHRoZSBNUEM4eHgsIHRoZSBTT0MgaGFz
-IGFsbCByZWdpc3RlcnMNCj4gbG9jYXRlZCBpbiB0aGUgc2FtZSBJTyBhcmVhLg0KPiANCj4gV2hl
-biBsb29raW5nIGF0IGlvcmVtYXBzIGRvbmUgZHVyaW5nIHN0YXJ0dXAsIHdlIHNlZSB0aGF0DQo+
-IG1hbnkgZHJpdmVycyBhcmUgcmUtbWFwcGluZyBzbWFsbCBwYXJ0cyBvZiB0aGUgSU1NUiBmb3Ig
-dGhlaXIgb3duIHVzZQ0KPiBhbmQgYWxsIHRob3NlIHNtYWxsIHBpZWNlcyBnZXRzIHRoZWlyIG93
-biA0ayBwYWdlLCBhbXBsaWZ5aW5nIHRoZQ0KPiBudW1iZXIgb2YgVExCIG1pc3NlczogaW4gb3Vy
-IHN5c3RlbSB3ZSBnZXQgMHhmZjAwMDAwMCBtYXBwZWQgMzEgdGltZXMNCj4gYW5kIDB4ZmYwMDMw
-MDAgbWFwcGVkIDkgdGltZXMuDQoNCklzbid0IHRoaXMgYSBtb3JlIGdlbmVyYWwgcHJvYmxlbT8N
-Cg0KSWYgdGhlcmUgYXJlIG11bHRpcGxlIHJlbWFwIHJlcXVlc3RzIGZvciB0aGUgc2FtZSBwaHlz
-aWNhbCBwYWdlDQpzaG91bGRuJ3QgdGhlIGtlcm5lbCBiZSBqdXN0IGluY3JlYXNpbmcgYSByZWZl
-cmVuY2UgY291bnQgc29tZXdoZXJlDQphbmQgcmV0dXJuaW5nIGFkZHJlc3MgaW4gdGhlIHNhbWUg
-dmlydHVhbCBwYWdlPw0KVGhpcyBzaG91bGQgcHJvYmFibHkgaGFwcGVuIHJlZ2FyZGxlc3Mgb2Yg
-dGhlIGFkZHJlc3MuDQpJIHByZXN1bWUgaXQgbXVzdCBiZSBkb25lIGZvciBjYWNoZWFibGUgbWFw
-cGluZ3MuDQoNCldoZXRoZXIgdGhpbmdzIGxpa2UgdGhlIElNTVIgc2hvdWxkIGJlIG1hcHBlZCB3
-aXRoIGEgbGFyZ2VyIFRMQg0KaXMgYSBzZXBhcmF0ZSBtYXR0ZXIuDQoNCglEYXZpZA0KDQo=
+From: Igal Liberman <Igal.Liberman@freescale.com>
+
+Add Frame Manager Multi-User RAM support.
+This internal FMan memory block is used by the
+FMan hardware modules, the management being made
+through the generic allocator.
+
+The FMan Internal memory, for example, is used for
+allocating transmit and receive FIFOs.
+
+Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+---
+ drivers/net/ethernet/freescale/Kconfig           |    1 +
+ drivers/net/ethernet/freescale/Makefile          |    2 +
+ drivers/net/ethernet/freescale/fman/Kconfig      |    8 ++
+ drivers/net/ethernet/freescale/fman/Makefile     |    5 +
+ drivers/net/ethernet/freescale/fman/fman_muram.c |  120 ++++++++++++++++++++++
+ drivers/net/ethernet/freescale/fman/fman_muram.h |   90 ++++++++++++++++
+ 6 files changed, 226 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/fman/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/fman/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_muram.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman_muram.h
+
+diff --git a/drivers/net/ethernet/freescale/Kconfig b/drivers/net/ethernet/freescale/Kconfig
+index ff76d4e..f3f89cc 100644
+--- a/drivers/net/ethernet/freescale/Kconfig
++++ b/drivers/net/ethernet/freescale/Kconfig
+@@ -53,6 +53,7 @@ config FEC_MPC52xx_MDIO
+ 	  If compiled as module, it will be called fec_mpc52xx_phy.
+ 
+ source "drivers/net/ethernet/freescale/fs_enet/Kconfig"
++source "drivers/net/ethernet/freescale/fman/Kconfig"
+ 
+ config FSL_PQ_MDIO
+ 	tristate "Freescale PQ MDIO"
+diff --git a/drivers/net/ethernet/freescale/Makefile b/drivers/net/ethernet/freescale/Makefile
+index 71debd1..4097c58 100644
+--- a/drivers/net/ethernet/freescale/Makefile
++++ b/drivers/net/ethernet/freescale/Makefile
+@@ -17,3 +17,5 @@ gianfar_driver-objs := gianfar.o \
+ 		gianfar_ethtool.o
+ obj-$(CONFIG_UCC_GETH) += ucc_geth_driver.o
+ ucc_geth_driver-objs := ucc_geth.o ucc_geth_ethtool.o
++
++obj-$(CONFIG_FSL_FMAN) += fman/
+diff --git a/drivers/net/ethernet/freescale/fman/Kconfig b/drivers/net/ethernet/freescale/fman/Kconfig
+new file mode 100644
+index 0000000..66b7296
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/Kconfig
+@@ -0,0 +1,8 @@
++config FSL_FMAN
++	bool "FMan support"
++	depends on FSL_SOC || COMPILE_TEST
++	select GENERIC_ALLOCATOR
++	default n
++	help
++		Freescale Data-Path Acceleration Architecture Frame Manager
++		(FMan) support
+diff --git a/drivers/net/ethernet/freescale/fman/Makefile b/drivers/net/ethernet/freescale/fman/Makefile
+new file mode 100644
+index 0000000..fc2e194
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/Makefile
+@@ -0,0 +1,5 @@
++subdir-ccflags-y +=  -I$(srctree)/drivers/net/ethernet/freescale/fman
++
++obj-y		+= fsl_fman.o
++
++fsl_fman-objs	:= fman_muram.o
+diff --git a/drivers/net/ethernet/freescale/fman/fman_muram.c b/drivers/net/ethernet/freescale/fman/fman_muram.c
+new file mode 100644
+index 0000000..cb84a22
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/fman_muram.c
+@@ -0,0 +1,120 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "fman_muram.h"
++
++#include <linux/io.h>
++#include <linux/slab.h>
++#include <linux/genalloc.h>
++
++struct muram_info {
++	struct gen_pool *pool;
++	void __iomem *vbase;
++	size_t size;
++	phys_addr_t pbase;
++};
++
++static unsigned long fman_muram_vbase_to_offset(struct muram_info *muram,
++						unsigned long vaddr)
++{
++	return vaddr - (unsigned long)muram->vbase;
++}
++
++struct muram_info *fman_muram_init(phys_addr_t base, size_t size)
++{
++	struct muram_info *muram;
++	void __iomem *vaddr;
++	int ret;
++
++	muram = kzalloc(sizeof(*muram), GFP_KERNEL);
++	if (!muram)
++		return NULL;
++
++	muram->pool = gen_pool_create(ilog2(64), -1);
++	if (!muram->pool) {
++		pr_err("%s(): MURAM pool create failed\n", __func__);
++		goto  muram_free;
++	}
++
++	vaddr = ioremap(base, size);
++	if (!vaddr) {
++		pr_err("%s(): MURAM ioremap failed\n", __func__);
++		goto pool_destroy;
++	}
++
++	ret = gen_pool_add_virt(muram->pool, (unsigned long)vaddr,
++				base, size, -1);
++	if (ret < 0) {
++		pr_err("%s(): MURAM pool add failed\n", __func__);
++		iounmap(vaddr);
++		goto pool_destroy;
++	}
++
++	memset_io(vaddr, 0, (int)size);
++
++	muram->vbase = vaddr;
++	muram->pbase = base;
++	return muram;
++
++pool_destroy:
++	gen_pool_destroy(muram->pool);
++muram_free:
++	kfree(muram);
++	return NULL;
++}
++
++unsigned long fman_muram_offset_to_vbase(struct muram_info *muram,
++					 unsigned long offset)
++{
++	return offset + (unsigned long)muram->vbase;
++}
++
++int fman_muram_alloc(struct muram_info *muram, size_t size)
++{
++	unsigned long vaddr;
++
++	vaddr = gen_pool_alloc(muram->pool, size);
++	if (!vaddr)
++		return -ENOMEM;
++
++	memset_io((void __iomem *)vaddr, 0, size);
++
++	return fman_muram_vbase_to_offset(muram, vaddr);
++}
++
++void fman_muram_free_mem(struct muram_info *muram, u32 offset, size_t size)
++{
++	unsigned long addr = fman_muram_offset_to_vbase(muram, offset);
++
++	gen_pool_free(muram->pool, addr, size);
++}
++
+diff --git a/drivers/net/ethernet/freescale/fman/fman_muram.h b/drivers/net/ethernet/freescale/fman/fman_muram.h
+new file mode 100644
+index 0000000..c715795
+--- /dev/null
++++ b/drivers/net/ethernet/freescale/fman/fman_muram.h
+@@ -0,0 +1,90 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++#ifndef __FM_MURAM_EXT
++#define __FM_MURAM_EXT
++
++#include <linux/types.h>
++
++#define FM_MURAM_INVALID_ALLOCATION	-1
++
++/* Structure for FM MURAM information */
++struct muram_info;
++
++/**
++ * fman_muram_init
++ * @base:	Pointer to base of memory mapped FM-MURAM.
++ * @size:	Size of the FM-MURAM partition.
++ *
++ * Creates partition in the MURAM.
++ * The routine returns a pointer to the MURAM partition.
++ * This pointer must be passed as to all other FM-MURAM function calls.
++ * No actual initialization or configuration of FM_MURAM hardware is done by
++ * this routine.
++ *
++ * Return: pointer to FM-MURAM object, or NULL for Failure.
++ */
++struct muram_info *fman_muram_init(phys_addr_t base, size_t size);
++
++/**
++ * fman_muram_offset_to_vbase
++ * @muram:	FM-MURAM module pointer.
++ * @offset:	the offset of the memory block
++ *
++ * Gives the address of the memory region from specific offset
++ *
++ * Return: The address of the memory block
++ */
++unsigned long fman_muram_offset_to_vbase(struct muram_info *muram,
++					 unsigned long offset);
++
++/**
++ * fman_muram_alloc
++ * @muram:	FM-MURAM module pointer.
++ * @size:	Size of the memory to be allocated.
++ *
++ * Allocate some memory from FM-MURAM partition.
++ *
++ * Return: address of the allocated memory; NULL otherwise.
++ */
++int fman_muram_alloc(struct muram_info *muram, size_t size);
++
++/**
++ * fman_muram_free_mem
++ * muram:	FM-MURAM module pointer.
++ * offset:	offset of the memory region to be freed.
++ * size:	size of the memory to be freed.
++ *
++ * Free an allocated memory from FM-MURAM partition.
++ */
++void fman_muram_free_mem(struct muram_info *muram, u32 offset, size_t size);
++
++#endif /* __FM_MURAM_EXT */
+-- 
+1.7.9.5
