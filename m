@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96B141A0B38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:42:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D48F1A0B75
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:42:17 +1000 (AEST)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 13:42:07 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A6CB01FF004A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:33:13 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8OJcxrZ55574574
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:38:59 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8OJg2wn016942
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:42:04 -0600
+ Thu, 24 Sep 2015 13:42:15 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 82A101FF002D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:33:22 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t8OJfJiw11141588
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:41:19 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8OJgCe1013748
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:42:13 -0600
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,10 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v3 21/32] cxlflash: Correct behavior in device reset handler
- following EEH
-Date: Thu, 24 Sep 2015 14:41:24 -0500
-Message-Id: <1443123684-17465-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v3 22/32] cxlflash: Remove unnecessary scsi_block_requests
+Date: Thu, 24 Sep 2015 14:41:32 -0500
+Message-Id: <1443123692-17504-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,44 +45,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the device reset handler is entered while a reset operation
-is taking place, the handler exits without actually sending a
-reset (TMF) to the targeted device. This behavior is incorrect
-as the device is not reset. Further complicating matters is the
-fact that a success is returned even when the TMF was not sent.
-
-To fix, the state is rechecked after coming out of the reset
-state. When the state is normal, a TMF will be sent out.
+The host reset handler is called with I/O already blocked, thus
+there is no need to explicitly block and unblock I/O in the handler.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/scsi/cxlflash/main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index fada355..cf6a067 100644
+index cf6a067..729f742 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -1920,6 +1920,7 @@ static int cxlflash_eh_device_reset_handler(struct scsi_cmnd *scp)
- 		 get_unaligned_be32(&((u32 *)scp->cmnd)[2]),
- 		 get_unaligned_be32(&((u32 *)scp->cmnd)[3]));
- 
-+retry:
+@@ -1966,7 +1966,6 @@ static int cxlflash_eh_host_reset_handler(struct scsi_cmnd *scp)
  	switch (cfg->state) {
  	case STATE_NORMAL:
- 		rcr = send_tmf(afu, scp, TMF_LUN_RESET);
-@@ -1928,9 +1929,7 @@ static int cxlflash_eh_device_reset_handler(struct scsi_cmnd *scp)
+ 		cfg->state = STATE_RESET;
+-		scsi_block_requests(cfg->host);
+ 		cxlflash_mark_contexts_error(cfg);
+ 		rcr = afu_reset(cfg);
+ 		if (rcr) {
+@@ -1975,7 +1974,6 @@ static int cxlflash_eh_host_reset_handler(struct scsi_cmnd *scp)
+ 		} else
+ 			cfg->state = STATE_NORMAL;
+ 		wake_up_all(&cfg->reset_waitq);
+-		scsi_unblock_requests(cfg->host);
  		break;
  	case STATE_RESET:
  		wait_event(cfg->reset_waitq, cfg->state != STATE_RESET);
--		if (cfg->state == STATE_NORMAL)
--			break;
--		/* fall through */
-+		goto retry;
- 	default:
- 		rc = FAILED;
- 		break;
 -- 
 2.1.0
