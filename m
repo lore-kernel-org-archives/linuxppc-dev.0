@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D6C91A0A68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:40:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B85651A074C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:40:07 +1000 (AEST)
 Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 13:40:01 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7E4AB19D8026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:30:50 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t8OJdvZj2687334
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:39:57 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8OJduvw001120
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:39:57 -0600
+ Thu, 24 Sep 2015 15:40:05 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4E64538C8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:40:03 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8OJe37q54591492
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 19:40:03 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8OJe1tI032284
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:40:03 -0400
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,9 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v3 13/32] cxlflash: Fix to avoid stall while waiting on TMF
-Date: Thu, 24 Sep 2015 14:39:20 -0500
-Message-Id: <1443123560-17081-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v3 14/32] cxlflash: Fix location of setting resid
+Date: Thu, 24 Sep 2015 14:39:26 -0500
+Message-Id: <1443123566-17119-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,149 +45,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Borrowing the TMF waitq's spinlock causes a stall condition when
-waiting for the TMF to complete. To remedy, introduce our own spin
-lock to serialize TMF and use the appropriate wait services.
-
-Also add a timeout while waiting for a TMF completion. When a TMF
-times out, report back a failure such that a bigger hammer reset
-can occur.
+The resid is incorrectly set which can lead to unnecessary retry
+attempts by the stack. This is due to resid _always_ being set
+using a value returned from the adapter. Instead, the value
+should only be interpreted and set when in an underrun scenario.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/common.h |  1 +
- drivers/scsi/cxlflash/main.c   | 55 +++++++++++++++++++++++++-----------------
- 2 files changed, 34 insertions(+), 22 deletions(-)
+ drivers/scsi/cxlflash/main.c | 20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index b038ac7..7a0cb5c 100644
---- a/drivers/scsi/cxlflash/common.h
-+++ b/drivers/scsi/cxlflash/common.h
-@@ -124,6 +124,7 @@ struct cxlflash_cfg {
- 	struct list_head lluns; /* list of llun_info structs */
- 
- 	wait_queue_head_t tmf_waitq;
-+	spinlock_t tmf_slock;
- 	bool tmf_active;
- 	wait_queue_head_t reset_waitq;
- 	enum cxlflash_state state;
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 527ff85..110037d 100644
+index 110037d..5503a40 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -249,11 +249,10 @@ static void cmd_complete(struct afu_cmd *cmd)
+@@ -107,6 +107,7 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
+ {
+ 	struct sisl_ioarcb *ioarcb;
+ 	struct sisl_ioasa *ioasa;
++	u32 resid;
+ 
+ 	if (unlikely(!cmd))
+ 		return;
+@@ -115,9 +116,10 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
+ 	ioasa = &(cmd->sa);
+ 
+ 	if (ioasa->rc.flags & SISL_RC_FLAGS_UNDERRUN) {
+-		pr_debug("%s: cmd underrun cmd = %p scp = %p\n",
+-			 __func__, cmd, scp);
+-		scp->result = (DID_ERROR << 16);
++		resid = ioasa->resid;
++		scsi_set_resid(scp, resid);
++		pr_debug("%s: cmd underrun cmd = %p scp = %p, resid = %d\n",
++			 __func__, cmd, scp, resid);
+ 	}
+ 
+ 	if (ioasa->rc.flags & SISL_RC_FLAGS_OVERRUN) {
+@@ -158,8 +160,7 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
+ 				/* If the SISL_RC_FLAGS_OVERRUN flag was set,
+ 				 * then we will handle this error else where.
+ 				 * If not then we must handle it here.
+-				 * This is probably an AFU bug. We will
+-				 * attempt a retry to see if that resolves it.
++				 * This is probably an AFU bug.
+ 				 */
+ 				scp->result = (DID_ERROR << 16);
+ 			}
+@@ -183,7 +184,7 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
+ 		/* We have an AFU error */
+ 		switch (ioasa->rc.afu_rc) {
+ 		case SISL_AFU_RC_NO_CHANNELS:
+-			scp->result = (DID_MEDIUM_ERROR << 16);
++			scp->result = (DID_NO_CONNECT << 16);
+ 			break;
+ 		case SISL_AFU_RC_DATA_DMA_ERR:
+ 			switch (ioasa->afu_extra) {
+@@ -217,7 +218,6 @@ static void process_cmd_err(struct afu_cmd *cmd, struct scsi_cmnd *scp)
+ static void cmd_complete(struct afu_cmd *cmd)
+ {
+ 	struct scsi_cmnd *scp;
+-	u32 resid;
+ 	ulong lock_flags;
+ 	struct afu *afu = cmd->parent;
+ 	struct cxlflash_cfg *cfg = afu->parent;
+@@ -229,14 +229,11 @@ static void cmd_complete(struct afu_cmd *cmd)
+ 
+ 	if (cmd->rcb.scp) {
+ 		scp = cmd->rcb.scp;
+-		if (unlikely(cmd->sa.rc.afu_rc ||
+-			     cmd->sa.rc.scsi_rc ||
+-			     cmd->sa.rc.fc_rc))
++		if (unlikely(cmd->sa.ioasc))
+ 			process_cmd_err(cmd, scp);
+ 		else
+ 			scp->result = (DID_OK << 16);
+ 
+-		resid = cmd->sa.resid;
+ 		cmd_is_tmf = cmd->cmd_tmf;
+ 		cmd_checkin(cmd); /* Don't use cmd after here */
+ 
+@@ -244,7 +241,6 @@ static void cmd_complete(struct afu_cmd *cmd)
+ 				     "ioasc=%d\n", __func__, scp, scp->result,
+ 				     cmd->sa.ioasc);
+ 
+-		scsi_set_resid(scp, resid);
+ 		scsi_dma_unmap(scp);
  		scp->scsi_done(scp);
  
- 		if (cmd_is_tmf) {
--			spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+			spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 			cfg->tmf_active = false;
- 			wake_up_all_locked(&cfg->tmf_waitq);
--			spin_unlock_irqrestore(&cfg->tmf_waitq.lock,
--					       lock_flags);
-+			spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 		}
- 	} else
- 		complete(&cmd->cevent);
-@@ -420,6 +419,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	struct device *dev = &cfg->dev->dev;
- 	ulong lock_flags;
- 	int rc = 0;
-+	ulong to;
- 
- 	cmd = cmd_checkout(afu);
- 	if (unlikely(!cmd)) {
-@@ -428,15 +428,15 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 		goto out;
- 	}
- 
--	/* If a Task Management Function is active, do not send one more.
--	 */
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+	/* When Task Management Function is active do not send another */
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active)
--		wait_event_interruptible_locked_irq(cfg->tmf_waitq,
--						    !cfg->tmf_active);
-+		wait_event_interruptible_lock_irq(cfg->tmf_waitq,
-+						  !cfg->tmf_active,
-+						  cfg->tmf_slock);
- 	cfg->tmf_active = true;
- 	cmd->cmd_tmf = true;
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
- 	cmd->rcb.ctx_id = afu->ctx_hndl;
- 	cmd->rcb.port_sel = port_sel;
-@@ -457,15 +457,24 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	rc = send_cmd(afu, cmd);
- 	if (unlikely(rc)) {
- 		cmd_checkin(cmd);
--		spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+		spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 		cfg->tmf_active = false;
--		spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 		goto out;
- 	}
- 
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
--	wait_event_interruptible_locked_irq(cfg->tmf_waitq, !cfg->tmf_active);
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
-+	to = msecs_to_jiffies(5000);
-+	to = wait_event_interruptible_lock_irq_timeout(cfg->tmf_waitq,
-+						       !cfg->tmf_active,
-+						       cfg->tmf_slock,
-+						       to);
-+	if (!to) {
-+		cfg->tmf_active = false;
-+		dev_err(dev, "%s: TMF timed out!\n", __func__);
-+		rc = -1;
-+	}
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- out:
- 	return rc;
- }
-@@ -512,16 +521,17 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 			    get_unaligned_be32(&((u32 *)scp->cmnd)[2]),
- 			    get_unaligned_be32(&((u32 *)scp->cmnd)[3]));
- 
--	/* If a Task Management Function is active, wait for it to complete
-+	/*
-+	 * If a Task Management Function is active, wait for it to complete
- 	 * before continuing with regular commands.
- 	 */
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active) {
--		spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 		rc = SCSI_MLQUEUE_HOST_BUSY;
- 		goto out;
- 	}
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
- 	switch (cfg->state) {
- 	case STATE_RESET:
-@@ -713,11 +723,12 @@ static void cxlflash_remove(struct pci_dev *pdev)
- 	/* If a Task Management Function is active, wait for it to complete
- 	 * before continuing with remove.
- 	 */
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active)
--		wait_event_interruptible_locked_irq(cfg->tmf_waitq,
--						    !cfg->tmf_active);
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+		wait_event_interruptible_lock_irq(cfg->tmf_waitq,
-+						  !cfg->tmf_active,
-+						  cfg->tmf_slock);
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
- 	cfg->state = STATE_FAILTERM;
- 	cxlflash_stop_term_user_contexts(cfg);
 -- 
 2.1.0
