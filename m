@@ -1,40 +1,35 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 90ACF1A022E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 04:30:29 +1000 (AEST)
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C4A3C14029C
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2015 04:30:28 +1000 (AEST)
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id BBF7F1A02D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:04:09 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 12:30:26 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6F69B1FF0042
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 12:21:33 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t8OITEh87406008
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 11:29:14 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8OIUN86017373
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 12:30:24 -0600
-Date: Thu, 24 Sep 2015 11:28:19 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Subject: [PATCH] perf: Fix build break on powerpc due to sample_reg_masks
-Message-ID: <20150924182817.GA11058@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Fri, 25 Sep 2015 05:04:08 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E5B672BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:04:04 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8OJ3uJW11731126
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:04:04 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8OJ3Vom011960
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:03:32 +1000
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, acme@kernel.org, scottwood@freescale.com,
+ sukadev@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
+ mpe@ellerman.id.au, paulus@samba.org, mingo@redhat.com,
+ hemant@linux.vnet.ibm.com
+Subject: [PATCH v7 1/4] perf, kvm/{x86,
+ s390}: Remove dependency on uapi/kvm_perf.h
+Date: Fri, 25 Sep 2015 00:32:58 +0530
+Message-Id: <1443121381-24553-1-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,78 +39,222 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Its better to remove the dependency on uapi/kvm_perf.h to allow dynamic
+discovery of kvm events (if its needed). To do this, some extern
+variables have been introduced with which we can keep the generic
+functions generic.
 
->From d1171a4c34c6100ec8b663ddb803dd69ef3fb7ce Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Thu, 24 Sep 2015 17:53:49 -0400
-Subject: [PATCH] perf: Fix build break on powerpc due to sample_reg_masks
-
-perf_regs.c does not get built on Powerpc as CONFIG_PERF_REGS is false.
-So the weak definition for 'sample_regs_masks' doesn't get picked up.
-
-Adding perf_regs.o to util/Build unconditionally, exposes a redefinition
-error for 'perf_reg_value()' function (due to the static inline version
-in util/perf_regs.h). So use #ifdef HAVE_PERF_REGS_SUPPORT' around that
-function.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 ---
- tools/perf/util/Build       | 2 +-
- tools/perf/util/perf_regs.c | 2 ++
- tools/perf/util/perf_regs.h | 4 ++++
- 3 files changed, 7 insertions(+), 1 deletion(-)
+ tools/perf/arch/s390/util/kvm-stat.c | 10 +++++++-
+ tools/perf/arch/x86/util/kvm-stat.c  | 12 +++++++++-
+ tools/perf/builtin-kvm.c             | 44 ++++++++++++++++++++++--------------
+ tools/perf/util/kvm-stat.h           |  3 +++
+ 4 files changed, 50 insertions(+), 19 deletions(-)
 
-diff --git a/tools/perf/util/Build b/tools/perf/util/Build
-index 349bc96..e5f18a2 100644
---- a/tools/perf/util/Build
-+++ b/tools/perf/util/Build
-@@ -17,6 +17,7 @@ libperf-y += levenshtein.o
- libperf-y += llvm-utils.o
- libperf-y += parse-options.o
- libperf-y += parse-events.o
-+libperf-y += perf_regs.o
- libperf-y += path.o
- libperf-y += rbtree.o
- libperf-y += bitmap.o
-@@ -103,7 +104,6 @@ libperf-$(CONFIG_LIBBABELTRACE) += data-convert-bt.o
+diff --git a/tools/perf/arch/s390/util/kvm-stat.c b/tools/perf/arch/s390/util/kvm-stat.c
+index a5dbc07..c2acb3e 100644
+--- a/tools/perf/arch/s390/util/kvm-stat.c
++++ b/tools/perf/arch/s390/util/kvm-stat.c
+@@ -10,7 +10,11 @@
+  */
  
- libperf-y += scripting-engines/
+ #include "../../util/kvm-stat.h"
+-#include <asm/kvm_perf.h>
++#include <asm/sie.h>
++
++#define DECODE_STR_LEN 40
++#define VCPU_ID "id"
++#define KVM_EXIT_REASON "icptcode"
  
--libperf-$(CONFIG_PERF_REGS) += perf_regs.o
- libperf-$(CONFIG_ZLIB) += zlib.o
- libperf-$(CONFIG_LZMA) += lzma.o
- 
-diff --git a/tools/perf/util/perf_regs.c b/tools/perf/util/perf_regs.c
-index 885e8ac..6b8eb13 100644
---- a/tools/perf/util/perf_regs.c
-+++ b/tools/perf/util/perf_regs.c
-@@ -6,6 +6,7 @@ const struct sample_reg __weak sample_reg_masks[] = {
- 	SMPL_REG_END
+ define_exit_reasons_table(sie_exit_reasons, sie_intercept_code);
+ define_exit_reasons_table(sie_icpt_insn_codes, icpt_insn_codes);
+@@ -83,6 +87,10 @@ const char * const kvm_events_tp[] = {
+ 	NULL,
  };
  
-+#ifdef HAVE_PERF_REGS_SUPPORT
- int perf_reg_value(u64 *valp, struct regs_dump *regs, int id)
- {
- 	int i, idx = 0;
-@@ -29,3 +30,4 @@ out:
- 	*valp = regs->cache_regs[id];
- 	return 0;
- }
-+#endif
-diff --git a/tools/perf/util/perf_regs.h b/tools/perf/util/perf_regs.h
-index 2984dcc..8dbdfeb 100644
---- a/tools/perf/util/perf_regs.h
-+++ b/tools/perf/util/perf_regs.h
-@@ -3,6 +3,10 @@
- 
- #include <linux/types.h>
- 
-+#ifndef __maybe_unused
-+#define __maybe_unused __attribute__((unused))
-+#endif
++const char *vcpu_id_str = VCPU_ID;
++const int decode_str_len = DECODE_STR_LEN;
++const char *exit_reason_code = KVM_EXIT_REASON;
 +
- struct regs_dump;
+ struct kvm_reg_events_ops kvm_reg_events_ops[] = {
+ 	{ .name = "vmexit", .ops = &exit_events },
+ 	{ NULL, NULL },
+diff --git a/tools/perf/arch/x86/util/kvm-stat.c b/tools/perf/arch/x86/util/kvm-stat.c
+index 14e4e66..2d0d43b5 100644
+--- a/tools/perf/arch/x86/util/kvm-stat.c
++++ b/tools/perf/arch/x86/util/kvm-stat.c
+@@ -1,5 +1,11 @@
+ #include "../../util/kvm-stat.h"
+-#include <asm/kvm_perf.h>
++#include <asm/svm.h>
++#include <asm/vmx.h>
++#include <asm/kvm.h>
++
++#define DECODE_STR_LEN 20
++#define VCPU_ID "vcpu_id"
++#define KVM_EXIT_REASON "exit_reason"
  
- struct sample_reg {
+ define_exit_reasons_table(vmx_exit_reasons, VMX_EXIT_REASONS);
+ define_exit_reasons_table(svm_exit_reasons, SVM_EXIT_REASONS);
+@@ -129,6 +135,10 @@ const char * const kvm_events_tp[] = {
+ 	NULL,
+ };
+ 
++const char *vcpu_id_str = VCPU_ID;
++const int decode_str_len = DECODE_STR_LEN;
++const char *exit_reason_code = KVM_EXIT_REASON;
++
+ struct kvm_reg_events_ops kvm_reg_events_ops[] = {
+ 	{ .name = "vmexit", .ops = &exit_events },
+ 	{ .name = "mmio", .ops = &mmio_events },
+diff --git a/tools/perf/builtin-kvm.c b/tools/perf/builtin-kvm.c
+index fc1cffb..dbb1b1e 100644
+--- a/tools/perf/builtin-kvm.c
++++ b/tools/perf/builtin-kvm.c
+@@ -31,20 +31,19 @@
+ #include <math.h>
+ 
+ #ifdef HAVE_KVM_STAT_SUPPORT
+-#include <asm/kvm_perf.h>
+ #include "util/kvm-stat.h"
+ 
+-void exit_event_get_key(struct perf_evsel *evsel,
+-			struct perf_sample *sample,
+-			struct event_key *key)
++void exit_event_get_key(struct perf_evsel *evsel __maybe_unused,
++			   struct perf_sample *sample __maybe_unused,
++			   struct event_key *key __maybe_unused)
+ {
+ 	key->info = 0;
+-	key->key = perf_evsel__intval(evsel, sample, KVM_EXIT_REASON);
++	key->key = perf_evsel__intval(evsel, sample, exit_reason_code);
+ }
+ 
+-bool kvm_exit_event(struct perf_evsel *evsel)
++bool kvm_exit_event(struct perf_evsel *evsel __maybe_unused)
+ {
+-	return !strcmp(evsel->name, KVM_EXIT_TRACE);
++	return !strncmp(evsel->name, kvm_events_tp[1], strlen(evsel->name));
+ }
+ 
+ bool exit_event_begin(struct perf_evsel *evsel,
+@@ -58,9 +57,9 @@ bool exit_event_begin(struct perf_evsel *evsel,
+ 	return false;
+ }
+ 
+-bool kvm_entry_event(struct perf_evsel *evsel)
++bool kvm_entry_event(struct perf_evsel *evsel __maybe_unused)
+ {
+-	return !strcmp(evsel->name, KVM_ENTRY_TRACE);
++	return !strncmp(evsel->name, kvm_events_tp[0], strlen(evsel->name));
+ }
+ 
+ bool exit_event_end(struct perf_evsel *evsel,
+@@ -71,8 +70,8 @@ bool exit_event_end(struct perf_evsel *evsel,
+ }
+ 
+ static const char *get_exit_reason(struct perf_kvm_stat *kvm,
+-				   struct exit_reasons_table *tbl,
+-				   u64 exit_code)
++			    struct exit_reasons_table *tbl,
++			    u64 exit_code)
+ {
+ 	while (tbl->reason != NULL) {
+ 		if (tbl->exit_code == exit_code)
+@@ -92,7 +91,7 @@ void exit_event_decode_key(struct perf_kvm_stat *kvm,
+ 	const char *exit_reason = get_exit_reason(kvm, key->exit_reasons,
+ 						  key->key);
+ 
+-	scnprintf(decode, DECODE_STR_LEN, "%s", exit_reason);
++	scnprintf(decode, decode_str_len, "%s", exit_reason);
+ }
+ 
+ static bool register_kvm_events_ops(struct perf_kvm_stat *kvm)
+@@ -358,7 +357,11 @@ static bool handle_end_event(struct perf_kvm_stat *kvm,
+ 	time_diff = sample->time - time_begin;
+ 
+ 	if (kvm->duration && time_diff > kvm->duration) {
+-		char decode[DECODE_STR_LEN];
++		char *decode = zalloc(decode_str_len);
++		if (!decode) {
++			pr_err("Not enough memory\n");
++			return false;
++		}
+ 
+ 		kvm->events_ops->decode_key(kvm, &event->key, decode);
+ 		if (!skip_event(decode)) {
+@@ -366,6 +369,7 @@ static bool handle_end_event(struct perf_kvm_stat *kvm,
+ 				 sample->time, sample->pid, vcpu_record->vcpu_id,
+ 				 decode, time_diff/1000);
+ 		}
++		free(decode);
+ 	}
+ 
+ 	return update_kvm_event(event, vcpu, time_diff);
+@@ -386,7 +390,7 @@ struct vcpu_event_record *per_vcpu_record(struct thread *thread,
+ 			return NULL;
+ 		}
+ 
+-		vcpu_record->vcpu_id = perf_evsel__intval(evsel, sample, VCPU_ID);
++		vcpu_record->vcpu_id = perf_evsel__intval(evsel, sample, vcpu_id_str);
+ 		thread__set_priv(thread, vcpu_record);
+ 	}
+ 
+@@ -575,7 +579,7 @@ static void show_timeofday(void)
+ 
+ static void print_result(struct perf_kvm_stat *kvm)
+ {
+-	char decode[DECODE_STR_LEN];
++	char *decode;
+ 	struct kvm_event *event;
+ 	int vcpu = kvm->trace_vcpu;
+ 
+@@ -584,9 +588,14 @@ static void print_result(struct perf_kvm_stat *kvm)
+ 		show_timeofday();
+ 	}
+ 
++	decode = zalloc(decode_str_len);
++	if (!decode) {
++		pr_err("Not enough memory\n");
++		return;
++	}
+ 	pr_info("\n\n");
+ 	print_vcpu_info(kvm);
+-	pr_info("%*s ", DECODE_STR_LEN, kvm->events_ops->name);
++	pr_info("%*s ", decode_str_len, kvm->events_ops->name);
+ 	pr_info("%10s ", "Samples");
+ 	pr_info("%9s ", "Samples%");
+ 
+@@ -605,7 +614,7 @@ static void print_result(struct perf_kvm_stat *kvm)
+ 		min = get_event_min(event, vcpu);
+ 
+ 		kvm->events_ops->decode_key(kvm, &event->key, decode);
+-		pr_info("%*s ", DECODE_STR_LEN, decode);
++		pr_info("%*s ", decode_str_len, decode);
+ 		pr_info("%10llu ", (unsigned long long)ecount);
+ 		pr_info("%8.2f%% ", (double)ecount / kvm->total_count * 100);
+ 		pr_info("%8.2f%% ", (double)etime / kvm->total_time * 100);
+@@ -615,6 +624,7 @@ static void print_result(struct perf_kvm_stat *kvm)
+ 			kvm_event_rel_stddev(vcpu, event));
+ 		pr_info("\n");
+ 	}
++	free(decode);
+ 
+ 	pr_info("\nTotal Samples:%" PRIu64 ", Total events handled time:%.2fus.\n\n",
+ 		kvm->total_count, kvm->total_time / 1e3);
+diff --git a/tools/perf/util/kvm-stat.h b/tools/perf/util/kvm-stat.h
+index ae825d4..59ed51c 100644
+--- a/tools/perf/util/kvm-stat.h
++++ b/tools/perf/util/kvm-stat.h
+@@ -136,5 +136,8 @@ int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid);
+ extern const char * const kvm_events_tp[];
+ extern struct kvm_reg_events_ops kvm_reg_events_ops[];
+ extern const char * const kvm_skip_events[];
++extern const char *vcpu_id_str;
++extern const int decode_str_len;
++extern const char *exit_reason_code;
+ 
+ #endif /* __PERF_KVM_STAT_H */
 -- 
-1.8.3.1
+1.9.3
