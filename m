@@ -1,27 +1,33 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0135.outbound.protection.outlook.com [207.46.100.135])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <andrew@lunn.ch>
+Received: from vps0.lunn.ch (vps0.lunn.ch [178.209.37.122])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C50111A2D68
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 08:58:37 +1000 (AEST)
-Message-ID: <1443135504.32298.67.camel@freescale.com>
-Subject: Re: [PATCH 15/19] KVM: PPC: e500: fix handling local_sid_lookup result
-From: Scott Wood <scottwood@freescale.com>
-To: Andrzej Hajda <a.hajda@samsung.com>
-CC: <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz
- <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>,
- Alexander Graf <agraf@suse.com>, Gleb Natapov <gleb@kernel.org>, "Paolo
- Bonzini" <pbonzini@redhat.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, <kvm-ppc@vger.kernel.org>,
- <kvm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 24 Sep 2015 17:58:24 -0500
-In-Reply-To: <1443103227-25612-16-git-send-email-a.hajda@samsung.com>
-References: <1443103227-25612-1-git-send-email-a.hajda@samsung.com>
- <1443103227-25612-16-git-send-email-a.hajda@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E6B61A2D88
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 08:58:50 +1000 (AEST)
+Date: Fri, 25 Sep 2015 00:50:33 +0200
+From: Andrew Lunn <andrew@lunn.ch>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Florian Fainelli <f.fainelli@gmail.com>,
+ David Miller <davem@davemloft.net>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ devicetree@vger.kernel.org, Sunil Goutham <sgoutham@cavium.com>,
+ Robert Richter <rric@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <robh+dt@kernel.org>,
+ Michal Simek <michal.simek@xilinx.com>, netdev@vger.kernel.org,
+ Soren Brinkmann <soren.brinkmann@xilinx.com>,
+ Iyappan Subramanian <isubramanian@apm.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Li Yang <leoli@freescale.com>, Keyur Chudgar <kchudgar@apm.com>,
+ linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH v3 0/9] Phy, mdiobus, and netdev struct device fixes
+Message-ID: <20150924225033.GI20825@lunn.ch>
+References: <20150924191754.GC21513@n2100.arm.linux.org.uk>
+ <20150924215731.GE20825@lunn.ch>
+ <20150924221541.GF21513@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150924221541.GF21513@n2100.arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-09-24 at 16:00 +0200, Andrzej Hajda wrote:
-> The function can return negative value.
-> 
-> The problem has been detected using proposed semantic patch
-> scripts/coccinelle/tests/assign_signed_to_unsigned.cocci [1].
-> 
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2046107
-> 
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
-> ---
-> Hi,
-> 
-> To avoid problems with too many mail recipients I have sent whole
-> patchset only to LKML. Anyway patches have no dependencies.
-> 
-> Regards
-> Andrzej
-> ---
->  arch/powerpc/kvm/e500.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> Thanks for testing.  Please could you confirm whether the same behaviour
+> is observed without the patches, just to make absolutely sure that isn't
+> a regression.
 
-Acked-by: Scott Wood <scottwood@freescale.com>
+So i tested this now.
 
--Scott
+I have two FEC interfaces. One i my main access interface, and the
+second is used by DSA to access switches. With your patches, the
+module Used by count is equal to the number of interfaces which are
+up.
+
+Without your patches, the count is always 0.
+
+When i try to remove the fec module, without your patches, but DSA
+still using the interface, i get the same
+
+ kernel:unregister_netdevice: waiting for eth1 to become free. Usage count = 1
+
+as with your patch. So this is not a regression.
+
+   Andrew
