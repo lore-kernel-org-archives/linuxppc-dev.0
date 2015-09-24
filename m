@@ -1,35 +1,43 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E84F81A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:18:38 +1000 (AEST)
 Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D39671A0026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:17:27 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id BCA54140281
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 13:18:38 +1000 (AEST)
 Received: from /spool/local
  by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 12:17:26 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 427483578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:17:24 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8O2HHsd39256238
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:17:25 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8O2GopH023830
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:16:51 +1000
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: acme@kernel.org, masami.hiramatsu.pt@hitachi.com, mjw@redhat.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- srikar@linux.vnet.ibm.com, naveen.n.rao@linux.vnet.ibm.com,
- hemant@linux.vnet.ibm.com
-Subject: [PATCH] perf/probe: Search both .eh_frame and .debug_frame sections
- for probe location
-Date: Thu, 24 Sep 2015 07:46:30 +0530
-Message-Id: <1443060990-10313-1-git-send-email-hemant@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Thu, 24 Sep 2015 13:18:37 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id ACF1E3578052
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 13:18:33 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8O3ILDK23134458
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 13:18:30 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8O3I02R011105
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 13:18:01 +1000
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Daniel Axtens <dja@axtens.net>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, mpe <mpe@ellerman.id.au>,
+ benh <benh@kernel.crashing.org>, mikey <mikey@neuling.org>,
+ "andrew.donnellan" <andrew.donnellan@au1.ibm.com>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ Manoj Kumar <kumarmn@us.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Panic on unhandled Machine Check
+In-reply-to: <1442990508-10199-1-git-send-email-dja@axtens.net>
+References: <1442990508-10199-1-git-send-email-dja@axtens.net>
+Date: Thu, 24 Sep 2015 13:17:35 +1000
+Message-Id: <1443064592-sup-3691@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,137 +47,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-perf probe through debuginfo__find_probes() in util/probe-finder.c
-checks for the functions' frame descriptions in either .eh_frame section
-of an ELF or the .debug_frame. The check is based on whether either one
-of these sections is present. But sometimes, it may happen that,
-.eh_frame, even if present, may not be complete and may miss some
-descriptions. For e.g., in powerpc, this may happen :
- $ gcc -g bin.c -o bin
+Thanks Daniel.
 
- $ objdump --dwarf ./bin
- <1><145>: Abbrev Number: 7 (DW_TAG_subprogram)
-    <146>   DW_AT_external    : 1
-    <146>   DW_AT_name        : (indirect string, offset: 0x9e): main
-    <14a>   DW_AT_decl_file   : 1
-    <14b>   DW_AT_decl_line   : 39
-    <14c>   DW_AT_prototyped  : 1
-    <14c>   DW_AT_type        : <0x57>
-    <150>   DW_AT_low_pc      : 0x100007b8
-
-If the .eh_frame and .debug_frame are checked for the same binary, we
-will find that, .eh_frame (although present) doesn't contain a
-description for "main" function.
-But, .debug_frame has a description :
-
-000000d8 00000024 00000000 FDE cie=00000000 pc=100007b8..10000838
-  DW_CFA_advance_loc: 16 to 100007c8
-  DW_CFA_def_cfa_offset: 144
-  DW_CFA_offset_extended_sf: r65 at cfa+16
-...
-
-Due to this (since, perf checks whether .eh_frame is present and goes on
-searching for that address inside that frame), perf is unable to process
-the probes :
- # perf probe -x ./bin main
-Failed to get call frame on 0x100007b8
-  Error: Failed to add events.
-
-To avoid this issue, we need to check both the sections (.eh_frame and
-.debug_frame), which is done in this patch.
-
-Note that, we can always force everything into both .eh_frame and
-.debug_frame by :
- $ gcc bin.c -fasynchronous-unwind-tables  -fno-dwarf2-cfi-asm -g -o bin
-
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
----
- tools/perf/util/probe-finder.c | 59 +++++++++++++++++++++++++-----------------
- 1 file changed, 35 insertions(+), 24 deletions(-)
-
-diff --git a/tools/perf/util/probe-finder.c b/tools/perf/util/probe-finder.c
-index 2da65a7..7ce02b9 100644
---- a/tools/perf/util/probe-finder.c
-+++ b/tools/perf/util/probe-finder.c
-@@ -1022,9 +1022,8 @@ static int pubname_search_cb(Dwarf *dbg, Dwarf_Global *gl, void *data)
- 	return DWARF_CB_OK;
- }
- 
--/* Find probe points from debuginfo */
--static int debuginfo__find_probes(struct debuginfo *dbg,
--				  struct probe_finder *pf)
-+static int debuginfo__find_probe_location(struct debuginfo *dbg,
-+					  struct probe_finder *pf)
- {
- 	struct perf_probe_point *pp = &pf->pev->point;
- 	Dwarf_Off off, noff;
-@@ -1032,27 +1031,6 @@ static int debuginfo__find_probes(struct debuginfo *dbg,
- 	Dwarf_Die *diep;
- 	int ret = 0;
- 
--#if _ELFUTILS_PREREQ(0, 142)
--	Elf *elf;
--	GElf_Ehdr ehdr;
--	GElf_Shdr shdr;
--
--	/* Get the call frame information from this dwarf */
--	elf = dwarf_getelf(dbg->dbg);
--	if (elf == NULL)
--		return -EINVAL;
--
--	if (gelf_getehdr(elf, &ehdr) == NULL)
--		return -EINVAL;
--
--	if (elf_section_by_name(elf, &ehdr, &shdr, ".eh_frame", NULL) &&
--	    shdr.sh_type == SHT_PROGBITS) {
--		pf->cfi = dwarf_getcfi_elf(elf);
--	} else {
--		pf->cfi = dwarf_getcfi(dbg->dbg);
--	}
--#endif
--
- 	off = 0;
- 	pf->lcache = intlist__new(NULL);
- 	if (!pf->lcache)
-@@ -1115,6 +1093,39 @@ found:
- 	return ret;
- }
- 
-+/* Find probe points from debuginfo */
-+static int debuginfo__find_probes(struct debuginfo *dbg,
-+				  struct probe_finder *pf)
-+{
-+	int ret = 0;
-+
-+#if _ELFUTILS_PREREQ(0, 142)
-+	Elf *elf;
-+	GElf_Ehdr ehdr;
-+	GElf_Shdr shdr;
-+
-+	/* Get the call frame information from this dwarf */
-+	elf = dwarf_getelf(dbg->dbg);
-+	if (elf == NULL)
-+		return -EINVAL;
-+
-+	if (gelf_getehdr(elf, &ehdr) == NULL)
-+		return -EINVAL;
-+
-+	if (elf_section_by_name(elf, &ehdr, &shdr, ".eh_frame", NULL) &&
-+	    shdr.sh_type == SHT_PROGBITS) {
-+		pf->cfi = dwarf_getcfi_elf(elf);
-+		ret = debuginfo__find_probe_location(dbg, pf);
-+		if (ret >= 0)
-+			return ret;
-+	}
-+	pf->cfi = dwarf_getcfi(dbg->dbg);
-+#endif
-+
-+	ret = debuginfo__find_probe_location(dbg, pf);
-+	return ret;
-+}
-+
- struct local_vars_finder {
- 	struct probe_finder *pf;
- 	struct perf_probe_arg *args;
--- 
-1.9.3
+Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
