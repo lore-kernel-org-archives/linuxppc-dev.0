@@ -1,31 +1,42 @@
-Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 25D751A05FA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:37:42 +1000 (AEST)
-In-Reply-To: <20150922161710.GA21084@n2100.arm.linux.org.uk>
-References: <20150922161710.GA21084@n2100.arm.linux.org.uk>
-From: Russell King <rmk+kernel@arm.linux.org.uk>
-To: Florian Fainelli <f.fainelli@gmail.com>, David Miller <davem@davemloft.net>
-Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
- Grant Likely <grant.likely@linaro.org>,
- Iyappan Subramanian <isubramanian@apm.com>, Keyur Chudgar <kchudgar@apm.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- Li Yang <leoli@freescale.com>, Michal Simek <michal.simek@xilinx.com>,
- netdev@vger.kernel.org, Robert Richter <rric@kernel.org>,
- Rob Herring <robh+dt@kernel.org>,
- "Soren Brinkmann" <soren.brinkmann@xilinx.com>,
- Sunil Goutham <sgoutham@cavium.com>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND v3 8/9] phy: add phy_device_remove()
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <E1ZfCJg-0004S3-KP@rmk-PC.arm.linux.org.uk>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Date: Thu, 24 Sep 2015 20:36:28 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F99E1A0A2C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:38:12 +1000 (AEST)
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Thu, 24 Sep 2015 13:38:09 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6103C1FF002D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:29:17 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8OJb62h31391764
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 12:37:14 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8OJbYKr023414
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 13:37:35 -0600
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Manoj Kumar <kumarmn@us.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Subject: [PATCH v3 01/32] cxlflash: Fix to avoid invalid port_sel value
+Date: Thu, 24 Sep 2015 14:36:03 -0500
+Message-Id: <1443123363-16540-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
+References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,118 +46,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a phy_device_remove() function to complement phy_device_register(),
-which undoes the effects of phy_device_register() by removing the phy
-device from visibility, but not freeing it.
+From: Manoj Kumar <kumarmn@us.ibm.com>
 
-This allows these details to be moved out of the mdio bus code into
-the phy code where this action belongs.
+If two concurrent MANAGE_LUN ioctls are issued with the same
+WWID parameter, it would result in an incorrect value of port_sel.
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+This is because port_sel is modified without any locks being
+held. If the first caller stalls after the return from
+find_and_create_lun(), the value of port_sel will be set
+incorrectly to indicate a single port, though in this case
+it should have been set to both ports.
+
+To fix, use the global mutex to serialize the lookup of the
+WWID and the subsequent modification of port_sel.
+
+Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/freescale/gianfar.c |  5 +++--
- drivers/net/phy/mdio_bus.c               | 15 ++++++++++-----
- drivers/net/phy/phy_device.c             | 18 ++++++++++++++++++
- include/linux/phy.h                      |  1 +
- 4 files changed, 32 insertions(+), 7 deletions(-)
+ drivers/scsi/cxlflash/lunmgt.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-index 65a16086faec..903211df3288 100644
---- a/drivers/net/ethernet/freescale/gianfar.c
-+++ b/drivers/net/ethernet/freescale/gianfar.c
-@@ -1702,7 +1702,6 @@ static void gfar_configure_serdes(struct net_device *dev)
- 	tbiphy = of_phy_find_device(priv->tbi_node);
- 	if (!tbiphy) {
- 		dev_err(&dev->dev, "error: Could not get TBI device\n");
--		put_device(&tbiphy->dev);
- 		return;
- 	}
- 
-@@ -1711,8 +1710,10 @@ static void gfar_configure_serdes(struct net_device *dev)
- 	 * everything for us?  Resetting it takes the link down and requires
- 	 * several seconds for it to come back.
- 	 */
--	if (phy_read(tbiphy, MII_BMSR) & BMSR_LSTATUS)
-+	if (phy_read(tbiphy, MII_BMSR) & BMSR_LSTATUS) {
-+		put_device(&tbiphy->dev);
- 		return;
-+	}
- 
- 	/* Single clk mode, mii mode off(for serdes communication) */
- 	phy_write(tbiphy, MII_TBICON, TBICON_CLK_SELECT);
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index 992406624b7c..c340e412b38f 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -291,8 +291,11 @@ int __mdiobus_register(struct mii_bus *bus, struct module *owner)
- 
- error:
- 	while (--i >= 0) {
--		if (bus->phy_map[i])
--			device_unregister(&bus->phy_map[i]->dev);
-+		struct phy_device *phydev = bus->phy_map[i];
-+		if (phydev) {
-+			phy_device_remove(phydev);
-+			phy_device_free(phydev);
-+		}
- 	}
- 	device_del(&bus->dev);
- 	return err;
-@@ -307,9 +310,11 @@ void mdiobus_unregister(struct mii_bus *bus)
- 	bus->state = MDIOBUS_UNREGISTERED;
- 
- 	for (i = 0; i < PHY_MAX_ADDR; i++) {
--		if (bus->phy_map[i])
--			device_unregister(&bus->phy_map[i]->dev);
--		bus->phy_map[i] = NULL;
-+		struct phy_device *phydev = bus->phy_map[i];
-+		if (phydev) {
-+			phy_device_remove(phydev);
-+			phy_device_free(phydev);
-+		}
- 	}
- 	device_del(&bus->dev);
- }
-diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-index 97a4f52addac..f761288abe66 100644
---- a/drivers/net/phy/phy_device.c
-+++ b/drivers/net/phy/phy_device.c
-@@ -384,6 +384,24 @@ int phy_device_register(struct phy_device *phydev)
- EXPORT_SYMBOL(phy_device_register);
- 
- /**
-+ * phy_device_remove - Remove a previously registered phy device from the MDIO bus
-+ * @phydev: phy_device structure to remove
+diff --git a/drivers/scsi/cxlflash/lunmgt.c b/drivers/scsi/cxlflash/lunmgt.c
+index d98ad0f..8c372fc 100644
+--- a/drivers/scsi/cxlflash/lunmgt.c
++++ b/drivers/scsi/cxlflash/lunmgt.c
+@@ -120,7 +120,8 @@ static struct glun_info *lookup_global(u8 *wwid)
+  *
+  * The LUN is kept both in a local list (per adapter) and in a global list
+  * (across all adapters). Certain attributes of the LUN are local to the
+- * adapter (such as index, port selection mask etc.).
++ * adapter (such as index, port selection mask, etc.).
 + *
-+ * This doesn't free the phy_device itself, it merely reverses the effects
-+ * of phy_device_register(). Use phy_device_free() to free the device
-+ * after calling this function.
-+ */
-+void phy_device_remove(struct phy_device *phydev)
-+{
-+	struct mii_bus *bus = phydev->bus;
-+	int addr = phydev->addr;
-+
-+	device_del(&phydev->dev);
-+	bus->phy_map[addr] = NULL;
-+}
-+EXPORT_SYMBOL(phy_device_remove);
-+
-+/**
-  * phy_find_first - finds the first PHY device on the bus
-  * @bus: the target MII bus
+  * The block allocation map is shared across all adapters (i.e. associated
+  * wih the global list). Since different attributes are associated with
+  * the per adapter and global entries, allocate two separate structures for each
+@@ -128,6 +129,8 @@ static struct glun_info *lookup_global(u8 *wwid)
+  *
+  * Keep a pointer back from the local to the global entry.
+  *
++ * This routine assumes the caller holds the global mutex.
++ *
+  * Return: Found/Allocated local lun_info structure on success, NULL on failure
   */
-diff --git a/include/linux/phy.h b/include/linux/phy.h
-index 11bce44f6d65..4a4e3a092337 100644
---- a/include/linux/phy.h
-+++ b/include/linux/phy.h
-@@ -745,6 +745,7 @@ struct phy_device *phy_device_create(struct mii_bus *bus, int addr, int phy_id,
- 				     struct phy_c45_device_ids *c45_ids);
- struct phy_device *get_phy_device(struct mii_bus *bus, int addr, bool is_c45);
- int phy_device_register(struct phy_device *phy);
-+void phy_device_remove(struct phy_device *phydev);
- int phy_init_hw(struct phy_device *phydev);
- int phy_suspend(struct phy_device *phydev);
- int phy_resume(struct phy_device *phydev);
+ static struct llun_info *find_and_create_lun(struct scsi_device *sdev, u8 *wwid)
+@@ -137,7 +140,6 @@ static struct llun_info *find_and_create_lun(struct scsi_device *sdev, u8 *wwid)
+ 	struct Scsi_Host *shost = sdev->host;
+ 	struct cxlflash_cfg *cfg = shost_priv(shost);
+ 
+-	mutex_lock(&global.mutex);
+ 	if (unlikely(!wwid))
+ 		goto out;
+ 
+@@ -169,7 +171,6 @@ static struct llun_info *find_and_create_lun(struct scsi_device *sdev, u8 *wwid)
+ 	list_add(&gli->list, &global.gluns);
+ 
+ out:
+-	mutex_unlock(&global.mutex);
+ 	pr_debug("%s: returning %p\n", __func__, lli);
+ 	return lli;
+ }
+@@ -235,6 +236,7 @@ int cxlflash_manage_lun(struct scsi_device *sdev,
+ 	u64 flags = manage->hdr.flags;
+ 	u32 chan = sdev->channel;
+ 
++	mutex_lock(&global.mutex);
+ 	lli = find_and_create_lun(sdev, manage->wwid);
+ 	pr_debug("%s: ENTER: WWID = %016llX%016llX, flags = %016llX li = %p\n",
+ 		 __func__, get_unaligned_le64(&manage->wwid[0]),
+@@ -261,6 +263,7 @@ int cxlflash_manage_lun(struct scsi_device *sdev,
+ 	}
+ 
+ out:
++	mutex_unlock(&global.mutex);
+ 	pr_debug("%s: returning rc=%d\n", __func__, rc);
+ 	return rc;
+ }
 -- 
 2.1.0
