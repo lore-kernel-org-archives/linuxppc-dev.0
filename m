@@ -1,38 +1,31 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B74521A033F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:36:05 +1000 (AEST)
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 24 Sep 2015 15:36:01 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DB8B8C90045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:27:01 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8OJZoC050987088
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 19:35:58 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8OJZOgZ024378
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 15:35:25 -0400
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 00/32] cxlflash: Miscellaneous bug fixes and corrections
-Date: Thu, 24 Sep 2015 14:33:13 -0500
-Message-Id: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A98F81A050B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 05:36:16 +1000 (AEST)
+In-Reply-To: <20150922161710.GA21084@n2100.arm.linux.org.uk>
+References: <20150922161710.GA21084@n2100.arm.linux.org.uk>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+To: Florian Fainelli <f.fainelli@gmail.com>, David Miller <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ Iyappan Subramanian <isubramanian@apm.com>, Keyur Chudgar <kchudgar@apm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ Li Yang <leoli@freescale.com>, Michal Simek <michal.simek@xilinx.com>,
+ netdev@vger.kernel.org, Robert Richter <rric@kernel.org>,
+ Rob Herring <robh+dt@kernel.org>,
+ "Soren Brinkmann" <soren.brinkmann@xilinx.com>,
+ Sunil Goutham <sgoutham@cavium.com>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH RESEND v3 1/9] phy: fix of_mdio_find_bus() device refcount leak
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <E1ZfCJ6-0004PA-Mh@rmk-PC.arm.linux.org.uk>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Date: Thu, 24 Sep 2015 20:35:52 +0100
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,78 +35,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch set contains various fixes and corrections for issues that
-were found during test and code review. The series is based upon the
-code upstreamed in 4.3 and is intended for the rc phase. The entire
-set is bisectable. Please reference the changelog below for details
-on what has been altered from previous versions of this patch set.
+of_mdio_find_bus() leaks a struct device refcount, caused by using
+class_find_device() and not realising that the device reference has
+its refcount incremented:
 
-v3 Changes:
-- Rebased the series on top of patch by Dan Carpenter ("a couple off...")
-- Incorporate comments from David Laight
-- Incorporate comments from Tomas Henzl
-- Incorporate comments from Brian King
-- Removed patch to stop interrupt processing on remove
-- Removed double scsi_device_put() from "Fix potential oops"
-- Fixed usage of scnprintf() in "Refine host/device attributes"
-- Removed unnecessary parenthesis from "Fix read capacity timeout"
-- Added patch to use correct operator for doubling delay
-- Changed location of cancel_work_sync() in "Fix to prevent workq..."
-- Removed local mutex from cxlflash_afu_sync() in "Fix to avoid state..."
-- Added patch to correctly identify a failed function in a trace
-- Added patch to fix a fops corruption bug
+ * Note, you will need to drop the reference with put_device() after use.
+...
+        while ((dev = class_dev_iter_next(&iter))) {
+                if (match(dev, data)) {
+                        get_device(dev);
+                        break;
+                }
 
-v2 Changes:
-- Incorporate comments from Ian Munsie
-- Rework commit messages to be more descriptive
-- Add state change serialization patch
+Update the comment, and arrange for the phy code to drop this refcount
+when disposing of a reference to it.
 
-Manoj Kumar (4):
-  cxlflash: Fix to avoid invalid port_sel value
-  cxlflash: Replace magic numbers with literals
-  cxlflash: Fix read capacity timeout
-  cxlflash: Fix to double the delay each time
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/net/phy/mdio-mux.c | 19 +++++++++++++------
+ drivers/net/phy/mdio_bus.c |  4 +++-
+ 2 files changed, 16 insertions(+), 7 deletions(-)
 
-Matthew R. Ochs (28):
-  cxlflash: Fix potential oops following LUN removal
-  cxlflash: Fix data corruption when vLUN used over multiple cards
-  cxlflash: Fix to avoid sizeof(bool)
-  cxlflash: Fix context encode mask width
-  cxlflash: Fix to avoid CXL services during EEH
-  cxlflash: Correct naming of limbo state and waitq
-  cxlflash: Make functions static
-  cxlflash: Refine host/device attributes
-  cxlflash: Fix to avoid spamming the kernel log
-  cxlflash: Fix to avoid stall while waiting on TMF
-  cxlflash: Fix location of setting resid
-  cxlflash: Fix host link up event handling
-  cxlflash: Fix async interrupt bypass logic
-  cxlflash: Remove dual port online dependency
-  cxlflash: Fix AFU version access/storage and add check
-  cxlflash: Correct usage of scsi_host_put()
-  cxlflash: Fix to prevent workq from accessing freed memory
-  cxlflash: Correct behavior in device reset handler following EEH
-  cxlflash: Remove unnecessary scsi_block_requests
-  cxlflash: Fix function prolog parameters and return codes
-  cxlflash: Fix MMIO and endianness errors
-  cxlflash: Fix to prevent EEH recovery failure
-  cxlflash: Correct spelling, grammar, and alignment mistakes
-  cxlflash: Fix to prevent stale AFU RRQ
-  cxlflash: Fix to avoid state change collision
-  MAINTAINERS: Add cxlflash driver
-  cxlflash: Fix to avoid corrupting adapter fops
-  cxlflash: Correct trace string
-
- MAINTAINERS                       |    9 +
- drivers/scsi/cxlflash/common.h    |   30 +-
- drivers/scsi/cxlflash/lunmgt.c    |    9 +-
- drivers/scsi/cxlflash/main.c      | 1572 ++++++++++++++++++++-----------------
- drivers/scsi/cxlflash/main.h      |    1 +
- drivers/scsi/cxlflash/sislite.h   |    8 +-
- drivers/scsi/cxlflash/superpipe.c |  182 +++--
- drivers/scsi/cxlflash/superpipe.h |   11 +-
- drivers/scsi/cxlflash/vlun.c      |   39 +-
- 9 files changed, 1028 insertions(+), 833 deletions(-)
-
+diff --git a/drivers/net/phy/mdio-mux.c b/drivers/net/phy/mdio-mux.c
+index 4d4d25efc1e1..280c7c311f72 100644
+--- a/drivers/net/phy/mdio-mux.c
++++ b/drivers/net/phy/mdio-mux.c
+@@ -113,18 +113,18 @@ int mdio_mux_init(struct device *dev,
+ 	if (!parent_bus_node)
+ 		return -ENODEV;
+ 
+-	parent_bus = of_mdio_find_bus(parent_bus_node);
+-	if (parent_bus == NULL) {
+-		ret_val = -EPROBE_DEFER;
+-		goto err_parent_bus;
+-	}
+-
+ 	pb = devm_kzalloc(dev, sizeof(*pb), GFP_KERNEL);
+ 	if (pb == NULL) {
+ 		ret_val = -ENOMEM;
+ 		goto err_parent_bus;
+ 	}
+ 
++	parent_bus = of_mdio_find_bus(parent_bus_node);
++	if (parent_bus == NULL) {
++		ret_val = -EPROBE_DEFER;
++		goto err_parent_bus;
++	}
++
+ 	pb->switch_data = data;
+ 	pb->switch_fn = switch_fn;
+ 	pb->current_child = -1;
+@@ -173,6 +173,10 @@ int mdio_mux_init(struct device *dev,
+ 		dev_info(dev, "Version " DRV_VERSION "\n");
+ 		return 0;
+ 	}
++
++	/* balance the reference of_mdio_find_bus() took */
++	put_device(&pb->mii_bus->dev);
++
+ err_parent_bus:
+ 	of_node_put(parent_bus_node);
+ 	return ret_val;
+@@ -189,6 +193,9 @@ void mdio_mux_uninit(void *mux_handle)
+ 		mdiobus_free(cb->mii_bus);
+ 		cb = cb->next;
+ 	}
++
++	/* balance the reference of_mdio_find_bus() in mdio_mux_init() took */
++	put_device(&pb->mii_bus->dev);
+ }
+ EXPORT_SYMBOL_GPL(mdio_mux_uninit);
+ 
+diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+index 02a4615b65f8..67553e13bd36 100644
+--- a/drivers/net/phy/mdio_bus.c
++++ b/drivers/net/phy/mdio_bus.c
+@@ -167,7 +167,9 @@ static int of_mdio_bus_match(struct device *dev, const void *mdio_bus_np)
+  * of_mdio_find_bus - Given an mii_bus node, find the mii_bus.
+  * @mdio_bus_np: Pointer to the mii_bus.
+  *
+- * Returns a pointer to the mii_bus, or NULL if none found.
++ * Returns a reference to the mii_bus, or NULL if none found.  The
++ * embedded struct device will have its reference count incremented,
++ * and this must be put once the bus is finished with.
+  *
+  * Because the association of a device_node and mii_bus is made via
+  * of_mdiobus_register(), the mii_bus cannot be found before it is
 -- 
 2.1.0
