@@ -1,10 +1,10 @@
 Return-Path: <madalin.bucur@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
+ (mail-by2on0139.outbound.protection.outlook.com [207.46.100.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BBBC1A05F0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 01:17:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 199C11A0719
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 01:17:57 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <netdev@vger.kernel.org>
 CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
@@ -13,9 +13,11 @@ CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
  <ppc@mindchasers.com>, <joe@perches.com>, <pebolle@tiscali.nl>,
  <joakim.tjernlund@transmode.se>, <f.fainelli@gmail.com>, <stsp@list.ru>,
  Madalin Bucur <madalin.bucur@freescale.com>
-Subject: [v3 0/8] dpaa_eth: Add the Freescale DPAA Ethernet driver
-Date: Thu, 24 Sep 2015 18:00:11 +0300
-Message-ID: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
+Subject: [v3 4/8] dpaa_eth: add driver's Tx queue selection mechanism
+Date: Thu, 24 Sep 2015 18:00:15 +0300
+Message-ID: <1443106819-5549-5-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
+References: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -28,145 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series adds the Ethernet driver for the Freescale
-QorIQ Data Path Acceleration Architecture (DPAA).
+Allow the selection of the transmission queue based on the CPU id.
 
-This version includes changes following the feedback received
-on previous versions from Eric Dumazet, Bob Cochran, Joe Perches,
-Paul Bolle, Joakim Tjernlund, Scott Wood - thank you for your support.
+Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+---
+ drivers/net/ethernet/freescale/dpaa/Kconfig           | 10 ++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c        |  3 +++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h        |  6 ++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c |  8 ++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h |  4 ++++
+ 5 files changed, 31 insertions(+)
 
-Together with the driver a managed version of alloc_percpu
-is provided that simplifies the release of per-CPU memory.
-
-The Freescale DPAA architecture consists in a series of hardware
-blocks that support the Ethernet connectivity. The Ethernet driver
-depends upon the following drivers that are currently in the Linux
-kernel or in review:
- - Peripheral Access Memory Unit (PAMU)
-    drivers/iommu/fsl_*
- - Frame Manager (FMan)
-    drivers/net/ethernet/freescale/fman
- - Queue Manager (QMan), Buffer Manager (BMan)
-    drivers/soc/fsl/qbman
-
-dpaa_eth interfaces mapping to FMan MACs:
-
-  dpaa_eth       /eth0\     ...       /ethN\
-  driver        |      |             |      |
-  -------------   ----   -----------   ----   -------------
-       -Ports  / Tx  Rx \    ...    / Tx  Rx \
-  FMan        |          |         |          |
-       -MACs  |   MAC0   |         |   MACN   |
-             /   dtsec0   \  ...  /   dtsecN   \ (or tgec)
-            /              \     /              \(or memac)
-  ---------  --------------  ---  --------------  ---------
-      FMan, FMan Port, FMan SP, FMan MURAM drivers
-  ---------------------------------------------------------
-      FMan HW blocks: MURAM, MACs, Ports, SP
-  ---------------------------------------------------------
-
-dpaa_eth relation to QMan, FMan:
-              ________________________________
-  dpaa_eth   /            eth0                \
-  driver    /                                  \
-  ---------   -^-   -^-   -^-   ---    ---------
-  QMan driver / \   / \   / \  \   /  | BMan    |
-             |Rx | |Rx | |Tx | |Tx |  | driver  |
-  ---------  |Dfl| |Err| |Cnf| |FQs|  |         |
-  QMan HW    |FQ | |FQ | |FQ | |   |  |         |
-             /   \ /   \ /   \  \ /   |         |
-  ---------   ---   ---   ---   -v-    ---------
-            |        FMan QMI         |         |
-            | FMan HW       FMan BMI  | BMan HW |
-              -----------------------   --------
-
-where the acronyms used above (and in the code) are:
-DPAA = Data Path Acceleration Architecture
-FMan = DPAA Frame Manager
-QMan = DPAA Queue Manager
-BMan = DPAA Buffers Manager
-QMI = QMan interface in FMan
-BMI = BMan interface in FMan
-FMan SP = FMan Storage Profiles
-MURAM = Multi-user RAM in FMan
-FQ = QMan Frame Queue
-Rx Dfl FQ = default reception FQ
-Rx Err FQ = Rx error frames FQ
-Tx Cnf FQ = Tx confirmation FQ
-Tx FQs = transmission frame queues
-dtsec = datapath three speed Ethernet controller (10/100/1000 Mbps)
-tgec = ten gigabit Ethernet controller (10 Gbps)
-memac = multirate Ethernet MAC (10/100/1000/10000)
-
-The latest FMan driver patches were submitted by Igal Liberman:
-https://patchwork.ozlabs.org/project/netdev/list/?submitter=64715&state=*&q=[v5,
-
-The latest Q/BMan drivers were submitted by Roy Pledge:
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=66331&state=*
-
-Changes from v2:
- - removed debugfs, moved exports to ethtool statistics
- - removed congestion groups Kconfig params
-
-Changes from v1:
- - bpool level Kconfig options removed
- - print format using pr_fmt, cleaned up prints
- - __hot/__cold removed
- - gratuitous unlikely() removed
- - code style aligned, consistent spacing for declarations
- - comment formatting
-
-The complete patch set based on the latest net-next/master kernel
-can be found in the public git at:
-http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git
-under the tag ldup_public_git_20150924:
-http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git/log/?h=ldup_public_git_20150924
-
-There is one patch that needs to be applied to u-boot to align it
-to the latest device tree binding document specification used by
-the FMan driver. Please make sure your u-boot includes this patch.
-The patch is marked as accepted in u-boot patchwork:
-https://patchwork.ozlabs.org/patch/508374/
-Alternatively you can find it in the Freescale public git under the
-ldup_public_git_20150410 tag at:
-http://git.freescale.com/git/cgit.cgi/ppc/upstream/u-boot.git/log/?h=ldup_public_git_20150410
-
-Madalin Bucur (8):
-  devres: add devm_alloc_percpu()
-  dpaa_eth: add support for DPAA Ethernet
-  dpaa_eth: add support for S/G frames
-  dpaa_eth: add driver's Tx queue selection mechanism
-  dpaa_eth: add ethtool functionality
-  dpaa_eth: add ethtool statistics
-  dpaa_eth: add sysfs exports
-  dpaa_eth: add trace points
-
- Documentation/driver-model/devres.txt              |    4 +
- drivers/base/devres.c                              |   64 +
- drivers/net/ethernet/freescale/Kconfig             |    2 +
- drivers/net/ethernet/freescale/Makefile            |    1 +
- drivers/net/ethernet/freescale/dpaa/Kconfig        |   32 +
- drivers/net/ethernet/freescale/dpaa/Makefile       |   12 +
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  857 ++++++++++++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  478 +++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.c  | 1395 ++++++++++++++++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.h  |  109 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c  |  706 ++++++++++
- .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  167 +++
- .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   |  141 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |  413 ++++++
- include/linux/device.h                             |   19 +
- 15 files changed, 4400 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/dpaa/Kconfig
- create mode 100644 drivers/net/ethernet/freescale/dpaa/Makefile
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-
+diff --git a/drivers/net/ethernet/freescale/dpaa/Kconfig b/drivers/net/ethernet/freescale/dpaa/Kconfig
+index 022d5aa..2577aac 100644
+--- a/drivers/net/ethernet/freescale/dpaa/Kconfig
++++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
+@@ -11,6 +11,16 @@ menuconfig FSL_DPAA_ETH
+ 
+ if FSL_DPAA_ETH
+ 
++config FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++	bool "Use driver's Tx queue selection mechanism"
++	default y
++	---help---
++	  The DPAA Ethernet driver defines a ndo_select_queue() callback for optimal selection
++	  of the egress FQ. That will override the XPS support for this netdevice.
++	  If for whatever reason you want to be in control of the egress FQ-to-CPU selection and mapping,
++	  or simply don't want to use the driver's ndo_select_queue() callback, then unselect this
++	  and use the standard XPS support instead.
++
+ config FSL_DPAA_ETH_FRIENDLY_IF_NAME
+ 	bool "Use fmX-macY names for the DPAA interfaces"
+ 	default y
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+index 85e2bdf..a04c0aa 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -393,6 +393,9 @@ static const struct net_device_ops dpa_private_ops = {
+ 	.ndo_get_stats64 = dpa_get_stats64,
+ 	.ndo_set_mac_address = dpa_set_mac_address,
+ 	.ndo_validate_addr = eth_validate_addr,
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++	.ndo_select_queue = dpa_select_queue,
++#endif
+ 	.ndo_change_mtu = dpa_change_mtu,
+ 	.ndo_set_rx_mode = dpa_set_rx_mode,
+ 	.ndo_init = dpa_ndo_init,
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+index 96553fd..349e052 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+@@ -419,9 +419,15 @@ static inline void _dpa_assign_wq(struct dpa_fq *fq)
+ 	}
+ }
+ 
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++/* Use in lieu of skb_get_queue_mapping() */
++#define dpa_get_queue_mapping(skb) \
++	raw_smp_processor_id()
++#else
+ /* Use the queue selected by XPS */
+ #define dpa_get_queue_mapping(skb) \
+ 	skb_get_queue_mapping(skb)
++#endif
+ 
+ static inline void _dpa_bp_free_pf(void *addr)
+ {
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
+index b36cbca..89f3b1f 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
+@@ -593,6 +593,14 @@ bool dpa_bpid2pool_use(int bpid)
+ 	return false;
+ }
+ 
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++u16 dpa_select_queue(struct net_device *net_dev, struct sk_buff *skb,
++		     void *accel_priv, select_queue_fallback_t fallback)
++{
++	return dpa_get_queue_mapping(skb);
++}
++#endif
++
+ struct dpa_fq *dpa_fq_alloc(struct device *dev,
+ 			    const struct fqid_cell *fqids,
+ 			    struct list_head *list,
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
+index 9df8f14..2e9471d 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
+@@ -70,6 +70,10 @@ struct dpa_bp *dpa_bpid2pool(int bpid);
+ void dpa_bpid2pool_map(int bpid, struct dpa_bp *dpa_bp);
+ bool dpa_bpid2pool_use(int bpid);
+ void dpa_bp_drain(struct dpa_bp *bp);
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++u16 dpa_select_queue(struct net_device *net_dev, struct sk_buff *skb,
++		     void *accel_priv, select_queue_fallback_t fallback);
++#endif
+ struct dpa_fq *dpa_fq_alloc(struct device *dev,
+ 			    const struct fqid_cell *fqids,
+ 			    struct list_head *list,
 -- 
 1.7.11.7
