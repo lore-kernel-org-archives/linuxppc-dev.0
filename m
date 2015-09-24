@@ -1,29 +1,40 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-f66.google.com (mail-la0-f66.google.com
- [209.85.215.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95EBB1A02C4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 03:28:02 +1000 (AEST)
-Received: by laag3 with SMTP id g3so8334652laa.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 10:27:58 -0700 (PDT)
-From: Alexander Popov <alex.popov@linux.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Gerhard Sittig <gsi@denx.de>,
- Rob Herring <robh@kernel.org>, Timur Tabi <timur@tabi.org>,
- Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, Alexander Popov <alex.popov@linux.com>,
- linuxppc-dev@lists.ozlabs.org, dmaengine@vger.kernel.org,
- devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 3/3] dmaengine: mpc512x: initialize with subsys_initcall()
-Date: Thu, 24 Sep 2015 20:28:57 +0300
-Message-Id: <1443115737-3948-4-git-send-email-alex.popov@linux.com>
-In-Reply-To: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
-References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90ACF1A022E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 04:30:29 +1000 (AEST)
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C4A3C14029C
+ for <linuxppc-dev@ozlabs.org>; Fri, 25 Sep 2015 04:30:28 +1000 (AEST)
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 24 Sep 2015 12:30:26 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6F69B1FF0042
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 12:21:33 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t8OITEh87406008
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 11:29:14 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8OIUN86017373
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Sep 2015 12:30:24 -0600
+Date: Thu, 24 Sep 2015 11:28:19 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Stephane Eranian <eranian@google.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
+Subject: [PATCH] perf: Fix build break on powerpc due to sample_reg_masks
+Message-ID: <20150924182817.GA11058@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,37 +44,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Initialize Freescale MPC512x DMA driver with subsys_initcall()
-to allow the depending drivers to call dma_request_slave_channel()
-during their probe.
 
-Signed-off-by: Alexander Popov <alex.popov@linux.com>
+>From d1171a4c34c6100ec8b663ddb803dd69ef3fb7ce Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Thu, 24 Sep 2015 17:53:49 -0400
+Subject: [PATCH] perf: Fix build break on powerpc due to sample_reg_masks
+
+perf_regs.c does not get built on Powerpc as CONFIG_PERF_REGS is false.
+So the weak definition for 'sample_regs_masks' doesn't get picked up.
+
+Adding perf_regs.o to util/Build unconditionally, exposes a redefinition
+error for 'perf_reg_value()' function (due to the static inline version
+in util/perf_regs.h). So use #ifdef HAVE_PERF_REGS_SUPPORT' around that
+function.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- drivers/dma/mpc512x_dma.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ tools/perf/util/Build       | 2 +-
+ tools/perf/util/perf_regs.c | 2 ++
+ tools/perf/util/perf_regs.h | 4 ++++
+ 3 files changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index e6281e7..4f29d7c 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -1083,7 +1083,17 @@ static struct platform_driver mpc_dma_driver = {
- 	},
+diff --git a/tools/perf/util/Build b/tools/perf/util/Build
+index 349bc96..e5f18a2 100644
+--- a/tools/perf/util/Build
++++ b/tools/perf/util/Build
+@@ -17,6 +17,7 @@ libperf-y += levenshtein.o
+ libperf-y += llvm-utils.o
+ libperf-y += parse-options.o
+ libperf-y += parse-events.o
++libperf-y += perf_regs.o
+ libperf-y += path.o
+ libperf-y += rbtree.o
+ libperf-y += bitmap.o
+@@ -103,7 +104,6 @@ libperf-$(CONFIG_LIBBABELTRACE) += data-convert-bt.o
+ 
+ libperf-y += scripting-engines/
+ 
+-libperf-$(CONFIG_PERF_REGS) += perf_regs.o
+ libperf-$(CONFIG_ZLIB) += zlib.o
+ libperf-$(CONFIG_LZMA) += lzma.o
+ 
+diff --git a/tools/perf/util/perf_regs.c b/tools/perf/util/perf_regs.c
+index 885e8ac..6b8eb13 100644
+--- a/tools/perf/util/perf_regs.c
++++ b/tools/perf/util/perf_regs.c
+@@ -6,6 +6,7 @@ const struct sample_reg __weak sample_reg_masks[] = {
+ 	SMPL_REG_END
  };
  
--module_platform_driver(mpc_dma_driver);
-+static int __init mpc_dma_driver_init(void)
-+{
-+	return platform_driver_register(&mpc_dma_driver);
-+}
-+subsys_initcall(mpc_dma_driver_init);
-+
-+static void __exit mpc_dma_driver_exit(void)
-+{
-+	platform_driver_unregister(&mpc_dma_driver);
-+}
-+module_exit(mpc_dma_driver_exit);
++#ifdef HAVE_PERF_REGS_SUPPORT
+ int perf_reg_value(u64 *valp, struct regs_dump *regs, int id)
+ {
+ 	int i, idx = 0;
+@@ -29,3 +30,4 @@ out:
+ 	*valp = regs->cache_regs[id];
+ 	return 0;
+ }
++#endif
+diff --git a/tools/perf/util/perf_regs.h b/tools/perf/util/perf_regs.h
+index 2984dcc..8dbdfeb 100644
+--- a/tools/perf/util/perf_regs.h
++++ b/tools/perf/util/perf_regs.h
+@@ -3,6 +3,10 @@
  
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Piotr Ziecik <kosmo@semihalf.com>");
+ #include <linux/types.h>
+ 
++#ifndef __maybe_unused
++#define __maybe_unused __attribute__((unused))
++#endif
++
+ struct regs_dump;
+ 
+ struct sample_reg {
 -- 
-1.9.1
+1.8.3.1
