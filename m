@@ -1,34 +1,21 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0111.outbound.protection.outlook.com [207.46.100.111])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E49781A0D87
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 08:16:02 +1000 (AEST)
-Date: Thu, 24 Sep 2015 23:15:41 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Florian Fainelli <f.fainelli@gmail.com>,
- David Miller <davem@davemloft.net>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- devicetree@vger.kernel.org, Sunil Goutham <sgoutham@cavium.com>,
- Robert Richter <rric@kernel.org>, Frank Rowand <frowand.list@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>,
- Michal Simek <michal.simek@xilinx.com>, netdev@vger.kernel.org,
- Soren Brinkmann <soren.brinkmann@xilinx.com>,
- Iyappan Subramanian <isubramanian@apm.com>,
- Grant Likely <grant.likely@linaro.org>,
- Li Yang <leoli@freescale.com>, Keyur Chudgar <kchudgar@apm.com>,
- linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 0/9] Phy, mdiobus, and netdev struct device fixes
-Message-ID: <20150924221541.GF21513@n2100.arm.linux.org.uk>
-References: <20150924191754.GC21513@n2100.arm.linux.org.uk>
- <20150924215731.GE20825@lunn.ch>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A5F1B1A2EC4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 08:18:22 +1000 (AEST)
+Message-ID: <1443133087.32298.62.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/e6500: add TMCFG0 register definition
+From: Scott Wood <scottwood@freescale.com>
+To: Laurentiu Tudor <b10716@freescale.com>
+CC: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Laurentiu Tudor
+ <Laurentiu.Tudor@freescale.com>, <kvm-ppc@vger.kernel.org>
+Date: Thu, 24 Sep 2015 17:18:07 -0500
+In-Reply-To: <5602BFEE.7060708@freescale.com>
+References: <5602BFEE.7060708@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150924215731.GE20825@lunn.ch>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,40 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 24, 2015 at 11:57:31PM +0200, Andrew Lunn wrote:
-> Hi Russell
+On Wed, 2015-09-23 at 18:06 +0300, Laurentiu Tudor wrote:
+> The register is not currently used in the base kernel
+> but will be in a forthcoming kvm patch.
 > 
-> I tested both of these with my board. It is a Freescale Vybrid, using
-> the FEC ethernet driver, and i have three switches attached, using
-> mdio-mux to give three mdio busses.
-> 
-> No obvious regressions, my board boots, the switches are all present
-> and correct. I built the FEC driver as a module, and it won't unload:
-> 
->  kernel:unregister_netdevice: waiting for eth1 to become free. Usage count = 1
-> unregister_netdevice: waiting for eth1 to become free. Usage count = 1
-> 
-> i assume because DSA holds a reference. I've not tried a fully module
-> build, DSA has issues with that.
-> 
-> Tested-by: Andrew Lunn <andrew@lunn.ch>
+> Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+> ---
+>  arch/powerpc/include/asm/reg_booke.h | 6 ++++++
+>  1 file changed, 6 insertions(+)
 
-Thanks for testing.  Please could you confirm whether the same behaviour
-is observed without the patches, just to make absolutely sure that isn't
-a regression.
+Acked-by: Scott Wood <scottwood@freescale.com>
 
-However, I think you are correct - I'm unable to locate where in the
-DSA code:
-- dst->master_dev's dev_hold() is undone (hence a reference left)
-- dst is freed - dsa_probe() allocates it using kzalloc(), but
-  dsa_remove() and it's children don't free this structure.
-
-There's no notifier which detects whether the underlying device has
-gone away - it registers a netdev notifier (dsa_slave_netdevice_event)
-but this only deals with slave devices, not the master device.
-
-Thanks.
-
--- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+-Scott
