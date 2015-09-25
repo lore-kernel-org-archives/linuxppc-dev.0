@@ -1,32 +1,17 @@
-Return-Path: <f.fainelli@gmail.com>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 438321A0026
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 11:40:08 +1000 (AEST)
-Received: by pacgz1 with SMTP id gz1so6878702pac.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Sep 2015 18:40:05 -0700 (PDT)
-Message-ID: <5604A5EC.7060401@gmail.com>
-Date: Thu, 24 Sep 2015 18:39:56 -0700
-From: Florian Fainelli <f.fainelli@gmail.com>
-MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- David Miller <davem@davemloft.net>
-CC: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- devicetree@vger.kernel.org, Sunil Goutham <sgoutham@cavium.com>,
- Robert Richter <rric@kernel.org>,
- Frank Rowand <frowand.list@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Michal Simek <michal.simek@xilinx.com>,
- netdev@vger.kernel.org, Soren Brinkmann <soren.brinkmann@xilinx.com>,
- Iyappan Subramanian <isubramanian@apm.com>,
- Grant Likely <grant.likely@linaro.org>, Li Yang <leoli@freescale.com>,
- Keyur Chudgar <kchudgar@apm.com>, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v3 0/9] Phy, mdiobus, and netdev struct device fixes
-References: <20150924191754.GC21513@n2100.arm.linux.org.uk>
-In-Reply-To: <20150924191754.GC21513@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F6AE1A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 12:12:03 +1000 (AEST)
+In-Reply-To: <1442977679-4468-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, mikey@neuling.org,
+ Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@axtens.net>
+Subject: Re: cxl: Fix lockdep warning while creating afu_err_buff attribute
+Message-Id: <20150925021203.0870C140789@ozlabs.org>
+Date: Fri, 25 Sep 2015 12:12:02 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,115 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24/09/15 12:17, Russell King - ARM Linux wrote:
-> Hi,
+On Wed, 2015-23-09 at 03:07:59 UTC, Vaibhav Jain wrote:
+> Presently a lockdep warning is reported during creation of afu_err_buff
+> bin_attribute for the afu. This is caused due to the variable attr.key
+> not pointing to a static class key, hence the function lockdep_init_map
+> reports this warning:
 > 
-> The third version of this series fixes the build error which David
-> identified, and drops the broken changes for the Cavium Thunger BGX
-> ethernet driver as this driver requires some complex changes to
-> resolve the leakage - and this is best done by people who can test
-> the driver.
+>  BUG: key <some-address> not in .data!
 > 
-> Compared to v2, the only patch which has changed is patch 6
->   "net: fix phy refcounting in a bunch of drivers"
+> The patch fixes this issue by calling sysfs_attr_init on the
+> attr_eb.attr structure before populating it with the afu_err_buff file
+> details. This will populate the attr.key variable with a static class
+> key so that lockdep_init_map stops complaining about the lockdep key not
+> being static.
 > 
-> I _think_ I've been able to build-test all the drivers touched by
-> that patch to some degree now, though several of them needed the
-> Kconfig hacked to allow it (not all had || COMPILE_TEST clause on
-> their dependencies.)
+> Reported-by: Daniel Axtens <dja@axtens.net>
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
 
-Tested-by: Florian Fainelli <f.fainelli@gmail.com>
-Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
+Applied to powerpc fixes, thanks.
 
-Thanks for fixing that.
+https://git.kernel.org/powerpc/c/d6eb71a6d2eda21c8cd7a4dc
 
-> 
-> Previous cover letters below:
-> 
-> This is the second version of the series, with the comments David had
-> on the first patch fixed up.  Original series description with updated
-> diffstat below.
-> 
-> While looking at the DSA code, I noticed we have a
-> of_find_net_device_by_node(), and it looks like users of that are
-> similarly buggy - it looks like net/dsa/dsa.c is the only user.  Fix
-> that too.
-> 
-> Hi,
-> 
-> While looking at the phy code, I identified a number of weaknesses
-> where refcounting on device structures was being leaked, where
-> modules could be removed while in-use, and where the fixed-phy could
-> end up having unintended consequences caused by incorrect calls to
-> fixed_phy_update_state().
-> 
-> This patch series resolves those issues, some of which were discovered
-> with testing on an Armada 388 board.  Not all patches are fully tested,
-> particularly the one which touches several network drivers.
-> 
-> When resolving the struct device refcounting problems, several different
-> solutions were considered before settling on the implementation here -
-> one of the considerations was to avoid touching many network drivers.
-> The solution here is:
-> 
-> 	phy_attach*() - takes a refcount
-> 	phy_detach*() - drops the phy_attach refcount
-> 
-> Provided drivers always attach and detach their phys, which they should
-> already be doing, this should change nothing, even if they leak a refcount.
-> 
-> 	of_phy_find_device() and of_* functions which use that take
-> 	a refcount.  Arrange for this refcount to be dropped once
-> 	the phy is attached.
-> 
-> This is the reason why the previous change is important - we can't drop
-> this refcount taken by of_phy_find_device() until something else holds
-> a reference on the device.  This resolves the leaked refcount caused by
-> using of_phy_connect() or of_phy_attach().
-> 
-> Even without the above changes, these drivers are leaking by calling
-> of_phy_find_device().  These drivers are addressed by adding the
-> appropriate release of that refcount.
-> 
-> The mdiobus code also suffered from the same kind of leak, but thankfully
-> this only happened in one place - the mdio-mux code.
-> 
-> I also found that the try_module_get() in the phy layer code was utterly
-> useless: phydev->dev.driver was guaranteed to always be NULL, so
-> try_module_get() was always being called with a NULL argument.  I proved
-> this with my SFP code, which declares its own MDIO bus - the module use
-> count was never incremented irrespective of how I set the MDIO bus up.
-> This allowed the MDIO bus code to be removed from the kernel while there
-> were still PHYs attached to it.
-> 
-> One other bug was discovered: while using in-band-status with mvneta, it
-> was found that if a real phy is attached with in-band-status enabled,
-> and another ethernet interface is using the fixed-phy infrastructure, the
-> interface using the fixed-phy infrastructure is configured according to
-> the other interface using the in-band-status - which is caused by the
-> fixed-phy code not verifying that the phy_device passed in is actually
-> a fixed-phy device, rather than a real MDIO phy.
-> 
-> Lastly, having mdio_bus reversing phy_device_register() internals seems
-> like a layering violation - it's trivial to move that code to the phy
-> device layer.
-> 
->  drivers/net/ethernet/apm/xgene/xgene_enet_hw.c | 24 ++++++----
->  drivers/net/ethernet/freescale/gianfar.c       |  6 ++-
->  drivers/net/ethernet/freescale/ucc_geth.c      |  8 +++-
->  drivers/net/ethernet/marvell/mvneta.c          |  2 +
->  drivers/net/ethernet/xilinx/xilinx_emaclite.c  |  2 +
->  drivers/net/phy/fixed_phy.c                    |  2 +-
->  drivers/net/phy/mdio-mux.c                     | 19 +++++---
->  drivers/net/phy/mdio_bus.c                     | 24 ++++++----
->  drivers/net/phy/phy_device.c                   | 62 ++++++++++++++++++++------
->  drivers/of/of_mdio.c                           | 27 +++++++++--
->  include/linux/phy.h                            |  6 ++-
->  net/core/net-sysfs.c                           |  9 ++++
->  net/dsa/dsa.c                                  | 41 ++++++++++++++---
->  13 files changed, 181 insertions(+), 51 deletions(-)
-> 
-
-
--- 
-Florian
+cheers
