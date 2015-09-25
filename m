@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 423611A189E
+ by lists.ozlabs.org (Postfix) with ESMTPS id D09AE1A0E5B
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 09:17:47 +1000 (AEST)
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Fri, 25 Sep 2015 19:17:45 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 3FEB8C90041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 19:08:46 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8PNHgh360555356
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 23:17:42 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8PNHfbJ010137
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 19:17:42 -0400
+ Fri, 25 Sep 2015 17:17:45 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 784E23E4003B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:17:42 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8PNGNCI10092970
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 16:16:32 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8PNH95V032500
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:17:09 -0600
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,10 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v4 18/32] cxlflash: Fix AFU version access/storage and add
- check
-Date: Fri, 25 Sep 2015 18:17:04 -0500
-Message-Id: <1443223024-9618-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v4 13/32] cxlflash: Fix to avoid stall while waiting on TMF
+Date: Fri, 25 Sep 2015 18:16:07 -0500
+Message-Id: <1443222967-9424-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,82 +45,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The AFU version is stored as a non-terminated string of bytes within
-a 64-bit little-endian register. Presently the value is read directly
-(no MMIO accessor) and is stored in a buffer that is not big enough
-to contain a NULL terminator. Additionally the version obtained is not
-evaluated against a known value to prevent usage with unsupported AFUs.
-All of these deficiencies can lead to a variety of problems.
+Borrowing the TMF waitq's spinlock causes a stall condition when
+waiting for the TMF to complete. To remedy, introduce our own spin
+lock to serialize TMF and use the appropriate wait services.
 
-To remedy, use the correct MMIO accessor to read the version value into
-a null-terminated buffer and add a check to prevent an incompatible AFU
-from being used with this driver.
+Also add a timeout while waiting for a TMF completion. When a TMF
+times out, report back a failure such that a bigger hammer reset
+can occur.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/common.h  |  2 +-
- drivers/scsi/cxlflash/main.c    | 18 ++++++++++++------
- drivers/scsi/cxlflash/sislite.h |  2 +-
- 3 files changed, 14 insertions(+), 8 deletions(-)
+ drivers/scsi/cxlflash/common.h |  1 +
+ drivers/scsi/cxlflash/main.c   | 55 +++++++++++++++++++++++++-----------------
+ 2 files changed, 34 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index faf7f56..3be5754 100644
+index b038ac7..7a0cb5c 100644
 --- a/drivers/scsi/cxlflash/common.h
 +++ b/drivers/scsi/cxlflash/common.h
-@@ -179,7 +179,7 @@ struct afu {
- 	u32 cmd_couts;		/* Number of command checkouts */
- 	u32 internal_lun;	/* User-desired LUN mode for this AFU */
+@@ -124,6 +124,7 @@ struct cxlflash_cfg {
+ 	struct list_head lluns; /* list of llun_info structs */
  
--	char version[8];
-+	char version[16];
- 	u64 interface_version;
- 
- 	struct cxlflash_cfg *parent; /* Pointer back to parent cxlflash_cfg */
+ 	wait_queue_head_t tmf_waitq;
++	spinlock_t tmf_slock;
+ 	bool tmf_active;
+ 	wait_queue_head_t reset_waitq;
+ 	enum cxlflash_state state;
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index d45388f..b6a2584 100644
+index 527ff85..110037d 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -1751,14 +1751,20 @@ static int init_afu(struct cxlflash_cfg *cfg)
- 		goto err1;
+@@ -249,11 +249,10 @@ static void cmd_complete(struct afu_cmd *cmd)
+ 		scp->scsi_done(scp);
+ 
+ 		if (cmd_is_tmf) {
+-			spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
++			spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
+ 			cfg->tmf_active = false;
+ 			wake_up_all_locked(&cfg->tmf_waitq);
+-			spin_unlock_irqrestore(&cfg->tmf_waitq.lock,
+-					       lock_flags);
++			spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+ 		}
+ 	} else
+ 		complete(&cmd->cevent);
+@@ -420,6 +419,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
+ 	struct device *dev = &cfg->dev->dev;
+ 	ulong lock_flags;
+ 	int rc = 0;
++	ulong to;
+ 
+ 	cmd = cmd_checkout(afu);
+ 	if (unlikely(!cmd)) {
+@@ -428,15 +428,15 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
+ 		goto out;
  	}
  
--	/* don't byte reverse on reading afu_version, else the string form */
--	/*     will be backwards */
--	reg = afu->afu_map->global.regs.afu_version;
--	memcpy(afu->version, &reg, 8);
-+	/* No byte reverse on reading afu_version or string will be backwards */
-+	reg = readq(&afu->afu_map->global.regs.afu_version);
-+	memcpy(afu->version, &reg, sizeof(reg));
- 	afu->interface_version =
- 	    readq_be(&afu->afu_map->global.regs.interface_version);
--	pr_debug("%s: afu version %s, interface version 0x%llX\n",
--		 __func__, afu->version, afu->interface_version);
-+	if ((afu->interface_version + 1) == 0) {
-+		pr_err("Back level AFU, please upgrade. AFU version %s "
-+		       "interface version 0x%llx\n", afu->version,
-+		       afu->interface_version);
-+		rc = -EINVAL;
-+		goto err1;
-+	} else
-+		pr_debug("%s: afu version %s, interface version 0x%llX\n",
-+			 __func__, afu->version, afu->interface_version);
+-	/* If a Task Management Function is active, do not send one more.
+-	 */
+-	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
++	/* When Task Management Function is active do not send another */
++	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
+ 	if (cfg->tmf_active)
+-		wait_event_interruptible_locked_irq(cfg->tmf_waitq,
+-						    !cfg->tmf_active);
++		wait_event_interruptible_lock_irq(cfg->tmf_waitq,
++						  !cfg->tmf_active,
++						  cfg->tmf_slock);
+ 	cfg->tmf_active = true;
+ 	cmd->cmd_tmf = true;
+-	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
++	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
  
- 	rc = start_afu(cfg);
- 	if (rc) {
-diff --git a/drivers/scsi/cxlflash/sislite.h b/drivers/scsi/cxlflash/sislite.h
-index 63bf394..8425d1a 100644
---- a/drivers/scsi/cxlflash/sislite.h
-+++ b/drivers/scsi/cxlflash/sislite.h
-@@ -340,7 +340,7 @@ struct sisl_global_regs {
- #define SISL_AFUCONF_MBOX_CLR_READ     0x0010ULL
- 	__be64 afu_config;
- 	__be64 rsvd[0xf8];
--	__be64 afu_version;
-+	__le64 afu_version;
- 	__be64 interface_version;
- };
+ 	cmd->rcb.ctx_id = afu->ctx_hndl;
+ 	cmd->rcb.port_sel = port_sel;
+@@ -457,15 +457,24 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
+ 	rc = send_cmd(afu, cmd);
+ 	if (unlikely(rc)) {
+ 		cmd_checkin(cmd);
+-		spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
++		spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
+ 		cfg->tmf_active = false;
+-		spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
++		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+ 		goto out;
+ 	}
  
+-	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
+-	wait_event_interruptible_locked_irq(cfg->tmf_waitq, !cfg->tmf_active);
+-	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
++	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
++	to = msecs_to_jiffies(5000);
++	to = wait_event_interruptible_lock_irq_timeout(cfg->tmf_waitq,
++						       !cfg->tmf_active,
++						       cfg->tmf_slock,
++						       to);
++	if (!to) {
++		cfg->tmf_active = false;
++		dev_err(dev, "%s: TMF timed out!\n", __func__);
++		rc = -1;
++	}
++	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+ out:
+ 	return rc;
+ }
+@@ -512,16 +521,17 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
+ 			    get_unaligned_be32(&((u32 *)scp->cmnd)[2]),
+ 			    get_unaligned_be32(&((u32 *)scp->cmnd)[3]));
+ 
+-	/* If a Task Management Function is active, wait for it to complete
++	/*
++	 * If a Task Management Function is active, wait for it to complete
+ 	 * before continuing with regular commands.
+ 	 */
+-	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
++	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
+ 	if (cfg->tmf_active) {
+-		spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
++		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+ 		rc = SCSI_MLQUEUE_HOST_BUSY;
+ 		goto out;
+ 	}
+-	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
++	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+ 
+ 	switch (cfg->state) {
+ 	case STATE_RESET:
+@@ -713,11 +723,12 @@ static void cxlflash_remove(struct pci_dev *pdev)
+ 	/* If a Task Management Function is active, wait for it to complete
+ 	 * before continuing with remove.
+ 	 */
+-	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
++	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
+ 	if (cfg->tmf_active)
+-		wait_event_interruptible_locked_irq(cfg->tmf_waitq,
+-						    !cfg->tmf_active);
+-	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
++		wait_event_interruptible_lock_irq(cfg->tmf_waitq,
++						  !cfg->tmf_active,
++						  cfg->tmf_slock);
++	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
+ 
+ 	cfg->state = STATE_FAILTERM;
+ 	cxlflash_stop_term_user_contexts(cfg);
 -- 
 2.1.0
