@@ -1,43 +1,28 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0139.outbound.protection.outlook.com [157.56.110.139])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 083D21A0391
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 07:12:20 +1000 (AEST)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Fri, 25 Sep 2015 15:12:18 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 836FD1FF0042
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 15:03:25 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8PLCG4410420718
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 14:12:16 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8PLCEFt020598
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 15:12:16 -0600
-Subject: Re: [PATCH v3 30/32] cxlflash: Fix to double the delay each time
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
-References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443123846-17855-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Manoj Kumar <manoj@linux.vnet.ibm.com>
-From: Brian King <brking@linux.vnet.ibm.com>
-Message-ID: <5605B8AB.5050600@linux.vnet.ibm.com>
-Date: Fri, 25 Sep 2015 16:12:11 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id C7FD41A0391
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 07:17:23 +1000 (AEST)
+Message-ID: <1443215827.32298.130.camel@freescale.com>
+Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock
+ implementation details
+From: Scott Wood <scottwood@freescale.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+CC: Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette
+ <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Russell
+ King" <linux@arm.linux.org.uk>, <linux-clk@vger.kernel.org>,
+ <linux-pm@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-arm-kernel@lists.infradead.org>, Tang Yuantian
+ <Yuantian.Tang@freescale.com>
+Date: Fri, 25 Sep 2015 16:17:07 -0500
+In-Reply-To: <3374654.Hks5DeSGVV@vostro.rjw.lan>
+References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
+ <1442723397-26329-6-git-send-email-scottwood@freescale.com>
+ <20150922194654.GJ24314@linux> <3374654.Hks5DeSGVV@vostro.rjw.lan>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1443123846-17855-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,9 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+On Fri, 2015-09-25 at 23:42 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, September 22, 2015 12:46:54 PM Viresh Kumar wrote:
+> > On 19-09-15, 23:29, Scott Wood wrote:
+> > > Get the CPU clock's potential parent clocks from the clock interface
+> > > itself, rather than manually parsing the clocks property to find a
+> > > phandle, looking at the clock-names property of that, and assuming that
+> > > those are valid parent clocks for the cpu clock.
+> > > 
+> > > This is necessary now that the clocks are generated based on the clock
+> > > driver's knowledge of the chip rather than a fragile device-tree
+> > > description of the mux options.
+> > > 
+> > > We can now rely on the clock driver to ensure that the mux only exposes
+> > > options that are valid.  The cpufreq driver was currently being overly
+> > > conservative in some cases -- for example, the "min_cpufreq =
+> > > get_bus_freq()" restriction only applies to chips with erratum
+> > > A-004510, and whether the freq_mask used on p5020 is needed depends on
+> > > the actual frequencies of the PLLs (FWIW, p5040 has a similar
+> > > limitation but its .freq_mask was zero) -- and the frequency mask
+> > > mechanism made assumptions about particular parent clock indices that
+> > > are no longer valid.
+> > > 
+> > > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > > ---
+> > > v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
+> > > to clk api usage
+> > > 
+> > >  drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++---------------------
+> > > -------
+> > >  1 file changed, 40 insertions(+), 97 deletions(-)
+> > 
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> I'm wondering who's supposed to be merging this set?
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+As I noted in the cover letter, I'm looking for acks so that I can apply 
+these to a topic branch which can be pulled through the PPC and ARM trees, 
+each of which will have patches that depend on it.
+
+-Scott
