@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 623FE1A0E2F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 09:17:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A13381A0B6D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 09:17:42 +1000 (AEST)
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Fri, 25 Sep 2015 17:17:35 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B622319D803F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:08:24 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t8PNGbZ67930270
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 16:16:37 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8PNHU1n002306
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:17:31 -0600
+ Fri, 25 Sep 2015 19:17:40 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 934FD6E8047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 19:09:20 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8PNHb2b59768942
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 23:17:37 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8PNHaq1010318
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 19:17:37 -0400
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,9 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v4 16/32] cxlflash: Fix async interrupt bypass logic
-Date: Fri, 25 Sep 2015 18:16:51 -0500
-Message-Id: <1443223011-9539-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v4 17/32] cxlflash: Remove dual port online dependency
+Date: Fri, 25 Sep 2015 18:16:58 -0500
+Message-Id: <1443223018-9577-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,31 +45,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A bug was introduced earlier in the development cycle when cleaning
-up logic statements. Instead of skipping bits that are not set, set
-bits are skipped, causing async interrupts to not be handled correctly.
-
-To fix, simply add back in the proper evaluation for an unset bit.
+At present, both ports must be online for the device to
+configure properly. Remove this dependency and the unnecessary
+internal LUN override logic as well. Additionally, as a refactoring
+measure, change the return code variable name to match that used
+throughout the driver.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/cxlflash/main.c | 23 ++++++++---------------
+ 1 file changed, 8 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 98fdac1..ed9fd8c 100644
+index ed9fd8c..d45388f 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -1315,7 +1315,7 @@ static irqreturn_t cxlflash_async_err_irq(int irq, void *data)
- 	/* check each bit that is on */
- 	for (i = 0; reg_unmasked; i++, reg_unmasked = (reg_unmasked >> 1)) {
- 		info = find_ainfo(1ULL << i);
--		if ((reg_unmasked & 0x1) || !info)
-+		if (((reg_unmasked & 0x1) == 0) || !info)
- 			continue;
+@@ -1030,7 +1030,7 @@ static int wait_port_offline(u64 *fc_regs, u32 delay_us, u32 nretry)
+  */
+ static int afu_set_wwpn(struct afu *afu, int port, u64 *fc_regs, u64 wwpn)
+ {
+-	int ret = 0;
++	int rc = 0;
  
- 		port = info->port;
+ 	set_port_offline(fc_regs);
+ 
+@@ -1038,33 +1038,26 @@ static int afu_set_wwpn(struct afu *afu, int port, u64 *fc_regs, u64 wwpn)
+ 			       FC_PORT_STATUS_RETRY_CNT)) {
+ 		pr_debug("%s: wait on port %d to go offline timed out\n",
+ 			 __func__, port);
+-		ret = -1; /* but continue on to leave the port back online */
++		rc = -1; /* but continue on to leave the port back online */
+ 	}
+ 
+-	if (ret == 0)
++	if (rc == 0)
+ 		writeq_be(wwpn, &fc_regs[FC_PNAME / 8]);
+ 
++	/* Always return success after programming WWPN */
++	rc = 0;
++
+ 	set_port_online(fc_regs);
+ 
+ 	if (!wait_port_online(fc_regs, FC_PORT_STATUS_RETRY_INTERVAL_US,
+ 			      FC_PORT_STATUS_RETRY_CNT)) {
+ 		pr_debug("%s: wait on port %d to go online timed out\n",
+ 			 __func__, port);
+-		ret = -1;
+-
+-		/*
+-		 * Override for internal lun!!!
+-		 */
+-		if (afu->internal_lun) {
+-			pr_debug("%s: Overriding port %d online timeout!!!\n",
+-				 __func__, port);
+-			ret = 0;
+-		}
+ 	}
+ 
+-	pr_debug("%s: returning rc=%d\n", __func__, ret);
++	pr_debug("%s: returning rc=%d\n", __func__, rc);
+ 
+-	return ret;
++	return rc;
+ }
+ 
+ /**
 -- 
 2.1.0
