@@ -1,45 +1,23 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A99E1A0B34
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 03:10:53 +1000 (AEST)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Fri, 25 Sep 2015 13:10:50 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 560DFC90052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 13:01:51 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8PHAdlu59637856
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:10:48 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8PHAEfT006447
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 13:10:15 -0400
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
-Subject: Re: [PATCH v3 08/32] cxlflash: Fix to avoid CXL services during EEH
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <5604A20C.4090000@linux.vnet.ibm.com>
-Date: Fri, 25 Sep 2015 12:09:51 -0500
-Cc: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Message-Id: <ACF85932-A3A7-42C1-9655-D3C571C84F9D@linux.vnet.ibm.com>
-References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443123485-16808-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <5604A20C.4090000@linux.vnet.ibm.com>
-To: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id B887B1A0391
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 05:48:52 +1000 (AEST)
+Date: Fri, 25 Sep 2015 12:48:48 -0700 (PDT)
+Message-Id: <20150925.124848.1041664902815491015.davem@davemloft.net>
+To: madalin.bucur@freescale.com
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, scottwood@freescale.com,
+ igal.liberman@freescale.com, roy.pledge@freescale.com,
+ ppc@mindchasers.com, joe@perches.com, pebolle@tiscali.nl,
+ joakim.tjernlund@transmode.se, f.fainelli@gmail.com, stsp@list.ru
+Subject: Re: [v3 2/8] dpaa_eth: add support for DPAA Ethernet
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1443106819-5549-3-git-send-email-madalin.bucur@freescale.com>
+References: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
+ <1443106819-5549-3-git-send-email-madalin.bucur@freescale.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,52 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Sep 24, 2015, at 8:23 PM, Brian King <brking@linux.vnet.ibm.com> =
-wrote:
-> On 09/24/2015 02:38 PM, Matthew R. Ochs wrote:
->> diff --git a/drivers/scsi/cxlflash/main.c =
-b/drivers/scsi/cxlflash/main.c
->> index 3e3ccf1..6e85c77 100644
->> --- a/drivers/scsi/cxlflash/main.c
->> +++ b/drivers/scsi/cxlflash/main.c
->> @@ -2383,16 +2397,14 @@ static pci_ers_result_t =
-cxlflash_pci_error_detected(struct pci_dev *pdev,
->> 	switch (state) {
->> 	case pci_channel_io_frozen:
->> 		cfg->state =3D STATE_LIMBO;
->> -
->> -		/* Turn off legacy I/O */
->> 		scsi_block_requests(cfg->host);
->> +		drain_ioctls(cfg);
->=20
-> I don't see this addressing the deadlock with an outstanding =
-read_cap16 during EEH I identified
-> in the previous review. Am I missing something here?
+From: Madalin Bucur <madalin.bucur@freescale.com>
+Date: Thu, 24 Sep 2015 18:00:13 +0300
 
-I'll submit this in a separate patch in v4.
+> +#define DPA_NAPI_WEIGHT		64
 
->> /**
->> + * check_state() - checks and responds to the current adapter state
->> + * @cfg:	Internal structure associated with the host.
->> + * @ioctl:	Indicates if on an ioctl thread.
->> + *
->> + * This routine can block and should only be used on process =
-context.
->> + * When blocking on an ioctl thread, the ioctl read semaphore should =
-be
->> + * let up to allow for draining actively running ioctls. Also note =
-that
->> + * when waking up from waiting in reset, the state is unknown and =
-must
->> + * be checked again before proceeding.
->> + *
->> + * Return: 0 on success, -errno on failure
->> + */
->> +static int check_state(struct cxlflash_cfg *cfg, bool ioctl)
->=20
-> Looks like you missed this cleanup. The second parameter is not =
-needed, since all
-> the callers set it to true.
+This is just the default, so simply use "NAPI_POLL_WEIGHT" rather
+than defining your own macro unnecessarily for this.
 
-Yep, this was my mistake. I'll correct in a v4 as the change will
-ripple to the next patch in the series.
+> +static int dpa_eth_priv_stop(struct net_device *net_dev)
+> +{
+> +	int err;
+> +	struct dpa_priv_s *priv;
+> +
+> +	err = dpa_stop(net_dev);
+> +	/* Allow NAPI to consume any frame still in the Rx/TxConfirm
+> +	 * ingress queues. This is to avoid a race between the current
+> +	 * context and ksoftirqd which could leave NAPI disabled while
+> +	 * in fact there's still Rx traffic to be processed.
+> +	 */
+> +	usleep_range(5000, 10000);
+
+A wait never fixes a race.  Instead you must use appropriate mutual
+exclusion mechanisms to ensure that NAPI is really completed it's
+run, and we definitely have a means by which to do that properly.
+
+> +	net_dev->hw_features |= (NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
+> +		NETIF_F_LLTX);
+
+This second line should start exactly at the first column after the
+openning parenthesis of the first line.
