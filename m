@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D09AE1A0E5B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 09:17:47 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C230F1A2AB6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 09:17:54 +1000 (AEST)
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Fri, 25 Sep 2015 17:17:45 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 784E23E4003B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:17:42 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8PNGNCI10092970
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 16:16:32 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8PNH95V032500
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:17:09 -0600
+ Fri, 25 Sep 2015 17:17:52 -0600
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id ABFAE38C804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 19:17:49 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8PNHngP59047944
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 23:17:49 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8PNHme5010233
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 19:17:49 -0400
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,9 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v4 13/32] cxlflash: Fix to avoid stall while waiting on TMF
-Date: Fri, 25 Sep 2015 18:16:07 -0500
-Message-Id: <1443222967-9424-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v4 19/32] cxlflash: Correct usage of scsi_host_put()
+Date: Fri, 25 Sep 2015 18:17:09 -0500
+Message-Id: <1443223029-9656-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,150 +45,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Borrowing the TMF waitq's spinlock causes a stall condition when
-waiting for the TMF to complete. To remedy, introduce our own spin
-lock to serialize TMF and use the appropriate wait services.
+Currently, scsi_host_put() is being called prematurely in the
+remove path and is missing entirely in an error cleanup path.
+The former can lead to memory being freed too early with
+subsequent access potentially corrupting data whilst the former
+would result in a memory leak.
 
-Also add a timeout while waiting for a TMF completion. When a TMF
-times out, report back a failure such that a bigger hammer reset
-can occur.
+Move the usage on remove to be the last cleanup action taken
+and introduce a call to scsi_host_put() in the one initialization
+error path that does not use remove to cleanup.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/common.h |  1 +
- drivers/scsi/cxlflash/main.c   | 55 +++++++++++++++++++++++++-----------------
- 2 files changed, 34 insertions(+), 22 deletions(-)
+ drivers/scsi/cxlflash/main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index b038ac7..7a0cb5c 100644
---- a/drivers/scsi/cxlflash/common.h
-+++ b/drivers/scsi/cxlflash/common.h
-@@ -124,6 +124,7 @@ struct cxlflash_cfg {
- 	struct list_head lluns; /* list of llun_info structs */
- 
- 	wait_queue_head_t tmf_waitq;
-+	spinlock_t tmf_slock;
- 	bool tmf_active;
- 	wait_queue_head_t reset_waitq;
- 	enum cxlflash_state state;
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 527ff85..110037d 100644
+index b6a2584..0bb6629 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -249,11 +249,10 @@ static void cmd_complete(struct afu_cmd *cmd)
- 		scp->scsi_done(scp);
+@@ -733,7 +733,6 @@ static void cxlflash_remove(struct pci_dev *pdev)
+ 	case INIT_STATE_SCSI:
+ 		cxlflash_term_local_luns(cfg);
+ 		scsi_remove_host(cfg->host);
+-		scsi_host_put(cfg->host);
+ 		/* Fall through */
+ 	case INIT_STATE_AFU:
+ 		term_afu(cfg);
+@@ -743,6 +742,7 @@ static void cxlflash_remove(struct pci_dev *pdev)
+ 	case INIT_STATE_NONE:
+ 		flush_work(&cfg->work_q);
+ 		free_mem(cfg);
++		scsi_host_put(cfg->host);
+ 		break;
+ 	}
  
- 		if (cmd_is_tmf) {
--			spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+			spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 			cfg->tmf_active = false;
- 			wake_up_all_locked(&cfg->tmf_waitq);
--			spin_unlock_irqrestore(&cfg->tmf_waitq.lock,
--					       lock_flags);
-+			spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 		}
- 	} else
- 		complete(&cmd->cevent);
-@@ -420,6 +419,7 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	struct device *dev = &cfg->dev->dev;
- 	ulong lock_flags;
- 	int rc = 0;
-+	ulong to;
- 
- 	cmd = cmd_checkout(afu);
- 	if (unlikely(!cmd)) {
-@@ -428,15 +428,15 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
+@@ -2404,6 +2404,7 @@ static int cxlflash_probe(struct pci_dev *pdev,
+ 		dev_err(&pdev->dev, "%s: call to scsi_host_alloc failed!\n",
+ 			__func__);
+ 		rc = -ENOMEM;
++		scsi_host_put(cfg->host);
  		goto out;
  	}
  
--	/* If a Task Management Function is active, do not send one more.
--	 */
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+	/* When Task Management Function is active do not send another */
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active)
--		wait_event_interruptible_locked_irq(cfg->tmf_waitq,
--						    !cfg->tmf_active);
-+		wait_event_interruptible_lock_irq(cfg->tmf_waitq,
-+						  !cfg->tmf_active,
-+						  cfg->tmf_slock);
- 	cfg->tmf_active = true;
- 	cmd->cmd_tmf = true;
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
- 	cmd->rcb.ctx_id = afu->ctx_hndl;
- 	cmd->rcb.port_sel = port_sel;
-@@ -457,15 +457,24 @@ static int send_tmf(struct afu *afu, struct scsi_cmnd *scp, u64 tmfcmd)
- 	rc = send_cmd(afu, cmd);
- 	if (unlikely(rc)) {
- 		cmd_checkin(cmd);
--		spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+		spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 		cfg->tmf_active = false;
--		spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 		goto out;
- 	}
- 
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
--	wait_event_interruptible_locked_irq(cfg->tmf_waitq, !cfg->tmf_active);
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
-+	to = msecs_to_jiffies(5000);
-+	to = wait_event_interruptible_lock_irq_timeout(cfg->tmf_waitq,
-+						       !cfg->tmf_active,
-+						       cfg->tmf_slock,
-+						       to);
-+	if (!to) {
-+		cfg->tmf_active = false;
-+		dev_err(dev, "%s: TMF timed out!\n", __func__);
-+		rc = -1;
-+	}
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- out:
- 	return rc;
- }
-@@ -512,16 +521,17 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
- 			    get_unaligned_be32(&((u32 *)scp->cmnd)[2]),
- 			    get_unaligned_be32(&((u32 *)scp->cmnd)[3]));
- 
--	/* If a Task Management Function is active, wait for it to complete
-+	/*
-+	 * If a Task Management Function is active, wait for it to complete
- 	 * before continuing with regular commands.
- 	 */
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active) {
--		spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+		spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 		rc = SCSI_MLQUEUE_HOST_BUSY;
- 		goto out;
- 	}
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
- 	switch (cfg->state) {
- 	case STATE_RESET:
-@@ -713,11 +723,12 @@ static void cxlflash_remove(struct pci_dev *pdev)
- 	/* If a Task Management Function is active, wait for it to complete
- 	 * before continuing with remove.
- 	 */
--	spin_lock_irqsave(&cfg->tmf_waitq.lock, lock_flags);
-+	spin_lock_irqsave(&cfg->tmf_slock, lock_flags);
- 	if (cfg->tmf_active)
--		wait_event_interruptible_locked_irq(cfg->tmf_waitq,
--						    !cfg->tmf_active);
--	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
-+		wait_event_interruptible_lock_irq(cfg->tmf_waitq,
-+						  !cfg->tmf_active,
-+						  cfg->tmf_slock);
-+	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
- 
- 	cfg->state = STATE_FAILTERM;
- 	cxlflash_stop_term_user_contexts(cfg);
 -- 
 2.1.0
