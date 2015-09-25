@@ -1,30 +1,19 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A42B31A01EE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 10:18:13 +1000 (AEST)
-Subject: Re: [PATCH v3 2/3] powerpc/512x: add a device tree binding for
- LocalPlus Bus FIFO
-To: Alexander Popov <alex.popov@linux.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Gerhard Sittig <gsi@denx.de>,
- Rob Herring <robh@kernel.org>, Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
- <1443115737-3948-3-git-send-email-alex.popov@linux.com>
-From: Timur Tabi <timur@tabi.org>
-Message-ID: <560492C1.307@tabi.org>
-Date: Thu, 24 Sep 2015 19:18:09 -0500
-MIME-Version: 1.0
-In-Reply-To: <1443115737-3948-3-git-send-email-alex.popov@linux.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id D97101A0205
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 10:33:37 +1000 (AEST)
+Message-ID: <1443141217.2157.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/1] powerpc: Individual System V IPC system calls
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, anton@samba.org
+Date: Fri, 25 Sep 2015 10:33:37 +1000
+In-Reply-To: <fc46555d58def0d9ad51ba3e6bc66d5dcf537d48.1443073157.git.sam.bobroff@au1.ibm.com>
+References: <fc46555d58def0d9ad51ba3e6bc66d5dcf537d48.1443073157.git.sam.bobroff@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,7 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Popov wrote:
-> +- dma-names: should be "rx-tx";
+On Thu, 2015-09-24 at 15:39 +1000, Sam Bobroff wrote:
+> This patch provides individual system call numbers for the following
+> System V IPC system calls, on PowerPC, so that they do not need to be
+> multiplexed:
+> * semop, semget, semctl, semtimedop
+> * msgsnd, msgrcv, msgget, msgctl
+> * shmat, shmdt, shmget, shmctl
 
-Why bother, if it can only be one value?
+Thanks.
+
+Can you please rebase this on top of linux-next, where we have two new
+syscalls wired up. It should be trivial, just the numbering changes, but I
+think you have a modified libc to actually test the result.
+
+cheers
