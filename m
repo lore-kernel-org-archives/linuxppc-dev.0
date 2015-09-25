@@ -1,23 +1,43 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id B887B1A0391
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 05:48:52 +1000 (AEST)
-Date: Fri, 25 Sep 2015 12:48:48 -0700 (PDT)
-Message-Id: <20150925.124848.1041664902815491015.davem@davemloft.net>
-To: madalin.bucur@freescale.com
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, scottwood@freescale.com,
- igal.liberman@freescale.com, roy.pledge@freescale.com,
- ppc@mindchasers.com, joe@perches.com, pebolle@tiscali.nl,
- joakim.tjernlund@transmode.se, f.fainelli@gmail.com, stsp@list.ru
-Subject: Re: [v3 2/8] dpaa_eth: add support for DPAA Ethernet
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1443106819-5549-3-git-send-email-madalin.bucur@freescale.com>
-References: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
- <1443106819-5549-3-git-send-email-madalin.bucur@freescale.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA7141A0391
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 06:32:32 +1000 (AEST)
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Fri, 25 Sep 2015 16:32:28 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1ECFFC90041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 16:23:30 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8PKWQgk43122908
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 20:32:26 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8PKWO9k024177
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 16:32:26 -0400
+Subject: Re: [PATCH v3 13/32] cxlflash: Fix to avoid stall while waiting on TMF
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
+References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1443123560-17081-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Message-ID: <5605AF55.2060606@linux.vnet.ibm.com>
+Date: Fri, 25 Sep 2015 15:32:21 -0500
+MIME-Version: 1.0
+In-Reply-To: <1443123560-17081-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +47,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@freescale.com>
-Date: Thu, 24 Sep 2015 18:00:13 +0300
+Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 
-> +#define DPA_NAPI_WEIGHT		64
 
-This is just the default, so simply use "NAPI_POLL_WEIGHT" rather
-than defining your own macro unnecessarily for this.
-
-> +static int dpa_eth_priv_stop(struct net_device *net_dev)
-> +{
-> +	int err;
-> +	struct dpa_priv_s *priv;
-> +
-> +	err = dpa_stop(net_dev);
-> +	/* Allow NAPI to consume any frame still in the Rx/TxConfirm
-> +	 * ingress queues. This is to avoid a race between the current
-> +	 * context and ksoftirqd which could leave NAPI disabled while
-> +	 * in fact there's still Rx traffic to be processed.
-> +	 */
-> +	usleep_range(5000, 10000);
-
-A wait never fixes a race.  Instead you must use appropriate mutual
-exclusion mechanisms to ensure that NAPI is really completed it's
-run, and we definitely have a means by which to do that properly.
-
-> +	net_dev->hw_features |= (NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
-> +		NETIF_F_LLTX);
-
-This second line should start exactly at the first column after the
-openning parenthesis of the first line.
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
