@@ -1,25 +1,23 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0116.outbound.protection.outlook.com [157.56.111.116])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B55BC1A0145
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:36:11 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH V3] thermal: qoriq: Add thermal management support
-Date: Fri, 25 Sep 2015 07:36:04 +0000
-Message-ID: <BLUPR03MB149D7CAE2B82F34325BAB14E1420@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
- <1443132592.32298.56.camel@freescale.com>
- <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
- <1443157928.32298.108.camel@freescale.com>
-In-Reply-To: <1443157928.32298.108.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id CCCED1A01E2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:45:48 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, Aaron Sawdey <sawdey@us.ibm.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>, Steve Munroe <sjmunroe@us.ibm.com>,
+ linuxppc-dev@ozlabs.org, anton@samba.org
+Subject: Re: [PATCH v2 1/2] powerpc/selftest: Add gettimeofday() benchmark
+Date: Fri, 25 Sep 2015 09:39:56 +0200
+Message-ID: <1474940.LhqZEdbX4W@wuerfel>
+In-Reply-To: <1443153700-15395-2-git-send-email-mikey@neuling.org>
+References: <1443153700-15395-1-git-send-email-mikey@neuling.org>
+ <1443153700-15395-2-git-send-email-mikey@neuling.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,64 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1IDE6MTIgUE0NCj4gVG86IEppYSBI
-b25ndGFvLUIzODk1MQ0KPiBDYzogZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXgtcG1Admdlci5r
-ZXJuZWwub3JnOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDog
-UmU6IFtQQVRDSCBWM10gdGhlcm1hbDogcW9yaXE6IEFkZCB0aGVybWFsIG1hbmFnZW1lbnQgc3Vw
-cG9ydA0KPiANCj4gT24gVGh1LCAyMDE1LTA5LTI0IGF0IDIyOjA5IC0wNTAwLCBKaWEgSG9uZ3Rh
-by1CMzg5NTEgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4g
-RnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IEZyaWRheSwgU2VwdGVtYmVyIDI1
-LCAyMDE1IDY6MTAgQU0NCj4gPiA+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5NTENCj4gPiA+IENjOiBl
-ZHViZXp2YWxAZ21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0K
-PiA+ID4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjNd
-IHRoZXJtYWw6IHFvcmlxOiBBZGQgdGhlcm1hbCBtYW5hZ2VtZW50DQo+IHN1cHBvcnQNCj4gPiA+
-DQo+ID4gPiBPbiBXZWQsIDIwMTUtMDktMjMgYXQgMTY6MjggKzA4MDAsIEppYSBIb25ndGFvIHdy
-b3RlOg0KPiA+ID4gPiBUaGlzIGRyaXZlciBhZGQgdGhlcm1hbCBtYW5hZ2VtZW50IHN1cHBvcnQg
-YnkgZW5hYmxpbmcgVE1VIChUaGVybWFsDQo+ID4gPiA+IE1vbml0b3JpbmcgVW5pdCkgb24gUW9y
-SVEgcGxhdGZvcm0uDQo+ID4gPiA+DQo+ID4gPiA+IEl0J3MgYmFzZWQgb24gdGhlcm1hbCBvZiBm
-cmFtZXdvcms6DQo+ID4gPiA+IC0gVHJpcCBwb2ludHMgZGVmaW5lZCBpbiBkZXZpY2UgdHJlZS4N
-Cj4gPiA+ID4gLSBDcHVmcmVxIGFzIGNvb2xpbmcgZGV2aWNlIHJlZ2lzdGVyZWQgaW4gcW9yaXEg
-Y3B1ZnJlcSBkcml2ZXIuDQo+ID4gPg0KPiA+ID4gSSBkb24ndCBzZWUgYW55IGNvb2xpbmcgZGV2
-aWNlIHJlZ2lzdGVyZWQgaW4gdGhlIHFvcmlxIGNwdWZyZXEgZHJpdmVyLg0KPiA+ID4gSXMgdGhp
-cyBkZXBlbmRlbnQgb24gc29tZSBvdGhlciBwYXRjaD8NCj4gPg0KPiA+IEl0J3Mgbm90IGRlcGVu
-ZCBvbiBhbnkgcGF0Y2guIEJ1dCBJIHNhdyB5b3VyIHBhdGNoIGJlbG93Og0KPiA+IFtQQVRDSCB2
-MyA1LzVdIGNwdWZyZXE6IHFvcmlxOiBEb24ndCBsb29rIGF0IGNsb2NrIGltcGxlbWVudGF0aW9u
-DQo+IGRldGFpbHMNCj4gPiBTbyBJIGhvbGQgbXkgcGF0Y2ggd2FpdGluZyBmb3IgeW91ciBwYXRj
-aCBtZXJnZWQgb3IgdGhlcmUgd2lsbCBiZQ0KPiBjb25mbGljdC4NCj4gPg0KPiA+IEkgY291bGQg
-c2VuZCBpdCBvdXQgdG9vIGlmIHlvdSBhcmUgZmluZSB3aXRoIGl0Lg0KPiANCj4gWWVzLCByZWJh
-c2UgaXQgb24gdGhhdCBwYXRjaCBhbmQgc2VuZCBpdC4gIE1lbnRpb24gYmVsb3cgdGhlIC0tLSB0
-aGF0DQo+IHlvdSdyZQ0KPiBkZXBlbmRpbmcgb24gdGhhdCBwYXRjaCwgYW5kIHByb3ZpZGUgYSBw
-YXRjaHdvcmsvYXJjaGl2ZSBsaW5rLg0KDQpPay4gQnV0IEkgbmVlZCByZWJhc2UgYWdhaW4gaWYg
-eW91IGhhdmUgZnVydGhlciBjaGFuZ2VzIG9uIHRoYXQgcGF0Y2guDQpBbnl3YXksIHRoaXMgaXMg
-bm90IGEgYmlnIHByb2JsZW0gZm9yIG1lLg0KDQo+IA0KPiA+ID4gPiArc3RhdGljIGludCB0bXVf
-Z2V0X3RlbXAodm9pZCAqcCwgaW50ICp0ZW1wKSB7DQo+ID4gPiA+ICsgICAgIHU4IHZhbDsNCj4g
-PiA+ID4gKyAgICAgc3RydWN0IHFvcmlxX3RtdV9kYXRhICpkYXRhID0gcDsNCj4gPiA+ID4gKw0K
-PiA+ID4gPiArICAgICB2YWwgPSBpb3JlYWQzMmJlKCZkYXRhLT5yZWdzLT5zaXRlWzBdLnRyaXRz
-cik7DQo+ID4gPiA+ICsgICAgICp0ZW1wID0gKGludCl2YWwgKiAxMDAwOw0KPiA+ID4NCj4gPiA+
-IFdoeSBkb24ndCB5b3UgZGVjbGFyZSB2YWwgYXMgaW50IGluIHRoZSBmaXJzdCBwbGFjZT8NCj4g
-Pg0KPiA+IEl0J3MgYSAzMmJpdCByZWdpc3Rlci4NCj4gPiBPbmx5IHRoZSBsZWFzdCBzaWduaWZp
-Y2FudCA4IGJpdHMgcmVwcmVzZW50IHRoZSB0ZW1wZXJhdHVyZS4NCj4gPiBUaGUgbW9zdCBzaWdu
-aWZpY2FudCBiaXQgc2hvd3MgdGhlIHZhbGlkbmVzcyBvZiB0aGUgdmFsdWUuDQo+ID4gSSB1c2Ug
-dTggdHlwZSB0byByZW1vdmUgdGhlIHJlc3QgMjRiaXRzIGluZmx1ZW5jZS4NCj4gDQo+IFRoYXQn
-cyBldmVuIHdvcnNlLiAgVXNlIGFuIGV4cGxpY2l0ICYgb3BlcmF0aW9uIHRvIGV4dHJhY3QgdGhl
-IGZpZWxkDQo+IHlvdSdyZQ0KPiBpbnRlcmVzdGVkIGluLg0KDQpXaWxsIGNoYW5nZSBmb3IgbmV4
-dCB2ZXJzaW9uLg0KDQo+IA0KPiA+ID4gPiArICAgICByZXQgPSBxb3JpcV90bXVfY2FsaWJyYXRp
-b24ocGRldik7ICAgICAgLyogVE1VIGNhbGlicmF0aW9uICovDQo+ID4gPiA+ICsgICAgIGlmIChy
-ZXQgPCAwKSB7DQo+ID4gPiA+ICsgICAgICAgICAgICAgZGV2X2VycigmcGRldi0+ZGV2LCAiVE1V
-IGNhbGlicmF0aW9uIGZhaWxlZC5cbiIpOw0KPiA+ID4gPiArICAgICAgICAgICAgIHJldCA9IC1F
-Tk9ERVY7DQo+ID4gPiA+ICsgICAgICAgICAgICAgZ290byBlcnJfaW9tYXA7DQo+ID4gPiA+ICsg
-ICAgIH0NCj4gPiA+DQo+ID4gPiBUaGF0IGZ1bmN0aW9uIHJldHVybnMgbmVnYXRpdmUgd2hlbiBk
-ZXZpY2UgdHJlZSBwcm9wZXJ0aWVzIGFyZQ0KPiBtaXNzaW5nLA0KPiA+ID4gbm90IHdoZW4gYSBj
-YWxpYnJhdGlvbiBwcm9jZWR1cmUgZmFpbHMuDQo+ID4NCj4gPiBXaGF0J3MgeW91ciBzdWdnZXN0
-aW9uIGhlcmUgdG8gcmV0dXJuIHRoZW4/DQo+IA0KPiBSZW1vdmUgdGhpcyBtZXNzYWdlIGFuZCBh
-ZGQgYSBtZXNzYWdlIGluIHFvcmlxX3RtdV9jYWxpYnJhdGlvbiBmb3IgZWFjaA0KPiBlcnJvcg0K
-PiBjb25kaXRpb24uICBBbHNvIGhhdmUgcW9yaXFfdG11X2NhbGlicmF0aW9uIHBhc3MgYmFjayBh
-IHByb3BlciBlcnJvciBjb2RlLA0KPiBub3QgLTEuDQoNClllcywgdGhpcyBpcyBtb3JlIHJlYXNv
-bmFibGUuDQoNCj4gDQo+ID4gPiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBx
-b3JpcV90bXVfbWF0Y2hbXSA9IHsNCj4gPiA+ID4gKyAgICAgeyAuY29tcGF0aWJsZSA9ICJmc2ws
-cW9yaXEtdG11IiwgfSwNCj4gPiA+ID4gKyAgICAge30sDQo+ID4gPiA+ICt9Ow0KPiA+ID4NCj4g
-PiA+IEJpbmRpbmc/DQo+ID4NCj4gPiBOb3Qgc2VuZCBvdXQgeWV0Lg0KPiANCj4gVGhlIGJpbmRp
-bmcgbmVlZHMgdG8gY29tZSBiZWZvcmUgdGhlIGRyaXZlciB0aGF0IHVzZXMgaXQuDQoNClJpZ2h0
-LiBJIHdpbGwgc2VuZCBvdXQgdGhlIHdob2xlIHBhdGNoc2V0Lg0KDQo+IA0KPiAtU2NvdHQNCj4g
-DQoNCg==
+On Friday 25 September 2015 14:01:39 Michael Neuling wrote:
+> This adds a benchmark directory to the powerpc selftests and adds a
+> gettimeofday() benchmark to it.
+> 
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> 
+
+Any reason for keeping this powerpc specific? It seems generally useful.
+and portable.
+
+	Arnd
