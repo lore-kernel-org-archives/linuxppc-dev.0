@@ -1,29 +1,43 @@
-Return-Path: <mmarek@suse.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 114381A0391
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 06:46:45 +1000 (AEST)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 90A69140549
- for <linuxppc-dev@ozlabs.org>; Sat, 26 Sep 2015 06:46:43 +1000 (AEST)
-Subject: Re: [RFC PATCH 1/2] scripts/kconfig/Makefile: Allow KBUILD_DEFCONFIG
- to be a target
-To: Michael Ellerman <michael@ellerman.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
- <560275FC.60104@suse.com>
- <FE248B88-D584-4E66-A59F-B2A2C254000C@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
- yann.morin.1998@free.fr
-From: Michal Marek <mmarek@suse.com>
-Message-ID: <5605B2AE.1080409@suse.com>
-Date: Fri, 25 Sep 2015 22:46:38 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1496E1A0391
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 07:10:39 +1000 (AEST)
+Received: from localhost
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Fri, 25 Sep 2015 15:10:37 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 9C8FF1FF004F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 15:01:43 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8PL7T1W61669394
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 14:07:29 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8PLAXej011296
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 15:10:34 -0600
+Subject: Re: [PATCH v3 28/32] cxlflash: Fix to avoid state change collision
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Ian Munsie <imunsie@au1.ibm.com>, Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
+References: <1443123193-16498-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1443123756-17736-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+From: Brian King <brking@linux.vnet.ibm.com>
+Message-ID: <5605B846.5020101@linux.vnet.ibm.com>
+Date: Fri, 25 Sep 2015 16:10:30 -0500
 MIME-Version: 1.0
-In-Reply-To: <FE248B88-D584-4E66-A59F-B2A2C254000C@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1443123756-17736-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,38 +47,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dne 24.9.2015 v 00:16 Michael Ellerman napsal(a):
+On 09/24/2015 02:42 PM, Matthew R. Ochs wrote:
+> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+> index ab11ee6..325ba31 100644
+> --- a/drivers/scsi/cxlflash/main.c
+> +++ b/drivers/scsi/cxlflash/main.c
+> @@ -496,6 +496,7 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
+>  	struct cxlflash_cfg *cfg = (struct cxlflash_cfg *)host->hostdata;
+>  	struct afu *afu = cfg->afu;
+>  	struct device *dev = &cfg->dev->dev;
+> +	enum cxlflash_state state;
+>  	struct afu_cmd *cmd;
+>  	u32 port_sel = scp->device->channel + 1;
+>  	int nseg, i, ncount;
+> @@ -525,7 +526,11 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
+>  	}
+>  	spin_unlock_irqrestore(&cfg->tmf_slock, lock_flags);
 > 
-> 
-> On 23 September 2015 19:50:52 GMT+10:00, Michal Marek
-> <mmarek@suse.com> wrote:
->> On 2015-09-23 07:40, Michael Ellerman wrote:
->>> +else ifneq ($(wildcard
->> arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
->>> @$(kecho) "*** Default configuration is based on
->> '$(KBUILD_DEFCONFIG)'"
->>> $(Q)$< $(silent)
->> --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
->>> +else +	@$(kecho) "*** Default configuration is based on target
->> '$(KBUILD_DEFCONFIG)'"
->>> +	$(Q)$(MAKE) -f $(srctree)/Makefile $(KBUILD_DEFCONFIG) endif
->> 
->> What is the anticipated usage of this? The patch is not needed to
->> make
->> 
->> make ppc64le_defconfig
->> 
->> work with the second patch. If it was, this would create a loop
->> anyway.
-> 
-> The idea is to make 'make defconfig' work when KBUILD_DEFCONFIG is
-> ppc64le_defconfig (which happens for us when uname returns ppc64le)
-> and additionally when ppc64le_defconfig is not a real file.
+> -	switch (cfg->state) {
+> +	mutex_lock(&cfg->mutex);
+> +	state = cfg->state;
+> +	mutex_unlock(&cfg->mutex);
 
-Ah, that makes sense. You can add
+You can't grab a mutex in queuecommand, since it can sleep and queuecommand can be called from soft irq context.
 
-Acked-by: Michal Marek <mmarek@suse.com>
+Also, I'm not sure what to think about this patch in general. Obviously state can change immediately after
+you drop the mutex, and according to Documentation/memory-barriers.txt, memory operations after the unlock can
+occur before the unlock occurs. Is this a problem?
 
-if you want.
+> +
+> +	switch (state) {
+>  	case STATE_RESET:
+>  		dev_dbg_ratelimited(dev, "%s: device is in reset!\n", __func__);
+>  		rc = SCSI_MLQUEUE_HOST_BUSY;
 
-Michal
+
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
