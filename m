@@ -1,41 +1,39 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-ob0-x22a.google.com (mail-ob0-x22a.google.com
+ [IPv6:2607:f8b0:4003:c01::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B699C1A2DFE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 09:21:41 +1000 (AEST)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Fri, 25 Sep 2015 17:21:39 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id E94411FF0042
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:12:45 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8PNINjW6750678
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 16:18:31 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8PNL3uG005241
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 17:21:04 -0600
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v4 32/32] cxlflash: Fix to avoid potential deadlock on EEH
-Date: Fri, 25 Sep 2015 18:19:57 -0500
-Message-Id: <1443223197-10153-1-git-send-email-mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
-References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A73C1A03A8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Sep 2015 12:18:57 +1000 (AEST)
+Received: by obbda8 with SMTP id da8so94982440obb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Sep 2015 19:18:54 -0700 (PDT)
+Date: Sat, 26 Sep 2015 10:18:29 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Will Deacon <will.deacon@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 3/7] powerpc: atomic: Implement
+ atomic{,64}_{add,sub}_return_* variants
+Message-ID: <20150926021829.GB1814@fixme-laptop.cn.ibm.com>
+References: <1442418575-12297-4-git-send-email-boqun.feng@gmail.com>
+ <20150918165902.GF12837@arm.com>
+ <20150919153310.GB20458@fixme-laptop.cn.ibm.com>
+ <20150920082303.GA1166@fixme-laptop.cn.ibm.com>
+ <20150921222427.GG7356@arm.com>
+ <20150921232656.GC970@fixme-laptop.cn.ibm.com>
+ <20150921233704.GD970@fixme-laptop.cn.ibm.com>
+ <20150922152540.GO4029@linux.vnet.ibm.com>
+ <20150923000754.GB27867@fixme-laptop.cn.ibm.com>
+ <20150925212904.GC30373@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="CdrF4e02JqNVZeln"
+In-Reply-To: <20150925212904.GC30373@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,162 +43,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ioctl threads that use scsi_execute() can run for an excessive amount
-of time due to the fact that they have lengthy timeouts and retry logic
-built in. Under normal operation this is not an issue. However, once EEH
-enters the picture, a long execution time coupled with the possibility
-that a timeout can trigger entry to the driver via registered reset
-callbacks becomes a liability.
 
-In particular, a deadlock can occur when an EEH event is encountered
-while in running in scsi_execute(). As part of the recovery, the EEH
-handler drains all currently running ioctls, waiting until they have
-completed before proceeding with a reset. As the scsi_execute()'s are
-situated on the ioctl path, the EEH handler will wait until they (and
-the remainder of the ioctl handler they're associated with) have
-completed. Normally this would not be much of an issue aside from the
-longer recovery period. Unfortunately, the scsi_execute() triggers a
-reset when it times out. The reset handler will see that the device is
-already being reset and wait until that reset completed. This creates
-a condition where the EEH handler becomes stuck, infinitely waiting for
-the ioctl thread to complete.
+--CdrF4e02JqNVZeln
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-To avoid this behavior, temporarily unmark the scsi_execute() threads
-as an ioctl thread by releasing the ioctl read semaphore. This allows
-the EEH handler to proceed with a recovery while the thread is still
-running. Once the scsi_execute() returns, the ioctl read semaphore is
-reacquired and the adapter state is rechecked in case it changed while
-inside of scsi_execute(). The state check will wait if the adapter is
-still being recovered or returns a failure if the recovery failed. In
-the event that the adapter reset failed, the failure is simply returned
-as the ioctl would be unable to continue.
+On Fri, Sep 25, 2015 at 02:29:04PM -0700, Paul E. McKenney wrote:
+> On Wed, Sep 23, 2015 at 08:07:55AM +0800, Boqun Feng wrote:
+> > On Tue, Sep 22, 2015 at 08:25:40AM -0700, Paul E. McKenney wrote:
+> > > On Tue, Sep 22, 2015 at 07:37:04AM +0800, Boqun Feng wrote:
+> > > > On Tue, Sep 22, 2015 at 07:26:56AM +0800, Boqun Feng wrote:
+> > > > > On Mon, Sep 21, 2015 at 11:24:27PM +0100, Will Deacon wrote:
+> > > > > > Hi Boqun,
+> > > > > >=20
+> > > > > > On Sun, Sep 20, 2015 at 09:23:03AM +0100, Boqun Feng wrote:
+> > > > > > > On Sat, Sep 19, 2015 at 11:33:10PM +0800, Boqun Feng wrote:
+> > > > > > > > On Fri, Sep 18, 2015 at 05:59:02PM +0100, Will Deacon wrote:
+> > > > > > > > > On Wed, Sep 16, 2015 at 04:49:31PM +0100, Boqun Feng wrot=
+e:
+> > > > > > > > > > On powerpc, we don't need a general memory barrier to a=
+chieve acquire and
+> > > > > > > > > > release semantics, so __atomic_op_{acquire,release} can=
+ be implemented
+> > > > > > > > > > using "lwsync" and "isync".
+> > > > > > > > >=20
+> > > > > > > > > I'm assuming isync+ctrl isn't transitive, so we need to g=
+et to the bottom
+> > > > > > > >=20
+> > > > > > > > Actually the transitivity is still guaranteed here, I think=
+ ;-)
+> > > > > >=20
+> > > > > > The litmus test I'm thinking of is:
+> > > > > >=20
+> > > > > >=20
+> > > > > > {
+> > > > > > 0:r2=3Dx;
+> > > > > > 1:r2=3Dx; 1:r5=3Dz;
+> > > > > > 2:r2=3Dz; 2:r4=3Dx;
+> > > > > > }
+> > > > > >  P0           | P1            | P2           ;
+> > > > > >  li r1,1      | lwz r1,0(r2)  | lwz r1,0(r2) ;
+> > > > > >  stw r1,0(r2) | cmpw r1,r1    | cmpw r1,r1   ;
+> > > > > >               | beq LC00      | beq  LC01    ;
+> > > > > >               | LC00:         | LC01:        ;
+> > > > > >               | isync         | isync        ;
+> > > > > >               | li r4,1       | lwz r3,0(r4) ;
+> > > > > >               | stw r4,0(r5)  |              ;
+> > > > > > exists
+> > > > > > (1:r1=3D1 /\ 2:r1=3D1 /\ 2:r3=3D0)
+> > > > > >=20
+> > > > > >=20
+> > > > > > Which appears to be allowed. I don't think you need to worry ab=
+out backwards
+> > > > > > branches for the ctrl+isync construction (none of the current e=
+xample do,
+> > > > > > afaict).
+> > > > > >=20
+> > > > >=20
+> > > > > Yes.. my care of backwards branches is not quite related to the t=
+opic, I
+> > > > > concerned that mostly because my test is using atomic operation, =
+and I
+> > > > > just want to test the exact asm code.
+> > > > >=20
+> > > > > > Anyway, all the problematic cases seem to arise when we start m=
+ixing
+> > > > > > ACQUIRE/RELEASE accesses with relaxed accesses (i.e. where an a=
+ccess from
+> > > > > > one group reads from an access in the other group). It would be=
+ simplest
+> > > > > > to say that this doesn't provide any transitivity guarantees, a=
+nd that
+> > > > > > an ACQUIRE must always read from a RELEASE if transitivity is r=
+equired.
+> > > > > >=20
+> > > > >=20
+> > > > > Agreed. RELEASE alone doesn't provide transitivity and transitivi=
+ty is
+> > > >           ^^^^^^^
+> > > > This should be ACQUIRE...
+> > > >=20
+> > > > > guaranteed only if an ACQUIRE read from a RELEASE. That's exactly=
+ the
+> > > > > direction which the link (https://lkml.org/lkml/2015/9/15/836) is
+> > > > > heading to. So I think we are fine here to use ctrl+isync here, r=
+ight?
+> > >=20
+> > > We are going to have to err on the side of strictness, that is, having
+> > > the documentation place more requirements on the developer than the u=
+nion
+> > > of the hardware does.  Besides, I haven't heard any recent complaints
+> > > that memory-barriers.txt is too simple.  ;-)
+> >=20
+> > Agreed ;-)
+> >=20
+> > For atomic operations, using isync in ACQUIRE operations does gaurantee
+> > that a pure RELEASE/ACQUIRE chain provides transitivity. So, again, I
+> > think we are fine here to use isync in ACQUIRE atomic operations,
+> > unless you think we need to be more strict, i.e, making ACQUIRE itself
+> > provide transitivy?
+>=20
+> As I understand it, either isync or lwsync suffices, with the choice
+> depending on the hardware.  The kernel will rewrite itself at boot time
+> if you use the appropriate macro.  ;-)
+>=20
 
-Reported-by: Brian King <brking@linux.vnet.ibm.com>
-Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/superpipe.c | 30 +++++++++++++++++++++++++++++-
- drivers/scsi/cxlflash/superpipe.h |  2 ++
- drivers/scsi/cxlflash/vlun.c      | 29 +++++++++++++++++++++++++++++
- 3 files changed, 60 insertions(+), 1 deletion(-)
+Yep ;-)
 
-diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-index f625e07..8af7cdc 100644
---- a/drivers/scsi/cxlflash/superpipe.c
-+++ b/drivers/scsi/cxlflash/superpipe.c
-@@ -283,6 +283,24 @@ out:
-  * @sdev:	SCSI device associated with LUN.
-  * @lli:	LUN destined for capacity request.
-  *
-+ * The READ_CAP16 can take quite a while to complete. Should an EEH occur while
-+ * in scsi_execute(), the EEH handler will attempt to recover. As part of the
-+ * recovery, the handler drains all currently running ioctls, waiting until they
-+ * have completed before proceeding with a reset. As this routine is used on the
-+ * ioctl path, this can create a condition where the EEH handler becomes stuck,
-+ * infinitely waiting for this ioctl thread. To avoid this behavior, temporarily
-+ * unmark this thread as an ioctl thread by releasing the ioctl read semaphore.
-+ * This will allow the EEH handler to proceed with a recovery while this thread
-+ * is still running. Once the scsi_execute() returns, reacquire the ioctl read
-+ * semaphore and check the adapter state in case it changed while inside of
-+ * scsi_execute(). The state check will wait if the adapter is still being
-+ * recovered or return a failure if the recovery failed. In the event that the
-+ * adapter reset failed, simply return the failure as the ioctl would be unable
-+ * to continue.
-+ *
-+ * Note that the above puts a requirement on this routine to only be called on
-+ * an ioctl thread.
-+ *
-  * Return: 0 on success, -errno on failure
-  */
- static int read_cap16(struct scsi_device *sdev, struct llun_info *lli)
-@@ -314,8 +332,18 @@ retry:
- 	dev_dbg(dev, "%s: %ssending cmd(0x%x)\n", __func__,
- 		retry_cnt ? "re" : "", scsi_cmd[0]);
- 
-+	/* Drop the ioctl read semahpore across lengthy call */
-+	up_read(&cfg->ioctl_rwsem);
- 	result = scsi_execute(sdev, scsi_cmd, DMA_FROM_DEVICE, cmd_buf,
- 			      CMD_BUFSIZE, sense_buf, to, CMD_RETRIES, 0, NULL);
-+	down_read(&cfg->ioctl_rwsem);
-+	rc = check_state(cfg);
-+	if (rc) {
-+		dev_err(dev, "%s: Failed state! result=0x08%X\n",
-+			__func__, result);
-+		rc = -ENODEV;
-+		goto out;
-+	}
- 
- 	if (driver_byte(result) == DRIVER_SENSE) {
- 		result &= ~(0xFF<<24); /* DRIVER_SENSE is not an error */
-@@ -1221,7 +1249,7 @@ static const struct file_operations null_fops = {
-  *
-  * Return: 0 on success, -errno on failure
-  */
--static int check_state(struct cxlflash_cfg *cfg)
-+int check_state(struct cxlflash_cfg *cfg)
- {
- 	struct device *dev = &cfg->dev->dev;
- 	int rc = 0;
-diff --git a/drivers/scsi/cxlflash/superpipe.h b/drivers/scsi/cxlflash/superpipe.h
-index 7df88ee..06a805a 100644
---- a/drivers/scsi/cxlflash/superpipe.h
-+++ b/drivers/scsi/cxlflash/superpipe.h
-@@ -147,4 +147,6 @@ void cxlflash_ba_terminate(struct ba_lun *);
- 
- int cxlflash_manage_lun(struct scsi_device *, struct dk_cxlflash_manage_lun *);
- 
-+int check_state(struct cxlflash_cfg *);
-+
- #endif /* ifndef _CXLFLASH_SUPERPIPE_H */
-diff --git a/drivers/scsi/cxlflash/vlun.c b/drivers/scsi/cxlflash/vlun.c
-index b0eaf55..a53f583 100644
---- a/drivers/scsi/cxlflash/vlun.c
-+++ b/drivers/scsi/cxlflash/vlun.c
-@@ -400,6 +400,24 @@ static int init_vlun(struct llun_info *lli)
-  * @lba:	Logical block address to start write same.
-  * @nblks:	Number of logical blocks to write same.
-  *
-+ * The SCSI WRITE_SAME16 can take quite a while to complete. Should an EEH occur
-+ * while in scsi_execute(), the EEH handler will attempt to recover. As part of
-+ * the recovery, the handler drains all currently running ioctls, waiting until
-+ * they have completed before proceeding with a reset. As this routine is used
-+ * on the ioctl path, this can create a condition where the EEH handler becomes
-+ * stuck, infinitely waiting for this ioctl thread. To avoid this behavior,
-+ * temporarily unmark this thread as an ioctl thread by releasing the ioctl read
-+ * semaphore. This will allow the EEH handler to proceed with a recovery while
-+ * this thread is still running. Once the scsi_execute() returns, reacquire the
-+ * ioctl read semaphore and check the adapter state in case it changed while
-+ * inside of scsi_execute(). The state check will wait if the adapter is still
-+ * being recovered or return a failure if the recovery failed. In the event that
-+ * the adapter reset failed, simply return the failure as the ioctl would be
-+ * unable to continue.
-+ *
-+ * Note that the above puts a requirement on this routine to only be called on
-+ * an ioctl thread.
-+ *
-  * Return: 0 on success, -errno on failure
-  */
- static int write_same16(struct scsi_device *sdev,
-@@ -433,9 +451,20 @@ static int write_same16(struct scsi_device *sdev,
- 		put_unaligned_be32(ws_limit < left ? ws_limit : left,
- 				   &scsi_cmd[10]);
- 
-+		/* Drop the ioctl read semahpore across lengthy call */
-+		up_read(&cfg->ioctl_rwsem);
- 		result = scsi_execute(sdev, scsi_cmd, DMA_TO_DEVICE, cmd_buf,
- 				      CMD_BUFSIZE, sense_buf, to, CMD_RETRIES,
- 				      0, NULL);
-+		down_read(&cfg->ioctl_rwsem);
-+		rc = check_state(cfg);
-+		if (rc) {
-+			dev_err(dev, "%s: Failed state! result=0x08%X\n",
-+				__func__, result);
-+			rc = -ENODEV;
-+			goto out;
-+		}
-+
- 		if (result) {
- 			dev_err_ratelimited(dev, "%s: command failed for "
- 					    "offset %lld result=0x%x\n",
--- 
-2.1.0
+Thank you and Will both for your comments. To be honest, I just began to
+learn about these transitivity and cumulativity things recently. That's
+a lot of fun to discuss these with you, Peter and Will, and the
+herdtools you suggested and the N2745 document you wrote really helped a
+lot. Thank you again!
+
+Regards,
+Boqun
+
+--CdrF4e02JqNVZeln
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWBgBuAAoJEEl56MO1B/q42QwH/1kBixM6PrsET/ev+uZboyJC
+bMSfPvToIS6WoiKHh0dX9RTKtlpvO1xm0IfTV/4r/geeqWrAoIrnaH0LIijH+2gs
+qgGEFVsYOidoWoQQ9JcbL72CEenWf+1Y6Dijnd/51PFE/1F6vCZYFkoyTWDt0UVO
+S+FCg1k1ymSmJC/EuFL93oxNVzjeraupTUiEQ2ElXWcfPEjoVpbG9KPnwqN/9Lmb
+TofEr0lbboSdhaRiXYZw0QJMJV2K8HKybX9aQMerWfuIinF2UemgWiRsaePul3F0
+Im7oW+4Y/ZYJrUQOCzIkuoBS1JrVwS/CENf0Ci7xFtEI0LJRqRaS37cp/waPnkk=
+=0QrP
+-----END PGP SIGNATURE-----
+
+--CdrF4e02JqNVZeln--
