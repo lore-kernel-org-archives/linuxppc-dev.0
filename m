@@ -2,25 +2,25 @@ Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
 Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE50B1A0705
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 04:28:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B22C01A0510
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 04:28:44 +1000 (AEST)
 Received: from localhost
  by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
- Sun, 27 Sep 2015 14:28:38 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id AA8EAC90041
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 14:19:38 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8RISZ2w52887636
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 18:28:35 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8RISYLd005992
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 14:28:35 -0400
+ Sun, 27 Sep 2015 14:28:42 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5BE6BC90042
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 14:19:43 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8RISeti66388206
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 18:28:40 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8RISd5x025298
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 14:28:39 -0400
 From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
 To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>
 Cc: <anton@samba.org>, <linuxppc-dev@lists.ozlabs.org>,
@@ -28,10 +28,10 @@ Cc: <anton@samba.org>, <linuxppc-dev@lists.ozlabs.org>,
  <nacc@linux.vnet.ibm.com>, <gkurz@linux.vnet.ibm.com>,
  <grant.likely@linaro.org>, <nikunj@linux.vnet.ibm.com>,
  <raghavendra.kt@linux.vnet.ibm.com>, <khandual@linux.vnet.ibm.com>
-Subject: [PATCH RFC 4/5] powerpc:numa Add helper functions to maintain chipid
- to nid mapping
-Date: Sun, 27 Sep 2015 23:59:12 +0530
-Message-Id: <1443378553-2146-5-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+Subject: [PATCH RFC 5/5] powerpc:numa Use chipid to nid mapping to get serial
+ numa node ids
+Date: Sun, 27 Sep 2015 23:59:13 +0530
+Message-Id: <1443378553-2146-6-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
 In-Reply-To: <1443378553-2146-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
 References: <1443378553-2146-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,93 +43,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create arrays that maps serial nids and sparse chipids.
+Also properly initialize numa distance table for serial nids.
 
-Note: My original idea had only two arrays of chipid to nid map. Final
-code is inspired by driver/acpi/numa.c that maps a proximity node with
-a logical node by Takayoshi Kochi <t-kochi@bq.jp.nec.com>, and thus
-uses an additional chipid_map nodemask. The mask helps in first unused
-nid easily by knowing first unset bit in the mask.
+Problem: Powerpc supports sparse nid numbering which could affect
+1) memory footprint 2) virtualization use cases
 
-No change in functionality.
+Current solution:
+The patch maps sprase chipid got fromn device tree to serail
+nids.
+
+Result before:
+node   0   1  16  17
+  0:  10  20  40  40
+  1:  20  10  40  40
+ 16:  40  40  10  20
+ 17:  40  40  20  10
+
+After:
+node   0   1   2   3
+  0:  10  20  40  40
+  1:  20  10  40  40
+  2:  40  40  10  20
+  3:  40  40  20  10
+
+Testing: Scenarios tested on  baremetal and KVM guest with 4 nodes
+1) offlining and onlining memory and cpus
+2) Running the tests from numactl source.
+3) Creating 1000s of docker containers stressing the system
 
 Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/numa.c | 48 +++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 47 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/numa.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index dd2073b..f015cad 100644
+index f015cad..873ac8c 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
-@@ -63,6 +63,11 @@ static int form1_affinity;
- static int distance_ref_points_depth;
- static const __be32 *distance_ref_points;
- static int distance_lookup_table[MAX_NUMNODES][MAX_DISTANCE_REF_POINTS];
-+static nodemask_t chipid_map = NODE_MASK_NONE;
-+static int chipid_to_nid_map[MAX_NUMNODES]
-+				= { [0 ... MAX_NUMNODES - 1] = NUMA_NO_NODE };
-+static int nid_to_chipid_map[MAX_NUMNODES]
-+				= { [0 ... MAX_NUMNODES - 1] = NUMA_NO_NODE };
+@@ -304,7 +304,8 @@ static int associativity_to_chipid(const __be32 *associativity)
+ 		/*
+ 		 * Skip the length field and send start of associativity array
+ 		 */
+-		initialize_distance_lookup_table(chipid, associativity + 1);
++		initialize_distance_lookup_table(chipid_to_nid(chipid),
++						 associativity + 1);
+ 	}
  
- /*
-  * Allocate node_to_cpumask_map based on number of available nodes
-@@ -133,6 +138,48 @@ static int __init fake_numa_create_new_node(unsigned long end_pfn,
- 	return 0;
- }
- 
-+int chipid_to_nid(int chipid)
-+{
-+	if (chipid < 0)
-+		return NUMA_NO_NODE;
-+	return chipid_to_nid_map[chipid];
-+}
-+
-+int nid_to_chipid(int nid)
-+{
-+	if (nid < 0)
-+		return NUMA_NO_NODE;
-+	return nid_to_chipid_map[nid];
-+}
-+
-+static void __map_chipid_to_nid(int chipid, int nid)
-+{
-+	if (chipid_to_nid_map[chipid] == NUMA_NO_NODE
-+	     || nid < chipid_to_nid_map[chipid])
-+		chipid_to_nid_map[chipid] = nid;
-+	if (nid_to_chipid_map[nid] == NUMA_NO_NODE
-+	    || chipid < nid_to_chipid_map[nid])
-+		nid_to_chipid_map[nid] = chipid;
-+}
-+
-+int map_chipid_to_nid(int chipid)
-+{
-+	int nid;
-+
-+	if (chipid < 0 || chipid >= MAX_NUMNODES)
-+		return NUMA_NO_NODE;
-+
-+	nid = chipid_to_nid_map[chipid];
-+	if (nid == NUMA_NO_NODE) {
-+		if (nodes_weight(chipid_map) >= MAX_NUMNODES)
-+			return NUMA_NO_NODE;
-+		nid = first_unset_node(chipid_map);
-+		__map_chipid_to_nid(chipid, nid);
-+		node_set(nid, chipid_map);
-+	}
-+	return nid;
-+}
-+
- int numa_cpu_lookup(int cpu)
- {
- 	return numa_cpu_lookup_table[cpu];
-@@ -264,7 +311,6 @@ out:
- 	return chipid;
- }
- 
--
+ out:
+@@ -314,9 +315,10 @@ out:
   /* Return the nid from associativity */
  static int associativity_to_nid(const __be32 *associativity)
  {
+-	int nid;
++	int chipid, nid;
+ 
+-	nid = associativity_to_chipid(associativity);
++	chipid = associativity_to_chipid(associativity);
++	nid = map_chipid_to_nid(chipid);
+ 	return nid;
+ }
+ 
+@@ -340,9 +342,10 @@ static int of_node_to_chipid_single(struct device_node *device)
+  */
+ static int of_node_to_nid_single(struct device_node *device)
+ {
+-	int nid;
++	int chipid, nid;
+ 
+-	nid = of_node_to_chipid_single(device);
++	chipid = of_node_to_chipid_single(device);
++	nid = map_chipid_to_nid(chipid);
+ 	return nid;
+ }
+ 
 -- 
 1.7.11.7
