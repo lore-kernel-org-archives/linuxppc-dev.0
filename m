@@ -1,36 +1,41 @@
 Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E33CE1A0B01
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 04:29:17 +1000 (AEST)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by lists.ozlabs.org (Postfix) with ESMTPS id 113F81A0371
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 04:40:26 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
- Sun, 27 Sep 2015 12:29:15 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id ACC3D19D803F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 12:20:05 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8RISA8j1180042
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 11:28:18 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8RISdcj020507
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Sep 2015 12:28:40 -0600
+ Mon, 28 Sep 2015 04:40:24 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 172862BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 04:40:20 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8RIeDBm2949432
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 04:40:21 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8RIdk0Y012000
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 04:39:47 +1000
+Message-ID: <5608383D.2020205@linux.vnet.ibm.com>
+Date: Mon, 28 Sep 2015 00:11:01 +0530
 From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>
-Cc: <anton@samba.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>, <cl@linux.com>,
- <nacc@linux.vnet.ibm.com>, <gkurz@linux.vnet.ibm.com>,
- <grant.likely@linaro.org>, <nikunj@linux.vnet.ibm.com>,
- <raghavendra.kt@linux.vnet.ibm.com>, <khandual@linux.vnet.ibm.com>
-Subject: [PATCH RFC  0/5] powerpc:numa Add serial nid support
-Date: Sun, 27 Sep 2015 23:59:08 +0530
-Message-Id: <1443378553-2146-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+CC: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ anton@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, cl@linux.com, nacc@linux.vnet.ibm.com,
+ gkurz@linux.vnet.ibm.com, grant.likely@linaro.org,
+ nikunj@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
+Subject: Re: [PATCH RFC  1/5] powerpc:numa Add numa_cpu_lookup function to
+ update lookup table
+References: <1443378553-2146-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+ <1443378553-2146-2-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+In-Reply-To: <1443378553-2146-2-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,119 +45,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Problem description:
-Powerpc has sparse node numbering, i.e. on a 4 node system nodes are
-numbered (possibly) as 0,1,16,17. At a lower level, we map the chipid
-got from device tree is naturally mapped (directly) to nid.
+On 09/27/2015 11:59 PM, Raghavendra K T wrote:
+> We access numa_cpu_lookup_table array directly in all the places
+> to read/update numa cpu lookup information. Instead use a helper
+> function to update.
+>
+> This is helpful in changing the way numa<-->cpu mapping in single
+> place when needed.
+>
+> This is a cosmetic change, no change in functionality.
+>
+> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.inet.ibm.com>
+Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+> ---
+Sorry:  changelog edit messed it.. :(
 
-Potential side effect of that is:
-
-1) There are several places in kernel that assumes serial node numbering.
-and memory allocations assume that all the nodes from 0-(highest nid)
-exist inturn ending up allocating memory for the nodes that does not exist.
-
-2) For virtualization use cases (such as qemu, libvirt, openstack), mapping
-sparse nid of the host system to contiguous nids of guest (numa affinity,
-placement) could be a challenge.
-
-Possible Solutions:
-1) Handling the memory allocations is kernel case by case: Though in some
-cases it is easy to achieve, some cases may be intrusive/not trivial. 
-at the end it does not handle side effect (2) above.
-
-2) Map the sparse chipid got from device tree to a serial nid at kernel
-level (The idea proposed in this series).
-Pro: It is more natural to handle at kernel level than at lower (OPAL) layer.
-con: The chipid is in device tree no longer the same as nid in kernel
-
-3) Let the lower layer (OPAL) give the serial node ids after parsing the
-chipid and the associativity etc [ either as a separate item in device tree
-or by compacting the chipid numbers ]
-Pros: kernel, device tree are on same page and less change in kernel
-Con: is it the functionality expected in lower layer
-
-As mentioned above, current patch series tries to map chipid from lower layer
-to a contiguos nid at kernel level keeping the node distance calculation and
-so on intact.
-
-Result:
-Before the patch: numactl -H
-
-available: 4 nodes (0-1,16-17)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-node 0 size: 31665 MB
-node 0 free: 29836 MB
-node 1 cpus: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63
-node 1 size: 32722 MB
-node 1 free: 32019 MB
-node 16 cpus: 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95
-node 16 size: 32571 MB
-node 16 free: 31222 MB
-node 17 cpus: 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127
-node 17 size: 0 MB
-node 17 free: 0 MB
-node distances:
-node   0   1  16  17 
-  0:  10  20  40  40 
-  1:  20  10  40  40 
- 16:  40  40  10  20 
- 17:  40  40  20  10 
-
-After the patch: numactl -H
-
-available: 4 nodes (0-3)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-node 0 size: 31665 MB
-node 0 free: 30657 MB
-node 1 cpus: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63
-node 1 size: 32722 MB
-node 1 free: 32566 MB
-node 2 cpus: 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95
-node 2 size: 32571 MB
-node 2 free: 32401 MB
-node 3 cpus: 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127
-node 3 size: 0 MB
-node 3 free: 0 MB
-node distances:
-node   0   1   2   3 
-  0:  10  20  40  40 
-  1:  20  10  40  40 
-  2:  40  40  10  20 
-  3:  40  40  20  10 
-
-(note that numa distances are intact). Apart from this, The following tests
-are done with the patched kernel (both baremetal and KVM guest with multiple
-nodes) to ensure there is no breakage.
-
-1) offlining and onlining of memory in /sys/devices/system/node/nodeX path
-
-2) offlining and onlining of cpus in /sys/devices/system/cpu/ path
-
-3) Numactl tests from
-ftp://oss.sgi.com/www/projects/libnuma/download/numactl-2.0.10.tar.gz
-
-(infact there were more breakage before the patch because of sparse nid
-and memoryless node cases of powerpc)
-
-4) Thousands of docker containers were spawned.
-
-Please let me know your comments.
-
- patch 1-3: cleanup patches
- patch 4: Adds helper function to map nid and chipid
- patch 5: Uses the mapping to get serial nid 
-
-Raghavendra K T (5):
-  powerpc:numa Add numa_cpu_lookup function to update lookup table
-  powerpc:numa Rename functions referring to nid as chipid
-  powerpc:numa create 1:1 mappaing between chipid and nid
-  powerpc:numa Add helper functions to maintain chipid to nid mapping
-  powerpc:numa Use chipid to nid mapping to get serial numa node ids
-
- arch/powerpc/include/asm/mmzone.h |   2 +-
- arch/powerpc/kernel/smp.c         |  10 ++--
- arch/powerpc/mm/numa.c            | 121 +++++++++++++++++++++++++++++++-------
- 3 files changed, 105 insertions(+), 28 deletions(-)
-
--- 
-1.7.11.7
+>   arch/powerpc/include/asm/mmzone.h |  2 +-
+>   arch/powerpc/kernel/smp.c         | 10 +++++-----
+>   arch/powerpc/mm/numa.c            | 28 +++++++++++++++++-----------
+>   3 files changed, 23 insertions(+), 17 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+> index 7b58917..c24a5f4 100644
+> --- a/arch/powerpc/include/asm/mmzone.h
+> +++ b/arch/powerpc/include/asm/mmzone.h
+> @@ -29,7 +29,7 @@ extern struct pglist_data *node_data[];
+>    * Following are specific to this numa platform.
+>    */
+>
+> -extern int numa_cpu_lookup_table[];
+> +extern int numa_cpu_lookup(int cpu);
+>   extern cpumask_var_t node_to_cpumask_map[];
+>   #ifdef CONFIG_MEMORY_HOTPLUG
+>   extern unsigned long max_pfn;
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index ec9ec20..56fbe9e 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -381,9 +381,9 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+>   		 * numa_node_id() works after this.
+>   		 */
+>   		if (cpu_present(cpu)) {
+> -			set_cpu_numa_node(cpu, numa_cpu_lookup_table[cpu]);
+> +			set_cpu_numa_node(cpu, numa_cpu_lookup(cpu));
+>   			set_cpu_numa_mem(cpu,
+> -				local_memory_node(numa_cpu_lookup_table[cpu]));
+> +				local_memory_node(numa_cpu_lookup(cpu)));
+>   		}
+>   	}
+>
+> @@ -400,7 +400,7 @@ void smp_prepare_boot_cpu(void)
+>   #ifdef CONFIG_PPC64
+>   	paca[boot_cpuid].__current = current;
+>   #endif
+> -	set_numa_node(numa_cpu_lookup_table[boot_cpuid]);
+> +	set_numa_node(numa_cpu_lookup(boot_cpuid));
+>   	current_set[boot_cpuid] = task_thread_info(current);
+>   }
+>
+> @@ -718,8 +718,8 @@ void start_secondary(void *unused)
+>   	}
+>   	traverse_core_siblings(cpu, true);
+>
+> -	set_numa_node(numa_cpu_lookup_table[cpu]);
+> -	set_numa_mem(local_memory_node(numa_cpu_lookup_table[cpu]));
+> +	set_numa_node(numa_cpu_lookup(cpu));
+> +	set_numa_mem(local_memory_node(numa_cpu_lookup(cpu)));
+>
+>   	smp_wmb();
+>   	notify_cpu_starting(cpu);
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 8b9502a..d5e6eee 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -52,7 +52,6 @@ int numa_cpu_lookup_table[NR_CPUS];
+>   cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
+>   struct pglist_data *node_data[MAX_NUMNODES];
+>
+> -EXPORT_SYMBOL(numa_cpu_lookup_table);
+>   EXPORT_SYMBOL(node_to_cpumask_map);
+>   EXPORT_SYMBOL(node_data);
+>
+> @@ -134,19 +133,25 @@ static int __init fake_numa_create_new_node(unsigned long end_pfn,
+>   	return 0;
+>   }
+>
+> -static void reset_numa_cpu_lookup_table(void)
+> +int numa_cpu_lookup(int cpu)
+>   {
+> -	unsigned int cpu;
+> -
+> -	for_each_possible_cpu(cpu)
+> -		numa_cpu_lookup_table[cpu] = -1;
+> +	return numa_cpu_lookup_table[cpu];
+>   }
+> +EXPORT_SYMBOL(numa_cpu_lookup);
+>
+> -static void update_numa_cpu_lookup_table(unsigned int cpu, int node)
+> +static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node)
+>   {
+>   	numa_cpu_lookup_table[cpu] = node;
+>   }
+>
+> +static void reset_numa_cpu_lookup_table(void)
+> +{
+> +	unsigned int cpu;
+> +
+> +	for_each_possible_cpu(cpu)
+> +		update_numa_cpu_lookup_table(cpu, -1);
+> +}
+> +
+>   static void map_cpu_to_node(int cpu, int node)
+>   {
+>   	update_numa_cpu_lookup_table(cpu, node);
+> @@ -160,7 +165,7 @@ static void map_cpu_to_node(int cpu, int node)
+>   #if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_PPC_SPLPAR)
+>   static void unmap_cpu_from_node(unsigned long cpu)
+>   {
+> -	int node = numa_cpu_lookup_table[cpu];
+> +	int node = numa_cpu_lookup(cpu);
+>
+>   	dbg("removing cpu %lu from node %d\n", cpu, node);
+>
+> @@ -536,7 +541,8 @@ static int numa_setup_cpu(unsigned long lcpu)
+>   	 * directly instead of querying the firmware, since it represents
+>   	 * the most recent mapping notified to us by the platform (eg: VPHN).
+>   	 */
+> -	if ((nid = numa_cpu_lookup_table[lcpu]) >= 0) {
+> +	nid = numa_cpu_lookup(lcpu);
+> +	if (nid >= 0) {
+>   		map_cpu_to_node(lcpu, nid);
+>   		return nid;
+>   	}
+> @@ -1413,7 +1419,7 @@ int arch_update_cpu_topology(void)
+>   		if (new_nid < 0 || !node_online(new_nid))
+>   			new_nid = first_online_node;
+>
+> -		if (new_nid == numa_cpu_lookup_table[cpu]) {
+> +		if (new_nid == numa_cpu_lookup(cpu)) {
+>   			cpumask_andnot(&cpu_associativity_changes_mask,
+>   					&cpu_associativity_changes_mask,
+>   					cpu_sibling_mask(cpu));
+> @@ -1425,7 +1431,7 @@ int arch_update_cpu_topology(void)
+>   			ud = &updates[i++];
+>   			ud->cpu = sibling;
+>   			ud->new_nid = new_nid;
+> -			ud->old_nid = numa_cpu_lookup_table[sibling];
+> +			ud->old_nid = numa_cpu_lookup(sibling);
+>   			cpumask_set_cpu(sibling, &updated_cpus);
+>   			if (i < weight)
+>   				ud->next = &updates[i];
+>
