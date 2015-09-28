@@ -1,30 +1,25 @@
-Return-Path: <dsahern@gmail.com>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0125.outbound.protection.outlook.com [65.55.169.125])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 428181A002B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 01:21:16 +1000 (AEST)
-Received: by padhy16 with SMTP id hy16so177220656pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 08:21:14 -0700 (PDT)
-Subject: Re: [PATCH v8 1/4] perf,kvm/{x86,s390}: Remove dependency on
- uapi/kvm_perf.h
-To: Scott Wood <scottwood@freescale.com>
-References: <1443161838-31462-1-git-send-email-hemant@linux.vnet.ibm.com>
- <87bncm7l6z.fsf@linux.vnet.ibm.com> <56094F5D.9090805@gmail.com>
- <1443453406.32298.171.camel@freescale.com>
-Cc: Alexander Yarygin <yarygin@linux.vnet.ibm.com>,
- Hemant Kumar <hemant@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, acme@kernel.org, sukadev@linux.vnet.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, mpe@ellerman.id.au, paulus@samba.org,
- mingo@redhat.com, Christian Borntraeger <borntraeger@de.ibm.com>,
- linux-s390 <linux-s390@vger.kernel.org>
-From: David Ahern <dsahern@gmail.com>
-Message-ID: <56095AEA.8050002@gmail.com>
-Date: Mon, 28 Sep 2015 09:21:14 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5AE9C1A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 02:41:32 +1000 (AEST)
+Message-ID: <1443458480.32298.173.camel@freescale.com>
+Subject: Re: [PATCH 00/31] powerpc/mm: Update page table format for book3s 64
+From: Scott Wood <scottwood@freescale.com>
+To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+CC: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 28 Sep 2015 11:41:20 -0500
+In-Reply-To: <87zj07gn06.fsf@linux.vnet.ibm.com>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442872135.19102.184.camel@freescale.com>
+ <877fnj3q6m.fsf@linux.vnet.ibm.com>
+ <1442905053.19102.228.camel@freescale.com>
+ <87zj07gn06.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1443453406.32298.171.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/28/15 9:16 AM, Scott Wood wrote:
-> On Mon, 2015-09-28 at 08:31 -0600, David Ahern wrote:
->> On 9/28/15 7:00 AM, Alexander Yarygin wrote:
->>>> diff --git a/tools/perf/builtin-kvm.c b/tools/perf/builtin-kvm.c
->>>> index fc1cffb..ef25fcf 100644
->>>> --- a/tools/perf/builtin-kvm.c
->>>> +++ b/tools/perf/builtin-kvm.c
->>>> @@ -31,20 +31,18 @@
->>>>    #include <math.h>
->>>>
->>>>    #ifdef HAVE_KVM_STAT_SUPPORT
->>>> -#include <asm/kvm_perf.h>
->>>>    #include "util/kvm-stat.h"
->>>>
->>>> -void exit_event_get_key(struct perf_evsel *evsel,
->>>> -                 struct perf_sample *sample,
->>>> +void exit_event_get_key(struct perf_evsel *evsel, struct perf_sample
->>>> *sample,
->>>>                            struct event_key *key)
->>>>    {
->>>>            key->info = 0;
->>>> - key->key = perf_evsel__intval(evsel, sample, KVM_EXIT_REASON);
->>>> + key->key = perf_evsel__intval(evsel, sample, exit_reason_code);
->>>>    }
->>>>
->>>>    bool kvm_exit_event(struct perf_evsel *evsel)
->>>>    {
->>>> - return !strcmp(evsel->name, KVM_EXIT_TRACE);
->>>> + return !strncmp(evsel->name, kvm_events_tp[1], strlen(evsel->name));
->>>>    }
->>>
->>> Hmm, direct access to kvm_events_tp? Maybe add a getter for this or
->>> something like extern char *kvm_exit_trace;?
->>> /* why strncmp? */
->>>
->>>>
->>>>    bool exit_event_begin(struct perf_evsel *evsel,
->>>> @@ -60,7 +58,7 @@ bool exit_event_begin(struct perf_evsel *evsel,
->>>>
->>>>    bool kvm_entry_event(struct perf_evsel *evsel)
->>>>    {
->>>> - return !strcmp(evsel->name, KVM_ENTRY_TRACE);
->>>> + return !strncmp(evsel->name, kvm_events_tp[0], strlen(evsel->name));
->>>>    }
->>>>
->>>>    bool exit_event_end(struct perf_evsel *evsel,
->>
->> I agree; don't rely on kvm_events_tp. Define KVM_ENTRY_TRACE and
->> KVM_EXIT_TRACE like x86.
->
-> If you mean defining them in uapi, that doesn't work for arches that have
-> multiple subarches that may have different trace events.  This patchset
-> doesn't actually implement dynamic support for the subarches, but it avoids
-> adding constants to uapi headers that only apply to one of the subarches.
+On Mon, 2015-09-28 at 10:26 +0530, Aneesh Kumar K.V wrote:
+> Scott Wood <scottwood@freescale.com> writes:
+> 
+> > On Tue, 2015-09-22 at 12:18 +0530, Aneesh Kumar K.V wrote:
+> > > Scott Wood <scottwood@freescale.com> writes:
+> > > 
+> > > > On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
+> > > > > Hi All,
+> > > > > 
+> > > > > This patch series attempt to update book3s 64 linux page table 
+> > > > > format to
+> > > > > make it more flexible. Our current pte format is very restrictive 
+> > > > > and we
+> > > > > overload multiple pte bits. This is due to the non-availability of 
+> > > > > free 
+> > > > > bits
+> > > > > in pte_t. We use pte_t to track the validity of 4K subpages. This 
+> > > > > patch
+> > > > > series free up pte_t of 11 bits by moving 4K subpage tracking to the
+> > > > > lower half of PTE page. The pte format is updated such that we have 
+> > > > > a
+> > > > > better method for identifying a pte entry at pmd level. This will 
+> > > > > also 
+> > > > > enable
+> > > > > us to implement hugetlb migration(not yet done in this series). 
+> > > > > 
+> > > > > Before making the changes to the pte format, I am splitting the
+> > > > > pte header definition such that we now have the below layout for 
+> > > > > headers
+> > > > > 
+> > > > > book3s
+> > > > >    32
+> > > > >      hash.h pgtable.h 
+> > > > >    64
+> > > > >      hash.h  pgtable.h hash-4k.h hash-64k.h
+> > > > > booke
+> > > > >   32
+> > > > >      pgtable.h pte-40x.h pte-44x.h pte-8xx.h pte-fsl-booke.h
+> > > > >   64
+> > > > >     pgtable-4k.h  pgtable-64k.h  pgtable.h
+> > > > 
+> > > > 40x and 8xx are not booke.  Is there a better name that can be used 
+> > > > for 
+> > > > this 
+> > > > directory?  Maybe "nohash", similar to arch/powerpc/mm/tlb_nohash.c?
+> > > > 
+> > > 
+> > > I looked at Documentation/powerpc/cpu_families.txt to name the headers.
+> > > It lists then below booke.
+> > 
+> > It lists 40x as booke (there was some question about that when 
+> > cpu_families.txt was added...  I guess you could call it "proto-booke", 
+> > though it doesn't use CONFIG_BOOKE in Linux), but 8xx is in its own 
+> > category.
+> > 
+> > In any case, "nohash" is the term used elsewhere.
+> 
+> How about using swtlb ? (nohash always confused me, It would be nice to
+> be explict and us software tlb ?)
 
-I don't agree on relying on kvm_events_tp[0] and [1]. If you need that 
-to be a runtime definition then change KVM_ENTRY_TRACE to const char 
-*kvm_entry_trace and s390 and other arches can have code to set 
-kvm_{entry,exit}_trace at runtime.
+I'd prefer nohash.  Besides being existing practice (what's confusing about 
+it?), e6500 is nohash but has a partial hw tlb, and 603 is considered hash 
+despite having a software-loaded tlb.
 
-David
+-Scott
