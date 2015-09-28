@@ -1,37 +1,36 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BBD221A0730
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 14:56:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E5341A01D2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 14:58:57 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 28 Sep 2015 10:26:45 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4885FE0056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 10:26:26 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8S4ug5b42729558
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 10:26:42 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8S4ufwp012919
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 10:26:42 +0530
+ Mon, 28 Sep 2015 14:58:56 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DB5E12BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 14:58:53 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8S4wjup41353288
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 14:58:53 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8S4wK18025572
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 14:58:21 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 00/31] powerpc/mm: Update page table format for book3s 64
-In-Reply-To: <1442905053.19102.228.camel@freescale.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 24/31] powerpc/mm: Convert __hash_page_64K to C
+In-Reply-To: <5602AF78.501@linux.vnet.ibm.com>
 References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1442872135.19102.184.camel@freescale.com>
- <877fnj3q6m.fsf@linux.vnet.ibm.com>
- <1442905053.19102.228.camel@freescale.com>
-Date: Mon, 28 Sep 2015 10:26:41 +0530
-Message-ID: <87zj07gn06.fsf@linux.vnet.ibm.com>
+ <1442817658-2588-25-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <5602AF78.501@linux.vnet.ibm.com>
+Date: Mon, 28 Sep 2015 10:28:01 +0530
+Message-ID: <87wpvbgmxy.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,54 +42,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> writes:
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
-> On Tue, 2015-09-22 at 12:18 +0530, Aneesh Kumar K.V wrote:
->> Scott Wood <scottwood@freescale.com> writes:
+> On 09/21/2015 12:10 PM, Aneesh Kumar K.V wrote:
+>> Convert from asm to C
 >> 
->> > On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
->> > > Hi All,
->> > > 
->> > > This patch series attempt to update book3s 64 linux page table format to
->> > > make it more flexible. Our current pte format is very restrictive and we
->> > > overload multiple pte bits. This is due to the non-availability of free 
->> > > bits
->> > > in pte_t. We use pte_t to track the validity of 4K subpages. This patch
->> > > series free up pte_t of 11 bits by moving 4K subpage tracking to the
->> > > lower half of PTE page. The pte format is updated such that we have a
->> > > better method for identifying a pte entry at pmd level. This will also 
->> > > enable
->> > > us to implement hugetlb migration(not yet done in this series). 
->> > > 
->> > > Before making the changes to the pte format, I am splitting the
->> > > pte header definition such that we now have the below layout for headers
->> > > 
->> > > book3s
->> > >    32
->> > >      hash.h pgtable.h 
->> > >    64
->> > >      hash.h  pgtable.h hash-4k.h hash-64k.h
->> > > booke
->> > >   32
->> > >      pgtable.h pte-40x.h pte-44x.h pte-8xx.h pte-fsl-booke.h
->> > >   64
->> > >     pgtable-4k.h  pgtable-64k.h  pgtable.h
->> > 
->> > 40x and 8xx are not booke.  Is there a better name that can be used for 
->> > this 
->> > directory?  Maybe "nohash", similar to arch/powerpc/mm/tlb_nohash.c?
->> > 
->> 
->> I looked at Documentation/powerpc/cpu_families.txt to name the headers.
->> It lists then below booke.
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> +		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
+>> +		new_pte |= (slot << _PAGE_F_GIX_SHIFT) & (_PAGE_F_SECOND | _PAGE_F_GIX);
 >
-> It lists 40x as booke (there was some question about that when 
-> cpu_families.txt was added...  I guess you could call it "proto-booke", 
-> though it doesn't use CONFIG_BOOKE in Linux), but 8xx is in its own category.
 >
-> In any case, "nohash" is the term used elsewhere.
+> I know this is already part of the function __hash_page_huge(), but its
+> just coincidence that _PAGE_F_SECOND is the left bit of _PAGE_F_GIX 3 bit
+> positions, so we dont check exclusively for the fourth bit on the returned
+> 'slot' value from hpte_insert() function and explicitly set _PAGE_F_SECOND
+> flag for the pte. This hack does the work but makes it pretty confusing.
 
-How about using swtlb ? (nohash always confused me, It would be nice to
-be explict and us software tlb ?)
+slot number should be looked at as a 4 bit entity, of format
+
+[ 1 bit (secondary or not) | 3 bit hash pte slot ]
+
 
 -aneesh
