@@ -1,24 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0118.outbound.protection.outlook.com [157.56.111.118])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA5741A0014
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 10:04:00 +1000 (AEST)
-Date: Mon, 28 Sep 2015 19:03:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 15/25] powerpc/8xx: move 8xx SPRN defines into
- reg_8xx.h and add some missing ones
-Message-ID: <20150929000346.GH6161@home.buserror.net>
-References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <a8718136980080a9b8ec7b76e6786a434b50e447.1442939410.git.christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <a8718136980080a9b8ec7b76e6786a434b50e447.1442939410.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D12BD1A0014
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 10:12:54 +1000 (AEST)
+Message-ID: <1443485557.4610.36.camel@kernel.crashing.org>
+Subject: Re: [PATCH 00/31] powerpc/mm: Update page table format for book3s 64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Scott Wood
+ <scottwood@freescale.com>
+Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 29 Sep 2015 10:12:37 +1000
+In-Reply-To: <87zj07gn06.fsf@linux.vnet.ibm.com>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442872135.19102.184.camel@freescale.com>
+ <877fnj3q6m.fsf@linux.vnet.ibm.com>
+ <1442905053.19102.228.camel@freescale.com>
+ <87zj07gn06.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,14 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 22, 2015 at 06:50:58PM +0200, Christophe Leroy wrote:
-> Move 8xx SPRN defines into reg_8xx.h and add some missing ones
+On Mon, 2015-09-28 at 10:26 +0530, Aneesh Kumar K.V wrote:
+> > In any case, "nohash" is the term used elsewhere.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
-> No change in v2
+> How about using swtlb ? (nohash always confused me, It would be nice 
+> to be explict and us software tlb ?)
 
-Why are they being moved?  Why are they being separated from the bit
-definitions?
+Stick to nohash, that's been our convention so far, I don't see
+the point in changing it.
 
--Scott
+Cheers,
+Ben.
