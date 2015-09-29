@@ -1,36 +1,28 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
- [209.85.215.53])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 065721A05D7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 16:32:23 +1000 (AEST)
-Received: by laer8 with SMTP id r8so55796398lae.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 23:32:20 -0700 (PDT)
-Reply-To: alex.popov@linux.com
-Subject: Re: [PATCH v3 2/3] powerpc/512x: add a device tree binding for
- LocalPlus Bus FIFO
-References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
- <1443115737-3948-3-git-send-email-alex.popov@linux.com>
- <560492C1.307@tabi.org> <56093F89.1020004@linux.com>
- <5609401F.3010603@tabi.org>
-To: Timur Tabi <timur@tabi.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Gerhard Sittig <gsi@denx.de>,
- Rob Herring <robh@kernel.org>, Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Popov <alex.popov@linux.com>
-From: Alexander Popov <alex.popov@linux.com>
-Message-ID: <560A3141.6090705@linux.com>
-Date: Tue, 29 Sep 2015 09:35:45 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D8F71A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 16:53:41 +1000 (AEST)
+Date: Tue, 29 Sep 2015 08:53:36 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Stephane Eranian <eranian@google.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ "mingo@redhat.com" <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH] perf record: Limit --intr-regs to platforms supporting
+ PERF_REGS
+Message-ID: <20150929065335.GE18363@krava.redhat.com>
+References: <1443096718-11926-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+ <20150924125703.GA11857@krava.redhat.com>
+ <CABPqkBSaxTm6-7x7VpwRtw6aS2qmHup_VsWK0VYFJVwZSMG10w@mail.gmail.com>
+ <20150924164554.GA11493@naverao1-tp.in.ibm.com>
+ <20150929053617.GA1060@naverao1-tp.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <5609401F.3010603@tabi.org>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150929053617.GA1060@naverao1-tp.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,35 +32,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28.09.2015 16:26, Timur Tabi wrote:
-> Alexander Popov wrote:
->> I've just followed devicetree/bindings/dma/dma.txt...
->> This "rx-tx" doesn't mean much but it could show that LocalPlus Bus FIFO
->> uses a single DMA read-write channel. Should I really drop it?
+On Tue, Sep 29, 2015 at 11:06:17AM +0530, Naveen N. Rao wrote:
+> On 2015/09/24 10:15PM, Naveen N Rao wrote:
+> > On 2015/09/24 08:32AM, Stephane Eranian wrote:
+> > > On Thu, Sep 24, 2015 at 5:57 AM, Jiri Olsa <jolsa@redhat.com> wrote:
+> > > >
+> > > > On Thu, Sep 24, 2015 at 05:41:58PM +0530, Naveen N. Rao wrote:
+> > > > > perf build currently fails on powerpc:
+> > > > >
+> > > > >   LINK     perf
+> > > > > libperf.a(libperf-in.o):(.toc+0x120): undefined reference to
+> > > > > `sample_reg_masks'
+> > > > > libperf.a(libperf-in.o):(.toc+0x130): undefined reference to
+> > > > > `sample_reg_masks'
+> > > > > collect2: error: ld returned 1 exit status
+> > > > > make[1]: *** [perf] Error 1
+> > > > > make: *** [all] Error 2
+> > > > >
+> > > > > This is due to parse-regs-options.c using sample_reg_masks, which is
+> > > > > defined only with CONFIG_PERF_REGS.
+> > > > >
+> > > > > In addition, perf record -I is only useful if the arch supports
+> > > > > PERF_REGS. Hence, let's expose -I conditionally.
+> > > > >
+> > > > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > > >
+> > > > hum, I wonder why we have sample_reg_masks defined as weak in util/perf_regs.c
+> > > > which is also built only via CONFIG_PERF_REGS
+> > > >
+> > > > I wonder we could get rid of the weak definition via attached patch, Stephane?
+> > > >
+> > > But the whole point of having it weak is to avoid this error scenario
+> > > on any arch without support
+> > > and avoid ugly #ifdef HAVE_ in generic files.
+> > > 
+> > > if perf_regs.c is compiled on PPC, then why do we get the undefined?
+> > 
+> > As Jiri Olsa pointed out, powerpc and many other architectures don't 
+> > (yet) have support for perf regs.
+> > 
+> > But, the larger reason to introduce #ifdef is so the user doesn't see 
+> > options (s)he can't use on a specific architecture, along the same lines 
+> > as builtin-probe.c
 > 
-> Hmmm, I'm not sure.  Is there anything else (besides your driver) that
-> parses this device tree node?
+> Stephane, Arnaldo,
+> Suka has also posted a fix for this with a different approach [1]. Can 
+> you please ack/pull one of these versions? Building perf is broken on 
+> v4.3-rc due to this.
 
-No, mpc512x_lpbfifo.c is the only piece of code which is going to use this
-device tree node.
+I did not get any answer for additional comments I made to the patch
+(couldnt get marc.info working, sending the patch again)
 
-> dma.txt says this:
 > 
->     "The specific strings that can be used are defined in the binding of the
-> DMA client device."
-> 
-> So this looks like it's driver-specific,
+> [1] http://article.gmane.org/gmane.linux.kernel/2046370
 
-Yes.
-MPC512x LocalPlus Bus FIFO uses the channel #26 of the DMA controller
-both for reading and writing, and other DMA clients use other specific
-DMA channels. This channel assignment is fixed in hardware and described
-in the Reference Manual.
+I dont have this last version, which seems to have other changes
+and patch in above link looks mangled, could you please repost it?
 
-> but it is a required property.
-> I guess you should keep it, but I think you should get a second opinion.
+thanks,
+jirka
 
-Ok, thanks.
 
-Best regards,
-Alexander
+---
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index 142eeb341b29..19c8fd22fbe3 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -1082,9 +1082,11 @@ struct option __record_options[] = {
+ 		    "sample transaction flags (special events only)"),
+ 	OPT_BOOLEAN(0, "per-thread", &record.opts.target.per_thread,
+ 		    "use per-thread mmaps"),
++#ifdef HAVE_PERF_REGS_SUPPORT
+ 	OPT_CALLBACK_OPTARG('I', "intr-regs", &record.opts.sample_intr_regs, NULL, "any register",
+ 		    "sample selected machine registers on interrupt,"
+ 		    " use -I ? to list register names", parse_regs),
++#endif
+ 	OPT_BOOLEAN(0, "running-time", &record.opts.running_time,
+ 		    "Record running/enabled time of read (:S) events"),
+ 	OPT_CALLBACK('k', "clockid", &record.opts,
+diff --git a/tools/perf/util/Build b/tools/perf/util/Build
+index 4bc7a9ab45b1..93c6371405a3 100644
+--- a/tools/perf/util/Build
++++ b/tools/perf/util/Build
+@@ -104,7 +104,7 @@ libperf-$(CONFIG_LIBBABELTRACE) += data-convert-bt.o
+ 
+ libperf-y += scripting-engines/
+ 
+-libperf-$(CONFIG_PERF_REGS) += perf_regs.o
++libperf-y += perf_regs.o
+ libperf-$(CONFIG_ZLIB) += zlib.o
+ libperf-$(CONFIG_LZMA) += lzma.o
+ 
