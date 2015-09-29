@@ -1,50 +1,45 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
+Return-Path: <mrochs@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33DBD1A05FD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 06:04:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A3F991A05C9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 06:11:23 +1000 (AEST)
 Received: from localhost
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 29 Sep 2015 14:04:50 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BBD0519D806E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:55:39 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8TK3PaG38600946
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:03:33 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8TK4EFP003657
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 14:04:14 -0600
-Date: Tue, 29 Sep 2015 11:10:02 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] perf record: Limit --intr-regs to platforms supporting
- PERF_REGS
-Message-ID: <20150929181002.GA6822@us.ibm.com>
-References: <1443096718-11926-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
- <20150924125703.GA11857@krava.redhat.com>
- <CABPqkBSaxTm6-7x7VpwRtw6aS2qmHup_VsWK0VYFJVwZSMG10w@mail.gmail.com>
- <20150924164554.GA11493@naverao1-tp.in.ibm.com>
- <20150929053617.GA1060@naverao1-tp.in.ibm.com>
- <20150929065335.GE18363@krava.redhat.com>
- <20150929080010.GB1060@naverao1-tp.in.ibm.com>
- <20150929104711.GE27383@krava.redhat.com>
- <20150929163136.GA24723@naverao1-tp.ibm.com>
- <20150929171556.GA1856@krava.redhat.com>
-MIME-Version: 1.0
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Tue, 29 Sep 2015 14:11:21 -0600
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 3D5D0C90042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 16:02:22 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8TKBJ6157802976
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 20:11:19 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8TKBHZV021704
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 16:11:18 -0400
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150929171556.GA1856@krava.redhat.com>
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
+Subject: Re: [PATCH v4 25/32] cxlflash: Fix to prevent EEH recovery failure
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+In-Reply-To: <87612uuich.fsf@gamma.ozlabs.ibm.com>
+Date: Tue, 29 Sep 2015 15:11:15 -0500
+Cc: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Message-Id: <F4D4C09B-DEF2-485E-9453-671DF867AE37@linux.vnet.ibm.com>
+References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1443223134-9886-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <87612uuich.fsf@gamma.ozlabs.ibm.com>
+To: Daniel Axtens <dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,100 +49,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jiri Olsa [jolsa@redhat.com] wrote:
-| > I just tried it, but it fails. As Suka points out in his patch:
-| > "Adding perf_regs.o to util/Build unconditionally, exposes a 
-| > redefinition error for 'perf_reg_value()' function (due to the static 
-| > inline version in util/perf_regs.h). So use #ifdef 
-| > HAVE_PERF_REGS_SUPPORT' around that function."
-| 
-| could you (or Suka) please reply in here with the patch?
-Jiri,
+> On Sep 28, 2015, at 8:25 PM, Daniel Axtens <dja@axtens.net> wrote:
+> 
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA512
+> 
+> "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com> writes:
+> 
+> 
+>> The process_sense() routine can perform a read capacity which
+>> can take some time to complete. If an EEH occurs while waiting
+>> on the read capacity, the EEH handler is unable to obtain the
+>> context's mutex in order to put the context in an error state.
+>> The EEH handler will sit and wait until the context is free,
+>> but this wait can last longer than the EEH handler tolerates,
+>> leading to a failed recovery.
+> 
+> I'm not quite clear on what you mean by the EEH handler timing
+> out. AFAIK there's nothing in eehd and the EEH core that times out if a
+> driver doesn't respond - indeed, it's pretty easy to hang eehd with a
+> misbehaving driver.
+> 
+> Are you referring to your own internal timeouts?
+> cxlflash_wait_for_pci_err_recovery and anything else that uses
+> CXLFLASH_PCI_ERROR_RECOVERY_TIMEOUT?
 
-Do you mean this patch? I was planning on pinging Arnaldo again in a
-couple of days about this patch, since the powerpc build is broken.
-
-Sukadev
-
----
-
-
->From d1171a4c34c6100ec8b663ddb803dd69ef3fb7ce Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Thu, 24 Sep 2015 17:53:49 -0400
-Subject: [PATCH] perf: Fix build break on powerpc due to sample_reg_masks
-
-perf_regs.c does not get built on Powerpc as CONFIG_PERF_REGS is false.
-So the weak definition for 'sample_regs_masks' doesn't get picked up.
-
-Adding perf_regs.o to util/Build unconditionally, exposes a redefinition
-error for 'perf_reg_value()' function (due to the static inline version
-in util/perf_regs.h). So use #ifdef HAVE_PERF_REGS_SUPPORT' around that
-function.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- tools/perf/util/Build       | 2 +-
- tools/perf/util/perf_regs.c | 2 ++
- tools/perf/util/perf_regs.h | 4 ++++
- 3 files changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/tools/perf/util/Build b/tools/perf/util/Build
-index 349bc96..e5f18a2 100644
---- a/tools/perf/util/Build
-+++ b/tools/perf/util/Build
-@@ -17,6 +17,7 @@ libperf-y += levenshtein.o
- libperf-y += llvm-utils.o
- libperf-y += parse-options.o
- libperf-y += parse-events.o
-+libperf-y += perf_regs.o
- libperf-y += path.o
- libperf-y += rbtree.o
- libperf-y += bitmap.o
-@@ -103,7 +104,6 @@ libperf-$(CONFIG_LIBBABELTRACE) += data-convert-bt.o
- 
- libperf-y += scripting-engines/
- 
--libperf-$(CONFIG_PERF_REGS) += perf_regs.o
- libperf-$(CONFIG_ZLIB) += zlib.o
- libperf-$(CONFIG_LZMA) += lzma.o
- 
-diff --git a/tools/perf/util/perf_regs.c b/tools/perf/util/perf_regs.c
-index 885e8ac..6b8eb13 100644
---- a/tools/perf/util/perf_regs.c
-+++ b/tools/perf/util/perf_regs.c
-@@ -6,6 +6,7 @@ const struct sample_reg __weak sample_reg_masks[] = {
- 	SMPL_REG_END
- };
- 
-+#ifdef HAVE_PERF_REGS_SUPPORT
- int perf_reg_value(u64 *valp, struct regs_dump *regs, int id)
- {
- 	int i, idx = 0;
-@@ -29,3 +30,4 @@ out:
- 	*valp = regs->cache_regs[id];
- 	return 0;
- }
-+#endif
-diff --git a/tools/perf/util/perf_regs.h b/tools/perf/util/perf_regs.h
-index 2984dcc..8dbdfeb 100644
---- a/tools/perf/util/perf_regs.h
-+++ b/tools/perf/util/perf_regs.h
-@@ -3,6 +3,10 @@
- 
- #include <linux/types.h>
- 
-+#ifndef __maybe_unused
-+#define __maybe_unused __attribute__((unused))
-+#endif
-+
- struct regs_dump;
- 
- struct sample_reg {
--- 
-1.8.3.1
-
-_______________________________________________
-Linuxppc-dev mailing list
-Linuxppc-dev@lists.ozlabs.org
-https://lists.ozlabs.org/listinfo/linuxppc-dev
+Reading through this again I can see how this is misleading. This is
+actually similar and related to the deadlock scenario described in
+"Fix to avoid potential deadlock on EEH". Without this fix, you'd end
+up in a similar situation but deadlocked on the context mutex instead
+of the ioctl semaphore.
