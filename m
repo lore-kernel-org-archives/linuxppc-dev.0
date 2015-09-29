@@ -1,35 +1,35 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20CB41A0601
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 10:53:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A84321A06B9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 10:53:23 +1000 (AEST)
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 28 Sep 2015 18:53:19 -0600
+ Mon, 28 Sep 2015 18:53:21 -0600
 Received: from b03cxnp08027.gho.boulder.ibm.com
  (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3E23D1FF0049
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 18:44:25 -0600 (MDT)
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CDAFB19D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 18:44:09 -0600 (MDT)
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
  by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8T0rGdg9175418
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 17:53:16 -0700
+ t8T0rHOb2752908
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 17:53:17 -0700
 Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
  by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8T0rF6k028082
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 18:53:16 -0600
+ t8T0rGuB028124
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 18:53:17 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, maddy@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v17 17/19] perf, tools: Make alias matching case-insensitive
-Date: Mon, 28 Sep 2015 17:50:55 -0700
-Message-Id: <1443487857-26281-18-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v17 18/19] perf, tools, pmu-events: Fix fixed counters on Intel
+Date: Mon, 28 Sep 2015 17:50:56 -0700
+Message-Id: <1443487857-26281-19-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1443487857-26281-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1443487857-26281-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,39 +43,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Andi Kleen <ak@linux.intel.com>
 
-Make alias matching the events parser case-insensitive. This is useful
-with the JSON events. perf uses lower case events, but the CPU manuals
-generally use upper case event names. The JSON files use lower
-case by default too. But if we search case insensitively then
-users can cut-n-paste the upper case event names.
+The JSON event lists use a different encoding for fixed counters
+than perf for instructions and cycles (ref-cycles is ok)
 
-So the following works:
+This lead to some common events like inst_retired.any
+or cpu_clk_unhalted.thread not counting, when specified with their
+JSON name.
 
-% perf stat -e BR_INST_EXEC.TAKEN_INDIRECT_NEAR_CALL true
-
- Performance counter stats for 'true':
-
-               305      BR_INST_EXEC.TAKEN_INDIRECT_NEAR_CALL
-
-       0.000492799 seconds time elapsed
+Special case these events in the jevents conversion process.
+I prefer to not touch the JSON files for this, as it's intended
+that standard JSON files can be just dropped into the perf
+build without changes.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+[Fix minor compile error]
 ---
- tools/perf/util/parse-events.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/perf/pmu-events/jevents.c | 25 +++++++++++++++++++++++--
+ 1 file changed, 23 insertions(+), 2 deletions(-)
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index b23baa5..9982fd6 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -1020,7 +1020,7 @@ comp_pmu(const void *p1, const void *p2)
- 	struct perf_pmu_event_symbol *pmu1 = (struct perf_pmu_event_symbol *) p1;
- 	struct perf_pmu_event_symbol *pmu2 = (struct perf_pmu_event_symbol *) p2;
- 
--	return strcmp(pmu1->symbol, pmu2->symbol);
-+	return strcasecmp(pmu1->symbol, pmu2->symbol);
+diff --git a/tools/perf/pmu-events/jevents.c b/tools/perf/pmu-events/jevents.c
+index 7347cca..247d777e 100644
+--- a/tools/perf/pmu-events/jevents.c
++++ b/tools/perf/pmu-events/jevents.c
+@@ -237,6 +237,28 @@ static void print_events_table_suffix(FILE *outfp)
+ 	fprintf(outfp, "};\n");
  }
  
- static void perf_pmu__parse_cleanup(void)
++static struct fixed {
++	const char *name;
++	const char *event;
++} fixed[] = {
++	{ "inst_retired.any", "event=0xc0" },
++	{ "cpu_clk_unhalted.thread", "event=0x3c" },
++	{ "cpu_clk_unhalted.thread_any", "event=0x3c,any=1" },
++	{ NULL, NULL},
++};
++
++/*
++ * Handle different fixed counter encodings between JSON and perf.
++ */
++static char *real_event(const char *name, char *event)
++{
++	int i;
++	for (i = 0; fixed[i].name; i++)
++		if (!strcasecmp(name, fixed[i].name))
++			return (char *)fixed[i].event;
++	return event;
++}
++
+ /* Call func with each event in the json file */
+ int json_events(const char *fn,
+ 	  int (*func)(void *data, char *name, char *event, char *desc,
+@@ -324,8 +346,7 @@ int json_events(const char *fn,
+ 		if (msr != NULL)
+ 			addfield(map, &event, ",", msr->pname, msrval);
+ 		fixname(name);
+-
+-		err = func(data, name, event, desc, long_desc, topic);
++		err = func(data, name, real_event(name, event), desc, long_desc, topic);
+ 		free(event);
+ 		free(desc);
+ 		free(name);
 -- 
 2.5.3
