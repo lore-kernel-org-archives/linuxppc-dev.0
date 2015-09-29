@@ -1,46 +1,38 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6F5B1A0024
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 18:01:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 996491A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 18:15:22 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 29 Sep 2015 13:30:51 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 29 Sep 2015 13:44:26 +0530
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7949B394006C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:30:45 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 118553940079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:43:53 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8T80S1X50659510
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:30:28 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8T80RqL025801
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:30:27 +0530
-Date: Tue, 29 Sep 2015 13:30:10 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- Stephane Eranian <eranian@google.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] perf record: Limit --intr-regs to platforms supporting
- PERF_REGS
-Message-ID: <20150929080010.GB1060@naverao1-tp.in.ibm.com>
-References: <1443096718-11926-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
- <20150924125703.GA11857@krava.redhat.com>
- <CABPqkBSaxTm6-7x7VpwRtw6aS2qmHup_VsWK0VYFJVwZSMG10w@mail.gmail.com>
- <20150924164554.GA11493@naverao1-tp.in.ibm.com>
- <20150929053617.GA1060@naverao1-tp.in.ibm.com>
- <20150929065335.GE18363@krava.redhat.com>
+ t8T8DiYg13893722
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:43:46 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8T8DiFQ006188
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:43:44 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 19/31] powerpc/mm: Convert 4k hash insert to C
+In-Reply-To: <1442823396.2819.2.camel@kernel.crashing.org>
+References: <1442817658-2588-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442817658-2588-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1442823396.2819.2.camel@kernel.crashing.org>
+Date: Tue, 29 Sep 2015 13:43:43 +0530
+Message-ID: <874midprrc.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150929065335.GE18363@krava.redhat.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,77 +42,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/09/29 08:53AM, Jiri Olsa wrote:
-> On Tue, Sep 29, 2015 at 11:06:17AM +0530, Naveen N. Rao wrote:
-> > On 2015/09/24 10:15PM, Naveen N Rao wrote:
-> > > On 2015/09/24 08:32AM, Stephane Eranian wrote:
-> > > > On Thu, Sep 24, 2015 at 5:57 AM, Jiri Olsa <jolsa@redhat.com> wrote:
-> > > > >
-> > > > > On Thu, Sep 24, 2015 at 05:41:58PM +0530, Naveen N. Rao wrote:
-> > > > > > perf build currently fails on powerpc:
-> > > > > >
-> > > > > >   LINK     perf
-> > > > > > libperf.a(libperf-in.o):(.toc+0x120): undefined reference to
-> > > > > > `sample_reg_masks'
-> > > > > > libperf.a(libperf-in.o):(.toc+0x130): undefined reference to
-> > > > > > `sample_reg_masks'
-> > > > > > collect2: error: ld returned 1 exit status
-> > > > > > make[1]: *** [perf] Error 1
-> > > > > > make: *** [all] Error 2
-> > > > > >
-> > > > > > This is due to parse-regs-options.c using sample_reg_masks, which is
-> > > > > > defined only with CONFIG_PERF_REGS.
-> > > > > >
-> > > > > > In addition, perf record -I is only useful if the arch supports
-> > > > > > PERF_REGS. Hence, let's expose -I conditionally.
-> > > > > >
-> > > > > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > > > >
-> > > > > hum, I wonder why we have sample_reg_masks defined as weak in util/perf_regs.c
-> > > > > which is also built only via CONFIG_PERF_REGS
-> > > > >
-> > > > > I wonder we could get rid of the weak definition via attached patch, Stephane?
-> > > > >
-> > > > But the whole point of having it weak is to avoid this error scenario
-> > > > on any arch without support
-> > > > and avoid ugly #ifdef HAVE_ in generic files.
-> > > > 
-> > > > if perf_regs.c is compiled on PPC, then why do we get the undefined?
-> > > 
-> > > As Jiri Olsa pointed out, powerpc and many other architectures don't 
-> > > (yet) have support for perf regs.
-> > > 
-> > > But, the larger reason to introduce #ifdef is so the user doesn't see 
-> > > options (s)he can't use on a specific architecture, along the same lines 
-> > > as builtin-probe.c
-> > 
-> > Stephane, Arnaldo,
-> > Suka has also posted a fix for this with a different approach [1]. Can 
-> > you please ack/pull one of these versions? Building perf is broken on 
-> > v4.3-rc due to this.
-> 
-> I did not get any answer for additional comments I made to the patch
-> (couldnt get marc.info working, sending the patch again)
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Hi Jiri,
-I concur with the changes you proposed to my patch here (getting rid of 
-the weak variant):
-http://article.gmane.org/gmane.linux.kernel/2046108
-
-I am aware of the other approach you posted (and the one attached 
-below). When I said "please ack/pull one of these versions", I meant one 
-of: your version, Suka's and mine.
-
-> 
-> > 
-> > [1] http://article.gmane.org/gmane.linux.kernel/2046370
-> 
-> I dont have this last version, which seems to have other changes
-> and patch in above link looks mangled, could you please repost it?
-
-Can you please check the raw version:
-http://article.gmane.org/gmane.linux.kernel/2046370/raw
+> On Mon, 2015-09-21 at 12:10 +0530, Aneesh Kumar K.V wrote:
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/mm/Makefile        |   3 +
+>>  arch/powerpc/mm/hash64_64k.c    | 204 +++++++++++++++++++++
+>>  arch/powerpc/mm/hash_low_64.S   | 380 ------------------------------
+>> ----------
+>>  arch/powerpc/mm/hash_utils_64.c |   4 +-
+>>  4 files changed, 210 insertions(+), 381 deletions(-)
+>>  create mode 100644 arch/powerpc/mm/hash64_64k.c
+>
+> Did you check if there was any measurable performance difference ?
+>
 
 
-Thanks,
-Naveen
+I looked at the performance number with and without patch. I don't see much
+impact in the numbers. We do have a path lengh increase ( I measured this
+using systemsim)
+
+Path length __hash_page_4k
+with patch: 196
+without patch: 142
+
+Path length __hash_page_64k
+with patch: 219
+without patch: 154
+
+
+But even if we have a path lengh increase of around 50 instructions. We don't see
+the impact when running workload. I tried the kernelbuild test. 
+
+With THP enabled (which is default) we see an improvement. I haven't fully looked at
+the reason. This could be due to reduced contention of ptl lock. __hash_thp_page is
+already a C code.
+
+make -j64 vmlinux modules 
+With fix:
+---------
+real    1m35.509s
+user    56m8.565s
+sys     4m34.973s
+
+real    1m32.174s
+user    57m2.336s
+sys     4m39.142s
+
+Without fix:
+---------------
+real    1m37.703s
+user    58m50.783s
+sys     7m52.440s
+
+
+real    1m37.890s
+user    57m55.445s
+sys     7m50.501s
+
+
+THP disabled:
+
+make -j64 vmlinux modules 
+With fix:
+---------
+real    1m37.197s
+user    58m28.672s
+sys     7m58.188s
+
+real    1m44.638s
+user    58m37.551s
+sys     7m53.960s
+
+Without fix:
+------------
+real    1m41.224s
+user    58m46.944s
+sys     7m49.714s
+
+
+real    1m42.585s
+user    59m14.019s
+sys     7m52.714s
+
+
+-aneesh
