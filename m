@@ -1,12 +1,28 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCB7D1A0024
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 03:16:02 +1000 (AEST)
-Date: Tue, 29 Sep 2015 19:15:56 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB1C31A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 03:42:11 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 29 Sep 2015 23:12:08 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 85D153940049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 23:12:05 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8THbHaA2883890
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 23:12:05 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8TGW2Wh021327
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 22:02:03 +0530
+Date: Tue, 29 Sep 2015 22:01:36 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Jiri Olsa <jolsa@redhat.com>
 Cc: LKML <linux-kernel@vger.kernel.org>,
  Arnaldo Carvalho de Melo <acme@kernel.org>,
  "mingo@redhat.com" <mingo@redhat.com>,
@@ -15,7 +31,7 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
  linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH] perf record: Limit --intr-regs to platforms supporting
  PERF_REGS
-Message-ID: <20150929171556.GA1856@krava.redhat.com>
+Message-ID: <20150929163136.GA24723@naverao1-tp.ibm.com>
 References: <1443096718-11926-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
  <20150924125703.GA11857@krava.redhat.com>
  <CABPqkBSaxTm6-7x7VpwRtw6aS2qmHup_VsWK0VYFJVwZSMG10w@mail.gmail.com>
@@ -24,10 +40,9 @@ References: <1443096718-11926-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
  <20150929065335.GE18363@krava.redhat.com>
  <20150929080010.GB1060@naverao1-tp.in.ibm.com>
  <20150929104711.GE27383@krava.redhat.com>
- <20150929163136.GA24723@naverao1-tp.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150929163136.GA24723@naverao1-tp.ibm.com>
+In-Reply-To: <20150929104711.GE27383@krava.redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +52,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 29, 2015 at 10:01:36PM +0530, Naveen N. Rao wrote:
-> On 2015/09/29 12:47PM, Jiri Olsa wrote:
-> > On Tue, Sep 29, 2015 at 01:30:10PM +0530, Naveen N. Rao wrote:
-> > 
-> > SNIP
-> > 
-> > > > > Suka has also posted a fix for this with a different approach [1]. Can 
-> > > > > you please ack/pull one of these versions? Building perf is broken on 
-> > > > > v4.3-rc due to this.
-> > > > 
-> > > > I did not get any answer for additional comments I made to the patch
-> > > > (couldnt get marc.info working, sending the patch again)
-> > > 
-> > > Hi Jiri,
-> > > I concur with the changes you proposed to my patch here (getting rid of 
-> > > the weak variant):
-> > > http://article.gmane.org/gmane.linux.kernel/2046108
-> > > 
-> > > I am aware of the other approach you posted (and the one attached 
-> > > below). When I said "please ack/pull one of these versions", I meant one 
-> > > of: your version, Suka's and mine.
-> > 
-> > I was hoping somebody could test it on ppc ;-)
-> > 
-> > I think the last version (in my last email) that keeps the weak
-> > variable is correct, let's wait for Arnaldo to sort this out
+On 2015/09/29 12:47PM, Jiri Olsa wrote:
+> On Tue, Sep 29, 2015 at 01:30:10PM +0530, Naveen N. Rao wrote:
 > 
-> I just tried it, but it fails. As Suka points out in his patch:
-> "Adding perf_regs.o to util/Build unconditionally, exposes a 
-> redefinition error for 'perf_reg_value()' function (due to the static 
-> inline version in util/perf_regs.h). So use #ifdef 
-> HAVE_PERF_REGS_SUPPORT' around that function."
+> SNIP
+> 
+> > > > Suka has also posted a fix for this with a different approach [1]. Can 
+> > > > you please ack/pull one of these versions? Building perf is broken on 
+> > > > v4.3-rc due to this.
+> > > 
+> > > I did not get any answer for additional comments I made to the patch
+> > > (couldnt get marc.info working, sending the patch again)
+> > 
+> > Hi Jiri,
+> > I concur with the changes you proposed to my patch here (getting rid of 
+> > the weak variant):
+> > http://article.gmane.org/gmane.linux.kernel/2046108
+> > 
+> > I am aware of the other approach you posted (and the one attached 
+> > below). When I said "please ack/pull one of these versions", I meant one 
+> > of: your version, Suka's and mine.
+> 
+> I was hoping somebody could test it on ppc ;-)
+> 
+> I think the last version (in my last email) that keeps the weak
+> variable is correct, let's wait for Arnaldo to sort this out
 
-could you (or Suka) please reply in here with the patch?
+I just tried it, but it fails. As Suka points out in his patch:
+"Adding perf_regs.o to util/Build unconditionally, exposes a 
+redefinition error for 'perf_reg_value()' function (due to the static 
+inline version in util/perf_regs.h). So use #ifdef 
+HAVE_PERF_REGS_SUPPORT' around that function."
 
-thanks,
-jirka
+- Naveen
