@@ -1,12 +1,12 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B26EA1A05FA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:26:10 +1000 (AEST)
-Received: by pacex6 with SMTP id ex6so189596844pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 18:26:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0162E1A05F2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:36:48 +1000 (AEST)
+Received: by pablk4 with SMTP id lk4so92866309pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Sep 2015 18:36:45 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -16,12 +16,12 @@ To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 25/32] cxlflash: Fix to prevent EEH recovery failure
-In-Reply-To: <1443223134-9886-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 27/32] cxlflash: Fix to prevent stale AFU RRQ
+In-Reply-To: <1443223144-9962-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443223134-9886-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Date: Tue, 29 Sep 2015 11:25:50 +1000
-Message-ID: <87612uuich.fsf@gamma.ozlabs.ibm.com>
+ <1443223144-9962-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Date: Tue, 29 Sep 2015 11:36:32 +1000
+Message-ID: <8737xyuhun.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,88 +38,57 @@ Hash: SHA512
 
 "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com> writes:
 
+> Following an adapter reset, the AFU RRQ that resides in host memory
+> holds stale data. This can lead to a condition where the RRQ interrupt
+> handler tries to process stale entries and/or endlessly loops due to an
+> out of sync generation bit.
+>
+> To fix, the AFU RRQ in host memory needs to be cleared after each reset.
 
-> The process_sense() routine can perform a read capacity which
-> can take some time to complete. If an EEH occurs while waiting
-> on the read capacity, the EEH handler is unable to obtain the
-> context's mutex in order to put the context in an error state.
-> The EEH handler will sit and wait until the context is free,
-> but this wait can last longer than the EEH handler tolerates,
-> leading to a failed recovery.
+This looks good. Do you need anything to bail out of cxlflash_rrq_irq if
+the data goes stale or to all Fs while that function is running?
 
-I'm not quite clear on what you mean by the EEH handler timing
-out. AFAIK there's nothing in eehd and the EEH core that times out if a
-driver doesn't respond - indeed, it's pretty easy to hang eehd with a
-misbehaving driver.
-
-Are you referring to your own internal timeouts?
-cxlflash_wait_for_pci_err_recovery and anything else that uses
-CXLFLASH_PCI_ERROR_RECOVERY_TIMEOUT?
-
-Regards,
 Daniel
 
->
-> To address this issue, make the context unavailable to new,
-> non-system owned threads and release the context while calling
-> into process_sense(). After returning from process_sense() the
-> context mutex is reacquired and the context is made available
-> again. The context can be safely moved to the error state if
-> needed during the unavailable window as no other threads will
-> hold its reference.
 >
 > Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 > Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 > Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 > ---
->  drivers/scsi/cxlflash/superpipe.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>  drivers/scsi/cxlflash/main.c | 3 +++
+>  1 file changed, 3 insertions(+)
 >
-> diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/su=
-perpipe.c
-> index a6316f5..7283e83 100644
-> --- a/drivers/scsi/cxlflash/superpipe.c
-> +++ b/drivers/scsi/cxlflash/superpipe.c
-> @@ -1787,12 +1787,21 @@ static int cxlflash_disk_verify(struct scsi_devic=
-e *sdev,
->  	 * inquiry (i.e. the Unit attention is due to the WWN changing).
->  	 */
->  	if (verify->hint & DK_CXLFLASH_VERIFY_HINT_SENSE) {
-> +		/* Can't hold mutex across process_sense/read_cap16,
-> +		 * since we could have an intervening EEH event.
-> +		 */
-> +		ctxi->unavail =3D true;
-> +		mutex_unlock(&ctxi->mutex);
->  		rc =3D process_sense(sdev, verify);
->  		if (unlikely(rc)) {
->  			dev_err(dev, "%s: Failed to validate sense data (%d)\n",
->  				__func__, rc);
-> +			mutex_lock(&ctxi->mutex);
-> +			ctxi->unavail =3D false;
->  			goto out;
->  		}
-> +		mutex_lock(&ctxi->mutex);
-> +		ctxi->unavail =3D false;
->  	}
+> diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+> index 24aedfb..ab11ee6 100644
+> --- a/drivers/scsi/cxlflash/main.c
+> +++ b/drivers/scsi/cxlflash/main.c
+> @@ -1598,6 +1598,9 @@ static int start_afu(struct cxlflash_cfg *cfg)
 >=20=20
->  	switch (gli->mode) {
+>  	init_pcr(cfg);
+>=20=20
+> +	/* After an AFU reset, RRQ entries are stale, clear them */
+> +	memset(&afu->rrq_entry, 0, sizeof(afu->rrq_entry));
+> +
+>  	/* Initialize RRQ pointers */
+>  	afu->hrrq_start =3D &afu->rrq_entry[0];
+>  	afu->hrrq_end =3D &afu->rrq_entry[NUM_RRQ_ENTRY - 1];
 > --=20
 > 2.1.0
 =2D----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAEBCgAGBQJWCeieAAoJEPC3R3P2I92F+hMP/1OdLQCin+kKbOb9qxf952bH
-DUAkmEhc0oD7xZFQI8HgDmHRxpes5HHxXtwXFsLgsr8QYG+aOIV568GXIZtTbrl0
-aCFMqtKXZ6jVqv5L60r1tgzcWxmWdshMLd1op6t3BwA67nUc5Edcr94ePUyDDLj1
-at335wCnxuGxn0kdB0Ud/lbPzTsgDPcuV6tCLy0o4J15KFOyFt9hCjO4nmL/wcIt
-kmjyn5SHbdgje+73uaRQnXkli4wDA9x7x6/8wFgLspnOxgMEJgnHmm+HYbOXnHyX
-nFFHw9+X2ETUcucVWuKNaFzW1vH+WJDteEZbjS7t7liJIkmIiZSFHyUTtVGdBkl1
-FsWswA0pkzuGq94Wsb0nGtNHbsMw+WeWTcTlNN46DMG/wqz75iO3yMGK9MZuddSX
-9jUokiM0kQvvfwAoujmvpMCVB4b2oseRRG4/yJ0lKSCcC8kETQTXgVHbT8oLmCdk
-rUA0hxbbKzVQsDzw8s5HqYZjqHdLp3sDPeyukPeJl2CNhysrmnyHXpq8XgcLi3op
-kbuuiR3z8UH3MW4BDpplnjhZ+5Wyw9cSI57vRF2Kr80NnU+5hBvftNh4rBneeny2
-0gCDlPHDvB7Ks9HkcxkK9MW78FTgj50ePofS/dUUod4M9ohDd4MSwRKjpwQ+H3By
-jmxnzfvWO/oTlL1D9+2W
-=3D3BcU
+iQIcBAEBCgAGBQJWCesgAAoJEPC3R3P2I92FE4kP+wYTEdCDP50RfKZPNCpoY//T
+5tDNV58W1RasTrJLVGrpeGBboI4WTzRlKYAYX1iLC6ZSkX1rQS5rBqgImQQAg3i5
+N9qoAdNCch06UVO7psceptT9653xt0OzitHW/tmB8pOMII65UIm8AtydSs2+J0e8
+htw9Jnw098jls8NJtzz32T48QoM+kV1w7vfJJN36Z6FjL36KJLQCAL2/gLvv+3Zt
+2ueeP6MM0q0iFxnQJwPFdf3DebggbMqeVbNorNAyCSkNNoUh2QR8NMHeFS8OoXCl
+nrzjFoeSFDXh4c4bRzVoGRalIFzP+VY9guk9d/VtAt8ZkkrIyfI3K9lJTgDq2gqj
+ShnT/WB4lskUVc/FjdkyIc+Nyg6pPkm4OftCnN7sf7CSd2+myO/d6S1f1qJlCn7s
+3KBLXEFrKXKHl9TVDqkZSZVvyJOKmxoMqT98I00CWhXFkRgO126tnqsMsmrqgzxu
+QxZQSo+/Oi7av6YuVtTP2c9SeYbGBfhOMOH5Dx7z9VY57rWvE5CVsduYJoG2D59P
+Td5ToL1H3UOt8G1vzeqmkb7AWK882py2OLS7WG0PUDRDa2dfE6+8NOCJmuX9tW2x
+/NnLlInDTiVTpz3iiJpe9Efu3SkL2KeMEBxi4jdt31hFO0BPeFWnZHKjwOa+uQ/w
+OSaHCUZEZ6LRdbeJ1GLk
+=3DO6Zk
 =2D----END PGP SIGNATURE-----
