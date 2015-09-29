@@ -1,27 +1,27 @@
 Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 450951A30B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:18:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E8A331A33E9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:19:39 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 29 Sep 2015 11:18:43 +1000
+ Tue, 29 Sep 2015 11:19:38 +1000
 Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 274552CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:18:38 +1000 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id AC4543578054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:19:37 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8T1IV1J62259362
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:18:39 +1000
+ t8T1JUUM57147510
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:19:38 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8T1I4c7003337
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:18:05 +1000
-Message-ID: <5609E6CB.7000206@au1.ibm.com>
-Date: Tue, 29 Sep 2015 11:18:03 +1000
+ t8T1J4fK004815
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:19:05 +1000
+Message-ID: <5609E707.2020101@au1.ibm.com>
+Date: Tue, 29 Sep 2015 11:19:03 +1000
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 MIME-Version: 1.0
 To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
@@ -30,14 +30,13 @@ To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
  Daniel Axtens <dja@ozlabs.au.ibm.com>, Tomas Henzl <thenzl@redhat.com>,
  David Laight <David.Laight@ACULAB.COM>
-CC: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 26/32] cxlflash: Correct spelling, grammar,
- and alignment mistakes
+CC: Michael Neuling <mikey@neuling.org>,
+ Manoj Kumar <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 29/32] cxlflash: Fix to double the delay each time
 References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443223139-9924-1-git-send-email-mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1443223139-9924-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ <1443223157-10039-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1443223157-10039-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,15 +46,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/09/15 09:18, Matthew R. Ochs wrote:
-> There are several spelling and grammar mistakes throughout the
-> driver. Additionally there are a handful of places where there
-> are extra lines and unnecessary variables/statements. These are
-> a nuisance and pollute the driver.
+On 26/09/15 09:19, Matthew R. Ochs wrote:
+> From: Manoj Kumar <manoj@linux.vnet.ibm.com>
 >
-> Fix spelling and grammar issues. Update some comments for clarity and
-> consistency. Remove extra lines and a few unneeded variables/statements.
+> The operator used to double the delay is incorrect and
+> does not result in delay doubling.
 >
+> To fix, use a left shift instead of the XOR operator.
+>
+> Reported-by: Tomas Henzl <thenzl@redhat.com>
 > Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 > Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 > Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
