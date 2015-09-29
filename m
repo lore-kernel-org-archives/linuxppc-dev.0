@@ -1,42 +1,22 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0108.outbound.protection.outlook.com [157.56.110.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A98B1A05DA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:52:46 +1000 (AEST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 29 Sep 2015 11:52:44 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5963D3578055
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:52:40 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8T1qLLv65798270
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:52:29 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8T1q7xV022461
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 11:52:08 +1000
-Message-ID: <5609EEC6.1010505@au1.ibm.com>
-Date: Tue, 29 Sep 2015 11:52:06 +1000
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EBD0E1A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 12:15:41 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: <scottwood@freescale.com>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
+ <leoli@freescale.com>, <paulus@samba.org>, Zhao Qiang
+ <qiang.zhao@freescale.com>
+Subject: [PATCH v11 1/6] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Tue, 29 Sep 2015 10:09:16 +0800
+Message-ID: <1443492561-11538-1-git-send-email-qiang.zhao@freescale.com>
 MIME-Version: 1.0
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>, Tomas Henzl <thenzl@redhat.com>,
- David Laight <David.Laight@ACULAB.COM>
-CC: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 24/32] cxlflash: Fix MMIO and endianness errors
-References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443223127-9848-1-git-send-email-mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1443223127-9848-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,21 +26,226 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26/09/15 09:18, Matthew R. Ochs wrote:
-> Sparse uncovered several errors with MMIO operations (accessing
-> directly) and handling endianness. These can cause issues when
-> running in different environments.
->
-> Introduce __iomem and proper endianness tags/swaps where
-> appropriate to make driver sparse clean.
->
-> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-> Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
+Bytes alignment is required to manage some special RAM,
+so add gen_pool_first_fit_align to genalloc,
+meanwhile add gen_pool_alloc_data to pass data to
+gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+---
+Changes for v6:
+	- patches set v6 include a new patch because of using 
+	- genalloc to manage QE MURAM, patch 0001 is the new 
+	- patch, adding bytes alignment for allocation for use.
+Changes for v7:
+	- cpm muram also need to use genalloc to manage, it has 
+	  a function to reserve a specific region of muram,
+	  add offset to genpool_data for start addr to be allocated.
+Changes for v8:
+	- remove supporting reserving a specific region from this patch
+	  add a new patch to support it.
+Changes for v9:
+	- Nil 
+Changes for v10:
+	- Nil
+Changes for v11:
+	- Nil
 
+ include/linux/genalloc.h | 24 ++++++++++++++++----
+ lib/genalloc.c           | 58 +++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 73 insertions(+), 9 deletions(-)
+
+diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
+index 1ccaab4..aaf3dc2 100644
+--- a/include/linux/genalloc.h
++++ b/include/linux/genalloc.h
+@@ -30,10 +30,12 @@
+ #ifndef __GENALLOC_H__
+ #define __GENALLOC_H__
+ 
++#include <linux/types.h>
+ #include <linux/spinlock_types.h>
+ 
+ struct device;
+ struct device_node;
++struct gen_pool;
+ 
+ /**
+  * Allocation callback function type definition
+@@ -47,7 +49,7 @@ typedef unsigned long (*genpool_algo_t)(unsigned long *map,
+ 			unsigned long size,
+ 			unsigned long start,
+ 			unsigned int nr,
+-			void *data);
++			void *data, struct gen_pool *pool);
+ 
+ /*
+  *  General purpose special memory pool descriptor.
+@@ -73,6 +75,13 @@ struct gen_pool_chunk {
+ 	unsigned long bits[0];		/* bitmap for allocating memory chunk */
+ };
+ 
++/*
++ *  gen_pool data descriptor for gen_pool_first_fit_align.
++ */
++struct genpool_data_align {
++	int align;		/* alignment by bytes for starting address */
++};
++
+ extern struct gen_pool *gen_pool_create(int, int);
+ extern phys_addr_t gen_pool_virt_to_phys(struct gen_pool *pool, unsigned long);
+ extern int gen_pool_add_virt(struct gen_pool *, unsigned long, phys_addr_t,
+@@ -96,6 +105,7 @@ static inline int gen_pool_add(struct gen_pool *pool, unsigned long addr,
+ }
+ extern void gen_pool_destroy(struct gen_pool *);
+ extern unsigned long gen_pool_alloc(struct gen_pool *, size_t);
++extern unsigned long gen_pool_alloc_data(struct gen_pool *, size_t, void *data);
+ extern void *gen_pool_dma_alloc(struct gen_pool *pool, size_t size,
+ 		dma_addr_t *dma);
+ extern void gen_pool_free(struct gen_pool *, unsigned long, size_t);
+@@ -108,14 +118,20 @@ extern void gen_pool_set_algo(struct gen_pool *pool, genpool_algo_t algo,
+ 		void *data);
+ 
+ extern unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data);
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool);
++
++extern unsigned long gen_pool_first_fit_align(unsigned long *map,
++		unsigned long size, unsigned long start, unsigned int nr,
++		void *data, struct gen_pool *pool);
+ 
+ extern unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+ 		unsigned long size, unsigned long start, unsigned int nr,
+-		void *data);
++		void *data, struct gen_pool *pool);
+ 
+ extern unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data);
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool);
+ 
+ extern struct gen_pool *devm_gen_pool_create(struct device *dev,
+ 		int min_alloc_order, int nid);
+diff --git a/lib/genalloc.c b/lib/genalloc.c
+index d214866..b8762b1 100644
+--- a/lib/genalloc.c
++++ b/lib/genalloc.c
+@@ -269,6 +269,24 @@ EXPORT_SYMBOL(gen_pool_destroy);
+  */
+ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
+ {
++	return gen_pool_alloc_data(pool, size, pool->data);
++}
++EXPORT_SYMBOL(gen_pool_alloc);
++
++/**
++ * gen_pool_alloc_data - allocate special memory from the pool
++ * @pool: pool to allocate from
++ * @size: number of bytes to allocate from the pool
++ * @data: data passed to algorithm
++ *
++ * Allocate the requested number of bytes from the specified pool.
++ * Uses the pool allocation function (with first-fit algorithm by default).
++ * Can not be used in NMI handler on architectures without
++ * NMI-safe cmpxchg implementation.
++ */
++unsigned long gen_pool_alloc_data(struct gen_pool *pool, size_t size,
++		void *data)
++{
+ 	struct gen_pool_chunk *chunk;
+ 	unsigned long addr = 0;
+ 	int order = pool->min_alloc_order;
+@@ -290,7 +308,7 @@ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
+ 		end_bit = chunk_size(chunk) >> order;
+ retry:
+ 		start_bit = pool->algo(chunk->bits, end_bit, start_bit, nbits,
+-				pool->data);
++				data, pool);
+ 		if (start_bit >= end_bit)
+ 			continue;
+ 		remain = bitmap_set_ll(chunk->bits, start_bit, nbits);
+@@ -309,7 +327,7 @@ retry:
+ 	rcu_read_unlock();
+ 	return addr;
+ }
+-EXPORT_SYMBOL(gen_pool_alloc);
++EXPORT_SYMBOL(gen_pool_alloc_data);
+ 
+ /**
+  * gen_pool_dma_alloc - allocate special memory from the pool for DMA usage
+@@ -500,15 +518,42 @@ EXPORT_SYMBOL(gen_pool_set_algo);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  */
+ unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data)
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
+ {
+ 	return bitmap_find_next_zero_area(map, size, start, nr, 0);
+ }
+ EXPORT_SYMBOL(gen_pool_first_fit);
+ 
+ /**
++ * gen_pool_first_fit_align - find the first available region
++ * of memory matching the size requirement (alignment constraint)
++ * @map: The address to base the search on
++ * @size: The bitmap size in bits
++ * @start: The bitnumber to start searching at
++ * @nr: The number of zeroed bits we're looking for
++ * @data: data for alignment
++ * @pool: pool to get order from
++ */
++unsigned long gen_pool_first_fit_align(unsigned long *map, unsigned long size,
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
++{
++	struct genpool_data_align *alignment;
++	unsigned long align_mask;
++	int order;
++
++	alignment = data;
++	order = pool->min_alloc_order;
++	align_mask = ((alignment->align + (1UL << order) - 1) >> order) - 1;
++	return bitmap_find_next_zero_area(map, size, start, nr, align_mask);
++}
++EXPORT_SYMBOL(gen_pool_first_fit_align);
++
++/**
+  * gen_pool_first_fit_order_align - find the first available region
+  * of memory matching the size requirement. The region will be aligned
+  * to the order of the size specified.
+@@ -517,10 +562,11 @@ EXPORT_SYMBOL(gen_pool_first_fit);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  */
+ unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+ 		unsigned long size, unsigned long start,
+-		unsigned int nr, void *data)
++		unsigned int nr, void *data, struct gen_pool *pool)
+ {
+ 	unsigned long align_mask = roundup_pow_of_two(nr) - 1;
+ 
+@@ -536,12 +582,14 @@ EXPORT_SYMBOL(gen_pool_first_fit_order_align);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  *
+  * Iterate over the bitmap to find the smallest free region
+  * which we can allocate the memory.
+  */
+ unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data)
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
+ {
+ 	unsigned long start_bit = size;
+ 	unsigned long len = size + 1;
 -- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+2.1.0.27.g96db324
