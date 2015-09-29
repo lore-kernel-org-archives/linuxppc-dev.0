@@ -1,48 +1,42 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB1C31A0024
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 03:42:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2E491A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 04:19:31 +1000 (AEST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 29 Sep 2015 23:12:08 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 85D153940049
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 23:12:05 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8THbHaA2883890
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 23:12:05 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8TGW2Wh021327
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 22:02:03 +0530
-Date: Tue, 29 Sep 2015 22:01:36 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- Stephane Eranian <eranian@google.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] perf record: Limit --intr-regs to platforms supporting
- PERF_REGS
-Message-ID: <20150929163136.GA24723@naverao1-tp.ibm.com>
-References: <1443096718-11926-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
- <20150924125703.GA11857@krava.redhat.com>
- <CABPqkBSaxTm6-7x7VpwRtw6aS2qmHup_VsWK0VYFJVwZSMG10w@mail.gmail.com>
- <20150924164554.GA11493@naverao1-tp.in.ibm.com>
- <20150929053617.GA1060@naverao1-tp.in.ibm.com>
- <20150929065335.GE18363@krava.redhat.com>
- <20150929080010.GB1060@naverao1-tp.in.ibm.com>
- <20150929104711.GE27383@krava.redhat.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
+ Wed, 30 Sep 2015 04:19:29 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 43E8C3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 04:19:26 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8TIJIrg62128264
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 04:19:27 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8TIIqhe011824
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 04:18:53 +1000
+Message-ID: <560AD654.1060401@linux.vnet.ibm.com>
+Date: Tue, 29 Sep 2015 23:50:04 +0530
+From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150929104711.GE27383@krava.redhat.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Denis Kirjanov <kda@linux-powerpc.org>
+CC: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ nikunj@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ anton@samba.org, grant.likely@linaro.org, cl@linux.com,
+ khandual@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ gkurz@linux.vnet.ibm.com
+Subject: Re: [PATCH RFC 0/5] powerpc:numa Add serial nid support
+References: <1443378553-2146-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+ <CAOJe8K1P+o9WsU1yW3aDJ5o5834hKU7qwSF3ZzdZef=iUY0-Aw@mail.gmail.com>
+ <20150928170455.GA48470@linux.vnet.ibm.com>
+In-Reply-To: <20150928170455.GA48470@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,36 +46,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/09/29 12:47PM, Jiri Olsa wrote:
-> On Tue, Sep 29, 2015 at 01:30:10PM +0530, Naveen N. Rao wrote:
-> 
-> SNIP
-> 
-> > > > Suka has also posted a fix for this with a different approach [1]. Can 
-> > > > you please ack/pull one of these versions? Building perf is broken on 
-> > > > v4.3-rc due to this.
-> > > 
-> > > I did not get any answer for additional comments I made to the patch
-> > > (couldnt get marc.info working, sending the patch again)
-> > 
-> > Hi Jiri,
-> > I concur with the changes you proposed to my patch here (getting rid of 
-> > the weak variant):
-> > http://article.gmane.org/gmane.linux.kernel/2046108
-> > 
-> > I am aware of the other approach you posted (and the one attached 
-> > below). When I said "please ack/pull one of these versions", I meant one 
-> > of: your version, Suka's and mine.
-> 
-> I was hoping somebody could test it on ppc ;-)
-> 
-> I think the last version (in my last email) that keeps the weak
-> variable is correct, let's wait for Arnaldo to sort this out
+On 09/28/2015 10:34 PM, Nishanth Aravamudan wrote:
+> On 28.09.2015 [13:44:42 +0300], Denis Kirjanov wrote:
+>> On 9/27/15, Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com> wrote:
+>>> Problem description:
+>>> Powerpc has sparse node numbering, i.e. on a 4 node system nodes are
+>>> numbered (possibly) as 0,1,16,17. At a lower level, we map the chipid
+>>> got from device tree is naturally mapped (directly) to nid.
+>>
+>> Interesting thing to play with, I'll try to test it on my POWER7 box,
+>> but it doesn't have the OPAL layer :(
 
-I just tried it, but it fails. As Suka points out in his patch:
-"Adding perf_regs.o to util/Build unconditionally, exposes a 
-redefinition error for 'perf_reg_value()' function (due to the static 
-inline version in util/perf_regs.h). So use #ifdef 
-HAVE_PERF_REGS_SUPPORT' around that function."
+Hi Denis,
+Thanks for your interest. I have pushed the patches to
 
-- Naveen
+https://github.com/ktraghavendra/linux/tree/serialnuma_v1 if it makes
+  patches easy to grab.
+
+>
+> Note that it's also interesting to try it under PowerVM, with odd NUMA
+> topologies and report any issues found :)
+>
+
+Thanks Nish, I 'll also grab a powerVM and test.
