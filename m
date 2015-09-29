@@ -1,32 +1,32 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B34A1A0676
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 06:26:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 77C231A0705
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 06:33:49 +1000 (AEST)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Tue, 29 Sep 2015 14:23:06 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 17E6719D8061
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 14:13:36 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8TKLmWL64553100
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 13:21:48 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8TKMe2S005062
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 14:22:43 -0600
+ Tue, 29 Sep 2015 16:33:46 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B8E3DC9004A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 16:24:46 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8TKXhCO66060394
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 20:33:43 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8TKXg4x025345
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Sep 2015 16:33:43 -0400
 Content-Type: text/plain; charset=us-ascii
 Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
-Subject: Re: [PATCH v4 27/32] cxlflash: Fix to prevent stale AFU RRQ
+Subject: Re: [PATCH v4 29/32] cxlflash: Fix to double the delay each time
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <8737xyuhun.fsf@gamma.ozlabs.ibm.com>
-Date: Tue, 29 Sep 2015 15:22:39 -0500
+In-Reply-To: <87wpvat33j.fsf@gamma.ozlabs.ibm.com>
+Date: Tue, 29 Sep 2015 15:28:37 -0500
 Cc: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
  "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
@@ -34,11 +34,11 @@ Cc: linux-scsi@vger.kernel.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>,
  Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Message-Id: <FAA7C7C9-EFA4-4135-B39D-E0255980A5E8@linux.vnet.ibm.com>
+ Manoj Kumar <manoj@linux.vnet.ibm.com>
+Message-Id: <11CB17AB-0383-41C8-8398-7B875E480A82@linux.vnet.ibm.com>
 References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443223144-9962-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <8737xyuhun.fsf@gamma.ozlabs.ibm.com>
+ <1443223157-10039-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <87wpvat33j.fsf@gamma.ozlabs.ibm.com>
 To: Daniel Axtens <dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -49,30 +49,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Sep 28, 2015, at 8:36 PM, Daniel Axtens <dja@axtens.net> wrote:
->=20
+> On Sep 28, 2015, at 8:40 PM, Daniel Axtens <dja@axtens.net> wrote:
+> 
 > -----BEGIN PGP SIGNED MESSAGE-----
 > Hash: SHA512
->=20
+> 
 > "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com> writes:
->=20
->> Following an adapter reset, the AFU RRQ that resides in host memory
->> holds stale data. This can lead to a condition where the RRQ =
-interrupt
->> handler tries to process stale entries and/or endlessly loops due to =
-an
->> out of sync generation bit.
->>=20
->> To fix, the AFU RRQ in host memory needs to be cleared after each =
-reset.
->=20
-> This looks good. Do you need anything to bail out of cxlflash_rrq_irq =
-if
-> the data goes stale or to all Fs while that function is running?
+> 
+>> From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+>> 
+>> The operator used to double the delay is incorrect and
+>> does not result in delay doubling.
+>> 
+>> To fix, use a left shift instead of the XOR operator.
+>> 
+> I can see that the patch is correct, but this commit message is a bit
+> confusing. What delay? In what circumstances are you doubling it? Why?
 
-We're not performing an MMIO here, so I'm not sure how the all Fs check
-would apply. We're also protected fairly well by the generation bit. I =
-suppose
-we could look at adding some type of 'max iterations' count to protect =
-against
-a runaway handler but that would be in a future patch.
+This is the response delay while resetting the master context. The reset
+is performed by writing a bit and then waiting for it to clear. While waiting
+for it to clear, the code relaxes the delta between MMIO reads.
