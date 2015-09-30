@@ -2,31 +2,32 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 89C6A1A05D5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E6901A0676
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:47 +1000 (AEST)
 Received: from /spool/local
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 30 Sep 2015 12:28:43 +1000
+ Wed, 30 Sep 2015 12:28:47 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 99D5E2BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:41 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 480702BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:44 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8U2STWt31523070
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:37 +1000
+ t8U2SWUZ33685634
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:40 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8U2S8hU007556
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:09 +1000
+ t8U2SBk2007617
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 12:28:11 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2 06/31] powerpc/mm: Delete booke bits from book3s
-Date: Wed, 30 Sep 2015 07:56:59 +0530
-Message-Id: <1443580044-30659-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V2 07/31] powerpc/mm: Don't have generic headers introduce
+ functions touching pte bits
+Date: Wed, 30 Sep 2015 07:57:00 +0530
+Message-Id: <1443580044-30659-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1443580044-30659-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1443580044-30659-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,383 +39,632 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We also move __ASSEMBLY__ towards the end of header. This avoid
-having #ifndef __ASSEMBLY___ all over the header
+We are going to drop pte_common.h in the later patch. The idea is to
+enable hash code not require to define all PTE bits. Having PTE bits
+defined in pte_common.h made the code unnecessarily complex.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 93 +++++++---------------------
- arch/powerpc/include/asm/book3s/64/pgtable.h | 88 ++++++++------------------
- arch/powerpc/include/asm/book3s/pgtable.h    |  1 +
- 3 files changed, 51 insertions(+), 131 deletions(-)
+ arch/powerpc/include/asm/book3s/pgtable.h | 176 ++++++++++++++++++++++++++
+ arch/powerpc/include/asm/pgtable-book3e.h | 199 ++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/pgtable.h        | 192 +---------------------------
+ 3 files changed, 376 insertions(+), 191 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/pgtable-book3e.h
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index a7738dfbe7e5..2afe5958c837 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -3,18 +3,10 @@
- 
- #include <asm-generic/pgtable-nopmd.h>
- 
--#ifndef __ASSEMBLY__
--#include <linux/sched.h>
--#include <linux/threads.h>
--#include <asm/io.h>			/* For sub-arch specific PPC_PIN_SIZE */
--
--extern unsigned long ioremap_bot;
--
--#ifdef CONFIG_44x
--extern int icache_44x_need_flush;
--#endif
-+#include <asm/book3s/32/hash.h>
- 
--#endif /* __ASSEMBLY__ */
-+/* And here we include common definitions */
-+#include <asm/pte-common.h>
- 
- /*
-  * The normal case is that PTEs are 32-bits and we have a 1-page
-@@ -31,28 +23,11 @@ extern int icache_44x_need_flush;
- #define PGDIR_SIZE	(1UL << PGDIR_SHIFT)
- #define PGDIR_MASK	(~(PGDIR_SIZE-1))
- 
--/*
-- * entries per page directory level: our page-table tree is two-level, so
-- * we don't really have any PMD directory.
-- */
--#ifndef __ASSEMBLY__
--#define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_SHIFT)
--#define PGD_TABLE_SIZE	(sizeof(pgd_t) << (32 - PGDIR_SHIFT))
--#endif	/* __ASSEMBLY__ */
--
- #define PTRS_PER_PTE	(1 << PTE_SHIFT)
- #define PTRS_PER_PMD	1
- #define PTRS_PER_PGD	(1 << (32 - PGDIR_SHIFT))
- 
- #define USER_PTRS_PER_PGD	(TASK_SIZE / PGDIR_SIZE)
--#define FIRST_USER_ADDRESS	0UL
--
--#define pte_ERROR(e) \
--	pr_err("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
--		(unsigned long long)pte_val(e))
--#define pgd_ERROR(e) \
--	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
--
- /*
-  * This is the bottom of the PKMAP area with HIGHMEM or an arbitrary
-  * value (for now) on others, from where we can start layout kernel
-@@ -100,30 +75,30 @@ extern int icache_44x_need_flush;
- #endif
- #define VMALLOC_END	ioremap_bot
- 
-+#ifndef __ASSEMBLY__
-+#include <linux/sched.h>
-+#include <linux/threads.h>
-+#include <asm/io.h>			/* For sub-arch specific PPC_PIN_SIZE */
-+
-+extern unsigned long ioremap_bot;
-+
-+/*
-+ * entries per page directory level: our page-table tree is two-level, so
-+ * we don't really have any PMD directory.
-+ */
-+#define PTE_TABLE_SIZE	(sizeof(pte_t) << PTE_SHIFT)
-+#define PGD_TABLE_SIZE	(sizeof(pgd_t) << (32 - PGDIR_SHIFT))
-+
-+#define pte_ERROR(e) \
-+	pr_err("%s:%d: bad pte %llx.\n", __FILE__, __LINE__, \
-+		(unsigned long long)pte_val(e))
-+#define pgd_ERROR(e) \
-+	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
- /*
-  * Bits in a linux-style PTE.  These match the bits in the
-  * (hardware-defined) PowerPC PTE as closely as possible.
-  */
- 
--#if defined(CONFIG_40x)
--#include <asm/pte-40x.h>
--#elif defined(CONFIG_44x)
--#include <asm/pte-44x.h>
--#elif defined(CONFIG_FSL_BOOKE) && defined(CONFIG_PTE_64BIT)
--#include <asm/pte-book3e.h>
--#elif defined(CONFIG_FSL_BOOKE)
--#include <asm/pte-fsl-booke.h>
--#elif defined(CONFIG_8xx)
--#include <asm/pte-8xx.h>
--#else /* CONFIG_6xx */
--#include <asm/book3s/32/hash.h>
--#endif
--
--/* And here we include common definitions */
--#include <asm/pte-common.h>
--
--#ifndef __ASSEMBLY__
--
- #define pte_clear(mm, addr, ptep) \
- 	do { pte_update(ptep, ~_PAGE_HASHPTE, 0); } while (0)
- 
-@@ -167,7 +142,6 @@ static inline unsigned long pte_update(pte_t *p,
- 				       unsigned long clr,
- 				       unsigned long set)
- {
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
- 
- 	__asm__ __volatile__("\
-@@ -180,15 +154,7 @@ static inline unsigned long pte_update(pte_t *p,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
- 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
- 	: "cc" );
--#else /* PTE_ATOMIC_UPDATES */
--	unsigned long old = pte_val(*p);
--	*p = __pte((old & ~clr) | set);
--#endif /* !PTE_ATOMIC_UPDATES */
--
--#ifdef CONFIG_44x
--	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
--		icache_44x_need_flush = 1;
--#endif
-+
- 	return old;
- }
- #else /* CONFIG_PTE_64BIT */
-@@ -196,7 +162,6 @@ static inline unsigned long long pte_update(pte_t *p,
- 					    unsigned long clr,
- 					    unsigned long set)
- {
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long long old;
- 	unsigned long tmp;
- 
-@@ -211,15 +176,7 @@ static inline unsigned long long pte_update(pte_t *p,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
- 	: "r" (p), "r" ((unsigned long)(p) + 4), "r" (clr), "r" (set), "m" (*p)
- 	: "cc" );
--#else /* PTE_ATOMIC_UPDATES */
--	unsigned long long old = pte_val(*p);
--	*p = __pte((old & ~(unsigned long long)clr) | set);
--#endif /* !PTE_ATOMIC_UPDATES */
--
--#ifdef CONFIG_44x
--	if ((old & _PAGE_USER) && (old & _PAGE_EXEC))
--		icache_44x_need_flush = 1;
--#endif
-+
- 	return old;
- }
- #endif /* CONFIG_PTE_64BIT */
-@@ -233,12 +190,10 @@ static inline int __ptep_test_and_clear_young(unsigned int context, unsigned lon
- {
- 	unsigned long old;
- 	old = pte_update(ptep, _PAGE_ACCESSED, 0);
--#if _PAGE_HASHPTE != 0
- 	if (old & _PAGE_HASHPTE) {
- 		unsigned long ptephys = __pa(ptep) & PAGE_MASK;
- 		flush_hash_pages(context, addr, ptephys, 1);
- 	}
--#endif
- 	return (old & _PAGE_ACCESSED) != 0;
- }
- #define ptep_test_and_clear_young(__vma, __addr, __ptep) \
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 4336e89a7745..8bd2f66738f2 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -8,7 +8,6 @@
- #include <asm/book3s/64/hash.h>
- #include <asm/barrier.h>
- 
--#define FIRST_USER_ADDRESS	0UL
- 
- /*
-  * Size of EA range mapped by our pagetables.
-@@ -25,27 +24,16 @@
- /*
-  * Define the address range of the kernel non-linear virtual area
-  */
--
--#ifdef CONFIG_PPC_BOOK3E
--#define KERN_VIRT_START ASM_CONST(0x8000000000000000)
--#else
- #define KERN_VIRT_START ASM_CONST(0xD000000000000000)
--#endif
- #define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
--
- /*
-  * The vmalloc space starts at the beginning of that region, and
-  * occupies half of it on hash CPUs and a quarter of it on Book3E
-  * (we keep a quarter for the virtual memmap)
-  */
- #define VMALLOC_START	KERN_VIRT_START
--#ifdef CONFIG_PPC_BOOK3E
--#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 2)
--#else
- #define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 1)
--#endif
- #define VMALLOC_END	(VMALLOC_START + VMALLOC_SIZE)
--
- /*
-  * The second half of the kernel virtual space is used for IO mappings,
-  * it's itself carved into the PIO region (ISA and PHB IO space) and
-@@ -64,7 +52,6 @@
- #define IOREMAP_BASE	(PHB_IO_END)
- #define IOREMAP_END	(KERN_VIRT_START + KERN_VIRT_SIZE)
- 
--
- /*
-  * Region IDs
-  */
-@@ -79,32 +66,41 @@
- 
- /*
-  * Defines the address of the vmemap area, in its own region on
-- * hash table CPUs and after the vmalloc space on Book3E
-+ * hash table CPUs.
-  */
--#ifdef CONFIG_PPC_BOOK3E
--#define VMEMMAP_BASE		VMALLOC_END
--#define VMEMMAP_END		KERN_IO_START
--#else
- #define VMEMMAP_BASE		(VMEMMAP_REGION_ID << REGION_SHIFT)
--#endif
- #define vmemmap			((struct page *)VMEMMAP_BASE)
- 
- 
--/*
-- * Include the PTE bits definitions
-- */
--#ifdef CONFIG_PPC_BOOK3S
--#include <asm/book3s/64/hash.h>
--#else
--#include <asm/pte-book3e.h>
--#endif
--#include <asm/pte-common.h>
--
- #ifdef CONFIG_PPC_MM_SLICES
- #define HAVE_ARCH_UNMAPPED_AREA
- #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-+#else
-+#error "Hash Config needs mm slice enabled"
- #endif /* CONFIG_PPC_MM_SLICES */
- 
-+/*
-+ * THP pages can't be special. So use the _PAGE_SPECIAL
-+ */
-+#define _PAGE_SPLITTING _PAGE_SPECIAL
-+
-+/*
-+ * We need to differentiate between explicit huge page and THP huge
-+ * page, since THP huge page also need to track real subpage details
-+ */
-+#define _PAGE_THP_HUGE  _PAGE_4K_PFN
-+
-+/*
-+ * set of bits not changed in pmd_modify.
-+ */
-+#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
-+			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
-+			 _PAGE_THP_HUGE)
-+/*
-+ * Default defines for things which we don't use.
-+ * We should get this removed.
-+ */
-+#include <asm/pte-common.h>
- #ifndef __ASSEMBLY__
- 
- /*
-@@ -144,7 +140,7 @@
- #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
- #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
- 
--#define pmd_set(pmdp, pmdval) 	(pmd_val(*(pmdp)) = (pmdval))
-+#define pmd_set(pmdp, pmdval)	(pmd_val(*(pmdp)) = (pmdval))
- #define pmd_none(pmd)		(!pmd_val(pmd))
- #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
- 				 || (pmd_val(pmd) & PMD_BAD_BITS))
-@@ -206,7 +202,6 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 				       unsigned long set,
- 				       int huge)
- {
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
- 
- 	__asm__ __volatile__(
-@@ -220,18 +215,12 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*ptep)
- 	: "r" (ptep), "r" (clr), "m" (*ptep), "i" (_PAGE_BUSY), "r" (set)
- 	: "cc" );
--#else
--	unsigned long old = pte_val(*ptep);
--	*ptep = __pte((old & ~clr) | set);
--#endif
- 	/* huge pages use the old page table lock */
- 	if (!huge)
- 		assert_pte_locked(mm, addr);
- 
--#ifdef CONFIG_PPC_STD_MMU_64
- 	if (old & _PAGE_HASHPTE)
- 		hpte_need_flush(mm, addr, ptep, old, huge);
--#endif
- 
- 	return old;
- }
-@@ -313,7 +302,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 	unsigned long bits = pte_val(entry) &
- 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
- 
--#ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
- 
- 	__asm__ __volatile__(
-@@ -326,10 +314,6 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 	:"=&r" (old), "=&r" (tmp), "=m" (*ptep)
- 	:"r" (bits), "r" (ptep), "m" (*ptep), "i" (_PAGE_BUSY)
- 	:"cc");
--#else
--	unsigned long old = pte_val(*ptep);
--	*ptep = __pte(old | bits);
--#endif
- }
- 
- #define __HAVE_ARCH_PTE_SAME
-@@ -367,28 +351,8 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
--#endif /* __ASSEMBLY__ */
- 
- /*
-- * THP pages can't be special. So use the _PAGE_SPECIAL
-- */
--#define _PAGE_SPLITTING _PAGE_SPECIAL
--
--/*
-- * We need to differentiate between explicit huge page and THP huge
-- * page, since THP huge page also need to track real subpage details
-- */
--#define _PAGE_THP_HUGE  _PAGE_4K_PFN
--
--/*
-- * set of bits not changed in pmd_modify.
-- */
--#define _HPAGE_CHG_MASK (PTE_RPN_MASK | _PAGE_HPTEFLAGS |		\
--			 _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPLITTING | \
--			 _PAGE_THP_HUGE)
--
--#ifndef __ASSEMBLY__
--/*
-  * The linux hugepage PMD now include the pmd entries followed by the address
-  * to the stashed pgtable_t. The stashed pgtable_t contains the hpte bits.
-  * [ 1 bit secondary | 3 bit hidx | 1 bit valid | 000]. We use one byte per
 diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
-index a8d8e5152bd4..3818cc7bc9b7 100644
+index 3818cc7bc9b7..fa270cfcf30a 100644
 --- a/arch/powerpc/include/asm/book3s/pgtable.h
 +++ b/arch/powerpc/include/asm/book3s/pgtable.h
-@@ -7,4 +7,5 @@
- #include <asm/book3s/32/pgtable.h>
+@@ -8,4 +8,180 @@
  #endif
  
-+#define FIRST_USER_ADDRESS	0UL
+ #define FIRST_USER_ADDRESS	0UL
++#ifndef __ASSEMBLY__
++
++/* Generic accessors to PTE bits */
++static inline int pte_write(pte_t pte)
++{
++	return (pte_val(pte) & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO;
++}
++static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
++static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
++static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
++static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
++static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
++
++#ifdef CONFIG_NUMA_BALANCING
++/*
++ * These work without NUMA balancing but the kernel does not care. See the
++ * comment in include/asm-generic/pgtable.h . On powerpc, this will only
++ * work for user pages and always return true for kernel pages.
++ */
++static inline int pte_protnone(pte_t pte)
++{
++	return (pte_val(pte) &
++		(_PAGE_PRESENT | _PAGE_USER)) == _PAGE_PRESENT;
++}
++
++static inline int pmd_protnone(pmd_t pmd)
++{
++	return pte_protnone(pmd_pte(pmd));
++}
++#endif /* CONFIG_NUMA_BALANCING */
++
++static inline int pte_present(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_PRESENT;
++}
++
++/* Conversion functions: convert a page and protection to a page entry,
++ * and a page entry and page directory to the page they refer to.
++ *
++ * Even if PTEs can be unsigned long long, a PFN is always an unsigned
++ * long for now.
++ */
++static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot) {
++	return __pte(((pte_basic_t)(pfn) << PTE_RPN_SHIFT) |
++		     pgprot_val(pgprot)); }
++static inline unsigned long pte_pfn(pte_t pte)	{
++	return pte_val(pte) >> PTE_RPN_SHIFT; }
++
++/* Generic modifiers for PTE bits */
++static inline pte_t pte_wrprotect(pte_t pte) {
++	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE);
++	pte_val(pte) |= _PAGE_RO; return pte; }
++static inline pte_t pte_mkclean(pte_t pte) {
++	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
++static inline pte_t pte_mkold(pte_t pte) {
++	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
++static inline pte_t pte_mkwrite(pte_t pte) {
++	pte_val(pte) &= ~_PAGE_RO;
++	pte_val(pte) |= _PAGE_RW; return pte; }
++static inline pte_t pte_mkdirty(pte_t pte) {
++	pte_val(pte) |= _PAGE_DIRTY; return pte; }
++static inline pte_t pte_mkyoung(pte_t pte) {
++	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
++static inline pte_t pte_mkspecial(pte_t pte) {
++	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
++static inline pte_t pte_mkhuge(pte_t pte) {
++	return pte; }
++static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
++{
++	pte_val(pte) = (pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot);
++	return pte;
++}
++
++
++/* Insert a PTE, top-level function is out of line. It uses an inline
++ * low level function in the respective pgtable-* files
++ */
++extern void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
++		       pte_t pte);
++
++/* This low level function performs the actual PTE insertion
++ * Setting the PTE depends on the MMU type and other factors. It's
++ * an horrible mess that I'm not going to try to clean up now but
++ * I'm keeping it in one place rather than spread around
++ */
++static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
++				pte_t *ptep, pte_t pte, int percpu)
++{
++#if defined(CONFIG_PPC_STD_MMU_32) && defined(CONFIG_SMP) && !defined(CONFIG_PTE_64BIT)
++	/* First case is 32-bit Hash MMU in SMP mode with 32-bit PTEs. We use the
++	 * helper pte_update() which does an atomic update. We need to do that
++	 * because a concurrent invalidation can clear _PAGE_HASHPTE. If it's a
++	 * per-CPU PTE such as a kmap_atomic, we do a simple update preserving
++	 * the hash bits instead (ie, same as the non-SMP case)
++	 */
++	if (percpu)
++		*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
++			      | (pte_val(pte) & ~_PAGE_HASHPTE));
++	else
++		pte_update(ptep, ~_PAGE_HASHPTE, pte_val(pte));
++
++#elif defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT)
++	/* Second case is 32-bit with 64-bit PTE.  In this case, we
++	 * can just store as long as we do the two halves in the right order
++	 * with a barrier in between. This is possible because we take care,
++	 * in the hash code, to pre-invalidate if the PTE was already hashed,
++	 * which synchronizes us with any concurrent invalidation.
++	 * In the percpu case, we also fallback to the simple update preserving
++	 * the hash bits
++	 */
++	if (percpu) {
++		*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
++			      | (pte_val(pte) & ~_PAGE_HASHPTE));
++		return;
++	}
++	if (pte_val(*ptep) & _PAGE_HASHPTE)
++		flush_hash_entry(mm, ptep, addr);
++	__asm__ __volatile__("\
++		stw%U0%X0 %2,%0\n\
++		eieio\n\
++		stw%U0%X0 %L2,%1"
++	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
++	: "r" (pte) : "memory");
++
++#elif defined(CONFIG_PPC_STD_MMU_32)
++	/* Third case is 32-bit hash table in UP mode, we need to preserve
++	 * the _PAGE_HASHPTE bit since we may not have invalidated the previous
++	 * translation in the hash yet (done in a subsequent flush_tlb_xxx())
++	 * and see we need to keep track that this PTE needs invalidating
++	 */
++	*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
++		      | (pte_val(pte) & ~_PAGE_HASHPTE));
++
++#else
++	/* Anything else just stores the PTE normally. That covers all 64-bit
++	 * cases, and 32-bit non-hash with 32-bit PTEs.
++	 */
++	*ptep = pte;
++#endif
++}
++
++
++#define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
++extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
++				 pte_t *ptep, pte_t entry, int dirty);
++
++/*
++ * Macro to mark a page protection value as "uncacheable".
++ */
++
++#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_GUARDED | _PAGE_NO_CACHE | \
++			 _PAGE_WRITETHRU)
++
++#define pgprot_noncached(prot)	  (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_NO_CACHE | _PAGE_GUARDED))
++
++#define pgprot_noncached_wc(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_NO_CACHE))
++
++#define pgprot_cached(prot)       (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_COHERENT))
++
++#define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_COHERENT | _PAGE_WRITETHRU))
++
++#define pgprot_cached_noncoherent(prot) \
++		(__pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL))
++
++#define pgprot_writecombine pgprot_noncached_wc
++
++struct file;
++extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++				     unsigned long size, pgprot_t vma_prot);
++#define __HAVE_PHYS_MEM_ACCESS_PROT
++
++#endif /* __ASSEMBLY__ */
  #endif
+diff --git a/arch/powerpc/include/asm/pgtable-book3e.h b/arch/powerpc/include/asm/pgtable-book3e.h
+new file mode 100644
+index 000000000000..a3221cff2e31
+--- /dev/null
++++ b/arch/powerpc/include/asm/pgtable-book3e.h
+@@ -0,0 +1,199 @@
++#ifndef _ASM_POWERPC_PGTABLE_BOOK3E_H
++#define _ASM_POWERPC_PGTABLE_BOOK3E_H
++
++#if defined(CONFIG_PPC64)
++#include <asm/pgtable-ppc64.h>
++#else
++#include <asm/pgtable-ppc32.h>
++#endif
++
++#ifndef __ASSEMBLY__
++
++/* Generic accessors to PTE bits */
++static inline int pte_write(pte_t pte)
++{
++	return (pte_val(pte) & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO;
++}
++static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
++static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
++static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
++static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
++static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
++
++#ifdef CONFIG_NUMA_BALANCING
++/*
++ * These work without NUMA balancing but the kernel does not care. See the
++ * comment in include/asm-generic/pgtable.h . On powerpc, this will only
++ * work for user pages and always return true for kernel pages.
++ */
++static inline int pte_protnone(pte_t pte)
++{
++	return (pte_val(pte) &
++		(_PAGE_PRESENT | _PAGE_USER)) == _PAGE_PRESENT;
++}
++
++static inline int pmd_protnone(pmd_t pmd)
++{
++	return pte_protnone(pmd_pte(pmd));
++}
++#endif /* CONFIG_NUMA_BALANCING */
++
++static inline int pte_present(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_PRESENT;
++}
++
++/* Conversion functions: convert a page and protection to a page entry,
++ * and a page entry and page directory to the page they refer to.
++ *
++ * Even if PTEs can be unsigned long long, a PFN is always an unsigned
++ * long for now.
++ */
++static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot) {
++	return __pte(((pte_basic_t)(pfn) << PTE_RPN_SHIFT) |
++		     pgprot_val(pgprot)); }
++static inline unsigned long pte_pfn(pte_t pte)	{
++	return pte_val(pte) >> PTE_RPN_SHIFT; }
++
++/* Generic modifiers for PTE bits */
++static inline pte_t pte_wrprotect(pte_t pte) {
++	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE);
++	pte_val(pte) |= _PAGE_RO; return pte; }
++static inline pte_t pte_mkclean(pte_t pte) {
++	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
++static inline pte_t pte_mkold(pte_t pte) {
++	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
++static inline pte_t pte_mkwrite(pte_t pte) {
++	pte_val(pte) &= ~_PAGE_RO;
++	pte_val(pte) |= _PAGE_RW; return pte; }
++static inline pte_t pte_mkdirty(pte_t pte) {
++	pte_val(pte) |= _PAGE_DIRTY; return pte; }
++static inline pte_t pte_mkyoung(pte_t pte) {
++	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
++static inline pte_t pte_mkspecial(pte_t pte) {
++	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
++static inline pte_t pte_mkhuge(pte_t pte) {
++	return pte; }
++static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
++{
++	pte_val(pte) = (pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot);
++	return pte;
++}
++
++
++/* Insert a PTE, top-level function is out of line. It uses an inline
++ * low level function in the respective pgtable-* files
++ */
++extern void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
++		       pte_t pte);
++
++/* This low level function performs the actual PTE insertion
++ * Setting the PTE depends on the MMU type and other factors. It's
++ * an horrible mess that I'm not going to try to clean up now but
++ * I'm keeping it in one place rather than spread around
++ */
++static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
++				pte_t *ptep, pte_t pte, int percpu)
++{
++#if defined(CONFIG_PPC_STD_MMU_32) && defined(CONFIG_SMP) && !defined(CONFIG_PTE_64BIT)
++	/* First case is 32-bit Hash MMU in SMP mode with 32-bit PTEs. We use the
++	 * helper pte_update() which does an atomic update. We need to do that
++	 * because a concurrent invalidation can clear _PAGE_HASHPTE. If it's a
++	 * per-CPU PTE such as a kmap_atomic, we do a simple update preserving
++	 * the hash bits instead (ie, same as the non-SMP case)
++	 */
++	if (percpu)
++		*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
++			      | (pte_val(pte) & ~_PAGE_HASHPTE));
++	else
++		pte_update(ptep, ~_PAGE_HASHPTE, pte_val(pte));
++
++#elif defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT)
++	/* Second case is 32-bit with 64-bit PTE.  In this case, we
++	 * can just store as long as we do the two halves in the right order
++	 * with a barrier in between. This is possible because we take care,
++	 * in the hash code, to pre-invalidate if the PTE was already hashed,
++	 * which synchronizes us with any concurrent invalidation.
++	 * In the percpu case, we also fallback to the simple update preserving
++	 * the hash bits
++	 */
++	if (percpu) {
++		*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
++			      | (pte_val(pte) & ~_PAGE_HASHPTE));
++		return;
++	}
++#if _PAGE_HASHPTE != 0
++	if (pte_val(*ptep) & _PAGE_HASHPTE)
++		flush_hash_entry(mm, ptep, addr);
++#endif
++	__asm__ __volatile__("\
++		stw%U0%X0 %2,%0\n\
++		eieio\n\
++		stw%U0%X0 %L2,%1"
++	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
++	: "r" (pte) : "memory");
++
++#elif defined(CONFIG_PPC_STD_MMU_32)
++	/* Third case is 32-bit hash table in UP mode, we need to preserve
++	 * the _PAGE_HASHPTE bit since we may not have invalidated the previous
++	 * translation in the hash yet (done in a subsequent flush_tlb_xxx())
++	 * and see we need to keep track that this PTE needs invalidating
++	 */
++	*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
++		      | (pte_val(pte) & ~_PAGE_HASHPTE));
++
++#else
++	/* Anything else just stores the PTE normally. That covers all 64-bit
++	 * cases, and 32-bit non-hash with 32-bit PTEs.
++	 */
++	*ptep = pte;
++
++#ifdef CONFIG_PPC_BOOK3E_64
++	/*
++	 * With hardware tablewalk, a sync is needed to ensure that
++	 * subsequent accesses see the PTE we just wrote.  Unlike userspace
++	 * mappings, we can't tolerate spurious faults, so make sure
++	 * the new PTE will be seen the first time.
++	 */
++	if (is_kernel_addr(addr))
++		mb();
++#endif
++#endif
++}
++
++
++#define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
++extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
++				 pte_t *ptep, pte_t entry, int dirty);
++
++/*
++ * Macro to mark a page protection value as "uncacheable".
++ */
++
++#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_GUARDED | _PAGE_NO_CACHE | \
++			 _PAGE_WRITETHRU)
++
++#define pgprot_noncached(prot)	  (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_NO_CACHE | _PAGE_GUARDED))
++
++#define pgprot_noncached_wc(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_NO_CACHE))
++
++#define pgprot_cached(prot)       (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_COHERENT))
++
++#define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
++				            _PAGE_COHERENT | _PAGE_WRITETHRU))
++
++#define pgprot_cached_noncoherent(prot) \
++		(__pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL))
++
++#define pgprot_writecombine pgprot_noncached_wc
++
++struct file;
++extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
++				     unsigned long size, pgprot_t vma_prot);
++#define __HAVE_PHYS_MEM_ACCESS_PROT
++
++#endif /* __ASSEMBLY__ */
++#endif
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 07d7ca96c13f..a056e395711e 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -1,6 +1,5 @@
+ #ifndef _ASM_POWERPC_PGTABLE_H
+ #define _ASM_POWERPC_PGTABLE_H
+-#ifdef __KERNEL__
+ 
+ #ifndef __ASSEMBLY__
+ #include <linux/mmdebug.h>
+@@ -16,11 +15,7 @@ struct mm_struct;
+ #ifdef CONFIG_PPC_BOOK3S
+ #include <asm/book3s/pgtable.h>
+ #else
+-#if defined(CONFIG_PPC64)
+-#  include <asm/pgtable-ppc64.h>
+-#else
+-#  include <asm/pgtable-ppc32.h>
+-#endif
++#include <asm/pgtable-book3e.h>
+ #endif /* !CONFIG_PPC_BOOK3S */
+ 
+ /*
+@@ -33,194 +28,10 @@ struct mm_struct;
+ 
+ #include <asm/tlbflush.h>
+ 
+-/* Generic accessors to PTE bits */
+-static inline int pte_write(pte_t pte)
+-{	return (pte_val(pte) & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO; }
+-static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+-static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+-static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+-static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+-static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
+-
+-#ifdef CONFIG_NUMA_BALANCING
+-/*
+- * These work without NUMA balancing but the kernel does not care. See the
+- * comment in include/asm-generic/pgtable.h . On powerpc, this will only
+- * work for user pages and always return true for kernel pages.
+- */
+-static inline int pte_protnone(pte_t pte)
+-{
+-	return (pte_val(pte) &
+-		(_PAGE_PRESENT | _PAGE_USER)) == _PAGE_PRESENT;
+-}
+-
+-static inline int pmd_protnone(pmd_t pmd)
+-{
+-	return pte_protnone(pmd_pte(pmd));
+-}
+-#endif /* CONFIG_NUMA_BALANCING */
+-
+-static inline int pte_present(pte_t pte)
+-{
+-	return pte_val(pte) & _PAGE_PRESENT;
+-}
+-
+-/* Conversion functions: convert a page and protection to a page entry,
+- * and a page entry and page directory to the page they refer to.
+- *
+- * Even if PTEs can be unsigned long long, a PFN is always an unsigned
+- * long for now.
+- */
+-static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot) {
+-	return __pte(((pte_basic_t)(pfn) << PTE_RPN_SHIFT) |
+-		     pgprot_val(pgprot)); }
+-static inline unsigned long pte_pfn(pte_t pte)	{
+-	return pte_val(pte) >> PTE_RPN_SHIFT; }
+-
+ /* Keep these as a macros to avoid include dependency mess */
+ #define pte_page(x)		pfn_to_page(pte_pfn(x))
+ #define mk_pte(page, pgprot)	pfn_pte(page_to_pfn(page), (pgprot))
+ 
+-/* Generic modifiers for PTE bits */
+-static inline pte_t pte_wrprotect(pte_t pte) {
+-	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE);
+-	pte_val(pte) |= _PAGE_RO; return pte; }
+-static inline pte_t pte_mkclean(pte_t pte) {
+-	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
+-static inline pte_t pte_mkold(pte_t pte) {
+-	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_mkwrite(pte_t pte) {
+-	pte_val(pte) &= ~_PAGE_RO;
+-	pte_val(pte) |= _PAGE_RW; return pte; }
+-static inline pte_t pte_mkdirty(pte_t pte) {
+-	pte_val(pte) |= _PAGE_DIRTY; return pte; }
+-static inline pte_t pte_mkyoung(pte_t pte) {
+-	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_mkspecial(pte_t pte) {
+-	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
+-static inline pte_t pte_mkhuge(pte_t pte) {
+-	return pte; }
+-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+-{
+-	pte_val(pte) = (pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot);
+-	return pte;
+-}
+-
+-
+-/* Insert a PTE, top-level function is out of line. It uses an inline
+- * low level function in the respective pgtable-* files
+- */
+-extern void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+-		       pte_t pte);
+-
+-/* This low level function performs the actual PTE insertion
+- * Setting the PTE depends on the MMU type and other factors. It's
+- * an horrible mess that I'm not going to try to clean up now but
+- * I'm keeping it in one place rather than spread around
+- */
+-static inline void __set_pte_at(struct mm_struct *mm, unsigned long addr,
+-				pte_t *ptep, pte_t pte, int percpu)
+-{
+-#if defined(CONFIG_PPC_STD_MMU_32) && defined(CONFIG_SMP) && !defined(CONFIG_PTE_64BIT)
+-	/* First case is 32-bit Hash MMU in SMP mode with 32-bit PTEs. We use the
+-	 * helper pte_update() which does an atomic update. We need to do that
+-	 * because a concurrent invalidation can clear _PAGE_HASHPTE. If it's a
+-	 * per-CPU PTE such as a kmap_atomic, we do a simple update preserving
+-	 * the hash bits instead (ie, same as the non-SMP case)
+-	 */
+-	if (percpu)
+-		*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
+-			      | (pte_val(pte) & ~_PAGE_HASHPTE));
+-	else
+-		pte_update(ptep, ~_PAGE_HASHPTE, pte_val(pte));
+-
+-#elif defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT)
+-	/* Second case is 32-bit with 64-bit PTE.  In this case, we
+-	 * can just store as long as we do the two halves in the right order
+-	 * with a barrier in between. This is possible because we take care,
+-	 * in the hash code, to pre-invalidate if the PTE was already hashed,
+-	 * which synchronizes us with any concurrent invalidation.
+-	 * In the percpu case, we also fallback to the simple update preserving
+-	 * the hash bits
+-	 */
+-	if (percpu) {
+-		*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
+-			      | (pte_val(pte) & ~_PAGE_HASHPTE));
+-		return;
+-	}
+-#if _PAGE_HASHPTE != 0
+-	if (pte_val(*ptep) & _PAGE_HASHPTE)
+-		flush_hash_entry(mm, ptep, addr);
+-#endif
+-	__asm__ __volatile__("\
+-		stw%U0%X0 %2,%0\n\
+-		eieio\n\
+-		stw%U0%X0 %L2,%1"
+-	: "=m" (*ptep), "=m" (*((unsigned char *)ptep+4))
+-	: "r" (pte) : "memory");
+-
+-#elif defined(CONFIG_PPC_STD_MMU_32)
+-	/* Third case is 32-bit hash table in UP mode, we need to preserve
+-	 * the _PAGE_HASHPTE bit since we may not have invalidated the previous
+-	 * translation in the hash yet (done in a subsequent flush_tlb_xxx())
+-	 * and see we need to keep track that this PTE needs invalidating
+-	 */
+-	*ptep = __pte((pte_val(*ptep) & _PAGE_HASHPTE)
+-		      | (pte_val(pte) & ~_PAGE_HASHPTE));
+-
+-#else
+-	/* Anything else just stores the PTE normally. That covers all 64-bit
+-	 * cases, and 32-bit non-hash with 32-bit PTEs.
+-	 */
+-	*ptep = pte;
+-
+-#ifdef CONFIG_PPC_BOOK3E_64
+-	/*
+-	 * With hardware tablewalk, a sync is needed to ensure that
+-	 * subsequent accesses see the PTE we just wrote.  Unlike userspace
+-	 * mappings, we can't tolerate spurious faults, so make sure
+-	 * the new PTE will be seen the first time.
+-	 */
+-	if (is_kernel_addr(addr))
+-		mb();
+-#endif
+-#endif
+-}
+-
+-
+-#define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+-extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+-				 pte_t *ptep, pte_t entry, int dirty);
+-
+-/*
+- * Macro to mark a page protection value as "uncacheable".
+- */
+-
+-#define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_GUARDED | _PAGE_NO_CACHE | \
+-			 _PAGE_WRITETHRU)
+-
+-#define pgprot_noncached(prot)	  (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_NO_CACHE | _PAGE_GUARDED))
+-
+-#define pgprot_noncached_wc(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_NO_CACHE))
+-
+-#define pgprot_cached(prot)       (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_COHERENT))
+-
+-#define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_COHERENT | _PAGE_WRITETHRU))
+-
+-#define pgprot_cached_noncoherent(prot) \
+-		(__pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL))
+-
+-#define pgprot_writecombine pgprot_noncached_wc
+-
+-struct file;
+-extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+-				     unsigned long size, pgprot_t vma_prot);
+-#define __HAVE_PHYS_MEM_ACCESS_PROT
+-
+ /*
+  * ZERO_PAGE is a global shared page that is always zero: used
+  * for zero-mapped memory areas etc..
+@@ -275,5 +86,4 @@ static inline pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea,
+ }
+ #endif /* __ASSEMBLY__ */
+ 
+-#endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_PGTABLE_H */
 -- 
 2.5.0
