@@ -1,24 +1,40 @@
-Return-Path: <prvs=7086823a8=julien.grall@citrix.com>
-Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97CDB1A0038
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 20:52:49 +1000 (AEST)
-From: Julien Grall <julien.grall@citrix.com>
-To: <xen-devel@lists.xenproject.org>
-CC: <linux-arm-kernel@lists.infradead.org>, <ian.campbell@citrix.com>,
- <stefano.stabellini@eu.citrix.com>, <linux-kernel@vger.kernel.org>, "Julien
- Grall" <julien.grall@citrix.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, David Vrabel
- <david.vrabel@citrix.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v5 11/22] tty/hvc: xen: Use xen page definition
-Date: Wed, 30 Sep 2015 11:45:26 +0100
-Message-ID: <1443609937-25278-12-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1443609937-25278-1-git-send-email-julien.grall@citrix.com>
-References: <1443609937-25278-1-git-send-email-julien.grall@citrix.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2264C1A0038
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 21:22:18 +1000 (AEST)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C2898140D19
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2015 21:22:17 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 30 Sep 2015 21:22:16 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 493952BB004D
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2015 21:22:13 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8UBM4H663963226
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2015 21:22:13 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8UBLd0J012197
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2015 21:21:40 +1000
+Message-ID: <560BC5B1.1050609@linux.vnet.ibm.com>
+Date: Wed, 30 Sep 2015 16:51:21 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Linux PPC dev <linuxppc-dev@ozlabs.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Regarding DSISR value of 0xa410
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The console ring is always based on the page granularity of Xen.
+Hey Ben/Michael,
 
-Signed-off-by: Julien Grall <julien.grall@citrix.com>
-Reviewed-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Why does 0xa410 value of DSISR called weird here ? What does this
+signify ? Just wondering if we can replace it with a meaningful
+macro instead.
 
----
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>
-Cc: David Vrabel <david.vrabel@citrix.com>
-Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+arch/powerpc/kernel/exceptions-64s.S
 
-    Changes in v4:
-        - The ring is always 4K (i.e XEN_PAGE_SIZE), so no need to
-        map with PAGE_SIZE. This was correctly done in v2 but lost with
-        the rebase to the "s/mfn/gfn/" series
+/*
+ * Hash table stuff
+ */
+        .align  7
+do_hash_page:
+        std     r3,_DAR(r1)
+        std     r4,_DSISR(r1)
 
-    Changes in v3:
-        - Some changes has been moved in the series "Use correctly the
-        Xen memory terminologies in Linux".
-        - Add Stefano's reviewed-by
----
- drivers/tty/hvc/hvc_xen.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+        andis.  r0,r4,0xa410            /* weird error? */
 
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index 10beb15..fa816b7 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
- 	if (r < 0 || v == 0)
- 		goto err;
- 	gfn = v;
--	info->intf = xen_remap(gfn << PAGE_SHIFT, PAGE_SIZE);
-+	info->intf = xen_remap(gfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
- 	if (info->intf == NULL)
- 		goto err;
- 	info->vtermno = HVC_COOKIE;
-@@ -472,7 +472,7 @@ static int xencons_resume(struct xenbus_device *dev)
- 	struct xencons_info *info = dev_get_drvdata(&dev->dev);
- 
- 	xencons_disconnect_backend(info);
--	memset(info->intf, 0, PAGE_SIZE);
-+	memset(info->intf, 0, XEN_PAGE_SIZE);
- 	return xencons_connect_backend(dev, info);
- }
- 
--- 
-2.1.4
+Regards
+Anshuman
