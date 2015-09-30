@@ -1,32 +1,38 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 441E11A00C5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 09:50:09 +1000 (AEST)
-Received: by padhy16 with SMTP id hy16so54606916pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 16:50:06 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>,
- Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 17/32] cxlflash: Remove dual port online dependency
-In-Reply-To: <FD47E8E4-D768-401E-8A4C-31A3E37E359B@linux.vnet.ibm.com>
-References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443223018-9577-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <87a8s6und0.fsf@gamma.ozlabs.ibm.com>
- <FD47E8E4-D768-401E-8A4C-31A3E37E359B@linux.vnet.ibm.com>
-Date: Thu, 01 Oct 2015 09:50:00 +1000
-Message-ID: <87si5vsc0n.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C5231A030D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 09:51:07 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Thu, 1 Oct 2015 05:21:04 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4C3F43940049
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 05:21:00 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t8UNoxil11665826
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 05:20:59 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t8UNowCV011375
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 05:20:58 +0530
+Date: Thu, 1 Oct 2015 07:50:55 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/iommu: use iommu_num_pages() to calculate the
+ number of iommu page
+Message-ID: <20150930235054.GA1530@Richards-MBP.lan>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1442667867-1802-1-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1442667867-1802-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,33 +42,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hmm... some comments on this one? like it or not?
 
-(resending to the list this time, apologies!)
-
->> I'm not sure I fully understand the flow of this function, but it looks
->> like you set rc=0 regardless of how things actually go: is this ever
->> going to print a return value other than zero?
+On Sat, Sep 19, 2015 at 09:04:27PM +0800, Wei Yang wrote:
+>On PowerPC, currently we support different value of PAGE_SIZE and different
+>value of IOMMU Page Size.
 >
-> Correct, this function behaves more like a void for the time being. The
-> overall goal of this is to allow a card to configure even when the link is
-> down. At some later point when the link is transitioned to 'up', a link state
-> change interrupt will trigger the port configuration. I left this with a return
-> code for right now in case we need to alter the behavior again (based
-> upon testing) and actually return a value other than 0.
+>In case the PAGE_SIZE is 4K and the IOMMU Page Size is 16M, and driver
+>asked for some DMA less than 16M, the current calculation would return 0
+>and the following allocation in iommu_alloc() would fail.
+>
+>This patch uses iommu_num_pages() to calculate it.
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>---
+> arch/powerpc/kernel/iommu.c | 2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>index a8e3490..9885397 100644
+>--- a/arch/powerpc/kernel/iommu.c
+>+++ b/arch/powerpc/kernel/iommu.c
+>@@ -842,7 +842,7 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
+> 	memset(ret, 0, size);
+>
+> 	/* Set up tces to cover the allocated range */
+>-	nio_pages = size >> tbl->it_page_shift;
+>+	nio_pages = iommu_num_pages(0, size, IOMMU_PAGE_SIZE(tbl));
+> 	io_order = get_iommu_order(size, tbl);
+> 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
+> 			      mask >> tbl->it_page_shift, io_order, NULL);
+>-- 
+>2.5.0
 
-OK. That makes more sense - it wasn't clear to me how it could be
-correct to proceed if the links were down but now I understand how that
-works. I think that explanation should go in the commit message.
-
->>> 	if (!wait_port_online(fc_regs, FC_PORT_STATUS_RETRY_INTERVAL_US,
->>> 			      FC_PORT_STATUS_RETRY_CNT)) {
->>> 		pr_debug("%s: wait on port %d to go online timed out\n",
->>> 			 __func__, port);
-
-As an aside, should this be a bit noisier? It seems like something
-a user would probably want to know - especially in the case where
-something has actually gone wrong so there's no link state change
-interrupt forthcoming regardless of how long you wait.
-
-Regards,
-Daniel
+-- 
+Richard Yang
+Help you, Help me
