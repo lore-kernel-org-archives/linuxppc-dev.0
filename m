@@ -1,42 +1,25 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <hch@lst.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47A461A0DFF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 00:07:35 +1000 (AEST)
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9E331A0038
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 01:09:34 +1000 (AEST)
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 93B05140D26
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2015 00:07:34 +1000 (AEST)
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 30 Sep 2015 08:04:01 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 1F5A93E40041
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2015 08:03:50 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8UE0gnm39911662
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2015 07:00:42 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8UE3n5b025814
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Sep 2015 08:03:49 -0600
+ by ozlabs.org (Postfix) with ESMTPS id 74709140D24
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2015 01:09:33 +1000 (AEST)
+Date: Wed, 30 Sep 2015 17:03:29 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, hch@lst.de, JBottomley@Odin.com,
+ snitzer@redhat.com, hare@suse.de, martin.petersen@oracle.com
+Subject: Re: [PATCH] powerpc/configs: Re-enable CONFIG_SCSI_DH
+Message-ID: <20150930150329.GA26299@lst.de>
+References: <1443522908-25523-1-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2102\))
-Subject: Re: [PATCH 1/3] cxl: fix leak of IRQ names in cxl_free_afu_irqs()
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1443578287-7847-1-git-send-email-andrew.donnellan@au1.ibm.com>
-Date: Wed, 30 Sep 2015 09:03:47 -0500
-Cc: linuxppc-dev@ozlabs.org, imunsie@au1.ibm.com, mikey@neuling.org,
- vaibhav@linux.vnet.ibm.com
-Message-Id: <9C9CE721-C957-4E1B-A653-4C12B5DF793F@linux.vnet.ibm.com>
-References: <1443578287-7847-1-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+In-Reply-To: <1443522908-25523-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,4 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+On Tue, Sep 29, 2015 at 08:35:08PM +1000, Michael Ellerman wrote:
+> Commit 086b91d052eb ("scsi_dh: integrate into the core SCSI code")
+> changed CONFIG_SCSI_DH from tristate to bool.
+> 
+> Our defconfigs have CONFIG_SCSI_DH=m, which the kconfig machinery warns
+> us is invalid, but instead of converting it to =y it leaves it unset.
+> This means we loose the CONFIG_SCSI_DH code and everything that depends
+> on it.
+> 
+> So convert the values in the defconfigs to =y.
+> 
+> Fixes: 086b91d052eb ("scsi_dh: integrate into the core SCSI code")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
+Looks good,
+
+Reviewed-by: Christoph Hellwig <hch@lst.de>
