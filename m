@@ -1,38 +1,32 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C5231A030D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 09:51:07 +1000 (AEST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 1 Oct 2015 05:21:04 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4C3F43940049
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 05:21:00 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t8UNoxil11665826
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 05:20:59 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t8UNowCV011375
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 05:20:58 +0530
-Date: Thu, 1 Oct 2015 07:50:55 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/iommu: use iommu_num_pages() to calculate the
- number of iommu page
-Message-ID: <20150930235054.GA1530@Richards-MBP.lan>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1442667867-1802-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA53F1A0A01
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 09:51:33 +1000 (AEST)
+Received: by pacex6 with SMTP id ex6so54729404pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 16:51:31 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+Cc: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>,
+ Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 27/32] cxlflash: Fix to prevent stale AFU RRQ
+In-Reply-To: <FAA7C7C9-EFA4-4135-B39D-E0255980A5E8@linux.vnet.ibm.com>
+References: <1443222593-8828-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1443223144-9962-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <8737xyuhun.fsf@gamma.ozlabs.ibm.com>
+ <FAA7C7C9-EFA4-4135-B39D-E0255980A5E8@linux.vnet.ibm.com>
+Date: Thu, 01 Oct 2015 09:51:22 +1000
+Message-ID: <87pp0zsbyd.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442667867-1802-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,39 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hmm... some comments on this one? like it or not?
 
-On Sat, Sep 19, 2015 at 09:04:27PM +0800, Wei Yang wrote:
->On PowerPC, currently we support different value of PAGE_SIZE and different
->value of IOMMU Page Size.
+>>> Following an adapter reset, the AFU RRQ that resides in host memory
+>>> holds stale data. This can lead to a condition where the RRQ interrupt
+>>> handler tries to process stale entries and/or endlessly loops due to an
+>>> out of sync generation bit.
+>>> 
+>>> To fix, the AFU RRQ in host memory needs to be cleared after each reset.
+>> 
+>> This looks good. Do you need anything to bail out of cxlflash_rrq_irq if
+>> the data goes stale or to all Fs while that function is running?
 >
->In case the PAGE_SIZE is 4K and the IOMMU Page Size is 16M, and driver
->asked for some DMA less than 16M, the current calculation would return 0
->and the following allocation in iommu_alloc() would fail.
->
->This patch uses iommu_num_pages() to calculate it.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->---
-> arch/powerpc/kernel/iommu.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
->diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->index a8e3490..9885397 100644
->--- a/arch/powerpc/kernel/iommu.c
->+++ b/arch/powerpc/kernel/iommu.c
->@@ -842,7 +842,7 @@ void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
-> 	memset(ret, 0, size);
->
-> 	/* Set up tces to cover the allocated range */
->-	nio_pages = size >> tbl->it_page_shift;
->+	nio_pages = iommu_num_pages(0, size, IOMMU_PAGE_SIZE(tbl));
-> 	io_order = get_iommu_order(size, tbl);
-> 	mapping = iommu_alloc(dev, tbl, ret, nio_pages, DMA_BIDIRECTIONAL,
-> 			      mask >> tbl->it_page_shift, io_order, NULL);
->-- 
->2.5.0
+> We're not performing an MMIO here, so I'm not sure how the all Fs check
+> would apply. We're also protected fairly well by the generation bit. I suppose
+> we could look at adding some type of 'max iterations' count to protect against
+> a runaway handler but that would be in a future patch.
 
--- 
-Richard Yang
-Help you, Help me
+Ah, right you are. I had confused all Fs with UEs.
+
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+
+Regards,
+Daniel
