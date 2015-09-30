@@ -1,26 +1,22 @@
-Return-Path: <acme@kernel.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E90811A05FD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 05:45:41 +1000 (AEST)
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by ozlabs.org (Postfix) with ESMTP id 90EBA1402B6
- for <linuxppc-dev@ozlabs.org>; Thu,  1 Oct 2015 05:45:41 +1000 (AEST)
-Date: Wed, 30 Sep 2015 16:45:35 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, eranian@google.com,
- naveen.n.rao@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2] perf: Fix build break on powerpc due to
- sample_reg_masks
-Message-ID: <20150930194535.GK1944@kernel.org>
-References: <20150930182836.GA27858@us.ibm.com>
- <20150930190909.GA27570@krava.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150930190909.GA27570@krava.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E27A1A05FA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 06:18:39 +1000 (AEST)
+Message-ID: <1443644298.2828.16.camel@kernel.crashing.org>
+Subject: Re: [PATCH V2 19/31] powerpc/mm: Convert 4k hash insert to C
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Thu, 01 Oct 2015 06:18:18 +1000
+In-Reply-To: <560BD07B.60202@linux.vnet.ibm.com>
+References: <1443580044-30659-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1443580044-30659-20-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <560BD07B.60202@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Wed, Sep 30, 2015 at 09:09:09PM +0200, Jiri Olsa escreveu:
-> On Wed, Sep 30, 2015 at 11:28:36AM -0700, Sukadev Bhattiprolu wrote:
-> > From e29aeeee7236122c4d807ec9ebc721b5d7d75c8d Mon Sep 17 00:00:00 2001
-> > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> > Date: Thu, 24 Sep 2015 17:53:49 -0400
-> > Subject: [PATCH v2] perf: Fix build break on powerpc due to sample_reg_masks
-> > 
-> > perf_regs.c does not get built on Powerpc as CONFIG_PERF_REGS is false.
-> > So the weak definition for 'sample_regs_masks' doesn't get picked up.
-> > 
-> > Adding perf_regs.o to util/Build unconditionally, exposes a redefinition
-> > error for 'perf_reg_value()' function (due to the static inline version
-> > in util/perf_regs.h). So use #ifdef HAVE_PERF_REGS_SUPPORT' around that
-> > function.
-> > 
-> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+On Wed, 2015-09-30 at 17:37 +0530, Anshuman Khandual wrote:
+> > +             if (unlikely(old_pte & _PAGE_BUSY))
+> > +                     return 0;
+> > +             /* If PTE permissions don't match, take page fault */
 > 
-> Acked-by: Jiri Olsa <jolsa@kernel.org>
+> We are already in page fault interrupt path,  will it be better
+> if we call it "take Linux page fault" instead as we will go back
+> walking the page table.
 
-Thanks, applied.
+A better wording would be "escalate the page fault"
 
-- Arnaldo
+Cheers,
+Ben.
