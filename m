@@ -1,22 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=7086823a8=julien.grall@citrix.com>
+Received: from SMTP.CITRIX.COM (smtp.citrix.com [66.165.176.89])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CFE881A0038
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 20:46:46 +1000 (AEST)
-Message-ID: <1443610005.10198.1.camel@ellerman.id.au>
-Subject: Re: [1/5] powerpc/perf: Drop the branch sample when 'from' cannot
- be fetched
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com,
- dja@axtens.net
-Date: Wed, 30 Sep 2015 20:46:45 +1000
-In-Reply-To: <560BA55A.70309@linux.vnet.ibm.com>
-References: <20150727041915.63106140326@ozlabs.org>
- <55B6F225.4070902@linux.vnet.ibm.com> <560BA55A.70309@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97CDB1A0038
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Sep 2015 20:52:49 +1000 (AEST)
+From: Julien Grall <julien.grall@citrix.com>
+To: <xen-devel@lists.xenproject.org>
+CC: <linux-arm-kernel@lists.infradead.org>, <ian.campbell@citrix.com>,
+ <stefano.stabellini@eu.citrix.com>, <linux-kernel@vger.kernel.org>, "Julien
+ Grall" <julien.grall@citrix.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, David Vrabel
+ <david.vrabel@citrix.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v5 11/22] tty/hvc: xen: Use xen page definition
+Date: Wed, 30 Sep 2015 11:45:26 +0100
+Message-ID: <1443609937-25278-12-git-send-email-julien.grall@citrix.com>
+In-Reply-To: <1443609937-25278-1-git-send-email-julien.grall@citrix.com>
+References: <1443609937-25278-1-git-send-email-julien.grall@citrix.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-09-30 at 14:33 +0530, Anshuman Khandual wrote:
-> On 07/28/2015 08:38 AM, Anshuman Khandual wrote:
-> > On 07/27/2015 09:49 AM, Michael Ellerman wrote:
-> >> > On Tue, 2015-30-06 at 08:20:27 UTC, Anshuman Khandual wrote:
-> >>> >> BHRB (Branch History Rolling Buffer) is a rolling buffer. Hence we
-> >>> >> might end up in a situation where we have read one target address
-> >>> >> but when we try to read the next entry indicating the from address
-> >>> >> of the target address, the buffer just overflows. In this case, the
-> >>> >> captured from address will be zero which indicates the end of the
-> >>> >> buffer.
-> >> > 
-> >> > Right. But with SMT8 the size of the buffer is very small, so we will actually
-> >> > hit this case somewhat often. When we originally wrote this we decided it was
-> >> > better to get some information, ie. the from address, than no information at
-> >> > all.
-> > You are right. But practically as of now we are not using this kind of
-> > (from, 0) branch entries any where as a special case. More over for
-> > certain kind of workloads which has a small code and a few branches,
-> > the chances of getting this kind of branch (from, 0) increases a lot
-> > making them probably one of the highest percentage entries in the final
-> > perf report. Now with this change of code, the workload session might
-> > have overall less number of branch entries, but in my opinion represents
-> > more accurate branch profile of the given workload in percentage wise.
-> > 
-> >> > 
-> >>> >> 	This patch drops the entire branch record which would have
-> >>> >> otherwise confused the user space tools.
-> >> > 
-> >> > Does it confuse the tools? Can you show me before/after output from perf?
-> > The word 'confuse' might be little misleading. But the point as
-> > explained above that the relative branch percentage profile of
-> > certain workloads might be distorted and that I believe is true.
-> > Also branch entries like "from ----> 0" in the perf report might
-> > be confusing to users who dont expect to see this kind of entries
-> > in the final perf report and will never get into "perf report -D"
-> > to figure out what really happened.
-> 
-> Hey Michael,
-> 
-> As I had explained earlier, is not it a good idea to drop these
-> kind of branch records from the final output ? I will request
-> consideration of this patch along with others in the series.
+The console ring is always based on the page granularity of Xen.
 
-I think it's too late to change it. ie. we've shipped several kernel versions
-that did emit them, so we just have to stick with that. If it was obviously a
-bug fix we could change it, but it's not obviously correct either way.
+Signed-off-by: Julien Grall <julien.grall@citrix.com>
+Reviewed-by: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
 
-So please drop that patch and repost the series.
+---
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.cz>
+Cc: David Vrabel <david.vrabel@citrix.com>
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 
-cheers
+    Changes in v4:
+        - The ring is always 4K (i.e XEN_PAGE_SIZE), so no need to
+        map with PAGE_SIZE. This was correctly done in v2 but lost with
+        the rebase to the "s/mfn/gfn/" series
+
+    Changes in v3:
+        - Some changes has been moved in the series "Use correctly the
+        Xen memory terminologies in Linux".
+        - Add Stefano's reviewed-by
+---
+ drivers/tty/hvc/hvc_xen.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index 10beb15..fa816b7 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
+ 	if (r < 0 || v == 0)
+ 		goto err;
+ 	gfn = v;
+-	info->intf = xen_remap(gfn << PAGE_SHIFT, PAGE_SIZE);
++	info->intf = xen_remap(gfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
+ 	if (info->intf == NULL)
+ 		goto err;
+ 	info->vtermno = HVC_COOKIE;
+@@ -472,7 +472,7 @@ static int xencons_resume(struct xenbus_device *dev)
+ 	struct xencons_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	xencons_disconnect_backend(info);
+-	memset(info->intf, 0, PAGE_SIZE);
++	memset(info->intf, 0, XEN_PAGE_SIZE);
+ 	return xencons_connect_backend(dev, info);
+ }
+ 
+-- 
+2.1.4
