@@ -1,15 +1,15 @@
 Return-Path: <andriy.shevchenko@linux.intel.com>
 Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id E76361A055A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 19:46:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id BB9501A060E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 19:46:42 +1000 (AEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
  Segher Boessenkool <segher@kernel.crashing.org>,
  Denis Kirjanov <kda@linux-powerpc.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 2/5] powerpc/pseries: fix a potential memory leak
-Date: Thu,  1 Oct 2015 12:46:07 +0300
-Message-Id: <1443692770-44944-3-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 4/5] powerpc/pseries: handle nodes without '/'
+Date: Thu,  1 Oct 2015 12:46:09 +0300
+Message-Id: <1443692770-44944-5-git-send-email-andriy.shevchenko@linux.intel.com>
 In-Reply-To: <1443692770-44944-1-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1443692770-44944-1-git-send-email-andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,37 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In case we have a full node name like /foo/bar and /foo is not found the
-parent_path left unfreed. So, free a memory before return to a caller.
+In case we have node without '/' strrchr() returns NULL which might lead to
+crash. Replace strrchr() by kbasename() and modify condition to avoid such
+behaviour.
 
+Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/powerpc/platforms/pseries/of_helpers.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/pseries/of_helpers.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
-index 1cbd896..2f363e3 100644
+index 8c6b05a..4417afe 100644
 --- a/arch/powerpc/platforms/pseries/of_helpers.c
 +++ b/arch/powerpc/platforms/pseries/of_helpers.c
-@@ -15,7 +15,7 @@
-  */
- struct device_node *pseries_of_derive_parent(const char *path)
+@@ -17,14 +17,14 @@ struct device_node *pseries_of_derive_parent(const char *path)
  {
--	struct device_node *parent = NULL;
-+	struct device_node *parent;
+ 	struct device_node *parent;
  	char *parent_path = "/";
- 	size_t parent_path_len = strrchr(path, '/') - path + 1;
+-	size_t parent_path_len = strrchr(path, '/') - path + 1;
++	const char *tail = kbasename(path);
  
-@@ -30,9 +30,7 @@ struct device_node *pseries_of_derive_parent(const char *path)
- 		strlcpy(parent_path, path, parent_path_len);
+ 	/* reject if path is "/" */
+ 	if (!strcmp(path, "/"))
+ 		return ERR_PTR(-EINVAL);
+ 
+-	if (strrchr(path, '/') != path) {
+-		parent_path = kstrndup(path, parent_path_len, GFP_KERNEL);
++	if (tail > path + 1) {
++		parent_path = kstrndup(path, tail - path, GFP_KERNEL);
+ 		if (!parent_path)
+ 			return ERR_PTR(-ENOMEM);
  	}
- 	parent = of_find_node_by_path(parent_path);
--	if (!parent)
--		return ERR_PTR(-EINVAL);
- 	if (strcmp(parent_path, "/"))
- 		kfree(parent_path);
--	return parent;
-+	return parent ? parent : ERR_PTR(-EINVAL);
- }
 -- 
 2.5.1
