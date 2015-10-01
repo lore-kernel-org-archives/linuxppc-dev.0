@@ -1,25 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA1A91A010A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 17:05:50 +1000 (AEST)
-Message-ID: <1443683150.16900.1.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 1/2] scripts/kconfig/Makefile: Allow
- KBUILD_DEFCONFIG to be a target
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal Marek <mmarek@suse.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kbuild@vger.kernel.org, yann.morin.1998@free.fr
-Date: Thu, 01 Oct 2015 17:05:50 +1000
-In-Reply-To: <560CD7A6.2040905@suse.com>
-References: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
- <560275FC.60104@suse.com>
- <FE248B88-D584-4E66-A59F-B2A2C254000C@ellerman.id.au>
- <5605B2AE.1080409@suse.com> <1443680055.16900.0.camel@ellerman.id.au>
- <560CD7A6.2040905@suse.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D5B611A00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 18:18:05 +1000 (AEST)
+Date: Thu, 1 Oct 2015 10:17:03 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Bjorn Helgaas <bhelgaas@google.com>, David Miller <davem@davemloft.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, TJ <linux@iam.tj>,
+ Yijing Wang <wangyijing@huawei.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-arch@vger.kernel.org
+Subject: Re: [PATCH v6 40/53] PCI: Unify skip_ioresource_align()
+In-Reply-To: <1443678807-786-41-git-send-email-yinghai@kernel.org>
+Message-ID: <alpine.DEB.2.11.1510011016500.4500@nanos>
+References: <1443678807-786-1-git-send-email-yinghai@kernel.org>
+ <1443678807-786-41-git-send-email-yinghai@kernel.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-01 at 08:50 +0200, Michal Marek wrote:
-> On 2015-10-01 08:14, Michael Ellerman wrote:
-> > On Fri, 2015-09-25 at 22:46 +0200, Michal Marek wrote:
-> >> Dne 24.9.2015 v 00:16 Michael Ellerman napsal(a):
-> >>> On 23 September 2015 19:50:52 GMT+10:00, Michal Marek
-> >>> <mmarek@suse.com> wrote:
-> >>>> On 2015-09-23 07:40, Michael Ellerman wrote:
-> >>>>> +else ifneq ($(wildcard
-> >>>> arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
-> >>>>> @$(kecho) "*** Default configuration is based on
-> >>>> '$(KBUILD_DEFCONFIG)'"
-> >>>>> $(Q)$< $(silent)
-> >>>> --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
-> >>>>> +else +	@$(kecho) "*** Default configuration is based on target
-> >>>> '$(KBUILD_DEFCONFIG)'"
-> >>>>> +	$(Q)$(MAKE) -f $(srctree)/Makefile $(KBUILD_DEFCONFIG) endif
-> >>>>
-> >>>> What is the anticipated usage of this? The patch is not needed to
-> >>>> make
-> >>>>
-> >>>> make ppc64le_defconfig
-> >>>>
-> >>>> work with the second patch. If it was, this would create a loop
-> >>>> anyway.
-> >>>
-> >>> The idea is to make 'make defconfig' work when KBUILD_DEFCONFIG is
-> >>> ppc64le_defconfig (which happens for us when uname returns ppc64le)
-> >>> and additionally when ppc64le_defconfig is not a real file.
-> >>
-> >> Ah, that makes sense. You can add
-> >>
-> >> Acked-by: Michal Marek <mmarek@suse.com>
-> >>
-> >> if you want.
-> > 
-> > Thanks. I'll assume by that you mean you're happy if I take both patches
-> > through the powerpc tree.
+On Wed, 30 Sep 2015, Yinghai Lu wrote:
+
+> There are powerpc generic version and x86 local version for
+> skip_ioresource_align().
 > 
-> Yes, I assumed that this was your plan.
+> Move the powerpc version to setup-bus.c, and kill x86 local version.
+> 
+> Also kill dummy version in microblaze.
+> 
+> Cc: Michal Simek <monstr@monstr.eu>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-arch@vger.kernel.org
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-I didn't really have a plan :)
-
-It's certainly easiest if I take it in my tree along with the new
-ppc64le_defconfig, so I'll do that. Thanks.
-
-cheers
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
