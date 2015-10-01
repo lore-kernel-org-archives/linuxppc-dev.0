@@ -1,24 +1,14 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71ECF1A00C5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 16:14:15 +1000 (AEST)
-Message-ID: <1443680055.16900.0.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 1/2] scripts/kconfig/Makefile: Allow
- KBUILD_DEFCONFIG to be a target
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8DB0B1A00C5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 16:44:37 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal Marek <mmarek@suse.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kbuild@vger.kernel.org, yann.morin.1998@free.fr
-Date: Thu, 01 Oct 2015 16:14:15 +1000
-In-Reply-To: <5605B2AE.1080409@suse.com>
-References: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
- <560275FC.60104@suse.com>
- <FE248B88-D584-4E66-A59F-B2A2C254000C@ellerman.id.au>
- <5605B2AE.1080409@suse.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/4] powerpc/pseries: Make PCI non-optional
+Date: Thu,  1 Oct 2015 16:44:31 +1000
+Message-Id: <1443681874-28145-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-09-25 at 22:46 +0200, Michal Marek wrote:
-> Dne 24.9.2015 v 00:16 Michael Ellerman napsal(a):
-> > 
-> > 
-> > On 23 September 2015 19:50:52 GMT+10:00, Michal Marek
-> > <mmarek@suse.com> wrote:
-> >> On 2015-09-23 07:40, Michael Ellerman wrote:
-> >>> +else ifneq ($(wildcard
-> >> arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
-> >>> @$(kecho) "*** Default configuration is based on
-> >> '$(KBUILD_DEFCONFIG)'"
-> >>> $(Q)$< $(silent)
-> >> --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
-> >>> +else +	@$(kecho) "*** Default configuration is based on target
-> >> '$(KBUILD_DEFCONFIG)'"
-> >>> +	$(Q)$(MAKE) -f $(srctree)/Makefile $(KBUILD_DEFCONFIG) endif
-> >> 
-> >> What is the anticipated usage of this? The patch is not needed to
-> >> make
-> >> 
-> >> make ppc64le_defconfig
-> >> 
-> >> work with the second patch. If it was, this would create a loop
-> >> anyway.
-> > 
-> > The idea is to make 'make defconfig' work when KBUILD_DEFCONFIG is
-> > ppc64le_defconfig (which happens for us when uname returns ppc64le)
-> > and additionally when ppc64le_defconfig is not a real file.
-> 
-> Ah, that makes sense. You can add
-> 
-> Acked-by: Michal Marek <mmarek@suse.com>
-> 
-> if you want.
+The pseries build with PCI=n looks to have been broken for at least 5
+years, and no one's noticed or cared.
 
-Thanks. I'll assume by that you mean you're happy if I take both patches
-through the powerpc tree.
+Following the obvious breakages backward, the first commit I can find
+that builds is the parent of 2eb4afb69ff3 ("powerpc/pci: Move pseries
+code into pseries platform specific area") from April 2009.
 
-cheers
+A distro would never ship a PCI=n kernel, so it is only useful for folks
+building custom kernels. Also on KVM the virtio devices appear on PCI,
+so it would only be useful if you were building kernels specifically to
+run on PowerVM and with no PCI devices.
+
+The added code complexity, and testing load (which we've clearly not
+been doing), is not justified by the small reduction in kernel size for
+such a niche use case.
+
+So just make PCI non-optional on pseries.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/pseries/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 54c87d5d349d..d9068a3d6af4 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -4,6 +4,7 @@ config PPC_PSERIES
+ 	select HAVE_PCSPKR_PLATFORM
+ 	select MPIC
+ 	select OF_DYNAMIC
++	select PCI
+ 	select PCI_MSI
+ 	select PPC_XICS
+ 	select PPC_ICP_NATIVE
+@@ -15,7 +16,6 @@ config PPC_PSERIES
+ 	select RTAS_ERROR_LOGGING
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
+-	select PPC_PCI_CHOICE if EXPERT
+ 	select PPC_DOORBELL
+ 	select HAVE_CONTEXT_TRACKING
+ 	select HOTPLUG_CPU if SMP
+-- 
+2.1.4
