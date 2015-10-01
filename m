@@ -1,14 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8DB0B1A00C5
+ by lists.ozlabs.org (Postfix) with ESMTPS id A97F61A010A
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 16:44:37 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/4] powerpc/pseries: Make PCI non-optional
-Date: Thu,  1 Oct 2015 16:44:31 +1000
-Message-Id: <1443681874-28145-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/4] powerpc/pseries: Remove use of CONFIG_PCI
+Date: Thu,  1 Oct 2015 16:44:32 +1000
+Message-Id: <1443681874-28145-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1443681874-28145-1-git-send-email-mpe@ellerman.id.au>
+References: <1443681874-28145-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,48 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pseries build with PCI=n looks to have been broken for at least 5
-years, and no one's noticed or cared.
-
-Following the obvious breakages backward, the first commit I can find
-that builds is the parent of 2eb4afb69ff3 ("powerpc/pci: Move pseries
-code into pseries platform specific area") from April 2009.
-
-A distro would never ship a PCI=n kernel, so it is only useful for folks
-building custom kernels. Also on KVM the virtio devices appear on PCI,
-so it would only be useful if you were building kernels specifically to
-run on PowerVM and with no PCI devices.
-
-The added code complexity, and testing load (which we've clearly not
-been doing), is not justified by the small reduction in kernel size for
-such a niche use case.
-
-So just make PCI non-optional on pseries.
+Now that we always have CONFIG_PCI=y for pseries, we can stop guarding
+code with CONFIG_PCI ifdefs.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/iommu.c | 10 ----------
+ arch/powerpc/platforms/pseries/setup.c |  4 ----
+ 2 files changed, 14 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 54c87d5d349d..d9068a3d6af4 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -4,6 +4,7 @@ config PPC_PSERIES
- 	select HAVE_PCSPKR_PLATFORM
- 	select MPIC
- 	select OF_DYNAMIC
-+	select PCI
- 	select PCI_MSI
- 	select PPC_XICS
- 	select PPC_ICP_NATIVE
-@@ -15,7 +16,6 @@ config PPC_PSERIES
- 	select RTAS_ERROR_LOGGING
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
--	select PPC_PCI_CHOICE if EXPERT
- 	select PPC_DOORBELL
- 	select HAVE_CONTEXT_TRACKING
- 	select HOTPLUG_CPU if SMP
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 0946b98d75d4..bd98ce2be17b 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -532,7 +532,6 @@ static int tce_setrange_multi_pSeriesLP_walk(unsigned long start_pfn,
+ 	return tce_setrange_multi_pSeriesLP(start_pfn, num_pfn, arg);
+ }
+ 
+-#ifdef CONFIG_PCI
+ static void iommu_table_setparms(struct pci_controller *phb,
+ 				 struct device_node *dn,
+ 				 struct iommu_table *tbl)
+@@ -1292,15 +1291,6 @@ static u64 dma_get_required_mask_pSeriesLP(struct device *dev)
+ 	return dma_iommu_ops.get_required_mask(dev);
+ }
+ 
+-#else  /* CONFIG_PCI */
+-#define pci_dma_bus_setup_pSeries	NULL
+-#define pci_dma_dev_setup_pSeries	NULL
+-#define pci_dma_bus_setup_pSeriesLP	NULL
+-#define pci_dma_dev_setup_pSeriesLP	NULL
+-#define dma_set_mask_pSeriesLP		NULL
+-#define dma_get_required_mask_pSeriesLP	NULL
+-#endif /* !CONFIG_PCI */
+-
+ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
+ 		void *data)
+ {
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 9a83eb71b030..9e524c26db14 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -837,10 +837,6 @@ static int pSeries_pci_probe_mode(struct pci_bus *bus)
+ 	return PCI_PROBE_NORMAL;
+ }
+ 
+-#ifndef CONFIG_PCI
+-void pSeries_final_fixup(void) { }
+-#endif
+-
+ struct pci_controller_ops pseries_pci_controller_ops = {
+ 	.probe_mode		= pSeries_pci_probe_mode,
+ };
 -- 
 2.1.4
