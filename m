@@ -1,17 +1,20 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id BB9501A060E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 19:46:42 +1000 (AEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Segher Boessenkool <segher@kernel.crashing.org>,
- Denis Kirjanov <kda@linux-powerpc.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 4/5] powerpc/pseries: handle nodes without '/'
-Date: Thu,  1 Oct 2015 12:46:09 +0300
-Message-Id: <1443692770-44944-5-git-send-email-andriy.shevchenko@linux.intel.com>
-In-Reply-To: <1443692770-44944-1-git-send-email-andriy.shevchenko@linux.intel.com>
-References: <1443692770-44944-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Return-Path: <claudiu.manoil@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0110.outbound.protection.outlook.com [157.56.111.110])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 444921A010C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 20:29:52 +1000 (AEST)
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>
+CC: <linux-kernel@vger.kernel.org>, <galak@codeaurora.org>, "David S. Miller"
+ <davem@davemloft.net>, Li Yang <leoli@freescale.com>, Zhao Chenhui
+ <chenhui.zhao@freescale.com>
+Subject: [PATCH 1/3] doc: dt: net: Add fsl,wake-on-filer for eTSEC
+Date: Thu, 1 Oct 2015 13:10:01 +0300
+Message-ID: <1443694201-29485-1-git-send-email-claudiu.manoil@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,37 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In case we have node without '/' strrchr() returns NULL which might lead to
-crash. Replace strrchr() by kbasename() and modify condition to avoid such
-behaviour.
+Add the "fsl,wake-on-filer" property for eTSEC nodes to
+indicate that the system has the power management
+infrastructure needed to be able to wake up the system
+via FGPI (filer, aka. h/w rx parser) interrupt.
 
-Suggested-by: Segher Boessenkool <segher@kernel.crashing.org>
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Li Yang <leoli@freescale.com>
+Cc: Zhao Chenhui <chenhui.zhao@freescale.com>
+
+Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
 ---
- arch/powerpc/platforms/pseries/of_helpers.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/net/fsl-tsec-phy.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
-index 8c6b05a..4417afe 100644
---- a/arch/powerpc/platforms/pseries/of_helpers.c
-+++ b/arch/powerpc/platforms/pseries/of_helpers.c
-@@ -17,14 +17,14 @@ struct device_node *pseries_of_derive_parent(const char *path)
- {
- 	struct device_node *parent;
- 	char *parent_path = "/";
--	size_t parent_path_len = strrchr(path, '/') - path + 1;
-+	const char *tail = kbasename(path);
- 
- 	/* reject if path is "/" */
- 	if (!strcmp(path, "/"))
- 		return ERR_PTR(-EINVAL);
- 
--	if (strrchr(path, '/') != path) {
--		parent_path = kstrndup(path, parent_path_len, GFP_KERNEL);
-+	if (tail > path + 1) {
-+		parent_path = kstrndup(path, tail - path, GFP_KERNEL);
- 		if (!parent_path)
- 			return ERR_PTR(-ENOMEM);
- 	}
+diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+index 1e97532..db74f0d 100644
+--- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
++++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+@@ -57,6 +57,10 @@ Properties:
+     "rgmii-id", as all other connection types are detected by hardware.
+   - fsl,magic-packet : If present, indicates that the hardware supports
+     waking up via magic packet.
++  - fsl,wake-on-filer : If present, indicates that the hardware supports
++    waking up by Filer General Purpose Interrupt (FGPI) asserted on the
++    Rx int line.  This is an advanced power management capability allowing
++    certain packet types (user) defined by filer rules to wake up the system.
+   - bd-stash : If present, indicates that the hardware supports stashing
+     buffer descriptors in the L2.
+   - rx-stash-len : Denotes the number of bytes of a received buffer to stash
 -- 
-2.5.1
+1.7.11.7
