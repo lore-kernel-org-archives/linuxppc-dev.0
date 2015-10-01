@@ -1,18 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-f182.google.com (mail-yk0-f182.google.com
+ [209.85.160.182])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2DBC1A0FE2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 16:51:04 +1000 (AEST)
-In-Reply-To: <1443578287-7847-3-git-send-email-andrew.donnellan@au1.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, mrochs@linux.vnet.ibm.com, imunsie@au1.ibm.com,
- vaibhav@linux.vnet.ibm.com
-Subject: Re: [3/3] cxl: fix leak of ctx->mapping when releasing kernel API
- contexts
-Message-Id: <20151001065104.272A6140D71@ozlabs.org>
-Date: Thu,  1 Oct 2015 16:51:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D93421A006C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 17:02:14 +1000 (AEST)
+Received: by ykdg206 with SMTP id g206so69082547ykd.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2015 00:02:11 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1443668200.17980.1.camel@ellerman.id.au>
+References: <20150814115200.0F4E1140293@ozlabs.org>
+ <1443629978.8361.316.camel@linux.intel.com>
+ <1443668200.17980.1.camel@ellerman.id.au>
+Date: Thu, 1 Oct 2015 10:02:10 +0300
+Message-ID: <CAOJe8K1qga-K0Nf=W1h7uP_Rr+w2akH4ES+PGmkSJTLTbL8oPg@mail.gmail.com>
+Subject: Re: [v2,5/5] powerpc/pseries: re-use code from of_helpers module
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,25 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-30-09 at 01:58:07 UTC, Andrew Donnellan wrote:
-> When a context is created via the kernel API, ctx->mapping is allocated
-> within the kernel and thus needs to be freed when the context is freed.
-> reclaim_ctx() attempts to do this for contexts with the ctx->kernelapi flag
-> set, but afu_release() (which can be called from the kernel API through
-> cxl_fd_release()) sets ctx->mapping to NULL before calling
-> cxl_context_free() to free the context.
-> 
-> Add a check to afu_release() so that the mappings in contexts created via
-> the kernel API are left alone so reclaim_ctx() can free them.
-> 
-> Reported-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Fixes: 6f7f0b3df6d4 ("cxl: Add AFU virtual PHB and kernel API")
-> Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
-> Reviewed-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+On 10/1/15, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> On Wed, 2015-09-30 at 19:19 +0300, Andy Shevchenko wrote:
+>> On Fri, 2015-08-14 at 21:51 +1000, Michael Ellerman wrote:
+>> > On Tue, 2015-11-08 at 11:23:09 UTC, Andy Shevchenko wrote:
+>> > >  int dlpar_attach_node(struct device_node *dn)
+>> > >  {
+>> > >  	int rc;
+>> > >
+>> > > -	dn->parent = derive_parent(dn->full_name);
+>> > > -	if (!dn->parent)
+>> > > -		return -ENOMEM;
+>> > > +	dn->parent = pseries_of_derive_parent(dn->full_name);
+>> > > +	if (IS_ERR(dn->parent))
+>> > > +		return PTR_ERR(dn_parent);
+>> >                                  ^
+>> > 				 ?
+>> >
+>> > There are cross compilers on kernel.org, or on Ubuntu you can just:
+>> >
+>> > $ apt-get install gcc-powerpc-linux-gnu
+>> > $ make ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu-gcc
+>>
+>> Thanks! I tried today and the above the only problem with the series.
+>> Would you like me to resend whole series?
+>
+> I'd like someone to test it. I gather that you haven't because it didn't
+> compile.
 
-Applied to powerpc fixes, thanks.
+Oh yeah, totally untested:
 
-https://git.kernel.org/powerpc/c/5f81b95fe2a2de4ec51d46ff
+  CC      arch/powerpc/platforms/pseries/dlpar.o
+arch/powerpc/platforms/pseries/dlpar.c: In function 'dlpar_attach_node':
+arch/powerpc/platforms/pseries/dlpar.c:255:18: error: 'dn_parent'
+undeclared (first use in this function)
+   return PTR_ERR(dn_parent);
+                  ^
+arch/powerpc/platforms/pseries/dlpar.c:255:18: note: each undeclared
+identifier is reported only once for each function it appears in
+scripts/Makefile.build:258: recipe for target
+'arch/powerpc/platforms/pseries/dlpar.o' failed
+make[2]: *** [arch/powerpc/platforms/pseries/dlpar.o] Error 1
+scripts/Makefile.build:403: recipe for target
+'arch/powerpc/platforms/pseries' failed
+make[1]: *** [arch/powerpc/platforms/pseries] Error 2
+Makefile:941: recipe for target 'arch/powerpc/platforms' failed
+make: *** [arch/powerpc/platforms] Error 2
 
-cheers
+>
+> I assume you don't have access to hardware to test it on?
+>
+> cheers
+>
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
