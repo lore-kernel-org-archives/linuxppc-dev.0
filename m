@@ -1,45 +1,31 @@
-Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-lb0-x233.google.com (mail-lb0-x233.google.com
+ [IPv6:2a00:1450:4010:c04::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C200B1A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 08:17:36 +1000 (AEST)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Thu, 1 Oct 2015 16:17:34 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 30B281FF0043
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 16:05:44 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t91MGJ2O11010326
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 15:16:19 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t91MHTVv024977
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 16:17:31 -0600
-Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: [PATCH v5 33/34] cxlflash: Fix to avoid leaving dangling
- interrupt resources
-References: <1443714773-9176-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443715127-25776-1-git-send-email-mrochs@linux.vnet.ibm.com>
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <560DB0FE.8040203@linux.vnet.ibm.com>
-Date: Thu, 1 Oct 2015 17:17:34 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id B05D21A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 09:19:08 +1000 (AEST)
+Received: by lbcao8 with SMTP id ao8so17845823lbc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2015 16:19:04 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1443715127-25776-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <20151001122802.GR2881@worktop.programming.kicks-ass.net>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-7-git-send-email-boqun.feng@gmail.com>
+ <20151001122802.GR2881@worktop.programming.kicks-ass.net>
+Date: Fri, 2 Oct 2015 07:19:04 +0800
+Message-ID: <CAL0jBu_=w-GDtg6B+YXLmEn=Qac0mnWaWzS6NvLC9KMcNSj8=w@mail.gmail.com>
+Subject: Re: [RFC v2 6/7] powerpc: atomic: Make atomic{,64}_xchg and xchg a
+ full barrier
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Waiman Long <waiman.long@hp.com>,
+ Ingo Molnar <mingo@kernel.org>, Will Deacon <will.deacon@arm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: multipart/alternative; boundary=001a11401a64e68ddd0521134500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,4 +35,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
+--001a11401a64e68ddd0521134500
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi Peter,
+
+Please forgive me for the format of my reply. I'm travelling,
+and replying from my phone.
+
+2015=E5=B9=B410=E6=9C=881=E6=97=A5 =E4=B8=8B=E5=8D=887:28=EF=BC=8C"Peter Zi=
+jlstra" <peterz@infradead.org>=E5=86=99=E9=81=93=EF=BC=9A
+>
+> On Wed, Sep 16, 2015 at 11:49:34PM +0800, Boqun Feng wrote:
+> > According to memory-barriers.txt, xchg and its atomic{,64}_ versions
+> > need to imply a full barrier, however they are now just RELEASE+ACQUIRE=
+,
+> > which is not a full barrier.
+> >
+> > So remove the definition of xchg(), and let __atomic_op_fence() build
+> > the full-barrier versions of these operations.
+>
+> Do you want to do a patch for -stable fixing the current implementation?
+
+Good idea! I didn't think of this before, and I'd love to do the patch,
+but thing is that I'm not able to use my laptop until Oct 10th.
+I will send the patch once I'm back.
+Does that work for you?
+
+Regards,
+Boqun
+
+--001a11401a64e68ddd0521134500
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<p dir=3D"ltr">Hi Peter,</p>
+<p dir=3D"ltr">Please forgive me for the format of my reply. I&#39;m travel=
+ling,<br>
+and replying from my phone.</p>
+<p dir=3D"ltr">2015=E5=B9=B410=E6=9C=881=E6=97=A5 =E4=B8=8B=E5=8D=887:28=EF=
+=BC=8C&quot;Peter Zijlstra&quot; &lt;<a href=3D"mailto:peterz@infradead.org=
+">peterz@infradead.org</a>&gt;=E5=86=99=E9=81=93=EF=BC=9A<br>
+&gt;<br>
+&gt; On Wed, Sep 16, 2015 at 11:49:34PM +0800, Boqun Feng wrote:<br>
+&gt; &gt; According to memory-barriers.txt, xchg and its atomic{,64}_ versi=
+ons<br>
+&gt; &gt; need to imply a full barrier, however they are now just RELEASE+A=
+CQUIRE,<br>
+&gt; &gt; which is not a full barrier.<br>
+&gt; &gt;<br>
+&gt; &gt; So remove the definition of xchg(), and let __atomic_op_fence() b=
+uild<br>
+&gt; &gt; the full-barrier versions of these operations.<br>
+&gt;<br>
+&gt; Do you want to do a patch for -stable fixing the current implementatio=
+n?</p>
+<p dir=3D"ltr">Good idea! I didn&#39;t think of this before, and I&#39;d lo=
+ve to do the patch,<br>
+but thing is that I&#39;m not able to use my laptop until Oct 10th.<br>
+I will send the patch once I&#39;m back.<br>
+Does that work for you?</p>
+<p dir=3D"ltr">Regards,<br>
+Boqun</p>
+
+--001a11401a64e68ddd0521134500--
