@@ -1,29 +1,30 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCD641A03D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 03:11:15 +1000 (AEST)
-Subject: Re: [PATCH v3 1/3] powerpc/512x: add LocalPlus Bus FIFO device driver
-To: alex.popov@linux.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id BACD81A039D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 03:17:26 +1000 (AEST)
+Date: Thu, 1 Oct 2015 19:11:51 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Rob Herring <robh@kernel.org>,
- Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
- <1443115737-3948-2-git-send-email-alex.popov@linux.com>
- <56049CD0.7080104@tabi.org> <560C5325.6070406@linux.com>
-From: Timur Tabi <timur@tabi.org>
-Message-ID: <560D692E.1010309@tabi.org>
-Date: Thu, 1 Oct 2015 12:11:10 -0500
+ Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{,64}_* and
+ atomic{,64}_cmpxchg_* variants
+Message-ID: <20151001171151.GW3816@twins.programming.kicks-ass.net>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
+ <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
+ <20151001123626.GB3281@worktop.programming.kicks-ass.net>
+ <20151001151219.GD4043@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <560C5325.6070406@linux.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151001151219.GD4043@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,35 +34,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/30/2015 04:24 PM, Alexander Popov wrote:
+On Thu, Oct 01, 2015 at 08:12:19AM -0700, Paul E. McKenney wrote:
 
->> Can you test for "!cs" here instead?
->>
->>> +        e = -EFAULT;
->>> +        goto err_param;
->>> +    }
->
-> Unfortunately no: 0 is a valid value for Chip Select.
-> Is it OK to leave it like that?
+> What C11 does is to allow the developer to specify different orderings
+> on success and failure.  But it is no harder to supply a barrier (if
+> needed) on the failure path, right?
 
-Yes.
-
->>> +    lpbfifo.ram_bus_addr = sg_dma_address(&sg); /* For freeing later */
->>> +    sg_dma_len(&sg) = lpbfifo.req->size;
->>
->> I don't think sg_dma_len() is meant to be used as an lvalue.
->
-> I've double-checked and found many cases of such usage of this macro.
-> It seems that I can't avoid it too.
-
-Ok.
-
->> Driver code that has to parse #address-cells or #size-cells
->> is usually wrong.
->
-> I would not call it "parsing", I just check whether the dts-file is good.
-> Anyway, could you give me a clue how to do better?
-
-You should use of_n_size_cells() and of_n_addr_cells().
-
--- 
+Quite right.
