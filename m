@@ -1,23 +1,43 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f173.google.com (mail-yk0-f173.google.com
- [209.85.160.173])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D80E41A1197
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 05:26:57 +1000 (AEST)
-Received: by ykdt18 with SMTP id t18so89777079ykd.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2015 12:26:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 712941A1199
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 05:41:06 +1000 (AEST)
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Thu, 1 Oct 2015 13:41:04 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 125BA19D8045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 13:29:14 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t91Jdna07143684
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 12:39:49 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t91Jex2S024807
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 13:41:01 -0600
+Date: Thu, 1 Oct 2015 12:41:00 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 4/7] powerpc: atomic: Implement xchg_* and
+ atomic{,64}_xchg_* variants
+Message-ID: <20151001194100.GL4043@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20151001182309.GY3816@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <1443692770-44944-1-git-send-email-andriy.shevchenko@linux.intel.com>
-References: <1443692770-44944-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Date: Thu, 1 Oct 2015 22:26:53 +0300
-Message-ID: <CAOJe8K3YLntJ1OfHijfQrXisrJ2yUmmuaTzEo2MG18MhUH1cAQ@mail.gmail.com>
-Subject: Re: [PATCH v3 0/5] powerpc/pseries: bug fix and clean up
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151001182309.GY3816@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +47,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/1/15, Andy Shevchenko <andriy.shevchenko@linux.intel.com> wrote:
-> Changelog v2:
->  - fix compiler error
->  - rebase on top of recent linux-next
->  - compile tested
->
-> Andy Shevchenko (5):
->   powerpc/pseries: extract of_helpers module
->   powerpc/pseries: fix a potential memory leak
->   powerpc/pseries: replace kmalloc + strlcpy
->   powerpc/pseries: handle nodes without '/'
->   powerpc/pseries: re-use code from of_helpers module
+On Thu, Oct 01, 2015 at 08:23:09PM +0200, Peter Zijlstra wrote:
+> On Thu, Oct 01, 2015 at 11:03:01AM -0700, Paul E. McKenney wrote:
+> > On Thu, Oct 01, 2015 at 07:13:04PM +0200, Peter Zijlstra wrote:
+> > > On Thu, Oct 01, 2015 at 08:09:09AM -0700, Paul E. McKenney wrote:
+> > > > On Thu, Oct 01, 2015 at 02:24:40PM +0200, Peter Zijlstra wrote:
+> > > 
+> > > > > I must say I'm somewhat surprised by this level of relaxation, I had
+> > > > > expected to only loose SMP barriers, not the program order ones.
+> > > > > 
+> > > > > Is there a good argument for this?
+> > > > 
+> > > > Yes, when we say "relaxed", we really mean relaxed.  ;-)
+> > > > 
+> > > > Both the CPU and the compiler are allowed to reorder around relaxed
+> > > > operations.
+> > > 
+> > > Is this documented somewhere, because I completely missed this part.
+> > 
+> > Well, yes, these need to be added to the documentation.  I am assuming
+> > that Will is looking to have the same effect as C11 memory_order_relaxed,
+> > which is relaxed in this sense.  If he has something else in mind,
+> > he needs to tell us what it is and why.  ;-)
+> 
+> I suspect he is; but I'm not _that_ up to date on the whole C11 stuff.
 
-Ok, looks like it's working for me.
+Lucky you!  ;-)
 
-Tested-by: Denis Kirjanov <kda@linux-powerpc.org>
-
-
->
->  arch/powerpc/platforms/pseries/Makefile     |  1 +
->  arch/powerpc/platforms/pseries/dlpar.c      | 31 +++++--------------------
->  arch/powerpc/platforms/pseries/of_helpers.c | 35
-> +++++++++++++++++++++++++++++
->  arch/powerpc/platforms/pseries/of_helpers.h |  8 +++++++
->  arch/powerpc/platforms/pseries/reconfig.c   | 34
-> ++--------------------------
->  5 files changed, 51 insertions(+), 58 deletions(-)
->  create mode 100644 arch/powerpc/platforms/pseries/of_helpers.c
->  create mode 100644 arch/powerpc/platforms/pseries/of_helpers.h
->
-> --
-> 2.5.1
->
->
+							Thanx, Paul
