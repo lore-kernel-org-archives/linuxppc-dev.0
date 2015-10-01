@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C82551A1BDB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 01:59:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C2E1C1A03A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 01:59:40 +1000 (AEST)
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 1 Oct 2015 09:59:32 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 1C12E3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 09:59:16 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t91Fu7wV46399638
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 08:56:07 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t91FxEiQ006735
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 09:59:15 -0600
+ Thu, 1 Oct 2015 11:59:38 -0400
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 3B34F6E803F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 11:47:47 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t91FxY5E53412038
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 15:59:34 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t91FxXcU023268
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 11:59:34 -0400
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -29,11 +29,11 @@ To: linux-scsi@vger.kernel.org,
  Daniel Axtens <dja@ozlabs.au.ibm.com>,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Manoj Kumar <manoj@linux.vnet.ibm.com>
-Subject: [PATCH v5 29/34] cxlflash: Fix to double the delay each time
-Date: Thu,  1 Oct 2015 10:58:28 -0500
-Message-Id: <1443715108-21832-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 33/34] cxlflash: Fix to avoid leaving dangling interrupt
+ resources
+Date: Thu,  1 Oct 2015 10:58:47 -0500
+Message-Id: <1443715127-25776-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1443714773-9176-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1443714773-9176-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,34 +45,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Manoj Kumar <manoj@linux.vnet.ibm.com>
+When running with an unsupported AFU, the cxlflash driver fails
+the probe. When the driver is removed, the following Oops is
+encountered on a show_interrupts() thread:
 
-The operator used to double the master context response delay
-is incorrect and does not result in delay doubling.
+Call Trace:
+[c000001fba5a7a10] [0000000000000003] 0x3 (unreliable)
+[c000001fba5a7a60] [c00000000053dcf4] vsnprintf+0x204/0x4c0
+[c000001fba5a7ae0] [c00000000030045c] seq_vprintf+0x5c/0xd0
+[c000001fba5a7b20] [c00000000030051c] seq_printf+0x4c/0x60
+[c000001fba5a7b50] [c00000000013e140] show_interrupts+0x370/0x4f0
+[c000001fba5a7c10] [c0000000002ff898] seq_read+0xe8/0x530
+[c000001fba5a7ca0] [c00000000035d5c0] proc_reg_read+0xb0/0x110
+[c000001fba5a7cf0] [c0000000002ca74c] __vfs_read+0x6c/0x180
+[c000001fba5a7d90] [c0000000002cb464] vfs_read+0xa4/0x1c0
+[c000001fba5a7de0] [c0000000002cc51c] SyS_read+0x6c/0x110
+[c000001fba5a7e30] [c000000000009204] system_call+0x38/0xb4
 
-To fix, use a left shift instead of the XOR operator.
+The Oops is due to not cleaning up correctly on the unsupported
+AFU error path, leaving various allocated and registered resources.
+In this case, interrupts are in a semi-allocated/registered state,
+which the show_interrupts() thread attempts to use.
 
-Reported-by: Tomas Henzl <thenzl@redhat.com>
+To fix, the cleanup logic in init_afu() is consolidated to error
+gates at the bottom of the function and the appropriate goto is
+added to each error path. As a mini side fix while refactoring
+in this routine, the else statement following the AFU version
+evaluation is eliminated as it is not needed.
+
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/cxlflash/main.c | 28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index c77cb92..51883be 100644
+index 998373e..c152703 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -303,7 +303,7 @@ write_rrin:
- 		if (rrin != 0x1)
- 			break;
- 		/* Double delay each time */
--		udelay(2 ^ nretry);
-+		udelay(2 << nretry);
- 	} while (nretry++ < MC_ROOM_RETRY_CNT);
+@@ -1721,15 +1721,14 @@ static int init_afu(struct cxlflash_cfg *cfg)
+ 	if (rc) {
+ 		dev_err(dev, "%s: call to init_mc failed, rc=%d!\n",
+ 			__func__, rc);
+-		goto err1;
++		goto out;
+ 	}
+ 
+ 	/* Map the entire MMIO space of the AFU */
+ 	afu->afu_map = cxl_psa_map(cfg->mcctx);
+ 	if (!afu->afu_map) {
+-		rc = -ENOMEM;
+-		term_mc(cfg, UNDO_START);
+ 		dev_err(dev, "%s: call to cxl_psa_map failed!\n", __func__);
++		rc = -ENOMEM;
+ 		goto err1;
+ 	}
+ 
+@@ -1743,19 +1742,17 @@ static int init_afu(struct cxlflash_cfg *cfg)
+ 		       "interface version 0x%llx\n", afu->version,
+ 		       afu->interface_version);
+ 		rc = -EINVAL;
+-		goto err1;
+-	} else
+-		pr_debug("%s: afu version %s, interface version 0x%llX\n",
+-			 __func__, afu->version, afu->interface_version);
++		goto err2;
++	}
++
++	pr_debug("%s: afu version %s, interface version 0x%llX\n", __func__,
++		 afu->version, afu->interface_version);
+ 
+ 	rc = start_afu(cfg);
+ 	if (rc) {
+ 		dev_err(dev, "%s: call to start_afu failed, rc=%d!\n",
+ 			__func__, rc);
+-		term_mc(cfg, UNDO_START);
+-		cxl_psa_unmap((void __iomem *)afu->afu_map);
+-		afu->afu_map = NULL;
+-		goto err1;
++		goto err2;
+ 	}
+ 
+ 	afu_err_intr_init(cfg->afu);
+@@ -1763,9 +1760,16 @@ static int init_afu(struct cxlflash_cfg *cfg)
+ 
+ 	/* Restore the LUN mappings */
+ 	cxlflash_restore_luntable(cfg);
+-err1:
++out:
+ 	pr_debug("%s: returning rc=%d\n", __func__, rc);
+ 	return rc;
++
++err2:
++	cxl_psa_unmap((void __iomem *)afu->afu_map);
++	afu->afu_map = NULL;
++err1:
++	term_mc(cfg, UNDO_START);
++	goto out;
  }
  
+ /**
 -- 
 2.1.0
