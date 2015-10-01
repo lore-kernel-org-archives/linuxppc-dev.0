@@ -1,46 +1,39 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <mrochs@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2093F1A0D05
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 01:13:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B4AE1A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 01:54:01 +1000 (AEST)
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 1 Oct 2015 09:13:19 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C636F1FF0042
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 09:01:24 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t91FCGFT9699786
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 08:12:16 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t91FDA35017775
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 09:13:12 -0600
-Date: Thu, 1 Oct 2015 08:13:10 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>
-Subject: Re: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{,64}_* and
- atomic{,64}_cmpxchg_* variants
-Message-ID: <20151001151310.GE4043@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
- <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
- <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
- <20151001123626.GB3281@worktop.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151001123626.GB3281@worktop.programming.kicks-ass.net>
+ for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
+ Thu, 1 Oct 2015 11:53:59 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 1B68938C804A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 11:53:56 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t91FruOs56361192
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 15:53:56 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t91Frrmx027158
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 11:53:55 -0400
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
+Subject: [PATCH v5 00/34] cxlflash: Miscellaneous bug fixes and corrections
+Date: Thu,  1 Oct 2015 10:52:53 -0500
+Message-Id: <1443714773-9176-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,23 +43,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 01, 2015 at 02:36:26PM +0200, Peter Zijlstra wrote:
-> On Thu, Oct 01, 2015 at 02:27:15PM +0200, Peter Zijlstra wrote:
-> > On Wed, Sep 16, 2015 at 11:49:33PM +0800, Boqun Feng wrote:
-> > > Unlike other atomic operation variants, cmpxchg{,64}_acquire and
-> > > atomic{,64}_cmpxchg_acquire don't have acquire semantics if the cmp part
-> > > fails, so we need to implement these using assembly.
-> > 
-> > I think that is actually expected and documented. That is, a cmpxchg
-> > only implies barriers on success. See:
-> > 
-> >   ed2de9f74ecb ("locking/Documentation: Clarify failed cmpxchg() memory ordering semantics")
-> 
-> Also:
-> 
-> 654672d4ba1a6 (Will Deacon     2015-08-06 17:54:37 +0100  28)  * store portion of the operation. Note that a failed cmpxchg_acquire
-> 654672d4ba1a6 (Will Deacon     2015-08-06 17:54:37 +0100  29)  * does -not- imply any memory ordering constraints.
+This patch set contains various fixes and corrections for issues that
+were found during test and code review. The series is based upon the
+code upstreamed in 4.3 and is intended for the rc phase. The entire
+set is bisectable. Please reference the changelog below for details
+on what has been altered from previous versions of this patch set.
 
-Agreed, no need for ordering on failed cmpxchg.
+v5 Changes:
+- Incorporate comments from Daniel Axtens
+- Incorporate comments from Andrew Donnellan 
+- Added additional clarifications to several commit messages
+- Specified some return codes as failures in "Fix function prolog..."
+- Made port online failure noisier in "Remove dual port online..."
+- Added patch to properly cleanup when encountering an unsupported AFU
+- Added patch to escalate a link reset on login timeout
 
-							Thanx, Paul
+v4 Changes:
+- Incorporate comments from Brian King
+- Removed unnecessary check_state() parameter from "Fix to avoid CXL..."
+- Added patch to fix potential deadlock on EEH
+- Removed patch to avoid state change collision
+- Changed fops initialization location in "Fix to avoid corrupting..."
+
+v3 Changes:
+- Rebased the series on top of patch by Dan Carpenter ("a couple off...")
+- Incorporate comments from David Laight
+- Incorporate comments from Tomas Henzl
+- Incorporate comments from Brian King
+- Removed patch to stop interrupt processing on remove
+- Removed double scsi_device_put() from "Fix potential oops"
+- Fixed usage of scnprintf() in "Refine host/device attributes"
+- Removed unnecessary parenthesis from "Fix read capacity timeout"
+- Added patch to use correct operator for doubling delay
+- Changed location of cancel_work_sync() in "Fix to prevent workq..."
+- Removed local mutex from cxlflash_afu_sync() in "Fix to avoid state..."
+- Added patch to correctly identify a failed function in a trace
+- Added patch to fix a fops corruption bug
+
+v2 Changes:
+- Incorporate comments from Ian Munsie
+- Rework commit messages to be more descriptive
+- Add state change serialization patch
+
+Manoj Kumar (5):
+  cxlflash: Fix to avoid invalid port_sel value
+  cxlflash: Replace magic numbers with literals
+  cxlflash: Fix read capacity timeout
+  cxlflash: Fix to double the delay each time
+  cxlflash: Fix to escalate to LINK_RESET on login timeout
+
+Matthew R. Ochs (29):
+  cxlflash: Fix potential oops following LUN removal
+  cxlflash: Fix data corruption when vLUN used over multiple cards
+  cxlflash: Fix to avoid sizeof(bool)
+  cxlflash: Fix context encode mask width
+  cxlflash: Fix to avoid CXL services during EEH
+  cxlflash: Correct naming of limbo state and waitq
+  cxlflash: Make functions static
+  cxlflash: Refine host/device attributes
+  cxlflash: Fix to avoid spamming the kernel log
+  cxlflash: Fix to avoid stall while waiting on TMF
+  cxlflash: Fix location of setting resid
+  cxlflash: Fix host link up event handling
+  cxlflash: Fix async interrupt bypass logic
+  cxlflash: Remove dual port online dependency
+  cxlflash: Fix AFU version access/storage and add check
+  cxlflash: Correct usage of scsi_host_put()
+  cxlflash: Fix to prevent workq from accessing freed memory
+  cxlflash: Correct behavior in device reset handler following EEH
+  cxlflash: Remove unnecessary scsi_block_requests
+  cxlflash: Fix function prolog parameters and return codes
+  cxlflash: Fix MMIO and endianness errors
+  cxlflash: Fix to prevent EEH recovery failure
+  cxlflash: Correct spelling, grammar, and alignment mistakes
+  cxlflash: Fix to prevent stale AFU RRQ
+  MAINTAINERS: Add cxlflash driver
+  cxlflash: Fix to avoid corrupting adapter fops
+  cxlflash: Correct trace string
+  cxlflash: Fix to avoid potential deadlock on EEH
+  cxlflash: Fix to avoid leaving dangling interrupt resources
+
+ MAINTAINERS                       |    9 +
+ drivers/scsi/cxlflash/common.h    |   30 +-
+ drivers/scsi/cxlflash/lunmgt.c    |    9 +-
+ drivers/scsi/cxlflash/main.c      | 1549 ++++++++++++++++++++-----------------
+ drivers/scsi/cxlflash/main.h      |    1 +
+ drivers/scsi/cxlflash/sislite.h   |    8 +-
+ drivers/scsi/cxlflash/superpipe.c |  204 +++--
+ drivers/scsi/cxlflash/superpipe.h |   13 +-
+ drivers/scsi/cxlflash/vlun.c      |   68 +-
+ 9 files changed, 1055 insertions(+), 836 deletions(-)
+
+-- 
+2.1.0
