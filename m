@@ -1,11 +1,11 @@
 Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 375DE1A010A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 22:27:26 +1000 (AEST)
-Date: Thu, 1 Oct 2015 14:27:16 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 118B61A0B63
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 22:28:11 +1000 (AEST)
+Date: Thu, 1 Oct 2015 14:28:02 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: Boqun Feng <boqun.feng@gmail.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -15,14 +15,14 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Waiman Long <waiman.long@hp.com>
-Subject: Re: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{,64}_* and
- atomic{,64}_cmpxchg_* variants
-Message-ID: <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
+Subject: Re: [RFC v2 6/7] powerpc: atomic: Make atomic{,64}_xchg and xchg a
+ full barrier
+Message-ID: <20151001122802.GR2881@worktop.programming.kicks-ass.net>
 References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
- <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-7-git-send-email-boqun.feng@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
+In-Reply-To: <1442418575-12297-7-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,12 +32,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 16, 2015 at 11:49:33PM +0800, Boqun Feng wrote:
-> Unlike other atomic operation variants, cmpxchg{,64}_acquire and
-> atomic{,64}_cmpxchg_acquire don't have acquire semantics if the cmp part
-> fails, so we need to implement these using assembly.
+On Wed, Sep 16, 2015 at 11:49:34PM +0800, Boqun Feng wrote:
+> According to memory-barriers.txt, xchg and its atomic{,64}_ versions
+> need to imply a full barrier, however they are now just RELEASE+ACQUIRE,
+> which is not a full barrier.
+> 
+> So remove the definition of xchg(), and let __atomic_op_fence() build
+> the full-barrier versions of these operations.
 
-I think that is actually expected and documented. That is, a cmpxchg
-only implies barriers on success. See:
-
-  ed2de9f74ecb ("locking/Documentation: Clarify failed cmpxchg() memory ordering semantics")
+Do you want to do a patch for -stable fixing the current implementation?
