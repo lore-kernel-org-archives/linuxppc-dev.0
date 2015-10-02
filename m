@@ -1,32 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <labbott@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97ADB1A010C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 00:34:55 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 3 Oct 2015 00:34:53 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4FCAD357804F
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 00:34:47 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t92EYdwN46858436
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 3 Oct 2015 00:34:47 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t92EYE4P016640
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 3 Oct 2015 00:34:14 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc: Fix _ALIGN_* errors due to type difference.
-Date: Fri,  2 Oct 2015 20:03:48 +0530
-Message-Id: <1443796428-11517-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BFEE81A007F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 01:43:35 +1000 (AEST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Laura Abbott <labbott@redhat.com>
+Subject: Missing operand for tlbie instruction on Power7
+Message-ID: <560EA623.1040300@redhat.com>
+Date: Fri, 2 Oct 2015 08:43:31 -0700
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This avoid errors like
+Hi,
 
-        unsigned int usize = 1 << 30;
-        int size = 1 << 30;
-        unsigned long addr = 64UL << 30 ;
+We received a report (https://bugzilla.redhat.com/show_bug.cgi?id=1267395) of bad assembly
+when compiling on powerpc with little endian
 
-        value = _ALIGN_DOWN(addr, usize); -> 0
-        value = _ALIGN_DOWN(addr, size);  -> 0x1000000000
+[labbott@labbott-redhat-machine linux_upstream]$ make ARCH=powerpc CROSS_COMPILE=powerpc64-linux-gnu-
+   CHK     include/config/kernel.release
+   CHK     include/generated/uapi/linux/version.h
+   CHK     include/generated/utsrelease.h
+   CHK     include/generated/bounds.h
+   CHK     include/generated/timeconst.h
+   CHK     include/generated/asm-offsets.h
+   CALL    scripts/checksyscalls.sh
+   CHK     include/generated/compile.h
+   CALL    arch/powerpc/kernel/systbl_chk.sh
+   AS      arch/powerpc/kernel/swsusp_asm64.o
+arch/powerpc/kernel/swsusp_asm64.S: Assembler messages:
+arch/powerpc/kernel/swsusp_asm64.S:188: Error: missing operand
+scripts/Makefile.build:294: recipe for target 'arch/powerpc/kernel/swsusp_asm64.o' failed
+make[1]: *** [arch/powerpc/kernel/swsusp_asm64.o] Error 1
+Makefile:941: recipe for target 'arch/powerpc/kernel' failed
+make: *** [arch/powerpc/kernel] Error 2
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/boot/page.h        | 4 ++--
- arch/powerpc/include/asm/page.h | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+This problem started happening after a binutils update:
 
-diff --git a/arch/powerpc/boot/page.h b/arch/powerpc/boot/page.h
-index 14eca30fef64..87c42d7d283d 100644
---- a/arch/powerpc/boot/page.h
-+++ b/arch/powerpc/boot/page.h
-@@ -22,8 +22,8 @@
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
- /* align addr on a size boundary - adjust address up/down if needed */
--#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
--#define _ALIGN_DOWN(addr,size)	((addr)&(~((size)-1)))
-+#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((typeof(addr))(size)-1)))
-+#define _ALIGN_DOWN(addr, size)	((addr)&(~((typeof(addr))(size)-1)))
- 
- /* align addr on a size boundary - adjust address up if needed */
- #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 71294a6e976e..1dd69774a31c 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -240,8 +240,8 @@ extern long long virt_phys_offset;
- #endif
- 
- /* align addr on a size boundary - adjust address up/down if needed */
--#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
--#define _ALIGN_DOWN(addr,size)	((addr)&(~((size)-1)))
-+#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((typeof(addr))(size)-1)))
-+#define _ALIGN_DOWN(addr, size)	((addr)&(~((typeof(addr))(size)-1)))
- 
- /* align addr on a size boundary - adjust address up if needed */
- #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
--- 
-2.5.0
+[labbott@labbott-redhat-machine linux_upstream]$ powerpc64-linux-gnu-as --version
+GNU assembler version 2.25.1-1.fc22
+Copyright (C) 2014 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or later.
+This program has absolutely no warranty.
+This assembler was configured for a target of `powerpc64-linux-gnu'.
+[labbott@labbott-redhat-machine linux_upstream]$
+
+After some discussion with the binutils folks, it turns out that the tlbie
+instruction actually requires another operand and binutils was updated to
+check for this https://sourceware.org/ml/binutils/2015-05/msg00133.html .
+
+The code sequence in arch/powerpc/include/asm/ppc_asm.h now needs to be updated:
+
+#if !defined(CONFIG_4xx) && !defined(CONFIG_8xx)
+#define tlbia                                   \
+         li      r4,1024;                        \
+         mtctr   r4;                             \
+         lis     r4,KERNELBASE@h;                \
+0:      tlbie   r4;                             \
+         addi    r4,r4,0x1000;                   \
+         bdnz    0b
+#endif
+
+I don't know enough ppc assembly to properly fix this but I can test.
+
+Thanks,
+Laura
