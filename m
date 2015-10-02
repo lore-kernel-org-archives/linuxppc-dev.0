@@ -1,46 +1,25 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F34121A0013
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 07:51:22 +1000 (AEST)
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 2 Oct 2015 17:51:20 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 205F3C90105
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 17:36:16 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t92Lm4RC64159954
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Oct 2015 21:48:04 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t92Lm1UO021974
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Oct 2015 17:48:03 -0400
-Date: Fri, 2 Oct 2015 14:48:00 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Matthew Wilcox <willy@linux.intel.com>,
- Keith Busch <keith.busch@intel.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Christoph Hellwig <hch@infradead.org>, linux-nvme@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/5 v2] Fix NVMe driver support on Power with 32-bit DMA
-Message-ID: <20151002214800.GN8040@linux.vnet.ibm.com>
-References: <20151002171606.GA41011@linux.vnet.ibm.com>
- <20151002200953.GB40695@linux.vnet.ibm.com>
- <1443819066.27295.19.camel@kernel.crashing.org>
- <20151002210435.GM8040@linux.vnet.ibm.com>
- <1443821709.27295.20.camel@kernel.crashing.org>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3581F1A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 08:01:00 +1000 (AEST)
+Date: Fri, 2 Oct 2015 17:00:51 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: Peter Bergner <bergner@vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Laura Abbott <labbott@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Missing operand for tlbie instruction on Power7
+Message-ID: <20151002220051.GA26712@gate.crashing.org>
+References: <560EA623.1040300@redhat.com>
+ <CAOJe8K1gQFRakYVWPYe0j9+Zc+s9hqB7uFF_aZh9NwCZSfTB_w@mail.gmail.com>
+ <1443816930.13186.214.camel@otta>
+ <CAOJe8K2GOsBk=CcWaZqq9KN=McLad97BP6ZhEdRB7i2Ag4csOg@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1443821709.27295.20.camel@kernel.crashing.org>
+In-Reply-To: <CAOJe8K2GOsBk=CcWaZqq9KN=McLad97BP6ZhEdRB7i2Ag4csOg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,32 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03.10.2015 [07:35:09 +1000], Benjamin Herrenschmidt wrote:
-> On Fri, 2015-10-02 at 14:04 -0700, Nishanth Aravamudan wrote:
-> > Right, I did start with your advice and tried that approach, but it
-> > turned out I was wrong about the actual issue at the time. The problem
-> > for NVMe isn't actually the starting address alignment (which it can
-> > handle not being aligned to the device's page size). It doesn't handle
-> > (addr + len % dev_page_size != 0). That is, it's really a length
-> > alignment issue.
-> > 
-> > It seems incredibly device specific to have a an API into the DMA code
-> > to request an end alignment -- no other device seems to have this
-> > issue/design. If you think that's better, I can fiddle with that
-> > instead.
-> > 
-> > Sorry, I should have called this out better as an alternative
-> > consideration.
+On Sat, Oct 03, 2015 at 12:37:35AM +0300, Denis Kirjanov wrote:
+> >> -0:     tlbie   r4;                             \
+> >> +0:     tlbie   r4, 0;                          \
+> >
+> > This isn't correct.  With POWER7 and later (which this compile
+> > is, since it's on LE), the tlbie instruction takes two register
+> > operands:
+> >
+> >     tlbie RB, RS
+> >
+> > The tlbie instruction on pre POWER7 cpus had one required register
+> > operand (RB) and an optional second L operand, where if you omitted
+> > it, it was the same as using "0":
+> >
+> >     tlbie RB, L
+> >
+> > This is a POWER7 and later build, so your change which adds the "0"
+> > above is really adding r0 for RS.  The new tlbie instruction doesn't
+> > treat r0 specially, so you'll be using whatever random bits which
+> > happen to be in r0 which I don't think that is what you want.
 > 
-> Nah it's fine. Ok. Also adding the alignment requirement to the API
-> would have been a much more complex patch since it would have had to
-> be implemented for all archs.
-> 
-> I think your current solution is fine.
+> Ok, than we can just zero out r5 for example and use it in tlbie as RS,
+> right?
 
-Great, thanks. Also, while it's possible an alignment API would be more
-performant...we're already not using DDW on Power in this case,
-performance is not a primary concern. We want to simply be
-functional/correct in this configuration.
+That won't assemble _unless_ your assembler is in POWER7 mode.  It also
+won't do the right thing at run time on older machines.
 
--Nish
+Where is this tlbia macro used at all, for 64-bit machines?
+
+
+Segher
