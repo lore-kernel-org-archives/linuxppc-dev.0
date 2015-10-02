@@ -1,46 +1,24 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0133.outbound.protection.outlook.com [65.55.169.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5990E1A015B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 11:18:45 +1000 (AEST)
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Thu, 1 Oct 2015 21:18:41 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DE8F4C90041
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Oct 2015 21:06:48 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t921IaKa61538334
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Oct 2015 01:18:36 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t921IYo5005104
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Oct 2015 21:18:36 -0400
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2104\))
-Subject: Re: [PATCH v5 18/34] cxlflash: Fix AFU version access/storage and add
- check
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-In-Reply-To: <87h9maay0s.fsf@gamma.ozlabs.ibm.com>
-Date: Thu, 1 Oct 2015 20:18:32 -0500
-Cc: linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>,
- Michael Neuling <mikey@neuling.org>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Message-Id: <A8B191C3-D4C7-49ED-A058-95443BABDBDC@linux.vnet.ibm.com>
-References: <1443714773-9176-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1443715012-18236-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <87h9maay0s.fsf@gamma.ozlabs.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F37F21A017A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 13:35:27 +1000 (AEST)
+Date: Thu, 1 Oct 2015 22:35:06 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <igal.liberman@freescale.com>
+CC: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>, <madalin.bucur@freescale.com>,
+ <pebolle@tiscali.nl>, <joakim.tjernlund@transmode.se>, <ppc@mindchasers.com>,
+ <stephen@networkplumber.org>, <davem@davemloft.net>
+Subject: Re: [v5, 2/6] fsl/fman: Add FMan support
+Message-ID: <20151002033506.GA8067@home.buserror.net>
+References: <1443085838-7539-1-git-send-email-igal.liberman@freescale.com>
+ <1443085838-7539-3-git-send-email-igal.liberman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1443085838-7539-3-git-send-email-igal.liberman@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,30 +28,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Oct 1, 2015, at 7:56 PM, Daniel Axtens <dja@axtens.net> wrote:
-> 
-> "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com> writes:
-> 
->> The AFU version is stored as a non-terminated string of bytes within
->> a 64-bit little-endian register. Presently the value is read directly
->> (no MMIO accessor) and is stored in a buffer that is not big enough
->> to contain a NULL terminator. Additionally the version obtained is not
->> evaluated against a known value to prevent usage with unsupported AFUs.
->> All of these deficiencies can lead to a variety of problems.
->> 
->> +	if ((afu->interface_version + 1) == 0) {
->> +		pr_err("Back level AFU, please upgrade. AFU version %s "
->> +		       "interface version 0x%llx\n", afu->version,
->> +		       afu->interface_version);
->> +		rc = -EINVAL;
->> +		goto err1;
-> 
-> I'm confused by this if statement. If afu->interface_version + 1 == 0,
-> and interface_version is a 64bit unsigned int, that would mean that
-> afu->interface_version was 0xFFFF FFFF FFFF FFFF.
-> 
-> Are you trying to check against all Fs? Is that value significant in the
-> hardware?
+On Thu, Sep 24, 2015 at 12:10:34PM +0300, igal.liberman@freescale.com wrote:
+> +int fman_get_rx_extra_headroom(void)
+> +{
+> +	static bool fm_check_rx_extra_headroom;
+> +
+> +	if (!fm_check_rx_extra_headroom) {
+> +		if (fsl_fm_rx_extra_headroom > FSL_FM_RX_EXTRA_HEADROOM_MAX ||
+> +		    fsl_fm_rx_extra_headroom < FSL_FM_RX_EXTRA_HEADROOM_MIN) {
+> +			pr_warn("Invalid fsl_fm_rx_extra_headroom value (%d) in bootargs, valid range is %d-%d. Falling back to the default (%d)\n",
+> +				fsl_fm_rx_extra_headroom,
+> +				FSL_FM_RX_EXTRA_HEADROOM_MIN,
+> +				FSL_FM_RX_EXTRA_HEADROOM_MAX,
+> +				FSL_FM_RX_EXTRA_HEADROOM);
+> +			fsl_fm_rx_extra_headroom = FSL_FM_RX_EXTRA_HEADROOM;
+> +		}
+> +
+> +		fsl_fm_rx_extra_headroom = true;
 
-Correct, downlevel (unsupported) AFUs don't implement the interface_version
-register and thus will return -1 at that offset.
+I think you mean "fm_check_rx_extra_headroom = true".
+
+> +		fsl_fm_rx_extra_headroom = ALIGN(fsl_fm_rx_extra_headroom, 16);
+> +	}
+> +
+> +	return fsl_fm_rx_extra_headroom;
+> +}
+> +EXPORT_SYMBOL(fman_get_rx_extra_headroom);
+
+Please just check things like this once during module init. 
+Init-on-first-use is unnecessarily complicated, and race-prone.
+
+-Scott
