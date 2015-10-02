@@ -1,28 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0148.outbound.protection.outlook.com [157.56.110.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 962141A007F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 10:26:55 +1000 (AEST)
-Message-ID: <1443745589.5336.185.camel@freescale.com>
-Subject: Re: [RFC PATCH 0/8] clk: qoriq: Move chip-specific knowledge into
- driver
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@codeaurora.org>
-CC: Tang Yuantian <Yuantian.Tang@freescale.com>, "Rafael J. Wysocki"
- <rjw@rjwysocki.net>, Liberman Igal-B31950 <Igal.Liberman@freescale.com>,
- Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>,
- <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
- <devicetree@vger.kernel.org>
-Date: Thu, 1 Oct 2015 19:26:29 -0500
-In-Reply-To: <20150811182535.31346.52965@quantum>
-References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
- <20150811182535.31346.52965@quantum>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 100221A015B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 10:56:42 +1000 (AEST)
+Received: by pacex6 with SMTP id ex6so90404084pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Oct 2015 17:56:40 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
+Cc: Michael Neuling <mikey@neuling.org>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v5 18/34] cxlflash: Fix AFU version access/storage and add
+ check
+In-Reply-To: <1443715012-18236-1-git-send-email-mrochs@linux.vnet.ibm.com>
+References: <1443714773-9176-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1443715012-18236-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Date: Fri, 02 Oct 2015 10:56:35 +1000
+Message-ID: <87h9maay0s.fsf@gamma.ozlabs.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +34,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Resending to updated e-mail address]
+"Matthew R. Ochs" <mrochs@linux.vnet.ibm.com> writes:
 
-On Tue, 2015-08-11 at 11:25 -0700, Michael Turquette wrote:
-> Hi Scott,
-> 
-> Quoting Scott Wood (2015-06-18 19:49:10)
-> > The existing device tree bindings are error-prone and inflexible. 
-> > Correct the mistake by moving the knowledge into the driver, which
-> > has more flexibility in describing the quirks of each chip.  This leaves
-> > the device tree to its proper role of identifying a programming interface
-> > rather than describing its individual registers.
-> 
-> Sorry for not responding to this one sooner. Fell through the cracks.
-> 
-> All of the changes to drives/clk/clk-qoriq.c look great to me. I assume
-> you need to keep all of these patches together and want to the take
-> through the freescale tree? If so feel free to add,
-> 
-> Acked-by: Michael Turquette <mturquette@baylibre.com>
+> The AFU version is stored as a non-terminated string of bytes within
+> a 64-bit little-endian register. Presently the value is read directly
+> (no MMIO accessor) and is stored in a buffer that is not big enough
+> to contain a NULL terminator. Additionally the version obtained is not
+> evaluated against a known value to prevent usage with unsupported AFUs.
+> All of these deficiencies can lead to a variety of problems.
+>
+> +	if ((afu->interface_version + 1) == 0) {
+> +		pr_err("Back level AFU, please upgrade. AFU version %s "
+> +		       "interface version 0x%llx\n", afu->version,
+> +		       afu->interface_version);
+> +		rc = -EINVAL;
+> +		goto err1;
 
-Is the ack still valid for the v3 patchset?
+I'm confused by this if statement. If afu->interface_version + 1 == 0,
+and interface_version is a 64bit unsigned int, that would mean that
+afu->interface_version was 0xFFFF FFFF FFFF FFFF.
 
--Scott
+Are you trying to check against all Fs? Is that value significant in the
+hardware?
+
+Regards,
+Daniel
+
+
+
+> +	} else
+> +		pr_debug("%s: afu version %s, interface version 0x%llX\n",
+> +			 __func__, afu->version, afu->interface_version);
+>  
+>  	rc = start_afu(cfg);
+>  	if (rc) {
+> diff --git a/drivers/scsi/cxlflash/sislite.h b/drivers/scsi/cxlflash/sislite.h
+> index 63bf394..8425d1a 100644
+> --- a/drivers/scsi/cxlflash/sislite.h
+> +++ b/drivers/scsi/cxlflash/sislite.h
+> @@ -340,7 +340,7 @@ struct sisl_global_regs {
+>  #define SISL_AFUCONF_MBOX_CLR_READ     0x0010ULL
+>  	__be64 afu_config;
+>  	__be64 rsvd[0xf8];
+> -	__be64 afu_version;
+> +	__le64 afu_version;
+>  	__be64 interface_version;
+>  };
+>  
+> -- 
+> 2.1.0
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
