@@ -1,47 +1,25 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF6E91A0019
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 06:31:24 +1000 (AEST)
-Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 2 Oct 2015 14:31:22 -0600
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2901E38C807A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 16:30:56 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t92KUuEf60817644
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Oct 2015 20:30:56 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t92KUr3A021928
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Oct 2015 16:30:55 -0400
-Date: Fri, 2 Oct 2015 13:30:22 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: Keith Busch <keith.busch@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Christoph Hellwig <hch@infradead.org>, linux-nvme@lists.infradead.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 864551A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 06:52:26 +1000 (AEST)
+Message-ID: <1443819066.27295.19.camel@kernel.crashing.org>
+Subject: Re: [PATCH 0/5 v2] Fix NVMe driver support on Power with 32-bit DMA
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matthew Wilcox
+ <willy@linux.intel.com>
+Cc: Keith Busch <keith.busch@intel.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>, David Gibson <david@gibson.dropbear.id.au>, Christoph
+ Hellwig <hch@infradead.org>, linux-nvme@lists.infradead.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5 v2] drivers/nvme: default to the IOMMU page size
-Message-ID: <20151002203022.GK8040@linux.vnet.ibm.com>
+Date: Sat, 03 Oct 2015 06:51:06 +1000
+In-Reply-To: <20151002200953.GB40695@linux.vnet.ibm.com>
 References: <20151002171606.GA41011@linux.vnet.ibm.com>
  <20151002200953.GB40695@linux.vnet.ibm.com>
- <20151002201142.GC40695@linux.vnet.ibm.com>
- <20151002201647.GH8040@linux.vnet.ibm.com>
- <20151002201914.GI8040@linux.vnet.ibm.com>
- <20151002202151.GJ8040@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151002202151.GJ8040@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,51 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We received a bug report recently when DDW (64-bit direct DMA on Power)
-is not enabled for NVMe devices. In that case, we fall back to 32-bit
-DMA via the IOMMU, which is always done via 4K TCEs (Translation Control
-Entries).
+On Fri, 2015-10-02 at 13:09 -0700, Nishanth Aravamudan wrote:
 
-The NVMe device driver, though, assumes that the DMA alignment for the
-PRP entries will match the device's page size, and that the DMA aligment
-matches the kernel's page aligment. On Power, the the IOMMU page size,
-as mentioned above, can be 4K, while the device can have a page size of
-8K, while the kernel has a page size of 64K. This eventually trips the
-BUG_ON in nvme_setup_prps(), as we have a 'dma_len' that is a multiple
-of 4K but not 8K (e.g., 0xF000).
+> 1) add a generic dma_get_page_shift implementation that just returns
+> PAGE_SHIFT
 
-In this particular case of page sizes, we clearly want to use the
-IOMMU's page size in the driver. And generally, the NVMe driver in this
-function should be using the IOMMU's page size for the default device
-page size, rather than the kernel's page size.
+So you chose to return the granularity of the iommu to the driver
+rather than providing a way for the driver to request a specific
+alignment for DMA mappings. Any specific reason ?
 
-With this patch, a NVMe device survives our internal hardware
-exerciser; the kernel BUGs within a few seconds without the patch.
-
----
-v1 -> v2:
-  Based upon feedback from Christoph Hellwig, implement the IOMMU page
-  size lookup as a generic DMA API, rather than an architecture-specific
-  hack.
-
-diff --git a/drivers/block/nvme-core.c b/drivers/block/nvme-core.c
-index b97fc3f..c561137 100644
---- a/drivers/block/nvme-core.c
-+++ b/drivers/block/nvme-core.c
-@@ -18,6 +18,7 @@
- #include <linux/blk-mq.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
-+#include <linux/dma-mapping.h>
- #include <linux/errno.h>
- #include <linux/fs.h>
- #include <linux/genhd.h>
-@@ -1713,7 +1714,7 @@ static int nvme_configure_admin_queue(struct nvme_dev *dev)
- 	u32 aqa;
- 	u64 cap = readq(&dev->bar->cap);
- 	struct nvme_queue *nvmeq;
--	unsigned page_shift = PAGE_SHIFT;
-+	unsigned page_shift = dma_get_page_shift(dev->dev);
- 	unsigned dev_page_min = NVME_CAP_MPSMIN(cap) + 12;
- 	unsigned dev_page_max = NVME_CAP_MPSMAX(cap) + 12;
- 
+Cheers,
+Ben.
