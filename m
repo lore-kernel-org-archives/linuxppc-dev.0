@@ -1,30 +1,31 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0144.outbound.protection.outlook.com [207.46.100.144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 286261A0FE0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 18:58:16 +1000 (AEST)
-Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
- [209.85.220.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9F07B1402D5
- for <linuxppc-dev@ozlabs.org>; Fri,  2 Oct 2015 18:58:15 +1000 (AEST)
-Received: by padhy16 with SMTP id hy16so101719224pad.1
- for <linuxppc-dev@ozlabs.org>; Fri, 02 Oct 2015 01:58:13 -0700 (PDT)
-Subject: Re: [PATCH V4 2/6] powerpc/powernv: simplify the calculation of iov
- resource alignment
-To: Wei Yang <weiyang@linux.vnet.ibm.com>, gwshan@linux.vnet.ibm.com,
- benh@kernel.crashing.org
-References: <1439949704-8023-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1439949704-8023-3-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <560E4721.1090007@ozlabs.ru>
-Date: Fri, 2 Oct 2015 18:58:09 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CF201A04D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 19:16:48 +1000 (AEST)
+From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "davem@davemloft.net" <davem@davemloft.net>, Liberman Igal
+ <Igal.Liberman@freescale.com>, Roy Pledge <roy.pledge@freescale.com>,
+ "ppc@mindchasers.com" <ppc@mindchasers.com>, "joe@perches.com"
+ <joe@perches.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>,
+ "joakim.tjernlund@transmode.se" <joakim.tjernlund@transmode.se>,
+ "f.fainelli@gmail.com" <f.fainelli@gmail.com>, "stsp@list.ru" <stsp@list.ru>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: RE: [v3 1/8] devres: add devm_alloc_percpu()
+Date: Fri, 2 Oct 2015 09:16:42 +0000
+Message-ID: <BL2PR03MB54503928C025D7EAF9F8814E64B0@BL2PR03MB545.namprd03.prod.outlook.com>
+References: <1443106819-5549-1-git-send-email-madalin.bucur@freescale.com>
+ <1443106819-5549-2-git-send-email-madalin.bucur@freescale.com>
+ <20151002010041.GA4245@home.buserror.net>
+In-Reply-To: <20151002010041.GA4245@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1439949704-8023-3-git-send-email-weiyang@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,59 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/19/2015 12:01 PM, Wei Yang wrote:
-> The alignment of IOV BAR on PowerNV platform is the total size of the IOV
-> BAR. No matter whether the IOV BAR is extended with number of
-> roundup_pow_of_two(total_vfs) or number of max PE number (256), the total
-> size could be calculated by (vfs_expanded * VF_BAR_size).
->
-> This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
-> first case.
->
-> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/pci-ioda.c |   14 +++++++++-----
->   1 file changed, 9 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 8c031b5..e3e0acb 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2988,12 +2988,16 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
->   						      int resno)
->   {
->   	struct pci_dn *pdn = pci_get_pdn(pdev);
-> -	resource_size_t align, iov_align;
-> -
-> -	iov_align = resource_size(&pdev->resource[resno]);
-> -	if (iov_align)
-> -		return iov_align;
-> +	resource_size_t align;
->
-> +	/*
-> +	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
-> +	 * SR-IOV. While from hardware perspective, the range mapped by M64
-> +	 * BAR should be size aligned.
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, October 02, 2015 4:01 AM
+>=20
+> On Thu, Sep 24, 2015 at 06:00:12PM +0300, Madalin Bucur wrote:
+> > Introduce managed counterparts for alloc_percpu() and free_percpu().
+> > Add devm_alloc_percpu() and devm_free_percpu() into the managed
+> > interfaces list.
+> >
+> > Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+> > Tested-by: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+> > ---
+> >  Documentation/driver-model/devres.txt |  4 +++
+> >  drivers/base/devres.c                 | 64
+> +++++++++++++++++++++++++++++++++++
+> >  include/linux/device.h                | 19 +++++++++++
+> >  3 files changed, 87 insertions(+)
+>=20
+> Greg KH needs to be CCed on any drivers/base changes.
+>=20
+> -Scott
 
+Thank you, I will add him.
 
-Out of curiosity - IOV BAR does NOT have to be aligned on other platforms?
-
-
-> +	 *
-> +	 * This function returns the total IOV BAR size if expanded or just the
-> +	 * individual size if not.
-
-Expanded vs. non-expanded means "using shared M64" (when it is split by 256 
-segments) vs. "using entire M64"?
-
-
-> +	 */
->   	align = pci_iov_resource_size(pdev, resno);
->   	if (pdn->vfs_expanded)
->   		return pdn->vfs_expanded * align;
->
-
-
--- 
-Alexey
+Madalin
