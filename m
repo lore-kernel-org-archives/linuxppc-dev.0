@@ -1,12 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-In-Reply-To: <1442266595.3837.2.camel@infradead.org>
-To: Geoff Levand <geoff@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 096261A04D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 17:47:10 +1000 (AEST)
+In-Reply-To: <1441266656-4789-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [V2,3/3] powerpc/ps3: Refresh ps3_defconfig
-Message-Id: <20151002074709.BA125140787@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: powerpc/mm: Add virt_to_pfn and use this instead of opencoding
+Message-Id: <20151002074709.E42FD140788@ozlabs.org>
 Date: Fri,  2 Oct 2015 17:47:09 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -17,13 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-14-09 at 21:36:35 UTC, Geoff Levand wrote:
-> Refresh and remove obsolete CONFIG_EXT3_FS.
+On Thu, 2015-03-09 at 07:50:56 UTC, "Aneesh Kumar K.V" wrote:
+> This add helper virt_to_pfn and remove the opencoded usage of the
+> same.
 > 
-> Signed-off-by: Geoff Levand <geoff@infradead.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/336382c78b926af7f3b22f73
+https://git.kernel.org/powerpc/c/65d3223a853ac8598694064c
 
 cheers
