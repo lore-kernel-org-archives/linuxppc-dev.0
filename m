@@ -1,31 +1,25 @@
-Return-Path: <BATV+9a74b0e5f9a269ad7b1a+4422+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-yk0-f175.google.com (mail-yk0-f175.google.com
+ [209.85.160.175])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9D23C1A05CB
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 03:41:52 +1000 (AEST)
-Date: Fri, 2 Oct 2015 10:41:46 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Matthew Wilcox <willy@linux.intel.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- Keith Busch <keith.busch@intel.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 2/2] drivers/nvme: default to the IOMMU page size on Power
-Message-ID: <20151002174146.GA21503@infradead.org>
-References: <20151002171606.GA41011@linux.vnet.ibm.com>
- <20151002171800.GB41011@linux.vnet.ibm.com>
- <20151002172313.GC41011@linux.vnet.ibm.com>
- <20151002172544.GA16139@infradead.org>
- <20151002173947.GA40695@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 929F31A055C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 05:03:47 +1000 (AEST)
+Received: by ykdz138 with SMTP id z138so119438530ykd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2015 12:03:45 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151002173947.GA40695@linux.vnet.ibm.com>
+In-Reply-To: <560EA623.1040300@redhat.com>
+References: <560EA623.1040300@redhat.com>
+Date: Fri, 2 Oct 2015 22:03:45 +0300
+Message-ID: <CAOJe8K1gQFRakYVWPYe0j9+Zc+s9hqB7uFF_aZh9NwCZSfTB_w@mail.gmail.com>
+Subject: Re: Missing operand for tlbie instruction on Power7
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Laura Abbott <labbott@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=001a113a6b24a763f7052123d27b
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,16 +29,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 02, 2015 at 10:39:47AM -0700, Nishanth Aravamudan wrote:
-> Ok, I'm happy to do that instead -- what I struggled with is that I
-> don't have enough knowledge of the various architectures to provide the
-> right default implementation. It should be sufficient for the default to
-> return PAGE_SHIFT, and on Power just override that to return the IOMMU
-> table's page size? Since the only user will be the NVMe driver
-> currently, that should be fine?
+--001a113a6b24a763f7052123d27b
+Content-Type: text/plain; charset=UTF-8
 
-I think that's fine.
+On 10/2/15, Laura Abbott <labbott@redhat.com> wrote:
+> Hi,
+>
+> We received a report (https://bugzilla.redhat.com/show_bug.cgi?id=1267395)
+> of bad assembly
+> when compiling on powerpc with little endian
+>
+> [labbott@labbott-redhat-machine linux_upstream]$ make ARCH=powerpc
+> CROSS_COMPILE=powerpc64-linux-gnu-
+>    CHK     include/config/kernel.release
+>    CHK     include/generated/uapi/linux/version.h
+>    CHK     include/generated/utsrelease.h
+>    CHK     include/generated/bounds.h
+>    CHK     include/generated/timeconst.h
+>    CHK     include/generated/asm-offsets.h
+>    CALL    scripts/checksyscalls.sh
+>    CHK     include/generated/compile.h
+>    CALL    arch/powerpc/kernel/systbl_chk.sh
+>    AS      arch/powerpc/kernel/swsusp_asm64.o
+> arch/powerpc/kernel/swsusp_asm64.S: Assembler messages:
+> arch/powerpc/kernel/swsusp_asm64.S:188: Error: missing operand
+> scripts/Makefile.build:294: recipe for target
+> 'arch/powerpc/kernel/swsusp_asm64.o' failed
+> make[1]: *** [arch/powerpc/kernel/swsusp_asm64.o] Error 1
+> Makefile:941: recipe for target 'arch/powerpc/kernel' failed
+> make: *** [arch/powerpc/kernel] Error 2
+>
+> This problem started happening after a binutils update:
+>
+> [labbott@labbott-redhat-machine linux_upstream]$ powerpc64-linux-gnu-as
+> --version
+> GNU assembler version 2.25.1-1.fc22
+> Copyright (C) 2014 Free Software Foundation, Inc.
+> This program is free software; you may redistribute it under the terms of
+> the GNU General Public License version 3 or later.
+> This program has absolutely no warranty.
+> This assembler was configured for a target of `powerpc64-linux-gnu'.
+> [labbott@labbott-redhat-machine linux_upstream]$
+>
+> After some discussion with the binutils folks, it turns out that the tlbie
+> instruction actually requires another operand and binutils was updated to
+> check for this https://sourceware.org/ml/binutils/2015-05/msg00133.html .
+>
+> The code sequence in arch/powerpc/include/asm/ppc_asm.h now needs to be
+> updated:
+>
+> #if !defined(CONFIG_4xx) && !defined(CONFIG_8xx)
+> #define tlbia                                   \
+>          li      r4,1024;                        \
+>          mtctr   r4;                             \
+>          lis     r4,KERNELBASE@h;                \
+> 0:      tlbie   r4;                             \
+>          addi    r4,r4,0x1000;                   \
+>          bdnz    0b
+> #endif
+>
+> I don't know enough ppc assembly to properly fix this but I can test.
 
-> Sorry for the less-than-ideal patch!
+Could you please test the patch attached?
 
-Np, it's a reasonable first attempt that we just need to refine.
+
+
+>
+> Thanks,
+> Laura
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+--001a113a6b24a763f7052123d27b
+Content-Type: text/x-patch; charset=US-ASCII; name="tlbie_fix.patch"
+Content-Disposition: attachment; filename="tlbie_fix.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: file0
+
+ZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wcGNfYXNtLmggYi9hcmNoL3Bv
+d2VycGMvaW5jbHVkZS9hc20vcHBjX2FzbS5oCmluZGV4IGRkMGZjMTguLjI0MDU1N2EgMTAwNjQ0
+Ci0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wcGNfYXNtLmgKKysrIGIvYXJjaC9wb3dl
+cnBjL2luY2x1ZGUvYXNtL3BwY19hc20uaApAQCAtNDQ1LDcgKzQ0NSw3IEBAIEVORF9GVFJfU0VD
+VElPTl9ORVNURUQoQ1BVX0ZUUl9IQVNfUFBSLENQVV9GVFJfSEFTX1BQUiw5NDUpCiAJbGkJcjQs
+MTAyNDsJCQlcCiAJbXRjdHIJcjQ7CQkJCVwKIAlsaXMJcjQsS0VSTkVMQkFTRUBoOwkJXAotMDoJ
+dGxiaWUJcjQ7CQkJCVwKKzA6CXRsYmllCXI0LCAwOwkJCQlcCiAJYWRkaQlyNCxyNCwweDEwMDA7
+CQkJXAogCWJkbnoJMGIKICNlbmRpZgo=
+--001a113a6b24a763f7052123d27b--
