@@ -1,25 +1,42 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f175.google.com (mail-yk0-f175.google.com
- [209.85.160.175])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 929F31A055C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 05:03:47 +1000 (AEST)
-Received: by ykdz138 with SMTP id z138so119438530ykd.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Oct 2015 12:03:45 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <560EA623.1040300@redhat.com>
-References: <560EA623.1040300@redhat.com>
-Date: Fri, 2 Oct 2015 22:03:45 +0300
-Message-ID: <CAOJe8K1gQFRakYVWPYe0j9+Zc+s9hqB7uFF_aZh9NwCZSfTB_w@mail.gmail.com>
-Subject: Re: Missing operand for tlbie instruction on Power7
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Laura Abbott <labbott@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32AD61A055C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 06:10:09 +1000 (AEST)
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 2 Oct 2015 14:10:07 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id B08881FF004C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Oct 2015 13:58:08 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t92K8h5E53018654
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Oct 2015 13:08:43 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t92K9smB029095
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Oct 2015 14:09:56 -0600
+Date: Fri, 2 Oct 2015 13:09:53 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Matthew Wilcox <willy@linux.intel.com>
+Cc: Keith Busch <keith.busch@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary=001a113a6b24a763f7052123d27b
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Christoph Hellwig <hch@infradead.org>, linux-nvme@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/5 v2] Fix NVMe driver support on Power with 32-bit DMA
+Message-ID: <20151002200953.GB40695@linux.vnet.ibm.com>
+References: <20151002171606.GA41011@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151002171606.GA41011@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,92 +46,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a113a6b24a763f7052123d27b
-Content-Type: text/plain; charset=UTF-8
+We received a bug report recently when DDW (64-bit direct DMA on Power)
+is not enabled for NVMe devices. In that case, we fall back to 32-bit
+DMA via the IOMMU, which is always done via 4K TCEs (Translation Control
+Entries).
+ 
+The NVMe device driver, though, assumes that the DMA alignment for the
+PRP entries will match the device's page size, and that the DMA aligment
+matches the kernel's page aligment. On Power, the the IOMMU page size,
+as mentioned above, can be 4K, while the device can have a page size of
+8K, while the kernel has a page size of 64K. This eventually trips the
+BUG_ON in nvme_setup_prps(), as we have a 'dma_len' that is a multiple
+of 4K but not 8K (e.g., 0xF000).
+ 
+In this particular case, and generally, we want to use the IOMMU's page
+size for the default device page size, rather than the kernel's page
+size.
+ 
+This series consists of five patches:
 
-On 10/2/15, Laura Abbott <labbott@redhat.com> wrote:
-> Hi,
->
-> We received a report (https://bugzilla.redhat.com/show_bug.cgi?id=1267395)
-> of bad assembly
-> when compiling on powerpc with little endian
->
-> [labbott@labbott-redhat-machine linux_upstream]$ make ARCH=powerpc
-> CROSS_COMPILE=powerpc64-linux-gnu-
->    CHK     include/config/kernel.release
->    CHK     include/generated/uapi/linux/version.h
->    CHK     include/generated/utsrelease.h
->    CHK     include/generated/bounds.h
->    CHK     include/generated/timeconst.h
->    CHK     include/generated/asm-offsets.h
->    CALL    scripts/checksyscalls.sh
->    CHK     include/generated/compile.h
->    CALL    arch/powerpc/kernel/systbl_chk.sh
->    AS      arch/powerpc/kernel/swsusp_asm64.o
-> arch/powerpc/kernel/swsusp_asm64.S: Assembler messages:
-> arch/powerpc/kernel/swsusp_asm64.S:188: Error: missing operand
-> scripts/Makefile.build:294: recipe for target
-> 'arch/powerpc/kernel/swsusp_asm64.o' failed
-> make[1]: *** [arch/powerpc/kernel/swsusp_asm64.o] Error 1
-> Makefile:941: recipe for target 'arch/powerpc/kernel' failed
-> make: *** [arch/powerpc/kernel] Error 2
->
-> This problem started happening after a binutils update:
->
-> [labbott@labbott-redhat-machine linux_upstream]$ powerpc64-linux-gnu-as
-> --version
-> GNU assembler version 2.25.1-1.fc22
-> Copyright (C) 2014 Free Software Foundation, Inc.
-> This program is free software; you may redistribute it under the terms of
-> the GNU General Public License version 3 or later.
-> This program has absolutely no warranty.
-> This assembler was configured for a target of `powerpc64-linux-gnu'.
-> [labbott@labbott-redhat-machine linux_upstream]$
->
-> After some discussion with the binutils folks, it turns out that the tlbie
-> instruction actually requires another operand and binutils was updated to
-> check for this https://sourceware.org/ml/binutils/2015-05/msg00133.html .
->
-> The code sequence in arch/powerpc/include/asm/ppc_asm.h now needs to be
-> updated:
->
-> #if !defined(CONFIG_4xx) && !defined(CONFIG_8xx)
-> #define tlbia                                   \
->          li      r4,1024;                        \
->          mtctr   r4;                             \
->          lis     r4,KERNELBASE@h;                \
-> 0:      tlbie   r4;                             \
->          addi    r4,r4,0x1000;                   \
->          bdnz    0b
-> #endif
->
-> I don't know enough ppc assembly to properly fix this but I can test.
+1) add a generic dma_get_page_shift implementation that just returns
+PAGE_SHIFT
+2) override the generic implementation on Power to use the IOMMU table's
+page shift if available
+3) allow further specific overriding on power with machdep platform
+overrides
+4) use the machdep override on pseries, as the DDW code puts the TCE
+shift in a special property and there is no IOMMU table available
+5) leverage the new API in the NVMe driver
+ 
+With these patches, a NVMe device survives our internal hardware
+exerciser; the kernel BUGs within a few seconds without the patch.
 
-Could you please test the patch attached?
+ arch/powerpc/include/asm/dma-mapping.h   |  3 +++
+ arch/powerpc/include/asm/machdep.h       |  3 ++-
+ arch/powerpc/kernel/dma.c                | 11 +++++++++++
+ arch/powerpc/platforms/pseries/iommu.c   | 36 ++++++++++++++++++++++++++++++++++++
+ drivers/block/nvme-core.c                |  3 ++-
+ include/asm-generic/dma-mapping-common.h |  7 +++++++
+ 6 files changed, 61 insertions(+), 2 deletions(-)
 
-
-
->
-> Thanks,
-> Laura
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---001a113a6b24a763f7052123d27b
-Content-Type: text/x-patch; charset=US-ASCII; name="tlbie_fix.patch"
-Content-Disposition: attachment; filename="tlbie_fix.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: file0
-
-ZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wcGNfYXNtLmggYi9hcmNoL3Bv
-d2VycGMvaW5jbHVkZS9hc20vcHBjX2FzbS5oCmluZGV4IGRkMGZjMTguLjI0MDU1N2EgMTAwNjQ0
-Ci0tLSBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wcGNfYXNtLmgKKysrIGIvYXJjaC9wb3dl
-cnBjL2luY2x1ZGUvYXNtL3BwY19hc20uaApAQCAtNDQ1LDcgKzQ0NSw3IEBAIEVORF9GVFJfU0VD
-VElPTl9ORVNURUQoQ1BVX0ZUUl9IQVNfUFBSLENQVV9GVFJfSEFTX1BQUiw5NDUpCiAJbGkJcjQs
-MTAyNDsJCQlcCiAJbXRjdHIJcjQ7CQkJCVwKIAlsaXMJcjQsS0VSTkVMQkFTRUBoOwkJXAotMDoJ
-dGxiaWUJcjQ7CQkJCVwKKzA6CXRsYmllCXI0LCAwOwkJCQlcCiAJYWRkaQlyNCxyNCwweDEwMDA7
-CQkJXAogCWJkbnoJMGIKICNlbmRpZgo=
---001a113a6b24a763f7052123d27b--
+v1 -> v2:
+  Based upon feedback from Christoph Hellwig, rather than using an
+  arch-specific hack, expose the DMA page shift via a generic DMA API and
+  override it on Power as needed.
