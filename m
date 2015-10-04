@@ -1,26 +1,22 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geoff@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5DCE31A0035
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Oct 2015 11:00:20 +1100 (AEDT)
-Date: Sat, 3 Oct 2015 19:00:09 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Peter Bergner <bergner@vnet.ibm.com>
-Cc: Denis Kirjanov <kda@linux-powerpc.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Laura Abbott <labbott@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Missing operand for tlbie instruction on Power7
-Message-ID: <20151004000009.GA10997@gate.crashing.org>
-References: <560EA623.1040300@redhat.com>
- <CAOJe8K1gQFRakYVWPYe0j9+Zc+s9hqB7uFF_aZh9NwCZSfTB_w@mail.gmail.com>
- <1443816930.13186.214.camel@otta>
- <CAOJe8K2GOsBk=CcWaZqq9KN=McLad97BP6ZhEdRB7i2Ag4csOg@mail.gmail.com>
- <20151002220051.GA26712@gate.crashing.org> <1443839086.13186.219.camel@otta>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2AEF1A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Oct 2015 06:31:41 +1100 (AEDT)
+Message-ID: <1443986839.20459.8.camel@infradead.org>
+Subject: Re: Time to remove platforms/cell?
+From: Geoff Levand <geoff@infradead.org>
+To: Marc Dietrich <marvin24@gmx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Sun, 04 Oct 2015 12:27:19 -0700
+In-Reply-To: <2785247.ZjG8XMQlJP@fb07-iapwap2>
+References: <1442467727.25483.0.camel@ellerman.id.au>
+ <2023345.Irprl084gX@fb07-iapwap2> <1442483138.26748.4.camel@ellerman.id.au>
+ <2785247.ZjG8XMQlJP@fb07-iapwap2>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1443839086.13186.219.camel@otta>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 02, 2015 at 09:24:46PM -0500, Peter Bergner wrote:
-> > > Ok, than we can just zero out r5 for example and use it in tlbie as RS,
-> > > right?
-> > 
-> > That won't assemble _unless_ your assembler is in POWER7 mode.  It also
-> > won't do the right thing at run time on older machines.
-> 
-> Correct, getting this to work on both pre-power7 and power7 and later
-> is tricky.  One really horrible hack would be to do:
-> 
->   li r0,0
->   tlbie r4,0
-> 
-> On pre-power7, the "0" will be taken as a zero L operand and on
-> power7 and later, it'll be r0, but with a zero value we loaded in
-> the insn before.  I know, really ugly. :-)
+Hi,
 
-Hide the "li 0,0" somewhere earlier, and write it as "tlbie 4,0", and
-don't write a comment -- we *like* tricky!
+On Thu, 2015-09-17 at 12:28 +0200, Marc Dietrich wrote:
+> well, I like to but I couldn't get the kernel booting for some reason. Still 
+> trying. 
 
-It should really be a separate macro define for power7 and 4xx etc.;
-and the macro should not be called "tlbia", but something that makes
-it obvious at the usage sites that it is in fact a macro; and why a
-macro anyway, a function call might be better here?
+I just tested the ps3-queue branch (v4.3-rc4 based) of my ps3-linux git
+repo and it works OK.
 
+Do you see any output on the display, maybe some penguins at least?
 
-Segher
+-Geoff
