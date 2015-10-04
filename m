@@ -1,30 +1,26 @@
-Return-Path: <BATV+4d33cd06d343d4174115+4423+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4AB1E1A00BA
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Oct 2015 18:20:11 +1000 (AEST)
-Date: Sat, 3 Oct 2015 01:19:52 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Matthew Wilcox <willy@linux.intel.com>,
- Keith Busch <keith.busch@intel.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Christoph Hellwig <hch@infradead.org>,
- linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/5 v2] Fix NVMe driver support on Power with 32-bit DMA
-Message-ID: <20151003081952.GC24025@infradead.org>
-References: <20151002171606.GA41011@linux.vnet.ibm.com>
- <20151002200953.GB40695@linux.vnet.ibm.com>
- <1443819066.27295.19.camel@kernel.crashing.org>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5DCE31A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Oct 2015 11:00:20 +1100 (AEDT)
+Date: Sat, 3 Oct 2015 19:00:09 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Peter Bergner <bergner@vnet.ibm.com>
+Cc: Denis Kirjanov <kda@linux-powerpc.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Laura Abbott <labbott@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Missing operand for tlbie instruction on Power7
+Message-ID: <20151004000009.GA10997@gate.crashing.org>
+References: <560EA623.1040300@redhat.com>
+ <CAOJe8K1gQFRakYVWPYe0j9+Zc+s9hqB7uFF_aZh9NwCZSfTB_w@mail.gmail.com>
+ <1443816930.13186.214.camel@otta>
+ <CAOJe8K2GOsBk=CcWaZqq9KN=McLad97BP6ZhEdRB7i2Ag4csOg@mail.gmail.com>
+ <20151002220051.GA26712@gate.crashing.org> <1443839086.13186.219.camel@otta>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1443819066.27295.19.camel@kernel.crashing.org>
+In-Reply-To: <1443839086.13186.219.camel@otta>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,15 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Oct 03, 2015 at 06:51:06AM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2015-10-02 at 13:09 -0700, Nishanth Aravamudan wrote:
+On Fri, Oct 02, 2015 at 09:24:46PM -0500, Peter Bergner wrote:
+> > > Ok, than we can just zero out r5 for example and use it in tlbie as RS,
+> > > right?
+> > 
+> > That won't assemble _unless_ your assembler is in POWER7 mode.  It also
+> > won't do the right thing at run time on older machines.
 > 
-> > 1) add a generic dma_get_page_shift implementation that just returns
-> > PAGE_SHIFT
+> Correct, getting this to work on both pre-power7 and power7 and later
+> is tricky.  One really horrible hack would be to do:
 > 
-> So you chose to return the granularity of the iommu to the driver
-> rather than providing a way for the driver to request a specific
-> alignment for DMA mappings. Any specific reason ?
+>   li r0,0
+>   tlbie r4,0
+> 
+> On pre-power7, the "0" will be taken as a zero L operand and on
+> power7 and later, it'll be r0, but with a zero value we loaded in
+> the insn before.  I know, really ugly. :-)
 
-At least for NVMe that's the way to go - it allows to set a page set in
-the device which should fit the IOMMU page size.
+Hide the "li 0,0" somewhere earlier, and write it as "tlbie 4,0", and
+don't write a comment -- we *like* tricky!
+
+It should really be a separate macro define for power7 and 4xx etc.;
+and the macro should not be called "tlbia", but something that makes
+it obvious at the usage sites that it is in fact a macro; and why a
+macro anyway, a function call might be better here?
+
+
+Segher
