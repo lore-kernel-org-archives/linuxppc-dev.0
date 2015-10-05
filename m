@@ -2,36 +2,36 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D0351A0239
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Oct 2015 20:59:35 +1100 (AEDT)
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BD611A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Oct 2015 20:59:40 +1100 (AEDT)
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AB531140D7D
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 20:59:33 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id B28D1140D78
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 20:59:39 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 5 Oct 2015 15:29:31 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 582FDE0059
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 15:29:17 +0530 (IST)
+ Mon, 5 Oct 2015 15:29:37 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 78CEFE0067
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 15:29:21 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t959xEl638994090
- for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2015 15:29:16 +0530
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t959xEMV66060374
+ for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2015 15:29:15 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t959xETt015309
+ t959xE7O015295
  for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2015 15:29:14 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, mikey@neuling.org, dja@axtens.net
-Subject: [PATCH V11 02/10] powerpc/perf: Re organize PMU branch filter
- processing on POWER8
-Date: Mon,  5 Oct 2015 15:29:04 +0530
-Message-Id: <1444039152-3665-3-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V11 01/10] powerpc/perf: Change name & type of 'pred' in
+ power_pmu_bhrb_read
+Date: Mon,  5 Oct 2015 15:29:03 +0530
+Message-Id: <1444039152-3665-2-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1444039152-3665-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1444039152-3665-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,56 +43,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch does some code re-arrangements to make it clear that kernel
-ignores any separate privilege level branch filter request and does not
-support any combinations of HW PMU branch filters.
+Branch record attributes 'mispred' and 'predicted' are single bit
+fields as defined in the perf ABI. Hence the data type of the field
+'pred' used during BHRB processing should be changed from integer
+to bool. This patch also changes the name of the variable from 'pred'
+to 'mispred' making the logical inversion process more meaningful
+and readable.
 
+Reported-by: Daniel Axtens <dja@axtens.net>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/power8-pmu.c | 22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
+ arch/powerpc/perf/core-book3s.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 396351d..a6c6a2c 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -656,8 +656,6 @@ static int power8_generic_events[] = {
- 
- static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index b0382f3..d6b31d0 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -426,7 +426,8 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
  {
--	u64 pmu_bhrb_filter = 0;
--
- 	/* BHRB and regular PMU events share the same privilege state
- 	 * filter configuration. BHRB is always recorded along with a
- 	 * regular PMU event. As the privilege state filter is handled
-@@ -665,21 +663,15 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
- 	 * PMU event, we ignore any separate BHRB specific request.
- 	 */
+ 	u64 val;
+ 	u64 addr;
+-	int r_index, u_index, pred;
++	int r_index, u_index;
++	bool mispred;
  
--	/* No branch filter requested */
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
--		return pmu_bhrb_filter;
--
--	/* Invalid branch filter options - HW does not support */
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
--		return -1;
-+	/* Ignore user, kernel, hv bits */
-+	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
+ 	r_index = 0;
+ 	u_index = 0;
+@@ -438,7 +439,7 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 			break;
+ 		else {
+ 			addr = val & BHRB_EA;
+-			pred = val & BHRB_PREDICTION;
++			mispred = val & BHRB_PREDICTION;
  
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
--		return -1;
-+	/* No branch filter requested */
-+	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
-+		return 0;
+ 			if (!addr)
+ 				/* invalid entry */
+@@ -467,8 +468,9 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 				 * (ie. computed gotos/XL form)
+ 				 */
+ 				cpuhw->bhrb_entries[u_index].to = addr;
+-				cpuhw->bhrb_entries[u_index].mispred = pred;
+-				cpuhw->bhrb_entries[u_index].predicted = ~pred;
++				cpuhw->bhrb_entries[u_index].mispred = mispred;
++				cpuhw->bhrb_entries[u_index].predicted =
++								~mispred;
  
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
--		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
--		return pmu_bhrb_filter;
--	}
-+	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL)
-+		return POWER8_MMCRA_IFM1;
+ 				/* Get from address in next entry */
+ 				val = read_bhrb(r_index++);
+@@ -486,8 +488,9 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
+ 				cpuhw->bhrb_entries[u_index].from = addr;
+ 				cpuhw->bhrb_entries[u_index].to =
+ 					power_pmu_bhrb_to(addr);
+-				cpuhw->bhrb_entries[u_index].mispred = pred;
+-				cpuhw->bhrb_entries[u_index].predicted = ~pred;
++				cpuhw->bhrb_entries[u_index].mispred = mispred;
++				cpuhw->bhrb_entries[u_index].predicted =
++								~mispred;
+ 			}
+ 			u_index++;
  
- 	/* Every thing else is unsupported */
- 	return -1;
 -- 
 2.1.0
