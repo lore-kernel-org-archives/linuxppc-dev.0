@@ -1,39 +1,36 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55ED31A023F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Oct 2015 20:59:41 +1100 (AEDT)
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C8631A01EB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Oct 2015 20:59:54 +1100 (AEDT)
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3EAA7140D80
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 20:59:40 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id A8870140CEB
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 20:59:53 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 5 Oct 2015 15:29:37 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 07507394004E
- for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 15:29:33 +0530 (IST)
+ Mon, 5 Oct 2015 15:29:51 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CE7ED1258021
+ for <linuxppc-dev@ozlabs.org>; Mon,  5 Oct 2015 15:28:56 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t959xFKC9371890
- for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2015 15:29:16 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t959xEOB5964168
+ for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2015 15:29:15 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t959xEFu015369
+ t959xEIg015277
  for <linuxppc-dev@ozlabs.org>; Mon, 5 Oct 2015 15:29:14 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
 Cc: mpe@ellerman.id.au, mikey@neuling.org, dja@axtens.net
-Subject: [PATCH V11 07/10] powerpc/perf: Enable SW filtering in branch stack
- sampling framework
-Date: Mon,  5 Oct 2015 15:29:09 +0530
-Message-Id: <1444039152-3665-8-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1444039152-3665-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1444039152-3665-1-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V11 00/10] powerpc/perf: Enable SW branch filters
+Date: Mon,  5 Oct 2015 15:29:02 +0530
+Message-Id: <1444039152-3665-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,360 +40,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables SW based post processing of BHRB captured branches
-to be able to meet more user defined branch filtration criteria in perf
-branch stack sampling framework. These changes increase the number of
-branch filters and their valid combinations on any powerpc64 server
-platform with BHRB support. Find the summary of code changes here.
+	This is the continuation (rebased and reworked) of the series
+posted at https://lkml.org/lkml/2014/5/5/153 (which is V6). I remember
+to have incremented the version count for the re-send of the first four
+patches of the series to Peter Z for generic review which got pulled in
+last year. These patches here are the remaining powerpc part of the
+original series.
 
-(1) struct cpu_hw_event
+NOTE: This patch series is logical extension and also dependent on the
+series posted at https://patchwork.ozlabs.org/patch/489544/
 
-Introduced two new variables track various filter values and mask
+Changes in V11
+==============
+(1) Re-merged all the patches into this series like before
+(2) One patch got already merged into mainline
+(3) Dropped couple of patches as suggested
+(4) Changed the self test case to ignore incomplete branch records
+(5) Fixed build problem of the self test case on LE
+(6) Replaced all the direct addressing registers as rN instead in the test
+(7) Rebased against mainline kernel
 
-(a) bhrb_sw_filter      Tracks SW implemented branch filter flags
-(b) bhrb_filter         Tracks both (SW and HW) branch filter flags
+Changes in V10 (https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-June/130566.html)
+==============
+(1) The patch series is split into two groups now for easier review
+(2) Changed the 'check_excludes' function as suggested by Daniel
+(3) Using logical inversion of 'mispred' inside 'insert_branch' function 
+(4) Made 'insert_branch' function inline and changed its last argument
 
-(2) Event creation
+Changes in V9 (https://patchwork.ozlabs.org/patch/484242/)
+=============
+(1) Changed some of the commit messages and fixed some typos
+(2) Variable 'bhrb_users' type changed from int to unsigned int
+(3) Replaced the last usage of 'get_cpu_var' with 'this_cpu_ptr'
+(4) Conditional checks for 'cpuhw->bhrb_users' changed to test against zero
+(5) Updated in-code documentation inside 'check_excludes' function
+(6) Changed the name & type of 'pred' variable in 'power_pmu_bhrb_read'
+(7) Changed the name of 'tmp' to 'to_addr' inside 'power_pmu_bhrb_read'
+(8) Changed return values for branch instruction analysis functions
+(9) Changed the name of 'flag' variable to 'select_branch' inside 'keep_branch'
+(10) Fixed one nested conditional statement inside 'keep_branch' function
+(11) Changed function name from 'update_branch_entry' to 'insert_branch'
+(12) Fixed copyright and license statements for new selftest related files
+(13) Improved helper assembly functions with some macro definitions
+(14) Improved the core test program at various places
+(15) Added .gitignore file for the new test case
 
-Kernel will figure out supported BHRB branch filters through a PMU
-call back 'bhrb_filter_map'. This function will find out how many of
-the requested branch filters can be supported in the PMU HW. It will
-not try to invalidate any branch filter combinations. Event creation
-will not error out because of lack of HW based branch filters.
-Meanwhile it will track the overall supported branch filters in the
-'bhrb_filter' variable.
+Changes in V8 (http://patchwork.ozlabs.org/patch/481848/)
+=============
+(1) Fixed BHRB privilege mode branch filter request processing
+(2) Dropped branch records where 'from' cannot be fetched
+(3) Added in-code documenation at various places in the patch series
+(4) Added one comprehensive seltest case to verify all the filters
 
-Once the PMU call back returns kernel will process the user branch
-filter request against available SW filters (bhrb_sw_filter_map) while
-looking at the 'bhrb_filter'. During this phase all the branch filters
-which are still pending from the user requested list will have to be
-supported in SW failing which the event creation will error out.
+Changes in V7
+=============
+(1) Incremented the version count while requesting pull for generic changes
 
-(3) SW branch filter
+Changes in V6 (https://lkml.org/lkml/2014/5/5/153)
+=============
+(1) Rebased the patchset against the master
+(2) Added "Reviewed-by: Andi Kleen" in the first four patches in the series which changes the
+    generic or X86 perf code. [https://lkml.org/lkml/2014/4/7/130]
 
-During the BHRB data capture inside the PMU interrupt context, each
-of the captured 'perf_branch_entry.from' will be checked for compliance
-with applicable SW branch filters. If the entry does not conform to the
-filter requirements, it will be discarded from the final perf branch
-stack buffer.
+Changes in V5 (https://lkml.org/lkml/2014/3/7/101)
+=============
+(1) Added a precursor patch to cleanup the indentation problem in power_pmu_bhrb_read
+(2) Added a precursor patch to re-arrange P8 PMU BHRB filter config which improved the clarity
+(3) Merged the previous 10th patch into the 8th patch
+(4) Moved SW based branch analysis code from core perf into code-patching library as suggested by Michael
+(5) Simplified the logic in branch analysis library
+(6) Fixed some ambiguities in documentation at various places
+(7) Added some more in-code documentation blocks at various places
+(8) Renamed some local variable and function names
+(9) Fixed some indentation and white space errors in the code
+(10) Implemented almost all the review comments and suggestions made by Michael Ellerman on V4 patchset
+(11) Enabled privilege mode SW branch filter
+(12) Simplified and generalized the SW implemented conditional branch filter
+(13) PERF_SAMPLE_BRANCH_COND filter is now supported only through SW implementation
+(14) Adjusted other patches to deal with the above changes
 
-(4) Supported SW based branch filters
+Changes in V4 (https://lkml.org/lkml/2013/12/4/168)
+=============
+(1) Changed the commit message for patch (01/10)
+(2) Changed the patch (02/10) to accommodate review comments from Michael Ellerman
+(3) Rebased the patchset against latest Linus's tree
 
-(a) PERF_SAMPLE_BRANCH_ANY_RETURN
-(b) PERF_SAMPLE_BRANCH_IND_CALL
-(c) PERF_SAMPLE_BRANCH_ANY_CALL
-(d) PERF_SAMPLE_BRANCH_COND
+Changes in V3 (https://lkml.org/lkml/2013/10/16/59)
+=============
+(1) Split the SW branch filter enablement into multiple patches
+(2) Added PMU neutral SW branch filtering code, PMU specific HW branch filtering code
+(3) Added new instruction analysis functionality into powerpc code-patching library
+(4) Changed name for some of the functions
+(5) Fixed couple of spelling mistakes
+(6) Changed code documentation in multiple places
 
-Please refer the patch to understand the classification of instructions
-into these branch filter categories.
+Changes in V2 (https://lkml.org/lkml/2013/8/30/10)
+=============
+(1) Enabled PPC64 SW branch filtering support
+(2) Incorporated changes required for all previous comments
 
-(5) Multiple branch filter semantics
+Anshuman Khandual (10):
+  powerpc/perf: Change name & type of 'pred' in power_pmu_bhrb_read
+  powerpc/perf: Re organize PMU branch filter processing on POWER8
+  powerpc/perf: Restore privilege level filter support for BHRB
+  powerpc/perf: Re organize BHRB processing
+  powerpc/perf: Change the name of HW PMU branch filter tracking variable
+  powerpc/lib: Add new branch analysis support functions
+  powerpc/perf: Enable SW filtering in branch stack sampling framework
+  powerpc/perf: Change POWER8 PMU configuration to work with SW filters
+  powerpc/perf: Enable privilege mode SW branch filters
+  selftests/powerpc: Add test for BHRB branch filters (HW & SW)
 
-Book3 sever implementation follows the same OR semantics (as implemented
-in x86) while dealing with multiple branch filters at any point of time.
-SW branch filter analysis is carried on the data set captured in the PMU
-HW. So the resulting set of data (after applying the SW filters) will
-inherently be an AND with the HW captured set. Hence any combination of
-HW and SW branch filters will be invalid. HW based branch filters are
-more efficient and faster compared to SW implemented branch filters. So
-at first the PMU should decide whether it can support all the requested
-branch filters itself or not. In case it can support all the branch
-filters in an OR manner, we dont apply any SW branch filter on top of the
-HW captured set (which is the final set). This preserves the OR semantic
-of multiple branch filters as required. But in case where the PMU cannot
-support all the requested branch filters in an OR manner, it should not
-apply any it's filters and leave it upto the SW to handle them all. Its
-the PMU code's responsibility to uphold this protocol to be able to
-conform to the overall OR semantic of perf branch stack sampling framework.
+ arch/powerpc/include/asm/code-patching.h           |  15 +
+ arch/powerpc/include/asm/perf_event_server.h       |  10 +-
+ arch/powerpc/lib/code-patching.c                   |  60 +++
+ arch/powerpc/perf/core-book3s.c                    | 355 +++++++++++---
+ arch/powerpc/perf/power8-pmu.c                     |  70 ++-
+ tools/testing/selftests/powerpc/pmu/Makefile       |  11 +-
+ .../testing/selftests/powerpc/pmu/bhrb/.gitignore  |   1 +
+ tools/testing/selftests/powerpc/pmu/bhrb/Makefile  |  13 +
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters.c      | 539 +++++++++++++++++++++
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters.h      |  15 +
+ .../selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S  | 257 ++++++++++
+ tools/testing/selftests/powerpc/pmu/event.h        |   5 +
+ 12 files changed, 1263 insertions(+), 88 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.c
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters.h
+ create mode 100644 tools/testing/selftests/powerpc/pmu/bhrb/bhrb_filters_asm.S
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/perf_event_server.h |   7 +-
- arch/powerpc/perf/core-book3s.c              | 188 ++++++++++++++++++++++++++-
- arch/powerpc/perf/power8-pmu.c               |   2 +-
- 3 files changed, 191 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 8146221..cb7ca1a 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -38,7 +38,8 @@ struct power_pmu {
- 				unsigned long *valp);
- 	int		(*get_alternatives)(u64 event_id, unsigned int flags,
- 				u64 alt[]);
--	u64             (*bhrb_filter_map)(u64 branch_sample_type);
-+	u64             (*bhrb_filter_map)(u64 branch_sample_type,
-+							u64 *bhrb_filter);
- 	void            (*config_bhrb)(u64 pmu_bhrb_filter);
- 	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
- 	int		(*limited_pmc_event)(u64 event_id);
-@@ -80,6 +81,10 @@ extern unsigned long perf_misc_flags(struct pt_regs *regs);
- extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
- extern unsigned long int read_bhrb(int n);
- 
-+#define for_each_branch_sample_type(x) \
-+		for ((x) = PERF_SAMPLE_BRANCH_USER; \
-+			(x) < PERF_SAMPLE_BRANCH_MAX; (x) <<= 1)
-+
- /*
-  * Only override the default definitions in include/linux/perf_event.h
-  * if we have hardware PMU support.
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 463ddd3..d106569 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -53,6 +53,8 @@ struct cpu_hw_events {
- 
- 	/* BHRB bits */
- 	u64				bhrb_hw_filter;	/* BHRB HW filter */
-+	u64				bhrb_sw_filter;	/* BHRB SW filter */
-+	u64				bhrb_filter;	/* Branch filter mask */
- 	unsigned int			bhrb_users;
- 	void				*bhrb_context;
- 	struct	perf_branch_stack	bhrb_stack;
-@@ -430,6 +432,84 @@ static inline void insert_branch(struct cpu_hw_events *cpuhw,
- 	cpuhw->bhrb_entries[index].predicted = !mispred;
- }
- 
-+/**
-+ * check_instruction - Instruction opcode analysis
-+ * @addr:	Instruction address
-+ * @sw_filter:	SW branch filter
-+ *
-+ * Analyse instruction opcodes and classify them into various
-+ * branch filter options available. This follows the standard
-+ * semantics of OR which means that instructions which conforms
-+ * to any of the requested branch filters get picked up.
-+ */
-+static bool check_instruction(unsigned int *addr, u64 sw_filter)
-+{
-+	if (sw_filter & PERF_SAMPLE_BRANCH_ANY_RETURN) {
-+		if (instr_is_return_branch(*addr))
-+			return true;
-+	}
-+
-+	if (sw_filter & PERF_SAMPLE_BRANCH_IND_CALL) {
-+		if (instr_is_indirect_func_call(*addr))
-+			return true;
-+	}
-+
-+	if (sw_filter & PERF_SAMPLE_BRANCH_ANY_CALL) {
-+		if (instr_is_func_call(*addr))
-+			return true;
-+	}
-+
-+	if (sw_filter & PERF_SAMPLE_BRANCH_COND) {
-+		if (instr_is_conditional_branch(*addr))
-+			return true;
-+	}
-+	return false;
-+}
-+
-+/**
-+ * keep_branch - Whether the branch conforms to applicable filter
-+ * @from:	From address
-+ * @sw_filter	SW branch filter
-+ *
-+ * Access the instruction contained in the address and then check
-+ * whether it complies with the applicable SW branch filters.
-+ */
-+static bool keep_branch(u64 from, u64 sw_filter)
-+{
-+	unsigned int instr;
-+	bool ret;
-+
-+	/*
-+	 * The "from" branch for every branch record has to go
-+	 * through this filter verification. So this quick check
-+	 * here for no SW filters will improve performance.
-+	 */
-+	if (sw_filter == 0)
-+		return true;
-+
-+	if (is_kernel_addr(from)) {
-+		return check_instruction((unsigned int *) from, sw_filter);
-+	} else {
-+		/*
-+		 * Userspace address needs to be
-+		 * copied first before analysis.
-+		 */
-+		pagefault_disable();
-+		ret =  __get_user_inatomic(instr, (unsigned int __user *) from);
-+
-+		/*
-+		 * If the instruction could not be accessible
-+		 * from user space, we still 'okay' the entry.
-+		 */
-+		if (ret) {
-+			pagefault_enable();
-+			return true;
-+		}
-+		pagefault_enable();
-+		return check_instruction(&instr, sw_filter);
-+	}
-+}
-+
- /* Processing BHRB entries */
- static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- {
-@@ -493,6 +573,11 @@ static void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw)
- 			to_addr = power_pmu_bhrb_to(addr);
- 			insert_branch(cpuhw, u_index, addr, to_addr, mispred);
- 		}
-+
-+		/* Apply SW branch filters and drop the entry if required */
-+		if (!keep_branch(cpuhw->bhrb_entries[u_index].from,
-+						cpuhw->bhrb_sw_filter))
-+			u_index--;
- 		u_index++;
- 	}
- 	cpuhw->bhrb_stack.nr = u_index;
-@@ -690,6 +775,79 @@ static void pmao_restore_workaround(bool ebb)
- }
- #endif /* CONFIG_PPC64 */
- 
-+/* SW implemented branch filters */
-+static unsigned int power_sw_filter[] = { PERF_SAMPLE_BRANCH_USER,
-+					  PERF_SAMPLE_BRANCH_KERNEL,
-+					  PERF_SAMPLE_BRANCH_HV,
-+					  PERF_SAMPLE_BRANCH_ANY_CALL,
-+					  PERF_SAMPLE_BRANCH_COND,
-+					  PERF_SAMPLE_BRANCH_ANY_RETURN,
-+					  PERF_SAMPLE_BRANCH_IND_CALL };
-+
-+/**
-+ * all_filters_covered - Whether requested filters covered
-+ * @branch_sample_type:	Requested branch sample filter
-+ * @bhrb_filter:	Branch Filters covered through SW and HW
-+ *
-+ * Validate whether all the user requested branch filters are getting
-+ * processed either in the PMU HW or in SW.
-+ */
-+static int all_filters_covered(u64 branch_sample_type, u64 bhrb_filter)
-+{
-+	u64 x;
-+
-+	if (bhrb_filter == PERF_SAMPLE_BRANCH_ANY)
-+		return true;
-+
-+	for_each_branch_sample_type(x) {
-+		if (!(branch_sample_type & x))
-+			continue;
-+		/*
-+		 * Requested filter not available either
-+		 * in PMU or in SW.
-+		 */
-+		if (!(bhrb_filter & x))
-+			return false;
-+	}
-+	return true;
-+}
-+
-+/**
-+ * bhrb_sw_filter_map - Required SW based branch filters
-+ * @branch_sample_type:	Requested branch sample type
-+ * @bhrb_filter:	Branch filters covered through HW
-+ *
-+ * This is called after figuring out what all branch filters the PMU HW
-+ * supports for the requested branch filter set. Here we will go through
-+ * all the SW implemented branch filters one by one and pick them up if
-+ * its not already supported in the PMU.
-+ */
-+static u64 bhrb_sw_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
-+{
-+	u64 branch_sw_filter = 0;
-+	unsigned int i;
-+
-+	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY) {
-+		WARN_ON(*bhrb_filter != PERF_SAMPLE_BRANCH_ANY);
-+		return branch_sw_filter;
-+	}
-+
-+	/*
-+	 * PMU supported branch filters must be implemented in SW
-+	 * when the PMU is unable to process them for some reason.
-+	 */
-+	for (i = 0; i < ARRAY_SIZE(power_sw_filter); i++) {
-+		if (branch_sample_type & power_sw_filter[i]) {
-+			if (!(*bhrb_filter & power_sw_filter[i])) {
-+				branch_sw_filter |= power_sw_filter[i];
-+				*bhrb_filter |= power_sw_filter[i];
-+			}
-+		}
-+	}
-+
-+	return branch_sw_filter;
-+}
-+
- static void perf_event_interrupt(struct pt_regs *regs);
- 
- /*
-@@ -1355,6 +1513,8 @@ static void power_pmu_enable(struct pmu *pmu)
- 	mmcr0 = ebb_switch_in(ebb, cpuhw);
- 
- 	mb();
-+
-+	/* Enable PMU based branch filters */
- 	if (cpuhw->bhrb_users)
- 		ppmu->config_bhrb(cpuhw->bhrb_hw_filter);
- 
-@@ -1464,8 +1624,12 @@ nocheck:
-  out:
- 	if (has_branch_stack(event)) {
- 		power_pmu_bhrb_enable(event);
--		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
--					event->attr.branch_sample_type);
-+		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map
-+					(event->attr.branch_sample_type,
-+							&cpuhw->bhrb_filter);
-+		cpuhw->bhrb_sw_filter = bhrb_sw_filter_map
-+					(event->attr.branch_sample_type,
-+							&cpuhw->bhrb_filter);
- 	}
- 
- 	perf_pmu_enable(event->pmu);
-@@ -1846,11 +2010,27 @@ static int power_pmu_event_init(struct perf_event *event)
- 
- 	err = power_check_constraints(cpuhw, events, cflags, n + 1);
- 
-+	/*
-+	 * BHRB branch filters implemented in PMU will take
-+	 * effect when we enable the event and data set
-+	 * collected thereafter will be compliant with those
-+	 * branch filters. Where as the SW branch filters will
-+	 * be applied during the post processing of BHRB data.
-+	 */
- 	if (has_branch_stack(event)) {
-+		/* Query available PMU branch filter support */
- 		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
--					event->attr.branch_sample_type);
-+					event->attr.branch_sample_type,
-+					&cpuhw->bhrb_filter);
-+
-+		/* Query available SW branch filter support */
-+		cpuhw->bhrb_sw_filter = bhrb_sw_filter_map(
-+					event->attr.branch_sample_type,
-+					&cpuhw->bhrb_filter);
- 
--		if (cpuhw->bhrb_hw_filter == -1) {
-+		/* Check overall coverage of branch filter request */
-+		if (!all_filters_covered(event->attr.branch_sample_type,
-+							cpuhw->bhrb_filter)) {
- 			put_cpu_var(cpu_hw_events);
- 			return -EOPNOTSUPP;
- 		}
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index a6c6a2c..5e17cb5 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -654,7 +654,7 @@ static int power8_generic_events[] = {
- 	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
- };
- 
--static u64 power8_bhrb_filter_map(u64 branch_sample_type)
-+static u64 power8_bhrb_filter_map(u64 branch_sample_type, u64 *bhrb_filter)
- {
- 	/* BHRB and regular PMU events share the same privilege state
- 	 * filter configuration. BHRB is always recorded along with a
 -- 
 2.1.0
