@@ -1,21 +1,29 @@
-Return-Path: <marvin24@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCF7F1A0239
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Oct 2015 21:34:15 +1100 (AEDT)
-From: Marc Dietrich <marvin24@gmx.de>
-To: Geoff Levand <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Time to remove platforms/cell?
-Date: Mon, 05 Oct 2015 12:27:50 +0200
-Message-ID: <2232594.bcXLTZgZyv@fb07-iapwap2>
-In-Reply-To: <1443986839.20459.8.camel@infradead.org>
-References: <1442467727.25483.0.camel@ellerman.id.au>
- <2785247.ZjG8XMQlJP@fb07-iapwap2> <1443986839.20459.8.camel@infradead.org>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id ED2FA1A0030
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 01:44:14 +1100 (AEDT)
+Date: Mon, 5 Oct 2015 15:44:07 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 4/7] powerpc: atomic: Implement xchg_* and
+ atomic{,64}_xchg_* variants
+Message-ID: <20151005144407.GI8818@arm.com>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-5-git-send-email-boqun.feng@gmail.com>
+ <20151001122440.GP2881@worktop.programming.kicks-ass.net>
+ <20151001150909.GC4043@linux.vnet.ibm.com>
+ <20151001171304.GX3816@twins.programming.kicks-ass.net>
+ <20151001180301.GJ4043@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1946704.QmF4Xtv5Uk";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151001180301.GJ4043@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart1946704.QmF4Xtv5Uk
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-
-Hi Geoff,
-
-Am Sonntag, 4. Oktober 2015, 12:27:19 schrieb Geoff Levand:
-> Hi,
+On Thu, Oct 01, 2015 at 07:03:01PM +0100, Paul E. McKenney wrote:
+> On Thu, Oct 01, 2015 at 07:13:04PM +0200, Peter Zijlstra wrote:
+> > On Thu, Oct 01, 2015 at 08:09:09AM -0700, Paul E. McKenney wrote:
+> > > On Thu, Oct 01, 2015 at 02:24:40PM +0200, Peter Zijlstra wrote:
+> > 
+> > > > I must say I'm somewhat surprised by this level of relaxation, I had
+> > > > expected to only loose SMP barriers, not the program order ones.
+> > > > 
+> > > > Is there a good argument for this?
+> > > 
+> > > Yes, when we say "relaxed", we really mean relaxed.  ;-)
+> > > 
+> > > Both the CPU and the compiler are allowed to reorder around relaxed
+> > > operations.
+> > 
+> > Is this documented somewhere, because I completely missed this part.
 > 
-> On Thu, 2015-09-17 at 12:28 +0200, Marc Dietrich wrote:
-> > well, I like to but I couldn't get the kernel booting for some reason.
-> > Still trying.
-> 
-> I just tested the ps3-queue branch (v4.3-rc4 based) of my ps3-linux git
-> repo and it works OK.
-> 
-> Do you see any output on the display, maybe some penguins at least
+> Well, yes, these need to be added to the documentation.  I am assuming
+> that Will is looking to have the same effect as C11 memory_order_relaxed,
+> which is relaxed in this sense.  If he has something else in mind,
+> he needs to tell us what it is and why.  ;-)
 
+I was treating them purely as being single-copy atomic and not providing
+any memory ordering guarantees (much like the non *_return atomic operations
+that we already have). I think this lines up with C11, minus the bits
+about data races which we don't call out anyway.
 
-I tried with ps3-queue and still no luck. Petitboot just says "Booting kernel 
-..." thats all - no output.
-
-FW is 3.15 of course
-Petitboot says (white-09.09.01-15.56)
-compiled kernel with gcc 4.4.2 (fedora 13)
-git clean -fdx; make ps3_defconfig; make vmlinux modules; make modules_install
-strip --strip-unneeded vmlinux
-boot this kernel
-
-Maybe still something missing?
-
-Thanks!
-
-Marc
---nextPart1946704.QmF4Xtv5Uk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWElCmAAoJEKyeR39HFBtoCo8H/22adItjuoAdqOU4AUwrcLkg
-PPo8HvpamTKXfbFfsXl4Gx74dZOhxvI7xigTdJzyqJ9wH6u5TKHreiqnXLjsjw9W
-UwN8/Rsu7z1dqYW/BB7fDTRczJsZ76vXZM85mzryDgHJs1lhmkC7AKDjm39EPwPs
-04NG34v6viPiXvcWel2CYNEhi7fvzcOSAM+MSEDQJaHrIMj5yamYhjab54bP3/iD
-BODUUHHGPDeYrO33j1fQyJ5aZOJGnHrcmvxjZ2WxFmwq15vrRFwiuGVd2XC7sPat
-UMbq4RwL9EUlftqiOnmICqqdyJnrqSexgWcESMg7tEHYWe1Z4ItOvBd9JjgGZhU=
-=V4DO
------END PGP SIGNATURE-----
-
---nextPart1946704.QmF4Xtv5Uk--
+Will
