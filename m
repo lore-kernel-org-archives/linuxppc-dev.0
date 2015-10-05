@@ -1,26 +1,35 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-lb0-f178.google.com (mail-lb0-f178.google.com
+ [209.85.217.178])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2E4661A0007
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 07:29:10 +1100 (AEDT)
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id 571C8140273
- for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2015 07:29:08 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2] cpufreq : powernv: Report Pmax throttling if capped
- below nominal frequency
-Date: Mon, 05 Oct 2015 22:50:58 +0200
-Message-ID: <2149242.U2nasEWuDM@vostro.rjw.lan>
-In-Reply-To: <20150914102809.GD32551@linux>
-References: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1442219507-6499-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20150914102809.GD32551@linux>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3EA861A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 09:19:16 +1100 (AEDT)
+Received: by lbbwt4 with SMTP id wt4so28414327lbb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2015 15:19:13 -0700 (PDT)
+Reply-To: alex.popov@linux.com
+Subject: Re: [PATCH v3 1/3] powerpc/512x: add LocalPlus Bus FIFO device driver
+References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
+ <1443115737-3948-2-git-send-email-alex.popov@linux.com>
+ <56049CD0.7080104@tabi.org> <560C5325.6070406@linux.com>
+ <560D692E.1010309@tabi.org>
+To: Timur Tabi <timur@tabi.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anatolij Gustschin <agust@denx.de>, Rob Herring <robh@kernel.org>,
+ Grant Likely <grant.likely@linaro.org>,
+ Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
+ Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Alexander Popov <alex.popov@linux.com>
+From: Alexander Popov <alex.popov@linux.com>
+Message-ID: <5612F832.9060407@linux.com>
+Date: Tue, 6 Oct 2015 01:22:42 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <560D692E.1010309@tabi.org>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +39,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday, September 14, 2015 03:58:09 PM Viresh Kumar wrote:
-> On 14-09-15, 14:01, Shilpasri G Bhat wrote:
-> > Log a 'critical' message if the max frequency is reduced below nominal
-> > frequency. We already log 'info' message if the max frequency is
-> > capped below turbo frequency. CPU should guarantee atleast nominal
-> > frequency, but not turbo frequency in all system configurations and
-> > environments. So report the pmax throttling with severity when Pmax is
-> > dipped below nominal frequency.
-> > 
-> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> > ---
-> > Changes from v1:
-> > - Modified the printk messages as per Viresh's suggestion.
-> > 
-> >  drivers/cpufreq/powernv-cpufreq.c | 10 ++++++++--
-> >  1 file changed, 8 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> > index 64994e1..cb50138 100644
-> > --- a/drivers/cpufreq/powernv-cpufreq.c
-> > +++ b/drivers/cpufreq/powernv-cpufreq.c
-> > @@ -327,8 +327,14 @@ static void powernv_cpufreq_throttle_check(void *data)
-> >  		if (chips[i].throttled)
-> >  			goto next;
-> >  		chips[i].throttled = true;
-> > -		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
-> > -			chips[i].id, pmsr_pmax);
-> > +		if (pmsr_pmax < powernv_pstate_info.nominal)
-> > +			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
-> > +				cpu, chips[i].id, pmsr_pmax,
-> > +				powernv_pstate_info.nominal);
-> > +		else
-> > +			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
-> > +				cpu, chips[i].id, pmsr_pmax,
-> > +				powernv_pstate_info.max);
-> >  	} else if (chips[i].throttled) {
-> >  		chips[i].throttled = false;
-> >  		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+On 01.10.2015 20:11, Timur Tabi wrote:
+> On 09/30/2015 04:24 PM, Alexander Popov wrote:
+>>> Driver code that has to parse #address-cells or #size-cells
+>>> is usually wrong.
+>>
+>> I would not call it "parsing", I just check whether the dts-file is good.
+>> Anyway, could you give me a clue how to do better?
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> You should use of_n_size_cells() and of_n_addr_cells().
 
-Applied, thanks!
+It seems that of_n_size_cells() and of_n_addr_cells() don't work well in
+my case. These functions just help to get "#address-cells" and "#size-cells"
+from a parent node of a given node.
 
-Rafael
+"sclpc" device tree node is a child of "soc" node (not "localbus" node),
+but the driver must use "ranges" property of "localbus" to determine
+the chip select number of a client device which ordered the DMA transfer.
+
+It seems that ns2_leds_get_of_pdata() from linux/drivers/leds/leds-ns2.c
+or pnv_init_idle_states() from arch/powerpc/platforms/powernv/idle.c do
+something similar to get_cs_ranges().
+Is it OK?
+
+Best regards,
+Alexander
