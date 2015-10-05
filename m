@@ -1,35 +1,26 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-lb0-f178.google.com (mail-lb0-f178.google.com
- [209.85.217.178])
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-wi0-x22a.google.com (mail-wi0-x22a.google.com
+ [IPv6:2a00:1450:400c:c05::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3EA861A0023
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 09:19:16 +1100 (AEDT)
-Received: by lbbwt4 with SMTP id wt4so28414327lbb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2015 15:19:13 -0700 (PDT)
-Reply-To: alex.popov@linux.com
-Subject: Re: [PATCH v3 1/3] powerpc/512x: add LocalPlus Bus FIFO device driver
-References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
- <1443115737-3948-2-git-send-email-alex.popov@linux.com>
- <56049CD0.7080104@tabi.org> <560C5325.6070406@linux.com>
- <560D692E.1010309@tabi.org>
-To: Timur Tabi <timur@tabi.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>, Rob Herring <robh@kernel.org>,
- Grant Likely <grant.likely@linaro.org>,
- Dan Williams <dan.j.williams@intel.com>, Vinod Koul <vinod.koul@intel.com>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, Alexander Popov <alex.popov@linux.com>
-From: Alexander Popov <alex.popov@linux.com>
-Message-ID: <5612F832.9060407@linux.com>
-Date: Tue, 6 Oct 2015 01:22:42 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CDDD1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 10:10:10 +1100 (AEDT)
+Received: by wiclk2 with SMTP id lk2so142333316wic.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2015 16:10:07 -0700 (PDT)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 4/5] kernel/cpu.c: eliminate cpu_*_mask
+References: <1443205347-13634-5-git-send-email-linux@rasmusvillemoes.dk>
+ <201509281303.5hjLVTJZ%fengguang.wu@intel.com>
+ <87oagnf3ok.fsf@rasmusvillemoes.dk>
+Date: Tue, 06 Oct 2015 01:10:05 +0200
+In-Reply-To: <87oagnf3ok.fsf@rasmusvillemoes.dk> (Rasmus Villemoes's message
+ of "Mon, 28 Sep 2015 08:39:23 +0200")
+Message-ID: <87612k9ak2.fsf@rasmusvillemoes.dk>
 MIME-Version: 1.0
-In-Reply-To: <560D692E.1010309@tabi.org>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,28 +30,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01.10.2015 20:11, Timur Tabi wrote:
-> On 09/30/2015 04:24 PM, Alexander Popov wrote:
->>> Driver code that has to parse #address-cells or #size-cells
->>> is usually wrong.
->>
->> I would not call it "parsing", I just check whether the dts-file is good.
->> Anyway, could you give me a clue how to do better?
-> 
-> You should use of_n_size_cells() and of_n_addr_cells().
+Hi PPC maintainers
 
-It seems that of_n_size_cells() and of_n_addr_cells() don't work well in
-my case. These functions just help to get "#address-cells" and "#size-cells"
-from a parent node of a given node.
+Can I get you to ack or nak this? It's a prerequisite for a minor
+patch series for kernel/cpu.c and include/linux/cpumask.h of mine.
 
-"sclpc" device tree node is a child of "soc" node (not "localbus" node),
-but the driver must use "ranges" property of "localbus" to determine
-the chip select number of a client device which ordered the DMA transfer.
+Thanks,
+Rasmus
 
-It seems that ns2_leds_get_of_pdata() from linux/drivers/leds/leds-ns2.c
-or pnv_init_idle_states() from arch/powerpc/platforms/powernv/idle.c do
-something similar to get_cs_ranges().
-Is it OK?
+On Mon, Sep 28 2015, Rasmus Villemoes <linux@rasmusvillemoes.dk> wrote:
 
-Best regards,
-Alexander
+> Gah, I didn't check for struct members called cpu_online_mask :(
+>
+> PPC people: The issue is that I changed cpu_online_mask (and friends)
+> from being "const struct cpumask *const" exported variables to macros
+> with the same type and value (after exporting what they pointed to). But
+> that conflicts with that identifier used in struct
+> fadump_crash_info_header. Would you be ok with renaming that member to
+> just "online_mask"? I think it would be
+>
+> Subject: [PATCH] ppc: rename cpu_online_mask member of struct
+>  fadump_crash_info_header
+>
+> As preparation for eliminating the indirect access to the various
+> global cpu_xyz_bits bitmaps via the pointer variables cpu_xyz_mask,
+> rename the cpu_online_mask of struct fadump_crash_info_header to
+> simply online_mask, to allow cpu_online_mask to become a macro.
+>
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> ---
+>  arch/powerpc/include/asm/fadump.h | 2 +-
+>  arch/powerpc/kernel/fadump.c      | 4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+> index 493e72f64b35..b4407d0add27 100644
+> --- a/arch/powerpc/include/asm/fadump.h
+> +++ b/arch/powerpc/include/asm/fadump.h
+> @@ -191,7 +191,7 @@ struct fadump_crash_info_header {
+>  	u64		elfcorehdr_addr;
+>  	u32		crashing_cpu;
+>  	struct pt_regs	regs;
+> -	struct cpumask	cpu_online_mask;
+> +	struct cpumask	online_mask;
+>  };
+>  
+>  /* Crash memory ranges */
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 26d091a1a54c..3cb3b02a13dd 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -415,7 +415,7 @@ void crash_fadump(struct pt_regs *regs, const char *str)
+>  	else
+>  		ppc_save_regs(&fdh->regs);
+>  
+> -	fdh->cpu_online_mask = *cpu_online_mask;
+> +	fdh->online_mask = *cpu_online_mask;
+>  
+>  	/* Call ibm,os-term rtas call to trigger firmware assisted dump */
+>  	rtas_os_term((char *)str);
+> @@ -646,7 +646,7 @@ static int __init fadump_build_cpu_notes(const struct fadump_mem_struct *fdm)
+>  		}
+>  		/* Lower 4 bytes of reg_value contains logical cpu id */
+>  		cpu = be64_to_cpu(reg_entry->reg_value) & FADUMP_CPU_ID_MASK;
+> -		if (fdh && !cpumask_test_cpu(cpu, &fdh->cpu_online_mask)) {
+> +		if (fdh && !cpumask_test_cpu(cpu, &fdh->online_mask)) {
+>  			SKIP_TO_NEXT_CPU(reg_entry);
+>  			continue;
+>  		}
