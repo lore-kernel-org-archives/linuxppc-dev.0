@@ -3,16 +3,16 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2on0140.outbound.protection.outlook.com [207.46.100.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B4901A0017
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 09:56:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BEA21A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 09:56:10 +1100 (AEDT)
 From: Scott Wood <scottwood@freescale.com>
 To: Simon Horman <horms@verge.net.au>
 CC: <kexec@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>, "Samuel
- Mendoza-Jonas" <sam.mj@au1.ibm.com>
-Subject: [PATCH v2 2/3] ppc64: Avoid rfid if no need to clear MSR_LE
-Date: Tue, 6 Oct 2015 17:55:49 -0500
-Message-ID: <1444172150-29493-2-git-send-email-scottwood@freescale.com>
+ Ellerman" <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>
+Subject: [PATCH v2 3/3] ppc64: Add a flag to tell the kernel it's booting from
+ kexec
+Date: Tue, 6 Oct 2015 17:55:50 -0500
+Message-ID: <1444172150-29493-3-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
 References: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -26,46 +26,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a304e2d82a8c3 ("ppc64: purgatory: Reset primary cpu endian to
-big-endian) changed bctr to rfid.  rfid is book3s-only and will cause a
-fatal exception on book3e.
-
-Purgatory is an isolated environment which makes importing information
-about the subarch awkward, so instead rely on the fact that MSR_LE
-should never be set on book3e, and the rfid is only needed if MSR_LE is
-set (and thus needs to be cleared).  In theory that MSR bit is reserved
-on book3e, rather than zero, but in practice I have not seen it set.
+It needs to know this because the SMP release mechanism for Freescale
+book3e is different from when booting with normal hardware.  In theory
+we could simulate the normal spin table mechanism, but not (easily) at
+the addresses U-Boot put in the device tree -- so there'd need to be
+even more communication between the kernel and kexec to set that up.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
 ---
-v2: new patch
+v2: Use a device tree property rather than setting a flag in the kernel
+image, as requested by Michael Ellerman.
+---
+ kexec/arch/ppc64/Makefile           |  6 +++
+ kexec/arch/ppc64/fdt.c              | 78 +++++++++++++++++++++++++++++++++++++
+ kexec/arch/ppc64/include/arch/fdt.h |  9 +++++
+ kexec/arch/ppc64/kexec-elf-ppc64.c  |  7 ++++
+ 4 files changed, 100 insertions(+)
+ create mode 100644 kexec/arch/ppc64/fdt.c
+ create mode 100644 kexec/arch/ppc64/include/arch/fdt.h
 
- purgatory/arch/ppc64/v2wrap.S | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/purgatory/arch/ppc64/v2wrap.S b/purgatory/arch/ppc64/v2wrap.S
-index 179ade9..3534080 100644
---- a/purgatory/arch/ppc64/v2wrap.S
-+++ b/purgatory/arch/ppc64/v2wrap.S
-@@ -116,9 +116,17 @@ master:
- 	stw	7,0x5c(4)	# and patch it into the kernel
- 	mr      3,16            # restore dt address
- 
-+	mfmsr	5
-+	andi.	10,5,1		# test MSR_LE
-+	bne	little_endian
+diff --git a/kexec/arch/ppc64/Makefile b/kexec/arch/ppc64/Makefile
+index 9a6e475..37cd233 100644
+--- a/kexec/arch/ppc64/Makefile
++++ b/kexec/arch/ppc64/Makefile
+@@ -1,11 +1,15 @@
+ #
+ # kexec ppc64 (linux booting linux)
+ #
++include $(srcdir)/kexec/libfdt/Makefile.libfdt
 +
-+	li	5,0		# r5 will be 0 for kernel
-+	mtctr	4		# prepare branch to
-+	bctr			# start kernel
-+	
-+little_endian:			# book3s-only
- 	mtsrr0	4		# prepare branch to
+ ppc64_KEXEC_SRCS =  kexec/arch/ppc64/kexec-elf-rel-ppc64.c
+ ppc64_KEXEC_SRCS += kexec/arch/ppc64/kexec-zImage-ppc64.c
+ ppc64_KEXEC_SRCS += kexec/arch/ppc64/kexec-elf-ppc64.c
+ ppc64_KEXEC_SRCS += kexec/arch/ppc64/kexec-ppc64.c
+ ppc64_KEXEC_SRCS += kexec/arch/ppc64/crashdump-ppc64.c
++ppc64_KEXEC_SRCS += kexec/arch/ppc64/fdt.c
++ppc64_KEXEC_SRCS += $(LIBFDT_SRCS:%=kexec/libfdt/%)
  
--	mfmsr	5
- 	clrrdi	5,5,1		# clear MSR_LE
- 	mtsrr1	5
+ ppc64_ARCH_REUSE_INITRD =
+ 
+@@ -13,6 +17,8 @@ ppc64_FS2DT	    = kexec/fs2dt.c
+ ppc64_FS2DT_INCLUDE = -include $(srcdir)/kexec/arch/ppc64/crashdump-ppc64.h \
+                       -include $(srcdir)/kexec/arch/ppc64/kexec-ppc64.h
+ 
++ppc64_CPPFLAGS = -I$(srcdir)/kexec/libfdt
++
+ dist += kexec/arch/ppc64/Makefile $(ppc64_KEXEC_SRCS)			\
+ 	kexec/arch/ppc64/kexec-ppc64.h kexec/arch/ppc64/crashdump-ppc64.h \
+ 	kexec/arch/ppc64/include/arch/options.h
+diff --git a/kexec/arch/ppc64/fdt.c b/kexec/arch/ppc64/fdt.c
+new file mode 100644
+index 0000000..8bc6d2d
+--- /dev/null
++++ b/kexec/arch/ppc64/fdt.c
+@@ -0,0 +1,78 @@
++/*
++ * ppc64 fdt fixups
++ *
++ * Copyright 2015 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation (version 2 of the License).
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <arch/fdt.h>
++#include <libfdt.h>
++#include <stdio.h>
++#include <stdlib.h>
++
++/*
++ * Let the kernel know it booted from kexec, as some things (e.g.
++ * secondary CPU release) may work differently.
++ */
++static int fixup_kexec_prop(void *fdt)
++{
++	int err, nodeoffset;
++
++	nodeoffset = fdt_subnode_offset(fdt, 0, "chosen");
++	if (nodeoffset < 0)
++		nodeoffset = fdt_add_subnode(fdt, 0, "chosen");
++	if (nodeoffset < 0) {
++		printf("%s: add /chosen %s\n", __func__,
++		       fdt_strerror(nodeoffset));
++		return -1;
++	}
++
++	err = fdt_setprop(fdt, nodeoffset, "linux,booted-from-kexec",
++			  NULL, 0);
++	if (err < 0) {
++		printf("%s: couldn't write linux,booted-from-kexec: %s\n",
++		       __func__, fdt_strerror(err));
++		return -1;
++	}
++
++	return 0;
++}
++
++
++/*
++ * For now, assume that the added content fits in the file.
++ * This should be the case when flattening from /proc/device-tree,
++ * and when passing in a dtb, dtc can be told to add padding.
++ */
++int fixup_dt(char **fdt, off_t *size)
++{
++	int ret;
++
++	*size += 4096;
++	*fdt = realloc(*fdt, *size);
++	if (!*fdt) {
++		fprintf(stderr, "%s: out of memory\n", __func__);
++		return -1;
++	}
++
++	ret = fdt_open_into(*fdt, *fdt, *size);
++	if (ret < 0) {
++		fprintf(stderr, "%s: fdt_open_into: %s\n", __func__,
++			fdt_strerror(ret));
++		return -1;
++	}
++
++	ret = fixup_kexec_prop(*fdt);
++	if (ret < 0)
++		return ret;
++
++	return 0;
++}
+diff --git a/kexec/arch/ppc64/include/arch/fdt.h b/kexec/arch/ppc64/include/arch/fdt.h
+new file mode 100644
+index 0000000..14f8be2
+--- /dev/null
++++ b/kexec/arch/ppc64/include/arch/fdt.h
+@@ -0,0 +1,9 @@
++#ifndef KEXEC_ARCH_PPC64_FDT
++#define KEXEC_ARCH_PPC64_FDT
++
++#include <sys/types.h>
++
++int fixup_dt(char **fdt, off_t *size);
++
++#endif
++
+diff --git a/kexec/arch/ppc64/kexec-elf-ppc64.c b/kexec/arch/ppc64/kexec-elf-ppc64.c
+index adcee4c..ddd3de8 100644
+--- a/kexec/arch/ppc64/kexec-elf-ppc64.c
++++ b/kexec/arch/ppc64/kexec-elf-ppc64.c
+@@ -37,6 +37,8 @@
+ #include "kexec-ppc64.h"
+ #include "../../fs2dt.h"
+ #include "crashdump-ppc64.h"
++#include <libfdt.h>
++#include <arch/fdt.h>
+ #include <arch/options.h>
+ 
+ uint64_t initrd_base, initrd_size;
+@@ -242,6 +244,11 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+ 		/* create from fs2dt */
+ 		create_flatten_tree(&seg_buf, &seg_size, cmdline);
+ 	}
++
++	result = fixup_dt(&seg_buf, &seg_size);
++	if (result < 0)
++		return result;
++
+ 	my_dt_offset = add_buffer(info, seg_buf, seg_size, seg_size,
+ 				0, 0, max_addr, -1);
  
 -- 
 2.1.4
