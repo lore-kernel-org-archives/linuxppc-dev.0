@@ -1,26 +1,19 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0138.outbound.protection.outlook.com [207.46.100.138])
+ (mail-by2on0140.outbound.protection.outlook.com [207.46.100.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B5BC1A000C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 07:39:04 +1100 (AEDT)
-Message-ID: <1444163930.5336.306.camel@freescale.com>
-Subject: Re: [PATCH v2 01/25] powerpc/8xx: Save r3 all the time in DTLB miss
- handler
+ by lists.ozlabs.org (Postfix) with ESMTPS id 433FE1A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 09:56:07 +1100 (AEDT)
 From: Scott Wood <scottwood@freescale.com>
-To: christophe leroy <christophe.leroy@c-s.fr>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 6 Oct 2015 15:38:50 -0500
-In-Reply-To: <56142F4D.5090405@c-s.fr>
-References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <2d35de4435e873f23d37e3b5b5fb34c64421f136.1442939410.git.christophe.leroy@c-s.fr>
- <20150928220717.GA6161@home.buserror.net> <5613CE1C.40806@c-s.fr>
- <1444149995.5336.282.camel@freescale.com> <56142F4D.5090405@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+To: Simon Horman <horms@verge.net.au>
+CC: <kexec@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>
+Subject: [PATCH v2 1/3] ppc64: Fix warnings
+Date: Tue, 6 Oct 2015 17:55:48 -0500
+Message-ID: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-06 at 22:30 +0200, christophe leroy wrote:
-> Le 06/10/2015 18:46, Scott Wood a écrit :
-> > On Tue, 2015-10-06 at 15:35 +0200, Christophe Leroy wrote:
-> > > Le 29/09/2015 00:07, Scott Wood a écrit :
-> > > > On Tue, Sep 22, 2015 at 06:50:29PM +0200, Christophe Leroy wrote:
-> > > > > We are spending between 40 and 160 cycles with a mean of 65 cycles 
-> > > > > in
-> > > > > the TLB handling routines (measured with mftbl) so make it more
-> > > > > simple althought it adds one instruction.
-> > > > > 
-> > > > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > > > Does this just make it simpler or does it make it faster?  What is the
-> > > > performance impact?  Is the performance impact seen with or without
-> > > > CONFIG_8xx_CPU6 enabled?  Without it, it looks like you're adding an
-> > > > mtspr/mfspr combo in order to replace one mfspr.
-> > > > 
-> > > > 
-> > > The performance impact is not noticeable. Theoritically it adds 1 cycle
-> > > on a mean of 65 cycles, that is 1.5%. Even in the worst case where we
-> > > spend around 10% of the time in TLB handling exceptions, that represents
-> > > only 0.15% of the total CPU time. So that's almost nothing.
-> > > Behind the fact to get in simpler, the main reason is because I need a
-> > > third register for the following patch in the set, otherwise I would
-> > > spend a more time saving and restoring CR several times.
-> > FWIW, the added instruction is an SPR access and I doubt that's only one
-> > cycle.
-> > 
-> > 
-> According to the mpc885 reference manual (table 9-1), Instruction 
-> Execution Timing for "Move to: mtspr, mtcrf, mtmsr, mcrxr except mtspr to LR
-> and CTR and to SPRs external to the core" is "serialize + 1 cycle".
-> Taking into account we preeceeding instructions are also 'mtspr', we are 
-> already serialized, so it is only one cycle I believe.
-> Am I interpreting it wrong ?
+Produce a warning-free build on ppc64 (at least, when built as 64-bit
+userspace -- if a 64-bit binary for ppc64 is a requirement, why is -m64
+set only on purgatory?).  Mostly unused (or write-only) variable
+warnings, but also one nasty one where reserve() was used without a
+prototype, causing long long arguments to be passed as int.
 
-I don't know.  The manual doesn't go into much detail about the mechanics of 
-serialization.  If it's just about "block[ing] all execution units" without 
-any effect on fetching, decoding, etc. then maybe you're right.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+v2: no change
 
--Scott
+ kexec/arch/ppc64/crashdump-ppc64.c | 3 ++-
+ kexec/arch/ppc64/kexec-elf-ppc64.c | 9 +--------
+ 2 files changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/kexec/arch/ppc64/crashdump-ppc64.c b/kexec/arch/ppc64/crashdump-ppc64.c
+index 6214b83..b3c8928 100644
+--- a/kexec/arch/ppc64/crashdump-ppc64.c
++++ b/kexec/arch/ppc64/crashdump-ppc64.c
+@@ -33,6 +33,7 @@
+ #include "../../kexec-syscall.h"
+ #include "../../crashdump.h"
+ #include "kexec-ppc64.h"
++#include "../../fs2dt.h"
+ #include "crashdump-ppc64.h"
+ 
+ static struct crash_elf_info elf_info64 =
+@@ -187,7 +188,7 @@ static int get_crash_memory_ranges(struct memory_range **range, int *ranges)
+ 	DIR *dir, *dmem;
+ 	FILE *file;
+ 	struct dirent *dentry, *mentry;
+-	int i, n, crash_rng_len = 0;
++	int n, crash_rng_len = 0;
+ 	unsigned long long start, end;
+ 	int page_size;
+ 
+diff --git a/kexec/arch/ppc64/kexec-elf-ppc64.c b/kexec/arch/ppc64/kexec-elf-ppc64.c
+index 4a1540e..adcee4c 100644
+--- a/kexec/arch/ppc64/kexec-elf-ppc64.c
++++ b/kexec/arch/ppc64/kexec-elf-ppc64.c
+@@ -97,7 +97,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+ 	struct mem_ehdr ehdr;
+ 	char *cmdline, *modified_cmdline = NULL;
+ 	const char *devicetreeblob;
+-	int cmdline_len, modified_cmdline_len;
+ 	uint64_t max_addr, hole_addr;
+ 	char *seg_buf = NULL;
+ 	off_t seg_size = 0;
+@@ -107,7 +106,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+ 	uint64_t *rsvmap_ptr;
+ 	struct bootblock *bb_ptr;
+ #endif
+-	int i;
+ 	int result, opt;
+ 	uint64_t my_kernel, my_dt_offset;
+ 	uint64_t my_opal_base = 0, my_opal_entry = 0;
+@@ -162,10 +160,7 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+ 		}
+ 	}
+ 
+-	cmdline_len = 0;
+-	if (cmdline)
+-		cmdline_len = strlen(cmdline) + 1;
+-	else
++	if (!cmdline)
+ 		fprintf(stdout, "Warning: append= option is not passed. Using the first kernel root partition\n");
+ 
+ 	if (ramdisk && reuse_initrd)
+@@ -181,7 +176,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+ 			strncpy(modified_cmdline, cmdline, COMMAND_LINE_SIZE);
+ 			modified_cmdline[COMMAND_LINE_SIZE - 1] = '\0';
+ 		}
+-		modified_cmdline_len = strlen(modified_cmdline);
+ 	}
+ 
+ 	/* Parse the Elf file */
+@@ -219,7 +213,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
+ 			return -1;
+ 		/* Use new command line. */
+ 		cmdline = modified_cmdline;
+-		cmdline_len = strlen(modified_cmdline) + 1;
+ 	}
+ 
+ 	/* Add v2wrap to the current image */
+-- 
+2.1.4
