@@ -1,26 +1,34 @@
-Return-Path: <linux@rasmusvillemoes.dk>
-Received: from mail-wi0-x22a.google.com (mail-wi0-x22a.google.com
- [IPv6:2a00:1450:400c:c05::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5CDDD1A0023
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 10:10:10 +1100 (AEDT)
-Received: by wiclk2 with SMTP id lk2so142333316wic.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Oct 2015 16:10:07 -0700 (PDT)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 4/5] kernel/cpu.c: eliminate cpu_*_mask
-References: <1443205347-13634-5-git-send-email-linux@rasmusvillemoes.dk>
- <201509281303.5hjLVTJZ%fengguang.wu@intel.com>
- <87oagnf3ok.fsf@rasmusvillemoes.dk>
-Date: Tue, 06 Oct 2015 01:10:05 +0200
-In-Reply-To: <87oagnf3ok.fsf@rasmusvillemoes.dk> (Rasmus Villemoes's message
- of "Mon, 28 Sep 2015 08:39:23 +0200")
-Message-ID: <87612k9ak2.fsf@rasmusvillemoes.dk>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6C9B1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 11:24:27 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 6 Oct 2015 10:24:26 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DC0B2357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 11:24:23 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t960OA0Q42598414
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 11:24:19 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t960Noms031994
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 11:23:50 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] cxl: Fix number of allocated pages in SPA
+In-reply-to: <1443794485-30565-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1443794485-30565-1-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Tue, 06 Oct 2015 11:23:20 +1100
+Message-Id: <1444090988-sup-9677@delenn.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,71 +38,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi PPC maintainers
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 
-Can I get you to ack or nak this? It's a prerequisite for a minor
-patch series for kernel/cpu.c and include/linux/cpumask.h of mine.
-
-Thanks,
-Rasmus
-
-On Mon, Sep 28 2015, Rasmus Villemoes <linux@rasmusvillemoes.dk> wrote:
-
-> Gah, I didn't check for struct members called cpu_online_mask :(
->
-> PPC people: The issue is that I changed cpu_online_mask (and friends)
-> from being "const struct cpumask *const" exported variables to macros
-> with the same type and value (after exporting what they pointed to). But
-> that conflicts with that identifier used in struct
-> fadump_crash_info_header. Would you be ok with renaming that member to
-> just "online_mask"? I think it would be
->
-> Subject: [PATCH] ppc: rename cpu_online_mask member of struct
->  fadump_crash_info_header
->
-> As preparation for eliminating the indirect access to the various
-> global cpu_xyz_bits bitmaps via the pointer variables cpu_xyz_mask,
-> rename the cpu_online_mask of struct fadump_crash_info_header to
-> simply online_mask, to allow cpu_online_mask to become a macro.
->
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Excerpts from Christophe Lombard's message of 2015-10-03 00:01:25 +1000:
+> This moves the initialisation of the num_procs to before the SPA
+> allocation.
+> 
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/fadump.h | 2 +-
->  arch/powerpc/kernel/fadump.c      | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-> index 493e72f64b35..b4407d0add27 100644
-> --- a/arch/powerpc/include/asm/fadump.h
-> +++ b/arch/powerpc/include/asm/fadump.h
-> @@ -191,7 +191,7 @@ struct fadump_crash_info_header {
->  	u64		elfcorehdr_addr;
->  	u32		crashing_cpu;
->  	struct pt_regs	regs;
-> -	struct cpumask	cpu_online_mask;
-> +	struct cpumask	online_mask;
->  };
+>  drivers/misc/cxl/native.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+> index b37f2e8..d2e75c8 100644
+> --- a/drivers/misc/cxl/native.c
+> +++ b/drivers/misc/cxl/native.c
+> @@ -457,6 +457,7 @@ static int activate_afu_directed(struct cxl_afu *afu)
 >  
->  /* Crash memory ranges */
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index 26d091a1a54c..3cb3b02a13dd 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -415,7 +415,7 @@ void crash_fadump(struct pt_regs *regs, const char *str)
->  	else
->  		ppc_save_regs(&fdh->regs);
+>      dev_info(&afu->dev, "Activating AFU directed mode\n");
 >  
-> -	fdh->cpu_online_mask = *cpu_online_mask;
-> +	fdh->online_mask = *cpu_online_mask;
+> +    afu->num_procs = afu->max_procs_virtualised;
+>      if (afu->spa == NULL) {
+>          if (cxl_alloc_spa(afu))
+>              return -ENOMEM;
+> @@ -468,7 +469,6 @@ static int activate_afu_directed(struct cxl_afu *afu)
+>      cxl_p1n_write(afu, CXL_PSL_ID_An, CXL_PSL_ID_An_F | CXL_PSL_ID_An_L);
 >  
->  	/* Call ibm,os-term rtas call to trigger firmware assisted dump */
->  	rtas_os_term((char *)str);
-> @@ -646,7 +646,7 @@ static int __init fadump_build_cpu_notes(const struct fadump_mem_struct *fdm)
->  		}
->  		/* Lower 4 bytes of reg_value contains logical cpu id */
->  		cpu = be64_to_cpu(reg_entry->reg_value) & FADUMP_CPU_ID_MASK;
-> -		if (fdh && !cpumask_test_cpu(cpu, &fdh->cpu_online_mask)) {
-> +		if (fdh && !cpumask_test_cpu(cpu, &fdh->online_mask)) {
->  			SKIP_TO_NEXT_CPU(reg_entry);
->  			continue;
->  		}
+>      afu->current_mode = CXL_MODE_DIRECTED;
+> -    afu->num_procs = afu->max_procs_virtualised;
+>  
+>      if ((rc = cxl_chardev_m_afu_add(afu)))
+>          return rc;
