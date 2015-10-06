@@ -1,18 +1,30 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+3c55f238f98dbda1c167+4426+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC4E51A0017
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 20:48:43 +1100 (AEDT)
-In-Reply-To: <1443796428-11517-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc: Fix _ALIGN_* errors due to type difference.
-Message-Id: <20151006094843.C8ECF140D71@ozlabs.org>
-Date: Tue,  6 Oct 2015 20:48:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A8C21A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 20:51:55 +1100 (AEDT)
+Date: Tue, 6 Oct 2015 02:51:36 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+ Keith Busch <keith.busch@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Christoph Hellwig <hch@infradead.org>,
+ linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/5 v2] dma-mapping: add generic dma_get_page_shift API
+Message-ID: <20151006095136.GB14144@infradead.org>
+References: <20151002171606.GA41011@linux.vnet.ibm.com>
+ <20151002200953.GB40695@linux.vnet.ibm.com>
+ <20151002201142.GC40695@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151002201142.GC40695@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,48 +34,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-02-10 at 14:33:48 UTC, "Aneesh Kumar K.V" wrote:
-> This avoid errors like
-> 
->         unsigned int usize = 1 << 30;
->         int size = 1 << 30;
->         unsigned long addr = 64UL << 30 ;
-> 
->         value = _ALIGN_DOWN(addr, usize); -> 0
->         value = _ALIGN_DOWN(addr, size);  -> 0x1000000000
+Do we need a function here or can we just have a IOMMU_PAGE_SHIFT define
+with an #ifndef in common code?
 
-Are you actually seeing that anywhere? I assume not.
-
-> diff --git a/arch/powerpc/boot/page.h b/arch/powerpc/boot/page.h
-> index 14eca30fef64..87c42d7d283d 100644
-> --- a/arch/powerpc/boot/page.h
-> +++ b/arch/powerpc/boot/page.h
-> @@ -22,8 +22,8 @@
->  #define PAGE_MASK	(~(PAGE_SIZE-1))
->  
->  /* align addr on a size boundary - adjust address up/down if needed */
-> -#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
-> -#define _ALIGN_DOWN(addr,size)	((addr)&(~((size)-1)))
-> +#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((typeof(addr))(size)-1)))
-> +#define _ALIGN_DOWN(addr, size)	((addr)&(~((typeof(addr))(size)-1)))
->  
->  /* align addr on a size boundary - adjust address up if needed */
->  #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
-> diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-> index 71294a6e976e..1dd69774a31c 100644
-> --- a/arch/powerpc/include/asm/page.h
-> +++ b/arch/powerpc/include/asm/page.h
-> @@ -240,8 +240,8 @@ extern long long virt_phys_offset;
->  #endif
->  
->  /* align addr on a size boundary - adjust address up/down if needed */
-> -#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
-> -#define _ALIGN_DOWN(addr,size)	((addr)&(~((size)-1)))
-> +#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((typeof(addr))(size)-1)))
-> +#define _ALIGN_DOWN(addr, size)	((addr)&(~((typeof(addr))(size)-1)))
-
-
-It looks like ALIGN() in kernel.h already does this right, so can we just use
-that instead for _ALIGN_UP() at least.
-
-cheers
+Also not all architectures use dma-mapping-common.h yet, so you either
+need to update all of those as well, or just add the #ifndef directly
+to linux/dma-mapping.h.
