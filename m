@@ -1,22 +1,39 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1082B1A0019
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 21:25:46 +1100 (AEDT)
-Message-ID: <1444127145.16578.8.camel@ellerman.id.au>
-Subject: Re: [PATCH RFC  0/5] powerpc:numa Add serial nid support
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, cl@linux.com,
- nacc@linux.vnet.ibm.com, gkurz@linux.vnet.ibm.com, grant.likely@linaro.org,
- nikunj@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
-Date: Tue, 06 Oct 2015 21:25:45 +1100
-In-Reply-To: <1443378553-2146-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
-References: <1443378553-2146-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 960221A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 21:32:50 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
+ Tue, 6 Oct 2015 16:02:46 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5F40C125801B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 16:02:23 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t96AWI2P20119604
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 16:02:23 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t96AWA5U020048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 16:02:11 +0530
+Message-ID: <5613A37E.5040302@linux.vnet.ibm.com>
+Date: Tue, 06 Oct 2015 16:03:34 +0530
+From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+CC: benh@kernel.crashing.org, paulus@samba.org, nikunj@linux.vnet.ibm.com,
+ nacc@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, anton@samba.org,
+ grant.likely@linaro.org, cl@linux.com, khandual@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, gkurz@linux.vnet.ibm.com
+Subject: Re: [RFC, 1/5] powerpc:numa Add numa_cpu_lookup function to update
+ lookup table
+References: <20151006101732.52907140D72@ozlabs.org>
+In-Reply-To: <20151006101732.52907140D72@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,62 +43,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-09-27 at 23:59 +0530, Raghavendra K T wrote:
-> Problem description:
-> Powerpc has sparse node numbering, i.e. on a 4 node system nodes are
-> numbered (possibly) as 0,1,16,17. At a lower level, we map the chipid
-> got from device tree is naturally mapped (directly) to nid.
-> 
-> Potential side effect of that is:
-> 
-> 1) There are several places in kernel that assumes serial node numbering.
-> and memory allocations assume that all the nodes from 0-(highest nid)
-> exist inturn ending up allocating memory for the nodes that does not exist.
+On 10/06/2015 03:47 PM, Michael Ellerman wrote:
+> On Sun, 2015-27-09 at 18:29:09 UTC, Raghavendra K T wrote:
+>> We access numa_cpu_lookup_table array directly in all the places
+>> to read/update numa cpu lookup information. Instead use a helper
+>> function to update.
+>>
+>> This is helpful in changing the way numa<-->cpu mapping in single
+>> place when needed.
+>>
+>> This is a cosmetic change, no change in functionality.
+>>
+>> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.inet.ibm.com>
+>> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/mmzone.h |  2 +-
+>>   arch/powerpc/kernel/smp.c         | 10 +++++-----
+>>   arch/powerpc/mm/numa.c            | 28 +++++++++++++++++-----------
+>>   3 files changed, 23 insertions(+), 17 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
+>> index 7b58917..c24a5f4 100644
+>> --- a/arch/powerpc/include/asm/mmzone.h
+>> +++ b/arch/powerpc/include/asm/mmzone.h
+>> @@ -29,7 +29,7 @@ extern struct pglist_data *node_data[];
+>>    * Following are specific to this numa platform.
+>>    */
+>>
+>> -extern int numa_cpu_lookup_table[];
+>> +extern int numa_cpu_lookup(int cpu);
+>
+> Can you rename it better :)
+>
+> Something like cpu_to_nid().
 
-Is it several? Or lots?
+Good name. sure.
 
-If it's several, ie. more than two but not lots, then we should probably just
-fix those places. Or is that /really/ hard for some reason?
+>
+> Although maybe nid is wrong given the rest of the series.
 
-Do we ever get whole nodes hotplugged in under PowerVM? I don't think so, but I
-don't remember for sure.
+May be not. The current plan is to rename (after discussing with Nish)
 
-> 2) For virtualization use cases (such as qemu, libvirt, openstack), mapping
-> sparse nid of the host system to contiguous nids of guest (numa affinity,
-> placement) could be a challenge.
+chipid to pnid (physical nid)
+and nid to vnid (virtual nid)
 
-Can you elaborate? That's a bit vague.
+within powerpc numa.c
+[reasoning chipid is applicable only to OPAL, since we want to handle
+powerkvm, powervm and baremetal we need a generic name ]
 
-> Possible Solutions:
-> 1) Handling the memory allocations is kernel case by case: Though in some
-> cases it is easy to achieve, some cases may be intrusive/not trivial. 
-> at the end it does not handle side effect (2) above.
-> 
-> 2) Map the sparse chipid got from device tree to a serial nid at kernel
-> level (The idea proposed in this series).
-> Pro: It is more natural to handle at kernel level than at lower (OPAL) layer.
-> con: The chipid is in device tree no longer the same as nid in kernel
-> 
-> 3) Let the lower layer (OPAL) give the serial node ids after parsing the
-> chipid and the associativity etc [ either as a separate item in device tree
-> or by compacting the chipid numbers ]
-> Pros: kernel, device tree are on same page and less change in kernel
-> Con: is it the functionality expected in lower layer
+But 'nid' naming will be retained which is applicable for generic
+kernel interactions.
 
-...
+>
+>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+>> index 8b9502a..d5e6eee 100644
+>> --- a/arch/powerpc/mm/numa.c
+>> +++ b/arch/powerpc/mm/numa.c
+>> @@ -52,7 +52,6 @@ int numa_cpu_lookup_table[NR_CPUS];
+>>   cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
+>>   struct pglist_data *node_data[MAX_NUMNODES];
+>>
+>> -EXPORT_SYMBOL(numa_cpu_lookup_table);
+>>   EXPORT_SYMBOL(node_to_cpumask_map);
+>>   EXPORT_SYMBOL(node_data);
+>>
+>> @@ -134,19 +133,25 @@ static int __init fake_numa_create_new_node(unsigned long end_pfn,
+>>   	return 0;
+>>   }
+>>
+>> -static void reset_numa_cpu_lookup_table(void)
+>> +int numa_cpu_lookup(int cpu)
+>>   {
+>> -	unsigned int cpu;
+>> -
+>> -	for_each_possible_cpu(cpu)
+>> -		numa_cpu_lookup_table[cpu] = -1;
+>> +	return numa_cpu_lookup_table[cpu];
+>>   }
+>> +EXPORT_SYMBOL(numa_cpu_lookup);
+>
+> I don't see you changing any modular code that uses this, or any macros that
+> might be used by modules, so I don't see why this needs to be exported?
+>
+> I think you just added it because num_cpu_lookup_table was exported?
+>
 
-> 3) Numactl tests from
-> ftp://oss.sgi.com/www/projects/libnuma/download/numactl-2.0.10.tar.gz
-> 
-> (infact there were more breakage before the patch because of sparse nid
-> and memoryless node cases of powerpc)
-
-This is probably the best argument for your series. ie. userspace is dumb and
-fixing every broken app that assumes linear node numbering is not feasible.
-
-
-So on the whole I think the concept is good. This series though is a bit
-confusing because of all the renaming etc. etc. Nish made lots of good comments
-so I'll wait for a v2 based on those.
-
-cheers
+arch/powerpc/kernel/smp.c uses it.
