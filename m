@@ -1,20 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 532D71A0034
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 17:15:02 +1100 (AEDT)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id E4AA214029C
- for <linuxppc-dev@ozlabs.org>; Tue,  6 Oct 2015 17:15:01 +1100 (AEDT)
-Message-ID: <1444112101.16578.0.camel@ellerman.id.au>
-Subject: Who uses CROSS32_COMPILE ?
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21DAD1A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 17:19:03 +1100 (AEDT)
+Message-ID: <1444112342.16578.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] cxl: Fix number of allocated pages in SPA
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 06 Oct 2015 17:15:01 +1100
-Content-Type: text/plain
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>
+Cc: imunsie@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 06 Oct 2015 17:19:02 +1100
+In-Reply-To: <1443794485-30565-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1443794485-30565-1-git-send-email-clombard@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,6 +23,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Does anyone build their kernels using CROSS32_COMPILE ?
+On Fri, 2015-10-02 at 16:01 +0200, Christophe Lombard wrote:
+> This moves the initialisation of the num_procs to before the SPA
+> allocation.
+
+Why? What does it fix? I can't tell from the diff or the change log.
 
 cheers
