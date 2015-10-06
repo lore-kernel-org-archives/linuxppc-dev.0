@@ -1,33 +1,22 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A7A0D1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 01:19:57 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Tue, 6 Oct 2015 15:19:52 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id A165B1B08084
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 15:19:51 +0100 (BST)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t96EJofi37290110
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 14:19:50 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t96EJnRM000790
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 08:19:50 -0600
-From: Christophe Lombard <clombard@linux.vnet.ibm.com>
-To: imunsie@au1.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] cxl: Fix number of allocated pages in SPA
-Date: Tue,  6 Oct 2015 16:19:49 +0200
-Message-Id: <1444141189-16621-1-git-send-email-clombard@linux.vnet.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 004771A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 01:35:49 +1100 (AEDT)
+Subject: Re: [PATCH v2 15/25] powerpc/8xx: move 8xx SPRN defines into
+ reg_8xx.h and add some missing ones
+To: Scott Wood <scottwood@freescale.com>
+References: <cover.1442939410.git.christophe.leroy@c-s.fr>
+ <a8718136980080a9b8ec7b76e6786a434b50e447.1442939410.git.christophe.leroy@c-s.fr>
+ <20150929000346.GH6161@home.buserror.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <5613DC41.2000100@c-s.fr>
+Date: Tue, 6 Oct 2015 16:35:45 +0200
+MIME-Version: 1.0
+In-Reply-To: <20150929000346.GH6161@home.buserror.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,37 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the initialisation of the num_procs to before the SPA
-allocation.
-The field 'num_procs' of the structure cxl_afu is not updated to the
-right value (maximum number of processes that can be supported by
-the AFU) when the pages are allocated (i.e. when  cxl_alloc_spa() is called).
-The number of allocates pages depends on the max number of processes.
 
-Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
----
- drivers/misc/cxl/native.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index b37f2e8..d2e75c8 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -457,6 +457,7 @@ static int activate_afu_directed(struct cxl_afu *afu)
- 
- 	dev_info(&afu->dev, "Activating AFU directed mode\n");
- 
-+	afu->num_procs = afu->max_procs_virtualised;
- 	if (afu->spa == NULL) {
- 		if (cxl_alloc_spa(afu))
- 			return -ENOMEM;
-@@ -468,7 +469,6 @@ static int activate_afu_directed(struct cxl_afu *afu)
- 	cxl_p1n_write(afu, CXL_PSL_ID_An, CXL_PSL_ID_An_F | CXL_PSL_ID_An_L);
- 
- 	afu->current_mode = CXL_MODE_DIRECTED;
--	afu->num_procs = afu->max_procs_virtualised;
- 
- 	if ((rc = cxl_chardev_m_afu_add(afu)))
- 		return rc;
--- 
-1.9.1
+Le 29/09/2015 02:03, Scott Wood a écrit :
+> On Tue, Sep 22, 2015 at 06:50:58PM +0200, Christophe Leroy wrote:
+>> Move 8xx SPRN defines into reg_8xx.h and add some missing ones
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>> No change in v2
+> Why are they being moved?  Why are they being separated from the bit
+> definitions?
+>
+>
+It was to keep asm/reg_8xx.h self sufficient for the following patch.
+
+Also because including asm/mmu-8xx.h creates circular inclusion issue 
+(mmu-8xx.h needs page.h which includes page-32.h, page-32.h includes 
+cache.h, cache.h include reg.h which includes reg_8xx). The circle 
+starts with an inclusion of asm/cache.h by linux/cache.h, himself 
+included by linux/printk.h, and I end up with 'implicit declaration' issues.
+
+How can I fix that ?
+
+Christophe
