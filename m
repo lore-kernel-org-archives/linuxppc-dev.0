@@ -1,39 +1,23 @@
-Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 960221A0019
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 21:32:50 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
- Tue, 6 Oct 2015 16:02:46 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5F40C125801B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 16:02:23 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t96AWI2P20119604
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 16:02:23 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t96AWA5U020048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 16:02:11 +0530
-Message-ID: <5613A37E.5040302@linux.vnet.ibm.com>
-Date: Tue, 06 Oct 2015 16:03:34 +0530
-From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 190991A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 21:48:19 +1100 (AEDT)
+Subject: Re: [PATCH] powerpc: Kconfig.cputype: Disallow TUNE_CELL on LE systems
 To: Michael Ellerman <mpe@ellerman.id.au>
-CC: benh@kernel.crashing.org, paulus@samba.org, nikunj@linux.vnet.ibm.com,
- nacc@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, anton@samba.org,
- grant.likely@linaro.org, cl@linux.com, khandual@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, gkurz@linux.vnet.ibm.com
-Subject: Re: [RFC, 1/5] powerpc:numa Add numa_cpu_lookup function to update
- lookup table
-References: <20151006101732.52907140D72@ozlabs.org>
-In-Reply-To: <20151006101732.52907140D72@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1442585820-18623-1-git-send-email-thuth@redhat.com>
+ <1442819926.354.5.camel@ellerman.id.au> <55FFD6DF.2080300@redhat.com>
+ <1444125937.16578.7.camel@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, boqun.feng@gmail.com
+From: Thomas Huth <thuth@redhat.com>
+Message-ID: <5613A6ED.10806@redhat.com>
+Date: Tue, 6 Oct 2015 12:48:13 +0200
+MIME-Version: 1.0
+In-Reply-To: <1444125937.16578.7.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,89 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/06/2015 03:47 PM, Michael Ellerman wrote:
-> On Sun, 2015-27-09 at 18:29:09 UTC, Raghavendra K T wrote:
->> We access numa_cpu_lookup_table array directly in all the places
->> to read/update numa cpu lookup information. Instead use a helper
->> function to update.
+On 06/10/15 12:05, Michael Ellerman wrote:
+> On Mon, 2015-09-21 at 12:07 +0200, Thomas Huth wrote:
+>> On 21/09/15 09:18, Michael Ellerman wrote:
+>>> On Fri, 2015-09-18 at 16:17 +0200, Thomas Huth wrote:
+>>>> It looks somewhat weird that you can enable TUNE_CELL on little
+>>>> endian systems, so let's disable this option with CPU_LITTLE_ENDIAN.
+>>>>
+>>>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+>>>> ---
+>>>>  I first thought that it might be better to make this option depend
+>>>>  on PPC_CELL instead ... but I guess it's a bad idea to depend a
+>>>>  CPU option on a platform option? Alternatively, would it make
+>>>>  sense to make it depend on (GENERIC_CPU || CELL_CPU) instead?
+>>>
+>>> Hmm, it's a little backward, but I think it would be fine, and less confusing
+>>> for users. Both PS3 and Cell select PPC_CELL, so it would work in both those
+>>> cases.
 >>
->> This is helpful in changing the way numa<-->cpu mapping in single
->> place when needed.
->>
->> This is a cosmetic change, no change in functionality.
->>
->> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.inet.ibm.com>
->> Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/include/asm/mmzone.h |  2 +-
->>   arch/powerpc/kernel/smp.c         | 10 +++++-----
->>   arch/powerpc/mm/numa.c            | 28 +++++++++++++++++-----------
->>   3 files changed, 23 insertions(+), 17 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
->> index 7b58917..c24a5f4 100644
->> --- a/arch/powerpc/include/asm/mmzone.h
->> +++ b/arch/powerpc/include/asm/mmzone.h
->> @@ -29,7 +29,7 @@ extern struct pglist_data *node_data[];
->>    * Following are specific to this numa platform.
->>    */
->>
->> -extern int numa_cpu_lookup_table[];
->> +extern int numa_cpu_lookup(int cpu);
->
-> Can you rename it better :)
->
-> Something like cpu_to_nid().
+>> It's just that when you step through the kernel config (e.g. with "make
+>> menuconfig"), you normally step through the "Processor support" first,
+>> and then later do the "Platform support". I think most users won't look
+>> back into "Processor support" again once they already reached the
+>> "Platform support" section, so this TUNE_CELL option then might appear
+>> unnoticed when you enable a Cell platform under "Platform support".
+> 
+> Ah OK. Personally I almost never use menuconfig, but I guess some folks do.
+> 
+> That actually seems like we should reorder those sections, ie. put platform
+> support first, and then processor support. After all there's not much point
+> agonising over whether to tune for CELL cpus if you then don't enable a Cell
+> platform.
 
-Good name. sure.
+Not sure whether reordering the sections make much sense - others might
+think "I want to support Cell chips with my distro, so let's enable that
+first, then let's see which platforms I can select next..." - so I'd
+rather not do that.
 
->
-> Although maybe nid is wrong given the rest of the series.
+> I'm not sure if it's that simple in practice ... :)
 
-May be not. The current plan is to rename (after discussing with Nish)
+Maybe we could also simply remove the TUNE_CELL option nowadays? I think
+this was used for building generic Linux distros, which are just
+optimized for Cell ... but who is still doing that nowadays?
 
-chipid to pnid (physical nid)
-and nid to vnid (virtual nid)
+Alternatively, if that is not an option and if you don't like my patch
+with CPU_LITTLE_ENDIAN, what about changing it to check "depends on
+(GENERIC_CPU || CELL_CPU)" instead?
 
-within powerpc numa.c
-[reasoning chipid is applicable only to OPAL, since we want to handle
-powerkvm, powervm and baremetal we need a generic name ]
-
-But 'nid' naming will be retained which is applicable for generic
-kernel interactions.
-
->
->> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->> index 8b9502a..d5e6eee 100644
->> --- a/arch/powerpc/mm/numa.c
->> +++ b/arch/powerpc/mm/numa.c
->> @@ -52,7 +52,6 @@ int numa_cpu_lookup_table[NR_CPUS];
->>   cpumask_var_t node_to_cpumask_map[MAX_NUMNODES];
->>   struct pglist_data *node_data[MAX_NUMNODES];
->>
->> -EXPORT_SYMBOL(numa_cpu_lookup_table);
->>   EXPORT_SYMBOL(node_to_cpumask_map);
->>   EXPORT_SYMBOL(node_data);
->>
->> @@ -134,19 +133,25 @@ static int __init fake_numa_create_new_node(unsigned long end_pfn,
->>   	return 0;
->>   }
->>
->> -static void reset_numa_cpu_lookup_table(void)
->> +int numa_cpu_lookup(int cpu)
->>   {
->> -	unsigned int cpu;
->> -
->> -	for_each_possible_cpu(cpu)
->> -		numa_cpu_lookup_table[cpu] = -1;
->> +	return numa_cpu_lookup_table[cpu];
->>   }
->> +EXPORT_SYMBOL(numa_cpu_lookup);
->
-> I don't see you changing any modular code that uses this, or any macros that
-> might be used by modules, so I don't see why this needs to be exported?
->
-> I think you just added it because num_cpu_lookup_table was exported?
->
-
-arch/powerpc/kernel/smp.c uses it.
+ Thomas
