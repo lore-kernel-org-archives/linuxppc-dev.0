@@ -1,23 +1,18 @@
-Return-Path: <labbott@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <danielwa@cisco.com>
+Received: from rcdn-iport-6.cisco.com (rcdn-iport-6.cisco.com [173.37.86.77])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C2EC1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 05:26:05 +1100 (AEDT)
-Subject: Re: Missing operand for tlbie instruction on Power7
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <560EA623.1040300@redhat.com>
- <1444102518.16909.3.camel@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-From: Laura Abbott <labbott@redhat.com>
-Message-ID: <56141237.2040403@redhat.com>
-Date: Tue, 6 Oct 2015 11:25:59 -0700
-MIME-Version: 1.0
-In-Reply-To: <1444102518.16909.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 300501A0036
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 02:59:27 +1100 (AEDT)
+From: Daniel Walker <danielwa@cisco.com>
+To: xe-kernel@external.cisco.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH-RFC 3/7] powerpc: convert to generic builtin command line
+Date: Tue,  6 Oct 2015 08:47:10 -0700
+Message-Id: <1444146434-12776-3-git-send-email-danielwa@cisco.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +22,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/05/2015 08:35 PM, Michael Ellerman wrote:
-> On Fri, 2015-10-02 at 08:43 -0700, Laura Abbott wrote:
->> Hi,
->>
->> We received a report (https://bugzilla.redhat.com/show_bug.cgi?id=1267395) of bad assembly
->> when compiling on powerpc with little endian
->
-> ...
->
->> After some discussion with the binutils folks, it turns out that the tlbie
->> instruction actually requires another operand and binutils was updated to
->> check for this https://sourceware.org/ml/binutils/2015-05/msg00133.html .
->>
->> The code sequence in arch/powerpc/include/asm/ppc_asm.h now needs to be updated:
->>
->> #if !defined(CONFIG_4xx) && !defined(CONFIG_8xx)
->> #define tlbia                                   \
->>           li      r4,1024;                        \
->>           mtctr   r4;                             \
->>           lis     r4,KERNELBASE@h;                \
->> 0:      tlbie   r4;                             \
->>           addi    r4,r4,0x1000;                   \
->>           bdnz    0b
->> #endif
->>
->> I don't know enough ppc assembly to properly fix this but I can test.
->
-> How are you testing? This code is fairly old and I'm dubious if it still works.
->
-> These days we have a ppc_md hook for flushing the TLB, ppc_md.flush_tlb().
-> Ideally the swsusp code would use that.
->
-> cheers
->
->
+This updates the powerpc code to use the CONFIG_GENERIC_CMDLINE
+option.
 
-Testing would probably just be compile and maybe boot. I don't have regular
-access to the hardware. This problem just showed up for me when someone
-tried to compile Fedora rawhide with the latest binutils.
+Cc: xe-kernel@external.cisco.com
+Cc: Daniel Walker <dwalker@fifo99.com>
+Signed-off-by: Daniel Walker <danielwa@cisco.com>
+---
+ arch/powerpc/Kconfig            | 23 +----------------------
+ arch/powerpc/kernel/prom.c      |  4 ++++
+ arch/powerpc/kernel/prom_init.c |  8 ++++----
+ 3 files changed, 9 insertions(+), 26 deletions(-)
 
- From what I can tell, it looks like the .flush_tlb of the cpu_spec is only
-defined for power7 and power8 and I don't see a ppc_md.flush_tlb on the
-master branch. It's not clear what to do for the case where there is no
-flush_tlb function. Would filling in a .flush_tlb for all the PPC_BOOK3S_64
-with the existing tlbia sequence work? It's also worth noting that the
-__flush_power7 uses tlbiel instead of tlbie.
-
-Thanks,
-Laura
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9a7057e..26252dc 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -160,6 +160,7 @@ config PPC
+ 	select EDAC_ATOMIC_SCRUB
+ 	select ARCH_HAS_DMA_SET_COHERENT_MASK
+ 	select HAVE_ARCH_SECCOMP_FILTER
++	select GENERIC_CMDLINE
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+@@ -640,28 +641,6 @@ config PPC_DENORMALISATION
+ 	  Add support for handling denormalisation of single precision
+ 	  values.  Useful for bare metal only.  If unsure say Y here.
+ 
+-config CMDLINE_BOOL
+-	bool "Default bootloader kernel arguments"
+-
+-config CMDLINE
+-	string "Initial kernel command string"
+-	depends on CMDLINE_BOOL
+-	default "console=ttyS0,9600 console=tty0 root=/dev/sda2"
+-	help
+-	  On some platforms, there is currently no way for the boot loader to
+-	  pass arguments to the kernel. For these platforms, you can supply
+-	  some command-line options at build time by entering them here.  In
+-	  most cases you will need to specify the root device here.
+-
+-config CMDLINE_FORCE
+-	bool "Always use the default kernel command string"
+-	depends on CMDLINE_BOOL
+-	help
+-	  Always use the default kernel command string, even if the boot
+-	  loader passes other arguments to the kernel.
+-	  This is useful if you cannot or don't want to change the
+-	  command-line options your boot loader passes to the kernel.
+-
+ config EXTRA_TARGETS
+ 	string "Additional default image types"
+ 	help
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index bef76c5..3281d5a 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -34,6 +34,7 @@
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+ #include <linux/libfdt.h>
++#include <linux/cmdline.h>
+ 
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -670,6 +671,9 @@ void __init early_init_devtree(void *params)
+ 	 */
+ 	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
+ 
++	/* append and prepend any arguments built into the kernel. */
++	cmdline_add_builtin(boot_command_line, NULL, COMMAND_LINE_SIZE);
++
+ 	/* Scan memory nodes and rebuild MEMBLOCKs */
+ 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
+ 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 15099c4..2dd2608 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -28,6 +28,7 @@
+ #include <linux/delay.h>
+ #include <linux/initrd.h>
+ #include <linux/bitops.h>
++#include <linux/cmdline.h>
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+ #include <asm/page.h>
+@@ -595,11 +596,10 @@ static void __init early_cmdline_parse(void)
+ 	p = prom_cmd_line;
+ 	if ((long)prom.chosen > 0)
+ 		l = prom_getprop(prom.chosen, "bootargs", p, COMMAND_LINE_SIZE-1);
+-#ifdef CONFIG_CMDLINE
++
+ 	if (l <= 0 || p[0] == '\0') /* dbl check */
+-		strlcpy(prom_cmd_line,
+-			CONFIG_CMDLINE, sizeof(prom_cmd_line));
+-#endif /* CONFIG_CMDLINE */
++		cmdline_add_builtin(prom_cmd_line, NULL, sizeof(prom_cmd_line));
++
+ 	prom_printf("command line: %s\n", prom_cmd_line);
+ 
+ #ifdef CONFIG_PPC64
+-- 
+2.1.4
