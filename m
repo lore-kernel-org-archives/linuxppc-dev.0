@@ -1,22 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id 004771A0017
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 01:35:49 +1100 (AEDT)
-Subject: Re: [PATCH v2 15/25] powerpc/8xx: move 8xx SPRN defines into
- reg_8xx.h and add some missing ones
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0133.outbound.protection.outlook.com [157.56.110.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FFA31A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 02:17:07 +1100 (AEDT)
+Message-ID: <1444144611.5336.269.camel@freescale.com>
+Subject: Re: [PATCH v2 07/25] powerpc32: refactor x_mapped_by_bats() and
+ x_mapped_by_tlbcam() together
+From: Scott Wood <scottwood@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 6 Oct 2015 10:16:51 -0500
+In-Reply-To: <5613D490.9060704@c-s.fr>
 References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <a8718136980080a9b8ec7b76e6786a434b50e447.1442939410.git.christophe.leroy@c-s.fr>
- <20150929000346.GH6161@home.buserror.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <5613DC41.2000100@c-s.fr>
-Date: Tue, 6 Oct 2015 16:35:45 +0200
+ <a5b89d1db195031679775bfe7c32f903e9403bb3.1442939410.git.christophe.leroy@c-s.fr>
+ <20150928234702.GD6161@home.buserror.net> <5613D490.9060704@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <20150929000346.GH6161@home.buserror.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2015-10-06 at 16:02 +0200, Christophe Leroy wrote:
+> Le 29/09/2015 01:47, Scott Wood a Ã©crit :
+> > On Tue, Sep 22, 2015 at 06:50:42PM +0200, Christophe Leroy wrote:
+> > > x_mapped_by_bats() and x_mapped_by_tlbcam() serve the same kind of
+> > > purpose, so lets group them into a single function.
+> > > 
+> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > > ---
+> > > No change in v2
+> > > 
+> > >   arch/powerpc/mm/pgtable_32.c | 33 ++++++++++++++++++++++++++-------
+> > >   1 file changed, 26 insertions(+), 7 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+> > > index 03a073a..3fd9083 100644
+> > > --- a/arch/powerpc/mm/pgtable_32.c
+> > > +++ b/arch/powerpc/mm/pgtable_32.c
+> > > @@ -67,6 +67,28 @@ extern unsigned long p_mapped_by_tlbcam(phys_addr_t 
+> > > pa);
+> > >   #define p_mapped_by_tlbcam(x)   (0UL)
+> > >   #endif /* HAVE_TLBCAM */
+> > >   
+> > > +static inline unsigned long p_mapped_by_other(phys_addr_t pa)
+> > > +{
+> > > + unsigned long v;
+> > > +
+> > > + v = p_mapped_by_bats(pa);
+> > > + if (v /*&& p_mapped_by_bats(p+size-1)*/)
+> > > +         return v;
+> > > +
+> > > + return p_mapped_by_tlbcam(pa);
+> > > +}
+> > Did you forget to remove that comment?
+> > 
+> > 
+> No I didn't, I though it was there for a reason, it has been there since 
+> 2005.
+> Do you think I should remove it ?
 
+Oh, you took it from __ioremap_caller.  Commented-out code is generally 
+frowned upon, and it makes even less sense now because there's no "size" in 
+p_mapped_by_other.
 
-Le 29/09/2015 02:03, Scott Wood a écrit :
-> On Tue, Sep 22, 2015 at 06:50:58PM +0200, Christophe Leroy wrote:
->> Move 8xx SPRN defines into reg_8xx.h and add some missing ones
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->> No change in v2
-> Why are they being moved?  Why are they being separated from the bit
-> definitions?
->
->
-It was to keep asm/reg_8xx.h self sufficient for the following patch.
-
-Also because including asm/mmu-8xx.h creates circular inclusion issue 
-(mmu-8xx.h needs page.h which includes page-32.h, page-32.h includes 
-cache.h, cache.h include reg.h which includes reg_8xx). The circle 
-starts with an inclusion of asm/cache.h by linux/cache.h, himself 
-included by linux/printk.h, and I end up with 'implicit declaration' issues.
-
-How can I fix that ?
-
-Christophe
+-Scott
