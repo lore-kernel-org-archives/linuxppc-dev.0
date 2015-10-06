@@ -1,22 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clombard@linux.vnet.ibm.com>
+Received: from e06smtp09.uk.ibm.com (e06smtp09.uk.ibm.com [195.75.94.105])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D5AD1A0034
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 17:26:20 +1100 (AEDT)
-Message-ID: <1444112779.16578.4.camel@ellerman.id.au>
-Subject: Re: [PATCH 4/5] kernel/cpu.c: eliminate cpu_*_mask
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Date: Tue, 06 Oct 2015 17:26:19 +1100
-In-Reply-To: <87612k9ak2.fsf@rasmusvillemoes.dk>
-References: <1443205347-13634-5-git-send-email-linux@rasmusvillemoes.dk>
- <201509281303.5hjLVTJZ%fengguang.wu@intel.com>
- <87oagnf3ok.fsf@rasmusvillemoes.dk> <87612k9ak2.fsf@rasmusvillemoes.dk>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1DEE61A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 20:21:33 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp09.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
+ Tue, 6 Oct 2015 10:21:30 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 02BA32190066
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 10:21:26 +0100 (BST)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t969LQvC36241576
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 09:21:26 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t969LQBJ010915
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Oct 2015 03:21:26 -0600
+Subject: Re: [PATCH] cxl: Fix number of allocated pages in SPA
+To: Michael Ellerman <mpe@ellerman.id.au>
+References: <1443794485-30565-1-git-send-email-clombard@linux.vnet.ibm.com>
+ <1444112342.16578.1.camel@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, imunsie@au1.ibm.com
+From: christophe lombard <clombard@linux.vnet.ibm.com>
+Message-ID: <56139295.3050109@linux.vnet.ibm.com>
+Date: Tue, 6 Oct 2015 11:21:25 +0200
+MIME-Version: 1.0
+In-Reply-To: <1444112342.16578.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,76 +42,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-06 at 01:10 +0200, Rasmus Villemoes wrote:
-> Hi PPC maintainers
-> 
-> Can I get you to ack or nak this? It's a prerequisite for a minor
-> patch series for kernel/cpu.c and include/linux/cpumask.h of mine.
+The field 'num_procs' of the structure cxl_afu is not updated to the
+right value (maximum number of processes that can be supported by
+the AFU) when the pages are allocated (i.e. when  cxl_alloc_spa() is called).
+The number of allocates pages depends on the max number of processes.
 
-Yeah fine by me.
+Thanks
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-cheers
-
-> On Mon, Sep 28 2015, Rasmus Villemoes <linux@rasmusvillemoes.dk> wrote:
-> 
-> > Gah, I didn't check for struct members called cpu_online_mask :(
-> >
-> > PPC people: The issue is that I changed cpu_online_mask (and friends)
-> > from being "const struct cpumask *const" exported variables to macros
-> > with the same type and value (after exporting what they pointed to). But
-> > that conflicts with that identifier used in struct
-> > fadump_crash_info_header. Would you be ok with renaming that member to
-> > just "online_mask"? I think it would be
-> >
-> > Subject: [PATCH] ppc: rename cpu_online_mask member of struct
-> >  fadump_crash_info_header
-> >
-> > As preparation for eliminating the indirect access to the various
-> > global cpu_xyz_bits bitmaps via the pointer variables cpu_xyz_mask,
-> > rename the cpu_online_mask of struct fadump_crash_info_header to
-> > simply online_mask, to allow cpu_online_mask to become a macro.
-> >
-> > Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> > ---
-> >  arch/powerpc/include/asm/fadump.h | 2 +-
-> >  arch/powerpc/kernel/fadump.c      | 4 ++--
-> >  2 files changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-> > index 493e72f64b35..b4407d0add27 100644
-> > --- a/arch/powerpc/include/asm/fadump.h
-> > +++ b/arch/powerpc/include/asm/fadump.h
-> > @@ -191,7 +191,7 @@ struct fadump_crash_info_header {
-> >  	u64		elfcorehdr_addr;
-> >  	u32		crashing_cpu;
-> >  	struct pt_regs	regs;
-> > -	struct cpumask	cpu_online_mask;
-> > +	struct cpumask	online_mask;
-> >  };
-> >  
-> >  /* Crash memory ranges */
-> > diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> > index 26d091a1a54c..3cb3b02a13dd 100644
-> > --- a/arch/powerpc/kernel/fadump.c
-> > +++ b/arch/powerpc/kernel/fadump.c
-> > @@ -415,7 +415,7 @@ void crash_fadump(struct pt_regs *regs, const char *str)
-> >  	else
-> >  		ppc_save_regs(&fdh->regs);
-> >  
-> > -	fdh->cpu_online_mask = *cpu_online_mask;
-> > +	fdh->online_mask = *cpu_online_mask;
-> >  
-> >  	/* Call ibm,os-term rtas call to trigger firmware assisted dump */
-> >  	rtas_os_term((char *)str);
-> > @@ -646,7 +646,7 @@ static int __init fadump_build_cpu_notes(const struct fadump_mem_struct *fdm)
-> >  		}
-> >  		/* Lower 4 bytes of reg_value contains logical cpu id */
-> >  		cpu = be64_to_cpu(reg_entry->reg_value) & FADUMP_CPU_ID_MASK;
-> > -		if (fdh && !cpumask_test_cpu(cpu, &fdh->cpu_online_mask)) {
-> > +		if (fdh && !cpumask_test_cpu(cpu, &fdh->online_mask)) {
-> >  			SKIP_TO_NEXT_CPU(reg_entry);
-> >  			continue;
-> >  		}
-> 
+On 06/10/2015 08:19, Michael Ellerman wrote:
+> On Fri, 2015-10-02 at 16:01 +0200, Christophe Lombard wrote:
+>> This moves the initialisation of the num_procs to before the SPA
+>> allocation.
+> Why? What does it fix? I can't tell from the diff or the change log.
+>
+> cheers
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
