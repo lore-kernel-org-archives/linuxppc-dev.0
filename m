@@ -1,11 +1,11 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+ (mail-by2on0131.outbound.protection.outlook.com [207.46.100.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E5481A001B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 03:40:04 +1100 (AEDT)
-Message-ID: <1444149591.5336.279.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 39B1B1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 03:46:49 +1100 (AEDT)
+Message-ID: <1444149995.5336.282.camel@freescale.com>
 Subject: Re: [PATCH v2 01/25] powerpc/8xx: Save r3 all the time in DTLB miss
  handler
 From: Scott Wood <scottwood@freescale.com>
@@ -13,7 +13,7 @@ To: Christophe Leroy <christophe.leroy@c-s.fr>
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
  <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 6 Oct 2015 11:39:51 -0500
+Date: Tue, 6 Oct 2015 11:46:35 -0500
 In-Reply-To: <5613CE1C.40806@c-s.fr>
 References: <cover.1442939410.git.christophe.leroy@c-s.fr>
  <2d35de4435e873f23d37e3b5b5fb34c64421f136.1442939410.git.christophe.leroy@c-s.fr>
@@ -51,10 +51,7 @@ On Tue, 2015-10-06 at 15:35 +0200, Christophe Leroy wrote:
 > third register for the following patch in the set, otherwise I would 
 > spend a more time saving and restoring CR several times.
 
-If you had said in the changelog that it was because future patches would 
-need the register to be saved, we could have avoided this exchange...  
-Especially with large patchsets, I review the patches one at a time.  Don't 
-assume I know what's coming in patch n+1 (and especially not n+m) when I 
-review patch n.
+FWIW, the added instruction is an SPR access and I doubt that's only one 
+cycle.
 
 -Scott
