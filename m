@@ -1,21 +1,21 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id DAFDF1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 00:35:29 +1100 (AEDT)
-Subject: Re: [PATCH v2 01/25] powerpc/8xx: Save r3 all the time in DTLB miss
- handler
+ by lists.ozlabs.org (Postfix) with ESMTP id B8C8A1A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 00:50:14 +1100 (AEDT)
+Subject: Re: [PATCH v2 06/25] powerpc32: iounmap() cannot vunmap() area mapped
+ by TLBCAMs either
 To: Scott Wood <scottwood@freescale.com>
 References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <2d35de4435e873f23d37e3b5b5fb34c64421f136.1442939410.git.christophe.leroy@c-s.fr>
- <20150928220717.GA6161@home.buserror.net>
+ <2b94a5b931daa6aa2f32ddad88175d932da4d573.1442939410.git.christophe.leroy@c-s.fr>
+ <20150928234116.GC6161@home.buserror.net>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <5613CE1C.40806@c-s.fr>
-Date: Tue, 6 Oct 2015 15:35:24 +0200
+Message-ID: <5613D193.7050104@c-s.fr>
+Date: Tue, 6 Oct 2015 15:50:11 +0200
 MIME-Version: 1.0
-In-Reply-To: <20150928220717.GA6161@home.buserror.net>
+In-Reply-To: <20150928234116.GC6161@home.buserror.net>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,26 +27,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-
-Le 29/09/2015 00:07, Scott Wood a écrit :
-> On Tue, Sep 22, 2015 at 06:50:29PM +0200, Christophe Leroy wrote:
->> We are spending between 40 and 160 cycles with a mean of 65 cycles in
->> the TLB handling routines (measured with mftbl) so make it more
->> simple althought it adds one instruction.
+Le 29/09/2015 01:41, Scott Wood a écrit :
+> On Tue, Sep 22, 2015 at 06:50:40PM +0200, Christophe Leroy wrote:
+>> iounmap() cannot vunmap() area mapped by TLBCAMs either
 >>
 >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Does this just make it simpler or does it make it faster?  What is the
-> performance impact?  Is the performance impact seen with or without
-> CONFIG_8xx_CPU6 enabled?  Without it, it looks like you're adding an
-> mtspr/mfspr combo in order to replace one mfspr.
+>> ---
+>> No change in v2
+>>
+>>   arch/powerpc/mm/pgtable_32.c | 4 +++-
+>>   1 file changed, 3 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+>> index 7692d1b..03a073a 100644
+>> --- a/arch/powerpc/mm/pgtable_32.c
+>> +++ b/arch/powerpc/mm/pgtable_32.c
+>> @@ -278,7 +278,9 @@ void iounmap(volatile void __iomem *addr)
+>>   	 * If mapped by BATs then there is nothing to do.
+>>   	 * Calling vfree() generates a benign warning.
+>>   	 */
+>> -	if (v_mapped_by_bats((unsigned long)addr)) return;
+>> +	if (v_mapped_by_bats((unsigned long)addr) ||
+>> +	    v_mapped_by_tlbcam((unsigned long)addr))
+>> +		return;
+> This is pretty pointless given that the next patch replaces both with
+> v_mapped_by_other().
 >
 >
-The performance impact is not noticeable. Theoritically it adds 1 cycle 
-on a mean of 65 cycles, that is 1.5%. Even in the worst case where we 
-spend around 10% of the time in TLB handling exceptions, that represents 
-only 0.15% of the total CPU time. So that's almost nothing.
-Behind the fact to get in simpler, the main reason is because I need a 
-third register for the following patch in the set, otherwise I would 
-spend a more time saving and restoring CR several times.
+I thought it was cleaner to first fix the bug, in order to make the 
+following patch straight through, but I can skip it, no problem.
 
 Christophe
