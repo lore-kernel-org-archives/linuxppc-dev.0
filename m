@@ -2,23 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D97041A0034
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 14:39:07 +1100 (AEDT)
-Message-ID: <1444102746.16909.4.camel@ellerman.id.au>
-Subject: Re: [PATCH 4/5 v2] pseries/iommu: implement DDW-aware
- dma_get_page_shift
+ by lists.ozlabs.org (Postfix) with ESMTPS id A116D1A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 14:43:37 +1100 (AEDT)
+Message-ID: <1444103016.16909.6.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/5 v2] dma-mapping: add generic dma_get_page_shift API
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: kbuild test robot <lkp@intel.com>
-Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, kbuild-all@01.org,
- Matthew Wilcox <willy@linux.intel.com>, Keith Busch
- <keith.busch@intel.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, Christoph Hellwig
- <hch@infradead.org>, linux-nvme@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 06 Oct 2015 14:39:06 +1100
-In-Reply-To: <201510030421.d9fvrbXU%fengguang.wu@intel.com>
-References: <201510030421.d9fvrbXU%fengguang.wu@intel.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Matthew Wilcox <willy@linux.intel.com>, Keith Busch
+ <keith.busch@intel.com>,  Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Alexey
+ Kardashevskiy <aik@ozlabs.ru>,  David Gibson <david@gibson.dropbear.id.au>,
+ Christoph Hellwig <hch@infradead.org>,  linux-nvme@lists.infradead.org,
+ linux-kernel@vger.kernel.org,  linuxppc-dev@lists.ozlabs.org, Arnd Bergmann
+ <arnd@arndb.de>
+Date: Tue, 06 Oct 2015 14:43:36 +1100
+In-Reply-To: <20151002201142.GC40695@linux.vnet.ibm.com>
+References: <20151002171606.GA41011@linux.vnet.ibm.com>
+ <20151002200953.GB40695@linux.vnet.ibm.com>
+ <20151002201142.GC40695@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,25 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-10-03 at 04:33 +0800, kbuild test robot wrote:
-> Hi Nishanth,
+On Fri, 2015-10-02 at 13:11 -0700, Nishanth Aravamudan wrote:
+> Drivers like NVMe need to be able to determine the page size used for
+> DMA transfers. Add a new API that defaults to return PAGE_SHIFT on all
+> architectures.
 > 
-> [auto build test results on v4.3-rc3 -- if it's inappropriate base, please ignore]
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 > 
-> config: powerpc-defconfig (attached as .config)
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=powerpc 
+> diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
+> index b1bc954..86e4e97 100644
+> --- a/include/asm-generic/dma-mapping-common.h
+> +++ b/include/asm-generic/dma-mapping-common.h
+> @@ -355,4 +355,11 @@ static inline int dma_set_mask(struct device *dev, u64 mask)
+>  }
+>  #endif
+>  
+> +#ifndef HAVE_ARCH_DMA_GET_PAGE_SHIFT
+> +static inline unsigned long dma_get_page_shift(struct device *dev)
+> +{
+> +	return PAGE_SHIFT;
+> +}
+> +#endif
+> +
+>  #endif
 > 
-> All error/warnings (new ones prefixed by >>):
-> 
->    arch/powerpc/platforms/pseries/iommu.c: In function 'iommu_init_early_pSeries':
-> >> arch/powerpc/platforms/pseries/iommu.c:1433:9: error: 'struct machdep_calls' has no member named 'dma_get_page_shift'
->       ppc_md.dma_get_page_shift = dma_get_page_shift_pSeriesLP;
 
-It was added in patch 3/5, so I think this error is bogus. Unless there's a
-typo I'm missing?
+Adding Arnd who is asm-generic maintainer.
+
+Arnd/Christoph can one of you give us an ack for this patch?
 
 cheers
