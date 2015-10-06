@@ -1,22 +1,25 @@
-Return-Path: <linux@rasmusvillemoes.dk>
-Received: from mail-la0-x22b.google.com (mail-la0-x22b.google.com
- [IPv6:2a00:1450:4010:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7750E1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 02:22:27 +1100 (AEDT)
-Received: by laddr2 with SMTP id dr2so29088242lad.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Oct 2015 08:22:23 -0700 (PDT)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: Rusty Russell <rusty@rustcorp.com.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Oleg Nesterov <oleg@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/6] kernel/cpu.c: eliminate some indirection
-Date: Tue,  6 Oct 2015 17:21:53 +0200
-Message-Id: <1444144919-25143-1-git-send-email-linux@rasmusvillemoes.dk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E5481A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 03:40:04 +1100 (AEDT)
+Message-ID: <1444149591.5336.279.camel@freescale.com>
+Subject: Re: [PATCH v2 01/25] powerpc/8xx: Save r3 all the time in DTLB miss
+ handler
+From: Scott Wood <scottwood@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 6 Oct 2015 11:39:51 -0500
+In-Reply-To: <5613CE1C.40806@c-s.fr>
+References: <cover.1442939410.git.christophe.leroy@c-s.fr>
+ <2d35de4435e873f23d37e3b5b5fb34c64421f136.1442939410.git.christophe.leroy@c-s.fr>
+ <20150928220717.GA6161@home.buserror.net> <5613CE1C.40806@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v2: fix build failure on ppc, add acks.
+On Tue, 2015-10-06 at 15:35 +0200, Christophe Leroy wrote:
+> Le 29/09/2015 00:07, Scott Wood a écrit :
+> > On Tue, Sep 22, 2015 at 06:50:29PM +0200, Christophe Leroy wrote:
+> > > We are spending between 40 and 160 cycles with a mean of 65 cycles in
+> > > the TLB handling routines (measured with mftbl) so make it more
+> > > simple althought it adds one instruction.
+> > > 
+> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> > Does this just make it simpler or does it make it faster?  What is the
+> > performance impact?  Is the performance impact seen with or without
+> > CONFIG_8xx_CPU6 enabled?  Without it, it looks like you're adding an
+> > mtspr/mfspr combo in order to replace one mfspr.
+> > 
+> > 
+> The performance impact is not noticeable. Theoritically it adds 1 cycle 
+> on a mean of 65 cycles, that is 1.5%. Even in the worst case where we 
+> spend around 10% of the time in TLB handling exceptions, that represents 
+> only 0.15% of the total CPU time. So that's almost nothing.
+> Behind the fact to get in simpler, the main reason is because I need a 
+> third register for the following patch in the set, otherwise I would 
+> spend a more time saving and restoring CR several times.
 
-The four cpumasks cpu_{possible,online,present,active}_bits are
-exposed readonly via the corresponding const variables
-cpu_xyz_mask. But they are also accessible for arbitrary writing via
-the exposed functions set_cpu_xyz. There's quite a bit of code
-throughout the kernel which iterates over or otherwise accesses these
-bitmaps, and having the access go via the cpu_xyz_mask variables is
-nowadays [1] simply a useless indirection.
+If you had said in the changelog that it was because future patches would 
+need the register to be saved, we could have avoided this exchange...  
+Especially with large patchsets, I review the patches one at a time.  Don't 
+assume I know what's coming in patch n+1 (and especially not n+m) when I 
+review patch n.
 
-It may be that any problem in CS can be solved by an extra level of
-indirection, but that doesn't mean every extra indirection solves a
-problem. In this case, it even necessitates some minor ugliness (see
-4/6).
-
-Patch 1/6 is new in v2, and fixes a build failure on ppc by renaming a
-struct member, to avoid problems when the identifier cpu_online_mask
-becomes a macro later in the series. The next four patches eliminate
-the cpu_xyz_mask variables by simply exposing the actual bitmaps,
-after renaming them to discourage direct access - that still happens
-through cpu_xyz_mask, which are now simply macros with the same type
-and value as they used to have.
-
-After that, there's no longer any reason to have the setter functions
-be out-of-line: The boolean parameter is almost always a literal true
-or false, so by making them static inlines they will usually compile
-to one or two instructions.
-
-For a defconfig build on x86_64, bloat-o-meter says we save ~3000
-bytes. We also save a little stack (stackdelta says 127 functions have
-a 16 byte smaller stack frame, while two grow by that amount). Mostly
-because, when iterating over the mask, gcc typically loads the value
-of cpu_xyz_mask into a callee-saved register and from there into %rdi
-before each find_next_bit call - now it can just load the appropriate
-immediate address into %rdi before each call.
-
-[1] See Rusty's kind explanation
-http://thread.gmane.org/gmane.linux.kernel/2047078/focus=2047722 for
-some historic context.
-
-Rasmus Villemoes (6):
-  powerpc/fadump: rename cpu_online_mask member of struct
-    fadump_crash_info_header
-  kernel/cpu.c: change type of cpu_possible_bits and friends
-  kernel/cpu.c: export __cpu_*_mask
-  drivers/base/cpu.c: use __cpu_*_mask directly
-  kernel/cpu.c: eliminate cpu_*_mask
-  kernel/cpu.c: make set_cpu_* static inlines
-
- arch/powerpc/include/asm/fadump.h |  2 +-
- arch/powerpc/kernel/fadump.c      |  4 +--
- drivers/base/cpu.c                | 10 +++---
- include/linux/cpumask.h           | 55 ++++++++++++++++++++++++++++-----
- kernel/cpu.c                      | 64 ++++++++-------------------------------
- 5 files changed, 68 insertions(+), 67 deletions(-)
-
--- 
-2.1.3
+-Scott
