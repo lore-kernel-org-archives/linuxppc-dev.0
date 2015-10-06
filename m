@@ -1,18 +1,23 @@
-Return-Path: <danielwa@cisco.com>
-Received: from rcdn-iport-6.cisco.com (rcdn-iport-6.cisco.com [173.37.86.77])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 300501A0036
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 02:59:27 +1100 (AEDT)
-From: Daniel Walker <danielwa@cisco.com>
-To: xe-kernel@external.cisco.com,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Daniel Walker <dwalker@fifo99.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH-RFC 3/7] powerpc: convert to generic builtin command line
-Date: Tue,  6 Oct 2015 08:47:10 -0700
-Message-Id: <1444146434-12776-3-git-send-email-danielwa@cisco.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0EE841A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 07:30:11 +1100 (AEDT)
+From: christophe leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH v2 01/25] powerpc/8xx: Save r3 all the time in DTLB miss
+ handler
+To: Scott Wood <scottwood@freescale.com>
+References: <cover.1442939410.git.christophe.leroy@c-s.fr>
+ <2d35de4435e873f23d37e3b5b5fb34c64421f136.1442939410.git.christophe.leroy@c-s.fr>
+ <20150928220717.GA6161@home.buserror.net> <5613CE1C.40806@c-s.fr>
+ <1444149995.5336.282.camel@freescale.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-ID: <56142F4D.5090405@c-s.fr>
+Date: Tue, 6 Oct 2015 22:30:05 +0200
+MIME-Version: 1.0
+In-Reply-To: <1444149995.5336.282.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,107 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This updates the powerpc code to use the CONFIG_GENERIC_CMDLINE
-option.
 
-Cc: xe-kernel@external.cisco.com
-Cc: Daniel Walker <dwalker@fifo99.com>
-Signed-off-by: Daniel Walker <danielwa@cisco.com>
+
+Le 06/10/2015 18:46, Scott Wood a écrit :
+> On Tue, 2015-10-06 at 15:35 +0200, Christophe Leroy wrote:
+>> Le 29/09/2015 00:07, Scott Wood a écrit :
+>>> On Tue, Sep 22, 2015 at 06:50:29PM +0200, Christophe Leroy wrote:
+>>>> We are spending between 40 and 160 cycles with a mean of 65 cycles in
+>>>> the TLB handling routines (measured with mftbl) so make it more
+>>>> simple althought it adds one instruction.
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> Does this just make it simpler or does it make it faster?  What is the
+>>> performance impact?  Is the performance impact seen with or without
+>>> CONFIG_8xx_CPU6 enabled?  Without it, it looks like you're adding an
+>>> mtspr/mfspr combo in order to replace one mfspr.
+>>>
+>>>
+>> The performance impact is not noticeable. Theoritically it adds 1 cycle
+>> on a mean of 65 cycles, that is 1.5%. Even in the worst case where we
+>> spend around 10% of the time in TLB handling exceptions, that represents
+>> only 0.15% of the total CPU time. So that's almost nothing.
+>> Behind the fact to get in simpler, the main reason is because I need a
+>> third register for the following patch in the set, otherwise I would
+>> spend a more time saving and restoring CR several times.
+> FWIW, the added instruction is an SPR access and I doubt that's only one
+> cycle.
+>
+>
+According to the mpc885 reference manual (table 9-1), Instruction 
+Execution Timing for "Move to: mtspr, mtcrf, mtmsr, mcrxr except mtspr to LR
+and CTR and to SPRs external to the core" is "serialize + 1 cycle".
+Taking into account we preeceeding instructions are also 'mtspr', we are 
+already serialized, so it is only one cycle I believe.
+Am I interpreting it wrong ?
+
+Christophe
+
 ---
- arch/powerpc/Kconfig            | 23 +----------------------
- arch/powerpc/kernel/prom.c      |  4 ++++
- arch/powerpc/kernel/prom_init.c |  8 ++++----
- 3 files changed, 9 insertions(+), 26 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9a7057e..26252dc 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -160,6 +160,7 @@ config PPC
- 	select EDAC_ATOMIC_SCRUB
- 	select ARCH_HAS_DMA_SET_COHERENT_MASK
- 	select HAVE_ARCH_SECCOMP_FILTER
-+	select GENERIC_CMDLINE
- 
- config GENERIC_CSUM
- 	def_bool CPU_LITTLE_ENDIAN
-@@ -640,28 +641,6 @@ config PPC_DENORMALISATION
- 	  Add support for handling denormalisation of single precision
- 	  values.  Useful for bare metal only.  If unsure say Y here.
- 
--config CMDLINE_BOOL
--	bool "Default bootloader kernel arguments"
--
--config CMDLINE
--	string "Initial kernel command string"
--	depends on CMDLINE_BOOL
--	default "console=ttyS0,9600 console=tty0 root=/dev/sda2"
--	help
--	  On some platforms, there is currently no way for the boot loader to
--	  pass arguments to the kernel. For these platforms, you can supply
--	  some command-line options at build time by entering them here.  In
--	  most cases you will need to specify the root device here.
--
--config CMDLINE_FORCE
--	bool "Always use the default kernel command string"
--	depends on CMDLINE_BOOL
--	help
--	  Always use the default kernel command string, even if the boot
--	  loader passes other arguments to the kernel.
--	  This is useful if you cannot or don't want to change the
--	  command-line options your boot loader passes to the kernel.
--
- config EXTRA_TARGETS
- 	string "Additional default image types"
- 	help
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index bef76c5..3281d5a 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -34,6 +34,7 @@
- #include <linux/of.h>
- #include <linux/of_fdt.h>
- #include <linux/libfdt.h>
-+#include <linux/cmdline.h>
- 
- #include <asm/prom.h>
- #include <asm/rtas.h>
-@@ -670,6 +671,9 @@ void __init early_init_devtree(void *params)
- 	 */
- 	of_scan_flat_dt(early_init_dt_scan_chosen_ppc, boot_command_line);
- 
-+	/* append and prepend any arguments built into the kernel. */
-+	cmdline_add_builtin(boot_command_line, NULL, COMMAND_LINE_SIZE);
-+
- 	/* Scan memory nodes and rebuild MEMBLOCKs */
- 	of_scan_flat_dt(early_init_dt_scan_root, NULL);
- 	of_scan_flat_dt(early_init_dt_scan_memory_ppc, NULL);
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 15099c4..2dd2608 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -28,6 +28,7 @@
- #include <linux/delay.h>
- #include <linux/initrd.h>
- #include <linux/bitops.h>
-+#include <linux/cmdline.h>
- #include <asm/prom.h>
- #include <asm/rtas.h>
- #include <asm/page.h>
-@@ -595,11 +596,10 @@ static void __init early_cmdline_parse(void)
- 	p = prom_cmd_line;
- 	if ((long)prom.chosen > 0)
- 		l = prom_getprop(prom.chosen, "bootargs", p, COMMAND_LINE_SIZE-1);
--#ifdef CONFIG_CMDLINE
-+
- 	if (l <= 0 || p[0] == '\0') /* dbl check */
--		strlcpy(prom_cmd_line,
--			CONFIG_CMDLINE, sizeof(prom_cmd_line));
--#endif /* CONFIG_CMDLINE */
-+		cmdline_add_builtin(prom_cmd_line, NULL, sizeof(prom_cmd_line));
-+
- 	prom_printf("command line: %s\n", prom_cmd_line);
- 
- #ifdef CONFIG_PPC64
--- 
-2.1.4
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
