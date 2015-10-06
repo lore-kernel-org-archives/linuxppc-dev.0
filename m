@@ -3,15 +3,18 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2on0140.outbound.protection.outlook.com [207.46.100.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433FE1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 09:56:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B4901A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 09:56:09 +1100 (AEDT)
 From: Scott Wood <scottwood@freescale.com>
 To: Simon Horman <horms@verge.net.au>
 CC: <kexec@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>, "Michael
- Ellerman" <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v2 1/3] ppc64: Fix warnings
-Date: Tue, 6 Oct 2015 17:55:48 -0500
-Message-ID: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
+ Ellerman" <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>, "Samuel
+ Mendoza-Jonas" <sam.mj@au1.ibm.com>
+Subject: [PATCH v2 2/3] ppc64: Avoid rfid if no need to clear MSR_LE
+Date: Tue, 6 Oct 2015 17:55:49 -0500
+Message-ID: <1444172150-29493-2-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
+References: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,88 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Produce a warning-free build on ppc64 (at least, when built as 64-bit
-userspace -- if a 64-bit binary for ppc64 is a requirement, why is -m64
-set only on purgatory?).  Mostly unused (or write-only) variable
-warnings, but also one nasty one where reserve() was used without a
-prototype, causing long long arguments to be passed as int.
+Commit a304e2d82a8c3 ("ppc64: purgatory: Reset primary cpu endian to
+big-endian) changed bctr to rfid.  rfid is book3s-only and will cause a
+fatal exception on book3e.
+
+Purgatory is an isolated environment which makes importing information
+about the subarch awkward, so instead rely on the fact that MSR_LE
+should never be set on book3e, and the rfid is only needed if MSR_LE is
+set (and thus needs to be cleared).  In theory that MSR bit is reserved
+on book3e, rather than zero, but in practice I have not seen it set.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
+Cc: Samuel Mendoza-Jonas <sam.mj@au1.ibm.com>
 ---
-v2: no change
+v2: new patch
 
- kexec/arch/ppc64/crashdump-ppc64.c | 3 ++-
- kexec/arch/ppc64/kexec-elf-ppc64.c | 9 +--------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ purgatory/arch/ppc64/v2wrap.S | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/kexec/arch/ppc64/crashdump-ppc64.c b/kexec/arch/ppc64/crashdump-ppc64.c
-index 6214b83..b3c8928 100644
---- a/kexec/arch/ppc64/crashdump-ppc64.c
-+++ b/kexec/arch/ppc64/crashdump-ppc64.c
-@@ -33,6 +33,7 @@
- #include "../../kexec-syscall.h"
- #include "../../crashdump.h"
- #include "kexec-ppc64.h"
-+#include "../../fs2dt.h"
- #include "crashdump-ppc64.h"
+diff --git a/purgatory/arch/ppc64/v2wrap.S b/purgatory/arch/ppc64/v2wrap.S
+index 179ade9..3534080 100644
+--- a/purgatory/arch/ppc64/v2wrap.S
++++ b/purgatory/arch/ppc64/v2wrap.S
+@@ -116,9 +116,17 @@ master:
+ 	stw	7,0x5c(4)	# and patch it into the kernel
+ 	mr      3,16            # restore dt address
  
- static struct crash_elf_info elf_info64 =
-@@ -187,7 +188,7 @@ static int get_crash_memory_ranges(struct memory_range **range, int *ranges)
- 	DIR *dir, *dmem;
- 	FILE *file;
- 	struct dirent *dentry, *mentry;
--	int i, n, crash_rng_len = 0;
-+	int n, crash_rng_len = 0;
- 	unsigned long long start, end;
- 	int page_size;
++	mfmsr	5
++	andi.	10,5,1		# test MSR_LE
++	bne	little_endian
++
++	li	5,0		# r5 will be 0 for kernel
++	mtctr	4		# prepare branch to
++	bctr			# start kernel
++	
++little_endian:			# book3s-only
+ 	mtsrr0	4		# prepare branch to
  
-diff --git a/kexec/arch/ppc64/kexec-elf-ppc64.c b/kexec/arch/ppc64/kexec-elf-ppc64.c
-index 4a1540e..adcee4c 100644
---- a/kexec/arch/ppc64/kexec-elf-ppc64.c
-+++ b/kexec/arch/ppc64/kexec-elf-ppc64.c
-@@ -97,7 +97,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
- 	struct mem_ehdr ehdr;
- 	char *cmdline, *modified_cmdline = NULL;
- 	const char *devicetreeblob;
--	int cmdline_len, modified_cmdline_len;
- 	uint64_t max_addr, hole_addr;
- 	char *seg_buf = NULL;
- 	off_t seg_size = 0;
-@@ -107,7 +106,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
- 	uint64_t *rsvmap_ptr;
- 	struct bootblock *bb_ptr;
- #endif
--	int i;
- 	int result, opt;
- 	uint64_t my_kernel, my_dt_offset;
- 	uint64_t my_opal_base = 0, my_opal_entry = 0;
-@@ -162,10 +160,7 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
- 		}
- 	}
+-	mfmsr	5
+ 	clrrdi	5,5,1		# clear MSR_LE
+ 	mtsrr1	5
  
--	cmdline_len = 0;
--	if (cmdline)
--		cmdline_len = strlen(cmdline) + 1;
--	else
-+	if (!cmdline)
- 		fprintf(stdout, "Warning: append= option is not passed. Using the first kernel root partition\n");
- 
- 	if (ramdisk && reuse_initrd)
-@@ -181,7 +176,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
- 			strncpy(modified_cmdline, cmdline, COMMAND_LINE_SIZE);
- 			modified_cmdline[COMMAND_LINE_SIZE - 1] = '\0';
- 		}
--		modified_cmdline_len = strlen(modified_cmdline);
- 	}
- 
- 	/* Parse the Elf file */
-@@ -219,7 +213,6 @@ int elf_ppc64_load(int argc, char **argv, const char *buf, off_t len,
- 			return -1;
- 		/* Use new command line. */
- 		cmdline = modified_cmdline;
--		cmdline_len = strlen(modified_cmdline) + 1;
- 	}
- 
- 	/* Add v2wrap to the current image */
 -- 
 2.1.4
