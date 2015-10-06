@@ -1,50 +1,27 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB3131A0023
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 11:54:12 +1100 (AEDT)
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 5 Oct 2015 18:54:09 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 648D419D803E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Oct 2015 18:42:19 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t960r90j11338082
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Oct 2015 17:53:09 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t960s6tW013550
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 Oct 2015 18:54:07 -0600
-Date: Mon, 5 Oct 2015 09:57:03 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Will Deacon <will.deacon@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Ingo Molnar <mingo@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 93FBA1A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Oct 2015 14:23:18 +1100 (AEDT)
+Date: Tue, 6 Oct 2015 14:19:43 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+ Keith Busch <keith.busch@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
-Subject: Re: [RFC v2 4/7] powerpc: atomic: Implement xchg_* and
- atomic{,64}_xchg_* variants
-Message-ID: <20151005165703.GD4487@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
- <1442418575-12297-5-git-send-email-boqun.feng@gmail.com>
- <20151001122440.GP2881@worktop.programming.kicks-ass.net>
- <20151001150909.GC4043@linux.vnet.ibm.com>
- <20151001171304.GX3816@twins.programming.kicks-ass.net>
- <20151001180301.GJ4043@linux.vnet.ibm.com>
- <20151005144407.GI8818@arm.com>
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/iommu: expose IOMMU page shift
+Message-ID: <20151006031943.GC3861@voom.fritz.box>
+References: <20151002171606.GA41011@linux.vnet.ibm.com>
+ <20151002171800.GB41011@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151005144407.GI8818@arm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="yLVHuoLXiP9kZBkt"
+In-Reply-To: <20151002171800.GB41011@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,38 +31,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 05, 2015 at 03:44:07PM +0100, Will Deacon wrote:
-> On Thu, Oct 01, 2015 at 07:03:01PM +0100, Paul E. McKenney wrote:
-> > On Thu, Oct 01, 2015 at 07:13:04PM +0200, Peter Zijlstra wrote:
-> > > On Thu, Oct 01, 2015 at 08:09:09AM -0700, Paul E. McKenney wrote:
-> > > > On Thu, Oct 01, 2015 at 02:24:40PM +0200, Peter Zijlstra wrote:
-> > > 
-> > > > > I must say I'm somewhat surprised by this level of relaxation, I had
-> > > > > expected to only loose SMP barriers, not the program order ones.
-> > > > > 
-> > > > > Is there a good argument for this?
-> > > > 
-> > > > Yes, when we say "relaxed", we really mean relaxed.  ;-)
-> > > > 
-> > > > Both the CPU and the compiler are allowed to reorder around relaxed
-> > > > operations.
-> > > 
-> > > Is this documented somewhere, because I completely missed this part.
-> > 
-> > Well, yes, these need to be added to the documentation.  I am assuming
-> > that Will is looking to have the same effect as C11 memory_order_relaxed,
-> > which is relaxed in this sense.  If he has something else in mind,
-> > he needs to tell us what it is and why.  ;-)
-> 
-> I was treating them purely as being single-copy atomic and not providing
-> any memory ordering guarantees (much like the non *_return atomic operations
-> that we already have). I think this lines up with C11, minus the bits
-> about data races which we don't call out anyway.
 
-As long as it is single-copy atomic and not multi-copy atomic, I believe
-we are on the saem page.  We have slowly been outlawing some sorts of
-data races over the past few years, and I would guess that this will
-continue, expecially if good tooling emerges (and KTSAN is showing some
-promise from what I can see).
+--yLVHuoLXiP9kZBkt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-							Thanx, Paul
+On Fri, Oct 02, 2015 at 10:18:00AM -0700, Nishanth Aravamudan wrote:
+> We will leverage this macro in the NVMe driver, which needs to know the
+> configured IOMMU page shift to properly configure its device's page
+> size.
+>=20
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+>=20
+> ---
+> Given this is available, it seems reasonable to expose -- and it doesn't
+> really make sense to make the driver do a log2 call on the existing
+> IOMMU_PAGE_SIZE() value.
+>=20
+> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/=
+iommu.h
+> index ca18cff..6fdf857 100644
+> --- a/arch/powerpc/include/asm/iommu.h
+> +++ b/arch/powerpc/include/asm/iommu.h
+> @@ -36,6 +36,7 @@
+>  #define IOMMU_PAGE_MASK_4K       (~((1 << IOMMU_PAGE_SHIFT_4K) - 1))
+>  #define IOMMU_PAGE_ALIGN_4K(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE_4K)
+> =20
+> +#define IOMMU_PAGE_SHIFT(tblptr) (tblptr)->it_page_shift
+>  #define IOMMU_PAGE_SIZE(tblptr) (ASM_CONST(1) << (tblptr)->it_page_shift)
+
+Seems like it would be a touch safer to alter IOMMU_PAGE_SIZE so it
+uses the new IOMMU_PAGE_SHIFT macro.
+
+>  #define IOMMU_PAGE_MASK(tblptr) (~((1 << (tblptr)->it_page_shift) - 1))
+>  #define IOMMU_PAGE_ALIGN(addr, tblptr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE(t=
+blptr))
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--yLVHuoLXiP9kZBkt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJWEz3OAAoJEGw4ysog2bOSMkEP/3z5B81aJ2P4h6CGYgkFBW3C
+x5laS6nhWXrrD7ErsKFI9EBGLrzEXN5HxDQUbJ9feo2yLoK1oDeAq2iHwhTO9gWa
+CZzblQM8Qdu1IEyM3QNhqcF13x48MMzWqbFOTFVwFGBL5kjVaaQWvhEPlAxFK+PE
+gzSuWNxCdVLeez4ZceTWJfGmyut23rN/Kmq9NqGPQ81u6BQFOlOw0hNynNznmnrN
+X6NMrXAWpLw6ZydNeDZduVbZ5X1fb86HLj1AJmLRSDA9WMIIxJxb90Py+kVLPBei
+CsRAkFRrndZaOPt/FlaPgf1692rwFjqhvsfNnwkkwPzBj8VfwbnnXAM3ZUopT+9F
+Zpf7NnsdSUjk8txjODE7ib2gGLK3O+nMw8mZz/pXAWE8H1dQ9v2Yhi7YzrGagHjK
+hysgaKYlM7eWiZZppN1FgAquWwCF/SJVho3cq0CUU1N0LX/o9s3a+w/rV/r9bSw1
+lqM7in5kw/Xqk9Iff4giZ8tHx14inHBf9vryy0/PdxY72wi17cNl0BWxmphEgeai
+OJhigCXoZhEIJQqk2X1w90oj0MDEen4tlhuH+A36JBkLOB+cBdtLUvw+pBkSxV0/
+7pBl2KxNWSUI6uYO3mWMY4PgAqxG4z/Qh4I3cfFasuXjLPEf/NVVczkH7NzE5Jzo
+7h+0qXiQvx7UivNoO5OH
+=E/DB
+-----END PGP SIGNATURE-----
+
+--yLVHuoLXiP9kZBkt--
