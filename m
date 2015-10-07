@@ -1,31 +1,36 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
- [IPv6:2607:f8b0:4001:c05::22b])
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-lb0-f195.google.com (mail-lb0-f195.google.com
+ [209.85.217.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7FF31A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 01:31:31 +1100 (AEDT)
-Received: by igxx6 with SMTP id x6so15791925igx.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2015 07:31:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2CD61A012E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 08:28:06 +1100 (AEDT)
+Received: by lbcao8 with SMTP id ao8so2680661lbc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Oct 2015 14:28:02 -0700 (PDT)
+Reply-To: alex.popov@linux.com
+Subject: Re: [PATCH v3 3/3] dmaengine: mpc512x: initialize with
+ subsys_initcall()
+References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
+ <1443115737-3948-4-git-send-email-alex.popov@linux.com>
+ <20151007141740.GF3320@vkoul-mobl.iind.intel.com>
+To: Vinod Koul <vinod.koul@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anatolij Gustschin <agust@denx.de>, Gerhard Sittig <gsi@denx.de>,
+ Rob Herring <robh@kernel.org>, Timur Tabi <timur@tabi.org>,
+ Grant Likely <grant.likely@linaro.org>,
+ Dan Williams <dan.j.williams@intel.com>, Pawel Moll <pawel.moll@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Alexander Popov <alex.popov@linux.com>
+From: Alexander Popov <alex.popov@linux.com>
+Message-ID: <56158F36.1080602@linux.com>
+Date: Thu, 8 Oct 2015 00:31:34 +0300
 MIME-Version: 1.0
-Sender: jwboyer@gmail.com
-In-Reply-To: <1444209210.19375.1.camel@ellerman.id.au>
-References: <560EA623.1040300@redhat.com>
- <1444102518.16909.3.camel@ellerman.id.au>
- <56141237.2040403@redhat.com>
- <1444197649.6794.7.camel@ellerman.id.au>
- <20151007071911.GA31002@gate.crashing.org>
- <1444209210.19375.1.camel@ellerman.id.au>
-Date: Wed, 7 Oct 2015 10:31:27 -0400
-Message-ID: <CA+5PVA7rpTbbVRJ_ze8Fndk+uxb2c=uqjkJRk+E9_aymu2fUew@mail.gmail.com>
-Subject: Re: Missing operand for tlbie instruction on Power7
-From: Josh Boyer <jwboyer@fedoraproject.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
- Laura Abbott <labbott@redhat.com>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20151007141740.GF3320@vkoul-mobl.iind.intel.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,43 +40,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 7, 2015 at 5:13 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Wed, 2015-10-07 at 02:19 -0500, Segher Boessenkool wrote:
->> On Wed, Oct 07, 2015 at 05:00:49PM +1100, Michael Ellerman wrote:
->> > > It's also worth noting that the __flush_power7 uses tlbiel instead of tlbie.
->> >
->> > Yeah that's a good point. It's not clear if the swsusp code wants to a local or
->> > a global invalidate.
->>
->> If I read the code right, this is called on the boot CPU when all the
->> non-boot CPUs are still (potentially) down, so if you would do a global
->> invalidate the non-boot CPUs might not even notice, so those need to do
->> a (local) invalidate after being brought up anyway?  Or they probably
->> need it before being brought down at all?  You figure it out, it makes
->> my brain hurt :-)
->
-> A good rule would be that every cpu does a local invalidate before turning on
-> the MMU. That would work for this case and also for kexec, kdump, junk left by
-> firmare etc. But I don't think we do that consistently in a way that works for
-> this code at the moment.
->
->> > As an alternative, can you try adding a .machine push / .machine "power4" /
->> > .machine pop, around the tlbie. That should tell the assembler to drop back to
->> > power4 mode for that instruction, which should then do the right thing. There
->> > are some examples in that file.
->>
->> That will get the assembler to not complain, but it will assemble the wrong
->> instruction: the power7 instruction has the same opcode (but different
->> semantics).  So if you assemble a "tlbie r4" in power4 mode, a newer CPU
->> will see it as a "tlbie r4,r0" and do the wrong thing.
->
-> Yeah, it would basically maintain the existing behaviour which is wrong but a
-> known quantity. I suspect no one has ever run this on Power7 or in fact
-> anything other than G5 or Book3E.
+On 07.10.2015 17:17, Vinod Koul wrote:
+> On Thu, Sep 24, 2015 at 08:28:57PM +0300, Alexander Popov wrote:
+>> Initialize Freescale MPC512x DMA driver with subsys_initcall()
+>> to allow the depending drivers to call dma_request_slave_channel()
+>> during their probe.
+> 
+> Why can't we use defered probe ? I have been asking people to not move init
+> levels and esnure we have right solutions using defered probe
 
-Likely not, but leaving it broken just because it is known behavior
-seems pretty weird to me.  I think Fedora will look at simply
-disabling hibernation on ppc64 so the file isn't built at all.  Seems
-to be a safer option.
+Thanks, Vinod, I'll do it in v4.
 
-josh
+Best regards,
+Alexander
