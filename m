@@ -1,18 +1,41 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B69B21A0026
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 09:44:46 +1100 (AEDT)
-Date: Thu, 8 Oct 2015 09:44:44 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Chris Metcalf
- <cmetcalf@ezchip.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of Linus' tree
-Message-ID: <20151008094444.10d9cc68@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2DCA1A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 10:21:18 +1100 (AEDT)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6FABA140D6E
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 10:21:18 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 8 Oct 2015 09:21:16 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3C5A7357804F
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 10:21:11 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t97NL3d661472840
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 10:21:11 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t97NKcQB002624
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 10:20:39 +1100
+Date: Thu, 8 Oct 2015 10:20:14 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH 1/5] powerpc/eeh: Don't unfreeze PHB PE after reset
+Message-ID: <20151007232014.GA5040@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1444187529-32217-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1444187529-32217-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +45,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus,
+On Wed, Oct 07, 2015 at 02:12:05PM +1100, Gavin Shan wrote:
+>On PowerNV platform, the PE is kept in frozen state until the PE
+>reset is completed to avoid recursive EEH error caused by MMIO
+>access during the period of EEH reset. The PE's frozen state is
+>cleared after BARs of PCI device included in the PE are restored
+>and enabled. However, we needn't clear the frozen state for PHB PE
+>explicitly at this point as there is no real PE for PHB PE. As the
+>PHB PE is always binding with PE#0, we actually clear PE#0, which
+>is wrong. It doesn't incur any problem though.
+>
+>This checks if the PE is PHB PE and doesn't clear the frozen state
+>if it is.
+>
+>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-After merging Linus' tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+Michael, please ignore this series for now. One or two patches are
+still missed. Also, this series needs respin.
 
-lib/string.c: In function 'strscpy':
-lib/string.c:209:4: error: implicit declaration of function 'zero_bytemask' [-Werror=implicit-function-declaration]
-    *(unsigned long *)(dest+res) = c & zero_bytemask(data);
-    ^
+Thanks,
+Gavin
 
-Caused by commit
-
-  30035e45753b ("string: provide strscpy()")
-
-but only exposed by commit
-
-  19c22f3a29fa ("word-at-a-time.h: fix some Kbuild files")
-
-BIG_ENDIAN powerpc doesn't have a definition for this function ...
-
-Isn't this why we have linux-next ... to find this stuff early?  :-(
-
-Oh, well, I have applied the following (that just copies zero_bytemask
-from asm-generic.  I have done no testing beyond compiling.
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 8 Oct 2015 09:29:26 +1100
-Subject: [PATCH] word-at-a-time.h: powerpc: implement define zero_bytemask
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/include/asm/word-at-a-time.h | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
-index 5b3a903adae6..4f9b6b93c18f 100644
---- a/arch/powerpc/include/asm/word-at-a-time.h
-+++ b/arch/powerpc/include/asm/word-at-a-time.h
-@@ -40,6 +40,8 @@ static inline bool has_zero(unsigned long val, unsigned long *data, const struct
- 	return (val + c->high_bits) & ~rhs;
- }
- 
-+#define zero_bytemask(mask) (~1ul << __fls(mask))
-+
- #else
- 
- #ifdef CONFIG_64BIT
--- 
-2.5.1
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+>---
+> arch/powerpc/kernel/eeh_driver.c | 14 ++++++++++----
+> 1 file changed, 10 insertions(+), 4 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+>index 89eb4bc..3a626ed 100644
+>--- a/arch/powerpc/kernel/eeh_driver.c
+>+++ b/arch/powerpc/kernel/eeh_driver.c
+>@@ -587,10 +587,16 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
+> 	eeh_ops->configure_bridge(pe);
+> 	eeh_pe_restore_bars(pe);
+>
+>-	/* Clear frozen state */
+>-	rc = eeh_clear_pe_frozen_state(pe, false);
+>-	if (rc)
+>-		return rc;
+>+	/*
+>+	 * If it's PHB PE, the frozen state on all available PEs should have
+>+	 * been cleared by the PHB reset. Otherwise, we unfreeze the PE and its
+>+	 * child PEs because they might be in frozen state.
+>+	 */
+>+	if (!(pe->type & EEH_PE_PHB)) {
+>+		rc = eeh_clear_pe_frozen_state(pe, false);
+>+		if (rc)
+>+			return rc;
+>+	}
+>
+> 	/* Give the system 5 seconds to finish running the user-space
+> 	 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes,
+>-- 
+>2.1.0
+>
