@@ -1,27 +1,29 @@
-Return-Path: <lkp@intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 7003B1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 00:56:18 +1100 (AEDT)
-Date: Wed, 7 Oct 2015 21:56:02 +0800
-From: Fengguang Wu <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- Keith Busch <keith.busch@intel.com>,
- Paul Mackerras <paulus@samba.org>, kbuild-all@01.org,
- Matthew Wilcox <willy@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [kbuild-all] [PATCH 4/5 v2] pseries/iommu: implement DDW-aware
- dma_get_page_shift
-Message-ID: <20151007135602.GA17377@wfg-t540p.sh.intel.com>
-References: <201510030421.d9fvrbXU%fengguang.wu@intel.com>
- <1444102746.16909.4.camel@ellerman.id.au>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id 89EC21A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 01:17:53 +1100 (AEDT)
+Date: Wed, 7 Oct 2015 15:17:41 +0100
+From: Vinod Koul <vinod.koul@intel.com>
+To: Alexander Popov <alex.popov@linux.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Anatolij Gustschin <agust@denx.de>, Gerhard Sittig <gsi@denx.de>,
+ Rob Herring <robh@kernel.org>, Timur Tabi <timur@tabi.org>,
+ Grant Likely <grant.likely@linaro.org>,
+ Dan Williams <dan.j.williams@intel.com>, Pawel Moll <pawel.moll@arm.com>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 3/3] dmaengine: mpc512x: initialize with
+ subsys_initcall()
+Message-ID: <20151007141740.GF3320@vkoul-mobl.iind.intel.com>
+References: <1443115737-3948-1-git-send-email-alex.popov@linux.com>
+ <1443115737-3948-4-git-send-email-alex.popov@linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1444102746.16909.4.camel@ellerman.id.au>
+In-Reply-To: <1443115737-3948-4-git-send-email-alex.popov@linux.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,32 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 06, 2015 at 02:39:06PM +1100, Michael Ellerman wrote:
-> On Sat, 2015-10-03 at 04:33 +0800, kbuild test robot wrote:
-> > Hi Nishanth,
-> > 
-> > [auto build test results on v4.3-rc3 -- if it's inappropriate base, please ignore]
-> > 
-> > config: powerpc-defconfig (attached as .config)
-> > reproduce:
-> >         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-> >         chmod +x ~/bin/make.cross
-> >         # save the attached .config to linux build tree
-> >         make.cross ARCH=powerpc 
-> > 
-> > All error/warnings (new ones prefixed by >>):
-> > 
-> >    arch/powerpc/platforms/pseries/iommu.c: In function 'iommu_init_early_pSeries':
-> > >> arch/powerpc/platforms/pseries/iommu.c:1433:9: error: 'struct machdep_calls' has no member named 'dma_get_page_shift'
-> >       ppc_md.dma_get_page_shift = dma_get_page_shift_pSeriesLP;
-> 
-> It was added in patch 3/5, so I think this error is bogus. Unless there's a
-> typo I'm missing?
+On Thu, Sep 24, 2015 at 08:28:57PM +0300, Alexander Popov wrote:
+> Initialize Freescale MPC512x DMA driver with subsys_initcall()
+> to allow the depending drivers to call dma_request_slave_channel()
+> during their probe.
 
-Yes sorry, the patchset was not detected correctly in your case,
-ending up the patches being tested as individual ones.
+Why can't we use defered probe ? I have been asking people to not move init
+levels and esnure we have right solutions using defered probe
 
-I'll fixup the robot.
-
-Thanks,
-Fengguang
+-- 
+~Vinod
