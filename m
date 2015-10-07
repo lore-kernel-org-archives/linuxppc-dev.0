@@ -1,21 +1,28 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <BATV+c584780a7cfe22ed9f83+4427+infradead.org+acme@casper.srs.infradead.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E544A1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 02:33:34 +1100 (AEDT)
-Message-ID: <56152578.6070802@freescale.com>
-Date: Wed, 7 Oct 2015 17:00:24 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-CC: Tiejun Chen <tiejun.chen@intel.com>, <kexec@lists.infradead.org>
-Subject: Re: [PATCH v2 05/18] powerpc/85xx: Load all early TLB entries at once
-References: <1444189702-17241-1-git-send-email-scottwood@freescale.com>
- <1444189702-17241-6-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1444189702-17241-6-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id F04BF1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 02:42:15 +1100 (AEDT)
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 227F21402B4
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 02:42:15 +1100 (AEDT)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 1/1] perf tools: Fix build break on powerpc due to
+ sample_reg_masks
+Date: Wed,  7 Oct 2015 12:42:03 -0300
+Message-Id: <1444232523-20638-2-git-send-email-acme@kernel.org>
+In-Reply-To: <1444232523-20638-1-git-send-email-acme@kernel.org>
+References: <1444232523-20638-1-git-send-email-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,74 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/07/2015 06:48 AM, Scott Wood wrote:
-> Use an AS=1 trampoline TLB entry to allow all normal TLB1 entries to
-> be loaded at once.  This avoids the need to keep the translation that
-> code is executing from in the same TLB entry in the final TLB
-> configuration as during early boot, which in turn is helpful for
-> relocatable kernels (e.g. kdump) where the kernel is not running from
-> what would be the first TLB entry.
-> 
-> On e6500, we limit map_mem_in_cams() to the primary hwthread of a
-> core (the boot cpu is always considered primary, as a kdump kernel
-> can be entered on any cpu).  Each TLB only needs to be set up once,
-> and when we do, we don't want another thread to be running when we
-> create a temporary trampoline TLB1 entry.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/kernel/setup_64.c   |  8 +++++
->  arch/powerpc/mm/fsl_booke_mmu.c  | 15 ++++++++--
->  arch/powerpc/mm/mmu_decl.h       |  1 +
->  arch/powerpc/mm/tlb_nohash.c     | 19 +++++++++++-
->  arch/powerpc/mm/tlb_nohash_low.S | 63 ++++++++++++++++++++++++++++++++++++++++
->  5 files changed, 102 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> index bdcbb71..505ec2c 100644
-> --- a/arch/powerpc/kernel/setup_64.c
-> +++ b/arch/powerpc/kernel/setup_64.c
-> @@ -108,6 +108,14 @@ static void setup_tlb_core_data(void)
->  	for_each_possible_cpu(cpu) {
->  		int first = cpu_first_thread_sibling(cpu);
->  
-> +		/*
-> +		 * If we boot via kdump on a non-primary thread,
-> +		 * make sure we point at the thread that actually
-> +		 * set up this TLB.
-> +		 */
-> +		if (cpu_first_thread_sibling(boot_cpuid) == first)
-> +			first = boot_cpuid;
-> +
->  		paca[cpu].tcd_ptr = &paca[first].tcd;
->  
->  		/*
-> diff --git a/arch/powerpc/mm/fsl_booke_mmu.c b/arch/powerpc/mm/fsl_booke_mmu.c
-> index 354ba3c..36d3c55 100644
-> --- a/arch/powerpc/mm/fsl_booke_mmu.c
-> +++ b/arch/powerpc/mm/fsl_booke_mmu.c
-> @@ -105,8 +105,9 @@ unsigned long p_mapped_by_tlbcam(phys_addr_t pa)
->   * an unsigned long (for example, 32-bit implementations cannot support a 4GB
->   * size).
->   */
-> -static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
-> -		unsigned long size, unsigned long flags, unsigned int pid)
-> +static void preptlbcam(int index, unsigned long virt, phys_addr_t phys,
-> +		       unsigned long size, unsigned long flags,
-> +		       unsigned int pid)
->  {
->  	unsigned int tsize;
->  
-> @@ -141,7 +142,13 @@ static void settlbcam(int index, unsigned long virt, phys_addr_t phys,
->  	tlbcam_addrs[index].start = virt;
->  	tlbcam_addrs[index].limit = virt + size - 1;
->  	tlbcam_addrs[index].phys = phys;
-> +}
->  
-> +void settlbcam(int index, unsigned long virt, phys_addr_t phys,
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
+perf_regs.c does not get built on Powerpc as CONFIG_PERF_REGS is false.
+So the weak definition for 'sample_regs_masks' doesn't get picked up.
 
-Nit: shouldn't this be left static? Also, now with this bulk TLB1 loading is it still used? Maybe it can be dropped.
+Adding perf_regs.o to util/Build unconditionally, exposes a redefinition
+error for 'perf_reg_value()' function (due to the static inline version
+in util/perf_regs.h). So use #ifdef HAVE_PERF_REGS_SUPPORT' around that
+function.
 
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Jiri Olsa <jolsa@kernel.org>
+Cc: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Stephane Eranian <eranian@google.com>
+Cc: linuxppc-dev@ozlabs.org
+Link: http://lkml.kernel.org/r/20150930182836.GA27858@us.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
-Best Regards, Laurentiu
+ tools/perf/util/Build       | 2 +-
+ tools/perf/util/perf_regs.c | 2 ++
+ tools/perf/util/perf_regs.h | 1 +
+ 3 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/tools/perf/util/Build b/tools/perf/util/Build
+index 349bc96ca1fe..e5f18a288b74 100644
+--- a/tools/perf/util/Build
++++ b/tools/perf/util/Build
+@@ -17,6 +17,7 @@ libperf-y += levenshtein.o
+ libperf-y += llvm-utils.o
+ libperf-y += parse-options.o
+ libperf-y += parse-events.o
++libperf-y += perf_regs.o
+ libperf-y += path.o
+ libperf-y += rbtree.o
+ libperf-y += bitmap.o
+@@ -103,7 +104,6 @@ libperf-$(CONFIG_LIBBABELTRACE) += data-convert-bt.o
+ 
+ libperf-y += scripting-engines/
+ 
+-libperf-$(CONFIG_PERF_REGS) += perf_regs.o
+ libperf-$(CONFIG_ZLIB) += zlib.o
+ libperf-$(CONFIG_LZMA) += lzma.o
+ 
+diff --git a/tools/perf/util/perf_regs.c b/tools/perf/util/perf_regs.c
+index 885e8ac83997..6b8eb13e14e4 100644
+--- a/tools/perf/util/perf_regs.c
++++ b/tools/perf/util/perf_regs.c
+@@ -6,6 +6,7 @@ const struct sample_reg __weak sample_reg_masks[] = {
+ 	SMPL_REG_END
+ };
+ 
++#ifdef HAVE_PERF_REGS_SUPPORT
+ int perf_reg_value(u64 *valp, struct regs_dump *regs, int id)
+ {
+ 	int i, idx = 0;
+@@ -29,3 +30,4 @@ out:
+ 	*valp = regs->cache_regs[id];
+ 	return 0;
+ }
++#endif
+diff --git a/tools/perf/util/perf_regs.h b/tools/perf/util/perf_regs.h
+index 2984dcc54d67..679d6e493962 100644
+--- a/tools/perf/util/perf_regs.h
++++ b/tools/perf/util/perf_regs.h
+@@ -2,6 +2,7 @@
+ #define __PERF_REGS_H
+ 
+ #include <linux/types.h>
++#include <linux/compiler.h>
+ 
+ struct regs_dump;
+ 
+-- 
+2.1.0
