@@ -3,17 +3,17 @@ Received: from na01-bn1-obe.outbound.protection.outlook.com
  (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 009571A0008
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 14:48:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3EC721A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 14:48:38 +1100 (AEDT)
 From: Scott Wood <scottwood@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
 CC: Tiejun Chen <tiejun.chen@intel.com>, Michael Ellerman
  <mpe@ellerman.id.au>, <kexec@lists.infradead.org>, Scott Wood
  <scottwood@freescale.com>
-Subject: [PATCH v2 02/18] powerpc/fsl-corenet: Disable coreint if kexec is
- enabled
-Date: Tue, 6 Oct 2015 22:48:06 -0500
-Message-ID: <1444189702-17241-3-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v2 03/18] powerpc/85xx: Don't use generic timebase sync on
+ 64-bit
+Date: Tue, 6 Oct 2015 22:48:07 -0500
+Message-ID: <1444189702-17241-4-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1444189702-17241-1-git-send-email-scottwood@freescale.com>
 References: <1444189702-17241-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -27,40 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Problems have been observed in coreint (EPR) mode if interrupts are
-left pending (due to the lack of device quiescence with kdump) after
-having tried to deliver to a CPU but unable to deliver due to MSR[EE]
--- interrupts no longer get reliably delivered in the new kernel.  I
-tried various ways of fixing it up inside the crash kernel itself, and
-none worked (including resetting the entire mpic).  Masking all
-interrupts and issuing EOIs in the crashing kernel did help a lot of
-the time, but the behavior was not consistent.
+85xx currently uses the generic timebase sync mechanism when
+CONFIG_KEXEC is enabled, because 32-bit 85xx kexec support does a hard
+reset of each core.  64-bit 85xx kexec does not do this, so we neither
+need nor want this (nor is the generic timebase sync code built on
+ppc64).
 
-Thus, stick to standard IACK mode when kdump is a possibility.
+FWIW, I don't like the fact that the hard reset is done on 32-bit
+kexec, and I especially don't like the timebase sync being triggered
+only on the presence of CONFIG_KEXEC rather than actually booting in
+that environment, but that's beyond the scope of this patch...
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
-Previously I discussed the possibility of removing coreint entirely,
-but I think we want to keep it for virtualized guests.
----
- arch/powerpc/platforms/85xx/corenet_generic.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/platforms/85xx/smp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index b395571..04ffbcb 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -214,7 +214,11 @@ define_machine(corenet_generic) {
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
- 	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index c2ded03..a0763be 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -344,7 +344,7 @@ struct smp_ops_t smp_85xx_ops = {
+ 	.cpu_disable	= generic_cpu_disable,
+ 	.cpu_die	= generic_cpu_die,
  #endif
-+#ifdef CONFIG_KEXEC
-+	.get_irq		= mpic_get_irq,
-+#else
- 	.get_irq		= mpic_get_coreint_irq,
-+#endif
- 	.restart		= fsl_rstcr_restart,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= udbg_progress,
+-#ifdef CONFIG_KEXEC
++#if defined(CONFIG_KEXEC) && !defined(CONFIG_PPC64)
+ 	.give_timebase	= smp_generic_give_timebase,
+ 	.take_timebase	= smp_generic_take_timebase,
+ #endif
 -- 
 2.1.4
