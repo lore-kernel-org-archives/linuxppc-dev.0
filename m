@@ -1,25 +1,25 @@
 Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10F751A005A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 13:26:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A0671A01D7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 13:26:32 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Wed, 7 Oct 2015 12:26:23 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8D40C3578053
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 13:26:22 +1100 (EST)
+ Wed, 7 Oct 2015 12:26:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id DB8642CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Oct 2015 13:26:28 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t972QFRW65208390
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2015 13:26:24 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t972QKsQ42729532
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2015 13:26:28 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t972Pnb4016271
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2015 13:25:50 +1100
+ t972PtY8016403
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 Oct 2015 13:25:56 +1100
 From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, acme@kernel.org, scottwood@freescale.com,
@@ -27,9 +27,9 @@ Cc: linuxppc-dev@lists.ozlabs.org, acme@kernel.org, scottwood@freescale.com,
  mpe@ellerman.id.au, paulus@samba.org, mingo@redhat.com,
  yarygin@linux.vnet.ibm.com, borntraeger@de.ibm.com,
  srikar@linux.vnet.ibm.com, dsahern@gmail.com, hemant@linux.vnet.ibm.com
-Subject: [PATCH v9 2/4] perf,kvm/{x86,s390}: Remove const from kvm_events_tp
-Date: Wed,  7 Oct 2015 07:55:09 +0530
-Message-Id: <1444184711-8559-2-git-send-email-hemant@linux.vnet.ibm.com>
+Subject: [PATCH v9 3/4] perf,kvm/powerpc: Port perf kvm stat to powerpc
+Date: Wed,  7 Oct 2015 07:55:10 +0530
+Message-Id: <1444184711-8559-3-git-send-email-hemant@linux.vnet.ibm.com>
 In-Reply-To: <1444184711-8559-1-git-send-email-hemant@linux.vnet.ibm.com>
 References: <1444184711-8559-1-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,56 +41,314 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch removes the "const" qualifier from kvm_events_tp declaration
-to account for the fact that some architectures may need to update this
-variable dynamically. For instance, powerpc will need to update this
-variable dynamically depending on the machine type.
+perf kvm can be used to analyze guest exit reasons. This support already
+exists in x86. Hence, porting it to powerpc.
 
+ - To trace KVM events :
+  perf kvm stat record
+  If many guests are running, we can track for a specific guest by using
+  --pid as in : perf kvm stat record --pid <pid>
+
+ - To see the results :
+  perf kvm stat report
+
+The result shows the number of exits (from the guest context to
+host/hypervisor context) grouped by their respective exit reasons with
+their frequency.
+
+Since, different powerpc machines have different KVM tracepoints, this
+patch discovers the available tracepoints dynamically and accordingly
+looks for them. If any single tracepoint is not present, this support
+won't be enabled for reporting. To record, this will fail if any of the
+events we are looking to record isn't available.
+Right now, its only supported on PowerPC Book3S_HV architectures.
+
+To analyze the different exits, group them and present them (in a slight
+descriptive way) to the user, we need a mapping between the "exit
+code" (dumped in the kvm_guest_exit tracepoint data) and to its related
+Interrupt vector description (exit reason). This patch adds this mapping
+in book3s_hv_exits.h.
+
+It records on two available KVM tracepoints for book3s_hv:
+"kvm_hv:kvm_guest_exit" and "kvm_hv:kvm_guest_enter".
+
+Here is a sample o/p:
+ # pgrep qemu
+19378
+60515
+
+2 Guests are running on the host.
+
+ # perf kvm stat record -a
+^C[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 4.153 MB perf.data.guest (39624
+samples) ]
+
+ # perf kvm stat report -p 60515
+
+Analyze events for pid(s) 60515, all VCPUs:
+
+       VM-EXIT    Samples  Samples%     Time%    Min Time    Max Time         Avg time
+
+       SYSCALL       9141    63.67%     7.49%      1.26us   5782.39us      9.87us ( +-   6.46% )
+H_DATA_STORAGE       4114    28.66%     5.07%      1.72us   4597.68us     14.84us ( +-  20.06% )
+HV_DECREMENTER        418     2.91%     4.26%      0.70us  30002.22us    122.58us ( +-  70.29% )
+      EXTERNAL        392     2.73%     0.06%      0.64us    104.10us      1.94us ( +-  18.83% )
+RETURN_TO_HOST        287     2.00%    83.11%      1.53us 124240.15us   3486.52us ( +-  16.81% )
+H_INST_STORAGE          5     0.03%     0.00%      1.88us      3.73us      2.39us ( +-  14.20% )
+
+Total Samples:14357, Total events handled time:1203918.42us.
+
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 ---
- tools/perf/arch/s390/util/kvm-stat.c | 2 +-
- tools/perf/arch/x86/util/kvm-stat.c  | 2 +-
- tools/perf/util/kvm-stat.h           | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Changelog:
+v8 to v9:
+- Moved the book3s specific setup into one function.
+- Removed the macros (which were being used only once).
+- Formatting changes.
+v7 to v8:
+- Fixed a perf kvm stat live bug.
+v6 to v7:
+- Removed dependency on uapi.
+v4 to v5:
+- Removed dependency on arch/powerpc/kvm/trace_book3s.h and added them in
+the userspace side.
+- No more arch side dependency.
+v1 to v3:
+- Split the patches for powerpc and perf
 
-diff --git a/tools/perf/arch/s390/util/kvm-stat.c b/tools/perf/arch/s390/util/kvm-stat.c
-index b85a94b..ed57df2 100644
---- a/tools/perf/arch/s390/util/kvm-stat.c
-+++ b/tools/perf/arch/s390/util/kvm-stat.c
-@@ -79,7 +79,7 @@ static struct kvm_events_ops exit_events = {
- 	.name = "VM-EXIT"
- };
+ tools/perf/arch/powerpc/Makefile               |   2 +
+ tools/perf/arch/powerpc/util/Build             |   1 +
+ tools/perf/arch/powerpc/util/book3s_hv_exits.h |  33 ++++++++
+ tools/perf/arch/powerpc/util/kvm-stat.c        | 100 +++++++++++++++++++++++++
+ tools/perf/builtin-kvm.c                       |  18 +++++
+ tools/perf/util/kvm-stat.h                     |   1 +
+ 6 files changed, 155 insertions(+)
+ create mode 100644 tools/perf/arch/powerpc/util/book3s_hv_exits.h
+ create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
+
+diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+index 7fbca17..9f9cea3 100644
+--- a/tools/perf/arch/powerpc/Makefile
++++ b/tools/perf/arch/powerpc/Makefile
+@@ -1,3 +1,5 @@
+ ifndef NO_DWARF
+ PERF_HAVE_DWARF_REGS := 1
+ endif
++
++HAVE_KVM_STAT_SUPPORT := 1
+diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
+index 7b8b0d1..c8fe207 100644
+--- a/tools/perf/arch/powerpc/util/Build
++++ b/tools/perf/arch/powerpc/util/Build
+@@ -1,5 +1,6 @@
+ libperf-y += header.o
+ libperf-y += sym-handling.o
++libperf-y += kvm-stat.o
  
--const char * const kvm_events_tp[] = {
-+const char *kvm_events_tp[] = {
- 	"kvm:kvm_s390_sie_enter",
- 	"kvm:kvm_s390_sie_exit",
- 	"kvm:kvm_s390_intercept_instruction",
-diff --git a/tools/perf/arch/x86/util/kvm-stat.c b/tools/perf/arch/x86/util/kvm-stat.c
-index babefda..b63d4be 100644
---- a/tools/perf/arch/x86/util/kvm-stat.c
-+++ b/tools/perf/arch/x86/util/kvm-stat.c
-@@ -129,7 +129,7 @@ static struct kvm_events_ops ioport_events = {
- 	.name = "IO Port Access"
- };
+ libperf-$(CONFIG_DWARF) += dwarf-regs.o
+ libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
+diff --git a/tools/perf/arch/powerpc/util/book3s_hv_exits.h b/tools/perf/arch/powerpc/util/book3s_hv_exits.h
+new file mode 100644
+index 0000000..e68ba2d
+--- /dev/null
++++ b/tools/perf/arch/powerpc/util/book3s_hv_exits.h
+@@ -0,0 +1,33 @@
++#ifndef ARCH_PERF_BOOK3S_HV_EXITS_H
++#define ARCH_PERF_BOOK3S_HV_EXITS_H
++
++/*
++ * PowerPC Interrupt vectors : exit code to name mapping
++ */
++
++#define kvm_trace_symbol_exit \
++	{0x0,	"RETURN_TO_HOST"}, \
++	{0x100, "SYSTEM_RESET"}, \
++	{0x200, "MACHINE_CHECK"}, \
++	{0x300, "DATA_STORAGE"}, \
++	{0x380, "DATA_SEGMENT"}, \
++	{0x400, "INST_STORAGE"}, \
++	{0x480, "INST_SEGMENT"}, \
++	{0x500, "EXTERNAL"}, \
++	{0x501, "EXTERNAL_LEVEL"}, \
++	{0x502, "EXTERNAL_HV"}, \
++	{0x600, "ALIGNMENT"}, \
++	{0x700, "PROGRAM"}, \
++	{0x800, "FP_UNAVAIL"}, \
++	{0x900, "DECREMENTER"}, \
++	{0x980, "HV_DECREMENTER"}, \
++	{0xc00, "SYSCALL"}, \
++	{0xd00, "TRACE"}, \
++	{0xe00, "H_DATA_STORAGE"}, \
++	{0xe20, "H_INST_STORAGE"}, \
++	{0xe40, "H_EMUL_ASSIST"}, \
++	{0xf00, "PERFMON"}, \
++	{0xf20, "ALTIVEC"}, \
++	{0xf40, "VSX"}
++
++#endif
+diff --git a/tools/perf/arch/powerpc/util/kvm-stat.c b/tools/perf/arch/powerpc/util/kvm-stat.c
+new file mode 100644
+index 0000000..9d64df5
+--- /dev/null
++++ b/tools/perf/arch/powerpc/util/kvm-stat.c
+@@ -0,0 +1,100 @@
++#include "util/kvm-stat.h"
++#include "util/parse-events.h"
++
++#include "book3s_hv_exits.h"
++
++#define NR_TPS 2
++
++const char *vcpu_id_str = "vcpu_id";
++const int decode_str_len = 40;
++const char *kvm_entry_trace = "kvm_hv:kvm_guest_enter";
++const char *kvm_exit_trace = "kvm_hv:kvm_guest_exit";
++
++define_exit_reasons_table(hv_exit_reasons, kvm_trace_symbol_exit);
++
++/* Tracepoints specific to ppc_book3s_hv */
++const char *ppc_book3s_hv_kvm_tp[] = {
++	"kvm_hv:kvm_guest_enter",
++	"kvm_hv:kvm_guest_exit",
++};
++
++/* 1 extra placeholder for NULL */
++const char *kvm_events_tp[NR_TPS + 1];
++const char *kvm_exit_reason;
++
++static struct kvm_events_ops exit_events = {
++	.is_begin_event = exit_event_begin,
++	.is_end_event = exit_event_end,
++	.decode_key = exit_event_decode_key,
++	.name = "VM-EXIT"
++};
++
++struct kvm_reg_events_ops kvm_reg_events_ops[] = {
++	{ .name = "vmexit", .ops = &exit_events },
++	{ NULL, NULL },
++};
++
++const char * const kvm_skip_events[] = {
++	NULL,
++};
++
++
++static int is_tracepoint_available(const char *str, struct perf_evlist *evlist)
++{
++	return parse_events(evlist, str, NULL);
++}
++
++static int ppc__setup_book3s_hv(struct perf_kvm_stat *kvm,
++				struct perf_evlist *evlist)
++{
++	const char **events_ptr;
++	int i, nr_tp = 0, err = -1;
++
++	/* Check for book3s_hv tracepoints */
++	for (events_ptr = ppc_book3s_hv_kvm_tp; *events_ptr; events_ptr++) {
++		err = is_tracepoint_available(*events_ptr, evlist);
++		if (err)
++			return -1;
++		nr_tp++;
++	}
++
++	for (i = 0; i < nr_tp; i++)
++		kvm_events_tp[i] = ppc_book3s_hv_kvm_tp[i];
++
++	kvm_events_tp[i] = NULL;
++	kvm_exit_reason = "trap";
++	kvm->exit_reasons = hv_exit_reasons;
++	kvm->exit_reasons_isa = "HV";
++
++	return 0;
++}
++
++/* Wrapper to setup kvm tracepoints */
++static int ppc__setup_kvm_tp(struct perf_kvm_stat *kvm)
++{
++	struct perf_evlist *evlist = perf_evlist__new();
++
++	if (evlist == NULL)
++		return -ENOMEM;
++
++	/* Right now, only supported on book3s_hv */
++	return ppc__setup_book3s_hv(kvm, evlist);
++}
++
++int setup_kvm_events_tp(struct perf_kvm_stat *kvm)
++{
++	return ppc__setup_kvm_tp(kvm);
++}
++
++int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
++{
++	int ret;
++
++	ret = ppc__setup_kvm_tp(kvm);
++	if (ret) {
++		kvm->exit_reasons = NULL;
++		kvm->exit_reasons_isa = NULL;
++	}
++
++	return ret;
++}
+diff --git a/tools/perf/builtin-kvm.c b/tools/perf/builtin-kvm.c
+index 5104c7e..b50d3b9 100644
+--- a/tools/perf/builtin-kvm.c
++++ b/tools/perf/builtin-kvm.c
+@@ -1145,6 +1145,11 @@ exit:
+ 		_p;			\
+ 	})
  
--const char * const kvm_events_tp[] = {
-+const char *kvm_events_tp[] = {
- 	"kvm:kvm_entry",
- 	"kvm:kvm_exit",
- 	"kvm:kvm_mmio",
++int __weak setup_kvm_events_tp(struct perf_kvm_stat *kvm __maybe_unused)
++{
++	return 0;
++}
++
+ static int
+ kvm_events_record(struct perf_kvm_stat *kvm, int argc, const char **argv)
+ {
+@@ -1161,7 +1166,14 @@ kvm_events_record(struct perf_kvm_stat *kvm, int argc, const char **argv)
+ 		NULL
+ 	};
+ 	const char * const *events_tp;
++	int ret;
++
+ 	events_tp_size = 0;
++	ret = setup_kvm_events_tp(kvm);
++	if (ret < 0) {
++		pr_err("Unable to setup the kvm tracepoints\n");
++		return ret;
++	}
+ 
+ 	for (events_tp = kvm_events_tp; *events_tp; events_tp++)
+ 		events_tp_size++;
+@@ -1391,6 +1403,12 @@ static int kvm_events_live(struct perf_kvm_stat *kvm,
+ 	/*
+ 	 * generate the event list
+ 	 */
++	err = setup_kvm_events_tp(kvm);
++	if (err < 0) {
++		pr_err("Unable to setup the kvm tracepoints\n");
++		return err;
++	}
++
+ 	kvm->evlist = kvm_live_event_list();
+ 	if (kvm->evlist == NULL) {
+ 		err = -1;
 diff --git a/tools/perf/util/kvm-stat.h b/tools/perf/util/kvm-stat.h
-index dd55548..c965dc8 100644
+index c965dc8..d01e735 100644
 --- a/tools/perf/util/kvm-stat.h
 +++ b/tools/perf/util/kvm-stat.h
-@@ -133,7 +133,7 @@ bool kvm_entry_event(struct perf_evsel *evsel);
-  */
- int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid);
+@@ -122,6 +122,7 @@ void exit_event_decode_key(struct perf_kvm_stat *kvm,
  
--extern const char * const kvm_events_tp[];
-+extern const char *kvm_events_tp[];
- extern struct kvm_reg_events_ops kvm_reg_events_ops[];
- extern const char * const kvm_skip_events[];
- extern const char *vcpu_id_str;
+ bool kvm_exit_event(struct perf_evsel *evsel);
+ bool kvm_entry_event(struct perf_evsel *evsel);
++int setup_kvm_events_tp(struct perf_kvm_stat *kvm);
+ 
+ #define define_exit_reasons_table(name, symbols)	\
+ 	static struct exit_reasons_table name[] = {	\
 -- 
 1.9.3
