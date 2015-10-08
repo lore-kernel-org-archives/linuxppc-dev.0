@@ -1,42 +1,40 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 545A71A0ABE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 15:06:53 +1100 (AEDT)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 054861A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 15:16:29 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 16D49140D8A
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 15:06:53 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id D8F2A1402A8
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 15:16:28 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 8 Oct 2015 14:06:52 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2F4892CE8052
- for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 15:06:49 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9846TBO45809728
- for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 15:06:37 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9846Giq019859
- for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 15:06:16 +1100
-Date: Thu, 8 Oct 2015 15:05:52 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH 1/5] powerpc/eeh: Don't unfreeze PHB PE after reset
-Message-ID: <20151008040551.GA22416@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1444187529-32217-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20151007232014.GA5040@gwshan>
+ for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 8 Oct 2015 14:16:27 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A84652BB0059
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 15:16:24 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t984GB2V42336280
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 15:16:20 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t984FpOn020788
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 15:15:52 +1100
+Message-ID: <5615EDF9.2050704@au1.ibm.com>
+Date: Thu, 08 Oct 2015 15:15:53 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151007232014.GA5040@gwshan>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v2 5/8] powerpc/pseries: Cleanup on pseries_eeh_get_state()
+References: <1444276739-20372-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1444276739-20372-6-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1444276739-20372-6-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,60 +44,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 08, 2015 at 10:20:14AM +1100, Gavin Shan wrote:
->On Wed, Oct 07, 2015 at 02:12:05PM +1100, Gavin Shan wrote:
->>On PowerNV platform, the PE is kept in frozen state until the PE
->>reset is completed to avoid recursive EEH error caused by MMIO
->>access during the period of EEH reset. The PE's frozen state is
->>cleared after BARs of PCI device included in the PE are restored
->>and enabled. However, we needn't clear the frozen state for PHB PE
->>explicitly at this point as there is no real PE for PHB PE. As the
->>PHB PE is always binding with PE#0, we actually clear PE#0, which
->>is wrong. It doesn't incur any problem though.
->>
->>This checks if the PE is PHB PE and doesn't clear the frozen state
->>if it is.
->>
->>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On 08/10/15 14:58, Gavin Shan wrote:
+> This cleans up pseries_eeh_get_state(), no functional changes:
 >
->Michael, please ignore this series for now. One or two patches are
->still missed. Also, this series needs respin.
+>     * Return EEH_STATE_NOT_SUPPORT early when the 2nd RTAS output
+>       argument is zero to avoid nested if statements.
+>     * Skip clearing bits in the PE state represented by variable
+>       "result" to simplify the code.
 >
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-v2 was just sent out. Please look at v2 instead of this one.
+Much easier to follow!
 
-Thanks,
-Gavin
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
->>---
->> arch/powerpc/kernel/eeh_driver.c | 14 ++++++++++----
->> 1 file changed, 10 insertions(+), 4 deletions(-)
->>
->>diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->>index 89eb4bc..3a626ed 100644
->>--- a/arch/powerpc/kernel/eeh_driver.c
->>+++ b/arch/powerpc/kernel/eeh_driver.c
->>@@ -587,10 +587,16 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
->> 	eeh_ops->configure_bridge(pe);
->> 	eeh_pe_restore_bars(pe);
->>
->>-	/* Clear frozen state */
->>-	rc = eeh_clear_pe_frozen_state(pe, false);
->>-	if (rc)
->>-		return rc;
->>+	/*
->>+	 * If it's PHB PE, the frozen state on all available PEs should have
->>+	 * been cleared by the PHB reset. Otherwise, we unfreeze the PE and its
->>+	 * child PEs because they might be in frozen state.
->>+	 */
->>+	if (!(pe->type & EEH_PE_PHB)) {
->>+		rc = eeh_clear_pe_frozen_state(pe, false);
->>+		if (rc)
->>+			return rc;
->>+	}
->>
->> 	/* Give the system 5 seconds to finish running the user-space
->> 	 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes,
->>-- 
->>2.1.0
->>
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
