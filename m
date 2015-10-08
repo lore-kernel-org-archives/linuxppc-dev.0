@@ -1,40 +1,29 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CBBF41A0174
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 20:39:48 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Thu, 8 Oct 2015 15:09:45 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4ACF2394004E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 15:09:42 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t989dHkR24379544
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 15:09:17 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t989dBAZ000301
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 15:09:16 +0530
-Message-ID: <561639B8.8040407@linux.vnet.ibm.com>
-Date: Thu, 08 Oct 2015 15:09:04 +0530
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BE5B91A0176
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 22:16:47 +1100 (AEDT)
+Date: Thu, 8 Oct 2015 13:16:38 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: paulmck@linux.vnet.ibm.com, Will Deacon <will.deacon@arm.com>,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Boqun Feng <boqun.feng@gmail.com>, Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
+ update documentation
+Message-ID: <20151008111638.GL3816@twins.programming.kicks-ass.net>
+References: <1444215568-24732-1-git-send-email-will.deacon@arm.com>
+ <20151007111915.GF17308@twins.programming.kicks-ass.net>
+ <20151007132317.GK16065@arm.com>
+ <20151007152501.GI3910@linux.vnet.ibm.com>
+ <1444276236.9940.5.camel@ellerman.id.au>
 MIME-Version: 1.0
-To: David Ahern <dsahern@gmail.com>, linux-kernel@vger.kernel.org
-CC: srikar@linux.vnet.ibm.com, yarygin@linux.vnet.ibm.com, acme@kernel.org,
- borntraeger@de.ibm.com, mingo@redhat.com, paulus@samba.org,
- scottwood@freescale.com, naveen.n.rao@linux.vnet.ibm.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v9 1/4] perf, kvm/{x86,
- s390}: Remove dependency on uapi/kvm_perf.h
-References: <1444184711-8559-1-git-send-email-hemant@linux.vnet.ibm.com>
- <5615443F.7030909@gmail.com>
-In-Reply-To: <5615443F.7030909@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1444276236.9940.5.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,64 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+On Thu, Oct 08, 2015 at 02:50:36PM +1100, Michael Ellerman wrote:
+> On Wed, 2015-10-07 at 08:25 -0700, Paul E. McKenney wrote:
 
+> > Currently, we do need smp_mb__after_unlock_lock() to be after the
+> > acquisition on PPC -- putting it between the unlock and the lock
+> > of course doesn't cut it for the cross-thread unlock/lock case.
 
-On 10/07/2015 09:41 PM, David Ahern wrote:
-> On 10/6/15 8:25 PM, Hemant Kumar wrote:
->> @@ -358,7 +357,12 @@ static bool handle_end_event(struct 
->> perf_kvm_stat *kvm,
->>       time_diff = sample->time - time_begin;
->>
->>       if (kvm->duration && time_diff > kvm->duration) {
->> -        char decode[DECODE_STR_LEN];
->> +        char *decode = zalloc(decode_str_len);
->
-> decode can still be a stack variable even with variable length.
->
+This ^, that makes me think I don't understand
+smp_mb__after_unlock_lock.
 
-Yeah, we can do that. But, I am not sure whether its a standard way.
+How is:
 
->> +
->> +        if (!decode) {
->> +            pr_err("Not enough memory\n");
->> +            return false;
->> +        }
->>
->>           kvm->events_ops->decode_key(kvm, &event->key, decode);
->>           if (!skip_event(decode)) {
->> @@ -366,6 +370,7 @@ static bool handle_end_event(struct perf_kvm_stat 
->> *kvm,
->>                    sample->time, sample->pid, vcpu_record->vcpu_id,
->>                    decode, time_diff/1000);
->>           }
->> +        free(decode);
->>       }
->>
->>       return update_kvm_event(event, vcpu, time_diff);
->> @@ -386,7 +391,8 @@ struct vcpu_event_record *per_vcpu_record(struct 
->> thread *thread,
->
-> -----8<-----
->
->> @@ -575,7 +581,7 @@ static void show_timeofday(void)
->>
->>   static void print_result(struct perf_kvm_stat *kvm)
->>   {
->> -    char decode[DECODE_STR_LEN];
->> +    char *decode;
->
-> and a stack variable here too.
->
+	UNLOCK x
+	smp_mb__after_unlock_lock()
+	LOCK y
 
-Same here.
+a problem? That's still a full barrier.
 
-> David
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > I am with Peter -- we do need the benchmark results for PPC.
+> 
+> Urgh, sorry guys. I have been slowly doing some benchmarks, but time is not
+> plentiful at the moment.
+> 
+> If we do a straight lwsync -> sync conversion for unlock it looks like that
+> will cost us ~4.2% on Anton's standard context switch benchmark.
 
--- 
-Thanks,
-Hemant Kumar
+And that does not seem to agree with Paul's smp_mb__after_unlock_lock()
+usage and would not be sufficient for the same (as of yet unexplained)
+reason.
+
+Why does it matter which of the LOCK or UNLOCK gets promoted to full
+barrier on PPC in order to become RCsc?
