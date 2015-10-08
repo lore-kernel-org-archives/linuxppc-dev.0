@@ -2,29 +2,29 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6FDF61A0244
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 01:50:55 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by lists.ozlabs.org (Postfix) with ESMTPS id C2E9D1A0200
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 01:50:59 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 98597140D93
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2015 01:50:54 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 74702140D93
+ for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2015 01:50:59 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 9 Oct 2015 00:50:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7990E2BB0052
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2015 01:50:51 +1100 (EST)
+ Fri, 9 Oct 2015 00:50:58 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id BF0402BB004D
+ for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2015 01:50:56 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t98EohJf36569248
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2015 01:50:51 +1100
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t98Eobbq57344194
+ for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2015 01:50:45 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t98EoGEU008752
- for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2015 01:50:18 +1100
+ t98EoMhp008839
+ for <linuxppc-dev@ozlabs.org>; Fri, 9 Oct 2015 01:50:24 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 Cc: peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de,
@@ -35,10 +35,10 @@ Cc: peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de,
  mpe@ellerman.id.au, sam.bobroff@au1.ibm.com, kirjanov@gmail.com,
  shuahkh@osg.samsung.com, Ulrich.Weigand@de.ibm.com,
  emachado@linux.vnet.ibm.com
-Subject: [PATCH V9 22/28] selftests, powerpc: Add ptrace tests for TAR, PPR,
- DSCR in TM
-Date: Thu,  8 Oct 2015 20:17:43 +0530
-Message-Id: <1444315669-23487-23-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V9 23/28] selftests, powerpc: Add ptrace tests for TAR, PPR,
+ DSCR in suspended TM
+Date: Thu,  8 Oct 2015 20:17:44 +0530
+Message-Id: <1444315669-23487-24-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1444315669-23487-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1444315669-23487-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -51,36 +51,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This patch adds ptrace interface test for TAR, PPR, DSCR
-registers inside TM context. This also adds ptrace
-interface based helper functions related to checkpointed
-TAR, PPR, DSCR register access.
+registers inside suspended TM context.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
  tools/testing/selftests/powerpc/ptrace/Makefile    |   2 +-
- .../selftests/powerpc/ptrace/ptrace-tm-tar.c       | 170 +++++++++++++++++++++
- 2 files changed, 171 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
+ .../selftests/powerpc/ptrace/ptrace-tm-spd-tar.c   | 184 +++++++++++++++++++++
+ 2 files changed, 185 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index 28d4465..a5d177b 100644
+index a5d177b..f058083 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
 @@ -1,5 +1,5 @@
  TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
--ptrace-tar
-+ptrace-tar ptrace-tm-tar
+-ptrace-tar ptrace-tm-tar
++ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar
  
  all: $(TEST_PROGS)
  
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
 new file mode 100644
-index 0000000..45b6fa3
+index 0000000..56f604b
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
-@@ -0,0 +1,170 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
+@@ -0,0 +1,184 @@
 +/*
-+ * Ptrace test for TAR, PPR, DSCR registers in the TM context
++ * Ptrace test for TAR, PPR, DSCR registers in the TM Suspend context
 + *
 + * Copyright (C) 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -95,8 +93,12 @@ index 0000000..45b6fa3
 +int shm_id;
 +volatile int *cptr, *pptr;
 +
++__attribute__((used)) void wait_parent(void)
++{
++	while(!cptr[1]);
++}
 +
-+void tm_tar(void)
++void tm_spd_tar(void)
 +{
 +	unsigned long result, texasr;
 +	unsigned long regs[3];
@@ -120,9 +122,15 @@ index 0000000..45b6fa3
 +		"li	4, %[dscr_2];"
 +		"mtspr %[sprn_dscr], 4;"	/* DSCR_2 */
 +		"or     1,1,1;"			/* PPR_2 */
++
 +		TSUSPEND
++		"li	4, %[tar_3];"
++		"mtspr %[sprn_tar],  4;"	/* TAR_3 */
++		"li	4, %[dscr_3];"
++		"mtspr %[sprn_dscr], 4;"	/* DSCR_3 */
++		"or     6,6,6;"			/* PPR_3 */
++		"bl wait_parent;"
 +		TRESUME
-+		"b .;"
 +
 +		TEND
 +		"li 0, 0;"
@@ -138,9 +146,10 @@ index 0000000..45b6fa3
 +		"3: ;"
 +
 +		:[res] "=r" (result), [texasr] "=r" (texasr)
-+		:[sprn_dscr]"i"(SPRN_DSCR), [sprn_tar]"i"(SPRN_TAR), [sprn_ppr]"i"(SPRN_PPR), [sprn_texasr]"i"(SPRN_TEXASR),
++		:[val] "r" (cptr[1]), [sprn_dscr]"i"(SPRN_DSCR), [sprn_tar]"i"(SPRN_TAR), [sprn_ppr]"i"(SPRN_PPR), [sprn_texasr]"i"(SPRN_TEXASR),
 +		[tar_1]"i"(TAR_1), [dscr_1]"i"(DSCR_1),
-+		[tar_2]"i"(TAR_2), [dscr_2]"i"(DSCR_2)
++		[tar_2]"i"(TAR_2), [dscr_2]"i"(DSCR_2),
++		[tar_3]"i"(TAR_3), [dscr_3]"i"(DSCR_3)
 +		: "memory", "r0", "r1", "r3", "r4", "r5", "r6"
 +		);
 +
@@ -165,7 +174,7 @@ index 0000000..45b6fa3
 +	exit(1);
 +}
 +
-+int trace_tm_tar(pid_t child)
++int trace_tm_spd_tar(pid_t child)
 +{
 +	unsigned long regs[3];
 +	int ret;
@@ -181,7 +190,7 @@ index 0000000..45b6fa3
 +
 +	printf("%-30s TAR: %lu PPR: %lx DSCR: %lu\n", ptrace_read_running, regs[0], regs[1], regs[2]);
 +
-+	ret = validate_tar_registers(regs, TAR_2, PPR_2, DSCR_2);
++	ret = validate_tar_registers(regs, TAR_3, PPR_3, DSCR_3);
 +	if (ret)
 +		return TEST_FAIL;
 +
@@ -207,27 +216,30 @@ index 0000000..45b6fa3
 +	return TEST_PASS;
 +}
 +
-+int ptrace_tm_tar(void)
++int ptrace_tm_spd_tar(void)
 +{
 +	pid_t pid;
 +	int ret, status;
 +
 +	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-+	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 1, 0777|IPC_CREAT);
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 2, 0777|IPC_CREAT);
 +	pid = fork();
 +	if (pid == 0)
-+		tm_tar();
++		tm_spd_tar();
 +
 +	pptr = (int *)shmat(shm_id, NULL, 0);
 +	pptr[0] = 0;
++	pptr[1] = 0;
 +
 +	if (pid) {
-+		ret = trace_tm_tar(pid);
++		ret = trace_tm_spd_tar(pid);
 +		if (ret) {
 +			kill(pid, SIGTERM);
 +			return TEST_FAIL;
 +		}
++
 +		pptr[0] = 1;
++		pptr[1] = 1;
 +		shmdt(&pptr);
 +
 +		ret = wait(&status);
@@ -247,7 +259,7 @@ index 0000000..45b6fa3
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_tm_tar, "ptrace_tm_tar");
++	return test_harness(ptrace_tm_spd_tar, "ptrace_tm_spd_tar");
 +}
 -- 
 2.1.0
