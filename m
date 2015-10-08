@@ -1,47 +1,36 @@
-Return-Path: <gpiccoli@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-ob0-x244.google.com (mail-ob0-x244.google.com
+ [IPv6:2607:f8b0:4003:c01::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 729361A0216
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 03:05:49 +1100 (AEDT)
-Received: from /spool/local
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
- Thu, 8 Oct 2015 13:05:44 -0300
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 250871DC0071
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 12:04:34 -0400 (EDT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t98G64I54845784
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 13:06:05 -0300
-Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t98G5ZEl013169
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 13:05:36 -0300
-Subject: Re: [PATCH v2 2/2] powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
- probe time in OF case
-To: Bjorn Helgaas <bhelgaas@google.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <1439932430-13375-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1439932077-11427-3-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <1440010450-4549-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
- <20150903175624.GI829@google.com> <55EA2678.5030801@linux.vnet.ibm.com>
- <20150906173838-mutt-send-email-mst@redhat.com>
- <1441595823.12945.4.camel@ellerman.id.au> <20150915161821.GB25767@google.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- benh@kernel.crashing.org, paulus@samba.org,
- Fam Zheng <famz@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
- Yijing Wang <wangyijing@huawei.com>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- "David S. Miller" <davem@davemloft.net>
-From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-Message-ID: <5616944F.6090608@linux.vnet.ibm.com>
-Date: Thu, 8 Oct 2015 13:05:35 -0300
-MIME-Version: 1.0
-In-Reply-To: <20150915161821.GB25767@google.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 126851A0372
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 04:54:01 +1100 (AEDT)
+Received: by obbbh8 with SMTP id bh8so4300978obb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2015 10:53:58 -0700 (PDT)
+Sender: Rob Herring <robherring2@gmail.com>
+From: Rob Herring <robh@kernel.org>
+To: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Grant Likely <grant.likely@linaro.org>,
+ Frank Rowand <frowand.list@gmail.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-xtensa@linux-xtensa.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Ley Foon Tan <lftan@altera.com>,
+ nios2-dev@lists.rocketboards.org, Ralf Baechle <ralf@linux-mips.org>,
+ linux-mips@linux-mips.org, James Hogan <james.hogan@imgtec.com>,
+ linux-metag@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ uclinux-h8-devel@lists.sourceforge.jp,
+ Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
+ Vineet Gupta <vgupta@synopsys.com>, arm@kernel.org
+Subject: [PATCH v2 00/13] Enable building all dtb files
+Date: Thu,  8 Oct 2015 12:53:34 -0500
+Message-Id: <1444326827-3565-1-git-send-email-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,21 +40,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/15/2015 01:18 PM, Bjorn Helgaas wrote:
-> We could also argue that when CONFIG_PCI_MSI=n, dev->msi[x]_cap should not
-> even exist, so we could catch that a build-time instead of run-time.  My
-> personal opinion is that it's not a big deal, and the existing code that
-> includes dev->msi[x]_cap and initializes it even when CONFIG_PCI_MSI=n
-> allows some useful code sharing.
+This series enables building all the dtb files in the kernel mostly 
+independent of the kernel config. The option is only dependent on 
+COMPILE_TEST, OF, and the new OF_ALL_DTBS options. This ensures that 
+allyesconfig builds can build all dtb files although most arches have to 
+build "dtbs" target explicitly. Some arches like ARM include dtbs in the 
+default target.
 
-Nice Bjorn, so let's follow your idea regarding moving the code of MSI 
-capabilities initialization to allow some code sharing. It's good option 
-specially since it avoids the same problem (MSI capabilities not 
-found)to occur in SPARC arch too.
+Arch/arm-soc maintainers, Please ack and I will take this series via the DT 
+tree.
 
-Sorry for my delay in response, soon I'll send the patch to the list.
+v2:
+- Add OF_ALL_DTBS option hidden behind COMPILE_TEST
+- Expand to all architectures (with more than 1 dtb)
 
-Cheers,
+Rob
 
 
-Guilherme
+Rob Herring (13):
+  of: add config option to enable building of all dtbs
+  arc: use common make variables for dtb builds
+  arc: enable building of all dtbs
+  arm: enable building of all dtbs
+  arm64: enable building of all dtbs
+  h8300: enable building of all dtbs
+  metag: use common make variables for dtb builds
+  metag: enable building of all dtbs
+  mips: enable building of all dtbs
+  nios2: use common make variables for dtb builds
+  nios2: enable building of all dtbs
+  powerpc: enable building of all dtbs
+  xtensa: enable building of all dtbs
+
+ arch/arc/Makefile              |  2 +-
+ arch/arc/boot/dts/Makefile     |  6 ++++--
+ arch/arm/boot/dts/Makefile     |  3 +++
+ arch/arm64/boot/dts/Makefile   |  6 ++++++
+ arch/h8300/boot/dts/Makefile   |  3 +++
+ arch/metag/Makefile            |  2 +-
+ arch/metag/boot/dts/Makefile   |  7 +++----
+ arch/mips/boot/dts/Makefile    |  3 +++
+ arch/nios2/Makefile            | 10 +++++-----
+ arch/nios2/boot/Makefile       | 13 +++----------
+ arch/nios2/boot/dts/Makefile   |  6 ++++++
+ arch/powerpc/Makefile          |  6 ++++++
+ arch/powerpc/boot/Makefile     |  5 ++++-
+ arch/powerpc/boot/dts/Makefile |  5 +++++
+ arch/xtensa/Makefile           |  4 ++++
+ arch/xtensa/boot/dts/Makefile  |  7 ++++++-
+ drivers/of/Kconfig             | 10 ++++++++++
+ 17 files changed, 73 insertions(+), 25 deletions(-)
+ create mode 100644 arch/nios2/boot/dts/Makefile
+ create mode 100644 arch/powerpc/boot/dts/Makefile
+
+-- 
+2.1.4
