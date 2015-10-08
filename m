@@ -1,24 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
+Return-Path: <cmetcalf@ezchip.com>
+Received: from emea01-am1-obe.outbound.protection.outlook.com
+ (mail-am1on0060.outbound.protection.outlook.com [157.56.112.60])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EBA4F1A030A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 06:13:41 +1100 (AEDT)
-Message-ID: <1444331608.5336.329.camel@freescale.com>
-Subject: Re: [PATCH v2 05/25] powerpc/8xx: Fix vaddr for IMMR early remap
-From: Scott Wood <scottwood@freescale.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id A67B21A025F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 07:03:15 +1100 (AEDT)
+Subject: [GIT PULL] strscpy powerpc fix for 4.3 - not 3.4 :-)
+To: Guenter Roeck <linux@roeck-us.net>, Linus Torvalds
+ <torvalds@linux-foundation.org>
+References: <20151008094444.10d9cc68@canb.auug.org.au>
+ <5615B87A.80206@ezchip.com> <20151008184541.GA8373@roeck-us.net>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, <linux-next@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 8 Oct 2015 14:13:28 -0500
-In-Reply-To: <561662ED.1040103@c-s.fr>
-References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <83ffd345e7a3fe00443e32b6caf900e7618453d6.1442939410.git.christophe.leroy@c-s.fr>
- <20150928233900.GB6161@home.buserror.net> <561662ED.1040103@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
+From: Chris Metcalf <cmetcalf@ezchip.com>
+Message-ID: <5616C853.6030708@ezchip.com>
+Date: Thu, 8 Oct 2015 15:47:31 -0400
 MIME-Version: 1.0
+In-Reply-To: <20151008184541.GA8373@roeck-us.net>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-08 at 14:34 +0200, Christophe Leroy wrote:
-> Le 29/09/2015 01:39, Scott Wood a écrit :
-> > On Tue, Sep 22, 2015 at 06:50:38PM +0200, Christophe Leroy wrote:
-> > > Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
-> > > 648K rodata, 508K init, 290K bss, 6644K reserved)
-> > > Kernel virtual memory layout:
-> > >    * 0xfffdf000..0xfffff000  : fixmap
-> > >    * 0xfde00000..0xfe000000  : consistent mem
-> > >    * 0xfddf6000..0xfde00000  : early ioremap
-> > >    * 0xc9000000..0xfddf6000  : vmalloc & ioremap
-> > > SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
-> > > 
-> > > Mapping IMMR 1:1 is just wrong because it may overlap with another
-> > > area. On most mpc8xx boards it is OK because IMMR is set to
-> > > 0xff000000 but for instance on EP88xC board, IMMR is at 0xfa200000
-> > > which overlaps with VM ioremap area
-> > > 
-> > > This patch fixes the virtual address for remapping IMMR to 0xff000000,
-> > > regardless of the value of IMMR.
-> > > 
-> > > The size of IMMR area is 256kbytes (CPM at offset 0, security engine
-> > > at offset 128) so 512kbytes is enough and allows to handle the EP88xC
-> > > case (which is not 8Mbytes but only 2Mbytes aligned) the same way.
-> > > 
-> > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > Instead of hardcoding 0xff000000, can you use asm/fixmap.h to allocate a
-> > virtual address at compile time?
-> > 
-> > 
-> Yes good idea, but in asm/fixmap.h FIX_XXXX constants are defined as enums.
-> Is there a way to use them in head_8xx.S ?
+On 10/08/2015 02:45 PM, Guenter Roeck wrote:
+> On Wed, Oct 07, 2015 at 08:27:38PM -0400, Chris Metcalf wrote:
+>> On 10/7/2015 6:44 PM, Stephen Rothwell wrote:
+>>> Hi Linus,
+>>>
+>>> After merging Linus' tree, today's linux-next build (powerpc
+>>> ppc64_defconfig) failed like this:
+>>>
+>>> lib/string.c: In function 'strscpy':
+>>> lib/string.c:209:4: error: implicit declaration of function 'zero_bytemask' [-Werror=implicit-function-declaration]
+>>>      *(unsigned long *)(dest+res) = c & zero_bytemask(data);
+>>>      ^
+>>>
+>>> Caused by commit
+>>>
+>>>    30035e45753b ("string: provide strscpy()")
+>> I posted a change equivalent to yours earlier today:
+>>
+>> http://lkml.kernel.org/r/1444229188-19640-1-git-send-email-cmetcalf@ezchip.com
+>>
+>> I also did no testing, but since the rest of the PPC code is similar to the
+>> asm-generic version, I believe the zero_bytemask() definition should be OK.
+>>
+>> It probably should go through Linus' tree, like the previous set of patches.
+>> I just pushed it up to the linux-tile tree for Linus to grab as:
+>>
+> Wonder if Linus is going to realize that you meant 4.3 in your subject line,
+> not 3.4.
 
-asm-offsets
+Oops, good catch :-)
 
--Scott
+I updated the subject line of this reply so it will catch on Linus's mail
+filters better, if that helps!
+
+>> git://git.kernel.org/pub/scm/linux/kernel/git/cmetcalf/linux-tile.git strscpy
+>>
+>> Chris Metcalf (1):
+>>        arch/powerpc: provide zero_bytemask() for big-endian
+>>
+>>   arch/powerpc/include/asm/word-at-a-time.h | 5 +++++
+>>   1 file changed, 5 insertions(+)
+>>
+>> -- 
+>> Chris Metcalf, EZChip Semiconductor
+>> http://www.ezchip.com
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>>
+
+-- 
+Chris Metcalf, EZChip Semiconductor
+http://www.ezchip.com
