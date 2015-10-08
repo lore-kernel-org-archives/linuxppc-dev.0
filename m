@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 52B7C1A027F
+ by lists.ozlabs.org (Postfix) with ESMTPS id D479D1A0285
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 08:09:24 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
 Cc: thuth@redhat.com
-Subject: [PATCH 5/6] powerpc/kconfig: Move cpu options after platform options
-Date: Fri,  9 Oct 2015 08:09:16 +1100
-Message-Id: <1444338557-14988-5-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 6/6] powerpc/kconfig: Cell CPU options should depend on
+ PPC_CELL
+Date: Fri,  9 Oct 2015 08:09:17 +1100
+Message-Id: <1444338557-14988-6-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
 References: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,51 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In general platforms are a more important configuration decision than
-cpus, so the platforms should come first.
-
-My basis for saying that is that our cpu selection options are generally
-just about tuning for a cpu, rather than enabling/disabling support for
-a cpu. On the other hand disabling a platform means you can't boot on
-those machines, and any associated cpu options should vanish.
-
-With this applied the start of menuconfig looks like:
-
-     [*] 64-bit kernel
-         Endianness selection (Build little endian kernel)
-         General setup
-     [*] Enable loadable module support
-     -*- Enable the block layer
-         Platform support
-         Processor support
-         Kernel options
-         Bus options
+If none of the Cell platforms are enabled then the resulting kernel can
+never boot on a Cell machine, and so there's no sense offering to tune
+or build for Cell CPUs.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/Kconfig | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/Kconfig.cputype | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ea9377259f15..0f8c51279147 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -34,8 +34,6 @@ config CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 60b28e63c137..03c53f4418ad 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -91,7 +91,7 @@ config GENERIC_CPU
  
- endchoice
+ config CELL_CPU
+ 	bool "Cell Broadband Engine"
+-	depends on PPC_BOOK3S_64 && !CPU_LITTLE_ENDIAN
++	depends on PPC_CELL
  
--source "arch/powerpc/platforms/Kconfig.cputype"
--
- config PPC32
- 	bool
- 	default y if !PPC64
-@@ -339,6 +337,7 @@ source "init/Kconfig"
- source "kernel/Kconfig.freezer"
+ config POWER4_CPU
+ 	bool "POWER4"
+@@ -140,7 +140,7 @@ config 6xx
  
- source "arch/powerpc/platforms/Kconfig"
-+source "arch/powerpc/platforms/Kconfig.cputype"
- 
- menu "Kernel options"
- 
+ config TUNE_CELL
+ 	bool "Optimize for Cell Broadband Engine"
+-	depends on PPC64 && PPC_BOOK3S
++	depends on PPC_CELL
+ 	help
+ 	  Cause the compiler to optimize for the PPE of the Cell Broadband
+ 	  Engine. This will make the code run considerably faster on Cell
 -- 
 2.1.4
