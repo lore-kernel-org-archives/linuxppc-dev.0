@@ -1,30 +1,28 @@
-Return-Path: <lkp@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id EF3F01A0018
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 12:16:43 +1100 (AEDT)
-Date: Thu, 8 Oct 2015 09:16:09 +0800
-From: Fengguang Wu <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- Keith Busch <keith.busch@intel.com>,
- Paul Mackerras <paulus@samba.org>, kbuild-all@01.org,
- Matthew Wilcox <willy@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [kbuild-all] [PATCH 4/5 v2] pseries/iommu: implement DDW-aware
- dma_get_page_shift
-Message-ID: <20151008011609.GA25163@wfg-t540p.sh.intel.com>
-References: <201510030421.d9fvrbXU%fengguang.wu@intel.com>
- <1444102746.16909.4.camel@ellerman.id.au>
- <20151007135602.GA17377@wfg-t540p.sh.intel.com>
- <1444263119.31685.4.camel@ellerman.id.au>
- <20151008010603.GA24198@wfg-t540p.sh.intel.com>
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0104.outbound.protection.outlook.com [157.56.111.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6AC651A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 13:32:19 +1100 (AEDT)
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+To: Stuart Yoder <stuart.yoder@freescale.com>
+CC: Scott Wood <scottwood@freescale.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, Zhao C.H. <chenhui.zhao@freescale.com>, "Huan
+ Wang" <alison.wang@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Yuantian Tang <Yuantian.Tang@freescale.com>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, Jin Jason
+ <Jason.Jin@freescale.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Subject: RE: [PATCH v3 1/2] fsl: Add binding for RCPM
+Date: Thu, 8 Oct 2015 02:32:10 +0000
+Message-ID: <SN1PR0301MB161632E7B6EB131A35C137939D350@SN1PR0301MB1616.namprd03.prod.outlook.com>
+References: <1443083354-37369-1-git-send-email-dongsheng.wang@freescale.com>
+ <CALRxmdDwGgxCG5SfSOaEXK8_fJcG4UUw_9D2=NA7nQhikDyb+A@mail.gmail.com>
+ <CY1PR0301MB0748AB1CE2D93FFD79FE6009874C0@CY1PR0301MB0748.namprd03.prod.outlook.com>
+In-Reply-To: <CY1PR0301MB0748AB1CE2D93FFD79FE6009874C0@CY1PR0301MB0748.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151008010603.GA24198@wfg-t540p.sh.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,70 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 08, 2015 at 09:06:03AM +0800, Fengguang Wu wrote:
-> On Thu, Oct 08, 2015 at 11:11:59AM +1100, Michael Ellerman wrote:
-> > On Wed, 2015-10-07 at 21:56 +0800, Fengguang Wu wrote:
-> > > On Tue, Oct 06, 2015 at 02:39:06PM +1100, Michael Ellerman wrote:
-> > > > On Sat, 2015-10-03 at 04:33 +0800, kbuild test robot wrote:
-> > > > > Hi Nishanth,
-> > > > > 
-> > > > > [auto build test results on v4.3-rc3 -- if it's inappropriate base, please ignore]
-> > > > > 
-> > > > > config: powerpc-defconfig (attached as .config)
-> > > > > reproduce:
-> > > > >         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-> > > > >         chmod +x ~/bin/make.cross
-> > > > >         # save the attached .config to linux build tree
-> > > > >         make.cross ARCH=powerpc 
-> > > > > 
-> > > > > All error/warnings (new ones prefixed by >>):
-> > > > > 
-> > > > >    arch/powerpc/platforms/pseries/iommu.c: In function 'iommu_init_early_pSeries':
-> > > > > >> arch/powerpc/platforms/pseries/iommu.c:1433:9: error: 'struct machdep_calls' has no member named 'dma_get_page_shift'
-> > > > >       ppc_md.dma_get_page_shift = dma_get_page_shift_pSeriesLP;
-> > > > 
-> > > > It was added in patch 3/5, so I think this error is bogus. Unless there's a
-> > > > typo I'm missing?
-> > > 
-> > > Yes sorry, the patchset was not detected correctly in your case,
-> > > ending up the patches being tested as individual ones.
-> > > 
-> > > I'll fixup the robot.
-> > 
-> > Thanks.
-> > 
-> > How did the robot decide to build this series in the first place? Does it build
-> > everything sent to one of the lists on CC?
-> 
-> Yes, currently the following mailing lists are subscribed.  Patches
-> sent to them will be tested if they can be git-am to RC or linux-next
-> kernels:
-> 
-> kvm
-> linux-acpi
-> linux-bluetooth
-> linux-btrfs
-> linux-embedded
-> linux-ext4
-> linux-fsdevel
-> linux-media
-> linux-mmc
-> linux-nfs
-> linux-omap
-> linux-pci
-> linux-pm
-> linux-raid
-> linux-rdma
-> linux-scsi
-> linux-usb
-> linux-wireless
-> netdev
-> netfilter-devel
-> linux-mm
-> driverdev-devel
-> intel-gfx
-
-And of course linux-kernel. More lists could be added in future.
-
-Thanks,
-Fengguang
+PiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9zb2MvZnNsL3JjcG0u
+dHh0DQo+ID4gQEAgLTAsMCArMSw2MyBAQA0KPiA+ICsqIFJ1biBDb250cm9sIGFuZCBQb3dlciBN
+YW5hZ2VtZW50DQo+ID4gKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0NCj4gPiArVGhlIFJDUE0gcGVyZm9ybXMgYWxsIGRldmljZS1sZXZlbCB0YXNrcyBhc3NvY2lh
+dGVkIHdpdGggZGV2aWNlIHJ1bg0KPiA+ICtjb250cm9sIGFuZCBwb3dlciBtYW5hZ2VtZW50Lg0K
+PiA+ICsNCj4gPiArUmVxdWlyZWQgcHJvcGVyaXRlczoNCj4gPiArICAtIHJlZyA6IE9mZnNldCBh
+bmQgbGVuZ3RoIG9mIHRoZSByZWdpc3RlciBzZXQgb2YgUkNQTSBibG9jay4NCj4gDQo+IHMvUkNQ
+TSBibG9jay90aGUgUkNQTSBibG9jay8NCj4gDQo+ID4gKyAgLSBmc2wsI3JjcG0td2FrZXVwLWNl
+bGxzIDogVGhlIG51bWJlciBvZiBjZWxscyBpbiByY3BtLXdha2V1cCBwcm9wZXJ0eS4NCj4gDQo+
+IHMvcmNwbS13YWtldXAtcHJvcGVydHkvdGhlIHJjcG0td2FrZXVwLXByb3BlcnR5Lw0KPiANCj4g
+PiArICAtIGNvbXBhdGlibGUgOiBTb3VsZCBjb250YWluIGEgY2hpcC1zcGVjaWZpYyBSQ1BNIGJs
+b2NrIGNvbXBhdGlibGUNCj4gPiArIHN0cmluZw0KPiANCj4gcy9Tb3VsZC9TaG91bGQNCj4gDQo+
+ICJTaG91bGQiIG1lYW5zIGl0IGlzIHJlY29tbWVuZGVkLCBidXQgZG9lcyBub3QgbWVhbiAibXVz
+dCIuICBJcyBpdCByZWFsbHkNCj4gb3B0aW9uYWw/DQo+IA0KDQpUaGFua3MgZm9yIHlvdXIgcGF0
+aWVudCBleHBsYWluLCBjaGFuZ2UgdG8gIm11c3QiLg0KDQpSZWdhcmRzLA0KLURvbmdzaGVuZw0K
+DQo+ID4gKyAgICAgICBhbmQgKGlmIGFwcGxpY2FibGUpIG1heSBjb250YWluIGEgY2hhc3Npcy12
+ZXJzaW9uIFJDUE0gY29tcGF0aWJsZQ0KPiA+ICsgICAgICAgc3RyaW5nLiBDaGlwLXNwZWNpZmlj
+IHN0cmluZ3MgYXJlIG9mIHRoZSBmb3JtICJmc2wsPGNoaXA+LXJjcG0iLA0KPiA+ICsgICAgICAg
+c3VjaCBhczoNCj4gPiArICAgICAgICogImZzbCxwMjA0MS1yY3BtIg0KPiA+ICsgICAgICAgKiAi
+ZnNsLHAzMDQxLXJjcG0iDQo+ID4gKyAgICAgICAqICJmc2wscDQwODAtcmNwbSINCj4gPiArICAg
+ICAgICogImZzbCxwNTAyMC1yY3BtIg0KPiA+ICsgICAgICAgKiAiZnNsLHA1MDQwLXJjcG0iDQo+
+ID4gKyAgICAgICAqICJmc2wsdDQyNDAtcmNwbSINCj4gPiArICAgICAgICogImZzbCxiNDQyMC1y
+Y3BtIg0KPiA+ICsgICAgICAgKiAiZnNsLGI0ODYwLXJjcG0iDQo+IA0KPiAyIG9yIDMgZXhhbXBs
+ZXMgaXMgZW5vdWdoLg0KPiANCj4gPiArICAgICAgIENoYXNzaXMtdmVyc2lvbiBzdHJpbmdzIGFy
+ZSBvZiB0aGUgZm9ybSAiZnNsLHFvcmlxLXJjcG0tPHZlcnNpb24+IiwNCj4gPiArICAgICAgIHN1
+Y2ggYXM6DQo+ID4gKyAgICAgICAqICJmc2wscW9yaXEtcmNwbS0xLjAiOiBmb3IgY2hhc3NpcyAx
+LjAgcmNwbQ0KPiA+ICsgICAgICAgKiAiZnNsLHFvcmlxLXJjcG0tMi4wIjogZm9yIGNoYXNzaXMg
+Mi4wIHJjcG0NCj4gPiArICAgICAgICogImZzbCxxb3JpcS1yY3BtLTIuMSI6IGZvciBjaGFzc2lz
+IDIuMSByY3BtDQo+ID4gKw0KPiA+ICtBbGwgcmVmZXJlbmNlcyB0byAiMS4wIiBhbmQgIjIuMCIg
+cmVmZXIgdG8gdGhlIFFvcklRIGNoYXNzaXMgdmVyc2lvbg0KPiA+ICt0byB3aGljaCB0aGUgY2hp
+cCBjb21wbGllcy4NCj4gPiArQ2hhc3NpcyBWZXJzaW9uICAgICAgICAgICAgICAgIEV4YW1wbGUg
+Q2hpcHMNCj4gPiArLS0tLS0tLS0tLS0tLS0tICAgICAgICAgICAgICAgIC0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0NCj4gPiArMS4wICAgICAgICAgICAgICAgICAgICAgICAgICAgIHA0
+MDgwLCBwNTAyMCwgcDUwNDAsIHAyMDQxLCBwMzA0MQ0KPiA+ICsyLjAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgdDQyNDAsIGI0ODYwLCBiNDQyMA0KPiA+ICsyLjEgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgdDEwNDAsIGxzMTAyMQ0KPiANCj4gTm90IHN1cmUgdGhpcyBiaW5kaW5nIGlz
+IHRoZSBwbGFjZSB0byBtYWludGFpbiBhIHRhYmxlIG9mIGNoYXNzaXMgdmVyc2lvbnMgdG8NCj4g
+U29Dcy4NCj4gDQo+IFRoYW5rcywNCj4gU3R1YXJ0DQo=
