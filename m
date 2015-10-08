@@ -1,32 +1,40 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E02CC1A0171
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 19:00:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBBF41A0174
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 20:39:48 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 8 Oct 2015 18:00:36 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 133C02CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 19:00:33 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9880O5c64225422
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 19:00:33 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t98800bM011299
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 19:00:00 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2] powerpc: Fix _ALIGN_* errors due to type difference.
-Date: Thu,  8 Oct 2015 13:29:28 +0530
-Message-Id: <1444291168-2360-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Thu, 8 Oct 2015 15:09:45 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4ACF2394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 15:09:42 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t989dHkR24379544
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 15:09:17 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t989dBAZ000301
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 Oct 2015 15:09:16 +0530
+Message-ID: <561639B8.8040407@linux.vnet.ibm.com>
+Date: Thu, 08 Oct 2015 15:09:04 +0530
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: David Ahern <dsahern@gmail.com>, linux-kernel@vger.kernel.org
+CC: srikar@linux.vnet.ibm.com, yarygin@linux.vnet.ibm.com, acme@kernel.org,
+ borntraeger@de.ibm.com, mingo@redhat.com, paulus@samba.org,
+ scottwood@freescale.com, naveen.n.rao@linux.vnet.ibm.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v9 1/4] perf, kvm/{x86,
+ s390}: Remove dependency on uapi/kvm_perf.h
+References: <1444184711-8559-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <5615443F.7030909@gmail.com>
+In-Reply-To: <5615443F.7030909@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,58 +44,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This avoid errors like
+Hi David,
 
-        unsigned int usize = 1 << 30;
-        int size = 1 << 30;
-        unsigned long addr = 64UL << 30 ;
 
-        value = _ALIGN_DOWN(addr, usize); -> 0
-        value = _ALIGN_DOWN(addr, size);  -> 0x1000000000
+On 10/07/2015 09:41 PM, David Ahern wrote:
+> On 10/6/15 8:25 PM, Hemant Kumar wrote:
+>> @@ -358,7 +357,12 @@ static bool handle_end_event(struct 
+>> perf_kvm_stat *kvm,
+>>       time_diff = sample->time - time_begin;
+>>
+>>       if (kvm->duration && time_diff > kvm->duration) {
+>> -        char decode[DECODE_STR_LEN];
+>> +        char *decode = zalloc(decode_str_len);
+>
+> decode can still be a stack variable even with variable length.
+>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/boot/page.h        | 4 ++--
- arch/powerpc/include/asm/page.h | 5 +++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+Yeah, we can do that. But, I am not sure whether its a standard way.
 
-diff --git a/arch/powerpc/boot/page.h b/arch/powerpc/boot/page.h
-index 14eca30fef64..87c42d7d283d 100644
---- a/arch/powerpc/boot/page.h
-+++ b/arch/powerpc/boot/page.h
-@@ -22,8 +22,8 @@
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
- /* align addr on a size boundary - adjust address up/down if needed */
--#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
--#define _ALIGN_DOWN(addr,size)	((addr)&(~((size)-1)))
-+#define _ALIGN_UP(addr, size)	(((addr)+((size)-1))&(~((typeof(addr))(size)-1)))
-+#define _ALIGN_DOWN(addr, size)	((addr)&(~((typeof(addr))(size)-1)))
- 
- /* align addr on a size boundary - adjust address up if needed */
- #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 71294a6e976e..0711b3188247 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -12,6 +12,7 @@
- 
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
-+#include <linux/kernel.h>
- #else
- #include <asm/types.h>
- #endif
-@@ -240,8 +241,8 @@ extern long long virt_phys_offset;
- #endif
- 
- /* align addr on a size boundary - adjust address up/down if needed */
--#define _ALIGN_UP(addr,size)	(((addr)+((size)-1))&(~((size)-1)))
--#define _ALIGN_DOWN(addr,size)	((addr)&(~((size)-1)))
-+#define _ALIGN_UP(addr, size)   __ALIGN_KERNEL(addr, size)
-+#define _ALIGN_DOWN(addr, size)	((addr)&(~((typeof(addr))(size)-1)))
- 
- /* align addr on a size boundary - adjust address up if needed */
- #define _ALIGN(addr,size)     _ALIGN_UP(addr,size)
+>> +
+>> +        if (!decode) {
+>> +            pr_err("Not enough memory\n");
+>> +            return false;
+>> +        }
+>>
+>>           kvm->events_ops->decode_key(kvm, &event->key, decode);
+>>           if (!skip_event(decode)) {
+>> @@ -366,6 +370,7 @@ static bool handle_end_event(struct perf_kvm_stat 
+>> *kvm,
+>>                    sample->time, sample->pid, vcpu_record->vcpu_id,
+>>                    decode, time_diff/1000);
+>>           }
+>> +        free(decode);
+>>       }
+>>
+>>       return update_kvm_event(event, vcpu, time_diff);
+>> @@ -386,7 +391,8 @@ struct vcpu_event_record *per_vcpu_record(struct 
+>> thread *thread,
+>
+> -----8<-----
+>
+>> @@ -575,7 +581,7 @@ static void show_timeofday(void)
+>>
+>>   static void print_result(struct perf_kvm_stat *kvm)
+>>   {
+>> -    char decode[DECODE_STR_LEN];
+>> +    char *decode;
+>
+> and a stack variable here too.
+>
+
+Same here.
+
+> David
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
 -- 
-2.5.0
+Thanks,
+Hemant Kumar
