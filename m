@@ -1,23 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0134.outbound.protection.outlook.com [65.55.169.134])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5EE2C1A025E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 06:13:03 +1100 (AEDT)
-Message-ID: <1444331568.5336.328.camel@freescale.com>
-Subject: Re: [PATCH v2 22/25] powerpc32: move xxxxx_dcache_range() functions
- inline
+ by lists.ozlabs.org (Postfix) with ESMTPS id EBA4F1A030A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 06:13:41 +1100 (AEDT)
+Message-ID: <1444331608.5336.329.camel@freescale.com>
+Subject: Re: [PATCH v2 05/25] powerpc/8xx: Fix vaddr for IMMR early remap
 From: Scott Wood <scottwood@freescale.com>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
  <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 8 Oct 2015 14:12:48 -0500
-In-Reply-To: <561514D4.9090406@c-s.fr>
+Date: Thu, 8 Oct 2015 14:13:28 -0500
+In-Reply-To: <561662ED.1040103@c-s.fr>
 References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <c1c88096cb3f6ee71048dbab44ffb9ac260b07a3.1442939410.git.christophe.leroy@c-s.fr>
- <20150929002935.GK6161@home.buserror.net> <561514D4.9090406@c-s.fr>
+ <83ffd345e7a3fe00443e32b6caf900e7618453d6.1442939410.git.christophe.leroy@c-s.fr>
+ <20150928233900.GB6161@home.buserror.net> <561662ED.1040103@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,75 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-07 at 14:49 +0200, Christophe Leroy wrote:
-> Le 29/09/2015 02:29, Scott Wood a écrit :
-> > On Tue, Sep 22, 2015 at 06:51:13PM +0200, Christophe Leroy wrote:
-> > > flush/clean/invalidate _dcache_range() functions are all very
-> > > similar and are quite short. They are mainly used in __dma_sync()
-> > > perf_event locate them in the top 3 consumming functions during
-> > > heavy ethernet activity
+On Thu, 2015-10-08 at 14:34 +0200, Christophe Leroy wrote:
+> Le 29/09/2015 01:39, Scott Wood a écrit :
+> > On Tue, Sep 22, 2015 at 06:50:38PM +0200, Christophe Leroy wrote:
+> > > Memory: 124428K/131072K available (3748K kernel code, 188K rwdata,
+> > > 648K rodata, 508K init, 290K bss, 6644K reserved)
+> > > Kernel virtual memory layout:
+> > >    * 0xfffdf000..0xfffff000  : fixmap
+> > >    * 0xfde00000..0xfe000000  : consistent mem
+> > >    * 0xfddf6000..0xfde00000  : early ioremap
+> > >    * 0xc9000000..0xfddf6000  : vmalloc & ioremap
+> > > SLUB: HWalign=16, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
 > > > 
-> > > They are good candidate for inlining, as __dma_sync() does
-> > > almost nothing but calling them
+> > > Mapping IMMR 1:1 is just wrong because it may overlap with another
+> > > area. On most mpc8xx boards it is OK because IMMR is set to
+> > > 0xff000000 but for instance on EP88xC board, IMMR is at 0xfa200000
+> > > which overlaps with VM ioremap area
+> > > 
+> > > This patch fixes the virtual address for remapping IMMR to 0xff000000,
+> > > regardless of the value of IMMR.
+> > > 
+> > > The size of IMMR area is 256kbytes (CPM at offset 0, security engine
+> > > at offset 128) so 512kbytes is enough and allows to handle the EP88xC
+> > > case (which is not 8Mbytes but only 2Mbytes aligned) the same way.
 > > > 
 > > > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> > > ---
-> > > New in v2
-> > > 
-> > >   arch/powerpc/include/asm/cacheflush.h | 55 
-> > > +++++++++++++++++++++++++++--
-> > >   arch/powerpc/kernel/misc_32.S         | 65 ---------------------------
-> > > --------
-> > >   arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
-> > >   3 files changed, 54 insertions(+), 68 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/include/asm/cacheflush.h 
-> > > b/arch/powerpc/include/asm/cacheflush.h
-> > > index 6229e6b..6169604 100644
-> > > --- a/arch/powerpc/include/asm/cacheflush.h
-> > > +++ b/arch/powerpc/include/asm/cacheflush.h
-> > > @@ -47,12 +47,61 @@ static inline void 
-> > > __flush_dcache_icache_phys(unsigned long physaddr)
-> > >   }
-> > >   #endif
-> > >   
-> > > -extern void flush_dcache_range(unsigned long start, unsigned long 
-> > > stop);
-> > >   #ifdef CONFIG_PPC32
-> > > -extern void clean_dcache_range(unsigned long start, unsigned long 
-> > > stop);
-> > > -extern void invalidate_dcache_range(unsigned long start, unsigned long 
-> > > stop);
-> > > +/*
-> > > + * Write any modified data cache blocks out to memory and invalidate 
-> > > them.
-> > > + * Does not invalidate the corresponding instruction cache blocks.
-> > > + */
-> > > +static inline void flush_dcache_range(unsigned long start, unsigned 
-> > > long stop)
-> > > +{
-> > > + void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
-> > > + unsigned int size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
-> > > + unsigned int i;
-> > > +
-> > > + for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
-> > > +         dcbf(addr);
-> > > + if (i)
-> > > +         mb();   /* sync */
-> > > +}
-> > I know this is 32-bit-specific code, but it's still bad practice to use
-> > "unsigned int" for addresses or sizes thereof.
+> > Instead of hardcoding 0xff000000, can you use asm/fixmap.h to allocate a
+> > virtual address at compile time?
 > > 
 > > 
-> Ok, I can fix size, but what about start and stop ? If I change that, it 
-> means I also have to fix all caller. Do you expect me to do that ?
+> Yes good idea, but in asm/fixmap.h FIX_XXXX constants are defined as enums.
+> Is there a way to use them in head_8xx.S ?
 
-start and stop are already unsigned long.
-
-> And it is very unlykely, but what if for some reason someone wants to 
-> invalidate the entire user address space which is 3Gbytes size ? A 
-> signed size would be negative here.
-
-Why would size be signed?
+asm-offsets
 
 -Scott
