@@ -1,27 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 097071A0018
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 14:50:37 +1100 (AEDT)
-Message-ID: <1444276236.9940.5.camel@ellerman.id.au>
-Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
- update documentation
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: paulmck@linux.vnet.ibm.com
-Cc: Will Deacon <will.deacon@arm.com>, Peter Zijlstra
- <peterz@infradead.org>,  linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>, Anton
- Blanchard <anton@samba.org>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
-Date: Thu, 08 Oct 2015 14:50:36 +1100
-In-Reply-To: <20151007152501.GI3910@linux.vnet.ibm.com>
-References: <1444215568-24732-1-git-send-email-will.deacon@arm.com>
- <20151007111915.GF17308@twins.programming.kicks-ass.net>
- <20151007132317.GK16065@arm.com> <20151007152501.GI3910@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97D271A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 15:00:01 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3526F140D8C
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 15:00:01 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 8 Oct 2015 14:00:00 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 22A6E3578052
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Oct 2015 14:59:58 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t983xpaj590124
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 14:59:59 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t983xPfd016208
+ for <linuxppc-dev@ozlabs.org>; Thu, 8 Oct 2015 14:59:25 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/8] powerpc/eeh: More relexed hotplug criterion
+Date: Thu,  8 Oct 2015 14:58:53 +1100
+Message-Id: <1444276739-20372-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1444276739-20372-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1444276739-20372-1-git-send-email-gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,46 +42,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-07 at 08:25 -0700, Paul E. McKenney wrote:
-> On Wed, Oct 07, 2015 at 02:23:17PM +0100, Will Deacon wrote:
-> > Hi Peter,
-> > 
-> > Thanks for the headache ;)
-> > 
-> > On Wed, Oct 07, 2015 at 01:19:15PM +0200, Peter Zijlstra wrote:
-> > > On Wed, Oct 07, 2015 at 11:59:28AM +0100, Will Deacon wrote:
-> > > > As much as we'd like to live in a world where RELEASE -> ACQUIRE is
-> > > > always cheaply ordered and can be used to construct UNLOCK -> LOCK
-> > > > definitions with similar guarantees, the grim reality is that this isn't
-> > > > even possible on x86 (thanks to Paul for bringing us crashing down to
-> > > > Earth).
-> > > > 
-> > > > This patch handles the issue by introducing a new barrier macro,
-> > > > smp_mb__release_acquire, that can be placed between a RELEASE and a
-> > > > subsequent ACQUIRE operation in order to upgrade them to a full memory
-> > > > barrier. At the moment, it doesn't have any users, so its existence
-> > > > serves mainly as a documentation aid.
-> > > 
-> > > Does we want to go revert 12d560f4ea87 ("rcu,locking: Privatize
-> > > smp_mb__after_unlock_lock()") for that same reason?
-> > 
-> > I don't think we want a straight revert. smp_mb__after_unlock_lock could
-> > largely die if PPC strengthened its locks, whereas smp_mb__release_acquire
-> > is needed by quite a few architectures.
-> 
-> Currently, we do need smp_mb__after_unlock_lock() to be after the
-> acquisition on PPC -- putting it between the unlock and the lock
-> of course doesn't cut it for the cross-thread unlock/lock case.
-> 
-> I am with Peter -- we do need the benchmark results for PPC.
+Currently, we rely on the existence of struct pci_driver::err_handler
+to judge if the corresponding PCI device should be unplugged during
+EEH recovery (partially hotplug case). However, it's not elaborate.
+some device drivers are implementing part of the EEH error handlers
+to collect diag-data. That means the driver still expects a hotplug
+to recover from the EEH error.
 
-Urgh, sorry guys. I have been slowly doing some benchmarks, but time is not
-plentiful at the moment.
+This makes the hotplug criterion more relaxed: if the device driver
+doesn't provide all necessary EEH error handlers, it will experience
+hotplug during EEH recovery.
 
-If we do a straight lwsync -> sync conversion for unlock it looks like that
-will cost us ~4.2% on Anton's standard context switch benchmark.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh_driver.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-So that's not all that nice. But we also don't want to be the only arch that
-has the weird lock semantics and has to find all the bugs.
-
-cheers
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 3a626ed..32178a4 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -416,7 +416,10 @@ static void *eeh_rmv_device(void *data, void *userdata)
+ 	driver = eeh_pcid_get(dev);
+ 	if (driver) {
+ 		eeh_pcid_put(dev);
+-		if (driver->err_handler)
++		if (driver->err_handler &&
++		    driver->err_handler->error_detected &&
++		    driver->err_handler->slot_reset &&
++		    driver->err_handler->resume)
+ 			return NULL;
+ 	}
+ 
+-- 
+2.1.0
