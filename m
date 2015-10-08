@@ -1,22 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
- by lists.ozlabs.org (Postfix) with ESMTP id E2C271A0018
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 12:03:38 +1100 (AEDT)
-Subject: Re: [PATCH v2 22/25] powerpc32: move xxxxx_dcache_range() functions
- inline
-To: Scott Wood <scottwood@freescale.com>
-References: <cover.1442939410.git.christophe.leroy@c-s.fr>
- <c1c88096cb3f6ee71048dbab44ffb9ac260b07a3.1442939410.git.christophe.leroy@c-s.fr>
- <20150929002935.GK6161@home.buserror.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <561514D4.9090406@c-s.fr>
-Date: Wed, 7 Oct 2015 14:49:24 +0200
+Return-Path: <lkp@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id EF27E1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 12:06:41 +1100 (AEDT)
+Date: Thu, 8 Oct 2015 09:06:03 +0800
+From: Fengguang Wu <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Keith Busch <keith.busch@intel.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
+ Christoph Hellwig <hch@infradead.org>,
+ Paul Mackerras <paulus@samba.org>, kbuild-all@01.org,
+ Matthew Wilcox <willy@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [kbuild-all] [PATCH 4/5 v2] pseries/iommu: implement DDW-aware
+ dma_get_page_shift
+Message-ID: <20151008010603.GA24198@wfg-t540p.sh.intel.com>
+References: <201510030421.d9fvrbXU%fengguang.wu@intel.com>
+ <1444102746.16909.4.camel@ellerman.id.au>
+ <20151007135602.GA17377@wfg-t540p.sh.intel.com>
+ <1444263119.31685.4.camel@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20150929002935.GK6161@home.buserror.net>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1444263119.31685.4.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +32,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Oct 08, 2015 at 11:11:59AM +1100, Michael Ellerman wrote:
+> On Wed, 2015-10-07 at 21:56 +0800, Fengguang Wu wrote:
+> > On Tue, Oct 06, 2015 at 02:39:06PM +1100, Michael Ellerman wrote:
+> > > On Sat, 2015-10-03 at 04:33 +0800, kbuild test robot wrote:
+> > > > Hi Nishanth,
+> > > > 
+> > > > [auto build test results on v4.3-rc3 -- if it's inappropriate base, please ignore]
+> > > > 
+> > > > config: powerpc-defconfig (attached as .config)
+> > > > reproduce:
+> > > >         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+> > > >         chmod +x ~/bin/make.cross
+> > > >         # save the attached .config to linux build tree
+> > > >         make.cross ARCH=powerpc 
+> > > > 
+> > > > All error/warnings (new ones prefixed by >>):
+> > > > 
+> > > >    arch/powerpc/platforms/pseries/iommu.c: In function 'iommu_init_early_pSeries':
+> > > > >> arch/powerpc/platforms/pseries/iommu.c:1433:9: error: 'struct machdep_calls' has no member named 'dma_get_page_shift'
+> > > >       ppc_md.dma_get_page_shift = dma_get_page_shift_pSeriesLP;
+> > > 
+> > > It was added in patch 3/5, so I think this error is bogus. Unless there's a
+> > > typo I'm missing?
+> > 
+> > Yes sorry, the patchset was not detected correctly in your case,
+> > ending up the patches being tested as individual ones.
+> > 
+> > I'll fixup the robot.
+> 
+> Thanks.
+> 
+> How did the robot decide to build this series in the first place? Does it build
+> everything sent to one of the lists on CC?
 
+Yes, currently the following mailing lists are subscribed.  Patches
+sent to them will be tested if they can be git-am to RC or linux-next
+kernels:
 
-Le 29/09/2015 02:29, Scott Wood a écrit :
-> On Tue, Sep 22, 2015 at 06:51:13PM +0200, Christophe Leroy wrote:
->> flush/clean/invalidate _dcache_range() functions are all very
->> similar and are quite short. They are mainly used in __dma_sync()
->> perf_event locate them in the top 3 consumming functions during
->> heavy ethernet activity
->>
->> They are good candidate for inlining, as __dma_sync() does
->> almost nothing but calling them
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->> New in v2
->>
->>   arch/powerpc/include/asm/cacheflush.h | 55 +++++++++++++++++++++++++++--
->>   arch/powerpc/kernel/misc_32.S         | 65 -----------------------------------
->>   arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
->>   3 files changed, 54 insertions(+), 68 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
->> index 6229e6b..6169604 100644
->> --- a/arch/powerpc/include/asm/cacheflush.h
->> +++ b/arch/powerpc/include/asm/cacheflush.h
->> @@ -47,12 +47,61 @@ static inline void __flush_dcache_icache_phys(unsigned long physaddr)
->>   }
->>   #endif
->>   
->> -extern void flush_dcache_range(unsigned long start, unsigned long stop);
->>   #ifdef CONFIG_PPC32
->> -extern void clean_dcache_range(unsigned long start, unsigned long stop);
->> -extern void invalidate_dcache_range(unsigned long start, unsigned long stop);
->> +/*
->> + * Write any modified data cache blocks out to memory and invalidate them.
->> + * Does not invalidate the corresponding instruction cache blocks.
->> + */
->> +static inline void flush_dcache_range(unsigned long start, unsigned long stop)
->> +{
->> +	void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
->> +	unsigned int size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
->> +	unsigned int i;
->> +
->> +	for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
->> +		dcbf(addr);
->> +	if (i)
->> +		mb();	/* sync */
->> +}
-> I know this is 32-bit-specific code, but it's still bad practice to use
-> "unsigned int" for addresses or sizes thereof.
->
->
-Ok, I can fix size, but what about start and stop ? If I change that, it 
-means I also have to fix all caller. Do you expect me to do that ?
+kvm
+linux-acpi
+linux-bluetooth
+linux-btrfs
+linux-embedded
+linux-ext4
+linux-fsdevel
+linux-media
+linux-mmc
+linux-nfs
+linux-omap
+linux-pci
+linux-pm
+linux-raid
+linux-rdma
+linux-scsi
+linux-usb
+linux-wireless
+netdev
+netfilter-devel
+linux-mm
+driverdev-devel
+intel-gfx
 
-And it is very unlykely, but what if for some reason someone wants to 
-invalidate the entire user address space which is 3Gbytes size ? A 
-signed size would be negative here.
-
-Christophe
+Thanks,
+Fengguang
