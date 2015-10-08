@@ -1,12 +1,12 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-ob0-x244.google.com (mail-ob0-x244.google.com
- [IPv6:2607:f8b0:4003:c01::244])
+Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
+ [IPv6:2607:f8b0:4003:c06::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 126851A0372
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 04:54:01 +1100 (AEDT)
-Received: by obbbh8 with SMTP id bh8so4300978obb.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2015 10:53:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D72211A03C0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 04:54:08 +1100 (AEDT)
+Received: by oigj1 with SMTP id j1so1776149oig.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Oct 2015 10:54:07 -0700 (PDT)
 Sender: Rob Herring <robherring2@gmail.com>
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org,
@@ -15,22 +15,14 @@ Cc: Grant Likely <grant.likely@linaro.org>,
  Frank Rowand <frowand.list@gmail.com>,
  Ian Campbell <ijc+devicetree@hellion.org.uk>,
  Geert Uytterhoeven <geert@linux-m68k.org>, Olof Johansson <olof@lixom.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- linux-xtensa@linux-xtensa.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, Ley Foon Tan <lftan@altera.com>,
- nios2-dev@lists.rocketboards.org, Ralf Baechle <ralf@linux-mips.org>,
- linux-mips@linux-mips.org, James Hogan <james.hogan@imgtec.com>,
- linux-metag@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>,
- uclinux-h8-devel@lists.sourceforge.jp,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org,
- Vineet Gupta <vgupta@synopsys.com>, arm@kernel.org
-Subject: [PATCH v2 00/13] Enable building all dtb files
-Date: Thu,  8 Oct 2015 12:53:34 -0500
-Message-Id: <1444326827-3565-1-git-send-email-robh@kernel.org>
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 12/13] powerpc: enable building of all dtbs
+Date: Thu,  8 Oct 2015 12:53:46 -0500
+Message-Id: <1444326827-3565-13-git-send-email-robh@kernel.org>
+In-Reply-To: <1444326827-3565-1-git-send-email-robh@kernel.org>
+References: <1444326827-3565-1-git-send-email-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,58 +32,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series enables building all the dtb files in the kernel mostly 
-independent of the kernel config. The option is only dependent on 
-COMPILE_TEST, OF, and the new OF_ALL_DTBS options. This ensures that 
-allyesconfig builds can build all dtb files although most arches have to 
-build "dtbs" target explicitly. Some arches like ARM include dtbs in the 
-default target.
+Enable building all dtb files when CONFIG_OF_ALL_DTBS is enabled. The dtbs
+are not really dependent on a platform being enabled or any other kernel
+config, so for testing coverage it is convenient to build all of the dtbs.
+This builds all dts files in the tree, not just targets listed.
 
-Arch/arm-soc maintainers, Please ack and I will take this series via the DT 
-tree.
+Supporting this requires adding 'dtbs' make target which was not yet
+supported on powerpc.
 
-v2:
-- Add OF_ALL_DTBS option hidden behind COMPILE_TEST
-- Expand to all architectures (with more than 1 dtb)
-
-Rob
-
-
-Rob Herring (13):
-  of: add config option to enable building of all dtbs
-  arc: use common make variables for dtb builds
-  arc: enable building of all dtbs
-  arm: enable building of all dtbs
-  arm64: enable building of all dtbs
-  h8300: enable building of all dtbs
-  metag: use common make variables for dtb builds
-  metag: enable building of all dtbs
-  mips: enable building of all dtbs
-  nios2: use common make variables for dtb builds
-  nios2: enable building of all dtbs
-  powerpc: enable building of all dtbs
-  xtensa: enable building of all dtbs
-
- arch/arc/Makefile              |  2 +-
- arch/arc/boot/dts/Makefile     |  6 ++++--
- arch/arm/boot/dts/Makefile     |  3 +++
- arch/arm64/boot/dts/Makefile   |  6 ++++++
- arch/h8300/boot/dts/Makefile   |  3 +++
- arch/metag/Makefile            |  2 +-
- arch/metag/boot/dts/Makefile   |  7 +++----
- arch/mips/boot/dts/Makefile    |  3 +++
- arch/nios2/Makefile            | 10 +++++-----
- arch/nios2/boot/Makefile       | 13 +++----------
- arch/nios2/boot/dts/Makefile   |  6 ++++++
- arch/powerpc/Makefile          |  6 ++++++
- arch/powerpc/boot/Makefile     |  5 ++++-
- arch/powerpc/boot/dts/Makefile |  5 +++++
- arch/xtensa/Makefile           |  4 ++++
- arch/xtensa/boot/dts/Makefile  |  7 ++++++-
- drivers/of/Kconfig             | 10 ++++++++++
- 17 files changed, 73 insertions(+), 25 deletions(-)
- create mode 100644 arch/nios2/boot/dts/Makefile
+Signed-off-by: Rob Herring <robh@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/Makefile          | 6 ++++++
+ arch/powerpc/boot/Makefile     | 5 ++++-
+ arch/powerpc/boot/dts/Makefile | 5 +++++
+ 3 files changed, 15 insertions(+), 1 deletion(-)
  create mode 100644 arch/powerpc/boot/dts/Makefile
 
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index b9b4af2..0ec35ff 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -273,6 +273,11 @@ bootwrapper_install:
+ %.dtb: scripts
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
++PHONY += dtbs
++
++dtbs: prepare scripts
++	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot)/dts
++
+ # Used to create 'merged defconfigs'
+ # To use it $(call) it with the first argument as the base defconfig
+ # and the second argument as a space separated list of .config files to merge,
+@@ -317,6 +322,7 @@ define archhelp
+   @echo '  dtbImage.<dt>   - zImage with an embedded device tree blob'
+   @echo '  simpleImage.<dt> - Firmware independent image.'
+   @echo '  treeImage.<dt>  - Support for older IBM 4xx firmware (not U-Boot)'
++  echo  '  dtbs            - Build device tree blobs for enabled boards'
+   @echo '  install         - Install kernel using'
+   @echo '                    (your) ~/bin/$(INSTALLKERNEL) or'
+   @echo '                    (distribution) /sbin/$(INSTALLKERNEL) or'
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 4eec430..381df1a 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -402,7 +402,7 @@ zInstall: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+ clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
+ 	zImage zImage.initrd zImage.chrp zImage.coff zImage.holly \
+ 	zImage.miboot zImage.pmac zImage.pseries \
+-	zImage.maple simpleImage.* otheros.bld *.dtb
++	zImage.maple simpleImage.* otheros.bld
+ 
+ # clean up files cached by wrapper
+ clean-kernel := vmlinux.strip vmlinux.bin
+@@ -410,6 +410,9 @@ clean-kernel += $(addsuffix .gz,$(clean-kernel))
+ # If not absolute clean-files are relative to $(obj).
+ clean-files += $(addprefix $(objtree)/, $(clean-kernel))
+ 
++# Let clean descend into subdirs
++subdir- := dts
++
+ WRAPPER_OBJDIR := /usr/lib/kernel-wrapper
+ WRAPPER_DTSDIR := /usr/lib/kernel-wrapper/dts
+ WRAPPER_BINDIR := /usr/sbin
+diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
+new file mode 100644
+index 0000000..f121775
+--- /dev/null
++++ b/arch/powerpc/boot/dts/Makefile
+@@ -0,0 +1,5 @@
++dtstree		:= $(srctree)/$(src)
++dtb-$(CONFIG_OF_ALL_DTBS) := $(patsubst $(dtstree)/%.dts,%.dtb, $(wildcard $(dtstree)/*.dts))
++
++always		:= $(dtb-y)
++clean-files	:= *.dtb
 -- 
 2.1.4
