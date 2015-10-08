@@ -1,30 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cmetcalf@ezchip.com>
+Received: from emea01-db3-obe.outbound.protection.outlook.com
+ (mail-db3on0053.outbound.protection.outlook.com [157.55.234.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3A9181A0026
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 11:38:32 +1100 (AEDT)
-Message-ID: <1444264711.31685.5.camel@ellerman.id.au>
-Subject: Re: Missing operand for tlbie instruction on Power7
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Josh Boyer <jwboyer@fedoraproject.org>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>, Laura Abbott
- <labbott@redhat.com>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>
-Date: Thu, 08 Oct 2015 11:38:31 +1100
-In-Reply-To: <CA+5PVA4XggCNPo3eA0fTzsfe7rHEKqoZQwF3Rbj79wjZJFyAMg@mail.gmail.com>
-References: <560EA623.1040300@redhat.com>
- <1444102518.16909.3.camel@ellerman.id.au> <56141237.2040403@redhat.com>
- <1444197649.6794.7.camel@ellerman.id.au>
- <20151007071911.GA31002@gate.crashing.org>
- <1444209210.19375.1.camel@ellerman.id.au>
- <CA+5PVA7rpTbbVRJ_ze8Fndk+uxb2c=uqjkJRk+E9_aymu2fUew@mail.gmail.com>
- <1444263036.31685.2.camel@ellerman.id.au>
- <CA+5PVA4XggCNPo3eA0fTzsfe7rHEKqoZQwF3Rbj79wjZJFyAMg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A68891A0026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Oct 2015 11:42:40 +1100 (AEDT)
+Subject: [GIT PULL] strscpy powerpc fix for 3.4
+To: Stephen Rothwell <sfr@canb.auug.org.au>, Linus Torvalds
+ <torvalds@linux-foundation.org>
+References: <20151008094444.10d9cc68@canb.auug.org.au>
+CC: <linux-next@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+From: Chris Metcalf <cmetcalf@ezchip.com>
+Message-ID: <5615B87A.80206@ezchip.com>
+Date: Wed, 7 Oct 2015 20:27:38 -0400
+MIME-Version: 1.0
+In-Reply-To: <20151008094444.10d9cc68@canb.auug.org.au>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,61 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-07 at 20:15 -0400, Josh Boyer wrote:
-> On Wed, Oct 7, 2015 at 8:10 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > On Wed, 2015-10-07 at 10:31 -0400, Josh Boyer wrote:
-> >> On Wed, Oct 7, 2015 at 5:13 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >> > On Wed, 2015-10-07 at 02:19 -0500, Segher Boessenkool wrote:
-> >> >> On Wed, Oct 07, 2015 at 05:00:49PM +1100, Michael Ellerman wrote:
-> >> >> > > It's also worth noting that the __flush_power7 uses tlbiel instead of tlbie.
-> >> >> >
-> >> >> > Yeah that's a good point. It's not clear if the swsusp code wants to a local or
-> >> >> > a global invalidate.
-> >> >>
-> >> >> If I read the code right, this is called on the boot CPU when all the
-> >> >> non-boot CPUs are still (potentially) down, so if you would do a global
-> >> >> invalidate the non-boot CPUs might not even notice, so those need to do
-> >> >> a (local) invalidate after being brought up anyway?  Or they probably
-> >> >> need it before being brought down at all?  You figure it out, it makes
-> >> >> my brain hurt :-)
-> >> >
-> >> > A good rule would be that every cpu does a local invalidate before turning on
-> >> > the MMU. That would work for this case and also for kexec, kdump, junk left by
-> >> > firmare etc. But I don't think we do that consistently in a way that works for
-> >> > this code at the moment.
-> >> >
-> >> >> > As an alternative, can you try adding a .machine push / .machine "power4" /
-> >> >> > .machine pop, around the tlbie. That should tell the assembler to drop back to
-> >> >> > power4 mode for that instruction, which should then do the right thing. There
-> >> >> > are some examples in that file.
-> >> >>
-> >> >> That will get the assembler to not complain, but it will assemble the wrong
-> >> >> instruction: the power7 instruction has the same opcode (but different
-> >> >> semantics).  So if you assemble a "tlbie r4" in power4 mode, a newer CPU
-> >> >> will see it as a "tlbie r4,r0" and do the wrong thing.
-> >> >
-> >> > Yeah, it would basically maintain the existing behaviour which is wrong but a
-> >> > known quantity. I suspect no one has ever run this on Power7 or in fact
-> >> > anything other than G5 or Book3E.
-> >>
-> >> Likely not, but leaving it broken just because it is known behavior
-> >> seems pretty weird to me.
-> >
-> > In a universe where I have infinite time to fix random things we would
-> > obviously do a proper fix :)
-> >
-> >> I think Fedora will look at simply disabling hibernation on ppc64 so the file
-> >> isn't built at all.  Seems to be a safer option.
-> >
-> > It's safer for sure. Though you might have some G5 users who are using it and
-> > notice it being disabled.
-> 
-> The 5 of them will notice it being disabled and then they'll realize
-> they either get a working kernel minus hibernation, or they get no
-> kernel at all because it doesn't compile.
+On 10/7/2015 6:44 PM, Stephen Rothwell wrote:
+> Hi Linus,
+>
+> After merging Linus' tree, today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+>
+> lib/string.c: In function 'strscpy':
+> lib/string.c:209:4: error: implicit declaration of function 'zero_bytemask' [-Werror=implicit-function-declaration]
+>      *(unsigned long *)(dest+res) = c & zero_bytemask(data);
+>      ^
+>
+> Caused by commit
+>
+>    30035e45753b ("string: provide strscpy()")
 
-Sure. But if we do the machine push thing they'll get both :)
+I posted a change equivalent to yours earlier today:
 
-And I doubt it's 5, 2 is more likely.
+http://lkml.kernel.org/r/1444229188-19640-1-git-send-email-cmetcalf@ezchip.com
 
-cheers
+I also did no testing, but since the rest of the PPC code is similar to the
+asm-generic version, I believe the zero_bytemask() definition should be OK.
+
+It probably should go through Linus' tree, like the previous set of patches.
+I just pushed it up to the linux-tile tree for Linus to grab as:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/cmetcalf/linux-tile.git strscpy
+
+Chris Metcalf (1):
+       arch/powerpc: provide zero_bytemask() for big-endian
+
+  arch/powerpc/include/asm/word-at-a-time.h | 5 +++++
+  1 file changed, 5 insertions(+)
+
+-- 
+Chris Metcalf, EZChip Semiconductor
+http://www.ezchip.com
