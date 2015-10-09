@@ -1,17 +1,29 @@
-Return-Path: <marvin24@gmx.de>
-From: Marc Dietrich <marvin24@gmx.de>
-To: Geoff Levand <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org
-Subject: Re: Time to remove platforms/cell?
-Date: Fri, 09 Oct 2015 23:13:52 +0200
-Message-ID: <2993505.617vsrhBxj@fb07-iapwap2>
-In-Reply-To: <1444412742.29301.90.camel@infradead.org>
-References: <1442467727.25483.0.camel@ellerman.id.au>
- <1444327832.29301.27.camel@infradead.org>
- <1444412742.29301.90.camel@infradead.org>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0109.outbound.protection.outlook.com [157.56.111.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EA5A1A0598
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 10:58:00 +1100 (AEDT)
+Message-ID: <1444435064.5185.16.camel@freescale.com>
+Subject: Re: [RFC PATCH 0/8] clk: qoriq: Move chip-specific knowledge into
+ driver
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Turquette <mturquette@baylibre.com>
+CC: Stephen Boyd <sboyd@codeaurora.org>, Tang Yuantian
+ <Yuantian.Tang@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Liberman Igal-B31950 <Igal.Liberman@freescale.com>, "Bucur
+ Madalin-Cristian-B32716" <madalin.bucur@freescale.com>,
+ <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>,
+ <devicetree@vger.kernel.org>
+Date: Fri, 9 Oct 2015 18:57:44 -0500
+In-Reply-To: <1443745589.5336.185.camel@freescale.com>
+References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
+ <20150811182535.31346.52965@quantum>
+ <1443745589.5336.185.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart17617918.sAx2iIpHZI";
- micalg="pgp-sha256"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,52 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart17617918.sAx2iIpHZI
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="UTF-8"
-
-Hi Geoff,
-
-Am Freitag, 9. Oktober 2015, 10:45:42 schrieb Geoff Levand:
-> Hi Marc,
+On Thu, 2015-10-01 at 19:26 -0500, Scott Wood wrote:
+> [Resending to updated e-mail address]
 > 
-> On Thu, 2015-10-08 at 11:10 -0700, Geoff Levand wrote:
-> > > On Mon, 2015-10-05 at 12:27 +0200, Marc Dietrich wrote:
-> > > > > I tried with ps3-queue and still no luck. Petitboot just says
-> > > > > "Booting kernel
-> > > > > ..." thats all - no output.
-> > > > > 
-> > > > > FW is 3.15 of course
-> > > > > Petitboot says (white-09.09.01-15.56)
-> > > 
-> > > I spent a few minutes on this, and it seems the 2nd stage kernel
-> > > panics when
-> > > setting up the SPUs.  You could try with CONFIG_SPU_FS=n.
+> On Tue, 2015-08-11 at 11:25 -0700, Michael Turquette wrote:
+> > Hi Scott,
+> > 
+> > Quoting Scott Wood (2015-06-18 19:49:10)
+> > > The existing device tree bindings are error-prone and inflexible. 
+> > > Correct the mistake by moving the knowledge into the driver, which
+> > > has more flexibility in describing the quirks of each chip.  This leaves
+> > > the device tree to its proper role of identifying a programming 
+> > > interface
+> > > rather than describing its individual registers.
+> > 
+> > Sorry for not responding to this one sooner. Fell through the cracks.
+> > 
+> > All of the changes to drives/clk/clk-qoriq.c look great to me. I assume
+> > you need to keep all of these patches together and want to the take
+> > through the freescale tree? If so feel free to add,
+> > 
+> > Acked-by: Michael Turquette <mturquette@baylibre.com>
 > 
-> With the 4.2-rc4 kernel, kexec seems to work when CONFIG_SPU_FS=n.  I
-> have not tried with petitboot release white-09.09.01-15.56 yet though.
+> Is the ack still valid for the v3 patchset?
 
-I guess you mean 4.3-rc4. Still no luck with CONFIG_SPU_FS=n. No output even 
-with direct calling kexec. Can you put a working kernel/initrd to some place 
-so I can try this?
+ping
 
-Marc
-
---nextPart17617918.sAx2iIpHZI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWGC4QAAoJEKyeR39HFBto1IcH/RDl/QMtXCWYIG7K4YzupZ0l
-3AKItP5eiE7Lj7zo1DYCKnm6XGdBI2xa2s2GwdaBhldiS6/dlibWhZxjVoI/cqzH
-Y/1Gl4lNkXW7VcfEI/9CZADWWlv/1dAQiWGSkvmwiRCjtpGwEyRxWzF24yUSkh1n
-yC/22jKzwt5OJBcgUjp/BfF+7L/TgGFYTH3f1FCH7cbpX3JrdTjEq1lKeHG1/H4y
-LZufkRHUoaDJD36cSjFWVPSTSLmB/IaGXGIyqyWuosEMCsaAKsFTkmVzGLpuoC77
-PLfr0Fq3Xwj7tPuIvZ6LDKQhgZNJKE72oIO2hmXXIHQxzifXA62lNlX6fkJ0lMU=
-=lPAn
------END PGP SIGNATURE-----
-
---nextPart17617918.sAx2iIpHZI--
+-Scott
