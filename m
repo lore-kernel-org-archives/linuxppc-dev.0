@@ -1,51 +1,23 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 702A21A0562
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 04:21:57 +1100 (AEDT)
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 9 Oct 2015 11:21:55 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id CB5201FF0041
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 11:10:05 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t99HKab53146066
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2015 10:20:36 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t99HLqMK015279
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 Oct 2015 11:21:53 -0600
-Date: Fri, 9 Oct 2015 10:21:54 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Will Deacon <will.deacon@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>,
- Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
- update documentation
-Message-ID: <20151009172154.GU3910@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1444215568-24732-1-git-send-email-will.deacon@arm.com>
- <20151007111915.GF17308@twins.programming.kicks-ass.net>
- <20151007132317.GK16065@arm.com>
- <20151007152501.GI3910@linux.vnet.ibm.com>
- <1444276236.9940.5.camel@ellerman.id.au>
- <20151008111638.GL3816@twins.programming.kicks-ass.net>
- <20151008214439.GE3910@linux.vnet.ibm.com>
- <20151009083138.GU3816@twins.programming.kicks-ass.net>
- <20151009094039.GD26278@arm.com>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id B6BBB1A0567
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 04:40:04 +1100 (AEDT)
+Date: Sat, 10 Oct 2015 01:39:13 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Gerlando Falauto <gerlando.falauto@keymile.com>
+Cc: kbuild-all@01.org, netdev@vger.kernel.org, timur@tabi.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ ogabbay@advaoptical.com, bigeasy@linutronix.de,
+ Gerlando Falauto <gerlando.falauto@keymile.com>,
+ Timur Tabi <timur@freescale.com>, "David S. Miller" <davem@davemloft.net>,
+ Andy Fleming <afleming@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] net/fsl_pq_mdio: check TBI address for consistency
+ with mapped range
+Message-ID: <201510100149.FPVBX63z%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151009094039.GD26278@arm.com>
+Content-Type: multipart/mixed; boundary="EVF5PPMfhYS0aIcm"
+In-Reply-To: <1444403708-16576-1-git-send-email-gerlando.falauto@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,302 +27,315 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 09, 2015 at 10:40:39AM +0100, Will Deacon wrote:
-> On Fri, Oct 09, 2015 at 10:31:38AM +0200, Peter Zijlstra wrote:
-> > On Thu, Oct 08, 2015 at 02:44:39PM -0700, Paul E. McKenney wrote:
-> > > On Thu, Oct 08, 2015 at 01:16:38PM +0200, Peter Zijlstra wrote:
-> > > > On Thu, Oct 08, 2015 at 02:50:36PM +1100, Michael Ellerman wrote:
-> > > > > On Wed, 2015-10-07 at 08:25 -0700, Paul E. McKenney wrote:
-> > > > 
-> > > > > > Currently, we do need smp_mb__after_unlock_lock() to be after the
-> > > > > > acquisition on PPC -- putting it between the unlock and the lock
-> > > > > > of course doesn't cut it for the cross-thread unlock/lock case.
-> > > > 
-> > > > This ^, that makes me think I don't understand
-> > > > smp_mb__after_unlock_lock.
-> > > > 
-> > > > How is:
-> > > > 
-> > > > 	UNLOCK x
-> > > > 	smp_mb__after_unlock_lock()
-> > > > 	LOCK y
-> > > > 
-> > > > a problem? That's still a full barrier.
-> > > 
-> > > The problem is that I need smp_mb__after_unlock_lock() to give me
-> > > transitivity even if the UNLOCK happened on one CPU and the LOCK
-> > > on another.  For that to work, the smp_mb__after_unlock_lock() needs
-> > > to be either immediately after the acquire (the current choice) or
-> > > immediately before the release (which would also work from a purely
-> > > technical viewpoint, but I much prefer the current choice).
-> > > 
-> > > Or am I missing your point?
-> > 
-> > So lots of little confusions added up to complete fail :-{
 
-I know that feeling!
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> > Mostly I think it was the UNLOCK x + LOCK x are fully ordered (where I
-> > forgot: but not against uninvolved CPUs) and RELEASE/ACQUIRE are
-> > transitive (where I forgot: RELEASE/ACQUIRE _chains_ are transitive, but
-> > again not against uninvolved CPUs).
-> > 
-> > Which leads me to think I would like to suggest alternative rules for
-> > RELEASE/ACQUIRE (to replace those Will suggested; as I think those are
-> > partly responsible for my confusion).
-> 
-> Yeah, sorry. I originally used the phrase "fully ordered" but changed it
-> to "full barrier", which has stronger transitivity (newly understood
-> definition) requirements that I didn't intend.
-> 
-> RELEASE -> ACQUIRE should be used for message passing between two CPUs
-> and not have ordering effects on other observers unless they're part of
-> the RELEASE -> ACQUIRE chain.
-> 
-> >  - RELEASE -> ACQUIRE is fully ordered (but not a full barrier) when
-> >    they operate on the same variable and the ACQUIRE reads from the
-> >    RELEASE. Notable, RELEASE/ACQUIRE are RCpc and lack transitivity.
+Hi Gerlando,
 
-RELEASE->ACQUIRE has local transistivity/causality.  However, it is more
-than just message passing:
+[auto build test WARNING on net/master -- if it's inappropriate base, please ignore]
 
-	void thread0(void)
-	{
-		r1 = READ_ONCE(a);
-		WRITE_ONCE(b, 1);
-		smp_store_release(&c, 1);
-	}
+config: powerpc-tqm8541_defconfig (attached as .config)
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        make.cross ARCH=powerpc 
 
-	void thread1(void)
-	{
-		r2 = smp_store_acquire(&c);
-		WRITE_ONCE(a, 1);
-		r3 = READ_ONCE(b);
-		smp_store_release(&d, 1);
-	}
+All warnings (new ones prefixed by >>):
 
-	void thread2(void)
-	{
-		r4 = smp_load_acquire(&d);
-		WRITE_ONCE(a, 2);
-		r5 = READ_ONCE(b);
-	}
+   drivers/net/ethernet/freescale/fsl_pq_mdio.c: In function 'fsl_pq_mdio_probe':
+>> drivers/net/ethernet/freescale/fsl_pq_mdio.c:454:14: warning: comparison of distinct pointer types lacks a cast
+       if (tbipa > priv->map + resource_size(&res))
+                 ^
 
-After the dust settles, if r2==1&&r4==1, we should also have
-r1==0&&r3==1&&r5==1.  And here is the PowerPC ppcmem/herd model:
+vim +454 drivers/net/ethernet/freescale/fsl_pq_mdio.c
 
-------------------------------------------------------------------------
+   438				if (!prop) {
+   439					dev_err(&pdev->dev,
+   440						"missing 'reg' property in node %s\n",
+   441						tbi->full_name);
+   442					err = -EBUSY;
+   443					goto error;
+   444				}
+   445	
+   446				tbipa = data->get_tbipa(priv->map);
+   447	
+   448				/*
+   449				 * Add consistency check to make sure TBI is contained
+   450				 * within the mapped range (not because we would get a
+   451				 * segfault, rather to catch bugs in computing TBI
+   452				 * address). Print error message but continue anyway.
+   453				 */
+ > 454				if (tbipa > priv->map + resource_size(&res))
+   455					dev_err(&pdev->dev, "invalid register map (should be at least 0x%04x to contain TBI address)\n",
+   456						((void *)tbipa - priv->map) + 4);
+   457	
+   458				iowrite32be(be32_to_cpup(prop), tbipa);
+   459			}
+   460		}
+   461	
+   462		if (data->ucc_configure)
 
-PPC LinuxAcqRelLocal
-""
-(*
- * Does a powerpc lwsync-based Acq-Rel chain provide local causality?
- * October 9, 2015: Yes.
- *)
-{
-a=0; b=0; c=0; d=0;
-0:r0=1; 0:r11=a; 0:r12=b; 0:r13=c; 0:r14=d;
-1:r0=1; 1:r11=a; 1:r12=b; 1:r13=c; 1:r14=d;
-2:r0=2; 2:r11=a; 2:r12=b; 2:r13=c; 2:r14=d;
-}
- P0            | P1            | P2            ;
- lwz r1,0(r11) | lwz r2,0(r13) | lwz r4,0(r14) ;
- stw r0,0(r12) | lwsync        | lwsync        ;
- lwsync        | stw r0,0(r11) | stw r0,0(r11) ;
- stw r0,0(r13) | lwz r3,0(r12) | lwz r5,0(r12) ;
-               | lwsync        |               ;
-               | stw r0,0(r14) |               ;
-exists
-(1:r2=1 /\ 2:r4=1 /\ (0:r1=1 \/ 0:r1=2 \/ 1:r3=0 \/ 2:r5=0))
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
-------------------------------------------------------------------------
+--EVF5PPMfhYS0aIcm
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
 
-This confirms the local causality/transitivity.
+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
 
-So let's add an uninvolved observer thread, which will also require adding
-another variable to avoid ordering via cache coherence:
-
-	void thread0(void)
-	{
-		r1 = READ_ONCE(a);
-		WRITE_ONCE(b, 1);
-		smp_store_release(&c, 1);
-	}
-
-	void thread1(void)
-	{
-		r2 = smp_store_acquire(&c);
-		WRITE_ONCE(a, 1);
-		r3 = READ_ONCE(b);
-		smp_store_release(&d, 1);
-	}
-
-	void thread2(void)
-	{
-		r4 = smp_load_acquire(&d);
-		WRITE_ONCE(a, 2);
-		r5 = READ_ONCE(b);
-		r6 = READ_ONCE(e);
-	}
-
-	void thread3(void) /* uninvolved observer */
-	{
-		WRITE_ONCE(e, 1);
-		smp_mb();
-		r7 = READ_ONCE(b);
-	}
-
-Can we see r2==1&&r4==1&&r6=0&&r7==0?  Here is the PowerPC model:
-
-------------------------------------------------------------------------
-
-PPC LinuxAcqRelGlobal
-""
-(*
- * Does a powerpc lwsync-based Acq-Rel chain provide global causality?
- * October 9, 2015: No.
- *)
-{
-a=0; b=0; c=0; d=0; e=0;
-0:r0=1; 0:r11=a; 0:r12=b; 0:r13=c; 0:r14=d; 0:r15=e;
-1:r0=1; 1:r11=a; 1:r12=b; 1:r13=c; 1:r14=d; 1:r15=e;
-2:r0=2; 2:r11=a; 2:r12=b; 2:r13=c; 2:r14=d; 2:r15=e;
-3:r0=1; 3:r11=a; 3:r12=b; 3:r13=c; 3:r14=d; 3:r15=e;
-}
- P0            | P1            | P2            | P3            ;
- lwz r1,0(r11) | lwz r2,0(r13) | lwz r4,0(r14) | stw r0,0(r15) ;
- stw r0,0(r12) | lwsync        | lwsync        | sync          ;
- lwsync        | stw r0,0(r11) | stw r0,0(r11) | lwz r7,0(r12) ;
- stw r0,0(r13) | lwz r3,0(r12) | lwz r5,0(r12) |               ;
-               | lwsync        | lwz r6,0(r15) |               ;
-               | stw r0,0(r14) |               |               ;
-exists
-(1:r2=1 /\ 2:r4=1 /\ 2:r6=0 /\ 3:r7=0)
-
-------------------------------------------------------------------------
-
-And, as expected, P3 can see misordering because it is not involved
-in the acquire-release chain.
-
-> Are we explicit about the difference between "fully ordered" and "full
-> barrier" somewhere else, because this looks like it will confuse people.
-
-Probably not.  We need something meaning "local transitivity" on the
-one hand and "global transitivity" on the other.  I suppose we could use
-"causality" for the local case and "transitivity" for the global case,
-but I do not believe that normal formal/mathematical usage matches this.
-
-The term "single-copy atomic" could reasonably be used to mean "local
-transitivity" and "multi-copy atomic" to mean "global transitivity",
-but those are all too easy to confuse with each other, require a lot of
-knowledge to understand, and don't exactly roll off the tongue.
-
-The phrases "locally visible causality" and "globally visible causality"
-should be (relatively) easy to understand, but don't exactly roll off
-the tongue, either.
-
-Maybe LVC and GVC?
-
-LVC:  Locally visible causality:  If you are in the causal chain,
-	you are guaranteed to see the ordering.  Otherwise, you
-	might not.
-
-GVC: Globally visible causality:  You are guarantee to see the
-	ordering whether or not you are in the causal chain.
-
-I could of course poll the memory-ordering academics and get more options.  ;-)
-
-> >  - RELEASE -> ACQUIRE can be upgraded to a full barrier (including
-> >    transitivity) using smp_mb__release_acquire(), either before RELEASE
-> >    or after ACQUIRE (but consistently [*]).
-> 
-> Hmm, but we don't actually need this for RELEASE -> ACQUIRE, afaict. This
-> is just needed for UNLOCK -> LOCK, and is exactly what RCU is currently
-> using (for PPC only).
-
-If by "don't actually need this" you mean "don't currently know of a
-use case", I agree.  For now, anyway.  ;-)
-
-> Stepping back a second, I believe that there are three cases:
-> 
-> 
->  RELEASE X -> ACQUIRE Y (same CPU)
->    * Needs a barrier on TSO architectures for full ordering
-
-Agreed, assuming these restatements match your views:
-
-Compiler barrier() for TSO for ordering to be visible within the causal chain.
-
-Memory-barrier instruction for TSO for ordering to be visible globally.
-
->  UNLOCK X -> LOCK Y (same CPU)
->    * Needs a barrier on PPC for full ordering
-
-Where "full ordering" is what I have been calling "globally visible
-ordering" (or transitivity or causality or whatever), agreed.
-
->  RELEASE X -> ACQUIRE X (different CPUs)
->  UNLOCK X -> ACQUIRE X (different CPUs)
->    * Fully ordered everywhere...
->    * ... but needs a barrier on PPC to become a full barrier
-
-Agreed, assuming these restatements match your views:
-
-With compiler barrier (for TSO) or lwsync-capable memory-barrier instruction
-(for weakly ordered systems), ordering is visible within the causal chain.
-
-With compiler barrier (for TSO) or full memory-barrier instruction
-(for weakly ordered systems), ordering is visible globally.
-
-> so maybe it makes more sense to split out the local and inter-cpu ordering
-> with something like:
-> 
->   smp_mb__after_release_acquire()
->   smp_mb__after_release_acquire_local()
-> 
-> then the first one directly replaces smp_mb__after_unlock_lock, and is
-> only defined for PPC, whereas the second one is also defined for TSO archs.
-
-I don't see the need for the _local() variant.  We already have
-smp_store_release() and smp_load_acquire(), both of which imply any
-barriers needed for the case of locally visible causality.
-
-> >  - RELEASE -> ACQUIRE _chains_ (on shared variables) preserve causality,
-> >    (because each link is fully ordered) but are not transitive.
-> 
-> Yup, and that's the same for UNLOCK -> LOCK, too.
-
-Any transitive ordering is visible only locally, within the chain.
-For global visibility, you need smp_mb__after_release_acquire().
-
-> > And I think that in the past few weeks we've been using transitive
-> > ambiguously, the definition we have in Documentation/memory-barriers.txt
-> > is a _strong_ transitivity, where we can make guarantees about CPUs not
-> > directly involved.
-> > 
-> > What we have here (due to RCpc) is a weak form of transitivity, which,
-> > while it preserves the natural concept of causality, does not extend to
-> > other CPUs.
-> > 
-> > So we could go around and call them 'strong' and 'weak' transitivity,
-> > but I suspect its easier for everyone involved if we come up with
-> > separate terms (less room for error if we accidentally omit the
-> > 'strong/weak' qualifier).
-> 
-> Surely the general case is message passing and so "transitivity" should
-> just refer to chains of RELEASE -> ACQUIRE? Then "strong transitivity"
-> could refer to the far more complicated (imo) case that is synonymous
-> with "full barrier".
-
-We should have fun agreeing on the best words to describe all this, but
-agreed.
-
-One nit:  RELEASE->ACQUIRE chains can do more than message passing.
-Anything before the RELEASE, be it a load or a store, is visible to
-anything after any ACQUIRE further down the chain.  Here a prior load is
-"visible" to a subsequent store in the sense that the store cannot affect
-the value loaded.  This is consistent with the C11/C++11 memory model.
-
-Seem reasonable?
-
-							Thanx, Paul
+--EVF5PPMfhYS0aIcm--
