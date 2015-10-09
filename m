@@ -1,24 +1,32 @@
-Return-Path: <thuth@redhat.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 21F381A025E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 16:54:23 +1100 (AEDT)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CCC91140D57
- for <linuxppc-dev@ozlabs.org>; Fri,  9 Oct 2015 16:54:22 +1100 (AEDT)
-Subject: Re: [PATCH 2/6] powerpc/kconfig: Move sysdev Kconfig later
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
- <1444338557-14988-2-git-send-email-mpe@ellerman.id.au>
-From: Thomas Huth <thuth@redhat.com>
-Message-ID: <5617568A.9050904@redhat.com>
-Date: Fri, 9 Oct 2015 07:54:18 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id D6A711A0389
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 18:29:40 +1100 (AEDT)
+Date: Fri, 9 Oct 2015 09:29:31 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Will Deacon <will.deacon@arm.com>, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>,
+ Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
+ update documentation
+Message-ID: <20151009072931.GT3816@twins.programming.kicks-ass.net>
+References: <1444215568-24732-1-git-send-email-will.deacon@arm.com>
+ <20151007111915.GF17308@twins.programming.kicks-ass.net>
+ <20151007132317.GK16065@arm.com>
+ <20151007152501.GI3910@linux.vnet.ibm.com>
+ <1444276236.9940.5.camel@ellerman.id.au>
+ <20151008111638.GL3816@twins.programming.kicks-ass.net>
+ <20151008214439.GE3910@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1444338557-14988-2-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151008214439.GE3910@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,34 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/15 23:09, Michael Ellerman wrote:
-> Things in sysdev are generally not what we want near the top of the
-> menuconfig, so move them down later in the list.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index c6f1aa1e8d4c..db685fa54c5f 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -302,7 +302,6 @@ source "init/Kconfig"
->  
->  source "kernel/Kconfig.freezer"
->  
-> -source "arch/powerpc/sysdev/Kconfig"
->  source "arch/powerpc/platforms/Kconfig"
->  
->  menu "Kernel options"
-> @@ -1079,6 +1078,7 @@ source "arch/powerpc/sysdev/qe_lib/Kconfig"
->  source "lib/Kconfig"
->  
->  source "arch/powerpc/Kconfig.debug"
-> +source "arch/powerpc/sysdev/Kconfig"
->  
->  source "security/Kconfig"
->  
+On Thu, Oct 08, 2015 at 02:44:39PM -0700, Paul E. McKenney wrote:
 
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+> > > > I am with Peter -- we do need the benchmark results for PPC.
+> > > 
+> > > Urgh, sorry guys. I have been slowly doing some benchmarks, but time is not
+> > > plentiful at the moment.
+> > > 
+> > > If we do a straight lwsync -> sync conversion for unlock it looks like that
+> > > will cost us ~4.2% on Anton's standard context switch benchmark.
+> > 
+> > And that does not seem to agree with Paul's smp_mb__after_unlock_lock()
+> > usage and would not be sufficient for the same (as of yet unexplained)
+> > reason.
+> > 
+> > Why does it matter which of the LOCK or UNLOCK gets promoted to full
+> > barrier on PPC in order to become RCsc?
+> 
+> You could do either.  However, as I understand it, there is hardware for
+> which bc;isync is faster than lwsync.  For such hardware, it is cheaper
+> to upgrade the unlock from lwsync to sync than to upgrade the lock from
+> bc;isync to sync.  If I recall correctly, the kernel rewrites itself at
+> boot to select whichever of lwsync or bc;isync is better for the hardware
+> at hand.
+
+Fair enough. I'll go wake up and think about the other issue ;-)
