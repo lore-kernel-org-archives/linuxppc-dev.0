@@ -1,11 +1,11 @@
 Return-Path: <will.deacon@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 396FF1A038B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 20:40:44 +1100 (AEDT)
-Date: Fri, 9 Oct 2015 10:40:39 +0100
+ by lists.ozlabs.org (Postfix) with ESMTP id 411D71A038D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Oct 2015 20:51:33 +1100 (AEDT)
+Date: Fri, 9 Oct 2015 10:51:29 +0100
 From: Will Deacon <will.deacon@arm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
  Michael Ellerman <mpe@ellerman.id.au>, linux-arch@vger.kernel.org,
  linux-kernel@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>,
  Anton Blanchard <anton@samba.org>,
@@ -13,18 +13,18 @@ Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
  update documentation
-Message-ID: <20151009094039.GD26278@arm.com>
+Message-ID: <20151009095129.GF26278@arm.com>
 References: <1444215568-24732-1-git-send-email-will.deacon@arm.com>
  <20151007111915.GF17308@twins.programming.kicks-ass.net>
  <20151007132317.GK16065@arm.com>
  <20151007152501.GI3910@linux.vnet.ibm.com>
  <1444276236.9940.5.camel@ellerman.id.au>
  <20151008111638.GL3816@twins.programming.kicks-ass.net>
- <20151008214439.GE3910@linux.vnet.ibm.com>
- <20151009083138.GU3816@twins.programming.kicks-ass.net>
+ <20151008125937.GH16807@arm.com>
+ <20151008221716.GF3910@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151009083138.GU3816@twins.programming.kicks-ass.net>
+In-Reply-To: <20151008221716.GF3910@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,116 +34,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 09, 2015 at 10:31:38AM +0200, Peter Zijlstra wrote:
-> On Thu, Oct 08, 2015 at 02:44:39PM -0700, Paul E. McKenney wrote:
-> > On Thu, Oct 08, 2015 at 01:16:38PM +0200, Peter Zijlstra wrote:
-> > > On Thu, Oct 08, 2015 at 02:50:36PM +1100, Michael Ellerman wrote:
-> > > > On Wed, 2015-10-07 at 08:25 -0700, Paul E. McKenney wrote:
-> > > 
-> > > > > Currently, we do need smp_mb__after_unlock_lock() to be after the
-> > > > > acquisition on PPC -- putting it between the unlock and the lock
-> > > > > of course doesn't cut it for the cross-thread unlock/lock case.
-> > > 
-> > > This ^, that makes me think I don't understand
-> > > smp_mb__after_unlock_lock.
-> > > 
-> > > How is:
-> > > 
-> > > 	UNLOCK x
-> > > 	smp_mb__after_unlock_lock()
-> > > 	LOCK y
-> > > 
-> > > a problem? That's still a full barrier.
+Hi Paul,
+
+On Thu, Oct 08, 2015 at 03:17:16PM -0700, Paul E. McKenney wrote:
+> On Thu, Oct 08, 2015 at 01:59:38PM +0100, Will Deacon wrote:
+> > I thought Paul was talking about something like this case:
 > > 
-> > The problem is that I need smp_mb__after_unlock_lock() to give me
-> > transitivity even if the UNLOCK happened on one CPU and the LOCK
-> > on another.  For that to work, the smp_mb__after_unlock_lock() needs
-> > to be either immediately after the acquire (the current choice) or
-> > immediately before the release (which would also work from a purely
-> > technical viewpoint, but I much prefer the current choice).
-> > 
-> > Or am I missing your point?
+> > CPU A     CPU B              CPU C
+> > foo = 1
+> > UNLOCK x
+> >           LOCK x
+> >           (RELEASE) bar = 1
+> >                              ACQUIRE bar = 1
+> >                              READ_ONCE foo = 0
 > 
-> So lots of little confusions added up to complete fail :-{
+> More like this:
 > 
-> Mostly I think it was the UNLOCK x + LOCK x are fully ordered (where I
-> forgot: but not against uninvolved CPUs) and RELEASE/ACQUIRE are
-> transitive (where I forgot: RELEASE/ACQUIRE _chains_ are transitive, but
-> again not against uninvolved CPUs).
+> CPU A			CPU B			CPU C
+> WRITE_ONCE(foo, 1);
+> UNLOCK x
+> 			LOCK x
+> 			r1 = READ_ONCE(bar);
+> 						WRITE_ONCE(bar, 1);
+> 						smp_mb();
+> 						r2 = READ_ONCE(foo);
 > 
-> Which leads me to think I would like to suggest alternative rules for
-> RELEASE/ACQUIRE (to replace those Will suggested; as I think those are
-> partly responsible for my confusion).
+> This can result in r1==0 && r2==0.
 
-Yeah, sorry. I originally used the phrase "fully ordered" but changed it
-to "full barrier", which has stronger transitivity (newly understood
-definition) requirements that I didn't intend.
+Thank you, that is extremely enlightening :)
 
-RELEASE -> ACQUIRE should be used for message passing between two CPUs
-and not have ordering effects on other observers unless they're part of
-the RELEASE -> ACQUIRE chain.
-
->  - RELEASE -> ACQUIRE is fully ordered (but not a full barrier) when
->    they operate on the same variable and the ACQUIRE reads from the
->    RELEASE. Notable, RELEASE/ACQUIRE are RCpc and lack transitivity.
-
-Are we explicit about the difference between "fully ordered" and "full
-barrier" somewhere else, because this looks like it will confuse people.
-
->  - RELEASE -> ACQUIRE can be upgraded to a full barrier (including
->    transitivity) using smp_mb__release_acquire(), either before RELEASE
->    or after ACQUIRE (but consistently [*]).
-
-Hmm, but we don't actually need this for RELEASE -> ACQUIRE, afaict. This
-is just needed for UNLOCK -> LOCK, and is exactly what RCU is currently
-using (for PPC only).
-
-Stepping back a second, I believe that there are three cases:
-
-
- RELEASE X -> ACQUIRE Y (same CPU)
-   * Needs a barrier on TSO architectures for full ordering
-
- UNLOCK X -> LOCK Y (same CPU)
-   * Needs a barrier on PPC for full ordering
-
- RELEASE X -> ACQUIRE X (different CPUs)
- UNLOCK X -> ACQUIRE X (different CPUs)
-   * Fully ordered everywhere...
-   * ... but needs a barrier on PPC to become a full barrier
-
-
-so maybe it makes more sense to split out the local and inter-cpu ordering
-with something like:
-
-  smp_mb__after_release_acquire()
-  smp_mb__after_release_acquire_local()
-
-then the first one directly replaces smp_mb__after_unlock_lock, and is
-only defined for PPC, whereas the second one is also defined for TSO archs.
-
->  - RELEASE -> ACQUIRE _chains_ (on shared variables) preserve causality,
->    (because each link is fully ordered) but are not transitive.
-
-Yup, and that's the same for UNLOCK -> LOCK, too.
-
-> And I think that in the past few weeks we've been using transitive
-> ambiguously, the definition we have in Documentation/memory-barriers.txt
-> is a _strong_ transitivity, where we can make guarantees about CPUs not
-> directly involved.
+> > I think we need a PPC litmus test illustrating the inter-thread, same
+> > lock failure case when smp_mb__after_unlock_lock is not present so that
+> > we can reason about this properly. Paul?
 > 
-> What we have here (due to RCpc) is a weak form of transitivity, which,
-> while it preserves the natural concept of causality, does not extend to
-> other CPUs.
+> Please see above.  ;-)
 > 
-> So we could go around and call them 'strong' and 'weak' transitivity,
-> but I suspect its easier for everyone involved if we come up with
-> separate terms (less room for error if we accidentally omit the
-> 'strong/weak' qualifier).
+> The corresponding litmus tests are below.
 
-Surely the general case is message passing and so "transitivity" should
-just refer to chains of RELEASE -> ACQUIRE? Then "strong transitivity"
-could refer to the far more complicated (imo) case that is synonymous
-with "full barrier".
+How do people feel about including these in memory-barriers.txt? I find
+them considerably easier to read than our current kernel code + list of
+possible orderings + wall of text, but there's a good chance that my
+brain has been corrupted from staring at this stuff for too long.
+
+The only snag is the ppc assembly code, but it's not *too* horrific ;)
+
+> PPC lock-2thread-WR-barrier.litmus
+> ""
+> (*
+>  * Does 3.0 Linux-kernel Power lock-unlock provide local 
+>  * barrier that orders prior stores against subsequent loads,
+>  * if the unlock and lock happen on different threads?
+>  * This version uses lwsync instead of isync.
+>  *)
+> (* 23-July-2013: ppcmem says "Sometimes" *)
+> {
+> l=1;
+> 0:r1=1;          0:r4=x;         0:r10=0;          0:r12=l;
+> 1:r1=1; 1:r3=42; 1:r4=x; 1:r5=y; 1:r10=0; 1:r11=0; 1:r12=l;
+> 2:r1=1;          2:r4=x; 2:r5=y;
+> }
+>  P0             | P1                 | P2;
+>  stw r1,0(r4)   | lwarx r11,r10,r12  | stw r1,0(r5) ;
+>  lwsync         | cmpwi r11,0        | lwsync       ;
+>  stw r10,0(r12) | bne Fail1          | lwz r7,0(r4) ;
+>                 | stwcx. r1,r10,r12  | ;
+>                 | bne Fail1          | ;
+>                 | isync              | ;
+>                 | lwz r3,0(r5)       | ;
+>                 | Fail1:             | ;
+> 
+> 
+> exists
+> (1:r3=0 /\ 2:r7=0)
+
+We could also include a link to the ppcmem/herd web frontends and your
+lwn.net article. (ppcmem is already linked, but it's not obvious that
+you can run litmus tests in your browser).
 
 Will
