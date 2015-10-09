@@ -1,21 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <prvs=0724564a37=gerlando.falauto@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C63FD1A0384
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 11:39:43 +1100 (AEDT)
-Date: Sat, 10 Oct 2015 11:39:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Metcalf <cmetcalf@ezchip.com>, <linux-next@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [GIT PULL] strscpy powerpc fix for 3.4
-Message-ID: <20151010113943.5d124b42@canb.auug.org.au>
-In-Reply-To: <5615B87A.80206@ezchip.com>
-References: <20151008094444.10d9cc68@canb.auug.org.au>
- <5615B87A.80206@ezchip.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9579F1A0554
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 02:22:07 +1100 (AEDT)
+From: Gerlando Falauto <gerlando.falauto@keymile.com>
+To: netdev@vger.kernel.org, timur@tabi.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: ogabbay@advaoptical.com, bigeasy@linutronix.de,
+ Gerlando Falauto <gerlando.falauto@keymile.com>,
+ Timur Tabi <timur@freescale.com>, "David S. Miller" <davem@davemloft.net>,
+ Andy Fleming <afleming@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 2/2] net/fsl_pq_mdio: fix computed address for the TBI register
+Date: Fri,  9 Oct 2015 17:15:08 +0200
+Message-Id: <1444403708-16576-2-git-send-email-gerlando.falauto@keymile.com>
+In-Reply-To: <1444403708-16576-1-git-send-email-gerlando.falauto@keymile.com>
+References: <1371041258-15298-1-git-send-email-ogabbay@advaoptical.com>
+ <1444403708-16576-1-git-send-email-gerlando.falauto@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +27,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus,
+commit afae5ad78b342f401c28b0bb1adb3cd494cb125a
+  "net/fsl_pq_mdio: streamline probing of MDIO nodes"
 
-On Wed, 7 Oct 2015 20:27:38 -0400 Chris Metcalf <cmetcalf@ezchip.com> wrote:
->
-> On 10/7/2015 6:44 PM, Stephen Rothwell wrote:
-> >
-> > After merging Linus' tree, today's linux-next build (powerpc
-> > ppc64_defconfig) failed like this:
-> >
-> > lib/string.c: In function 'strscpy':
-> > lib/string.c:209:4: error: implicit declaration of function 'zero_bytemask' [-Werror=implicit-function-declaration]
-> >      *(unsigned long *)(dest+res) = c & zero_bytemask(data);
-> >      ^
-> >
-> > Caused by commit
-> >
-> >    30035e45753b ("string: provide strscpy()")
-> 
-> I posted a change equivalent to yours earlier today:
-> 
-> http://lkml.kernel.org/r/1444229188-19640-1-git-send-email-cmetcalf@ezchip.com
-> 
-> I also did no testing, but since the rest of the PPC code is similar to the
-> asm-generic version, I believe the zero_bytemask() definition should be OK.
-> 
-> It probably should go through Linus' tree, like the previous set of patches.
-> I just pushed it up to the linux-tile tree for Linus to grab as:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/cmetcalf/linux-tile.git strscpy
-> 
-> Chris Metcalf (1):
->        arch/powerpc: provide zero_bytemask() for big-endian
-> 
->   arch/powerpc/include/asm/word-at-a-time.h | 5 +++++
->   1 file changed, 5 insertions(+)
-> 
-> -- 
-> Chris Metcalf, EZChip Semiconductor
-> http://www.ezchip.com
+added support for different types of MDIO devices:
+1) Gianfar MDIO nodes that only map the MII registers
+2) Gianfar MDIO nodes that map the full MDIO register set
+3) eTSEC2 MDIO nodes (which map the full MDIO register set)
+4) QE MDIO nodes (which map only the MII registers)
 
-Can you please do this pull as most of the powerpc build testing is
-failing at the moment ... :-(
+However, the implementation for types 1 and 4 would mistakenly assume
+a mapping of the full MDIO register set, thereby computing the address
+for the TBI register starting from the containing structure.
+The TBI register would therefore be accessed at a wrong (much bigger)
+address, not giving the expected result at all.
+This patch restores the correct behavior we had prior to the above one.
 
+The consequences of this bug are apparent when trying to access a PHY
+with the same address as the value contained in the initial value of
+the TBI register (normally 0); in that case you'll get answers from the
+internal TBI device (even though MDIO/MDC pins are actually *also*
+toggling on the physical bus!).
+Beware that you also need to add a fake tbi node to your device tree
+with an unused address.
+
+Notice how this fix is related to commit
+220669495bf8b68130a8218607147c7b74c28d2b
+  "powerpc: Add TBI PHY node to first MDIO bus"
+
+which fixed the behavior in kernel 3.3, which was later broken by the
+above commit on kernel 3.7.
+
+Change-Id: If78651268435aaed1f07ebdef374c46c0a528429
+Signed-off-by: Gerlando Falauto <gerlando.falauto@keymile.com>
+Cc: Timur Tabi <timur@freescale.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Andy Fleming <afleming@freescale.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/net/ethernet/freescale/fsl_pq_mdio.c | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+index 4618011..9e12e02 100644
+--- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
++++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+@@ -198,11 +198,13 @@ static int fsl_pq_mdio_reset(struct mii_bus *bus)
+ 
+ #if defined(CONFIG_GIANFAR) || defined(CONFIG_GIANFAR_MODULE)
+ /*
++ * Return the TBIPA address, starting from the address
++ * of the mapped GFAR MDIO registers (struct gfar)
+  * This is mildly evil, but so is our hardware for doing this.
+  * Also, we have to cast back to struct gfar because of
+  * definition weirdness done in gianfar.h.
+  */
+-static uint32_t __iomem *get_gfar_tbipa(void __iomem *p)
++static uint32_t __iomem *get_gfar_tbipa_from_mdio(void __iomem *p)
+ {
+ 	struct gfar __iomem *enet_regs = p;
+ 
+@@ -210,6 +212,15 @@ static uint32_t __iomem *get_gfar_tbipa(void __iomem *p)
+ }
+ 
+ /*
++ * Return the TBIPA address, starting from the address
++ * of the mapped GFAR MII registers (gfar_mii_regs[] within struct gfar)
++ */
++static uint32_t __iomem *get_gfar_tbipa_from_mii(void __iomem *p)
++{
++	return get_gfar_tbipa_from_mdio(container_of(p, struct gfar, gfar_mii_regs));
++}
++
++/*
+  * Return the TBIPAR address for an eTSEC2 node
+  */
+ static uint32_t __iomem *get_etsec_tbipa(void __iomem *p)
+@@ -220,11 +231,12 @@ static uint32_t __iomem *get_etsec_tbipa(void __iomem *p)
+ 
+ #if defined(CONFIG_UCC_GETH) || defined(CONFIG_UCC_GETH_MODULE)
+ /*
+- * Return the TBIPAR address for a QE MDIO node
++ * Return the TBIPAR address for a QE MDIO node, starting from the address
++ * of the mapped MII registers (struct fsl_pq_mii)
+  */
+ static uint32_t __iomem *get_ucc_tbipa(void __iomem *p)
+ {
+-	struct fsl_pq_mdio __iomem *mdio = p;
++	struct fsl_pq_mdio __iomem *mdio = container_of(p, struct fsl_pq_mdio, mii);
+ 
+ 	return &mdio->utbipar;
+ }
+@@ -300,14 +312,14 @@ static const struct of_device_id fsl_pq_mdio_match[] = {
+ 		.compatible = "fsl,gianfar-tbi",
+ 		.data = &(struct fsl_pq_mdio_data) {
+ 			.mii_offset = 0,
+-			.get_tbipa = get_gfar_tbipa,
++			.get_tbipa = get_gfar_tbipa_from_mii,
+ 		},
+ 	},
+ 	{
+ 		.compatible = "fsl,gianfar-mdio",
+ 		.data = &(struct fsl_pq_mdio_data) {
+ 			.mii_offset = 0,
+-			.get_tbipa = get_gfar_tbipa,
++			.get_tbipa = get_gfar_tbipa_from_mii,
+ 		},
+ 	},
+ 	{
+@@ -315,7 +327,7 @@ static const struct of_device_id fsl_pq_mdio_match[] = {
+ 		.compatible = "gianfar",
+ 		.data = &(struct fsl_pq_mdio_data) {
+ 			.mii_offset = offsetof(struct fsl_pq_mdio, mii),
+-			.get_tbipa = get_gfar_tbipa,
++			.get_tbipa = get_gfar_tbipa_from_mdio,
+ 		},
+ 	},
+ 	{
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+1.8.0.1
