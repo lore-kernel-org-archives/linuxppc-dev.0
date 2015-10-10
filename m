@@ -1,21 +1,32 @@
-Return-Path: <kuleshovmail@gmail.com>
-Received: from mail-lb0-x233.google.com (mail-lb0-x233.google.com
- [IPv6:2a00:1450:4010:c04::233])
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1A811A0394
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 05:32:07 +1100 (AEDT)
-Received: by lbcao8 with SMTP id ao8so90679976lbc.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2015 11:32:03 -0700 (PDT)
-From: Alexander Kuleshov <kuleshovmail@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
- Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Alexander Kuleshov <kuleshovmail@gmail.com>
-Subject: [PATCH] powerpc/mm: use memblock_is_memory
-Date: Sat, 10 Oct 2015 00:30:30 +0600
-Message-Id: <1444415430-25827-1-git-send-email-kuleshovmail@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 262A41A056E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 12:58:32 +1100 (AEDT)
+Received: by padhy16 with SMTP id hy16so101436779pad.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2015 18:58:30 -0700 (PDT)
+Date: Sat, 10 Oct 2015 09:58:06 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{,64}_* and
+ atomic{,64}_cmpxchg_* variants
+Message-ID: <20151010015805.GA946@fixme-laptop.cn.ibm.com>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
+ <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
+In-Reply-To: <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +36,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The <linux/memblock.h> provides memblock_is_memory() function that
-tries to find a given physical address in the memblock.memory.regions.
-Let's use this function instead of direct coding of the same functionality.
 
-Signed-off-by: Alexander Kuleshov <kuleshovmail@gmail.com>
----
- arch/powerpc/mm/mem.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+--jRHKVT23PllUwdXP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 22d94c3..85b462b 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -82,11 +82,9 @@ int page_is_ram(unsigned long pfn)
- 	return pfn < max_pfn;
- #else
- 	unsigned long paddr = (pfn << PAGE_SHIFT);
--	struct memblock_region *reg;
+Hi Peter,
 
--	for_each_memblock(memory, reg)
--		if (paddr >= reg->base && paddr < (reg->base + reg->size))
--			return 1;
-+	if (memblock_is_memory(paddr))
-+		return 1;
- 	return 0;
- #endif
- }
---
-2.6.0
+Sorry for replying late.
+
+On Thu, Oct 01, 2015 at 02:27:16PM +0200, Peter Zijlstra wrote:
+> On Wed, Sep 16, 2015 at 11:49:33PM +0800, Boqun Feng wrote:
+> > Unlike other atomic operation variants, cmpxchg{,64}_acquire and
+> > atomic{,64}_cmpxchg_acquire don't have acquire semantics if the cmp part
+> > fails, so we need to implement these using assembly.
+>=20
+> I think that is actually expected and documented. That is, a cmpxchg
+> only implies barriers on success. See:
+>=20
+>   ed2de9f74ecb ("locking/Documentation: Clarify failed cmpxchg() memory o=
+rdering semantics")
+
+I probably didn't make myself clear here, my point is that if we use
+__atomic_op_acquire() to built *_cmpchg_acquire(For ARM and PowerPC),
+the barrier will be implied _unconditionally_, meaning no matter cmp
+fails or not, there will be a barrier after the cmpxchg operation.
+Therefore we have to use assembly to implement the operations right now.
+
+Regards,
+Boqun
+
+--jRHKVT23PllUwdXP
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWGHCmAAoJEEl56MO1B/q4GkMH+wWVfgleFLzIDrURMWc9eHK0
+NfCFabgZeeqgiVJqeqGHSkPqMVzfm5RVSshGrsrT7fynUOfzT2vVmDbSsei/nkSm
+ADkJr8e6MKiN2PDOfCQoGHWyocOZXHyGo6rKBR5YmAJmf1r/OeYI5ewK9PcWcohV
+TtAxdChzrob+moKronElXc7kS0jMAqh7M98o6FxDP3HzQeQFZ4bnauD/yoHlu2sB
+9yp8Ael105/LclTIM/9Z9hwHEPI949ASbkYa+BGDvDlJLN49e8wEhouCk5howqzD
+WwBP+OwFXbUkOt1mDrCUvsoVeNnRzbTA9Wm01lNXs1F405sDktNF5UczYEo3IyU=
+=d3yF
+-----END PGP SIGNATURE-----
+
+--jRHKVT23PllUwdXP--
