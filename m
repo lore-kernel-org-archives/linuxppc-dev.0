@@ -1,32 +1,38 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 262A41A056E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 12:58:32 +1100 (AEDT)
-Received: by padhy16 with SMTP id hy16so101436779pad.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Oct 2015 18:58:30 -0700 (PDT)
-Date: Sat, 10 Oct 2015 09:58:06 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>
-Subject: Re: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{,64}_* and
- atomic{,64}_cmpxchg_* variants
-Message-ID: <20151010015805.GA946@fixme-laptop.cn.ibm.com>
-References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
- <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
- <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 258C51A05C5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 17:20:41 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 10 Oct 2015 16:20:39 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id BCA4F357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 17:20:34 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9A6KPm841877694
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 17:20:34 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9A6K1Hv007096
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 17:20:01 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>, benh@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>, cmetcalf@ezchip.com,
+ paulus@samba.org, scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: Quick fix upstream main line build error on
+ PowerPC
+In-Reply-To: <1444359309-40375-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1444359309-40375-1-git-send-email-dongsheng.wang@freescale.com>
+Date: Sat, 10 Oct 2015 11:49:40 +0530
+Message-ID: <87pp0nz1mr.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
-In-Reply-To: <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +42,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Dongsheng Wang <dongsheng.wang@freescale.com> writes:
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+>
+> This issue caused on 'commit 990486c8af04 ("strscpy: zero any trailing
+> garbage bytes in the destination")'.
+>
+> zero_bytemask is not implemented on PowerPC. So copy the zero_bytemask
+> of BIG_ENDIAN implementation from include/asm-generic/word-at-a-time.h
+> to arch/powerpc/include/asm/word-at-a-time.h.
+>
+> Build message:
+> lib/string.c: In function 'strscpy':
+> lib/string.c:209:4: error: implicit declaration of function
+> 	'zero_bytemask' [-Werror=implicit-function-declaration]
+> 	*(unsigned long *)(dest+res) = c & zero_bytemask(data);
+> cc1: some warnings being treated as errors
+> make[1]: *** [lib/string.o] Error 1
+> make[1]: *** Waiting for unfinished jobs....
+>
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+>
+> diff --git a/arch/powerpc/include/asm/word-at-a-time.h b/arch/powerpc/include/asm/word-at-a-time.h
+> index 5b3a903..d891456 100644
+> --- a/arch/powerpc/include/asm/word-at-a-time.h
+> +++ b/arch/powerpc/include/asm/word-at-a-time.h
+> @@ -40,6 +40,10 @@ static inline bool has_zero(unsigned long val, unsigned long *data, const struct
+>  	return (val + c->high_bits) & ~rhs;
+>  }
+>  
+> +#ifndef zero_bytemask
+> +#define zero_bytemask(mask) (~1ul << __fls(mask))
+> +#endif
+> +
+>  #else
 
-Hi Peter,
 
-Sorry for replying late.
+Why #ifndef zero_bytemask ?. What will override zero_bytemask defined in
+arch headers. We generally do it such that generic code does #ifndef, but arch
+headers doesn't need to do this.
 
-On Thu, Oct 01, 2015 at 02:27:16PM +0200, Peter Zijlstra wrote:
-> On Wed, Sep 16, 2015 at 11:49:33PM +0800, Boqun Feng wrote:
-> > Unlike other atomic operation variants, cmpxchg{,64}_acquire and
-> > atomic{,64}_cmpxchg_acquire don't have acquire semantics if the cmp part
-> > fails, so we need to implement these using assembly.
->=20
-> I think that is actually expected and documented. That is, a cmpxchg
-> only implies barriers on success. See:
->=20
->   ed2de9f74ecb ("locking/Documentation: Clarify failed cmpxchg() memory o=
-rdering semantics")
-
-I probably didn't make myself clear here, my point is that if we use
-__atomic_op_acquire() to built *_cmpchg_acquire(For ARM and PowerPC),
-the barrier will be implied _unconditionally_, meaning no matter cmp
-fails or not, there will be a barrier after the cmpxchg operation.
-Therefore we have to use assembly to implement the operations right now.
-
-Regards,
-Boqun
-
---jRHKVT23PllUwdXP
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWGHCmAAoJEEl56MO1B/q4GkMH+wWVfgleFLzIDrURMWc9eHK0
-NfCFabgZeeqgiVJqeqGHSkPqMVzfm5RVSshGrsrT7fynUOfzT2vVmDbSsei/nkSm
-ADkJr8e6MKiN2PDOfCQoGHWyocOZXHyGo6rKBR5YmAJmf1r/OeYI5ewK9PcWcohV
-TtAxdChzrob+moKronElXc7kS0jMAqh7M98o6FxDP3HzQeQFZ4bnauD/yoHlu2sB
-9yp8Ael105/LclTIM/9Z9hwHEPI949ASbkYa+BGDvDlJLN49e8wEhouCk5howqzD
-WwBP+OwFXbUkOt1mDrCUvsoVeNnRzbTA9Wm01lNXs1F405sDktNF5UczYEo3IyU=
-=d3yF
------END PGP SIGNATURE-----
-
---jRHKVT23PllUwdXP--
+-aneesh
+  
