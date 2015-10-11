@@ -1,31 +1,19 @@
-Return-Path: <lkp@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 5A8C81A0617
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 01:22:59 +1100 (AEDT)
-Date: Sun, 11 Oct 2015 22:22:35 +0800
-From: Fengguang Wu <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Keith Busch <keith.busch@intel.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-nvme@lists.infradead.org,
- Christoph Hellwig <hch@infradead.org>,
- Paul Mackerras <paulus@samba.org>, kbuild-all@01.org,
- Matthew Wilcox <willy@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [kbuild-all] [PATCH 4/5 v2] pseries/iommu: implement DDW-aware
- dma_get_page_shift
-Message-ID: <20151011142235.GC17528@wfg-t540p.sh.intel.com>
-References: <201510030421.d9fvrbXU%fengguang.wu@intel.com>
- <1444102746.16909.4.camel@ellerman.id.au>
- <20151007135602.GA17377@wfg-t540p.sh.intel.com>
- <1444263119.31685.4.camel@ellerman.id.au>
- <20151008010603.GA24198@wfg-t540p.sh.intel.com>
- <20151008011609.GA25163@wfg-t540p.sh.intel.com>
- <1444277187.9940.7.camel@ellerman.id.au>
+Return-Path: <lvivier@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C7941A065B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 07:06:19 +1100 (AEDT)
+Subject: Re: [RFC v6 00/25] Re-use nvram module
+To: Finn Thain <fthain@telegraphics.com.au>, linux-kernel@vger.kernel.org,
+ linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20150823104129.517600532@telegraphics.com.au>
+From: Laurent Vivier <lvivier@redhat.com>
+Message-ID: <561AC137.9090809@redhat.com>
+Date: Sun, 11 Oct 2015 22:06:15 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1444277187.9940.7.camel@ellerman.id.au>
+In-Reply-To: <20150823104129.517600532@telegraphics.com.au>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,46 +23,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
 
-> > > > How did the robot decide to build this series in the first place? Does it build
-> > > > everything sent to one of the lists on CC?
-> > > 
-> > > Yes, currently the following mailing lists are subscribed.  Patches
-> > > sent to them will be tested if they can be git-am to RC or linux-next
-> > > kernels:
-> > > 
-> > > kvm
-> > > linux-acpi
-> > > linux-bluetooth
-> > > linux-btrfs
-> > > linux-embedded
-> > > linux-ext4
-> > > linux-fsdevel
-> > > linux-media
-> > > linux-mmc
-> > > linux-nfs
-> > > linux-omap
-> > > linux-pci
-> > > linux-pm
-> > > linux-raid
-> > > linux-rdma
-> > > linux-scsi
-> > > linux-usb
-> > > linux-wireless
-> > > netdev
-> > > netfilter-devel
-> > > linux-mm
-> > > driverdev-devel
-> > > intel-gfx
-> > 
-> > And of course linux-kernel. More lists could be added in future.
+
+On 23/08/2015 12:41, Finn Thain wrote:
+> The generic NVRAM module, drivers/char/generic_nvram, implements a
+> /dev/nvram misc device. It is used only by 32-bit PowerPC platforms and
+> isn't generic enough to be more widely used.
 > 
-> So do you mind adding linuxppc-dev@lists.ozlabs.org ? :)
+> The RTC NVRAM module, drivers/char/nvram, also implements a /dev/nvram
+> misc device. It is used by x86, ARM and m68k.
 > 
-> It's pretty low traffic compared to lkml.
+> The former module cannot be used on x86, ARM or m68k because it
+> cannot co-exist with the latter module, partly due to the Kconfig logic.
+> 
+> It is possible to modify the modules so that one kernel binary could
+> have either, neither or both. However, automatically loading the
+> appropriate module is then impossible; if both provide the
+> char-major-10-144 alias then the wrong module will end up being loaded.
+> Hence a multi-platform kernel binary needs a single generic nvram module
+> with alias char-major-10-144.
+> 
+> Therefore, drivers/char/nvram.c should be made more generic and the
+> arch-specific code therein should be moved to a more appropriate
+> place under arch/. Also, drivers/char/generic_nvram.c should be removed
+> to reduce code duplication.
+> 
+> In this patch series, Atari-specific code is moved from the nvram module
+> to arch/m68k/atari. More arch-specific code in the nvram module could
+> be moved, probably to arch/x86, but it is difficult to determine just
+> what code is relevant to ARM platforms and what code is x86-only.
+> 
+> In addressing code duplication, v1 of this patch series removes three
+> inconsistent /dev/nvram misc device implementations. One of these,
+> drivers/macintosh/nvram.c is entirely unused already. The other two,
+> drivers/char/generic_nvram.c and the misc device implementation in
+> arch/powerpc/kernel/nvram_64.c, are replaced by drivers/char/nvram.c.
+> 
+> A benefit of this work is better consistency -- between PPC32 and PPC64
+> as well as between PPC_PMAC and MAC. This new uniformity does have
+> implications for userspace, that is, some error codes for some ioctl calls
+> become consistent on all PowerPC platforms.
+> 
+> The drivers/char/nvram module becomes sufficiently generic to be useful
+> to other platforms and architectures, besides those with "CMOS" RTC. At the
+> end of this patch series the module is adopted by the m68k Mac port, which
+> already has PRAM access functions but lacks the /dev/nvram misc device.
+> 
+> This patch series has been compile-tested for arm, m68k, powerpc and x86.
+> The nvram and thinkpad_acpi modules were regression tested on a ThinkPad
+> T43. The /dev/nvram functionality was also regression tested on a G3
+> PowerMac. The nvram module was also tested on a PowerBook 520, Quadra 650
+> and Atari Falcon. AFAIK, no testing has been done on PPC64 as yet.
 
-Sure, I'm subscribing to it. :)
+For PPC64, tested on a PowerMac G5 (PowerMac11,2), kernel 4.3.0-rc4
+with nvram tools 1.2.24 (Fedora 22 ppc64).
 
-Thanks,
-Fengguang
+Tested-by: Laurent Vivier <lvivier@redhat.com>
+
+Tests done:
+ # modinfo nvram
+ filename:       /lib/modules/4.3.0-rc4+/kernel/drivers/char/nvram.ko
+ alias:          devname:nvram
+ alias:          char-major-10-144
+ license:        GPL
+ depends:
+ intree:         Y
+ vermagic:       4.3.0-rc4+ SMP mod_unload
+
+ # modprobe nvram
+ [  364.655577] Non-volatile memory driver v1.3
+
+ # nvram --partitions
+  # Sig Chk  Len  Name
+  0  5a  82  0002 nvram
+  1  5f  45  003e system
+  2  70  bd  00c1 common
+  3  a0  1e  0052 APL,MacOS75
+  4  a1  15  0081 APL,OSXPanic
+  5  7f  45  002c wwwwwwwwwwww
+
+ # nvram --dump "nvram"
+ 0x00000000  5a820002 6e767261 6d000000 00000000 |Z...nvram.......|
+ 0x00000010  cae8613d 000001c9 00000000 00000000 |..a=............|
+
+ # nvram --print-config=boot-volume
+ 1
+
+ # nvram --update-config=boot-volume=6
+
+ # rmmod nvram
+
+ # nvram --print-config=boot-volume
+ 6
+
+ # reboot
+
+ # nvram --print-config=boot-volume
+ 6
+
+> Changes since v1:
+> - Minor changes to patches 7, 15 and 20 as described in commit logs.
+> - Revised patches 21 and 24 to address comments from Geert.
+> 
+> Changes since v2:
+> - Dropped patch 1, "macintosh/nvram: Remove as unused", because it has
+> since been merged.
+> - Inserted a new patch, "m68k/mac: Use macros for RTC accesses not
+> magic numbers".
+> - Revised patches 21 and 23 to address comments from Geert.
+> 
+> Changes since v3:
+> - Split the patch, "m68k/atari: Move Atari-specific code out of
+> drivers/char/nvram.c", as suggested by Geert.
+> - Revised patches 11 and 25 to address comments from Geert.
+> - Minor change to patch 21 as described in commit log.
+> 
+> Changes since v4:
+> - Split the patch, "powerpc, fbdev: Use arch_nvram_ops methods instead
+> of nvram_read_byte() and nvram_write_byte()", so as to separately address
+> inconsistent use of Kconfig symbols in PowerMac fbdev drivers.
+> - Fix possible git bisect build failure with CONFIG_PPC_PMAC=n.
+> 
+> Changes since v5:
+> - Dropped patch 2, "char/nvram: Use bitwise OR to obtain Atari video mode
+> data", since it has been added to Greg Kroah-Hartman's char-misc-next queue.
+> - In patch 15, error codes from the IOC_NVRAM_GET_OFFSET ioctl are now
+> consistent with the old generic_nvram module.
+> 
+> ---
+>  arch/m68k/Kconfig                          |    3 
+>  arch/m68k/Kconfig.machine                  |    2 
+>  arch/m68k/atari/Makefile                   |    2 
+>  arch/m68k/atari/nvram.c                    |  291 +++++++++++
+>  arch/m68k/include/asm/atarihw.h            |    6 
+>  arch/m68k/include/asm/macintosh.h          |    4 
+>  arch/m68k/kernel/setup_mm.c                |  100 +++
+>  arch/m68k/mac/misc.c                       |  207 +++++---
+>  arch/powerpc/Kconfig                       |    5 
+>  arch/powerpc/include/asm/nvram.h           |    9 
+>  arch/powerpc/kernel/nvram_64.c             |  203 +------
+>  arch/powerpc/kernel/setup_32.c             |   27 -
+>  arch/powerpc/platforms/chrp/Makefile       |    2 
+>  arch/powerpc/platforms/chrp/nvram.c        |   14 
+>  arch/powerpc/platforms/chrp/setup.c        |    2 
+>  arch/powerpc/platforms/powermac/Makefile   |    5 
+>  arch/powerpc/platforms/powermac/nvram.c    |    9 
+>  arch/powerpc/platforms/powermac/setup.c    |    3 
+>  arch/powerpc/platforms/pseries/nvram.c     |    2 
+>  drivers/char/Kconfig                       |   13 
+>  drivers/char/Makefile                      |    6 
+>  drivers/char/generic_nvram.c               |  174 ------
+>  drivers/char/nvram.c                       |  742 ++++++++++++-----------------
+>  drivers/platform/x86/thinkpad_acpi.c       |   20 
+>  drivers/scsi/Kconfig                       |    6 
+>  drivers/scsi/atari_scsi.c                  |   16 
+>  drivers/video/fbdev/Kconfig                |    2 
+>  drivers/video/fbdev/controlfb.c            |    4 
+>  drivers/video/fbdev/imsttfb.c              |   17 
+>  drivers/video/fbdev/matrox/matroxfb_base.c |    6 
+>  drivers/video/fbdev/platinumfb.c           |    4 
+>  drivers/video/fbdev/valkyriefb.c           |   18 
+>  include/linux/nvram.h                      |   23 
+>  include/uapi/linux/pmu.h                   |    2 
+>  34 files changed, 998 insertions(+), 951 deletions(-)
+> 
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
