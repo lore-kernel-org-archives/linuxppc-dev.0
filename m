@@ -1,19 +1,20 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <christophe.jaillet@wanadoo.fr>
+Received: from smtp.smtpout.orange.fr (smtp06.smtpout.orange.fr
+ [80.12.242.128])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C7941A065B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 07:06:19 +1100 (AEDT)
-Subject: Re: [RFC v6 00/25] Re-use nvram module
-To: Finn Thain <fthain@telegraphics.com.au>, linux-kernel@vger.kernel.org,
- linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20150823104129.517600532@telegraphics.com.au>
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <561AC137.9090809@redhat.com>
-Date: Sun, 11 Oct 2015 22:06:15 +0200
-MIME-Version: 1.0
-In-Reply-To: <20150823104129.517600532@telegraphics.com.au>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17EDC1A065D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 07:24:10 +1100 (AEDT)
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH] powerpc/numa: Use of_get_next_parent to simplify code
+Date: Sun, 11 Oct 2015 22:23:27 +0200
+Message-Id: <1444595007-3029-1-git-send-email-christophe.jaillet@wanadoo.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,176 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+of_get_next_parent can be used to simplify the while() loop and
+avoid the need of a temp variable.
 
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ arch/powerpc/mm/numa.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-On 23/08/2015 12:41, Finn Thain wrote:
-> The generic NVRAM module, drivers/char/generic_nvram, implements a
-> /dev/nvram misc device. It is used only by 32-bit PowerPC platforms and
-> isn't generic enough to be more widely used.
-> 
-> The RTC NVRAM module, drivers/char/nvram, also implements a /dev/nvram
-> misc device. It is used by x86, ARM and m68k.
-> 
-> The former module cannot be used on x86, ARM or m68k because it
-> cannot co-exist with the latter module, partly due to the Kconfig logic.
-> 
-> It is possible to modify the modules so that one kernel binary could
-> have either, neither or both. However, automatically loading the
-> appropriate module is then impossible; if both provide the
-> char-major-10-144 alias then the wrong module will end up being loaded.
-> Hence a multi-platform kernel binary needs a single generic nvram module
-> with alias char-major-10-144.
-> 
-> Therefore, drivers/char/nvram.c should be made more generic and the
-> arch-specific code therein should be moved to a more appropriate
-> place under arch/. Also, drivers/char/generic_nvram.c should be removed
-> to reduce code duplication.
-> 
-> In this patch series, Atari-specific code is moved from the nvram module
-> to arch/m68k/atari. More arch-specific code in the nvram module could
-> be moved, probably to arch/x86, but it is difficult to determine just
-> what code is relevant to ARM platforms and what code is x86-only.
-> 
-> In addressing code duplication, v1 of this patch series removes three
-> inconsistent /dev/nvram misc device implementations. One of these,
-> drivers/macintosh/nvram.c is entirely unused already. The other two,
-> drivers/char/generic_nvram.c and the misc device implementation in
-> arch/powerpc/kernel/nvram_64.c, are replaced by drivers/char/nvram.c.
-> 
-> A benefit of this work is better consistency -- between PPC32 and PPC64
-> as well as between PPC_PMAC and MAC. This new uniformity does have
-> implications for userspace, that is, some error codes for some ioctl calls
-> become consistent on all PowerPC platforms.
-> 
-> The drivers/char/nvram module becomes sufficiently generic to be useful
-> to other platforms and architectures, besides those with "CMOS" RTC. At the
-> end of this patch series the module is adopted by the m68k Mac port, which
-> already has PRAM access functions but lacks the /dev/nvram misc device.
-> 
-> This patch series has been compile-tested for arm, m68k, powerpc and x86.
-> The nvram and thinkpad_acpi modules were regression tested on a ThinkPad
-> T43. The /dev/nvram functionality was also regression tested on a G3
-> PowerMac. The nvram module was also tested on a PowerBook 520, Quadra 650
-> and Atari Falcon. AFAIK, no testing has been done on PPC64 as yet.
-
-For PPC64, tested on a PowerMac G5 (PowerMac11,2), kernel 4.3.0-rc4
-with nvram tools 1.2.24 (Fedora 22 ppc64).
-
-Tested-by: Laurent Vivier <lvivier@redhat.com>
-
-Tests done:
- # modinfo nvram
- filename:       /lib/modules/4.3.0-rc4+/kernel/drivers/char/nvram.ko
- alias:          devname:nvram
- alias:          char-major-10-144
- license:        GPL
- depends:
- intree:         Y
- vermagic:       4.3.0-rc4+ SMP mod_unload
-
- # modprobe nvram
- [  364.655577] Non-volatile memory driver v1.3
-
- # nvram --partitions
-  # Sig Chk  Len  Name
-  0  5a  82  0002 nvram
-  1  5f  45  003e system
-  2  70  bd  00c1 common
-  3  a0  1e  0052 APL,MacOS75
-  4  a1  15  0081 APL,OSXPanic
-  5  7f  45  002c wwwwwwwwwwww
-
- # nvram --dump "nvram"
- 0x00000000  5a820002 6e767261 6d000000 00000000 |Z...nvram.......|
- 0x00000010  cae8613d 000001c9 00000000 00000000 |..a=............|
-
- # nvram --print-config=boot-volume
- 1
-
- # nvram --update-config=boot-volume=6
-
- # rmmod nvram
-
- # nvram --print-config=boot-volume
- 6
-
- # reboot
-
- # nvram --print-config=boot-volume
- 6
-
-> Changes since v1:
-> - Minor changes to patches 7, 15 and 20 as described in commit logs.
-> - Revised patches 21 and 24 to address comments from Geert.
-> 
-> Changes since v2:
-> - Dropped patch 1, "macintosh/nvram: Remove as unused", because it has
-> since been merged.
-> - Inserted a new patch, "m68k/mac: Use macros for RTC accesses not
-> magic numbers".
-> - Revised patches 21 and 23 to address comments from Geert.
-> 
-> Changes since v3:
-> - Split the patch, "m68k/atari: Move Atari-specific code out of
-> drivers/char/nvram.c", as suggested by Geert.
-> - Revised patches 11 and 25 to address comments from Geert.
-> - Minor change to patch 21 as described in commit log.
-> 
-> Changes since v4:
-> - Split the patch, "powerpc, fbdev: Use arch_nvram_ops methods instead
-> of nvram_read_byte() and nvram_write_byte()", so as to separately address
-> inconsistent use of Kconfig symbols in PowerMac fbdev drivers.
-> - Fix possible git bisect build failure with CONFIG_PPC_PMAC=n.
-> 
-> Changes since v5:
-> - Dropped patch 2, "char/nvram: Use bitwise OR to obtain Atari video mode
-> data", since it has been added to Greg Kroah-Hartman's char-misc-next queue.
-> - In patch 15, error codes from the IOC_NVRAM_GET_OFFSET ioctl are now
-> consistent with the old generic_nvram module.
-> 
-> ---
->  arch/m68k/Kconfig                          |    3 
->  arch/m68k/Kconfig.machine                  |    2 
->  arch/m68k/atari/Makefile                   |    2 
->  arch/m68k/atari/nvram.c                    |  291 +++++++++++
->  arch/m68k/include/asm/atarihw.h            |    6 
->  arch/m68k/include/asm/macintosh.h          |    4 
->  arch/m68k/kernel/setup_mm.c                |  100 +++
->  arch/m68k/mac/misc.c                       |  207 +++++---
->  arch/powerpc/Kconfig                       |    5 
->  arch/powerpc/include/asm/nvram.h           |    9 
->  arch/powerpc/kernel/nvram_64.c             |  203 +------
->  arch/powerpc/kernel/setup_32.c             |   27 -
->  arch/powerpc/platforms/chrp/Makefile       |    2 
->  arch/powerpc/platforms/chrp/nvram.c        |   14 
->  arch/powerpc/platforms/chrp/setup.c        |    2 
->  arch/powerpc/platforms/powermac/Makefile   |    5 
->  arch/powerpc/platforms/powermac/nvram.c    |    9 
->  arch/powerpc/platforms/powermac/setup.c    |    3 
->  arch/powerpc/platforms/pseries/nvram.c     |    2 
->  drivers/char/Kconfig                       |   13 
->  drivers/char/Makefile                      |    6 
->  drivers/char/generic_nvram.c               |  174 ------
->  drivers/char/nvram.c                       |  742 ++++++++++++-----------------
->  drivers/platform/x86/thinkpad_acpi.c       |   20 
->  drivers/scsi/Kconfig                       |    6 
->  drivers/scsi/atari_scsi.c                  |   16 
->  drivers/video/fbdev/Kconfig                |    2 
->  drivers/video/fbdev/controlfb.c            |    4 
->  drivers/video/fbdev/imsttfb.c              |   17 
->  drivers/video/fbdev/matrox/matroxfb_base.c |    6 
->  drivers/video/fbdev/platinumfb.c           |    4 
->  drivers/video/fbdev/valkyriefb.c           |   18 
->  include/linux/nvram.h                      |   23 
->  include/uapi/linux/pmu.h                   |    2 
->  34 files changed, 998 insertions(+), 951 deletions(-)
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 8b9502a..b85d442 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -276,7 +276,6 @@ static int of_node_to_nid_single(struct device_node *device)
+ /* Walk the device tree upwards, looking for an associativity id */
+ int of_node_to_nid(struct device_node *device)
+ {
+-	struct device_node *tmp;
+ 	int nid = -1;
+ 
+ 	of_node_get(device);
+@@ -285,9 +284,7 @@ int of_node_to_nid(struct device_node *device)
+ 		if (nid != -1)
+ 			break;
+ 
+-	        tmp = device;
+-		device = of_get_parent(tmp);
+-		of_node_put(tmp);
++		device = of_get_next_parent(device);
+ 	}
+ 	of_node_put(device);
+ 
+-- 
+2.1.4
