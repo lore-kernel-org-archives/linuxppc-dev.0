@@ -1,25 +1,33 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from mail-qg0-f47.google.com (mail-qg0-f47.google.com
- [209.85.192.47])
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-oi0-x22c.google.com (mail-oi0-x22c.google.com
+ [IPv6:2607:f8b0:4003:c06::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 973251A060A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2015 07:01:25 +1100 (AEDT)
-Received: by qgx61 with SMTP id 61so94627719qgx.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Oct 2015 13:01:23 -0700 (PDT)
-From: Peter Hurley <peter@hurleysoftware.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>, Alan Cox <alan@linux.intel.com>,
- David Laight <David.Laight@aculab.com>, Arnd Bergmann <arnd@arndb.de>,
- linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
- netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
- Peter Hurley <peter@hurleysoftware.com>,
- Karsten Keil <isdn@linux-pingi.de>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/7] tty: Remove tty_wait_until_sent_from_close()
-Date: Sat, 10 Oct 2015 16:00:51 -0400
-Message-Id: <1444507257-7513-2-git-send-email-peter@hurleysoftware.com>
-In-Reply-To: <1444507257-7513-1-git-send-email-peter@hurleysoftware.com>
-References: <1444507257-7513-1-git-send-email-peter@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 612A11A060F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2015 21:25:43 +1100 (AEDT)
+Received: by oiak8 with SMTP id k8so49574302oia.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Oct 2015 03:25:41 -0700 (PDT)
+Date: Sun, 11 Oct 2015 18:25:20 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{,64}_* and
+ atomic{,64}_cmpxchg_* variants
+Message-ID: <20151011102520.GB27351@fixme-laptop.cn.ibm.com>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
+ <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
+ <20151010015805.GA946@fixme-laptop.cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
+In-Reply-To: <20151010015805.GA946@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,157 +37,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-tty_wait_until_sent_from_close() drops the tty lock while waiting
-for the tty driver to finish sending previously accepted data (ie.,
-data remaining in its write buffer and transmit fifo).
 
-tty_wait_until_sent_from_close() was added by commit a57a7bf3fc7e
-("TTY: define tty_wait_until_sent_from_close") to prevent the entire
-tty subsystem from being unable to open new ttys while waiting for
-one tty to close while output drained.
+--YiEDa0DAkWCtVeE4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-However, since commit 0911261d4cb6 ("tty: Don't take tty_mutex for tty
-count changes"), holding a tty lock while closing does not prevent other
-ttys from being opened/closed/hung up, but only prevents lifetime event
-changes for the tty under lock.
+On Sat, Oct 10, 2015 at 09:58:05AM +0800, Boqun Feng wrote:
+> Hi Peter,
+>=20
+> Sorry for replying late.
+>=20
+> On Thu, Oct 01, 2015 at 02:27:16PM +0200, Peter Zijlstra wrote:
+> > On Wed, Sep 16, 2015 at 11:49:33PM +0800, Boqun Feng wrote:
+> > > Unlike other atomic operation variants, cmpxchg{,64}_acquire and
+> > > atomic{,64}_cmpxchg_acquire don't have acquire semantics if the cmp p=
+art
+> > > fails, so we need to implement these using assembly.
+> >=20
+> > I think that is actually expected and documented. That is, a cmpxchg
+> > only implies barriers on success. See:
+> >=20
+> >   ed2de9f74ecb ("locking/Documentation: Clarify failed cmpxchg() memory=
+ ordering semantics")
+>=20
+> I probably didn't make myself clear here, my point is that if we use
+> __atomic_op_acquire() to built *_cmpchg_acquire(For ARM and PowerPC),
+> the barrier will be implied _unconditionally_, meaning no matter cmp
+> fails or not, there will be a barrier after the cmpxchg operation.
+> Therefore we have to use assembly to implement the operations right now.
+>=20
 
-Holding the tty lock while waiting for output to drain does prevent
-parallel non-blocking opens (O_NONBLOCK) from advancing or returning
-while the tty lock is held. However, all parallel opens _already_
-block even if the tty lock is dropped while closing and the parallel
-open advances. Blocking in open has been in mainline since at least 2.6.29
-(see tty_port_block_til_ready(); note the test for O_NONBLOCK is _after_
-the wait while ASYNC_CLOSING).
+Or let me try another way to explain this. What I wanted to say here is
+that unlike the implementation of xchg family, which needs only to
+implement _relaxed version and *remove* the fully ordered version, the
+implementation of cmpxchg family needs to *remain* the fully ordered
+version and implement the _acquire version in assembly. Because if we
+use __atomic_op_*(), the barriers in the cmpxchg family will be implied
+*unconditionally*, for example:
 
-IOW, before this patch a non-blocking open will sleep anyway for the
-_entire_ duration of a parallel hardware shutdown, and when it wakes, the
-error return will cause a release of its tty, and it will restart with
-a fresh attempt to open. Similarly with a blocking open that is already
-waiting; when it's woken, the hardware shutdown has already completed
-to ASYNC_INITIALIZED is not set, which forces a release and restart as
-well.
+cmpxchg() on PPC will be(built by my version of __atomic_op_fence()):
 
-So, holding the tty lock across the _entire_ close (which is what this
-patch does), even while waiting for output to drain, is equivalent to
-the current outcome wrt parallel opens.
+	smp_lwsync();
+	cmpxchg_relaxed(...);
+	smp_mb__after_atomic(); // a full barrier regardless of success
+				// or failure.
 
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: David Laight <David.Laight@aculab.com>
-CC: Arnd Bergmann <arnd@arndb.de>
-CC: Karsten Keil <isdn@linux-pingi.de>
-CC: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
----
- drivers/isdn/i4l/isdn_tty.c   |  2 +-
- drivers/tty/hvc/hvc_console.c |  2 +-
- drivers/tty/hvc/hvcs.c        |  2 +-
- drivers/tty/tty_port.c        | 11 ++---------
- include/linux/tty.h           | 18 ------------------
- 5 files changed, 5 insertions(+), 30 deletions(-)
+In order to have a conditional barrier, we need a way to jump out of a
+ll/sc loop, which could only(?) be done by assembly code.
 
-diff --git a/drivers/isdn/i4l/isdn_tty.c b/drivers/isdn/i4l/isdn_tty.c
-index bc91261..2175225 100644
---- a/drivers/isdn/i4l/isdn_tty.c
-+++ b/drivers/isdn/i4l/isdn_tty.c
-@@ -1582,7 +1582,7 @@ isdn_tty_close(struct tty_struct *tty, struct file *filp)
- 	 * line status register.
- 	 */
- 	if (port->flags & ASYNC_INITIALIZED) {
--		tty_wait_until_sent_from_close(tty, 3000);	/* 30 seconds timeout */
-+		tty_wait_until_sent(tty, 3000);	/* 30 seconds timeout */
- 		/*
- 		 * Before we drop DTR, make sure the UART transmitter
- 		 * has completely drained; this is especially
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 9c30f67..e46d628 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -418,7 +418,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		 * there is no buffered data otherwise sleeps on a wait queue
- 		 * waking periodically to check chars_in_buffer().
- 		 */
--		tty_wait_until_sent_from_close(tty, HVC_CLOSE_WAIT);
-+		tty_wait_until_sent(tty, HVC_CLOSE_WAIT);
- 	} else {
- 		if (hp->port.count < 0)
- 			printk(KERN_ERR "hvc_close %X: oops, count is %d\n",
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index f7ff97c..5997b17 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -1230,7 +1230,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 		irq = hvcsd->vdev->irq;
- 		spin_unlock_irqrestore(&hvcsd->lock, flags);
- 
--		tty_wait_until_sent_from_close(tty, HVCS_CLOSE_WAIT);
-+		tty_wait_until_sent(tty, HVCS_CLOSE_WAIT);
- 
- 		/*
- 		 * This line is important because it tells hvcs_open that this
-diff --git a/drivers/tty/tty_port.c b/drivers/tty/tty_port.c
-index 40b3183..d7d9f9c 100644
---- a/drivers/tty/tty_port.c
-+++ b/drivers/tty/tty_port.c
-@@ -463,10 +463,7 @@ static void tty_port_drain_delay(struct tty_port *port, struct tty_struct *tty)
- 	schedule_timeout_interruptible(timeout);
- }
- 
--/* Caller holds tty lock.
-- * NB: may drop and reacquire tty lock (in tty_wait_until_sent_from_close())
-- * so tty and tty port may have changed state (but not hung up or reopened).
-- */
-+/* Caller holds tty lock. */
- int tty_port_close_start(struct tty_port *port,
- 				struct tty_struct *tty, struct file *filp)
- {
-@@ -502,7 +499,7 @@ int tty_port_close_start(struct tty_port *port,
- 		if (tty->flow_stopped)
- 			tty_driver_flush_buffer(tty);
- 		if (port->closing_wait != ASYNC_CLOSING_WAIT_NONE)
--			tty_wait_until_sent_from_close(tty, port->closing_wait);
-+			tty_wait_until_sent(tty, port->closing_wait);
- 		if (port->drain_delay)
- 			tty_port_drain_delay(port, tty);
- 	}
-@@ -543,10 +540,6 @@ EXPORT_SYMBOL(tty_port_close_end);
-  * tty_port_close
-  *
-  * Caller holds tty lock
-- *
-- * NB: may drop and reacquire tty lock (in tty_port_close_start()->
-- * tty_wait_until_sent_from_close()) so tty and tty_port may have changed
-- * state (but not hung up or reopened).
-  */
- void tty_port_close(struct tty_port *port, struct tty_struct *tty,
- 							struct file *filp)
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index d072ded..614c822 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -657,24 +657,6 @@ extern void __lockfunc tty_lock_slave(struct tty_struct *tty);
- extern void __lockfunc tty_unlock_slave(struct tty_struct *tty);
- extern void tty_set_lock_subclass(struct tty_struct *tty);
- /*
-- * this shall be called only from where BTM is held (like close)
-- *
-- * We need this to ensure nobody waits for us to finish while we are waiting.
-- * Without this we were encountering system stalls.
-- *
-- * This should be indeed removed with BTM removal later.
-- *
-- * Locking: BTM required. Nobody is allowed to hold port->mutex.
-- */
--static inline void tty_wait_until_sent_from_close(struct tty_struct *tty,
--		long timeout)
--{
--	tty_unlock(tty); /* tty->ops->close holds the BTM, drop it while waiting */
--	tty_wait_until_sent(tty, timeout);
--	tty_lock(tty);
--}
--
--/*
-  * wait_event_interruptible_tty -- wait for a condition with the tty lock held
-  *
-  * The condition we are waiting for might take a long time to
--- 
-2.6.1
+My commit log surely failed to explain this clearly, I will modifiy that
+in next series. In the meanwhile, looking forwards to suggestion on the
+implementation of cmpxchg familiy ;-)
+
+BTW, Will, could you please check whether the barriers in cmpxchg family
+are unconditional or not in the current implementation of ARM? IIUC,
+they are currently unconditional, right?
+
+Regards,
+Boqun
+
+--YiEDa0DAkWCtVeE4
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWGjkMAAoJEEl56MO1B/q4+tQH/3vuGJsfSQ5kbTaaAsmzdeCH
+Jg7Ltl1+KseO/5HmRrBnfnUdLQw9jLYHslLOyZGR6s8vNWmGT6n6N2lWoppuurBE
+8PgLSUmL/H/Vn0t3glpW2CGzf6wZEyLGIasP5HwAkglC89V+BPPI27ljXtzqJcB2
+MJHhN7VYVwVgY+9ifFlHGYuuYE61V7jK92fCZhpNWlQv6gABY3iWOWORsH2pkPq1
+s4knxHlzadZvnqZurZ/eyDbbXzpofP0FjkmrwHfdVbUW9z21Ig2PKALBqTvnLN8p
+u5BnD/jHCzzOvdLs7TTCje2GCkVeWqIy7K4mV34Hobd5g7TZBCdITB8FzFA1hyY=
+=vieX
+-----END PGP SIGNATURE-----
+
+--YiEDa0DAkWCtVeE4--
