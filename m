@@ -1,28 +1,43 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D3931A01DC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 01:31:00 +1100 (AEDT)
-Received: by pabve7 with SMTP id ve7so97792491pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 07:30:58 -0700 (PDT)
-From: Boqun Feng <boqun.feng@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F1E21A018C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 03:04:02 +1100 (AEDT)
+Received: from localhost
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Mon, 12 Oct 2015 10:03:58 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 97EDC3E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 10:03:55 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9CG2tR811600368
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 09:02:55 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9CG3rWO013178
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 10:03:55 -0600
+Date: Mon, 12 Oct 2015 09:03:52 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+ Keith Busch <keith.busch@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Boqun Feng <boqun.feng@gmail.com>, <stable@vger.kernel.org>
-Subject: [PATCH RESEND v3 1/6] powerpc: atomic: Make *xchg and *cmpxchg a full
- barrier
-Date: Mon, 12 Oct 2015 22:30:20 +0800
-Message-Id: <1444660220-25559-1-git-send-email-boqun.feng@gmail.com>
-In-Reply-To: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
-References: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-nvme@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/iommu: expose IOMMU page shift
+Message-ID: <20151012160352.GA24212@linux.vnet.ibm.com>
+References: <20151002171606.GA41011@linux.vnet.ibm.com>
+ <20151002171800.GB41011@linux.vnet.ibm.com>
+ <20151006031943.GC3861@voom.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151006031943.GC3861@voom.fritz.box>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,90 +47,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to memory-barriers.txt, xchg, cmpxchg and their atomic{,64}_
-versions all need to imply a full barrier, however they are now just
-RELEASE+ACQUIRE, which is not a full barrier.
+On 06.10.2015 [14:19:43 +1100], David Gibson wrote:
+> On Fri, Oct 02, 2015 at 10:18:00AM -0700, Nishanth Aravamudan wrote:
+> > We will leverage this macro in the NVMe driver, which needs to know the
+> > configured IOMMU page shift to properly configure its device's page
+> > size.
+> > 
+> > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> > 
+> > ---
+> > Given this is available, it seems reasonable to expose -- and it doesn't
+> > really make sense to make the driver do a log2 call on the existing
+> > IOMMU_PAGE_SIZE() value.
+> > 
+> > diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+> > index ca18cff..6fdf857 100644
+> > --- a/arch/powerpc/include/asm/iommu.h
+> > +++ b/arch/powerpc/include/asm/iommu.h
+> > @@ -36,6 +36,7 @@
+> >  #define IOMMU_PAGE_MASK_4K       (~((1 << IOMMU_PAGE_SHIFT_4K) - 1))
+> >  #define IOMMU_PAGE_ALIGN_4K(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE_4K)
+> >  
+> > +#define IOMMU_PAGE_SHIFT(tblptr) (tblptr)->it_page_shift
+> >  #define IOMMU_PAGE_SIZE(tblptr) (ASM_CONST(1) << (tblptr)->it_page_shift)
+> 
+> Seems like it would be a touch safer to alter IOMMU_PAGE_SIZE so it
+> uses the new IOMMU_PAGE_SHIFT macro.
 
-So replace PPC_RELEASE_BARRIER and PPC_ACQUIRE_BARRIER with
-PPC_ATOMIC_ENTRY_BARRIER and PPC_ATOMIC_EXIT_BARRIER in
-__{cmp,}xchg_{u32,u64} respectively to guarantee a full barrier
-semantics of atomic{,64}_{cmp,}xchg() and {cmp,}xchg().
+Yes absolutely! Sorry, I initially didn't add the first macro, so didn't
+think that through. Will update.
 
-This patch is a complement of commit b97021f85517 ("powerpc: Fix
-atomic_xxx_return barrier semantics").
-
-Cc: <stable@vger.kernel.org> # 3.4.y-
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
----
- arch/powerpc/include/asm/cmpxchg.h | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index ad6263c..d1a8d93 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -18,12 +18,12 @@ __xchg_u32(volatile void *p, unsigned long val)
- 	unsigned long prev;
- 
- 	__asm__ __volatile__(
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	lwarx	%0,0,%2 \n"
- 	PPC405_ERR77(0,%2)
- "	stwcx.	%3,0,%2 \n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	: "=&r" (prev), "+m" (*(volatile unsigned int *)p)
- 	: "r" (p), "r" (val)
- 	: "cc", "memory");
-@@ -61,12 +61,12 @@ __xchg_u64(volatile void *p, unsigned long val)
- 	unsigned long prev;
- 
- 	__asm__ __volatile__(
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	ldarx	%0,0,%2 \n"
- 	PPC405_ERR77(0,%2)
- "	stdcx.	%3,0,%2 \n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	: "=&r" (prev), "+m" (*(volatile unsigned long *)p)
- 	: "r" (p), "r" (val)
- 	: "cc", "memory");
-@@ -151,14 +151,14 @@ __cmpxchg_u32(volatile unsigned int *p, unsigned long old, unsigned long new)
- 	unsigned int prev;
- 
- 	__asm__ __volatile__ (
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	lwarx	%0,0,%2		# __cmpxchg_u32\n\
- 	cmpw	0,%0,%3\n\
- 	bne-	2f\n"
- 	PPC405_ERR77(0,%2)
- "	stwcx.	%4,0,%2\n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	"\n\
- 2:"
- 	: "=&r" (prev), "+m" (*p)
-@@ -197,13 +197,13 @@ __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
- 	unsigned long prev;
- 
- 	__asm__ __volatile__ (
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	ldarx	%0,0,%2		# __cmpxchg_u64\n\
- 	cmpd	0,%0,%3\n\
- 	bne-	2f\n\
- 	stdcx.	%4,0,%2\n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	"\n\
- 2:"
- 	: "=&r" (prev), "+m" (*p)
--- 
-2.5.3
+-Nish
