@@ -1,21 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C03E1A06F2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:07:46 +1100 (AEDT)
-Message-ID: <1444648065.31951.3.camel@ellerman.id.au>
-Subject: Re: [PATCH 1/6] powerpc/kconfig: Move NR_IRQS into "Kernel Options"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BBD31A03A9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:17:19 +1100 (AEDT)
+In-Reply-To: <4fd8daff1bb5daad99d909aa75ff5c2702c4c490.1437117145.git.christophe.jaillet@wanadoo.fr>
+To: Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linuxppc-dev@ozlabs.org, thuth@redhat.com
-Date: Mon, 12 Oct 2015 22:07:45 +1100
-In-Reply-To: <7516455.YEROTAngT1@wuerfel>
-References: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
- <7826129.RXlL8kStvO@wuerfel> <1444644025.31951.1.camel@ellerman.id.au>
- <7516455.YEROTAngT1@wuerfel>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Cc: kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [1/2] powerpc/nvram: Add missing kfree in error path
+Message-Id: <20151012111719.07ACD14029E@ozlabs.org>
+Date: Mon, 12 Oct 2015 22:17:18 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-10-12 at 12:30 +0200, Arnd Bergmann wrote:
-> On Monday 12 October 2015 21:00:25 Michael Ellerman wrote:
-> > On Thu, 2015-10-08 at 23:30 +0200, Arnd Bergmann wrote:
-> > > On Friday 09 October 2015 08:09:12 Michael Ellerman wrote:
-> > > > Currently the NR_IRQS option sits at the top level, which is ugly in
-> > > > menuconfig. It's not something users will commonly need to worry about
-> > > > so move it into "Kernel Options".
-> > > 
-> > > Is this option actually still meaningful at all, when you select CONFIG_SPARSE_IRQ
-> > > unconditionally?
-> > 
-> > It's still used for #define NR_IRQS, which is still used by the generic irq
-> > code and also some drivers.
+On Fri, 2015-17-07 at 07:19:59 UTC, Christophe Jaillet wrote:
+> If 'nvram_write_header' fails, then 'new_part' should be freed, otherwise,
+> there is a memory leak.
 > 
-> Drivers shouldn't use it, and I don't see any driver using it that can be
-> enabled on powerpc.
-> 
-> The question is rather whether you have any devices on powerpc that
-> get a hardwired IRQ number from a statically defined platform device
-> rather from DT.
-> 
-> If there are any ISA devices, the driver might try to use an interrupt
-> number that is hardcoded in the driver as a number from 0 to 15.
-> I guess that could happen on old CHRP or 6xx machines.
-> 
-> > So we need some value for that, whether it needs to be user defined or if we
-> > could just pick a value I'm not sure. x86 seem to just define it based on
-> > NR_CPUs and some other factors.
-> 
-> What happens if you set it to 16?
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-Yeah, this builds and boots at least on pseries KVM.
+Applied to powerpc next, thanks.
 
-diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-index e8e3a0a04eb0..35fba282b7f9 100644
---- a/arch/powerpc/include/asm/irq.h
-+++ b/arch/powerpc/include/asm/irq.h
-@@ -23,11 +23,8 @@ extern atomic_t ppc_n_lost_interrupts;
- /* This number is used when no interrupt has been assigned */
- #define NO_IRQ                 (0)
- 
--/* Total number of virq in the platform */
--#define NR_IRQS                CONFIG_NR_IRQS
--
--/* Same thing, used by the generic IRQ code */
- #define NR_IRQS_LEGACY         NUM_ISA_INTERRUPTS
-+#define NR_IRQS                        NR_IRQS_LEGACY
- 
- extern irq_hw_number_t virq_to_hw(unsigned int virq);
- 
+https://git.kernel.org/powerpc/c/7d523187173294f6ae3b86a4
 
 cheers
