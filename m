@@ -1,31 +1,17 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0CFD21A06B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 13:51:57 +1100 (AEDT)
-Message-ID: <1444618316.7194.0.camel@ellerman.id.au>
-Subject: Re: [kbuild-all] [PATCH 4/5 v2] pseries/iommu: implement DDW-aware
- dma_get_page_shift
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDA8C1A06B0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 13:53:55 +1100 (AEDT)
+Message-ID: <1444618435.7194.2.camel@ellerman.id.au>
+Subject: Re: use interrupt without clearing ?
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Fengguang Wu <lkp@intel.com>
-Cc: Keith Busch <keith.busch@intel.com>, Alexey Kardashevskiy
- <aik@ozlabs.ru>,  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org,  linux-nvme@lists.infradead.org, Christoph
- Hellwig <hch@infradead.org>, Paul Mackerras <paulus@samba.org>,
- kbuild-all@01.org, Matthew Wilcox <willy@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
-Date: Mon, 12 Oct 2015 13:51:56 +1100
-In-Reply-To: <20151011142235.GC17528@wfg-t540p.sh.intel.com>
-References: <201510030421.d9fvrbXU%fengguang.wu@intel.com>
- <1444102746.16909.4.camel@ellerman.id.au>
- <20151007135602.GA17377@wfg-t540p.sh.intel.com>
- <1444263119.31685.4.camel@ellerman.id.au>
- <20151008010603.GA24198@wfg-t540p.sh.intel.com>
- <20151008011609.GA25163@wfg-t540p.sh.intel.com>
- <1444277187.9940.7.camel@ellerman.id.au>
- <20151011142235.GC17528@wfg-t540p.sh.intel.com>
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 12 Oct 2015 13:53:55 +1100
+In-Reply-To: <CAJ2oMhLMi2PZvQoFU7JuYSsJM_UbuTsOaRfQKxqsJQq=KDG9vQ@mail.gmail.com>
+References: <CAJ2oMhLMi2PZvQoFU7JuYSsJM_UbuTsOaRfQKxqsJQq=KDG9vQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,14 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-10-11 at 22:22 +0800, Fengguang Wu wrote:
-> > 
-> > So do you mind adding linuxppc-dev@lists.ozlabs.org ? :)
-> > 
-> > It's pretty low traffic compared to lkml.
+On Sun, 2015-10-11 at 15:13 +0300, Ran Shalit wrote:
+> Hello,
 > 
-> Sure, I'm subscribing to it. :)
+> Is it possible to register an interrupt (in linux), without using the
+> automatic clear of interrupt.
+> I need this just for testing.
 
-Thanks.
+Hi Ran,
+
+You need to give us much more info than that before anyone will be able to
+answer your question. Linux runs on lots of different powerpc machines, so
+without knowing what hardware you're talking about it's impossible to
+answer.
 
 cheers
