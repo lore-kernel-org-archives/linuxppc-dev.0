@@ -1,29 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-ob0-x22e.google.com (mail-ob0-x22e.google.com
+ [IPv6:2607:f8b0:4003:c01::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 929611A06BD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 17:55:39 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DA7701402A8
- for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2015 17:55:38 +1100 (AEDT)
-Message-ID: <1444632924.2845.39.camel@kernel.crashing.org>
-Subject: Re: [PATCH V5 1/6] powerpc/powernv: don't enable SRIOV when VF BAR
- has non 64bit-prefetchable BAR
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, linuxppc-dev@ozlabs.org,
- mpe@ellerman.id.au
-Date: Mon, 12 Oct 2015 12:25:24 +0530
-In-Reply-To: <20151012025837.GA2111@Richards-MacBook-Pro.local>
-References: <1444358816-8163-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1444358816-8163-2-git-send-email-weiyang@linux.vnet.ibm.com>
- <1444378519.2845.14.camel@kernel.crashing.org>
- <20151012025837.GA2111@Richards-MacBook-Pro.local>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9A131A06BD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 18:03:47 +1100 (AEDT)
+Received: by obbda8 with SMTP id da8so101074400obb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 00:03:45 -0700 (PDT)
+Date: Mon, 12 Oct 2015 15:03:18 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 5/7] powerpc: atomic: Implement cmpxchg{,64}_* and
+ atomic{,64}_cmpxchg_* variants
+Message-ID: <20151012070317.GE27351@fixme-laptop.cn.ibm.com>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-6-git-send-email-boqun.feng@gmail.com>
+ <20151001122715.GQ2881@worktop.programming.kicks-ass.net>
+ <20151010015805.GA946@fixme-laptop.cn.ibm.com>
+ <20151011102520.GB27351@fixme-laptop.cn.ibm.com>
+ <20151012064621.GL3604@twins.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="FFoLq8A0u+X9iRU8"
+In-Reply-To: <20151012064621.GL3604@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,145 +39,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-10-12 at 10:58 +0800, Wei Yang wrote:
-> On Fri, Oct 09, 2015 at 07:15:19PM +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2015-10-09 at 10:46 +0800, Wei Yang wrote:
-> > > On PHB_IODA2, we enable SRIOV devices by mapping IOV BAR with M64 BARs. If
-> > > a SRIOV device's IOV BAR is not 64bit-prefetchable, this is not assigned
-> > > from 64bit prefetchable window, which means M64 BAR can't work on it.
-> > 
-> > Won't this cause a lot of devices to become unsupported for us ? Or do
-> > all devices we care about have their BARs marked prefetchable ?
-> > 
-> 
-> You are right. After doing so, some of the devices will not be supported.
-> 
-> Hmm, I thought you know this, since this strategy, use M64 BAR to map IOV
-> BAR, is proposed by you. This patch doesn't change the function, while make it
-> more explicit.
 
-Right but we can make things better by also effectively allowing non
--prefetch BARs to sit in the prefetchable window of a bridge.
+--FFoLq8A0u+X9iRU8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > > The reason is PCI bridges support only 2 windows and the kernel code
-> > > programs bridges in the way that one window is 32bit-nonprefetchable and
-> > > the other one is 64bit-prefetchable. So if devices' IOV BAR is 64bit and
-> > > non-prefetchable, it will be mapped into 32bit space and therefore M64
-> > > cannot be used for it.
-> > > 
-> > > This patch makes this explicit.
-> > 
-> > So PCIe allows for non-prefetchable BARs to be put under prefetchable
-> > bridge windows as long as the mapping done by the CPU doesn't prefetch,
-> > I believe. Well it's a natural conclusion of the weird note "Additional
-> > Guidance on the Prefetchable Bit in Memory Space BARs" page 596 of PCIe
-> > spec v3.0... it also says that devices should be pretty much free to
-> > set their prefetchable bit even if they have side effects so.
-> > 
-> > So maybe we should have that option, rather than just not using the
-> > devices, allow them to be allocate via the prefetchable window...
-> > 
-> 
-> Based on current linux kernel pci core resource size/assignment algorithm,
-> when we have 64bit-prefetchable root window, only 64bit-prefetchable BAR could
-> be assigned in this region. Refer to commit 5b28541552ef "PCI: Restrict 64-bit
-> prefetchable bridge windows to 64-bit resources" for more detail.
+On Mon, Oct 12, 2015 at 08:46:21AM +0200, Peter Zijlstra wrote:
+> On Sun, Oct 11, 2015 at 06:25:20PM +0800, Boqun Feng wrote:
+> > On Sat, Oct 10, 2015 at 09:58:05AM +0800, Boqun Feng wrote:
+> > > Hi Peter,
+> > >=20
+> > > Sorry for replying late.
+> > >=20
+> > > On Thu, Oct 01, 2015 at 02:27:16PM +0200, Peter Zijlstra wrote:
+> > > > On Wed, Sep 16, 2015 at 11:49:33PM +0800, Boqun Feng wrote:
+> > > > > Unlike other atomic operation variants, cmpxchg{,64}_acquire and
+> > > > > atomic{,64}_cmpxchg_acquire don't have acquire semantics if the c=
+mp part
+> > > > > fails, so we need to implement these using assembly.
+> > > >=20
+> > > > I think that is actually expected and documented. That is, a cmpxchg
+> > > > only implies barriers on success. See:
+> > > >=20
+> > > >   ed2de9f74ecb ("locking/Documentation: Clarify failed cmpxchg() me=
+mory ordering semantics")
+> > >=20
+> > > I probably didn't make myself clear here, my point is that if we use
+> > > __atomic_op_acquire() to built *_cmpchg_acquire(For ARM and PowerPC),
+> > > the barrier will be implied _unconditionally_, meaning no matter cmp
+> > > fails or not, there will be a barrier after the cmpxchg operation.
+> > > Therefore we have to use assembly to implement the operations right n=
+ow.
+>=20
+> See later, but no, you don't _have_ to.
+>=20
+> > Or let me try another way to explain this. What I wanted to say here is
+> > that unlike the implementation of xchg family, which needs only to
+> > implement _relaxed version and *remove* the fully ordered version, the
+> > implementation of cmpxchg family needs to *remain* the fully ordered
+> > version and implement the _acquire version in assembly. Because if we
+> > use __atomic_op_*(), the barriers in the cmpxchg family will be implied
+> > *unconditionally*, for example:
+>=20
+> So the point that confused me, and which is still valid for the above,
+> is your use of 'need'.
+>=20
 
-The above patch was about avoiding 32-bit prefetchable, it's not about
-64-bit non-prefetchable.
+Indeed, my apologies for confusing more..
 
-> So we have two facts here:
-> 1. We want to use M64 BAR to map VFs, so that VF could be put into individual
-> PE. And the M64 BAR just map 64bit window.
-> 2. Current MMIO size/assignment algorithm in linux pci core only put
-> 64bit-prefetchable BAR into 64bit prefetchable bridge window, no other BARs.
-> 
-> Your suggestion here is to put a non-prefetchable BAR in prefetchable bridge
-> window? This would make the MMIO size/assignment algorithm more confusing.
+> You don't need to omit the barrier at all. Its perfectly valid to issue
+> too many barriers (pointless and a waste of time, yes; incorrect, no).
+>=20
 
-Right, in the long run, both us and x86 might need to be able to do
-that, though exclusively for PCIe. PCI/PCI-X bridges can prefetch.
+Agreed.
 
-Cheers,
-Ben.
+> So what you want to say is: "Optimize cmpxchg_acquire() to avoid
+> superfluous barrier".
 
-> > > Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> > > Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> > > Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > > ---
-> > >  arch/powerpc/platforms/powernv/pci-ioda.c | 25 +++++++++----------------
-> > >  1 file changed, 9 insertions(+), 16 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > index 85cbc96..8c031b5 100644
-> > > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > @@ -908,9 +908,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
-> > >  > > > > 	> > > > > > > 	> > > > if (!res->flags || !res->parent)
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > >  
-> > > -> > > > 	> > > > > > > 	> > > > if (!pnv_pci_is_mem_pref_64(res->flags))
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > > -
-> > >  > > > > 	> > > > > > > 	> > > > /*
-> > >  > > > > 	> > > > > > > 	> > > >  * The actual IOV BAR range is determined by the start address
-> > >  > > > > 	> > > > > > > 	> > > >  * and the actual size for num_vfs VFs BAR.  This check is to
-> > > @@ -939,9 +936,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
-> > >  > > > > 	> > > > > > > 	> > > > if (!res->flags || !res->parent)
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > >  
-> > > -> > > > 	> > > > > > > 	> > > > if (!pnv_pci_is_mem_pref_64(res->flags))
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > > -
-> > >  > > > > 	> > > > > > > 	> > > > size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
-> > >  > > > > 	> > > > > > > 	> > > > res2 = *res;
-> > >  > > > > 	> > > > > > > 	> > > > res->start += size * offset;
-> > > @@ -1221,9 +1215,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
-> > >  > > > > 	> > > > > > > 	> > > > if (!res->flags || !res->parent)
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > >  
-> > > -> > > > 	> > > > > > > 	> > > > if (!pnv_pci_is_mem_pref_64(res->flags))
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > > -
-> > >  > > > > 	> > > > > > > 	> > > > for (j = 0; j < vf_groups; j++) {
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > do {
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > > > > 	> > > > win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
-> > > @@ -1510,6 +1501,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
-> > >  > > > > 	> > > > pdn = pci_get_pdn(pdev);
-> > >  
-> > >  > > > > 	> > > > if (phb->type == PNV_PHB_IODA2) {
-> > > +> > > > 	> > > > > > > 	> > > > if (!pdn->vfs_expanded) {
-> > > +> > > > 	> > > > > > > 	> > > > > > > 	> > > > dev_info(&pdev->dev, "don't support this SRIOV device"
-> > > +> > > > 	> > > > > > > 	> > > > > > > 	> > > > > > > 	> > > > " with non 64bit-prefetchable IOV BAR\n");
-> > > +> > > > 	> > > > > > > 	> > > > > > > 	> > > > return -ENOSPC;
-> > > +> > > > 	> > > > > > > 	> > > > }
-> > > +
-> > >  > > > > 	> > > > > > > 	> > > > /* Calculate available PE for required VFs */
-> > >  > > > > 	> > > > > > > 	> > > > mutex_lock(&phb->ioda.pe_alloc_mutex);
-> > >  > > > > 	> > > > > > > 	> > > > pdn->offset = bitmap_find_next_zero_area(
-> > > @@ -2775,9 +2772,10 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
-> > >  > > > > 	> > > > > > > 	> > > > if (!res->flags || res->parent)
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > >  > > > > 	> > > > > > > 	> > > > if (!pnv_pci_is_mem_pref_64(res->flags)) {
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > dev_warn(&pdev->dev, " non M64 VF BAR%d: %pR\n",
-> > > +> > > > 	> > > > > > > 	> > > > > > > 	> > > > dev_warn(&pdev->dev, "Don't support SR-IOV with"
-> > > +> > > > 	> > > > > > > 	> > > > > > > 	> > > > > > > 	> > > > > > > 	> > > > " non M64 VF BAR%d: %pR. \n",
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > > > > 	> > > >  i, res);
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > > +> > > > 	> > > > > > > 	> > > > > > > 	> > > > return;
-> > >  > > > > 	> > > > > > > 	> > > > }
-> > >  
-> > >  > > > > 	> > > > > > > 	> > > > size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
-> > > @@ -2796,11 +2794,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
-> > >  > > > > 	> > > > > > > 	> > > > res = &pdev->resource[i + PCI_IOV_RESOURCES];
-> > >  > > > > 	> > > > > > > 	> > > > if (!res->flags || res->parent)
-> > >  > > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > > -> > > > 	> > > > > > > 	> > > > if (!pnv_pci_is_mem_pref_64(res->flags)) {
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > > > > 	> > > >  i, res);
-> > > -> > > > 	> > > > > > > 	> > > > > > > 	> > > > continue;
-> > > -> > > > 	> > > > > > > 	> > > > }
-> > >  
-> > >  > > > > 	> > > > > > > 	> > > > dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
-> > >  > > > > 	> > > > > > > 	> > > > size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
-> 
+Yes. I would like to implement a cmpxchg_acquire that really has no
+barrier if cmp failed, which became my 'need' for the implementation.
+But you are right, we don't have to omit the barrier. I will modify the
+commit log to explain this clear in the next version. Thank you!
+
+Regards,
+Boqun
+
+--FFoLq8A0u+X9iRU8
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWG1swAAoJEEl56MO1B/q4+NMH/jt9uYjYIMY0Uw0IfJcmKod/
+l+tWnwLsHmtxFjstK1deUk7uNDqUlt4SZwnToPfaVCDyBXqRKDtxWEw9goWt1bOm
+bzEIz7PW4aCPD93MTthz7Ywo7fMXNDe00fyTciaAdDQIacfWwOSqRevh5Svhkiml
+hG0v4ofYaZBqZjXLAydHX1UGuS8XZliJCFXTLF6Qp+Z2Df6KCZ2gtwCrODldY+u4
+z3YlrNQHRpcjaU1OCqHrXMDEfAdv4mRd6n7IY6FeQEkDpGlw86PMXJvamJRP0zOs
+JPu2DC4pIZZhMxTQJKHUsHUhlAtYTPmRNRGxj88aXcX8RKRoMEEdwdlNciUIz38=
+=Cp19
+-----END PGP SIGNATURE-----
+
+--FFoLq8A0u+X9iRU8--
