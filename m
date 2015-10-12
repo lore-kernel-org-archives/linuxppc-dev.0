@@ -1,23 +1,29 @@
-Return-Path: <prvs=07276f4170=gerlando.falauto@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 25A821A02B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 18:19:07 +1100 (AEDT)
-From: Gerlando Falauto <gerlando.falauto@keymile.com>
-To: netdev@vger.kernel.org, timur@tabi.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: ogabbay@advaoptical.com, bigeasy@linutronix.de,
- Gerlando Falauto <gerlando.falauto@keymile.com>,
- "David S. Miller" <davem@davemloft.net>,
- Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2 2/2] net/fsl_pq_mdio: fix computed address for the TBI
- register
-Date: Mon, 12 Oct 2015 09:18:41 +0200
-Message-Id: <1444634321-14902-2-git-send-email-gerlando.falauto@keymile.com>
-In-Reply-To: <1444634321-14902-1-git-send-email-gerlando.falauto@keymile.com>
-References: <1371041258-15298-1-git-send-email-ogabbay@advaoptical.com>
- <1444634321-14902-1-git-send-email-gerlando.falauto@keymile.com>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 272121A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 20:28:59 +1100 (AEDT)
+Date: Mon, 12 Oct 2015 10:28:56 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>
+Subject: Re: [RFC v2 4/7] powerpc: atomic: Implement xchg_* and
+ atomic{,64}_xchg_* variants
+Message-ID: <20151012092856.GB16124@arm.com>
+References: <1442418575-12297-1-git-send-email-boqun.feng@gmail.com>
+ <1442418575-12297-5-git-send-email-boqun.feng@gmail.com>
+ <20151001122440.GP2881@worktop.programming.kicks-ass.net>
+ <20151001150909.GC4043@linux.vnet.ibm.com>
+ <20151001171304.GX3816@twins.programming.kicks-ass.net>
+ <20151001180301.GJ4043@linux.vnet.ibm.com>
+ <20151012011749.GD27351@fixme-laptop.cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151012011749.GD27351@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,120 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit afae5ad78b342f401c28b0bb1adb3cd494cb125a
-  "net/fsl_pq_mdio: streamline probing of MDIO nodes"
+On Mon, Oct 12, 2015 at 09:17:50AM +0800, Boqun Feng wrote:
+> On Thu, Oct 01, 2015 at 11:03:01AM -0700, Paul E. McKenney wrote:
+> > On Thu, Oct 01, 2015 at 07:13:04PM +0200, Peter Zijlstra wrote:
+> > > On Thu, Oct 01, 2015 at 08:09:09AM -0700, Paul E. McKenney wrote:
+> > > > On Thu, Oct 01, 2015 at 02:24:40PM +0200, Peter Zijlstra wrote:
+> > > 
+> > > > > I must say I'm somewhat surprised by this level of relaxation, I had
+> > > > > expected to only loose SMP barriers, not the program order ones.
+> > > > > 
+> > > > > Is there a good argument for this?
+> > > > 
+> > > > Yes, when we say "relaxed", we really mean relaxed.  ;-)
+> > > > 
+> > > > Both the CPU and the compiler are allowed to reorder around relaxed
+> > > > operations.
+> > > 
+> > > Is this documented somewhere, because I completely missed this part.
+> > 
+> > Well, yes, these need to be added to the documentation.  I am assuming
+> 
+> Maybe it's good time for us to call it out which operation should be
+> a compiler barrier or a CPU barrier?
+> 
+> I had something in my mind while I was working on this series, not
+> really sure whether it's correct, but probably a start point:
+> 
+> All global and local atomic operations are at least atomic(no one can
+> observe the middle state) and volatile(compilers can't optimize out the
+> memory access). Based on this, there are four strictness levels, one
+> can rely on them:
+> 
+> RELAXED: neither a compiler barrier or a CPU barrier
+> LOCAL: a compiler barrier
+> PARTIAL: both a compiler barrier and a CPU barrier but not transitive
+> FULL: both compiler barrier and a CPU barrier, and transitive.
+> 
+> RELAXED includes all _relaxed variants and non-return atomics, LOCAL
+> includes all local atomics(local_* and {cmp}xchg_local), PARTIAL
+> includes _acquire and _release operations and FULL includes all fully
+> ordered global atomic operations.
+> 
+> Thoughts?
 
-added support for different types of MDIO devices:
-1) Gianfar MDIO nodes that only map the MII registers
-2) Gianfar MDIO nodes that map the full MDIO register set
-3) eTSEC2 MDIO nodes (which map the full MDIO register set)
-4) QE MDIO nodes (which map only the MII registers)
+I think that's where we currently are already, apart from defining
+transitivity (see the other thread), which makes things a whole lot more
+muddy.
 
-However, the implementation for types 1 and 4 would mistakenly assume
-a mapping of the full MDIO register set, thereby computing the address
-for the TBI register starting from the containing structure.
-The TBI register would therefore be accessed at a wrong (much bigger)
-address, not giving the expected result at all.
-This patch restores the correct behavior we had prior to the above one.
+That said, on Friday we seemed to be in broad agreement on the semantics
+-- the difficult part is getting the language right (which is why we
+started to discuss including litmus tests alongside the documentation).
 
-The consequences of this bug are apparent when trying to access a PHY
-with the same address as the value contained in the initial value of
-the TBI register (normally 0); in that case you'll get answers from the
-internal TBI device (even though MDIO/MDC pins are actually *also*
-toggling on the physical bus!).
-Beware that you also need to add a fake tbi node to your device tree
-with an unused address.
-
-Notice how this fix is related to commit
-220669495bf8b68130a8218607147c7b74c28d2b
-  "powerpc: Add TBI PHY node to first MDIO bus"
-
-which fixed the behavior in kernel 3.3, which was later broken by the
-above commit on kernel 3.7.
-
-Signed-off-by: Gerlando Falauto <gerlando.falauto@keymile.com>
-Cc: Timur Tabi <timur@tabi.org>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>
----
- drivers/net/ethernet/freescale/fsl_pq_mdio.c | 24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-index 5333d0a..55c3623 100644
---- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-+++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-@@ -198,11 +198,13 @@ static int fsl_pq_mdio_reset(struct mii_bus *bus)
- 
- #if defined(CONFIG_GIANFAR) || defined(CONFIG_GIANFAR_MODULE)
- /*
-+ * Return the TBIPA address, starting from the address
-+ * of the mapped GFAR MDIO registers (struct gfar)
-  * This is mildly evil, but so is our hardware for doing this.
-  * Also, we have to cast back to struct gfar because of
-  * definition weirdness done in gianfar.h.
-  */
--static uint32_t __iomem *get_gfar_tbipa(void __iomem *p)
-+static uint32_t __iomem *get_gfar_tbipa_from_mdio(void __iomem *p)
- {
- 	struct gfar __iomem *enet_regs = p;
- 
-@@ -210,6 +212,15 @@ static uint32_t __iomem *get_gfar_tbipa(void __iomem *p)
- }
- 
- /*
-+ * Return the TBIPA address, starting from the address
-+ * of the mapped GFAR MII registers (gfar_mii_regs[] within struct gfar)
-+ */
-+static uint32_t __iomem *get_gfar_tbipa_from_mii(void __iomem *p)
-+{
-+	return get_gfar_tbipa_from_mdio(container_of(p, struct gfar, gfar_mii_regs));
-+}
-+
-+/*
-  * Return the TBIPAR address for an eTSEC2 node
-  */
- static uint32_t __iomem *get_etsec_tbipa(void __iomem *p)
-@@ -220,11 +231,12 @@ static uint32_t __iomem *get_etsec_tbipa(void __iomem *p)
- 
- #if defined(CONFIG_UCC_GETH) || defined(CONFIG_UCC_GETH_MODULE)
- /*
-- * Return the TBIPAR address for a QE MDIO node
-+ * Return the TBIPAR address for a QE MDIO node, starting from the address
-+ * of the mapped MII registers (struct fsl_pq_mii)
-  */
- static uint32_t __iomem *get_ucc_tbipa(void __iomem *p)
- {
--	struct fsl_pq_mdio __iomem *mdio = p;
-+	struct fsl_pq_mdio __iomem *mdio = container_of(p, struct fsl_pq_mdio, mii);
- 
- 	return &mdio->utbipar;
- }
-@@ -300,14 +312,14 @@ static const struct of_device_id fsl_pq_mdio_match[] = {
- 		.compatible = "fsl,gianfar-tbi",
- 		.data = &(struct fsl_pq_mdio_data) {
- 			.mii_offset = 0,
--			.get_tbipa = get_gfar_tbipa,
-+			.get_tbipa = get_gfar_tbipa_from_mii,
- 		},
- 	},
- 	{
- 		.compatible = "fsl,gianfar-mdio",
- 		.data = &(struct fsl_pq_mdio_data) {
- 			.mii_offset = 0,
--			.get_tbipa = get_gfar_tbipa,
-+			.get_tbipa = get_gfar_tbipa_from_mii,
- 		},
- 	},
- 	{
-@@ -315,7 +327,7 @@ static const struct of_device_id fsl_pq_mdio_match[] = {
- 		.compatible = "gianfar",
- 		.data = &(struct fsl_pq_mdio_data) {
- 			.mii_offset = offsetof(struct fsl_pq_mdio, mii),
--			.get_tbipa = get_gfar_tbipa,
-+			.get_tbipa = get_gfar_tbipa_from_mdio,
- 		},
- 	},
- 	{
--- 
-1.8.0.1
+Will
