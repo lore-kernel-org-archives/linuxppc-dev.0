@@ -1,33 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 11D531A0836
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 05:40:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C3331A084B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 05:40:37 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 13 Oct 2015 00:10:34 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 9DAF4E0056
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 00:10:27 +0530 (IST)
+ Tue, 13 Oct 2015 00:10:35 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 61F0CE005C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 00:10:29 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9CIeUm62752890
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 00:10:30 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9CIeW4X57999550
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 00:10:32 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9CIeTRF013595
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 00:10:30 +0530
+ t9CIeVgN013798
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 00:10:32 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v3 18/31] powerpc/mm: Increase the pte frag size.
-Date: Tue, 13 Oct 2015 00:10:02 +0530
-Message-Id: <1444675215-19484-19-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH v3 26/31] powerpc/mm: Remove the dependency on pte bit
+ position in asm code
+Date: Tue, 13 Oct 2015 00:10:10 +0530
+Message-Id: <1444675215-19484-27-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1444675215-19484-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1444675215-19484-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,39 +40,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We will use the increased size to store more information of 4K pte
-when using 64K page size. The idea is to free up bits in pte_t.
+We should not expect pte bit position in asm code. Simply
+by moving part of that to C
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgalloc-64.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S | 16 +++-------------
+ arch/powerpc/mm/hash_utils_64.c      | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgalloc-64.h b/arch/powerpc/include/asm/pgalloc-64.h
-index d8cde71f6734..4f1cc6c46728 100644
---- a/arch/powerpc/include/asm/pgalloc-64.h
-+++ b/arch/powerpc/include/asm/pgalloc-64.h
-@@ -164,15 +164,15 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 0a0399c2af11..34920f11dbdd 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1556,28 +1556,18 @@ do_hash_page:
+ 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
+ 	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
+ 	bne	77f			/* then don't call hash_page now */
+-	/*
+-	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
+-	 * accessing a userspace segment (even from the kernel). We assume
+-	 * kernel addresses always have the high bit set.
+-	 */
+-	rlwinm	r4,r4,32-25+9,31-9,31-9	/* DSISR_STORE -> _PAGE_RW */
+-	rotldi	r0,r3,15		/* Move high bit into MSR_PR posn */
+-	orc	r0,r12,r0		/* MSR_PR | ~high_bit */
+-	rlwimi	r4,r0,32-13,30,30	/* becomes _PAGE_USER access bit */
+-	ori	r4,r4,1			/* add _PAGE_PRESENT */
+-	rlwimi	r4,r5,22+2,31-2,31-2	/* Set _PAGE_EXEC if trap is 0x400 */
  
- #else /* if CONFIG_PPC_64K_PAGES */
- /*
-- * we support 16 fragments per PTE page.
-+ * we support 8 fragments per PTE page.
-  */
--#define PTE_FRAG_NR	16
-+#define PTE_FRAG_NR	8
- /*
-- * We use a 2K PTE page fragment and another 2K for storing
-- * real_pte_t hash index
-+ * We use a 2K PTE page fragment and another 4K for storing
-+ * real_pte_t hash index. Rounding the entire thing to 8K
-  */
--#define PTE_FRAG_SIZE_SHIFT  12
--#define PTE_FRAG_SIZE (2 * PTRS_PER_PTE * sizeof(pte_t))
-+#define PTE_FRAG_SIZE_SHIFT  13
-+#define PTE_FRAG_SIZE (1UL << PTE_FRAG_SIZE_SHIFT)
+ 	/*
+ 	 * r3 contains the faulting address
+-	 * r4 contains the required access permissions
++	 * r4 msr
+ 	 * r5 contains the trap number
+ 	 * r6 contains dsisr
+ 	 *
+ 	 * at return r3 = 0 for success, 1 for page fault, negative for error
+ 	 */
++        mr 	r4,r12
+ 	ld      r6,_DSISR(r1)
+-	bl	hash_page		/* build HPTE if possible */
++	bl	__hash_page		/* build HPTE if possible */
+ 	cmpdi	r3,0			/* see if hash_page succeeded */
  
- extern pte_t *page_table_alloc(struct mm_struct *, unsigned long, int);
- extern void page_table_free(struct mm_struct *, unsigned long *, int);
+ 	/* Success */
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index db35e7d83088..04d549527eaa 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1162,6 +1162,35 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap,
+ }
+ EXPORT_SYMBOL_GPL(hash_page);
+ 
++int __hash_page(unsigned long ea, unsigned long msr, unsigned long trap,
++		unsigned long dsisr)
++{
++	unsigned long access = _PAGE_PRESENT;
++	unsigned long flags = 0;
++	struct mm_struct *mm = current->mm;
++
++	if (REGION_ID(ea) == VMALLOC_REGION_ID)
++		mm = &init_mm;
++
++	if (dsisr & DSISR_NOHPTE)
++		flags |= HPTE_NOHPTE_UPDATE;
++
++	if (dsisr & DSISR_ISSTORE)
++		access |= _PAGE_RW;
++	/*
++	 * We need to set the _PAGE_USER bit if MSR_PR is set or if we are
++	 * accessing a userspace segment (even from the kernel). We assume
++	 * kernel addresses always have the high bit set.
++	 */
++	if ((msr & MSR_PR) || (REGION_ID(ea) == USER_REGION_ID))
++		access |= _PAGE_USER;
++
++	if (trap == 0x400)
++		access |= _PAGE_EXEC;
++
++	return hash_page_mm(mm, ea, access, trap, flags);
++}
++
+ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 		  unsigned long access, unsigned long trap)
+ {
 -- 
 2.5.0
