@@ -2,16 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49D031A038D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:21:23 +1100 (AEDT)
-In-Reply-To: <1442431574-4575-1-git-send-email-kda@linux-powerpc.org>
-To: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E70A1A07DB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:21:24 +1100 (AEDT)
+In-Reply-To: <20150821110515.94DBB1A241A@localhost.localdomain>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Denis Kirjanov <kda@linux-powerpc.org>,
- Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [v3] powerpc: msi: mark bitmap with kmemleak_not_leak()
-Message-Id: <20151012112123.3028A140D8F@ozlabs.org>
-Date: Mon, 12 Oct 2015 22:21:22 +1100 (AEDT)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/8xx: Shorten irq_chip name for the SIU
+Message-Id: <20151012112123.D420814027C@ozlabs.org>
+Date: Mon, 12 Oct 2015 22:21:23 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-16-09 at 19:26:14 UTC, Denis Kirjanov wrote:
-> During the MSI bitmap test on boot kmemleak spews the following trace:
+On Fri, 2015-21-08 at 11:05:15 UTC, Christophe Leroy wrote:
+> show_interrupts() expects the irq_chip name to be max 8 characters
+> otherwise everything get misaligned
 > 
-> unreferenced object 0xc00000016e86c900 (size 64):
->     comm "swapper/0", pid 1, jiffies 4294893173 (age 518.024s)
->     hex dump (first 32 bytes):
-> 	00 00 01 ff 7f ff 7f 37 00 00 00 00 00 00 00 00
-> 	.......7........
-> 	ff ff ff ff ff ff ff ff 01 ff ff ff ff
-> 	ff ff ff
-> 	................
-> 	backtrace:
-> 	[<c00000000003eebc>] .zalloc_maybe_bootmem+0x3c/0x380
-> 	[<c000000000042d6c>] .msi_bitmap_alloc+0x3c/0xb0
-> 	[<c000000000a9aff8>] .msi_bitmap_selftest+0x30/0x2b4
-> 	[<c0000000000090f4>] .do_one_initcall+0xd4/0x270
-> 	[<c000000000a8e250>] .kernel_init_freeable+0x1a0/0x280
-> 	[<c000000000009b5c>] .kernel_init+0x1c/0x120
-> 	[<c000000000007fbc>] .ret_from_kernel_thread+0x58/0x9c
+> # cat /proc/interrupts
+>            CPU0
+>  17:          0   CPM PIC   0 Level     error
+>  19:          0  MPC8XX SIU  15 Level     tbint
+>  20:         90   CPM PIC   4 Level     cpm_uart
+>  38:      29746  MPC8XX SIU   5 Level     fs_enet-mac
+>  39:          0  MPC8XX SIU   7 Level     fs_enet-mac
+>  47:        401   CPM PIC   5 Level     fsl_spi
+>  68:          1  MPC8XX SIU   2 Level     phy_interrupt, phy_interrupt, phy_interrupt
+> LOC:    7225485   Local timer interrupts for timer event device
+> LOC:          9   Local timer interrupts for others
+> SPU:          0   Spurious interrupts
+> PMI:          0   Performance monitoring interrupts
+> MCE:          0   Machine check exceptions
 > 
-> Added a flag to msi_bitmap for tracking allocations
-> from slab and memblock so we can properly free/handle
-> memory in msi_bitmap_free().
-> 
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/cb2d3883c6033831e2a93b39
+https://git.kernel.org/powerpc/c/255e8e046c3925ee45a86946
 
 cheers
