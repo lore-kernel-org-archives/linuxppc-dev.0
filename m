@@ -1,15 +1,37 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 494E31A012E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 15:29:02 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] selftests/powerpc: Fix build failure of
- load_unaligned_zeropad test
-Date: Mon, 12 Oct 2015 15:28:57 +1100
-Message-Id: <1444624137-22259-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8DEB61A0682
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 16:35:18 +1100 (AEDT)
+Received: from plane.gmane.org (plane.gmane.org [80.91.229.3])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0E3521402B0
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2015 16:35:17 +1100 (AEDT)
+Received: from list by plane.gmane.org with local (Exim 4.69)
+ (envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
+ id 1ZlVWn-0001JR-Kk
+ for linuxppc-dev@ozlabs.org; Mon, 12 Oct 2015 07:20:05 +0200
+Received: from aorleans-552-1-114-80.w92-140.abo.wanadoo.fr ([92.140.185.80])
+ by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2015 07:20:05 +0200
+Received: from christophe.jaillet by
+ aorleans-552-1-114-80.w92-140.abo.wanadoo.fr with local (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2015 07:20:05 +0200
+To: linuxppc-dev@ozlabs.org
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: Re: [PATCH] powerpc/mpc5xxx: Use of_get_next_parent to simplify code
+Date: Mon, 12 Oct 2015 07:05:11 +0200
+Message-ID: <mvff27$jm4$1@ger.gmane.org>
+References: <1444595260-3332-1-git-send-email-christophe.jaillet@wanadoo.fr>
+ <alpine.DEB.2.02.1510112243420.2096@localhost6.localdomain6>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <alpine.DEB.2.02.1510112243420.2096@localhost6.localdomain6>
+Cc: linux-kernel@vger.kernel.org,kernel-janitors@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,44 +41,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 7a5692e6e533 ("arch/powerpc: provide zero_bytemask() for
-big-endian") added a call to __fls() in our word-at-a-time.h. That was
-fine for the kernel build but missed the fact that we also use
-word-at-a-time.h in a userspace test.
+Le 11/10/2015 22:44, Julia Lawall a écrit :
+>
+>> of_get_next_parent can be used to simplify the while() loop and
+>> avoid the need of a temp variable.
+> Can you do something with the loop in __of_translate_address, in
+> drivers/of/address.c?  Is there not an iterator for this?
+>
+> julia
+>
 
-Pulling in the kernel version of __fls() gets messy, so just define our
-own, it's unlikely to change often. We also need to forward declare it
-to avoid header inclusion mess.
+Hi Julia,
 
-Fixes: 7a5692e6e533 ("arch/powerpc: provide zero_bytemask() for big-endian")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- .../selftests/powerpc/primitives/load_unaligned_zeropad.c        | 9 +++++++++
- 1 file changed, 9 insertions(+)
+There does not seem to be any 'for_each_parent_of_node' or equivalent.
 
-diff --git a/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c b/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
-index d1b647509596..9b569ec3dbc5 100644
---- a/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
-+++ b/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
-@@ -25,10 +25,19 @@
- 
- #define FIXUP_SECTION ".ex_fixup"
- 
-+static unsigned long __fls(unsigned long x);
-+
- #include "word-at-a-time.h"
- 
- #include "utils.h"
- 
-+static unsigned long __fls(unsigned long x)
-+{
-+	int lz;
-+
-+	asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (x));
-+	return sizeof(unsigned long) - 1 - lz;
-+}
- 
- static int page_size;
- static char *mem_region;
--- 
-2.1.4
+Best regards,
+CJ
