@@ -1,46 +1,23 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 459B21A087B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 03:05:01 +1100 (AEDT)
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 12 Oct 2015 10:04:59 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2BFDF1FF0045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 09:53:08 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t9CG1gQi57475222
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 09:01:42 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9CG4sfC014414
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 10:04:55 -0600
-Date: Mon, 12 Oct 2015 09:04:52 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Matthew Wilcox <willy@linux.intel.com>,
- Keith Busch <keith.busch@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (2.236.17.93.rev.sfr.net [93.17.236.2])
+ by lists.ozlabs.org (Postfix) with ESMTP id 92CF31A0734
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 05:08:55 +1100 (AEDT)
+Subject: Re: [PATCH v2 22/25] powerpc32: move xxxxx_dcache_range() functions
+ inline
+To: Scott Wood <scottwood@freescale.com>
+References: <cover.1442939410.git.christophe.leroy@c-s.fr>
+ <c1c88096cb3f6ee71048dbab44ffb9ac260b07a3.1442939410.git.christophe.leroy@c-s.fr>
+ <20150929002935.GK6161@home.buserror.net> <561514D4.9090406@c-s.fr>
+ <1444331568.5336.328.camel@freescale.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/5 v2] dma-mapping: add generic dma_get_page_shift API
-Message-ID: <20151012160452.GB24212@linux.vnet.ibm.com>
-References: <20151002171606.GA41011@linux.vnet.ibm.com>
- <20151002200953.GB40695@linux.vnet.ibm.com>
- <20151002201142.GC40695@linux.vnet.ibm.com>
- <20151006095136.GB14144@infradead.org>
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <561BF730.1060501@c-s.fr>
+Date: Mon, 12 Oct 2015 20:08:48 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151006095136.GB14144@infradead.org>
+In-Reply-To: <1444331568.5336.328.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,19 +27,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06.10.2015 [02:51:36 -0700], Christoph Hellwig wrote:
-> Do we need a function here or can we just have a IOMMU_PAGE_SHIFT define
-> with an #ifndef in common code?
 
-I suppose we could do that -- I wasn't sure if the macro would be
-palatable.
 
-> Also not all architectures use dma-mapping-common.h yet, so you either
-> need to update all of those as well, or just add the #ifndef directly
-> to linux/dma-mapping.h.
+Le 08/10/2015 21:12, Scott Wood a écrit :
+> On Wed, 2015-10-07 at 14:49 +0200, Christophe Leroy wrote:
+>> Le 29/09/2015 02:29, Scott Wood a écrit :
+>>> On Tue, Sep 22, 2015 at 06:51:13PM +0200, Christophe Leroy wrote:
+>>>> flush/clean/invalidate _dcache_range() functions are all very
+>>>> similar and are quite short. They are mainly used in __dma_sync()
+>>>> perf_event locate them in the top 3 consumming functions during
+>>>> heavy ethernet activity
+>>>>
+>>>> They are good candidate for inlining, as __dma_sync() does
+>>>> almost nothing but calling them
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> ---
+>>>> New in v2
+>>>>
+>>>>    arch/powerpc/include/asm/cacheflush.h | 55
+>>>> +++++++++++++++++++++++++++--
+>>>>    arch/powerpc/kernel/misc_32.S         | 65 ---------------------------
+>>>> --------
+>>>>    arch/powerpc/kernel/ppc_ksyms.c       |  2 ++
+>>>>    3 files changed, 54 insertions(+), 68 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/cacheflush.h
+>>>> b/arch/powerpc/include/asm/cacheflush.h
+>>>> index 6229e6b..6169604 100644
+>>>> --- a/arch/powerpc/include/asm/cacheflush.h
+>>>> +++ b/arch/powerpc/include/asm/cacheflush.h
+>>>> @@ -47,12 +47,61 @@ static inline void
+>>>> __flush_dcache_icache_phys(unsigned long physaddr)
+>>>>    }
+>>>>    #endif
+>>>>    
+>>>> -extern void flush_dcache_range(unsigned long start, unsigned long
+>>>> stop);
+>>>>    #ifdef CONFIG_PPC32
+>>>> -extern void clean_dcache_range(unsigned long start, unsigned long
+>>>> stop);
+>>>> -extern void invalidate_dcache_range(unsigned long start, unsigned long
+>>>> stop);
+>>>> +/*
+>>>> + * Write any modified data cache blocks out to memory and invalidate
+>>>> them.
+>>>> + * Does not invalidate the corresponding instruction cache blocks.
+>>>> + */
+>>>> +static inline void flush_dcache_range(unsigned long start, unsigned
+>>>> long stop)
+>>>> +{
+>>>> + void *addr = (void *)(start & ~(L1_CACHE_BYTES - 1));
+>>>> + unsigned int size = stop - (unsigned long)addr + (L1_CACHE_BYTES - 1);
+>>>> + unsigned int i;
+>>>> +
+>>>> + for (i = 0; i < size >> L1_CACHE_SHIFT; i++, addr += L1_CACHE_BYTES)
+>>>> +         dcbf(addr);
+>>>> + if (i)
+>>>> +         mb();   /* sync */
+>>>> +}
+>>> I know this is 32-bit-specific code, but it's still bad practice to use
+>>> "unsigned int" for addresses or sizes thereof.
+>>>
+>>>
+>> Ok, I can fix size, but what about start and stop ? If I change that, it
+>> means I also have to fix all caller. Do you expect me to do that ?
+> start and stop are already unsigned long.
+>
+>> And it is very unlykely, but what if for some reason someone wants to
+>> invalidate the entire user address space which is 3Gbytes size ? A
+>> signed size would be negative here.
+> Why would size be signed?
 
-Ok, I will take a look at that and spin up a v3.
+Oops, indeed I misunderstood your comment, thought you said:
+* size has to be signed int instead of unsigned int
+* addresses have to be void *
 
-Thanks for the feedback!
+I understand now that size and addresses should be unsigned long instead
 
--Nish
+Christophe
+
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
