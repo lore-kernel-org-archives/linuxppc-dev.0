@@ -1,23 +1,27 @@
-Return-Path: <ranshalit@gmail.com>
-Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
- [IPv6:2607:f8b0:4001:c05::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03A9B1A0997
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 08:14:55 +1100 (AEDT)
-Received: by igbni9 with SMTP id ni9so45936556igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 14:14:52 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1444618435.7194.2.camel@ellerman.id.au>
-References: <CAJ2oMhLMi2PZvQoFU7JuYSsJM_UbuTsOaRfQKxqsJQq=KDG9vQ@mail.gmail.com>
- <1444618435.7194.2.camel@ellerman.id.au>
-Date: Tue, 13 Oct 2015 00:14:52 +0300
-Message-ID: <CAJ2oMhJeo=T3r_rG-dBATxZiC36XBnzxoiD+fnLu37QpoGmcpg@mail.gmail.com>
-Subject: Re: use interrupt without clearing ?
-From: Ran Shalit <ranshalit@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 061061A073D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 08:47:42 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0105.outbound.protection.outlook.com [157.56.110.105])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 437371402B7
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 08:47:40 +1100 (AEDT)
+Message-ID: <1444686438.5185.94.camel@freescale.com>
+Subject: Re: [PATCH 5/6] powerpc/kconfig: Move cpu options after platform
+ options
+From: Scott Wood <scottwood@freescale.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+CC: <linuxppc-dev@ozlabs.org>, <thuth@redhat.com>
+Date: Mon, 12 Oct 2015 16:47:18 -0500
+In-Reply-To: <1444338557-14988-5-git-send-email-mpe@ellerman.id.au>
+References: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
+ <1444338557-14988-5-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +31,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Oct 12, 2015 at 5:53 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> On Sun, 2015-10-11 at 15:13 +0300, Ran Shalit wrote:
->> Hello,
->>
->> Is it possible to register an interrupt (in linux), without using the
->> automatic clear of interrupt.
->> I need this just for testing.
->
-> Hi Ran,
->
-> You need to give us much more info than that before anyone will be able to
-> answer your question. Linux runs on lots of different powerpc machines, so
-> without knowing what hardware you're talking about it's impossible to
-> answer.
->
-> cheers
->
->
+On Fri, 2015-10-09 at 08:09 +1100, Michael Ellerman wrote:
+> In general platforms are a more important configuration decision than
+> cpus, so the platforms should come first.
+> 
+> My basis for saying that is that our cpu selection options are generally
+> just about tuning for a cpu, rather than enabling/disabling support for
+> a cpu. On the other hand disabling a platform means you can't boot on
+> those machines, and any associated cpu options should vanish.
 
-Hi,
+Kconfig.cputype *is* about enabling/disabling support for a cpu.  On 32-bit, 
+the first choice is between "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx", 
+"Freescale 85xx", "Freescale 8xx", "AMCC 40x", "AMCC 44x, 46x or 47x", or 
+"Freescale e200".  Until that is set correctly, the platforms available for 
+selection will not be correct.
 
-The interrupt for external IRQ.
-It is configured in device tree as following:
+Likewise, on 64-bit one must choose book3s versus book3e, before going on to 
+the tuning selection you describe above.
 
-
-intc4@0{
-compatible = "intc4";
- #address-cells = <1>;
- #size-cells = <0>;
- reg = <0 0x1000>;
- interrupts = <20 0x8> ;
- interrupt-parent = <&ipic>;
-};
-
-It works OK (with normal clearing of interrupt), but we need to
-implement a testing requirement as following (startup BIT  testing):
-
-1. an interrupt is given - and not being cleared automatically
-2. need to validate that there is a pending interrupt
-3. and then we can clear the interrupt and restore the mechnism to its
-normal usage (automatic cleari of interrupt)
-
-Regards,
-Ran
+-Scott
