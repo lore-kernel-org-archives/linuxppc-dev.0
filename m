@@ -1,52 +1,44 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B89141A08EB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 10:56:31 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 683B51A0889
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 10:30:45 +1100 (AEDT)
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by ozlabs.org (Postfix) with ESMTPS id 7F9D11402B7
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 10:56:31 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Mon, 12 Oct 2015 17:30:43 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 00BB419D803E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 17:18:52 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t9CNTOT910879330
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 16:29:24 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9CNUdkq029188
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 17:30:40 -0600
-Date: Mon, 12 Oct 2015 16:30:48 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Will Deacon <will.deacon@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, Boqun Feng <boqun.feng@gmail.com>,
- Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
- update documentation
-Message-ID: <20151012233048.GK3910@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20151007111915.GF17308@twins.programming.kicks-ass.net>
- <20151007132317.GK16065@arm.com>
- <20151007152501.GI3910@linux.vnet.ibm.com>
- <1444276236.9940.5.camel@ellerman.id.au>
- <20151008111638.GL3816@twins.programming.kicks-ass.net>
- <20151008125937.GH16807@arm.com>
- <20151008221716.GF3910@linux.vnet.ibm.com>
- <20151009095129.GF26278@arm.com>
- <20151009174327.GV3910@linux.vnet.ibm.com>
- <20151009183328.GV26278@arm.com>
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 13 Oct 2015 09:56:30 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4D2B92BB004D
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 10:56:24 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9CNu4xP66781314
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 10:56:12 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9CNtpUd030865
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 10:55:52 +1100
+Date: Tue, 13 Oct 2015 10:55:27 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH V5 3/6] powerpc/powernv: use one M64 BAR in Single PE
+ mode for one VF BAR
+Message-ID: <20151012235527.GA18815@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1444358816-8163-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1444358816-8163-4-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151009183328.GV26278@arm.com>
+In-Reply-To: <1444358816-8163-4-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,109 +48,411 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 09, 2015 at 07:33:28PM +0100, Will Deacon wrote:
-> On Fri, Oct 09, 2015 at 10:43:27AM -0700, Paul E. McKenney wrote:
-> > On Fri, Oct 09, 2015 at 10:51:29AM +0100, Will Deacon wrote:
-> > > How do people feel about including these in memory-barriers.txt? I find
-> > > them considerably easier to read than our current kernel code + list of
-> > > possible orderings + wall of text, but there's a good chance that my
-> > > brain has been corrupted from staring at this stuff for too long.
-> > > 
-> > > The only snag is the ppc assembly code, but it's not *too* horrific ;)
-> > 
-> > Maybe we should include them as separate files in Documentation/litmus
-> > or some such.  We could then use a litmus-test style with Linux-kernel
-> > C code, and reference litmus tests for various architectures.  Maybe
-> > Documentation/litmus/{arm,arm64,powerpc,x86}/ and so on.
-> 
-> I think that would be useful, particularly if we had a way to "compile"
-> a kernel litmus test into one for a particular architecture.
+On Fri, Oct 09, 2015 at 10:46:53AM +0800, Wei Yang wrote:
+>In current implementation, when VF BAR is bigger than 64MB, it uses 4 M64
+>BARs in Single PE mode to cover the number of VFs required to be enabled.
+>By doing so, several VFs would be in one VF Group and leads to interference
+>between VFs in the same group.
+>
+>And in this patch, m64_wins is renamed to m64_map, which means index number
+>of the M64 BAR used to map the VF BAR. Based on Gavin's comments.
+>
+>This patch changes the design by using one M64 BAR in Single PE mode for
+>one VF BAR. This gives absolute isolation for VFs.
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>---
+> arch/powerpc/include/asm/pci-bridge.h     |   5 +-
+> arch/powerpc/platforms/powernv/pci-ioda.c | 169 ++++++++++++------------------
+> 2 files changed, 68 insertions(+), 106 deletions(-)
+>
+>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>index 712add5..8aeba4c 100644
+>--- a/arch/powerpc/include/asm/pci-bridge.h
+>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>@@ -214,10 +214,9 @@ struct pci_dn {
+> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+> 	u16     num_vfs;		/* number of VFs enabled*/
+> 	int     offset;			/* PE# for the first VF PE */
+>-#define M64_PER_IOV 4
+>-	int     m64_per_iov;
+>+	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+> #define IODA_INVALID_M64        (-1)
+>-	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
+>+	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+> #endif /* CONFIG_PCI_IOV */
+> #endif
+> 	struct list_head child_list;
+>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>index 7da476b..2886f90 100644
+>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>@@ -1148,29 +1148,36 @@ static void pnv_pci_ioda_setup_PEs(void)
+> }
+>
+> #ifdef CONFIG_PCI_IOV
+>-static int pnv_pci_vf_release_m64(struct pci_dev *pdev)
+>+static int pnv_pci_vf_release_m64(struct pci_dev *pdev, u16 num_vfs)
+> {
+> 	struct pci_bus        *bus;
+> 	struct pci_controller *hose;
+> 	struct pnv_phb        *phb;
+> 	struct pci_dn         *pdn;
+> 	int                    i, j;
+>+	int                    m64_bars;
+>
+> 	bus = pdev->bus;
+> 	hose = pci_bus_to_host(bus);
+> 	phb = hose->private_data;
+> 	pdn = pci_get_pdn(pdev);
+>
+>+	if (pdn->m64_single_mode)
+>+		m64_bars = num_vfs;
+>+	else
+>+		m64_bars = 1;
+>+
+> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>-		for (j = 0; j < M64_PER_IOV; j++) {
+>-			if (pdn->m64_wins[i][j] == IODA_INVALID_M64)
+>+		for (j = 0; j < m64_bars; j++) {
+>+			if (pdn->m64_map[j][i] == IODA_INVALID_M64)
+> 				continue;
+> 			opal_pci_phb_mmio_enable(phb->opal_id,
+>-				OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 0);
+>-			clear_bit(pdn->m64_wins[i][j], &phb->ioda.m64_bar_alloc);
+>-			pdn->m64_wins[i][j] = IODA_INVALID_M64;
+>+				OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 0);
+>+			clear_bit(pdn->m64_map[j][i], &phb->ioda.m64_bar_alloc);
+>+			pdn->m64_map[j][i] = IODA_INVALID_M64;
+> 		}
+>
+>+	kfree(pdn->m64_map);
+> 	return 0;
+> }
+>
+>@@ -1187,8 +1194,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+> 	int                    total_vfs;
+> 	resource_size_t        size, start;
+> 	int                    pe_num;
+>-	int                    vf_groups;
+>-	int                    vf_per_group;
+>+	int                    m64_bars;
+>
+> 	bus = pdev->bus;
+> 	hose = pci_bus_to_host(bus);
+>@@ -1196,26 +1202,26 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+> 	pdn = pci_get_pdn(pdev);
+> 	total_vfs = pci_sriov_get_totalvfs(pdev);
+>
+>-	/* Initialize the m64_wins to IODA_INVALID_M64 */
+>-	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>-		for (j = 0; j < M64_PER_IOV; j++)
+>-			pdn->m64_wins[i][j] = IODA_INVALID_M64;
+>+	if (pdn->m64_single_mode)
+>+		m64_bars = num_vfs;
+>+	else
+>+		m64_bars = 1;
+>+
+>+	pdn->m64_map = kmalloc(sizeof(*pdn->m64_map) * m64_bars, GFP_KERNEL);
+>+	if (!pdn->m64_map)
+>+		return -ENOMEM;
+>+	/* Initialize the m64_map to IODA_INVALID_M64 */
+>+	for (i = 0; i < m64_bars ; i++)
+>+		for (j = 0; j < PCI_SRIOV_NUM_BARS; j++)
+>+			pdn->m64_map[i][j] = IODA_INVALID_M64;
+>
+>-	if (pdn->m64_per_iov == M64_PER_IOV) {
+>-		vf_groups = (num_vfs <= M64_PER_IOV) ? num_vfs: M64_PER_IOV;
+>-		vf_per_group = (num_vfs <= M64_PER_IOV)? 1:
+>-			roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>-	} else {
+>-		vf_groups = 1;
+>-		vf_per_group = 1;
+>-	}
+>
+> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+> 		if (!res->flags || !res->parent)
+> 			continue;
+>
+>-		for (j = 0; j < vf_groups; j++) {
+>+		for (j = 0; j < m64_bars; j++) {
+> 			do {
+> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
+> 						phb->ioda.m64_bar_idx + 1, 0);
+>@@ -1224,12 +1230,11 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+> 					goto m64_failed;
+> 			} while (test_and_set_bit(win, &phb->ioda.m64_bar_alloc));
+>
+>-			pdn->m64_wins[i][j] = win;
+>+			pdn->m64_map[j][i] = win;
+>
+>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>+			if (pdn->m64_single_mode) {
+> 				size = pci_iov_resource_size(pdev,
+> 							PCI_IOV_RESOURCES + i);
+>-				size = size * vf_per_group;
+> 				start = res->start + size * j;
+> 			} else {
+> 				size = resource_size(res);
+>@@ -1237,16 +1242,16 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+> 			}
+>
+> 			/* Map the M64 here */
+>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>+			if (pdn->m64_single_mode) {
+> 				pe_num = pdn->offset + j;
+> 				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+> 						pe_num, OPAL_M64_WINDOW_TYPE,
+>-						pdn->m64_wins[i][j], 0);
+>+						pdn->m64_map[j][i], 0);
+> 			}
+>
+> 			rc = opal_pci_set_phb_mem_window(phb->opal_id,
+> 						 OPAL_M64_WINDOW_TYPE,
+>-						 pdn->m64_wins[i][j],
+>+						 pdn->m64_map[j][i],
+> 						 start,
+> 						 0, /* unused */
+> 						 size);
+>@@ -1258,12 +1263,12 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+> 				goto m64_failed;
+> 			}
+>
+>-			if (pdn->m64_per_iov == M64_PER_IOV)
+>+			if (pdn->m64_single_mode)
+> 				rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>-				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 2);
+>+				     OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 2);
+> 			else
+> 				rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>-				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 1);
+>+				     OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 1);
+>
+> 			if (rc != OPAL_SUCCESS) {
+> 				dev_err(&pdev->dev, "Failed to enable M64 window #%d: %llx\n",
+>@@ -1275,7 +1280,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+> 	return 0;
+>
+> m64_failed:
+>-	pnv_pci_vf_release_m64(pdev);
+>+	pnv_pci_vf_release_m64(pdev, num_vfs);
+> 	return -EBUSY;
+> }
+>
+>@@ -1302,15 +1307,13 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+> 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+> }
+>
+>-static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>+static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+> {
+> 	struct pci_bus        *bus;
+> 	struct pci_controller *hose;
+> 	struct pnv_phb        *phb;
+> 	struct pnv_ioda_pe    *pe, *pe_n;
+> 	struct pci_dn         *pdn;
+>-	u16                    vf_index;
+>-	int64_t                rc;
+>
+> 	bus = pdev->bus;
+> 	hose = pci_bus_to_host(bus);
+>@@ -1320,35 +1323,6 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+> 	if (!pdev->is_physfn)
+> 		return;
+>
+>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>-		int   vf_group;
+>-		int   vf_per_group;
+>-		int   vf_index1;
+>-
+>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>-
+>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++)
+>-			for (vf_index = vf_group * vf_per_group;
+>-				vf_index < (vf_group + 1) * vf_per_group &&
+>-				vf_index < num_vfs;
+>-				vf_index++)
+>-				for (vf_index1 = vf_group * vf_per_group;
+>-					vf_index1 < (vf_group + 1) * vf_per_group &&
+>-					vf_index1 < num_vfs;
+>-					vf_index1++){
+>-
+>-					rc = opal_pci_set_peltv(phb->opal_id,
+>-						pdn->offset + vf_index,
+>-						pdn->offset + vf_index1,
+>-						OPAL_REMOVE_PE_FROM_DOMAIN);
+>-
+>-					if (rc)
+>-					    dev_warn(&pdev->dev, "%s: Failed to unlink same group PE#%d(%lld)\n",
+>-						__func__,
+>-						pdn->offset + vf_index1, rc);
+>-				}
+>-	}
+>-
+> 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
+> 		if (pe->parent_dev != pdev)
+> 			continue;
+>@@ -1383,14 +1357,14 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
+> 	num_vfs = pdn->num_vfs;
+>
+> 	/* Release VF PEs */
+>-	pnv_ioda_release_vf_PE(pdev, num_vfs);
+>+	pnv_ioda_release_vf_PE(pdev);
+>
+> 	if (phb->type == PNV_PHB_IODA2) {
+>-		if (pdn->m64_per_iov == 1)
+>+		if (!pdn->m64_single_mode)
+> 			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
+>
+> 		/* Release M64 windows */
+>-		pnv_pci_vf_release_m64(pdev);
+>+		pnv_pci_vf_release_m64(pdev, num_vfs);
+>
+> 		/* Release PE numbers */
+> 		bitmap_clear(phb->ioda.pe_alloc, pdn->offset, num_vfs);
+>@@ -1409,7 +1383,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+> 	int                    pe_num;
+> 	u16                    vf_index;
+> 	struct pci_dn         *pdn;
+>-	int64_t                rc;
+>
+> 	bus = pdev->bus;
+> 	hose = pci_bus_to_host(bus);
+>@@ -1454,37 +1427,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>
+> 		pnv_pci_ioda2_setup_dma_pe(phb, pe);
+> 	}
+>-
+>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>-		int   vf_group;
+>-		int   vf_per_group;
+>-		int   vf_index1;
+>-
+>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>-
+>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++) {
+>-			for (vf_index = vf_group * vf_per_group;
+>-			     vf_index < (vf_group + 1) * vf_per_group &&
+>-			     vf_index < num_vfs;
+>-			     vf_index++) {
+>-				for (vf_index1 = vf_group * vf_per_group;
+>-				     vf_index1 < (vf_group + 1) * vf_per_group &&
+>-				     vf_index1 < num_vfs;
+>-				     vf_index1++) {
+>-
+>-					rc = opal_pci_set_peltv(phb->opal_id,
+>-						pdn->offset + vf_index,
+>-						pdn->offset + vf_index1,
+>-						OPAL_ADD_PE_TO_DOMAIN);
+>-
+>-					if (rc)
+>-					    dev_warn(&pdev->dev, "%s: Failed to link same group PE#%d(%lld)\n",
+>-						__func__,
+>-						pdn->offset + vf_index1, rc);
+>-				}
+>-			}
+>-		}
+>-	}
+> }
+>
+> int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>@@ -1507,6 +1449,15 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+> 			return -ENOSPC;
+> 		}
+>
+>+		/*
+>+		 * When M64 BARs functions in Single PE mode, the number of VFs
+>+		 * could be enabled must be less than the number of M64 BARs.
+>+		 */
+>+		if (pdn->m64_single_mode && num_vfs > phb->ioda.m64_bar_idx) {
+>+			dev_info(&pdev->dev, "Not enough M64 BAR for VFs\n");
+>+			return -EBUSY;
+>+		}
+>+
+> 		/* Calculate available PE for required VFs */
+> 		mutex_lock(&phb->ioda.pe_alloc_mutex);
+> 		pdn->offset = bitmap_find_next_zero_area(
+>@@ -1534,7 +1485,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+> 		 * the IOV BAR according to the PE# allocated to the VFs.
+> 		 * Otherwise, the PE# for the VF will conflict with others.
+> 		 */
+>-		if (pdn->m64_per_iov == 1) {
+>+		if (!pdn->m64_single_mode) {
+> 			ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
+> 			if (ret)
+> 				goto m64_failed;
+>@@ -1567,8 +1518,7 @@ int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+> 	/* Allocate PCI data */
+> 	add_dev_pci_data(pdev);
+>
+>-	pnv_pci_sriov_enable(pdev, num_vfs);
+>-	return 0;
+>+	return pnv_pci_sriov_enable(pdev, num_vfs);
+> }
+> #endif /* CONFIG_PCI_IOV */
+>
+>@@ -2762,9 +2712,9 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>
+> 	pdn = pci_get_pdn(pdev);
+> 	pdn->vfs_expanded = 0;
+>+	pdn->m64_single_mode = false;
+>
+> 	total_vfs = pci_sriov_get_totalvfs(pdev);
+>-	pdn->m64_per_iov = 1;
+> 	mul = phb->ioda.total_pe;
+>
+> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>@@ -2784,8 +2734,8 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+> 		if (size > (1 << 26)) {
+> 			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
+> 				 i, res);
+>-			pdn->m64_per_iov = M64_PER_IOV;
+> 			mul = roundup_pow_of_two(total_vfs);
+>+			pdn->m64_single_mode = true;
+> 			break;
+> 		}
+> 	}
+>@@ -2987,6 +2937,8 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+> static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+> 						      int resno)
+> {
+>+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+>+	struct pnv_phb *phb = hose->private_data;
+> 	struct pci_dn *pdn = pci_get_pdn(pdev);
+> 	resource_size_t align;
+>
+>@@ -2995,12 +2947,23 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+> 	 * SR-IOV. While from hardware perspective, the range mapped by M64
+> 	 * BAR should be size aligned.
+> 	 *
+>+	 * When IOV BAR is mapped with M64 BAR in Single PE mode, the extra
+>+	 * powernv-specific hardware restriction is gone. But if just use the
+>+	 * VF BAR size as the alignment, PF BAR / VF BAR may be allocated with
+>+	 * in one segment of M64 #15, which introduces the PE conflict between
+>+	 * PF and VF. Based on this, the minimum alignment of an IOV BAR is
+>+	 * m64_segsize.
+>+	 *
 
-Very useful!  Probably some limitations, especially for loops and lock
-acquisition, but what else is new?
+When M64 BARs run in single mode, it still requires 32MB aligned. Does
+"the extra powernv-specific hardware restriction" includes the limitation
+or not?
 
-> > For example, the first example in memory-barriers.txt is this:
-> > 
-> > ------------------------------------------------------------------------
-> > 	CPU 1		CPU 2
-> > 	===============	===============
-> > 	{ A == 1; B == 2 }
-> > 	A = 3;		x = B;
-> > 	B = 4;		y = A;
-> > 
-> > The set of accesses as seen by the memory system in the middle can be arranged
-> > in 24 different combinations:
-> > 
-> > 	STORE A=3,	STORE B=4,	y=LOAD A->3,	x=LOAD B->4
-> > 	STORE A=3,	STORE B=4,	x=LOAD B->4,	y=LOAD A->3
-> > 	STORE A=3,	y=LOAD A->3,	STORE B=4,	x=LOAD B->4
-> > 	STORE A=3,	y=LOAD A->3,	x=LOAD B->2,	STORE B=4
-> > 	STORE A=3,	x=LOAD B->2,	STORE B=4,	y=LOAD A->3
-> > 	STORE A=3,	x=LOAD B->2,	y=LOAD A->3,	STORE B=4
-> > 	STORE B=4,	STORE A=3,	y=LOAD A->3,	x=LOAD B->4
-> > 	STORE B=4, ...
-> > 	...
-> > 
-> > and can thus result in four different combinations of values:
-> > 
-> > 	x == 2, y == 1
-> > 	x == 2, y == 3
-> > 	x == 4, y == 1
-> > 	x == 4, y == 3
-> > ------------------------------------------------------------------------
-> > > > Maybe this changes to:
-> > 
-> > ------------------------------------------------------------------------
-> > Linux MP
-> > ""
-> > {
-> > a=1; b=2;
-> > }
-> >  P0               | P1                ;
-> >  WRITE_ONCE(a, 3) | r1 = READ_ONCE(b) ;
-> >  WRITE_ONCE(b, 4) | r2 = READ_ONCE(a) ;
-> > 
-> > exists (2:r1=4 /\ 2:r2=3)
-> > ------------------------------------------------------------------------
-> > 
-> > We can then state that this assertion can fail.  We could include
-> > either ppcmem or herd output along with the litmus tests, which would
-> > allow the curious to see a full list of the possible outcomes.
-> 
-> More importantly, it would allow them to make small changes to the test
-> and see what the outcome is, without us having to spawn another
-> thread-of-death on LKML :)
-
-Or perhaps we could at least hope for thread-of-tool-supported-death
-on LKML.  ;-)
-
-> > > We could also include a link to the ppcmem/herd web frontends and your
-> > > lwn.net article. (ppcmem is already linked, but it's not obvious that
-> > > you can run litmus tests in your browser).
-> > 
-> > I bet that the URLs for the web frontends are not stable long term.
-> > Don't get me wrong, PPCMEM/ARMMEM has been there for me for a goodly
-> > number of years, but professors do occasionally move from one institution
-> > to another.  For but one example, Susmit Sarkar is now at University
-> > of St. Andrews rather than at Cambridge.
-> > 
-> > So to make this work, we probably need to be thinking in terms of
-> > asking the researchers for permission to include their ocaml code in the
-> > Linux-kernel source tree.  I would be strongly in favor of this, actually.
-> > 
-> > Thoughts?
-> 
-> I'm extremely hesitant to import a bunch of dubiously licensed, academic
-> ocaml code into the kernel. Even if we did, who would maintain it?
-> 
-> A better solution might be to host a mirror of the code on kernel.org,
-> along with a web front-end for people to play with (the tests we're talking
-> about here do seem to run ok in my browser).
-
-I am not too worried about how this happens, but we should avoid
-constraining the work of our academic partners.  The reason I was thinking
-in terms of in the kernel was to avoid version-synchronization issues.
-"Wait, this is Linux kernel v4.17, which means that you need to use
-version 8.3.5.1 of the tooling...  And with these four patches as well."
-
-							Thanx, Paul
+> 	 * This function returns the total IOV BAR size if M64 BAR is in
+> 	 * Shared PE mode or just the individual size if not.
+>+	 * If the M64 BAR is in Single PE mode, return the VF BAR size or
+>+	 * M64 segment size if IOV BAR size is less.
+> 	 */
+> 	align = pci_iov_resource_size(pdev, resno);
+> 	if (!pdn->vfs_expanded)
+> 		return align;
+>+	if (pdn->m64_single_mode)
+>+		return max(align, (resource_size_t)phb->ioda.m64_segsize);
+>
+> 	return pdn->vfs_expanded * align;
+> }
+>-- 
+>2.5.0
+>
