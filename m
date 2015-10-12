@@ -1,19 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BBD31A03A9
+ by lists.ozlabs.org (Postfix) with ESMTPS id B06501A03A9
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:17:19 +1100 (AEDT)
-In-Reply-To: <4fd8daff1bb5daad99d909aa75ff5c2702c4c490.1437117145.git.christophe.jaillet@wanadoo.fr>
-To: Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
- benh@kernel.crashing.org, paulus@samba.org
+In-Reply-To: <1443692770-44944-2-git-send-email-andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, Segher Boessenkool <segher@kernel.crashing.org>,
+ Denis Kirjanov <kda@linux-powerpc.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [1/2] powerpc/nvram: Add missing kfree in error path
-Message-Id: <20151012111719.07ACD14029E@ozlabs.org>
-Date: Mon, 12 Oct 2015 22:17:18 +1100 (AEDT)
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [v3,1/5] powerpc/pseries: extract of_helpers module
+Message-Id: <20151012111719.9D3A01402B7@ozlabs.org>
+Date: Mon, 12 Oct 2015 22:17:19 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,14 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-17-07 at 07:19:59 UTC, Christophe Jaillet wrote:
-> If 'nvram_write_header' fails, then 'new_part' should be freed, otherwise,
-> there is a memory leak.
+On Thu, 2015-01-10 at 09:46:06 UTC, Andy Shevchenko wrote:
+> Extract a new module to share the code between other modules.
 > 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> There is no functional change.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/7d523187173294f6ae3b86a4
+https://git.kernel.org/powerpc/c/948ad1acaf456b7213731cd9
 
 cheers
