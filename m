@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CB6B1A06F2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:17:22 +1100 (AEDT)
-In-Reply-To: <1441610633-8077-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A17A71A027D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:21:21 +1100 (AEDT)
+In-Reply-To: <1444330858-5508-1-git-send-email-colin.king@canonical.com>
+To: Colin King <colin.king@canonical.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: powerpc/mm: Disable hugepd for 64K page size.
-Message-Id: <20151012111722.3A7401402B2@ozlabs.org>
-Date: Mon, 12 Oct 2015 22:17:22 +1100 (AEDT)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: powerpc/pseries/hvcserver: don't memset pi_buff if it is null
+Message-Id: <20151012112121.8623F14029E@ozlabs.org>
+Date: Mon, 12 Oct 2015 22:21:21 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,16 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-07-09 at 07:23:53 UTC, "Aneesh Kumar K.V" wrote:
-> After commit e2b3d202d1dba8f3546ed28224ce485bc50010be
-> ("powerpc: Switch 16GB and 16MB explicit hugepages to a
-> different page table format"), we don't need to support
-> is_hugepd() for 64K page size.
+On Thu, 2015-08-10 at 19:00:58 UTC, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> pi_buff is being memset before it is sanity checked. Move the
+> memset after the null pi_buff sanity check to avoid an oops.
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/ec2640b114d535ba7d895b6e
+https://git.kernel.org/powerpc/c/c13e1c05b22b504bf0d72fc7
 
 cheers
