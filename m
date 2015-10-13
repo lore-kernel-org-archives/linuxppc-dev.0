@@ -1,17 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B27B1A026D
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D52C1A026E
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 14:47:15 +1100 (AEDT)
-In-Reply-To: <1442990508-10199-1-git-send-email-dja@axtens.net>
-To: Daniel Axtens <dja@axtens.net>, linuxppc-dev@ozlabs.org
+In-Reply-To: <1444262666-6942-1-git-send-email-cyrilbur@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mikey@neuling.org, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- imunsie@au.ibm.com, andrew.donnellan@au1.ibm.com,
- Manoj Kumar <kumarmn@us.ibm.com>, Daniel Axtens <dja@axtens.net>
-Subject: Re: powerpc/powernv: Panic on unhandled Machine Check
-Message-Id: <20151013034715.17F341402D6@ozlabs.org>
+Subject: Re: [v2] powerpc: Fix checkstop in native_hpte_clear() with lockdep
+Message-Id: <20151013034715.43765140FDB@ozlabs.org>
 Date: Tue, 13 Oct 2015 14:47:15 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,22 +19,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-23-09 at 06:41:48 UTC, Daniel Axtens wrote:
-> All unrecovered machine check errors on PowerNV should cause an
-> immediate panic. There are 2 reasons that this is the right policy:
-> it's not safe to continue, and we're already trying to reboot.
-...
-> Explicitly panic() on unrecovered MCEs on PowerNV.
-> Update the comments appropriately.
+On Thu, 2015-08-10 at 00:04:26 UTC, Cyril Bur wrote:
+> native_hpte_clear() is called in real mode from two places:
+> - Early in boot during htab initialisation if firmware assisted dump is
+>   active.
+> - Late in the kexec path.
 > 
-> This fixes some hangs following EEH events on cxlflash setups.
+> In both contexts there is no need to disable interrupts are they are
+> already disabled. Furthermore, locking around the tlbie() is only required
+> for pre POWER5 hardware.
 > 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
-> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Reviewed-by: Ian Munsie <imunsie@au1.ibm.com>
+> On POWER5 or newer hardware concurrent tlbie()s work as expected and on pre
+> POWER5 hardware concurrent tlbie()s could result in deadlock. This code
+> would only be executed at crashdump time, during which all bets are off,
+> concurrent tlbie()s are unlikely and taking locks is unsafe therefore the
+> best course of action is to simply do nothing. Concurrent tlbie()s are not
+> possible in the first case as secondary CPUs have not come up yet.
+> 
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/f2dd80ecca5f06b46134f2bd
+https://git.kernel.org/powerpc/c/fdf880a60835cd1dec256346
 
 cheers
