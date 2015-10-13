@@ -1,15 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B6581A082E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 16:15:16 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86E381A082E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 16:18:33 +1100 (AEDT)
+Message-ID: <1444713513.29347.3.camel@ellerman.id.au>
+Subject: Re: [PATCH] scripts/tags.sh: Teach tags about some powerpc macros
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v3] selftests/powerpc: Fix build failure of
- load_unaligned_zeropad test
-Date: Tue, 13 Oct 2015 16:15:14 +1100
-Message-Id: <1444713314-13596-1-git-send-email-mpe@ellerman.id.au>
+To: mmarek@suse.com
+Cc: linuxppc-dev@ozlabs.org
+Date: Tue, 13 Oct 2015 16:18:33 +1100
+In-Reply-To: <1442891295-5222-1-git-send-email-mpe@ellerman.id.au>
+References: <1442891295-5222-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,48 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 7a5692e6e533 ("arch/powerpc: provide zero_bytemask() for
-big-endian") added a call to __fls() in our word-at-a-time.h. That was
-fine for the kernel build but missed the fact that we also use
-word-at-a-time.h in a userspace test.
+On Tue, 2015-09-22 at 13:08 +1000, Michael Ellerman wrote:
+> The IO accessors on powerpc are generated using macro fu, ie. out_be32()
+> etc. Also there are some debugger related symbols that are macro
+> generated. Teach scripts/tags.sh about both.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  scripts/tags.sh | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/scripts/tags.sh b/scripts/tags.sh
+> index 8e5aee6d9da2..262889046703 100755
+> --- a/scripts/tags.sh
+> +++ b/scripts/tags.sh
+> @@ -198,6 +198,8 @@ exuberant()
+>  	--regex-c++='/TASK_PFA_TEST\([^,]*,\s*([^)]*)\)/task_\1/'	\
+>  	--regex-c++='/TASK_PFA_SET\([^,]*,\s*([^)]*)\)/task_set_\1/'	\
+>  	--regex-c++='/TASK_PFA_CLEAR\([^,]*,\s*([^)]*)\)/task_clear_\1/'\
+> +	--regex-c++='/DEF_MMIO_(IN|OUT)_(X|D)\(([^,]*),\s*[^)]*\)/\3/'	\
+> +	--regex-c++='/DEBUGGER_BOILERPLATE\(([^,]*)\)/\1/'		\
+>  	--regex-c='/PCI_OP_READ\((\w*).*[1-4]\)/pci_bus_read_config_\1/' \
+>  	--regex-c='/PCI_OP_WRITE\((\w*).*[1-4]\)/pci_bus_write_config_\1/' \
+>  	--regex-c='/DEFINE_(MUTEX|SEMAPHORE|SPINLOCK)\((\w*)/\2/v/'	\
 
-Pulling in the kernel version of __fls() gets messy, so just define our
-own, it's unlikely to change often.
 
-Fixes: 7a5692e6e533 ("arch/powerpc: provide zero_bytemask() for big-endian")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- .../selftests/powerpc/primitives/load_unaligned_zeropad.c        | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Michal, do you want to take this one or should I ?
 
-v3: FFS, we still need the forward declaration for some compiler verions.
-
-v2: Use a static inline, otherwise the little endian build fails because
-    __fls() is unused >:(
-
-diff --git a/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c b/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
-index d1b647509596..6cae06117b55 100644
---- a/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
-+++ b/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
-@@ -25,10 +25,19 @@
- 
- #define FIXUP_SECTION ".ex_fixup"
- 
-+static inline unsigned long __fls(unsigned long x);
-+
- #include "word-at-a-time.h"
- 
- #include "utils.h"
- 
-+static inline unsigned long __fls(unsigned long x)
-+{
-+	int lz;
-+
-+	asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (x));
-+	return sizeof(unsigned long) - 1 - lz;
-+}
- 
- static int page_size;
- static char *mem_region;
--- 
-2.1.4
+cheers
