@@ -1,23 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 364401A098C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 22:14:23 +1100 (AEDT)
-Date: Tue, 13 Oct 2015 04:30:22 -0700 (PDT)
-Message-Id: <20151013.043022.342257265586096881.davem@davemloft.net>
-To: gerlando.falauto@keymile.com
-Cc: netdev@vger.kernel.org, timur@tabi.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, ogabbay@advaoptical.com,
- bigeasy@linutronix.de, galak@kernel.crashing.org
-Subject: Re: [PATCH v2 2/2] net/fsl_pq_mdio: fix computed address for the
- TBI register
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1444634321-14902-2-git-send-email-gerlando.falauto@keymile.com>
-References: <1371041258-15298-1-git-send-email-ogabbay@advaoptical.com>
- <1444634321-14902-1-git-send-email-gerlando.falauto@keymile.com>
- <1444634321-14902-2-git-send-email-gerlando.falauto@keymile.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B3751A098B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 22:46:26 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Sam bobroff <sam.bobroff@au1.ibm.com>, linuxppc-dev@ozlabs.org,
+ mikey@neuling.org, anton@samba.org
+Subject: Re: [v2,1/1] powerpc: Individual System V IPC system calls
+Date: Tue, 13 Oct 2015 13:46:11 +0200
+Message-ID: <8190190.Oz6apY7Xxc@wuerfel>
+In-Reply-To: <20151013093842.B3EA21402D6@ozlabs.org>
+References: <20151013093842.B3EA21402D6@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gerlando Falauto <gerlando.falauto@keymile.com>
-Date: Mon, 12 Oct 2015 09:18:41 +0200
+On Tuesday 13 October 2015 20:38:42 Michael Ellerman wrote:
+> On Tue, 2015-13-10 at 01:49:28 UTC, Sam bobroff wrote:
+> > This patch provides individual system call numbers for the following
+> > System V IPC system calls, on PowerPC, so that they do not need to be
+> > multiplexed:
+> > * semop, semget, semctl, semtimedop
+> > * msgsnd, msgrcv, msgget, msgctl
+> > * shmat, shmdt, shmget, shmctl
+> 
+> You tested this right?   Tell me about it.
+> 
+> Also we could make these available to SPU programs, but I don't think there's
+> any point, no one's going to do a libc update for that.
+> 
 
-> commit afae5ad78b342f401c28b0bb1adb3cd494cb125a
->   "net/fsl_pq_mdio: streamline probing of MDIO nodes"
-> 
-> added support for different types of MDIO devices:
-> 1) Gianfar MDIO nodes that only map the MII registers
-> 2) Gianfar MDIO nodes that map the full MDIO register set
-> 3) eTSEC2 MDIO nodes (which map the full MDIO register set)
-> 4) QE MDIO nodes (which map only the MII registers)
-> 
-> However, the implementation for types 1 and 4 would mistakenly assume
-> a mapping of the full MDIO register set, thereby computing the address
-> for the TBI register starting from the containing structure.
-> The TBI register would therefore be accessed at a wrong (much bigger)
-> address, not giving the expected result at all.
-> This patch restores the correct behavior we had prior to the above one.
-> 
-> The consequences of this bug are apparent when trying to access a PHY
-> with the same address as the value contained in the initial value of
-> the TBI register (normally 0); in that case you'll get answers from the
-> internal TBI device (even though MDIO/MDC pins are actually *also*
-> toggling on the physical bus!).
-> Beware that you also need to add a fake tbi node to your device tree
-> with an unused address.
-> 
-> Notice how this fix is related to commit
-> 220669495bf8b68130a8218607147c7b74c28d2b
->   "powerpc: Add TBI PHY node to first MDIO bus"
-> 
-> which fixed the behavior in kernel 3.3, which was later broken by the
-> above commit on kernel 3.7.
-> 
-> Signed-off-by: Gerlando Falauto <gerlando.falauto@keymile.com>
+The existing sys_ipc is also in the list of exceptions that are
+not exported to the SPU. I don't remember what the reason for this
+is, but there probably was one.
 
-Applied.
+	Arnd
