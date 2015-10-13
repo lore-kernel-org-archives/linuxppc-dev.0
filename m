@@ -1,20 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC39C1A07F1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 09:56:24 +1100 (AEDT)
-Message-ID: <1444776984.12197.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] scripts/tags.sh: Teach tags about some powerpc macros
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal Marek <mmarek@suse.com>
-Cc: linuxppc-dev@ozlabs.org
-Date: Wed, 14 Oct 2015 09:56:24 +1100
-In-Reply-To: <561CF100.3070605@suse.com>
-References: <1442891295-5222-1-git-send-email-mpe@ellerman.id.au>
- <1444713513.29347.3.camel@ellerman.id.au> <561CF100.3070605@suse.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C5941A0806
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 10:06:49 +1100 (AEDT)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Thierry Reding
+ <thierry.reding@gmail.com>,
+ <linux-serial@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] tty: disable unbind for old 74xx based serial/mpsc console
+ port
+Date: Tue, 13 Oct 2015 19:06:30 -0400
+Message-ID: <1444777590-15674-1-git-send-email-paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-13 at 13:54 +0200, Michal Marek wrote:
-> On 2015-10-13 07:18, Michael Ellerman wrote:
-> > On Tue, 2015-09-22 at 13:08 +1000, Michael Ellerman wrote:
-> >> The IO accessors on powerpc are generated using macro fu, ie. out_be32()
-> >> etc. Also there are some debugger related symbols that are macro
-> >> generated. Teach scripts/tags.sh about both.
-> >>
-> >> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> >> ---
-> >>  scripts/tags.sh | 2 ++
-> >>  1 file changed, 2 insertions(+)
-> >>
-> >> diff --git a/scripts/tags.sh b/scripts/tags.sh
-> >> index 8e5aee6d9da2..262889046703 100755
-> >> --- a/scripts/tags.sh
-> >> +++ b/scripts/tags.sh
-> >> @@ -198,6 +198,8 @@ exuberant()
-> >>  	--regex-c++='/TASK_PFA_TEST\([^,]*,\s*([^)]*)\)/task_\1/'	\
-> >>  	--regex-c++='/TASK_PFA_SET\([^,]*,\s*([^)]*)\)/task_set_\1/'	\
-> >>  	--regex-c++='/TASK_PFA_CLEAR\([^,]*,\s*([^)]*)\)/task_clear_\1/'\
-> >> +	--regex-c++='/DEF_MMIO_(IN|OUT)_(X|D)\(([^,]*),\s*[^)]*\)/\3/'	\
-> >> +	--regex-c++='/DEBUGGER_BOILERPLATE\(([^,]*)\)/\1/'		\
-> >>  	--regex-c='/PCI_OP_READ\((\w*).*[1-4]\)/pci_bus_read_config_\1/' \
-> >>  	--regex-c='/PCI_OP_WRITE\((\w*).*[1-4]\)/pci_bus_write_config_\1/' \
-> >>  	--regex-c='/DEFINE_(MUTEX|SEMAPHORE|SPINLOCK)\((\w*)/\2/v/'	\
-> > 
-> > 
-> > Michal, do you want to take this one or should I ?
-> 
-> I applied it to kbuild.git#misc.
+We recently got rid of some modular code in this driver and also
+got rid of the unused ".remove" function at the same time.  Thierry
+noted that it was however possible to force the remove through the
+bind/unbind interface.
 
-Thanks.
+Since this is a console device used on 2005 vintage 74xx based
+powerpc embedded targets, and is essentially always used in
+conjunction with SERIAL_MPSC_CONSOLE=y -- there is no sane reason
+anyone would ever want to unbind the builtin driver and lose the
+console.  So we just explicitly block bind/unbind operations and
+prevent root from shooting themselves in the foot.
 
-cheers
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-serial@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ drivers/tty/serial/mpsc.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/tty/serial/mpsc.c b/drivers/tty/serial/mpsc.c
+index 2f43a58cb392..cadfd1cfae2b 100644
+--- a/drivers/tty/serial/mpsc.c
++++ b/drivers/tty/serial/mpsc.c
+@@ -2109,7 +2109,8 @@ static int mpsc_drv_probe(struct platform_device *dev)
+ static struct platform_driver mpsc_driver = {
+ 	.probe	= mpsc_drv_probe,
+ 	.driver	= {
+-		.name	= MPSC_CTLR_NAME,
++		.name			= MPSC_CTLR_NAME,
++		.suppress_bind_attrs	= true,
+ 	},
+ };
+ 
+-- 
+2.6.1
