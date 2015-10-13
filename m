@@ -1,36 +1,15 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B6B51A02CF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 12:50:38 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EF8B7140D7A
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:37 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Tue, 13 Oct 2015 11:50:36 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 317232CE8050
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:34 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9D1oLuG15466604
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:29 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9D1o1l4023254
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:01 +1100
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au, anton@samba.org, mikey@neuling.org
-Subject: [PATCH v2 1/1] powerpc: Individual System V IPC system calls
-Date: Tue, 13 Oct 2015 12:49:28 +1100
-Message-Id: <a3cfb270cd61cc3aacdf929e7739ae46dcff86bd.1444700960.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD4341A0942
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 12:50:46 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v2] selftests/powerpc: Fix build failure of
+ load_unaligned_zeropad test
+Date: Tue, 13 Oct 2015 12:50:41 +1100
+Message-Id: <1444701041-17839-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,79 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch provides individual system call numbers for the following
-System V IPC system calls, on PowerPC, so that they do not need to be
-multiplexed:
-* semop, semget, semctl, semtimedop
-* msgsnd, msgrcv, msgget, msgctl
-* shmat, shmdt, shmget, shmctl
+Commit 7a5692e6e533 ("arch/powerpc: provide zero_bytemask() for
+big-endian") added a call to __fls() in our word-at-a-time.h. That was
+fine for the kernel build but missed the fact that we also use
+word-at-a-time.h in a userspace test.
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Pulling in the kernel version of __fls() gets messy, so just define our
+own, it's unlikely to change often.
+
+Fixes: 7a5692e6e533 ("arch/powerpc: provide zero_bytemask() for big-endian")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
+ .../testing/selftests/powerpc/primitives/load_unaligned_zeropad.c  | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-v2:
+v2: Use a static inline, otherwise the little endian build fails because
+    __fls() is unused >:(
 
-Rebased onto today's next-20151012.
-
- arch/powerpc/include/asm/systbl.h      | 12 ++++++++++++
- arch/powerpc/include/asm/unistd.h      |  2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 12 ++++++++++++
- 3 files changed, 25 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 126d0c4..c9e26cb 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -370,3 +370,15 @@ COMPAT_SYS(execveat)
- PPC64ONLY(switch_endian)
- SYSCALL_SPU(userfaultfd)
- SYSCALL_SPU(membarrier)
-+SYSCALL(semop)
-+SYSCALL(semget)
-+COMPAT_SYS(semctl)
-+COMPAT_SYS(semtimedop)
-+COMPAT_SYS(msgsnd)
-+COMPAT_SYS(msgrcv)
-+SYSCALL(msgget)
-+COMPAT_SYS(msgctl)
-+COMPAT_SYS(shmat)
-+SYSCALL(shmdt)
-+SYSCALL(shmget)
-+COMPAT_SYS(shmctl)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 13411be..6d8f802 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
+diff --git a/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c b/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
+index d1b647509596..d33b380344aa 100644
+--- a/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
++++ b/tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
+@@ -29,6 +29,13 @@
  
+ #include "utils.h"
  
--#define __NR_syscalls		366
-+#define __NR_syscalls		378
++static inline unsigned long __fls(unsigned long x)
++{
++	int lz;
++
++	asm (PPC_CNTLZL "%0,%1" : "=r" (lz) : "r" (x));
++	return sizeof(unsigned long) - 1 - lz;
++}
  
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 63377380..81579e9 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -388,5 +388,17 @@
- #define __NR_switch_endian	363
- #define __NR_userfaultfd	364
- #define __NR_membarrier		365
-+#define __NR_semop		366
-+#define __NR_semget		367
-+#define __NR_semctl		368
-+#define __NR_semtimedop		369
-+#define __NR_msgsnd		370
-+#define __NR_msgrcv		371
-+#define __NR_msgget		372
-+#define __NR_msgctl		373
-+#define __NR_shmat		374
-+#define __NR_shmdt		375
-+#define __NR_shmget		376
-+#define __NR_shmctl		377
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+ static int page_size;
+ static char *mem_region;
 -- 
 2.1.4
