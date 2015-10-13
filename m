@@ -1,22 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0117.outbound.protection.outlook.com [157.56.110.117])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 514491A08ED
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 11:22:55 +1100 (AEDT)
-Message-ID: <1444695749.5185.96.camel@freescale.com>
-Subject: Re: [PATCH v3 00/31]  powerpc/mm: Update page table format for
- book3s 64
-From: Scott Wood <scottwood@freescale.com>
-To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-CC: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
- <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 12 Oct 2015 19:22:29 -0500
-In-Reply-To: <1444675215-19484-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1444675215-19484-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B19B71A0287
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 11:28:06 +1100 (AEDT)
+Message-ID: <1444696086.5383.3.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/6] powerpc/kconfig: Move NR_IRQS into "Kernel Options"
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linuxppc-dev@ozlabs.org, thuth@redhat.com
+Date: Tue, 13 Oct 2015 11:28:06 +1100
+In-Reply-To: <5354986.Emc3ODSKdL@wuerfel>
+References: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
+ <7516455.YEROTAngT1@wuerfel> <1444648065.31951.3.camel@ellerman.id.au>
+ <5354986.Emc3ODSKdL@wuerfel>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-13 at 00:09 +0530, Aneesh Kumar K.V wrote:
-> Hi All,
+On Mon, 2015-10-12 at 13:50 +0200, Arnd Bergmann wrote:
+> On Monday 12 October 2015 22:07:45 Michael Ellerman wrote:
+> > Yeah, this builds and boots at least on pseries KVM.
+> > 
+> > diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
+> > index e8e3a0a04eb0..35fba282b7f9 100644
+> > --- a/arch/powerpc/include/asm/irq.h
+> > +++ b/arch/powerpc/include/asm/irq.h
+> > @@ -23,11 +23,8 @@ extern atomic_t ppc_n_lost_interrupts;
+> >  /* This number is used when no interrupt has been assigned */
+> >  #define NO_IRQ                 (0)
+> >  
+> > -/* Total number of virq in the platform */
+> > -#define NR_IRQS                CONFIG_NR_IRQS
+> > -
+> > -/* Same thing, used by the generic IRQ code */
+> >  #define NR_IRQS_LEGACY         NUM_ISA_INTERRUPTS
+> > +#define NR_IRQS                        NR_IRQS_LEGACY
+> >  
+> >  extern irq_hw_number_t virq_to_hw(unsigned int virq);
+> >  
 > 
-> This patch series attempt to update book3s 64 linux page table format to
-> make it more flexible. Our current pte format is very restrictive and we
-> overload multiple pte bits. This is due to the non-availability of free bits
-> in pte_t. We use pte_t to track the validity of 4K subpages. This patch
-> series free up pte_t of 11 bits by moving 4K subpage tracking to the
-> lower half of PTE page. The pte format is updated such that we have a
-> better method for identifying a pte entry at pmd level. This will also 
-> enable
-> us to implement hugetlb migration(not yet done in this series). 
+> This looks like the way it's intended.
 
-Acked-by: Scott Wood <scottwood@freescale.com>
+Hmm, though IRQ_BITMAP_BITS is still a hard limit, and by default it's set to
+NR_IRQS + 8196.
 
--Scott
+So we'd be relying on the + 8196 to get us up to a reasonable number. That
+looks like it was added as a bit of a hack/bug-fix, so I'm not sure we want to
+rely on it. (c1ee6264280e ("genirq: Prevent access beyond allocated_irqs
+bitmap"))
+
+All the distros seem to run with NR_IRQS=512, so it seems no one has needed
+more than that or we would have heard about it presumably.
+
+At the same time if we're only spending a single bit for each interrupt number
+maybe we should just set it to min(512, NR_CPUS) or something like that to make
+sure it's always reasonably big.
+
+
+> I've also checked that no powerpc platform defines a static IRQ larger than
+> NUM_ISA_INTERRUPTS, and only two files do it at all
+> (arch/powerpc/platforms/chrp/pegasos_eth.c and arch/powerpc/sysdev/rtc_cmos_setup.c).
+
+Thanks. You clearly have better grep fu than me :)
+
+cheers
