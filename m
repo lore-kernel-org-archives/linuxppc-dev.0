@@ -1,21 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B19B71A0287
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 11:28:06 +1100 (AEDT)
-Message-ID: <1444696086.5383.3.camel@ellerman.id.au>
-Subject: Re: [PATCH 1/6] powerpc/kconfig: Move NR_IRQS into "Kernel Options"
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linuxppc-dev@ozlabs.org, thuth@redhat.com
-Date: Tue, 13 Oct 2015 11:28:06 +1100
-In-Reply-To: <5354986.Emc3ODSKdL@wuerfel>
-References: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
- <7516455.YEROTAngT1@wuerfel> <1444648065.31951.3.camel@ellerman.id.au>
- <5354986.Emc3ODSKdL@wuerfel>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA1441A0920
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 12:43:45 +1100 (AEDT)
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7F951140DA5
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:43:43 +1100 (AEDT)
+Received: by pabrc13 with SMTP id rc13so4363705pab.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2015 18:43:40 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/8] powerpc/eeh: Force reset on fenced PHB
+In-Reply-To: <1444276739-20372-4-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1444276739-20372-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1444276739-20372-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Date: Tue, 13 Oct 2015 12:43:23 +1100
+Message-ID: <871tcz4k78.fsf@gamma.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+ micalg=pgp-sha512; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +33,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-10-12 at 13:50 +0200, Arnd Bergmann wrote:
-> On Monday 12 October 2015 22:07:45 Michael Ellerman wrote:
-> > Yeah, this builds and boots at least on pseries KVM.
-> > 
-> > diff --git a/arch/powerpc/include/asm/irq.h b/arch/powerpc/include/asm/irq.h
-> > index e8e3a0a04eb0..35fba282b7f9 100644
-> > --- a/arch/powerpc/include/asm/irq.h
-> > +++ b/arch/powerpc/include/asm/irq.h
-> > @@ -23,11 +23,8 @@ extern atomic_t ppc_n_lost_interrupts;
-> >  /* This number is used when no interrupt has been assigned */
-> >  #define NO_IRQ                 (0)
-> >  
-> > -/* Total number of virq in the platform */
-> > -#define NR_IRQS                CONFIG_NR_IRQS
-> > -
-> > -/* Same thing, used by the generic IRQ code */
-> >  #define NR_IRQS_LEGACY         NUM_ISA_INTERRUPTS
-> > +#define NR_IRQS                        NR_IRQS_LEGACY
-> >  
-> >  extern irq_hw_number_t virq_to_hw(unsigned int virq);
-> >  
-> 
-> This looks like the way it's intended.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Hmm, though IRQ_BITMAP_BITS is still a hard limit, and by default it's set to
-NR_IRQS + 8196.
-
-So we'd be relying on the + 8196 to get us up to a reasonable number. That
-looks like it was added as a bit of a hack/bug-fix, so I'm not sure we want to
-rely on it. (c1ee6264280e ("genirq: Prevent access beyond allocated_irqs
-bitmap"))
-
-All the distros seem to run with NR_IRQS=512, so it seems no one has needed
-more than that or we would have heard about it presumably.
-
-At the same time if we're only spending a single bit for each interrupt number
-maybe we should just set it to min(512, NR_CPUS) or something like that to make
-sure it's always reasonably big.
+Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
 
 
-> I've also checked that no powerpc platform defines a static IRQ larger than
-> NUM_ISA_INTERRUPTS, and only two files do it at all
-> (arch/powerpc/platforms/chrp/pegasos_eth.c and arch/powerpc/sysdev/rtc_cmos_setup.c).
+> +	 *
+> +	 * When the PHB is fenced, we have to issue a reset to recover from
+> +	 * the error. Override the result if necessary to have partially
+> +	 * hotplug for this case.
+>  	 */
+>  	pr_info("EEH: Notify device drivers to shutdown\n");
+>  	eeh_pe_dev_traverse(pe, eeh_report_error, &result);
+> +	if ((pe->type & EEH_PE_PHB) &&
+> +	    result !=3D PCI_ERS_RESULT_NONE &&
+> +	    result !=3D PCI_ERS_RESULT_NEED_RESET)
+> +		result =3D PCI_ERS_RESULT_NEED_RESET;
+I think we shouldn't discard the DISCONNECT state. A driver could ask
+that the device be disconnected in the error_detected callback and we
+should probably honour that.
 
-Thanks. You clearly have better grep fu than me :)
+Regards,
+Daniel
 
-cheers
+>=20=20
+>  	/* Get the current PCI slot state. This can take a long time,
+>  	 * sometimes over 300 seconds for certain systems.
+> --=20
+> 2.1.0
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAEBCgAGBQJWHGG7AAoJEPC3R3P2I92Fo/wP/RPPGSfrHNpC7s7Nd8ZchlmO
+LsWe0hKVywvIzav77iufermfD2I1uDgV8XVzclRLlivN5v58K90QPPf8qv29MifV
+Gghi3pVvLyNimWCrMbN3xaf4+Kiz52XCSUMqnWLEYvcZBakymSY4zjrsvoq3lUop
+xggzkfOpGostR38ncj1Ki1TttZ/bN4lEDYe/tiUxdjVTQXTfVt1i43ToIxjR27et
+g0GODd0FMG6wDtYp79nqhbgYsRjkvsPWJEBxhX7PBMr992LhqWFNjxPQqsEHPVyM
+2l0wWTnq4KGUo4VBqYGvVP2OxRbafmkTInX0McWWrS65rFLvu9JMAOMkYK3+PKYr
+CS/BIDAJVg/6KnhhieWbxYGDu0dZl0Bg+a4xkWKZzlbZAkq2jiz3W4nQNlTAgJ5J
+HQeZQExlWITEe6WxfFIFzEe0F1CtqOmXBlj40rTs8BAytb5e0dNRQv2KagbHG7CI
+zUH2SUYzK4DTL3m6p9YFiv3/9JGD1WypN0uoXZdoAJ0mQbZWuFxKbzZk/IONq2k9
+jAbTa10egusNqSkKu66O4Ks0jhmrH1K0pgVGbWzwiopOIOAulCbv4Dih8Di7GeHk
+/XrAQH1HUqH/OOYIyDx4brQ98NIONl5YZo2Wbu288+ZR/p1dpQsQu6fWOVyeh3fW
+4tbwfoI28pPFjTAiTJeQ
+=nwLA
+-----END PGP SIGNATURE-----
+--=-=-=--
