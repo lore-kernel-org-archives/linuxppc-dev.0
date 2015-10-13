@@ -1,34 +1,47 @@
-Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E10321A0666
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 16:30:38 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8FE7D1A0200
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 16:26:18 +1100 (AEDT)
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by ozlabs.org (Postfix) with ESMTPS id 96677140D7A
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 16:30:38 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
- Mon, 12 Oct 2015 23:26:16 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C037C3E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 23:26:14 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9D5QEsh10420504
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 22:26:14 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9D5QELl015219
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Oct 2015 23:26:14 -0600
-From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-To: <axboe@kernel.dk>
-Cc: <linuxppc-dev@lists.ozlabs.org>, <ming.lei@canonical.com>,
- <keith.busch@intel.com>, <snitzer@redhat.com>,
- <linux-kernel@vger.kernel.org>, <raghavendra.kt@linux.vnet.ibm.com>
-Subject: [PATCH] block-mq:Fix the null memory access while setting tags cpumask
-Date: Tue, 13 Oct 2015 10:55:27 +0530
-Message-Id: <1444713927-16261-1-git-send-email-raghavendra.kt@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 13 Oct 2015 15:30:37 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 900C12BB0059
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 16:30:34 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9D5UQdL56492202
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 16:30:34 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9D5U14e005583
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 16:30:02 +1100
+Date: Tue, 13 Oct 2015 13:29:44 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH V5 3/6] powerpc/powernv: use one M64 BAR in Single PE
+ mode for one VF BAR
+Message-ID: <20151013052944.GC2858@richards-mbp.cn.ibm.com>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1444358816-8163-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1444358816-8163-4-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20151012235527.GA18815@gwshan>
+ <20151013025042.GD1437@Richards-MacBook-Pro.local>
+ <20151013033248.GC21017@gwshan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151013033248.GC21017@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,117 +51,453 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In nr_hw_queues >1 cases when certain number of cpus are onlined/or
-offlined, that results change in request_queue map in block-mq layer,
-we see the kernel dumping like:
+On Tue, Oct 13, 2015 at 02:32:49PM +1100, Gavin Shan wrote:
+>On Tue, Oct 13, 2015 at 10:50:42AM +0800, Wei Yang wrote:
+>>On Tue, Oct 13, 2015 at 10:55:27AM +1100, Gavin Shan wrote:
+>>>On Fri, Oct 09, 2015 at 10:46:53AM +0800, Wei Yang wrote:
+>>>>In current implementation, when VF BAR is bigger than 64MB, it uses 4 M64
+>>>>BARs in Single PE mode to cover the number of VFs required to be enabled.
+>>>>By doing so, several VFs would be in one VF Group and leads to interference
+>>>>between VFs in the same group.
+>>>>
+>>>>And in this patch, m64_wins is renamed to m64_map, which means index number
+>>>>of the M64 BAR used to map the VF BAR. Based on Gavin's comments.
+>>>>
+>>>>This patch changes the design by using one M64 BAR in Single PE mode for
+>>>>one VF BAR. This gives absolute isolation for VFs.
+>>>>
+>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>>Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>---
+>>>> arch/powerpc/include/asm/pci-bridge.h     |   5 +-
+>>>> arch/powerpc/platforms/powernv/pci-ioda.c | 169 ++++++++++++------------------
+>>>> 2 files changed, 68 insertions(+), 106 deletions(-)
+>>>>
+>>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>>>index 712add5..8aeba4c 100644
+>>>>--- a/arch/powerpc/include/asm/pci-bridge.h
+>>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>>>>@@ -214,10 +214,9 @@ struct pci_dn {
+>>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
+>>>> 	u16     num_vfs;		/* number of VFs enabled*/
+>>>> 	int     offset;			/* PE# for the first VF PE */
+>>>>-#define M64_PER_IOV 4
+>>>>-	int     m64_per_iov;
+>>>>+	bool    m64_single_mode;	/* Use M64 BAR in Single Mode */
+>>>> #define IODA_INVALID_M64        (-1)
+>>>>-	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
+>>>>+	int     (*m64_map)[PCI_SRIOV_NUM_BARS];
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>> #endif
+>>>> 	struct list_head child_list;
+>>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>index 7da476b..2886f90 100644
+>>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>@@ -1148,29 +1148,36 @@ static void pnv_pci_ioda_setup_PEs(void)
+>>>> }
+>>>>
+>>>> #ifdef CONFIG_PCI_IOV
+>>>>-static int pnv_pci_vf_release_m64(struct pci_dev *pdev)
+>>>>+static int pnv_pci_vf_release_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> {
+>>>> 	struct pci_bus        *bus;
+>>>> 	struct pci_controller *hose;
+>>>> 	struct pnv_phb        *phb;
+>>>> 	struct pci_dn         *pdn;
+>>>> 	int                    i, j;
+>>>>+	int                    m64_bars;
+>>>>
+>>>> 	bus = pdev->bus;
+>>>> 	hose = pci_bus_to_host(bus);
+>>>> 	phb = hose->private_data;
+>>>> 	pdn = pci_get_pdn(pdev);
+>>>>
+>>>>+	if (pdn->m64_single_mode)
+>>>>+		m64_bars = num_vfs;
+>>>>+	else
+>>>>+		m64_bars = 1;
+>>>>+
+>>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>>>>-		for (j = 0; j < M64_PER_IOV; j++) {
+>>>>-			if (pdn->m64_wins[i][j] == IODA_INVALID_M64)
+>>>>+		for (j = 0; j < m64_bars; j++) {
+>>>>+			if (pdn->m64_map[j][i] == IODA_INVALID_M64)
+>>>> 				continue;
+>>>> 			opal_pci_phb_mmio_enable(phb->opal_id,
+>>>>-				OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 0);
+>>>>-			clear_bit(pdn->m64_wins[i][j], &phb->ioda.m64_bar_alloc);
+>>>>-			pdn->m64_wins[i][j] = IODA_INVALID_M64;
+>>>>+				OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 0);
+>>>>+			clear_bit(pdn->m64_map[j][i], &phb->ioda.m64_bar_alloc);
+>>>>+			pdn->m64_map[j][i] = IODA_INVALID_M64;
+>>>> 		}
+>>>>
+>>>>+	kfree(pdn->m64_map);
+>>>> 	return 0;
+>>>> }
+>>>>
+>>>>@@ -1187,8 +1194,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	int                    total_vfs;
+>>>> 	resource_size_t        size, start;
+>>>> 	int                    pe_num;
+>>>>-	int                    vf_groups;
+>>>>-	int                    vf_per_group;
+>>>>+	int                    m64_bars;
+>>>>
+>>>> 	bus = pdev->bus;
+>>>> 	hose = pci_bus_to_host(bus);
+>>>>@@ -1196,26 +1202,26 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	pdn = pci_get_pdn(pdev);
+>>>> 	total_vfs = pci_sriov_get_totalvfs(pdev);
+>>>>
+>>>>-	/* Initialize the m64_wins to IODA_INVALID_M64 */
+>>>>-	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+>>>>-		for (j = 0; j < M64_PER_IOV; j++)
+>>>>-			pdn->m64_wins[i][j] = IODA_INVALID_M64;
+>>>>+	if (pdn->m64_single_mode)
+>>>>+		m64_bars = num_vfs;
+>>>>+	else
+>>>>+		m64_bars = 1;
+>>>>+
+>>>>+	pdn->m64_map = kmalloc(sizeof(*pdn->m64_map) * m64_bars, GFP_KERNEL);
+>>>>+	if (!pdn->m64_map)
+>>>>+		return -ENOMEM;
+>>>>+	/* Initialize the m64_map to IODA_INVALID_M64 */
+>>>>+	for (i = 0; i < m64_bars ; i++)
+>>>>+		for (j = 0; j < PCI_SRIOV_NUM_BARS; j++)
+>>>>+			pdn->m64_map[i][j] = IODA_INVALID_M64;
+>>>>
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>-		vf_groups = (num_vfs <= M64_PER_IOV) ? num_vfs: M64_PER_IOV;
+>>>>-		vf_per_group = (num_vfs <= M64_PER_IOV)? 1:
+>>>>-			roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-	} else {
+>>>>-		vf_groups = 1;
+>>>>-		vf_per_group = 1;
+>>>>-	}
+>>>>
+>>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>>> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>>>> 		if (!res->flags || !res->parent)
+>>>> 			continue;
+>>>>
+>>>>-		for (j = 0; j < vf_groups; j++) {
+>>>>+		for (j = 0; j < m64_bars; j++) {
+>>>> 			do {
+>>>> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
+>>>> 						phb->ioda.m64_bar_idx + 1, 0);
+>>>>@@ -1224,12 +1230,11 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 					goto m64_failed;
+>>>> 			} while (test_and_set_bit(win, &phb->ioda.m64_bar_alloc));
+>>>>
+>>>>-			pdn->m64_wins[i][j] = win;
+>>>>+			pdn->m64_map[j][i] = win;
+>>>>
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>+			if (pdn->m64_single_mode) {
+>>>> 				size = pci_iov_resource_size(pdev,
+>>>> 							PCI_IOV_RESOURCES + i);
+>>>>-				size = size * vf_per_group;
+>>>> 				start = res->start + size * j;
+>>>> 			} else {
+>>>> 				size = resource_size(res);
+>>>>@@ -1237,16 +1242,16 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 			}
+>>>>
+>>>> 			/* Map the M64 here */
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV) {
+>>>>+			if (pdn->m64_single_mode) {
+>>>> 				pe_num = pdn->offset + j;
+>>>> 				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+>>>> 						pe_num, OPAL_M64_WINDOW_TYPE,
+>>>>-						pdn->m64_wins[i][j], 0);
+>>>>+						pdn->m64_map[j][i], 0);
+>>>> 			}
+>>>>
+>>>> 			rc = opal_pci_set_phb_mem_window(phb->opal_id,
+>>>> 						 OPAL_M64_WINDOW_TYPE,
+>>>>-						 pdn->m64_wins[i][j],
+>>>>+						 pdn->m64_map[j][i],
+>>>> 						 start,
+>>>> 						 0, /* unused */
+>>>> 						 size);
+>>>>@@ -1258,12 +1263,12 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 				goto m64_failed;
+>>>> 			}
+>>>>
+>>>>-			if (pdn->m64_per_iov == M64_PER_IOV)
+>>>>+			if (pdn->m64_single_mode)
+>>>> 				rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>>>>-				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 2);
+>>>>+				     OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 2);
+>>>> 			else
+>>>> 				rc = opal_pci_phb_mmio_enable(phb->opal_id,
+>>>>-				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 1);
+>>>>+				     OPAL_M64_WINDOW_TYPE, pdn->m64_map[j][i], 1);
+>>>>
+>>>> 			if (rc != OPAL_SUCCESS) {
+>>>> 				dev_err(&pdev->dev, "Failed to enable M64 window #%d: %llx\n",
+>>>>@@ -1275,7 +1280,7 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	return 0;
+>>>>
+>>>> m64_failed:
+>>>>-	pnv_pci_vf_release_m64(pdev);
+>>>>+	pnv_pci_vf_release_m64(pdev, num_vfs);
+>>>> 	return -EBUSY;
+>>>> }
+>>>>
+>>>>@@ -1302,15 +1307,13 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>>>> 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+>>>> }
+>>>>
+>>>>-static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>+static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
+>>>> {
+>>>> 	struct pci_bus        *bus;
+>>>> 	struct pci_controller *hose;
+>>>> 	struct pnv_phb        *phb;
+>>>> 	struct pnv_ioda_pe    *pe, *pe_n;
+>>>> 	struct pci_dn         *pdn;
+>>>>-	u16                    vf_index;
+>>>>-	int64_t                rc;
+>>>>
+>>>> 	bus = pdev->bus;
+>>>> 	hose = pci_bus_to_host(bus);
+>>>>@@ -1320,35 +1323,6 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	if (!pdev->is_physfn)
+>>>> 		return;
+>>>>
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>>>>-		int   vf_group;
+>>>>-		int   vf_per_group;
+>>>>-		int   vf_index1;
+>>>>-
+>>>>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-
+>>>>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++)
+>>>>-			for (vf_index = vf_group * vf_per_group;
+>>>>-				vf_index < (vf_group + 1) * vf_per_group &&
+>>>>-				vf_index < num_vfs;
+>>>>-				vf_index++)
+>>>>-				for (vf_index1 = vf_group * vf_per_group;
+>>>>-					vf_index1 < (vf_group + 1) * vf_per_group &&
+>>>>-					vf_index1 < num_vfs;
+>>>>-					vf_index1++){
+>>>>-
+>>>>-					rc = opal_pci_set_peltv(phb->opal_id,
+>>>>-						pdn->offset + vf_index,
+>>>>-						pdn->offset + vf_index1,
+>>>>-						OPAL_REMOVE_PE_FROM_DOMAIN);
+>>>>-
+>>>>-					if (rc)
+>>>>-					    dev_warn(&pdev->dev, "%s: Failed to unlink same group PE#%d(%lld)\n",
+>>>>-						__func__,
+>>>>-						pdn->offset + vf_index1, rc);
+>>>>-				}
+>>>>-	}
+>>>>-
+>>>> 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
+>>>> 		if (pe->parent_dev != pdev)
+>>>> 			continue;
+>>>>@@ -1383,14 +1357,14 @@ void pnv_pci_sriov_disable(struct pci_dev *pdev)
+>>>> 	num_vfs = pdn->num_vfs;
+>>>>
+>>>> 	/* Release VF PEs */
+>>>>-	pnv_ioda_release_vf_PE(pdev, num_vfs);
+>>>>+	pnv_ioda_release_vf_PE(pdev);
+>>>>
+>>>> 	if (phb->type == PNV_PHB_IODA2) {
+>>>>-		if (pdn->m64_per_iov == 1)
+>>>>+		if (!pdn->m64_single_mode)
+>>>> 			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
+>>>>
+>>>> 		/* Release M64 windows */
+>>>>-		pnv_pci_vf_release_m64(pdev);
+>>>>+		pnv_pci_vf_release_m64(pdev, num_vfs);
+>>>>
+>>>> 		/* Release PE numbers */
+>>>> 		bitmap_clear(phb->ioda.pe_alloc, pdn->offset, num_vfs);
+>>>>@@ -1409,7 +1383,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	int                    pe_num;
+>>>> 	u16                    vf_index;
+>>>> 	struct pci_dn         *pdn;
+>>>>-	int64_t                rc;
+>>>>
+>>>> 	bus = pdev->bus;
+>>>> 	hose = pci_bus_to_host(bus);
+>>>>@@ -1454,37 +1427,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>>>>
+>>>> 		pnv_pci_ioda2_setup_dma_pe(phb, pe);
+>>>> 	}
+>>>>-
+>>>>-	if (pdn->m64_per_iov == M64_PER_IOV && num_vfs > M64_PER_IOV) {
+>>>>-		int   vf_group;
+>>>>-		int   vf_per_group;
+>>>>-		int   vf_index1;
+>>>>-
+>>>>-		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+>>>>-
+>>>>-		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++) {
+>>>>-			for (vf_index = vf_group * vf_per_group;
+>>>>-			     vf_index < (vf_group + 1) * vf_per_group &&
+>>>>-			     vf_index < num_vfs;
+>>>>-			     vf_index++) {
+>>>>-				for (vf_index1 = vf_group * vf_per_group;
+>>>>-				     vf_index1 < (vf_group + 1) * vf_per_group &&
+>>>>-				     vf_index1 < num_vfs;
+>>>>-				     vf_index1++) {
+>>>>-
+>>>>-					rc = opal_pci_set_peltv(phb->opal_id,
+>>>>-						pdn->offset + vf_index,
+>>>>-						pdn->offset + vf_index1,
+>>>>-						OPAL_ADD_PE_TO_DOMAIN);
+>>>>-
+>>>>-					if (rc)
+>>>>-					    dev_warn(&pdev->dev, "%s: Failed to link same group PE#%d(%lld)\n",
+>>>>-						__func__,
+>>>>-						pdn->offset + vf_index1, rc);
+>>>>-				}
+>>>>-			}
+>>>>-		}
+>>>>-	}
+>>>> }
+>>>>
+>>>> int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>>@@ -1507,6 +1449,15 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>> 			return -ENOSPC;
+>>>> 		}
+>>>>
+>>>>+		/*
+>>>>+		 * When M64 BARs functions in Single PE mode, the number of VFs
+>>>>+		 * could be enabled must be less than the number of M64 BARs.
+>>>>+		 */
+>>>>+		if (pdn->m64_single_mode && num_vfs > phb->ioda.m64_bar_idx) {
+>>>>+			dev_info(&pdev->dev, "Not enough M64 BAR for VFs\n");
+>>>>+			return -EBUSY;
+>>>>+		}
+>>>>+
+>>>> 		/* Calculate available PE for required VFs */
+>>>> 		mutex_lock(&phb->ioda.pe_alloc_mutex);
+>>>> 		pdn->offset = bitmap_find_next_zero_area(
+>>>>@@ -1534,7 +1485,7 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>> 		 * the IOV BAR according to the PE# allocated to the VFs.
+>>>> 		 * Otherwise, the PE# for the VF will conflict with others.
+>>>> 		 */
+>>>>-		if (pdn->m64_per_iov == 1) {
+>>>>+		if (!pdn->m64_single_mode) {
+>>>> 			ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
+>>>> 			if (ret)
+>>>> 				goto m64_failed;
+>>>>@@ -1567,8 +1518,7 @@ int pcibios_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>>>> 	/* Allocate PCI data */
+>>>> 	add_dev_pci_data(pdev);
+>>>>
+>>>>-	pnv_pci_sriov_enable(pdev, num_vfs);
+>>>>-	return 0;
+>>>>+	return pnv_pci_sriov_enable(pdev, num_vfs);
+>>>> }
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>>
+>>>>@@ -2762,9 +2712,9 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>>
+>>>> 	pdn = pci_get_pdn(pdev);
+>>>> 	pdn->vfs_expanded = 0;
+>>>>+	pdn->m64_single_mode = false;
+>>>>
+>>>> 	total_vfs = pci_sriov_get_totalvfs(pdev);
+>>>>-	pdn->m64_per_iov = 1;
+>>>> 	mul = phb->ioda.total_pe;
+>>>>
+>>>> 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>>>@@ -2784,8 +2734,8 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>>>> 		if (size > (1 << 26)) {
+>>>> 			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
+>>>> 				 i, res);
+>>>>-			pdn->m64_per_iov = M64_PER_IOV;
+>>>> 			mul = roundup_pow_of_two(total_vfs);
+>>>>+			pdn->m64_single_mode = true;
+>>>> 			break;
+>>>> 		}
+>>>> 	}
+>>>>@@ -2987,6 +2937,8 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+>>>> static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+>>>> 						      int resno)
+>>>> {
+>>>>+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+>>>>+	struct pnv_phb *phb = hose->private_data;
+>>>> 	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>>> 	resource_size_t align;
+>>>>
+>>>>@@ -2995,12 +2947,23 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+>>>> 	 * SR-IOV. While from hardware perspective, the range mapped by M64
+>>>> 	 * BAR should be size aligned.
+>>>> 	 *
+>>>>+	 * When IOV BAR is mapped with M64 BAR in Single PE mode, the extra
+>>>>+	 * powernv-specific hardware restriction is gone. But if just use the
+>>>>+	 * VF BAR size as the alignment, PF BAR / VF BAR may be allocated with
+>>>>+	 * in one segment of M64 #15, which introduces the PE conflict between
+>>>>+	 * PF and VF. Based on this, the minimum alignment of an IOV BAR is
+>>>>+	 * m64_segsize.
+>>>>+	 *
+>>>
+>>>When M64 BARs run in single mode, it still requires 32MB aligned. Does
+>>>"the extra powernv-specific hardware restriction" includes the limitation
+>>>or not?
+>>>
+>>
+>>The 32MB aligned you mentioned is the size of VF BAR?
+>>
+>>The answer is No. "the extra powernv-specific hardware restriction" only
+>>mentioned the total M64 BAR alignment.
+>>
+>
+>No, it's PHB's M64 BAR. there are 16 in total. When it's running in single PE
+>mode, it requires 32MB alignment at least. Extracted from PHB3 spec:
+>
+>When Single PE = 1, Bits 02:26 are the base address to compare
+>against the MSB 25 AIB address bits, 0:24, out of 0:49 (32MB aligned).
+>Bits 27:31 are the upper 5 bits of the PE# that owns the entire address
+>space defined by this BAR.
+>
 
- BUG: unable to handle kernel NULL pointer dereference at 0000000000000080
- IP: [<ffffffff8128e2f2>] cpumask_set_cpu+0x6/0xd
- PGD 6d957067 PUD 7604c067 PMD 0
- Oops: 0002 [#1] SMP
- Modules linked in: null_blk
- CPU: 2 PID: 1926 Comm: bash Not tainted 4.3.0-rc2+ #24
- Hardware name: Bochs Bochs, BIOS Bochs 01/01/2011
- task: ffff8800724cd1c0 ti: ffff880070a2c000 task.ti: ffff880070a2c000
- RIP: 0010:[<ffffffff8128e2f2>]  [<ffffffff8128e2f2>] cpumask_set_cpu+0x6/0xd
- RSP: 0018:ffff880070a2fbc8  EFLAGS: 00010203
- RAX: ffff880073eedc00 RBX: ffff88006cc88000 RCX: ffff88006c06b000
- RDX: 0000000000000007 RSI: 0000000000000080 RDI: 0000000000000008
- RBP: ffff880070a2fbc8 R08: ffff88006c06ac00 R09: ffff88006c06ad48
- R10: ffff880000004ea8 R11: ffff88006c069650 R12: ffff88007378fe28
- R13: 0000000000000008 R14: ffffe8ffff500200 R15: ffffffff81d2a630
- FS:  00007fa34803b700(0000) GS:ffff88007cc40000(0000) knlGS:0000000000000000
- CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
- CR2: 0000000000000080 CR3: 00000000761d2000 CR4: 00000000000006e0
- Stack:
-  ffff880070a2fc18 ffffffff8128edec 0000000000000000 ffff880073eedc00
-  0000000000000039 ffff88006cc88000 0000000000000007 00000000ffffffe3
-  ffffffff81cef2c0 0000000000000000 ffff880070a2fc38 ffffffff8129049a
- Call Trace:
-  [<ffffffff8128edec>] blk_mq_map_swqueue+0x9d/0x206
-  [<ffffffff8129049a>] blk_mq_queue_reinit_notify+0xe3/0x144
-  [<ffffffff8108b403>] notifier_call_chain+0x37/0x63
-  [<ffffffff8108b48b>] __raw_notifier_call_chain+0xe/0x10
-  [<ffffffff810729ea>] __cpu_notify+0x20/0x32
-  [<ffffffff81072c24>] cpu_notify_nofail+0x13/0x1b
-  [<ffffffff81073111>] _cpu_down+0x18a/0x264
-  [<ffffffff811884ce>] ? path_put+0x1f/0x23
-  [<ffffffff81073218>] cpu_down+0x2d/0x3a
-  [<ffffffff813a9ad8>] cpu_subsys_offline+0x14/0x16
-  [<ffffffff813a55c6>] device_offline+0x65/0x94
-  [<ffffffff813a56b3>] online_store+0x48/0x68
-  [<ffffffff811e0880>] ? kernfs_fop_write+0x6f/0x143
-  [<ffffffff813a3046>] dev_attr_store+0x20/0x22
-  [<ffffffff811e1037>] sysfs_kf_write+0x3c/0x3e
-  [<ffffffff811e08fe>] kernfs_fop_write+0xed/0x143
-  [<ffffffff8117fe0c>] __vfs_write+0x28/0xa6
-  [<ffffffff8124b998>] ? security_file_permission+0x3c/0x44
-  [<ffffffff810a5a1e>] ? percpu_down_read+0x21/0x42
-  [<ffffffff81181ee5>] ? __sb_start_write+0x24/0x41
-  [<ffffffff81180956>] vfs_write+0x8d/0xd1
-  [<ffffffff81180b37>] SyS_write+0x59/0x83
-  [<ffffffff816df46e>] entry_SYSCALL_64_fastpath+0x12/0x71
- Code: 03 75 06 65 48 ff 0a eb 1a f0 48 83 af 68 07 00 00 01 74 02 eb 0d 48 8d bf 68 07 00 00 ff 90 78 07 00 00 5d c3 55 89 ff 48 89 e5 <f0> 48 0f ab 3e 5d c3 0f 1f 44 00 00 55 8b 4e 44 31 d2 8b b7 94
- RIP  [<ffffffff8128e2f2>] cpumask_set_cpu+0x6/0xd
-  RSP <ffff880070a2fbc8>
- CR2: 0000000000000080
+Good, looks we have another hardware specific requirement.
 
-How to reproduce:
-1. create 80 vcpu guest with 10 core 8 threads
-2. modprobe null_blk submit_queues=64
-3. for i in 72 73 74 75 76 77 78 79 ; do
- echo 0 > /sys/devices/system/cpu/cpu$i/online;
-done
+While it is not proper to handle it here. This requirement effects the whole
+pci resource assignment.
 
-Reason:
-We try to set freed hwctx->tag->cpumask in blk_mq_map_swqueue().
-Introduced during commit f26cdc8536ad ("blk-mq: Shared tag enhancements").
+Linux kernel doesn't assign VF BAR individually, it assigns the IOV BAR and
+VF BAR is a piece in it and they are continuous. So this means if the VF BAR
+is less than 32MB and we want to use M64 BAR in Single PE mode, this would
+make two VF BAR sits in one PE.
 
-What is happening:
-When certain number of cpus are onlined/offlined, that results in
-blk_mq_update_queue_map, we could potentially end up in new mapping to
-hwctx.
+My suggestion is to add this check in pnv_pci_ioda_fixup_iov_resources(), when
+we decide to use M64 BAR in Single PE mode to cover a IOV BAR, each VF BAR
+should be at least 32MB. When this condition is met, the alignment from M64
+Single PE mode is met too.
 
-Subsequent blk_mq_map_swqueue of request_queue, tries to set the
-hwctx->tags->cpumask which is already freed by blk_mq_free_rq_map in
-earlier itearation when it was not mapped.
+>>>> 	 * This function returns the total IOV BAR size if M64 BAR is in
+>>>> 	 * Shared PE mode or just the individual size if not.
+>>>>+	 * If the M64 BAR is in Single PE mode, return the VF BAR size or
+>>>>+	 * M64 segment size if IOV BAR size is less.
+>>>> 	 */
+>>>> 	align = pci_iov_resource_size(pdev, resno);
+>>>> 	if (!pdn->vfs_expanded)
+>>>> 		return align;
+>>>>+	if (pdn->m64_single_mode)
+>>>>+		return max(align, (resource_size_t)phb->ioda.m64_segsize);
+>>>>
+>>>> 	return pdn->vfs_expanded * align;
+>>>> }
+>>>>-- 
+>>>>2.5.0
+>>>>
+>>
+>>-- 
+>>Richard Yang
+>>Help you, Help me
 
-Fix:
-Set the hwctx->tags->cpumask only after blk_mq_init_rq_map() is done
-
-hwctx->tags->cpumask does not follow the hwctx->cpumask after new
-mapping even in the cases where new mapping does not cause problem.
-That is also fixed with this change.
-
-This problem is originally found in powervm which had 160 cpus (SMT8),
-128 nr_hw_queues. The dump was easily reproduced with offlining last core
-and it has been a blocker issue because cpu hotplug is a common case for
-DLPAR.
-
-Signed-off-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
----
- block/blk-mq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/block/blk-mq.c b/block/blk-mq.c
-index f2d67b4..39a7834 100644
---- a/block/blk-mq.c
-+++ b/block/blk-mq.c
-@@ -1811,7 +1811,6 @@ static void blk_mq_map_swqueue(struct request_queue *q)
- 
- 		hctx = q->mq_ops->map_queue(q, i);
- 		cpumask_set_cpu(i, hctx->cpumask);
--		cpumask_set_cpu(i, hctx->tags->cpumask);
- 		ctx->index_hw = hctx->nr_ctx;
- 		hctx->ctxs[hctx->nr_ctx++] = ctx;
- 	}
-@@ -1836,6 +1835,7 @@ static void blk_mq_map_swqueue(struct request_queue *q)
- 		if (!set->tags[i])
- 			set->tags[i] = blk_mq_init_rq_map(set, i);
- 		hctx->tags = set->tags[i];
-+		cpumask_copy(hctx->tags->cpumask, hctx->cpumask);
- 		WARN_ON(!hctx->tags);
- 
- 		/*
 -- 
-1.7.11.7
+Richard Yang
+Help you, Help me
