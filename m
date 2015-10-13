@@ -1,22 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C41911A08EB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 11:11:38 +1100 (AEDT)
-Message-ID: <1444695098.5383.1.camel@ellerman.id.au>
-Subject: Re: [PATCH 5/6] powerpc/kconfig: Move cpu options after platform
- options
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, thuth@redhat.com
-Date: Tue, 13 Oct 2015 11:11:38 +1100
-In-Reply-To: <1444686438.5185.94.camel@freescale.com>
-References: <1444338557-14988-1-git-send-email-mpe@ellerman.id.au>
- <1444338557-14988-5-git-send-email-mpe@ellerman.id.au>
- <1444686438.5185.94.camel@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 72A8E1A08EB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 11:14:51 +1100 (AEDT)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 23A42140DA8
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 11:14:51 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 13 Oct 2015 10:14:49 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AD4722CE8050
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 11:14:47 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9D0ERcS65601638
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 11:14:35 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9D0EE2h021350
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 11:14:15 +1100
+Date: Tue, 13 Oct 2015 11:13:50 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH V5 2/6] powerpc/powernv: simplify the calculation of iov
+ resource alignment
+Message-ID: <20151013001350.GA21778@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1444358816-8163-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1444358816-8163-3-git-send-email-weiyang@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1444358816-8163-3-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +48,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-10-12 at 16:47 -0500, Scott Wood wrote:
-> On Fri, 2015-10-09 at 08:09 +1100, Michael Ellerman wrote:
-> > In general platforms are a more important configuration decision than
-> > cpus, so the platforms should come first.
-> > 
-> > My basis for saying that is that our cpu selection options are generally
-> > just about tuning for a cpu, rather than enabling/disabling support for
-> > a cpu. On the other hand disabling a platform means you can't boot on
-> > those machines, and any associated cpu options should vanish.
-> 
-> Kconfig.cputype *is* about enabling/disabling support for a cpu.  On 32-bit, 
-> the first choice is between "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx", 
-> "Freescale 85xx", "Freescale 8xx", "AMCC 40x", "AMCC 44x, 46x or 47x", or 
-> "Freescale e200".  Until that is set correctly, the platforms available for 
-> selection will not be correct.
-> 
-> Likewise, on 64-bit one must choose book3s versus book3e, before going on to 
-> the tuning selection you describe above.
+On Fri, Oct 09, 2015 at 10:46:52AM +0800, Wei Yang wrote:
+>The alignment of IOV BAR on PowerNV platform is the total size of the IOV
+>BAR. No matter whether the IOV BAR is extended with number of
+>roundup_pow_of_two(total_vfs) or number of max PE number (256), the total
+>size could be calculated by (vfs_expanded * VF_BAR_size).
+>
+>This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
+>first case.
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>---
+> arch/powerpc/platforms/powernv/pci-ioda.c | 20 ++++++++++++--------
+> 1 file changed, 12 insertions(+), 8 deletions(-)
+>
+>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>index 8c031b5..7da476b 100644
+>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>@@ -2988,17 +2988,21 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+> 						      int resno)
+> {
+> 	struct pci_dn *pdn = pci_get_pdn(pdev);
+>-	resource_size_t align, iov_align;
+>-
+>-	iov_align = resource_size(&pdev->resource[resno]);
+>-	if (iov_align)
+>-		return iov_align;
+>+	resource_size_t align;
+>
+>+	/*
+>+	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
+>+	 * SR-IOV. While from hardware perspective, the range mapped by M64
+>+	 * BAR should be size aligned.
+>+	 *
+>+	 * This function returns the total IOV BAR size if M64 BAR is in
+>+	 * Shared PE mode or just the individual size if not.
+>+	 */
 
-Ugh, this Kconfig mess shits me.
+s/the invidial size/VF BAR size
 
-You're right, my testing was running menuconfig with an existing config, so
-then the options look vaguely sane, but if you start with a blank config then
-it's the wrong way around as you say.
+> 	align = pci_iov_resource_size(pdev, resno);
+>-	if (pdn->vfs_expanded)
+>-		return pdn->vfs_expanded * align;
+>+	if (!pdn->vfs_expanded)
+>+		return align;
+>
+>-	return align;
+>+	return pdn->vfs_expanded * align;
 
-So I'll drop this.
+There is no difference before/after the changes. why this change is needed?
 
-cheers
+> }
+> #endif /* CONFIG_PCI_IOV */
+>
+>-- 
+>2.5.0
+>
