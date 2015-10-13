@@ -1,24 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E5EA21A0981
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 20:26:59 +1100 (AEDT)
-Message-ID: <1444728418.22686.3.camel@ellerman.id.au>
-Subject: Re: [PATCH v3 10/31] powerpc/mm: Don't use pmd_val,pud_val and
- pgd_val as lvalue
+ by lists.ozlabs.org (Postfix) with ESMTPS id D302E1A0985
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 20:38:42 +1100 (AEDT)
+In-Reply-To: <a3cfb270cd61cc3aacdf929e7739ae46dcff86bd.1444700960.git.sam.bobroff@au1.ibm.com>
+To: Sam bobroff <sam.bobroff@au1.ibm.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, Scott Wood
- <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 13 Oct 2015 20:26:58 +1100
-In-Reply-To: <87612btk8y.fsf@linux.vnet.ibm.com>
-References: <1444675215-19484-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1444675215-19484-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1444713006.29347.2.camel@ellerman.id.au>
- <87612btk8y.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Cc: mikey@neuling.org, anton@samba.org
+Subject: Re: [v2,1/1] powerpc: Individual System V IPC system calls
+Message-Id: <20151013093842.B3EA21402D6@ozlabs.org>
+Date: Tue, 13 Oct 2015 20:38:42 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-13 at 10:53 +0530, Aneesh Kumar K.V wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
-> 
-> > On Tue, 2015-10-13 at 00:09 +0530, Aneesh Kumar K.V wrote:
-> >> We convert them static inline function here as we did with pte_val in
-> >> the previous patch
-> >
-> > This breaks ppc40x_defconfig & 40x/ep405_defconfig with:
-> 
-> How about
-> 
-> diff --git a/arch/powerpc/mm/40x_mmu.c b/arch/powerpc/mm/40x_mmu.c
-> index 5810967511d4..31a5d42df8c9 100644
-> --- a/arch/powerpc/mm/40x_mmu.c
-> +++ b/arch/powerpc/mm/40x_mmu.c
-> @@ -110,10 +110,10 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
->  		unsigned long val = p | _PMD_SIZE_16M | _PAGE_EXEC | _PAGE_HWWRITE;
->  
->  		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
-> -		pmd_val(*pmdp++) = val;
-> -		pmd_val(*pmdp++) = val;
-> -		pmd_val(*pmdp++) = val;
-> -		pmd_val(*pmdp++) = val;
-> +		*pmdp++ = __pmd(val);
-> +		*pmdp++ = __pmd(val);
-> +		*pmdp++ = __pmd(val);
-> +		*pmdp++ = __pmd(val);
->  
->  		v += LARGE_PAGE_SIZE_16M;
->  		p += LARGE_PAGE_SIZE_16M;
-> @@ -125,7 +125,7 @@ unsigned long __init mmu_mapin_ram(unsigned long top)
->  		unsigned long val = p | _PMD_SIZE_4M | _PAGE_EXEC | _PAGE_HWWRITE;
->  
->  		pmdp = pmd_offset(pud_offset(pgd_offset_k(v), v), v);
-> -		pmd_val(*pmdp) = val;
-> +		*pmdp = __pmd(val);
+On Tue, 2015-13-10 at 01:49:28 UTC, Sam bobroff wrote:
+> This patch provides individual system call numbers for the following
+> System V IPC system calls, on PowerPC, so that they do not need to be
+> multiplexed:
+> * semop, semget, semctl, semtimedop
+> * msgsnd, msgrcv, msgget, msgctl
+> * shmat, shmdt, shmget, shmctl
 
+You tested this right? :)  Tell me about it.
 
-Yep that fixes it, I've squashed that in for now to get it building.
+Also we could make these available to SPU programs, but I don't think there's
+any point, no one's going to do a libc update for that.
 
 cheers
