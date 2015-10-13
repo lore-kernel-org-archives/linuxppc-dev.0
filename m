@@ -1,29 +1,36 @@
-Return-Path: <dja@axtens.net>
+Return-Path: <sam.bobroff@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA1441A0920
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 12:43:45 +1100 (AEDT)
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B6B51A02CF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 12:50:38 +1100 (AEDT)
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7F951140DA5
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:43:43 +1100 (AEDT)
-Received: by pabrc13 with SMTP id rc13so4363705pab.0
- for <linuxppc-dev@ozlabs.org>; Mon, 12 Oct 2015 18:43:40 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 3/8] powerpc/eeh: Force reset on fenced PHB
-In-Reply-To: <1444276739-20372-4-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1444276739-20372-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1444276739-20372-4-git-send-email-gwshan@linux.vnet.ibm.com>
-Date: Tue, 13 Oct 2015 12:43:23 +1100
-Message-ID: <871tcz4k78.fsf@gamma.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+ by ozlabs.org (Postfix) with ESMTPS id EF8B7140D7A
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:37 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Tue, 13 Oct 2015 11:50:36 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 317232CE8050
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:34 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9D1oLuG15466604
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:29 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9D1o1l4023254
+ for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 12:50:01 +1100
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, anton@samba.org, mikey@neuling.org
+Subject: [PATCH v2 1/1] powerpc: Individual System V IPC system calls
+Date: Tue, 13 Oct 2015 12:49:28 +1100
+Message-Id: <a3cfb270cd61cc3aacdf929e7739ae46dcff86bd.1444700960.git.sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,61 +40,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This patch provides individual system call numbers for the following
+System V IPC system calls, on PowerPC, so that they do not need to be
+multiplexed:
+* semop, semget, semctl, semtimedop
+* msgsnd, msgrcv, msgget, msgctl
+* shmat, shmdt, shmget, shmctl
 
-Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+---
 
+v2:
 
-> +	 *
-> +	 * When the PHB is fenced, we have to issue a reset to recover from
-> +	 * the error. Override the result if necessary to have partially
-> +	 * hotplug for this case.
->  	 */
->  	pr_info("EEH: Notify device drivers to shutdown\n");
->  	eeh_pe_dev_traverse(pe, eeh_report_error, &result);
-> +	if ((pe->type & EEH_PE_PHB) &&
-> +	    result !=3D PCI_ERS_RESULT_NONE &&
-> +	    result !=3D PCI_ERS_RESULT_NEED_RESET)
-> +		result =3D PCI_ERS_RESULT_NEED_RESET;
-I think we shouldn't discard the DISCONNECT state. A driver could ask
-that the device be disconnected in the error_detected callback and we
-should probably honour that.
+Rebased onto today's next-20151012.
 
-Regards,
-Daniel
+ arch/powerpc/include/asm/systbl.h      | 12 ++++++++++++
+ arch/powerpc/include/asm/unistd.h      |  2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 12 ++++++++++++
+ 3 files changed, 25 insertions(+), 1 deletion(-)
 
->=20=20
->  	/* Get the current PCI slot state. This can take a long time,
->  	 * sometimes over 300 seconds for certain systems.
-> --=20
-> 2.1.0
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWHGG7AAoJEPC3R3P2I92Fo/wP/RPPGSfrHNpC7s7Nd8ZchlmO
-LsWe0hKVywvIzav77iufermfD2I1uDgV8XVzclRLlivN5v58K90QPPf8qv29MifV
-Gghi3pVvLyNimWCrMbN3xaf4+Kiz52XCSUMqnWLEYvcZBakymSY4zjrsvoq3lUop
-xggzkfOpGostR38ncj1Ki1TttZ/bN4lEDYe/tiUxdjVTQXTfVt1i43ToIxjR27et
-g0GODd0FMG6wDtYp79nqhbgYsRjkvsPWJEBxhX7PBMr992LhqWFNjxPQqsEHPVyM
-2l0wWTnq4KGUo4VBqYGvVP2OxRbafmkTInX0McWWrS65rFLvu9JMAOMkYK3+PKYr
-CS/BIDAJVg/6KnhhieWbxYGDu0dZl0Bg+a4xkWKZzlbZAkq2jiz3W4nQNlTAgJ5J
-HQeZQExlWITEe6WxfFIFzEe0F1CtqOmXBlj40rTs8BAytb5e0dNRQv2KagbHG7CI
-zUH2SUYzK4DTL3m6p9YFiv3/9JGD1WypN0uoXZdoAJ0mQbZWuFxKbzZk/IONq2k9
-jAbTa10egusNqSkKu66O4Ks0jhmrH1K0pgVGbWzwiopOIOAulCbv4Dih8Di7GeHk
-/XrAQH1HUqH/OOYIyDx4brQ98NIONl5YZo2Wbu288+ZR/p1dpQsQu6fWOVyeh3fW
-4tbwfoI28pPFjTAiTJeQ
-=nwLA
------END PGP SIGNATURE-----
---=-=-=--
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 126d0c4..c9e26cb 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -370,3 +370,15 @@ COMPAT_SYS(execveat)
+ PPC64ONLY(switch_endian)
+ SYSCALL_SPU(userfaultfd)
+ SYSCALL_SPU(membarrier)
++SYSCALL(semop)
++SYSCALL(semget)
++COMPAT_SYS(semctl)
++COMPAT_SYS(semtimedop)
++COMPAT_SYS(msgsnd)
++COMPAT_SYS(msgrcv)
++SYSCALL(msgget)
++COMPAT_SYS(msgctl)
++COMPAT_SYS(shmat)
++SYSCALL(shmdt)
++SYSCALL(shmget)
++COMPAT_SYS(shmctl)
+diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+index 13411be..6d8f802 100644
+--- a/arch/powerpc/include/asm/unistd.h
++++ b/arch/powerpc/include/asm/unistd.h
+@@ -12,7 +12,7 @@
+ #include <uapi/asm/unistd.h>
+ 
+ 
+-#define __NR_syscalls		366
++#define __NR_syscalls		378
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+index 63377380..81579e9 100644
+--- a/arch/powerpc/include/uapi/asm/unistd.h
++++ b/arch/powerpc/include/uapi/asm/unistd.h
+@@ -388,5 +388,17 @@
+ #define __NR_switch_endian	363
+ #define __NR_userfaultfd	364
+ #define __NR_membarrier		365
++#define __NR_semop		366
++#define __NR_semget		367
++#define __NR_semctl		368
++#define __NR_semtimedop		369
++#define __NR_msgsnd		370
++#define __NR_msgrcv		371
++#define __NR_msgget		372
++#define __NR_msgctl		373
++#define __NR_shmat		374
++#define __NR_shmdt		375
++#define __NR_shmget		376
++#define __NR_shmctl		377
+ 
+ #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+-- 
+2.1.4
