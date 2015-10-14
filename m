@@ -1,41 +1,22 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0115.outbound.protection.outlook.com [207.46.100.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E586F1A0742
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 18:01:42 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B8A54140E40
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 18:01:42 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Wed, 14 Oct 2015 17:01:41 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 287202CE8052
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 18:01:35 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9E71RdY66781294
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 18:01:35 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9E712YA012017
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 18:01:02 +1100
-Date: Wed, 14 Oct 2015 18:00:29 +1100
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, anton@samba.org
-Subject: Re: [v2,1/1] powerpc: Individual System V IPC system calls
-Message-ID: <20151014070029.GA8383@tungsten.ozlabs.ibm.com>
-References: <a3cfb270cd61cc3aacdf929e7739ae46dcff86bd.1444700960.git.sam.bobroff@au1.ibm.com>
- <20151013093842.B3EA21402D6@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B7DF21A0743
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 18:22:42 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: <scottwood@freescale.com>
+CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
+ <leoli@freescale.com>, <paulus@samba.org>, Zhao Qiang
+ <qiang.zhao@freescale.com>
+Subject: [PATCH v12 1/6] genalloc:support memory-allocation with
+ bytes-alignment to genalloc
+Date: Wed, 14 Oct 2015 15:16:03 +0800
+Message-ID: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151013093842.B3EA21402D6@ozlabs.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,71 +26,228 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 13, 2015 at 08:38:42PM +1100, Michael Ellerman wrote:
-> On Tue, 2015-13-10 at 01:49:28 UTC, Sam bobroff wrote:
-> > This patch provides individual system call numbers for the following
-> > System V IPC system calls, on PowerPC, so that they do not need to be
-> > multiplexed:
-> > * semop, semget, semctl, semtimedop
-> > * msgsnd, msgrcv, msgget, msgctl
-> > * shmat, shmdt, shmget, shmctl
-> 
-> You tested this right? :)  Tell me about it.
+Bytes alignment is required to manage some special RAM,
+so add gen_pool_first_fit_align to genalloc,
+meanwhile add gen_pool_alloc_data to pass data to
+gen_pool_first_fit_align(modify gen_pool_alloc as a wrapper)
 
-Why yes I did:
+Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+---
+Changes for v6:
+	- patches set v6 include a new patch because of using 
+	- genalloc to manage QE MURAM, patch 0001 is the new 
+	- patch, adding bytes alignment for allocation for use.
+Changes for v7:
+	- cpm muram also need to use genalloc to manage, it has 
+	  a function to reserve a specific region of muram,
+	  add offset to genpool_data for start addr to be allocated.
+Changes for v8:
+	- remove supporting reserving a specific region from this patch
+	  add a new patch to support it.
+Changes for v9:
+	- Nil 
+Changes for v10:
+	- Nil
+Changes for v11:
+	- Nil
+Changes for v12:
+	- Nil
 
-I have written a (fairly) trivial test program that calls each function in a
-way that doesn't fail (but that doesn't necessarily attempt to exercise the
-full functionality of it; my intent was primarily to validate the parameter
-passing part as that is where most of the code change is (on the glibc side)).
+ include/linux/genalloc.h | 24 ++++++++++++++++----
+ lib/genalloc.c           | 58 +++++++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 73 insertions(+), 9 deletions(-)
 
-I patched a local copy of glibc with the new kernel header and various tweaks
-to correctly format the parameter lists for the new calls (there is actually
-quite a lot of code in glibc around the IPC calls due to various compatibility
-issues). I could then build a full tool chain that supported the new calls.
-
-(This was a lot more extensive than the kernel patch but should be fairly close
-to what needs to go into glibc.)
-
-I used that tool chain to build a complete host system (using buildroot). Then
-I could run the following tests:
-
-* glibc: stock
-  Host kernel: stock
-  Result: success
-  Notes: As expected, base case.
-
-* glibc: stock
-  Host kernel: patched
-  Result: success
-  Notes: As expected, the old ipc() call still exists in the patched host.
-
-* glibc: patched
-  Host kernel: stock
-  Result: failure
-  Notes: As expected, the test was run with a glibc that requires a patched
-  kernel on an unpatched one so the syscalls are unknown.
-
-* glibc: patched
-  Host kernel: patched
-  Result: success
-  Notes: As expected. (Also, a bit of debug in glibc shows the new system call
-  paths being followed.)
-
-(I also re-ran the tests both for little-endian and big-endian hosts.)
-
-It would obviously be good to have someone else test this, but I can't see a
-way to make it easy to do. They would presumably have to go through all of the
-above, which seems too much to ask given how trivial the kernel side of the
-patch is. Still, it bothers me a bit so if there is any way please let me know.
-(I thought about writing some assembly to directly test the syscall numbers but
-all it would do is verify that the numbers are valid, which really isn't much
-of a test.)
-
-> Also we could make these available to SPU programs, but I don't think there's
-> any point, no one's going to do a libc update for that.
-> 
-> cheers
-
-Cheers,
-Sam.
+diff --git a/include/linux/genalloc.h b/include/linux/genalloc.h
+index 1ccaab4..aaf3dc2 100644
+--- a/include/linux/genalloc.h
++++ b/include/linux/genalloc.h
+@@ -30,10 +30,12 @@
+ #ifndef __GENALLOC_H__
+ #define __GENALLOC_H__
+ 
++#include <linux/types.h>
+ #include <linux/spinlock_types.h>
+ 
+ struct device;
+ struct device_node;
++struct gen_pool;
+ 
+ /**
+  * Allocation callback function type definition
+@@ -47,7 +49,7 @@ typedef unsigned long (*genpool_algo_t)(unsigned long *map,
+ 			unsigned long size,
+ 			unsigned long start,
+ 			unsigned int nr,
+-			void *data);
++			void *data, struct gen_pool *pool);
+ 
+ /*
+  *  General purpose special memory pool descriptor.
+@@ -73,6 +75,13 @@ struct gen_pool_chunk {
+ 	unsigned long bits[0];		/* bitmap for allocating memory chunk */
+ };
+ 
++/*
++ *  gen_pool data descriptor for gen_pool_first_fit_align.
++ */
++struct genpool_data_align {
++	int align;		/* alignment by bytes for starting address */
++};
++
+ extern struct gen_pool *gen_pool_create(int, int);
+ extern phys_addr_t gen_pool_virt_to_phys(struct gen_pool *pool, unsigned long);
+ extern int gen_pool_add_virt(struct gen_pool *, unsigned long, phys_addr_t,
+@@ -96,6 +105,7 @@ static inline int gen_pool_add(struct gen_pool *pool, unsigned long addr,
+ }
+ extern void gen_pool_destroy(struct gen_pool *);
+ extern unsigned long gen_pool_alloc(struct gen_pool *, size_t);
++extern unsigned long gen_pool_alloc_data(struct gen_pool *, size_t, void *data);
+ extern void *gen_pool_dma_alloc(struct gen_pool *pool, size_t size,
+ 		dma_addr_t *dma);
+ extern void gen_pool_free(struct gen_pool *, unsigned long, size_t);
+@@ -108,14 +118,20 @@ extern void gen_pool_set_algo(struct gen_pool *pool, genpool_algo_t algo,
+ 		void *data);
+ 
+ extern unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data);
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool);
++
++extern unsigned long gen_pool_first_fit_align(unsigned long *map,
++		unsigned long size, unsigned long start, unsigned int nr,
++		void *data, struct gen_pool *pool);
+ 
+ extern unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+ 		unsigned long size, unsigned long start, unsigned int nr,
+-		void *data);
++		void *data, struct gen_pool *pool);
+ 
+ extern unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data);
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool);
+ 
+ extern struct gen_pool *devm_gen_pool_create(struct device *dev,
+ 		int min_alloc_order, int nid);
+diff --git a/lib/genalloc.c b/lib/genalloc.c
+index d214866..b8762b1 100644
+--- a/lib/genalloc.c
++++ b/lib/genalloc.c
+@@ -269,6 +269,24 @@ EXPORT_SYMBOL(gen_pool_destroy);
+  */
+ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
+ {
++	return gen_pool_alloc_data(pool, size, pool->data);
++}
++EXPORT_SYMBOL(gen_pool_alloc);
++
++/**
++ * gen_pool_alloc_data - allocate special memory from the pool
++ * @pool: pool to allocate from
++ * @size: number of bytes to allocate from the pool
++ * @data: data passed to algorithm
++ *
++ * Allocate the requested number of bytes from the specified pool.
++ * Uses the pool allocation function (with first-fit algorithm by default).
++ * Can not be used in NMI handler on architectures without
++ * NMI-safe cmpxchg implementation.
++ */
++unsigned long gen_pool_alloc_data(struct gen_pool *pool, size_t size,
++		void *data)
++{
+ 	struct gen_pool_chunk *chunk;
+ 	unsigned long addr = 0;
+ 	int order = pool->min_alloc_order;
+@@ -290,7 +308,7 @@ unsigned long gen_pool_alloc(struct gen_pool *pool, size_t size)
+ 		end_bit = chunk_size(chunk) >> order;
+ retry:
+ 		start_bit = pool->algo(chunk->bits, end_bit, start_bit, nbits,
+-				pool->data);
++				data, pool);
+ 		if (start_bit >= end_bit)
+ 			continue;
+ 		remain = bitmap_set_ll(chunk->bits, start_bit, nbits);
+@@ -309,7 +327,7 @@ retry:
+ 	rcu_read_unlock();
+ 	return addr;
+ }
+-EXPORT_SYMBOL(gen_pool_alloc);
++EXPORT_SYMBOL(gen_pool_alloc_data);
+ 
+ /**
+  * gen_pool_dma_alloc - allocate special memory from the pool for DMA usage
+@@ -500,15 +518,42 @@ EXPORT_SYMBOL(gen_pool_set_algo);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  */
+ unsigned long gen_pool_first_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data)
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
+ {
+ 	return bitmap_find_next_zero_area(map, size, start, nr, 0);
+ }
+ EXPORT_SYMBOL(gen_pool_first_fit);
+ 
+ /**
++ * gen_pool_first_fit_align - find the first available region
++ * of memory matching the size requirement (alignment constraint)
++ * @map: The address to base the search on
++ * @size: The bitmap size in bits
++ * @start: The bitnumber to start searching at
++ * @nr: The number of zeroed bits we're looking for
++ * @data: data for alignment
++ * @pool: pool to get order from
++ */
++unsigned long gen_pool_first_fit_align(unsigned long *map, unsigned long size,
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
++{
++	struct genpool_data_align *alignment;
++	unsigned long align_mask;
++	int order;
++
++	alignment = data;
++	order = pool->min_alloc_order;
++	align_mask = ((alignment->align + (1UL << order) - 1) >> order) - 1;
++	return bitmap_find_next_zero_area(map, size, start, nr, align_mask);
++}
++EXPORT_SYMBOL(gen_pool_first_fit_align);
++
++/**
+  * gen_pool_first_fit_order_align - find the first available region
+  * of memory matching the size requirement. The region will be aligned
+  * to the order of the size specified.
+@@ -517,10 +562,11 @@ EXPORT_SYMBOL(gen_pool_first_fit);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  */
+ unsigned long gen_pool_first_fit_order_align(unsigned long *map,
+ 		unsigned long size, unsigned long start,
+-		unsigned int nr, void *data)
++		unsigned int nr, void *data, struct gen_pool *pool)
+ {
+ 	unsigned long align_mask = roundup_pow_of_two(nr) - 1;
+ 
+@@ -536,12 +582,14 @@ EXPORT_SYMBOL(gen_pool_first_fit_order_align);
+  * @start: The bitnumber to start searching at
+  * @nr: The number of zeroed bits we're looking for
+  * @data: additional data - unused
++ * @pool: pool to find the fit region memory from
+  *
+  * Iterate over the bitmap to find the smallest free region
+  * which we can allocate the memory.
+  */
+ unsigned long gen_pool_best_fit(unsigned long *map, unsigned long size,
+-		unsigned long start, unsigned int nr, void *data)
++		unsigned long start, unsigned int nr, void *data,
++		struct gen_pool *pool)
+ {
+ 	unsigned long start_bit = size;
+ 	unsigned long len = size + 1;
+-- 
+2.1.0.27.g96db324
