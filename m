@@ -1,22 +1,47 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 35E441A03A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 22:20:39 +1100 (AEDT)
-Date: Wed, 14 Oct 2015 22:19:37 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: "James E.J. Bottomley" <JBottomley@odin.com>
-cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- Michael Schmitz <schmitzmic@gmail.com>, linux-scsi@vger.kernel.org
-Subject: Re: [RFC v6 03/25] m68k/atari: Replace nvram_{read,write}_byte with
- arch_nvram_ops
-In-Reply-To: <20150823104130.287718296@telegraphics.com.au>
-Message-ID: <alpine.LNX.2.00.1510142216390.4586@nippy.intranet>
-References: <20150823104129.517600532@telegraphics.com.au>
- <20150823104130.287718296@telegraphics.com.au>
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B1BA1A0730
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:39:12 +1100 (AEDT)
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Wed, 14 Oct 2015 11:39:09 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 247B4C90043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 11:27:17 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9EFd56O59899942
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 15:39:05 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9EFd2BN011860
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 11:39:05 -0400
+Date: Wed, 14 Oct 2015 08:39:00 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+ Keith Busch <keith.busch@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/5 v2] dma-mapping: add generic dma_get_page_shift API
+Message-ID: <20151014153900.GC30179@linux.vnet.ibm.com>
+References: <20151002171606.GA41011@linux.vnet.ibm.com>
+ <20151002200953.GB40695@linux.vnet.ibm.com>
+ <20151002201142.GC40695@linux.vnet.ibm.com>
+ <20151006095136.GB14144@infradead.org>
+ <20151012210651.GB26702@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151012210651.GB26702@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,203 +51,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Christoph,
 
-James, would you please review and ack this patch, and patch 01/25 also?
+On 12.10.2015 [14:06:51 -0700], Nishanth Aravamudan wrote:
+> On 06.10.2015 [02:51:36 -0700], Christoph Hellwig wrote:
+> > Do we need a function here or can we just have a IOMMU_PAGE_SHIFT define
+> > with an #ifndef in common code?
+> 
+> On Power, since it's technically variable, we'd need a function. So are
+> you suggesting define'ing it to a function just on Power and leaving it
+> a constant elsewhere?
+> 
+> I noticed that sparc has a IOMMU_PAGE_SHIFT already, fwiw.
 
-On Sun, 23 Aug 2015, Finn Thain wrote:
+Sorry, I should have been more specific -- I'm ready to spin out a v3,
+with a sparc-specific function.
 
-> By implementing an arch_nvram_ops struct, any platform can re-use the
-> drivers/char/nvram module without needing any arch-specific code
-> in that module. Atari does so here.
-> 
-> Atari has one user of nvram_check_checksum() whereas the other platforms
-> (i.e. x86 and ARM platforms) have none at all. Replace this
-> validate-checksum-and-read-byte sequence with the equivalent
-> rtc_nvram_ops.read() call and remove the now unused functions.
-> 
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> Tested-by: Christian T. Steigies <cts@debian.org>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> 
-> ---
-> 
-> The advantage of the new ops struct over the old global nvram_* functions
-> is that the misc device module can be shared by different platforms
-> without requiring every platform to implement every nvram_* function.
-> E.g. only RTC "CMOS" NVRAMs have a checksum for the entire NVRAM
-> and only PowerPC platforms have a "sync" ioctl.
-> 
-> ---
->  arch/m68k/atari/nvram.c   |   89 ++++++++++++++++++++++++++++------------------
->  drivers/scsi/atari_scsi.c |    8 ++--
->  include/linux/nvram.h     |    9 ++++
->  3 files changed, 70 insertions(+), 36 deletions(-)
-> 
-> Index: linux/arch/m68k/atari/nvram.c
-> ===================================================================
-> --- linux.orig/arch/m68k/atari/nvram.c	2015-08-23 20:40:55.000000000 +1000
-> +++ linux/arch/m68k/atari/nvram.c	2015-08-23 20:40:57.000000000 +1000
-> @@ -38,33 +38,12 @@ unsigned char __nvram_read_byte(int i)
->  	return CMOS_READ(NVRAM_FIRST_BYTE + i);
->  }
->  
-> -unsigned char nvram_read_byte(int i)
-> -{
-> -	unsigned long flags;
-> -	unsigned char c;
-> -
-> -	spin_lock_irqsave(&rtc_lock, flags);
-> -	c = __nvram_read_byte(i);
-> -	spin_unlock_irqrestore(&rtc_lock, flags);
-> -	return c;
-> -}
-> -EXPORT_SYMBOL(nvram_read_byte);
-> -
->  /* This races nicely with trying to read with checksum checking */
->  void __nvram_write_byte(unsigned char c, int i)
->  {
->  	CMOS_WRITE(c, NVRAM_FIRST_BYTE + i);
->  }
->  
-> -void nvram_write_byte(unsigned char c, int i)
-> -{
-> -	unsigned long flags;
-> -
-> -	spin_lock_irqsave(&rtc_lock, flags);
-> -	__nvram_write_byte(c, i);
-> -	spin_unlock_irqrestore(&rtc_lock, flags);
-> -}
-> -
->  /* On Ataris, the checksum is over all bytes except the checksum bytes
->   * themselves; these are at the very end.
->   */
-> @@ -83,18 +62,6 @@ int __nvram_check_checksum(void)
->  	       (__nvram_read_byte(ATARI_CKS_LOC + 1) == (sum & 0xff));
->  }
->  
-> -int nvram_check_checksum(void)
-> -{
-> -	unsigned long flags;
-> -	int rv;
-> -
-> -	spin_lock_irqsave(&rtc_lock, flags);
-> -	rv = __nvram_check_checksum();
-> -	spin_unlock_irqrestore(&rtc_lock, flags);
-> -	return rv;
-> -}
-> -EXPORT_SYMBOL(nvram_check_checksum);
-> -
->  static void __nvram_set_checksum(void)
->  {
->  	int i;
-> @@ -106,6 +73,62 @@ static void __nvram_set_checksum(void)
->  	__nvram_write_byte(sum, ATARI_CKS_LOC + 1);
->  }
->  
-> +static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
-> +{
-> +	char *p = buf;
-> +	loff_t i;
-> +
-> +	spin_lock_irq(&rtc_lock);
-> +
-> +	if (!__nvram_check_checksum()) {
-> +		spin_unlock_irq(&rtc_lock);
-> +		return -EIO;
-> +	}
-> +
-> +	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-> +		*p = __nvram_read_byte(i);
-> +
-> +	spin_unlock_irq(&rtc_lock);
-> +
-> +	*ppos = i;
-> +	return p - buf;
-> +}
-> +
-> +static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
-> +{
-> +	char *p = buf;
-> +	loff_t i;
-> +
-> +	spin_lock_irq(&rtc_lock);
-> +
-> +	if (!__nvram_check_checksum()) {
-> +		spin_unlock_irq(&rtc_lock);
-> +		return -EIO;
-> +	}
-> +
-> +	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-> +		__nvram_write_byte(*p, i);
-> +
-> +	__nvram_set_checksum();
-> +
-> +	spin_unlock_irq(&rtc_lock);
-> +
-> +	*ppos = i;
-> +	return p - buf;
-> +}
-> +
-> +static ssize_t nvram_get_size(void)
-> +{
-> +	return NVRAM_BYTES;
-> +}
-> +
-> +const struct nvram_ops arch_nvram_ops = {
-> +	.read           = nvram_read,
-> +	.write          = nvram_write,
-> +	.get_size       = nvram_get_size,
-> +};
-> +EXPORT_SYMBOL(arch_nvram_ops);
-> +
->  #ifdef CONFIG_PROC_FS
->  static struct {
->  	unsigned char val;
-> Index: linux/drivers/scsi/atari_scsi.c
-> ===================================================================
-> --- linux.orig/drivers/scsi/atari_scsi.c	2015-08-23 20:40:53.000000000 +1000
-> +++ linux/drivers/scsi/atari_scsi.c	2015-08-23 20:40:57.000000000 +1000
-> @@ -880,13 +880,15 @@ static int __init atari_scsi_probe(struc
->  #ifdef CONFIG_NVRAM
->  	else
->  		/* Test if a host id is set in the NVRam */
-> -		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
-> -			unsigned char b = nvram_read_byte(14);
-> +		if (ATARIHW_PRESENT(TT_CLK)) {
-> +			unsigned char b;
-> +			loff_t offset = 14;
-> +			ssize_t count = arch_nvram_ops.read(&b, 1, &offset);
->  
->  			/* Arbitration enabled? (for TOS)
->  			 * If yes, use configured host ID
->  			 */
-> -			if (b & 0x80)
-> +			if ((count == 1) && (b & 0x80))
->  				atari_scsi_template.this_id = b & 7;
->  		}
->  #endif
-> Index: linux/include/linux/nvram.h
-> ===================================================================
-> --- linux.orig/include/linux/nvram.h	2015-08-23 20:40:53.000000000 +1000
-> +++ linux/include/linux/nvram.h	2015-08-23 20:40:57.000000000 +1000
-> @@ -10,4 +10,13 @@ extern void __nvram_write_byte(unsigned
->  extern void nvram_write_byte(unsigned char c, int i);
->  extern int __nvram_check_checksum(void);
->  extern int nvram_check_checksum(void);
-> +
-> +struct nvram_ops {
-> +	ssize_t         (*read)(char *, size_t, loff_t *);
-> +	ssize_t         (*write)(char *, size_t, loff_t *);
-> +	ssize_t         (*get_size)(void);
-> +};
-> +
-> +extern const struct nvram_ops arch_nvram_ops;
-> +
->  #endif  /* _LINUX_NVRAM_H */
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-m68k" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Are you ok with leaving it a function for now (the only caller is in
+NVMe obviously).
+
+-Nish
