@@ -1,28 +1,34 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-io0-x22a.google.com (mail-io0-x22a.google.com
- [IPv6:2607:f8b0:4001:c06::22a])
+Return-Path: <olof@lixom.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9574E1A066C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 03:54:58 +1100 (AEDT)
+Received: from mail-yk0-f179.google.com (mail-yk0-f179.google.com
+ [209.85.160.179])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BE221A07F5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:57:27 +1100 (AEDT)
-Received: by iodv82 with SMTP id v82so60087807iod.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:57:25 -0700 (PDT)
-From: Boqun Feng <boqun.feng@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Boqun Feng <boqun.feng@gmail.com>
-Subject: [PATCH tip/locking/core v4 6/6] powerpc: atomic: Implement cmpxchg{,
- 64}_* and atomic{, 64}_cmpxchg_* variants
-Date: Wed, 14 Oct 2015 23:56:01 +0800
-Message-Id: <1444838161-17209-7-git-send-email-boqun.feng@gmail.com>
-In-Reply-To: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
-References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id EC65C141107
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2015 03:54:57 +1100 (AEDT)
+Received: by ykoo7 with SMTP id o7so53209190yko.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 09:54:55 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1444779780.12197.3.camel@ellerman.id.au>
+References: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
+ <20151002074708.CF4DC14076A@ozlabs.org>
+ <CAOesGMjDC99RFEenyUqc2uhpT9EhqhevrqxiO5Gd7AN_GWmrkg@mail.gmail.com>
+ <1444779780.12197.3.camel@ellerman.id.au>
+Date: Wed, 14 Oct 2015 09:54:55 -0700
+Message-ID: <CAOesGMgd2rnAs9hmi1B9PWN2=fr6HUDn+krxdDdGPUKBrZOQGw@mail.gmail.com>
+Subject: Re: [RFC, 1/2] scripts/kconfig/Makefile: Allow KBUILD_DEFCONFIG to be
+ a target
+From: Olof Johansson <olof@lixom.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, mmarek@suse.com,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ yann.morin.1998@free.fr,
+ "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,244 +38,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement cmpxchg{,64}_relaxed and atomic{,64}_cmpxchg_relaxed, based on
-which _release variants can be built.
+On Tue, Oct 13, 2015 at 4:43 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> On Tue, 2015-10-13 at 14:02 -0700, Olof Johansson wrote:
+>> On Fri, Oct 2, 2015 at 12:47 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> > On Wed, 2015-23-09 at 05:40:34 UTC, Michael Ellerman wrote:
+>> >> Arch Makefiles can set KBUILD_DEFCONFIG to tell kbuild the name of the
+>> >> defconfig that should be built by default.
+>> >>
+>> >> However currently there is an assumption that KBUILD_DEFCONFIG points to
+>> >> a file at arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG).
+>> >>
+>> >> We would like to use a target, using merge_config, as our defconfig, so
+>> >> adapt the logic in scripts/kconfig/Makefile to allow that.
+>> >>
+>> >> To minimise the chance of breaking anything, we first check if
+>> >> KBUILD_DEFCONFIG is a file, and if so we do the old logic. If it's not a
+>> >> file, then we call the top-level Makefile with KBUILD_DEFCONFIG as the
+>> >> target.
+>> >>
+>> >> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> >> Acked-by: Michal Marek <mmarek@suse.com>
+>> >
+>> > Applied to powerpc next.
+>> >
+>> > https://git.kernel.org/powerpc/c/d2036f30cfe1daa19e63ce75
+>>
+>> This breaks arm64 defconfig for me:
+>>
+>> mkdir obj-tmp
+>> make -f Makefile O=obj-tmp ARCH=arm64 defconfig
+>> ... watch loop of:
+>> *** Default configuration is based on target 'defconfig'
+>>   GEN     ./Makefile
+>
+> Crap, sorry. I knew I shouldn't have touched that code!
+>
+> Does this fix it for you?
 
-To avoid superfluous barriers in _acquire variants, we implement these
-operations with assembly code rather use __atomic_op_acquire() to build
-them automatically.
+Yes, it does, however:
 
-For the same reason, we keep the assembly implementation of fully
-ordered cmpxchg operations.
+>
+> diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+> index b2b9c87..3043d6b 100644
+> --- a/scripts/kconfig/Makefile
+> +++ b/scripts/kconfig/Makefile
+> @@ -96,7 +96,7 @@ savedefconfig: $(obj)/conf
+>  defconfig: $(obj)/conf
+>  ifeq ($(KBUILD_DEFCONFIG),)
+>         $< $(silent) --defconfig $(Kconfig)
+> -else ifneq ($(wildcard arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
+> +else ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
+>         @$(kecho) "*** Default configuration is based on '$(KBUILD_DEFCONFIG)'"
+>         $(Q)$< $(silent) --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
 
-However, we don't do the similar for _release, because that will require
-putting barriers in the middle of ll/sc loops, which is probably a bad
-idea.
+Do you need a $(srctree) prefix here too? I'm not entirely sure what I
+would do to reproduce a run that goes down this path so I can't
+confirm.
 
-Note cmpxchg{,64}_relaxed and atomic{,64}_cmpxchg_relaxed are not
-compiler barriers.
 
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
----
- arch/powerpc/include/asm/atomic.h  |  10 +++
- arch/powerpc/include/asm/cmpxchg.h | 149 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 158 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index 1e9d526..e58188d 100644
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -185,6 +185,11 @@ static __inline__ int atomic_dec_return_relaxed(atomic_t *v)
- #define atomic_dec_return_relaxed atomic_dec_return_relaxed
- 
- #define atomic_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
-+#define atomic_cmpxchg_relaxed(v, o, n) \
-+	cmpxchg_relaxed(&((v)->counter), (o), (n))
-+#define atomic_cmpxchg_acquire(v, o, n) \
-+	cmpxchg_acquire(&((v)->counter), (o), (n))
-+
- #define atomic_xchg(v, new) (xchg(&((v)->counter), new))
- #define atomic_xchg_relaxed(v, new) xchg_relaxed(&((v)->counter), (new))
- 
-@@ -453,6 +458,11 @@ static __inline__ long atomic64_dec_if_positive(atomic64_t *v)
- }
- 
- #define atomic64_cmpxchg(v, o, n) (cmpxchg(&((v)->counter), (o), (n)))
-+#define atomic64_cmpxchg_relaxed(v, o, n) \
-+	cmpxchg_relaxed(&((v)->counter), (o), (n))
-+#define atomic64_cmpxchg_acquire(v, o, n) \
-+	cmpxchg_acquire(&((v)->counter), (o), (n))
-+
- #define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
- #define atomic64_xchg_relaxed(v, new) xchg_relaxed(&((v)->counter), (new))
- 
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index 17c7e14..cae4fa8 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -181,6 +181,56 @@ __cmpxchg_u32_local(volatile unsigned int *p, unsigned long old,
- 	return prev;
- }
- 
-+static __always_inline unsigned long
-+__cmpxchg_u32_relaxed(u32 *p, unsigned long old, unsigned long new)
-+{
-+	unsigned long prev;
-+
-+	__asm__ __volatile__ (
-+"1:	lwarx	%0,0,%2		# __cmpxchg_u32_relaxed\n"
-+"	cmpw	0,%0,%3\n"
-+"	bne-	2f\n"
-+	PPC405_ERR77(0, %2)
-+"	stwcx.	%4,0,%2\n"
-+"	bne-	1b\n"
-+"2:"
-+	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (old), "r" (new)
-+	: "cc");
-+
-+	return prev;
-+}
-+
-+/*
-+ * cmpxchg family don't have order guarantee if cmp part fails, therefore we
-+ * can avoid superfluous barriers if we use assembly code to implement
-+ * cmpxchg() and cmpxchg_acquire(), however we don't do the similar for
-+ * cmpxchg_release() because that will result in putting a barrier in the
-+ * middle of a ll/sc loop, which is probably a bad idea. For example, this
-+ * might cause the conditional store more likely to fail.
-+ */
-+static __always_inline unsigned long
-+__cmpxchg_u32_acquire(u32 *p, unsigned long old, unsigned long new)
-+{
-+	unsigned long prev;
-+
-+	__asm__ __volatile__ (
-+"1:	lwarx	%0,0,%2		# __cmpxchg_u32_acquire\n"
-+"	cmpw	0,%0,%3\n"
-+"	bne-	2f\n"
-+	PPC405_ERR77(0, %2)
-+"	stwcx.	%4,0,%2\n"
-+"	bne-	1b\n"
-+	PPC_ACQUIRE_BARRIER
-+	"\n"
-+"2:"
-+	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (old), "r" (new)
-+	: "cc", "memory");
-+
-+	return prev;
-+}
-+
- #ifdef CONFIG_PPC64
- static __always_inline unsigned long
- __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
-@@ -224,6 +274,46 @@ __cmpxchg_u64_local(volatile unsigned long *p, unsigned long old,
- 
- 	return prev;
- }
-+
-+static __always_inline unsigned long
-+__cmpxchg_u64_relaxed(u64 *p, unsigned long old, unsigned long new)
-+{
-+	unsigned long prev;
-+
-+	__asm__ __volatile__ (
-+"1:	ldarx	%0,0,%2		# __cmpxchg_u64_relaxed\n"
-+"	cmpd	0,%0,%3\n"
-+"	bne-	2f\n"
-+"	stdcx.	%4,0,%2\n"
-+"	bne-	1b\n"
-+"2:"
-+	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (old), "r" (new)
-+	: "cc");
-+
-+	return prev;
-+}
-+
-+static __always_inline unsigned long
-+__cmpxchg_u64_acquire(u64 *p, unsigned long old, unsigned long new)
-+{
-+	unsigned long prev;
-+
-+	__asm__ __volatile__ (
-+"1:	ldarx	%0,0,%2		# __cmpxchg_u64_acquire\n"
-+"	cmpd	0,%0,%3\n"
-+"	bne-	2f\n"
-+"	stdcx.	%4,0,%2\n"
-+"	bne-	1b\n"
-+	PPC_ACQUIRE_BARRIER
-+	"\n"
-+"2:"
-+	: "=&r" (prev), "+m" (*p)
-+	: "r" (p), "r" (old), "r" (new)
-+	: "cc", "memory");
-+
-+	return prev;
-+}
- #endif
- 
- /* This function doesn't exist, so you'll get a linker error
-@@ -262,6 +352,37 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
- 	return old;
- }
- 
-+static __always_inline unsigned long
-+__cmpxchg_relaxed(void *ptr, unsigned long old, unsigned long new,
-+		  unsigned int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __cmpxchg_u32_relaxed(ptr, old, new);
-+#ifdef CONFIG_PPC64
-+	case 8:
-+		return __cmpxchg_u64_relaxed(ptr, old, new);
-+#endif
-+	}
-+	__cmpxchg_called_with_bad_pointer();
-+	return old;
-+}
-+
-+static __always_inline unsigned long
-+__cmpxchg_acquire(void *ptr, unsigned long old, unsigned long new,
-+		  unsigned int size)
-+{
-+	switch (size) {
-+	case 4:
-+		return __cmpxchg_u32_acquire(ptr, old, new);
-+#ifdef CONFIG_PPC64
-+	case 8:
-+		return __cmpxchg_u64_acquire(ptr, old, new);
-+#endif
-+	}
-+	__cmpxchg_called_with_bad_pointer();
-+	return old;
-+}
- #define cmpxchg(ptr, o, n)						 \
-   ({									 \
-      __typeof__(*(ptr)) _o_ = (o);					 \
-@@ -279,6 +400,23 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
- 				    (unsigned long)_n_, sizeof(*(ptr))); \
-   })
- 
-+#define cmpxchg_relaxed(ptr, o, n)					\
-+({									\
-+	__typeof__(*(ptr)) _o_ = (o);					\
-+	__typeof__(*(ptr)) _n_ = (n);					\
-+	(__typeof__(*(ptr))) __cmpxchg_relaxed((ptr),			\
-+			(unsigned long)_o_, (unsigned long)_n_,		\
-+			sizeof(*(ptr)));				\
-+})
-+
-+#define cmpxchg_acquire(ptr, o, n)					\
-+({									\
-+	__typeof__(*(ptr)) _o_ = (o);					\
-+	__typeof__(*(ptr)) _n_ = (n);					\
-+	(__typeof__(*(ptr))) __cmpxchg_acquire((ptr),			\
-+			(unsigned long)_o_, (unsigned long)_n_,		\
-+			sizeof(*(ptr)));				\
-+})
- #ifdef CONFIG_PPC64
- #define cmpxchg64(ptr, o, n)						\
-   ({									\
-@@ -290,7 +428,16 @@ __cmpxchg_local(volatile void *ptr, unsigned long old, unsigned long new,
- 	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
- 	cmpxchg_local((ptr), (o), (n));					\
-   })
--#define cmpxchg64_relaxed	cmpxchg64_local
-+#define cmpxchg64_relaxed(ptr, o, n)					\
-+({									\
-+	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
-+	cmpxchg_relaxed((ptr), (o), (n));				\
-+})
-+#define cmpxchg64_acquire(ptr, o, n)					\
-+({									\
-+	BUILD_BUG_ON(sizeof(*(ptr)) != 8);				\
-+	cmpxchg_acquire((ptr), (o), (n));				\
-+})
- #else
- #include <asm-generic/cmpxchg-local.h>
- #define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
--- 
-2.5.3
+-Olof
