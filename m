@@ -1,12 +1,12 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-io0-x232.google.com (mail-io0-x232.google.com
- [IPv6:2607:f8b0:4001:c06::232])
+Received: from mail-io0-x234.google.com (mail-io0-x234.google.com
+ [IPv6:2607:f8b0:4001:c06::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 991781A028B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:56:56 +1100 (AEDT)
-Received: by iow1 with SMTP id 1so60382817iow.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:56:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D49DB1A037E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:57:04 +1100 (AEDT)
+Received: by iofl186 with SMTP id l186so60203541iof.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:57:03 -0700 (PDT)
 From: Boqun Feng <boqun.feng@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -17,10 +17,10 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
  Boqun Feng <boqun.feng@gmail.com>
-Subject: [PATCH tip/locking/core v4 2/6] atomics: Add test for atomic
- operations with _relaxed variants
-Date: Wed, 14 Oct 2015 23:55:57 +0800
-Message-Id: <1444838161-17209-3-git-send-email-boqun.feng@gmail.com>
+Subject: [PATCH tip/locking/core v4 3/6] atomics: Allow architectures to
+ define their own __atomic_op_* helpers
+Date: Wed, 14 Oct 2015 23:55:58 +0800
+Message-Id: <1444838161-17209-4-git-send-email-boqun.feng@gmail.com>
 In-Reply-To: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
 References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,176 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some atomic operations now have _relaxed/acquire/release variants, this
-patch then adds some trivial tests for two purpose:
-
-1.	test the behavior of these new operations in single-CPU
-	environment.
-
-2.	make their code generated before we actually use them somewhere,
-	so that we can examine their assembly code.
+Some architectures may have their special barriers for acquire, release
+and fence semantics, so that general memory barriers(smp_mb__*_atomic())
+in the default __atomic_op_*() may be too strong, so allow architectures
+to define their own helpers which can overwrite the default helpers.
 
 Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
 ---
- lib/atomic64_test.c | 120 ++++++++++++++++++++++++++++++++++------------------
- 1 file changed, 79 insertions(+), 41 deletions(-)
+ include/linux/atomic.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
-index 83c33a5b..18e422b 100644
---- a/lib/atomic64_test.c
-+++ b/lib/atomic64_test.c
-@@ -27,6 +27,65 @@ do {								\
- 		(unsigned long long)r);				\
- } while (0)
+diff --git a/include/linux/atomic.h b/include/linux/atomic.h
+index 27e580d..947c1dc 100644
+--- a/include/linux/atomic.h
++++ b/include/linux/atomic.h
+@@ -43,20 +43,29 @@ static inline int atomic_read_ctrl(const atomic_t *v)
+  * The idea here is to build acquire/release variants by adding explicit
+  * barriers on top of the relaxed variant. In the case where the relaxed
+  * variant is already fully ordered, no additional barriers are needed.
++ *
++ * Besides, if an arch has a special barrier for acquire/release, it could
++ * implement its own __atomic_op_* and use the same framework for building
++ * variants
+  */
++#ifndef __atomic_op_acquire
+ #define __atomic_op_acquire(op, args...)				\
+ ({									\
+ 	typeof(op##_relaxed(args)) __ret  = op##_relaxed(args);		\
+ 	smp_mb__after_atomic();						\
+ 	__ret;								\
+ })
++#endif
  
-+/*
-+ * Test for a atomic operation family,
-+ * @test should be a macro accepting parameters (bit, op, ...)
-+ */
-+
-+#define FAMILY_TEST(test, bit, op, args...)	\
-+do {						\
-+	test(bit, op, ##args);		\
-+	test(bit, op##_acquire, ##args);	\
-+	test(bit, op##_release, ##args);	\
-+	test(bit, op##_relaxed, ##args);	\
-+} while (0)
-+
-+#define TEST_RETURN(bit, op, c_op, val)				\
-+do {								\
-+	atomic##bit##_set(&v, v0);				\
-+	r = v0;							\
-+	r c_op val;						\
-+	BUG_ON(atomic##bit##_##op(val, &v) != r);		\
-+	BUG_ON(atomic##bit##_read(&v) != r);			\
-+} while (0)
-+
-+#define RETURN_FAMILY_TEST(bit, op, c_op, val)			\
-+do {								\
-+	FAMILY_TEST(TEST_RETURN, bit, op, c_op, val);		\
-+} while (0)
-+
-+#define TEST_ARGS(bit, op, init, ret, expect, args...)		\
-+do {								\
-+	atomic##bit##_set(&v, init);				\
-+	BUG_ON(atomic##bit##_##op(&v, ##args) != ret);		\
-+	BUG_ON(atomic##bit##_read(&v) != expect);		\
-+} while (0)
-+
-+#define XCHG_FAMILY_TEST(bit, init, new)				\
-+do {									\
-+	FAMILY_TEST(TEST_ARGS, bit, xchg, init, init, new, new);	\
-+} while (0)
-+
-+#define CMPXCHG_FAMILY_TEST(bit, init, new, wrong)			\
-+do {									\
-+	FAMILY_TEST(TEST_ARGS, bit, cmpxchg, 				\
-+			init, init, new, init, new);			\
-+	FAMILY_TEST(TEST_ARGS, bit, cmpxchg,				\
-+			init, init, init, wrong, new);			\
-+} while (0)
-+
-+#define INC_RETURN_FAMILY_TEST(bit, i)			\
-+do {							\
-+	FAMILY_TEST(TEST_ARGS, bit, inc_return,		\
-+			i, (i) + one, (i) + one);	\
-+} while (0)
-+
-+#define DEC_RETURN_FAMILY_TEST(bit, i)			\
-+do {							\
-+	FAMILY_TEST(TEST_ARGS, bit, dec_return,		\
-+			i, (i) - one, (i) - one);	\
-+} while (0)
-+
- static __init void test_atomic(void)
- {
- 	int v0 = 0xaaa31337;
-@@ -45,6 +104,18 @@ static __init void test_atomic(void)
- 	TEST(, and, &=, v1);
- 	TEST(, xor, ^=, v1);
- 	TEST(, andnot, &= ~, v1);
-+
-+	RETURN_FAMILY_TEST(, add_return, +=, onestwos);
-+	RETURN_FAMILY_TEST(, add_return, +=, -one);
-+	RETURN_FAMILY_TEST(, sub_return, -=, onestwos);
-+	RETURN_FAMILY_TEST(, sub_return, -=, -one);
-+
-+	INC_RETURN_FAMILY_TEST(, v0);
-+	DEC_RETURN_FAMILY_TEST(, v0);
-+
-+	XCHG_FAMILY_TEST(, v0, v1);
-+	CMPXCHG_FAMILY_TEST(, v0, v1, onestwos);
-+
- }
++#ifndef __atomic_op_release
+ #define __atomic_op_release(op, args...)				\
+ ({									\
+ 	smp_mb__before_atomic();					\
+ 	op##_relaxed(args);						\
+ })
++#endif
  
- #define INIT(c) do { atomic64_set(&v, c); r = c; } while (0)
-@@ -74,25 +145,10 @@ static __init void test_atomic64(void)
- 	TEST(64, xor, ^=, v1);
- 	TEST(64, andnot, &= ~, v1);
++#ifndef __atomic_op_fence
+ #define __atomic_op_fence(op, args...)					\
+ ({									\
+ 	typeof(op##_relaxed(args)) __ret;				\
+@@ -65,6 +74,7 @@ static inline int atomic_read_ctrl(const atomic_t *v)
+ 	smp_mb__after_atomic();						\
+ 	__ret;								\
+ })
++#endif
  
--	INIT(v0);
--	r += onestwos;
--	BUG_ON(atomic64_add_return(onestwos, &v) != r);
--	BUG_ON(v.counter != r);
--
--	INIT(v0);
--	r += -one;
--	BUG_ON(atomic64_add_return(-one, &v) != r);
--	BUG_ON(v.counter != r);
--
--	INIT(v0);
--	r -= onestwos;
--	BUG_ON(atomic64_sub_return(onestwos, &v) != r);
--	BUG_ON(v.counter != r);
--
--	INIT(v0);
--	r -= -one;
--	BUG_ON(atomic64_sub_return(-one, &v) != r);
--	BUG_ON(v.counter != r);
-+	RETURN_FAMILY_TEST(64, add_return, +=, onestwos);
-+	RETURN_FAMILY_TEST(64, add_return, +=, -one);
-+	RETURN_FAMILY_TEST(64, sub_return, -=, onestwos);
-+	RETURN_FAMILY_TEST(64, sub_return, -=, -one);
- 
- 	INIT(v0);
- 	atomic64_inc(&v);
-@@ -100,33 +156,15 @@ static __init void test_atomic64(void)
- 	BUG_ON(v.counter != r);
- 
- 	INIT(v0);
--	r += one;
--	BUG_ON(atomic64_inc_return(&v) != r);
--	BUG_ON(v.counter != r);
--
--	INIT(v0);
- 	atomic64_dec(&v);
- 	r -= one;
- 	BUG_ON(v.counter != r);
- 
--	INIT(v0);
--	r -= one;
--	BUG_ON(atomic64_dec_return(&v) != r);
--	BUG_ON(v.counter != r);
--
--	INIT(v0);
--	BUG_ON(atomic64_xchg(&v, v1) != v0);
--	r = v1;
--	BUG_ON(v.counter != r);
--
--	INIT(v0);
--	BUG_ON(atomic64_cmpxchg(&v, v0, v1) != v0);
--	r = v1;
--	BUG_ON(v.counter != r);
-+	INC_RETURN_FAMILY_TEST(64, v0);
-+	DEC_RETURN_FAMILY_TEST(64, v0);
- 
--	INIT(v0);
--	BUG_ON(atomic64_cmpxchg(&v, v2, v1) != v0);
--	BUG_ON(v.counter != r);
-+	XCHG_FAMILY_TEST(64, v0, v1);
-+	CMPXCHG_FAMILY_TEST(64, v0, v1, v2);
- 
- 	INIT(v0);
- 	BUG_ON(atomic64_add_unless(&v, one, v0));
+ /* atomic_add_return_relaxed */
+ #ifndef atomic_add_return_relaxed
 -- 
 2.5.3
