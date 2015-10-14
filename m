@@ -1,12 +1,12 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
- [IPv6:2607:f8b0:4001:c06::229])
+Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c05::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D0BA11A0279
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:56:38 +1100 (AEDT)
-Received: by iow1 with SMTP id 1so60371761iow.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:56:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F5E01A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:56:50 +1100 (AEDT)
+Received: by igsu6 with SMTP id u6so20071621igs.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:56:48 -0700 (PDT)
 From: Boqun Feng <boqun.feng@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -16,11 +16,13 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Boqun Feng <boqun.feng@gmail.com>
-Subject: [PATCH tip/locking/core v4 0/6] atomics: powerpc: Implement
- relaxed/acquire/release variants of some atomics
-Date: Wed, 14 Oct 2015 23:55:55 +0800
-Message-Id: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ Boqun Feng <boqun.feng@gmail.com>, <stable@vger.kernel.org>
+Subject: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
+ *cmpxchg a full barrier
+Date: Wed, 14 Oct 2015 23:55:56 +0800
+Message-Id: <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+In-Reply-To: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,78 +32,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+According to memory-barriers.txt, xchg, cmpxchg and their atomic{,64}_
+versions all need to imply a full barrier, however they are now just
+RELEASE+ACQUIRE, which is not a full barrier.
 
-This is v4 of the series.
+So replace PPC_RELEASE_BARRIER and PPC_ACQUIRE_BARRIER with
+PPC_ATOMIC_ENTRY_BARRIER and PPC_ATOMIC_EXIT_BARRIER in
+__{cmp,}xchg_{u32,u64} respectively to guarantee a full barrier
+semantics of atomic{,64}_{cmp,}xchg() and {cmp,}xchg().
 
-Link for v1: https://lkml.org/lkml/2015/8/27/798
-Link for v2: https://lkml.org/lkml/2015/9/16/527
-Link for v3: https://lkml.org/lkml/2015/10/12/368
+This patch is a complement of commit b97021f85517 ("powerpc: Fix
+atomic_xxx_return barrier semantics").
 
-Changes since v3:
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: <stable@vger.kernel.org> # 3.4+
+Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+---
+ arch/powerpc/include/asm/cmpxchg.h | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-*	avoid to introduce smp_acquire_barrier__after_atomic()
-	(Will Deacon)
-
-*	explain a little bit why we don't implement cmpxchg_release
-	with assembly code (Will Deacon)
-
-
-Relaxed/acquire/release variants of atomic operations {add,sub}_return
-and {cmp,}xchg are introduced by commit:
-
-"atomics: add acquire/release/relaxed variants of some atomic operations"
-
-and {inc,dec}_return has been introduced by commit:
-
-"locking/asm-generic: Add _{relaxed|acquire|release}() variants for
-inc/dec atomics"
-
-Both of these are in the current locking/core branch of the tip tree.
-
-By default, the generic code will implement a relaxed variant as a full
-ordered atomic operation and release/acquire a variant as a relaxed
-variant with a necessary general barrier before or after.
-
-On powerpc, which has a weak memory order model, a relaxed variant can
-be implemented more lightweightly than a full ordered one. Further more,
-release and acquire variants can be implemented with arch-specific
-lightweight barriers.
-
-Besides, cmpxchg, xchg and their atomic_ versions are only RELEASE+ACQUIRE
-rather that full barriers in current PPC implementation, which is
-incorrect according to memory-barriers.txt.
-
-Therefore this patchset fix the order guarantee of cmpxchg, xchg and
-their atomic_ versions and implements the relaxed/acquire/release
-variants based on powerpc memory model and specific barriers, Some
-trivial tests for these new variants are also included in this series,
-because some of these variants are not used in kernel for now, I think
-is a good idea to at least generate the code for these variants
-somewhere.
-
-The patchset consists of 6 parts:
-
-1.	Make xchg, cmpxchg and their atomic_ versions a full barrier
-
-2.	Add trivial tests for the new variants in lib/atomic64_test.c
-
-3.	Allow architectures to define their own __atomic_op_*() helpers
-	to build other variants based on relaxed.
-
-4.	Implement atomic{,64}_{add,sub,inc,dec}_return_* variants
-
-5.	Implement xchg_* and atomic{,64}_xchg_* variants
-
-6.	Implement cmpxchg_* atomic{,64}_cmpxchg_* variants
-
-
-This patchset is based on current locking/core branch of the tip tree
-and all patches are built and boot tested for little endian pseries, and
-also tested by 0day.
-
-
-Looking forward to any suggestion, question and comment ;-)
-
-Regards,
-Boqun
+diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
+index ad6263c..d1a8d93 100644
+--- a/arch/powerpc/include/asm/cmpxchg.h
++++ b/arch/powerpc/include/asm/cmpxchg.h
+@@ -18,12 +18,12 @@ __xchg_u32(volatile void *p, unsigned long val)
+ 	unsigned long prev;
+ 
+ 	__asm__ __volatile__(
+-	PPC_RELEASE_BARRIER
++	PPC_ATOMIC_ENTRY_BARRIER
+ "1:	lwarx	%0,0,%2 \n"
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%3,0,%2 \n\
+ 	bne-	1b"
+-	PPC_ACQUIRE_BARRIER
++	PPC_ATOMIC_EXIT_BARRIER
+ 	: "=&r" (prev), "+m" (*(volatile unsigned int *)p)
+ 	: "r" (p), "r" (val)
+ 	: "cc", "memory");
+@@ -61,12 +61,12 @@ __xchg_u64(volatile void *p, unsigned long val)
+ 	unsigned long prev;
+ 
+ 	__asm__ __volatile__(
+-	PPC_RELEASE_BARRIER
++	PPC_ATOMIC_ENTRY_BARRIER
+ "1:	ldarx	%0,0,%2 \n"
+ 	PPC405_ERR77(0,%2)
+ "	stdcx.	%3,0,%2 \n\
+ 	bne-	1b"
+-	PPC_ACQUIRE_BARRIER
++	PPC_ATOMIC_EXIT_BARRIER
+ 	: "=&r" (prev), "+m" (*(volatile unsigned long *)p)
+ 	: "r" (p), "r" (val)
+ 	: "cc", "memory");
+@@ -151,14 +151,14 @@ __cmpxchg_u32(volatile unsigned int *p, unsigned long old, unsigned long new)
+ 	unsigned int prev;
+ 
+ 	__asm__ __volatile__ (
+-	PPC_RELEASE_BARRIER
++	PPC_ATOMIC_ENTRY_BARRIER
+ "1:	lwarx	%0,0,%2		# __cmpxchg_u32\n\
+ 	cmpw	0,%0,%3\n\
+ 	bne-	2f\n"
+ 	PPC405_ERR77(0,%2)
+ "	stwcx.	%4,0,%2\n\
+ 	bne-	1b"
+-	PPC_ACQUIRE_BARRIER
++	PPC_ATOMIC_EXIT_BARRIER
+ 	"\n\
+ 2:"
+ 	: "=&r" (prev), "+m" (*p)
+@@ -197,13 +197,13 @@ __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
+ 	unsigned long prev;
+ 
+ 	__asm__ __volatile__ (
+-	PPC_RELEASE_BARRIER
++	PPC_ATOMIC_ENTRY_BARRIER
+ "1:	ldarx	%0,0,%2		# __cmpxchg_u64\n\
+ 	cmpd	0,%0,%3\n\
+ 	bne-	2f\n\
+ 	stdcx.	%4,0,%2\n\
+ 	bne-	1b"
+-	PPC_ACQUIRE_BARRIER
++	PPC_ATOMIC_EXIT_BARRIER
+ 	"\n\
+ 2:"
+ 	: "=&r" (prev), "+m" (*p)
+-- 
+2.5.3
