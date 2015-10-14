@@ -1,31 +1,27 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AECC91A01D7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 10:48:33 +1100 (AEDT)
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5E7DD140F99
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 10:48:31 +1100 (AEDT)
-Received: by pabrc13 with SMTP id rc13so35181308pab.0
- for <linuxppc-dev@ozlabs.org>; Tue, 13 Oct 2015 16:48:29 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2 2/8] powerpc/eeh: More relexed hotplug criterion
-In-Reply-To: <20151013042828.GA28681@gwshan>
-References: <1444276739-20372-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1444276739-20372-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <87612b4rye.fsf@gamma.ozlabs.ibm.com> <20151012232510.GA14333@gwshan>
- <87y4f732ll.fsf@gamma.ozlabs.ibm.com> <20151013042828.GA28681@gwshan>
-Date: Wed, 14 Oct 2015 10:48:15 +1100
-Message-ID: <87si5e2uv4.fsf@gamma.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
- micalg=pgp-sha512; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CD331A05AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 11:10:01 +1100 (AEDT)
+Message-ID: <1444781400.12197.4.camel@ellerman.id.au>
+Subject: Re: [PATCH RESEND v3 1/6] powerpc: atomic: Make *xchg and *cmpxchg
+ a full barrier
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Peter
+ Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon
+ <will.deacon@arm.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ stable@vger.kernel.org
+Date: Wed, 14 Oct 2015 11:10:00 +1100
+In-Reply-To: <1444660220-25559-1-git-send-email-boqun.feng@gmail.com>
+References: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
+ <1444660220-25559-1-git-send-email-boqun.feng@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,86 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2015-10-12 at 22:30 +0800, Boqun Feng wrote:
+> According to memory-barriers.txt, xchg, cmpxchg and their atomic{,64}_
+> versions all need to imply a full barrier, however they are now just
+> RELEASE+ACQUIRE, which is not a full barrier.
+> 
+> So replace PPC_RELEASE_BARRIER and PPC_ACQUIRE_BARRIER with
+> PPC_ATOMIC_ENTRY_BARRIER and PPC_ATOMIC_EXIT_BARRIER in
+> __{cmp,}xchg_{u32,u64} respectively to guarantee a full barrier
+> semantics of atomic{,64}_{cmp,}xchg() and {cmp,}xchg().
+> 
+> This patch is a complement of commit b97021f85517 ("powerpc: Fix
+> atomic_xxx_return barrier semantics").
+> 
+> Cc: <stable@vger.kernel.org> # 3.4.y-
+> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> ---
+>  arch/powerpc/include/asm/cmpxchg.h | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
 
-Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
+Hi Boqun,
+
+Thanks for fixing this. In future you should send a patch like this as a
+separate patch. I've not been paying attention to it because I assumed it was
+part of your full series and was still under discussion like the other patches.
+
+I don't think we've seen any crashes caused by this have we? So I guess I'll
+put it in next to let it get some wider testing rather than sending it straight
+to Linus.
+
+To be clear you're doing:
+
+> -	PPC_RELEASE_BARRIER
+> +	PPC_ATOMIC_ENTRY_BARRIER
+
+Which is correct but doesn't actually change anything at the moment, because
+both macros turn into LWSYNC.
+
+On the other hand:
+
+> -	PPC_ACQUIRE_BARRIER
+> +	PPC_ATOMIC_EXIT_BARRIER
+
+Is changing an isync (which is then patched to lwsync on some cpus), with a sync.
 
 
-> I think you're talking about the situation reported from the bug. It's
-> CAN_RECOVER instead of NONE returned from error_detected(). With the
-> CAN_RECOVER, the driver hopes the EEH core to enable the IO path so that
-> it can collect diag-data from IO space at late point.
+Also I'm not clear what your stable line means:
 
-Oh. That's an interesting decision from the driver's point of view.
+> Cc: <stable@vger.kernel.org> # 3.4.y-
 
-I obviously need to re-read the patch and the surrounding code and try
-again to make sense of it later. Thanks for your attempts to explain it!
+Do you mean 3.4 and anything after? I usually write that as 3.4+, but I'm not
+sure if that's the correct syntax either.
 
-Regards,
-Daniel
 
->
->>Partial hotplug is pretty hacky to begin with, and a driver being able
->>to opt out of EEH selectively is a useful feature, so we probably want
->>to redesign the state machine to handle them both better. That would be
->>a long term project.
->>
->
-> Thanks,
-> Gavin
->
->>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>> ---
->>>>>  arch/powerpc/kernel/eeh_driver.c | 5 ++++-
->>>>>  1 file changed, 4 insertions(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/e=
-eh_driver.c
->>>>> index 3a626ed..32178a4 100644
->>>>> --- a/arch/powerpc/kernel/eeh_driver.c
->>>>> +++ b/arch/powerpc/kernel/eeh_driver.c
->>>>> @@ -416,7 +416,10 @@ static void *eeh_rmv_device(void *data, void *us=
-erdata)
->>>>>  	driver =3D eeh_pcid_get(dev);
->>>>>  	if (driver) {
->>>>>  		eeh_pcid_put(dev);
->>>>> -		if (driver->err_handler)
->>>>> +		if (driver->err_handler &&
->>>>> +		    driver->err_handler->error_detected &&
->>>>> +		    driver->err_handler->slot_reset &&
->>>>> +		    driver->err_handler->resume)
->>>>>  			return NULL;
->>>>>  	}
->>>>>=20=20
->>>>> --=20
->>>>> 2.1.0
->>>>>
->>>>> _______________________________________________
->>>>> Linuxppc-dev mailing list
->>>>> Linuxppc-dev@lists.ozlabs.org
->>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAEBCgAGBQJWHZg/AAoJEPC3R3P2I92F4YwP/iWgV5OXan5QhAjTWtrSgxbT
-2K1YyGeyX16MHtkiDRE3QSFTM2kytS2IdAl1KK8CC9KqcxihbfQKhAUqwcm7Tyh2
-5ub2Iac+oaLnKZJPAjSLtG8HRt+rk8A3VQmEJPSfY6vcdKktb43WHj5CGT3372ma
-aZUvxz2D1DQVjcfsJbACJnz7wooUtlsA5Lhos+ZNw56Pd5Yvbo39Q7cKvsTAcl8/
-ZIZcy7K0rCgbv4taCXtVO0/cZ6WohrppvgMKhMHcn+8193GIm9hc2g/0rYmOskW6
-7JcCJBIp7Gc2HVihqSbCWjQrrc1pCjagWjNUyabC/1772EIjNaGL57g9wDuSAQE+
-zMIXBGUOxLzSLJatpvTfmerbdZAFQnHm+nBNXhmNf4eIDXBhZP9i3Y4HonabUnYn
-LW7JG0mr/ohjilLxr9WMD3dt3yT89hEmpAtxdz8/whL/mI+guuFDvW0t6RhJWQ8y
-mQ64299TtAsWsvRc0i8wC0ONdd1f6EDFCbLd8Cj7z1Fv5hioA4+uv9I1GOE+FWvi
-KvKCEZYvrT26xE+biPAdOeurQx62QbFojDf01q5TILTToWMT9MvA+ZXmvGLhxUaX
-mAYvySHBvJFqEseUEIebYZT4QPNMXpQYhkRVwEs6DbApXMD5XYnSngX9SbOFAIqG
-6SNVb6OB8aaalEpvWkTQ
-=SGN2
------END PGP SIGNATURE-----
---=-=-=--
+cheers
