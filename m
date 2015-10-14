@@ -1,20 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B312F1A0270
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 20:39:09 +1100 (AEDT)
-Message-ID: <1444815549.1843.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v3 1/2] powerpc/xmon: Paged output for paca display
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, khandual@linux.vnet.ibm.com
-Date: Wed, 14 Oct 2015 20:39:09 +1100
-In-Reply-To: <77516a018529fe23ca466db2ea513f7f03d820ec.1444265419.git.sam.bobroff@au1.ibm.com>
-References: <cover.1444265419.git.sam.bobroff@au1.ibm.com>
- <77516a018529fe23ca466db2ea513f7f03d820ec.1444265419.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id AB7D81A0C75
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 20:40:29 +1100 (AEDT)
+Date: Wed, 14 Oct 2015 10:40:27 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>
+Subject: Re: [PATCH v3 6/6] powerpc: atomic: Implement cmpxchg{,64}_* and
+ atomic{,64}_cmpxchg_* variants
+Message-ID: <20151014094027.GB11874@arm.com>
+References: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
+ <1444659246-24769-7-git-send-email-boqun.feng@gmail.com>
+ <20151013132404.GI21550@arm.com>
+ <20151013143259.GB23991@fixme-laptop.cn.ibm.com>
+ <20151013144333.GN21550@arm.com>
+ <20151013145830.GC23991@fixme-laptop.cn.ibm.com>
+ <20151013150427.GP21550@arm.com>
+ <20151014014735.GF23991@fixme-laptop.cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151014014735.GF23991@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-08 at 11:50 +1100, Sam Bobroff wrote:
-> The paca display is already more than 24 lines, which can be problematic
-> if you have an old school 80x24 terminal, or more likely you are on a
-> virtual terminal which does not scroll for whatever reason.
+On Wed, Oct 14, 2015 at 09:47:35AM +0800, Boqun Feng wrote:
+> On Tue, Oct 13, 2015 at 04:04:27PM +0100, Will Deacon wrote:
+> > On Tue, Oct 13, 2015 at 10:58:30PM +0800, Boqun Feng wrote:
+> > > On Tue, Oct 13, 2015 at 03:43:33PM +0100, Will Deacon wrote:
+> > > > Putting a barrier in the middle of that critical section is probably a
+> > > > terrible idea, and that's why I thought you were avoiding it (hence my
+> > > 
+> > > The fact is that I haven't thought of that way to implement
+> > > cmpxchg_release before you ask that question ;-) And I'm not going to do
+> > > that for now and probably not in the future.
+> > > 
+> > > > original question). Perhaps just add a comment to that effect, since I
+> > > 
+> > > Are you suggesting if I put a barrier in the middle I'd better to add a
+> > > comment, right? So if I don't do that, it's OK to let this patch as it.
+> > 
+> > No, I mean put a comment in your file to explain the reason why you
+> > override _relaxed and _acquire, but not _release (because overriding
 > 
-> This patch adds a new command ".", which takes a single (hex) numeric
-> argument: lines per page. It will cause the output of "dp" and "dpa"
-> to be broken into pages, if necessary.
-> 
-> Sample output:
-> 
-> 0:mon> .10
+> You mean overriding _acquire and fully order version, right?
 
-So what about making it "#" rather than "." ?
+Yes, my mistake. Sounds like you get my drift, though.
 
-cheers
+Will
