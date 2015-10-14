@@ -1,33 +1,33 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-io0-x22a.google.com (mail-io0-x22a.google.com
- [IPv6:2607:f8b0:4001:c06::22a])
+Received: from mail-ig0-x231.google.com (mail-ig0-x231.google.com
+ [IPv6:2607:f8b0:4001:c05::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 30ED51A0676
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 11:52:01 +1100 (AEDT)
-Received: by iofl186 with SMTP id l186so39893584iof.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 17:51:59 -0700 (PDT)
-Date: Wed, 14 Oct 2015 08:51:34 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A7A31A060A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 12:00:52 +1100 (AEDT)
+Received: by igsu6 with SMTP id u6so6132963igs.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 18:00:50 -0700 (PDT)
+Date: Wed, 14 Oct 2015 09:00:29 +0800
 From: Boqun Feng <boqun.feng@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
+To: Will Deacon <will.deacon@arm.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
-Subject: Re: [PATCH RESEND v3 1/6] powerpc: atomic: Make *xchg and *cmpxchg a
- full barrier
-Message-ID: <20151014005134.GE23991@fixme-laptop.cn.ibm.com>
+ Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>
+Subject: Re: [PATCH v3 4/6] powerpc: atomic: Implement atomic{, 64}_*_return_*
+ variants
+Message-ID: <20151014010029.GB14305@fixme-laptop.cn.ibm.com>
 References: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
- <1444660220-25559-1-git-send-email-boqun.feng@gmail.com>
- <1444781400.12197.4.camel@ellerman.id.au>
+ <1444659246-24769-5-git-send-email-boqun.feng@gmail.com>
+ <20151013132132.GH21550@arm.com>
+ <20151013133554.GA23991@fixme-laptop.cn.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="VdOwlNaOFKGAtAAV"
-In-Reply-To: <1444781400.12197.4.camel@ellerman.id.au>
+ protocol="application/pgp-signature"; boundary="nVMJ2NtxeReIH9PS"
+In-Reply-To: <20151013133554.GA23991@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,130 +38,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---VdOwlNaOFKGAtAAV
+--nVMJ2NtxeReIH9PS
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 14, 2015 at 11:10:00AM +1100, Michael Ellerman wrote:
-> On Mon, 2015-10-12 at 22:30 +0800, Boqun Feng wrote:
-> > According to memory-barriers.txt, xchg, cmpxchg and their atomic{,64}_
-> > versions all need to imply a full barrier, however they are now just
-> > RELEASE+ACQUIRE, which is not a full barrier.
+On Tue, Oct 13, 2015 at 09:35:54PM +0800, Boqun Feng wrote:
+> On Tue, Oct 13, 2015 at 02:21:32PM +0100, Will Deacon wrote:
+> > On Mon, Oct 12, 2015 at 10:14:04PM +0800, Boqun Feng wrote:
+> [snip]
+> > > +/*
+> > > + * Since {add,sub}_return_relaxed and xchg_relaxed are implemented w=
+ith
+> > > + * a "bne-" instruction at the end, so an isync is enough as a acqui=
+re barrier
+> > > + * on the platform without lwsync.
+> > > + */
+> > > +#ifdef CONFIG_SMP
+> > > +#define smp_acquire_barrier__after_atomic() \
+> > > +	__asm__ __volatile__(PPC_ACQUIRE_BARRIER : : : "memory")
 > >=20
-> > So replace PPC_RELEASE_BARRIER and PPC_ACQUIRE_BARRIER with
-> > PPC_ATOMIC_ENTRY_BARRIER and PPC_ATOMIC_EXIT_BARRIER in
-> > __{cmp,}xchg_{u32,u64} respectively to guarantee a full barrier
-> > semantics of atomic{,64}_{cmp,}xchg() and {cmp,}xchg().
+> > I'm not keen on this barrier, as it sounds like it's part of the kernel
+> > memory model, as opposed to an implementation detail on PowerPC (and
+> > we've already got enough of that in the generic code ;).
 > >=20
-> > This patch is a complement of commit b97021f85517 ("powerpc: Fix
-> > atomic_xxx_return barrier semantics").
+>=20
+> Indeed, but we still have smp_lwsync() ;-)
+>=20
+> > Can you name it something different please (and maybe #undef it when
+> > you're done)?
 > >=20
-> > Cc: <stable@vger.kernel.org> # 3.4.y-
-> > Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-> > ---
-> >  arch/powerpc/include/asm/cmpxchg.h | 16 ++++++++--------
-> >  1 file changed, 8 insertions(+), 8 deletions(-)
 >=20
-> Hi Boqun,
+> I've considered #undef it after used, but now I think open code this
+> into __atomic_op_acquire() of PPC is a better idea?
 >=20
-
-Hello, Michael
-
-> Thanks for fixing this. In future you should send a patch like this as a
-> separate patch. I've not been paying attention to it because I assumed it=
- was
-
-Got it. However, here is the thing, in previous version, this fix
-depends on some of other patches in this patchset. So to make this fix
-applied cleanly, I reorder my patchset to put this patch first, and the
-result is that some of other patches in this patchset depends on
-this(they need to remove code modified by this patch).
-
-So I guess I'd better to stop Cc stable for this one, and wait until
-this patchset merged and send a separate patch for -stable tree. Does
-that work for you? I think this is what Peter want to suggests me to do
-when he asked me about this, right, Peter?
-
-> part of your full series and was still under discussion like the other pa=
-tches.
 >=20
-> I don't think we've seen any crashes caused by this have we? So I guess I=
-'ll
+> #define __atomic_op_acquire(op, args...)				\
+> ({									\
+> 	typeof(op##_relaxed(args)) __ret  =3D op##_relaxed(args);		\
+> 	__asm__ __volatile__(PPC_ACQUIRE_BARRIER : : : "memory");	\
 
-No, we haven't seen any.
+Should be:
+	__asm__ __volatile__(PPC_ACQUIRE_BARRIER "" : : : "memory");
 
-> put it in next to let it get some wider testing rather than sending it st=
-raight
-> to Linus.
+> 	__ret;								\
+> })
 >=20
-
-Good idea, thank you ;-)
-
-> To be clear you're doing:
+> PPC_ACQUIRE_BARRIER will be empty if !SMP, so that will become a pure
+> compiler barrier and just what we need.
 >=20
-> > -	PPC_RELEASE_BARRIER
-> > +	PPC_ATOMIC_ENTRY_BARRIER
->=20
-> Which is correct but doesn't actually change anything at the moment, beca=
-use
-> both macros turn into LWSYNC.
->=20
-> On the other hand:
->=20
-> > -	PPC_ACQUIRE_BARRIER
-> > +	PPC_ATOMIC_EXIT_BARRIER
->=20
-> Is changing an isync (which is then patched to lwsync on some cpus), with=
- a sync.
->=20
+> Regards,
+> Boqun
 
-These macros are introduced by commit b97021f85517 ("powerpc: Fix
-atomic_xxx_return barrier semantics") to fix a similar problem, so I use
-them to keep code similar.
-
->=20
-> Also I'm not clear what your stable line means:
->=20
-> > Cc: <stable@vger.kernel.org> # 3.4.y-
->=20
-> Do you mean 3.4 and anything after? I usually write that as 3.4+, but I'm=
- not
-> sure if that's the correct syntax either.
->=20
-
-Quote from Documentation/stable_kernel_rules.txt:
-
-"""
-Also, some patches may have kernel version prerequisites.  This can be
-specified in the following format in the sign-off area:
-
-     Cc:  <stable@vger.kernel.org> # 3.3.x-
-
-   The tag has the meaning of:
-     git cherry-pick <this commit>
-
-   For each "-stable" tree starting with the specified version.
-"""
-
-But yes, I have seen several people use like "3.4+", I'm not sure either
-
-Regards,
-Boqun
-
---VdOwlNaOFKGAtAAV
+--nVMJ2NtxeReIH9PS
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWHacQAAoJEEl56MO1B/q4bagH/AnkrPTzIgF2xOoPrRGsbnD8
-DItdA+MTEV/01SEP/QVRudEReCuMUaoYzfukyvZlf3LaGpP3LZ4mcuj1WqqYXkjD
-cNKwg3IfKtWLnF5+AYWWymT5UVy3rqDJT4/ScUa/emwjDpB7liZqSGZVhSLtRIzN
-6zOwAW+X3pSl8MjEkWDRN7Oa4MKVUAo1BBaOjLO41F0avxd0G0KLViabxE+hhpIG
-P96cMWmUAnIYt3ZCNvTzuvvF+QgfbNqDd1VOTfpdcMtqxfhMdaolTY6iouAXzuN0
-XmzE4iPqLvzofMpW84UbjGMJZYEQQ4dCNgO6JkIEmktdktqXlNo8hjvn+QXSBW0=
-=RNtW
+iQEcBAABCAAGBQJWHakpAAoJEEl56MO1B/q4V84H/ivZAy1Ro3m2BdDvDLLbOzOl
+gEJrDi/RB7EpKAJFv+/yRg8+gBZxpf3/BXHPrtSrS/XOVhFLZph5wzoLFVHogu8J
+TYJw31TgIoggROtNlO9Der5NOX+pHbcCzZqgiNcGgg7voX0WO7wcdOuaJrjfiTdF
+dS8j8xIIox04a3UGUhFLp2+3pHgNRcOGrkE1S91bVaSh5ZQ2KLZJwenAy/I02TJy
+L1tDaQ32EOyi5jAb+Phl7Ebf/TbHHFU4vrwCxFj+xYVWR1vn2VDLoPjql0zybN37
+TPcdpVJ7RH8HYjub158ak8LMYZA2Ov7rzrKADxc/1OXT756O87Ik7O60LRXxWZA=
+=mcRu
 -----END PGP SIGNATURE-----
 
---VdOwlNaOFKGAtAAV--
+--nVMJ2NtxeReIH9PS--
