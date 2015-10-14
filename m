@@ -1,31 +1,32 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id AB7D81A0C75
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 20:40:29 +1100 (AEDT)
-Date: Wed, 14 Oct 2015 10:40:27 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>
-Subject: Re: [PATCH v3 6/6] powerpc: atomic: Implement cmpxchg{,64}_* and
- atomic{,64}_cmpxchg_* variants
-Message-ID: <20151014094027.GB11874@arm.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE7A71A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 20:43:59 +1100 (AEDT)
+Message-ID: <1444815838.1843.5.camel@ellerman.id.au>
+Subject: Re: [PATCH RESEND v3 1/6] powerpc: atomic: Make *xchg and *cmpxchg
+ a full barrier
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon
+ <will.deacon@arm.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ stable@vger.kernel.org
+Date: Wed, 14 Oct 2015 20:43:58 +1100
+In-Reply-To: <20151014093307.GC3816@twins.programming.kicks-ass.net>
 References: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
- <1444659246-24769-7-git-send-email-boqun.feng@gmail.com>
- <20151013132404.GI21550@arm.com>
- <20151013143259.GB23991@fixme-laptop.cn.ibm.com>
- <20151013144333.GN21550@arm.com>
- <20151013145830.GC23991@fixme-laptop.cn.ibm.com>
- <20151013150427.GP21550@arm.com>
- <20151014014735.GF23991@fixme-laptop.cn.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151014014735.GF23991@fixme-laptop.cn.ibm.com>
+ <1444660220-25559-1-git-send-email-boqun.feng@gmail.com>
+ <1444781400.12197.4.camel@ellerman.id.au>
+ <20151014005134.GE23991@fixme-laptop.cn.ibm.com>
+ <20151014080613.GP17308@twins.programming.kicks-ass.net>
+ <20151014092653.GA29432@fixme-laptop.cn.ibm.com>
+ <20151014093307.GC3816@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,27 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 14, 2015 at 09:47:35AM +0800, Boqun Feng wrote:
-> On Tue, Oct 13, 2015 at 04:04:27PM +0100, Will Deacon wrote:
-> > On Tue, Oct 13, 2015 at 10:58:30PM +0800, Boqun Feng wrote:
-> > > On Tue, Oct 13, 2015 at 03:43:33PM +0100, Will Deacon wrote:
-> > > > Putting a barrier in the middle of that critical section is probably a
-> > > > terrible idea, and that's why I thought you were avoiding it (hence my
-> > > 
-> > > The fact is that I haven't thought of that way to implement
-> > > cmpxchg_release before you ask that question ;-) And I'm not going to do
-> > > that for now and probably not in the future.
-> > > 
-> > > > original question). Perhaps just add a comment to that effect, since I
-> > > 
-> > > Are you suggesting if I put a barrier in the middle I'd better to add a
-> > > comment, right? So if I don't do that, it's OK to let this patch as it.
-> > 
-> > No, I mean put a comment in your file to explain the reason why you
-> > override _relaxed and _acquire, but not _release (because overriding
+On Wed, 2015-10-14 at 11:33 +0200, Peter Zijlstra wrote:
+> On Wed, Oct 14, 2015 at 05:26:53PM +0800, Boqun Feng wrote:
+> > Michael and Peter, rest of this patchset depends on commits which are
+> > currently in the locking/core branch of the tip, so I would like it as a
+> > whole queued there. Besides, I will keep this patch Cc'ed to stable in
+> > future versions, that works for you both?
 > 
-> You mean overriding _acquire and fully order version, right?
+> From my POV having the Cc stable in there is fine if Michael actually
+> wants them to go there. GregKH will vacuum them up once they hit Linus'
+> tree and we don't need to think about it anymore.
 
-Yes, my mistake. Sounds like you get my drift, though.
+Yeah that's fine by me. Here's an Ack if you want one:
 
-Will
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+> Alternatively, Michael could put the patch in a separate branch and we
+> could both merge that.
+> 
+> Or even, seeing how its a single patch and git mostly does the right
+> thing, we could just merge it independently in both trees and let git
+> sort it out at merge time.
+
+That probably would work, but I don't think it's necessary.
+
+My tree doesn't get much (or any) more testing than linux-next, so as long as
+locking/core is in linux-next then it will be tested just fine that way.
+
+cheers
