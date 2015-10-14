@@ -1,33 +1,26 @@
-Return-Path: <BATV+723121e0e7a892d27077+4434+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-io0-x229.google.com (mail-io0-x229.google.com
+ [IPv6:2607:f8b0:4001:c06::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1869F1A0730
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:42:58 +1100 (AEDT)
-Date: Wed, 14 Oct 2015 08:42:51 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
- Matthew Wilcox <willy@linux.intel.com>,
- Keith Busch <keith.busch@intel.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id D0BA11A0279
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:56:38 +1100 (AEDT)
+Received: by iow1 with SMTP id 1so60371761iow.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:56:36 -0700 (PDT)
+From: Boqun Feng <boqun.feng@gmail.com>
+To: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/5 v2] dma-mapping: add generic dma_get_page_shift API
-Message-ID: <20151014154251.GA7271@infradead.org>
-References: <20151002171606.GA41011@linux.vnet.ibm.com>
- <20151002200953.GB40695@linux.vnet.ibm.com>
- <20151002201142.GC40695@linux.vnet.ibm.com>
- <20151006095136.GB14144@infradead.org>
- <20151012210651.GB26702@linux.vnet.ibm.com>
- <20151014153900.GC30179@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151014153900.GC30179@linux.vnet.ibm.com>
+ Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ Boqun Feng <boqun.feng@gmail.com>
+Subject: [PATCH tip/locking/core v4 0/6] atomics: powerpc: Implement
+ relaxed/acquire/release variants of some atomics
+Date: Wed, 14 Oct 2015 23:55:55 +0800
+Message-Id: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,23 +30,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nishanth,
+Hi all,
 
-sorry for the late reply.
+This is v4 of the series.
 
-> > On Power, since it's technically variable, we'd need a function. So are
-> > you suggesting define'ing it to a function just on Power and leaving it
-> > a constant elsewhere?
-> > 
-> > I noticed that sparc has a IOMMU_PAGE_SHIFT already, fwiw.
-> 
-> Sorry, I should have been more specific -- I'm ready to spin out a v3,
-> with a sparc-specific function.
-> 
-> Are you ok with leaving it a function for now (the only caller is in
-> NVMe obviously).
+Link for v1: https://lkml.org/lkml/2015/8/27/798
+Link for v2: https://lkml.org/lkml/2015/9/16/527
+Link for v3: https://lkml.org/lkml/2015/10/12/368
+
+Changes since v3:
+
+*	avoid to introduce smp_acquire_barrier__after_atomic()
+	(Will Deacon)
+
+*	explain a little bit why we don't implement cmpxchg_release
+	with assembly code (Will Deacon)
 
 
-I guess we do indeed need a function then.  I'll take a look at your
-patch, but as long you found a way to avoid adding too much boilerplate
-code it should be fine.
+Relaxed/acquire/release variants of atomic operations {add,sub}_return
+and {cmp,}xchg are introduced by commit:
+
+"atomics: add acquire/release/relaxed variants of some atomic operations"
+
+and {inc,dec}_return has been introduced by commit:
+
+"locking/asm-generic: Add _{relaxed|acquire|release}() variants for
+inc/dec atomics"
+
+Both of these are in the current locking/core branch of the tip tree.
+
+By default, the generic code will implement a relaxed variant as a full
+ordered atomic operation and release/acquire a variant as a relaxed
+variant with a necessary general barrier before or after.
+
+On powerpc, which has a weak memory order model, a relaxed variant can
+be implemented more lightweightly than a full ordered one. Further more,
+release and acquire variants can be implemented with arch-specific
+lightweight barriers.
+
+Besides, cmpxchg, xchg and their atomic_ versions are only RELEASE+ACQUIRE
+rather that full barriers in current PPC implementation, which is
+incorrect according to memory-barriers.txt.
+
+Therefore this patchset fix the order guarantee of cmpxchg, xchg and
+their atomic_ versions and implements the relaxed/acquire/release
+variants based on powerpc memory model and specific barriers, Some
+trivial tests for these new variants are also included in this series,
+because some of these variants are not used in kernel for now, I think
+is a good idea to at least generate the code for these variants
+somewhere.
+
+The patchset consists of 6 parts:
+
+1.	Make xchg, cmpxchg and their atomic_ versions a full barrier
+
+2.	Add trivial tests for the new variants in lib/atomic64_test.c
+
+3.	Allow architectures to define their own __atomic_op_*() helpers
+	to build other variants based on relaxed.
+
+4.	Implement atomic{,64}_{add,sub,inc,dec}_return_* variants
+
+5.	Implement xchg_* and atomic{,64}_xchg_* variants
+
+6.	Implement cmpxchg_* atomic{,64}_cmpxchg_* variants
+
+
+This patchset is based on current locking/core branch of the tip tree
+and all patches are built and boot tested for little endian pseries, and
+also tested by 0day.
+
+
+Looking forward to any suggestion, question and comment ;-)
+
+Regards,
+Boqun
