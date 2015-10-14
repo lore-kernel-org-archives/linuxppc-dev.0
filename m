@@ -1,12 +1,12 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
- [IPv6:2607:f8b0:4001:c05::22a])
+Received: from mail-io0-x232.google.com (mail-io0-x232.google.com
+ [IPv6:2607:f8b0:4001:c06::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3F5E01A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:56:50 +1100 (AEDT)
-Received: by igsu6 with SMTP id u6so20071621igs.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:56:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 991781A028B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 02:56:56 +1100 (AEDT)
+Received: by iow1 with SMTP id 1so60382817iow.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 08:56:54 -0700 (PDT)
 From: Boqun Feng <boqun.feng@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
@@ -16,11 +16,11 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Will Deacon <will.deacon@arm.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Boqun Feng <boqun.feng@gmail.com>, <stable@vger.kernel.org>
-Subject: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-Date: Wed, 14 Oct 2015 23:55:56 +0800
-Message-Id: <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+ Boqun Feng <boqun.feng@gmail.com>
+Subject: [PATCH tip/locking/core v4 2/6] atomics: Add test for atomic
+ operations with _relaxed variants
+Date: Wed, 14 Oct 2015 23:55:57 +0800
+Message-Id: <1444838161-17209-3-git-send-email-boqun.feng@gmail.com>
 In-Reply-To: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
 References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,91 +32,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to memory-barriers.txt, xchg, cmpxchg and their atomic{,64}_
-versions all need to imply a full barrier, however they are now just
-RELEASE+ACQUIRE, which is not a full barrier.
+Some atomic operations now have _relaxed/acquire/release variants, this
+patch then adds some trivial tests for two purpose:
 
-So replace PPC_RELEASE_BARRIER and PPC_ACQUIRE_BARRIER with
-PPC_ATOMIC_ENTRY_BARRIER and PPC_ATOMIC_EXIT_BARRIER in
-__{cmp,}xchg_{u32,u64} respectively to guarantee a full barrier
-semantics of atomic{,64}_{cmp,}xchg() and {cmp,}xchg().
+1.	test the behavior of these new operations in single-CPU
+	environment.
 
-This patch is a complement of commit b97021f85517 ("powerpc: Fix
-atomic_xxx_return barrier semantics").
+2.	make their code generated before we actually use them somewhere,
+	so that we can examine their assembly code.
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: <stable@vger.kernel.org> # 3.4+
 Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
 ---
- arch/powerpc/include/asm/cmpxchg.h | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ lib/atomic64_test.c | 120 ++++++++++++++++++++++++++++++++++------------------
+ 1 file changed, 79 insertions(+), 41 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index ad6263c..d1a8d93 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -18,12 +18,12 @@ __xchg_u32(volatile void *p, unsigned long val)
- 	unsigned long prev;
+diff --git a/lib/atomic64_test.c b/lib/atomic64_test.c
+index 83c33a5b..18e422b 100644
+--- a/lib/atomic64_test.c
++++ b/lib/atomic64_test.c
+@@ -27,6 +27,65 @@ do {								\
+ 		(unsigned long long)r);				\
+ } while (0)
  
- 	__asm__ __volatile__(
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	lwarx	%0,0,%2 \n"
- 	PPC405_ERR77(0,%2)
- "	stwcx.	%3,0,%2 \n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	: "=&r" (prev), "+m" (*(volatile unsigned int *)p)
- 	: "r" (p), "r" (val)
- 	: "cc", "memory");
-@@ -61,12 +61,12 @@ __xchg_u64(volatile void *p, unsigned long val)
- 	unsigned long prev;
++/*
++ * Test for a atomic operation family,
++ * @test should be a macro accepting parameters (bit, op, ...)
++ */
++
++#define FAMILY_TEST(test, bit, op, args...)	\
++do {						\
++	test(bit, op, ##args);		\
++	test(bit, op##_acquire, ##args);	\
++	test(bit, op##_release, ##args);	\
++	test(bit, op##_relaxed, ##args);	\
++} while (0)
++
++#define TEST_RETURN(bit, op, c_op, val)				\
++do {								\
++	atomic##bit##_set(&v, v0);				\
++	r = v0;							\
++	r c_op val;						\
++	BUG_ON(atomic##bit##_##op(val, &v) != r);		\
++	BUG_ON(atomic##bit##_read(&v) != r);			\
++} while (0)
++
++#define RETURN_FAMILY_TEST(bit, op, c_op, val)			\
++do {								\
++	FAMILY_TEST(TEST_RETURN, bit, op, c_op, val);		\
++} while (0)
++
++#define TEST_ARGS(bit, op, init, ret, expect, args...)		\
++do {								\
++	atomic##bit##_set(&v, init);				\
++	BUG_ON(atomic##bit##_##op(&v, ##args) != ret);		\
++	BUG_ON(atomic##bit##_read(&v) != expect);		\
++} while (0)
++
++#define XCHG_FAMILY_TEST(bit, init, new)				\
++do {									\
++	FAMILY_TEST(TEST_ARGS, bit, xchg, init, init, new, new);	\
++} while (0)
++
++#define CMPXCHG_FAMILY_TEST(bit, init, new, wrong)			\
++do {									\
++	FAMILY_TEST(TEST_ARGS, bit, cmpxchg, 				\
++			init, init, new, init, new);			\
++	FAMILY_TEST(TEST_ARGS, bit, cmpxchg,				\
++			init, init, init, wrong, new);			\
++} while (0)
++
++#define INC_RETURN_FAMILY_TEST(bit, i)			\
++do {							\
++	FAMILY_TEST(TEST_ARGS, bit, inc_return,		\
++			i, (i) + one, (i) + one);	\
++} while (0)
++
++#define DEC_RETURN_FAMILY_TEST(bit, i)			\
++do {							\
++	FAMILY_TEST(TEST_ARGS, bit, dec_return,		\
++			i, (i) - one, (i) - one);	\
++} while (0)
++
+ static __init void test_atomic(void)
+ {
+ 	int v0 = 0xaaa31337;
+@@ -45,6 +104,18 @@ static __init void test_atomic(void)
+ 	TEST(, and, &=, v1);
+ 	TEST(, xor, ^=, v1);
+ 	TEST(, andnot, &= ~, v1);
++
++	RETURN_FAMILY_TEST(, add_return, +=, onestwos);
++	RETURN_FAMILY_TEST(, add_return, +=, -one);
++	RETURN_FAMILY_TEST(, sub_return, -=, onestwos);
++	RETURN_FAMILY_TEST(, sub_return, -=, -one);
++
++	INC_RETURN_FAMILY_TEST(, v0);
++	DEC_RETURN_FAMILY_TEST(, v0);
++
++	XCHG_FAMILY_TEST(, v0, v1);
++	CMPXCHG_FAMILY_TEST(, v0, v1, onestwos);
++
+ }
  
- 	__asm__ __volatile__(
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	ldarx	%0,0,%2 \n"
- 	PPC405_ERR77(0,%2)
- "	stdcx.	%3,0,%2 \n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	: "=&r" (prev), "+m" (*(volatile unsigned long *)p)
- 	: "r" (p), "r" (val)
- 	: "cc", "memory");
-@@ -151,14 +151,14 @@ __cmpxchg_u32(volatile unsigned int *p, unsigned long old, unsigned long new)
- 	unsigned int prev;
+ #define INIT(c) do { atomic64_set(&v, c); r = c; } while (0)
+@@ -74,25 +145,10 @@ static __init void test_atomic64(void)
+ 	TEST(64, xor, ^=, v1);
+ 	TEST(64, andnot, &= ~, v1);
  
- 	__asm__ __volatile__ (
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	lwarx	%0,0,%2		# __cmpxchg_u32\n\
- 	cmpw	0,%0,%3\n\
- 	bne-	2f\n"
- 	PPC405_ERR77(0,%2)
- "	stwcx.	%4,0,%2\n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	"\n\
- 2:"
- 	: "=&r" (prev), "+m" (*p)
-@@ -197,13 +197,13 @@ __cmpxchg_u64(volatile unsigned long *p, unsigned long old, unsigned long new)
- 	unsigned long prev;
+-	INIT(v0);
+-	r += onestwos;
+-	BUG_ON(atomic64_add_return(onestwos, &v) != r);
+-	BUG_ON(v.counter != r);
+-
+-	INIT(v0);
+-	r += -one;
+-	BUG_ON(atomic64_add_return(-one, &v) != r);
+-	BUG_ON(v.counter != r);
+-
+-	INIT(v0);
+-	r -= onestwos;
+-	BUG_ON(atomic64_sub_return(onestwos, &v) != r);
+-	BUG_ON(v.counter != r);
+-
+-	INIT(v0);
+-	r -= -one;
+-	BUG_ON(atomic64_sub_return(-one, &v) != r);
+-	BUG_ON(v.counter != r);
++	RETURN_FAMILY_TEST(64, add_return, +=, onestwos);
++	RETURN_FAMILY_TEST(64, add_return, +=, -one);
++	RETURN_FAMILY_TEST(64, sub_return, -=, onestwos);
++	RETURN_FAMILY_TEST(64, sub_return, -=, -one);
  
- 	__asm__ __volatile__ (
--	PPC_RELEASE_BARRIER
-+	PPC_ATOMIC_ENTRY_BARRIER
- "1:	ldarx	%0,0,%2		# __cmpxchg_u64\n\
- 	cmpd	0,%0,%3\n\
- 	bne-	2f\n\
- 	stdcx.	%4,0,%2\n\
- 	bne-	1b"
--	PPC_ACQUIRE_BARRIER
-+	PPC_ATOMIC_EXIT_BARRIER
- 	"\n\
- 2:"
- 	: "=&r" (prev), "+m" (*p)
+ 	INIT(v0);
+ 	atomic64_inc(&v);
+@@ -100,33 +156,15 @@ static __init void test_atomic64(void)
+ 	BUG_ON(v.counter != r);
+ 
+ 	INIT(v0);
+-	r += one;
+-	BUG_ON(atomic64_inc_return(&v) != r);
+-	BUG_ON(v.counter != r);
+-
+-	INIT(v0);
+ 	atomic64_dec(&v);
+ 	r -= one;
+ 	BUG_ON(v.counter != r);
+ 
+-	INIT(v0);
+-	r -= one;
+-	BUG_ON(atomic64_dec_return(&v) != r);
+-	BUG_ON(v.counter != r);
+-
+-	INIT(v0);
+-	BUG_ON(atomic64_xchg(&v, v1) != v0);
+-	r = v1;
+-	BUG_ON(v.counter != r);
+-
+-	INIT(v0);
+-	BUG_ON(atomic64_cmpxchg(&v, v0, v1) != v0);
+-	r = v1;
+-	BUG_ON(v.counter != r);
++	INC_RETURN_FAMILY_TEST(64, v0);
++	DEC_RETURN_FAMILY_TEST(64, v0);
+ 
+-	INIT(v0);
+-	BUG_ON(atomic64_cmpxchg(&v, v2, v1) != v0);
+-	BUG_ON(v.counter != r);
++	XCHG_FAMILY_TEST(64, v0, v1);
++	CMPXCHG_FAMILY_TEST(64, v0, v1, v2);
+ 
+ 	INIT(v0);
+ 	BUG_ON(atomic64_add_unless(&v, one, v0));
 -- 
 2.5.3
