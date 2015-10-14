@@ -1,32 +1,42 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE7A71A0008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 20:43:59 +1100 (AEDT)
-Message-ID: <1444815838.1843.5.camel@ellerman.id.au>
-Subject: Re: [PATCH RESEND v3 1/6] powerpc: atomic: Make *xchg and *cmpxchg
- a full barrier
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>, Will Deacon
- <will.deacon@arm.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>,
- stable@vger.kernel.org
-Date: Wed, 14 Oct 2015 20:43:58 +1100
-In-Reply-To: <20151014093307.GC3816@twins.programming.kicks-ass.net>
-References: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
- <1444660220-25559-1-git-send-email-boqun.feng@gmail.com>
- <1444781400.12197.4.camel@ellerman.id.au>
- <20151014005134.GE23991@fixme-laptop.cn.ibm.com>
- <20151014080613.GP17308@twins.programming.kicks-ass.net>
- <20151014092653.GA29432@fixme-laptop.cn.ibm.com>
- <20151014093307.GC3816@twins.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 35DD11A03A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 21:13:31 +1100 (AEDT)
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40A46140E43
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 21:13:28 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 14 Oct 2015 15:43:23 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id A57A03940064
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 15:43:20 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9EADJSZ18350160
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 15:43:19 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9EADALM012874
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 15:43:10 +0530
+Message-ID: <561E2AB4.3040608@linux.vnet.ibm.com>
+Date: Wed, 14 Oct 2015 15:43:08 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@ozlabs.org, mikey@neuling.org, nacc@linux.vnet.ibm.com
+Subject: Re: [RFC] powerpc/numa: Use VPHN based node ID information on shared
+ processor LPARs
+References: <1444813335-4009-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1444814360.1843.1.camel@ellerman.id.au>
+In-Reply-To: <1444814360.1843.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,31 +46,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-14 at 11:33 +0200, Peter Zijlstra wrote:
-> On Wed, Oct 14, 2015 at 05:26:53PM +0800, Boqun Feng wrote:
-> > Michael and Peter, rest of this patchset depends on commits which are
-> > currently in the locking/core branch of the tip, so I would like it as a
-> > whole queued there. Besides, I will keep this patch Cc'ed to stable in
-> > future versions, that works for you both?
+On 10/14/2015 02:49 PM, Michael Ellerman wrote:
+> On Wed, 2015-10-14 at 14:32 +0530, Anshuman Khandual wrote:
+>> On shared processor LPARs, H_HOME_NODE_ASSOCIATIVITY hcall provides the
+>> dynamic virtual-physical mapping for any given processor. Currently we
+>> use VPHN node ID information only after getting either a PRRN or a VPHN
+>> event. But during boot time inside the function numa_setup_cpu, we still
+>> query the OF device tree for the node ID value which might be different
+>> than what can be fetched from the H_HOME_NODE_ASSOCIATIVITY hcall. In a
+>> scenario where there are no PRRN or VPHN event after boot, all node-cpu
+>> mapping will remain incorrect there after.
+>>
+>> With this proposed change, numa_setup_cpu will try to override the OF
+>> device tree fetched node ID information with H_HOME_NODE_ASSOCIATIVITY
+>> hcall fetched node ID value. Right now shared processor property of the
+>> LPAR cannot be queried as VPA inializaion happens after numa_setup_cpu
+>> during boot time. So initmem_init function has been moved after ppc_md.
+>> setup_arch inside setup_arch during boot.
 > 
-> From my POV having the Cc stable in there is fine if Michael actually
-> wants them to go there. GregKH will vacuum them up once they hit Linus'
-> tree and we don't need to think about it anymore.
-
-Yeah that's fine by me. Here's an Ack if you want one:
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-> Alternatively, Michael could put the patch in a separate branch and we
-> could both merge that.
+> I would be *very* reluctant to change the order of initmem_init() vs
+> setup_arch().
 > 
-> Or even, seeing how its a single patch and git mostly does the right
-> thing, we could just merge it independently in both trees and let git
-> sort it out at merge time.
+> At a minimum you'd need to go through every setup_arch() implementation and
+> carefully determine if the ordering of what it does matters vs initmem_init().
+> And then you'd need to test on every affected platform.
+> 
+> So I suggest you think of a different way to do it if at all possible.
 
-That probably would work, but I don't think it's necessary.
+vpa_init() is being called inside pSeries_setup_arch which is ppc_md
+.setup_arch for the platform. Its called directly for the boot cpu
+and through smp_init_pseries_xics for other cpus on the system. Not
+sure what is the reason behind calling vpa_init() from XICS init
+though.
 
-My tree doesn't get much (or any) more testing than linux-next, so as long as
-locking/core is in linux-next then it will be tested just fine that way.
-
-cheers
+If we can move all these vpa_init() calls from pSeries_setup_arch
+to initmem_init just before calling numa_setup_cpu, the VPA area
+would be initialized when we need it during boot. Will look in
+this direction.
