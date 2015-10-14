@@ -1,47 +1,36 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-io0-x234.google.com (mail-io0-x234.google.com
+ [IPv6:2607:f8b0:4001:c06::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 570361A038D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 12:33:40 +1100 (AEDT)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 99CF4140E43
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 12:33:39 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 14 Oct 2015 07:03:37 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B2F60E0024
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 07:03:32 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9E1XZuj3670350
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 07:03:35 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9E1XYsd018664
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Oct 2015 07:03:35 +0530
-Date: Wed, 14 Oct 2015 12:33:32 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH v2 2/8] powerpc/eeh: More relexed hotplug criterion
-Message-ID: <20151014013332.GA25472@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1444276739-20372-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1444276739-20372-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <87612b4rye.fsf@gamma.ozlabs.ibm.com>
- <20151012232510.GA14333@gwshan>
- <87y4f732ll.fsf@gamma.ozlabs.ibm.com>
- <20151013042828.GA28681@gwshan>
- <87si5e2uv4.fsf@gamma.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD6A81A0549
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 12:47:58 +1100 (AEDT)
+Received: by iodv82 with SMTP id v82so40843237iod.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Oct 2015 18:47:56 -0700 (PDT)
+Date: Wed, 14 Oct 2015 09:47:35 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: Will Deacon <will.deacon@arm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Waiman Long <waiman.long@hp.com>, Davidlohr Bueso <dave@stgolabs.net>
+Subject: Re: [PATCH v3 6/6] powerpc: atomic: Implement cmpxchg{,64}_* and
+ atomic{,64}_cmpxchg_* variants
+Message-ID: <20151014014735.GF23991@fixme-laptop.cn.ibm.com>
+References: <1444659246-24769-1-git-send-email-boqun.feng@gmail.com>
+ <1444659246-24769-7-git-send-email-boqun.feng@gmail.com>
+ <20151013132404.GI21550@arm.com>
+ <20151013143259.GB23991@fixme-laptop.cn.ibm.com>
+ <20151013144333.GN21550@arm.com>
+ <20151013145830.GC23991@fixme-laptop.cn.ibm.com>
+ <20151013150427.GP21550@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87si5e2uv4.fsf@gamma.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="Y1L3PTX8QE8cb2T+"
+In-Reply-To: <20151013150427.GP21550@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,61 +40,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 14, 2015 at 10:48:15AM +1100, Daniel Axtens wrote:
->Gavin Shan <gwshan@linux.vnet.ibm.com> writes:
->> I think you're talking about the situation reported from the bug. It's
->> CAN_RECOVER instead of NONE returned from error_detected(). With the
->> CAN_RECOVER, the driver hopes the EEH core to enable the IO path so that
->> it can collect diag-data from IO space at late point.
->
->Oh. That's an interesting decision from the driver's point of view.
->
->I obviously need to re-read the patch and the surrounding code and try
->again to make sense of it later. Thanks for your attempts to explain it!
->
 
-Yeah, that was the tricky solution we had after discussion. Obviously,
-that's breaking EEH core's assumption that driver implements all error
-handlers or none of them as you said. Unfortunately, I think there might
-have more drivers to continue breaking but EEH core has to support. On
-the other hand, the error handlers could be used for purposes other than
-recovery, which is good.
+--Y1L3PTX8QE8cb2T+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Gavin
+On Tue, Oct 13, 2015 at 04:04:27PM +0100, Will Deacon wrote:
+> On Tue, Oct 13, 2015 at 10:58:30PM +0800, Boqun Feng wrote:
+> > On Tue, Oct 13, 2015 at 03:43:33PM +0100, Will Deacon wrote:
+> > > Putting a barrier in the middle of that critical section is probably a
+> > > terrible idea, and that's why I thought you were avoiding it (hence my
+> >=20
+> > The fact is that I haven't thought of that way to implement
+> > cmpxchg_release before you ask that question ;-) And I'm not going to do
+> > that for now and probably not in the future.
+> >=20
+> > > original question). Perhaps just add a comment to that effect, since I
+> >=20
+> > Are you suggesting if I put a barrier in the middle I'd better to add a
+> > comment, right? So if I don't do that, it's OK to let this patch as it.
+>=20
+> No, I mean put a comment in your file to explain the reason why you
+> override _relaxed and _acquire, but not _release (because overriding
 
->>
->>>Partial hotplug is pretty hacky to begin with, and a driver being able
->>>to opt out of EEH selectively is a useful feature, so we probably want
->>>to redesign the state machine to handle them both better. That would be
->>>a long term project.
->>>
+You mean overriding _acquire and fully order version, right?
 
->>>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>>> ---
->>>>>>  arch/powerpc/kernel/eeh_driver.c | 5 ++++-
->>>>>>  1 file changed, 4 insertions(+), 1 deletion(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->>>>>> index 3a626ed..32178a4 100644
->>>>>> --- a/arch/powerpc/kernel/eeh_driver.c
->>>>>> +++ b/arch/powerpc/kernel/eeh_driver.c
->>>>>> @@ -416,7 +416,10 @@ static void *eeh_rmv_device(void *data, void *userdata)
->>>>>>  	driver = eeh_pcid_get(dev);
->>>>>>  	if (driver) {
->>>>>>  		eeh_pcid_put(dev);
->>>>>> -		if (driver->err_handler)
->>>>>> +		if (driver->err_handler &&
->>>>>> +		    driver->err_handler->error_detected &&
->>>>>> +		    driver->err_handler->slot_reset &&
->>>>>> +		    driver->err_handler->resume)
->>>>>>  			return NULL;
->>>>>>  	}
->>>>>>  
->>>>>> -- 
->>>>>> 2.1.0
->>>>>>
->>>>>> _______________________________________________
->>>>>> Linuxppc-dev mailing list
->>>>>> Linuxppc-dev@lists.ozlabs.org
->>>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> _release would introduce this weird barrier in the middle of the critical
+> section, which would likely cause the conditional store to fail).
+>=20
+> Will
+
+--Y1L3PTX8QE8cb2T+
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWHbQzAAoJEEl56MO1B/q4JjIH/RtHBt8z/IElLm3upnFrejIp
+ffZQmRxcGNDLtreAd/xNgY2clOVWTdC1jV6J1N2aHSRj21+tdlJk/1+hed1Zj3Oj
+8F/gHk35UW0J++Yg7ID8YdLF14C+hoEHJjxiAgAuSuOrp6b2tFFbB8MlVVxKOr51
+9PdghSihyAaFnNO3FXQC0qoj66sdzORUAwCt/aMVKqQlSzJkaLbYrNYv8oMCwDCP
+P6KHtSkmvPXxfDgmKHbw3hx0zWB/LhSUXWtD6+i9H2vBNpMgwHMXAoSoNMqgBRE1
+yWkMAMiSwG4wrkM70fhu2nnVwGIWnSVc6be/XavrILZJhUU4HSSmp7ArQ/OQMc8=
+=ptoz
+-----END PGP SIGNATURE-----
+
+--Y1L3PTX8QE8cb2T+--
