@@ -1,23 +1,17 @@
-Return-Path: <christophe.jaillet@wanadoo.fr>
-Received: from smtp.smtpout.orange.fr (smtp07.smtpout.orange.fr
- [80.12.242.129])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 28A6B1A0491
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 16:56:36 +1100 (AEDT)
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH v2] powerpc/mpc5xxx: Avoid dereferencing potentially freed
- memory
-Date: Thu, 15 Oct 2015 07:56:20 +0200
-Message-Id: <1444888580-12966-1-git-send-email-christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20151014040011.8AB1514110A@ozlabs.org>
-References: <20151014040011.8AB1514110A@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A53BA1A0697
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 17:05:53 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: Olof Johannsson <olof@lixom.net>, <linux-kernel@vger.kernel.org>,
+ linux-kbuild@vger.kernel.org, yann.morin.1998@free.fr, mmarek@suse.com
+Subject: [PATCH] scripts/kconfig/Makefile: Fix KBUILD_DEFCONFIG check when
+ building with O=
+Date: Thu, 15 Oct 2015 17:05:50 +1100
+Message-Id: <1444889150-23609-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use 'of_property_read_u32()' instead of 'of_get_property()'+pointer
-dereference in order to avoid access to potentially freed memory.
+My recent commit d2036f30cfe1 ("scripts/kconfig/Makefile: Allow
+KBUILD_DEFCONFIG to be a target"), contained a bug in that when it
+checks if KBUILD_DEFCONFIG is a file it forgets to prepend $(srctree) to
+the path.
 
-Use 'of_get_next_parent()' to simplify the while() loop and avoid the
-need of a temp variable.
+This causes the build to fail when building out of tree (with O=), and
+when the value of KBUILD_DEFCONFIG is 'defconfig'. In that case we will
+fail to find the 'defconfig' file, because we look in the build
+directory not $(srctree), and so we will call Make again with
+'defconfig' as the target. From there we loop infinitely calling 'make
+defconfig' again and again.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+The fix is simple, we need to look for the file under $(srctree).
+
+Fixes: d2036f30cfe1 ("scripts/kconfig/Makefile: Allow KBUILD_DEFCONFIG to be a target")
+Reported-by: Olof Johansson <olof@lixom.net>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-v2: Use of_property_read_u32 instead of of_get_property+pointer dereference
-*** Untested ***
----
- arch/powerpc/sysdev/mpc5xxx_clocks.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+ scripts/kconfig/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/sysdev/mpc5xxx_clocks.c b/arch/powerpc/sysdev/mpc5xxx_clocks.c
-index f4f0301..92fbcf8 100644
---- a/arch/powerpc/sysdev/mpc5xxx_clocks.c
-+++ b/arch/powerpc/sysdev/mpc5xxx_clocks.c
-@@ -13,21 +13,17 @@
- 
- unsigned long mpc5xxx_get_bus_frequency(struct device_node *node)
- {
--	struct device_node *np;
--	const unsigned int *p_bus_freq = NULL;
-+	u32 bus_freq = 0;
- 
- 	of_node_get(node);
- 	while (node) {
--		p_bus_freq = of_get_property(node, "bus-frequency", NULL);
--		if (p_bus_freq)
-+		if (!of_property_read_u32(node, "bus-frequency", &bus_freq))
- 			break;
- 
--		np = of_get_parent(node);
--		of_node_put(node);
--		node = np;
-+		node = of_get_next_parent(node);
- 	}
- 	of_node_put(node);
- 
--	return p_bus_freq ? *p_bus_freq : 0;
-+	return bus_freq;
- }
- EXPORT_SYMBOL(mpc5xxx_get_bus_frequency);
+
+This works for me and is a minimal fix. I'll merge this into the powerpc#next
+branch unless anyone yells.
+
+diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
+index b2b9c87cec50..3043d6b0b51d 100644
+--- a/scripts/kconfig/Makefile
++++ b/scripts/kconfig/Makefile
+@@ -96,7 +96,7 @@ savedefconfig: $(obj)/conf
+ defconfig: $(obj)/conf
+ ifeq ($(KBUILD_DEFCONFIG),)
+ 	$< $(silent) --defconfig $(Kconfig)
+-else ifneq ($(wildcard arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
++else ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
+ 	@$(kecho) "*** Default configuration is based on '$(KBUILD_DEFCONFIG)'"
+ 	$(Q)$< $(silent) --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
+ else
 -- 
 2.1.4
