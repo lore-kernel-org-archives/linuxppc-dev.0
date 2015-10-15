@@ -2,20 +2,26 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A9F41A0427
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9CD4A1A045E
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 16:31:48 +1100 (AEDT)
-Date: Thu, 15 Oct 2015 16:29:55 +1100
+Date: Thu, 15 Oct 2015 16:30:39 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
-To: Laurentiu Tudor <b10716@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
- Scott Wood <scottwood@freescale.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH] powerpc/e6500: add TMCFG0 register definition
-Message-ID: <20151015052955.GC2960@iris.ozlabs.ibm.com>
-References: <5602BFEE.7060708@freescale.com>
+To: Andrzej Hajda <a.hajda@samsung.com>
+Cc: linux-kernel@vger.kernel.org,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Alexander Graf <agraf@suse.com>, Gleb Natapov <gleb@kernel.org>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 15/19] KVM: PPC: e500: fix handling local_sid_lookup result
+Message-ID: <20151015053039.GD2960@iris.ozlabs.ibm.com>
+References: <1443103227-25612-1-git-send-email-a.hajda@samsung.com>
+ <1443103227-25612-16-git-send-email-a.hajda@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5602BFEE.7060708@freescale.com>
+In-Reply-To: <1443103227-25612-16-git-send-email-a.hajda@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,11 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 23, 2015 at 06:06:22PM +0300, Laurentiu Tudor wrote:
-> The register is not currently used in the base kernel
-> but will be in a forthcoming kvm patch.
+On Thu, Sep 24, 2015 at 04:00:23PM +0200, Andrzej Hajda wrote:
+> The function can return negative value.
 > 
-> Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+> The problem has been detected using proposed semantic patch
+> scripts/coccinelle/tests/assign_signed_to_unsigned.cocci [1].
+> 
+> [1]: http://permalink.gmane.org/gmane.linux.kernel/2046107
+> 
+> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
 
 Thanks, applied to my kvm-ppc-next branch.
 
