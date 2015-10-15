@@ -1,30 +1,35 @@
-Return-Path: <B48286@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0138.outbound.protection.outlook.com [207.46.100.138])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <boqun.feng@gmail.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E5C211A074F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 14:08:14 +1100 (AEDT)
-From: Hou Zhiqiang <B48286@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "galak@kernel.crashing.org" <galak@kernel.crashing.org>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
- <paulus@samba.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com"
- <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "Harninder
- Rai" <harninder.rai@freescale.com>, Lian M.H. <Minghuan.Lian@freescale.com>,
- Hu Vincent <Mingkai.Hu@freescale.com>
-Subject: RE: [PATCH 1/2] powerpc/fsl: Add PCI node in device tree of bsc9132qds
-Date: Thu, 15 Oct 2015 02:52:58 +0000
-Message-ID: <CY1PR0301MB0780107C450233E7A0EA24628B3E0@CY1PR0301MB0780.namprd03.prod.outlook.com>
-References: <1444735761-1510-1-git-send-email-B48286@freescale.com>
- <1444854968.5185.205.camel@freescale.com>
-In-Reply-To: <1444854968.5185.205.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id B50C11A0583
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 14:11:29 +1100 (AEDT)
+Received: by pabws5 with SMTP id ws5so8971798pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 20:11:27 -0700 (PDT)
+Date: Thu, 15 Oct 2015 11:11:01 +0800
+From: Boqun Feng <boqun.feng@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
+Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
+ *cmpxchg a full barrier
+Message-ID: <20151015031101.GD14305@fixme-laptop.cn.ibm.com>
+References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+ <20151014201916.GB3910@linux.vnet.ibm.com>
+ <20151014210419.GY3604@twins.programming.kicks-ass.net>
+ <20151014214453.GC3910@linux.vnet.ibm.com>
+ <20151015005321.GB29432@fixme-laptop.cn.ibm.com>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="/3yNEOqWowh/8j+e"
+In-Reply-To: <20151015005321.GB29432@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,39 +39,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogMjAxNeW5tDEw5pyIMTXml6UgNDozNg0KPiBUbzogSG91IFpoaXFpYW5nLUI0
-ODI4Ng0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5j
-cmFzaGluZy5vcmc7DQo+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgcGF1bHVzQHNhbWJhLm9y
-ZzsgbXBlQGVsbGVybWFuLmlkLmF1Ow0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgcm9i
-aCtkdEBrZXJuZWwub3JnOyBwYXdlbC5tb2xsQGFybS5jb207DQo+IG1hcmsucnV0bGFuZEBhcm0u
-Y29tOyBpamMrZGV2aWNldHJlZUBoZWxsaW9uLm9yZy51azsgUmFpIEhhcm5pbmRlci1CMDEwNDQ7
-DQo+IExpYW4gTWluZ2h1YW4tQjMxOTM5OyBIdSBNaW5na2FpLUIyMTI4NA0KPiBTdWJqZWN0OiBS
-ZTogW1BBVENIIDEvMl0gcG93ZXJwYy9mc2w6IEFkZCBQQ0kgbm9kZSBpbiBkZXZpY2UgdHJlZSBv
-Zg0KPiBic2M5MTMycWRzDQo+IA0KPiBPbiBUdWUsIDIwMTUtMTAtMTMgYXQgMTk6MjkgKzA4MDAs
-IFpoaXFpYW5nIEhvdSB3cm90ZToNCj4gPiBGcm9tOiBIYXJuaW5kZXIgUmFpIDxoYXJuaW5kZXIu
-cmFpQGZyZWVzY2FsZS5jb20+DQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBIYXJuaW5kZXIgUmFp
-IDxoYXJuaW5kZXIucmFpQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogTWluZ2h1
-YW4gTGlhbiA8TWluZ2h1YW4uTGlhbkBmcmVlc2NhbGUuY29tPg0KPiA+IENoYW5nZS1JZDogSTQz
-NTVhZGQ0YTkyZDFmY2Y1MTQ4NDNhZWE1ZWNhZGQyZTI1MTc5NjkNCj4gPiBSZXZpZXdlZC1vbjog
-aHR0cDovL2dpdC5hbS5mcmVlc2NhbGUubmV0OjgxODEvMjQ1NA0KPiA+IFJldmlld2VkLWJ5OiBa
-YW5nIFRpZWZlaS1SNjE5MTEgPHRpZS1mZWkuemFuZ0BmcmVlc2NhbGUuY29tPg0KPiA+IFJldmll
-d2VkLWJ5OiBLdXNod2FoYSBQcmFiaGFrYXItQjMyNTc5IDxwcmFiaGFrYXJAZnJlZXNjYWxlLmNv
-bT4NCj4gPiBSZXZpZXdlZC1ieTogRmxlbWluZyBBbmRyZXctQUZMRU1JTkcgPEFGTEVNSU5HQGZy
-ZWVzY2FsZS5jb20+DQo+ID4gVGVzdGVkLWJ5OiBGbGVtaW5nIEFuZHJldy1BRkxFTUlORyA8QUZM
-RU1JTkdAZnJlZXNjYWxlLmNvbT4NCj4gDQo+IEdldCByaWQgb2YgdGhlIGdlcnJpdCBzdHVmZi4g
-IEFuZCB3aGVyZSBpcyB5b3VyIHNpZ25vZmY/DQo+IA0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bv
-d2VycGMvYm9vdC9kdHMvZnNsL2JzYzkxMzJzaS1wb3N0LmR0c2kNCj4gPiBiL2FyY2gvcG93ZXJw
-Yy9ib290L2R0cy9mc2wvYnNjOTEzMnNpLXBvc3QuZHRzaQ0KPiA+IGluZGV4IGM3MjMwNzEuLjc4
-YzhmMWMgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9ic2M5MTMy
-c2ktcG9zdC5kdHNpDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9ic2M5MTMy
-c2ktcG9zdC5kdHNpDQo+ID4gQEAgLTQwLDYgKzQwLDM1IEBADQo+ID4gICAgICAgaW50ZXJydXB0
-cyA9IDwxNiAyIDAgMCAyMCAyIDAgMD47ICB9Ow0KPiA+DQo+ID4gKy8qIGNvbnRyb2xsZXIgYXQg
-MHhhMDAwICovDQo+ID4gKyZwY2kwIHsNCj4gPiArICAgICBjb21wYXRpYmxlID0gImZzbCxic2M5
-MTMyLXBjaWUiLCAiZnNsLHFvcmlxLXBjaWUtdjIuMiI7DQo+ID4gKyAgICAgZGV2aWNlX3R5cGUg
-PSAicGNpIjsNCj4gPiArICAgICAjc2l6ZS1jZWxscyA9IDwyPjsNCj4gPiArICAgICAjYWRkcmVz
-cy1jZWxscyA9IDwzPjsNCj4gPiArICAgICBidXMtcmFuZ2UgPSA8MCAyNTU+Ow0KPiA+ICsgICAg
-IGNsb2NrLWZyZXF1ZW5jeSA9IDwzMzMzMzMzMz47DQo+ID4gKyAgICAgaW50ZXJydXB0cyA9IDwx
-NiAyIDAgMD47DQo+IA0KPiBUaGlzIGNsb2NrLWZyZXF1ZW5jeSBpcyBub3QgY29ycmVjdCBmb3Ig
-UENJZS4gIEp1c3QgcmVtb3ZlIGl0Lg0KPiANCg0KT2ssIHRoYW5rcyBmb3IgeW91ciBjb3JyZWN0
-aW9uLg0KIA0KDQpUaGFua3MsDQpaaGlxaWFuZw0KDQo=
+
+--/3yNEOqWowh/8j+e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Paul,
+
+On Thu, Oct 15, 2015 at 08:53:21AM +0800, Boqun Feng wrote:
+> On Wed, Oct 14, 2015 at 02:44:53PM -0700, Paul E. McKenney wrote:
+[snip]
+> > To that end, the herd tool can make a diagram of what it thought
+> > happened, and I have attached it.  I used this diagram to try and force
+> > this scenario at https://www.cl.cam.ac.uk/~pes20/ppcmem/index.html#PPC,
+> > and succeeded.  Here is the sequence of events:
+> >=20
+> > o	Commit P0's write.  The model offers to propagate this write
+> > 	to the coherence point and to P1, but don't do so yet.
+> >=20
+> > o	Commit P1's write.  Similar offers, but don't take them up yet.
+> >=20
+> > o	Commit P0's lwsync.
+> >=20
+> > o	Execute P0's lwarx, which reads a=3D0.  Then commit it.
+> >=20
+> > o	Commit P0's stwcx. as successful.  This stores a=3D1.
+> >=20
+> > o	Commit P0's branch (not taken).
+> >=20
+>=20
+> So at this point, P0's write to 'a' has propagated to P1, right? But
+> P0's write to 'x' hasn't, even there is a lwsync between them, right?
+> Doesn't the lwsync prevent this from happening?
+>=20
+> If at this point P0's write to 'a' hasn't propagated then when?
+>=20
+
+Hmm.. I played around ppcmem, and figured out what happens to
+propagation of P0's write to 'a':
+
+At this point, or some point after store 'a' to 1 and before sync on
+P1 finish, writes to 'a' reachs a coherence point which 'a' is 2, so
+P0's write to 'a' "fails" and will not propagate.
+
+
+I probably misunderstood the word "propagate", which actually means an
+already coherent write gets seen by another CPU, right?
+
+So my question should be:
+
+As lwsync can order P0's write to 'a' happens after P0's write to 'x',
+why P0's write to 'x' isn't seen by P1 after P1's write to 'a' overrides
+P0's?
+
+But ppcmem gave me the answer ;-) lwsync won't wait under P0's write to
+'x' gets propagated, and if P0's write to 'a' "wins" in write coherence,
+lwsync will guarantee propagation of 'x' happens before that of 'a', but
+if P0's write to 'a' "fails", there will be no propagation of 'a' from
+P0. So that lwsync can't do anything here.
+
+Regards,
+Boqun
+
+>=20
+> > o	Commit P0's final register-to-register move.
+> >=20
+> > o	Commit P1's sync instruction.
+> >=20
+> > o	There is now nothing that can happen in either processor.
+> > 	P0 is done, and P1 is waiting for its sync.  Therefore,
+> > 	propagate P1's a=3D2 write to the coherence point and to
+> > 	the other thread.
+> >=20
+> > o	There is still nothing that can happen in either processor.
+> > 	So pick the barrier propagate, then the acknowledge sync.
+> >=20
+> > o	P1 can now execute its read from x.  Because P0's write to
+> > 	x is still waiting to propagate to P1, this still reads
+> > 	x=3D0.  Execute and commit, and we now have both r3 registers
+> > 	equal to zero and the final value a=3D2.
+> >=20
+> > o	Clean up by propagating the write to x everywhere, and
+> > 	propagating the lwsync.
+> >=20
+> > And the "exists" clause really does trigger: 0:r3=3D0; 1:r3=3D0; [a]=3D=
+2;
+> >=20
+> > I am still not 100% confident of my litmus test.  It is quite possible
+> > that I lost something in translation, but that is looking less likely.
+> >=20
+
+--/3yNEOqWowh/8j+e
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWHxlBAAoJEEl56MO1B/q4G0UH/3Xl1Niv2WI+t941LQruVGyC
+OMjvIMg3cIKvU8DMZBUeQiSmzykAhoUfX6g/5Nry1YGHUf4kepcrRfX95Ai8Wp/Q
+HzkL//mmgRrxAwvtwDnklJsxNma9P8HmeXkrYAw2KIEymL9CV2m0ELExIVV+mYel
+aI7WTuBsKuYAmnKGxkK6Yxrqe/We2+HS8eKViDM/dJgi1uNstd7upoKkaegMJEoV
+9K1oT/+kx4qwaPB7Gr1y4kwBjN49e5Nn9PQB/er6CnulhOaHHFQNHQOWMM1Cgn2U
+76XCKZBiMR2q0p1rcX89Ir1XcT6v3mJWuBxPyjJ91vikm1paz/LsI9hHDF2rEbY=
+=kHcB
+-----END PGP SIGNATURE-----
+
+--/3yNEOqWowh/8j+e--
