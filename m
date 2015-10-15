@@ -1,23 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <B48286@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0144.outbound.protection.outlook.com [157.56.111.144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E424C1A06A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 17:36:17 +1100 (AEDT)
-Message-ID: <1444890977.5970.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/mpc5xxx: Avoid dereferencing potentially
- freed memory
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: benh@kernel.crashing.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org,  linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-Date: Thu, 15 Oct 2015 17:36:17 +1100
-In-Reply-To: <1444888580-12966-1-git-send-email-christophe.jaillet@wanadoo.fr>
-References: <20151014040011.8AB1514110A@ozlabs.org>
- <1444888580-12966-1-git-send-email-christophe.jaillet@wanadoo.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6A24F1A06A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 17:45:34 +1100 (AEDT)
+From: Hou Zhiqiang <B48286@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, "mturquette@baylibre.com"
+ <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org"
+ <viresh.kumar@linaro.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>
+CC: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang
+ <Yuantian.Tang@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Hu Vincent
+ <Mingkai.Hu@freescale.com>, Hou Zhiqiang <B48286@freescale.com>
+Subject: RE: [v3,1/5] powerpc/fsl: Move fsl_guts.h out of arch/powerpc
+Date: Thu, 15 Oct 2015 06:45:25 +0000
+Message-ID: <CY1PR0301MB07809DEB86BE03CD1FF608A98B3E0@CY1PR0301MB0780.namprd03.prod.outlook.com>
+References: <BN3PR0301MB12498818CCEA66A001228FAC843E0@BN3PR0301MB1249.namprd03.prod.outlook.com>
+In-Reply-To: <BN3PR0301MB12498818CCEA66A001228FAC843E0@BN3PR0301MB1249.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-15 at 07:56 +0200, Christophe JAILLET wrote:
-> Use 'of_property_read_u32()' instead of 'of_get_property()'+pointer
-> dereference in order to avoid access to potentially freed memory.
-> 
-> Use 'of_get_next_parent()' to simplify the while() loop and avoid the
-> need of a temp variable.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> v2: Use of_property_read_u32 instead of of_get_property+pointer dereference
-> *** Untested ***
-
-Thanks.
-
-Can someone with an mpc5xxx test this?
-
-cheers
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb20gcGF0Y2h3b3JrIFN1biBTZXAg
+MjAgMDQ6Mjk6NTMgMjAxNSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAN
+Cj4gQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PSJ1dGYtOCIgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiBNSU1FLVZlcnNpb246IDEuMCAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+IENv
+bnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICANCj4gU3ViamVjdDogW3YzLDEvNV0gcG93ZXJwYy9mc2w6IE1v
+dmUgZnNsX2d1dHMuaCBvdXQgb2YgYXJjaC9wb3dlcnBjICAgICAgICAgICAgIA0KPiBGcm9tOiBT
+Y290dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4gICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgDQo+IFgtUGF0Y2h3b3JrLUlkOiA3MjI1NDIxICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gTWVzc2FnZS1JZDog
+PDE0NDI3MjMzOTctMjYzMjktMi1naXQtc2VuZC1lbWFpbC1zY290dHdvb2RAZnJlZXNjYWxlLmNv
+bT4gICAgICAgIA0KPiBUbzogTWljaGFlbCBUdXJxdWV0dGUgPG10dXJxdWV0dGVAYmF5bGlicmUu
+Y29tPiwgU3RlcGhlbiBCb3lkICAgICAgICAgICAgICAgICAgDQo+ICAgICAgIDxzYm95ZEBjb2Rl
+YXVyb3JhLm9yZz4sICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2kubmV0PiwgICAg
+ICAgICANCj4gICAgICAgVmlyZXNoIEt1bWFyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgICAgICA8dmlyZXNoLmt1bWFyQGxp
+bmFyby5vcmc+LCBSdXNzZWxsIEtpbmcgPGxpbnV4QGFybS5saW51eC5vcmcudWs+ICAgICAgICAg
+DQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcsIFRhbmcgWXVhbnRpYW4gPFl1YW50aWFu
+LlRhbmdAZnJlZXNjYWxlLmNvbT4sICAgICANCj4gICAgICAgU2NvdHQgV29vZCA8c2NvdHR3b29k
+QGZyZWVzY2FsZS5jb20+LCBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZywgICAgIA0KPiAg
+ICAgICBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnLCBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmlu
+ZnJhZGVhZC5vcmcgICAgICAgICAgDQo+IERhdGU6IFNhdCwgMTkgU2VwIDIwMTUgMjM6Mjk6NTMg
+LTA1MDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIA0KPiBGcmVlc2NhbGUncyBMYXllcnNjYXBlIEFSTSBjaGlwcyB1c2Ug
+dGhlIHNhbWUgc3RydWN0dXJlLiAgICAgICAgICAgICAgICAgICAgICAgDQo+ICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICANCj4gU2lnbmVkLW9mZi1ieTogU2NvdHQgV29vZCA8c2NvdHR3b29kQGZyZWVz
+Y2FsZS5jb20+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgDQo+IC0tLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gdjM6IHdhcyBwYXRjaCAyLzUgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IA0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20v
+ZnNsX2d1dHMuaCAgICAgICAgfCAxOTIgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4g
+IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9tcGM4NXh4X21kcy5jICB8ICAgMiArLSAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIA0KPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L21w
+Yzg1eHhfcmRiLmMgIHwgICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBhcmNo
+L3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfZHMuYyAgICAgfCAgIDIgKy0gICAgICAgICAg
+ICAgICAgICAgICAgICAgICANCj4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9wMTAyMl9y
+ZGsuYyAgICB8ICAgMiArLSAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgYXJjaC9wb3dl
+cnBjL3BsYXRmb3Jtcy84NXh4L3NtcC5jICAgICAgICAgIHwgICAyICstICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgDQo+ICBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvdHdyX3AxMDJ4LmMg
+ICAgfCAgIDIgKy0gICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gIGFyY2gvcG93ZXJwYy9w
+bGF0Zm9ybXMvODZ4eC9tcGM4NjEwX2hwY2QuYyB8ICAgMiArLSAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIA0KPiAgZHJpdmVycy9pb21tdS9mc2xfcGFtdS5jICAgICAgICAgICAgICAgICAgIHwg
+ICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBpbmNsdWRlL2xpbnV4L2ZzbC9n
+dXRzLmggICAgICAgICAgICAgICAgICAgfCAxOTIgKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysNCj4gIHNvdW5kL3NvYy9mc2wvbXBjODYxMF9ocGNkLmMgICAgICAgICAgICAgICB8ICAgMiAr
+LSAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgc291bmQvc29jL2ZzbC9wMTAyMl9kcy5j
+ICAgICAgICAgICAgICAgICAgIHwgICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+
+ICBzb3VuZC9zb2MvZnNsL3AxMDIyX3Jkay5jICAgICAgICAgICAgICAgICAgfCAgIDIgKy0gICAg
+ICAgICAgICAgICAgICAgICAgICAgICANCj4gIDEzIGZpbGVzIGNoYW5nZWQsIDIwMyBpbnNlcnRp
+b25zKCspLCAyMDMgZGVsZXRpb25zKC0pICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgZGVs
+ZXRlIG1vZGUgMTAwNjQ0IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfZ3V0cy5oICAgICAg
+ICAgICAgICAgICAgICAgICAgDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgaW5jbHVkZS9saW51eC9m
+c2wvZ3V0cy5oICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCg0KTFMxMDQzQSBj
+bG9jayBkcml2ZXIgZGVwZW5kcyBvbiB0aGlzIHBhdGNoc2V0LCBhbmQgdGVzdGVkIG9uIExTMTA0
+M0FSREIgYm9hcmQuDQoNClRoYW5rcywNClpoaXFpYW5nDQo=
