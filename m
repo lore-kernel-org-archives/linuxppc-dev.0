@@ -1,26 +1,50 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 280C91A0416
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 14:27:15 +1100 (AEDT)
-Message-ID: <1444879634.5970.3.camel@ellerman.id.au>
-Subject: Re: [RFC, 1/2] scripts/kconfig/Makefile: Allow KBUILD_DEFCONFIG to
- be a target
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, mmarek@suse.com, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, yann.morin.1998@free.fr,
- "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>
-Date: Thu, 15 Oct 2015 14:27:14 +1100
-In-Reply-To: <CAOesGMgd2rnAs9hmi1B9PWN2=fr6HUDn+krxdDdGPUKBrZOQGw@mail.gmail.com>
-References: <1442986835-13985-1-git-send-email-mpe@ellerman.id.au>
- <20151002074708.CF4DC14076A@ozlabs.org>
- <CAOesGMjDC99RFEenyUqc2uhpT9EhqhevrqxiO5Gd7AN_GWmrkg@mail.gmail.com>
- <1444779780.12197.3.camel@ellerman.id.au>
- <CAOesGMgd2rnAs9hmi1B9PWN2=fr6HUDn+krxdDdGPUKBrZOQGw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 84AAC1A01BA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 14:33:14 +1100 (AEDT)
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 14 Oct 2015 21:33:11 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C03BB1FF0049
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 21:21:20 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t9F3W70Q10092914
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 20:32:07 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9F3X6sw026931
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Oct 2015 21:33:08 -0600
+Date: Wed, 14 Oct 2015 20:33:05 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
+Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
+ *cmpxchg a full barrier
+Message-ID: <20151015033305.GF3910@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+ <20151014201916.GB3910@linux.vnet.ibm.com>
+ <20151014210419.GY3604@twins.programming.kicks-ass.net>
+ <20151014214453.GC3910@linux.vnet.ibm.com>
+ <20151015005321.GB29432@fixme-laptop.cn.ibm.com>
+ <20151015031101.GD14305@fixme-laptop.cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151015031101.GD14305@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,73 +54,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-14 at 09:54 -0700, Olof Johansson wrote:
-> On Tue, Oct 13, 2015 at 4:43 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > On Tue, 2015-10-13 at 14:02 -0700, Olof Johansson wrote:
-> >> On Fri, Oct 2, 2015 at 12:47 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >> > On Wed, 2015-23-09 at 05:40:34 UTC, Michael Ellerman wrote:
-> >> >> Arch Makefiles can set KBUILD_DEFCONFIG to tell kbuild the name of the
-> >> >> defconfig that should be built by default.
-> >> >>
-> >> >> However currently there is an assumption that KBUILD_DEFCONFIG points to
-> >> >> a file at arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG).
-> >> >>
-> >> >> We would like to use a target, using merge_config, as our defconfig, so
-> >> >> adapt the logic in scripts/kconfig/Makefile to allow that.
-> >> >>
-> >> >> To minimise the chance of breaking anything, we first check if
-> >> >> KBUILD_DEFCONFIG is a file, and if so we do the old logic. If it's not a
-> >> >> file, then we call the top-level Makefile with KBUILD_DEFCONFIG as the
-> >> >> target.
-> >> >>
-> >> >> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> >> >> Acked-by: Michal Marek <mmarek@suse.com>
-> >> >
-> >> > Applied to powerpc next.
-> >> >
-> >> > https://git.kernel.org/powerpc/c/d2036f30cfe1daa19e63ce75
-> >>
-> >> This breaks arm64 defconfig for me:
-> >>
-> >> mkdir obj-tmp
-> >> make -f Makefile O=obj-tmp ARCH=arm64 defconfig
-> >> ... watch loop of:
-> >> *** Default configuration is based on target 'defconfig'
-> >>   GEN     ./Makefile
-> >
-> > Crap, sorry. I knew I shouldn't have touched that code!
-> >
-> > Does this fix it for you?
+On Thu, Oct 15, 2015 at 11:11:01AM +0800, Boqun Feng wrote:
+> Hi Paul,
 > 
-> Yes, it does, however:
+> On Thu, Oct 15, 2015 at 08:53:21AM +0800, Boqun Feng wrote:
+> > On Wed, Oct 14, 2015 at 02:44:53PM -0700, Paul E. McKenney wrote:
+> [snip]
+> > > To that end, the herd tool can make a diagram of what it thought
+> > > happened, and I have attached it.  I used this diagram to try and force
+> > > this scenario at https://www.cl.cam.ac.uk/~pes20/ppcmem/index.html#PPC,
+> > > and succeeded.  Here is the sequence of events:
+> > > 
+> > > o	Commit P0's write.  The model offers to propagate this write
+> > > 	to the coherence point and to P1, but don't do so yet.
+> > > 
+> > > o	Commit P1's write.  Similar offers, but don't take them up yet.
+> > > 
+> > > o	Commit P0's lwsync.
+> > > 
+> > > o	Execute P0's lwarx, which reads a=0.  Then commit it.
+> > > 
+> > > o	Commit P0's stwcx. as successful.  This stores a=1.
+> > > 
+> > > o	Commit P0's branch (not taken).
+> > > 
+> > 
+> > So at this point, P0's write to 'a' has propagated to P1, right? But
+> > P0's write to 'x' hasn't, even there is a lwsync between them, right?
+> > Doesn't the lwsync prevent this from happening?
+> > 
+> > If at this point P0's write to 'a' hasn't propagated then when?
 > 
-> > diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-> > index b2b9c87..3043d6b 100644
-> > --- a/scripts/kconfig/Makefile
-> > +++ b/scripts/kconfig/Makefile
-> > @@ -96,7 +96,7 @@ savedefconfig: $(obj)/conf
-> >  defconfig: $(obj)/conf
-> >  ifeq ($(KBUILD_DEFCONFIG),)
-> >         $< $(silent) --defconfig $(Kconfig)
-> > -else ifneq ($(wildcard arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
-> > +else ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG)),)
-> >         @$(kecho) "*** Default configuration is based on '$(KBUILD_DEFCONFIG)'"
-> >         $(Q)$< $(silent) --defconfig=arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG) $(Kconfig)
+> Hmm.. I played around ppcmem, and figured out what happens to
+> propagation of P0's write to 'a':
 > 
-> Do you need a $(srctree) prefix here too? I'm not entirely sure what I
-> would do to reproduce a run that goes down this path so I can't
-> confirm.
+> At this point, or some point after store 'a' to 1 and before sync on
+> P1 finish, writes to 'a' reachs a coherence point which 'a' is 2, so
+> P0's write to 'a' "fails" and will not propagate.
+> 
+> I probably misunderstood the word "propagate", which actually means an
+> already coherent write gets seen by another CPU, right?
 
-That is the path you're going down, now that it's fixed. That's the path where
-KBUILD_DEFCONFIG is a real file, ie. the old behaviour.
+It is quite possible for a given write to take a position in the coherence
+order that guarantees that no one will see it, as is the case here.
+But yes, all readers will see an order of values for a given memory
+location that is consistent with the coherence order.
 
-I'm not sure why it doesn't have a $(srctree) there, but it's never had one.
+> So my question should be:
+> 
+> As lwsync can order P0's write to 'a' happens after P0's write to 'x',
+> why P0's write to 'x' isn't seen by P1 after P1's write to 'a' overrides
+> P0's?
 
-It looks like it eventually boils down to zconf_fopen() which looks for the
-file in both .  and $(srctree).
+There is no global clock for PPC's memory model.
 
-So I think we could add a $(srctree) there, it would be more obvious and not
-rely on the zconf_fopen() behaviour, but I'd rather leave it as is and let
-Michal do that as a cleanup later.
+> But ppcmem gave me the answer ;-) lwsync won't wait under P0's write to
+> 'x' gets propagated, and if P0's write to 'a' "wins" in write coherence,
+> lwsync will guarantee propagation of 'x' happens before that of 'a', but
+> if P0's write to 'a' "fails", there will be no propagation of 'a' from
+> P0. So that lwsync can't do anything here.
 
-cheers
+I believe that this is consistent, but the corners can get tricky.
+
+							Thanx, Paul
+
+> Regards,
+> Boqun
+> 
+> > 
+> > > o	Commit P0's final register-to-register move.
+> > > 
+> > > o	Commit P1's sync instruction.
+> > > 
+> > > o	There is now nothing that can happen in either processor.
+> > > 	P0 is done, and P1 is waiting for its sync.  Therefore,
+> > > 	propagate P1's a=2 write to the coherence point and to
+> > > 	the other thread.
+> > > 
+> > > o	There is still nothing that can happen in either processor.
+> > > 	So pick the barrier propagate, then the acknowledge sync.
+> > > 
+> > > o	P1 can now execute its read from x.  Because P0's write to
+> > > 	x is still waiting to propagate to P1, this still reads
+> > > 	x=0.  Execute and commit, and we now have both r3 registers
+> > > 	equal to zero and the final value a=2.
+> > > 
+> > > o	Clean up by propagating the write to x everywhere, and
+> > > 	propagating the lwsync.
+> > > 
+> > > And the "exists" clause really does trigger: 0:r3=0; 1:r3=0; [a]=2;
+> > > 
+> > > I am still not 100% confident of my litmus test.  It is quite possible
+> > > that I lost something in translation, but that is looking less likely.
+> > > 
