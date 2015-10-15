@@ -1,21 +1,16 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0103.outbound.protection.outlook.com [157.56.111.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F0E5E1A0676
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 11:14:48 +1100 (AEDT)
-Message-ID: <1444868072.5185.214.camel@freescale.com>
-Subject: Re: devicetree and IRQ7 mapping for T1042(mpic)
-From: Scott Wood <scottwood@freescale.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 14 Oct 2015 19:14:32 -0500
-In-Reply-To: <1444867898.5185.213.camel@freescale.com>
-References: <1444851451.28972.59.camel@transmode.se>
- <1444867898.5185.213.camel@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C7ED1A0681
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 11:40:58 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: sam.bobroff@au1.ibm.com
+Subject: [PATCH] selftests/powerpc: Allow the tm-syscall test to build with
+ old headers
+Date: Thu, 15 Oct 2015 11:40:50 +1100
+Message-Id: <1444869650-15843-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +20,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-14 at 19:11 -0500, Scott Wood wrote:
-> On Wed, 2015-10-14 at 19:37 +0000, Joakim Tjernlund wrote:
-> > I am trying to figure out how to describe/map external IRQ7 in the 
-> > devicetree.
-> > 
-> > Basically either IRQ7 to be left alone by Linux(becase u-boot already set 
-> > it up)
-> > or map IRQ7 to sie 0(MPIC_EILR7=0xf0) and prio=0xf(MPIC_EIVPR7=0x4f0000)
-> > 
-> > There is no need for SW handler because IRQ7 will be routed to the DDR 
-> > controller
-> > and case an automatic Self Refresh just before CPU reset.
-> > 
-> > I cannot figure out how to do this. Any ideas?
-> > 
-> > If not possible from devicetree, then can one do it from board code?
-> 
-> The device tree describes the hardware.  Priority is configuration, and 
-> thus 
-> doesn't belong there.  You can call mpic_irq_set_priority() from board code.
-> 
-> Likewise, the fact that you want to route irq7 to sie0 is configuration, 
-> not 
-> hardware description.  At most, the device tree should describe is what is 
-> connected to each sie output.  There's no current Linux support for routing 
-> an interrupt to sie or anything other than "int".
+When building against older kernel headers, currently the tm-syscall
+test fails to build because PPC_FEATURE2_HTM_NOSC is not defined.
 
-BTW, priority is meaningless for interrupts routed to sie.
+Tweak the test so that if PPC_FEATURE2_HTM_NOSC is not defined it still
+builds, but prints a warning at run time and marks the test as skipped.
 
--Scott
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ tools/testing/selftests/powerpc/tm/tm-syscall.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall.c b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+index 1276e23da63b..e835bf7ec7ae 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-syscall.c
++++ b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+@@ -77,13 +77,23 @@ pid_t getppid_tm(bool suspend)
+ 	exit(-1);
+ }
+ 
++static inline bool have_htm_nosc(void)
++{
++#ifdef PPC_FEATURE2_HTM_NOSC
++	return ((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM_NOSC);
++#else
++	printf("PPC_FEATURE2_HTM_NOSC not defined, can't check AT_HWCAP2\n");
++	return false;
++#endif
++}
++
+ int tm_syscall(void)
+ {
+ 	unsigned count = 0;
+ 	struct timeval end, now;
+ 
+-	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2)
+-		  & PPC_FEATURE2_HTM_NOSC));
++	SKIP_IF(!have_htm_nosc());
++
+ 	setbuf(stdout, NULL);
+ 
+ 	printf("Testing transactional syscalls for %d seconds...\n", TEST_DURATION);
+-- 
+2.1.4
