@@ -1,23 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 577CC1A0679
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 20:38:06 +1100 (AEDT)
-Message-ID: <1444901885.8464.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] scripts/kconfig/Makefile: Fix KBUILD_DEFCONFIG check
- when building with O=
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal Marek <mmarek@suse.com>
-Cc: linuxppc-dev@ozlabs.org, Olof Johannsson <olof@lixom.net>,
- linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
- yann.morin.1998@free.fr
-Date: Thu, 15 Oct 2015 20:38:05 +1100
-In-Reply-To: <561F5552.4070902@suse.com>
-References: <1444889150-23609-1-git-send-email-mpe@ellerman.id.au>
- <561F5552.4070902@suse.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id EAC141A0396
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 21:35:50 +1100 (AEDT)
+Date: Thu, 15 Oct 2015 11:35:44 +0100
+From: Will Deacon <will.deacon@arm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
+Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
+ *cmpxchg a full barrier
+Message-ID: <20151015103510.GA27524@arm.com>
+References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+ <20151014201916.GB3910@linux.vnet.ibm.com>
+ <20151014210419.GY3604@twins.programming.kicks-ass.net>
+ <20151014214453.GC3910@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151014214453.GC3910@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +32,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-10-15 at 09:27 +0200, Michal Marek wrote:
-> Dne 15.10.2015 v 08:05 Michael Ellerman napsal(a):
-> > My recent commit d2036f30cfe1 ("scripts/kconfig/Makefile: Allow
-> > KBUILD_DEFCONFIG to be a target"), contained a bug in that when it
-> > checks if KBUILD_DEFCONFIG is a file it forgets to prepend $(srctree) to
-> > the path.
-> > 
-> > This causes the build to fail when building out of tree (with O=), and
-> > when the value of KBUILD_DEFCONFIG is 'defconfig'. In that case we will
-> > fail to find the 'defconfig' file, because we look in the build
-> > directory not $(srctree), and so we will call Make again with
-> > 'defconfig' as the target. From there we loop infinitely calling 'make
-> > defconfig' again and again.
-> > 
-> > The fix is simple, we need to look for the file under $(srctree).
-> > 
-> > Fixes: d2036f30cfe1 ("scripts/kconfig/Makefile: Allow KBUILD_DEFCONFIG to be a target")
-> > Reported-by: Olof Johansson <olof@lixom.net>
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Dammit guys, it's never simple is it?
+
+On Wed, Oct 14, 2015 at 02:44:53PM -0700, Paul E. McKenney wrote:
+> To that end, the herd tool can make a diagram of what it thought
+> happened, and I have attached it.  I used this diagram to try and force
+> this scenario at https://www.cl.cam.ac.uk/~pes20/ppcmem/index.html#PPC,
+> and succeeded.  Here is the sequence of events:
 > 
-> Acked-by: Michal Marek <mmarek@suse.com>
+> o	Commit P0's write.  The model offers to propagate this write
+> 	to the coherence point and to P1, but don't do so yet.
 > 
-> I could have spotted it myself :-/.
+> o	Commit P1's write.  Similar offers, but don't take them up yet.
+> 
+> o	Commit P0's lwsync.
+> 
+> o	Execute P0's lwarx, which reads a=0.  Then commit it.
+> 
+> o	Commit P0's stwcx. as successful.  This stores a=1.
 
-It was pretty easy to miss in the diff, especially as the kconfig invocation
-doesn't use $(srctree).
+On arm64, this is a conditional-store-*release* and therefore cannot be
+observed before the initial write to x...
 
-I should have noticed it in my testing, but it didn't actually break powerpc,
-so the only clue was that the message says "based on target". Anyway fixed now
-hopefully.
+> o	Commit P0's branch (not taken).
+> 
+> o	Commit P0's final register-to-register move.
+> 
+> o	Commit P1's sync instruction.
+> 
+> o	There is now nothing that can happen in either processor.
+> 	P0 is done, and P1 is waiting for its sync.  Therefore,
+> 	propagate P1's a=2 write to the coherence point and to
+> 	the other thread.
 
-cheers
+... therefore this is illegal, because you haven't yet propagated that
+prior write...
+
+> 
+> o	There is still nothing that can happen in either processor.
+> 	So pick the barrier propagate, then the acknowledge sync.
+> 
+> o	P1 can now execute its read from x.  Because P0's write to
+> 	x is still waiting to propagate to P1, this still reads
+> 	x=0.  Execute and commit, and we now have both r3 registers
+> 	equal to zero and the final value a=2.
+
+... and P1 would have to read x == 1.
+
+So arm64 is ok. Doesn't lwsync order store->store observability for PPC?
+
+Will
