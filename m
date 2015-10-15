@@ -1,20 +1,40 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 9467F1A06A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 01:50:46 +1100 (AEDT)
-Date: Thu, 15 Oct 2015 15:50:44 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F14611A03A4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 02:42:57 +1100 (AEDT)
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Thu, 15 Oct 2015 09:42:54 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B76BA3E4004C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 09:42:52 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t9FFgqJr6488436
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 08:42:52 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9FFgpKN004634
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 09:42:52 -0600
+Date: Thu, 15 Oct 2015 08:42:52 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Will Deacon <will.deacon@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>,
  Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
 Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
  *cmpxchg a full barrier
-Message-ID: <20151015145044.GG29301@arm.com>
+Message-ID: <20151015154252.GG3910@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
  <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
  <20151014201916.GB3910@linux.vnet.ibm.com>
@@ -33,11 +53,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 15, 2015 at 11:35:10AM +0100, Will Deacon wrote:
+On Thu, Oct 15, 2015 at 11:35:44AM +0100, Will Deacon wrote:
 > Dammit guys, it's never simple is it?
-
-I re-read this and it's even more confusing than I first thought.
-
+> 
 > On Wed, Oct 14, 2015 at 02:44:53PM -0700, Paul E. McKenney wrote:
 > > To that end, the herd tool can make a diagram of what it thought
 > > happened, and I have attached it.  I used this diagram to try and force
@@ -72,46 +90,45 @@ I re-read this and it's even more confusing than I first thought.
 > ... therefore this is illegal, because you haven't yet propagated that
 > prior write...
 
-I misread this as a propagation of PO's conditional store. What actually
-happens on arm64, is that the early conditional store can only succeed
-once it is placed into the coherence order of the location which it is
-updating (but note that this is subtly different from multi-copy
-atomicity!).
+OK.  Power distinguishes between propagating to the coherence point
+and to each of the other CPUs.
 
-So, given that the previous conditional store succeeded, the coherence
-order on A must be either {0, 1, 2} or {0, 2, 1}.
+> > o	There is still nothing that can happen in either processor.
+> > 	So pick the barrier propagate, then the acknowledge sync.
+> > 
+> > o	P1 can now execute its read from x.  Because P0's write to
+> > 	x is still waiting to propagate to P1, this still reads
+> > 	x=0.  Execute and commit, and we now have both r3 registers
+> > 	equal to zero and the final value a=2.
+> 
+> ... and P1 would have to read x == 1.
 
-If it's {0, 1, 2} (as required by your complete example), that means
-P1's a=2 write "observes" the conditional store by P0, and therefore
-(because the conditional store has release semantics), also observes
-P0's x=1 write.
+Good!  Do ARMMEM and herd agree with you?
 
-On the other hand, if P1's a=2 write propagates first and we have a
-coherence order of {0, 2, 1}, then P0 must have r3=2, because an
-exclusive load returning zero would have led to a failed conditional
-store thanks to the intervening write by P1.
+> So arm64 is ok. Doesn't lwsync order store->store observability for PPC?
 
-I find it pretty weird if PPC allows the conditional store to succeed in
-this way, as I think that would break simple cases like two threads
-incrementing a shared variable in parallel:
+Yes.  But this is not store->store observability, but rather store->load
+visibility.  Furthermore, as I understand it, lwsync controls the
+visibility to other CPUs, but not necessarily the coherence order.
 
+Let's look at the example C code again:
 
-""
-{
-0:r1=1; 0:r3=3; 0:r10=0 ; 0:r11=0; 0:r12=a;
-1:r1=1; 1:r3=3; 1:r10=0 ; 1:r11=0; 1:r12=a;
-}
-P0                 | P1                 ;
-lwarx  r11,r10,r12 | lwarx  r11,r10,r12 ;
-add r11,r1,r11     | add r11,r1,r11     ;
-stwcx. r11,r10,r12 | stwcx. r11,r10,r12 ;
-bne Fail0          | bne Fail1          ;
-mr r3,r1           | mr r3,r1           ;
-Fail0:             | Fail1:             ;
-exists
-(0:r3=1 /\ a=1 /\ 1:r3=1)
+	CPU 0				CPU 1
+	-----				-----
 
+	WRITE_ONCE(x, 1);		WRITE_ONCE(a, 2);
+	r3 = xchg(&a, 1);		smp_mb();
+					r3 = READ_ONCE(x);
 
-Is also allowed by herd and forbidden by ppcmem, for example.
+The problem is that we are applying intuitions obtained from a
+release-acquire chain, which hands off from stores to loads.  In contrast,
+this example is quite weird in that we have a store handing off to another
+store, but with reads also involved.  Making that work on Power requires
+full memory barriers on both sides.  Intuitively, the coherence order
+can be established after the fact as long as all readers see a consistent
+set of values based on the subset of the sequence that each reader sees.
 
-Will
+Anyway, it looks like Power does need a sync before and after for
+value-returning atomics.  That certainly simplifies the analysis.
+
+							Thanx, Paul
