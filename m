@@ -1,49 +1,36 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0265B1A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 02:46:17 +1100 (AEDT)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F14611A03A4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 02:42:57 +1100 (AEDT)
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by ozlabs.org (Postfix) with ESMTPS id 06BD21402D0
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2015 02:46:15 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Thu, 15 Oct 2015 09:42:54 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B76BA3E4004C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 09:42:52 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t9FFgqJr6488436
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 08:42:52 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9FFgpKN004634
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Oct 2015 09:42:52 -0600
-Date: Thu, 15 Oct 2015 08:42:52 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Will Deacon <will.deacon@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Boqun Feng <boqun.feng@gmail.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>, Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
-Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-Message-ID: <20151015154252.GG3910@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
- <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
- <20151014201916.GB3910@linux.vnet.ibm.com>
- <20151014210419.GY3604@twins.programming.kicks-ass.net>
- <20151014214453.GC3910@linux.vnet.ibm.com>
- <20151015103510.GA27524@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151015103510.GA27524@arm.com>
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 15 Oct 2015 21:16:13 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id D7E321258018
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2015 21:15:57 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9FFk8EP64291042
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2015 21:16:08 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9FFk7NM011393
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Oct 2015 21:16:07 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au, aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH] selfttest/powerpc: Add memory page migration tests
+Date: Thu, 15 Oct 2015 21:16:07 +0530
+Message-Id: <1444923967-22899-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,82 +40,362 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 15, 2015 at 11:35:44AM +0100, Will Deacon wrote:
-> Dammit guys, it's never simple is it?
-> 
-> On Wed, Oct 14, 2015 at 02:44:53PM -0700, Paul E. McKenney wrote:
-> > To that end, the herd tool can make a diagram of what it thought
-> > happened, and I have attached it.  I used this diagram to try and force
-> > this scenario at https://www.cl.cam.ac.uk/~pes20/ppcmem/index.html#PPC,
-> > and succeeded.  Here is the sequence of events:
-> > 
-> > o	Commit P0's write.  The model offers to propagate this write
-> > 	to the coherence point and to P1, but don't do so yet.
-> > 
-> > o	Commit P1's write.  Similar offers, but don't take them up yet.
-> > 
-> > o	Commit P0's lwsync.
-> > 
-> > o	Execute P0's lwarx, which reads a=0.  Then commit it.
-> > 
-> > o	Commit P0's stwcx. as successful.  This stores a=1.
-> 
-> On arm64, this is a conditional-store-*release* and therefore cannot be
-> observed before the initial write to x...
-> 
-> > o	Commit P0's branch (not taken).
-> > 
-> > o	Commit P0's final register-to-register move.
-> > 
-> > o	Commit P1's sync instruction.
-> > 
-> > o	There is now nothing that can happen in either processor.
-> > 	P0 is done, and P1 is waiting for its sync.  Therefore,
-> > 	propagate P1's a=2 write to the coherence point and to
-> > 	the other thread.
-> 
-> ... therefore this is illegal, because you haven't yet propagated that
-> prior write...
+This adds two tests for memory page migration. One for normal page
+migration which works for both 4K or 64K base page size kernel and
+the other one is for 16MB huge page migration which will work both
+4K or 64K base page sized 16MB huge pages as and when we support
+huge page migration.
 
-OK.  Power distinguishes between propagating to the coherence point
-and to each of the other CPUs.
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+- Works for normal page migration on both 64K and 4K base pages
+- Works for 16MB huge page migration (64K) on Aneesh's V2 PTE changes
 
-> > o	There is still nothing that can happen in either processor.
-> > 	So pick the barrier propagate, then the acknowledge sync.
-> > 
-> > o	P1 can now execute its read from x.  Because P0's write to
-> > 	x is still waiting to propagate to P1, this still reads
-> > 	x=0.  Execute and commit, and we now have both r3 registers
-> > 	equal to zero and the final value a=2.
-> 
-> ... and P1 would have to read x == 1.
+ tools/testing/selftests/powerpc/mm/Makefile        |  14 +-
+ .../selftests/powerpc/mm/hugepage-migration.c      |  30 ++++
+ tools/testing/selftests/powerpc/mm/migration.h     | 196 +++++++++++++++++++++
+ .../testing/selftests/powerpc/mm/page-migration.c  |  33 ++++
+ tools/testing/selftests/powerpc/mm/run_mmtests     |  21 +++
+ 5 files changed, 289 insertions(+), 5 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/mm/hugepage-migration.c
+ create mode 100644 tools/testing/selftests/powerpc/mm/migration.h
+ create mode 100644 tools/testing/selftests/powerpc/mm/page-migration.c
+ create mode 100755 tools/testing/selftests/powerpc/mm/run_mmtests
 
-Good!  Do ARMMEM and herd agree with you?
-
-> So arm64 is ok. Doesn't lwsync order store->store observability for PPC?
-
-Yes.  But this is not store->store observability, but rather store->load
-visibility.  Furthermore, as I understand it, lwsync controls the
-visibility to other CPUs, but not necessarily the coherence order.
-
-Let's look at the example C code again:
-
-	CPU 0				CPU 1
-	-----				-----
-
-	WRITE_ONCE(x, 1);		WRITE_ONCE(a, 2);
-	r3 = xchg(&a, 1);		smp_mb();
-					r3 = READ_ONCE(x);
-
-The problem is that we are applying intuitions obtained from a
-release-acquire chain, which hands off from stores to loads.  In contrast,
-this example is quite weird in that we have a store handing off to another
-store, but with reads also involved.  Making that work on Power requires
-full memory barriers on both sides.  Intuitively, the coherence order
-can be established after the fact as long as all readers see a consistent
-set of values based on the subset of the sequence that each reader sees.
-
-Anyway, it looks like Power does need a sync before and after for
-value-returning atomics.  That certainly simplifies the analysis.
-
-							Thanx, Paul
+diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+index ee179e2..c482614 100644
+--- a/tools/testing/selftests/powerpc/mm/Makefile
++++ b/tools/testing/selftests/powerpc/mm/Makefile
+@@ -1,12 +1,16 @@
+ noarg:
+ 	$(MAKE) -C ../
+ 
+-TEST_PROGS := hugetlb_vs_thp_test subpage_prot
+-TEST_FILES := tempfile
++TEST_PROGS := run_mmtests
++TEST_FILES := hugetlb_vs_thp_test
++TEST_FILES += subpage_prot
++TEST_FILES += tempfile
++TEST_FILES += hugepage-migration
++TEST_FILES += page-migration
+ 
+-all: $(TEST_PROGS) $(TEST_FILES)
++all: $(TEST_FILES)
+ 
+-$(TEST_PROGS): ../harness.c
++$(TEST_FILES): ../harness.c
+ 
+ include ../../lib.mk
+ 
+@@ -14,4 +18,4 @@ tempfile:
+ 	dd if=/dev/zero of=tempfile bs=64k count=1
+ 
+ clean:
+-	rm -f $(TEST_PROGS) tempfile
++	rm -f $(TEST_FILES)
+diff --git a/tools/testing/selftests/powerpc/mm/hugepage-migration.c b/tools/testing/selftests/powerpc/mm/hugepage-migration.c
+new file mode 100644
+index 0000000..b60bc10
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/hugepage-migration.c
+@@ -0,0 +1,30 @@
++/*
++ * Copyright (C) 2015, Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++#include "migration.h"
++
++static int hugepage_migration(void)
++{
++	int ret = 0;
++
++	if ((unsigned long)getpagesize() == 0x1000)
++		printf("Running on base page size 4K\n");
++
++	if ((unsigned long)getpagesize() == 0x10000)
++		printf("Running on base page size 64K\n");
++
++	ret = test_huge_migration(16 * MEM_MB);
++	ret = test_huge_migration(256 * MEM_MB);
++	ret = test_huge_migration(512 * MEM_MB);
++
++	return ret;
++}
++
++int main(void)
++{
++	return test_harness(hugepage_migration, "hugepage_migration");
++}
+diff --git a/tools/testing/selftests/powerpc/mm/migration.h b/tools/testing/selftests/powerpc/mm/migration.h
+new file mode 100644
+index 0000000..2f9e3f9
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/migration.h
+@@ -0,0 +1,196 @@
++/*
++ * Copyright (C) 2015, Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include <unistd.h>
++#include <sys/mman.h>
++#include <fcntl.h>
++
++#include "utils.h"
++
++#define HPAGE_OFF	0
++#define HPAGE_ON	1
++
++#define PAGE_SHIFT_4K	12
++#define PAGE_SHIFT_64K	16
++#define PAGE_SIZE_4K	0x1000
++#define PAGE_SIZE_64K	0x10000
++#define PAGE_SIZE_HUGE	16UL * 1024 * 1024
++
++#define MEM_GB		1024UL * 1024 * 1024
++#define MEM_MB		1024UL * 1024
++#define MME_KB		1024UL
++
++#define PMAP_FILE	"/proc/self/pagemap"
++#define PMAP_PFN	0x007FFFFFFFFFFFFFUL
++#define PMAP_SIZE	8
++
++#define SOFT_OFFLINE	"/sys/devices/system/memory/soft_offline_page"
++#define HARD_OFFLINE	"/sys/devices/system/memory/hard_offline_page"
++
++#define MMAP_LENGTH	(256 * MEM_MB)
++#define MMAP_ADDR	(void *)(0x0UL)
++#define MMAP_PROT	(PROT_READ | PROT_WRITE)
++#define MMAP_FLAGS	(MAP_PRIVATE | MAP_ANONYMOUS)
++#define MMAP_FLAGS_HUGE	(MAP_SHARED)
++
++#define FILE_NAME	"huge/hugepagefile"
++
++static void write_buffer(char *addr, unsigned long length)
++{
++	unsigned long i;
++
++	for (i = 0; i < length; i++)
++		*(addr + i) = (char)i;
++}
++
++static int read_buffer(char *addr, unsigned long length)
++{
++	unsigned long i;
++
++	for (i = 0; i < length; i++) {
++		if (*(addr + i) != (char)i) {
++			printf("Data miscompare at addr[%lu]\n", i);
++			return 1;
++		}
++	}
++	return 0;
++}
++
++static unsigned long get_npages(unsigned long length, unsigned long size)
++{
++	unsigned int tmp1 = length, tmp2 = size;
++
++	return tmp1/tmp2;
++}
++
++static void soft_offline_pages(int hugepage, void *addr,
++				unsigned long npages, unsigned long *failed)
++{
++	unsigned long psize, offset, pfn, pa, count;
++	void *tmp;
++	int i, fd1, fd2;
++	char buf[20];
++
++	fd1 = open(PMAP_FILE, O_RDONLY);
++	if (fd1 == -1) {
++		perror("open() failed");
++		exit(-1);
++	}
++
++	fd2 = open(SOFT_OFFLINE, O_WRONLY);
++	if (fd2 == -1) {
++		perror("open() failed");
++		exit(-1);
++	}
++
++	count = 0;
++	psize = getpagesize();
++	for (i = 0; i < npages; i++) {
++		if (hugepage)
++			tmp = addr + i * PAGE_SIZE_HUGE;
++		else
++			tmp = addr + i * psize;
++
++		offset = ((unsigned long) tmp / psize) * PMAP_SIZE;
++
++		if (lseek(fd1, offset, SEEK_SET) == -1) {
++			perror("lseek() failed");
++			exit(-1);
++		}
++
++		if (read(fd1, &pfn, sizeof(pfn)) == -1) {
++			perror("read() failed");
++			exit(-1);
++		}
++
++		pfn = pfn & PMAP_PFN;
++		if (psize == PAGE_SIZE_4K)
++			pa = pfn << PAGE_SHIFT_4K;
++
++		if (psize == PAGE_SIZE_64K)
++			pa = pfn << PAGE_SHIFT_64K;
++
++		sprintf(buf, "0x%lx\n", pa);
++
++		if (write(fd2, buf, strlen(buf)) == -1) {
++			perror("write() failed");
++			printf("%d PFN: %lx BUF: %s\n",i, pfn, buf);
++			count++;
++			exit(-1);
++		}
++
++	}
++
++	if (failed)
++		*failed = count;
++
++	close(fd1);
++	close(fd2);
++}
++
++int test_migration(unsigned long length)
++{
++	unsigned long failed;
++	void *addr;
++	int ret;
++
++	addr = mmap(MMAP_ADDR, length, MMAP_PROT, MMAP_FLAGS, -1, 0);
++	if (addr == MAP_FAILED) {
++		perror("mmap() failed");
++		exit(-1);
++	}
++
++	write_buffer(addr, length);
++	soft_offline_pages(HPAGE_OFF, addr, length/getpagesize(), &failed);
++	ret = read_buffer(addr, length);
++
++	printf("%ld pages moved, %ld pages failed\n", (length/getpagesize() - failed), failed);
++
++	munmap(addr, length);
++	return ret;
++}
++
++int test_huge_migration(unsigned long length)
++{
++	unsigned long failed, npages;
++	void *addr;
++	int fd, ret;
++
++	fd = open(FILE_NAME, O_CREAT | O_RDWR, 0755);
++	if (fd < 0) {
++		perror("open() failed");
++		exit(-1);
++	}
++
++	addr = mmap(MMAP_ADDR, length, MMAP_PROT, MMAP_FLAGS_HUGE, fd, 0);
++	if (addr == MAP_FAILED) {
++		perror("mmap() failed");
++		unlink(FILE_NAME);
++		exit(-1);
++	}
++
++        if (mlock(addr, length) == -1) {
++                perror("mlock() failed");
++		munmap(addr, length);
++                unlink(FILE_NAME);
++                exit(-1);
++        }
++
++	write_buffer(addr, length);
++	npages = get_npages(length, PAGE_SIZE_HUGE);
++	soft_offline_pages(HPAGE_ON, addr, npages, &failed);
++	ret = read_buffer(addr, length);
++
++	printf("%ld pages moved, %ld pages failed\n", (npages - failed), failed);
++
++	munmap(addr, length);
++	unlink(FILE_NAME);
++	return ret;
++}
+diff --git a/tools/testing/selftests/powerpc/mm/page-migration.c b/tools/testing/selftests/powerpc/mm/page-migration.c
+new file mode 100644
+index 0000000..fc6e472
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/page-migration.c
+@@ -0,0 +1,33 @@
++/*
++ * Copyright (C) 2015, Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++#include "migration.h"
++
++static int page_migration(void)
++{
++	int ret = 0;
++
++	if ((unsigned long)getpagesize() == 0x1000)
++		printf("Running on base page size 4K\n");
++
++	if ((unsigned long)getpagesize() == 0x10000)
++		printf("Running on base page size 64K\n");
++
++	ret = test_migration(4 * MEM_MB);
++	ret = test_migration(64 * MEM_MB);
++	ret = test_migration(256 * MEM_MB);
++	ret = test_migration(512 * MEM_MB);
++	ret = test_migration(1 * MEM_GB);
++	ret = test_migration(2 * MEM_GB);
++
++	return ret;
++}
++
++int main(void)
++{
++	return test_harness(page_migration, "page_migration");
++}
+diff --git a/tools/testing/selftests/powerpc/mm/run_mmtests b/tools/testing/selftests/powerpc/mm/run_mmtests
+new file mode 100755
+index 0000000..c537f4e
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/run_mmtests
+@@ -0,0 +1,21 @@
++#!/bin/bash
++mnt=./huge
++mkdir $mnt
++mount -t hugetlbfs none $mnt
++
++echo 256 > /proc/sys/vm/nr_hugepages
++echo "HugeTLB vs THP"
++./hugetlb_vs_thp_test
++
++echo "Subpage Protection"
++./subpage_prot
++
++echo "Test normal page migration"
++./page-migration
++
++echo "Test huge page migration"
++./hugepage-migration
++
++#cleanup
++umount $mnt
++rm -rf $mnt
+-- 
+2.1.0
