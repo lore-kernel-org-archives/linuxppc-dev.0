@@ -1,26 +1,37 @@
-Return-Path: <christophe.jaillet@wanadoo.fr>
-Received: from smtp.smtpout.orange.fr (smtp03.smtpout.orange.fr
- [80.12.242.125])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E169A1A07E3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 07:06:11 +1100 (AEDT)
-Subject: Re: [PATCH v2] powerpc/mpc5xxx: Avoid dereferencing potentially freed
- memory
-To: Michael Ellerman <mpe@ellerman.id.au>
-References: <20151014040011.8AB1514110A@ozlabs.org>
- <1444888580-12966-1-git-send-email-christophe.jaillet@wanadoo.fr>
- <1444890977.5970.4.camel@ellerman.id.au> <5620971D.8040103@wanadoo.fr>
- <1444988979.12954.1.camel@ellerman.id.au>
-Cc: benh@kernel.crashing.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 06C181A07E3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 07:10:18 +1100 (AEDT)
+Received: from plane.gmane.org (plane.gmane.org [80.91.229.3])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 90B9714110C
+ for <linuxppc-dev@ozlabs.org>; Sat, 17 Oct 2015 07:10:17 +1100 (AEDT)
+Received: from list by plane.gmane.org with local (Exim 4.69)
+ (envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
+ id 1ZnBKE-0004Fi-SJ
+ for linuxppc-dev@ozlabs.org; Fri, 16 Oct 2015 22:10:02 +0200
+Received: from aorleans-552-1-114-80.w92-140.abo.wanadoo.fr ([92.140.185.80])
+ by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2015 22:10:02 +0200
+Received: from christophe.jaillet by
+ aorleans-552-1-114-80.w92-140.abo.wanadoo.fr with local (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2015 22:10:02 +0200
+To: linuxppc-dev@ozlabs.org
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Message-ID: <562158A3.90000@wanadoo.fr>
-Date: Fri, 16 Oct 2015 22:05:55 +0200
-MIME-Version: 1.0
-In-Reply-To: <1444988979.12954.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/prom: Avoid reference to potentially freed memory
+Date: Fri, 16 Oct 2015 22:09:10 +0200
+Message-ID: <mvrlh7$mjr$1@ger.gmane.org>
+References: <1444976055-19148-1-git-send-email-christophe.jaillet@wanadoo.fr>
+ <1444989750.12954.4.camel@ellerman.id.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <1444989750.12954.4.camel@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org,kernel-janitors@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,67 +41,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 16/10/2015 11:49, Michael Ellerman a écrit :
-> On Fri, 2015-10-16 at 08:20 +0200, Christophe JAILLET wrote:
->> Le 15/10/2015 08:36, Michael Ellerman a écrit :
->>> On Thu, 2015-10-15 at 07:56 +0200, Christophe JAILLET wrote:
->>>> Use 'of_property_read_u32()' instead of
->>>> 'of_get_property()'+pointer
->>>> dereference in order to avoid access to potentially freed memory.
->>>>
->>>> Use 'of_get_next_parent()' to simplify the while() loop and avoid
->>>> the
->>>> need of a temp variable.
->>>>
->>>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
->>>> ---
->>>> v2: Use of_property_read_u32 instead of of_get_property+pointer
->>>> dereference
->>>> *** Untested ***
->>> Thanks.
->>>
->>> Can someone with an mpc5xxx test this?
->> Hi,
->> I don't think it is an issue, but while looking at another similar
->> patch, I noticed that the proposed patch adds a call to
->> be32_to_cpup()
->> (within of_property_read_u32).
->> Apparently, powerPC is a BE architecture, so this call should be a no
->> -op.
->>
->> Just wanted to point it out, in case of.
-> Hi Christoph,
+Le 16/10/2015 12:02, Michael Ellerman a écrit :
+> As the kbuild robot detected you have left an extra "}" here.
 >
-> I'm not sure I follow.
->
-> The device tree is always big endian, but of_property_read_u32() does
-> the
-> conversion to CPU endian for you already. That is one of the advantages
-> of
-> using it.
->
-> cheers
->
+> I don't mind too much if you send patches that aren't compile tested, but you
+> might save yourself some time by compiling them.
 
-Hi,
-sorry if un-clear.
+Sorry about it, and thanks for your patience.
+IMHO, this should never happen and patches should be at least 
+compile-tested.
 
-What I mean is that in the patch related 
-'powerpc/sysdev/mpc5xxx_clocks.c', there was no call to 'be32_to_cpup'.
-So in the proposed patch, 'of_property_read_u32' adds it.
-
-While in the patch against 'powerpc/kernel/prom.c', 'be32_to_cpup' was 
-called explicitly.
-So using 'of_property_read_u32' keep the same logic.
-
-
-Basically the code from 'mpc5xxx_clocks.c' and from 'prom.c' were 
-written the same way. I found spurious that a call to 'be32_to_cpup' was 
-done in only one case.
-Maybe, it was a missing in 'mpc5xxx_clocks.c'.
-
-
-I don't know if it can be an issue or not. I just find it 'strange'.
-
+I will be more careful and compile-test any new patch I submit.
 
 CJ
