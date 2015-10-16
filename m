@@ -1,36 +1,36 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+Received: from e06smtp06.uk.ibm.com (e06smtp06.uk.ibm.com [195.75.94.102])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7034C1A0938
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 23:07:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 70A1F1A0992
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 23:07:28 +1100 (AEDT)
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp06.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Fri, 16 Oct 2015 13:07:23 +0100
+ Fri, 16 Oct 2015 13:07:24 +0100
 Received: from b06cxnps4074.portsmouth.uk.ibm.com
  (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id EBAC5219005E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 13:07:18 +0100 (BST)
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id EE6881B0806E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 13:07:27 +0100 (BST)
 Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
  [9.149.37.216])
  by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9GC7KIj44433488
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 12:07:20 GMT
+ t9GC7MgL42270746
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 12:07:22 GMT
 Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9GC7Bv0009860
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 06:07:18 -0600
+ t9GC7DHU009913
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 06:07:20 -0600
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  akpm@linux-foundation.org, xemul@parallels.com,
  linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
  benh@kernel.crashing.org, aneesh.kumar@linux.vnet.ibm.com, paulus@samba.org
 Cc: criu@openvz.org
-Subject: [PATCH 1/3] mm: clearing pte in clear_soft_dirty()
-Date: Fri, 16 Oct 2015 14:07:06 +0200
-Message-Id: <8352032008c7d9f1eee8d39599888a4cbe570bf7.1444995096.git.ldufour@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] mm: clear_soft_dirty_pmd requires THP
+Date: Fri, 16 Oct 2015 14:07:07 +0200
+Message-Id: <c56e0cee475c34bda846ffbf1cc0e541ccb6b9b4.1444995096.git.ldufour@linux.vnet.ibm.com>
 In-Reply-To: <cover.1444995096.git.ldufour@linux.vnet.ibm.com>
 References: <cover.1444995096.git.ldufour@linux.vnet.ibm.com>
 In-Reply-To: <cover.1444995096.git.ldufour@linux.vnet.ibm.com>
@@ -44,46 +44,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As mentioned in the commit 56eecdb912b5 ("mm: Use ptep/pmdp_set_numa()
-for updating _PAGE_NUMA bit"), architecture like ppc64 doesn't do
-tlb flush in set_pte/pmd functions.
-
-So when dealing with existing pte in clear_soft_dirty, the pte must
-be cleared before being modified.
+Don't build clear_soft_dirty_pmd() if the transparent huge pages are
+not enabled.
 
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 CC: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- fs/proc/task_mmu.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ fs/proc/task_mmu.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index e2d46adb54b4..c9454ee39b28 100644
+index c9454ee39b28..fa847a982a9f 100644
 --- a/fs/proc/task_mmu.c
 +++ b/fs/proc/task_mmu.c
-@@ -753,19 +753,20 @@ static inline void clear_soft_dirty(struct vm_area_struct *vma,
- 	pte_t ptent = *pte;
- 
- 	if (pte_present(ptent)) {
-+		ptent = ptep_modify_prot_start(vma->vm_mm, addr, pte);
- 		ptent = pte_wrprotect(ptent);
- 		ptent = pte_clear_flags(ptent, _PAGE_SOFT_DIRTY);
-+		ptep_modify_prot_commit(vma->vm_mm, addr, pte, ptent);
- 	} else if (is_swap_pte(ptent)) {
- 		ptent = pte_swp_clear_soft_dirty(ptent);
-+		set_pte_at(vma->vm_mm, addr, pte, ptent);
+@@ -762,7 +762,14 @@ static inline void clear_soft_dirty(struct vm_area_struct *vma,
+ 		set_pte_at(vma->vm_mm, addr, pte, ptent);
  	}
--
--	set_pte_at(vma->vm_mm, addr, pte, ptent);
  }
++#else
++static inline void clear_soft_dirty(struct vm_area_struct *vma,
++		unsigned long addr, pte_t *pte)
++{
++}
++#endif
  
++#if defined(CONFIG_MEM_SOFT_DIRTY) && defined(CONFIG_TRANSPARENT_HUGEPAGE)
  static inline void clear_soft_dirty_pmd(struct vm_area_struct *vma,
  		unsigned long addr, pmd_t *pmdp)
  {
--	pmd_t pmd = *pmdp;
-+	pmd_t pmd = pmdp_huge_get_and_clear(vma->vm_mm, addr, pmdp);
+@@ -776,14 +783,7 @@ static inline void clear_soft_dirty_pmd(struct vm_area_struct *vma,
  
- 	pmd = pmd_wrprotect(pmd);
- 	pmd = pmd_clear_flags(pmd, _PAGE_SOFT_DIRTY);
+ 	set_pmd_at(vma->vm_mm, addr, pmdp, pmd);
+ }
+-
+ #else
+-
+-static inline void clear_soft_dirty(struct vm_area_struct *vma,
+-		unsigned long addr, pte_t *pte)
+-{
+-}
+-
+ static inline void clear_soft_dirty_pmd(struct vm_area_struct *vma,
+ 		unsigned long addr, pmd_t *pmdp)
+ {
 -- 
 1.9.1
