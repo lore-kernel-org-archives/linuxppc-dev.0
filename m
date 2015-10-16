@@ -1,22 +1,22 @@
-Return-Path: <christophe.jaillet@wanadoo.fr>
-Received: from smtp.smtpout.orange.fr (smtp03.smtpout.orange.fr
- [80.12.242.125])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 543731A08F7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 08:38:56 +1100 (AEDT)
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH v2] powerpc/prom: Avoid reference to potentially freed memory
-Date: Fri, 16 Oct 2015 23:38:45 +0200
-Message-Id: <1445031525-20086-1-git-send-email-christophe.jaillet@wanadoo.fr>
-In-Reply-To: <1444976055-19148-1-git-send-email-christophe.jaillet@wanadoo.fr>
-References: <1444976055-19148-1-git-send-email-christophe.jaillet@wanadoo.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C7FD31A08BB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 10:33:55 +1100 (AEDT)
+Date: Fri, 16 Oct 2015 18:33:34 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Claudiu Manoil <claudiu.manoil@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>, "Zhao
+ Chenhui" <chenhui.zhao@freescale.com>, "David S. Miller"
+ <davem@davemloft.net>, <linux-kernel@vger.kernel.org>, <galak@codeaurora.org>
+Subject: Re: [2/3] powerpc: dts: p1022si: Add fsl,wake-on-filer for eTSEC
+Message-ID: <20151016233334.GA13511@home.buserror.net>
+References: <1443694222-29519-1-git-send-email-claudiu.manoil@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1443694222-29519-1-git-send-email-claudiu.manoil@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_get_property() is used inside the loop, but then the reference to the
-node is dropped before dereferencing the prop pointer, which could by then
-point to junk if the node has been freed.
+On Thu, Oct 01, 2015 at 01:10:22PM +0300, Claudiu Manoil wrote:
+> Enable the "wake-on-filer" (aka. wake on user defined packet)
+> wake on lan capability for the eTSEC ethernet nodes.
+> 
+> Cc: Li Yang <leoli@freescale.com>
+> Cc: Zhao Chenhui <chenhui.zhao@freescale.com>
+> 
+> Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/p1022si-post.dtsi | 2 ++
+>  1 file changed, 2 insertions(+)
 
-Instead use of_property_read_u32() to actually read the property
-value before dropping the reference.
+Acked-by: Scott Wood <scottwood@freescale.com>
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-v2: Fix missing '{'
-*** COMPILE-TESTED ONLY ***
----
- arch/powerpc/kernel/prom.c | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index bef76c5..dc4f6a4 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -783,14 +783,13 @@ void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
- int of_get_ibm_chip_id(struct device_node *np)
- {
- 	of_node_get(np);
--	while(np) {
-+	while (np) {
- 		struct device_node *old = np;
--		const __be32 *prop;
-+		u32 chip_id;
- 
--		prop = of_get_property(np, "ibm,chip-id", NULL);
--		if (prop) {
-+		if (!of_property_read_u32(np, "ibm,chip-id", &chip_id)) {
- 			of_node_put(np);
--			return be32_to_cpup(prop);
-+			return chip_id;
- 		}
- 		np = of_get_parent(np);
- 		of_node_put(old);
--- 
-2.1.4
+-Scott
