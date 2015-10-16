@@ -1,24 +1,25 @@
-Return-Path: <lvivier@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <B48286@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0119.outbound.protection.outlook.com [157.56.111.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2538C1A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 18:57:29 +1100 (AEDT)
-Subject: Re: [PATCH] powerpc: on crash, kexec'ed kernel needs all CPUs are
- online
-To: David Gibson <dgibson@redhat.com>
-References: <1444935658-27319-1-git-send-email-lvivier@redhat.com>
- <20151016132943.1386fda6@voom.fritz.box>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, thuth@redhat.com
-From: Laurent Vivier <lvivier@redhat.com>
-Message-ID: <5620ADE4.9060701@redhat.com>
-Date: Fri, 16 Oct 2015 09:57:24 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 590691A08EB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 20:07:53 +1100 (AEDT)
+From: Zhiqiang Hou <B48286@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
+ <galak@kernel.crashing.org>, <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <mpe@ellerman.id.au>, <devicetree@vger.kernel.org>, <robh+dt@kernel.org>,
+ <pawel.moll@arm.com>, <mark.rutland@arm.com>,
+ <ijc+devicetree@hellion.org.uk>, <harninder.rai@freescale.com>
+CC: <Minghuan.Lian@freescale.com>, <Mingkai.Hu@freescale.com>
+Subject: [PATCH V2 2/2] powerpc/85xx: Add PCIe controller support for
+ bsc9132qds
+Date: Fri, 16 Oct 2015 17:01:11 +0800
+Message-ID: <1444986071-27317-2-git-send-email-B48286@freescale.com>
+In-Reply-To: <1444986071-27317-1-git-send-email-B48286@freescale.com>
+References: <1444986071-27317-1-git-send-email-B48286@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20151016132943.1386fda6@voom.fritz.box>
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +29,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+From: Harninder Rai <harninder.rai@freescale.com>
 
+1. Use machine_arch_initcall to hook mpc85xx_common_publish_devices
+This can ensure before pcibios_init() is called, pci controllers have
+been probed and added to the hose_list.
+2. Add a workaround for errata A-005434
+For the BSC9132, PEX_PEXIWARn[TRGT] for all windows defaults to 0xF,
+which is mapped to CCSRBAR. However, for other products, 0xF is
+mapped to the local memory. Therefore, for the BSC9132, any default
+PCI Express access to the local memory (DDR) will now access the
+CCSRBAR. This patch changes the mapping of targets of inbound windows
+PEX_PEXIWARn[TRGT] to the Local address space – 0x0 (from 0xF).
 
+Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Change-Id: Iebb3d0e057d64d5b96263c130495e5d04caf7948
+Reviewed-on: http://git.am.freescale.net:8181/2455
+Reviewed-by: Zang Tiefei-R61911 <tie-fei.zang@freescale.com>
+Reviewed-by: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
+Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
+---
+ arch/powerpc/platforms/85xx/bsc913x_qds.c |  8 +++++++-
+ arch/powerpc/sysdev/fsl_pci.c             | 13 +++++++++++++
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
-On 16/10/2015 04:29, David Gibson wrote:
-> On Thu, 15 Oct 2015 21:00:58 +0200 Laurent Vivier
-> <lvivier@redhat.com> wrote:
-> 
->> On kexec, all secondary offline CPUs are onlined before starting
->> the new kernel, this is not done in the case of kdump.
->> 
->> If kdump is configured and a kernel crash occurs whereas some
->> secondaries CPUs are offline (SMT=off), the new kernel is not
->> able to start them and displays some "Processor X is stuck.".
->> 
->> Starting with POWER8, subcore logic relies on all threads of core
->> being booted. So, on startup kernel tries to start all threads,
->> and asks OPAL (or RTAS) to start all CPUs (including threads). If
->> a CPU has been offlined by the previous kernel, it has not been
->> returned to OPAL, and thus OPAL cannot restart it: this CPU has
->> been lost...
->> 
->> Signed-off-by: Laurent Vivier <lvivier@redhat.com>
-> 
-> Nice analysis of the problem.  But, I'm a bit uneasy about this
-> approach to fixing it: Onlining potentially hundreds of CPU threads
-> seems like a risky operation in a kernel that's already crashed.
-
-I agree.
-
-> I don't have a terribly clear idea of what is the best way to
-> address this.  Here's a few ideas in the right general direction:
-> 
-> * I'm already looking into a kdump userspace fixes to stop it 
-> attempting to bring up secondary CPUs
-> 
-> * A working kernel option to say "only allow this many online cpus 
-> ever" which we could pass to the kdump kernel would be nice
-> 
-> * Paulus had an idea about offline threads returning themselves 
-> directly to OPAL by kicking a flag at kdump/kexec time.
-
-For me the problem is: as these CPUs are offline, I guess the core has
-been switched to 1 thread per core, so the CPUs (1 to 7 for core 0)
-don't exist anymore, how can we return them to OPAL ?
-
-> 
-> BenH, Paulus,
-> 
-> OPAL <-> kernel cpu transitions don't seem to work quite how I
-> thought they would.  IIUC there's a register we can use to directly
-> control which threads on a core are active.  Given that I would
-> have thought cpu "ownership" OPAL vs. kernel would be on a
-> per-core, rather than per-thread basis.
-> 
-> Is there some way we can change the CPU onlining / offlining code
-> so that if threads aren't in OPAL, we directly enable them, rather
-> than just hoping they're in a nap loop somewhere?
-> 
-
-Laurent
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJWIK3kAAoJEPMMOL0/L748S4UP/2rJIRavrB4QylPMYKpRIxf6
-VCLuve3TRY40er5GO8bwQ+95yHUo8K57OzZAh8T2mDQGjHGJArMElWUbb+EGaDF2
-z5FU0iH7TKkJ9FDBlz2ZTny0vrEK2eBwxAFggLcfF8PeKMs5H4Rh9FrTFKKuc9Z4
-KSAdhi4niKVdn0ln8M6k5FGB3AE0gG7zeTPeO74Knrr8cvOX1Xk5pfgzo2WpD91w
-zymDgG127xBL0G9gs8jrse+yXoB2dLsevdxS6CEH4vKnjsLokqnWlk1n9JeIUKiW
-+BEZ0llb5jppBYzOmrghTS5fPwh+Nmkbc4Kk9i/1Tjb8LRXNBEiSxVtHu9XIdwve
-K37gOIuqCkOap0NE/AbcDjsFEoCFVSHbdD6cCgtLEPVFq7f8w7U/qa9ty//PM8br
-KGtfZ1sG2/LCapMuyx3QhplxrXEy/bpQwT3BPnS818OMxrE20QfR5PM2C+nCpd4H
-8mpdLpOctLJ7lgmYSwSlbNkJrQJvTFXv8WhZB2Qkadi0yaq8C5JZ3Dr10HrijoVL
-lsOfrevB/mHrZmLBkp8t4+UYa5fM59nNpFZ/0BTdWfP8CDAlkw2Kla5PVeKN4ssk
-GzySgQwOPsyS27aAk005ZeXPtfrGD93A43EcwG4IULf5J8DbzmCt5gPoJ241D0IO
-3Z8+/4nl3WVRVzQ/Lwlc
-=yLqE
------END PGP SIGNATURE-----
+diff --git a/arch/powerpc/platforms/85xx/bsc913x_qds.c b/arch/powerpc/platforms/85xx/bsc913x_qds.c
+index f0927e5..dcfafd6 100644
+--- a/arch/powerpc/platforms/85xx/bsc913x_qds.c
++++ b/arch/powerpc/platforms/85xx/bsc913x_qds.c
+@@ -17,6 +17,7 @@
+ #include <linux/pci.h>
+ #include <asm/mpic.h>
+ #include <sysdev/fsl_soc.h>
++#include <sysdev/fsl_pci.h>
+ #include <asm/udbg.h>
+ 
+ #include "mpc85xx.h"
+@@ -46,10 +47,12 @@ static void __init bsc913x_qds_setup_arch(void)
+ 	mpc85xx_smp_init();
+ #endif
+ 
++	fsl_pci_assign_primary();
++
+ 	pr_info("bsc913x board from Freescale Semiconductor\n");
+ }
+ 
+-machine_device_initcall(bsc9132_qds, mpc85xx_common_publish_devices);
++machine_arch_initcall(bsc9132_qds, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+@@ -67,6 +70,9 @@ define_machine(bsc9132_qds) {
+ 	.probe			= bsc9132_qds_probe,
+ 	.setup_arch		= bsc913x_qds_setup_arch,
+ 	.init_IRQ		= bsc913x_qds_pic_init,
++#ifdef CONFIG_PCI
++	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
++#endif
+ 	.get_irq		= mpic_get_irq,
+ 	.restart		= fsl_rstcr_restart,
+ 	.calibrate_decr		= generic_calibrate_decr,
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index ebc1f412..b8607f6 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -193,6 +193,19 @@ static void setup_pci_atmu(struct pci_controller *hose)
+ 	const u64 *reg;
+ 	int len;
+ 
++	if (of_device_is_compatible(hose->dn, "fsl,bsc9132-pcie")) {
++		/*
++		 * BSC9132 Rev1.0 has an issue where all the PEX inbound
++		 * windows have implemented the default target value as 0xf
++		 * for CCSR space.In all Freescale legacy devices the target
++		 * of 0xf is reserved for local memory space. 9132 Rev1.0
++		 * now has local mempry space mapped to target 0x0 instead of
++		 * 0xf. Hence adding a workaround to remove the target 0xf
++		 * defined for memory space from Inbound window attributes.
++		 */
++		piwar &= ~PIWAR_TGI_LOCAL;
++	}
++
+ 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
+ 		if (in_be32(&pci->block_rev1) >= PCIE_IP_REV_2_2) {
+ 			win_idx = 2;
+-- 
+2.1.0.27.g96db324
