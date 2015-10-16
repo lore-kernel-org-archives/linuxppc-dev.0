@@ -1,23 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.jaillet@wanadoo.fr>
+Received: from smtp.smtpout.orange.fr (smtp03.smtpout.orange.fr
+ [80.12.242.125])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F228A1A08D8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 08:11:31 +1100 (AEDT)
-Date: Fri, 16 Oct 2015 14:11:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, xemul@parallels.com,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, aneesh.kumar@linux.vnet.ibm.com,
- paulus@samba.org, criu@openvz.org
-Subject: Re: [PATCH 0/3] mm/powerpc: enabling memory soft dirty tracking
-Message-Id: <20151016141129.8b014c6d882c475fafe577a9@linux-foundation.org>
-In-Reply-To: <cover.1444995096.git.ldufour@linux.vnet.ibm.com>
-References: <cover.1444995096.git.ldufour@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 543731A08F7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 08:38:56 +1100 (AEDT)
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH v2] powerpc/prom: Avoid reference to potentially freed memory
+Date: Fri, 16 Oct 2015 23:38:45 +0200
+Message-Id: <1445031525-20086-1-git-send-email-christophe.jaillet@wanadoo.fr>
+In-Reply-To: <1444976055-19148-1-git-send-email-christophe.jaillet@wanadoo.fr>
+References: <1444976055-19148-1-git-send-email-christophe.jaillet@wanadoo.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,23 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 16 Oct 2015 14:07:05 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+of_get_property() is used inside the loop, but then the reference to the
+node is dropped before dereferencing the prop pointer, which could by then
+point to junk if the node has been freed.
 
-> This series is enabling the software memory dirty tracking in the
-> kernel for powerpc.  This is the follow up of the commit 0f8975ec4db2
-> ("mm: soft-dirty bits for user memory changes tracking") which
-> introduced this feature in the mm code.
-> 
-> The first patch is fixing an issue in the code clearing the soft dirty
-> bit.  The PTE were not cleared before being modified, leading to hang
-> on ppc64.
-> 
-> The second patch is fixing a build issue when the transparent huge
-> page is not enabled.
-> 
-> The third patch is introducing the soft dirty tracking in the powerpc
-> architecture code. 
+Instead use of_property_read_u32() to actually read the property
+value before dropping the reference.
 
-I grabbed these patches, but they're more a ppc thing than a core
-kernel thing.  I can merge them into 4.3 with suitable acks or drop
-them if they turn up in the powerpc tree.  Or something else?
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+v2: Fix missing '{'
+*** COMPILE-TESTED ONLY ***
+---
+ arch/powerpc/kernel/prom.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index bef76c5..dc4f6a4 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -783,14 +783,13 @@ void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
+ int of_get_ibm_chip_id(struct device_node *np)
+ {
+ 	of_node_get(np);
+-	while(np) {
++	while (np) {
+ 		struct device_node *old = np;
+-		const __be32 *prop;
++		u32 chip_id;
+ 
+-		prop = of_get_property(np, "ibm,chip-id", NULL);
+-		if (prop) {
++		if (!of_property_read_u32(np, "ibm,chip-id", &chip_id)) {
+ 			of_node_put(np);
+-			return be32_to_cpup(prop);
++			return chip_id;
+ 		}
+ 		np = of_get_parent(np);
+ 		of_node_put(old);
+-- 
+2.1.4
