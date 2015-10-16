@@ -1,18 +1,20 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by lists.ozlabs.org (Postfix) with ESMTP id A38AF1A0762
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 12:54:51 +1100 (AEDT)
-Date: Fri, 16 Oct 2015 10:47:06 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kexec@lists.infradead.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 1/3] ppc64: Fix warnings
-Message-ID: <20151016014706.GE20667@verge.net.au>
-References: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1444172150-29493-1-git-send-email-scottwood@freescale.com>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D9A31A0259
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 13:10:52 +1100 (AEDT)
+Message-ID: <1444961451.28419.0.camel@ellerman.id.au>
+Subject: Re: [PATCH] PPC: fix LOGMPP instruction opcode and inline asm
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, thuth@redhat.com, stable@vger.kernel.org,
+ paulus@samba.org, dgibson@redhat.com, jstancek@redhat.com
+Date: Fri, 16 Oct 2015 13:10:51 +1100
+In-Reply-To: <1444958435-18808-1-git-send-email-stewart@linux.vnet.ibm.com>
+References: <1444958435-18808-1-git-send-email-stewart@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 06, 2015 at 05:55:48PM -0500, Scott Wood wrote:
-> Produce a warning-free build on ppc64 (at least, when built as 64-bit
-> userspace -- if a 64-bit binary for ppc64 is a requirement, why is -m64
-> set only on purgatory?).  Mostly unused (or write-only) variable
-> warnings, but also one nasty one where reserve() was used without a
-> prototype, causing long long arguments to be passed as int.
+On Fri, 2015-10-16 at 12:20 +1100, Stewart Smith wrote:
+> Back in 9678cda when we started using the Micro Partition Prefetch Engine
+> in POWER8 for KVM, there were two mistakes introduced from the original
+> patch used for investigation and microbenchmarks.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> One mistake was that the opcode was constructed incorrectly, putting
+> the register in the wrong field in the opcode, meaning that we were
+> asking the chip to read the memory address from some other register than
+> what we intended - probably r0.
 
-Thanks, applied.
+Where is the logmpp instruction documented?
 
-I would have slightly preferred one-patch per problem.
+cheers
