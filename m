@@ -1,10 +1,10 @@
 Return-Path: <B48286@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0119.outbound.protection.outlook.com [157.56.111.119])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0121.outbound.protection.outlook.com [65.55.169.121])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 590691A08EB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 20:07:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BFA31A027F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 20:22:48 +1100 (AEDT)
 From: Zhiqiang Hou <B48286@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
  <galak@kernel.crashing.org>, <benh@kernel.crashing.org>, <paulus@samba.org>,
@@ -12,14 +12,11 @@ To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
  <pawel.moll@arm.com>, <mark.rutland@arm.com>,
  <ijc+devicetree@hellion.org.uk>, <harninder.rai@freescale.com>
 CC: <Minghuan.Lian@freescale.com>, <Mingkai.Hu@freescale.com>
-Subject: [PATCH V2 2/2] powerpc/85xx: Add PCIe controller support for
- bsc9132qds
-Date: Fri, 16 Oct 2015 17:01:11 +0800
-Message-ID: <1444986071-27317-2-git-send-email-B48286@freescale.com>
-In-Reply-To: <1444986071-27317-1-git-send-email-B48286@freescale.com>
-References: <1444986071-27317-1-git-send-email-B48286@freescale.com>
+Subject: [PATCH V2 1/2] powerpc/fsl: Add PCI node in device tree of bsc9132qds
+Date: Fri, 16 Oct 2015 17:01:10 +0800
+Message-ID: <1444986071-27317-1-git-send-email-B48286@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,89 +28,99 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Harninder Rai <harninder.rai@freescale.com>
 
-1. Use machine_arch_initcall to hook mpc85xx_common_publish_devices
-This can ensure before pcibios_init() is called, pci controllers have
-been probed and added to the hose_list.
-2. Add a workaround for errata A-005434
-For the BSC9132, PEX_PEXIWARn[TRGT] for all windows defaults to 0xF,
-which is mapped to CCSRBAR. However, for other products, 0xF is
-mapped to the local memory. Therefore, for the BSC9132, any default
-PCI Express access to the local memory (DDR) will now access the
-CCSRBAR. This patch changes the mapping of targets of inbound windows
-PEX_PEXIWARn[TRGT] to the Local address space – 0x0 (from 0xF).
-
 Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
 Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-Change-Id: Iebb3d0e057d64d5b96263c130495e5d04caf7948
-Reviewed-on: http://git.am.freescale.net:8181/2455
+Change-Id: I4355add4a92d1fcf514843aea5ecadd2e2517969
+Reviewed-on: http://git.am.freescale.net:8181/2454
 Reviewed-by: Zang Tiefei-R61911 <tie-fei.zang@freescale.com>
 Reviewed-by: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
 Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 ---
- arch/powerpc/platforms/85xx/bsc913x_qds.c |  8 +++++++-
- arch/powerpc/sysdev/fsl_pci.c             | 13 +++++++++++++
- 2 files changed, 20 insertions(+), 1 deletion(-)
+V2:
+ - Remove property clock-frequency.
 
-diff --git a/arch/powerpc/platforms/85xx/bsc913x_qds.c b/arch/powerpc/platforms/85xx/bsc913x_qds.c
-index f0927e5..dcfafd6 100644
---- a/arch/powerpc/platforms/85xx/bsc913x_qds.c
-+++ b/arch/powerpc/platforms/85xx/bsc913x_qds.c
-@@ -17,6 +17,7 @@
- #include <linux/pci.h>
- #include <asm/mpic.h>
- #include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
- 
- #include "mpc85xx.h"
-@@ -46,10 +47,12 @@ static void __init bsc913x_qds_setup_arch(void)
- 	mpc85xx_smp_init();
- #endif
- 
-+	fsl_pci_assign_primary();
+ arch/powerpc/boot/dts/bsc9132qds.dts          | 15 ++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi | 28 +++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi  |  1 +
+ 3 files changed, 44 insertions(+)
+
+diff --git a/arch/powerpc/boot/dts/bsc9132qds.dts b/arch/powerpc/boot/dts/bsc9132qds.dts
+index 6cab106..940d719 100644
+--- a/arch/powerpc/boot/dts/bsc9132qds.dts
++++ b/arch/powerpc/boot/dts/bsc9132qds.dts
+@@ -29,6 +29,21 @@
+ 	soc: soc@ff700000 {
+ 		ranges = <0x0 0x0 0xff700000 0x100000>;
+ 	};
 +
- 	pr_info("bsc913x board from Freescale Semiconductor\n");
- }
- 
--machine_device_initcall(bsc9132_qds, mpc85xx_common_publish_devices);
-+machine_arch_initcall(bsc9132_qds, mpc85xx_common_publish_devices);
- 
- /*
-  * Called very early, device-tree isn't unflattened
-@@ -67,6 +70,9 @@ define_machine(bsc9132_qds) {
- 	.probe			= bsc9132_qds_probe,
- 	.setup_arch		= bsc913x_qds_setup_arch,
- 	.init_IRQ		= bsc913x_qds_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
- 	.get_irq		= mpic_get_irq,
- 	.restart		= fsl_rstcr_restart,
- 	.calibrate_decr		= generic_calibrate_decr,
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index ebc1f412..b8607f6 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -193,6 +193,19 @@ static void setup_pci_atmu(struct pci_controller *hose)
- 	const u64 *reg;
- 	int len;
- 
-+	if (of_device_is_compatible(hose->dn, "fsl,bsc9132-pcie")) {
-+		/*
-+		 * BSC9132 Rev1.0 has an issue where all the PEX inbound
-+		 * windows have implemented the default target value as 0xf
-+		 * for CCSR space.In all Freescale legacy devices the target
-+		 * of 0xf is reserved for local memory space. 9132 Rev1.0
-+		 * now has local mempry space mapped to target 0x0 instead of
-+		 * 0xf. Hence adding a workaround to remove the target 0xf
-+		 * defined for memory space from Inbound window attributes.
-+		 */
-+		piwar &= ~PIWAR_TGI_LOCAL;
-+	}
++	pci0: pcie@ff70a000 {
++		reg = <0 0xff70a000 0 0x1000>;
++		ranges = <0x2000000 0x0 0x90000000 0 0x90000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0 0xc0010000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0x90000000
++				  0x2000000 0x0 0x90000000
++				  0x0 0x20000000
 +
- 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
- 		if (in_be32(&pci->block_rev1) >= PCIE_IP_REV_2_2) {
- 			win_idx = 2;
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
+ };
+ 
+ /include/ "bsc9132qds.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+index c723071..b5f0715 100644
+--- a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+@@ -40,6 +40,34 @@
+ 	interrupts = <16 2 0 0 20 2 0 0>;
+ };
+ 
++/* controller at 0xa000 */
++&pci0 {
++	compatible = "fsl,bsc9132-pcie", "fsl,qoriq-pcie-v2.2";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0 255>;
++	interrupts = <16 2 0 0>;
++
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <16 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0x0 0x0 0x1 &mpic 0x0 0x2 0x0 0x0
++			0000 0x0 0x0 0x2 &mpic 0x1 0x2 0x0 0x0
++			0000 0x0 0x0 0x3 &mpic 0x2 0x2 0x0 0x0
++			0000 0x0 0x0 0x4 &mpic 0x3 0x2 0x0 0x0
++			>;
++	};
++};
++
+ &soc {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+index 301a9db..90f7949 100644
+--- a/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+@@ -45,6 +45,7 @@
+ 		serial0 = &serial0;
+ 		ethernet0 = &enet0;
+ 		ethernet1 = &enet1;
++		pci0 = &pci0;
+ 	};
+ 
+ 	cpus {
 -- 
 2.1.0.27.g96db324
