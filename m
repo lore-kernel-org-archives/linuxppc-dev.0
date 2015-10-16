@@ -1,42 +1,20 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <christophe.jaillet@wanadoo.fr>
+Received: from smtp.smtpout.orange.fr (smtp02.smtpout.orange.fr
+ [80.12.242.124])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D1D71A0B37
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 16:56:12 +1100 (AEDT)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42B951402DD
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2015 16:56:11 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 16 Oct 2015 11:26:09 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 37B84E0056
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2015 11:26:03 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9G5tpRu56361174
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2015 11:25:51 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9G5to6A004924
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Oct 2015 11:25:50 +0530
-Message-ID: <56209166.50602@linux.vnet.ibm.com>
-Date: Fri, 16 Oct 2015 11:25:50 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@ozlabs.org, mikey@neuling.org, nacc@linux.vnet.ibm.com
-Subject: Re: [RFC] powerpc/numa: Use VPHN based node ID information on shared
- processor LPARs
-References: <1444813335-4009-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1444962421.28419.3.camel@ellerman.id.au>
-In-Reply-To: <1444962421.28419.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8EC341A08A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 17:14:34 +1100 (AEDT)
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org,
+ Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH] powerpc/prom: Avoid reference to potentially freed memory
+Date: Fri, 16 Oct 2015 08:14:15 +0200
+Message-Id: <1444976055-19148-1-git-send-email-christophe.jaillet@wanadoo.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,56 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/16/2015 07:57 AM, Michael Ellerman wrote:
-> On Wed, 2015-10-14 at 14:32 +0530, Anshuman Khandual wrote:
->> On shared processor LPARs, H_HOME_NODE_ASSOCIATIVITY hcall provides the
->> dynamic virtual-physical mapping for any given processor. Currently we
->> use VPHN node ID information only after getting either a PRRN or a VPHN
->> event. But during boot time inside the function numa_setup_cpu, we still
->> query the OF device tree for the node ID value which might be different
->> than what can be fetched from the H_HOME_NODE_ASSOCIATIVITY hcall. In a
->> scenario where there are no PRRN or VPHN event after boot, all node-cpu
->> mapping will remain incorrect there after.
->>
->> With this proposed change, numa_setup_cpu will try to override the OF
->> device tree fetched node ID information with H_HOME_NODE_ASSOCIATIVITY
->> hcall fetched node ID value. Right now shared processor property of the
->> LPAR cannot be queried as VPA inializaion happens after numa_setup_cpu
->> during boot time. So initmem_init function has been moved after ppc_md.
->> setup_arch inside setup_arch during boot.
->>
->> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->> index 8b9502a..e404d05 100644
->> --- a/arch/powerpc/mm/numa.c
->> +++ b/arch/powerpc/mm/numa.c
->> @@ -553,6 +557,17 @@ static int numa_setup_cpu(unsigned long lcpu)
->>  
->>  	nid = of_node_to_nid_single(cpu);
->>  
->> +	/*
->> +	 * Override the OF device tree fetched node number
->> +	 * with VPHN based node number in case of a shared
->> +	 * processor LPAR on PHYP platform.
->> +	 */
->> +#ifdef CONFIG_PPC_SPLPAR
->> +	if (lppaca_shared_proc(get_lppaca())) {
->> +		nid = vphn_get_node(lcpu);
->> +	}
->> +#endif
-> 
-> 
-> That logic exposes a potential problem which you don't seem to have addressed.
+of_get_property() is used inside the loop, but then the reference to the
+node is dropped before dereferencing the prop pointer, which could by then
+point to junk if the node has been freed.
 
-You are right.
+Instead use of_property_read_u32() to actually read the property
+value before dropping the reference.
 
-> 
-> You're not updating the logic in of_node_to_nid[_single](), instead you're
-> overriding it in *this one location*. But what about other code that uses
-> of_node_to_nid()? It will still get the old device-tree value and so will have
-> the wrong nid, won't it?
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+*** UNTESTED ***
+---
+ arch/powerpc/kernel/prom.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-Yeah it will. of_node_to_nid() calls of_node_to_nid_single(). So we
-can move in this VPHN override logic inside of_node_to_nid_single to
-make it available across the board. But the original problem of timing
-of vpa_init() still remains to make lppaca_shared_proc() check available
-during boot time inside numa_setup_cpu() function.
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index bef76c5..dc4f6a4 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -783,14 +783,13 @@ void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
+ int of_get_ibm_chip_id(struct device_node *np)
+ {
+ 	of_node_get(np);
+-	while(np) {
++	while (np) {
+ 		struct device_node *old = np;
+-		const __be32 *prop;
++		u32 chip_id;
+ 
+-		prop = of_get_property(np, "ibm,chip-id", NULL);
+-		if (prop) {
++		if (!of_property_read_u32(np, "ibm,chip-id", &chip_id))
+ 			of_node_put(np);
+-			return be32_to_cpup(prop);
++			return chip_id;
+ 		}
+ 		np = of_get_parent(np);
+ 		of_node_put(old);
+-- 
+2.1.4
