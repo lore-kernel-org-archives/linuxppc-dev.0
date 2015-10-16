@@ -1,18 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D9A31A0259
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 13:10:52 +1100 (AEDT)
-Message-ID: <1444961451.28419.0.camel@ellerman.id.au>
-Subject: Re: [PATCH] PPC: fix LOGMPP instruction opcode and inline asm
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF7E31A0271
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Oct 2015 13:14:50 +1100 (AEDT)
+Message-ID: <1444961690.28419.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: on crash, kexec'ed kernel needs all CPUs are
+ online
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, thuth@redhat.com, stable@vger.kernel.org,
- paulus@samba.org, dgibson@redhat.com, jstancek@redhat.com
-Date: Fri, 16 Oct 2015 13:10:51 +1100
-In-Reply-To: <1444958435-18808-1-git-send-email-stewart@linux.vnet.ibm.com>
-References: <1444958435-18808-1-git-send-email-stewart@linux.vnet.ibm.com>
+To: Laurent Vivier <lvivier@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,  dgibson@redhat.com, thuth@redhat.com
+Date: Fri, 16 Oct 2015 13:14:50 +1100
+In-Reply-To: <1444935658-27319-1-git-send-email-lvivier@redhat.com>
+References: <1444935658-27319-1-git-send-email-lvivier@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,16 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-10-16 at 12:20 +1100, Stewart Smith wrote:
-> Back in 9678cda when we started using the Micro Partition Prefetch Engine
-> in POWER8 for KVM, there were two mistakes introduced from the original
-> patch used for investigation and microbenchmarks.
+On Thu, 2015-10-15 at 21:00 +0200, Laurent Vivier wrote:
+> On kexec, all secondary offline CPUs are onlined before
+> starting the new kernel, this is not done in the case of kdump.
 > 
-> One mistake was that the opcode was constructed incorrectly, putting
-> the register in the wrong field in the opcode, meaning that we were
-> asking the chip to read the memory address from some other register than
-> what we intended - probably r0.
+> If kdump is configured and a kernel crash occurs whereas
+> some secondaries CPUs are offline (SMT=off),
+> the new kernel is not able to start them and displays some
+> "Processor X is stuck.".
 
-Where is the logmpp instruction documented?
+Do we know why they are stuck?
+
+I really don't like this fix. The reason we're doing a kdump is because the
+first kernel has panicked, possibly with locks held or data structures
+corrupted. Calling cpu_up() then goes and tries to run a bunch of code in the
+crashed kernel, which increases the chance of us just wedging completely.
 
 cheers
