@@ -1,21 +1,35 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0106.outbound.protection.outlook.com [207.46.100.106])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3D401A08A5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 16:35:28 +1100 (AEDT)
-Date: Sat, 17 Oct 2015 00:35:12 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Hongtao Jia <hongtao.jia@freescale.com>
-CC: <devicetree@vger.kernel.org>, <robh+dt@kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: PowerPC: Move Freescale device tree files into fsl folder
-Message-ID: <20151017053512.GA24971@home.buserror.net>
-References: <1442548824-45849-1-git-send-email-hongtao.jia@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1442548824-45849-1-git-send-email-hongtao.jia@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E1FF1A0754
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 21:08:58 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 17 Oct 2015 15:38:55 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 84A7C1258069
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:40 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9HA8qTZ1704230
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:52 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9HA8phe017028
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:51 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V4 09/31] powerpc/mm: Don't use pte_val as lvalue
+Date: Sat, 17 Oct 2015 15:38:20 +0530
+Message-Id: <1445076522-20527-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +39,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 18, 2015 at 12:00:24PM +0800, Hongtao Jia wrote:
-> It makes no sense that some Freescale device tree files are in fsl
-> directory while some others not. This patch move Freescale device tree
-> files into fsl folder. To do that the following two steps are made:
-> - Move Freescale device tree files into fsl folder.
-> - Update the include path in these files from "fsl/*.dtsi" to "*.dtsi".
-> 
-> Please add "fsl/" prefix when you make dtb using Makefile.
-> 
-> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+We also convert few #define to static inline in this patch for better
+type checking
 
-This broke cuImage -- I made this change when applying:
+Acked-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/book3s/pgtable.h | 118 +++++++++++++++++++++---------
+ arch/powerpc/include/asm/page.h           |  10 ++-
+ arch/powerpc/include/asm/pgtable-book3e.h |  68 ++++++++++++-----
+ 3 files changed, 139 insertions(+), 57 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 4eec430..99e4487 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -364,6 +364,9 @@ $(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
- $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
- 	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
+diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
+index 87333618af3b..ebd6677ea017 100644
+--- a/arch/powerpc/include/asm/book3s/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/pgtable.h
+@@ -12,9 +12,9 @@
  
-+$(obj)/cuImage.%: vmlinux $(obj)/fsl/%.dtb $(wrapperbits)
-+	$(call if_changed,wrap,cuboot-$*,,$(obj)/fsl/$*.dtb)
+ /* Generic accessors to PTE bits */
+ static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
+-static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+-static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+-static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
++static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
++static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
++static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+ static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
+ 
+@@ -47,36 +47,61 @@ static inline int pte_present(pte_t pte)
+  * Even if PTEs can be unsigned long long, a PFN is always an unsigned
+  * long for now.
+  */
+-static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot) {
++static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
++{
+ 	return __pte(((pte_basic_t)(pfn) << PTE_RPN_SHIFT) |
+-		     pgprot_val(pgprot)); }
+-static inline unsigned long pte_pfn(pte_t pte)	{
+-	return pte_val(pte) >> PTE_RPN_SHIFT; }
++		     pgprot_val(pgprot));
++}
 +
- $(obj)/simpleImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
- 	$(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-
--Scott
++static inline unsigned long pte_pfn(pte_t pte)
++{
++	return pte_val(pte) >> PTE_RPN_SHIFT;
++}
+ 
+ /* Generic modifiers for PTE bits */
+ static inline pte_t pte_wrprotect(pte_t pte)
+ {
+-	pte_val(pte) &= ~_PAGE_RW;
++	return __pte(pte_val(pte) & ~_PAGE_RW);
++}
++
++static inline pte_t pte_mkclean(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
++}
++
++static inline pte_t pte_mkold(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
++}
++
++static inline pte_t pte_mkwrite(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_RW);
++}
++
++static inline pte_t pte_mkdirty(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_DIRTY);
++}
++
++static inline pte_t pte_mkyoung(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_ACCESSED);
++}
++
++static inline pte_t pte_mkspecial(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_SPECIAL);
++}
++
++static inline pte_t pte_mkhuge(pte_t pte)
++{
+ 	return pte;
+ }
+-static inline pte_t pte_mkclean(pte_t pte) {
+-	pte_val(pte) &= ~_PAGE_DIRTY; return pte; }
+-static inline pte_t pte_mkold(pte_t pte) {
+-	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_mkwrite(pte_t pte) {
+-	pte_val(pte) |= _PAGE_RW; return pte; }
+-static inline pte_t pte_mkdirty(pte_t pte) {
+-	pte_val(pte) |= _PAGE_DIRTY; return pte; }
+-static inline pte_t pte_mkyoung(pte_t pte) {
+-	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_mkspecial(pte_t pte) {
+-	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
+-static inline pte_t pte_mkhuge(pte_t pte) {
+-	return pte; }
++
+ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+ {
+-	pte_val(pte) = (pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot);
+-	return pte;
++	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
+ }
+ 
+ 
+@@ -159,22 +184,45 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
+ #define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_GUARDED | _PAGE_NO_CACHE | \
+ 			 _PAGE_WRITETHRU)
+ 
+-#define pgprot_noncached(prot)	  (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_NO_CACHE | _PAGE_GUARDED))
++#define pgprot_noncached pgprot_noncached
++static inline pgprot_t pgprot_noncached(pgprot_t prot)
++{
++	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
++			_PAGE_NO_CACHE | _PAGE_GUARDED);
++}
+ 
+-#define pgprot_noncached_wc(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_NO_CACHE))
++#define pgprot_noncached_wc pgprot_noncached_wc
++static inline pgprot_t pgprot_noncached_wc(pgprot_t prot)
++{
++	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
++			_PAGE_NO_CACHE);
++}
+ 
+-#define pgprot_cached(prot)       (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_COHERENT))
++#define pgprot_cached pgprot_cached
++static inline pgprot_t pgprot_cached(pgprot_t prot)
++{
++	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
++			_PAGE_COHERENT);
++}
+ 
+-#define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+-				            _PAGE_COHERENT | _PAGE_WRITETHRU))
++#define pgprot_cached_wthru pgprot_cached_wthru
++static inline pgprot_t pgprot_cached_wthru(pgprot_t prot)
++{
++	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
++			_PAGE_COHERENT | _PAGE_WRITETHRU);
++}
+ 
+-#define pgprot_cached_noncoherent(prot) \
+-		(__pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL))
++#define pgprot_cached_noncoherent pgprot_cached_noncoherent
++static inline pgprot_t pgprot_cached_noncoherent(pgprot_t prot)
++{
++	return __pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL);
++}
+ 
+-#define pgprot_writecombine pgprot_noncached_wc
++#define pgprot_writecombine pgprot_writecombine
++static inline pgprot_t pgprot_writecombine(pgprot_t prot)
++{
++	return pgprot_noncached_wc(prot);
++}
+ 
+ struct file;
+ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 96534b4e5a64..0e9d1d32053f 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -285,8 +285,11 @@ extern long long virt_phys_offset;
+ 
+ /* PTE level */
+ typedef struct { pte_basic_t pte; } pte_t;
+-#define pte_val(x)	((x).pte)
+ #define __pte(x)	((pte_t) { (x) })
++static inline pte_basic_t pte_val(pte_t x)
++{
++	return x.pte;
++}
+ 
+ /* 64k pages additionally define a bigger "real PTE" type that gathers
+  * the "second half" part of the PTE for pseudo 64k pages
+@@ -328,8 +331,11 @@ typedef struct { unsigned long pgprot; } pgprot_t;
+  */
+ 
+ typedef pte_basic_t pte_t;
+-#define pte_val(x)	(x)
+ #define __pte(x)	(x)
++static inline pte_basic_t pte_val(pte_t pte)
++{
++	return pte;
++}
+ 
+ #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
+ typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
+diff --git a/arch/powerpc/include/asm/pgtable-book3e.h b/arch/powerpc/include/asm/pgtable-book3e.h
+index a3221cff2e31..91325997ba25 100644
+--- a/arch/powerpc/include/asm/pgtable-book3e.h
++++ b/arch/powerpc/include/asm/pgtable-book3e.h
+@@ -56,30 +56,58 @@ static inline unsigned long pte_pfn(pte_t pte)	{
+ 	return pte_val(pte) >> PTE_RPN_SHIFT; }
+ 
+ /* Generic modifiers for PTE bits */
+-static inline pte_t pte_wrprotect(pte_t pte) {
+-	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE);
+-	pte_val(pte) |= _PAGE_RO; return pte; }
+-static inline pte_t pte_mkclean(pte_t pte) {
+-	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
+-static inline pte_t pte_mkold(pte_t pte) {
+-	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_mkwrite(pte_t pte) {
+-	pte_val(pte) &= ~_PAGE_RO;
+-	pte_val(pte) |= _PAGE_RW; return pte; }
+-static inline pte_t pte_mkdirty(pte_t pte) {
+-	pte_val(pte) |= _PAGE_DIRTY; return pte; }
+-static inline pte_t pte_mkyoung(pte_t pte) {
+-	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
+-static inline pte_t pte_mkspecial(pte_t pte) {
+-	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
+-static inline pte_t pte_mkhuge(pte_t pte) {
+-	return pte; }
+-static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
++static inline pte_t pte_wrprotect(pte_t pte)
++{
++	pte_basic_t ptev;
++
++	ptev = pte_val(pte) & ~(_PAGE_RW | _PAGE_HWWRITE);
++	ptev |= _PAGE_RO;
++	return __pte(ptev);
++}
++
++static inline pte_t pte_mkclean(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~(_PAGE_DIRTY | _PAGE_HWWRITE));
++}
++
++static inline pte_t pte_mkold(pte_t pte)
++{
++	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
++}
++
++static inline pte_t pte_mkwrite(pte_t pte)
++{
++	pte_basic_t ptev;
++
++	ptev = pte_val(pte) & ~_PAGE_RO;
++	ptev |= _PAGE_RW;
++	return __pte(ptev);
++}
++
++static inline pte_t pte_mkdirty(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_DIRTY);
++}
++
++static inline pte_t pte_mkyoung(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_ACCESSED);
++}
++
++static inline pte_t pte_mkspecial(pte_t pte)
++{
++	return __pte(pte_val(pte) | _PAGE_SPECIAL);
++}
++
++static inline pte_t pte_mkhuge(pte_t pte)
+ {
+-	pte_val(pte) = (pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot);
+ 	return pte;
+ }
+ 
++static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
++{
++	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
++}
+ 
+ /* Insert a PTE, top-level function is out of line. It uses an inline
+  * low level function in the respective pgtable-* files
+-- 
+2.5.0
