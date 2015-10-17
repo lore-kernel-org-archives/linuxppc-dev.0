@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B6301A0754
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 21:08:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EFCE01A0753
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 21:08:57 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 17 Oct 2015 15:38:54 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id BBD0F1258065
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:38 +0530 (IST)
+ Sat, 17 Oct 2015 15:38:55 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1AA981258066
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:39 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9HA8oqK12386538
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:51 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9HA8oF87864668
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:50 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9HA8oKb016917
+ t9HA8nP9016892
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:50 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 03/31] powerpc/mm: make a separate copy for book3s
-Date: Sat, 17 Oct 2015 15:38:14 +0530
-Message-Id: <1445076522-20527-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V4 01/31] powerpc/mm: move pte headers to book3s directory
+Date: Sat, 17 Oct 2015 15:38:12 +0530
+Message-Id: <1445076522-20527-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,82 +39,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In this patch we do:
-cp pgtable-ppc32.h book3s/32/pgtable.h
-cp pgtable-ppc64.h book3s/64/pgtable.h
-
-This enable us to do further changes to hash specific config.
-We will change the page table format for 64bit hash in later patches.
-
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- .../include/asm/{pgtable-ppc32.h => book3s/32/pgtable.h}       |  0
- .../include/asm/{pgtable-ppc64.h => book3s/64/pgtable.h}       |  0
- arch/powerpc/include/asm/book3s/pgtable.h                      | 10 ++++++++++
- arch/powerpc/include/asm/mmu-hash64.h                          |  2 +-
- arch/powerpc/include/asm/pgtable.h                             |  4 ++++
- 5 files changed, 15 insertions(+), 1 deletion(-)
- copy arch/powerpc/include/asm/{pgtable-ppc32.h => book3s/32/pgtable.h} (100%)
- copy arch/powerpc/include/asm/{pgtable-ppc64.h => book3s/64/pgtable.h} (100%)
- create mode 100644 arch/powerpc/include/asm/book3s/pgtable.h
+ arch/powerpc/include/asm/{pte-hash32.h => book3s/32/hash.h} | 0
+ arch/powerpc/include/asm/{pte-hash64.h => book3s/64/hash.h} | 0
+ arch/powerpc/include/asm/pgtable-ppc32.h                    | 2 +-
+ arch/powerpc/include/asm/pgtable-ppc64.h                    | 2 +-
+ 4 files changed, 2 insertions(+), 2 deletions(-)
+ rename arch/powerpc/include/asm/{pte-hash32.h => book3s/32/hash.h} (100%)
+ rename arch/powerpc/include/asm/{pte-hash64.h => book3s/64/hash.h} (100%)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+diff --git a/arch/powerpc/include/asm/pte-hash32.h b/arch/powerpc/include/asm/book3s/32/hash.h
 similarity index 100%
-copy from arch/powerpc/include/asm/pgtable-ppc32.h
-copy to arch/powerpc/include/asm/book3s/32/pgtable.h
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+rename from arch/powerpc/include/asm/pte-hash32.h
+rename to arch/powerpc/include/asm/book3s/32/hash.h
+diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/book3s/64/hash.h
 similarity index 100%
-copy from arch/powerpc/include/asm/pgtable-ppc64.h
-copy to arch/powerpc/include/asm/book3s/64/pgtable.h
-diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
-new file mode 100644
-index 000000000000..a8d8e5152bd4
---- /dev/null
-+++ b/arch/powerpc/include/asm/book3s/pgtable.h
-@@ -0,0 +1,10 @@
-+#ifndef _ASM_POWERPC_BOOK3S_PGTABLE_H
-+#define _ASM_POWERPC_BOOK3S_PGTABLE_H
-+
-+#ifdef CONFIG_PPC64
-+#include <asm/book3s/64/pgtable.h>
-+#else
-+#include <asm/book3s/32/pgtable.h>
-+#endif
-+
-+#endif
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index ba3342bbdbda..7352d3f212df 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -21,7 +21,7 @@
-  * need for various slices related matters. Note that this isn't the
-  * complete pgtable.h but only a portion of it.
-  */
--#include <asm/pgtable-ppc64.h>
-+#include <asm/book3s/64/pgtable.h>
- #include <asm/bug.h>
- #include <asm/processor.h>
- 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index b64b4212b71f..c304d0767919 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -13,11 +13,15 @@ struct mm_struct;
- 
- #endif /* !__ASSEMBLY__ */
- 
-+#ifdef CONFIG_PPC_BOOK3S
-+#include <asm/book3s/pgtable.h>
-+#else
- #if defined(CONFIG_PPC64)
- #  include <asm/pgtable-ppc64.h>
- #else
- #  include <asm/pgtable-ppc32.h>
+rename from arch/powerpc/include/asm/pte-hash64.h
+rename to arch/powerpc/include/asm/book3s/64/hash.h
+diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
+index 9c326565d498..1a58a05be99c 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc32.h
++++ b/arch/powerpc/include/asm/pgtable-ppc32.h
+@@ -116,7 +116,7 @@ extern int icache_44x_need_flush;
+ #elif defined(CONFIG_8xx)
+ #include <asm/pte-8xx.h>
+ #else /* CONFIG_6xx */
+-#include <asm/pte-hash32.h>
++#include <asm/book3s/32/hash.h>
  #endif
-+#endif /* !CONFIG_PPC_BOOK3S */
  
- /*
-  * We save the slot number & secondary bit in the second half of the
+ /* And here we include common definitions */
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 3245f2d96d4f..b36a932abdfb 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -98,7 +98,7 @@
+  * Include the PTE bits definitions
+  */
+ #ifdef CONFIG_PPC_BOOK3S
+-#include <asm/pte-hash64.h>
++#include <asm/book3s/64/hash.h>
+ #else
+ #include <asm/pte-book3e.h>
+ #endif
 -- 
 2.5.0
