@@ -1,33 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB7E01A023F
+ by lists.ozlabs.org (Postfix) with ESMTPS id E29401A02BF
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 21:09:01 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Sat, 17 Oct 2015 15:38:59 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 7E0EF3940065
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id E1607E005F
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:56 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9HA8tnM50004212
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:55 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9HA8uDp11207044
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:56 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9HA8tUa017278
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:55 +0530
+ t9HA8tCs017330
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:56 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 21/31] powerpc/mm: make pte page hash index slot 8 bits
-Date: Sat, 17 Oct 2015 15:38:32 +0530
-Message-Id: <1445076522-20527-22-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V4 23/31] powerpc/mm: Increase the width of #define
+Date: Sat, 17 Oct 2015 15:38:34 +0530
+Message-Id: <1445076522-20527-24-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,187 +39,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we use 4 bits for each slot and pack all the 16 slot
-information related to a 64K linux page in a 64bit value. To do this
-we use 16 bits of pte_t. Move the hash slot valid bit out of pte_t
-and place them in the second half of pte page. We also use 8 bit
-per each slot.
+No real change, only style changes
 
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-64k.h | 48 +++++++++++++++------------
- arch/powerpc/include/asm/book3s/64/hash.h     |  5 ---
- arch/powerpc/include/asm/page.h               |  4 +--
- arch/powerpc/mm/hash64_64k.c                  | 34 +++++++++++++++----
- 4 files changed, 56 insertions(+), 35 deletions(-)
+ arch/powerpc/include/asm/book3s/64/hash.h | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index ced5a17a8d1a..dafc2f31c843 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -78,33 +78,39 @@
-  * generic accessors and iterators here
-  */
- #define __real_pte __real_pte
--static inline real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep)
--{
--	real_pte_t rpte;
--
--	rpte.pte = pte;
--	rpte.hidx = 0;
--	if (pte_val(pte) & _PAGE_COMBO) {
--		/*
--		 * Make sure we order the hidx load against the _PAGE_COMBO
--		 * check. The store side ordering is done in __hash_page_4K
--		 */
--		smp_rmb();
--		rpte.hidx = pte_val(*((ptep) + PTRS_PER_PTE));
--	}
--	return rpte;
--}
--
-+extern real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep);
- static inline unsigned long __rpte_to_hidx(real_pte_t rpte, unsigned long index)
- {
- 	if ((pte_val(rpte.pte) & _PAGE_COMBO))
--		return (rpte.hidx >> (index<<2)) & 0xf;
-+		return (unsigned long) rpte.hidx[index] >> 4;
- 	return (pte_val(rpte.pte) >> 12) & 0xf;
- }
- 
--#define __rpte_to_pte(r)	((r).pte)
--#define __rpte_sub_valid(rpte, index) \
--	(pte_val(rpte.pte) & (_PAGE_HPTE_SUB0 >> (index)))
-+static inline pte_t __rpte_to_pte(real_pte_t rpte)
-+{
-+	return rpte.pte;
-+}
-+/*
-+ * we look at the second half of the pte page to determine whether
-+ * the sub 4k hpte is valid. We use 8 bits per each index, and we have
-+ * 16 index mapping full 64K page. Hence for each
-+ * 64K linux page we use 128 bit from the second half of pte page.
-+ * The encoding in the second half of the page is as below:
-+ * [ index 15 ] .........................[index 0]
-+ * [bit 127 ..................................bit 0]
-+ * fomat of each index
-+ * bit 7 ........ bit0
-+ * [one bit secondary][ 3 bit hidx][1 bit valid][000]
-+ */
-+static inline bool __rpte_sub_valid(real_pte_t rpte, unsigned long index)
-+{
-+	unsigned char index_val = rpte.hidx[index];
-+
-+	if ((index_val >> 3) & 0x1)
-+		return true;
-+	return false;
-+}
-+
- /*
-  * Trick: we set __end to va + 64k, which happens works for
-  * a 16M page as well as we want only one iteration
 diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index c74916b5c657..050d22aaa050 100644
+index 96475b1dbb7d..987076574395 100644
 --- a/arch/powerpc/include/asm/book3s/64/hash.h
 +++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -214,11 +214,6 @@
- 
- #define PMD_BAD_BITS		(PTE_TABLE_SIZE-1)
- #define PUD_BAD_BITS		(PMD_TABLE_SIZE-1)
--/*
-- * We save the slot number & secondary bit in the second half of the
-- * PTE page. We use the 8 bytes per each pte entry.
-- */
--#define PTE_PAGE_HIDX_OFFSET (PTRS_PER_PTE * 8)
- 
- #ifndef __ASSEMBLY__
- #define	pmd_bad(pmd)		(!is_kernel_addr(pmd_val(pmd)) \
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 9d2f38e1b21d..9c3211eb487c 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -295,7 +295,7 @@ static inline pte_basic_t pte_val(pte_t x)
-  * the "second half" part of the PTE for pseudo 64k pages
+@@ -71,22 +71,22 @@
+  * We could create separate kernel read-only if we used the 3 PP bits
+  * combinations that newer processors provide but we currently don't.
   */
- #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
--typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
-+typedef struct { pte_t pte; unsigned char *hidx; } real_pte_t;
- #else
- typedef struct { pte_t pte; } real_pte_t;
- #endif
-@@ -347,7 +347,7 @@ static inline pte_basic_t pte_val(pte_t pte)
- }
+-#define _PAGE_PRESENT		0x0001 /* software: pte contains a translation */
+-#define _PAGE_USER		0x0002 /* matches one of the PP bits */
++#define _PAGE_PRESENT		0x00001 /* software: pte contains a translation */
++#define _PAGE_USER		0x00002 /* matches one of the PP bits */
+ #define _PAGE_BIT_SWAP_TYPE	2
+-#define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
+-#define _PAGE_GUARDED		0x0008
++#define _PAGE_EXEC		0x00004 /* No execute on POWER4 and newer (we invert) */
++#define _PAGE_GUARDED		0x00008
+ /* We can derive Memory coherence from _PAGE_NO_CACHE */
+ #define _PAGE_COHERENT		0x0
+-#define _PAGE_NO_CACHE		0x0020 /* I: cache inhibit */
+-#define _PAGE_WRITETHRU		0x0040 /* W: cache write-through */
+-#define _PAGE_DIRTY		0x0080 /* C: page changed */
+-#define _PAGE_ACCESSED		0x0100 /* R: page referenced */
+-#define _PAGE_RW		0x0200 /* software: user write access allowed */
+-#define _PAGE_HASHPTE		0x0400 /* software: pte has an associated HPTE */
+-#define _PAGE_BUSY		0x0800 /* software: PTE & hash are busy */
+-#define _PAGE_F_GIX		0x7000 /* full page: hidx bits */
+-#define _PAGE_F_SECOND		0x8000 /* Whether to use secondary hash or not */
++#define _PAGE_NO_CACHE		0x00020 /* I: cache inhibit */
++#define _PAGE_WRITETHRU		0x00040 /* W: cache write-through */
++#define _PAGE_DIRTY		0x00080 /* C: page changed */
++#define _PAGE_ACCESSED		0x00100 /* R: page referenced */
++#define _PAGE_RW		0x00200 /* software: user write access allowed */
++#define _PAGE_HASHPTE		0x00400 /* software: pte has an associated HPTE */
++#define _PAGE_BUSY		0x00800 /* software: PTE & hash are busy */
++#define _PAGE_F_GIX		0x07000 /* full page: hidx bits */
++#define _PAGE_F_SECOND		0x08000 /* Whether to use secondary hash or not */
+ #define _PAGE_SPECIAL		0x10000 /* software: special page */
  
- #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
--typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
-+typedef struct { pte_t pte; unsigned char *hidx; } real_pte_t;
- #else
- typedef pte_t real_pte_t;
- #endif
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index 456aa3bfa8f1..c40ee12cc922 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -16,12 +16,32 @@
- #include <asm/machdep.h>
- #include <asm/mmu.h>
- 
-+real_pte_t __real_pte(unsigned long addr, pte_t pte, pte_t *ptep)
-+{
-+	int indx;
-+	real_pte_t rpte;
-+	pte_t *pte_headp;
-+
-+	rpte.pte = pte;
-+	rpte.hidx = NULL;
-+	if (pte_val(pte) & _PAGE_COMBO) {
-+		indx = pte_index(addr);
-+		pte_headp = ptep - indx;
-+		/*
-+		 * Make sure we order the hidx load against the _PAGE_COMBO
-+		 * check. The store side ordering is done in __hash_page_4K
-+		 */
-+		smp_rmb();
-+		rpte.hidx = (unsigned char *)(pte_headp + PTRS_PER_PTE) + (16 * indx);
-+	}
-+	return rpte;
-+}
-+
- int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 		   pte_t *ptep, unsigned long trap, unsigned long flags,
- 		   int ssize, int subpg_prot)
- {
- 	real_pte_t rpte;
--	unsigned long *hidxp;
- 	unsigned long hpte_group;
- 	unsigned int subpg_index;
- 	unsigned long shift = 12; /* 4K */
-@@ -90,7 +110,10 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 
- 	subpg_index = (ea & (PAGE_SIZE - 1)) >> shift;
- 	vpn  = hpt_vpn(ea, vsid, ssize);
--	rpte = __real_pte(ea, __pte(old_pte), ptep);
-+	if (!(old_pte & _PAGE_COMBO))
-+		rpte = __real_pte(ea, __pte(old_pte | _PAGE_COMBO), ptep);
-+	else
-+		rpte = __real_pte(ea, __pte(old_pte), ptep);
- 	/*
- 	 *None of the sub 4k page is hashed
- 	 */
-@@ -188,11 +211,8 @@ repeat:
- 	 * Since we have _PAGE_BUSY set on ptep, we can be sure
- 	 * nobody is undating hidx.
- 	 */
--	hidxp = (unsigned long *)(ptep + PTRS_PER_PTE);
--	/* __real_pte use pte_val() any idea why ? FIXME!! */
--	rpte.hidx &= ~(0xfUL << (subpg_index << 2));
--	*hidxp = rpte.hidx  | (slot << (subpg_index << 2));
--	new_pte |= (_PAGE_HPTE_SUB0 >> subpg_index);
-+	rpte.hidx[subpg_index] = (unsigned char)(slot << 4 | 0x1 << 3);
-+	new_pte |= _PAGE_HPTE_SUB0;
- 	/*
- 	 * check __real_pte for details on matching smp_rmb()
- 	 */
+ /* No separate kernel read-only */
 -- 
 2.5.0
