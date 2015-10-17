@@ -1,38 +1,21 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0106.outbound.protection.outlook.com [207.46.100.106])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 58CD21A025B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:34:09 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Sat, 17 Oct 2015 10:04:06 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 079CDE0024
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 10:04:03 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9H4Y23Y13828400
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 10:04:02 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9H4Y19r015565
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 10:04:02 +0530
-Message-ID: <5621CFB8.2050306@linux.vnet.ibm.com>
-Date: Sat, 17 Oct 2015 10:04:00 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3D401A08A5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 16:35:28 +1100 (AEDT)
+Date: Sat, 17 Oct 2015 00:35:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Hongtao Jia <hongtao.jia@freescale.com>
+CC: <devicetree@vger.kernel.org>, <robh+dt@kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: PowerPC: Move Freescale device tree files into fsl folder
+Message-ID: <20151017053512.GA24971@home.buserror.net>
+References: <1442548824-45849-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-To: Denis Kirjanov <kda@linux-powerpc.org>
-CC: linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com
-Subject: Re: [PATCH] rtas: Validate rtas entry before calling enter_rtas
-References: <20151016102327.6010.50184.stgit@hegdevasant.in.ibm.com>
- <CAOJe8K03v_0MULL_pxX=CgSaFTTDmS8aJe1j+aFO9HHxhZ7d4Q@mail.gmail.com>
- <56211459.1060006@linux.vnet.ibm.com>
- <CAOJe8K0Mva7+12k1eJjineUTfaPQiyae9HEnxRG+=2FkyrnmVA@mail.gmail.com>
-In-Reply-To: <CAOJe8K0Mva7+12k1eJjineUTfaPQiyae9HEnxRG+=2FkyrnmVA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1442548824-45849-1-git-send-email-hongtao.jia@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,37 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/16/2015 11:49 PM, Denis Kirjanov wrote:
-> On 10/16/15, Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
->> On 10/16/2015 04:02 PM, Denis Kirjanov wrote:
->>> On 10/16/15, Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
->>>> Currently we do not validate rtas entry before calling enter_rtas().
->>>> This
->>>> is resulting in a kernel oops (see below) when user space calls rtas
->>>> system
->>>> call on PowerNV platform. We hit below oops when we ran trinity (system
->>>> call
->>>> fuzzer) on PowerNV. This patch adds code to validate rtas entry before
->>>> making
->>>> enter_rtas() call.
->>>
->>> Hi,
->>> have you figured out why we have null entry?
->>
->> Denis,
+On Fri, Sep 18, 2015 at 12:00:24PM +0800, Hongtao Jia wrote:
+> It makes no sense that some Freescale device tree files are in fsl
+> directory while some others not. This patch move Freescale device tree
+> files into fsl folder. To do that the following two steps are made:
+> - Move Freescale device tree files into fsl folder.
+> - Update the include path in these files from "fsl/*.dtsi" to "*.dtsi".
+> 
+> Please add "fsl/" prefix when you make dtb using Makefile.
+> 
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
 
-Denis,
+This broke cuImage -- I made this change when applying:
 
->>
->> Yes... On PowerNV platform we don't have RTAS.. Hence it's not initialized.
-> But why do we have CONFIG_PPC_RTAS on OPAL machines then?
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 4eec430..99e4487 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -364,6 +364,9 @@ $(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ $(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ 	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
+ 
++$(obj)/cuImage.%: vmlinux $(obj)/fsl/%.dtb $(wrapperbits)
++	$(call if_changed,wrap,cuboot-$*,,$(obj)/fsl/$*.dtb)
++
+ $(obj)/simpleImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits)
+ 	$(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
 
-
-Sorry. I should have elaborated little bit..
-
-Today we use single config to build kernel for both PowerNV and PAPR guest. So
-that same ISO can be used in different environment (PAPR LPAR, PowerNV host,
-guest). I believe most distro also following this method. Hence we need this
-validation.
-
--Vasant
+-Scott
