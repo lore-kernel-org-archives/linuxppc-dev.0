@@ -1,35 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E1FF1A0754
+ by lists.ozlabs.org (Postfix) with ESMTPS id 622EB1A0769
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 21:08:58 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Sat, 17 Oct 2015 15:38:55 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 84A7C1258069
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:40 +0530 (IST)
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 49C09E005B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:51 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9HA8qTZ1704230
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:52 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9HA8o9W459232
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:50 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9HA8phe017028
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:51 +0530
+ t9HA8npk016885
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:50 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 09/31] powerpc/mm: Don't use pte_val as lvalue
-Date: Sat, 17 Oct 2015 15:38:20 +0530
-Message-Id: <1445076522-20527-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V4 00/31] powerpc/mm: Update page table format for book3s 64
+Date: Sat, 17 Oct 2015 15:38:11 +0530
+Message-Id: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,286 +37,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We also convert few #define to static inline in this patch for better
-type checking
+Hi All,
 
-Acked-by: Scott Wood <scottwood@freescale.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/pgtable.h | 118 +++++++++++++++++++++---------
- arch/powerpc/include/asm/page.h           |  10 ++-
- arch/powerpc/include/asm/pgtable-book3e.h |  68 ++++++++++++-----
- 3 files changed, 139 insertions(+), 57 deletions(-)
+This patch series attempt to update book3s 64 linux page table format to
+make it more flexible. Our current pte format is very restrictive and we
+overload multiple pte bits. This is due to the non-availability of free bits
+in pte_t. We use pte_t to track the validity of 4K subpages. This patch
+series free up pte_t of 11 bits by moving 4K subpage tracking to the
+lower half of PTE page. The pte format is updated such that we have a
+better method for identifying a pte entry at pmd level. This will also enable
+us to implement hugetlb migration(not yet done in this series). 
 
-diff --git a/arch/powerpc/include/asm/book3s/pgtable.h b/arch/powerpc/include/asm/book3s/pgtable.h
-index 87333618af3b..ebd6677ea017 100644
---- a/arch/powerpc/include/asm/book3s/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/pgtable.h
-@@ -12,9 +12,9 @@
- 
- /* Generic accessors to PTE bits */
- static inline int pte_write(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_RW);}
--static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
--static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
--static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
-+static inline int pte_dirty(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_DIRTY); }
-+static inline int pte_young(pte_t pte)		{ return !!(pte_val(pte) & _PAGE_ACCESSED); }
-+static inline int pte_special(pte_t pte)	{ return !!(pte_val(pte) & _PAGE_SPECIAL); }
- static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
- static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
- 
-@@ -47,36 +47,61 @@ static inline int pte_present(pte_t pte)
-  * Even if PTEs can be unsigned long long, a PFN is always an unsigned
-  * long for now.
-  */
--static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot) {
-+static inline pte_t pfn_pte(unsigned long pfn, pgprot_t pgprot)
-+{
- 	return __pte(((pte_basic_t)(pfn) << PTE_RPN_SHIFT) |
--		     pgprot_val(pgprot)); }
--static inline unsigned long pte_pfn(pte_t pte)	{
--	return pte_val(pte) >> PTE_RPN_SHIFT; }
-+		     pgprot_val(pgprot));
-+}
-+
-+static inline unsigned long pte_pfn(pte_t pte)
-+{
-+	return pte_val(pte) >> PTE_RPN_SHIFT;
-+}
- 
- /* Generic modifiers for PTE bits */
- static inline pte_t pte_wrprotect(pte_t pte)
- {
--	pte_val(pte) &= ~_PAGE_RW;
-+	return __pte(pte_val(pte) & ~_PAGE_RW);
-+}
-+
-+static inline pte_t pte_mkclean(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
-+}
-+
-+static inline pte_t pte_mkold(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
-+}
-+
-+static inline pte_t pte_mkwrite(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_RW);
-+}
-+
-+static inline pte_t pte_mkdirty(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_DIRTY);
-+}
-+
-+static inline pte_t pte_mkyoung(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_ACCESSED);
-+}
-+
-+static inline pte_t pte_mkspecial(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_SPECIAL);
-+}
-+
-+static inline pte_t pte_mkhuge(pte_t pte)
-+{
- 	return pte;
- }
--static inline pte_t pte_mkclean(pte_t pte) {
--	pte_val(pte) &= ~_PAGE_DIRTY; return pte; }
--static inline pte_t pte_mkold(pte_t pte) {
--	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
--static inline pte_t pte_mkwrite(pte_t pte) {
--	pte_val(pte) |= _PAGE_RW; return pte; }
--static inline pte_t pte_mkdirty(pte_t pte) {
--	pte_val(pte) |= _PAGE_DIRTY; return pte; }
--static inline pte_t pte_mkyoung(pte_t pte) {
--	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
--static inline pte_t pte_mkspecial(pte_t pte) {
--	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
--static inline pte_t pte_mkhuge(pte_t pte) {
--	return pte; }
-+
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- {
--	pte_val(pte) = (pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot);
--	return pte;
-+	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
- }
- 
- 
-@@ -159,22 +184,45 @@ extern int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long addre
- #define _PAGE_CACHE_CTL	(_PAGE_COHERENT | _PAGE_GUARDED | _PAGE_NO_CACHE | \
- 			 _PAGE_WRITETHRU)
- 
--#define pgprot_noncached(prot)	  (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
--				            _PAGE_NO_CACHE | _PAGE_GUARDED))
-+#define pgprot_noncached pgprot_noncached
-+static inline pgprot_t pgprot_noncached(pgprot_t prot)
-+{
-+	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
-+			_PAGE_NO_CACHE | _PAGE_GUARDED);
-+}
- 
--#define pgprot_noncached_wc(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
--				            _PAGE_NO_CACHE))
-+#define pgprot_noncached_wc pgprot_noncached_wc
-+static inline pgprot_t pgprot_noncached_wc(pgprot_t prot)
-+{
-+	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
-+			_PAGE_NO_CACHE);
-+}
- 
--#define pgprot_cached(prot)       (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
--				            _PAGE_COHERENT))
-+#define pgprot_cached pgprot_cached
-+static inline pgprot_t pgprot_cached(pgprot_t prot)
-+{
-+	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
-+			_PAGE_COHERENT);
-+}
- 
--#define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
--				            _PAGE_COHERENT | _PAGE_WRITETHRU))
-+#define pgprot_cached_wthru pgprot_cached_wthru
-+static inline pgprot_t pgprot_cached_wthru(pgprot_t prot)
-+{
-+	return __pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) |
-+			_PAGE_COHERENT | _PAGE_WRITETHRU);
-+}
- 
--#define pgprot_cached_noncoherent(prot) \
--		(__pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL))
-+#define pgprot_cached_noncoherent pgprot_cached_noncoherent
-+static inline pgprot_t pgprot_cached_noncoherent(pgprot_t prot)
-+{
-+	return __pgprot(pgprot_val(prot) & ~_PAGE_CACHE_CTL);
-+}
- 
--#define pgprot_writecombine pgprot_noncached_wc
-+#define pgprot_writecombine pgprot_writecombine
-+static inline pgprot_t pgprot_writecombine(pgprot_t prot)
-+{
-+	return pgprot_noncached_wc(prot);
-+}
- 
- struct file;
- extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 96534b4e5a64..0e9d1d32053f 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -285,8 +285,11 @@ extern long long virt_phys_offset;
- 
- /* PTE level */
- typedef struct { pte_basic_t pte; } pte_t;
--#define pte_val(x)	((x).pte)
- #define __pte(x)	((pte_t) { (x) })
-+static inline pte_basic_t pte_val(pte_t x)
-+{
-+	return x.pte;
-+}
- 
- /* 64k pages additionally define a bigger "real PTE" type that gathers
-  * the "second half" part of the PTE for pseudo 64k pages
-@@ -328,8 +331,11 @@ typedef struct { unsigned long pgprot; } pgprot_t;
-  */
- 
- typedef pte_basic_t pte_t;
--#define pte_val(x)	(x)
- #define __pte(x)	(x)
-+static inline pte_basic_t pte_val(pte_t pte)
-+{
-+	return pte;
-+}
- 
- #if defined(CONFIG_PPC_64K_PAGES) && defined(CONFIG_PPC_STD_MMU_64)
- typedef struct { pte_t pte; unsigned long hidx; } real_pte_t;
-diff --git a/arch/powerpc/include/asm/pgtable-book3e.h b/arch/powerpc/include/asm/pgtable-book3e.h
-index a3221cff2e31..91325997ba25 100644
---- a/arch/powerpc/include/asm/pgtable-book3e.h
-+++ b/arch/powerpc/include/asm/pgtable-book3e.h
-@@ -56,30 +56,58 @@ static inline unsigned long pte_pfn(pte_t pte)	{
- 	return pte_val(pte) >> PTE_RPN_SHIFT; }
- 
- /* Generic modifiers for PTE bits */
--static inline pte_t pte_wrprotect(pte_t pte) {
--	pte_val(pte) &= ~(_PAGE_RW | _PAGE_HWWRITE);
--	pte_val(pte) |= _PAGE_RO; return pte; }
--static inline pte_t pte_mkclean(pte_t pte) {
--	pte_val(pte) &= ~(_PAGE_DIRTY | _PAGE_HWWRITE); return pte; }
--static inline pte_t pte_mkold(pte_t pte) {
--	pte_val(pte) &= ~_PAGE_ACCESSED; return pte; }
--static inline pte_t pte_mkwrite(pte_t pte) {
--	pte_val(pte) &= ~_PAGE_RO;
--	pte_val(pte) |= _PAGE_RW; return pte; }
--static inline pte_t pte_mkdirty(pte_t pte) {
--	pte_val(pte) |= _PAGE_DIRTY; return pte; }
--static inline pte_t pte_mkyoung(pte_t pte) {
--	pte_val(pte) |= _PAGE_ACCESSED; return pte; }
--static inline pte_t pte_mkspecial(pte_t pte) {
--	pte_val(pte) |= _PAGE_SPECIAL; return pte; }
--static inline pte_t pte_mkhuge(pte_t pte) {
--	return pte; }
--static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-+static inline pte_t pte_wrprotect(pte_t pte)
-+{
-+	pte_basic_t ptev;
-+
-+	ptev = pte_val(pte) & ~(_PAGE_RW | _PAGE_HWWRITE);
-+	ptev |= _PAGE_RO;
-+	return __pte(ptev);
-+}
-+
-+static inline pte_t pte_mkclean(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~(_PAGE_DIRTY | _PAGE_HWWRITE));
-+}
-+
-+static inline pte_t pte_mkold(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
-+}
-+
-+static inline pte_t pte_mkwrite(pte_t pte)
-+{
-+	pte_basic_t ptev;
-+
-+	ptev = pte_val(pte) & ~_PAGE_RO;
-+	ptev |= _PAGE_RW;
-+	return __pte(ptev);
-+}
-+
-+static inline pte_t pte_mkdirty(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_DIRTY);
-+}
-+
-+static inline pte_t pte_mkyoung(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_ACCESSED);
-+}
-+
-+static inline pte_t pte_mkspecial(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_SPECIAL);
-+}
-+
-+static inline pte_t pte_mkhuge(pte_t pte)
- {
--	pte_val(pte) = (pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot);
- 	return pte;
- }
- 
-+static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-+{
-+	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
-+}
- 
- /* Insert a PTE, top-level function is out of line. It uses an inline
-  * low level function in the respective pgtable-* files
+Before making the changes to the pte format, I am splitting the
+pte header definition such that we now have the below layout for headers
+
+book3s
+   32
+     hash.h pgtable.h 
+   64
+     hash.h  pgtable.h hash-4k.h hash-64k.h
+booke
+  32
+     pgtable.h pte-40x.h pte-44x.h pte-8xx.h pte-fsl-booke.h
+  64
+    pgtable-4k.h  pgtable-64k.h  pgtable.h
+
+I have done the header split such that booke headers and modified to the minimum so as to avoid
+causing breakage in booke.
+
+The patch series can also be found at
+https://github.com/kvaneesh/linux.git book3s-pte-format 
+https://github.com/kvaneesh/linux/commits/book3s-pte-format
+
+
+Performance numbers with and without patch series.
+
+Path length __hash_page_4k
+with patch: 196
+without patch: 142
+
+Path length __hash_page_64k
+with patch: 219
+without patch: 154
+
+But even if we have a path lengh increase of around 50 instructions. We don't see
+the impact when running workload. I tried the kernelbuild test. 
+
+With THP enabled (which is default) we see an improvement. I haven't fully looked at
+the reason. This could be due to reduced contention of ptl lock. __hash_thp_page is
+already a C code.
+
+make -j64 vmlinux modules 
+With fix:
+---------
+real    1m35.509s
+user    56m8.565s
+sys     4m34.973s
+
+real    1m32.174s
+user    57m2.336s
+sys     4m39.142s
+
+Without fix:
+---------------
+real    1m37.703s
+user    58m50.783s
+sys     7m52.440s
+
+real    1m37.890s
+user    57m55.445s
+sys     7m50.501s
+
+THP disabled:
+
+make -j64 vmlinux modules 
+With fix:
+---------
+real    1m37.197s
+user    58m28.672s
+sys     7m58.188s
+
+real    1m44.638s
+user    58m37.551s
+sys     7m53.960s
+
+Without fix:
+------------
+real    1m41.224s
+user    58m46.944s
+sys     7m49.714s
+
+real    1m42.585s
+user    59m14.019s
+sys     7m52.714s
+
+
+Changes from V3:
+* Add missing #define pgprot_*
+* Add Acked-by
+
+Changes from V2:
+* rebase to -next for powerpc tree
+
+Changes from V1:
+1) Build fix with STRICT_MM_TYPES enabled 
+2) pte_mkwrite fix for nohash
+3) rebase to latest linus tree.
+
+
+Aneesh Kumar K.V (31):
+  powerpc/mm: move pte headers to book3s directory
+  powerpc/mm: move pte headers to book3s directory (part 2)
+  powerpc/mm: make a separate copy for book3s
+  powerpc/mm: make a separate copy for book3s (part 2)
+  powerpc/mm: Move hash specific pte width and other defines to book3s
+  powerpc/mm: Delete booke bits from book3s
+  powerpc/mm: Don't have generic headers introduce functions touching
+    pte bits
+  powerpc/mm: Drop pte-common.h from BOOK3S 64
+  powerpc/mm: Don't use pte_val as lvalue
+  powerpc/mm: Don't use pmd_val,pud_val and pgd_val as lvalue
+  powerpc/mm: Move hash64 PTE bits from book3s/64/pgtable.h to hash.h
+  powerpc/mm: Move PTE bits from generic functions to hash64 functions.
+  powerpc/booke: Move nohash headers (part 1)
+  powerpc/booke: Move nohash headers (part 2)
+  powerpc/booke: Move nohash headers (part 3)
+  powerpc/booke: Move nohash headers (part 4)
+  powerpc/booke: Move nohash headers (part 5)
+  powerpc/mm: Increase the pte frag size.
+  powerpc/mm: Convert 4k hash insert to C
+  powerpc/mm: update __real_pte to take address as argument
+  powerpc/mm: make pte page hash index slot 8 bits
+  powerpc/mm: Don't track subpage valid bit in pte_t
+  powerpc/mm: Increase the width of #define
+  powerpc/mm: Convert __hash_page_64K to C
+  powerpc/mm: Convert 4k insert from asm to C
+  powerpc/mm: Remove the dependency on pte bit position in asm code
+  powerpc/mm: Add helper for converting pte bit to hpte bits
+  powerpc/mm: Move WIMG update to helper.
+  powerpc/mm: Move hugetlb related headers
+  powerpc/mm: Move THP headers around
+  powerpc/mm: Add a _PAGE_PTE bit
+
+ .../include/asm/{pte-hash32.h => book3s/32/hash.h} |    6 +-
+ .../asm/{pgtable-ppc32.h => book3s/32/pgtable.h}   |  286 ++++--
+ .../{pgtable-ppc64-4k.h => book3s/64/hash-4k.h}    |   58 +-
+ arch/powerpc/include/asm/book3s/64/hash-64k.h      |  296 ++++++
+ arch/powerpc/include/asm/book3s/64/hash.h          |  530 +++++++++++
+ arch/powerpc/include/asm/book3s/64/pgtable.h       |  266 ++++++
+ arch/powerpc/include/asm/book3s/pgtable.h          |   29 +
+ arch/powerpc/include/asm/mmu-hash64.h              |    2 +-
+ .../asm/{pgtable-ppc32.h => nohash/32/pgtable.h}   |   25 +-
+ arch/powerpc/include/asm/{ => nohash/32}/pte-40x.h |    6 +-
+ arch/powerpc/include/asm/{ => nohash/32}/pte-44x.h |    6 +-
+ arch/powerpc/include/asm/{ => nohash/32}/pte-8xx.h |    6 +-
+ .../include/asm/{ => nohash/32}/pte-fsl-booke.h    |    6 +-
+ .../{pgtable-ppc64-4k.h => nohash/64/pgtable-4k.h} |   12 +-
+ .../64/pgtable-64k.h}                              |    6 +-
+ .../asm/{pgtable-ppc64.h => nohash/64/pgtable.h}   |  307 +-----
+ arch/powerpc/include/asm/{ => nohash}/pgtable.h    |  175 ++--
+ arch/powerpc/include/asm/{ => nohash}/pte-book3e.h |    6 +-
+ arch/powerpc/include/asm/page.h                    |   90 +-
+ arch/powerpc/include/asm/pgalloc-32.h              |   34 +-
+ arch/powerpc/include/asm/pgalloc-64.h              |   29 +-
+ arch/powerpc/include/asm/pgtable.h                 |  200 +---
+ arch/powerpc/include/asm/pte-common.h              |    5 +
+ arch/powerpc/include/asm/pte-hash64-4k.h           |   17 -
+ arch/powerpc/include/asm/pte-hash64-64k.h          |  102 --
+ arch/powerpc/include/asm/pte-hash64.h              |   54 --
+ arch/powerpc/kernel/exceptions-64s.S               |   16 +-
+ arch/powerpc/mm/40x_mmu.c                          |   10 +-
+ arch/powerpc/mm/Makefile                           |    9 +-
+ arch/powerpc/mm/hash64_4k.c                        |  123 +++
+ arch/powerpc/mm/hash64_64k.c                       |  313 ++++++
+ arch/powerpc/mm/hash_low_64.S                      | 1003 --------------------
+ arch/powerpc/mm/hash_native_64.c                   |   10 +
+ arch/powerpc/mm/hash_utils_64.c                    |  105 +-
+ arch/powerpc/mm/hugepage-hash64.c                  |   20 +-
+ arch/powerpc/mm/hugetlbpage-hash64.c               |   15 +-
+ arch/powerpc/mm/hugetlbpage.c                      |   58 +-
+ arch/powerpc/mm/pgtable.c                          |    4 +
+ arch/powerpc/mm/pgtable_64.c                       |   28 +-
+ arch/powerpc/mm/tlb_hash64.c                       |    2 +-
+ arch/powerpc/platforms/pseries/lpar.c              |   10 +
+ 41 files changed, 2184 insertions(+), 2101 deletions(-)
+ rename arch/powerpc/include/asm/{pte-hash32.h => book3s/32/hash.h} (93%)
+ copy arch/powerpc/include/asm/{pgtable-ppc32.h => book3s/32/pgtable.h} (62%)
+ copy arch/powerpc/include/asm/{pgtable-ppc64-4k.h => book3s/64/hash-4k.h} (71%)
+ create mode 100644 arch/powerpc/include/asm/book3s/64/hash-64k.h
+ create mode 100644 arch/powerpc/include/asm/book3s/64/hash.h
+ create mode 100644 arch/powerpc/include/asm/book3s/64/pgtable.h
+ create mode 100644 arch/powerpc/include/asm/book3s/pgtable.h
+ rename arch/powerpc/include/asm/{pgtable-ppc32.h => nohash/32/pgtable.h} (96%)
+ rename arch/powerpc/include/asm/{ => nohash/32}/pte-40x.h (95%)
+ rename arch/powerpc/include/asm/{ => nohash/32}/pte-44x.h (96%)
+ rename arch/powerpc/include/asm/{ => nohash/32}/pte-8xx.h (95%)
+ rename arch/powerpc/include/asm/{ => nohash/32}/pte-fsl-booke.h (88%)
+ rename arch/powerpc/include/asm/{pgtable-ppc64-4k.h => nohash/64/pgtable-4k.h} (92%)
+ rename arch/powerpc/include/asm/{pgtable-ppc64-64k.h => nohash/64/pgtable-64k.h} (90%)
+ rename arch/powerpc/include/asm/{pgtable-ppc64.h => nohash/64/pgtable.h} (56%)
+ copy arch/powerpc/include/asm/{ => nohash}/pgtable.h (62%)
+ rename arch/powerpc/include/asm/{ => nohash}/pte-book3e.h (95%)
+ delete mode 100644 arch/powerpc/include/asm/pte-hash64-4k.h
+ delete mode 100644 arch/powerpc/include/asm/pte-hash64-64k.h
+ delete mode 100644 arch/powerpc/include/asm/pte-hash64.h
+ create mode 100644 arch/powerpc/mm/hash64_4k.c
+ create mode 100644 arch/powerpc/mm/hash64_64k.c
+ delete mode 100644 arch/powerpc/mm/hash_low_64.S
+
 -- 
 2.5.0
