@@ -1,34 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D033F1A02BF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 09D041A001D
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 21:09:02 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Sat, 17 Oct 2015 15:39:00 +0530
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 100A5E0024
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:58 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2E24C3940053
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:56 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9HA8v86459246
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:57 +0530
+ t9HA8tvs5243332
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:55 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9HA8uFr017432
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:57 +0530
+ t9HA8s0u017213
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 15:38:55 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V4 27/31] powerpc/mm: Add helper for converting pte bit to
- hpte bits
-Date: Sat, 17 Oct 2015 15:38:38 +0530
-Message-Id: <1445076522-20527-28-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V4 17/31] powerpc/booke: Move nohash headers (part 5)
+Date: Sat, 17 Oct 2015 15:38:28 +0530
+Message-Id: <1445076522-20527-18-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,188 +39,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of open coding it in multiple code paths, export the helper
-and add more documentation. Also make sure we don't make assumption
-regarding pte bit position
-
 Acked-by: Scott Wood <scottwood@freescale.com>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash.h |  1 +
- arch/powerpc/mm/hash64_4k.c               | 13 +-----------
- arch/powerpc/mm/hash64_64k.c              | 35 +++----------------------------
- arch/powerpc/mm/hash_utils_64.c           | 22 ++++++++++++-------
- arch/powerpc/mm/hugepage-hash64.c         | 13 +-----------
- arch/powerpc/mm/hugetlbpage-hash64.c      |  4 +---
- 6 files changed, 21 insertions(+), 67 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pte-40x.h       | 6 +++---
+ arch/powerpc/include/asm/nohash/32/pte-44x.h       | 6 +++---
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h       | 6 +++---
+ arch/powerpc/include/asm/nohash/32/pte-fsl-booke.h | 6 +++---
+ arch/powerpc/include/asm/nohash/64/pgtable-4k.h    | 6 +++---
+ arch/powerpc/include/asm/nohash/64/pgtable-64k.h   | 6 +++---
+ arch/powerpc/include/asm/nohash/pte-book3e.h       | 6 +++---
+ 7 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash.h b/arch/powerpc/include/asm/book3s/64/hash.h
-index fb6de2954c4d..0d9800a32d61 100644
---- a/arch/powerpc/include/asm/book3s/64/hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash.h
-@@ -240,6 +240,7 @@ extern unsigned long pmd_hugepage_update(struct mm_struct *mm,
- 					 pmd_t *pmdp,
- 					 unsigned long clr,
- 					 unsigned long set);
-+extern unsigned long htab_convert_pte_flags(unsigned long pteflags);
- /* Atomic PTE updates */
- static inline unsigned long pte_update(struct mm_struct *mm,
- 				       unsigned long addr,
-diff --git a/arch/powerpc/mm/hash64_4k.c b/arch/powerpc/mm/hash64_4k.c
-index 3b49c6f18741..ee863137035a 100644
---- a/arch/powerpc/mm/hash64_4k.c
-+++ b/arch/powerpc/mm/hash64_4k.c
-@@ -53,18 +53,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
- 	 * need to add in 0x1 if it's a read-only user page
- 	 */
--	rflags = new_pte & _PAGE_USER;
--	if ((new_pte & _PAGE_USER) && !((new_pte & _PAGE_RW) &&
--					(new_pte & _PAGE_DIRTY)))
--		rflags |= 0x1;
--	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
--	 */
--	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
--	/*
--	 * Always add C and Memory coherence bit
--	 */
--	rflags |= HPTE_R_C | HPTE_R_M;
-+	rflags = htab_convert_pte_flags(new_pte);
- 	/*
- 	 * Add in WIMG bits
- 	 */
-diff --git a/arch/powerpc/mm/hash64_64k.c b/arch/powerpc/mm/hash64_64k.c
-index d6a98ef374f3..21d9e513e043 100644
---- a/arch/powerpc/mm/hash64_64k.c
-+++ b/arch/powerpc/mm/hash64_64k.c
-@@ -76,22 +76,7 @@ int __hash_page_4K(unsigned long ea, unsigned long access, unsigned long vsid,
- 	 * Handle the subpage protection bits
- 	 */
- 	subpg_pte = new_pte & ~subpg_prot;
--	/*
--	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
--	 */
--	rflags = subpg_pte & _PAGE_USER;
--	if ((subpg_pte & _PAGE_USER) && !((subpg_pte & _PAGE_RW) &&
--					(subpg_pte & _PAGE_DIRTY)))
--		rflags |= 0x1;
--	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
--	 */
--	rflags |= ((subpg_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
--	/*
--	 * Always add C and Memory coherence bit
--	 */
--	rflags |= HPTE_R_C | HPTE_R_M;
-+	rflags = htab_convert_pte_flags(subpg_pte);
- 	/*
- 	 * Add in WIMG bits
- 	 */
-@@ -262,22 +247,8 @@ int __hash_page_64K(unsigned long ea, unsigned long access,
- 			new_pte |= _PAGE_DIRTY;
- 	} while (old_pte != __cmpxchg_u64((unsigned long *)ptep,
- 					  old_pte, new_pte));
--	/*
--	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
--	 */
--	rflags = new_pte & _PAGE_USER;
--	if ((new_pte & _PAGE_USER) && !((new_pte & _PAGE_RW) &&
--					(new_pte & _PAGE_DIRTY)))
--		rflags |= 0x1;
--	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
--	 */
--	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
--	/*
--	 * Always add C and Memory coherence bit
--	 */
--	rflags |= HPTE_R_C | HPTE_R_M;
-+
-+	rflags = htab_convert_pte_flags(new_pte);
- 	/*
- 	 * Add in WIMG bits
- 	 */
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 04d549527eaa..3b5e547b965d 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -159,20 +159,26 @@ static struct mmu_psize_def mmu_psize_defaults_gp[] = {
- 	},
- };
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+index 486b1ef81338..9624ebdacc47 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PTE_40x_H
+-#define _ASM_POWERPC_PTE_40x_H
++#ifndef _ASM_POWERPC_NOHASH_32_PTE_40x_H
++#define _ASM_POWERPC_NOHASH_32_PTE_40x_H
+ #ifdef __KERNEL__
  
--static unsigned long htab_convert_pte_flags(unsigned long pteflags)
-+unsigned long htab_convert_pte_flags(unsigned long pteflags)
- {
--	unsigned long rflags = pteflags & 0x1fa;
-+	unsigned long rflags = 0;
+ /*
+@@ -61,4 +61,4 @@
+ #define PTE_ATOMIC_UPDATES	1
  
- 	/* _PAGE_EXEC -> NOEXEC */
- 	if ((pteflags & _PAGE_EXEC) == 0)
- 		rflags |= HPTE_R_N;
--
--	/* PP bits. PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
-+	/*
-+	 * PP bits:
-+	 * Linux use slb key 0 for kernel and 1 for user.
-+	 * kernel areas are mapped by PP bits 00
-+	 * and and there is no kernel RO (_PAGE_KERNEL_RO).
-+	 * User area mapped by 0x2 and read only use by
-+	 * 0x3.
- 	 */
--	if ((pteflags & _PAGE_USER) && !((pteflags & _PAGE_RW) &&
--					 (pteflags & _PAGE_DIRTY)))
--		rflags |= 1;
-+	if (pteflags & _PAGE_USER) {
-+		rflags |= 0x2;
-+		if (!((pteflags & _PAGE_RW) && (pteflags & _PAGE_DIRTY)))
-+			rflags |= 0x1;
-+	}
- 	/*
- 	 * Always add "C" bit for perf. Memory coherence is always enabled
- 	 */
-diff --git a/arch/powerpc/mm/hugepage-hash64.c b/arch/powerpc/mm/hugepage-hash64.c
-index 4d87122cf6a7..91fcac6f989d 100644
---- a/arch/powerpc/mm/hugepage-hash64.c
-+++ b/arch/powerpc/mm/hugepage-hash64.c
-@@ -54,18 +54,7 @@ int __hash_page_thp(unsigned long ea, unsigned long access, unsigned long vsid,
- 			new_pmd |= _PAGE_DIRTY;
- 	} while (old_pmd != __cmpxchg_u64((unsigned long *)pmdp,
- 					  old_pmd, new_pmd));
--	/*
--	 * PP bits. _PAGE_USER is already PP bit 0x2, so we only
--	 * need to add in 0x1 if it's a read-only user page
--	 */
--	rflags = new_pmd & _PAGE_USER;
--	if ((new_pmd & _PAGE_USER) && !((new_pmd & _PAGE_RW) &&
--					   (new_pmd & _PAGE_DIRTY)))
--		rflags |= 0x1;
--	/*
--	 * _PAGE_EXEC -> HW_NO_EXEC since it's inverted
--	 */
--	rflags |= ((new_pmd & _PAGE_EXEC) ? 0 : HPTE_R_N);
-+	rflags = htab_convert_pte_flags(new_pmd);
+ #endif /* __KERNEL__ */
+-#endif /*  _ASM_POWERPC_PTE_40x_H */
++#endif /*  _ASM_POWERPC_NOHASH_32_PTE_40x_H */
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-44x.h b/arch/powerpc/include/asm/nohash/32/pte-44x.h
+index 36f75fab23f5..fdab41c654ef 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-44x.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-44x.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PTE_44x_H
+-#define _ASM_POWERPC_PTE_44x_H
++#ifndef _ASM_POWERPC_NOHASH_32_PTE_44x_H
++#define _ASM_POWERPC_NOHASH_32_PTE_44x_H
+ #ifdef __KERNEL__
  
- #if 0
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE)) {
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 7584e8445512..304c8520506e 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -59,10 +59,8 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 			new_pte |= _PAGE_DIRTY;
- 	} while(old_pte != __cmpxchg_u64((unsigned long *)ptep,
- 					 old_pte, new_pte));
-+	rflags = htab_convert_pte_flags(new_pte);
+ /*
+@@ -94,4 +94,4 @@
  
--	rflags = 0x2 | (!(new_pte & _PAGE_RW));
--	/* _PAGE_EXEC -> HW_NO_EXEC since it's inverted */
--	rflags |= ((new_pte & _PAGE_EXEC) ? 0 : HPTE_R_N);
- 	sz = ((1UL) << shift);
- 	if (!cpu_has_feature(CPU_FTR_COHERENT_ICACHE))
- 		/* No CPU has hugepages but lacks no execute, so we
+ 
+ #endif /* __KERNEL__ */
+-#endif /*  _ASM_POWERPC_PTE_44x_H */
++#endif /*  _ASM_POWERPC_NOHASH_32_PTE_44x_H */
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+index a0e2ba960976..3742b1919661 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PTE_8xx_H
+-#define _ASM_POWERPC_PTE_8xx_H
++#ifndef _ASM_POWERPC_NOHASH_32_PTE_8xx_H
++#define _ASM_POWERPC_NOHASH_32_PTE_8xx_H
+ #ifdef __KERNEL__
+ 
+ /*
+@@ -62,4 +62,4 @@
+ 				 _PAGE_HWWRITE | _PAGE_EXEC)
+ 
+ #endif /* __KERNEL__ */
+-#endif /*  _ASM_POWERPC_PTE_8xx_H */
++#endif /*  _ASM_POWERPC_NOHASH_32_PTE_8xx_H */
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-fsl-booke.h b/arch/powerpc/include/asm/nohash/32/pte-fsl-booke.h
+index 9f5c3d04a1a3..5422d00c6145 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-fsl-booke.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-fsl-booke.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PTE_FSL_BOOKE_H
+-#define _ASM_POWERPC_PTE_FSL_BOOKE_H
++#ifndef _ASM_POWERPC_NOHASH_32_PTE_FSL_BOOKE_H
++#define _ASM_POWERPC_NOHASH_32_PTE_FSL_BOOKE_H
+ #ifdef __KERNEL__
+ 
+ /* PTE bit definitions for Freescale BookE SW loaded TLB MMU based
+@@ -37,4 +37,4 @@
+ #define PTE_WIMGE_SHIFT (6)
+ 
+ #endif /* __KERNEL__ */
+-#endif /*  _ASM_POWERPC_PTE_FSL_BOOKE_H */
++#endif /*  _ASM_POWERPC_NOHASH_32_PTE_FSL_BOOKE_H */
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable-4k.h b/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
+index 7bace25d6b62..fc7d51753f81 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable-4k.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PGTABLE_PPC64_4K_H
+-#define _ASM_POWERPC_PGTABLE_PPC64_4K_H
++#ifndef _ASM_POWERPC_NOHASH_64_PGTABLE_4K_H
++#define _ASM_POWERPC_NOHASH_64_PGTABLE_4K_H
+ /*
+  * Entries per page directory level.  The PTE level must use a 64b record
+  * for each page table entry.  The PMD and PGD level use a 32b record for
+@@ -89,4 +89,4 @@ extern struct page *pgd_page(pgd_t pgd);
+ #define remap_4k_pfn(vma, addr, pfn, prot)	\
+ 	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE, (prot))
+ 
+-#endif /* _ASM_POWERPC_PGTABLE_PPC64_4K_H */
++#endif /* _ _ASM_POWERPC_NOHASH_64_PGTABLE_4K_H */
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
+index 1de35bbd02a6..a44660d76096 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable-64k.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PGTABLE_PPC64_64K_H
+-#define _ASM_POWERPC_PGTABLE_PPC64_64K_H
++#ifndef _ASM_POWERPC_NOHASH_64_PGTABLE_64K_H
++#define _ASM_POWERPC_NOHASH_64_PGTABLE_64K_H
+ 
+ #include <asm-generic/pgtable-nopud.h>
+ 
+@@ -41,4 +41,4 @@
+ #define pgd_pte(pgd)	(pud_pte(((pud_t){ pgd })))
+ #define pte_pgd(pte)	((pgd_t)pte_pud(pte))
+ 
+-#endif /* _ASM_POWERPC_PGTABLE_PPC64_64K_H */
++#endif /* _ASM_POWERPC_NOHASH_64_PGTABLE_64K_H */
+diff --git a/arch/powerpc/include/asm/nohash/pte-book3e.h b/arch/powerpc/include/asm/nohash/pte-book3e.h
+index 8d8473278d91..e16807b78edf 100644
+--- a/arch/powerpc/include/asm/nohash/pte-book3e.h
++++ b/arch/powerpc/include/asm/nohash/pte-book3e.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_POWERPC_PTE_BOOK3E_H
+-#define _ASM_POWERPC_PTE_BOOK3E_H
++#ifndef _ASM_POWERPC_NOHASH_PTE_BOOK3E_H
++#define _ASM_POWERPC_NOHASH_PTE_BOOK3E_H
+ #ifdef __KERNEL__
+ 
+ /* PTE bit definitions for processors compliant to the Book3E
+@@ -84,4 +84,4 @@
+ #endif
+ 
+ #endif /* __KERNEL__ */
+-#endif /*  _ASM_POWERPC_PTE_FSL_BOOKE_H */
++#endif /*  _ASM_POWERPC_NOHASH_PTE_BOOK3E_H */
 -- 
 2.5.0
