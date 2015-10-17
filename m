@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8697C1A07F1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 13:01:25 +1100 (AEDT)
-Message-ID: <1445047273.24309.35.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD2661A02D1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 Oct 2015 13:04:05 +1100 (AEDT)
+Message-ID: <1445047433.24309.40.camel@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: on crash, kexec'ed kernel needs all CPUs are
  online
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Laurent Vivier <lvivier@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, dgibson@redhat.com, thuth@redhat.com
-Date: Sat, 17 Oct 2015 07:31:13 +0530
-In-Reply-To: <5620ABC5.6060300@redhat.com>
+To: Laurent Vivier <lvivier@redhat.com>, David Gibson <dgibson@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ thuth@redhat.com
+Date: Sat, 17 Oct 2015 07:33:53 +0530
+In-Reply-To: <5620ADE4.9060701@redhat.com>
 References: <1444935658-27319-1-git-send-email-lvivier@redhat.com>
- <1444961690.28419.1.camel@ellerman.id.au> <5620ABC5.6060300@redhat.com>
+ <20151016132943.1386fda6@voom.fritz.box> <5620ADE4.9060701@redhat.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,23 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-10-16 at 09:48 +0200, Laurent Vivier wrote:
-> 
-> Yes, we know :)
-> 
-> On the crash, as the CPUs are offline, kernel doesn't call
-> opal_return_cpu(), so for OPAL all these CPU are always in the
-> kernel.
+On Fri, 2015-10-16 at 09:57 +0200, Laurent Vivier wrote:
+> For me the problem is: as these CPUs are offline, I guess the core has
+> been switched to 1 thread per core, so the CPUs (1 to 7 for core 0)
+> don't exist anymore, how can we return them to OPAL ?
 
-Hrm and they may even be in winkle state, so basically off... waking
-them up *could* be a tricky business.
+Another option is to make the new kernel kick_cpu fallback, if it knows
+it's coming as a crashdump, to sending IPIs.
 
-I suppose we could, near the last stage of kexec, patch the 0x100
-vector to send anybody coming in to a kexec wait loop, and then machine
-gun the IPIs. But that will make them come in with an unclean ICP
-needing an EOI, I'm not sure we handle that very well.
-
-Ideally we could just soft-reset them but that's broken on P8.
+We would need some sane way to catch the guys coming it at 0x100 and
+route the to secondary start.
 
 Cheers,
 Ben.
