@@ -1,25 +1,15 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 479F91A0600
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2015 15:38:11 +1100 (AEDT)
-Message-ID: <1445229490.11557.3.camel@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/mpc5xxx: Avoid dereferencing potentially
- freed memory
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D6EE1A01DC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2015 15:53:23 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: benh@kernel.crashing.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org,  linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-Date: Mon, 19 Oct 2015 15:38:10 +1100
-In-Reply-To: <562158A3.90000@wanadoo.fr>
-References: <20151014040011.8AB1514110A@ozlabs.org>
- <1444888580-12966-1-git-send-email-christophe.jaillet@wanadoo.fr>
- <1444890977.5970.4.camel@ellerman.id.au> <5620971D.8040103@wanadoo.fr>
- <1444988979.12954.1.camel@ellerman.id.au> <562158A3.90000@wanadoo.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+To: <linuxppc-dev@ozlabs.org>
+Cc: geoff@infradead.org
+Subject: [PATCH] powerpc/ps3: Quieten the build when building ps3
+Date: Mon, 19 Oct 2015 15:53:22 +1100
+Message-Id: <1445230402-18087-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-10-16 at 22:05 +0200, Christophe JAILLET wrote:
-> Hi,
-> sorry if un-clear.
-> 
-> What I mean is that in the patch related 
-> 'powerpc/sysdev/mpc5xxx_clocks.c', there was no call to 'be32_to_cpup'.
-> So in the proposed patch, 'of_property_read_u32' adds it.
-> 
-> While in the patch against 'powerpc/kernel/prom.c', 'be32_to_cpup' was 
-> called explicitly.
-> So using 'of_property_read_u32' keep the same logic.
+The boot wrapper uses dd when building for ps3, which annoyingly tells
+us in great detail what it's doing, eg:
 
-Ah right, I understand now.
+  512+0 records in
+  512+0 records out
+  512 bytes (512 B) copied, 0.000802129 s, 638 kB/s
+  512+0 records in
+  512+0 records out
+  512 bytes (512 B) copied, 0.000745101 s, 687 kB/s
 
-> Basically the code from 'mpc5xxx_clocks.c' and from 'prom.c' were 
-> written the same way. I found spurious that a call to 'be32_to_cpup' was 
-> done in only one case.
-> Maybe, it was a missing in 'mpc5xxx_clocks.c'.
+Also annoyingly, there is no "quiet" flag to dd, so our only option is
+to grab all the output from dd, and iff there is an error print it out.
 
-Yes it was missing in that code.
+As it turns out we used to do this, so this is actually a partial revert
+of commit d47403733403 ("[POWERPC] bootwrapper: Bail from script if any
+command fails").
 
-But that's not a real bug because that code only ever runs on BE systems.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/boot/wrapper | 26 ++++++++++++++++++++------
+ 1 file changed, 20 insertions(+), 6 deletions(-)
 
-cheers
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 3f50c27ed8f8..b7d353b88029 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -456,13 +456,27 @@ ps3)
+ 
+     ${CROSS}objcopy -O binary "$ofile" "$ofile.bin"
+ 
+-    dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
+-        skip=$overlay_dest seek=$system_reset_kernel  \
+-        count=$overlay_size bs=1
++    set +e
+ 
+-    dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
+-        skip=$system_reset_overlay seek=$overlay_dest \
+-        count=$overlay_size bs=1
++    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
++          skip=$overlay_dest seek=$system_reset_kernel  \
++          count=$overlay_size bs=1 2>&1)
++
++    if [ $? -ne "0" ]; then
++        echo $msg
++        exit 1
++    fi
++
++    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
++          skip=$system_reset_overlay seek=$overlay_dest \
++          count=$overlay_size bs=1 2>&1)
++
++    if [ $? -ne "0" ]; then
++        echo $msg
++        exit 2
++    fi
++
++    set -e
+ 
+     odir="$(dirname "$ofile.bin")"
+     rm -f "$odir/otheros.bld"
+-- 
+2.5.0
