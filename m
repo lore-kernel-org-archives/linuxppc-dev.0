@@ -1,15 +1,23 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9D6EE1A01DC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2015 15:53:23 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C78DC1A0742
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2015 20:27:58 +1100 (AEDT)
+Message-ID: <1445246877.30407.1.camel@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc/prom: Avoid reference to potentially freed
+ memory
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: geoff@infradead.org
-Subject: [PATCH] powerpc/ps3: Quieten the build when building ps3
-Date: Mon, 19 Oct 2015 15:53:22 +1100
-Message-Id: <1445230402-18087-1-git-send-email-mpe@ellerman.id.au>
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kernel-janitors@vger.kernel.org
+Date: Mon, 19 Oct 2015 20:27:57 +1100
+In-Reply-To: <1445031525-20086-1-git-send-email-christophe.jaillet@wanadoo.fr>
+References: <1444976055-19148-1-git-send-email-christophe.jaillet@wanadoo.fr>
+ <1445031525-20086-1-git-send-email-christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,65 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The boot wrapper uses dd when building for ps3, which annoyingly tells
-us in great detail what it's doing, eg:
+On Fri, 2015-10-16 at 23:38 +0200, Christophe JAILLET wrote:
 
-  512+0 records in
-  512+0 records out
-  512 bytes (512 B) copied, 0.000802129 s, 638 kB/s
-  512+0 records in
-  512+0 records out
-  512 bytes (512 B) copied, 0.000745101 s, 687 kB/s
+> of_get_property() is used inside the loop, but then the reference to the
+> node is dropped before dereferencing the prop pointer, which could by then
+> point to junk if the node has been freed.
+> 
+> Instead use of_property_read_u32() to actually read the property
+> value before dropping the reference.
+> 
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> ---
+> v2: Fix missing '{'
+> *** COMPILE-TESTED ONLY ***
 
-Also annoyingly, there is no "quiet" flag to dd, so our only option is
-to grab all the output from dd, and iff there is an error print it out.
+Thanks, this looks good. I'll test it on real hardware.
 
-As it turns out we used to do this, so this is actually a partial revert
-of commit d47403733403 ("[POWERPC] bootwrapper: Bail from script if any
-command fails").
+Can you send me a follow up which does the of_get_next_parent() conversion?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/boot/wrapper | 26 ++++++++++++++++++++------
- 1 file changed, 20 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 3f50c27ed8f8..b7d353b88029 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -456,13 +456,27 @@ ps3)
- 
-     ${CROSS}objcopy -O binary "$ofile" "$ofile.bin"
- 
--    dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
--        skip=$overlay_dest seek=$system_reset_kernel  \
--        count=$overlay_size bs=1
-+    set +e
- 
--    dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
--        skip=$system_reset_overlay seek=$overlay_dest \
--        count=$overlay_size bs=1
-+    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
-+          skip=$overlay_dest seek=$system_reset_kernel  \
-+          count=$overlay_size bs=1 2>&1)
-+
-+    if [ $? -ne "0" ]; then
-+        echo $msg
-+        exit 1
-+    fi
-+
-+    msg=$(dd if="$ofile.bin" of="$ofile.bin" conv=notrunc   \
-+          skip=$system_reset_overlay seek=$overlay_dest \
-+          count=$overlay_size bs=1 2>&1)
-+
-+    if [ $? -ne "0" ]; then
-+        echo $msg
-+        exit 2
-+    fi
-+
-+    set -e
- 
-     odir="$(dirname "$ofile.bin")"
-     rm -f "$odir/otheros.bld"
--- 
-2.5.0
+cheers
