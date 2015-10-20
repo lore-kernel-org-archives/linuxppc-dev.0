@@ -1,21 +1,42 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 90B931A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 21:06:52 +1100 (AEDT)
-Message-ID: <1445335611.2152.4.camel@ellerman.id.au>
-Subject: Re: linux-next: build warning after merge of the powerpc tree
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Denis Kirjanov
- <kda@linux-powerpc.org>
-Date: Tue, 20 Oct 2015 21:06:51 +1100
-In-Reply-To: <20151020162155.01391301@canb.auug.org.au>
-References: <20151020162155.01391301@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6BE1E1A0725
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 17:43:43 +1100 (AEDT)
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Tue, 20 Oct 2015 00:43:40 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B10113E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 00:43:38 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t9K6gJWR55771342
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Oct 2015 23:42:19 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9K6hcbX013112
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 00:43:38 -0600
+Subject: Re: [PATCH 1/3] perf/powerpc:add ability to sample intr machine state
+ in power
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org
+References: <1445257133-27646-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1445257133-27646-2-git-send-email-anju@linux.vnet.ibm.com>
+ <5625C001.7090909@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com, acme@redhat.com,
+ mpe@ellerman.id.au, dsahern@gmail.com, jolsa@redhat.com,
+ khandual@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com
+From: AnjuTSudhakar <anju@linux.vnet.ibm.com>
+Message-ID: <5625E295.8020201@linux.vnet.ibm.com>
+Date: Tue, 20 Oct 2015 12:13:33 +0530
+MIME-Version: 1.0
+In-Reply-To: <5625C001.7090909@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +46,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-10-20 at 16:21 +1100, Stephen Rothwell wrote:
+Hi maddy,
+On Tuesday 20 October 2015 09:46 AM, Madhavan Srinivasan wrote:
+>
+> On Monday 19 October 2015 05:48 PM, Anju T wrote:
+>> From: Anju <anju@linux.vnet.ibm.com>
+>>
+>> The enum definition assigns an 'id' to each register in power.
+> I guess it should be "each register in "struct pt_regs" of arch/powerpc
+Right, that seems better.Will change the description like that.
 
-> Hi all,
-> 
-> After merging the powerpc tree, today's linux-next build (powerpc
-> allyesconfig) produced this warning:
-> 
-> WARNING: vmlinux.o(.text+0x9367c): Section mismatch in reference from the function .msi_bitmap_alloc() to the function .init.text:.memblock_virt_alloc_try_nid()
-> The function .msi_bitmap_alloc() references
-> the function __init .memblock_virt_alloc_try_nid().
-> This is often because .msi_bitmap_alloc lacks a __init
-> annotation or the annotation of .memblock_virt_alloc_try_nid is wrong.
-> 
-> Introduced (probably) by commit
-> 
->   cb2d3883c603 ("powerpc/msi: Free the bitmap if it was slab allocated")
+Thanks a lot for reviewing the patch .
+>> The order of these values in the enum definition are based on
+>> the corresponding macros in arch/powerpc/include/uapi/asm/ptrace.h .
+>>
+>> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/include/uapi/asm/perf_regs.h | 55 +++++++++++++++++++++++++++++++
+>>   1 file changed, 55 insertions(+)
+>>   create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+>>
+>> diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
+>> new file mode 100644
+>> index 0000000..b97727c
+>> --- /dev/null
+>> +++ b/arch/powerpc/include/uapi/asm/perf_regs.h
+>> @@ -0,0 +1,55 @@
+>> +#ifndef _ASM_POWERPC_PERF_REGS_H
+>> +#define _ASM_POWERPC_PERF_REGS_H
+>> +
+>> +enum perf_event_powerpc_regs {
+>> +	PERF_REG_POWERPC_GPR0,
+>> +	PERF_REG_POWERPC_GPR1,
+>> +	PERF_REG_POWERPC_GPR2,
+>> +	PERF_REG_POWERPC_GPR3,
+>> +	PERF_REG_POWERPC_GPR4,
+>> +	PERF_REG_POWERPC_GPR5,
+>> +	PERF_REG_POWERPC_GPR6,
+>> +	PERF_REG_POWERPC_GPR7,
+>> +	PERF_REG_POWERPC_GPR8,
+>> +	PERF_REG_POWERPC_GPR9,
+>> +	PERF_REG_POWERPC_GPR10,
+>> +	PERF_REG_POWERPC_GPR11,
+>> +	PERF_REG_POWERPC_GPR12,
+>> +	PERF_REG_POWERPC_GPR13,
+>> +	PERF_REG_POWERPC_GPR14,
+>> +	PERF_REG_POWERPC_GPR15,
+>> +	PERF_REG_POWERPC_GPR16,
+>> +	PERF_REG_POWERPC_GPR17,
+>> +	PERF_REG_POWERPC_GPR18,
+>> +	PERF_REG_POWERPC_GPR19,
+>> +	PERF_REG_POWERPC_GPR20,
+>> +	PERF_REG_POWERPC_GPR21,
+>> +	PERF_REG_POWERPC_GPR22,
+>> +	PERF_REG_POWERPC_GPR23,
+>> +	PERF_REG_POWERPC_GPR24,
+>> +	PERF_REG_POWERPC_GPR25,
+>> +	PERF_REG_POWERPC_GPR26,
+>> +	PERF_REG_POWERPC_GPR27,
+>> +	PERF_REG_POWERPC_GPR28,
+>> +	PERF_REG_POWERPC_GPR29,
+>> +	PERF_REG_POWERPC_GPR30,
+>> +	PERF_REG_POWERPC_GPR31,
+>> +	PERF_REG_POWERPC_NIP,
+>> +	PERF_REG_POWERPC_MSR,
+>> +	PERF_REG_POWERPC_ORIG_R3,
+>> +	PERF_REG_POWERPC_CTR,
+>> +	PERF_REG_POWERPC_LNK,
+>> +	PERF_REG_POWERPC_XER,
+>> +	PERF_REG_POWERPC_CCR,
+>> +#ifdef __powerpc64__
+>> +	PERF_REG_POWERPC_SOFTE,
+>> +#else
+>> +	PERF_REG_POWERPC_MQ,
+>> +#endif
+>> +	PERF_REG_POWERPC_TRAP,
+>> +	PERF_REG_POWERPC_DAR,
+>> +	PERF_REG_POWERPC_DSISR,
+>> +	PERF_REG_POWERPC_RESULT,
+>> +	PERF_REG_POWERPC_MAX,
+>> +};
+>> +#endif /* _ASM_POWERPC_PERF_REGS_H */
 
 
-Yeah that's correct, though it should be safe in practice.
 
-I'm not sure why you only saw that now though, the patch has been in next since
-the 13th of October.
 
-cheers
+Thanks
+Anju
