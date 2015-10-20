@@ -1,41 +1,39 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9FCAB1A0748
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 14:06:59 +1100 (AEDT)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 706181401DA
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 14:06:59 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 18F351A039F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 15:16:09 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 20 Oct 2015 13:06:58 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B55483578055
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 14:06:54 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9K36jf924445122
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 14:06:54 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9K36L4l000970
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 14:06:21 +1100
-Message-ID: <5625AF9B.6080606@linux.vnet.ibm.com>
-Date: Tue, 20 Oct 2015 08:36:03 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 20 Oct 2015 09:46:06 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id BCC9B125801A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 09:45:52 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9K4G2dB5439758
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 09:46:03 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9K4G18v028087
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 09:46:02 +0530
+Subject: Re: [PATCH 1/3] perf/powerpc:add ability to sample intr machine state
+ in power
+To: linux-kernel@vger.kernel.org, Anju <anju@linux.vnet.ibm.com>
+References: <1445257133-27646-1-git-send-email-anju@linux.vnet.ibm.com>
+ <1445257133-27646-2-git-send-email-anju@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com, acme@redhat.com,
+ mpe@ellerman.id.au, dsahern@gmail.com, jolsa@redhat.com,
+ khandual@linux.vnet.ibm.com, hemant@linux.vnet.ibm.com
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Message-ID: <5625C001.7090909@linux.vnet.ibm.com>
+Date: Tue, 20 Oct 2015 09:46:01 +0530
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] selfttest/powerpc: Add memory page migration tests
-References: <1444923967-22899-1-git-send-email-khandual@linux.vnet.ibm.com>
- <5620D2E2.7090401@linux.vnet.ibm.com> <87pp0fhwjc.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87pp0fhwjc.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1445257133-27646-2-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,41 +43,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/16/2015 05:09 PM, Aneesh Kumar K.V wrote:
-> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
-> 
->> On 10/15/2015 09:16 PM, Anshuman Khandual wrote:
->>> This adds two tests for memory page migration. One for normal page
->>> migration which works for both 4K or 64K base page size kernel and
->>> the other one is for 16MB huge page migration which will work both
->>> 4K or 64K base page sized 16MB huge pages as and when we support
->>> huge page migration.
->>>
->>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->>> ---
->>> - Works for normal page migration on both 64K and 4K base pages
->>> - Works for 16MB huge page migration (64K) on Aneesh's V2 PTE changes
->>>
->>> +
->>> +int test_migration(unsigned long length)
->>> +{
->>> +	unsigned long failed;
->>> +	void *addr;
->>> +	int ret;
->>> +
->>> +	addr = mmap(MMAP_ADDR, length, MMAP_PROT, MMAP_FLAGS, -1, 0);
->>> +	if (addr == MAP_FAILED) {
->>> +		perror("mmap() failed");
->>> +		exit(-1);
->>> +	}
->>
->> Will add a mlock() call here as well. Some times soft offline
->> fails while trying to move a huge chunk of memory on a system
->> because of swapping. With a mlock() in there the problem gets
->> resolved.
-> 
-> Is that with respect to hugetlb pages ? I doubt, because hugetlb pages
-> are not swapped out.
 
-Thats correct. It is related to normal pages (4K or 64K). Have not
-seen this swap problem of HugeTLB pages.
+
+On Monday 19 October 2015 05:48 PM, Anju T wrote:
+> From: Anju <anju@linux.vnet.ibm.com>
+>
+> The enum definition assigns an 'id' to each register in power.
+
+I guess it should be "each register in "struct pt_regs" of arch/powerpc
+> The order of these values in the enum definition are based on
+> the corresponding macros in arch/powerpc/include/uapi/asm/ptrace.h .
+>
+> Signed-off-by: Anju T <anju@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/uapi/asm/perf_regs.h | 55 +++++++++++++++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+>  create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
+>
+> diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
+> new file mode 100644
+> index 0000000..b97727c
+> --- /dev/null
+> +++ b/arch/powerpc/include/uapi/asm/perf_regs.h
+> @@ -0,0 +1,55 @@
+> +#ifndef _ASM_POWERPC_PERF_REGS_H
+> +#define _ASM_POWERPC_PERF_REGS_H
+> +
+> +enum perf_event_powerpc_regs {
+> +	PERF_REG_POWERPC_GPR0,
+> +	PERF_REG_POWERPC_GPR1,
+> +	PERF_REG_POWERPC_GPR2,
+> +	PERF_REG_POWERPC_GPR3,
+> +	PERF_REG_POWERPC_GPR4,
+> +	PERF_REG_POWERPC_GPR5,
+> +	PERF_REG_POWERPC_GPR6,
+> +	PERF_REG_POWERPC_GPR7,
+> +	PERF_REG_POWERPC_GPR8,
+> +	PERF_REG_POWERPC_GPR9,
+> +	PERF_REG_POWERPC_GPR10,
+> +	PERF_REG_POWERPC_GPR11,
+> +	PERF_REG_POWERPC_GPR12,
+> +	PERF_REG_POWERPC_GPR13,
+> +	PERF_REG_POWERPC_GPR14,
+> +	PERF_REG_POWERPC_GPR15,
+> +	PERF_REG_POWERPC_GPR16,
+> +	PERF_REG_POWERPC_GPR17,
+> +	PERF_REG_POWERPC_GPR18,
+> +	PERF_REG_POWERPC_GPR19,
+> +	PERF_REG_POWERPC_GPR20,
+> +	PERF_REG_POWERPC_GPR21,
+> +	PERF_REG_POWERPC_GPR22,
+> +	PERF_REG_POWERPC_GPR23,
+> +	PERF_REG_POWERPC_GPR24,
+> +	PERF_REG_POWERPC_GPR25,
+> +	PERF_REG_POWERPC_GPR26,
+> +	PERF_REG_POWERPC_GPR27,
+> +	PERF_REG_POWERPC_GPR28,
+> +	PERF_REG_POWERPC_GPR29,
+> +	PERF_REG_POWERPC_GPR30,
+> +	PERF_REG_POWERPC_GPR31,
+> +	PERF_REG_POWERPC_NIP,
+> +	PERF_REG_POWERPC_MSR,
+> +	PERF_REG_POWERPC_ORIG_R3,
+> +	PERF_REG_POWERPC_CTR,
+> +	PERF_REG_POWERPC_LNK,
+> +	PERF_REG_POWERPC_XER,
+> +	PERF_REG_POWERPC_CCR,
+> +#ifdef __powerpc64__
+> +	PERF_REG_POWERPC_SOFTE,
+> +#else
+> +	PERF_REG_POWERPC_MQ,
+> +#endif
+> +	PERF_REG_POWERPC_TRAP,
+> +	PERF_REG_POWERPC_DAR,
+> +	PERF_REG_POWERPC_DSISR,
+> +	PERF_REG_POWERPC_RESULT,
+> +	PERF_REG_POWERPC_MAX,
+> +};
+> +#endif /* _ASM_POWERPC_PERF_REGS_H */
