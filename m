@@ -1,40 +1,31 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E300F1A0BC6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 20:05:21 +1100 (AEDT)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 09A431401F0
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 20:05:20 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 20 Oct 2015 14:35:18 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 77CE9E005B
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 14:35:19 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9K94W2U6815828
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 14:34:32 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9K94W9l004314
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 14:34:32 +0530
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au,
- Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V6 4/6] powerpc/powernv: replace the hard coded boundary with
- gate
-Date: Tue, 20 Oct 2015 17:03:03 +0800
-Message-Id: <1445331785-4645-5-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1445331785-4645-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1445331785-4645-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DDB0B1A02CD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 20:22:10 +1100 (AEDT)
+Date: Tue, 20 Oct 2015 11:21:47 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
+Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
+ *cmpxchg a full barrier
+Message-ID: <20151020092147.GX17308@twins.programming.kicks-ass.net>
+References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+ <20151014201916.GB3910@linux.vnet.ibm.com>
+ <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,76 +35,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment 64bit-prefetchable window can be maximum 64GB, which is
-currently got from device tree. This means that in shared mode the maximum
-supported VF BAR size is 64GB/256=256MB. While this size could exhaust the
-whole 64bit-prefetchable window. This is a design decision to set a
-boundary to 64MB of the VF BAR size. Since VF BAR size with 64MB would
-occupy a quarter of the 64bit-prefetchable window, this is affordable.
+On Tue, Oct 20, 2015 at 03:15:32PM +0800, Boqun Feng wrote:
+> On Wed, Oct 14, 2015 at 01:19:17PM -0700, Paul E. McKenney wrote:
+> > 
+> > Am I missing something here?  If not, it seems to me that you need
+> > the leading lwsync to instead be a sync.
+> > 
+> > Of course, if I am not missing something, then this applies also to the
+> > value-returning RMW atomic operations that you pulled this pattern from.
+> > If so, it would seem that I didn't think through all the possibilities
+> > back when PPC_ATOMIC_EXIT_BARRIER moved to sync...  In fact, I believe
+> > that I worried about the RMW atomic operation acting as a barrier,
+> > but not as the load/store itself.  :-/
+> > 
+> 
+> Paul, I know this may be difficult, but could you recall why the
+> __futex_atomic_op() and futex_atomic_cmpxchg_inatomic() also got
+> involved into the movement of PPC_ATOMIC_EXIT_BARRIER to "sync"?
+> 
+> I did some search, but couldn't find the discussion of that patch.
+> 
+> I ask this because I recall Peter once bought up a discussion:
+> 
+> https://lkml.org/lkml/2015/8/26/596
+> 
+> Peter's conclusion seems to be that we could(though didn't want to) live
+> with futex atomics not being full barriers.
+> 
+> 
+> Peter, just be clear, I'm not in favor of relaxing futex atomics. But if
+> I make PPC_ATOMIC_ENTRY_BARRIER being "sync", it will also strengthen
+> the futex atomics, just wonder whether such strengthen is a -fix- or
+> not, considering that I want this patch to go to -stable tree.
 
-This patch replaces magic limit of 64MB with "gate", which is 1/4 of the
-M64 Segment Size(m64_segsize >> 2) and adds comment to explain the reason
-for it.
+So Linus' argued that since we only need to order against user accesses
+(true) and priv changes typically imply strong barriers (open) we might
+want to allow archs to rely on those instead of mandating they have
+explicit barriers in the futex primitives.
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-Reviewed-by: Gavin Shan <gwshan@linux.vent.ibm.com>
-Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
+And I indeed forgot to follow up on that discussion.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index dc64026..de5a194 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2696,8 +2696,9 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
- #ifdef CONFIG_PCI_IOV
- static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
- {
--	struct pci_controller *hose;
--	struct pnv_phb *phb;
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	const resource_size_t gate = phb->ioda.m64_segsize >> 2;
- 	struct resource *res;
- 	int i;
- 	resource_size_t size;
-@@ -2707,9 +2708,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
- 	if (!pdev->is_physfn || pdev->is_added)
- 		return;
- 
--	hose = pci_bus_to_host(pdev->bus);
--	phb = hose->private_data;
--
- 	pdn = pci_get_pdn(pdev);
- 	pdn->vfs_expanded = 0;
- 	pdn->m64_single_mode = false;
-@@ -2730,10 +2728,22 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
- 
- 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
- 
--		/* bigger than 64M */
--		if (size > (1 << 26)) {
--			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size is bigger than 64M, roundup power2\n",
--				 i, res);
-+		/*
-+		 * If bigger than quarter of M64 segment size, just round up
-+		 * power of two.
-+		 *
-+		 * Generally, one M64 BAR maps one IOV BAR. To avoid conflict
-+		 * with other devices, IOV BAR size is expanded to be
-+		 * (total_pe * VF_BAR_size).  When VF_BAR_size is half of M64
-+		 * segment size , the expanded size would equal to half of the
-+		 * whole M64 space size, which will exhaust the M64 Space and
-+		 * limit the system flexibility.  This is a design decision to
-+		 * set the boundary to quarter of the M64 segment size.
-+		 */
-+		if (size > gate) {
-+			dev_info(&pdev->dev, "PowerNV: VF BAR%d: %pR IOV size "
-+				"is bigger than %lld, roundup power2\n",
-+				 i, res, gate);
- 			mul = roundup_pow_of_two(total_vfs);
- 			pdn->m64_single_mode = true;
- 			break;
--- 
-2.5.0
+So; does PPC imply full barriers on user<->kernel boundaries? If so, its
+not critical to the futex atomic implementations what extra barriers are
+added.
+
+If not; then strengthening the futex ops is indeed (probably) a good
+thing :-)
