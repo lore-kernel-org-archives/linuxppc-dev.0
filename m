@@ -1,7 +1,7 @@
 Return-Path: <luisbg@osg.samsung.com>
 Received: from lists.s-osg.org (lists.s-osg.org [54.187.51.154])
- by lists.ozlabs.org (Postfix) with ESMTP id 5A3E81A01B2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 02:04:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id C3EE31A01B2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 02:04:17 +1100 (AEDT)
 From: Luis de Bethencourt <luisbg@osg.samsung.com>
 To: linux-kernel@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
@@ -9,10 +9,10 @@ Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, paulus@samba.org,
  dan.j.williams@intel.com, matthew.r.wilcox@intel.com, neilb@suse.com,
  ross.zwisler@linux.intel.com, Luis de Bethencourt <luis@debethencourt.com>,
  Luis de Bethencourt <luisbg@osg.samsung.com>
-Subject: [RESEND PATCH 1/2] powerpc: platforms: mpc52xx_lpbfifo: Fix module
- autoload for OF platform driver
-Date: Tue, 20 Oct 2015 16:04:12 +0100
-Message-Id: <1445353453-846-2-git-send-email-luisbg@osg.samsung.com>
+Subject: [RESEND PATCH 2/2] powerpc: axonram: Fix module autoload for OF
+ platform driver
+Date: Tue, 20 Oct 2015 16:04:13 +0100
+Message-Id: <1445353453-846-3-git-send-email-luisbg@osg.samsung.com>
 In-Reply-To: <1445353453-846-1-git-send-email-luisbg@osg.samsung.com>
 References: <1445353453-846-1-git-send-email-luisbg@osg.samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,20 +31,20 @@ alias information is not created so module autoloading won't work.
 
 Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
 ---
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c | 1 +
+ arch/powerpc/sysdev/axonram.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-index 251dcb9..7bb42a0 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -568,6 +568,7 @@ static const struct of_device_id mpc52xx_lpbfifo_match[] = {
- 	{ .compatible = "fsl,mpc5200-lpbfifo", },
- 	{},
+diff --git a/arch/powerpc/sysdev/axonram.c b/arch/powerpc/sysdev/axonram.c
+index d2b79bc..51b41c9 100644
+--- a/arch/powerpc/sysdev/axonram.c
++++ b/arch/powerpc/sysdev/axonram.c
+@@ -312,6 +312,7 @@ static const struct of_device_id axon_ram_device_id[] = {
+ 	},
+ 	{}
  };
-+MODULE_DEVICE_TABLE(of, mpc52xx_lpbfifo_match);
++MODULE_DEVICE_TABLE(of, axon_ram_device_id);
  
- static struct platform_driver mpc52xx_lpbfifo_driver = {
- 	.driver = {
+ static struct platform_driver axon_ram_driver = {
+ 	.probe		= axon_ram_probe,
 -- 
 2.5.3
