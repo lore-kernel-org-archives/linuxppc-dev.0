@@ -1,20 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0105.outbound.protection.outlook.com [157.56.110.105])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B95D71A047B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 09:10:34 +1100 (AEDT)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-CC: <kexec@lists.infradead.org>, Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v3 13/17] powerpc/book3e-64: Don't limit paca to 256 MiB
-Date: Mon, 19 Oct 2015 17:10:18 -0500
-Message-ID: <1445292618-20418-1-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1444189702-17241-14-git-send-email-scottwood@freescale.com>
-References: <1444189702-17241-14-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1C791A03CA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 11:44:43 +1100 (AEDT)
+Message-ID: <1445301883.21485.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Add run_cmd function to boot wrapper
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Geoff Levand <geoff@infradead.org>
+Cc: linuxppc-dev@ozlabs.org
+Date: Tue, 20 Oct 2015 11:44:43 +1100
+In-Reply-To: <1445277206.30908.6.camel@infradead.org>
+References: <1445230402-18087-1-git-send-email-mpe@ellerman.id.au>
+ <1445277206.30908.6.camel@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This limit only makes sense on book3s, and on book3e it can cause
-problems with kdump if we don't have any memory under 256 MiB.
+On Mon, 2015-10-19 at 10:53 -0700, Geoff Levand wrote:
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-v3: Fix book3s build error
+> Add a boot wrapper script function run_cmd which will run a shell command
+> quietly and only print the output if either V=1 or an error occurs.
+> 
+> Also, run the ps3 dd commands with run_cmd to clean up the build output.
+> 
+> Signed-off-by: Geoff Levand <geoff@infradead.org>
+> ---
+> Hi Michael,
+> 
+> How about something like this?  It seems a little cleaner.
 
- arch/powerpc/kernel/paca.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Yeah great that's nice, I'll take it.
 
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 5a23b69..01ea0ed 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -204,14 +204,19 @@ static int __initdata paca_size;
- 
- void __init allocate_pacas(void)
- {
--	int cpu, limit;
-+	u64 limit;
-+	int cpu;
- 
-+	limit = ppc64_rma_size;
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
- 	/*
- 	 * We can't take SLB misses on the paca, and we want to access them
- 	 * in real mode, so allocate them within the RMA and also within
- 	 * the first segment.
- 	 */
--	limit = min(0x10000000ULL, ppc64_rma_size);
-+	limit = min(0x10000000ULL, limit);
-+#endif
- 
- 	paca_size = PAGE_ALIGN(sizeof(struct paca_struct) * nr_cpu_ids);
- 
--- 
-2.1.4
+cheers
