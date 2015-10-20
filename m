@@ -1,32 +1,38 @@
 Return-Path: <boqun.feng@gmail.com>
-Received: from mail-io0-x22d.google.com (mail-io0-x22d.google.com
- [IPv6:2607:f8b0:4001:c06::22d])
+Received: from mail-io0-x233.google.com (mail-io0-x233.google.com
+ [IPv6:2607:f8b0:4001:c06::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9FF081A0730
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 18:15:58 +1100 (AEDT)
-Received: by iow1 with SMTP id 1so12490881iow.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 00:15:56 -0700 (PDT)
-Date: Tue, 20 Oct 2015 15:15:32 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id DFDEA1A0725
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 18:35:46 +1100 (AEDT)
+Received: by iodv82 with SMTP id v82so12911677iod.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Oct 2015 00:35:44 -0700 (PDT)
+Date: Tue, 20 Oct 2015 15:35:23 +0800
 From: Boqun Feng <boqun.feng@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Will Deacon <will.deacon@arm.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
-Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-Message-ID: <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
-References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
- <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
- <20151014201916.GB3910@linux.vnet.ibm.com>
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
+ update documentation
+Message-ID: <20151020073523.GC17714@fixme-laptop.cn.ibm.com>
+References: <20151007111915.GF17308@twins.programming.kicks-ass.net>
+ <20151007132317.GK16065@arm.com>
+ <20151007152501.GI3910@linux.vnet.ibm.com>
+ <1444276236.9940.5.camel@ellerman.id.au>
+ <20151008111638.GL3816@twins.programming.kicks-ass.net>
+ <20151008214439.GE3910@linux.vnet.ibm.com>
+ <20151009083138.GU3816@twins.programming.kicks-ass.net>
+ <20151009094039.GD26278@arm.com>
+ <20151019011718.GB924@fixme-laptop.cn.ibm.com>
+ <20151019102324.GO3816@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
-In-Reply-To: <20151014201916.GB3910@linux.vnet.ibm.com>
+ protocol="application/pgp-signature"; boundary="iFRdW5/EC4oqxDHL"
+In-Reply-To: <20151019102324.GO3816@twins.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,63 +43,109 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---KFztAG8eRSV9hGtP
+--iFRdW5/EC4oqxDHL
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Oct 14, 2015 at 01:19:17PM -0700, Paul E. McKenney wrote:
+On Mon, Oct 19, 2015 at 12:23:24PM +0200, Peter Zijlstra wrote:
+> On Mon, Oct 19, 2015 at 09:17:18AM +0800, Boqun Feng wrote:
+> > This is confusing me right now. ;-)
+> >=20
+> > Let's use a simple example for only one primitive, as I understand it,
+> > if we say a primitive A is "fully ordered", we actually mean:
+> >=20
+> > 1.	The memory operations preceding(in program order) A can't be
+> > 	reordered after the memory operations following(in PO) A.
+> >=20
+> > and
+> >=20
+> > 2.	The memory operation(s) in A can't be reordered before the
+> > 	memory operations preceding(in PO) A and after the memory
+> > 	operations following(in PO) A.
+> >=20
+> > If we say A is a "full barrier", we actually means:
+> >=20
+> > 1.	The memory operations preceding(in program order) A can't be
+> > 	reordered after the memory operations following(in PO) A.
+> >=20
+> > and
+> >=20
+> > 2.	The memory ordering guarantee in #1 is visible globally.
+> >=20
+> > Is that correct? Or "full barrier" is more strong than I understand,
+> > i.e. there is a third property of "full barrier":
+> >=20
+> > 3.	The memory operation(s) in A can't be reordered before the
+> > 	memory operations preceding(in PO) A and after the memory
+> > 	operations following(in PO) A.
+> >=20
+> > IOW, is "full barrier" a more strong version of "fully ordered" or not?
 >=20
-> Am I missing something here?  If not, it seems to me that you need
-> the leading lwsync to instead be a sync.
+> Yes, that was how I used it.
 >=20
-> Of course, if I am not missing something, then this applies also to the
-> value-returning RMW atomic operations that you pulled this pattern from.
-> If so, it would seem that I didn't think through all the possibilities
-> back when PPC_ATOMIC_EXIT_BARRIER moved to sync...  In fact, I believe
-> that I worried about the RMW atomic operation acting as a barrier,
-> but not as the load/store itself.  :-/
+> Now of course; the big question is do we want to promote this usage or
+> come up with a different set of words describing this stuff.
+>=20
+> I think separating the ordering from the transitivity is useful, for we
+> can then talk about and specify them independently.
 >=20
 
-Paul, I know this may be difficult, but could you recall why the
-__futex_atomic_op() and futex_atomic_cmpxchg_inatomic() also got
-involved into the movement of PPC_ATOMIC_EXIT_BARRIER to "sync"?
+Great idea!=20
 
-I did some search, but couldn't find the discussion of that patch.
+> That is, we can say:
+>=20
+> 	LOAD-ACQUIRE: orders LOAD->{LOAD,STORE}
+> 	              weak transitivity (RCpc)
+>=20
+> 	MB: orders {LOAD,STORE}->{LOAD,STORE} (fully ordered)
+> 	    strong transitivity (RCsc)
+>=20
 
-I ask this because I recall Peter once bought up a discussion:
+It will be helpful if we have this kind of description for each
+primitive mentioned in memory-barriers.txt, which, IMO, is better than
+the description like the following:
 
-https://lkml.org/lkml/2015/8/26/596
+"""
+Any atomic operation that modifies some state in memory and returns informa=
+tion
+about the state (old or new) implies an SMP-conditional general memory barr=
+ier
+(smp_mb()) on each side of the actual operation (with the exception of
+"""
 
-Peter's conclusion seems to be that we could(though didn't want to) live
-with futex atomics not being full barriers.
+I'm assuming that the arrow "->" stands for the program order, and word
+"orders" means that a primitive guarantees some program order becomes
+the memory operation order, so that the description above can be
+rewritten as:
 
-
-Peter, just be clear, I'm not in favor of relaxing futex atomics. But if
-I make PPC_ATOMIC_ENTRY_BARRIER being "sync", it will also strengthen
-the futex atomics, just wonder whether such strengthen is a -fix- or
-not, considering that I want this patch to go to -stable tree.
-
-
-Of course, in the meanwhile of waiting for your answer, I will try to
-figure out this by myself ;-)
+value-returning atomics:
+	orders {LOAD,STORE}->RmW(atomic operation)->{LOAD,STORE}
+	strong transitivity
+=09
+much simpler and clearer for discussion and reasoning
 
 Regards,
 Boqun
 
---KFztAG8eRSV9hGtP
+> etc..
+>=20
+> Also, in the above I used weak and strong transitivity, but that too is
+> of course up for grabs.
+
+--iFRdW5/EC4oqxDHL
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAABCAAGBQJWJeoQAAoJEEl56MO1B/q49RsH/jQvYe8mK6e8u1Wb5wgNIw+e
-57MbdqPsSpFEaopknDe7ZqHCGI9pyv1u29kfIpFLYiRkNj8hYKOpyILmcpSqMw57
-NZzKgAxs/9M3K7oLWNnw1jl14emDu/uT3kw9aZfEH/Z4JeAnhq1JK45F/aj+NcwC
-AgsEJt9pNyWMOyWuGirWp6PK0fnhZrxfAeI3MLJV3Qj/b+Fykt2pqqKOT7YVEAJl
-QVMEBcJczfRlWrPLZnmYSDAIaZsHdA1/n5yD3RmK07L1NWN1BzZ9YBVupBIOVg1i
-WqcocQYyVkLCLu6rVvUGWZ62Xk3eLFGpGfAnj6iYAICz6NfQqiHrpN/7+jdlfLw=
-=UI8A
+iQEcBAABCAAGBQJWJe63AAoJEEl56MO1B/q4IXMIALFiMMtTYpSRYHPMx1/zBJxJ
+3AtwxeRMDfXgWCI6Y8IvrWyOjJq12pLn3YnZKPmefFh86y0NaIyUJ3xfX6DPCxDO
+oU7KqWuhnAKFkafAxxXsVM8bIIN8DIrp3eMCn/zOk5hLcgiNVTnA9Wl47uKHivps
+p9mcI092cPayTcehgzegDCkXdjHAQCdMdugGlZpQ9MNLjnJ6+dFSU43UuHUKYjrA
+UQfNQ+PvNuIce2rk2OWNg0iqil3ap+dRqnmZcTb1DLkt1xS131NH4EeYS63DUunG
+meUwDFoDBdvHPzHAwtSRmfpMa8clA/7yh52Xn2iIps+LA3bnkfnZ71wE9ZqMIws=
+=fIvL
 -----END PGP SIGNATURE-----
 
---KFztAG8eRSV9hGtP--
+--iFRdW5/EC4oqxDHL--
