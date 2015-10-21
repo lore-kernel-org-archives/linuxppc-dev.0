@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1A5BA1A0B72
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:16:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 417981A0C93
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:16:53 +1100 (AEDT)
 Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 21 Oct 2015 14:16:44 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 634033E40041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:16:42 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9LKGg1I9437534
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:16:42 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9LKGe2h006856
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:16:42 -0600
+ Wed, 21 Oct 2015 14:16:51 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 73E773E40044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:16:49 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9LKGnWM1311200
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:16:49 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9LKGl2l011828
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:16:48 -0600
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,9 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 28/37] MAINTAINERS: Add cxlflash driver
-Date: Wed, 21 Oct 2015 15:15:22 -0500
-Message-Id: <1445458522-59351-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v6 29/37] cxlflash: Fix to double the delay each time
+Date: Wed, 21 Oct 2015 15:15:30 -0500
+Message-Id: <1445458530-59831-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,35 +45,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add stanza for cxlflash SCSI driver.
+From: Manoj Kumar <manoj@linux.vnet.ibm.com>
 
+The operator used to double the master context response delay
+is incorrect and does not result in delay doubling.
+
+To fix, use a left shift instead of the XOR operator.
+
+Reported-by: Tomas Henzl <thenzl@redhat.com>
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 ---
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/scsi/cxlflash/main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 274f854..f2f3046 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3153,6 +3153,15 @@ F:	Documentation/powerpc/cxl.txt
- F:	Documentation/powerpc/cxl.txt
- F:	Documentation/ABI/testing/sysfs-class-cxl
+diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+index c77cb92..51883be 100644
+--- a/drivers/scsi/cxlflash/main.c
++++ b/drivers/scsi/cxlflash/main.c
+@@ -303,7 +303,7 @@ write_rrin:
+ 		if (rrin != 0x1)
+ 			break;
+ 		/* Double delay each time */
+-		udelay(2 ^ nretry);
++		udelay(2 << nretry);
+ 	} while (nretry++ < MC_ROOM_RETRY_CNT);
+ }
  
-+CXLFLASH (IBM Coherent Accelerator Processor Interface CAPI Flash) SCSI DRIVER
-+M:	Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-+M:	Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-+L:	linux-scsi@vger.kernel.org
-+S:	Supported
-+F:	drivers/scsi/cxlflash/
-+F:	include/uapi/scsi/cxlflash_ioctls.h
-+F:	Documentation/powerpc/cxlflash.txt
-+
- STMMAC ETHERNET DRIVER
- M:	Giuseppe Cavallaro <peppe.cavallaro@st.com>
- L:	netdev@vger.kernel.org
 -- 
 2.1.0
