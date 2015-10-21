@@ -1,30 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 539711A03CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 16:54:30 +1100 (AEDT)
-Message-ID: <1445406845.701.55.camel@freescale.com>
-Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
-From: Scott Wood <scottwood@freescale.com>
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-CC: <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "Stephen
- Warren" <swarren@wwwdotorg.org>, Javier Martinez Canillas
- <javier@osg.samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
- Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki"
- <rjw@rjwysocki.net>, <linux-arm-kernel@lists.infradead.org>, Dmitry Torokhov
- <dmitry.torokhov@gmail.com>, <devicetree@vger.kernel.org>, Linus Walleij
- <linus.walleij@linaro.org>, <linux-acpi@vger.kernel.org>, Arnd Bergmann
- <arnd@arndb.de>, <linuxppc-dev@lists.ozlabs.org>, Hu Mingkai-B21284
- <Mingkai.Hu@freescale.com>
-Date: Wed, 21 Oct 2015 00:54:05 -0500
-In-Reply-To: <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
-References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
- <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD4BB1A03CA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 16:57:37 +1100 (AEDT)
+Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
+ [209.85.217.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C9A1914076E
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 16:57:36 +1100 (AEDT)
+Received: by lbbwb3 with SMTP id wb3so30575290lbb.1
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Oct 2015 22:57:33 -0700 (PDT)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
+ Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH] powerpc/msi: fix section mismatch warning
+Date: Wed, 21 Oct 2015 08:56:44 +0300
+Message-Id: <1445407004-6439-1-git-send-email-kda@linux-powerpc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,29 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
-> Instead of trying to match and probe platform and AMBA devices right
-> after each is registered, delay their probes until device_initcall_sync.
-> 
-> This means that devices will start probing once all built-in drivers
-> have registered, and after all platform and AMBA devices from the DT
-> have been registered already.
-> 
-> This allows us to prevent deferred probes by probing dependencies on
-> demand.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
-> 
-> Changes in v4:
-> - Also defer probes of AMBA devices registered from the DT as they can
->   also request resources.
-> 
->  drivers/of/platform.c | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
+Building with CONFIG_DEBUG_SECTION_MISMATCH
+gives the following warning:
 
-This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF platform 
-device, and it must be probed before pcibios_init() which is a 
-subsys_initcall(), or else the PCI bus never gets scanned.
+WARNING: vmlinux.o(.text+0x41fa8): Section mismatch in reference from
+the function .msi_bitmap_alloc() to the function
+.init.text:.memblock_virt_alloc_try_nid()
+The function .msi_bitmap_alloc() references
+the function __init .memblock_virt_alloc_try_nid().
+This is often because .msi_bitmap_alloc lacks a __init
+annotation or the annotation of .memblock_virt_alloc_try_nid is wrong.
 
--Scott
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
+ arch/powerpc/include/asm/msi_bitmap.h | 2 +-
+ arch/powerpc/sysdev/msi_bitmap.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/msi_bitmap.h b/arch/powerpc/include/asm/msi_bitmap.h
+index 1ec7125..fbd3424 100644
+--- a/arch/powerpc/include/asm/msi_bitmap.h
++++ b/arch/powerpc/include/asm/msi_bitmap.h
+@@ -29,7 +29,7 @@ void msi_bitmap_reserve_hwirq(struct msi_bitmap *bmp, unsigned int hwirq);
+ 
+ int msi_bitmap_reserve_dt_hwirqs(struct msi_bitmap *bmp);
+ 
+-int msi_bitmap_alloc(struct msi_bitmap *bmp, unsigned int irq_count,
++int __init_refok msi_bitmap_alloc(struct msi_bitmap *bmp, unsigned int irq_count,
+ 		     struct device_node *of_node);
+ void msi_bitmap_free(struct msi_bitmap *bmp);
+ 
+diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
+index 1a826f3..ed5234e 100644
+--- a/arch/powerpc/sysdev/msi_bitmap.c
++++ b/arch/powerpc/sysdev/msi_bitmap.c
+@@ -112,7 +112,7 @@ int msi_bitmap_reserve_dt_hwirqs(struct msi_bitmap *bmp)
+ 	return 0;
+ }
+ 
+-int msi_bitmap_alloc(struct msi_bitmap *bmp, unsigned int irq_count,
++int __init_refok msi_bitmap_alloc(struct msi_bitmap *bmp, unsigned int irq_count,
+ 		     struct device_node *of_node)
+ {
+ 	int size;
+-- 
+2.4.0
