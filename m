@@ -1,42 +1,45 @@
-Return-Path: <paulus@au1.ibm.com>
+Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D0D6C1A03C2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 16:07:32 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BA4D1A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 17:39:05 +1100 (AEDT)
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A105F140549
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 16:07:32 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6B6E5140787
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 17:39:04 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <paulus@au1.ibm.com>;
- Wed, 21 Oct 2015 15:07:31 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 327662BB003F
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 16:07:28 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9L577TB30736480
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 16:07:15 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9L56tJE024470
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 16:06:55 +1100
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t9L56tPZ023827
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 16:06:55 +1100
-Date: Wed, 21 Oct 2015 16:06:24 +1100
-From: Paul Mackerras <paulus@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc/powernv: Handle irq_happened flag correctly in
- off-line loop
-Message-ID: <20151021050624.GB17764@fergus.ozlabs.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 21 Oct 2015 12:09:00 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id DD9EDE0059
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 12:09:00 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9L6cufv5964160
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 12:08:57 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9L6ct0R030531
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 12:08:55 +0530
+Date: Wed, 21 Oct 2015 14:38:55 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH V6 1/6] powerpc/powernv: don't enable SRIOV when VF BAR
+ has non 64bit-prefetchable BAR
+Message-ID: <20151021063855.GA5352@Richards-MacBook-Pro.local>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1445331785-4645-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1445331785-4645-2-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20151021004426.GA19956@gwshan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151021004426.GA19956@gwshan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,105 +49,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a bug where it is possible for an off-line CPU to fail to
-go into a low-power state (nap/sleep/winkle), and to become unresponsive
-to requests from the KVM subsystem to wake up and run a VCPU.  What
-can happen is that a maskable interrupt of some kind (external,
-decrementer, hypervisor doorbell, or HMI) after we have called
-local_irq_disable() at the beginning of pnv_smp_cpu_kill_self() and
-before interrupts are hard-disabled inside power7_nap/sleep/winkle().
-In this situation, the pending event is marked in the irq_happened
-flag in the PACA.  This pending event prevents power7_nap/sleep/winkle
-from going to the requested low-power state; instead they return
-immediately.  We don't deal with any of these pending event flags
-in the off-line loop in pnv_smp_cpu_kill_self() because power7_nap
-et al. return 0 in this case, so we will have srr1 == 0, and none of
-the processing to clear interrupts or doorbells will be done.
+On Wed, Oct 21, 2015 at 11:44:26AM +1100, Gavin Shan wrote:
+>On Tue, Oct 20, 2015 at 05:03:00PM +0800, Wei Yang wrote:
+>>On PHB_IODA2, we enable SRIOV devices by mapping IOV BAR with M64 BARs. If
+>    ^^^^^^^^^
+>
+>s/PHB_IODA2/PHB3 or s/PHB_IODA2/IODA2 PHB
+>
+>>a SRIOV device's IOV BAR is not 64bit-prefetchable, this is not assigned
+>>from 64bit prefetchable window, which means M64 BAR can't work on it.
+>>
+>>The reason is PCI bridges support only 2 windows and the kernel code
+>                                        ^^^^^^^^^
+>
+>It would be more accurate: "2 memory windows".
+>
 
-Usually, the most obvious symptom of this is that a KVM guest will fail
-with a console message saying "KVM: couldn't grab cpu N".
+Thanks, will change in next version.
 
-This fixes the problem by making sure we handle the irq_happened flags
-properly.  First, we hard-disable before the off-line loop.  Once we
-have hard-disabled, the irq_happened flags can't change underneath us.
-We unconditionally clear the DEC and HMI flags: there is no processing
-of timer interrupts while off-line, and the necessary HMI processing is
-all done in lower-level code.  We leave the EE and DBELL flags alone for
-the first iteration of the loop, so that we won't fail to respond to a
-split-core request that came in just before hard-disabling.  Within the
-loop, we handle external interrupts if the EE bit is set in irq_happened
-as well as if the low-power state was interrupted by an external
-interrupt.  (We don't need to do the msgclr for a pending doorbell in
-irq_happened, because doorbells are edge-triggered and don't remain
-pending in hardware.)  Then we clear both the EE and DBELL flags, and
-once clear, they cannot be set again (until this CPU comes online again,
-that is).
+>>programs bridges in the way that one window is 32bit-nonprefetchable and
+>>the other one is 64bit-prefetchable. So if devices' IOV BAR is 64bit and
+>>non-prefetchable, it will be mapped into 32bit space and therefore M64
+>>cannot be used for it.
+>>
+>>This patch makes this explicit and truncate IOV resource in this case to
+>                                    ^^^^^^^^
+>>save MMIO space.
+>>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>---
+>> arch/powerpc/platforms/powernv/pci-ioda.c | 34 ++++++++++++++++---------------
+>> 1 file changed, 18 insertions(+), 16 deletions(-)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index 85cbc96..f042fed 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -908,9 +908,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>> 		if (!res->flags || !res->parent)
+>> 			continue;
+>>
+>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>-			continue;
+>>-
+>> 		/*
+>> 		 * The actual IOV BAR range is determined by the start address
+>> 		 * and the actual size for num_vfs VFs BAR.  This check is to
+>>@@ -939,9 +936,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>> 		if (!res->flags || !res->parent)
+>> 			continue;
+>>
+>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>-			continue;
+>>-
+>> 		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+>> 		res2 = *res;
+>> 		res->start += size * offset;
+>>@@ -1221,9 +1215,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
+>> 		if (!res->flags || !res->parent)
+>> 			continue;
+>>
+>>-		if (!pnv_pci_is_mem_pref_64(res->flags))
+>>-			continue;
+>>-
+>> 		for (j = 0; j < vf_groups; j++) {
+>> 			do {
+>> 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
+>>@@ -1510,6 +1501,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
+>> 	pdn = pci_get_pdn(pdev);
+>>
+>> 	if (phb->type == PNV_PHB_IODA2) {
+>>+		if (!pdn->vfs_expanded) {
+>>+			dev_info(&pdev->dev, "don't support this SRIOV device"
+>>+				" with non 64bit-prefetchable IOV BAR\n");
+>>+			return -ENOSPC;
+>>+		}
+>>+
+>> 		/* Calculate available PE for required VFs */
+>> 		mutex_lock(&phb->ioda.pe_alloc_mutex);
+>> 		pdn->offset = bitmap_find_next_zero_area(
+>>@@ -2775,9 +2772,10 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>> 		if (!res->flags || res->parent)
+>> 			continue;
+>> 		if (!pnv_pci_is_mem_pref_64(res->flags)) {
+>>-			dev_warn(&pdev->dev, " non M64 VF BAR%d: %pR\n",
+>>+			dev_warn(&pdev->dev, "Don't support SR-IOV with"
+>>+					" non M64 VF BAR%d: %pR. \n",
+>> 				 i, res);
+>>-			continue;
+>>+			goto truncate_iov;
+>> 		}
+>>
+>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
+>>@@ -2796,11 +2794,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>> 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>> 		if (!res->flags || res->parent)
+>> 			continue;
+>>-		if (!pnv_pci_is_mem_pref_64(res->flags)) {
+>>-			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
+>>-				 i, res);
+>>-			continue;
+>>-		}
+>>
+>> 		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
+>> 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
+>>@@ -2810,6 +2803,15 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>> 			 i, res, mul);
+>> 	}
+>> 	pdn->vfs_expanded = mul;
+>>+
+>>+	return;
+>>+
+>>+truncate_iov:
+>>+	/* To save MMIO space, IOV BAR is truncated. */
+>>+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>>+		res = &pdev->resource[i + PCI_IOV_RESOURCES];
+>>+		res->end = res->start - 1;
+>>+	}
+>
+>res->flags isn't cleared out, the IOV BAR will be counted in the optional list
+>in resource sizing stage. However, the size has became zero. It's obvious not
+>necessary to do that. I doubt this piece of code has been really testified on
+>real PCI adapter or one with emulated M32 IOV BAR?
+>
 
-This also fixes the debug check to not be done when we just ran a KVM
-guest or when the sleep didn't happen because of a pending event in
-irq_happened.
+Below is the log during my test:
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/platforms/powernv/smp.c | 29 ++++++++++++++++++++++++-----
- 1 file changed, 24 insertions(+), 5 deletions(-)
+[    0.436209] pci 0001:08:00.0: reg 0x10: [mem 0x3fe080820000-0x3fe08082ffff 64bit]
+[    0.436230] pci 0001:08:00.0: reg 0x18: [mem 0x3fe080830000-0x3fe08083ffff 64bit]
+[    0.436268] pci 0001:08:00.0: reg 0x30: [mem 0x00000000-0x0001ffff pref]
+[    0.436333] pci 0001:08:00.0: PME# supported from D0 D3hot D3cold
+[    0.436402] pci 0001:08:00.0: reg 0x16c: [mem 0x00000000-0x0000ffff 64bit]
+[    0.436404] pci 0001:08:00.0: VF(n) BAR0 space: [mem 0x00000000-0x001fffff 64bit] (contains BAR0 for 32 VFs)
+[    0.436515] pci 0001:08:00.0: reg 0x174: [mem 0x00000000-0x0000ffff 64bit]
+[    0.436517] pci 0001:08:00.0: VF(n) BAR2 space: [mem 0x00000000-0x001fffff 64bit] (contains BAR2 for 32 VFs)
 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 8f70ba6..ca26483 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -171,7 +171,26 @@ static void pnv_smp_cpu_kill_self(void)
- 	 * so clear LPCR:PECE1. We keep PECE2 enabled.
- 	 */
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
-+
-+	/*
-+	 * Hard-disable interrupts, and then clear irq_happened flags
-+	 * that we can safely ignore while off-line, since they
-+	 * are for things for which we do no processing when off-line
-+	 * (or in the case of HMI, all the processing we need to do
-+	 * is done in lower-level real-mode code).
-+	 */
-+	hard_irq_disable();
-+	local_paca->irq_happened &= ~(PACA_IRQ_DEC | PACA_IRQ_HMI);
-+
- 	while (!generic_check_cpu_restart(cpu)) {
-+		/*
-+		 * Clear IPI flag, since we don't handle IPIs while
-+		 * offline, except for those when changing micro-threading
-+		 * mode, which are handled explicitly below, and those
-+		 * for coming online, which are handled via
-+		 * generic_check_cpu_restart() calls.
-+		 */
-+		kvmppc_set_host_ipi(cpu, 0);
- 
- 		ppc64_runlatch_off();
- 
-@@ -196,20 +215,20 @@ static void pnv_smp_cpu_kill_self(void)
- 		 * having finished executing in a KVM guest, then srr1
- 		 * contains 0.
- 		 */
--		if ((srr1 & wmask) == SRR1_WAKEEE) {
-+		if (((srr1 & wmask) == SRR1_WAKEEE) ||
-+		    (local_paca->irq_happened & PACA_IRQ_EE)) {
- 			icp_native_flush_interrupt();
--			local_paca->irq_happened &= PACA_IRQ_HARD_DIS;
--			smp_mb();
- 		} else if ((srr1 & wmask) == SRR1_WAKEHDBELL) {
- 			unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
- 			asm volatile(PPC_MSGCLR(%0) : : "r" (msg));
--			kvmppc_set_host_ipi(cpu, 0);
- 		}
-+		local_paca->irq_happened &= ~(PACA_IRQ_EE | PACA_IRQ_DBELL);
-+		smp_mb();
- 
- 		if (cpu_core_split_required())
- 			continue;
- 
--		if (!generic_check_cpu_restart(cpu))
-+		if (srr1 && !generic_check_cpu_restart(cpu))
- 			DBG("CPU%d Unexpected exit while offline !\n", cpu);
- 	}
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) | LPCR_PECE1);
+IOV BAR not truncated:
+
+[root@tian-lp1 ~]# grep 0001:08:00.0 /proc/iomem
+        3fe080800000-3fe08081ffff : 0001:08:00.0
+        3fe080820000-3fe08082ffff : 0001:08:00.0
+        3fe080830000-3fe08083ffff : 0001:08:00.0
+        3fe080840000-3fe080a3ffff : 0001:08:00.0
+        3fe080a40000-3fe080c3ffff : 0001:08:00.0
+
+IOV BAR truncated:
+
+[ywywyang@tian-lp1 ~]$ grep 0001:08:00.0 /proc/iomem 
+        3fe080800000-3fe08081ffff : 0001:08:00.0
+        3fe080820000-3fe08082ffff : 0001:08:00.0
+        3fe080830000-3fe08083ffff : 0001:08:00.0
+
+We could see, after applying this patch, the 2 IOV BAR will not be allocated
+in iomem range.
+
+While I think your proposal is reasonable. By clearing the flag, IOV BAR will
+not be involved in the sizing/assign stage. Will change this in next version.
+
+>> }
+>> #endif /* CONFIG_PCI_IOV */
+>>
+>>-- 
+>>2.5.0
+>>
+
 -- 
-2.1.4
+Richard Yang
+Help you, Help me
