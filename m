@@ -1,15 +1,15 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B3691A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 22:41:45 +1100 (AEDT)
-In-Reply-To: <1444882955-27601-1-git-send-email-gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 539321A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 22:41:46 +1100 (AEDT)
+In-Reply-To: <1445277206.30908.6.camel@infradead.org>
+To: Geoff Levand <geoff@infradead.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: powerpc/eeh: Fix recursive fenced PHB on Broadcom shiner adapter
-Message-Id: <20151021114145.37C91140E31@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: powerpc: Add run_cmd function to boot wrapper
+Message-Id: <20151021114145.F3620140E32@ozlabs.org>
 Date: Wed, 21 Oct 2015 22:41:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,23 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-15-10 at 04:22:35 UTC, Gavin Shan wrote:
-> Similar to commit b6541db ("powerpc/eeh: Block PCI config access
-> upon frozen PE"), this blocks the PCI config space of Broadcom
-> Shiner adapter until PE reset is completed, to avoid recursive
-> fenced PHB when dumping PCI config registers during the period
-> of error recovery.
+On Mon, 2015-19-10 at 17:53:26 UTC, Geoff Levand wrote:
+> Add a boot wrapper script function run_cmd which will run a shell command
+> quietly and only print the output if either V=1 or an error occurs.
 > 
->    ~# lspci -ns 0003:03:00.0
->    0003:03:00.0 0200: 14e4:168a (rev 10)
->    ~# lspci -s 0003:03:00.0
->    0003:03:00.0 Ethernet controller: Broadcom Corporation \
->                 NetXtreme II BCM57800 1/10 Gigabit Ethernet (rev 10)
+> Also, run the ps3 dd commands with run_cmd to clean up the build output.
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Signed-off-by: Geoff Levand <geoff@infradead.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/353169acf1858bb2dc3f9147
+https://git.kernel.org/powerpc/c/879c26d4f6a2b573d75cc235
 
 cheers
