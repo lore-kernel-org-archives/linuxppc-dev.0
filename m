@@ -1,16 +1,34 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gpiccoli@linux.vnet.ibm.com>
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 171D71A0A70
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 22:42:33 +1100 (AEDT)
-In-Reply-To: <20151021050314.GA17764@fergus.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@au1.ibm.com>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [1/2] Revert "Use the POWER8 Micro Partition Prefetch Engine in
- KVM HV on POWER8"
-Message-Id: <20151021114232.E770A14076E@ozlabs.org>
-Date: Wed, 21 Oct 2015 22:42:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2A151A03E9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 01:17:47 +1100 (AEDT)
+Received: from /spool/local
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gpiccoli@linux.vnet.ibm.com>;
+ Wed, 21 Oct 2015 12:17:44 -0200
+Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id A55511DC006F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 10:16:34 -0400 (EDT)
+Received: from d24av03.br.ibm.com (d24av03.br.ibm.com [9.8.31.95])
+ by d24relay01.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9LEI6Ub4968696
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 12:18:07 -0200
+Received: from d24av03.br.ibm.com (localhost [127.0.0.1])
+ by d24av03.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9LEHarP006420
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 12:17:37 -0200
+From: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+To: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: bhelgaas@google.com, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org, mst@redhat.com, shangw@linux.vnet.ibm.com,
+ gpiccoli@linux.vnet.ibm.com
+Subject: [PATCH] Enable MSI/MSI-X caps and disable MSI interrupts at PCI probe
+ time - code move
+Date: Wed, 21 Oct 2015 12:17:35 -0200
+Message-Id: <1445437055-7017-1-git-send-email-gpiccoli@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,30 +38,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-21-10 at 05:03:14 UTC, Paul Mackerras wrote:
-> This reverts commit 9678cdaae93932473f696fdea5debf3eee1e1260 because
-> the original commit had multiple, partly self-cancelling bugs, that
-> could cause occasional memory corruption.  In fact the logmpp instruction
-> was using register r0 as the source of the buffer address and operation
-> code, and depending on what was in r0, it would either do nothing or
-> corrupt the 64k page pointed to by r0.  The logmpp instruction encoding
-> and the operation code definitions could be corrected, but then there is
-> the problem that there is no clearly defined way to know when the
-> hardware has finished writing to the buffer.  The original commit
-> attempted to work around this by aborting the write-out before starting
-> the prefetch, but this is ineffective in the case where the virtual
-> core is now executing on a different physical core from the one where
-> the write-out was initiated.
-> 
-> These problems plus advice from the hardware designers not to use the
-> function (since the measured performance improvement from using the
-> feature was actually mostly negative), mean that reverting the code is
-> the best option.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+Commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+doesn't support MSI") changed the location of the code that initializes
+dev->msi_cap/msix_cap and disables MSI/MSI-X interrupts at PCI probe
+time in devices that have this flag set. It moved the code from
+pci_msi_init_pci_dev() to a new function named pci_msi_setup_pci_dev(),
+called by pci_setup_device().
 
-Applied to powerpc fixes, thanks.
+In Open Firmware code path (PowerPC pSeries/SPARC archs) the function
+pci_setup_device() is not called, so MSI capabilities are never enabled,
+leading to error messages as:
 
-https://git.kernel.org/powerpc/c/23316316c1af0677a041c81f
+	bnx2x 0000:01:00.0: no msix capability found
 
-cheers
+Commit 4d9aac397a5d ("powerpc/PCI: Disable MSI/MSI-X interrupts at PCI
+probe time in OF case") solved the issue on PowerPC pSeries arch calling
+manually pci_msi_setup_pci_dev() on appropriate place. However, this
+modification does not solve the general case (SPARC arch should be
+modified too) and duplicates a lot of code, as pointed by Bjorn Helgaas.
+As suggested by him, worth to reorganize the code to generally solve the
+MSI caps issue and avoid too much code duplication.
+
+This patch does exactly this: we remove both the pci_msi_setup_pci_dev()
+call from pci_setup_device() and the same call in OF code path of PowerPC
+pSeries arch. Then, we call pci_msi_setup_pci_dev() directly from
+pci_init_capabilities(). So, we can initialize MSI caps and disable MSI
+interruptions during PCI probe in general fashion, avoiding code
+duplication.
+
+Notice that this patch has the same practical effect of reverting
+commit 1851617cd2da ("PCI/MSI: Disable MSI at enumeration even if kernel
+doesn't support MSI") and commit 4d9aac397a5d ("powerpc/PCI: Disable
+MSI/MSI-X interrupts at PCI probe time in OF case"). Regarding the
+former, the author called pci_msi_setup_pci_dev() from pci_setup_device()
+because there was an early quirk used in pci_msi_off(), which depended on
+pci_msi_setup_pci_dev(). Since pci_msi_off() was completely removed by
+commit c6201cd8513d ("PCI/MSI: Remove unused pci_msi_off()"), we can call
+pci_msi_setup_pci_dev() directly from pci_init_capabilities().
+
+Signed-off-by: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/pci_of_scan.c | 3 ---
+ drivers/pci/probe.c               | 5 +++--
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 2e710c1..526ac67 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -187,9 +187,6 @@ struct pci_dev *of_create_pci_dev(struct device_node *node,
+ 
+ 	pci_device_add(dev, bus);
+ 
+-	/* Setup MSI caps & disable MSI/MSI-X interrupts */
+-	pci_msi_setup_pci_dev(dev);
+-
+ 	return dev;
+ }
+ EXPORT_SYMBOL(of_create_pci_dev);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 8361d27..0aac86e 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1209,8 +1209,6 @@ int pci_setup_device(struct pci_dev *dev)
+ 	/* "Unknown power state" */
+ 	dev->current_state = PCI_UNKNOWN;
+ 
+-	pci_msi_setup_pci_dev(dev);
+-
+ 	/* Early fixups, before probing the BARs */
+ 	pci_fixup_device(pci_fixup_early, dev);
+ 	/* device class may be changed after fixup */
+@@ -1600,6 +1598,9 @@ static void pci_init_capabilities(struct pci_dev *dev)
+ 	/* MSI/MSI-X list */
+ 	pci_msi_init_pci_dev(dev);
+ 
++	/* Setup MSI caps & disable MSI/MSI-X interrupts */
++	pci_msi_setup_pci_dev(dev);
++
+ 	/* Buffers for saving PCIe and PCI-X capabilities */
+ 	pci_allocate_cap_save_buffers(dev);
+ 
+-- 
+2.1.0
