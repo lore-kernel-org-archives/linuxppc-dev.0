@@ -1,50 +1,34 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB7BB1A0AA2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 06:35:28 +1100 (AEDT)
-Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Wed, 21 Oct 2015 13:35:26 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2598D19D8041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:23:34 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t9LJZNH98519954
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 12:35:23 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9LJZJ3A017267
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:35:23 -0600
-Date: Wed, 21 Oct 2015 12:35:23 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32FA91A0BE5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 06:36:36 +1100 (AEDT)
+Date: Wed, 21 Oct 2015 21:36:44 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Boqun Feng <boqun.feng@gmail.com>, Will Deacon <will.deacon@arm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-arch@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
-Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-Message-ID: <20151021193523.GT5105@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
- <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
- <20151014201916.GB3910@linux.vnet.ibm.com>
- <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
- <20151020092147.GX17308@twins.programming.kicks-ass.net>
- <20151020212835.GH5105@linux.vnet.ibm.com>
- <20151021084503.GE17714@fixme-laptop.cn.ibm.com>
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
+ update documentation
+Message-ID: <20151021193644.GG2508@worktop.programming.kicks-ass.net>
+References: <20151007152501.GI3910@linux.vnet.ibm.com>
+ <1444276236.9940.5.camel@ellerman.id.au>
+ <20151008111638.GL3816@twins.programming.kicks-ass.net>
+ <20151008214439.GE3910@linux.vnet.ibm.com>
+ <20151009083138.GU3816@twins.programming.kicks-ass.net>
+ <20151009094039.GD26278@arm.com>
+ <20151019011718.GB924@fixme-laptop.cn.ibm.com>
+ <20151020233451.GI5105@linux.vnet.ibm.com>
+ <20151021082452.GC2881@worktop.programming.kicks-ass.net>
+ <20151021192923.GR5105@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151021084503.GE17714@fixme-laptop.cn.ibm.com>
+In-Reply-To: <20151021192923.GR5105@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,77 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 21, 2015 at 04:45:03PM +0800, Boqun Feng wrote:
-> On Tue, Oct 20, 2015 at 02:28:35PM -0700, Paul E. McKenney wrote:
-> > On Tue, Oct 20, 2015 at 11:21:47AM +0200, Peter Zijlstra wrote:
-> > > On Tue, Oct 20, 2015 at 03:15:32PM +0800, Boqun Feng wrote:
-> > > > On Wed, Oct 14, 2015 at 01:19:17PM -0700, Paul E. McKenney wrote:
-> > > > > 
-> > > > > Am I missing something here?  If not, it seems to me that you need
-> > > > > the leading lwsync to instead be a sync.
-> > > > > 
-> > > > > Of course, if I am not missing something, then this applies also to the
-> > > > > value-returning RMW atomic operations that you pulled this pattern from.
-> > > > > If so, it would seem that I didn't think through all the possibilities
-> > > > > back when PPC_ATOMIC_EXIT_BARRIER moved to sync...  In fact, I believe
-> > > > > that I worried about the RMW atomic operation acting as a barrier,
-> > > > > but not as the load/store itself.  :-/
-> > > > > 
-> > > > 
-> > > > Paul, I know this may be difficult, but could you recall why the
-> > > > __futex_atomic_op() and futex_atomic_cmpxchg_inatomic() also got
-> > > > involved into the movement of PPC_ATOMIC_EXIT_BARRIER to "sync"?
-> > > > 
-> > > > I did some search, but couldn't find the discussion of that patch.
-> > > > 
-> > > > I ask this because I recall Peter once bought up a discussion:
-> > > > 
-> > > > https://lkml.org/lkml/2015/8/26/596
-> > > > 
-> > > > Peter's conclusion seems to be that we could(though didn't want to) live
-> > > > with futex atomics not being full barriers.
+On Wed, Oct 21, 2015 at 12:29:23PM -0700, Paul E. McKenney wrote:
+> On Wed, Oct 21, 2015 at 10:24:52AM +0200, Peter Zijlstra wrote:
+> > On Tue, Oct 20, 2015 at 04:34:51PM -0700, Paul E. McKenney wrote:
+> > > There is also the question of whether the barrier forces ordering
+> > > of unrelated stores, everything initially zero and all accesses
+> > > READ_ONCE() or WRITE_ONCE():
+> > > 
+> > > 	P0		P1		P2		P3
+> > > 	X = 1;		Y = 1;		r1 = X;		r3 = Y;
+> > > 					some_barrier();	some_barrier();
+> > > 					r2 = Y;		r4 = X;
+> > > 
+> > > P2's and P3's ordering could be globally visible without requiring
+> > > P0's and P1's independent stores to be ordered, for example, if you
+> > > used smp_rmb() for some_barrier().  In contrast, if we used smp_mb()
+> > > for barrier, everyone would agree on the order of P0's and P0's stores.
 > > 
-> > I have heard of user-level applications relying on unlock-lock being a
-> > full barrier.  So paranoia would argue for the full barrier.
+> > Oh!?
 > 
-> Understood.
-> 
-> So a full barrier on one side of these operations is enough, I think.
-> IOW, there is no need to strengthen these operations.
+> Behold sequential consistency, worshipped fervently by a surprisingly
+> large number of people!  Something about legacy proof methods, as near
+> as I can tell.  ;-)
 
-Do we need to also worry about other futex use cases?
+But how can smp_mb() guarantee anything about P[01]? There is but the
+single store, which can race against P[23] arbitrarily. There is nothing
+to order.
 
-							Thanx, Paul
-
-> > > > Peter, just be clear, I'm not in favor of relaxing futex atomics. But if
-> > > > I make PPC_ATOMIC_ENTRY_BARRIER being "sync", it will also strengthen
-> > > > the futex atomics, just wonder whether such strengthen is a -fix- or
-> > > > not, considering that I want this patch to go to -stable tree.
-> > > 
-> > > So Linus' argued that since we only need to order against user accesses
-> > > (true) and priv changes typically imply strong barriers (open) we might
-> > > want to allow archs to rely on those instead of mandating they have
-> > > explicit barriers in the futex primitives.
-> > > 
-> > > And I indeed forgot to follow up on that discussion.
-> > > 
-> > > So; does PPC imply full barriers on user<->kernel boundaries? If so, its
-> > > not critical to the futex atomic implementations what extra barriers are
-> > > added.
-> > > 
-> > > If not; then strengthening the futex ops is indeed (probably) a good
-> > > thing :-)
-> 
-> Peter, that's probably a good thing, but I'm not that familiar with
-> futex right now, so I won't touch that part if unnecessary in this
-> series.
-> 
-> Regards,
-> Boqun
-> 
-> > 
-> > I am not seeing a sync there, but I really have to defer to the
-> > maintainers on this one.  I could easily have missed one.
-> > 
-> > 							Thanx, Paul
-> > 
+Maybe I'm confused again..
