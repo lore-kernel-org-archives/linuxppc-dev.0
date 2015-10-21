@@ -1,24 +1,43 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f178.google.com (mail-yk0-f178.google.com
- [209.85.160.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B19031A092B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 19:19:50 +1100 (AEDT)
-Received: by ykba4 with SMTP id a4so35688272ykb.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 01:19:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B34081A0C46
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 19:21:44 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 869B914076E
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 19:21:44 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 21 Oct 2015 18:21:43 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E92332BB003F
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 19:21:40 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9L8LWD925428170
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 19:21:40 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9L8L8Wt008487
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Oct 2015 19:21:08 +1100
+Date: Wed, 21 Oct 2015 16:20:44 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@ozlabs.ru,
+ benh@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv: retrieve m64_bar_idx from device node
+Message-ID: <20151021082044.GB8207@richards-mbp.cn.ibm.com>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1445411854-6951-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1445413971.3870.2.camel@ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <29528945.sG1Zff2dkQ@wuerfel>
-References: <1445407004-6439-1-git-send-email-kda@linux-powerpc.org>
- <29528945.sG1Zff2dkQ@wuerfel>
-Date: Wed, 21 Oct 2015 11:19:48 +0300
-Message-ID: <CAOJe8K0KOjLRoboKNvKneF_p1q6B6qQMHRAL1rHtPhAx-bs8bg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/msi: fix section mismatch warning
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1445413971.3870.2.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +47,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/21/15, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday 21 October 2015 08:56:44 Denis Kirjanov wrote:
->> Building with CONFIG_DEBUG_SECTION_MISMATCH
->> gives the following warning:
->>
->> WARNING: vmlinux.o(.text+0x41fa8): Section mismatch in reference from
->> the function .msi_bitmap_alloc() to the function
->> .init.text:.memblock_virt_alloc_try_nid()
->> The function .msi_bitmap_alloc() references
->> the function __init .memblock_virt_alloc_try_nid().
->> This is often because .msi_bitmap_alloc lacks a __init
->> annotation or the annotation of .memblock_virt_alloc_try_nid is wrong.
->>
->> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
->>
+On Wed, Oct 21, 2015 at 06:52:51PM +1100, Michael Ellerman wrote:
+>On Wed, 2015-10-21 at 15:17 +0800, Wei Yang wrote:
 >
-> A patch like this usually requires an explanation why the warning is
-> a false positive and why there is no way to solve it besides suppressing
-> the warning.
+>> Count of M64 BAR would differ with the evolution of hardware.
+>> 
+>> This patch retieves this count from device node instead of a hard coded
+>> value.
+>> 
+>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/powernv/pci-ioda.c | 7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 5c65d8f..4635d25 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -368,6 +368,7 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>>  	struct resource *res;
+>>  	const u32 *r;
+>>  	u64 pci_addr;
+>> +	const __be32 *prop32;
+>>  
+>>  	/* FIXME: Support M64 for P7IOC */
+>>  	if (phb->type != PNV_PHB_IODA2) {
+>> @@ -402,7 +403,11 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>>  			res->start, res->end, pci_addr);
+>>  
+>>  	/* Use last M64 BAR to cover M64 window */
+>> -	phb->ioda.m64_bar_idx = 15;
+>> +	prop32 = of_get_property(dn, "ibm,opal-m64-count", NULL);
+>> +	if (prop32)
+>> +		phb->ioda.m64_bar_idx = be32_to_cpup(prop32) - 1;
+>> +	else
+>> +		phb->ioda.m64_bar_idx = 15;
+>
+>Please use of_property_read_u32() instead of using of_get_property() directly.
+>
+>Also the "-1" is a bit unclear, I think it would be clearer if you did
+>something like:
+>
+>	if (of_property_read_u32(dn, "ibm,opal-m64-count", &count))
+>		count = 16;
+>
+>	/* Use last M64 BAR to cover M64 window */
+>	phb->ioda.m64_bar_idx = count - 1;
+>
 
-Because memory allocation in msi_bitmap_alloc use either slab allocator or
-memblock boot-time allocator so that's why we need the __init_refok
-for the latter case. I'll add it to the patch description
+Ok, thanks for the suggestion :-)
 
 >
-> 	Arnd
->
+>cheers
+
+-- 
+Richard Yang
+Help you, Help me
