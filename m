@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F3C641A09F1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:13:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 975C01A0B8E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:13:27 +1100 (AEDT)
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 21 Oct 2015 14:13:14 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B7EE819D8045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:01:21 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9LKBnDr6095236
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:11:49 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9LKDAru021853
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:13:11 -0600
+ Wed, 21 Oct 2015 14:13:25 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 496FF1FF0043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:01:35 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9LKDNFC65994764
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:13:23 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9LKDKf8025412
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:13:23 -0600
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,9 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 08/37] cxlflash: Fix to avoid CXL services during EEH
-Date: Wed, 21 Oct 2015 15:11:52 -0500
-Message-Id: <1445458312-60946-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v6 09/37] cxlflash: Correct naming of limbo state and waitq
+Date: Wed, 21 Oct 2015 15:12:00 -0500
+Message-Id: <1445458320-3176-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,20 +45,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During an EEH freeze event, certain CXL services should not be
-called until after the hardware reset has taken place. Doing so
-can result in unnecessary failures and possibly cause other ill
-effects by triggering hardware accesses. This translates to a
-requirement to quiesce all threads that may potentially use CXL
-runtime service during this window. In particular, multiple ioctls
-make use of the CXL services when acting on contexts on behalf of
-the user. Thus, it is essential to 'drain' running ioctls _before_
-proceeding with handling the EEH freeze event.
-
-Create the ability to drain ioctls by wrapping the ioctl handler
-call in a read semaphore and then implementing a small routine that
-obtains the write semaphore, effectively creating a wait point for
-all currently executing ioctls.
+Limbo is not an accurate representation of this state and is
+also not consistent with the terminology that other drivers
+use to represent this concept. Rename the state and and its
+associated waitq to 'reset'.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
@@ -66,224 +56,169 @@ Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 Reviewed-by: Daniel Axtens <dja@axtens.net>
 Reviewed-by: Tomas Henzl <thenzl@redhat.com>
 ---
- drivers/scsi/cxlflash/common.h    |  2 +
- drivers/scsi/cxlflash/main.c      | 18 +++++--
- drivers/scsi/cxlflash/superpipe.c | 98 ++++++++++++++++++++++++---------------
- 3 files changed, 77 insertions(+), 41 deletions(-)
+ drivers/scsi/cxlflash/common.h    |  4 ++--
+ drivers/scsi/cxlflash/main.c      | 26 +++++++++++++-------------
+ drivers/scsi/cxlflash/superpipe.c | 14 +++++++-------
+ 3 files changed, 22 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
-index 1c56037..1abe4e0 100644
+index 1abe4e0..11318de 100644
 --- a/drivers/scsi/cxlflash/common.h
 +++ b/drivers/scsi/cxlflash/common.h
-@@ -16,6 +16,7 @@
- #define _CXLFLASH_COMMON_H
+@@ -79,7 +79,7 @@ enum cxlflash_init_state {
  
- #include <linux/list.h>
-+#include <linux/rwsem.h>
- #include <linux/types.h>
- #include <scsi/scsi.h>
- #include <scsi/scsi_device.h>
-@@ -110,6 +111,7 @@ struct cxlflash_cfg {
- 	atomic_t recovery_threads;
- 	struct mutex ctx_recovery_mutex;
- 	struct mutex ctx_tbl_list_mutex;
-+	struct rw_semaphore ioctl_rwsem;
- 	struct ctx_info *ctx_tbl[MAX_CONTEXT];
- 	struct list_head ctx_err_recovery; /* contexts w/ recovery pending */
- 	struct file_operations cxl_fops;
+ enum cxlflash_state {
+ 	STATE_NORMAL,	/* Normal running state, everything good */
+-	STATE_LIMBO,	/* Limbo running state, trying to reset/recover */
++	STATE_RESET,	/* Reset state, trying to reset/recover */
+ 	STATE_FAILTERM	/* Failed/terminating state, error out users/threads */
+ };
+ 
+@@ -125,7 +125,7 @@ struct cxlflash_cfg {
+ 
+ 	wait_queue_head_t tmf_waitq;
+ 	bool tmf_active;
+-	wait_queue_head_t limbo_waitq;
++	wait_queue_head_t reset_waitq;
+ 	enum cxlflash_state state;
+ };
+ 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 3e3ccf1..6e85c77 100644
+index 6e85c77..8940336 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -2311,6 +2311,7 @@ static int cxlflash_probe(struct pci_dev *pdev,
- 	cfg->lr_port = -1;
- 	mutex_init(&cfg->ctx_tbl_list_mutex);
- 	mutex_init(&cfg->ctx_recovery_mutex);
-+	init_rwsem(&cfg->ioctl_rwsem);
- 	INIT_LIST_HEAD(&cfg->ctx_err_recovery);
- 	INIT_LIST_HEAD(&cfg->lluns);
+@@ -382,8 +382,8 @@ static int cxlflash_queuecommand(struct Scsi_Host *host, struct scsi_cmnd *scp)
+ 	spin_unlock_irqrestore(&cfg->tmf_waitq.lock, lock_flags);
  
-@@ -2365,6 +2366,19 @@ out_remove:
+ 	switch (cfg->state) {
+-	case STATE_LIMBO:
+-		dev_dbg_ratelimited(&cfg->dev->dev, "%s: device in limbo!\n",
++	case STATE_RESET:
++		dev_dbg_ratelimited(&cfg->dev->dev, "%s: device is in reset!\n",
+ 				    __func__);
+ 		rc = SCSI_MLQUEUE_HOST_BUSY;
+ 		goto out;
+@@ -479,8 +479,8 @@ static int cxlflash_eh_device_reset_handler(struct scsi_cmnd *scp)
+ 		if (unlikely(rcr))
+ 			rc = FAILED;
+ 		break;
+-	case STATE_LIMBO:
+-		wait_event(cfg->limbo_waitq, cfg->state != STATE_LIMBO);
++	case STATE_RESET:
++		wait_event(cfg->reset_waitq, cfg->state != STATE_RESET);
+ 		if (cfg->state == STATE_NORMAL)
+ 			break;
+ 		/* fall through */
+@@ -519,7 +519,7 @@ static int cxlflash_eh_host_reset_handler(struct scsi_cmnd *scp)
+ 
+ 	switch (cfg->state) {
+ 	case STATE_NORMAL:
+-		cfg->state = STATE_LIMBO;
++		cfg->state = STATE_RESET;
+ 		scsi_block_requests(cfg->host);
+ 		cxlflash_mark_contexts_error(cfg);
+ 		rcr = cxlflash_afu_reset(cfg);
+@@ -528,11 +528,11 @@ static int cxlflash_eh_host_reset_handler(struct scsi_cmnd *scp)
+ 			cfg->state = STATE_FAILTERM;
+ 		} else
+ 			cfg->state = STATE_NORMAL;
+-		wake_up_all(&cfg->limbo_waitq);
++		wake_up_all(&cfg->reset_waitq);
+ 		scsi_unblock_requests(cfg->host);
+ 		break;
+-	case STATE_LIMBO:
+-		wait_event(cfg->limbo_waitq, cfg->state != STATE_LIMBO);
++	case STATE_RESET:
++		wait_event(cfg->reset_waitq, cfg->state != STATE_RESET);
+ 		if (cfg->state == STATE_NORMAL)
+ 			break;
+ 		/* fall through */
+@@ -705,7 +705,7 @@ static void cxlflash_wait_for_pci_err_recovery(struct cxlflash_cfg *cfg)
+ 	struct pci_dev *pdev = cfg->dev;
+ 
+ 	if (pci_channel_offline(pdev))
+-		wait_event_timeout(cfg->limbo_waitq,
++		wait_event_timeout(cfg->reset_waitq,
+ 				   !pci_channel_offline(pdev),
+ 				   CXLFLASH_PCI_ERROR_RECOVERY_TIMEOUT);
  }
+@@ -2304,7 +2304,7 @@ static int cxlflash_probe(struct pci_dev *pdev,
+ 	cfg->mcctx = NULL;
  
- /**
-+ * drain_ioctls() - wait until all currently executing ioctls have completed
-+ * @cfg:	Internal structure associated with the host.
-+ *
-+ * Obtain write access to read/write semaphore that wraps ioctl
-+ * handling to 'drain' ioctls currently executing.
-+ */
-+static void drain_ioctls(struct cxlflash_cfg *cfg)
-+{
-+	down_write(&cfg->ioctl_rwsem);
-+	up_write(&cfg->ioctl_rwsem);
-+}
-+
-+/**
-  * cxlflash_pci_error_detected() - called when a PCI error is detected
-  * @pdev:	PCI device struct.
-  * @state:	PCI channel state.
-@@ -2383,16 +2397,14 @@ static pci_ers_result_t cxlflash_pci_error_detected(struct pci_dev *pdev,
+ 	init_waitqueue_head(&cfg->tmf_waitq);
+-	init_waitqueue_head(&cfg->limbo_waitq);
++	init_waitqueue_head(&cfg->reset_waitq);
+ 
+ 	INIT_WORK(&cfg->work_q, cxlflash_worker_thread);
+ 	cfg->lr_state = LINK_RESET_INVALID;
+@@ -2396,7 +2396,7 @@ static pci_ers_result_t cxlflash_pci_error_detected(struct pci_dev *pdev,
+ 
  	switch (state) {
  	case pci_channel_io_frozen:
- 		cfg->state = STATE_LIMBO;
--
--		/* Turn off legacy I/O */
+-		cfg->state = STATE_LIMBO;
++		cfg->state = STATE_RESET;
  		scsi_block_requests(cfg->host);
-+		drain_ioctls(cfg);
+ 		drain_ioctls(cfg);
  		rc = cxlflash_mark_contexts_error(cfg);
- 		if (unlikely(rc))
- 			dev_err(dev, "%s: Failed to mark user contexts!(%d)\n",
- 				__func__, rc);
- 		term_mc(cfg, UNDO_START);
- 		stop_afu(cfg);
--
+@@ -2408,7 +2408,7 @@ static pci_ers_result_t cxlflash_pci_error_detected(struct pci_dev *pdev,
  		return PCI_ERS_RESULT_NEED_RESET;
  	case pci_channel_io_perm_failure:
  		cfg->state = STATE_FAILTERM;
-diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-index 28aa9d9..655cbf1 100644
---- a/drivers/scsi/cxlflash/superpipe.c
-+++ b/drivers/scsi/cxlflash/superpipe.c
-@@ -1214,6 +1214,46 @@ static const struct file_operations null_fops = {
- };
+-		wake_up_all(&cfg->limbo_waitq);
++		wake_up_all(&cfg->reset_waitq);
+ 		scsi_unblock_requests(cfg->host);
+ 		return PCI_ERS_RESULT_DISCONNECT;
+ 	default:
+@@ -2455,7 +2455,7 @@ static void cxlflash_pci_resume(struct pci_dev *pdev)
+ 	dev_dbg(dev, "%s: pdev=%p\n", __func__, pdev);
  
- /**
-+ * check_state() - checks and responds to the current adapter state
-+ * @cfg:	Internal structure associated with the host.
-+ *
-+ * This routine can block and should only be used on process context.
-+ * It assumes that the caller is an ioctl thread and holding the ioctl
-+ * read semaphore. This is temporarily let up across the wait to allow
-+ * for draining actively running ioctls. Also note that when waking up
-+ * from waiting in reset, the state is unknown and must be checked again
-+ * before proceeding.
-+ *
-+ * Return: 0 on success, -errno on failure
-+ */
-+static int check_state(struct cxlflash_cfg *cfg)
-+{
-+	struct device *dev = &cfg->dev->dev;
-+	int rc = 0;
-+
-+retry:
-+	switch (cfg->state) {
-+	case STATE_LIMBO:
-+		dev_dbg(dev, "%s: Limbo state, going to wait...\n", __func__);
-+		up_read(&cfg->ioctl_rwsem);
-+		rc = wait_event_interruptible(cfg->limbo_waitq,
-+					      cfg->state != STATE_LIMBO);
-+		down_read(&cfg->ioctl_rwsem);
-+		if (unlikely(rc))
-+			break;
-+		goto retry;
-+	case STATE_FAILTERM:
-+		dev_dbg(dev, "%s: Failed/Terminating!\n", __func__);
-+		rc = -ENODEV;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+/**
-  * cxlflash_disk_attach() - attach a LUN to a context
-  * @sdev:	SCSI device associated with LUN.
-  * @attach:	Attach ioctl data structure.
-@@ -1523,41 +1563,6 @@ err1:
+ 	cfg->state = STATE_NORMAL;
+-	wake_up_all(&cfg->limbo_waitq);
++	wake_up_all(&cfg->reset_waitq);
+ 	scsi_unblock_requests(cfg->host);
  }
  
- /**
-- * check_state() - checks and responds to the current adapter state
-- * @cfg:	Internal structure associated with the host.
-- *
-- * This routine can block and should only be used on process context.
-- * Note that when waking up from waiting in limbo, the state is unknown
-- * and must be checked again before proceeding.
-- *
-- * Return: 0 on success, -errno on failure
-- */
--static int check_state(struct cxlflash_cfg *cfg)
--{
--	struct device *dev = &cfg->dev->dev;
--	int rc = 0;
--
--retry:
--	switch (cfg->state) {
+diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
+index 655cbf1..8a7ec5d 100644
+--- a/drivers/scsi/cxlflash/superpipe.c
++++ b/drivers/scsi/cxlflash/superpipe.c
+@@ -100,7 +100,7 @@ void cxlflash_stop_term_user_contexts(struct cxlflash_cfg *cfg)
+ 
+ 		dev_dbg(dev, "%s: Wait for user contexts to quiesce...\n",
+ 			__func__);
+-		wake_up_all(&cfg->limbo_waitq);
++		wake_up_all(&cfg->reset_waitq);
+ 		ssleep(1);
+ 	}
+ }
+@@ -1233,11 +1233,11 @@ static int check_state(struct cxlflash_cfg *cfg)
+ 
+ retry:
+ 	switch (cfg->state) {
 -	case STATE_LIMBO:
--		dev_dbg(dev, "%s: Limbo, going to wait...\n", __func__);
+-		dev_dbg(dev, "%s: Limbo state, going to wait...\n", __func__);
++	case STATE_RESET:
++		dev_dbg(dev, "%s: Reset state, going to wait...\n", __func__);
+ 		up_read(&cfg->ioctl_rwsem);
 -		rc = wait_event_interruptible(cfg->limbo_waitq,
 -					      cfg->state != STATE_LIMBO);
--		if (unlikely(rc))
--			break;
--		goto retry;
--	case STATE_FAILTERM:
--		dev_dbg(dev, "%s: Failed/Terminating!\n", __func__);
--		rc = -ENODEV;
--		break;
--	default:
--		break;
--	}
--
--	return rc;
--}
--
--/**
-  * cxlflash_afu_recover() - initiates AFU recovery
-  * @sdev:	SCSI device associated with LUN.
-  * @recover:	Recover ioctl data structure.
-@@ -1646,9 +1651,14 @@ retry_recover:
- 	/* Test if in error state */
- 	reg = readq_be(&afu->ctrl_map->mbox_r);
- 	if (reg == -1) {
--		dev_dbg(dev, "%s: MMIO read fail! Wait for recovery...\n",
--			__func__);
--		mutex_unlock(&ctxi->mutex);
-+		dev_dbg(dev, "%s: MMIO fail, wait for recovery.\n", __func__);
-+
-+		/*
-+		 * Before checking the state, put back the context obtained with
-+		 * get_context() as it is no longer needed and sleep for a short
-+		 * period of time (see prolog notes).
-+		 */
-+		put_context(ctxi);
- 		ctxi = NULL;
- 		ssleep(1);
- 		rc = check_state(cfg);
-@@ -1967,6 +1977,14 @@ out:
-  * @cmd:	IOCTL command.
-  * @arg:	Userspace ioctl data structure.
++		rc = wait_event_interruptible(cfg->reset_waitq,
++					      cfg->state != STATE_RESET);
+ 		down_read(&cfg->ioctl_rwsem);
+ 		if (unlikely(rc))
+ 			break;
+@@ -1578,10 +1578,10 @@ err1:
+  * quite possible for this routine to act as the kernel's EEH detection
+  * source (MMIO read of mbox_r). Because of this, there is a window of
+  * time where an EEH might have been detected but not yet 'serviced'
+- * (callback invoked, causing the device to enter limbo state). To avoid
++ * (callback invoked, causing the device to enter reset state). To avoid
+  * looping in this routine during that window, a 1 second sleep is in place
+  * between the time the MMIO failure is detected and the time a wait on the
+- * limbo wait queue is attempted via check_state().
++ * reset wait queue is attempted via check_state().
   *
-+ * A read/write semaphore is used to implement a 'drain' of currently
-+ * running ioctls. The read semaphore is taken at the beginning of each
-+ * ioctl thread and released upon concluding execution. Additionally the
-+ * semaphore should be released and then reacquired in any ioctl execution
-+ * path which will wait for an event to occur that is outside the scope of
-+ * the ioctl (i.e. an adapter reset). To drain the ioctls currently running,
-+ * a thread simply needs to acquire the write semaphore.
-+ *
   * Return: 0 on success, -errno on failure
   */
- int cxlflash_ioctl(struct scsi_device *sdev, int cmd, void __user *arg)
-@@ -2001,6 +2019,9 @@ int cxlflash_ioctl(struct scsi_device *sdev, int cmd, void __user *arg)
- 	{sizeof(struct dk_cxlflash_clone), (sioctl)cxlflash_disk_clone},
- 	};
- 
-+	/* Hold read semaphore so we can drain if needed */
-+	down_read(&cfg->ioctl_rwsem);
-+
- 	/* Restrict command set to physical support only for internal LUN */
- 	if (afu->internal_lun)
- 		switch (cmd) {
-@@ -2082,6 +2103,7 @@ int cxlflash_ioctl(struct scsi_device *sdev, int cmd, void __user *arg)
- 	/* fall through to exit */
- 
- cxlflash_ioctl_exit:
-+	up_read(&cfg->ioctl_rwsem);
- 	if (unlikely(rc && known_ioctl))
- 		dev_err(dev, "%s: ioctl %s (%08X) on dev(%d/%d/%d/%llu) "
- 			"returned rc %d\n", __func__,
 -- 
 2.1.0
