@@ -1,34 +1,50 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 32FA91A0BE5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 06:36:36 +1100 (AEDT)
-Date: Wed, 21 Oct 2015 21:36:44 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Boqun Feng <boqun.feng@gmail.com>, Will Deacon <will.deacon@arm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 165A51A0AE6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 06:36:49 +1100 (AEDT)
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 21 Oct 2015 13:36:47 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id D455619D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:24:44 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t9LJaY7f2884032
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 12:36:34 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9LJaWOi023579
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:36:34 -0600
+Date: Wed, 21 Oct 2015 12:36:38 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Boqun Feng <boqun.feng@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] barriers: introduce smp_mb__release_acquire and
- update documentation
-Message-ID: <20151021193644.GG2508@worktop.programming.kicks-ass.net>
-References: <20151007152501.GI3910@linux.vnet.ibm.com>
- <1444276236.9940.5.camel@ellerman.id.au>
- <20151008111638.GL3816@twins.programming.kicks-ass.net>
- <20151008214439.GE3910@linux.vnet.ibm.com>
- <20151009083138.GU3816@twins.programming.kicks-ass.net>
- <20151009094039.GD26278@arm.com>
- <20151019011718.GB924@fixme-laptop.cn.ibm.com>
- <20151020233451.GI5105@linux.vnet.ibm.com>
- <20151021082452.GC2881@worktop.programming.kicks-ass.net>
- <20151021192923.GR5105@linux.vnet.ibm.com>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
+Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
+ *cmpxchg a full barrier
+Message-ID: <20151021193638.GU5105@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+ <20151014201916.GB3910@linux.vnet.ibm.com>
+ <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
+ <20151020092147.GX17308@twins.programming.kicks-ass.net>
+ <20151020212835.GH5105@linux.vnet.ibm.com>
+ <20151021081833.GB2881@worktop.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151021192923.GR5105@linux.vnet.ibm.com>
+In-Reply-To: <20151021081833.GB2881@worktop.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,31 +54,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 21, 2015 at 12:29:23PM -0700, Paul E. McKenney wrote:
-> On Wed, Oct 21, 2015 at 10:24:52AM +0200, Peter Zijlstra wrote:
-> > On Tue, Oct 20, 2015 at 04:34:51PM -0700, Paul E. McKenney wrote:
-> > > There is also the question of whether the barrier forces ordering
-> > > of unrelated stores, everything initially zero and all accesses
-> > > READ_ONCE() or WRITE_ONCE():
-> > > 
-> > > 	P0		P1		P2		P3
-> > > 	X = 1;		Y = 1;		r1 = X;		r3 = Y;
-> > > 					some_barrier();	some_barrier();
-> > > 					r2 = Y;		r4 = X;
-> > > 
-> > > P2's and P3's ordering could be globally visible without requiring
-> > > P0's and P1's independent stores to be ordered, for example, if you
-> > > used smp_rmb() for some_barrier().  In contrast, if we used smp_mb()
-> > > for barrier, everyone would agree on the order of P0's and P0's stores.
-> > 
-> > Oh!?
+On Wed, Oct 21, 2015 at 10:18:33AM +0200, Peter Zijlstra wrote:
+> On Tue, Oct 20, 2015 at 02:28:35PM -0700, Paul E. McKenney wrote:
+> > I am not seeing a sync there, but I really have to defer to the
+> > maintainers on this one.  I could easily have missed one.
 > 
-> Behold sequential consistency, worshipped fervently by a surprisingly
-> large number of people!  Something about legacy proof methods, as near
-> as I can tell.  ;-)
+> So x86 implies a full barrier for everything that changes the CPL; and
+> some form of implied ordering seems a must if you change the privilege
+> level unless you tag every single load/store with the priv level at that
+> time, which seems the more expensive option.
 
-But how can smp_mb() guarantee anything about P[01]? There is but the
-single store, which can race against P[23] arbitrarily. There is nothing
-to order.
+And it is entirely possible that there is some similar operation
+somewhere in the powerpc entry/exit code.  I would not trust myself
+to recognize it, though.
 
-Maybe I'm confused again..
+> So I suspect the typical implementation will flush all load/stores,
+> change the effective priv level and continue.
+> 
+> This can of course be implemented at a pure per CPU ordering (RCpc),
+> which would be in line with the rest of Power, in which case you do
+> indeed need an explicit sync to make it visible to other CPUs.
+> 
+> But yes, if Michael or Ben could clarify this it would be good.
+> 
+> Back then I talked to Ralf about what MIPS says on this, and MIPS arch
+> spec is entirely quiet on this, it allows implementations full freedom
+> IIRC.
+
+:-) ;-) ;-)
+
+> </ramble>
+
+							Thanx, Paul
