@@ -1,22 +1,30 @@
-Return-Path: <christophe.jaillet@wanadoo.fr>
-Received: from smtp.smtpout.orange.fr (smtp02.smtpout.orange.fr
- [80.12.242.124])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D4A51A03C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 15:37:05 +1100 (AEDT)
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org,
- Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH v3] powerpc/prom: Avoid reference to potentially freed memory
-Date: Wed, 21 Oct 2015 06:36:47 +0200
-Message-Id: <1445402207-326-1-git-send-email-christophe.jaillet@wanadoo.fr>
-In-Reply-To: <1445246877.30407.1.camel@ellerman.id.au>
-References: <1445246877.30407.1.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 539711A03CA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 16:54:30 +1100 (AEDT)
+Message-ID: <1445406845.701.55.camel@freescale.com>
+Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
+From: Scott Wood <scottwood@freescale.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+CC: <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "Stephen
+ Warren" <swarren@wwwdotorg.org>, Javier Martinez Canillas
+ <javier@osg.samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
+ Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki"
+ <rjw@rjwysocki.net>, <linux-arm-kernel@lists.infradead.org>, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, <devicetree@vger.kernel.org>, Linus Walleij
+ <linus.walleij@linaro.org>, <linux-acpi@vger.kernel.org>, Arnd Bergmann
+ <arnd@arndb.de>, <linuxppc-dev@lists.ozlabs.org>, Hu Mingkai-B21284
+ <Mingkai.Hu@freescale.com>
+Date: Wed, 21 Oct 2015 00:54:05 -0500
+In-Reply-To: <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
+References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +34,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_get_property() is used inside the loop, but then the reference to the
-node is dropped before dereferencing the prop pointer, which could by then
-point to junk if the node has been freed.
-Instead use of_property_read_u32() to actually read the property
-value before dropping the reference.
+On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
+> Instead of trying to match and probe platform and AMBA devices right
+> after each is registered, delay their probes until device_initcall_sync.
+> 
+> This means that devices will start probing once all built-in drivers
+> have registered, and after all platform and AMBA devices from the DT
+> have been registered already.
+> 
+> This allows us to prevent deferred probes by probing dependencies on
+> demand.
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> ---
+> 
+> Changes in v4:
+> - Also defer probes of AMBA devices registered from the DT as they can
+>   also request resources.
+> 
+>  drivers/of/platform.c | 11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
 
-Use of_get_next_parent to simplify code.
+This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF platform 
+device, and it must be probed before pcibios_init() which is a 
+subsys_initcall(), or else the PCI bus never gets scanned.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-v2: Fix missing '{'
-v3: Use of_get_next_parent to simply code
-*** COMPILE-TESTED ONLY ***
----
- arch/powerpc/kernel/prom.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index bef76c5..ba29c0d 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -783,17 +783,14 @@ void __init early_get_first_memblock_info(void *params, phys_addr_t *size)
- int of_get_ibm_chip_id(struct device_node *np)
- {
- 	of_node_get(np);
--	while(np) {
--		struct device_node *old = np;
--		const __be32 *prop;
-+	while (np) {
-+		u32 chip_id;
- 
--		prop = of_get_property(np, "ibm,chip-id", NULL);
--		if (prop) {
-+		if (!of_property_read_u32(np, "ibm,chip-id", &chip_id)) {
- 			of_node_put(np);
--			return be32_to_cpup(prop);
-+			return chip_id;
- 		}
--		np = of_get_parent(np);
--		of_node_put(old);
-+		np = of_get_next_parent(np);
- 	}
- 	return -1;
- }
--- 
-2.1.4
+-Scott
