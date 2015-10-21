@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D74E71A0C5A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:17:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 28A921A0D60
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:17:55 +1100 (AEDT)
 Received: from localhost
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 21 Oct 2015 14:17:44 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3B9591FF0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:05:55 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9LKGNNr1311144
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:16:23 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9LKHgwS025145
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:17:43 -0600
+ Wed, 21 Oct 2015 14:17:54 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 485B71FF0043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:06:04 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9LKGm3e10289582
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:16:48 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9LKHoMH014428
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:17:52 -0600
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,9 +31,9 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 36/37] cxlflash: Fix to avoid lock instrumentation rejection
-Date: Wed, 21 Oct 2015 15:16:24 -0500
-Message-Id: <1445458584-63347-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v6 37/37] cxlflash: Fix to avoid bypassing context cleanup
+Date: Wed, 21 Oct 2015 15:16:32 -0500
+Message-Id: <1445458592-63806-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,28 +45,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When running with lock instrumentation (e.g. lockdep), some of the
-instrumentation can become disabled at probe time for a cxlflash
-adapter. This is due to a missing lock registration for the tmf_slock.
+Contexts may be skipped over for cleanup in situations where contention
+for the adapter's table-list mutex is experienced in the presence of a
+signal during the execution of the release handler.
 
-The fix is to call spin_lock_init() for the tmf_slock during probe.
+This can lead to two known issues:
+
+ - A hang condition on remove as that path tries to wait for users to
+   cleanup - something that will never complete should this scenario play
+   out as the user has already cleaned up from their perspective.
+
+ - An Oops in the unmap_mapping_range() call that is made as part of
+   the user waiting mechanism that is invoked on remove when contexts
+   are found to still exist.
+
+The root cause of this issue can be found in get_context() and how the
+table-list mutex is acquired. As this code path is shared by several
+different access points within the driver, a decision was made during
+the development cycle to acquire this mutex in this location using the
+interruptible version of the mutex locking service. In almost all of
+the use-cases and environmental scenarios this holds up, even when the
+mutex is contended. However, for critical system threads (such as the
+release handler), failing to acquire the mutex and bailing with the
+intention of the user being able to try again later is unacceptable.
+
+In such a scenario, the context _must_ be derived as it is on an
+irreversible path to being freed. Without being able to derive the
+context, the code mistakenly assumes that it has already been freed
+and proceeds to free up the underlying CXL context resources. From
+this point on, any usage of [the now stale] CXL context resources
+will result in undefined behavior. This is root cause of the Oops
+mentioned as the second known issue as the mapping passed to the
+unmap_mapping_range() service is owned by the CXL context.
+
+To fix this problem, acquisition of the table-list mutex within
+get_context() is simply changed to use the uninterruptible version
+of the mutex locking service. This is safe as the timing windows for
+holding this mutex are short and also protected against blocking.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/scsi/cxlflash/superpipe.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index afaf533..1e5bf0c 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -2410,6 +2410,7 @@ static int cxlflash_probe(struct pci_dev *pdev,
- 	INIT_WORK(&cfg->work_q, cxlflash_worker_thread);
- 	cfg->lr_state = LINK_RESET_INVALID;
- 	cfg->lr_port = -1;
-+	spin_lock_init(&cfg->tmf_slock);
- 	mutex_init(&cfg->ctx_tbl_list_mutex);
- 	mutex_init(&cfg->ctx_recovery_mutex);
- 	init_rwsem(&cfg->ioctl_rwsem);
+diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
+index 8af7cdc..34b21a0 100644
+--- a/drivers/scsi/cxlflash/superpipe.c
++++ b/drivers/scsi/cxlflash/superpipe.c
+@@ -162,10 +162,7 @@ struct ctx_info *get_context(struct cxlflash_cfg *cfg, u64 rctxid,
+ 
+ 	if (likely(ctxid < MAX_CONTEXT)) {
+ 		while (true) {
+-			rc = mutex_lock_interruptible(&cfg->ctx_tbl_list_mutex);
+-			if (rc)
+-				goto out;
+-
++			mutex_lock(&cfg->ctx_tbl_list_mutex);
+ 			ctxi = cfg->ctx_tbl[ctxid];
+ 			if (ctxi)
+ 				if ((file && (ctxi->file != file)) ||
 -- 
 2.1.0
