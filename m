@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA81C1A02DF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 22:41:44 +1100 (AEDT)
-In-Reply-To: <1444724227-24251-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8B3691A02DF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 22:41:45 +1100 (AEDT)
+In-Reply-To: <1444882955-27601-1-git-send-email-gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: thuth@redhat.com
-Subject: Re: powerpc/cell: Drop CONFIG_TUNE_CELL in favour of CONFIG_CELL_CPU
-Message-Id: <20151021114144.8F7F2140DB4@ozlabs.org>
-Date: Wed, 21 Oct 2015 22:41:44 +1100 (AEDT)
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: powerpc/eeh: Fix recursive fenced PHB on Broadcom shiner adapter
+Message-Id: <20151021114145.37C91140E31@ozlabs.org>
+Date: Wed, 21 Oct 2015 22:41:45 +1100 (AEDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-13-10 at 08:17:07 UTC, Michael Ellerman wrote:
-> The TUNE_CELL option allows you to build a kernel that runs on multiple
-> CPUs but is tuned (ie. optimised) to run on Cell CPUs. Now days no one
-> is building a distro in that fashion, and any users who are building
-> custom kernels for their Cell machines are better off building with
-> CONFIG_CELL_CPU, which builds a kernel that only runs on Cell and
-> therefore can be optimised even more aggresively.
+On Thu, 2015-15-10 at 04:22:35 UTC, Gavin Shan wrote:
+> Similar to commit b6541db ("powerpc/eeh: Block PCI config access
+> upon frozen PE"), this blocks the PCI config space of Broadcom
+> Shiner adapter until PE reset is completed, to avoid recursive
+> fenced PHB when dumping PCI config registers during the period
+> of error recovery.
 > 
-> Dropping the option also avoids confusing other users, who are presented
-> with an option to tune for Cell when they are not building for a Cell
-> CPU at all.
+>    ~# lspci -ns 0003:03:00.0
+>    0003:03:00.0 0200: 14e4:168a (rev 10)
+>    ~# lspci -s 0003:03:00.0
+>    0003:03:00.0 Ethernet controller: Broadcom Corporation \
+>                 NetXtreme II BCM57800 1/10 Gigabit Ethernet (rev 10)
 > 
-> Suggested-by: Thomas Huth <thuth@redhat.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bed08b7e1fa41eac214acb17
+https://git.kernel.org/powerpc/c/353169acf1858bb2dc3f9147
 
 cheers
