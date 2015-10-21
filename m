@@ -1,26 +1,26 @@
 Return-Path: <mrochs@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 968881A0C39
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:15:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A935F1A0C76
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 07:15:50 +1100 (AEDT)
 Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 21 Oct 2015 14:15:37 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 8A5EF3E40047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:15:35 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t9LKEFVJ5636504
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 13:14:15 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9LKFYSs026283
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 14:15:35 -0600
+ Wed, 21 Oct 2015 16:15:48 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 14D2C6E8047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 16:03:58 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9LKFkDF60358762
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 20:15:46 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9LKFhOI006201
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Oct 2015 16:15:45 -0400
 From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
@@ -31,10 +31,10 @@ To: linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v6 20/37] cxlflash: Fix to prevent workq from accessing freed
- memory
-Date: Wed, 21 Oct 2015 15:14:17 -0500
-Message-Id: <1445458457-31539-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Subject: [PATCH v6 21/37] cxlflash: Correct behavior in device reset handler
+ following EEH
+Date: Wed, 21 Oct 2015 15:14:24 -0500
+Message-Id: <1445458464-40183-1-git-send-email-mrochs@linux.vnet.ibm.com>
 In-Reply-To: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -46,37 +46,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The workq can process work in parallel with a remove event, leading
-to a condition where the workq handler can access freed memory.
+When the device reset handler is entered while a reset operation
+is taking place, the handler exits without actually sending a
+reset (TMF) to the targeted device. This behavior is incorrect
+as the device is not reset. Further complicating matters is the
+fact that a success is returned even when the TMF was not sent.
 
-To remedy, the workq should be terminated prior to freeing memory. Move
-the termination call earlier in remove and use cancel_work_sync() instead
-of flush_work() as there is not a need to process any scheduled work when
-shutting down.
+To fix, the state is rechecked after coming out of the reset
+state. When the state is normal, a TMF will be sent out.
 
 Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/cxlflash/main.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index 6b8b159..d0b9972 100644
+index d0b9972..89bd4c3 100644
 --- a/drivers/scsi/cxlflash/main.c
 +++ b/drivers/scsi/cxlflash/main.c
-@@ -736,11 +736,11 @@ static void cxlflash_remove(struct pci_dev *pdev)
- 		/* Fall through */
- 	case INIT_STATE_AFU:
- 		term_afu(cfg);
-+		cancel_work_sync(&cfg->work_q);
- 	case INIT_STATE_PCI:
- 		pci_release_regions(cfg->dev);
- 		pci_disable_device(pdev);
- 	case INIT_STATE_NONE:
--		flush_work(&cfg->work_q);
- 		free_mem(cfg);
- 		scsi_host_put(cfg->host);
+@@ -1920,6 +1920,7 @@ static int cxlflash_eh_device_reset_handler(struct scsi_cmnd *scp)
+ 		 get_unaligned_be32(&((u32 *)scp->cmnd)[2]),
+ 		 get_unaligned_be32(&((u32 *)scp->cmnd)[3]));
+ 
++retry:
+ 	switch (cfg->state) {
+ 	case STATE_NORMAL:
+ 		rcr = send_tmf(afu, scp, TMF_LUN_RESET);
+@@ -1928,9 +1929,7 @@ static int cxlflash_eh_device_reset_handler(struct scsi_cmnd *scp)
+ 		break;
+ 	case STATE_RESET:
+ 		wait_event(cfg->reset_waitq, cfg->state != STATE_RESET);
+-		if (cfg->state == STATE_NORMAL)
+-			break;
+-		/* fall through */
++		goto retry;
+ 	default:
+ 		rc = FAILED;
  		break;
 -- 
 2.1.0
