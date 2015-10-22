@@ -1,16 +1,37 @@
-Return-Path: <geoff@infradead.org>
-Message-ID: <1445541315.30908.148.camel@infradead.org>
-Subject: Re: Time to remove platforms/cell?
-From: Geoff Levand <geoff@infradead.org>
-To: Marc Dietrich <marvin24@gmx.de>, Declan Malone <declan.malone@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org
-Date: Thu, 22 Oct 2015 12:15:15 -0700
-In-Reply-To: <2993505.617vsrhBxj@fb07-iapwap2>
-References: <1442467727.25483.0.camel@ellerman.id.au>
- <1444327832.29301.27.camel@infradead.org>
- <1444412742.29301.90.camel@infradead.org> <2993505.617vsrhBxj@fb07-iapwap2>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0137.outbound.protection.outlook.com [157.56.110.137])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C94331A095E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 08:27:31 +1100 (AEDT)
+Message-ID: <1445549230.701.116.camel@freescale.com>
+Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
+From: Scott Wood <scottwood@freescale.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+CC: Rob Herring <robh+dt@kernel.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>,
+ Javier Martinez Canillas <javier@osg.samsung.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, "Thierry
+ Reding" <thierry.reding@gmail.com>, Alan Stern <stern@rowland.harvard.edu>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, Dmitry Torokhov
+ <dmitry.torokhov@gmail.com>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Arnd Bergmann
+ <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Hu
+ Mingkai-B21284" <Mingkai.Hu@freescale.com>
+Date: Thu, 22 Oct 2015 16:27:10 -0500
+In-Reply-To: <CAAObsKAfufBe_SycibUN3ZsE3fOkBfUjZRx1SWEMwVtM6t7inQ@mail.gmail.com>
+References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
+ <1445406845.701.55.camel@freescale.com>
+ <CAL_JsqLhZmc8cEC+tFJ25KLe0bQZsWmrRWGBMQake9VN6OjvdQ@mail.gmail.com>
+ <1445467912.701.90.camel@freescale.com>
+ <CAAObsKAfufBe_SycibUN3ZsE3fOkBfUjZRx1SWEMwVtM6t7inQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,25 +41,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Fri, 2015-10-09 at 23:13 +0200, Marc Dietrich wrote:
-> Am Freitag, 9. Oktober 2015, 10:45:42 schrieb Geoff Levand:
-> > With the 4.2-rc4 kernel, kexec seems to work when CONFIG_SPU_FS=n. 
-> >  I
-> > have not tried with petitboot release white-09.09.01-15.56 yet though.
+On Thu, 2015-10-22 at 15:04 +0200, Tomeu Vizoso wrote:
+> On 22 October 2015 at 00:51, Scott Wood <scottwood@freescale.com> wrote:
+> > On Wed, 2015-10-21 at 08:44 -0500, Rob Herring wrote:
+> > > On Wed, Oct 21, 2015 at 12:54 AM, Scott Wood <scottwood@freescale.com>
+> > > wrote:
+> > > > On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
+> > > > > Instead of trying to match and probe platform and AMBA devices right
+> > > > > after each is registered, delay their probes until 
+> > > > > device_initcall_sync.
+> > > > > 
+> > > > > This means that devices will start probing once all built-in drivers
+> > > > > have registered, and after all platform and AMBA devices from the DT
+> > > > > have been registered already.
+> > > > > 
+> > > > > This allows us to prevent deferred probes by probing dependencies on
+> > > > > demand.
+> > > > > 
+> > > > > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> > > > > ---
+> > > > > 
+> > > > > Changes in v4:
+> > > > > - Also defer probes of AMBA devices registered from the DT as they 
+> > > > > can
+> > > > >   also request resources.
+> > > > > 
+> > > > >  drivers/of/platform.c | 11 ++++++++---
+> > > > >  1 file changed, 8 insertions(+), 3 deletions(-)
+> > > > 
+> > > > This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF 
+> > > > platform
+> > > > device, and it must be probed before pcibios_init() which is a
+> > > > subsys_initcall(), or else the PCI bus never gets scanned.
+> > > 
+> > > Thanks for the report. This is probably getting dropped, but it could
+> > > be disabled for PPC.
+> > 
+> > I don't think that adding another arbitrary arch difference would be the
+> > right solution.
 > 
-> I guess you mean 4.3-rc4. Still no luck with CONFIG_SPU_FS=n. No output even 
-> with direct calling kexec. Can you put a working kernel/initrd to some place 
-> so I can try this?
+> I think Rob meant temporarily disable it while things get fixed. At
+> least, 
 
-I did some more work on this, but still did not find out what the problem
-is.  Kexec from 4.3 -> 4.3 works, but with the white-09.09.01-15.56
-petitboot (2.6.30.9) -> 4.3 gets a kernel panic:
+So, what is the permanent fix for the swiotlb issue (or more generally, the 
+inability to have a late_initcall that runs after non-module, non-hotplug 
+platform devices have been probed)?
 
- -> early_setup(), dt_ptr: 0x7fff000
-Kernel panic - not syncing: BUG: Failed verifying flat device tree, bad version?
+> I don't see any reason why PPC wouldn't benefit from this
+> series.
 
-I'll look at it some more as I find time.
+It's not clear to me what the benefit of this is at all, much less for PPC.   
+What is the fundamental problem with deferred probes?  In the cover letter 
+you say this change saves 2.3 seconds, but where is that time being consumed? 
+ Are the drivers taking too long in their probe function trying to initialize 
+and then deferring, rather than checking for dependencies up front?  Or are 
+there really so many devices and such a pessimal ordering that most of the 
+time is spent iterating through and reordering the list, with each defer 
+happening quickly?
 
--Geoff
+Even if something different does need to be done at this level, forcing all 
+OF platform devices to be probed at the late_initcall level seems quite 
+intrusive.  You limited it to OF because people complained that other things 
+will break.  Things still broke.  Surely there's a better way to address the 
+problem.  Can't the delay be requested by drivers that might otherwise need 
+to defer (which could be done incrementally, focusing on the worst 
+performance problems), rather than enabling it for everything?
+
+-Scott
