@@ -1,31 +1,31 @@
 Return-Path: <manoj@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3418E1A0758
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 04:17:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8EA611A026C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 04:34:21 +1100 (AEDT)
 Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <manoj@linux.vnet.ibm.com>;
- Thu, 22 Oct 2015 11:17:46 -0600
+ Thu, 22 Oct 2015 13:34:19 -0400
 Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
  [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id AC0EAC90046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 13:05:54 -0400 (EDT)
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A96A738C803B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 13:34:15 -0400 (EDT)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
  by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9MHHhCH55443584
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 17:17:43 GMT
+ t9MHYFOC54591540
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 17:34:15 GMT
 Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
  by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9MHHggv019552
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 13:17:42 -0400
+ t9MHYE69017365
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 13:34:15 -0400
 Reply-To: manoj@linux.vnet.ibm.com
-Subject: Re: [PATCH v6 35/37] cxlflash: Fix to avoid corrupting port selection
- mask
+Subject: Re: [PATCH v6 36/37] cxlflash: Fix to avoid lock instrumentation
+ rejection
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1445458575-62688-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1445458584-63347-1-git-send-email-mrochs@linux.vnet.ibm.com>
 To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
  "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
@@ -35,10 +35,10 @@ To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  Tomas Henzl <thenzl@redhat.com>, David Laight <David.Laight@ACULAB.COM>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 From: Manoj Kumar <manoj@linux.vnet.ibm.com>
-Message-ID: <56291A42.6090504@linux.vnet.ibm.com>
-Date: Thu, 22 Oct 2015 12:17:54 -0500
+Message-ID: <56291E23.6010406@linux.vnet.ibm.com>
+Date: Thu, 22 Oct 2015 12:34:27 -0500
 MIME-Version: 1.0
-In-Reply-To: <1445458575-62688-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1445458584-63347-1-git-send-email-mrochs@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -52,5 +52,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Acked-by: Manoj Kumar <manoj@linux.vnet.ibm.com>
 
 On 10/21/2015 3:16 PM, Matthew R. Ochs wrote:
-> The port selection mask of a LUN can be corrupted when the manage LUN
-> ioctl (DK_CXLFLASH_MANAGE_LUN) is issued more than once for any device.
+> When running with lock instrumentation (e.g. lockdep), some of the
+> instrumentation can become disabled at probe time for a cxlflash
+> adapter. This is due to a missing lock registration for the tmf_slock.
+>
+> The fix is to call spin_lock_init() for the tmf_slock during probe.
