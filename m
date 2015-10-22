@@ -1,38 +1,38 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5EBCB1A070B
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8BB121A070B
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 12:23:02 +1100 (AEDT)
 Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B868A14131C
+ by ozlabs.org (Postfix) with ESMTPS id E136D14131D
  for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 12:23:01 +1100 (AEDT)
 Received: from /spool/local
  by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 22 Oct 2015 06:52:59 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id B1B61394005C
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 06:52:57 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9M1MtEY65732688
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 06:52:55 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9M1Msmo007355
- for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 06:52:55 +0530
+ Thu, 22 Oct 2015 06:53:00 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3A06EE004C
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 06:53:02 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9M1MvUL62521582
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 06:52:57 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9M1MuUv001194
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 06:52:57 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org
 Cc: linuxppc-dev@ozlabs.org, mpe@ellerman.id.au,
  Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: [PATCH V7 1/6] powerpc/powernv: don't enable SRIOV when VF BAR has
- non 64bit-prefetchable BAR
-Date: Thu, 22 Oct 2015 09:22:14 +0800
-Message-Id: <1445476939-2995-2-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V7 2/6] powerpc/powernv: simplify the calculation of iov
+ resource alignment
+Date: Thu, 22 Oct 2015 09:22:15 +0800
+Message-Id: <1445476939-2995-3-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1445476939-2995-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1445476939-2995-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,112 +44,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PHB3, we enable SRIOV devices by mapping IOV BAR with M64 BARs. If a
-SRIOV device's IOV BAR is not 64bit-prefetchable, this is not assigned from
-64bit prefetchable window, which means M64 BAR can't work on it.
+The alignment of IOV BAR on PowerNV platform is the total size of the IOV
+BAR. No matter whether the IOV BAR is extended with number of
+roundup_pow_of_two(total_vfs) or number of max PE number (256), the total
+size could be calculated by (vfs_expanded * VF_BAR_size).
 
-The reason is PCI bridges support only 2 memory windows and the kernel code
-programs bridges in the way that one window is 32bit-nonprefetchable and
-the other one is 64bit-prefetchable. So if devices' IOV BAR is 64bit and
-non-prefetchable, it will be mapped into 32bit space and therefore M64
-cannot be used for it.
-
-This patch makes this explicit and truncate IOV resource in this case to
-save MMIO space.
+This patch simplifies the pnv_pci_iov_resource_alignment() by removing the
+first case.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Acked-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++++++++--------------
- 1 file changed, 19 insertions(+), 16 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 85cbc96..02324c6 100644
+index 02324c6..dc0c90b 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -908,9 +908,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
- 		if (!res->flags || !res->parent)
- 			continue;
- 
--		if (!pnv_pci_is_mem_pref_64(res->flags))
--			continue;
+@@ -2998,17 +2998,21 @@ static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
+ 						      int resno)
+ {
+ 	struct pci_dn *pdn = pci_get_pdn(pdev);
+-	resource_size_t align, iov_align;
 -
- 		/*
- 		 * The actual IOV BAR range is determined by the start address
- 		 * and the actual size for num_vfs VFs BAR.  This check is to
-@@ -939,9 +936,6 @@ static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
- 		if (!res->flags || !res->parent)
- 			continue;
+-	iov_align = resource_size(&pdev->resource[resno]);
+-	if (iov_align)
+-		return iov_align;
++	resource_size_t align;
  
--		if (!pnv_pci_is_mem_pref_64(res->flags))
--			continue;
--
- 		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
- 		res2 = *res;
- 		res->start += size * offset;
-@@ -1221,9 +1215,6 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 num_vfs)
- 		if (!res->flags || !res->parent)
- 			continue;
++	/*
++	 * On PowerNV platform, IOV BAR is mapped by M64 BAR to enable the
++	 * SR-IOV. While from hardware perspective, the range mapped by M64
++	 * BAR should be size aligned.
++	 *
++	 * This function returns the total IOV BAR size if M64 BAR is in
++	 * Shared PE mode or just VF BAR size if not.
++	 */
+ 	align = pci_iov_resource_size(pdev, resno);
+-	if (pdn->vfs_expanded)
+-		return pdn->vfs_expanded * align;
++	if (!pdn->vfs_expanded)
++		return align;
  
--		if (!pnv_pci_is_mem_pref_64(res->flags))
--			continue;
--
- 		for (j = 0; j < vf_groups; j++) {
- 			do {
- 				win = find_next_zero_bit(&phb->ioda.m64_bar_alloc,
-@@ -1510,6 +1501,12 @@ int pnv_pci_sriov_enable(struct pci_dev *pdev, u16 num_vfs)
- 	pdn = pci_get_pdn(pdev);
- 
- 	if (phb->type == PNV_PHB_IODA2) {
-+		if (!pdn->vfs_expanded) {
-+			dev_info(&pdev->dev, "don't support this SRIOV device"
-+				" with non 64bit-prefetchable IOV BAR\n");
-+			return -ENOSPC;
-+		}
-+
- 		/* Calculate available PE for required VFs */
- 		mutex_lock(&phb->ioda.pe_alloc_mutex);
- 		pdn->offset = bitmap_find_next_zero_area(
-@@ -2775,9 +2772,10 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
- 		if (!res->flags || res->parent)
- 			continue;
- 		if (!pnv_pci_is_mem_pref_64(res->flags)) {
--			dev_warn(&pdev->dev, " non M64 VF BAR%d: %pR\n",
-+			dev_warn(&pdev->dev, "Don't support SR-IOV with"
-+					" non M64 VF BAR%d: %pR. \n",
- 				 i, res);
--			continue;
-+			goto truncate_iov;
- 		}
- 
- 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
-@@ -2796,11 +2794,6 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
- 		res = &pdev->resource[i + PCI_IOV_RESOURCES];
- 		if (!res->flags || res->parent)
- 			continue;
--		if (!pnv_pci_is_mem_pref_64(res->flags)) {
--			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
--				 i, res);
--			continue;
--		}
- 
- 		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
- 		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
-@@ -2810,6 +2803,16 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
- 			 i, res, mul);
- 	}
- 	pdn->vfs_expanded = mul;
-+
-+	return;
-+
-+truncate_iov:
-+	/* To save MMIO space, IOV BAR is truncated. */
-+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-+		res = &pdev->resource[i + PCI_IOV_RESOURCES];
-+		res->flags = 0;
-+		res->end = res->start - 1;
-+	}
+-	return align;
++	return pdn->vfs_expanded * align;
  }
  #endif /* CONFIG_PCI_IOV */
  
