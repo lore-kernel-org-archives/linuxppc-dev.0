@@ -1,18 +1,29 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 544441A06CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 10:32:15 +1100 (AEDT)
-Message-ID: <1445470334.30295.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/ps3: Quieten the build when building ps3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9405D1A06C9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 11:34:49 +1100 (AEDT)
+Message-ID: <1445474088.30295.5.camel@ellerman.id.au>
+Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, geoff@infradead.org
-Date: Thu, 22 Oct 2015 10:32:14 +1100
-In-Reply-To: <20151021164746.GA8157@gate.crashing.org>
-References: <1445230402-18087-1-git-send-email-mpe@ellerman.id.au>
- <20151021164746.GA8157@gate.crashing.org>
+To: Scott Wood <scottwood@freescale.com>, Tomeu Vizoso
+ <tomeu.vizoso@collabora.com>
+Cc: devicetree@vger.kernel.org, linux-acpi@vger.kernel.org, Arnd Bergmann
+ <arnd@arndb.de>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki"
+ <rjw@rjwysocki.net>,  linux-kernel@vger.kernel.org, Rob Herring
+ <robh+dt@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>,
+ Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
+ Alan Stern <stern@rowland.harvard.edu>, Hu Mingkai-B21284
+ <Mingkai.Hu@freescale.com>,  linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Date: Thu, 22 Oct 2015 11:34:48 +1100
+In-Reply-To: <1445406845.701.55.camel@freescale.com>
+References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1442844182-27787-23-git-send-email-tomeu.vizoso@collabora.com>
+ <1445406845.701.55.camel@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,26 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-21 at 11:47 -0500, Segher Boessenkool wrote:
+On Wed, 2015-10-21 at 00:54 -0500, Scott Wood wrote:
 
-> On Mon, Oct 19, 2015 at 03:53:22PM +1100, Michael Ellerman wrote:
+> On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
 
-> > The boot wrapper uses dd when building for ps3, which annoyingly tells
-> > us in great detail what it's doing, eg:
+> > Instead of trying to match and probe platform and AMBA devices right
+> > after each is registered, delay their probes until device_initcall_sync.
 > > 
-> >   512+0 records in
-> >   512+0 records out
-> >   512 bytes (512 B) copied, 0.000802129 s, 638 kB/s
-> >   512+0 records in
-> >   512+0 records out
-> >   512 bytes (512 B) copied, 0.000745101 s, 687 kB/s
+> > This means that devices will start probing once all built-in drivers
+> > have registered, and after all platform and AMBA devices from the DT
+> > have been registered already.
 > > 
-> > Also annoyingly, there is no "quiet" flag to dd, so our only option is
-> > to grab all the output from dd, and iff there is an error print it out.
+> > This allows us to prevent deferred probes by probing dependencies on
+> > demand.
+> > 
+> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> > ---
+> > 
+> > Changes in v4:
+> > - Also defer probes of AMBA devices registered from the DT as they can
+> >   also request resources.
+> > 
+> >  drivers/of/platform.c | 11 ++++++++---
+> >  1 file changed, 8 insertions(+), 3 deletions(-)
 > 
-> "status=none", but that's not POSIX it seems.
+> This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF platform 
+> device, and it must be probed before pcibios_init() which is a 
+> subsys_initcall(), or else the PCI bus never gets scanned.
 
-Ah darn, that probably would have been fine, I think I just missed it because
-it's an argument not a flag.
+Ah right. This is presumably why I'm not seeing any PCI devices on my p5020ds
+with linux-next.
 
 cheers
