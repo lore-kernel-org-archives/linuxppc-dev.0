@@ -1,33 +1,42 @@
-Return-Path: <mturquette@baylibre.com>
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 540BE1A074C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 21:11:24 +1100 (AEDT)
-Received: by pabrc13 with SMTP id rc13so83203251pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 03:11:21 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 597B01A06A9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 22:14:52 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2B18A14131C
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 22:14:52 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 22 Oct 2015 21:14:50 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 81920357804F
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 22:14:47 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9MBEcwr65470526
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 22:14:47 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9MBEEYg010429
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 Oct 2015 22:14:14 +1100
+Date: Thu, 22 Oct 2015 22:13:57 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: gwshan@linux.vnet.ibm.com, aik@ozlabs.ru, benh@kernel.crashing.org,
+ linuxppc-dev@ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH V7 0/6] Redesign SR-IOV on PowerNV
+Message-ID: <20151022111356.GA22500@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1445476939-2995-1-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, 
-From: Michael Turquette <mturquette@baylibre.com>
-In-Reply-To: <1444435064.5185.16.camel@freescale.com>
-Cc: "Stephen Boyd" <sboyd@codeaurora.org>,
- "Tang Yuantian" <Yuantian.Tang@freescale.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "Liberman Igal-B31950" <Igal.Liberman@freescale.com>,
- "Bucur Madalin-Cristian-B32716" <madalin.bucur@freescale.com>,
- linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- devicetree@vger.kernel.org
-References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
- <20150811182535.31346.52965@quantum>
- <1443745589.5336.185.camel@freescale.com>
- <1444435064.5185.16.camel@freescale.com>
-Message-ID: <20151022101116.20687.55089@quantum>
-Subject: Re: [RFC PATCH 0/8] clk: qoriq: Move chip-specific knowledge into
- driver
-Date: Thu, 22 Oct 2015 03:11:16 -0700
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1445476939-2995-1-git-send-email-weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,50 +46,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Quoting Scott Wood (2015-10-09 16:57:44)
-> On Thu, 2015-10-01 at 19:26 -0500, Scott Wood wrote:
-> > [Resending to updated e-mail address]
-> > =
+On Thu, Oct 22, 2015 at 09:22:13AM +0800, Wei Yang wrote:
+>In original design, it tries to group VFs to enable more number of VFs in the
+>system, when VF BAR is bigger than 64MB. This design has a flaw in which one
+>error on a VF will interfere other VFs in the same group.
+>
+>This patch series change this design by using M64 BAR in Single PE mode to
+>cover only one VF BAR. By doing so, it gives absolute isolation between VFs.
+>
 
-> > On Tue, 2015-08-11 at 11:25 -0700, Michael Turquette wrote:
-> > > Hi Scott,
-> > > =
+This series looks good to me, no obvious problems found. By the way, The
+VF EEH patchset has been there for some time, could you respin it on top
+of this series and resend that after retesting?
 
-> > > Quoting Scott Wood (2015-06-18 19:49:10)
-> > > > The existing device tree bindings are error-prone and inflexible. =
+In case Michael need the ack as mentioned last time in IRC:
 
-> > > > Correct the mistake by moving the knowledge into the driver, which
-> > > > has more flexibility in describing the quirks of each chip.  This l=
-eaves
-> > > > the device tree to its proper role of identifying a programming =
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-> > > > interface
-> > > > rather than describing its individual registers.
-> > > =
-
-> > > Sorry for not responding to this one sooner. Fell through the cracks.
-> > > =
-
-> > > All of the changes to drives/clk/clk-qoriq.c look great to me. I assu=
-me
-> > > you need to keep all of these patches together and want to the take
-> > > through the freescale tree? If so feel free to add,
-> > > =
-
-> > > Acked-by: Michael Turquette <mturquette@baylibre.com>
-> > =
-
-> > Is the ack still valid for the v3 patchset?
-
-Yes. Looks Stephen beat me to it though.
-
-Regards,
-Mike
-
-> =
-
-> ping
-> =
-
-> -Scott
->=20
+>v7:
+>   * clear res->flags when truncating the IOV BAR
+>v6:
+>   * add the minimum size check when M64 BAR is in Single PE mode
+>   * truncate IOV BAR when powernv can't handle it
+>v5:
+>   * rebase on top of v4.2, with commit 68230242cdb "net/mlx4_core: Add port
+>     attribute when tracking counters" reverted
+>   * add some reason in change log of Patch 1
+>   * make the pnv_pci_iov_resource_alignment() more easy to read
+>   * initialize pe_num_map[] just after it is allocated
+>   * test ssh from guest to host via VF passed and then shutdown the guest
+>   * no code change
+>v4:
+>   * rebase the code on top of v4.2-rc7
+>   * switch back to use the dynamic version of pe_num_map and m64_map
+>   * split the memory allocation and PE assignment of pe_num_map to make it
+>     more easy to read
+>   * check pe_num_map value before free PE.
+>   * add the rename reason for pe_num_map and m64_map in change log
+>v3:
+>   * return -ENOSPC when a VF has non-64bit prefetchable BAR
+>   * rename offset to pe_num_map and define it staticly
+>   * change commit log based on comments
+>   * define m64_map staticly
+>v2:
+>   * clean up iov bar alignment calculation
+>   * change m64s to m64_bars
+>   * add a field to represent M64 Single PE mode will be used
+>   * change m64_wins to m64_map
+>   * calculate the gate instead of hard coded
+>   * dynamically allocate m64_map
+>   * dynamically allocate PE#
+>   * add a case to calculate iov bar alignment when M64 Single PE is used
+>   * when M64 Single PE is used, compare num_vfs with M64 BAR available number 
+>     in system at first
+>
+>
+>Wei Yang (6):
+>  powerpc/powernv: don't enable SRIOV when VF BAR has non
+>    64bit-prefetchable BAR
+>  powerpc/powernv: simplify the calculation of iov resource alignment
+>  powerpc/powernv: use one M64 BAR in Single PE mode for one VF BAR
+>  powerpc/powernv: replace the hard coded boundary with gate
+>  powerpc/powernv: boundary the total VF BAR size instead of the
+>    individual one
+>  powerpc/powernv: allocate sparse PE# when using M64 BAR in Single PE
+>    mode
+>
+> arch/powerpc/include/asm/pci-bridge.h     |   7 +-
+> arch/powerpc/platforms/powernv/pci-ioda.c | 347 ++++++++++++++++--------------
+> 2 files changed, 192 insertions(+), 162 deletions(-)
+>
+>-- 
+>2.5.0
+>
