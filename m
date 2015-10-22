@@ -1,29 +1,22 @@
 Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 067A11A0B51
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 00:46:01 +1100 (AEDT)
-Date: Thu, 22 Oct 2015 15:46:46 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 971A01A04DE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 01:08:21 +1100 (AEDT)
+Date: Thu, 22 Oct 2015 16:09:02 +0200
 From: Anatolij Gustschin <agust@denx.de>
-To: Alexander Popov <alex.popov@linux.com>
+To: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@pengutronix.de>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Rob Herring
- <robh@kernel.org>, Timur Tabi <timur@tabi.org>, Grant Likely
- <grant.likely@linaro.org>, Dan Williams <dan.j.williams@intel.com>, Vinod
- Koul <vinod.koul@intel.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland
- <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
- Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 2/2] powerpc/512x: add a device tree binding for
- LocalPlus Bus FIFO
-Message-ID: <20151022154646.590d7b03@crub>
-In-Reply-To: <1444597682-22181-3-git-send-email-alex.popov@linux.com>
-References: <1444597682-22181-1-git-send-email-alex.popov@linux.com>
- <1444597682-22181-3-git-send-email-alex.popov@linux.com>
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, kernel@pengutronix.de
+Subject: Re: [PATCH] powerpc: mpc512x: drop bogus and unused psc register
+ bit definitions
+Message-ID: <20151022160902.0446b1ef@crub>
+In-Reply-To: <1437463273-24742-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1437463273-24742-1-git-send-email-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,19 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 12 Oct 2015 00:08:02 +0300
-Alexander Popov <alex.popov@linux.com> wrote:
+On Tue, 21 Jul 2015 09:21:13 +0200
+Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de> wrote:
 
-> Add a device tree binding for Freescale MPC512x LocalPlus Bus FIFO and
-> introduce the document describing that binding.
-> 
-> Signed-off-by: Alexander Popov <alex.popov@linux.com>
+> These were introduced in commit 25ae3a0739c6 ("[POWERPC] mpc512x: Add
+> MPC512x PSC support to MPC52xx psc driver") and never used. Moreover
+> according to the datasheet[1] MEMERROR is bit 25 (0x40) and ORERR is
+> bit 27 (0x10).
+>=20
+> [1] MPC5125RM Rev. 2; 11/2009
+>=20
+> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
 > ---
->  .../bindings/powerpc/fsl/mpc512x_lpbfifo.txt        | 21 +++++++++++++++++++++
->  arch/powerpc/boot/dts/mpc5121.dtsi                  | 11 +++++++++--
->  arch/powerpc/boot/dts/mpc5125twr.dts                | 11 ++++++++++-
->  3 files changed, 40 insertions(+), 3 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mpc512x_lpbfifo.txt
+>  arch/powerpc/include/asm/mpc52xx_psc.h | 2 --
+>  1 file changed, 2 deletions(-)
 
 applied to mpc5xxx/next.
 
