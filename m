@@ -2,9 +2,9 @@ Return-Path: <thenzl@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 15CBD1A0171
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 00:36:53 +1100 (AEDT)
-Subject: Re: [PATCH v6 13/37] cxlflash: Fix to avoid stall while waiting on TMF
+ by lists.ozlabs.org (Postfix) with ESMTPS id 583AC1A0C54
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 00:37:37 +1100 (AEDT)
+Subject: Re: [PATCH v6 14/37] cxlflash: Fix location of setting resid
 To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
  "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
@@ -13,14 +13,14 @@ To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  David Laight <David.Laight@ACULAB.COM>
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1445458401-3279-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1445458409-10166-1-git-send-email-mrochs@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Tomas Henzl <thenzl@redhat.com>
-Message-ID: <562A37F0.4040201@redhat.com>
-Date: Fri, 23 Oct 2015 15:36:48 +0200
+Message-ID: <562A381C.8030304@redhat.com>
+Date: Fri, 23 Oct 2015 15:37:32 +0200
 MIME-Version: 1.0
-In-Reply-To: <1445458401-3279-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1445458409-10166-1-git-send-email-mrochs@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,13 +32,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 21.10.2015 22:13, Matthew R. Ochs wrote:
-> Borrowing the TMF waitq's spinlock causes a stall condition when
-> waiting for the TMF to complete. To remedy, introduce our own spin
-> lock to serialize TMF and use the appropriate wait services.
->
-> Also add a timeout while waiting for a TMF completion. When a TMF
-> times out, report back a failure such that a bigger hammer reset
-> can occur.
+> The resid is incorrectly set which can lead to unnecessary retry
+> attempts by the stack. This is due to resid _always_ being set
+> using a value returned from the adapter. Instead, the value
+> should only be interpreted and set when in an underrun scenario.
 >
 > Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 > Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
