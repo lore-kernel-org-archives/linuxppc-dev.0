@@ -1,26 +1,23 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0143.outbound.protection.outlook.com [207.46.100.143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <marvin24@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A0FE81A0B48
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 18:49:41 +1100 (AEDT)
-From: Zhao Qiang <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
-Date: Fri, 23 Oct 2015 07:49:35 +0000
-Message-ID: <SN1PR0301MB155072B05697D15EC990E0229B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
- <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
- <20151023031952.GA31843@home.buserror.net>
-In-Reply-To: <20151023031952.GA31843@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 33A2E1A0B50
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 19:02:06 +1100 (AEDT)
+From: Marc Dietrich <marvin24@gmx.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Geoff Levand <geoff@infradead.org>, Declan Malone <declan.malone@gmail.com>,
+ cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: Time to remove platforms/cell?
+Date: Fri, 23 Oct 2015 10:00:33 +0200
+Message-ID: <4305015.PtpKCQxEF8@fb07-iapwap2>
+In-Reply-To: <1445565296.27586.3.camel@ellerman.id.au>
+References: <1442467727.25483.0.camel@ellerman.id.au>
+ <1445541315.30908.148.camel@infradead.org>
+ <1445565296.27586.3.camel@ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart2319319.rAx90XdZc5";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 23, 2015 at 11:20 AM, Wood Scott-B07421 <scottwood@freescale.co=
-m> wrote:
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, October 23, 2015 11:20 AM
-> To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
-> paulus@samba.org
-> Subject: Re: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
->=20
-> On Wed, Oct 14, 2015 at 03:16:08PM +0800, Zhao Qiang wrote:
->=20
->=20
-> > diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig
-> > b/drivers/soc/fsl/qe/Kconfig similarity index 50% copy from
-> > arch/powerpc/sysdev/qe_lib/Kconfig
-> > copy to drivers/soc/fsl/qe/Kconfig
-> > index 3c25199..283fe0d 100644
-> > --- a/arch/powerpc/sysdev/qe_lib/Kconfig
-> > +++ b/drivers/soc/fsl/qe/Kconfig
-> > @@ -2,6 +2,17 @@
-> >  # QE Communication options
-> >  #
-> >
-> > +config QUICC_ENGINE
-> > +	bool "Freescale QUICC Engine (QE) Support"
-> > +	depends on FSL_SOC && PPC32
-> > +	select GENERIC_ALLOCATOR
-> > +	select CRC32
-> > +	help
-> > +	  The QUICC Engine (QE) is a new generation of communications
-> > +	  coprocessors on Freescale embedded CPUs (akin to CPM in older
-> chips).
-> > +	  Selecting this option means that you wish to build a kernel
-> > +	  for a machine with a QE coprocessor.
-> > +
-> >  config UCC_SLOW
-> >  	bool
-> >  	default y if SERIAL_QE
-> > @@ -19,9 +30,3 @@ config UCC_FAST
-> >  config UCC
-> >  	bool
-> >  	default y if UCC_FAST || UCC_SLOW
-> > -
-> > -config QE_USB
-> > -	bool
-> > -	default y if USB_FSL_QE
-> > -	help
-> > -	  QE USB Controller support
->=20
-> Why did some config symbols get moved and others not?
+--nextPart2319319.rAx90XdZc5
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 
-Because QE_USB should be putted under drivers/usb,
-It is independent of this patchset.
+Am Freitag, 23. Oktober 2015, 12:54:56 schrieb Michael Ellerman:
+> On Thu, 2015-10-22 at 12:15 -0700, Geoff Levand wrote:
+> > Hi,
+> > 
+> > On Fri, 2015-10-09 at 23:13 +0200, Marc Dietrich wrote:
+> > > Am Freitag, 9. Oktober 2015, 10:45:42 schrieb Geoff Levand:
+> > > > With the 4.2-rc4 kernel, kexec seems to work when CONFIG_SPU_FS=n.
+> > > > 
+> > > >  I
+> > > > 
+> > > > have not tried with petitboot release white-09.09.01-15.56 yet though.
+> > > 
+> > > I guess you mean 4.3-rc4. Still no luck with CONFIG_SPU_FS=n. No output
+> > > even with direct calling kexec. Can you put a working kernel/initrd to
+> > > some place so I can try this?
+> > 
+> > I did some more work on this, but still did not find out what the problem
+> > is.  Kexec from 4.3 -> 4.3 works, but with the white-09.09.01-15.56
+> > 
+> > petitboot (2.6.30.9) -> 4.3 gets a kernel panic:
+> >  -> early_setup(), dt_ptr: 0x7fff000
+> > 
+> > Kernel panic - not syncing: BUG: Failed verifying flat device tree, bad
+> > version?
+> > 
+> > I'll look at it some more as I find time.
+> 
+> That says that the device tree firmware gave you (ie. from kexec), is using
+> an old version of the device tree format.
+> 
+> I can't remember off the top of my head which version you need, but
+> basically newer kernels require a newer device tree format. So your kexec
+> might be too old?
 
--Zhao
+that reminds me about a different question. I said before that I use plain 
+vmlinux for the kernel image. This works at least with 2.6.35 (the newest 
+kernel I got booting so far). But I also saw that a device tree is being 
+compiled and linked with the kernel to produce a dt image in 
+arch/powerpc/boot. Is it possible that newer kernels require a device tree?
+
+Marc
+
+--nextPart2319319.rAx90XdZc5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAABCAAGBQJWKekhAAoJEKyeR39HFBtoTx4IAKDDCYvkULXwhYnvX3UhRPFc
+LFldwk66pzE3jPiH43FcXtU+IhOBnlDLhzhewdw/ZgQJ1b+QpHX/k+GM+LtoLG0Y
+MiHrkXI8BVptVj7p4rvd887tAqRrAR5ePGFpBhn3g+eJ8n8ZfEVX7hN+MRAX3k7P
+0ISqztLdELoZZvPwDMkmo/tkLbNP77zldKvLezEnJOCjAstP8Xot2jA0J3Fo6a94
++z2qC26Tk/dBrCtbxxcZZwxd48pGe3HqN7zt3ldhkNObCG2bTh4z+FoP0mKcMLiN
+0b4DXsoCPuU4PkI+oy1i05OmkR2l/7YBOZ9JLXjwqlj4y9swLohS19wFHWEgpmY=
+=QNZg
+-----END PGP SIGNATURE-----
+
+--nextPart2319319.rAx90XdZc5--
