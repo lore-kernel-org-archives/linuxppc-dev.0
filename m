@@ -2,10 +2,9 @@ Return-Path: <thenzl@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2759D1A0EA9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 00:45:11 +1100 (AEDT)
-Subject: Re: [PATCH v6 23/37] cxlflash: Fix function prolog parameters and
- return codes
+ by lists.ozlabs.org (Postfix) with ESMTPS id E50881A0171
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 00:53:25 +1100 (AEDT)
+Subject: Re: [PATCH v6 24/37] cxlflash: Fix MMIO and endianness errors
 To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
  "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
@@ -14,14 +13,14 @@ To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  David Laight <David.Laight@ACULAB.COM>
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1445458480-56547-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1445458488-57055-1-git-send-email-mrochs@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Tomas Henzl <thenzl@redhat.com>
-Message-ID: <562A39E1.4050206@redhat.com>
-Date: Fri, 23 Oct 2015 15:45:05 +0200
+Message-ID: <562A3BD0.3010802@redhat.com>
+Date: Fri, 23 Oct 2015 15:53:20 +0200
 MIME-Version: 1.0
-In-Reply-To: <1445458480-56547-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1445458488-57055-1-git-send-email-mrochs@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,12 +32,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 21.10.2015 22:14, Matthew R. Ochs wrote:
-> Several function prologs have incorrect parameter names and return
-> code descriptions. This can lead to confusion when reviewing the
-> source and creates inaccurate documentation.
+> Sparse uncovered several errors with MMIO operations (accessing
+> directly) and handling endianness. These can cause issues when
+> running in different environments.
 >
-> To remedy, update the function prologs to properly reflect parameter
-> names and return codes.
+> Introduce __iomem and proper endianness tags/swaps where
+> appropriate to make driver sparse clean.
 >
 > Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 > Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
