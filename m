@@ -1,23 +1,23 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0126.outbound.protection.outlook.com [65.55.169.126])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0106.outbound.protection.outlook.com [157.56.110.106])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39A821A0B37
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:11:37 +1100 (AEDT)
-Message-ID: <1445569881.701.143.camel@freescale.com>
-Subject: Re: [PATCH v12 5/6] QE: use subsys_initcall to init qe
+ by lists.ozlabs.org (Postfix) with ESMTPS id 25A611A0A7C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:20:09 +1100 (AEDT)
+Date: Thu, 22 Oct 2015 22:19:52 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: Zhao Qiang <qiang.zhao@freescale.com>
 CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
  <leoli@freescale.com>, <paulus@samba.org>
-Date: Thu, 22 Oct 2015 22:11:21 -0500
-In-Reply-To: <1444806968-4627-5-git-send-email-qiang.zhao@freescale.com>
+Subject: Re: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
+Message-ID: <20151023031952.GA31843@home.buserror.net>
 References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
- <1444806968-4627-5-git-send-email-qiang.zhao@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-10-14 at 15:16 +0800, Zhao Qiang wrote:
-> diff --git a/arch/powerpc/sysdev/qe_lib/qe.c > b/arch/powerpc/sysdev/qe_lib/qe.c
-> index c2518cd..3f9f596 100644
-> --- a/arch/powerpc/sysdev/qe_lib/qe.c
-> +++ b/arch/powerpc/sysdev/qe_lib/qe.c
-> @@ -671,6 +671,21 @@ unsigned int qe_get_num_of_snums(void)
->  }
->  EXPORT_SYMBOL(qe_get_num_of_snums);
+On Wed, Oct 14, 2015 at 03:16:08PM +0800, Zhao Qiang wrote:
+> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+> index 01626be7..c9541a5 100644
+> --- a/arch/powerpc/platforms/Kconfig
+> +++ b/arch/powerpc/platforms/Kconfig
+> @@ -272,25 +272,6 @@ config TAU_AVERAGE
 >  
-> +static int __init qe_init(void)
-> +{
-> +     struct device_node *np;
-> +
-> +     np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-> +     if (!np) {
-> +             pr_err("%s: Could not find Quicc Engine node\n", __func__);
-> +             return -ENODEV;
-> +     }
-> +     qe_reset();
-> +     of_node_put(np);
-> +     return 0;
-> +}
-> +subsys_initcall(qe_init);
+>  	  If in doubt, say N here.
+>  
+> -config QUICC_ENGINE
+> -	bool "Freescale QUICC Engine (QE) Support"
+> -	depends on FSL_SOC && PPC32
+> -	select GENERIC_ALLOCATOR
+> -	select CRC32
+> -	help
+> -	  The QUICC Engine (QE) is a new generation of communications
+> -	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+> -	  Selecting this option means that you wish to build a kernel
+> -	  for a machine with a QE coprocessor.
+> -
+> -config QE_GPIO
+> -	bool "QE GPIO support"
+> -	depends on QUICC_ENGINE
+> -	select ARCH_REQUIRE_GPIOLIB
+> -	help
+> -	  Say Y here if you're going to use hardware that connects to the
+> -	  QE GPIOs.
 
-Do not print an error, just because QE is not present.
+Why was QE_GPIO moved as part of this patch?
+
+
+> diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/drivers/soc/fsl/qe/Kconfig
+> similarity index 50%
+> copy from arch/powerpc/sysdev/qe_lib/Kconfig
+> copy to drivers/soc/fsl/qe/Kconfig
+> index 3c25199..283fe0d 100644
+> --- a/arch/powerpc/sysdev/qe_lib/Kconfig
+> +++ b/drivers/soc/fsl/qe/Kconfig
+> @@ -2,6 +2,17 @@
+>  # QE Communication options
+>  #
+>  
+> +config QUICC_ENGINE
+> +	bool "Freescale QUICC Engine (QE) Support"
+> +	depends on FSL_SOC && PPC32
+> +	select GENERIC_ALLOCATOR
+> +	select CRC32
+> +	help
+> +	  The QUICC Engine (QE) is a new generation of communications
+> +	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+> +	  Selecting this option means that you wish to build a kernel
+> +	  for a machine with a QE coprocessor.
+> +
+>  config UCC_SLOW
+>  	bool
+>  	default y if SERIAL_QE
+> @@ -19,9 +30,3 @@ config UCC_FAST
+>  config UCC
+>  	bool
+>  	default y if UCC_FAST || UCC_SLOW
+> -
+> -config QE_USB
+> -	bool
+> -	default y if USB_FSL_QE
+> -	help
+> -	  QE USB Controller support
+
+Why did some config symbols get moved and others not?
+
+> diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
+> new file mode 100644
+> index 0000000..51c9dce
+> --- /dev/null
+> +++ b/drivers/soc/fsl/qe/Makefile
+> @@ -0,0 +1,9 @@
+> +#
+> +#Makefile for the Linux fsl parts of QE
+> +#
+
+"fsl parts of QE"?  Are there non-fsl parts of QE?
 
 -Scott
