@@ -1,29 +1,44 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0144.outbound.protection.outlook.com [65.55.169.144])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B75E1A0C04
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:56:46 +1100 (AEDT)
-Message-ID: <1445633780.701.228.camel@freescale.com>
-Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
- qe_common
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
- <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
- <paulus@samba.org>
-Date: Fri, 23 Oct 2015 15:56:20 -0500
-In-Reply-To: <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
- <1444806968-4627-4-git-send-email-qiang.zhao@freescale.com>
- <1445569799.701.142.camel@freescale.com>
- <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA1751A0CD7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:57:25 +1100 (AEDT)
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 23 Oct 2015 16:57:23 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6763B6E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:45:32 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9NKvL2o56295522
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 20:57:21 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9NKvJUc023791
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:57:20 -0400
+Date: Fri, 23 Oct 2015 13:57:18 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+ Keith Busch <keith.busch@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Christoph Hellwig <hch@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
+Subject: [PATCH 2/7 v2] powerpc/dma-mapping: override dma_get_page_shift
+Message-ID: <20151023205718.GC10197@linux.vnet.ibm.com>
+References: <20151023205420.GA10197@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20151023205420.GA10197@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,68 +48,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-10-23 at 02:45 -0500, Zhao Qiang-B45475 wrote:
-> On Fri, 2015-10-23 at 11:10 AM, Wood Scott-B07421 <scottwood@freescale.com> 
-> wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, October 23, 2015 11:10 AM
-> > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
-> > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
-> > paulus@samba.org
-> > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
-> > qe_common
-> > 
-> > On Wed, 2015-10-14 at 15:16 +0800, Zhao Qiang wrote:
-> > > QE and CPM have the same muram, they use the same management
-> > > functions. Now QE support both ARM and PowerPC, it is necessary to
-> > > move QE to "driver/soc", so move the muram management functions from
-> > > cpm_common to qe_common for preparing to move QE code to "driver/soc"
-> > > 
-> > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
-> > > ---
-> > > Changes for v2:
-> > >       - no changes
-> > > Changes for v3:
-> > >       - no changes
-> > > Changes for v4:
-> > >       - no changes
-> > > Changes for v5:
-> > >       - no changes
-> > > Changes for v6:
-> > >       - using genalloc instead rheap to manage QE MURAM
-> > >       - remove qe_reset from platform file, using
-> > >       - subsys_initcall to call qe_init function.
-> > > Changes for v7:
-> > >       - move this patch from 3/3 to 2/3
-> > >       - convert cpm with genalloc
-> > >       - check for gen_pool allocation failure Changes for v8:
-> > >       - rebase
-> > >       - move BD_SC_* macro instead of copy Changes for v9:
-> > >       - doesn't modify CPM, add a new patch to modify.
-> > >       - rebase
-> > > Changes for v10:
-> > >       - rebase
-> > > Changes for v11:
-> > >       - remove renaming
-> > >       - delete removing qe_reset and delete adding qe_init.
-> > > Changes for v12:
-> > >       - SPI_FSL_CPM depends on QE-MURAM, select QUICC_ENGINE for it.
-> > 
-> > Why is the SPI change part of this patch?  Why is it even part of this 
-> > patchset,
-> > rather than an independent patch sent to the SPI list and maintainer?  If 
-> > it's tied
-> > to other changes you're making, explain that.  As is, there is zero 
-> > mention of
-> > the SPI change in the part of the e-mail that will become the git 
-> > changelog.
-> > 
-> This SPI_FSL_CPM is cpm-spi, it is part of CPM.
+On Power, the kernel's page size can differ from the IOMMU's page size,
+so we need to override the generic implementation, which always returns
+the kernel's page size. Lookup the IOMMU's page size from struct
+iommu_table, if available. Fallback to the kernel's page size,
+otherwise.
 
-So then why are you selecting QUICC_ENGINE?  And again, what does it have to 
-do with this patch?
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/dma-mapping.h | 3 +++
+ arch/powerpc/kernel/dma.c              | 9 +++++++++
+ 2 files changed, 12 insertions(+)
 
--Scott
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 7f522c0..c5638f4 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -125,6 +125,9 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ #define HAVE_ARCH_DMA_SET_MASK 1
+ extern int dma_set_mask(struct device *dev, u64 dma_mask);
+ 
++#define HAVE_ARCH_DMA_GET_PAGE_SHIFT 1
++extern unsigned long dma_get_page_shift(struct device *dev);
++
+ #include <asm-generic/dma-mapping-common.h>
+ 
+ extern int __dma_set_mask(struct device *dev, u64 dma_mask);
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 59503ed..e805af2 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -335,6 +335,15 @@ int dma_set_mask(struct device *dev, u64 dma_mask)
+ }
+ EXPORT_SYMBOL(dma_set_mask);
+ 
++unsigned long dma_get_page_shift(struct device *dev)
++{
++	struct iommu_table *tbl = get_iommu_table_base(dev);
++	if (tbl)
++		return tbl->it_page_shift;
++	return PAGE_SHIFT;
++}
++EXPORT_SYMBOL(dma_get_page_shift);
++
+ u64 __dma_get_required_mask(struct device *dev)
+ {
+ 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+-- 
+1.9.1
