@@ -1,27 +1,27 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CD181A0D14
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:58:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A2A81A0BE3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:59:34 +1100 (AEDT)
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 23 Oct 2015 14:58:40 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D7FAE1FF0043
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:46:49 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9NKvHNk7274920
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 13:57:17 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9NKwaVX009130
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:58:37 -0600
-Date: Fri, 23 Oct 2015 13:58:34 -0700
+ Fri, 23 Oct 2015 16:59:32 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id F33246E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:47:40 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9NKxTUX63832276
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 20:59:29 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9NKxQrE032715
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:59:29 -0400
+Date: Fri, 23 Oct 2015 13:59:25 -0700
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Matthew Wilcox <willy@linux.intel.com>,
@@ -33,8 +33,8 @@ Cc: Matthew Wilcox <willy@linux.intel.com>,
  "David S. Miller" <davem@davemloft.net>,
  linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 3/7 v2] powerpc/dma: implement per-platform dma_get_page_shift
-Message-ID: <20151023205834.GE10197@linux.vnet.ibm.com>
+Subject: [PATCH 4/7 v2] pseries/iommu: implement DDW-aware dma_get_page_shift
+Message-ID: <20151023205925.GF10197@linux.vnet.ibm.com>
 References: <20151023205420.GA10197@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,48 +48,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The IOMMU page size is not always stored in struct iommu on Power.
-Specifically if a device is configured for DDW (Dynamic DMA Windows aka.
-64-bit direct DMA), the used TCE (Translation Control Entry) size is
-stored in a special device property created at run-time by the DDW
-configuration code. DDW is a pseries-specific feature, so allow
-platforms to override the implementation of dma_get_page_shift if
-desired.
+When DDW (Dynamic DMA Windows) are present for a device, we have stored
+the TCE (Translation Control Entry) size in a special device tree
+property. Check if we have enabled DDW for the device and return the TCE
+size from that property if present. If the property isn't present,
+fallback to looking the value up in struct iommu_table. If we don't find
+a iommu_table, fallback to the kernel's page size.
 
 Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/machdep.h | 3 ++-
- arch/powerpc/kernel/dma.c          | 2 ++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/iommu.c | 36 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 3f191f5..9dd03cf 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -83,9 +83,10 @@ struct machdep_calls {
- #endif
- #endif /* CONFIG_PPC64 */
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 0946b98..1bf6471 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1292,6 +1292,40 @@ static u64 dma_get_required_mask_pSeriesLP(struct device *dev)
+ 	return dma_iommu_ops.get_required_mask(dev);
+ }
  
--	/* Platform set_dma_mask and dma_get_required_mask overrides */
-+	/* Platform overrides */
- 	int		(*dma_set_mask)(struct device *dev, u64 dma_mask);
- 	u64		(*dma_get_required_mask)(struct device *dev);
-+	unsigned long	(*dma_get_page_shift)(struct device *dev);
++static unsigned long dma_get_page_shift_pSeriesLP(struct device *dev)
++{
++	struct iommu_table *tbl;
++
++	if (!disable_ddw && dev_is_pci(dev)) {
++		struct pci_dev *pdev = to_pci_dev(dev);
++		struct device_node *dn;
++
++		dn = pci_device_to_OF_node(pdev);
++
++		/* search upwards for ibm,dma-window */
++		for (; dn && PCI_DN(dn) && !PCI_DN(dn)->table_group;
++				dn = dn->parent)
++			if (of_get_property(dn, "ibm,dma-window", NULL))
++				break;
++		/*
++		 * if there is a DDW configuration, the TCE shift is stored in
++		 * the property
++		 */
++		if (dn && PCI_DN(dn)) {
++			const struct dynamic_dma_window_prop *direct64 =
++				of_get_property(dn, DIRECT64_PROPNAME, NULL);
++			if (direct64)
++				return be32_to_cpu(direct64->tce_shift);
++		}
++	}
++
++	tbl = get_iommu_table_base(dev);
++	if (tbl)
++		return tbl->it_page_shift;
++
++	return PAGE_SHIFT;
++}
++
+ #else  /* CONFIG_PCI */
+ #define pci_dma_bus_setup_pSeries	NULL
+ #define pci_dma_dev_setup_pSeries	NULL
+@@ -1299,6 +1333,7 @@ static u64 dma_get_required_mask_pSeriesLP(struct device *dev)
+ #define pci_dma_dev_setup_pSeriesLP	NULL
+ #define dma_set_mask_pSeriesLP		NULL
+ #define dma_get_required_mask_pSeriesLP	NULL
++#define dma_get_page_shift_pSeriesLP	NULL
+ #endif /* !CONFIG_PCI */
  
- 	int		(*probe)(void);
- 	void		(*setup_arch)(void); /* Optional, may be NULL */
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index e805af2..c363896 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -338,6 +338,8 @@ EXPORT_SYMBOL(dma_set_mask);
- unsigned long dma_get_page_shift(struct device *dev)
- {
- 	struct iommu_table *tbl = get_iommu_table_base(dev);
-+	if (ppc_md.dma_get_page_shift)
-+		return ppc_md.dma_get_page_shift(dev);
- 	if (tbl)
- 		return tbl->it_page_shift;
- 	return PAGE_SHIFT;
+ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
+@@ -1395,6 +1430,7 @@ void iommu_init_early_pSeries(void)
+ 		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
+ 		ppc_md.dma_set_mask = dma_set_mask_pSeriesLP;
+ 		ppc_md.dma_get_required_mask = dma_get_required_mask_pSeriesLP;
++		ppc_md.dma_get_page_shift = dma_get_page_shift_pSeriesLP;
+ 	} else {
+ 		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeries;
+ 		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeries;
 -- 
 1.9.1
