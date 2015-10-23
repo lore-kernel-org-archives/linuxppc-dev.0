@@ -1,10 +1,10 @@
 Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0125.outbound.protection.outlook.com [207.46.100.125])
+ (mail-by2on0143.outbound.protection.outlook.com [207.46.100.143])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA3EF1A0B48
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 18:45:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0FE81A0B48
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 18:49:41 +1100 (AEDT)
 From: Zhao Qiang <qiang.zhao@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -12,15 +12,14 @@ CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
  <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
  Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
-Subject: RE: [PATCH v12 4/6] QE/CPM: move muram management functions to
- qe_common
-Date: Fri, 23 Oct 2015 07:45:09 +0000
-Message-ID: <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Subject: RE: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
+Date: Fri, 23 Oct 2015 07:49:35 +0000
+Message-ID: <SN1PR0301MB155072B05697D15EC990E0229B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
 References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
- <1444806968-4627-4-git-send-email-qiang.zhao@freescale.com>
- <1445569799.701.142.camel@freescale.com>
-In-Reply-To: <1445569799.701.142.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
+ <20151023031952.GA31843@home.buserror.net>
+In-Reply-To: <20151023031952.GA31843@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,44 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gRnJpLCAyMDE1LTEwLTIzIGF0IDExOjEwIEFNLCBXb29kIFNjb3R0LUIwNzQyMSA8c2NvdHR3
-b29kQGZyZWVzY2FsZS5jb20+IHdyb3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMjMsIDIw
-MTUgMTE6MTAgQU0NCj4gVG86IFpoYW8gUWlhbmctQjQ1NDc1IDxxaWFuZy56aGFvQGZyZWVzY2Fs
-ZS5jb20+DQo+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZA
-bGlzdHMub3psYWJzLm9yZzsNCj4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2
-MzA2MSA8WC5YaWVAZnJlZXNjYWxlLmNvbT47DQo+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsg
-TGkgWWFuZy1MZW8tUjU4NDcyIDxMZW9MaUBmcmVlc2NhbGUuY29tPjsNCj4gcGF1bHVzQHNhbWJh
-Lm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMiA0LzZdIFFFL0NQTTogbW92ZSBtdXJhbSBt
-YW5hZ2VtZW50IGZ1bmN0aW9ucyB0bw0KPiBxZV9jb21tb24NCj4gDQo+IE9uIFdlZCwgMjAxNS0x
-MC0xNCBhdCAxNToxNiArMDgwMCwgWmhhbyBRaWFuZyB3cm90ZToNCj4gPiBRRSBhbmQgQ1BNIGhh
-dmUgdGhlIHNhbWUgbXVyYW0sIHRoZXkgdXNlIHRoZSBzYW1lIG1hbmFnZW1lbnQNCj4gPiBmdW5j
-dGlvbnMuIE5vdyBRRSBzdXBwb3J0IGJvdGggQVJNIGFuZCBQb3dlclBDLCBpdCBpcyBuZWNlc3Nh
-cnkgdG8NCj4gPiBtb3ZlIFFFIHRvICJkcml2ZXIvc29jIiwgc28gbW92ZSB0aGUgbXVyYW0gbWFu
-YWdlbWVudCBmdW5jdGlvbnMgZnJvbQ0KPiA+IGNwbV9jb21tb24gdG8gcWVfY29tbW9uIGZvciBw
-cmVwYXJpbmcgdG8gbW92ZSBRRSBjb2RlIHRvICJkcml2ZXIvc29jIg0KPiA+DQo+ID4gU2lnbmVk
-LW9mZi1ieTogWmhhbyBRaWFuZyA8cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0K
-PiA+IENoYW5nZXMgZm9yIHYyOg0KPiA+ICAgICAgIC0gbm8gY2hhbmdlcw0KPiA+IENoYW5nZXMg
-Zm9yIHYzOg0KPiA+ICAgICAgIC0gbm8gY2hhbmdlcw0KPiA+IENoYW5nZXMgZm9yIHY0Og0KPiA+
-ICAgICAgIC0gbm8gY2hhbmdlcw0KPiA+IENoYW5nZXMgZm9yIHY1Og0KPiA+ICAgICAgIC0gbm8g
-Y2hhbmdlcw0KPiA+IENoYW5nZXMgZm9yIHY2Og0KPiA+ICAgICAgIC0gdXNpbmcgZ2VuYWxsb2Mg
-aW5zdGVhZCByaGVhcCB0byBtYW5hZ2UgUUUgTVVSQU0NCj4gPiAgICAgICAtIHJlbW92ZSBxZV9y
-ZXNldCBmcm9tIHBsYXRmb3JtIGZpbGUsIHVzaW5nDQo+ID4gICAgICAgLSBzdWJzeXNfaW5pdGNh
-bGwgdG8gY2FsbCBxZV9pbml0IGZ1bmN0aW9uLg0KPiA+IENoYW5nZXMgZm9yIHY3Og0KPiA+ICAg
-ICAgIC0gbW92ZSB0aGlzIHBhdGNoIGZyb20gMy8zIHRvIDIvMw0KPiA+ICAgICAgIC0gY29udmVy
-dCBjcG0gd2l0aCBnZW5hbGxvYw0KPiA+ICAgICAgIC0gY2hlY2sgZm9yIGdlbl9wb29sIGFsbG9j
-YXRpb24gZmFpbHVyZSBDaGFuZ2VzIGZvciB2ODoNCj4gPiAgICAgICAtIHJlYmFzZQ0KPiA+ICAg
-ICAgIC0gbW92ZSBCRF9TQ18qIG1hY3JvIGluc3RlYWQgb2YgY29weSBDaGFuZ2VzIGZvciB2OToN
-Cj4gPiAgICAgICAtIGRvZXNuJ3QgbW9kaWZ5IENQTSwgYWRkIGEgbmV3IHBhdGNoIHRvIG1vZGlm
-eS4NCj4gPiAgICAgICAtIHJlYmFzZQ0KPiA+IENoYW5nZXMgZm9yIHYxMDoNCj4gPiAgICAgICAt
-IHJlYmFzZQ0KPiA+IENoYW5nZXMgZm9yIHYxMToNCj4gPiAgICAgICAtIHJlbW92ZSByZW5hbWlu
-Zw0KPiA+ICAgICAgIC0gZGVsZXRlIHJlbW92aW5nIHFlX3Jlc2V0IGFuZCBkZWxldGUgYWRkaW5n
-IHFlX2luaXQuDQo+ID4gQ2hhbmdlcyBmb3IgdjEyOg0KPiA+ICAgICAgIC0gU1BJX0ZTTF9DUE0g
-ZGVwZW5kcyBvbiBRRS1NVVJBTSwgc2VsZWN0IFFVSUNDX0VOR0lORSBmb3IgaXQuDQo+IA0KPiBX
-aHkgaXMgdGhlIFNQSSBjaGFuZ2UgcGFydCBvZiB0aGlzIHBhdGNoPyAgV2h5IGlzIGl0IGV2ZW4g
-cGFydCBvZiB0aGlzIHBhdGNoc2V0LA0KPiByYXRoZXIgdGhhbiBhbiBpbmRlcGVuZGVudCBwYXRj
-aCBzZW50IHRvIHRoZSBTUEkgbGlzdCBhbmQgbWFpbnRhaW5lcj8gIElmIGl0J3MgdGllZA0KPiB0
-byBvdGhlciBjaGFuZ2VzIHlvdSdyZSBtYWtpbmcsIGV4cGxhaW4gdGhhdC4gIEFzIGlzLCB0aGVy
-ZSBpcyB6ZXJvIG1lbnRpb24gb2YNCj4gdGhlIFNQSSBjaGFuZ2UgaW4gdGhlIHBhcnQgb2YgdGhl
-IGUtbWFpbCB0aGF0IHdpbGwgYmVjb21lIHRoZSBnaXQgY2hhbmdlbG9nLg0KPiANClRoaXMgU1BJ
-X0ZTTF9DUE0gaXMgY3BtLXNwaSwgaXQgaXMgcGFydCBvZiBDUE0uDQoNCi1aaGFvDQo=
+On Fri, Oct 23, 2015 at 11:20 AM, Wood Scott-B07421 <scottwood@freescale.co=
+m> wrote:
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, October 23, 2015 11:20 AM
+> To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+> Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
+> benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
+> paulus@samba.org
+> Subject: Re: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
+>=20
+> On Wed, Oct 14, 2015 at 03:16:08PM +0800, Zhao Qiang wrote:
+>=20
+>=20
+> > diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig
+> > b/drivers/soc/fsl/qe/Kconfig similarity index 50% copy from
+> > arch/powerpc/sysdev/qe_lib/Kconfig
+> > copy to drivers/soc/fsl/qe/Kconfig
+> > index 3c25199..283fe0d 100644
+> > --- a/arch/powerpc/sysdev/qe_lib/Kconfig
+> > +++ b/drivers/soc/fsl/qe/Kconfig
+> > @@ -2,6 +2,17 @@
+> >  # QE Communication options
+> >  #
+> >
+> > +config QUICC_ENGINE
+> > +	bool "Freescale QUICC Engine (QE) Support"
+> > +	depends on FSL_SOC && PPC32
+> > +	select GENERIC_ALLOCATOR
+> > +	select CRC32
+> > +	help
+> > +	  The QUICC Engine (QE) is a new generation of communications
+> > +	  coprocessors on Freescale embedded CPUs (akin to CPM in older
+> chips).
+> > +	  Selecting this option means that you wish to build a kernel
+> > +	  for a machine with a QE coprocessor.
+> > +
+> >  config UCC_SLOW
+> >  	bool
+> >  	default y if SERIAL_QE
+> > @@ -19,9 +30,3 @@ config UCC_FAST
+> >  config UCC
+> >  	bool
+> >  	default y if UCC_FAST || UCC_SLOW
+> > -
+> > -config QE_USB
+> > -	bool
+> > -	default y if USB_FSL_QE
+> > -	help
+> > -	  QE USB Controller support
+>=20
+> Why did some config symbols get moved and others not?
+
+Because QE_USB should be putted under drivers/usb,
+It is independent of this patchset.
+
+-Zhao
