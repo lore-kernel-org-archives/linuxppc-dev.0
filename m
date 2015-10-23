@@ -1,44 +1,29 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0144.outbound.protection.outlook.com [65.55.169.144])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 046721A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:56:17 +1100 (AEDT)
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 23 Oct 2015 14:56:16 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 40E183E4003B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:56:13 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9NKsqxZ11600166
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 13:54:52 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9NKuBFI011242
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:56:12 -0600
-Date: Fri, 23 Oct 2015 13:56:10 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: Keith Busch <keith.busch@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Christoph Hellwig <hch@infradead.org>,
- "David S. Miller" <davem@davemloft.net>,
- linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 1/7 v3] dma-mapping: add generic dma_get_page_shift API
-Message-ID: <20151023205610.GB10197@linux.vnet.ibm.com>
-References: <20151023205420.GA10197@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B75E1A0C04
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:56:46 +1100 (AEDT)
+Message-ID: <1445633780.701.228.camel@freescale.com>
+Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
+ qe_common
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Fri, 23 Oct 2015 15:56:20 -0500
+In-Reply-To: <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
+ <1444806968-4627-4-git-send-email-qiang.zhao@freescale.com>
+ <1445569799.701.142.camel@freescale.com>
+ <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151023205420.GA10197@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,42 +33,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drivers like NVMe need to be able to determine the page size used for
-DMA transfers. Add a new API that defaults to return PAGE_SHIFT on all
-architectures.
+On Fri, 2015-10-23 at 02:45 -0500, Zhao Qiang-B45475 wrote:
+> On Fri, 2015-10-23 at 11:10 AM, Wood Scott-B07421 <scottwood@freescale.com> 
+> wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, October 23, 2015 11:10 AM
+> > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
+> > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
+> > paulus@samba.org
+> > Subject: Re: [PATCH v12 4/6] QE/CPM: move muram management functions to
+> > qe_common
+> > 
+> > On Wed, 2015-10-14 at 15:16 +0800, Zhao Qiang wrote:
+> > > QE and CPM have the same muram, they use the same management
+> > > functions. Now QE support both ARM and PowerPC, it is necessary to
+> > > move QE to "driver/soc", so move the muram management functions from
+> > > cpm_common to qe_common for preparing to move QE code to "driver/soc"
+> > > 
+> > > Signed-off-by: Zhao Qiang <qiang.zhao@freescale.com>
+> > > ---
+> > > Changes for v2:
+> > >       - no changes
+> > > Changes for v3:
+> > >       - no changes
+> > > Changes for v4:
+> > >       - no changes
+> > > Changes for v5:
+> > >       - no changes
+> > > Changes for v6:
+> > >       - using genalloc instead rheap to manage QE MURAM
+> > >       - remove qe_reset from platform file, using
+> > >       - subsys_initcall to call qe_init function.
+> > > Changes for v7:
+> > >       - move this patch from 3/3 to 2/3
+> > >       - convert cpm with genalloc
+> > >       - check for gen_pool allocation failure Changes for v8:
+> > >       - rebase
+> > >       - move BD_SC_* macro instead of copy Changes for v9:
+> > >       - doesn't modify CPM, add a new patch to modify.
+> > >       - rebase
+> > > Changes for v10:
+> > >       - rebase
+> > > Changes for v11:
+> > >       - remove renaming
+> > >       - delete removing qe_reset and delete adding qe_init.
+> > > Changes for v12:
+> > >       - SPI_FSL_CPM depends on QE-MURAM, select QUICC_ENGINE for it.
+> > 
+> > Why is the SPI change part of this patch?  Why is it even part of this 
+> > patchset,
+> > rather than an independent patch sent to the SPI list and maintainer?  If 
+> > it's tied
+> > to other changes you're making, explain that.  As is, there is zero 
+> > mention of
+> > the SPI change in the part of the e-mail that will become the git 
+> > changelog.
+> > 
+> This SPI_FSL_CPM is cpm-spi, it is part of CPM.
 
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+So then why are you selecting QUICC_ENGINE?  And again, what does it have to 
+do with this patch?
 
----
-v1 -> v2:
-  Based upon feedback from Christoph Hellwig, implement the IOMMU page
-  size lookup as a generic DMA API, rather than an architecture-specific
-  hack.
-v2 -> v3:
-  Based upon feedback from Christoph Hellwig that not all architectures
-  have moved to dma-mapping-common.h, so move the #ifdef and default to
-  linux/dma-mapping.h.
----
- include/linux/dma-mapping.h | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index ac07ff0..7eaba8d 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -95,6 +95,13 @@ static inline u64 dma_get_mask(struct device *dev)
- 	return DMA_BIT_MASK(32);
- }
- 
-+#ifndef HAVE_ARCH_DMA_GET_PAGE_SHIFT
-+static inline unsigned long dma_get_page_shift(struct device *dev)
-+{
-+	return PAGE_SHIFT;
-+}
-+#endif
-+
- #ifdef CONFIG_ARCH_HAS_DMA_SET_COHERENT_MASK
- int dma_set_coherent_mask(struct device *dev, u64 mask);
- #else
--- 
-1.9.1
+-Scott
