@@ -1,42 +1,28 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0119.outbound.protection.outlook.com [207.46.100.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9787C1A0AB5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:54:28 +1100 (AEDT)
-Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 23 Oct 2015 16:54:26 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 12E456E8055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:42:36 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9NKsO0b56557766
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 20:54:24 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9NKsLbL017550
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:54:24 -0400
-Date: Fri, 23 Oct 2015 13:54:20 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: Keith Busch <keith.busch@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Christoph Hellwig <hch@infradead.org>,
- "David S. Miller" <davem@davemloft.net>,
- linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
-Message-ID: <20151023205420.GA10197@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 151081A0AB5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:56:06 +1100 (AEDT)
+Message-ID: <1445633739.701.227.camel@freescale.com>
+Subject: Re: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xie Xiaobo-R63061
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Yang-Leo-R58472 <LeoLi@freescale.com>, "paulus@samba.org"
+ <paulus@samba.org>
+Date: Fri, 23 Oct 2015 15:55:39 -0500
+In-Reply-To: <SN1PR0301MB155072B05697D15EC990E0229B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
+ <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
+ <20151023031952.GA31843@home.buserror.net>
+ <SN1PR0301MB155072B05697D15EC990E0229B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,66 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We received a bug report recently when DDW (64-bit direct DMA on Power)
-is not enabled for NVMe devices. In that case, we fall back to 32-bit
-DMA via the IOMMU, which is always done via 4K TCEs (Translation Control
-Entries).
+On Fri, 2015-10-23 at 02:49 -0500, Zhao Qiang-B45475 wrote:
+> On Fri, Oct 23, 2015 at 11:20 AM, Wood Scott-B07421 <scottwood@freescale.com
+> > wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, October 23, 2015 11:20 AM
+> > To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
+> > Cc: linux-kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> > lauraa@codeaurora.org; Xie Xiaobo-R63061 <X.Xie@freescale.com>;
+> > benh@kernel.crashing.org; Li Yang-Leo-R58472 <LeoLi@freescale.com>;
+> > paulus@samba.org
+> > Subject: Re: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
+> > 
+> > On Wed, Oct 14, 2015 at 03:16:08PM +0800, Zhao Qiang wrote:
+> > 
+> > 
+> > > diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig
+> > > b/drivers/soc/fsl/qe/Kconfig similarity index 50% copy from
+> > > arch/powerpc/sysdev/qe_lib/Kconfig
+> > > copy to drivers/soc/fsl/qe/Kconfig
+> > > index 3c25199..283fe0d 100644
+> > > --- a/arch/powerpc/sysdev/qe_lib/Kconfig
+> > > +++ b/drivers/soc/fsl/qe/Kconfig
+> > > @@ -2,6 +2,17 @@
+> > >  # QE Communication options
+> > >  #
+> > > 
+> > > +config QUICC_ENGINE
+> > > + bool "Freescale QUICC Engine (QE) Support"
+> > > + depends on FSL_SOC && PPC32
+> > > + select GENERIC_ALLOCATOR
+> > > + select CRC32
+> > > + help
+> > > +   The QUICC Engine (QE) is a new generation of communications
+> > > +   coprocessors on Freescale embedded CPUs (akin to CPM in older
+> > chips).
+> > > +   Selecting this option means that you wish to build a kernel
+> > > +   for a machine with a QE coprocessor.
+> > > +
+> > >  config UCC_SLOW
+> > >   bool
+> > >   default y if SERIAL_QE
+> > > @@ -19,9 +30,3 @@ config UCC_FAST
+> > >  config UCC
+> > >   bool
+> > >   default y if UCC_FAST || UCC_SLOW
+> > > -
+> > > -config QE_USB
+> > > - bool
+> > > - default y if USB_FSL_QE
+> > > - help
+> > > -   QE USB Controller support
+> > 
+> > Why did some config symbols get moved and others not?
+> 
+> Because QE_USB should be putted under drivers/usb,
+> It is independent of this patchset.
 
-The NVMe device driver, though, assumes that the DMA alignment for the
-PRP entries will match the device's page size, and that the DMA aligment
-matches the kernel's page aligment. On Power, the the IOMMU page size,
-as mentioned above, can be 4K, while the device can have a page size of
-8K, while the kernel has a page size of 64K. This eventually trips the
-BUG_ON in nvme_setup_prps(), as we have a 'dma_len' that is a multiple
-of 4K but not 8K (e.g., 0xF000).
+If it's independent of this patchset then don't put it in this patchset.  
+Move all the QE stuff to drivers/soc and then later if something belongs 
+somewhere else, have a separate patch move it there.
 
-In this particular case, and generally, we want to use the IOMMU's page
-size for the default device page size, rather than the kernel's page
-size.
-
-This series consists of five patches:
-
-1) add a generic dma_get_page_shift implementation that just returns
-PAGE_SHIFT
-2) override the generic implementation on Power to use the IOMMU table's
-page shift if available
-3) allow further specific overriding on power with machdep platform
-overrides
-4) use the machdep override on pseries, as the DDW code puts the TCE
-shift in a special property and there is no IOMMU table available
-5) move some sparc code around to make IOMMU_PAGE_SHIFT available in
-include/asm
-6) override the generic implementation on sparce to use IOMMU_PAGE_SHIFT
-7) leverage the new API in the NVMe driver
-
-With these patches, a NVMe device survives our internal hardware
-exerciser; the kernel BUGs within a few seconds without the patch.
-
- arch/powerpc/include/asm/dma-mapping.h |  3 +++
- arch/powerpc/include/asm/machdep.h     |  3 ++-
- arch/powerpc/kernel/dma.c              | 11 +++++++++++
- arch/powerpc/platforms/pseries/iommu.c | 36 ++++++++++++++++++++++++++++++++++++
- arch/sparc/include/asm/dma-mapping.h   |  8 ++++++++
- arch/sparc/include/asm/iommu_common.h  | 51 +++++++++++++++++++++++++++++++++++++++++++++++++++
- arch/sparc/kernel/iommu.c              |  2 +-
- arch/sparc/kernel/iommu_common.h       | 51 ---------------------------------------------------
- arch/sparc/kernel/pci_psycho.c         |  2 +-
- arch/sparc/kernel/pci_sabre.c          |  2 +-
- arch/sparc/kernel/pci_schizo.c         |  2 +-
- arch/sparc/kernel/pci_sun4v.c          |  2 +-
- arch/sparc/kernel/psycho_common.c      |  2 +-
- arch/sparc/kernel/sbus.c               |  3 +--
- drivers/block/nvme-core.c              |  3 ++-
- include/linux/dma-mapping.h            |  7 +++++++
- 16 files changed, 127 insertions(+), 61 deletions(-)
-
-v1 -> v2:
-  Based upon feedback from Christoph Hellwig, rather than using an
-  arch-specific hack, expose the DMA page shift via a generic DMA API and
-  override it on Power as needed.
-v2 -> v3:
-  Based upon feedback from Christoph Hellwig, put the generic
-  implementation in include/linux/dma-mapping.h, since not all archs use
-  include/asm-generic/dma-mapping-common.h.
-  Add sparc implementation, as that arch seems to have a different IOMMU
-  page size.
+-Scott
