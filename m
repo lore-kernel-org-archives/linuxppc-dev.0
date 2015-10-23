@@ -1,23 +1,43 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0106.outbound.protection.outlook.com [157.56.110.106])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 25A611A0A7C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:20:09 +1100 (AEDT)
-Date: Thu, 22 Oct 2015 22:19:52 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang <qiang.zhao@freescale.com>
-CC: <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <lauraa@codeaurora.org>, <X.xie@freescale.com>, <benh@kernel.crashing.org>,
- <leoli@freescale.com>, <paulus@samba.org>
-Subject: Re: [PATCH v12 6/6] QE: Move QE from arch/powerpc to drivers/soc
-Message-ID: <20151023031952.GA31843@home.buserror.net>
-References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
- <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 23D0F1A0A7C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:51 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 23 Oct 2015 13:22:48 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8AA112CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:45 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9N3MORx12058762
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:32 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9N3MCXr001275
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:13 +1100
+Message-ID: <5629A7EB.5060207@au1.ibm.com>
+Date: Fri, 23 Oct 2015 14:22:19 +1100
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1444806968-4627-6-git-send-email-qiang.zhao@freescale.com>
+To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
+ James Bottomley <James.Bottomley@HansenPartnership.com>,
+ "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+ Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ Daniel Axtens <dja@ozlabs.au.ibm.com>, Tomas Henzl <thenzl@redhat.com>,
+ David Laight <David.Laight@ACULAB.COM>
+CC: Michael Neuling <mikey@neuling.org>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v6 36/37] cxlflash: Fix to avoid lock instrumentation
+ rejection
+References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1445458584-63347-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1445458584-63347-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,85 +47,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 14, 2015 at 03:16:08PM +0800, Zhao Qiang wrote:
-> diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-> index 01626be7..c9541a5 100644
-> --- a/arch/powerpc/platforms/Kconfig
-> +++ b/arch/powerpc/platforms/Kconfig
-> @@ -272,25 +272,6 @@ config TAU_AVERAGE
->  
->  	  If in doubt, say N here.
->  
-> -config QUICC_ENGINE
-> -	bool "Freescale QUICC Engine (QE) Support"
-> -	depends on FSL_SOC && PPC32
-> -	select GENERIC_ALLOCATOR
-> -	select CRC32
-> -	help
-> -	  The QUICC Engine (QE) is a new generation of communications
-> -	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
-> -	  Selecting this option means that you wish to build a kernel
-> -	  for a machine with a QE coprocessor.
-> -
-> -config QE_GPIO
-> -	bool "QE GPIO support"
-> -	depends on QUICC_ENGINE
-> -	select ARCH_REQUIRE_GPIOLIB
-> -	help
-> -	  Say Y here if you're going to use hardware that connects to the
-> -	  QE GPIOs.
+On 22/10/15 07:16, Matthew R. Ochs wrote:
+> When running with lock instrumentation (e.g. lockdep), some of the
+> instrumentation can become disabled at probe time for a cxlflash
+> adapter. This is due to a missing lock registration for the tmf_slock.
+>
+> The fix is to call spin_lock_init() for the tmf_slock during probe.
+>
+> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 
-Why was QE_GPIO moved as part of this patch?
+Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-
-> diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/drivers/soc/fsl/qe/Kconfig
-> similarity index 50%
-> copy from arch/powerpc/sysdev/qe_lib/Kconfig
-> copy to drivers/soc/fsl/qe/Kconfig
-> index 3c25199..283fe0d 100644
-> --- a/arch/powerpc/sysdev/qe_lib/Kconfig
-> +++ b/drivers/soc/fsl/qe/Kconfig
-> @@ -2,6 +2,17 @@
->  # QE Communication options
->  #
->  
-> +config QUICC_ENGINE
-> +	bool "Freescale QUICC Engine (QE) Support"
-> +	depends on FSL_SOC && PPC32
-> +	select GENERIC_ALLOCATOR
-> +	select CRC32
-> +	help
-> +	  The QUICC Engine (QE) is a new generation of communications
-> +	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
-> +	  Selecting this option means that you wish to build a kernel
-> +	  for a machine with a QE coprocessor.
-> +
->  config UCC_SLOW
->  	bool
->  	default y if SERIAL_QE
-> @@ -19,9 +30,3 @@ config UCC_FAST
->  config UCC
->  	bool
->  	default y if UCC_FAST || UCC_SLOW
-> -
-> -config QE_USB
-> -	bool
-> -	default y if USB_FSL_QE
-> -	help
-> -	  QE USB Controller support
-
-Why did some config symbols get moved and others not?
-
-> diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-> new file mode 100644
-> index 0000000..51c9dce
-> --- /dev/null
-> +++ b/drivers/soc/fsl/qe/Makefile
-> @@ -0,0 +1,9 @@
-> +#
-> +#Makefile for the Linux fsl parts of QE
-> +#
-
-"fsl parts of QE"?  Are there non-fsl parts of QE?
-
--Scott
+-- 
+Andrew Donnellan              Software Engineer, OzLabs
+andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
++61 2 6201 8874 (work)        IBM Australia Limited
