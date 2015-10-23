@@ -1,44 +1,46 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 65F811A0CAD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 08:02:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C76C71A104C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 08:02:59 +1100 (AEDT)
 Received: from localhost
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 23 Oct 2015 15:02:35 -0600
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C076E6E8041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:50:43 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9NL2W0545744242
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 21:02:32 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9NL1erM024133
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 17:01:45 -0400
-Date: Fri, 23 Oct 2015 14:02:23 -0700
+ Fri, 23 Oct 2015 15:02:57 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id EEA7D1FF0050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:51:02 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9NL1SE91048858
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:01:28 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9NL2lEP017663
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 15:02:50 -0600
+Date: Fri, 23 Oct 2015 14:02:45 -0700
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: Keith Busch <keith.busch@intel.com>,
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+ Keith Busch <keith.busch@intel.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Alexey Kardashevskiy <aik@ozlabs.ru>,
  David Gibson <david@gibson.dropbear.id.au>,
- Christoph Hellwig <hch@infradead.org>,
- "David S. Miller" <davem@davemloft.net>,
- linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
-Subject: [PATCH 7/7 v2] drivers/nvme: default to the IOMMU page size
-Message-ID: <20151023210223.GI10197@linux.vnet.ibm.com>
+ Christoph Hellwig <hch@infradead.org>, linux-nvme@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org
+Subject: Re: [PATCH 5/7] [RFC PATCH 5/7] sparc: rename kernel/iommu_common.h
+ -> include/asm/iommu_common.h
+Message-ID: <20151023210245.GJ10197@linux.vnet.ibm.com>
 References: <20151023205420.GA10197@linux.vnet.ibm.com>
+ <20151023210008.GG10197@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151023205420.GA10197@linux.vnet.ibm.com>
+In-Reply-To: <20151023210008.GG10197@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,58 +50,261 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We received a bug report recently when DDW (64-bit direct DMA on Power)
-is not enabled for NVMe devices. In that case, we fall back to 32-bit
-DMA via the IOMMU, which is always done via 4K TCEs (Translation Control
-Entries).
+[Apologies for the subject line, should just have the [RFC PATCH 5/7]]
 
-The NVMe device driver, though, assumes that the DMA alignment for the
-PRP entries will match the device's page size, and that the DMA aligment
-matches the kernel's page aligment. On Power, the the IOMMU page size,
-as mentioned above, can be 4K, while the device can have a page size of
-8K, while the kernel has a page size of 64K. This eventually trips the
-BUG_ON in nvme_setup_prps(), as we have a 'dma_len' that is a multiple
-of 4K but not 8K (e.g., 0xF000).
-
-In this particular case of page sizes, we clearly want to use the
-IOMMU's page size in the driver. And generally, the NVMe driver in this
-function should be using the IOMMU's page size for the default device
-page size, rather than the kernel's page size.
-
-With this patch, a NVMe device survives our internal hardware
-exerciser; the kernel BUGs within a few seconds without the patch.
-
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-
----
-v1 -> v2:
-  Based upon feedback from Christoph Hellwig, implement the IOMMU page
-  size lookup as a generic DMA API, rather than an architecture-specific
-  hack.
-
- drivers/block/nvme-core.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/block/nvme-core.c b/drivers/block/nvme-core.c
-index 6f04771..5a79106 100644
---- a/drivers/block/nvme-core.c
-+++ b/drivers/block/nvme-core.c
-@@ -18,6 +18,7 @@
- #include <linux/blk-mq.h>
- #include <linux/cpu.h>
- #include <linux/delay.h>
-+#include <linux/dma-mapping.h>
- #include <linux/errno.h>
- #include <linux/fs.h>
- #include <linux/genhd.h>
-@@ -1711,7 +1712,7 @@ static int nvme_configure_admin_queue(struct nvme_dev *dev)
- 	u32 aqa;
- 	u64 cap = readq(&dev->bar->cap);
- 	struct nvme_queue *nvmeq;
--	unsigned page_shift = PAGE_SHIFT;
-+	unsigned page_shift = dma_get_page_shift(dev->dev);
- 	unsigned dev_page_min = NVME_CAP_MPSMIN(cap) + 12;
- 	unsigned dev_page_max = NVME_CAP_MPSMAX(cap) + 12;
- 
--- 
-1.9.1
+On 23.10.2015 [14:00:08 -0700], Nishanth Aravamudan wrote:
+> In order to cleanly expose the desired IOMMU page shift via the new
+> dma_get_page_shift API, we need to have the sparc constants available in
+> a more typical location. There should be no functional impact to this
+> move, but it is untested.
+> 
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> ---
+>  arch/sparc/include/asm/iommu_common.h | 51 +++++++++++++++++++++++++++++++++++
+>  arch/sparc/kernel/iommu.c             |  2 +-
+>  arch/sparc/kernel/iommu_common.h      | 51 -----------------------------------
+>  arch/sparc/kernel/pci_psycho.c        |  2 +-
+>  arch/sparc/kernel/pci_sabre.c         |  2 +-
+>  arch/sparc/kernel/pci_schizo.c        |  2 +-
+>  arch/sparc/kernel/pci_sun4v.c         |  2 +-
+>  arch/sparc/kernel/psycho_common.c     |  2 +-
+>  arch/sparc/kernel/sbus.c              |  3 +--
+>  9 files changed, 58 insertions(+), 59 deletions(-)
+>  create mode 100644 arch/sparc/include/asm/iommu_common.h
+>  delete mode 100644 arch/sparc/kernel/iommu_common.h
+> 
+> diff --git a/arch/sparc/include/asm/iommu_common.h b/arch/sparc/include/asm/iommu_common.h
+> new file mode 100644
+> index 0000000..b40cec2
+> --- /dev/null
+> +++ b/arch/sparc/include/asm/iommu_common.h
+> @@ -0,0 +1,51 @@
+> +/* iommu_common.h: UltraSparc SBUS/PCI common iommu declarations.
+> + *
+> + * Copyright (C) 1999, 2008 David S. Miller (davem@davemloft.net)
+> + */
+> +
+> +#ifndef _IOMMU_COMMON_H
+> +#define _IOMMU_COMMON_H
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/types.h>
+> +#include <linux/sched.h>
+> +#include <linux/mm.h>
+> +#include <linux/scatterlist.h>
+> +#include <linux/device.h>
+> +#include <linux/iommu-helper.h>
+> +#include <linux/scatterlist.h>
+> +
+> +#include <asm/iommu.h>
+> +
+> +/*
+> + * These give mapping size of each iommu pte/tlb.
+> + */
+> +#define IO_PAGE_SHIFT			13
+> +#define IO_PAGE_SIZE			(1UL << IO_PAGE_SHIFT)
+> +#define IO_PAGE_MASK			(~(IO_PAGE_SIZE-1))
+> +#define IO_PAGE_ALIGN(addr)		ALIGN(addr, IO_PAGE_SIZE)
+> +
+> +#define IO_TSB_ENTRIES			(128*1024)
+> +#define IO_TSB_SIZE			(IO_TSB_ENTRIES * 8)
+> +
+> +/*
+> + * This is the hardwired shift in the iotlb tag/data parts.
+> + */
+> +#define IOMMU_PAGE_SHIFT		13
+> +
+> +#define SG_ENT_PHYS_ADDRESS(SG)	(__pa(sg_virt((SG))))
+> +
+> +static inline int is_span_boundary(unsigned long entry,
+> +				   unsigned long shift,
+> +				   unsigned long boundary_size,
+> +				   struct scatterlist *outs,
+> +				   struct scatterlist *sg)
+> +{
+> +	unsigned long paddr = SG_ENT_PHYS_ADDRESS(outs);
+> +	int nr = iommu_num_pages(paddr, outs->dma_length + sg->length,
+> +				 IO_PAGE_SIZE);
+> +
+> +	return iommu_is_span_boundary(entry, nr, shift, boundary_size);
+> +}
+> +
+> +#endif /* _IOMMU_COMMON_H */
+> diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
+> index 5320689..f9b6077 100644
+> --- a/arch/sparc/kernel/iommu.c
+> +++ b/arch/sparc/kernel/iommu.c
+> @@ -20,8 +20,8 @@
+>  #endif
+>  
+>  #include <asm/iommu.h>
+> +#include <asm/iommu_common.h>
+>  
+> -#include "iommu_common.h"
+>  #include "kernel.h"
+>  
+>  #define STC_CTXMATCH_ADDR(STC, CTX)	\
+> diff --git a/arch/sparc/kernel/iommu_common.h b/arch/sparc/kernel/iommu_common.h
+> deleted file mode 100644
+> index b40cec2..0000000
+> --- a/arch/sparc/kernel/iommu_common.h
+> +++ /dev/null
+> @@ -1,51 +0,0 @@
+> -/* iommu_common.h: UltraSparc SBUS/PCI common iommu declarations.
+> - *
+> - * Copyright (C) 1999, 2008 David S. Miller (davem@davemloft.net)
+> - */
+> -
+> -#ifndef _IOMMU_COMMON_H
+> -#define _IOMMU_COMMON_H
+> -
+> -#include <linux/kernel.h>
+> -#include <linux/types.h>
+> -#include <linux/sched.h>
+> -#include <linux/mm.h>
+> -#include <linux/scatterlist.h>
+> -#include <linux/device.h>
+> -#include <linux/iommu-helper.h>
+> -#include <linux/scatterlist.h>
+> -
+> -#include <asm/iommu.h>
+> -
+> -/*
+> - * These give mapping size of each iommu pte/tlb.
+> - */
+> -#define IO_PAGE_SHIFT			13
+> -#define IO_PAGE_SIZE			(1UL << IO_PAGE_SHIFT)
+> -#define IO_PAGE_MASK			(~(IO_PAGE_SIZE-1))
+> -#define IO_PAGE_ALIGN(addr)		ALIGN(addr, IO_PAGE_SIZE)
+> -
+> -#define IO_TSB_ENTRIES			(128*1024)
+> -#define IO_TSB_SIZE			(IO_TSB_ENTRIES * 8)
+> -
+> -/*
+> - * This is the hardwired shift in the iotlb tag/data parts.
+> - */
+> -#define IOMMU_PAGE_SHIFT		13
+> -
+> -#define SG_ENT_PHYS_ADDRESS(SG)	(__pa(sg_virt((SG))))
+> -
+> -static inline int is_span_boundary(unsigned long entry,
+> -				   unsigned long shift,
+> -				   unsigned long boundary_size,
+> -				   struct scatterlist *outs,
+> -				   struct scatterlist *sg)
+> -{
+> -	unsigned long paddr = SG_ENT_PHYS_ADDRESS(outs);
+> -	int nr = iommu_num_pages(paddr, outs->dma_length + sg->length,
+> -				 IO_PAGE_SIZE);
+> -
+> -	return iommu_is_span_boundary(entry, nr, shift, boundary_size);
+> -}
+> -
+> -#endif /* _IOMMU_COMMON_H */
+> diff --git a/arch/sparc/kernel/pci_psycho.c b/arch/sparc/kernel/pci_psycho.c
+> index 7dce27b..332fd6f 100644
+> --- a/arch/sparc/kernel/pci_psycho.c
+> +++ b/arch/sparc/kernel/pci_psycho.c
+> @@ -15,13 +15,13 @@
+>  #include <linux/of_device.h>
+>  
+>  #include <asm/iommu.h>
+> +#include <asm/iommu_common.h>
+>  #include <asm/irq.h>
+>  #include <asm/starfire.h>
+>  #include <asm/prom.h>
+>  #include <asm/upa.h>
+>  
+>  #include "pci_impl.h"
+> -#include "iommu_common.h"
+>  #include "psycho_common.h"
+>  
+>  #define DRIVER_NAME	"psycho"
+> diff --git a/arch/sparc/kernel/pci_sabre.c b/arch/sparc/kernel/pci_sabre.c
+> index 00a616f..6c2c616 100644
+> --- a/arch/sparc/kernel/pci_sabre.c
+> +++ b/arch/sparc/kernel/pci_sabre.c
+> @@ -16,12 +16,12 @@
+>  
+>  #include <asm/apb.h>
+>  #include <asm/iommu.h>
+> +#include <asm/iommu_common.h>
+>  #include <asm/irq.h>
+>  #include <asm/prom.h>
+>  #include <asm/upa.h>
+>  
+>  #include "pci_impl.h"
+> -#include "iommu_common.h"
+>  #include "psycho_common.h"
+>  
+>  #define DRIVER_NAME	"sabre"
+> diff --git a/arch/sparc/kernel/pci_schizo.c b/arch/sparc/kernel/pci_schizo.c
+> index c664d3e..ef23ab2 100644
+> --- a/arch/sparc/kernel/pci_schizo.c
+> +++ b/arch/sparc/kernel/pci_schizo.c
+> @@ -13,13 +13,13 @@
+>  #include <linux/of_device.h>
+>  
+>  #include <asm/iommu.h>
+> +#include <asm/iommu_common.h>
+>  #include <asm/irq.h>
+>  #include <asm/pstate.h>
+>  #include <asm/prom.h>
+>  #include <asm/upa.h>
+>  
+>  #include "pci_impl.h"
+> -#include "iommu_common.h"
+>  
+>  #define DRIVER_NAME	"schizo"
+>  #define PFX		DRIVER_NAME ": "
+> diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+> index d2fe57d..1d72295 100644
+> --- a/arch/sparc/kernel/pci_sun4v.c
+> +++ b/arch/sparc/kernel/pci_sun4v.c
+> @@ -18,12 +18,12 @@
+>  #include <linux/iommu-common.h>
+>  
+>  #include <asm/iommu.h>
+> +#include <asm/iommu_common.h>
+>  #include <asm/irq.h>
+>  #include <asm/hypervisor.h>
+>  #include <asm/prom.h>
+>  
+>  #include "pci_impl.h"
+> -#include "iommu_common.h"
+>  
+>  #include "pci_sun4v.h"
+>  
+> diff --git a/arch/sparc/kernel/psycho_common.c b/arch/sparc/kernel/psycho_common.c
+> index 8db48e8..8eec09d 100644
+> --- a/arch/sparc/kernel/psycho_common.c
+> +++ b/arch/sparc/kernel/psycho_common.c
+> @@ -5,10 +5,10 @@
+>  #include <linux/kernel.h>
+>  #include <linux/interrupt.h>
+>  
+> +#include <asm/iommu_common.h>
+>  #include <asm/upa.h>
+>  
+>  #include "pci_impl.h"
+> -#include "iommu_common.h"
+>  #include "psycho_common.h"
+>  
+>  #define  PSYCHO_STRBUF_CTRL_DENAB	0x0000000000000002ULL
+> diff --git a/arch/sparc/kernel/sbus.c b/arch/sparc/kernel/sbus.c
+> index be5bdf9..a92cdf6 100644
+> --- a/arch/sparc/kernel/sbus.c
+> +++ b/arch/sparc/kernel/sbus.c
+> @@ -24,8 +24,7 @@
+>  #include <asm/prom.h>
+>  #include <asm/oplib.h>
+>  #include <asm/starfire.h>
+> -
+> -#include "iommu_common.h"
+> +#include <asm/iommu_common.h>
+>  
+>  #define MAP_BASE	((u32)0xc0000000)
+>  
+> -- 
+> 1.9.1
+> 
