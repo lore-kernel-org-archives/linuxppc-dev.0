@@ -1,19 +1,18 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 084731A0976
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 09:57:06 +1100 (AEDT)
-Received: by pabrc13 with SMTP id rc13so98523750pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Oct 2015 15:57:04 -0700 (PDT)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: broonie@kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, timur@tabi.org, Xiubo.Lee@gmail.com
-Subject: [PATCH] ASoC: fsl: Use #ifdef instead of #if for CONFIG_PM_SLEEP
-Date: Thu, 22 Oct 2015 15:56:40 -0700
-Message-Id: <1445554600-43889-1-git-send-email-nicoleotsuka@gmail.com>
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1445565296.27586.3.camel@ellerman.id.au>
+Subject: Re: Time to remove platforms/cell?
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Geoff Levand <geoff@infradead.org>, Marc Dietrich <marvin24@gmx.de>,
+ Declan Malone <declan.malone@gmail.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 23 Oct 2015 12:54:56 +1100
+In-Reply-To: <1445541315.30908.148.camel@infradead.org>
+References: <1442467727.25483.0.camel@ellerman.id.au>
+ <1444327832.29301.27.camel@infradead.org>
+ <1444412742.29301.90.camel@infradead.org> <2993505.617vsrhBxj@fb07-iapwap2>
+ <1445541315.30908.148.camel@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change them to #ifdef as CONFIG_PM_SLEEP might not be defined at all.
+On Thu, 2015-10-22 at 12:15 -0700, Geoff Levand wrote:
 
-Reported-by: kbuild test robot <fengguang.wu@intel.com>
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
- sound/soc/fsl/fsl_esai.c | 2 +-
- sound/soc/fsl/fsl_sai.c  | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> Hi,
+> 
+> On Fri, 2015-10-09 at 23:13 +0200, Marc Dietrich wrote:
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index aab675a..59f234e 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -900,7 +900,7 @@ static const struct of_device_id fsl_esai_dt_ids[] = {
- };
- MODULE_DEVICE_TABLE(of, fsl_esai_dt_ids);
- 
--#if CONFIG_PM_SLEEP
-+#ifdef CONFIG_PM_SLEEP
- static int fsl_esai_suspend(struct device *dev)
- {
- 	struct fsl_esai *esai = dev_get_drvdata(dev);
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index f652f2e..15173e9 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -807,7 +807,7 @@ static const struct of_device_id fsl_sai_ids[] = {
- };
- MODULE_DEVICE_TABLE(of, fsl_sai_ids);
- 
--#if CONFIG_PM_SLEEP
-+#ifdef CONFIG_PM_SLEEP
- static int fsl_sai_suspend(struct device *dev)
- {
- 	struct fsl_sai *sai = dev_get_drvdata(dev);
--- 
-1.9.1
+> > Am Freitag, 9. Oktober 2015, 10:45:42 schrieb Geoff Levand:
+
+> > > With the 4.2-rc4 kernel, kexec seems to work when CONFIG_SPU_FS=n. 
+> > >  I
+> > > have not tried with petitboot release white-09.09.01-15.56 yet though.
+> > 
+> > I guess you mean 4.3-rc4. Still no luck with CONFIG_SPU_FS=n. No output even 
+> > with direct calling kexec. Can you put a working kernel/initrd to some place 
+> > so I can try this?
+> 
+> I did some more work on this, but still did not find out what the problem
+> is.  Kexec from 4.3 -> 4.3 works, but with the white-09.09.01-15.56
+> petitboot (2.6.30.9) -> 4.3 gets a kernel panic:
+> 
+>  -> early_setup(), dt_ptr: 0x7fff000
+> Kernel panic - not syncing: BUG: Failed verifying flat device tree, bad version?
+> 
+> I'll look at it some more as I find time.
+
+That says that the device tree firmware gave you (ie. from kexec), is using an
+old version of the device tree format.
+
+I can't remember off the top of my head which version you need, but basically
+newer kernels require a newer device tree format. So your kexec might be too
+old?
+
+cheers
