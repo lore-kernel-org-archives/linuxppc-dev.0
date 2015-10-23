@@ -1,46 +1,28 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0141.outbound.protection.outlook.com [65.55.169.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C76C71A104C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 08:02:59 +1100 (AEDT)
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 23 Oct 2015 15:02:57 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id EEA7D1FF0050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:51:02 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9NL1SE91048858
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:01:28 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9NL2lEP017663
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 15:02:50 -0600
-Date: Fri, 23 Oct 2015 14:02:45 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Matthew Wilcox <willy@linux.intel.com>,
- Keith Busch <keith.busch@intel.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Christoph Hellwig <hch@infradead.org>, linux-nvme@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org
-Subject: Re: [PATCH 5/7] [RFC PATCH 5/7] sparc: rename kernel/iommu_common.h
- -> include/asm/iommu_common.h
-Message-ID: <20151023210245.GJ10197@linux.vnet.ibm.com>
-References: <20151023205420.GA10197@linux.vnet.ibm.com>
- <20151023210008.GG10197@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB62F1A04DE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 09:40:10 +1100 (AEDT)
+Message-ID: <1445639975.701.257.camel@freescale.com>
+Subject: Re: [PATCH v3 0/5] clk: qoriq: Move chip-specific knowledge into
+ driver
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
+ <sboyd@codeaurora.org>
+CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar
+ <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>,
+ <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>, Tang
+ Yuantian <Yuantian.Tang@freescale.com>, <javier@osg.samsung.com>, Bhupesh
+ Sharma <bhupesh.sharma@freescale.com>, Russell King <linux@arm.linux.org.uk>,
+ Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 23 Oct 2015 17:39:35 -0500
+In-Reply-To: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
+References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20151023210008.GG10197@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,261 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Apologies for the subject line, should just have the [RFC PATCH 5/7]]
+On Sat, 2015-09-19 at 23:29 -0500, Scott Wood wrote:
+> The existing device tree bindings are error-prone and inflexible. 
+> Correct the mistake by moving the knowledge into the driver, which has
+> more flexibility in describing the quirks of each chip.  This leaves the
+> device tree to its proper role of identifying a programming interface
+> rather than describing its individual registers.
+> 
+> For more detail, see the commit message of patch 2.
+> 
+> As there are both ARM and PPC patches that depend on this patchset, I'm
+> requesting ACKs from clk and cpufreq in order to put this into a topic
+> branch that both ARM and PPC can pull.
+> 
+> Scott Wood (5):
+>   powerpc/fsl: Move fsl_guts.h out of arch/powerpc
+>   clk: qoriq: Move chip-specific knowledge into driver
+>   clk: qoriq: Add ls2080a support.
+>   clk: Add consumer APIs for discovering possible parent clocks
+>   cpufreq: qoriq: Don't look at clock implementation details
 
-On 23.10.2015 [14:00:08 -0700], Nishanth Aravamudan wrote:
-> In order to cleanly expose the desired IOMMU page shift via the new
-> dma_get_page_shift API, we need to have the sparc constants available in
-> a more typical location. There should be no functional impact to this
-> move, but it is untested.
-> 
-> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> ---
->  arch/sparc/include/asm/iommu_common.h | 51 +++++++++++++++++++++++++++++++++++
->  arch/sparc/kernel/iommu.c             |  2 +-
->  arch/sparc/kernel/iommu_common.h      | 51 -----------------------------------
->  arch/sparc/kernel/pci_psycho.c        |  2 +-
->  arch/sparc/kernel/pci_sabre.c         |  2 +-
->  arch/sparc/kernel/pci_schizo.c        |  2 +-
->  arch/sparc/kernel/pci_sun4v.c         |  2 +-
->  arch/sparc/kernel/psycho_common.c     |  2 +-
->  arch/sparc/kernel/sbus.c              |  3 +--
->  9 files changed, 58 insertions(+), 59 deletions(-)
->  create mode 100644 arch/sparc/include/asm/iommu_common.h
->  delete mode 100644 arch/sparc/kernel/iommu_common.h
-> 
-> diff --git a/arch/sparc/include/asm/iommu_common.h b/arch/sparc/include/asm/iommu_common.h
-> new file mode 100644
-> index 0000000..b40cec2
-> --- /dev/null
-> +++ b/arch/sparc/include/asm/iommu_common.h
-> @@ -0,0 +1,51 @@
-> +/* iommu_common.h: UltraSparc SBUS/PCI common iommu declarations.
-> + *
-> + * Copyright (C) 1999, 2008 David S. Miller (davem@davemloft.net)
-> + */
-> +
-> +#ifndef _IOMMU_COMMON_H
-> +#define _IOMMU_COMMON_H
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/types.h>
-> +#include <linux/sched.h>
-> +#include <linux/mm.h>
-> +#include <linux/scatterlist.h>
-> +#include <linux/device.h>
-> +#include <linux/iommu-helper.h>
-> +#include <linux/scatterlist.h>
-> +
-> +#include <asm/iommu.h>
-> +
-> +/*
-> + * These give mapping size of each iommu pte/tlb.
-> + */
-> +#define IO_PAGE_SHIFT			13
-> +#define IO_PAGE_SIZE			(1UL << IO_PAGE_SHIFT)
-> +#define IO_PAGE_MASK			(~(IO_PAGE_SIZE-1))
-> +#define IO_PAGE_ALIGN(addr)		ALIGN(addr, IO_PAGE_SIZE)
-> +
-> +#define IO_TSB_ENTRIES			(128*1024)
-> +#define IO_TSB_SIZE			(IO_TSB_ENTRIES * 8)
-> +
-> +/*
-> + * This is the hardwired shift in the iotlb tag/data parts.
-> + */
-> +#define IOMMU_PAGE_SHIFT		13
-> +
-> +#define SG_ENT_PHYS_ADDRESS(SG)	(__pa(sg_virt((SG))))
-> +
-> +static inline int is_span_boundary(unsigned long entry,
-> +				   unsigned long shift,
-> +				   unsigned long boundary_size,
-> +				   struct scatterlist *outs,
-> +				   struct scatterlist *sg)
-> +{
-> +	unsigned long paddr = SG_ENT_PHYS_ADDRESS(outs);
-> +	int nr = iommu_num_pages(paddr, outs->dma_length + sg->length,
-> +				 IO_PAGE_SIZE);
-> +
-> +	return iommu_is_span_boundary(entry, nr, shift, boundary_size);
-> +}
-> +
-> +#endif /* _IOMMU_COMMON_H */
-> diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
-> index 5320689..f9b6077 100644
-> --- a/arch/sparc/kernel/iommu.c
-> +++ b/arch/sparc/kernel/iommu.c
-> @@ -20,8 +20,8 @@
->  #endif
->  
->  #include <asm/iommu.h>
-> +#include <asm/iommu_common.h>
->  
-> -#include "iommu_common.h"
->  #include "kernel.h"
->  
->  #define STC_CTXMATCH_ADDR(STC, CTX)	\
-> diff --git a/arch/sparc/kernel/iommu_common.h b/arch/sparc/kernel/iommu_common.h
-> deleted file mode 100644
-> index b40cec2..0000000
-> --- a/arch/sparc/kernel/iommu_common.h
-> +++ /dev/null
-> @@ -1,51 +0,0 @@
-> -/* iommu_common.h: UltraSparc SBUS/PCI common iommu declarations.
-> - *
-> - * Copyright (C) 1999, 2008 David S. Miller (davem@davemloft.net)
-> - */
-> -
-> -#ifndef _IOMMU_COMMON_H
-> -#define _IOMMU_COMMON_H
-> -
-> -#include <linux/kernel.h>
-> -#include <linux/types.h>
-> -#include <linux/sched.h>
-> -#include <linux/mm.h>
-> -#include <linux/scatterlist.h>
-> -#include <linux/device.h>
-> -#include <linux/iommu-helper.h>
-> -#include <linux/scatterlist.h>
-> -
-> -#include <asm/iommu.h>
-> -
-> -/*
-> - * These give mapping size of each iommu pte/tlb.
-> - */
-> -#define IO_PAGE_SHIFT			13
-> -#define IO_PAGE_SIZE			(1UL << IO_PAGE_SHIFT)
-> -#define IO_PAGE_MASK			(~(IO_PAGE_SIZE-1))
-> -#define IO_PAGE_ALIGN(addr)		ALIGN(addr, IO_PAGE_SIZE)
-> -
-> -#define IO_TSB_ENTRIES			(128*1024)
-> -#define IO_TSB_SIZE			(IO_TSB_ENTRIES * 8)
-> -
-> -/*
-> - * This is the hardwired shift in the iotlb tag/data parts.
-> - */
-> -#define IOMMU_PAGE_SHIFT		13
-> -
-> -#define SG_ENT_PHYS_ADDRESS(SG)	(__pa(sg_virt((SG))))
-> -
-> -static inline int is_span_boundary(unsigned long entry,
-> -				   unsigned long shift,
-> -				   unsigned long boundary_size,
-> -				   struct scatterlist *outs,
-> -				   struct scatterlist *sg)
-> -{
-> -	unsigned long paddr = SG_ENT_PHYS_ADDRESS(outs);
-> -	int nr = iommu_num_pages(paddr, outs->dma_length + sg->length,
-> -				 IO_PAGE_SIZE);
-> -
-> -	return iommu_is_span_boundary(entry, nr, shift, boundary_size);
-> -}
-> -
-> -#endif /* _IOMMU_COMMON_H */
-> diff --git a/arch/sparc/kernel/pci_psycho.c b/arch/sparc/kernel/pci_psycho.c
-> index 7dce27b..332fd6f 100644
-> --- a/arch/sparc/kernel/pci_psycho.c
-> +++ b/arch/sparc/kernel/pci_psycho.c
-> @@ -15,13 +15,13 @@
->  #include <linux/of_device.h>
->  
->  #include <asm/iommu.h>
-> +#include <asm/iommu_common.h>
->  #include <asm/irq.h>
->  #include <asm/starfire.h>
->  #include <asm/prom.h>
->  #include <asm/upa.h>
->  
->  #include "pci_impl.h"
-> -#include "iommu_common.h"
->  #include "psycho_common.h"
->  
->  #define DRIVER_NAME	"psycho"
-> diff --git a/arch/sparc/kernel/pci_sabre.c b/arch/sparc/kernel/pci_sabre.c
-> index 00a616f..6c2c616 100644
-> --- a/arch/sparc/kernel/pci_sabre.c
-> +++ b/arch/sparc/kernel/pci_sabre.c
-> @@ -16,12 +16,12 @@
->  
->  #include <asm/apb.h>
->  #include <asm/iommu.h>
-> +#include <asm/iommu_common.h>
->  #include <asm/irq.h>
->  #include <asm/prom.h>
->  #include <asm/upa.h>
->  
->  #include "pci_impl.h"
-> -#include "iommu_common.h"
->  #include "psycho_common.h"
->  
->  #define DRIVER_NAME	"sabre"
-> diff --git a/arch/sparc/kernel/pci_schizo.c b/arch/sparc/kernel/pci_schizo.c
-> index c664d3e..ef23ab2 100644
-> --- a/arch/sparc/kernel/pci_schizo.c
-> +++ b/arch/sparc/kernel/pci_schizo.c
-> @@ -13,13 +13,13 @@
->  #include <linux/of_device.h>
->  
->  #include <asm/iommu.h>
-> +#include <asm/iommu_common.h>
->  #include <asm/irq.h>
->  #include <asm/pstate.h>
->  #include <asm/prom.h>
->  #include <asm/upa.h>
->  
->  #include "pci_impl.h"
-> -#include "iommu_common.h"
->  
->  #define DRIVER_NAME	"schizo"
->  #define PFX		DRIVER_NAME ": "
-> diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
-> index d2fe57d..1d72295 100644
-> --- a/arch/sparc/kernel/pci_sun4v.c
-> +++ b/arch/sparc/kernel/pci_sun4v.c
-> @@ -18,12 +18,12 @@
->  #include <linux/iommu-common.h>
->  
->  #include <asm/iommu.h>
-> +#include <asm/iommu_common.h>
->  #include <asm/irq.h>
->  #include <asm/hypervisor.h>
->  #include <asm/prom.h>
->  
->  #include "pci_impl.h"
-> -#include "iommu_common.h"
->  
->  #include "pci_sun4v.h"
->  
-> diff --git a/arch/sparc/kernel/psycho_common.c b/arch/sparc/kernel/psycho_common.c
-> index 8db48e8..8eec09d 100644
-> --- a/arch/sparc/kernel/psycho_common.c
-> +++ b/arch/sparc/kernel/psycho_common.c
-> @@ -5,10 +5,10 @@
->  #include <linux/kernel.h>
->  #include <linux/interrupt.h>
->  
-> +#include <asm/iommu_common.h>
->  #include <asm/upa.h>
->  
->  #include "pci_impl.h"
-> -#include "iommu_common.h"
->  #include "psycho_common.h"
->  
->  #define  PSYCHO_STRBUF_CTRL_DENAB	0x0000000000000002ULL
-> diff --git a/arch/sparc/kernel/sbus.c b/arch/sparc/kernel/sbus.c
-> index be5bdf9..a92cdf6 100644
-> --- a/arch/sparc/kernel/sbus.c
-> +++ b/arch/sparc/kernel/sbus.c
-> @@ -24,8 +24,7 @@
->  #include <asm/prom.h>
->  #include <asm/oplib.h>
->  #include <asm/starfire.h>
-> -
-> -#include "iommu_common.h"
-> +#include <asm/iommu_common.h>
->  
->  #define MAP_BASE	((u32)0xc0000000)
->  
-> -- 
-> 1.9.1
-> 
+I've applied the first three patches plus 
+http://patchwork.ozlabs.org/patch/534739/ to the clock branch of 
+scottwood/linux.git to be used as a basis for PPC and ARM device tree patches.
+
+Note that there is a trivial merge conflict with commit 
+4a7748c3d6419bb8178748 ("clk: Allow drivers to build if COMPILE_TEST is 
+enabled").  Another option is for these patches to go via the clk tree, and 
+the device tree patches will ust go separately.  This would result in 
+intermediate commits where the device tree contains clock information that 
+the clock driver can't handle, but it would be resolved by -rc1 -- and it 
+seems that one of the ARM device tree patches ("dts/ls2080a: Update DTSI to 
+add support of various peripherals") was already merged without waiting for 
+the clock driver patch.  I could still wait until next merge window to rip 
+out the legacy stuff from existing device trees, so it would only affect new 
+functionality.
+
+Patch 4 is still waiting for an ack from Russell King, but it appears that 
+patch 5 (which depends on patch 4) can probably wait until the next merge 
+window.  Without those patches, qoriq-cpufreq should still mostly work, as 
+long as the old device trees are used.  Patches 4 and 5 will be needed to 
+make qoriq-cpufreq continue to work with device trees using the new binding.
+
+-Scott
