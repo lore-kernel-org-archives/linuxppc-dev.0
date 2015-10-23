@@ -1,27 +1,27 @@
 Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 298FA1A0B28
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:41:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E1E361A0CA7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:52:31 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 23 Oct 2015 13:41:23 +1000
+ Fri, 23 Oct 2015 13:52:30 +1000
 Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8A8E62BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:41:20 +1100 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 64710357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:52:27 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9N3fDlZ28573942
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:41:21 +1100
+ t9N3qJJQ30081220
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:52:28 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9N3ekjM032151
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:40:48 +1100
-Message-ID: <5629AC45.7070007@au1.ibm.com>
-Date: Fri, 23 Oct 2015 14:40:53 +1100
+ t9N3pr3W017413
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:51:53 +1100
+Message-ID: <5629AEE0.3030701@au1.ibm.com>
+Date: Fri, 23 Oct 2015 14:52:00 +1100
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 MIME-Version: 1.0
 To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
@@ -32,11 +32,12 @@ To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  David Laight <David.Laight@ACULAB.COM>
 CC: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 16/37] cxlflash: Fix async interrupt bypass logic
+Subject: Re: [PATCH v6 35/37] cxlflash: Fix to avoid corrupting port selection
+ mask
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1445458425-20567-1-git-send-email-mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1445458425-20567-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ <1445458575-62688-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1445458575-62688-1-git-send-email-mrochs@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,16 +47,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/10/15 07:13, Matthew R. Ochs wrote:
-> A bug was introduced earlier in the development cycle when cleaning
-> up logic statements. Instead of skipping bits that are not set, set
-> bits are skipped, causing async interrupts to not be handled correctly.
+On 22/10/15 07:16, Matthew R. Ochs wrote:
+> The port selection mask of a LUN can be corrupted when the manage LUN
+> ioctl (DK_CXLFLASH_MANAGE_LUN) is issued more than once for any device.
 >
-> To fix, simply add back in the proper evaluation for an unset bit.
+ > ...
 >
 > Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
-> Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
-> Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
 
 Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
