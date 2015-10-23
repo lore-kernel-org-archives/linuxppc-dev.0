@@ -1,37 +1,27 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0125.outbound.protection.outlook.com [207.46.100.125])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A9A511A0889
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 17:20:22 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 79BDC14131F
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2015 17:20:22 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 23 Oct 2015 16:20:21 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8B9EB2BB0052
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2015 17:20:19 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9N6K5i311141194
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2015 17:20:14 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9N6JksV014530
- for <linuxppc-dev@ozlabs.org>; Fri, 23 Oct 2015 17:19:46 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/eeh: eeh_pci_enable(): fix checking of post-request
- state
-Date: Fri, 23 Oct 2015 17:19:46 +1100
-Message-Id: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA3EF1A0B48
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 18:45:18 +1100 (AEDT)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "lauraa@codeaurora.org" <lauraa@codeaurora.org>, Xiaobo Xie
+ <X.Xie@freescale.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ Li Leo <LeoLi@freescale.com>, "paulus@samba.org" <paulus@samba.org>
+Subject: RE: [PATCH v12 4/6] QE/CPM: move muram management functions to
+ qe_common
+Date: Fri, 23 Oct 2015 07:45:09 +0000
+Message-ID: <SN1PR0301MB1550CC4F282309872FF5ACBD9B260@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1444806968-4627-1-git-send-email-qiang.zhao@freescale.com>
+ <1444806968-4627-4-git-send-email-qiang.zhao@freescale.com>
+ <1445569799.701.142.camel@freescale.com>
+In-Reply-To: <1445569799.701.142.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In eeh_pci_enable(), after making the request to set the new options, we
-call eeh_ops->wait_state() to check that the request finished successfully.
-
-At the moment, if eeh_ops->wait_state() returns 0, we return 0 without
-checking that it reflects the expected outcome. This can lead to callers
-further up the chain incorrectly assuming the slot has been successfully
-unfrozen and continuing to attempt recovery.
-
-On powernv, this will occur if pnv_eeh_get_pe_state() or
-pnv_eeh_get_phb_state() return 0, which in turn occurs if the relevant OPAL
-call returns OPAL_EEH_STOPPED_MMIO_DMA_FREEZE or
-OPAL_EEH_PHB_ERROR respectively.
-
-On pseries, this will occur if pseries_eeh_get_state() returns 0, which in
-turn occurs if RTAS reports that the PE is in the MMIO Stopped and DMA
-Stopped states.
-
-Obviously, none of these cases represent a successful completion of a
-request to thaw MMIO or DMA.
-
-Fix the check so that a wait_state() return value of 0 won't be considered
-successful for the EEH_OPT_THAW_MMIO or EEH_OPT_THAW_DMA cases.
-
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
----
- arch/powerpc/kernel/eeh.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 40e4d4a..d757e7c 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -677,7 +677,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
- 	/* Check if the request is finished successfully */
- 	if (active_flag) {
- 		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
--		if (rc <= 0)
-+		if (rc < 0)
- 			return rc;
- 
- 		if (rc & active_flag)
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+T24gRnJpLCAyMDE1LTEwLTIzIGF0IDExOjEwIEFNLCBXb29kIFNjb3R0LUIwNzQyMSA8c2NvdHR3
+b29kQGZyZWVzY2FsZS5jb20+IHdyb3RlOg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBGcmlkYXksIE9jdG9iZXIgMjMsIDIw
+MTUgMTE6MTAgQU0NCj4gVG86IFpoYW8gUWlhbmctQjQ1NDc1IDxxaWFuZy56aGFvQGZyZWVzY2Fs
+ZS5jb20+DQo+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZzsNCj4gbGF1cmFhQGNvZGVhdXJvcmEub3JnOyBYaWUgWGlhb2JvLVI2
+MzA2MSA8WC5YaWVAZnJlZXNjYWxlLmNvbT47DQo+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsg
+TGkgWWFuZy1MZW8tUjU4NDcyIDxMZW9MaUBmcmVlc2NhbGUuY29tPjsNCj4gcGF1bHVzQHNhbWJh
+Lm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxMiA0LzZdIFFFL0NQTTogbW92ZSBtdXJhbSBt
+YW5hZ2VtZW50IGZ1bmN0aW9ucyB0bw0KPiBxZV9jb21tb24NCj4gDQo+IE9uIFdlZCwgMjAxNS0x
+MC0xNCBhdCAxNToxNiArMDgwMCwgWmhhbyBRaWFuZyB3cm90ZToNCj4gPiBRRSBhbmQgQ1BNIGhh
+dmUgdGhlIHNhbWUgbXVyYW0sIHRoZXkgdXNlIHRoZSBzYW1lIG1hbmFnZW1lbnQNCj4gPiBmdW5j
+dGlvbnMuIE5vdyBRRSBzdXBwb3J0IGJvdGggQVJNIGFuZCBQb3dlclBDLCBpdCBpcyBuZWNlc3Nh
+cnkgdG8NCj4gPiBtb3ZlIFFFIHRvICJkcml2ZXIvc29jIiwgc28gbW92ZSB0aGUgbXVyYW0gbWFu
+YWdlbWVudCBmdW5jdGlvbnMgZnJvbQ0KPiA+IGNwbV9jb21tb24gdG8gcWVfY29tbW9uIGZvciBw
+cmVwYXJpbmcgdG8gbW92ZSBRRSBjb2RlIHRvICJkcml2ZXIvc29jIg0KPiA+DQo+ID4gU2lnbmVk
+LW9mZi1ieTogWmhhbyBRaWFuZyA8cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0K
+PiA+IENoYW5nZXMgZm9yIHYyOg0KPiA+ICAgICAgIC0gbm8gY2hhbmdlcw0KPiA+IENoYW5nZXMg
+Zm9yIHYzOg0KPiA+ICAgICAgIC0gbm8gY2hhbmdlcw0KPiA+IENoYW5nZXMgZm9yIHY0Og0KPiA+
+ICAgICAgIC0gbm8gY2hhbmdlcw0KPiA+IENoYW5nZXMgZm9yIHY1Og0KPiA+ICAgICAgIC0gbm8g
+Y2hhbmdlcw0KPiA+IENoYW5nZXMgZm9yIHY2Og0KPiA+ICAgICAgIC0gdXNpbmcgZ2VuYWxsb2Mg
+aW5zdGVhZCByaGVhcCB0byBtYW5hZ2UgUUUgTVVSQU0NCj4gPiAgICAgICAtIHJlbW92ZSBxZV9y
+ZXNldCBmcm9tIHBsYXRmb3JtIGZpbGUsIHVzaW5nDQo+ID4gICAgICAgLSBzdWJzeXNfaW5pdGNh
+bGwgdG8gY2FsbCBxZV9pbml0IGZ1bmN0aW9uLg0KPiA+IENoYW5nZXMgZm9yIHY3Og0KPiA+ICAg
+ICAgIC0gbW92ZSB0aGlzIHBhdGNoIGZyb20gMy8zIHRvIDIvMw0KPiA+ICAgICAgIC0gY29udmVy
+dCBjcG0gd2l0aCBnZW5hbGxvYw0KPiA+ICAgICAgIC0gY2hlY2sgZm9yIGdlbl9wb29sIGFsbG9j
+YXRpb24gZmFpbHVyZSBDaGFuZ2VzIGZvciB2ODoNCj4gPiAgICAgICAtIHJlYmFzZQ0KPiA+ICAg
+ICAgIC0gbW92ZSBCRF9TQ18qIG1hY3JvIGluc3RlYWQgb2YgY29weSBDaGFuZ2VzIGZvciB2OToN
+Cj4gPiAgICAgICAtIGRvZXNuJ3QgbW9kaWZ5IENQTSwgYWRkIGEgbmV3IHBhdGNoIHRvIG1vZGlm
+eS4NCj4gPiAgICAgICAtIHJlYmFzZQ0KPiA+IENoYW5nZXMgZm9yIHYxMDoNCj4gPiAgICAgICAt
+IHJlYmFzZQ0KPiA+IENoYW5nZXMgZm9yIHYxMToNCj4gPiAgICAgICAtIHJlbW92ZSByZW5hbWlu
+Zw0KPiA+ICAgICAgIC0gZGVsZXRlIHJlbW92aW5nIHFlX3Jlc2V0IGFuZCBkZWxldGUgYWRkaW5n
+IHFlX2luaXQuDQo+ID4gQ2hhbmdlcyBmb3IgdjEyOg0KPiA+ICAgICAgIC0gU1BJX0ZTTF9DUE0g
+ZGVwZW5kcyBvbiBRRS1NVVJBTSwgc2VsZWN0IFFVSUNDX0VOR0lORSBmb3IgaXQuDQo+IA0KPiBX
+aHkgaXMgdGhlIFNQSSBjaGFuZ2UgcGFydCBvZiB0aGlzIHBhdGNoPyAgV2h5IGlzIGl0IGV2ZW4g
+cGFydCBvZiB0aGlzIHBhdGNoc2V0LA0KPiByYXRoZXIgdGhhbiBhbiBpbmRlcGVuZGVudCBwYXRj
+aCBzZW50IHRvIHRoZSBTUEkgbGlzdCBhbmQgbWFpbnRhaW5lcj8gIElmIGl0J3MgdGllZA0KPiB0
+byBvdGhlciBjaGFuZ2VzIHlvdSdyZSBtYWtpbmcsIGV4cGxhaW4gdGhhdC4gIEFzIGlzLCB0aGVy
+ZSBpcyB6ZXJvIG1lbnRpb24gb2YNCj4gdGhlIFNQSSBjaGFuZ2UgaW4gdGhlIHBhcnQgb2YgdGhl
+IGUtbWFpbCB0aGF0IHdpbGwgYmVjb21lIHRoZSBnaXQgY2hhbmdlbG9nLg0KPiANClRoaXMgU1BJ
+X0ZTTF9DUE0gaXMgY3BtLXNwaSwgaXQgaXMgcGFydCBvZiBDUE0uDQoNCi1aaGFvDQo=
