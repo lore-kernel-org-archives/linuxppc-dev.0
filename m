@@ -2,9 +2,9 @@ Return-Path: <thenzl@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 006D01A2BAF
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 00:55:31 +1100 (AEDT)
-Subject: Re: [PATCH v6 27/37] cxlflash: Fix to prevent stale AFU RRQ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D5C41A2F41
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 00:57:45 +1100 (AEDT)
+Subject: Re: [PATCH v6 29/37] cxlflash: Fix to double the delay each time
 To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  James Bottomley <James.Bottomley@HansenPartnership.com>,
  "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
@@ -13,14 +13,14 @@ To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  David Laight <David.Laight@ACULAB.COM>
 References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1445458514-58777-1-git-send-email-mrochs@linux.vnet.ibm.com>
+ <1445458530-59831-1-git-send-email-mrochs@linux.vnet.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Tomas Henzl <thenzl@redhat.com>
-Message-ID: <562A3C4E.1040507@redhat.com>
-Date: Fri, 23 Oct 2015 15:55:26 +0200
+Message-ID: <562A3CD4.4010500@redhat.com>
+Date: Fri, 23 Oct 2015 15:57:40 +0200
 MIME-Version: 1.0
-In-Reply-To: <1445458514-58777-1-git-send-email-mrochs@linux.vnet.ibm.com>
+In-Reply-To: <1445458530-59831-1-git-send-email-mrochs@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,17 +32,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 21.10.2015 22:15, Matthew R. Ochs wrote:
-> Following an adapter reset, the AFU RRQ that resides in host memory
-> holds stale data. This can lead to a condition where the RRQ interrupt
-> handler tries to process stale entries and/or endlessly loops due to an
-> out of sync generation bit.
+> From: Manoj Kumar <manoj@linux.vnet.ibm.com>
 >
-> To fix, the AFU RRQ in host memory needs to be cleared after each reset.
+> The operator used to double the master context response delay
+> is incorrect and does not result in delay doubling.
 >
+> To fix, use a left shift instead of the XOR operator.
+>
+> Reported-by: Tomas Henzl <thenzl@redhat.com>
 > Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 > Signed-off-by: Manoj N. Kumar <manoj@linux.vnet.ibm.com>
 > Reviewed-by: Brian King <brking@linux.vnet.ibm.com>
-> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 Reviewed-by: Tomas Henzl <thenzl@redhat.com>
 
