@@ -1,17 +1,36 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0116.outbound.protection.outlook.com [157.56.110.116])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D0A81A03CA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 15:50:53 +1100 (AEDT)
-From: Scott Wood <scottwood@freescale.com>
-To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
-CC: <linux-clk@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: [PATCH] clk: qoriq: Fix wrong data in p2041_cmux_grp2
-Date: Thu, 22 Oct 2015 23:50:34 -0500
-Message-ID: <1445575834-30146-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0CA711A0B32
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 17:07:57 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 23 Oct 2015 16:07:55 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C1D483578047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 17:07:50 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9N67fUX20840488
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 17:07:50 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9N67HTY027235
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 17:07:17 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V4 00/31] powerpc/mm: Update page table format for book3s
+ 64
+In-Reply-To: <CAOJe8K1cnLmDdnV-f4XNiJjoK2w59SwEi8vNy2i6yLyOKYxCVQ@mail.gmail.com>
+References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <CAOJe8K1cnLmDdnV-f4XNiJjoK2w59SwEi8vNy2i6yLyOKYxCVQ@mail.gmail.com>
+Date: Fri, 23 Oct 2015 11:36:56 +0530
+Message-ID: <87a8rarudb.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,28 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-This is on top of http://patchwork.ozlabs.org/patch/519801/
-and I'll apply them together.
+Denis Kirjanov <kda@linux-powerpc.org> writes:
 
- drivers/clk/clk-qoriq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> On 10/17/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>> Hi All,
+>>
+>> This patch series attempt to update book3s 64 linux page table format to
+>> make it more flexible. Our current pte format is very restrictive and we
+>> overload multiple pte bits. This is due to the non-availability of free bits
+>> in pte_t. We use pte_t to track the validity of 4K subpages. This patch
+>> series free up pte_t of 11 bits by moving 4K subpage tracking to the
+>> lower half of PTE page. The pte format is updated such that we have a
+>> better method for identifying a pte entry at pmd level. This will also
+>> enable
+>> us to implement hugetlb migration(not yet done in this series).
+>
+> Hi, what tree does this apply to?
+>
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 8f9c93b..07985a5 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -128,8 +128,8 @@ static const struct clockgen_muxinfo p2041_cmux_grp1 = {
- static const struct clockgen_muxinfo p2041_cmux_grp2 = {
- 	{
- 		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
--		[4] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
--		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
- 	}
- };
- 
--- 
-2.1.4
+linux-powerpc tree -next branch
+
+https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/
+
+-aneesh
