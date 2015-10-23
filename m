@@ -1,43 +1,25 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0102.outbound.protection.outlook.com [65.55.169.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 23D0F1A0A7C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:51 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 23 Oct 2015 13:22:48 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8AA112CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:45 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9N3MORx12058762
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:32 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9N3MCXr001275
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:22:13 +1100
-Message-ID: <5629A7EB.5060207@au1.ibm.com>
-Date: Fri, 23 Oct 2015 14:22:19 +1100
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B19501A0965
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 14:26:51 +1100 (AEDT)
+Message-ID: <1445570793.701.147.camel@freescale.com>
+Subject: Re: [PATCH 3/9] powerpc32: checksum_wrappers_64 becomes
+ checksum_wrappers
+From: Scott Wood <scottwood@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <netdev@vger.kernel.org>, <anton@samba.org>
+Date: Thu, 22 Oct 2015 22:26:33 -0500
+In-Reply-To: <91ebacbbd631ec02ad00e0a824b6cad0dac532a0.1442876807.git.christophe.leroy@c-s.fr>
+References: <cover.1442876807.git.christophe.leroy@c-s.fr>
+ <91ebacbbd631ec02ad00e0a824b6cad0dac532a0.1442876807.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org,
- James Bottomley <James.Bottomley@HansenPartnership.com>,
- "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
- Brian King <brking@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Daniel Axtens <dja@ozlabs.au.ibm.com>, Tomas Henzl <thenzl@redhat.com>,
- David Laight <David.Laight@ACULAB.COM>
-CC: Michael Neuling <mikey@neuling.org>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 36/37] cxlflash: Fix to avoid lock instrumentation
- rejection
-References: <1445458134-63197-1-git-send-email-mrochs@linux.vnet.ibm.com>
- <1445458584-63347-1-git-send-email-mrochs@linux.vnet.ibm.com>
-In-Reply-To: <1445458584-63347-1-git-send-email-mrochs@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,18 +29,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 22/10/15 07:16, Matthew R. Ochs wrote:
-> When running with lock instrumentation (e.g. lockdep), some of the
-> instrumentation can become disabled at probe time for a cxlflash
-> adapter. This is due to a missing lock registration for the tmf_slock.
->
-> The fix is to call spin_lock_init() for the tmf_slock during probe.
->
-> Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+On Tue, 2015-09-22 at 16:34 +0200, Christophe Leroy wrote:
+> The powerpc64 checksum wrapper functions adds csum_and_copy_to_user()
+> which otherwise is implemented in include/net/checksum.h by using
+> csum_partial() then copy_to_user()
+> 
+> Those two wrapper fonctions are also applicable to powerpc32 as it is
+> based on the use of csum_partial_copy_generic() which also
+> exists on powerpc32
+> 
+> This patch renames arch/powerpc/lib/checksum_wrappers_64.c to
+> arch/powerpc/lib/checksum_wrappers.c and
+> makes it non-conditional to CONFIG_WORD_SIZE
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/include/asm/checksum.h                              | 9 ------
+> ---
+>  arch/powerpc/lib/Makefile                                        | 3 +--
+>  arch/powerpc/lib/{checksum_wrappers_64.c => checksum_wrappers.c} | 0
+>  3 files changed, 1 insertion(+), 11 deletions(-)
+>  rename arch/powerpc/lib/{checksum_wrappers_64.c => checksum_wrappers.c} 
+> (100%)
 
-Reviewed-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+I wonder why it was 64-bit specific in the first place.
 
--- 
-Andrew Donnellan              Software Engineer, OzLabs
-andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
-+61 2 6201 8874 (work)        IBM Australia Limited
+CCing Anton Blanchard.  
+
+-Scott
+
+> 
+> diff --git a/arch/powerpc/include/asm/checksum.h 
+> b/arch/powerpc/include/asm/checksum.h
+> index d2ca07b..afa6722 100644
+> --- a/arch/powerpc/include/asm/checksum.h
+> +++ b/arch/powerpc/include/asm/checksum.h
+> @@ -47,21 +47,12 @@ extern __wsum csum_partial_copy_generic(const void 
+> *src, void *dst,
+>                                             int len, __wsum sum,
+>                                             int *src_err, int *dst_err);
+>  
+> -#ifdef __powerpc64__
+>  #define _HAVE_ARCH_COPY_AND_CSUM_FROM_USER
+>  extern __wsum csum_and_copy_from_user(const void __user *src, void *dst,
+>                                     int len, __wsum sum, int *err_ptr);
+>  #define HAVE_CSUM_COPY_USER
+>  extern __wsum csum_and_copy_to_user(const void *src, void __user *dst,
+>                                   int len, __wsum sum, int *err_ptr);
+> -#else
+> -/*
+> - * the same as csum_partial, but copies from src to dst while it
+> - * checksums.
+> - */
+> -#define csum_partial_copy_from_user(src, dst, len, sum, errp)   \
+> -        csum_partial_copy_generic((__force const void *)(src), (dst), 
+> (len), (sum), (errp), NULL)
+> -#endif
+>  
+>  #define csum_partial_copy_nocheck(src, dst, len, sum)   \
+>          csum_partial_copy_generic((src), (dst), (len), (sum), NULL, NULL)
+> diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+> index a47e142..e46b068 100644
+> --- a/arch/powerpc/lib/Makefile
+> +++ b/arch/powerpc/lib/Makefile
+> @@ -22,8 +22,7 @@ obj64-$(CONFIG_SMP) += locks.o
+>  obj64-$(CONFIG_ALTIVEC)      += vmx-helper.o
+>  
+>  ifeq ($(CONFIG_GENERIC_CSUM),)
+> -obj-y                        += checksum_$(CONFIG_WORD_SIZE).o
+> -obj-$(CONFIG_PPC64)  += checksum_wrappers_64.o
+> +obj-y                        += checksum_$(CONFIG_WORD_SIZE).o checksum_wrappers.o
+>  endif
+>  
+>  obj-$(CONFIG_PPC_EMULATE_SSTEP)      += sstep.o ldstfp.o
+> diff --git a/arch/powerpc/lib/checksum_wrappers_64.c 
+> b/arch/powerpc/lib/checksum_wrappers.c
+> similarity index 100%
+> rename from arch/powerpc/lib/checksum_wrappers_64.c
+> rename to arch/powerpc/lib/checksum_wrappers.c
