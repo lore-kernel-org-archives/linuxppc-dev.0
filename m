@@ -1,26 +1,42 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-yk0-f176.google.com (mail-yk0-f176.google.com
- [209.85.160.176])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F07C1A0C74
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 06:08:22 +1100 (AEDT)
-Received: by ykaz22 with SMTP id z22so130700568yka.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 12:08:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9787C1A0AB5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 07:54:28 +1100 (AEDT)
+Received: from localhost
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 23 Oct 2015 16:54:26 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 12E456E8055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:42:36 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9NKsO0b56557766
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 20:54:24 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9NKsLbL017550
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Oct 2015 16:54:24 -0400
+Date: Fri, 23 Oct 2015 13:54:20 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Matthew Wilcox <willy@linux.intel.com>
+Cc: Keith Busch <keith.busch@intel.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Christoph Hellwig <hch@infradead.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ linux-nvme@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
+Subject: [PATCH 0/5 v3] Fix NVMe driver support on Power with 32-bit DMA
+Message-ID: <20151023205420.GA10197@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87a8rarudb.fsf@linux.vnet.ibm.com>
-References: <1445076522-20527-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <CAOJe8K1cnLmDdnV-f4XNiJjoK2w59SwEi8vNy2i6yLyOKYxCVQ@mail.gmail.com>
- <87a8rarudb.fsf@linux.vnet.ibm.com>
-Date: Fri, 23 Oct 2015 22:08:20 +0300
-Message-ID: <CAOJe8K256Kr46VVZEPnbMR1Du4cuyS1hhYEh1FmGBgmDxcixJw@mail.gmail.com>
-Subject: Re: [PATCH V4 00/31] powerpc/mm: Update page table format for book3s
- 64
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,48 +46,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/23/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Denis Kirjanov <kda@linux-powerpc.org> writes:
->
->> On 10/17/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>> Hi All,
->>>
->>> This patch series attempt to update book3s 64 linux page table format to
->>> make it more flexible. Our current pte format is very restrictive and we
->>> overload multiple pte bits. This is due to the non-availability of free
->>> bits
->>> in pte_t. We use pte_t to track the validity of 4K subpages. This patch
->>> series free up pte_t of 11 bits by moving 4K subpage tracking to the
->>> lower half of PTE page. The pte format is updated such that we have a
->>> better method for identifying a pte entry at pmd level. This will also
->>> enable
->>> us to implement hugetlb migration(not yet done in this series).
->>
->> Hi, what tree does this apply to?
->>
->
-> linux-powerpc tree -next branch
->
-> https://git.kernel.org/cgit/linux/kernel/git/powerpc/linux.git/
+We received a bug report recently when DDW (64-bit direct DMA on Power)
+is not enabled for NVMe devices. In that case, we fall back to 32-bit
+DMA via the IOMMU, which is always done via 4K TCEs (Translation Control
+Entries).
 
-Ok, but I'm getting the following error after applying the first patch
-from your series:
+The NVMe device driver, though, assumes that the DMA alignment for the
+PRP entries will match the device's page size, and that the DMA aligment
+matches the kernel's page aligment. On Power, the the IOMMU page size,
+as mentioned above, can be 4K, while the device can have a page size of
+8K, while the kernel has a page size of 64K. This eventually trips the
+BUG_ON in nvme_setup_prps(), as we have a 'dma_len' that is a multiple
+of 4K but not 8K (e.g., 0xF000).
 
-error: patch failed: arch/powerpc/include/asm/pgalloc-64.h:166
-error: arch/powerpc/include/asm/pgalloc-64.h: patch does not apply
-error: arch/powerpc/mm/hash64_64k.c: No such file or directory
+In this particular case, and generally, we want to use the IOMMU's page
+size for the default device page size, rather than the kernel's page
+size.
 
-kda@hydra ~/devel/linux $ git branch
-  master
-* next
-kda@hydra ~/devel/linux $ git remote show origin
-* remote origin
-  Fetch URL: git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
-  Push  URL: git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git
+This series consists of five patches:
 
-Or am I missing something?
+1) add a generic dma_get_page_shift implementation that just returns
+PAGE_SHIFT
+2) override the generic implementation on Power to use the IOMMU table's
+page shift if available
+3) allow further specific overriding on power with machdep platform
+overrides
+4) use the machdep override on pseries, as the DDW code puts the TCE
+shift in a special property and there is no IOMMU table available
+5) move some sparc code around to make IOMMU_PAGE_SHIFT available in
+include/asm
+6) override the generic implementation on sparce to use IOMMU_PAGE_SHIFT
+7) leverage the new API in the NVMe driver
 
->
-> -aneesh
->
->
+With these patches, a NVMe device survives our internal hardware
+exerciser; the kernel BUGs within a few seconds without the patch.
+
+ arch/powerpc/include/asm/dma-mapping.h |  3 +++
+ arch/powerpc/include/asm/machdep.h     |  3 ++-
+ arch/powerpc/kernel/dma.c              | 11 +++++++++++
+ arch/powerpc/platforms/pseries/iommu.c | 36 ++++++++++++++++++++++++++++++++++++
+ arch/sparc/include/asm/dma-mapping.h   |  8 ++++++++
+ arch/sparc/include/asm/iommu_common.h  | 51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ arch/sparc/kernel/iommu.c              |  2 +-
+ arch/sparc/kernel/iommu_common.h       | 51 ---------------------------------------------------
+ arch/sparc/kernel/pci_psycho.c         |  2 +-
+ arch/sparc/kernel/pci_sabre.c          |  2 +-
+ arch/sparc/kernel/pci_schizo.c         |  2 +-
+ arch/sparc/kernel/pci_sun4v.c          |  2 +-
+ arch/sparc/kernel/psycho_common.c      |  2 +-
+ arch/sparc/kernel/sbus.c               |  3 +--
+ drivers/block/nvme-core.c              |  3 ++-
+ include/linux/dma-mapping.h            |  7 +++++++
+ 16 files changed, 127 insertions(+), 61 deletions(-)
+
+v1 -> v2:
+  Based upon feedback from Christoph Hellwig, rather than using an
+  arch-specific hack, expose the DMA page shift via a generic DMA API and
+  override it on Power as needed.
+v2 -> v3:
+  Based upon feedback from Christoph Hellwig, put the generic
+  implementation in include/linux/dma-mapping.h, since not all archs use
+  include/asm-generic/dma-mapping-common.h.
+  Add sparc implementation, as that arch seems to have a different IOMMU
+  page size.
