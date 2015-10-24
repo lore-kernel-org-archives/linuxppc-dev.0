@@ -1,40 +1,32 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-ob0-x233.google.com (mail-ob0-x233.google.com
- [IPv6:2607:f8b0:4003:c01::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 769401A08DD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 22:54:27 +1100 (AEDT)
-Received: by obbwb3 with SMTP id wb3so112460860obb.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 04:54:24 -0700 (PDT)
-Date: Sat, 24 Oct 2015 19:53:56 +0800
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Gleixner <tglx@linutronix.de>,
- Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
- Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
-Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
- *cmpxchg a full barrier
-Message-ID: <20151024115356.GA8545@fixme-laptop.cn.ibm.com>
-References: <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
- <20151014201916.GB3910@linux.vnet.ibm.com>
- <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
- <20151020092147.GX17308@twins.programming.kicks-ass.net>
- <20151020212835.GH5105@linux.vnet.ibm.com>
- <20151021084503.GE17714@fixme-laptop.cn.ibm.com>
- <20151021193523.GT5105@linux.vnet.ibm.com>
- <20151021194825.GH2508@worktop.programming.kicks-ass.net>
- <20151022120716.GA1481@fixme-laptop.cn.ibm.com>
- <20151024102627.GH17308@twins.programming.kicks-ass.net>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id A34001A0AB6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Oct 2015 00:22:54 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh+dt@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Javier Martinez Canillas <javier@osg.samsung.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>,
+ Alan Stern <stern@rowland.harvard.edu>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Hu Mingkai-B21284 <Mingkai.Hu@freescale.com>
+Subject: Re: [PATCH v6 22/22] of/platform: Defer probes of registered devices
+Date: Sat, 24 Oct 2015 15:51:46 +0200
+Message-ID: <4624753.sJZLTYh1pZ@vostro.rjw.lan>
+In-Reply-To: <1445549230.701.116.camel@freescale.com>
+References: <1442844182-27787-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CAAObsKAfufBe_SycibUN3ZsE3fOkBfUjZRx1SWEMwVtM6t7inQ@mail.gmail.com>
+ <1445549230.701.116.camel@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
-In-Reply-To: <20151024102627.GH17308@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,124 +36,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thursday, October 22, 2015 04:27:10 PM Scott Wood wrote:
+> On Thu, 2015-10-22 at 15:04 +0200, Tomeu Vizoso wrote:
+> > On 22 October 2015 at 00:51, Scott Wood <scottwood@freescale.com> wrote:
+> > > On Wed, 2015-10-21 at 08:44 -0500, Rob Herring wrote:
+> > > > On Wed, Oct 21, 2015 at 12:54 AM, Scott Wood <scottwood@freescale.com>
+> > > > wrote:
+> > > > > On Mon, 2015-09-21 at 16:03 +0200, Tomeu Vizoso wrote:
+> > > > > > Instead of trying to match and probe platform and AMBA devices right
+> > > > > > after each is registered, delay their probes until 
+> > > > > > device_initcall_sync.
+> > > > > > 
+> > > > > > This means that devices will start probing once all built-in drivers
+> > > > > > have registered, and after all platform and AMBA devices from the DT
+> > > > > > have been registered already.
+> > > > > > 
+> > > > > > This allows us to prevent deferred probes by probing dependencies on
+> > > > > > demand.
+> > > > > > 
+> > > > > > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> > > > > > ---
+> > > > > > 
+> > > > > > Changes in v4:
+> > > > > > - Also defer probes of AMBA devices registered from the DT as they 
+> > > > > > can
+> > > > > >   also request resources.
+> > > > > > 
+> > > > > >  drivers/of/platform.c | 11 ++++++++---
+> > > > > >  1 file changed, 8 insertions(+), 3 deletions(-)
+> > > > > 
+> > > > > This breaks arch/powerpc/sysdev/fsl_pci.c.  The PCI bus is an OF 
+> > > > > platform
+> > > > > device, and it must be probed before pcibios_init() which is a
+> > > > > subsys_initcall(), or else the PCI bus never gets scanned.
+> > > > 
+> > > > Thanks for the report. This is probably getting dropped, but it could
+> > > > be disabled for PPC.
+> > > 
+> > > I don't think that adding another arbitrary arch difference would be the
+> > > right solution.
+> > 
+> > I think Rob meant temporarily disable it while things get fixed. At
+> > least, 
+> 
+> So, what is the permanent fix for the swiotlb issue (or more generally, the 
+> inability to have a late_initcall that runs after non-module, non-hotplug 
+> platform devices have been probed)?
+> 
+> > I don't see any reason why PPC wouldn't benefit from this
+> > series.
+> 
+> It's not clear to me what the benefit of this is at all, much less for PPC.   
+> What is the fundamental problem with deferred probes?  In the cover letter 
+> you say this change saves 2.3 seconds, but where is that time being consumed? 
+>  Are the drivers taking too long in their probe function trying to initialize 
+> and then deferring, rather than checking for dependencies up front?  Or are 
+> there really so many devices and such a pessimal ordering that most of the 
+> time is spent iterating through and reordering the list, with each defer 
+> happening quickly?
+> 
+> Even if something different does need to be done at this level, forcing all 
+> OF platform devices to be probed at the late_initcall level seems quite 
+> intrusive.
 
---Kj7319i9nmIyA2yE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Totally agreed.
 
-On Sat, Oct 24, 2015 at 12:26:27PM +0200, Peter Zijlstra wrote:
-> On Thu, Oct 22, 2015 at 08:07:16PM +0800, Boqun Feng wrote:
-> > On Wed, Oct 21, 2015 at 09:48:25PM +0200, Peter Zijlstra wrote:
-> > > On Wed, Oct 21, 2015 at 12:35:23PM -0700, Paul E. McKenney wrote:
-> > > > > > > > I ask this because I recall Peter once bought up a discussi=
-on:
-> > > > > > > >=20
-> > > > > > > > https://lkml.org/lkml/2015/8/26/596
-> > >=20
-> > > > > So a full barrier on one side of these operations is enough, I th=
-ink.
-> > > > > IOW, there is no need to strengthen these operations.
-> > > >=20
-> > > > Do we need to also worry about other futex use cases?
-> > >=20
-> > > Worry, always!
-> > >=20
-> > > But yes, there is one more specific usecase, which is that of a
-> > > condition variable.
-> > >=20
-> > > When we go sleep on a futex, we might want to assume visibility of the
-> > > stores done by the thread that woke us by the time we wake up.
-> > >=20
-> >=20
-> > But the thing is futex atomics in PPC are already RELEASE(pc)+ACQUIRE
-> > and imply a full barrier, is an RELEASE(sc) semantics really needed
-> > here?
->=20
-> For this, no, the current code should be fine I think.
->=20
-> > Further more, is this condition variable visibility guaranteed by other
-> > part of futex? Because in futex_wake_op:
-> >=20
-> > 	futex_wake_op()
-> > 	  ...
-> > 	  double_unlock_hb(hb1, hb2);  <- RELEASE(pc) barrier here.
-> > 	  wake_up_q(&wake_q);
-> >=20
-> > and in futex_wait():
-> >=20
-> > 	futex_wait()
-> > 	  ...
-> > 	  futex_wait_queue_me(hb, &q, to); <- schedule() here
-> > 	  ...
-> > 	  unqueue_me(&q)
-> > 	    drop_futex_key_refs(&q->key);
-> > 	    	iput()/mmdrop(); <- a full barrier
-> > 	 =20
-> >=20
-> > The RELEASE(pc) barrier pairs with the full barrier, therefore the
-> > userspace wakee can observe the condition variable modification.
->=20
-> Right, futexes are a pain; and I think we all agreed we didn't want to
-> go rely on implementation details unless we absolutely _have_ to.
->=20
+> You limited it to OF because people complained that other things 
+> will break.
 
-Agreed.
+Right.
 
-Besides, after I have read why futex_wake_op(the caller of
-futex_atomic_op_inuser()) is introduced, I think your worries are quite
-reasonable. I thought the futex_atomic_op_inuser() only operated on
-futex related variables, but it turns out it can actually operate any
-userspace variable if userspace code likes, therefore we don't have
-control of all memory ordering guarantee of the variable. So if PPC
-doesn't provide a full barrier at user<->kernel boundries, we should
-make futex_atomic_op_inuser() fully ordered.
+And I'm not sure why that was regarded as a good enough reason to do it.
 
+> Things still broke.
 
-Still looking into futex_atomic_cmpxchg_inatomic() ...
+Yes, they did.
 
-> > > And.. aside from the thoughts I outlined in the email referenced abov=
-e,
-> > > there is always the chance people accidentally rely on the strong
-> > > ordering on their x86 CPU and find things come apart when ran on their
-> > > ARM/MIPS/etc..
-> > >=20
-> > > There are a fair number of people who use the raw futex call and we h=
-ave
-> > > 0 visibility into many of them. The assumed and accidental ordering
-> > > guarantees will forever remain a mystery.
-> > >=20
-> >=20
-> > Understood. That's truely a potential problem. Considering not all the
-> > architectures imply a full barrier at user<->kernel boundries, maybe we
-> > can use one bit in the opcode of the futex system call to indicate
-> > whether userspace treats futex as fully ordered. Like:
-> >=20
-> > #define FUTEX_ORDER_SEQ_CST  0
-> > #define FUTEX_ORDER_RELAXED  64 (bit 7 and bit 8 are already used)
->=20
-> Not unless there's an actual performance problem with any of this.
-> Futexes are painful enough as is.
+> Surely there's a better way to address the 
+> problem.  Can't the delay be requested by drivers that might otherwise need 
+> to defer (which could be done incrementally, focusing on the worst 
+> performance problems), rather than enabling it for everything?
 
-Make sense, and we still have choices like modifying the userspace code
-if there is actually a performance problem ;-)
+Well, I was suggesting to use an opt-in flag there, but I'm not sure if Tomeu
+took that into consideration.
 
-Regards,
-Boqun
+In any case, probing is just one aspect of a deeper issue, which is that
+we have no way to represent functional dependencies between devices.
 
---Kj7319i9nmIyA2yE
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAABCAAGBQJWK3FQAAoJEEl56MO1B/q4meEIAK3B5zFB+SIybIU96slixIUa
-Cyfw3TPHYiF98y2cpih0MRYkmX/1T35+bSt9bzLaR7NhXYbtqM49B7GdNx/QvBde
-CH0tPEq0MFdfLsO5nesuq4/Z9EWqdZ0CrQ6YZ1k0grlwg+/HqpWhbI6W0yIml8+b
-xlqdavzUqLlkwn1Q6CAkL8ipyG78XJ5Fk9O/g4XDcXSpdG3VvTvQoOEnnFc3LorU
-pMy0WZzbCgiQXnJSpiMg6TBVP/4rR2qYrOH8dp8C2pEyqe29j/hom+hZCKf8ZizQ
-K/32zK/ZBZQtKo79wPceGCgbGFDJBho+cpzfRWm+/7BxOYDWb10cb2J33aj1bqM=
-=G9Gh
------END PGP SIGNATURE-----
-
---Kj7319i9nmIyA2yE--
+Thanks,
+Rafael
