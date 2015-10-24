@@ -1,28 +1,42 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0141.outbound.protection.outlook.com [65.55.169.141])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB62F1A04DE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 09:40:10 +1100 (AEDT)
-Message-ID: <1445639975.701.257.camel@freescale.com>
-Subject: Re: [PATCH v3 0/5] clk: qoriq: Move chip-specific knowledge into
- driver
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd
- <sboyd@codeaurora.org>
-CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar
- <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>,
- <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-arm-kernel@lists.infradead.org>, Tang
- Yuantian <Yuantian.Tang@freescale.com>, <javier@osg.samsung.com>, Bhupesh
- Sharma <bhupesh.sharma@freescale.com>, Russell King <linux@arm.linux.org.uk>,
- Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 23 Oct 2015 17:39:35 -0500
-In-Reply-To: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 95C561A01D7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 12:24:06 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6135B1412FE
+ for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:24:06 +1100 (AEDT)
+Received: from localhost
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Sat, 24 Oct 2015 11:24:05 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CCDDD2CE8050
+ for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:24:02 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t9O1NsnC7340144
+ for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:24:02 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t9O1NUTZ021695
+ for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:23:30 +1100
+Date: Sat, 24 Oct 2015 12:23:05 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/eeh: eeh_pci_enable(): fix checking of
+ post-request state
+Message-ID: <20151024012305.GD26601@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +46,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-09-19 at 23:29 -0500, Scott Wood wrote:
-> The existing device tree bindings are error-prone and inflexible. 
-> Correct the mistake by moving the knowledge into the driver, which has
-> more flexibility in describing the quirks of each chip.  This leaves the
-> device tree to its proper role of identifying a programming interface
-> rather than describing its individual registers.
-> 
-> For more detail, see the commit message of patch 2.
-> 
-> As there are both ARM and PPC patches that depend on this patchset, I'm
-> requesting ACKs from clk and cpufreq in order to put this into a topic
-> branch that both ARM and PPC can pull.
-> 
-> Scott Wood (5):
->   powerpc/fsl: Move fsl_guts.h out of arch/powerpc
->   clk: qoriq: Move chip-specific knowledge into driver
->   clk: qoriq: Add ls2080a support.
->   clk: Add consumer APIs for discovering possible parent clocks
->   cpufreq: qoriq: Don't look at clock implementation details
+On Fri, Oct 23, 2015 at 05:19:46PM +1100, Andrew Donnellan wrote:
+>In eeh_pci_enable(), after making the request to set the new options, we
+>call eeh_ops->wait_state() to check that the request finished successfully.
+>
+>At the moment, if eeh_ops->wait_state() returns 0, we return 0 without
+>checking that it reflects the expected outcome. This can lead to callers
+>further up the chain incorrectly assuming the slot has been successfully
+>unfrozen and continuing to attempt recovery.
+>
+>On powernv, this will occur if pnv_eeh_get_pe_state() or
+>pnv_eeh_get_phb_state() return 0, which in turn occurs if the relevant OPAL
+>call returns OPAL_EEH_STOPPED_MMIO_DMA_FREEZE or
+>OPAL_EEH_PHB_ERROR respectively.
+>
+>On pseries, this will occur if pseries_eeh_get_state() returns 0, which in
+>turn occurs if RTAS reports that the PE is in the MMIO Stopped and DMA
+>Stopped states.
+>
+>Obviously, none of these cases represent a successful completion of a
+>request to thaw MMIO or DMA.
+>
+>Fix the check so that a wait_state() return value of 0 won't be considered
+>successful for the EEH_OPT_THAW_MMIO or EEH_OPT_THAW_DMA cases.
+>
+>Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-I've applied the first three patches plus 
-http://patchwork.ozlabs.org/patch/534739/ to the clock branch of 
-scottwood/linux.git to be used as a basis for PPC and ARM device tree patches.
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Note that there is a trivial merge conflict with commit 
-4a7748c3d6419bb8178748 ("clk: Allow drivers to build if COMPILE_TEST is 
-enabled").  Another option is for these patches to go via the clk tree, and 
-the device tree patches will ust go separately.  This would result in 
-intermediate commits where the device tree contains clock information that 
-the clock driver can't handle, but it would be resolved by -rc1 -- and it 
-seems that one of the ARM device tree patches ("dts/ls2080a: Update DTSI to 
-add support of various peripherals") was already merged without waiting for 
-the clock driver patch.  I could still wait until next merge window to rip 
-out the legacy stuff from existing device trees, so it would only affect new 
-functionality.
+Thanks,
+Gavin
 
-Patch 4 is still waiting for an ack from Russell King, but it appears that 
-patch 5 (which depends on patch 4) can probably wait until the next merge 
-window.  Without those patches, qoriq-cpufreq should still mostly work, as 
-long as the old device trees are used.  Patches 4 and 5 will be needed to 
-make qoriq-cpufreq continue to work with device trees using the new binding.
-
--Scott
+>---
+> arch/powerpc/kernel/eeh.c | 2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>index 40e4d4a..d757e7c 100644
+>--- a/arch/powerpc/kernel/eeh.c
+>+++ b/arch/powerpc/kernel/eeh.c
+>@@ -677,7 +677,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+> 	/* Check if the request is finished successfully */
+> 	if (active_flag) {
+> 		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
+>-		if (rc <= 0)
+>+		if (rc < 0)
+> 			return rc;
+>
+> 		if (rc & active_flag)
+>-- 
+>Andrew Donnellan              Software Engineer, OzLabs
+>andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
+>+61 2 6201 8874 (work)        IBM Australia Limited
+>
