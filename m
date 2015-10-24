@@ -1,42 +1,37 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95C561A01D7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 12:24:06 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6135B1412FE
- for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:24:06 +1100 (AEDT)
-Received: from localhost
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Sat, 24 Oct 2015 11:24:05 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id CCDDD2CE8050
- for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:24:02 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t9O1NsnC7340144
- for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:24:02 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t9O1NUTZ021695
- for <linuxppc-dev@ozlabs.org>; Sat, 24 Oct 2015 12:23:30 +1100
-Date: Sat, 24 Oct 2015 12:23:05 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/eeh: eeh_pci_enable(): fix checking of
- post-request state
-Message-ID: <20151024012305.GD26601@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 76DBC1A04D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Oct 2015 21:26:40 +1100 (AEDT)
+Date: Sat, 24 Oct 2015 12:26:27 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Will Deacon <will.deacon@arm.com>, Waiman Long <waiman.long@hp.com>,
+ Davidlohr Bueso <dave@stgolabs.net>, stable@vger.kernel.org
+Subject: Re: [PATCH tip/locking/core v4 1/6] powerpc: atomic: Make *xchg and
+ *cmpxchg a full barrier
+Message-ID: <20151024102627.GH17308@twins.programming.kicks-ass.net>
+References: <1444838161-17209-1-git-send-email-boqun.feng@gmail.com>
+ <1444838161-17209-2-git-send-email-boqun.feng@gmail.com>
+ <20151014201916.GB3910@linux.vnet.ibm.com>
+ <20151020071532.GB17714@fixme-laptop.cn.ibm.com>
+ <20151020092147.GX17308@twins.programming.kicks-ass.net>
+ <20151020212835.GH5105@linux.vnet.ibm.com>
+ <20151021084503.GE17714@fixme-laptop.cn.ibm.com>
+ <20151021193523.GT5105@linux.vnet.ibm.com>
+ <20151021194825.GH2508@worktop.programming.kicks-ass.net>
+ <20151022120716.GA1481@fixme-laptop.cn.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1445581186-10533-1-git-send-email-andrew.donnellan@au1.ibm.com>
+In-Reply-To: <20151022120716.GA1481@fixme-laptop.cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,57 +41,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Oct 23, 2015 at 05:19:46PM +1100, Andrew Donnellan wrote:
->In eeh_pci_enable(), after making the request to set the new options, we
->call eeh_ops->wait_state() to check that the request finished successfully.
->
->At the moment, if eeh_ops->wait_state() returns 0, we return 0 without
->checking that it reflects the expected outcome. This can lead to callers
->further up the chain incorrectly assuming the slot has been successfully
->unfrozen and continuing to attempt recovery.
->
->On powernv, this will occur if pnv_eeh_get_pe_state() or
->pnv_eeh_get_phb_state() return 0, which in turn occurs if the relevant OPAL
->call returns OPAL_EEH_STOPPED_MMIO_DMA_FREEZE or
->OPAL_EEH_PHB_ERROR respectively.
->
->On pseries, this will occur if pseries_eeh_get_state() returns 0, which in
->turn occurs if RTAS reports that the PE is in the MMIO Stopped and DMA
->Stopped states.
->
->Obviously, none of these cases represent a successful completion of a
->request to thaw MMIO or DMA.
->
->Fix the check so that a wait_state() return value of 0 won't be considered
->successful for the EEH_OPT_THAW_MMIO or EEH_OPT_THAW_DMA cases.
->
->Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
->Signed-off-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+On Thu, Oct 22, 2015 at 08:07:16PM +0800, Boqun Feng wrote:
+> On Wed, Oct 21, 2015 at 09:48:25PM +0200, Peter Zijlstra wrote:
+> > On Wed, Oct 21, 2015 at 12:35:23PM -0700, Paul E. McKenney wrote:
+> > > > > > > I ask this because I recall Peter once bought up a discussion:
+> > > > > > > 
+> > > > > > > https://lkml.org/lkml/2015/8/26/596
+> > 
+> > > > So a full barrier on one side of these operations is enough, I think.
+> > > > IOW, there is no need to strengthen these operations.
+> > > 
+> > > Do we need to also worry about other futex use cases?
+> > 
+> > Worry, always!
+> > 
+> > But yes, there is one more specific usecase, which is that of a
+> > condition variable.
+> > 
+> > When we go sleep on a futex, we might want to assume visibility of the
+> > stores done by the thread that woke us by the time we wake up.
+> > 
+> 
+> But the thing is futex atomics in PPC are already RELEASE(pc)+ACQUIRE
+> and imply a full barrier, is an RELEASE(sc) semantics really needed
+> here?
 
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+For this, no, the current code should be fine I think.
 
-Thanks,
-Gavin
+> Further more, is this condition variable visibility guaranteed by other
+> part of futex? Because in futex_wake_op:
+> 
+> 	futex_wake_op()
+> 	  ...
+> 	  double_unlock_hb(hb1, hb2);  <- RELEASE(pc) barrier here.
+> 	  wake_up_q(&wake_q);
+> 
+> and in futex_wait():
+> 
+> 	futex_wait()
+> 	  ...
+> 	  futex_wait_queue_me(hb, &q, to); <- schedule() here
+> 	  ...
+> 	  unqueue_me(&q)
+> 	    drop_futex_key_refs(&q->key);
+> 	    	iput()/mmdrop(); <- a full barrier
+> 	  
+> 
+> The RELEASE(pc) barrier pairs with the full barrier, therefore the
+> userspace wakee can observe the condition variable modification.
 
->---
-> arch/powerpc/kernel/eeh.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->
->diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->index 40e4d4a..d757e7c 100644
->--- a/arch/powerpc/kernel/eeh.c
->+++ b/arch/powerpc/kernel/eeh.c
->@@ -677,7 +677,7 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
-> 	/* Check if the request is finished successfully */
-> 	if (active_flag) {
-> 		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
->-		if (rc <= 0)
->+		if (rc < 0)
-> 			return rc;
->
-> 		if (rc & active_flag)
->-- 
->Andrew Donnellan              Software Engineer, OzLabs
->andrew.donnellan@au1.ibm.com  Australia Development Lab, Canberra
->+61 2 6201 8874 (work)        IBM Australia Limited
->
+Right, futexes are a pain; and I think we all agreed we didn't want to
+go rely on implementation details unless we absolutely _have_ to.
+
+> > And.. aside from the thoughts I outlined in the email referenced above,
+> > there is always the chance people accidentally rely on the strong
+> > ordering on their x86 CPU and find things come apart when ran on their
+> > ARM/MIPS/etc..
+> > 
+> > There are a fair number of people who use the raw futex call and we have
+> > 0 visibility into many of them. The assumed and accidental ordering
+> > guarantees will forever remain a mystery.
+> > 
+> 
+> Understood. That's truely a potential problem. Considering not all the
+> architectures imply a full barrier at user<->kernel boundries, maybe we
+> can use one bit in the opcode of the futex system call to indicate
+> whether userspace treats futex as fully ordered. Like:
+> 
+> #define FUTEX_ORDER_SEQ_CST  0
+> #define FUTEX_ORDER_RELAXED  64 (bit 7 and bit 8 are already used)
+
+Not unless there's an actual performance problem with any of this.
+Futexes are painful enough as is.
